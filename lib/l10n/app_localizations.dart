@@ -98,7 +98,7 @@ abstract class AppLocalizations {
     Locale('zh'),
     Locale.fromSubtags(
       languageCode: 'zh',
-      countryCode: 'CH',
+      countryCode: 'CN',
       scriptCode: 'Hans',
     ),
   ];
@@ -126,6 +126,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Profile'**
   String get profile;
+
+  /// No description provided for @softwareSetting.
+  ///
+  /// In en, this message translates to:
+  /// **'Software Setting'**
+  String get softwareSetting;
+
+  /// No description provided for @followSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow System'**
+  String get followSystem;
+
+  /// No description provided for @modifyLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Modify Language'**
+  String get modifyLanguage;
+
+  /// No description provided for @current.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get current;
 }
 
 class _AppLocalizationsDelegate
@@ -148,8 +172,8 @@ class _AppLocalizationsDelegate
 AppLocalizations lookupAppLocalizations(Locale locale) {
   // Lookup logic when language+script+country codes are specified.
   switch (locale.toString()) {
-    case 'zh_Hans_CH':
-      return AppLocalizationsZhHansCh();
+    case 'zh_Hans_CN':
+      return AppLocalizationsZhHansCn();
   }
 
   // Lookup logic when only language code is specified.

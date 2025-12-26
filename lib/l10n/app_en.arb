@@ -2,5 +2,9 @@
     "rubbishPlan": "Rubbish Plan",
     "selfLanguage": "English",
     "course": "Course",
-    "profile": "Profile"
+    "profile": "Profile",
+    "softwareSetting": "Software Setting",
+    "followSystem": "Follow System",
+    "modifyLanguage": "Modify Language",
+    "current": "Current"
 }

@@ -19,12 +19,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get profile => '我的';
-}
-
-/// The translations for Chinese, as used in Switzerland, using the Han script (`zh_Hans_CH`).
-class AppLocalizationsZhHansCh extends AppLocalizationsZh {
-  AppLocalizationsZhHansCh() : super('zh_Hans_CH');
 
   @override
-  String get selfLanguage => '中文-简体';
+  String get softwareSetting => '软件设置';
+
+  @override
+  String get followSystem => '跟随系统';
+
+  @override
+  String get modifyLanguage => '修改语言';
+
+  @override
+  String get current => '当前';
+}
+
+/// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).
+class AppLocalizationsZhHansCn extends AppLocalizationsZh {
+  AppLocalizationsZhHansCn() : super('zh_Hans_CN');
+
+  @override
+  String get selfLanguage => '中文-简体-中国';
 }

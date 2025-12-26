@@ -19,4 +19,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profile => 'Profile';
+
+  @override
+  String get softwareSetting => 'Software Setting';
+
+  @override
+  String get followSystem => 'Follow System';
+
+  @override
+  String get modifyLanguage => 'Modify Language';
+
+  @override
+  String get current => 'Current';
 }
