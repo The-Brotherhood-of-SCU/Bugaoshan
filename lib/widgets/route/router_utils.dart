@@ -30,22 +30,29 @@ Future popupContent(
       return PopupContext(
         isInPopup: true,
         child: Dialog(
+          backgroundColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0),
+            borderRadius: BorderRadius.circular(20.0),
           ),
-          child: Stack(
-            children: [
-              widget,
-              if (_showCloseButton)
-                Positioned(
-                  top: 4,
-                  right: 4,
-                  child: IconButton(
-                    icon: Icon(Icons.close),
-                    onPressed: () => Navigator.of(context0).pop(),
-                  ),
-                ),
-            ],
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20.0),
+            child: Container(
+              color: DialogTheme.of(context0).backgroundColor,
+              child: Stack(
+                children: [
+                  widget,
+                  if (_showCloseButton)
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: IconButton(
+                        icon: Icon(Icons.close),
+                        onPressed: () => Navigator.of(context0).pop(),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       );
