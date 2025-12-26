@@ -87,20 +87,11 @@ class AboutPage extends StatelessWidget {
   }
 
   Widget externalResources(AppLocalizations localizations) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Wrap(
+      alignment: WrapAlignment.center,
       spacing: 24,
+      runSpacing: 16,
       children: [
-        ElevatedButton.icon(
-          onPressed: () {
-            showInfoDialog(
-              title: localizations.environmentInfo,
-              content: versionProvider.getVersionInfo(),
-            );
-          },
-          label: Text(localizations.environmentInfo),
-          icon: Icon(Icons.info_outline),
-        ),
         ElevatedButton.icon(
           onPressed: () async {
             await openProjectRepository();
@@ -114,6 +105,16 @@ class AboutPage extends StatelessWidget {
           },
           label: Text(localizations.developmentTeam),
           icon: Icon(Icons.open_in_new),
+        ),
+        ElevatedButton.icon(
+          onPressed: () {
+            showInfoDialog(
+              title: localizations.environmentInfo,
+              content: versionProvider.getVersionInfo(),
+            );
+          },
+          label: Text(localizations.environmentInfo),
+          icon: Icon(Icons.info_outline),
         ),
       ],
     );
