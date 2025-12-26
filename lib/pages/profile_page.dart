@@ -18,6 +18,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final body = Column(
       spacing: 16,
       children: [
+        SizedBox(height: 16),
         ButtonWithMaxWidth(
           onPressed: () {
             popupOrNavigate(context, SoftwareSettingPage());

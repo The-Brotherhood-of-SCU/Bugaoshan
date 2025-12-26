@@ -36,8 +36,8 @@ Future popupContent(
             children: [
               widget,
               Positioned(
-                top: 5,
-                right: 5,
+                top: 4,
+                right: 4,
                 child: IconButton(
                   icon: Icon(Icons.close),
                   onPressed: () => Navigator.of(context0).pop(),

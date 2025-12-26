@@ -6,5 +6,19 @@
     "softwareSetting": "软件设置",
     "followSystem": "跟随系统",
     "modifyLanguage": "修改语言",
-    "current": "当前"
+    "current": "当前",
+    "animationDuration": "动画时长",
+    "confirm": "确认",
+    "currentAnimationDuration": "当前动画时长: {value} ms",
+    "animationDurationUpdated": "动画时长已更新为 {value} ms",
+    "animationDurationHint": "提示：调整滑块查看动画效果，点击确认后才会保存设置",
+    "themeColor": "主题颜色",
+    "changeThemeColor": "更改主题颜色",
+    "confirmButton": "确认",
+    "customizedColorHint": "自定义颜色由颜色种子生成",
+    "tips": "提示",
+    "resetToDefault": "重置为默认",
+    "blockPicker": "色块",
+    "materialPicker": "材质",
+    "advancedPicker": "高级"
 }

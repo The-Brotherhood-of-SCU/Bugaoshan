@@ -13,7 +13,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: appConfigService.locale,
+      listenable: Listenable.merge([
+        appConfigService.locale,
+        appConfigService.themeColor,
+      ]),
       builder: (context, child) {
         return _build(context);
       },
@@ -29,11 +32,13 @@ class MyApp extends StatelessWidget {
       supportedLocales: AppLocalizations.supportedLocales,
       title: 'Rubbish Plan',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: appConfigService.themeColor.value,
+        ),
       ),
       darkTheme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
+          seedColor: appConfigService.themeColor.value,
           brightness: Brightness.dark,
         ),
       ),
