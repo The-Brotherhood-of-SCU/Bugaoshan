@@ -34,5 +34,7 @@
     "projectRepository": "项目仓库",
     "clearAllData": "清除所有数据",
     "confirmMessage":"真的要这样做吗？",
-    "environmentInfo":"环境信息"
+    "environmentInfo":"环境信息",
+    "scheduleSetting":"课表设置",
+    "globalSetting":"全局设置"
 }

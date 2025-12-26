@@ -121,6 +121,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get environmentInfo => '环境信息';
+
+  @override
+  String get scheduleSetting => '课表设置';
+
+  @override
+  String get globalSetting => '全局设置';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

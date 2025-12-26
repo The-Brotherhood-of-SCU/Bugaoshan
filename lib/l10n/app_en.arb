@@ -34,5 +34,7 @@
     "projectRepository": "Project Repository",
     "clearAllData": "Clear All Data",
     "confirmMessage":"Are you sure?",
-    "environmentInfo":"Environment Info"
+    "environmentInfo":"Environment Info",
+    "scheduleSetting":"Schedule Setting",
+    "globalSetting":"Global Setting"
 }

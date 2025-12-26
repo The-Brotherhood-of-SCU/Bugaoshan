@@ -123,4 +123,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get environmentInfo => 'Environment Info';
+
+  @override
+  String get scheduleSetting => 'Schedule Setting';
+
+  @override
+  String get globalSetting => 'Global Setting';
 }

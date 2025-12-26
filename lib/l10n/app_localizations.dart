@@ -318,6 +318,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Environment Info'**
   String get environmentInfo;
+
+  /// No description provided for @scheduleSetting.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule Setting'**
+  String get scheduleSetting;
+
+  /// No description provided for @globalSetting.
+  ///
+  /// In en, this message translates to:
+  /// **'Global Setting'**
+  String get globalSetting;
 }
 
 class _AppLocalizationsDelegate

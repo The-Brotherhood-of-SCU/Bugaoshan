@@ -67,14 +67,16 @@ class _HomePageState extends State<HomePage> {
                       .toList(),
                 ),
                 const VerticalDivider(thickness: 1, width: 1),
-                Expanded(child: _navigationItems[_currentIndex].page),
+                Expanded(
+                  child: SafeArea(child: _navigationItems[_currentIndex].page),
+                ),
               ],
             ),
           );
         } else {
           // Portrait mode: use bottom navigation bar
           return Scaffold(
-            body: _navigationItems[_currentIndex].page,
+            body: SafeArea(child: _navigationItems[_currentIndex].page),
             bottomNavigationBar: NavigationBar(
               selectedIndex: _currentIndex,
               onDestinationSelected: (index) {
