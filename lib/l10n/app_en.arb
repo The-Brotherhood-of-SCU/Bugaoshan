@@ -20,5 +20,19 @@
     "resetToDefault": "Reset to Default",
     "blockPicker": "Block",
     "materialPicker": "Material",
-    "advancedPicker": "Advanced"
+    "advancedPicker": "Advanced",
+    "about": "About",
+    "developmentTeam": "Developer Team",
+    "projectInfo": "Project Info",
+    "appName": "App Name",
+    "version": "Version",
+    "description": "Description",
+    "appDescription": "A simple and practical course management app",
+    "contactUs": "Contact Us",
+    "developedBy":"Developed by {team}",
+    "externalResources": "External Resources",
+    "projectRepository": "Project Repository",
+    "clearAllData": "Clear All Data",
+    "confirmMessage":"Are you sure?",
+    "environmentInfo":"Environment Info"
 }

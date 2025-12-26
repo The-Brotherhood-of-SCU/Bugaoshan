@@ -41,6 +41,8 @@ dependencies:
     sdk: flutter
   intl: any
   flutter_colorpicker: 
+  url_launcher: 
+  package_info_plus: 
 
 dev_dependencies:
   flutter_test:
@@ -66,6 +68,8 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   generate: true
+  assets:
+    - assets/avater.png
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

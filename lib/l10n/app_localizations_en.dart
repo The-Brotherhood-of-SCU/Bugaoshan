@@ -79,4 +79,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get advancedPicker => 'Advanced';
+
+  @override
+  String get about => 'About';
+
+  @override
+  String get developmentTeam => 'Developer Team';
+
+  @override
+  String get projectInfo => 'Project Info';
+
+  @override
+  String get appName => 'App Name';
+
+  @override
+  String get version => 'Version';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get appDescription => 'A simple and practical course management app';
+
+  @override
+  String get contactUs => 'Contact Us';
+
+  @override
+  String developedBy(Object team) {
+    return 'Developed by $team';
+  }
+
+  @override
+  String get externalResources => 'External Resources';
+
+  @override
+  String get projectRepository => 'Project Repository';
+
+  @override
+  String get clearAllData => 'Clear All Data';
+
+  @override
+  String get confirmMessage => 'Are you sure?';
+
+  @override
+  String get environmentInfo => 'Environment Info';
 }

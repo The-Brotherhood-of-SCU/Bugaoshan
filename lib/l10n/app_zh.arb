@@ -20,5 +20,19 @@
     "resetToDefault": "重置为默认",
     "blockPicker": "色块",
     "materialPicker": "材质",
-    "advancedPicker": "高级"
+    "advancedPicker": "高级",
+    "about": "关于",
+    "developmentTeam": "开发团队",
+    "projectInfo": "项目信息",
+    "appName": "应用名称",
+    "version": "版本",
+    "description": "描述",
+    "appDescription": "一款简洁实用的课程管理应用",
+    "contactUs": "联系我们",
+    "developedBy":"由 {team} 倾情打造",
+    "externalResources": "外部资源",
+    "projectRepository": "项目仓库",
+    "clearAllData": "清除所有数据",
+    "confirmMessage":"真的要这样做吗？",
+    "environmentInfo":"环境信息"
 }

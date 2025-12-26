@@ -234,6 +234,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Advanced'**
   String get advancedPicker;
+
+  /// No description provided for @about.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get about;
+
+  /// No description provided for @developmentTeam.
+  ///
+  /// In en, this message translates to:
+  /// **'Developer Team'**
+  String get developmentTeam;
+
+  /// No description provided for @projectInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Project Info'**
+  String get projectInfo;
+
+  /// No description provided for @appName.
+  ///
+  /// In en, this message translates to:
+  /// **'App Name'**
+  String get appName;
+
+  /// No description provided for @version.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get version;
+
+  /// No description provided for @description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// No description provided for @appDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A simple and practical course management app'**
+  String get appDescription;
+
+  /// No description provided for @contactUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Us'**
+  String get contactUs;
+
+  /// No description provided for @developedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Developed by {team}'**
+  String developedBy(Object team);
+
+  /// No description provided for @externalResources.
+  ///
+  /// In en, this message translates to:
+  /// **'External Resources'**
+  String get externalResources;
+
+  /// No description provided for @projectRepository.
+  ///
+  /// In en, this message translates to:
+  /// **'Project Repository'**
+  String get projectRepository;
+
+  /// No description provided for @clearAllData.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear All Data'**
+  String get clearAllData;
+
+  /// No description provided for @confirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure?'**
+  String get confirmMessage;
+
+  /// No description provided for @environmentInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Environment Info'**
+  String get environmentInfo;
 }
 
 class _AppLocalizationsDelegate

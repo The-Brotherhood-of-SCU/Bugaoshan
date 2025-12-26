@@ -77,6 +77,50 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get advancedPicker => '高级';
+
+  @override
+  String get about => '关于';
+
+  @override
+  String get developmentTeam => '开发团队';
+
+  @override
+  String get projectInfo => '项目信息';
+
+  @override
+  String get appName => '应用名称';
+
+  @override
+  String get version => '版本';
+
+  @override
+  String get description => '描述';
+
+  @override
+  String get appDescription => '一款简洁实用的课程管理应用';
+
+  @override
+  String get contactUs => '联系我们';
+
+  @override
+  String developedBy(Object team) {
+    return '由 $team 倾情打造';
+  }
+
+  @override
+  String get externalResources => '外部资源';
+
+  @override
+  String get projectRepository => '项目仓库';
+
+  @override
+  String get clearAllData => '清除所有数据';
+
+  @override
+  String get confirmMessage => '真的要这样做吗？';
+
+  @override
+  String get environmentInfo => '环境信息';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:rubbish_plan/injection/injector.dart';
 import 'package:rubbish_plan/l10n/app_localizations.dart';
+import 'package:rubbish_plan/pages/about_page.dart';
 import 'package:rubbish_plan/pages/set_duration_page.dart';
 import 'package:rubbish_plan/pages/set_language_page.dart';
 import 'package:rubbish_plan/pages/set_theme_color_page.dart';
+import 'package:rubbish_plan/serivces/app_config_service.dart';
 import 'package:rubbish_plan/widgets/common/styled_widget.dart';
+import 'package:rubbish_plan/widgets/dialog/dialog.dart';
 import 'package:rubbish_plan/widgets/route/router_utils.dart';
 
 class SoftwareSettingPage extends StatelessWidget {
@@ -35,6 +39,30 @@ class SoftwareSettingPage extends StatelessWidget {
           },
           icon: Icon(Icons.color_lens),
           child: Text(localizations.themeColor),
+        ),
+        ButtonWithMaxWidth(
+          onPressed: () async {
+            final confirm = await showYesNoDialog(
+              title: localizations.clearAllData,
+              content: localizations.confirmMessage,
+            );
+            if (confirm == true) {
+              final appConfig = getIt<AppConfigService>();
+              appConfig.clearAll();
+            }
+          },
+          icon: Icon(Icons.delete, color: Colors.red),
+          child: Text(
+            localizations.clearAllData,
+            style: TextStyle(color: Colors.red),
+          ),
+        ),
+        ButtonWithMaxWidth(
+          onPressed: () {
+            popupOrNavigate(context, AboutPage());
+          },
+          icon: Icon(Icons.info_outline),
+          child: Text(localizations.about),
         ),
       ],
     );
