@@ -10,12 +10,10 @@ const String _keyLocale = 'locale';
 const String _keyCardSizeAnimationDuration = 'cardSizeAnimationDuration';
 const String _keyThemeColor = 'themeColor';
 
-
-
-class AppConfigService {
+class AppConfigProvider {
   final SharedPreferences _sharedPreferences;
 
-  AppConfigService(this._sharedPreferences) {
+  AppConfigProvider(this._sharedPreferences) {
     _loadLocale();
     _addSaveCallback();
   }
@@ -55,10 +53,7 @@ class AppConfigService {
       );
     });
     themeColor.addListener(() {
-      _sharedPreferences.setInt(
-        _keyThemeColor,
-        themeColor.value.toARGB32(),
-      );
+      _sharedPreferences.setInt(_keyThemeColor, themeColor.value.toARGB32());
     });
   }
 

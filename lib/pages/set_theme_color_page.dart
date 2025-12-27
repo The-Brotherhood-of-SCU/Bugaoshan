@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:rubbish_plan/injection/injector.dart';
 import 'package:rubbish_plan/l10n/app_localizations.dart';
-import 'package:rubbish_plan/serivces/app_config_service.dart';
+import 'package:rubbish_plan/providers/app_config_provider.dart';
 import 'package:rubbish_plan/widgets/common/padding.dart';
 
 class SetThemeColorPage extends StatefulWidget {
@@ -13,7 +13,7 @@ class SetThemeColorPage extends StatefulWidget {
 }
 
 class _SetThemeColorPageState extends State<SetThemeColorPage> {
-  final appConfigService = getIt<AppConfigService>();
+  final appConfigService = getIt<AppConfigProvider>();
 
   late Color pickerColor;
   ColorScheme? colorScheme;

@@ -2,7 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:rubbish_plan/providers/app_info_provider.dart';
-import 'package:rubbish_plan/serivces/app_config_service.dart';
+import 'package:rubbish_plan/providers/app_config_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'injector.config.dart';
@@ -23,10 +23,10 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<SharedPreferences>(
     () => SharedPreferences.getInstance(),
   );
-  getIt.registerSingletonAsync<AppConfigService>(() async {
+  getIt.registerSingletonAsync<AppConfigProvider>(() async {
     await getIt.isReady<SharedPreferences>();
     final prefs = getIt<SharedPreferences>();
-    return AppConfigService(prefs);
+    return AppConfigProvider(prefs);
   });
   getIt.registerSingletonAsync<PackageInfo>(() => PackageInfo.fromPlatform());
   getIt.registerSingletonAsync<AppInfoProvider>(() async {
@@ -37,5 +37,5 @@ void _configureAsyncDependencies() {
 }
 
 Future<void> ensureBasicDependencies() async {
-  await getIt.isReady<AppConfigService>();
+  await getIt.isReady<AppConfigProvider>();
 }

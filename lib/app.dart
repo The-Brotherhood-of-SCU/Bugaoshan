@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:rubbish_plan/injection/injector.dart';
 import 'package:rubbish_plan/pages/home_page.dart';
-import 'package:rubbish_plan/serivces/app_config_service.dart';
+import 'package:rubbish_plan/providers/app_config_provider.dart';
 import 'package:rubbish_plan/widgets/route/router_utils.dart';
 import 'l10n/app_localizations.dart';
 
 class MyApp extends StatelessWidget {
   MyApp({super.key});
-  final AppConfigService appConfigService = getIt<AppConfigService>();
+  final AppConfigProvider appConfigService = getIt<AppConfigProvider>();
 
   // This widget is the root of your application.
   @override

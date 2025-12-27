@@ -5,7 +5,7 @@ import 'package:rubbish_plan/pages/about_page.dart';
 import 'package:rubbish_plan/pages/set_duration_page.dart';
 import 'package:rubbish_plan/pages/set_language_page.dart';
 import 'package:rubbish_plan/pages/set_theme_color_page.dart';
-import 'package:rubbish_plan/serivces/app_config_service.dart';
+import 'package:rubbish_plan/providers/app_config_provider.dart';
 import 'package:rubbish_plan/widgets/common/styled_widget.dart';
 import 'package:rubbish_plan/widgets/dialog/dialog.dart';
 import 'package:rubbish_plan/widgets/route/router_utils.dart';
@@ -47,7 +47,7 @@ class SoftwareSettingPage extends StatelessWidget {
               content: localizations.confirmMessage,
             );
             if (confirm == true) {
-              final appConfig = getIt<AppConfigService>();
+              final appConfig = getIt<AppConfigProvider>();
               appConfig.clearAll();
             }
           },

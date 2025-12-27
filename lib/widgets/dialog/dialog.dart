@@ -1,10 +1,10 @@
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:rubbish_plan/injection/injector.dart';
-import 'package:rubbish_plan/serivces/app_config_service.dart';
+import 'package:rubbish_plan/providers/app_config_provider.dart';
 import 'package:rubbish_plan/widgets/route/router_utils.dart';
 
-final appConfigService = getIt<AppConfigService>();
+final appConfigService = getIt<AppConfigProvider>();
 
 Future showInfoDialog({
   BuildContext? context, //this is no need anymore

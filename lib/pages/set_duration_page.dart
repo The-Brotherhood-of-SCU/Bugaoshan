@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rubbish_plan/injection/injector.dart';
 import 'package:rubbish_plan/l10n/app_localizations.dart';
-import 'package:rubbish_plan/serivces/app_config_service.dart';
+import 'package:rubbish_plan/providers/app_config_provider.dart';
 import 'package:rubbish_plan/widgets/common/padding.dart';
 
 class SetDurationPage extends StatefulWidget {
@@ -61,7 +61,7 @@ class _SetDurationPageState extends State<SetDurationPage> {
     });
   }
 
-  final appConfigService = getIt<AppConfigService>();
+  final appConfigService = getIt<AppConfigProvider>();
 
   void _confirmChanges() {
     appConfigService.cardSizeAnimationDuration.value = Duration(

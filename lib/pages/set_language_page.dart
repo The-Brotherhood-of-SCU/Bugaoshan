@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:rubbish_plan/injection/injector.dart';
 import 'package:rubbish_plan/l10n/app_localizations.dart';
-import 'package:rubbish_plan/serivces/app_config_service.dart';
+import 'package:rubbish_plan/providers/app_config_provider.dart';
 import 'package:rubbish_plan/utils/locale_utils.dart';
 
 class SetLanguagePage extends StatefulWidget {
@@ -15,7 +15,7 @@ class SetLanguagePage extends StatefulWidget {
 
 class _SetLanguagePageState extends State<SetLanguagePage> {
   late List<Locale> locales = AppLocalizations.supportedLocales;
-  final appSetting = getIt<AppConfigService>();
+  final appSetting = getIt<AppConfigProvider>();
   String? selected;
 
   @override
@@ -134,7 +134,7 @@ class FollowSystemRadioButton extends RadioButton {
     required this.appSetting,
   });
 
-  final AppConfigService appSetting;
+  final AppConfigProvider appSetting;
 
   @override
   Widget build(BuildContext context) {
