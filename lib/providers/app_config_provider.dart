@@ -28,7 +28,7 @@ class AppConfigProvider {
     Colors.blueAccent,
   );
   final ValueNotifier<double> colorOpacity = ValueNotifier<double>(0.85);
-  final ValueNotifier<double> courseCardFontSize = ValueNotifier<double>(11.0);
+  final ValueNotifier<double> courseCardFontSize = ValueNotifier<double>(15.0);
 
   void _loadLocale() {
     final localeString = _sharedPreferences.getString(_keyLocale);
@@ -42,7 +42,7 @@ class AppConfigProvider {
     );
     colorOpacity.value = _sharedPreferences.getDouble(_keyColorOpacity) ?? 0.85;
     courseCardFontSize.value =
-        _sharedPreferences.getDouble(_keyCourseCardFontSize) ?? 11.0;
+        _sharedPreferences.getDouble(_keyCourseCardFontSize) ?? 15.0;
   }
 
   void _addSaveCallback() {

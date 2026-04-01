@@ -87,8 +87,8 @@ class SoftwareSettingPage extends StatelessWidget {
                     Slider(
                       value: appConfig.courseCardFontSize.value,
                       min: 8,
-                      max: 16,
-                      divisions: 16,
+                      max: 20,
+                      divisions: 12,
                       onChanged: (v) => appConfig.courseCardFontSize.value = v,
                     ),
                   ],

@@ -138,7 +138,7 @@ class CourseGrid extends StatelessWidget {
               ? '${slot.startTime.hour.toString().padLeft(2, '0')}:${slot.startTime.minute.toString().padLeft(2, '0')}'
               : '';
           return Container(
-            height: 60,
+            height: 72,
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(color: theme.colorScheme.outlineVariant, width: 0.5),
@@ -151,12 +151,15 @@ class CourseGrid extends StatelessWidget {
                 children: [
                   Text(
                     '${i + 1}${l10n.section}',
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                   ),
                   if (startStr.isNotEmpty)
-                    Text(
-                      startStr,
-                      style: TextStyle(fontSize: 8, color: theme.colorScheme.onSurfaceVariant),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        startStr,
+                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
+                      ),
                     ),
                 ],
               ),
@@ -174,7 +177,7 @@ class CourseGrid extends StatelessWidget {
     List<Course> dayCourses,
   ) {
     final theme = Theme.of(context);
-    final rowHeight = 60.0;
+    final rowHeight = 72.0;
 
     return Expanded(
       child: SizedBox(
@@ -201,18 +204,21 @@ class CourseGrid extends StatelessWidget {
             // Course cards
             ...dayCourses.map((course) {
               final top = (course.startSection - 1) * rowHeight;
-              final height = (course.endSection - course.startSection + 1) * rowHeight - 2;
+              // 不再设置固定 height，让内容自然撑开。最小高度仍然是课程占据的节数高度。
+              final minHeight = (course.endSection - course.startSection + 1) * rowHeight - 2;
               return Positioned(
                 top: top + 1,
                 left: 1,
                 right: 1,
-                height: height,
-                child: _CourseCard(
-                  course: course,
-                  config: config,
-                  displayWeek: displayWeek,
-                  onTap: onCourseTap != null ? () => onCourseTap!(course) : null,
-                  onLongPress: onCourseLongPress != null ? () => onCourseLongPress!(course) : null,
+                child: Container(
+                  constraints: BoxConstraints(minHeight: minHeight),
+                  child: _CourseCard(
+                    course: course,
+                    config: config,
+                    displayWeek: displayWeek,
+                    onTap: onCourseTap != null ? () => onCourseTap!(course) : null,
+                    onLongPress: onCourseLongPress != null ? () => onCourseLongPress!(course) : null,
+                  ),
                 ),
               );
             }),
@@ -259,6 +265,7 @@ class _CourseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appConfig = getIt<AppConfigProvider>();
+    final l10n = AppLocalizations.of(context)!;
 
     return ListenableBuilder(
       listenable: Listenable.merge([
@@ -271,54 +278,86 @@ class _CourseCard extends StatelessWidget {
             alpha: isActive
                 ? appConfig.colorOpacity.value
                 : appConfig.colorOpacity.value * 0.35);
-        final isDark = Theme.of(context).brightness == Brightness.dark;
         final textColor = Colors.white;
+        final fontSize = appConfig.courseCardFontSize.value;
+        final smallFontSize = fontSize - 2;
 
         return GestureDetector(
           onTap: onTap,
           onLongPress: onLongPress,
           child: Container(
+            // 移除 clipBehavior: Clip.hardEdge,
             decoration: BoxDecoration(
               color: color,
               borderRadius: BorderRadius.circular(6),
+              border: isActive ? null : Border.all(color: textColor.withAlpha(50), width: 0.5),
             ),
-            padding: const EdgeInsets.all(3),
+            padding: const EdgeInsets.all(4),
+            // 移除 SingleChildScrollView，让 Column 直接撑开 Container
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   course.name,
                   style: TextStyle(
-                    fontSize: appConfig.courseCardFontSize.value,
+                    fontSize: fontSize,
                     fontWeight: FontWeight.bold,
                     color: textColor,
+                    height: 1.1,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  // 不再限制行数，或者可以保留较大的值如 5
                 ),
                 if (config.showLocation && course.location.isNotEmpty)
-                  Text(
+                  _buildIconText(
+                    Icons.location_on_outlined,
                     course.location,
-                    style: TextStyle(
-                        fontSize: appConfig.courseCardFontSize.value - 1,
-                        color: textColor),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    smallFontSize,
+                    textColor,
                   ),
                 if (config.showTeacherName && course.teacher.isNotEmpty)
-                  Text(
+                  _buildIconText(
+                    Icons.person_outline,
                     course.teacher,
-                    style: TextStyle(
-                        fontSize: appConfig.courseCardFontSize.value - 1,
-                        color: textColor),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    smallFontSize,
+                    textColor,
                   ),
+                _buildIconText(
+                  Icons.calendar_today_outlined,
+                  '${course.startWeek}-${course.endWeek}${l10n.week}',
+                  smallFontSize,
+                  textColor,
+                ),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildIconText(IconData icon, String text, double fontSize, Color color) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: fontSize, color: color.withAlpha(200)),
+          const SizedBox(width: 2),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: fontSize,
+                color: color.withAlpha(230),
+                height: 1.1,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
