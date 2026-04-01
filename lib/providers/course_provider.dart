@@ -21,12 +21,12 @@ class CourseProvider {
     if (month >= 2 && month <= 6) {
       return ScheduleConfig(
         semesterStartDate: DateTime(now.year, 2, 17),
-        semesterEndDate: DateTime(now.year, 6, 30),
+        totalWeeks: 20,
       );
     }
     return ScheduleConfig(
       semesterStartDate: DateTime(now.year, 9, 1),
-      semesterEndDate: DateTime(now.year + 1, 1, 17),
+      totalWeeks: 20,
     );
   }
 

@@ -642,6 +642,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'End section must be greater than start section'**
   String get invalidSectionRange;
+
+  /// No description provided for @totalWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Weeks: {value}'**
+  String totalWeeks(Object value);
+
+  /// No description provided for @morning.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning'**
+  String get morning;
+
+  /// No description provided for @afternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon'**
+  String get afternoon;
+
+  /// No description provided for @evening.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening'**
+  String get evening;
+
+  /// No description provided for @courseDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Duration (mins)'**
+  String get courseDuration;
+
+  /// No description provided for @breakDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Break Duration (mins)'**
+  String get breakDuration;
+
+  /// No description provided for @autoSyncTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-calculate subsequent times'**
+  String get autoSyncTime;
 }
 
 class _AppLocalizationsDelegate

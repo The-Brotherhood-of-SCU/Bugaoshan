@@ -4,6 +4,7 @@ import 'package:rubbish_plan/l10n/app_localizations.dart';
 import 'package:rubbish_plan/models/course.dart';
 import 'package:rubbish_plan/providers/course_provider.dart';
 import 'package:rubbish_plan/widgets/common/styled_card.dart';
+import 'package:rubbish_plan/widgets/route/router_utils.dart';
 
 class CourseScheduleSetting extends StatefulWidget {
   const CourseScheduleSetting({super.key});
@@ -17,8 +18,13 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
 
   late TextEditingController _semesterNameController;
   late DateTime _startDate;
-  late DateTime _endDate;
-  late int _sectionsPerDay;
+  late int _totalWeeks;
+  late int _morningSections;
+  late int _afternoonSections;
+  late int _eveningSections;
+  late int _courseDuration;
+  late int _breakDuration;
+  late bool _autoSyncTime;
   late List<TimeSlot> _timeSlots;
   late double _colorOpacity;
   late double _fontSize;
@@ -32,8 +38,13 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
     final config = courseProvider.scheduleConfig.value;
     _semesterNameController = TextEditingController(text: config.semesterName);
     _startDate = config.semesterStartDate;
-    _endDate = config.semesterEndDate;
-    _sectionsPerDay = config.sectionsPerDay;
+    _totalWeeks = config.totalWeeks;
+    _morningSections = config.morningSections;
+    _afternoonSections = config.afternoonSections;
+    _eveningSections = config.eveningSections;
+    _courseDuration = config.courseDuration;
+    _breakDuration = config.breakDuration;
+    _autoSyncTime = config.autoSyncTime;
     _timeSlots = List.from(config.timeSlots);
     _colorOpacity = config.colorOpacity;
     _fontSize = config.courseCardFontSize;
@@ -80,55 +91,100 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
             _DatePickerField(
               label: l10n.semesterStartDate,
               date: _startDate,
-              onTap: () => _pickDate(context, true),
+              onTap: () => _pickDate(context),
             ),
-            _DatePickerField(
-              label: l10n.semesterEndDate,
-              date: _endDate,
-              onTap: () => _pickDate(context, false),
-            ),
+            _buildTotalWeeksPicker(context, l10n),
             const Divider(),
             // Section count
             _SectionTitle(l10n.sectionCount),
-            Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.remove),
-                  onPressed: _sectionsPerDay > 1
-                      ? () => setState(() {
-                            _sectionsPerDay--;
-                            _adjustTimeSlots();
-                          })
-                      : null,
-                ),
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      '$_sectionsPerDay',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: _sectionsPerDay < 20
-                      ? () => setState(() {
-                            _sectionsPerDay++;
-                            _adjustTimeSlots();
-                          })
-                      : null,
-                ),
-              ],
-            ),
+            _buildSectionCounter(l10n.morning, _morningSections, (v) {
+              setState(() {
+                _morningSections = v;
+                _adjustTimeSlots();
+              });
+            }),
+            _buildSectionCounter(l10n.afternoon, _afternoonSections, (v) {
+              setState(() {
+                _afternoonSections = v;
+                _adjustTimeSlots();
+              });
+            }),
+            _buildSectionCounter(l10n.evening, _eveningSections, (v) {
+              setState(() {
+                _eveningSections = v;
+                _adjustTimeSlots();
+              });
+            }),
             const Divider(),
             // Time slots
             _SectionTitle(l10n.timeSlot),
+            // Auto sync toggle
+            SwitchListTile(
+              title: Text(l10n.autoSyncTime),
+              value: _autoSyncTime,
+              onChanged: (v) => setState(() => _autoSyncTime = v),
+              contentPadding: EdgeInsets.zero,
+            ),
+            // Duration inputs
+            Row(
+              spacing: 16,
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    initialValue: _courseDuration.toString(),
+                    decoration: InputDecoration(
+                      labelText: l10n.courseDuration,
+                      border: const OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    onChanged: (v) {
+                      final val = int.tryParse(v);
+                      if (val != null && val > 0) {
+                        _courseDuration = val;
+                      }
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: TextFormField(
+                    initialValue: _breakDuration.toString(),
+                    decoration: InputDecoration(
+                      labelText: l10n.breakDuration,
+                      border: const OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    onChanged: (v) {
+                      final val = int.tryParse(v);
+                      if (val != null && val >= 0) {
+                        _breakDuration = val;
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
             ...List.generate(_timeSlots.length, (i) {
               return _TimeSlotEditor(
                 index: i,
                 slot: _timeSlots[i],
-                onChanged: (slot) {
-                  setState(() => _timeSlots[i] = slot);
+                onChanged: (slot, isStart) {
+                  setState(() {
+                    if (isStart && _autoSyncTime) {
+                      // Auto calculate end time for the current slot
+                      int endMin = slot.startTime.minute + _courseDuration;
+                      int endHour = slot.startTime.hour + (endMin ~/ 60);
+                      _timeSlots[i] = slot.copyWith(
+                        endTime: TimeOfDay(hour: endHour % 24, minute: endMin % 60),
+                      );
+                    } else {
+                      _timeSlots[i] = slot;
+                    }
+
+                    if (_autoSyncTime) {
+                      _syncFollowingSlots(i);
+                    }
+                  });
                 },
               );
             }),
@@ -190,50 +246,140 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
     );
   }
 
-  Future<void> _pickDate(BuildContext context, bool isStart) async {
-    final initial = isStart ? _startDate : _endDate;
+  Widget _buildTotalWeeksPicker(BuildContext context, AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 8,
+      children: [
+        Text(l10n.totalWeeks(20).split(':')[0]), // Using a trick to get the label
+        Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.remove),
+              onPressed: _totalWeeks > 1 ? () => setState(() => _totalWeeks--) : null,
+            ),
+            Expanded(
+              child: Center(
+                child: Text(
+                  '$_totalWeeks',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: _totalWeeks < 52 ? () => setState(() => _totalWeeks++) : null,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Future<void> _pickDate(BuildContext context) async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: initial,
+      initialDate: _startDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
     );
     if (picked != null) {
       setState(() {
-        if (isStart) {
-          _startDate = picked;
-          if (_endDate.isBefore(_startDate)) {
-            _endDate = _startDate;
-          }
-        } else {
-          _endDate = picked;
-          if (_startDate.isAfter(_endDate)) {
-            _startDate = _endDate;
-          }
-        }
+        _startDate = picked;
       });
     }
   }
 
+  Widget _buildSectionCounter(String label, int value, ValueChanged<int> onChanged) {
+    return Row(
+      children: [
+        Expanded(child: Text(label)),
+        IconButton(
+          icon: const Icon(Icons.remove),
+          onPressed: value > 0 ? () => onChanged(value - 1) : null,
+        ),
+        SizedBox(
+          width: 32,
+          child: Center(
+            child: Text(
+              '$value',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.add),
+          onPressed: value < 10 ? () => onChanged(value + 1) : null,
+        ),
+      ],
+    );
+  }
+
+  void _syncFollowingSlots(int index) {
+    // Determine the period of the changed slot
+    int startIdx = 0;
+    int endIdx = 0;
+    
+    if (index < _morningSections) {
+      startIdx = 0;
+      endIdx = _morningSections;
+    } else if (index < _morningSections + _afternoonSections) {
+      startIdx = _morningSections;
+      endIdx = _morningSections + _afternoonSections;
+    } else {
+      startIdx = _morningSections + _afternoonSections;
+      endIdx = _morningSections + _afternoonSections + _eveningSections;
+    }
+
+    // Sync only slots after the changed index, within the same period
+    for (int i = index + 1; i < endIdx; i++) {
+      if (i >= _timeSlots.length) break;
+      
+      final prevSlot = _timeSlots[i - 1];
+      int startMin = prevSlot.endTime.minute + _breakDuration;
+      int startHour = prevSlot.endTime.hour + (startMin ~/ 60);
+      startMin = startMin % 60;
+      
+      int endMin = startMin + _courseDuration;
+      int endHour = startHour + (endMin ~/ 60);
+      endMin = endMin % 60;
+
+      _timeSlots[i] = TimeSlot(
+        startTime: TimeOfDay(hour: startHour, minute: startMin),
+        endTime: TimeOfDay(hour: endHour, minute: endMin),
+      );
+    }
+  }
+
   void _adjustTimeSlots() {
-    while (_timeSlots.length < _sectionsPerDay) {
+    final totalSections = _morningSections + _afternoonSections + _eveningSections;
+    
+    while (_timeSlots.length < totalSections) {
+      // Just append a dummy slot, the user or sync logic can adjust it
       final hour = 8 + _timeSlots.length;
       _timeSlots.add(TimeSlot(
         startTime: TimeOfDay(hour: hour, minute: 0),
         endTime: TimeOfDay(hour: hour, minute: 45),
       ));
     }
-    if (_timeSlots.length > _sectionsPerDay) {
-      _timeSlots = _timeSlots.sublist(0, _sectionsPerDay);
+    if (_timeSlots.length > totalSections) {
+      _timeSlots = _timeSlots.sublist(0, totalSections);
     }
+    
+    // Optionally trigger a full sync when sections change, but for now we just maintain the length
   }
 
   Future<void> _save() async {
     final config = ScheduleConfig(
       semesterName: _semesterNameController.text.trim(),
       semesterStartDate: _startDate,
-      semesterEndDate: _endDate,
-      sectionsPerDay: _sectionsPerDay,
+      totalWeeks: _totalWeeks,
+      morningSections: _morningSections,
+      afternoonSections: _afternoonSections,
+      eveningSections: _eveningSections,
+      courseDuration: _courseDuration,
+      breakDuration: _breakDuration,
+      autoSyncTime: _autoSyncTime,
       timeSlots: _timeSlots,
       colorOpacity: _colorOpacity,
       courseCardFontSize: _fontSize,
@@ -242,7 +388,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
       showWeekend: _showWeekend,
     );
     await courseProvider.updateScheduleConfig(config);
-    if (mounted) Navigator.pop(context);
+    if (logicRootContext.mounted) Navigator.pop(logicRootContext);
   }
 }
 
@@ -298,7 +444,7 @@ class _DatePickerField extends StatelessWidget {
 class _TimeSlotEditor extends StatelessWidget {
   final int index;
   final TimeSlot slot;
-  final void Function(TimeSlot) onChanged;
+  final void Function(TimeSlot slot, bool isStart) onChanged;
 
   const _TimeSlotEditor({
     required this.index,
@@ -372,10 +518,13 @@ class _TimeSlotEditor extends StatelessWidget {
       initialTime: isStart ? slot.startTime : slot.endTime,
     );
     if (picked != null) {
-      onChanged(slot.copyWith(
-        startTime: isStart ? picked : null,
-        endTime: isStart ? null : picked,
-      ));
+      onChanged(
+        slot.copyWith(
+          startTime: isStart ? picked : null,
+          endTime: isStart ? null : picked,
+        ),
+        isStart,
+      );
     }
   }
 }

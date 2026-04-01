@@ -45,15 +45,18 @@ class _CourseEditPageState extends State<CourseEditPage> {
   void initState() {
     super.initState();
     final course = widget.course;
+    final config = courseProvider.scheduleConfig.value;
+    final maxSections = config.sectionsPerDay;
+
     _nameController = TextEditingController(text: course?.name ?? '');
     _teacherController = TextEditingController(text: course?.teacher ?? '');
     _locationController = TextEditingController(text: course?.location ?? '');
     _selectedColor = course?.color ?? _presetColors[Random().nextInt(_presetColors.length)];
-    _startWeek = course?.startWeek ?? 1;
-    _endWeek = course?.endWeek ?? courseProvider.scheduleConfig.value.totalWeeks;
+    _startWeek = (course?.startWeek ?? 1).clamp(1, config.totalWeeks);
+    _endWeek = (course?.endWeek ?? config.totalWeeks).clamp(1, config.totalWeeks);
     _dayOfWeek = course?.dayOfWeek ?? widget.prefillDayOfWeek ?? 1;
-    _startSection = course?.startSection ?? widget.prefillSection ?? 1;
-    _endSection = course?.endSection ?? widget.prefillSection ?? 1;
+    _startSection = (course?.startSection ?? widget.prefillSection ?? 1).clamp(1, maxSections);
+    _endSection = (course?.endSection ?? widget.prefillSection ?? 1).clamp(1, maxSections);
     _weekType = course?.weekType ?? WeekType.every;
   }
 

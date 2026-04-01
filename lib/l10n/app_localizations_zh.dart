@@ -287,6 +287,29 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get invalidSectionRange => '结束节次必须大于开始节次';
+
+  @override
+  String totalWeeks(Object value) {
+    return '总周数: $value';
+  }
+
+  @override
+  String get morning => '上午';
+
+  @override
+  String get afternoon => '下午';
+
+  @override
+  String get evening => '晚上';
+
+  @override
+  String get courseDuration => '单节课程时长 (分钟)';
+
+  @override
+  String get breakDuration => '课间休息时长 (分钟)';
+
+  @override
+  String get autoSyncTime => '自动推算后续时间';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

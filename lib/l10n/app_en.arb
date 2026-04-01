@@ -89,5 +89,12 @@
     "timeConflictMessage":"The selected time slot conflicts with an existing course.",
     "fieldRequired":"This field is required",
     "invalidWeekRange":"End week must be greater than or equal to start week",
-    "invalidSectionRange":"End section must be greater than start section"
+    "invalidSectionRange":"End section must be greater than start section",
+    "totalWeeks": "Total Weeks: {value}",
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "evening": "Evening",
+    "courseDuration": "Course Duration (mins)",
+    "breakDuration": "Break Duration (mins)",
+    "autoSyncTime": "Auto-calculate subsequent times"
 }

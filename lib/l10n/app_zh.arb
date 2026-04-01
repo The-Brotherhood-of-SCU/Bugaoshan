@@ -89,5 +89,12 @@
     "timeConflictMessage":"所选时间段与已有课程冲突。",
     "fieldRequired":"此字段不能为空",
     "invalidWeekRange":"结束周必须大于或等于开始周",
-    "invalidSectionRange":"结束节次必须大于开始节次"
+    "invalidSectionRange":"结束节次必须大于开始节次",
+    "totalWeeks": "总周数: {value}",
+    "morning": "上午",
+    "afternoon": "下午",
+    "evening": "晚上",
+    "courseDuration": "单节课程时长 (分钟)",
+    "breakDuration": "课间休息时长 (分钟)",
+    "autoSyncTime": "自动推算后续时间"
 }

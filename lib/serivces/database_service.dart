@@ -82,7 +82,7 @@ class DatabaseService {
     }
     return ScheduleConfig(
       semesterStartDate: startDate,
-      semesterEndDate: endDate,
+      totalWeeks: 20,
     );
   }
 

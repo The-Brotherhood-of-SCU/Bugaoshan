@@ -40,8 +40,13 @@ class TimeSlot {
 class ScheduleConfig {
   String semesterName;
   DateTime semesterStartDate;
-  DateTime semesterEndDate;
-  int sectionsPerDay;
+  int totalWeeks;
+  int morningSections;
+  int afternoonSections;
+  int eveningSections;
+  int courseDuration;
+  int breakDuration;
+  bool autoSyncTime;
   List<TimeSlot> timeSlots;
   double colorOpacity;
   double courseCardFontSize;
@@ -49,29 +54,67 @@ class ScheduleConfig {
   bool showLocation;
   bool showWeekend;
 
+  int get sectionsPerDay => morningSections + afternoonSections + eveningSections;
+
   ScheduleConfig({
     this.semesterName = '',
     required this.semesterStartDate,
-    required this.semesterEndDate,
-    this.sectionsPerDay = 12,
+    this.totalWeeks = 20,
+    this.morningSections = 4,
+    this.afternoonSections = 4,
+    this.eveningSections = 4,
+    this.courseDuration = 45,
+    this.breakDuration = 10,
+    this.autoSyncTime = true,
     List<TimeSlot>? timeSlots,
     this.colorOpacity = 0.85,
     this.courseCardFontSize = 11.0,
     this.showTeacherName = true,
     this.showLocation = true,
     this.showWeekend = true,
-  }) : timeSlots = timeSlots ?? _defaultTimeSlots(12);
+  }) : timeSlots = timeSlots ?? _defaultTimeSlots(4, 4, 4, 45, 10);
 
   factory ScheduleConfig.fromJson(Map<String, dynamic> json) {
+    int totalWeeks;
+    if (json.containsKey('totalWeeks')) {
+      totalWeeks = json['totalWeeks'] as int;
+    } else if (json.containsKey('semesterEndDate')) {
+      final startDate = DateTime.parse(json['semesterStartDate'] as String);
+      final endDate = DateTime.parse(json['semesterEndDate'] as String);
+      totalWeeks = (endDate.difference(startDate).inDays / 7).ceil();
+    } else {
+      totalWeeks = 20;
+    }
+
+    int morning = json['morningSections'] as int? ?? 4;
+    int afternoon = json['afternoonSections'] as int? ?? 4;
+    int evening = json['eveningSections'] as int? ?? 4;
+    
+    // Fallback for old configurations using `sectionsPerDay`
+    if (!json.containsKey('morningSections') && json.containsKey('sectionsPerDay')) {
+      int total = json['sectionsPerDay'] as int;
+      morning = (total >= 4) ? 4 : total;
+      afternoon = (total >= 8) ? 4 : (total > 4 ? total - 4 : 0);
+      evening = (total > 8) ? total - 8 : 0;
+    }
+
+    final courseDuration = json['courseDuration'] as int? ?? 45;
+    final breakDuration = json['breakDuration'] as int? ?? 10;
+
     return ScheduleConfig(
       semesterName: json['semesterName'] as String? ?? '',
       semesterStartDate: DateTime.parse(json['semesterStartDate'] as String),
-      semesterEndDate: DateTime.parse(json['semesterEndDate'] as String),
-      sectionsPerDay: json['sectionsPerDay'] as int? ?? 12,
+      totalWeeks: totalWeeks,
+      morningSections: morning,
+      afternoonSections: afternoon,
+      eveningSections: evening,
+      courseDuration: courseDuration,
+      breakDuration: breakDuration,
+      autoSyncTime: json['autoSyncTime'] as bool? ?? true,
       timeSlots: (json['timeSlots'] as List<dynamic>?)
               ?.map((e) => TimeSlot.fromJson(e as Map<String, dynamic>))
               .toList() ??
-          _defaultTimeSlots(json['sectionsPerDay'] as int? ?? 12),
+          _defaultTimeSlots(morning, afternoon, evening, courseDuration, breakDuration),
       colorOpacity: (json['colorOpacity'] as num?)?.toDouble() ?? 0.85,
       courseCardFontSize: (json['courseCardFontSize'] as num?)?.toDouble() ?? 11.0,
       showTeacherName: json['showTeacherName'] as bool? ?? true,
@@ -84,9 +127,13 @@ class ScheduleConfig {
     'semesterName': semesterName,
     'semesterStartDate':
         '${semesterStartDate.year}-${semesterStartDate.month.toString().padLeft(2, '0')}-${semesterStartDate.day.toString().padLeft(2, '0')}',
-    'semesterEndDate':
-        '${semesterEndDate.year}-${semesterEndDate.month.toString().padLeft(2, '0')}-${semesterEndDate.day.toString().padLeft(2, '0')}',
-    'sectionsPerDay': sectionsPerDay,
+    'totalWeeks': totalWeeks,
+    'morningSections': morningSections,
+    'afternoonSections': afternoonSections,
+    'eveningSections': eveningSections,
+    'courseDuration': courseDuration,
+    'breakDuration': breakDuration,
+    'autoSyncTime': autoSyncTime,
     'timeSlots': timeSlots.map((e) => e.toJson()).toList(),
     'colorOpacity': colorOpacity,
     'courseCardFontSize': courseCardFontSize,
@@ -95,42 +142,64 @@ class ScheduleConfig {
     'showWeekend': showWeekend,
   };
 
-  static List<TimeSlot> _defaultTimeSlots(int count) {
+  static List<TimeSlot> _defaultTimeSlots(
+    int morning, int afternoon, int evening, 
+    int courseDuration, int breakDuration
+  ) {
     final slots = <TimeSlot>[];
-    for (int i = 0; i < count; i++) {
-      int startHour;
-      int startMin;
-      if (i < 4) {
-        // Morning: 8:00, 8:55, 9:50, 10:55
-        startHour = 8 + i;
-        startMin = i < 3 ? 0 : 5;
-      } else if (i < 8) {
-        // Afternoon: 14:00, 14:55, 15:50, 16:55
-        startHour = 14 + (i - 4);
-        startMin = i < 7 ? 0 : 5;
-      } else {
-        // Evening: 19:00, 19:55, 20:50, 21:45
-        startHour = 19 + (i - 8);
-        startMin = i < 11 ? 0 : (i == 11 ? 5 : 0);
-      }
-      // Fix evening slots
-      if (i >= 8) {
-        startHour = 19 + (i - 8);
-        startMin = 0;
-      }
-      final endHour = startHour;
-      final endMin = startMin + 45;
+    
+    // Morning (starts at 8:00)
+    int currentHour = 8;
+    int currentMin = 0;
+    for (int i = 0; i < morning; i++) {
+      int endMin = currentMin + courseDuration;
+      int endHour = currentHour + (endMin ~/ 60);
+      endMin = endMin % 60;
       slots.add(TimeSlot(
-        startTime: TimeOfDay(hour: startHour, minute: startMin),
-        endTime: TimeOfDay(hour: endHour + (endMin >= 60 ? 1 : 0), minute: endMin >= 60 ? endMin - 60 : endMin),
+        startTime: TimeOfDay(hour: currentHour, minute: currentMin),
+        endTime: TimeOfDay(hour: endHour, minute: endMin),
       ));
+      // Add break
+      currentMin = endMin + breakDuration;
+      currentHour = endHour + (currentMin ~/ 60);
+      currentMin = currentMin % 60;
     }
-    return slots;
-  }
 
-  int get totalWeeks {
-    final days = semesterEndDate.difference(semesterStartDate).inDays;
-    return (days / 7).ceil();
+    // Afternoon (starts at 14:00)
+    currentHour = 14;
+    currentMin = 0;
+    for (int i = 0; i < afternoon; i++) {
+      int endMin = currentMin + courseDuration;
+      int endHour = currentHour + (endMin ~/ 60);
+      endMin = endMin % 60;
+      slots.add(TimeSlot(
+        startTime: TimeOfDay(hour: currentHour, minute: currentMin),
+        endTime: TimeOfDay(hour: endHour, minute: endMin),
+      ));
+      // Add break
+      currentMin = endMin + breakDuration;
+      currentHour = endHour + (currentMin ~/ 60);
+      currentMin = currentMin % 60;
+    }
+
+    // Evening (starts at 19:00)
+    currentHour = 19;
+    currentMin = 0;
+    for (int i = 0; i < evening; i++) {
+      int endMin = currentMin + courseDuration;
+      int endHour = currentHour + (endMin ~/ 60);
+      endMin = endMin % 60;
+      slots.add(TimeSlot(
+        startTime: TimeOfDay(hour: currentHour, minute: currentMin),
+        endTime: TimeOfDay(hour: endHour, minute: endMin),
+      ));
+      // Add break
+      currentMin = endMin + breakDuration;
+      currentHour = endHour + (currentMin ~/ 60);
+      currentMin = currentMin % 60;
+    }
+    
+    return slots;
   }
 
   int getCurrentWeek() {
@@ -146,8 +215,13 @@ class ScheduleConfig {
   ScheduleConfig copyWith({
     String? semesterName,
     DateTime? semesterStartDate,
-    DateTime? semesterEndDate,
-    int? sectionsPerDay,
+    int? totalWeeks,
+    int? morningSections,
+    int? afternoonSections,
+    int? eveningSections,
+    int? courseDuration,
+    int? breakDuration,
+    bool? autoSyncTime,
     List<TimeSlot>? timeSlots,
     double? colorOpacity,
     double? courseCardFontSize,
@@ -158,8 +232,13 @@ class ScheduleConfig {
     return ScheduleConfig(
       semesterName: semesterName ?? this.semesterName,
       semesterStartDate: semesterStartDate ?? this.semesterStartDate,
-      semesterEndDate: semesterEndDate ?? this.semesterEndDate,
-      sectionsPerDay: sectionsPerDay ?? this.sectionsPerDay,
+      totalWeeks: totalWeeks ?? this.totalWeeks,
+      morningSections: morningSections ?? this.morningSections,
+      afternoonSections: afternoonSections ?? this.afternoonSections,
+      eveningSections: eveningSections ?? this.eveningSections,
+      courseDuration: courseDuration ?? this.courseDuration,
+      breakDuration: breakDuration ?? this.breakDuration,
+      autoSyncTime: autoSyncTime ?? this.autoSyncTime,
       timeSlots: timeSlots ?? this.timeSlots,
       colorOpacity: colorOpacity ?? this.colorOpacity,
       courseCardFontSize: courseCardFontSize ?? this.courseCardFontSize,

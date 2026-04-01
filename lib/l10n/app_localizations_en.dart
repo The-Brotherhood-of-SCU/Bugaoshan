@@ -293,4 +293,27 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get invalidSectionRange =>
       'End section must be greater than start section';
+
+  @override
+  String totalWeeks(Object value) {
+    return 'Total Weeks: $value';
+  }
+
+  @override
+  String get morning => 'Morning';
+
+  @override
+  String get afternoon => 'Afternoon';
+
+  @override
+  String get evening => 'Evening';
+
+  @override
+  String get courseDuration => 'Course Duration (mins)';
+
+  @override
+  String get breakDuration => 'Break Duration (mins)';
+
+  @override
+  String get autoSyncTime => 'Auto-calculate subsequent times';
 }

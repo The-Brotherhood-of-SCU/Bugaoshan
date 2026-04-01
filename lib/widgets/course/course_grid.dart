@@ -148,7 +148,7 @@ class CourseGrid extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    '$i${l10n.section}',
+                    '${i + 1}${l10n.section}',
                     style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
                   ),
                   if (startStr.isNotEmpty)
