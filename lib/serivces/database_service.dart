@@ -69,19 +69,8 @@ class DatabaseService {
 
   ScheduleConfig _defaultScheduleConfig() {
     final now = DateTime.now();
-    final year = now.year;
-    final month = now.month;
-    DateTime startDate;
-    DateTime endDate;
-    if (month >= 2 && month <= 6) {
-      startDate = DateTime(year, 2, 17);
-      endDate = DateTime(year, 6, 30);
-    } else {
-      startDate = DateTime(year, 9, 1);
-      endDate = DateTime(year + 1, 1, 17);
-    }
     return ScheduleConfig(
-      semesterStartDate: startDate,
+      semesterStartDate: DateTime(now.year, now.month, now.day),
       totalWeeks: 20,
     );
   }

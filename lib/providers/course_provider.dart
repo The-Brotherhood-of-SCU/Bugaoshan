@@ -17,15 +17,8 @@ class CourseProvider {
 
   static ScheduleConfig _defaultConfig() {
     final now = DateTime.now();
-    final month = now.month;
-    if (month >= 2 && month <= 6) {
-      return ScheduleConfig(
-        semesterStartDate: DateTime(now.year, 2, 17),
-        totalWeeks: 20,
-      );
-    }
     return ScheduleConfig(
-      semesterStartDate: DateTime(now.year, 9, 1),
+      semesterStartDate: DateTime(now.year, now.month, now.day),
       totalWeeks: 20,
     );
   }
