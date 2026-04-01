@@ -300,7 +300,7 @@ class _CourseCard extends StatelessWidget {
                   Text(
                     course.location,
                     style: TextStyle(
-                        fontSize: appConfig.courseCardFontSize.value - 2,
+                        fontSize: appConfig.courseCardFontSize.value - 1,
                         color: textColor),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -309,7 +309,7 @@ class _CourseCard extends StatelessWidget {
                   Text(
                     course.teacher,
                     style: TextStyle(
-                        fontSize: appConfig.courseCardFontSize.value - 2,
+                        fontSize: appConfig.courseCardFontSize.value - 1,
                         color: textColor),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
