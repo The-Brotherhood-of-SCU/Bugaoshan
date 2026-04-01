@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:rubbish_plan/injection/injector.dart';
 import 'package:rubbish_plan/l10n/app_localizations.dart';
 import 'package:rubbish_plan/models/course.dart';
+import 'package:rubbish_plan/providers/app_config_provider.dart';
 
 /// Displays a weekly course schedule grid with time slots and course cards.
 class CourseGrid extends StatelessWidget {
@@ -256,50 +258,67 @@ class _CourseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isActive = course.isActiveInWeek(displayWeek);
-    final color = course.color.withValues(alpha: isActive ? config.colorOpacity : config.colorOpacity * 0.35);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : Colors.white;
+    final appConfig = getIt<AppConfigProvider>();
 
-    return GestureDetector(
-      onTap: onTap,
-      onLongPress: onLongPress,
-      child: Container(
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(6),
-        ),
-        padding: const EdgeInsets.all(3),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              course.name,
-              style: TextStyle(
-                fontSize: config.courseCardFontSize,
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        appConfig.colorOpacity,
+        appConfig.courseCardFontSize,
+      ]),
+      builder: (context, _) {
+        final isActive = course.isActiveInWeek(displayWeek);
+        final color = course.color.withValues(
+            alpha: isActive
+                ? appConfig.colorOpacity.value
+                : appConfig.colorOpacity.value * 0.35);
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final textColor = Colors.white;
+
+        return GestureDetector(
+          onTap: onTap,
+          onLongPress: onLongPress,
+          child: Container(
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(6),
             ),
-            if (config.showLocation && course.location.isNotEmpty)
-              Text(
-                course.location,
-                style: TextStyle(fontSize: config.courseCardFontSize - 2, color: textColor),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            if (config.showTeacherName && course.teacher.isNotEmpty)
-              Text(
-                course.teacher,
-                style: TextStyle(fontSize: config.courseCardFontSize - 2, color: textColor),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-          ],
-        ),
-      ),
+            padding: const EdgeInsets.all(3),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  course.name,
+                  style: TextStyle(
+                    fontSize: appConfig.courseCardFontSize.value,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (config.showLocation && course.location.isNotEmpty)
+                  Text(
+                    course.location,
+                    style: TextStyle(
+                        fontSize: appConfig.courseCardFontSize.value - 2,
+                        color: textColor),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                if (config.showTeacherName && course.teacher.isNotEmpty)
+                  Text(
+                    course.teacher,
+                    style: TextStyle(
+                        fontSize: appConfig.courseCardFontSize.value - 2,
+                        color: textColor),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

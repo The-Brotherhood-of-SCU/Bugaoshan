@@ -48,8 +48,6 @@ class ScheduleConfig {
   int breakDuration;
   bool autoSyncTime;
   List<TimeSlot> timeSlots;
-  double colorOpacity;
-  double courseCardFontSize;
   bool showTeacherName;
   bool showLocation;
   bool showWeekend;
@@ -67,8 +65,6 @@ class ScheduleConfig {
     this.breakDuration = 10,
     this.autoSyncTime = true,
     List<TimeSlot>? timeSlots,
-    this.colorOpacity = 0.85,
-    this.courseCardFontSize = 11.0,
     this.showTeacherName = true,
     this.showLocation = true,
     this.showWeekend = true,
@@ -115,8 +111,6 @@ class ScheduleConfig {
               ?.map((e) => TimeSlot.fromJson(e as Map<String, dynamic>))
               .toList() ??
           _defaultTimeSlots(morning, afternoon, evening, courseDuration, breakDuration),
-      colorOpacity: (json['colorOpacity'] as num?)?.toDouble() ?? 0.85,
-      courseCardFontSize: (json['courseCardFontSize'] as num?)?.toDouble() ?? 11.0,
       showTeacherName: json['showTeacherName'] as bool? ?? true,
       showLocation: json['showLocation'] as bool? ?? true,
       showWeekend: json['showWeekend'] as bool? ?? true,
@@ -135,8 +129,6 @@ class ScheduleConfig {
     'breakDuration': breakDuration,
     'autoSyncTime': autoSyncTime,
     'timeSlots': timeSlots.map((e) => e.toJson()).toList(),
-    'colorOpacity': colorOpacity,
-    'courseCardFontSize': courseCardFontSize,
     'showTeacherName': showTeacherName,
     'showLocation': showLocation,
     'showWeekend': showWeekend,
@@ -223,8 +215,6 @@ class ScheduleConfig {
     int? breakDuration,
     bool? autoSyncTime,
     List<TimeSlot>? timeSlots,
-    double? colorOpacity,
-    double? courseCardFontSize,
     bool? showTeacherName,
     bool? showLocation,
     bool? showWeekend,
@@ -240,8 +230,6 @@ class ScheduleConfig {
       breakDuration: breakDuration ?? this.breakDuration,
       autoSyncTime: autoSyncTime ?? this.autoSyncTime,
       timeSlots: timeSlots ?? this.timeSlots,
-      colorOpacity: colorOpacity ?? this.colorOpacity,
-      courseCardFontSize: courseCardFontSize ?? this.courseCardFontSize,
       showTeacherName: showTeacherName ?? this.showTeacherName,
       showLocation: showLocation ?? this.showLocation,
       showWeekend: showWeekend ?? this.showWeekend,

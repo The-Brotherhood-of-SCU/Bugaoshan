@@ -17,65 +17,114 @@ class SoftwareSettingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    final content = Column(
-      spacing: 16,
-      children: [
-        ButtonWithMaxWidth(
-          onPressed: () {
-            popupOrNavigate(context, SetLanguagePage());
-          },
-          icon: Icon(Icons.language),
-          child: Text(localizations.modifyLanguage),
-        ),
-        ButtonWithMaxWidth(
-          onPressed: () {
-            popupOrNavigate(context, SetDurationPage());
-          },
-          icon: Icon(Icons.timer),
-          child: Text(localizations.animationDuration),
-        ),
-        ButtonWithMaxWidth(
-          onPressed: () {
-            popupOrNavigate(context, SetThemeColorPage());
-          },
-          icon: Icon(Icons.color_lens),
-          child: Text(localizations.themeColor),
-        ),
-        ButtonWithMaxWidth(
-          onPressed: () async {
-            final confirm = await showYesNoDialog(
-              title: localizations.clearAllData,
-              content: localizations.confirmMessage,
-            );
-            if (confirm == true) {
-              final appConfig = getIt<AppConfigProvider>();
-              appConfig.clearAll();
-              final courseProvider = getIt<CourseProvider>();
-              await courseProvider.clearAllData();
-            }
-          },
-          icon: Icon(Icons.delete, color: Colors.red),
-          child: Text(
-            localizations.clearAllData,
-            style: TextStyle(color: Colors.red),
+    final appConfig = getIt<AppConfigProvider>();
+
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        appConfig.colorOpacity,
+        appConfig.courseCardFontSize,
+      ]),
+      builder: (context, _) {
+        return Scaffold(
+          appBar: AppBar(title: Text(localizations.softwareSetting)),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+            child: Column(
+              spacing: 16,
+              children: [
+                ButtonWithMaxWidth(
+                  onPressed: () {
+                    popupOrNavigate(context, SetLanguagePage());
+                  },
+                  icon: const Icon(Icons.language),
+                  child: Text(localizations.modifyLanguage),
+                ),
+                ButtonWithMaxWidth(
+                  onPressed: () {
+                    popupOrNavigate(context, SetDurationPage());
+                  },
+                  icon: const Icon(Icons.timer),
+                  child: Text(localizations.animationDuration),
+                ),
+                ButtonWithMaxWidth(
+                  onPressed: () {
+                    popupOrNavigate(context, SetThemeColorPage());
+                  },
+                  icon: const Icon(Icons.color_lens),
+                  child: Text(localizations.themeColor),
+                ),
+
+                const Divider(),
+                // Color opacity
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(child: Text(localizations.colorOpacity)),
+                        Text('${(appConfig.colorOpacity.value * 100).round()}%'),
+                      ],
+                    ),
+                    Slider(
+                      value: appConfig.colorOpacity.value,
+                      min: 0.3,
+                      max: 1.0,
+                      divisions: 14,
+                      onChanged: (v) => appConfig.colorOpacity.value = v,
+                    ),
+                  ],
+                ),
+                // Font size
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(child: Text(localizations.fontSize)),
+                        Text('${appConfig.courseCardFontSize.value.round()}'),
+                      ],
+                    ),
+                    Slider(
+                      value: appConfig.courseCardFontSize.value,
+                      min: 8,
+                      max: 16,
+                      divisions: 16,
+                      onChanged: (v) => appConfig.courseCardFontSize.value = v,
+                    ),
+                  ],
+                ),
+                const Divider(),
+
+                ButtonWithMaxWidth(
+                  onPressed: () async {
+                    final confirm = await showYesNoDialog(
+                      title: localizations.clearAllData,
+                      content: localizations.confirmMessage,
+                    );
+                    if (confirm == true) {
+                      appConfig.clearAll();
+                      final courseProvider = getIt<CourseProvider>();
+                      await courseProvider.clearAllData();
+                    }
+                  },
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  child: Text(
+                    localizations.clearAllData,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
+                ButtonWithMaxWidth(
+                  onPressed: () {
+                    popupOrNavigate(context, AboutPage());
+                  },
+                  icon: const Icon(Icons.info_outline),
+                  child: Text(localizations.about),
+                ),
+              ],
+            ),
           ),
-        ),
-        ButtonWithMaxWidth(
-          onPressed: () {
-            popupOrNavigate(context, AboutPage());
-          },
-          icon: Icon(Icons.info_outline),
-          child: Text(localizations.about),
-        ),
-      ],
-    );
-    final body = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-      child: content,
-    );
-    return Scaffold(
-      appBar: AppBar(title: Text(localizations.softwareSetting)),
-      body: body,
+        );
+      },
     );
   }
 }

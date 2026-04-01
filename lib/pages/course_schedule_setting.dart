@@ -26,8 +26,6 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
   late int _breakDuration;
   late bool _autoSyncTime;
   late List<TimeSlot> _timeSlots;
-  late double _colorOpacity;
-  late double _fontSize;
   late bool _showTeacher;
   late bool _showLocation;
   late bool _showWeekend;
@@ -46,8 +44,6 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
     _breakDuration = config.breakDuration;
     _autoSyncTime = config.autoSyncTime;
     _timeSlots = List.from(config.timeSlots);
-    _colorOpacity = config.colorOpacity;
-    _fontSize = config.courseCardFontSize;
     _showTeacher = config.showTeacherName;
     _showLocation = config.showLocation;
     _showWeekend = config.showWeekend;
@@ -191,34 +187,6 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
             const Divider(),
             // Display settings
             _SectionTitle(l10n.displaySetting),
-            // Color opacity
-            Row(
-              children: [
-                Expanded(child: Text(l10n.colorOpacity)),
-                Text('${(_colorOpacity * 100).round()}%'),
-              ],
-            ),
-            Slider(
-              value: _colorOpacity,
-              min: 0.3,
-              max: 1.0,
-              divisions: 14,
-              onChanged: (v) => setState(() => _colorOpacity = v),
-            ),
-            // Font size
-            Row(
-              children: [
-                Expanded(child: Text(l10n.fontSize)),
-                Text('${_fontSize.round()}'),
-              ],
-            ),
-            Slider(
-              value: _fontSize,
-              min: 8,
-              max: 16,
-              divisions: 16,
-              onChanged: (v) => setState(() => _fontSize = v),
-            ),
             // Show teacher
             SwitchListTile(
               title: Text(l10n.showTeacher),
@@ -381,8 +349,6 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
       breakDuration: _breakDuration,
       autoSyncTime: _autoSyncTime,
       timeSlots: _timeSlots,
-      colorOpacity: _colorOpacity,
-      courseCardFontSize: _fontSize,
       showTeacherName: _showTeacher,
       showLocation: _showLocation,
       showWeekend: _showWeekend,
