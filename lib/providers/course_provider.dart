@@ -22,7 +22,7 @@ class CourseProvider {
     return ScheduleConfig(
       id: 'default',
       semesterName: '默认课表',
-      semesterStartDate: DateTime(now.year, now.month, now.day),
+      semesterStartDate: now.toMonday(),
       totalWeeks: 20,
     );
   }

@@ -444,3 +444,9 @@ class Course {
     );
   }
 }
+
+extension DateTimeExtension on DateTime {
+  DateTime toMonday() {
+    return subtract(Duration(days: weekday - 1));
+  }
+}

@@ -194,7 +194,8 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
 
     // Default config
     final config = ScheduleConfig(
-      semesterStartDate: DateTime.now(), // User might need to adjust this later
+      semesterStartDate: DateTime.now()
+          .toMonday(), // User might need to adjust this later
       semesterName: 'JWXT Import ${DateTime.now().month}-${DateTime.now().day}',
     );
 

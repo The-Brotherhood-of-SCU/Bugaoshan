@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rubbish_plan/injection/injector.dart';
 import 'package:rubbish_plan/l10n/app_localizations.dart';
+import 'package:rubbish_plan/models/course.dart';
 import 'package:rubbish_plan/pages/import_schedule_page.dart';
 import 'package:rubbish_plan/providers/course_provider.dart';
 import 'package:rubbish_plan/widgets/dialog/dialog.dart';
@@ -140,7 +141,7 @@ class ScheduleManagementPage extends StatelessWidget {
                 final newConfig = currentConfig.copyWith(
                   id: DateTime.now().millisecondsSinceEpoch.toString(),
                   semesterName: newName,
-                  semesterStartDate: DateTime.now(),
+                  semesterStartDate: DateTime.now().toMonday(),
                 );
                 await courseProvider.addSchedule(newConfig);
               }
