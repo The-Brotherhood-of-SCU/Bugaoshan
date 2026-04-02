@@ -18,6 +18,37 @@ class CoursePage extends StatefulWidget {
 
 class _CoursePageState extends State<CoursePage> {
   final courseProvider = getIt<CourseProvider>();
+  late PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize PageController with the current week (0-indexed)
+    _pageController = PageController(
+      initialPage: courseProvider.currentWeek.value - 1,
+    );
+    
+    // Listen to changes in currentWeek to animate the PageView
+    courseProvider.currentWeek.addListener(_onCurrentWeekChanged);
+  }
+
+  @override
+  void dispose() {
+    courseProvider.currentWeek.removeListener(_onCurrentWeekChanged);
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _onCurrentWeekChanged() {
+    final targetPage = courseProvider.currentWeek.value - 1;
+    if (_pageController.hasClients && _pageController.page?.round() != targetPage) {
+      _pageController.animateToPage(
+        targetPage,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,14 +80,25 @@ class _CoursePageState extends State<CoursePage> {
             Expanded(
               child: allCourses.isEmpty
                   ? Center(child: Text(l10n.noCourseThisWeek))
-                  : CourseGrid(
-                      courses: allCourses,
-                      config: config,
-                      displayWeek: week,
-                      totalWeeks: totalWeeks,
-                      onCourseTap: _onCourseTap,
-                      onCourseLongPress: _onCourseLongPress,
-                      onEmptyTap: _onEmptyTap,
+                  : PageView.builder(
+                      controller: _pageController,
+                      itemCount: totalWeeks,
+                      onPageChanged: (index) {
+                        // Update current week when user swipes (index is 0-based)
+                        courseProvider.updateCurrentWeek(index + 1);
+                      },
+                      itemBuilder: (context, index) {
+                        final displayWeek = index + 1;
+                        return CourseGrid(
+                          courses: allCourses,
+                          config: config,
+                          displayWeek: displayWeek,
+                          totalWeeks: totalWeeks,
+                          onCourseTap: _onCourseTap,
+                          onCourseLongPress: _onCourseLongPress,
+                          onEmptyTap: _onEmptyTap,
+                        );
+                      },
                     ),
             ),
           ],

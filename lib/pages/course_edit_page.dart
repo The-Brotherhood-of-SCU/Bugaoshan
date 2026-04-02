@@ -56,7 +56,7 @@ class _CourseEditPageState extends State<CourseEditPage> {
     _endWeek = (course?.endWeek ?? config.totalWeeks).clamp(1, config.totalWeeks);
     _dayOfWeek = course?.dayOfWeek ?? widget.prefillDayOfWeek ?? 1;
     _startSection = (course?.startSection ?? widget.prefillSection ?? 1).clamp(1, maxSections);
-    _endSection = (course?.endSection ?? widget.prefillSection ?? 1).clamp(1, maxSections);
+    _endSection = (course?.endSection ?? ((widget.prefillSection ?? 1) + 1)).clamp(1, maxSections);
     _weekType = course?.weekType ?? WeekType.every;
   }
 
