@@ -298,10 +298,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get importSchedule => '导入课表';
 
   @override
-  String get importFromText => '从文本导入';
+  String get importFromShare => '从分享导入';
 
   @override
-  String get importDataHint => '请在此处粘贴课表 JSON 数据...';
+  String get importFromJwxt => '从教务系统抓包导入';
+
+  @override
+  String get importDataHint => '请在此处粘贴 JSON 数据...';
 
   @override
   String get importSuccess => '课表导入成功';

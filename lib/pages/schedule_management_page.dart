@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rubbish_plan/injection/injector.dart';
 import 'package:rubbish_plan/l10n/app_localizations.dart';
-import 'package:rubbish_plan/models/course.dart';
 import 'package:rubbish_plan/pages/import_schedule_page.dart';
 import 'package:rubbish_plan/providers/course_provider.dart';
 import 'package:rubbish_plan/widgets/dialog/dialog.dart';
@@ -28,22 +27,46 @@ class ScheduleManagementPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
                 child: Text(
                   l10n.importSchedule,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
               const Divider(),
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-                leading: const Icon(Icons.text_fields),
-                title: Text(l10n.importFromText),
+                leading: const Icon(Icons.share),
+                title: Text(l10n.importFromShare),
                 onTap: () {
                   Navigator.pop(context);
-                  popupOrNavigate(outerContext, ImportSchedulePage(courseProvider: courseProvider));
+                  popupOrNavigate(
+                    outerContext,
+                    ImportSchedulePage(
+                      courseProvider: courseProvider,
+                      mode: ImportMode.share,
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                leading: const Icon(Icons.school),
+                title: Text(l10n.importFromJwxt),
+                onTap: () {
+                  Navigator.pop(context);
+                  popupOrNavigate(
+                    outerContext,
+                    ImportSchedulePage(
+                      courseProvider: courseProvider,
+                      mode: ImportMode.jwxt,
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 8),
@@ -78,9 +101,7 @@ class ScheduleManagementPage extends StatelessWidget {
                   content: TextField(
                     controller: controller,
                     autofocus: true,
-                    decoration: InputDecoration(
-                      hintText: l10n.semesterName,
-                    ),
+                    decoration: InputDecoration(hintText: l10n.semesterName),
                   ),
                   actions: [
                     TextButton(
@@ -113,7 +134,7 @@ class ScheduleManagementPage extends StatelessWidget {
                   }
                   return;
                 }
-                
+
                 // 复用当前选中的课表配置（TimeSlot 等）
                 final currentConfig = courseProvider.scheduleConfig.value;
                 final newConfig = currentConfig.copyWith(
@@ -144,9 +165,15 @@ class ScheduleManagementPage extends StatelessWidget {
               return ListTile(
                 leading: Icon(
                   isCurrent ? Icons.check_circle : Icons.circle_outlined,
-                  color: isCurrent ? Theme.of(context).colorScheme.primary : Colors.grey,
+                  color: isCurrent
+                      ? Theme.of(context).colorScheme.primary
+                      : Colors.grey,
                 ),
-                title: Text(schedule.semesterName.isEmpty ? l10n.defaultScheduleName : schedule.semesterName),
+                title: Text(
+                  schedule.semesterName.isEmpty
+                      ? l10n.defaultScheduleName
+                      : schedule.semesterName,
+                ),
                 subtitle: Text('共 ${schedule.totalWeeks} 周'),
                 onTap: () {
                   courseProvider.switchSchedule(schedule.id);
@@ -158,7 +185,8 @@ class ScheduleManagementPage extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.send_outlined),
                       onPressed: () async {
-                        final courses = await courseProvider.getCoursesForSchedule(schedule.id);
+                        final courses = await courseProvider
+                            .getCoursesForSchedule(schedule.id);
                         final data = {
                           'config': schedule.toJson(),
                           'courses': courses.map((e) => e.toJson()).toList(),
@@ -175,7 +203,9 @@ class ScheduleManagementPage extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.edit_outlined),
                       onPressed: () async {
-                        final controller = TextEditingController(text: schedule.semesterName);
+                        final controller = TextEditingController(
+                          text: schedule.semesterName,
+                        );
                         final newName = await showDialog<String>(
                           context: context,
                           builder: (context) => AlertDialog(
@@ -193,7 +223,10 @@ class ScheduleManagementPage extends StatelessWidget {
                                 child: Text(l10n.cancel),
                               ),
                               TextButton(
-                                onPressed: () => Navigator.pop(context, controller.text.trim()),
+                                onPressed: () => Navigator.pop(
+                                  context,
+                                  controller.text.trim(),
+                                ),
                                 child: Text(l10n.save),
                               ),
                             ],
@@ -201,7 +234,10 @@ class ScheduleManagementPage extends StatelessWidget {
                         );
 
                         if (newName != null && newName.isNotEmpty) {
-                          if (courseProvider.isScheduleNameTaken(newName, excludeId: schedule.id)) {
+                          if (courseProvider.isScheduleNameTaken(
+                            newName,
+                            excludeId: schedule.id,
+                          )) {
                             if (context.mounted) {
                               showInfoDialog(
                                 title: l10n.duplicateScheduleName,
@@ -210,18 +246,27 @@ class ScheduleManagementPage extends StatelessWidget {
                             }
                             return;
                           }
-                          final updatedConfig = schedule.copyWith(semesterName: newName);
-                          await courseProvider.updateScheduleConfig(updatedConfig);
+                          final updatedConfig = schedule.copyWith(
+                            semesterName: newName,
+                          );
+                          await courseProvider.updateScheduleConfig(
+                            updatedConfig,
+                          );
                         }
                       },
                     ),
                     if (allSchedules.length > 1)
                       IconButton(
-                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        icon: const Icon(
+                          Icons.delete_outline,
+                          color: Colors.red,
+                        ),
                         onPressed: () async {
                           final confirm = await showYesNoDialog(
                             title: l10n.delete,
-                            content: l10n.deleteScheduleConfirm(schedule.semesterName),
+                            content: l10n.deleteScheduleConfirm(
+                              schedule.semesterName,
+                            ),
                           );
                           if (confirm == true) {
                             await courseProvider.deleteSchedule(schedule.id);

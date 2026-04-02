@@ -661,16 +661,22 @@ abstract class AppLocalizations {
   /// **'Import Schedule'**
   String get importSchedule;
 
-  /// No description provided for @importFromText.
+  /// No description provided for @importFromShare.
   ///
   /// In en, this message translates to:
-  /// **'Import from text'**
-  String get importFromText;
+  /// **'Import from Share'**
+  String get importFromShare;
+
+  /// No description provided for @importFromJwxt.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from Education System'**
+  String get importFromJwxt;
 
   /// No description provided for @importDataHint.
   ///
   /// In en, this message translates to:
-  /// **'Paste schedule JSON data here...'**
+  /// **'Paste JSON data here...'**
   String get importDataHint;
 
   /// No description provided for @importSuccess.

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 class TimeSlot {
   final TimeOfDay startTime;
@@ -19,10 +19,7 @@ class TimeSlot {
   };
 
   static TimeOfDay _timeOfDayFromJson(Map<String, dynamic> json) {
-    return TimeOfDay(
-      hour: json['hour'] as int,
-      minute: json['minute'] as int,
-    );
+    return TimeOfDay(hour: json['hour'] as int, minute: json['minute'] as int);
   }
 
   static Map<String, dynamic> _timeOfDayToJson(TimeOfDay time) {
@@ -53,7 +50,8 @@ class ScheduleConfig {
   bool showLocation;
   bool showWeekend;
 
-  int get sectionsPerDay => morningSections + afternoonSections + eveningSections;
+  int get sectionsPerDay =>
+      morningSections + afternoonSections + eveningSections;
 
   ScheduleConfig({
     this.id = 'default',
@@ -61,8 +59,8 @@ class ScheduleConfig {
     required this.semesterStartDate,
     this.totalWeeks = 20,
     this.morningSections = 4,
-    this.afternoonSections = 4,
-    this.eveningSections = 4,
+    this.afternoonSections = 5,
+    this.eveningSections = 3,
     this.courseDuration = 45,
     this.breakDuration = 10,
     this.autoSyncTime = true,
@@ -70,7 +68,7 @@ class ScheduleConfig {
     this.showTeacherName = true,
     this.showLocation = true,
     this.showWeekend = true,
-  }) : timeSlots = timeSlots ?? _defaultTimeSlots(4, 4, 4, 45, 10);
+  }) : timeSlots = timeSlots ?? _defaultTimeSlots(4, 5, 3, 45, 10);
 
   factory ScheduleConfig.fromJson(Map<String, dynamic> json) {
     int totalWeeks;
@@ -85,15 +83,16 @@ class ScheduleConfig {
     }
 
     int morning = json['morningSections'] as int? ?? 4;
-    int afternoon = json['afternoonSections'] as int? ?? 4;
-    int evening = json['eveningSections'] as int? ?? 4;
-    
+    int afternoon = json['afternoonSections'] as int? ?? 5;
+    int evening = json['eveningSections'] as int? ?? 3;
+
     // Fallback for old configurations using `sectionsPerDay`
-    if (!json.containsKey('morningSections') && json.containsKey('sectionsPerDay')) {
+    if (!json.containsKey('morningSections') &&
+        json.containsKey('sectionsPerDay')) {
       int total = json['sectionsPerDay'] as int;
       morning = (total >= 4) ? 4 : total;
-      afternoon = (total >= 8) ? 4 : (total > 4 ? total - 4 : 0);
-      evening = (total > 8) ? total - 8 : 0;
+      afternoon = (total >= 9) ? 5 : (total > 4 ? total - 4 : 0);
+      evening = (total > 9) ? total - 9 : 0;
     }
 
     final courseDuration = json['courseDuration'] as int? ?? 45;
@@ -110,10 +109,17 @@ class ScheduleConfig {
       courseDuration: courseDuration,
       breakDuration: breakDuration,
       autoSyncTime: json['autoSyncTime'] as bool? ?? true,
-      timeSlots: (json['timeSlots'] as List<dynamic>?)
+      timeSlots:
+          (json['timeSlots'] as List<dynamic>?)
               ?.map((e) => TimeSlot.fromJson(e as Map<String, dynamic>))
               .toList() ??
-          _defaultTimeSlots(morning, afternoon, evening, courseDuration, breakDuration),
+          _defaultTimeSlots(
+            morning,
+            afternoon,
+            evening,
+            courseDuration,
+            breakDuration,
+          ),
       showTeacherName: json['showTeacherName'] as bool? ?? true,
       showLocation: json['showLocation'] as bool? ?? true,
       showWeekend: json['showWeekend'] as bool? ?? true,
@@ -139,11 +145,72 @@ class ScheduleConfig {
   };
 
   static List<TimeSlot> _defaultTimeSlots(
-    int morning, int afternoon, int evening, 
-    int courseDuration, int breakDuration
+    int morning,
+    int afternoon,
+    int evening,
+    int courseDuration,
+    int breakDuration,
   ) {
     final slots = <TimeSlot>[];
-    
+
+    // Check if it matches the standard 4-5-3 config to provide specific times
+    if (morning == 4 && afternoon == 5 && evening == 3) {
+      return [
+        // Morning
+        TimeSlot(
+          startTime: const TimeOfDay(hour: 8, minute: 15),
+          endTime: const TimeOfDay(hour: 9, minute: 0),
+        ),
+        TimeSlot(
+          startTime: const TimeOfDay(hour: 9, minute: 10),
+          endTime: const TimeOfDay(hour: 9, minute: 55),
+        ),
+        TimeSlot(
+          startTime: const TimeOfDay(hour: 10, minute: 15),
+          endTime: const TimeOfDay(hour: 11, minute: 0),
+        ),
+        TimeSlot(
+          startTime: const TimeOfDay(hour: 11, minute: 10),
+          endTime: const TimeOfDay(hour: 11, minute: 55),
+        ),
+        // Afternoon
+        TimeSlot(
+          startTime: const TimeOfDay(hour: 13, minute: 50),
+          endTime: const TimeOfDay(hour: 14, minute: 35),
+        ),
+        TimeSlot(
+          startTime: const TimeOfDay(hour: 14, minute: 45),
+          endTime: const TimeOfDay(hour: 15, minute: 30),
+        ),
+        TimeSlot(
+          startTime: const TimeOfDay(hour: 15, minute: 40),
+          endTime: const TimeOfDay(hour: 16, minute: 25),
+        ),
+        TimeSlot(
+          startTime: const TimeOfDay(hour: 16, minute: 45),
+          endTime: const TimeOfDay(hour: 17, minute: 30),
+        ),
+        TimeSlot(
+          startTime: const TimeOfDay(hour: 17, minute: 40),
+          endTime: const TimeOfDay(hour: 18, minute: 25),
+        ),
+        // Evening
+        TimeSlot(
+          startTime: const TimeOfDay(hour: 19, minute: 20),
+          endTime: const TimeOfDay(hour: 20, minute: 5),
+        ),
+        TimeSlot(
+          startTime: const TimeOfDay(hour: 20, minute: 15),
+          endTime: const TimeOfDay(hour: 21, minute: 0),
+        ),
+        TimeSlot(
+          startTime: const TimeOfDay(hour: 21, minute: 10),
+          endTime: const TimeOfDay(hour: 21, minute: 55),
+        ),
+      ];
+    }
+
+    // Default generic logic if config is different
     // Morning (starts at 8:00)
     int currentHour = 8;
     int currentMin = 0;
@@ -151,10 +218,12 @@ class ScheduleConfig {
       int endMin = currentMin + courseDuration;
       int endHour = currentHour + (endMin ~/ 60);
       endMin = endMin % 60;
-      slots.add(TimeSlot(
-        startTime: TimeOfDay(hour: currentHour, minute: currentMin),
-        endTime: TimeOfDay(hour: endHour, minute: endMin),
-      ));
+      slots.add(
+        TimeSlot(
+          startTime: TimeOfDay(hour: currentHour, minute: currentMin),
+          endTime: TimeOfDay(hour: endHour, minute: endMin),
+        ),
+      );
       // Add break
       currentMin = endMin + breakDuration;
       currentHour = endHour + (currentMin ~/ 60);
@@ -168,10 +237,12 @@ class ScheduleConfig {
       int endMin = currentMin + courseDuration;
       int endHour = currentHour + (endMin ~/ 60);
       endMin = endMin % 60;
-      slots.add(TimeSlot(
-        startTime: TimeOfDay(hour: currentHour, minute: currentMin),
-        endTime: TimeOfDay(hour: endHour, minute: endMin),
-      ));
+      slots.add(
+        TimeSlot(
+          startTime: TimeOfDay(hour: currentHour, minute: currentMin),
+          endTime: TimeOfDay(hour: endHour, minute: endMin),
+        ),
+      );
       // Add break
       currentMin = endMin + breakDuration;
       currentHour = endHour + (currentMin ~/ 60);
@@ -185,23 +256,29 @@ class ScheduleConfig {
       int endMin = currentMin + courseDuration;
       int endHour = currentHour + (endMin ~/ 60);
       endMin = endMin % 60;
-      slots.add(TimeSlot(
-        startTime: TimeOfDay(hour: currentHour, minute: currentMin),
-        endTime: TimeOfDay(hour: endHour, minute: endMin),
-      ));
+      slots.add(
+        TimeSlot(
+          startTime: TimeOfDay(hour: currentHour, minute: currentMin),
+          endTime: TimeOfDay(hour: endHour, minute: endMin),
+        ),
+      );
       // Add break
       currentMin = endMin + breakDuration;
       currentHour = endHour + (currentMin ~/ 60);
       currentMin = currentMin % 60;
     }
-    
+
     return slots;
   }
 
   int getCurrentWeek() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final start = DateTime(semesterStartDate.year, semesterStartDate.month, semesterStartDate.day);
+    final start = DateTime(
+      semesterStartDate.year,
+      semesterStartDate.month,
+      semesterStartDate.day,
+    );
     if (today.isBefore(start)) return 1;
     final days = today.difference(start).inDays;
     final week = (days / 7).floor() + 1;
@@ -272,9 +349,11 @@ class Course {
     this.weekType = WeekType.every,
   }) : id = id ?? _generateId();
 
+  static int _idCounter = 0;
   static String _generateId() {
     final now = DateTime.now();
-    return '${now.microsecondsSinceEpoch}';
+    _idCounter++;
+    return '${now.microsecondsSinceEpoch}_$_idCounter';
   }
 
   factory Course.fromJson(Map<String, dynamic> json) {
@@ -329,7 +408,8 @@ class Course {
     for (int w = startWeek; w <= endWeek; w++) {
       if (isActiveInWeek(w) && other.isActiveInWeek(w)) {
         // Same week, check section overlap
-        if (!(endSection < other.startSection || startSection > other.endSection)) {
+        if (!(endSection < other.startSection ||
+            startSection > other.endSection)) {
           return true;
         }
       }

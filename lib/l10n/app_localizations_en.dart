@@ -303,10 +303,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importSchedule => 'Import Schedule';
 
   @override
-  String get importFromText => 'Import from text';
+  String get importFromShare => 'Import from Share';
 
   @override
-  String get importDataHint => 'Paste schedule JSON data here...';
+  String get importFromJwxt => 'Import from Education System';
+
+  @override
+  String get importDataHint => 'Paste JSON data here...';
 
   @override
   String get importSuccess => 'Schedule imported successfully';

@@ -243,13 +243,31 @@ class _CoursePageState extends State<CoursePage> {
               const Divider(),
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-                leading: const Icon(Icons.text_fields),
-                title: Text(l10n.importFromText),
+                leading: const Icon(Icons.share),
+                title: Text(l10n.importFromShare),
                 onTap: () {
                   Navigator.pop(context);
                   popupOrNavigate(
                     outerContext,
-                    ImportSchedulePage(courseProvider: courseProvider),
+                    ImportSchedulePage(
+                      courseProvider: courseProvider,
+                      mode: ImportMode.share,
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                leading: const Icon(Icons.school),
+                title: Text(l10n.importFromJwxt),
+                onTap: () {
+                  Navigator.pop(context);
+                  popupOrNavigate(
+                    outerContext,
+                    ImportSchedulePage(
+                      courseProvider: courseProvider,
+                      mode: ImportMode.jwxt,
+                    ),
                   );
                 },
               ),
