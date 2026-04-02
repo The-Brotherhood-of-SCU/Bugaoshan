@@ -1,3 +1,6 @@
 {
-    "cmake.ignoreCMakeListsMissing": true
+  "files.eol": "\n",
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true
 }
