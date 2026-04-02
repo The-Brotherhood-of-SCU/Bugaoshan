@@ -30,9 +30,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
   late bool _showLocation;
   late bool _showWeekend;
 
-  @override
-  void initState() {
-    super.initState();
+  void _loadConfig() {
     final config = courseProvider.scheduleConfig.value;
     _startDate = config.semesterStartDate;
     _totalWeeks = config.totalWeeks;
@@ -49,6 +47,12 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _loadConfig();
+  }
+
+  @override
   void dispose() {
     super.dispose();
   }
@@ -58,10 +62,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.scheduleSetting),
-        actions: [TextButton(onPressed: _save, child: Text(l10n.save))],
-      ),
+      appBar: AppBar(title: Text(l10n.scheduleSetting)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -84,7 +85,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
               title: Text(l10n.timeSlot),
               trailing: const Icon(Icons.chevron_right),
               onTap: () async {
-                final result = await Navigator.push<TimeSlotSettingResult>(
+                await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => TimeSlotSettingPage(
@@ -99,15 +100,9 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
                   ),
                 );
 
-                if (result != null && mounted) {
+                if (mounted) {
                   setState(() {
-                    _morningSections = result.morningSections;
-                    _afternoonSections = result.afternoonSections;
-                    _eveningSections = result.eveningSections;
-                    _courseDuration = result.courseDuration;
-                    _breakDuration = result.breakDuration;
-                    _autoSyncTime = result.autoSyncTime;
-                    _timeSlots = result.timeSlots;
+                    _loadConfig();
                   });
                 }
               },
@@ -119,21 +114,30 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
             SwitchListTile(
               title: Text(l10n.showTeacher),
               value: _showTeacher,
-              onChanged: (v) => setState(() => _showTeacher = v),
+              onChanged: (v) {
+                setState(() => _showTeacher = v);
+                _save();
+              },
               contentPadding: EdgeInsets.zero,
             ),
             // Show location
             SwitchListTile(
               title: Text(l10n.showLocation),
               value: _showLocation,
-              onChanged: (v) => setState(() => _showLocation = v),
+              onChanged: (v) {
+                setState(() => _showLocation = v);
+                _save();
+              },
               contentPadding: EdgeInsets.zero,
             ),
             // Show weekend
             SwitchListTile(
               title: Text(l10n.showWeekend),
               value: _showWeekend,
-              onChanged: (v) => setState(() => _showWeekend = v),
+              onChanged: (v) {
+                setState(() => _showWeekend = v);
+                _save();
+              },
               contentPadding: EdgeInsets.zero,
             ),
           ],
@@ -155,7 +159,10 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
             IconButton(
               icon: const Icon(Icons.remove),
               onPressed: _totalWeeks > 1
-                  ? () => setState(() => _totalWeeks--)
+                  ? () {
+                      setState(() => _totalWeeks--);
+                      _save();
+                    }
                   : null,
             ),
             Expanded(
@@ -169,7 +176,10 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
             IconButton(
               icon: const Icon(Icons.add),
               onPressed: _totalWeeks < 52
-                  ? () => setState(() => _totalWeeks++)
+                  ? () {
+                      setState(() => _totalWeeks++);
+                      _save();
+                    }
                   : null,
             ),
           ],
@@ -189,6 +199,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
       setState(() {
         _startDate = picked;
       });
+      _save();
     }
   }
 
@@ -209,7 +220,6 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
       showWeekend: _showWeekend,
     );
     await courseProvider.updateScheduleConfig(config);
-    if (logicRootContext.mounted) Navigator.pop(logicRootContext);
   }
 }
 

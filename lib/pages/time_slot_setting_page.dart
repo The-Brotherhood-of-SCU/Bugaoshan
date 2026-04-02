@@ -1,26 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:rubbish_plan/injection/injector.dart';
 import 'package:rubbish_plan/l10n/app_localizations.dart';
 import 'package:rubbish_plan/models/course.dart';
-
-class TimeSlotSettingResult {
-  final int morningSections;
-  final int afternoonSections;
-  final int eveningSections;
-  final int courseDuration;
-  final int breakDuration;
-  final bool autoSyncTime;
-  final List<TimeSlot> timeSlots;
-
-  TimeSlotSettingResult({
-    required this.morningSections,
-    required this.afternoonSections,
-    required this.eveningSections,
-    required this.courseDuration,
-    required this.breakDuration,
-    required this.autoSyncTime,
-    required this.timeSlots,
-  });
-}
+import 'package:rubbish_plan/providers/course_provider.dart';
 
 class TimeSlotSettingPage extends StatefulWidget {
   final int morningSections;
@@ -47,6 +29,7 @@ class TimeSlotSettingPage extends StatefulWidget {
 }
 
 class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
+  final courseProvider = getIt<CourseProvider>();
   late int _morningSections;
   late int _afternoonSections;
   late int _eveningSections;
@@ -65,6 +48,20 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
     _breakDuration = widget.initialBreakDuration;
     _autoSyncTime = widget.initialAutoSyncTime;
     _timeSlots = List.from(widget.initialTimeSlots);
+  }
+
+  void _autoSave() {
+    final currentConfig = courseProvider.scheduleConfig.value;
+    final config = currentConfig.copyWith(
+      morningSections: _morningSections,
+      afternoonSections: _afternoonSections,
+      eveningSections: _eveningSections,
+      courseDuration: _courseDuration,
+      breakDuration: _breakDuration,
+      autoSyncTime: _autoSyncTime,
+      timeSlots: _timeSlots,
+    );
+    courseProvider.updateScheduleConfig(config);
   }
 
   void _syncFollowingSlots(int index) {
@@ -98,7 +95,8 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
   }
 
   void _adjustTimeSlots() {
-    final totalSections = _morningSections + _afternoonSections + _eveningSections;
+    final totalSections =
+        _morningSections + _afternoonSections + _eveningSections;
 
     while (_timeSlots.length < totalSections) {
       // Just append a dummy slot, the user or sync logic can adjust it
@@ -115,30 +113,12 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
     }
   }
 
-  void _save() {
-    Navigator.pop(
-      context,
-      TimeSlotSettingResult(
-        morningSections: _morningSections,
-        afternoonSections: _afternoonSections,
-        eveningSections: _eveningSections,
-        courseDuration: _courseDuration,
-        breakDuration: _breakDuration,
-        autoSyncTime: _autoSyncTime,
-        timeSlots: _timeSlots,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.timeSlot),
-        actions: [TextButton(onPressed: _save, child: Text(l10n.save))],
-      ),
+      appBar: AppBar(title: Text(l10n.timeSlot)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -161,24 +141,30 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
                 _morningSections = v;
                 _adjustTimeSlots();
               });
+              _autoSave();
             }),
             _buildSectionCounter(l10n.afternoon, _afternoonSections, (v) {
               setState(() {
                 _afternoonSections = v;
                 _adjustTimeSlots();
               });
+              _autoSave();
             }),
             _buildSectionCounter(l10n.evening, _eveningSections, (v) {
               setState(() {
                 _eveningSections = v;
                 _adjustTimeSlots();
               });
+              _autoSave();
             }),
             const Divider(height: 32),
             SwitchListTile(
               title: Text(l10n.autoSyncTime),
               value: _autoSyncTime,
-              onChanged: (v) => setState(() => _autoSyncTime = v),
+              onChanged: (v) {
+                setState(() => _autoSyncTime = v);
+                _autoSave();
+              },
               contentPadding: EdgeInsets.zero,
             ),
             const SizedBox(height: 16),
@@ -197,6 +183,7 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
                       final val = int.tryParse(v);
                       if (val != null && val > 0) {
                         _courseDuration = val;
+                        _autoSave();
                       }
                     },
                   ),
@@ -213,6 +200,7 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
                       final val = int.tryParse(v);
                       if (val != null && val >= 0) {
                         _breakDuration = val;
+                        _autoSave();
                       }
                     },
                   ),
@@ -266,6 +254,7 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
                           _syncFollowingSlots(i);
                         }
                       });
+                      _autoSave();
                     },
                   ),
                 ],
@@ -297,22 +286,59 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
                   // Use the hardcoded default logic for 4-5-3
                   _timeSlots = [
                     // Morning
-                    const TimeSlot(startTime: TimeOfDay(hour: 8, minute: 15), endTime: TimeOfDay(hour: 9, minute: 0)),
-                    const TimeSlot(startTime: TimeOfDay(hour: 9, minute: 10), endTime: TimeOfDay(hour: 9, minute: 55)),
-                    const TimeSlot(startTime: TimeOfDay(hour: 10, minute: 15), endTime: TimeOfDay(hour: 11, minute: 0)),
-                    const TimeSlot(startTime: TimeOfDay(hour: 11, minute: 10), endTime: TimeOfDay(hour: 11, minute: 55)),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 8, minute: 15),
+                      endTime: TimeOfDay(hour: 9, minute: 0),
+                    ),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 9, minute: 10),
+                      endTime: TimeOfDay(hour: 9, minute: 55),
+                    ),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 10, minute: 15),
+                      endTime: TimeOfDay(hour: 11, minute: 0),
+                    ),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 11, minute: 10),
+                      endTime: TimeOfDay(hour: 11, minute: 55),
+                    ),
                     // Afternoon
-                    const TimeSlot(startTime: TimeOfDay(hour: 13, minute: 50), endTime: TimeOfDay(hour: 14, minute: 35)),
-                    const TimeSlot(startTime: TimeOfDay(hour: 14, minute: 45), endTime: TimeOfDay(hour: 15, minute: 30)),
-                    const TimeSlot(startTime: TimeOfDay(hour: 15, minute: 40), endTime: TimeOfDay(hour: 16, minute: 25)),
-                    const TimeSlot(startTime: TimeOfDay(hour: 16, minute: 45), endTime: TimeOfDay(hour: 17, minute: 30)),
-                    const TimeSlot(startTime: TimeOfDay(hour: 17, minute: 40), endTime: TimeOfDay(hour: 18, minute: 25)),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 13, minute: 50),
+                      endTime: TimeOfDay(hour: 14, minute: 35),
+                    ),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 14, minute: 45),
+                      endTime: TimeOfDay(hour: 15, minute: 30),
+                    ),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 15, minute: 40),
+                      endTime: TimeOfDay(hour: 16, minute: 25),
+                    ),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 16, minute: 45),
+                      endTime: TimeOfDay(hour: 17, minute: 30),
+                    ),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 17, minute: 40),
+                      endTime: TimeOfDay(hour: 18, minute: 25),
+                    ),
                     // Evening
-                    const TimeSlot(startTime: TimeOfDay(hour: 19, minute: 20), endTime: TimeOfDay(hour: 20, minute: 5)),
-                    const TimeSlot(startTime: TimeOfDay(hour: 20, minute: 15), endTime: TimeOfDay(hour: 21, minute: 0)),
-                    const TimeSlot(startTime: TimeOfDay(hour: 21, minute: 10), endTime: TimeOfDay(hour: 21, minute: 55)),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 19, minute: 20),
+                      endTime: TimeOfDay(hour: 20, minute: 5),
+                    ),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 20, minute: 15),
+                      endTime: TimeOfDay(hour: 21, minute: 0),
+                    ),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 21, minute: 10),
+                      endTime: TimeOfDay(hour: 21, minute: 55),
+                    ),
                   ];
                 });
+                _autoSave();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('已应用四川大学江安校区时间表预设')),
                 );
