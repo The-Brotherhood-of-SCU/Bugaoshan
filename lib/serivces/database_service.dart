@@ -121,7 +121,23 @@ class DatabaseService {
 
   // ==================== Courses ====================
 
-  List<Course> getCourses() {
+  List<Course> getCourses({String? scheduleId}) {
+    if (scheduleId != null) {
+      final boxName = scheduleId == 'default' ? 'courses' : 'courses_$scheduleId';
+      // If the box is already open (could be the current one), use it
+      if (Hive.isBoxOpen(boxName)) {
+        final box = Hive.box(boxName);
+        return box.values
+            .whereType<Map>()
+            .map((e) => Course.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+      }
+      // Note: In a real app we might want to open and close the box,
+      // but for export we'll assume it's safe to return empty if not loaded 
+      // or we can handle it in provider.
+      return [];
+    }
+
     if (_coursesBox == null || !_coursesBox!.isOpen) return [];
     return _coursesBox!.values
         .whereType<Map>()
@@ -139,6 +155,23 @@ class DatabaseService {
 
   Future<void> deleteCourse(String courseId) async {
     await _coursesBox!.delete(courseId);
+  }
+
+  Future<List<Course>> getCoursesAsync({String? scheduleId}) async {
+    if (scheduleId == null) return getCourses();
+    
+    final boxName = scheduleId == 'default' ? 'courses' : 'courses_$scheduleId';
+    if (Hive.isBoxOpen(boxName)) {
+      return getCourses(scheduleId: scheduleId);
+    }
+    
+    final box = await Hive.openBox(boxName);
+    final courses = box.values
+        .whereType<Map>()
+        .map((e) => Course.fromJson(Map<String, dynamic>.from(e)))
+        .toList();
+    await box.close();
+    return courses;
   }
 
   Future<bool> hasConflict(Course course, {String? excludeId}) async {

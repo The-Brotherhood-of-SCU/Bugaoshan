@@ -294,6 +294,30 @@ class AppLocalizationsEn extends AppLocalizations {
       'End week must be greater than or equal to start week';
 
   @override
+  String get duplicateScheduleName => 'Schedule name already exists';
+
+  @override
+  String get exportSuccess => 'Schedule data copied to clipboard';
+
+  @override
+  String get importSchedule => 'Import Schedule';
+
+  @override
+  String get importFromText => 'Import from text';
+
+  @override
+  String get importDataHint => 'Paste schedule JSON data here...';
+
+  @override
+  String get importSuccess => 'Schedule imported successfully';
+
+  @override
+  String get importFailed => 'Import failed, please check data format';
+
+  @override
+  String get notThisWeek => '[Not this week]';
+
+  @override
   String get invalidSectionRange =>
       'End section must be greater than start section';
 

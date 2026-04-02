@@ -289,6 +289,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String get invalidWeekRange => '结束周必须大于或等于开始周';
 
   @override
+  String get duplicateScheduleName => '课表名称已存在';
+
+  @override
+  String get exportSuccess => '课表数据已复制到剪贴板';
+
+  @override
+  String get importSchedule => '导入课表';
+
+  @override
+  String get importFromText => '从文本导入';
+
+  @override
+  String get importDataHint => '请在此处粘贴课表 JSON 数据...';
+
+  @override
+  String get importSuccess => '课表导入成功';
+
+  @override
+  String get importFailed => '导入失败，请检查数据格式';
+
+  @override
+  String get notThisWeek => '[非本周]';
+
+  @override
   String get invalidSectionRange => '结束节次必须大于开始节次';
 
   @override

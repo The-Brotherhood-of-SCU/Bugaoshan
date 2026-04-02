@@ -63,6 +63,16 @@ class CourseProvider {
     await _loadData();
   }
 
+  Future<List<Course>> getCoursesForSchedule(String scheduleId) async {
+    return await _db.getCoursesAsync(scheduleId: scheduleId);
+  }
+
+  bool isScheduleNameTaken(String name, {String? excludeId}) {
+    return allSchedules.value.any((s) => 
+      s.semesterName.trim() == name.trim() && s.id != excludeId
+    );
+  }
+
   List<Course> getCoursesForWeek(int week) {
     return courses.value.where((c) => c.isActiveInWeek(week)).toList();
   }
