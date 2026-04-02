@@ -1,14 +1,20 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:rubbish_plan/l10n/app_localizations.dart';
 import 'package:rubbish_plan/models/course.dart';
 
 class TimeSlotSettingResult {
+  final int morningSections;
+  final int afternoonSections;
+  final int eveningSections;
   final int courseDuration;
   final int breakDuration;
   final bool autoSyncTime;
   final List<TimeSlot> timeSlots;
 
   TimeSlotSettingResult({
+    required this.morningSections,
+    required this.afternoonSections,
+    required this.eveningSections,
     required this.courseDuration,
     required this.breakDuration,
     required this.autoSyncTime,
@@ -41,6 +47,9 @@ class TimeSlotSettingPage extends StatefulWidget {
 }
 
 class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
+  late int _morningSections;
+  late int _afternoonSections;
+  late int _eveningSections;
   late int _courseDuration;
   late int _breakDuration;
   late bool _autoSyncTime;
@@ -49,6 +58,9 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
   @override
   void initState() {
     super.initState();
+    _morningSections = widget.morningSections;
+    _afternoonSections = widget.afternoonSections;
+    _eveningSections = widget.eveningSections;
     _courseDuration = widget.initialCourseDuration;
     _breakDuration = widget.initialBreakDuration;
     _autoSyncTime = widget.initialAutoSyncTime;
@@ -58,15 +70,12 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
   void _syncFollowingSlots(int index) {
     int endIdx = 0;
 
-    if (index < widget.morningSections) {
-      endIdx = widget.morningSections;
-    } else if (index < widget.morningSections + widget.afternoonSections) {
-      endIdx = widget.morningSections + widget.afternoonSections;
+    if (index < _morningSections) {
+      endIdx = _morningSections;
+    } else if (index < _morningSections + _afternoonSections) {
+      endIdx = _morningSections + _afternoonSections;
     } else {
-      endIdx =
-          widget.morningSections +
-          widget.afternoonSections +
-          widget.eveningSections;
+      endIdx = _morningSections + _afternoonSections + _eveningSections;
     }
 
     for (int i = index + 1; i < endIdx; i++) {
@@ -82,9 +91,27 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
       endMin = endMin % 60;
 
       _timeSlots[i] = TimeSlot(
-        startTime: TimeOfDay(hour: startHour, minute: startMin),
-        endTime: TimeOfDay(hour: endHour, minute: endMin),
+        startTime: TimeOfDay(hour: startHour % 24, minute: startMin),
+        endTime: TimeOfDay(hour: endHour % 24, minute: endMin),
       );
+    }
+  }
+
+  void _adjustTimeSlots() {
+    final totalSections = _morningSections + _afternoonSections + _eveningSections;
+
+    while (_timeSlots.length < totalSections) {
+      // Just append a dummy slot, the user or sync logic can adjust it
+      final hour = 8 + _timeSlots.length;
+      _timeSlots.add(
+        TimeSlot(
+          startTime: TimeOfDay(hour: hour % 24, minute: 0),
+          endTime: TimeOfDay(hour: hour % 24, minute: 45),
+        ),
+      );
+    }
+    if (_timeSlots.length > totalSections) {
+      _timeSlots = _timeSlots.sublist(0, totalSections);
     }
   }
 
@@ -92,6 +119,9 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
     Navigator.pop(
       context,
       TimeSlotSettingResult(
+        morningSections: _morningSections,
+        afternoonSections: _afternoonSections,
+        eveningSections: _eveningSections,
         courseDuration: _courseDuration,
         breakDuration: _breakDuration,
         autoSyncTime: _autoSyncTime,
@@ -114,6 +144,37 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Section count settings
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                l10n.sectionCount,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+            _buildSectionCounter(l10n.morning, _morningSections, (v) {
+              setState(() {
+                _morningSections = v;
+                _adjustTimeSlots();
+              });
+            }),
+            _buildSectionCounter(l10n.afternoon, _afternoonSections, (v) {
+              setState(() {
+                _afternoonSections = v;
+                _adjustTimeSlots();
+              });
+            }),
+            _buildSectionCounter(l10n.evening, _eveningSections, (v) {
+              setState(() {
+                _eveningSections = v;
+                _adjustTimeSlots();
+              });
+            }),
+            const Divider(height: 32),
             SwitchListTile(
               title: Text(l10n.autoSyncTime),
               value: _autoSyncTime,
@@ -160,34 +221,135 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
             ),
             const SizedBox(height: 16),
             ...List.generate(_timeSlots.length, (i) {
-              return _TimeSlotEditor(
-                index: i,
-                slot: _timeSlots[i],
-                onChanged: (slot, isStart) {
-                  setState(() {
-                    if (isStart && _autoSyncTime) {
-                      int endMin = slot.startTime.minute + _courseDuration;
-                      int endHour = slot.startTime.hour + (endMin ~/ 60);
-                      _timeSlots[i] = slot.copyWith(
-                        endTime: TimeOfDay(
-                          hour: endHour % 24,
-                          minute: endMin % 60,
-                        ),
-                      );
-                    } else {
-                      _timeSlots[i] = slot;
-                    }
+              String groupTitle = '';
+              if (i == 0) {
+                groupTitle = l10n.morning;
+              } else if (i == _morningSections) {
+                groupTitle = l10n.afternoon;
+              } else if (i == _morningSections + _afternoonSections) {
+                groupTitle = l10n.evening;
+              }
 
-                    if (_autoSyncTime) {
-                      _syncFollowingSlots(i);
-                    }
-                  });
-                },
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (groupTitle.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16, bottom: 8),
+                      child: Text(
+                        groupTitle,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  _TimeSlotEditor(
+                    index: i,
+                    slot: _timeSlots[i],
+                    onChanged: (slot, isStart) {
+                      setState(() {
+                        if (isStart && _autoSyncTime) {
+                          int endMin = slot.startTime.minute + _courseDuration;
+                          int endHour = slot.startTime.hour + (endMin ~/ 60);
+                          _timeSlots[i] = slot.copyWith(
+                            endTime: TimeOfDay(
+                              hour: endHour % 24,
+                              minute: endMin % 60,
+                            ),
+                          );
+                        } else {
+                          _timeSlots[i] = slot;
+                        }
+
+                        if (_autoSyncTime) {
+                          _syncFollowingSlots(i);
+                        }
+                      });
+                    },
+                  ),
+                ],
               );
             }),
+            const Divider(height: 32),
+            // Quick set section
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                '快速设置',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('四川大学江安校区'),
+              subtitle: const Text('自动设置 4-5-3 节数及对应时间点'),
+              trailing: const Icon(Icons.auto_fix_high),
+              onTap: () {
+                setState(() {
+                  _morningSections = 4;
+                  _afternoonSections = 5;
+                  _eveningSections = 3;
+                  // Use the hardcoded default logic for 4-5-3
+                  _timeSlots = [
+                    // Morning
+                    const TimeSlot(startTime: TimeOfDay(hour: 8, minute: 15), endTime: TimeOfDay(hour: 9, minute: 0)),
+                    const TimeSlot(startTime: TimeOfDay(hour: 9, minute: 10), endTime: TimeOfDay(hour: 9, minute: 55)),
+                    const TimeSlot(startTime: TimeOfDay(hour: 10, minute: 15), endTime: TimeOfDay(hour: 11, minute: 0)),
+                    const TimeSlot(startTime: TimeOfDay(hour: 11, minute: 10), endTime: TimeOfDay(hour: 11, minute: 55)),
+                    // Afternoon
+                    const TimeSlot(startTime: TimeOfDay(hour: 13, minute: 50), endTime: TimeOfDay(hour: 14, minute: 35)),
+                    const TimeSlot(startTime: TimeOfDay(hour: 14, minute: 45), endTime: TimeOfDay(hour: 15, minute: 30)),
+                    const TimeSlot(startTime: TimeOfDay(hour: 15, minute: 40), endTime: TimeOfDay(hour: 16, minute: 25)),
+                    const TimeSlot(startTime: TimeOfDay(hour: 16, minute: 45), endTime: TimeOfDay(hour: 17, minute: 30)),
+                    const TimeSlot(startTime: TimeOfDay(hour: 17, minute: 40), endTime: TimeOfDay(hour: 18, minute: 25)),
+                    // Evening
+                    const TimeSlot(startTime: TimeOfDay(hour: 19, minute: 20), endTime: TimeOfDay(hour: 20, minute: 5)),
+                    const TimeSlot(startTime: TimeOfDay(hour: 20, minute: 15), endTime: TimeOfDay(hour: 21, minute: 0)),
+                    const TimeSlot(startTime: TimeOfDay(hour: 21, minute: 10), endTime: TimeOfDay(hour: 21, minute: 55)),
+                  ];
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('已应用四川大学江安校区时间表预设')),
+                );
+              },
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSectionCounter(
+    String label,
+    int value,
+    ValueChanged<int> onChanged,
+  ) {
+    return Row(
+      children: [
+        Expanded(child: Text(label)),
+        IconButton(
+          icon: const Icon(Icons.remove),
+          onPressed: value > 0 ? () => onChanged(value - 1) : null,
+        ),
+        SizedBox(
+          width: 32,
+          child: Center(
+            child: Text(
+              '$value',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.add),
+          onPressed: value < 10 ? () => onChanged(value + 1) : null,
+        ),
+      ],
     );
   }
 }

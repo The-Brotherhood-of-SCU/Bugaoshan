@@ -77,27 +77,6 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
             ),
             _buildTotalWeeksPicker(context, l10n),
             const Divider(),
-            // Section count
-            _SectionTitle(l10n.sectionCount),
-            _buildSectionCounter(l10n.morning, _morningSections, (v) {
-              setState(() {
-                _morningSections = v;
-                _adjustTimeSlots();
-              });
-            }),
-            _buildSectionCounter(l10n.afternoon, _afternoonSections, (v) {
-              setState(() {
-                _afternoonSections = v;
-                _adjustTimeSlots();
-              });
-            }),
-            _buildSectionCounter(l10n.evening, _eveningSections, (v) {
-              setState(() {
-                _eveningSections = v;
-                _adjustTimeSlots();
-              });
-            }),
-            const Divider(),
             // Time slots
             _SectionTitle(l10n.timeSlot),
             ListTile(
@@ -122,6 +101,9 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
 
                 if (result != null && mounted) {
                   setState(() {
+                    _morningSections = result.morningSections;
+                    _afternoonSections = result.afternoonSections;
+                    _eveningSections = result.eveningSections;
                     _courseDuration = result.courseDuration;
                     _breakDuration = result.breakDuration;
                     _autoSyncTime = result.autoSyncTime;
@@ -208,58 +190,6 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
         _startDate = picked;
       });
     }
-  }
-
-  Widget _buildSectionCounter(
-    String label,
-    int value,
-    ValueChanged<int> onChanged,
-  ) {
-    return Row(
-      children: [
-        Expanded(child: Text(label)),
-        IconButton(
-          icon: const Icon(Icons.remove),
-          onPressed: value > 0 ? () => onChanged(value - 1) : null,
-        ),
-        SizedBox(
-          width: 32,
-          child: Center(
-            child: Text(
-              '$value',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ),
-        ),
-        IconButton(
-          icon: const Icon(Icons.add),
-          onPressed: value < 10 ? () => onChanged(value + 1) : null,
-        ),
-      ],
-    );
-  }
-
-  // Removed _syncFollowingSlots because it's now in time_slot_setting_page.dart
-
-  void _adjustTimeSlots() {
-    final totalSections =
-        _morningSections + _afternoonSections + _eveningSections;
-
-    while (_timeSlots.length < totalSections) {
-      // Just append a dummy slot, the user or sync logic can adjust it
-      final hour = 8 + _timeSlots.length;
-      _timeSlots.add(
-        TimeSlot(
-          startTime: TimeOfDay(hour: hour, minute: 0),
-          endTime: TimeOfDay(hour: hour, minute: 45),
-        ),
-      );
-    }
-    if (_timeSlots.length > totalSections) {
-      _timeSlots = _timeSlots.sublist(0, totalSections);
-    }
-
-    // Optionally trigger a full sync when sections change, but for now we just maintain the length
   }
 
   Future<void> _save() async {
