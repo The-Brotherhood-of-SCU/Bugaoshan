@@ -196,8 +196,17 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
       lastDate: DateTime(2100),
     );
     if (picked != null) {
+      DateTime finalDate = picked;
+      if (picked.weekday != DateTime.monday) {
+        finalDate = picked.toMonday();
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('已自动调整为该周周一')));
+        }
+      }
       setState(() {
-        _startDate = picked;
+        _startDate = finalDate;
       });
       _save();
     }
