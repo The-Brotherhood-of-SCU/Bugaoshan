@@ -1,8 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:rubbish_plan/injection/injector.dart';
 import 'package:rubbish_plan/l10n/app_localizations.dart';
 import 'package:rubbish_plan/models/course.dart';
 import 'package:rubbish_plan/pages/course_edit_page.dart';
+import 'package:rubbish_plan/pages/import_schedule_page.dart';
 import 'package:rubbish_plan/pages/schedule_management_page.dart';
 import 'package:rubbish_plan/providers/course_provider.dart';
 import 'package:rubbish_plan/widgets/common/text.dart';
@@ -141,11 +144,11 @@ class _CoursePageState extends State<CoursePage> {
           icon: const Icon(Icons.add),
         ),
         IconButton(
-          onPressed: () {}, // Placeholder: download/import
+          onPressed: _onImport,
           icon: const Icon(Icons.download),
         ),
         IconButton(
-          onPressed: () {}, // Placeholder: send/export
+          onPressed: _onExport,
           icon: const Icon(Icons.send),
         ),
         const SizedBox(width: 8),
@@ -164,6 +167,68 @@ class _CoursePageState extends State<CoursePage> {
 
   void _showSchedulePicker() {
     popupOrNavigate(context, const ScheduleManagementPage());
+  }
+
+  void _onImport() {
+    final l10n = AppLocalizations.of(context)!;
+    final outerContext = context; // Capture the stable context
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                child: Text(
+                  l10n.importSchedule,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ),
+              const Divider(),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                leading: const Icon(Icons.text_fields),
+                title: Text(l10n.importFromText),
+                onTap: () {
+                  Navigator.pop(context);
+                  popupOrNavigate(outerContext, ImportSchedulePage(courseProvider: courseProvider));
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _onExport() async {
+    final l10n = AppLocalizations.of(context)!;
+    final config = courseProvider.scheduleConfig.value;
+    final allCourses = courseProvider.courses.value;
+
+    final data = {
+      'config': config.toJson(),
+      'courses': allCourses.map((e) => e.toJson()).toList(),
+    };
+
+    final jsonStr = json.encode(data);
+    await Clipboard.setData(ClipboardData(text: jsonStr));
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.exportSuccess)),
+      );
+    }
   }
 
   void _onAddCourse() {

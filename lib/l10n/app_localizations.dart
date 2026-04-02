@@ -643,6 +643,54 @@ abstract class AppLocalizations {
   /// **'End week must be greater than or equal to start week'**
   String get invalidWeekRange;
 
+  /// No description provided for @duplicateScheduleName.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule name already exists'**
+  String get duplicateScheduleName;
+
+  /// No description provided for @exportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule data copied to clipboard'**
+  String get exportSuccess;
+
+  /// No description provided for @importSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Schedule'**
+  String get importSchedule;
+
+  /// No description provided for @importFromText.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from text'**
+  String get importFromText;
+
+  /// No description provided for @importDataHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste schedule JSON data here...'**
+  String get importDataHint;
+
+  /// No description provided for @importSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule imported successfully'**
+  String get importSuccess;
+
+  /// No description provided for @importFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed, please check data format'**
+  String get importFailed;
+
+  /// No description provided for @notThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'[Not this week]'**
+  String get notThisWeek;
+
   /// No description provided for @invalidSectionRange.
   ///
   /// In en, this message translates to:

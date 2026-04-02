@@ -347,7 +347,7 @@ class _CourseCard extends StatelessWidget {
                 : appConfig.colorOpacity.value * 0.35);
         final textColor = Colors.white;
         final fontSize = appConfig.courseCardFontSize.value;
-        final smallFontSize = fontSize - 2;
+        final smallFontSize = fontSize - 1;
 
         return GestureDetector(
           onTap: onTap,
@@ -366,7 +366,7 @@ class _CourseCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  course.name,
+                  isActive ? course.name : '${l10n.notThisWeek} ${course.name}',
                   style: TextStyle(
                     fontSize: fontSize,
                     fontWeight: FontWeight.bold,
