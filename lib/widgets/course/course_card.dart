@@ -40,16 +40,26 @@ class CourseCard extends StatelessWidget {
         const textColor = Colors.white;
         final fontSize = appConfig.courseCardFontSize.value;
         final smallFontSize = fontSize - 1;
-        final details = <({IconData icon, String text})>[
-          if (config.showLocation && course.location.isNotEmpty)
-            (icon: Icons.location_on_outlined, text: course.location),
-          if (config.showTeacherName && course.teacher.isNotEmpty)
-            (icon: Icons.person_outline, text: course.teacher),
-          (
-            icon: Icons.calendar_today_outlined,
-            text: '${course.startWeek}-${course.endWeek}${l10n.week}',
-          ),
-        ];
+        final details =
+            <({IconData icon, String text, bool shrinkToFitHorizontally})>[
+              if (config.showLocation && course.location.isNotEmpty)
+                (
+                  icon: Icons.location_on_outlined,
+                  text: course.location,
+                  shrinkToFitHorizontally: true,
+                ),
+              if (config.showTeacherName && course.teacher.isNotEmpty)
+                (
+                  icon: Icons.person_outline,
+                  text: course.teacher,
+                  shrinkToFitHorizontally: false,
+                ),
+              (
+                icon: Icons.calendar_today_outlined,
+                text: '${course.startWeek}-${course.endWeek}${l10n.week}',
+                shrinkToFitHorizontally: false,
+              ),
+            ];
 
         return GestureDetector(
           onTap: onTap,
@@ -96,13 +106,16 @@ class CourseCard extends StatelessWidget {
                             height: 1.1,
                           ),
                         ),
-                        if (visibleDetails.isNotEmpty) const SizedBox(height: 2),
+                        if (visibleDetails.isNotEmpty)
+                          const SizedBox(height: 2),
                         ...visibleDetails.map(
                           (detail) => _buildIconText(
                             detail.icon,
                             detail.text,
                             smallFontSize,
                             textColor,
+                            shrinkToFitHorizontally:
+                                detail.shrinkToFitHorizontally,
                           ),
                         ),
                       ],
@@ -121,8 +134,9 @@ class CourseCard extends StatelessWidget {
     IconData icon,
     String text,
     double fontSize,
-    Color color,
-  ) {
+    Color color, {
+    bool shrinkToFitHorizontally = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(top: 2),
       child: Row(
@@ -132,16 +146,32 @@ class CourseCard extends StatelessWidget {
           Icon(icon, size: fontSize, color: color.withAlpha(200)),
           const SizedBox(width: 2),
           Expanded(
-            child: Text(
-              text,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: fontSize,
-                color: color.withAlpha(230),
-                height: 1.1,
-              ),
-            ),
+            child: shrinkToFitHorizontally
+                ? SizedBox(
+                    height: fontSize * 1.2,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        text,
+                        style: TextStyle(
+                          fontSize: fontSize,
+                          color: color.withAlpha(230),
+                          height: 1.1,
+                        ),
+                      ),
+                    ),
+                  )
+                : Text(
+                    text,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: fontSize,
+                      color: color.withAlpha(230),
+                      height: 1.1,
+                    ),
+                  ),
           ),
         ],
       ),
