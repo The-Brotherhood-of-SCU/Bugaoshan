@@ -61,6 +61,7 @@
     "saturday":"周六",
     "sunday":"周日",
     "currentWeek":"第 {week} 周",
+    "thisWeek":"本周",
     "weekRange":"第 {start} - {end} 周",
     "weekType":"周次类型",
     "everyWeek":"每周",

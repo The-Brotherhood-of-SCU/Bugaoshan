@@ -61,6 +61,7 @@
     "saturday":"Sat",
     "sunday":"Sun",
     "currentWeek":"Week {week}",
+    "thisWeek":"This week",
     "weekRange":"Week {start} - {end}",
     "weekType":"Week Type",
     "everyWeek":"Every Week",

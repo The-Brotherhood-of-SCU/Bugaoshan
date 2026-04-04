@@ -200,6 +200,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get thisWeek => '本周';
+
+  @override
   String weekRange(Object end, Object start) {
     return '第 $start - $end 周';
   }

@@ -203,6 +203,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get thisWeek => 'This week';
+
+  @override
   String weekRange(Object end, Object start) {
     return 'Week $start - $end';
   }

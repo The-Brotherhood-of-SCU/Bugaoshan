@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:rubbish_plan/injection/injector.dart';
 import 'package:rubbish_plan/l10n/app_localizations.dart';
 import 'package:rubbish_plan/pages/course_page.dart';
 import 'package:rubbish_plan/pages/profile_page.dart';
+import 'package:rubbish_plan/providers/course_provider.dart';
 import 'package:rubbish_plan/widgets/common/navigation_item.dart';
 
 class HomePage extends StatefulWidget {
@@ -13,6 +15,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
+  final _courseProvider = getIt<CourseProvider>();
   late AppLocalizations _localizations;
   late List<NavigationItemData> _navigationItems;
   @override
@@ -54,6 +57,11 @@ class _HomePageState extends State<HomePage> {
                     setState(() {
                       _currentIndex = index;
                     });
+                    if (index == 0) {
+                      _courseProvider.updateCurrentWeek(
+                        _courseProvider.scheduleConfig.value.getCurrentWeek(),
+                      );
+                    }
                   },
                   labelType: NavigationRailLabelType.all,
                   destinations: _navigationItems
@@ -83,6 +91,11 @@ class _HomePageState extends State<HomePage> {
                 setState(() {
                   _currentIndex = index;
                 });
+                if (index == 0) {
+                  _courseProvider.updateCurrentWeek(
+                    _courseProvider.scheduleConfig.value.getCurrentWeek(),
+                  );
+                }
               },
               destinations: _navigationItems
                   .map(

@@ -469,6 +469,12 @@ abstract class AppLocalizations {
   /// **'Week {week}'**
   String currentWeek(Object week);
 
+  /// No description provided for @thisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get thisWeek;
+
   /// No description provided for @weekRange.
   ///
   /// In en, this message translates to:

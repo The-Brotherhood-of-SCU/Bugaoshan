@@ -19,27 +19,37 @@ class CoursePage extends StatefulWidget {
   State<CoursePage> createState() => _CoursePageState();
 }
 
-class _CoursePageState extends State<CoursePage> {
+class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   final courseProvider = getIt<CourseProvider>();
   late PageController _pageController;
 
   @override
   void initState() {
     super.initState();
-    // Initialize PageController with the current week (0-indexed)
+    WidgetsBinding.instance.addObserver(this);
     _pageController = PageController(
       initialPage: courseProvider.currentWeek.value - 1,
     );
-
-    // Listen to changes in currentWeek to animate the PageView
     courseProvider.currentWeek.addListener(_onCurrentWeekChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _syncToCurrentWeek();
+    });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     courseProvider.currentWeek.removeListener(_onCurrentWeekChanged);
     _pageController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _syncToCurrentWeek();
+    }
   }
 
   void _onCurrentWeekChanged() {
@@ -52,6 +62,11 @@ class _CoursePageState extends State<CoursePage> {
         curve: Curves.easeInOut,
       );
     }
+  }
+
+  void _syncToCurrentWeek() {
+    final currentWeek = courseProvider.scheduleConfig.value.getCurrentWeek();
+    courseProvider.updateCurrentWeek(currentWeek);
   }
 
   @override
@@ -118,6 +133,7 @@ class _CoursePageState extends State<CoursePage> {
     int totalWeeks,
   ) {
     final config = courseProvider.scheduleConfig.value;
+    final isCurrentCalendarWeek = week == config.getCurrentWeek();
     final scheduleName = config.semesterName.isEmpty
         ? l10n.defaultScheduleName
         : config.semesterName;
@@ -138,15 +154,42 @@ class _CoursePageState extends State<CoursePage> {
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 28, minHeight: 36),
               ),
-              GestureDetector(
-                onTap: () => _goToCurrentWeek(),
-                child: Text(
-                  l10n.currentWeek(week),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: () => _goToCurrentWeek(),
+                    child: Text(
+                      l10n.currentWeek(week),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                   ),
-                ),
+                  if (isCurrentCalendarWeek) ...[
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        l10n.thisWeek,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
               IconButton(
                 onPressed: week < totalWeeks
@@ -209,8 +252,7 @@ class _CoursePageState extends State<CoursePage> {
   }
 
   void _goToCurrentWeek() {
-    final currentWeek = courseProvider.scheduleConfig.value.getCurrentWeek();
-    courseProvider.updateCurrentWeek(currentWeek);
+    _syncToCurrentWeek();
   }
 
   void _onImport() {
