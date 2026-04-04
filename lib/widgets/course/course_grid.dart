@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:rubbish_plan/l10n/app_localizations.dart';
 import 'package:rubbish_plan/models/course.dart';
 import 'package:rubbish_plan/widgets/course/course_card.dart';
@@ -204,7 +204,6 @@ class _CourseGridState extends State<CourseGrid> {
     BuildContext context,
   ) {
     final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context)!;
 
     // Calculate boundaries
     final morningEnd = widget.config.morningSections;
@@ -316,15 +315,14 @@ class _CourseGridState extends State<CourseGrid> {
             // Course cards
             ...dayCourses.map((course) {
               final top = (course.startSection - 1) * rowHeight;
-              // 不再设置固定 height，让内容自然撑开。最小高度仍然是课程占据的节数高度。
-              final minHeight =
+              final courseHeight =
                   (course.endSection - course.startSection + 1) * rowHeight - 2;
               return Positioned(
                 top: top + 1,
                 left: 1,
                 right: 1,
-                child: Container(
-                  constraints: BoxConstraints(minHeight: minHeight),
+                height: courseHeight,
+                child: SizedBox(
                   child: CourseCard(
                     course: course,
                     config: widget.config,
