@@ -228,6 +228,31 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
                               ),
                         ),
                       ),
+                    ] else ...[
+                      const SizedBox(width: 3),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 1,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.secondaryContainer,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          '本周第${config.getCurrentWeek()}周',
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSecondaryContainer,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 9,
+                              ),
+                        ),
+                      ),
                     ],
                   ],
                 ),
