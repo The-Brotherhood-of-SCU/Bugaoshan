@@ -5,7 +5,6 @@ import 'package:rubbish_plan/models/course.dart';
 import 'package:rubbish_plan/pages/time_slot_setting_page.dart';
 import 'package:rubbish_plan/providers/course_provider.dart';
 import 'package:rubbish_plan/widgets/common/styled_card.dart';
-import 'package:rubbish_plan/widgets/route/router_utils.dart';
 
 class CourseScheduleSetting extends StatefulWidget {
   const CourseScheduleSetting({super.key});

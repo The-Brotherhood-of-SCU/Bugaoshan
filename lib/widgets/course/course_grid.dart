@@ -1,8 +1,6 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:rubbish_plan/injection/injector.dart';
 import 'package:rubbish_plan/l10n/app_localizations.dart';
 import 'package:rubbish_plan/models/course.dart';
-import 'package:rubbish_plan/providers/app_config_provider.dart';
 import 'package:rubbish_plan/widgets/course/course_card.dart';
 
 /// Displays a weekly course schedule grid with time slots and course cards.
