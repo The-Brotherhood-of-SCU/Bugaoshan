@@ -349,6 +349,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notThisWeek => '[Not this week]';
 
   @override
+  String actualCurrentWeek(Object week) {
+    return 'Week $week';
+  }
+
+  @override
+  String totalWeeksSubtitle(Object count) {
+    return '$count weeks';
+  }
+
+  @override
   String get invalidSectionRange =>
       'End section must be greater than start section';
 

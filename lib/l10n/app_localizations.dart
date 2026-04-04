@@ -745,6 +745,18 @@ abstract class AppLocalizations {
   /// **'[Not this week]'**
   String get notThisWeek;
 
+  /// No description provided for @actualCurrentWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Week {week}'**
+  String actualCurrentWeek(Object week);
+
+  /// No description provided for @totalWeeksSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} weeks'**
+  String totalWeeksSubtitle(Object count);
+
   /// No description provided for @invalidSectionRange.
   ///
   /// In en, this message translates to:

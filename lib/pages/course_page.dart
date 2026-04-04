@@ -242,7 +242,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
-                          '本周第${config.getCurrentWeek()}周',
+                          l10n.actualCurrentWeek(config.getCurrentWeek()),
                           style: Theme.of(context).textTheme.labelSmall
                               ?.copyWith(
                                 color: Theme.of(

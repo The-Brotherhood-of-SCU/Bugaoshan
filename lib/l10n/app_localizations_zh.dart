@@ -344,6 +344,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get notThisWeek => '[非本周]';
 
   @override
+  String actualCurrentWeek(Object week) {
+    return '本周第 $week 周';
+  }
+
+  @override
+  String totalWeeksSubtitle(Object count) {
+    return '共 $count 周';
+  }
+
+  @override
   String get invalidSectionRange => '结束节次必须大于开始节次';
 
   @override
