@@ -107,6 +107,8 @@
     "exportSchedule": "Export Schedule",
     "copySuffix": " (Copy)",
     "notThisWeek": "[Not this week]",
+    "actualCurrentWeek": "Week {week}",
+    "totalWeeksSubtitle": "{count} weeks",
     "invalidSectionRange":"End section must be greater than start section",
     "crossPeriodError":"Cross Period Error",
     "crossPeriodErrorMessage":"A course cannot span across morning, afternoon, or evening periods.",

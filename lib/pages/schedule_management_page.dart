@@ -175,7 +175,7 @@ class ScheduleManagementPage extends StatelessWidget {
                       ? l10n.defaultScheduleName
                       : schedule.semesterName,
                 ),
-                subtitle: Text('共 ${schedule.totalWeeks} 周'),
+                subtitle: Text(l10n.totalWeeksSubtitle(schedule.totalWeeks)),
                 onTap: () {
                   courseProvider.switchSchedule(schedule.id);
                   Navigator.pop(logicRootContext);

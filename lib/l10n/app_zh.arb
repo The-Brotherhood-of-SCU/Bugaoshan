@@ -107,6 +107,8 @@
     "exportSchedule": "导出课表",
     "copySuffix": " (副本)",
     "notThisWeek": "[非本周]",
+    "actualCurrentWeek": "本周第 {week} 周",
+    "totalWeeksSubtitle": "共 {count} 周",
     "invalidSectionRange":"结束节次必须大于开始节次",
     "crossPeriodError":"跨时间段错误",
     "crossPeriodErrorMessage":"一门课程不能跨越上午、下午或晚上。",
