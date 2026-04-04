@@ -22,11 +22,13 @@ class CoursePage extends StatefulWidget {
 class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   final courseProvider = getIt<CourseProvider>();
   late PageController _pageController;
+  late int _visibleWeek;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _visibleWeek = courseProvider.currentWeek.value;
     _pageController = PageController(
       initialPage: courseProvider.currentWeek.value - 1,
     );
@@ -61,6 +63,10 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
+    } else if (_visibleWeek != courseProvider.currentWeek.value) {
+      setState(() {
+        _visibleWeek = courseProvider.currentWeek.value;
+      });
     }
   }
 
@@ -103,8 +109,14 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
                       controller: _pageController,
                       itemCount: totalWeeks,
                       onPageChanged: (index) {
+                        final displayWeek = index + 1;
+                        if (_visibleWeek != displayWeek) {
+                          setState(() {
+                            _visibleWeek = displayWeek;
+                          });
+                        }
                         // Update current week when user swipes (index is 0-based)
-                        courseProvider.updateCurrentWeek(index + 1);
+                        courseProvider.updateCurrentWeek(displayWeek);
                       },
                       itemBuilder: (context, index) {
                         final displayWeek = index + 1;
@@ -133,7 +145,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
     int totalWeeks,
   ) {
     final config = courseProvider.scheduleConfig.value;
-    final isCurrentCalendarWeek = week == config.getCurrentWeek();
+    final isCurrentCalendarWeek = _visibleWeek == config.getCurrentWeek();
     final scheduleName = config.semesterName.isEmpty
         ? l10n.defaultScheduleName
         : config.semesterName;
@@ -154,42 +166,44 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 28, minHeight: 36),
               ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  GestureDetector(
-                    onTap: () => _goToCurrentWeek(),
-                    child: Text(
+              GestureDetector(
+                onTap: () => _goToCurrentWeek(),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
                       l10n.currentWeek(week),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
                     ),
-                  ),
-                  if (isCurrentCalendarWeek) ...[
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        l10n.thisWeek,
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onPrimaryContainer,
-                          fontWeight: FontWeight.w600,
+                    if (isCurrentCalendarWeek) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          l10n.thisWeek,
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onPrimaryContainer,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
                       ),
-                    ),
+                    ],
                   ],
-                ],
+                ),
               ),
               IconButton(
                 onPressed: week < totalWeeks
