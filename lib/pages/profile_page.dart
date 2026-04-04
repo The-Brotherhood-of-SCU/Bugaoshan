@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:rubbish_plan/l10n/app_localizations.dart';
+import 'package:rubbish_plan/pages/about_page.dart';
 import 'package:rubbish_plan/pages/course_schedule_setting.dart';
 import 'package:rubbish_plan/pages/schedule_management_page.dart';
 import 'package:rubbish_plan/pages/software_setting_page.dart';
@@ -41,6 +42,13 @@ class _ProfilePageState extends State<ProfilePage> {
           },
           icon: Icon(Icons.settings),
           child: Text(localizations.softwareSetting),
+        ),
+        ButtonWithMaxWidth(
+          onPressed: () {
+            popupOrNavigate(context, AboutPage());
+          },
+          icon: Icon(Icons.info_outline),
+          child: Text(localizations.about),
         ),
       ],
     );

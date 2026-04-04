@@ -1,7 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:rubbish_plan/injection/injector.dart';
 import 'package:rubbish_plan/l10n/app_localizations.dart';
-import 'package:rubbish_plan/pages/about_page.dart';
 import 'package:rubbish_plan/pages/set_duration_page.dart';
 import 'package:rubbish_plan/pages/set_language_page.dart';
 import 'package:rubbish_plan/pages/set_theme_color_page.dart';
@@ -114,13 +113,6 @@ class SoftwareSettingPage extends StatelessWidget {
                     localizations.clearAllData,
                     style: const TextStyle(color: Colors.red),
                   ),
-                ),
-                ButtonWithMaxWidth(
-                  onPressed: () {
-                    popupOrNavigate(context, AboutPage());
-                  },
-                  icon: const Icon(Icons.info_outline),
-                  child: Text(localizations.about),
                 ),
               ],
             ),
