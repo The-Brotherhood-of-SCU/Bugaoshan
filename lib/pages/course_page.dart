@@ -146,45 +146,71 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   ) {
     final config = courseProvider.scheduleConfig.value;
     final isCurrentCalendarWeek = _visibleWeek == config.getCurrentWeek();
-    final scheduleName = config.semesterName.isEmpty
-        ? l10n.defaultScheduleName
-        : config.semesterName;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+    final now = DateTime.now();
+    final dateStr = '${now.year}/${now.month}/${now.day}';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center, // 确保垂直居中
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Left: Week navigation
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              IconButton(
-                onPressed: week > 1 ? () => _changeWeek(week - 1) : null,
-                icon: const Icon(Icons.chevron_left, size: 20),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 28, minHeight: 36),
-              ),
-              GestureDetector(
-                onTap: () => _goToCurrentWeek(),
-                child: Row(
+          GestureDetector(
+            onTap: () => _goToCurrentWeek(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 20),
+                  child: Text(
+                    dateStr,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Row(
                   mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      l10n.currentWeek(week),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                    IconButton(
+                      onPressed: week > 1 ? () => _changeWeek(week - 1) : null,
+                      icon: const Icon(Icons.chevron_left, size: 16),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 20,
+                        minHeight: 20,
+                      ),
+                    ),
+                    SizedBox(
+                      width: 60,
+                      child: Text(
+                        l10n.currentWeek(week),
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: week < totalWeeks
+                          ? () => _changeWeek(week + 1)
+                          : null,
+                      icon: const Icon(Icons.chevron_right, size: 16),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 20,
+                        minHeight: 20,
                       ),
                     ),
                     if (isCurrentCalendarWeek) ...[
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 3),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
+                          horizontal: 5,
+                          vertical: 1,
                         ),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.primaryContainer,
@@ -198,61 +224,36 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
                                   context,
                                 ).colorScheme.onPrimaryContainer,
                                 fontWeight: FontWeight.w600,
+                                fontSize: 9,
                               ),
                         ),
                       ),
                     ],
                   ],
                 ),
-              ),
-              IconButton(
-                onPressed: week < totalWeeks
-                    ? () => _changeWeek(week + 1)
-                    : null,
-                icon: const Icon(Icons.chevron_right, size: 20),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 24, minHeight: 32),
-              ),
-            ],
-          ),
-
-          // Center: Schedule Name (Horizontal Center)
-          Expanded(
-            child: Center(
-              child: Text(
-                scheduleName,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+              ],
             ),
           ),
-
-          // Right: Action buttons
           Row(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               IconButton(
                 onPressed: _onImport,
-                icon: const Icon(Icons.download, size: 20),
+                icon: const Icon(Icons.download_rounded, size: 20),
                 tooltip: l10n.importSchedule,
-                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
               ),
               IconButton(
                 onPressed: _onExport,
-                icon: const Icon(Icons.share, size: 20),
+                icon: const Icon(Icons.share_rounded, size: 20),
                 tooltip: l10n.exportSchedule,
-                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
               ),
               IconButton(
                 onPressed: _onAddCourse,
-                icon: const Icon(Icons.add, size: 20),
+                icon: const Icon(Icons.add_circle_rounded, size: 24),
                 tooltip: l10n.addCourse,
-                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
               ),
             ],
           ),
