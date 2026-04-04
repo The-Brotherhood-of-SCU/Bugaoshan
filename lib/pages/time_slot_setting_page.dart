@@ -344,6 +344,73 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
                 );
               },
             ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('四川大学望江/华西校区'),
+              subtitle: const Text('自动设置 4-5-3 节数及对应时间点'),
+              trailing: const Icon(Icons.auto_fix_high),
+              onTap: () {
+                setState(() {
+                  _morningSections = 4;
+                  _afternoonSections = 5;
+                  _eveningSections = 3;
+                  _timeSlots = [
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 8, minute: 0),
+                      endTime: TimeOfDay(hour: 8, minute: 45),
+                    ),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 8, minute: 55),
+                      endTime: TimeOfDay(hour: 9, minute: 40),
+                    ),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 10, minute: 0),
+                      endTime: TimeOfDay(hour: 10, minute: 45),
+                    ),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 10, minute: 55),
+                      endTime: TimeOfDay(hour: 11, minute: 40),
+                    ),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 14, minute: 0),
+                      endTime: TimeOfDay(hour: 14, minute: 45),
+                    ),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 14, minute: 55),
+                      endTime: TimeOfDay(hour: 15, minute: 40),
+                    ),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 15, minute: 50),
+                      endTime: TimeOfDay(hour: 16, minute: 35),
+                    ),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 16, minute: 55),
+                      endTime: TimeOfDay(hour: 17, minute: 40),
+                    ),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 17, minute: 50),
+                      endTime: TimeOfDay(hour: 18, minute: 35),
+                    ),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 19, minute: 30),
+                      endTime: TimeOfDay(hour: 20, minute: 15),
+                    ),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 20, minute: 25),
+                      endTime: TimeOfDay(hour: 21, minute: 10),
+                    ),
+                    const TimeSlot(
+                      startTime: TimeOfDay(hour: 21, minute: 20),
+                      endTime: TimeOfDay(hour: 22, minute: 5),
+                    ),
+                  ];
+                });
+                _autoSave();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('已应用四川大学望江/华西校区时间表预设')),
+                );
+              },
+            ),
           ],
         ),
       ),
