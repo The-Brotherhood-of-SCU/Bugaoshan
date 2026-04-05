@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rubbish_plan/injection/injector.dart';
 import 'package:rubbish_plan/l10n/app_localizations.dart';
+import 'package:rubbish_plan/pages/campus_page.dart';
 import 'package:rubbish_plan/pages/course_page.dart';
 import 'package:rubbish_plan/pages/profile_page.dart';
 import 'package:rubbish_plan/providers/course_provider.dart';
@@ -28,6 +29,12 @@ class _HomePageState extends State<HomePage> {
         selectedIcon: Icons.menu_book,
         label: _localizations.course,
         page: CoursePage(),
+      ),
+      NavigationItemData(
+        icon: Icons.school_outlined,
+        selectedIcon: Icons.school,
+        label: _localizations.campus,
+        page: const CampusPage(),
       ),
       NavigationItemData(
         icon: Icons.person_outlined,

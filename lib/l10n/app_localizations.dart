@@ -127,6 +127,12 @@ abstract class AppLocalizations {
   /// **'Profile'**
   String get profile;
 
+  /// No description provided for @campus.
+  ///
+  /// In en, this message translates to:
+  /// **'Campus'**
+  String get campus;
+
   /// No description provided for @softwareSetting.
   ///
   /// In en, this message translates to:
