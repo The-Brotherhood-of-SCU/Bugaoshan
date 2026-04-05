@@ -52,9 +52,14 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       ],
     );
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-      child: body,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: body,
+        ),
+      ),
     );
   }
 }
