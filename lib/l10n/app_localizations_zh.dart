@@ -9,7 +9,7 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get bugaoshan => 'Bugaoshan';
+  String get bugaoshan => '不高山上';
 
   @override
   String get selfLanguage => '中文';
@@ -431,6 +431,9 @@ class AppLocalizationsZh extends AppLocalizations {
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).
 class AppLocalizationsZhHansCn extends AppLocalizationsZh {
   AppLocalizationsZhHansCn() : super('zh_Hans_CN');
+
+  @override
+  String get bugaoshan => '不高山上';
 
   @override
   String get selfLanguage => '中文-简体-中国';
