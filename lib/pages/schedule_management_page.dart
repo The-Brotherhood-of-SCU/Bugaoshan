@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:rubbish_plan/injection/injector.dart';
-import 'package:rubbish_plan/l10n/app_localizations.dart';
-import 'package:rubbish_plan/models/course.dart';
-import 'package:rubbish_plan/pages/import_schedule_page.dart';
-import 'package:rubbish_plan/providers/course_provider.dart';
-import 'package:rubbish_plan/widgets/dialog/dialog.dart';
-import 'package:rubbish_plan/widgets/route/router_utils.dart';
+import 'package:Bugaoshan/injection/injector.dart';
+import 'package:Bugaoshan/l10n/app_localizations.dart';
+import 'package:Bugaoshan/models/course.dart';
+import 'package:Bugaoshan/pages/import_schedule_page.dart';
+import 'package:Bugaoshan/providers/course_provider.dart';
+import 'package:Bugaoshan/widgets/dialog/dialog.dart';
+import 'package:Bugaoshan/widgets/route/router_utils.dart';
 
 class ScheduleManagementPage extends StatelessWidget {
   const ScheduleManagementPage({super.key});

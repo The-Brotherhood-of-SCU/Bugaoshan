@@ -103,11 +103,11 @@ abstract class AppLocalizations {
     ),
   ];
 
-  /// No description provided for @rubbishPlan.
+  /// No description provided for @bugaoshan.
   ///
   /// In en, this message translates to:
-  /// **'Rubbish Plan'**
-  String get rubbishPlan;
+  /// **'Bugaoshan'**
+  String get bugaoshan;
 
   /// No description provided for @selfLanguage.
   ///

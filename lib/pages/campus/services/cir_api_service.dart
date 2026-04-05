@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:rubbish_plan/pages/campus/models/building_model.dart';
-import 'package:rubbish_plan/pages/campus/models/room_model.dart';
+import 'package:Bugaoshan/pages/campus/models/building_model.dart';
+import 'package:Bugaoshan/pages/campus/models/room_model.dart';
 
 class CirApiService {
   static const String baseUrl = 'https://cir.scu.edu.cn';

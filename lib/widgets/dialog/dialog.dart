@@ -1,8 +1,8 @@
 ﻿import 'package:async/async.dart';
 import 'package:flutter/material.dart';
-import 'package:rubbish_plan/injection/injector.dart';
-import 'package:rubbish_plan/providers/app_config_provider.dart';
-import 'package:rubbish_plan/widgets/route/router_utils.dart';
+import 'package:Bugaoshan/injection/injector.dart';
+import 'package:Bugaoshan/providers/app_config_provider.dart';
+import 'package:Bugaoshan/widgets/route/router_utils.dart';
 
 final appConfigService = getIt<AppConfigProvider>();
 

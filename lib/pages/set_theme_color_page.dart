@@ -1,8 +1,8 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:rubbish_plan/injection/injector.dart';
-import 'package:rubbish_plan/l10n/app_localizations.dart';
-import 'package:rubbish_plan/providers/app_config_provider.dart';
+import 'package:Bugaoshan/injection/injector.dart';
+import 'package:Bugaoshan/l10n/app_localizations.dart';
+import 'package:Bugaoshan/providers/app_config_provider.dart';
 
 class SetThemeColorPage extends StatefulWidget {
   const SetThemeColorPage({super.key});

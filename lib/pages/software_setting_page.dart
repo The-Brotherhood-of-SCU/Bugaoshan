@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:rubbish_plan/injection/injector.dart';
-import 'package:rubbish_plan/l10n/app_localizations.dart';
-import 'package:rubbish_plan/pages/set_duration_page.dart';
-import 'package:rubbish_plan/pages/set_language_page.dart';
-import 'package:rubbish_plan/pages/set_theme_color_page.dart';
-import 'package:rubbish_plan/providers/app_config_provider.dart';
-import 'package:rubbish_plan/providers/course_provider.dart';
-import 'package:rubbish_plan/widgets/common/styled_widget.dart';
-import 'package:rubbish_plan/widgets/dialog/dialog.dart';
-import 'package:rubbish_plan/widgets/route/router_utils.dart';
+import 'package:Bugaoshan/injection/injector.dart';
+import 'package:Bugaoshan/l10n/app_localizations.dart';
+import 'package:Bugaoshan/pages/set_duration_page.dart';
+import 'package:Bugaoshan/pages/set_language_page.dart';
+import 'package:Bugaoshan/pages/set_theme_color_page.dart';
+import 'package:Bugaoshan/providers/app_config_provider.dart';
+import 'package:Bugaoshan/providers/course_provider.dart';
+import 'package:Bugaoshan/widgets/common/styled_widget.dart';
+import 'package:Bugaoshan/widgets/dialog/dialog.dart';
+import 'package:Bugaoshan/widgets/route/router_utils.dart';
 
 class SoftwareSettingPage extends StatelessWidget {
   const SoftwareSettingPage({super.key});

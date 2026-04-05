@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get rubbishPlan => 'Rubbish Plan';
+  String get bugaoshan => 'Bugaoshan';
 
   @override
   String get selfLanguage => 'English';

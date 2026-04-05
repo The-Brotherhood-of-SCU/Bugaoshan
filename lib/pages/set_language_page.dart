@@ -1,10 +1,10 @@
 ﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:rubbish_plan/injection/injector.dart';
-import 'package:rubbish_plan/l10n/app_localizations.dart';
-import 'package:rubbish_plan/providers/app_config_provider.dart';
-import 'package:rubbish_plan/utils/locale_utils.dart';
+import 'package:Bugaoshan/injection/injector.dart';
+import 'package:Bugaoshan/l10n/app_localizations.dart';
+import 'package:Bugaoshan/providers/app_config_provider.dart';
+import 'package:Bugaoshan/utils/locale_utils.dart';
 
 class SetLanguagePage extends StatefulWidget {
   const SetLanguagePage({super.key});

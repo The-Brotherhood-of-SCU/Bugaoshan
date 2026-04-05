@@ -1,11 +1,11 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:rubbish_plan/l10n/app_localizations.dart';
-import 'package:rubbish_plan/pages/about_page.dart';
-import 'package:rubbish_plan/pages/course_schedule_setting.dart';
-import 'package:rubbish_plan/pages/schedule_management_page.dart';
-import 'package:rubbish_plan/pages/software_setting_page.dart';
-import 'package:rubbish_plan/widgets/common/styled_widget.dart';
-import 'package:rubbish_plan/widgets/route/router_utils.dart';
+import 'package:Bugaoshan/l10n/app_localizations.dart';
+import 'package:Bugaoshan/pages/about_page.dart';
+import 'package:Bugaoshan/pages/course_schedule_setting.dart';
+import 'package:Bugaoshan/pages/schedule_management_page.dart';
+import 'package:Bugaoshan/pages/software_setting_page.dart';
+import 'package:Bugaoshan/widgets/common/styled_widget.dart';
+import 'package:Bugaoshan/widgets/route/router_utils.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});

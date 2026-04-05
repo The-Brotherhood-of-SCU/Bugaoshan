@@ -1,10 +1,10 @@
 ﻿import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:rubbish_plan/providers/app_info_provider.dart';
-import 'package:rubbish_plan/providers/app_config_provider.dart';
-import 'package:rubbish_plan/providers/course_provider.dart';
-import 'package:rubbish_plan/serivces/database_service.dart';
+import 'package:Bugaoshan/providers/app_info_provider.dart';
+import 'package:Bugaoshan/providers/app_config_provider.dart';
+import 'package:Bugaoshan/providers/course_provider.dart';
+import 'package:Bugaoshan/serivces/database_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'injector.config.dart';

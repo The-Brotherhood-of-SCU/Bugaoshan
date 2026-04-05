@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.rubbish_plan"
+    namespace = "com.example.Bugaoshan"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.rubbish_plan"
+        applicationId = "com.example.Bugaoshan"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

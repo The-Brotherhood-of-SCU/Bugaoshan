@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:rubbish_plan/injection/injector.dart';
-import 'package:rubbish_plan/pages/home_page.dart';
-import 'package:rubbish_plan/providers/app_config_provider.dart';
-import 'package:rubbish_plan/widgets/route/router_utils.dart';
+import 'package:Bugaoshan/injection/injector.dart';
+import 'package:Bugaoshan/pages/home_page.dart';
+import 'package:Bugaoshan/providers/app_config_provider.dart';
+import 'package:Bugaoshan/widgets/route/router_utils.dart';
 import 'l10n/app_localizations.dart';
 
 class MyApp extends StatelessWidget {
@@ -27,10 +27,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: navigatorKey,
       locale: appConfigService.locale.value,
-      onGenerateTitle: (context) => AppLocalizations.of(context)!.rubbishPlan,
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.bugaoshan,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      title: 'Rubbish Plan',
+      title: 'Bugaoshan',
       theme: _buildTheme(Brightness.light),
       darkTheme: _buildTheme(Brightness.dark),
       themeMode: ThemeMode.system,

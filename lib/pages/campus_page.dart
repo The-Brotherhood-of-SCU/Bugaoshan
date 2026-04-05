@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:rubbish_plan/l10n/app_localizations.dart';
-import 'package:rubbish_plan/pages/campus/classroom/classroom_page.dart';
+import 'package:Bugaoshan/l10n/app_localizations.dart';
+import 'package:Bugaoshan/pages/campus/classroom/classroom_page.dart';
 
 class CampusPage extends StatelessWidget {
   const CampusPage({super.key});

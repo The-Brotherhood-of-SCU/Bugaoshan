@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:rubbish_plan/injection/injector.dart';
-import 'package:rubbish_plan/l10n/app_localizations.dart';
-import 'package:rubbish_plan/models/course.dart';
-import 'package:rubbish_plan/providers/app_config_provider.dart';
+import 'package:Bugaoshan/injection/injector.dart';
+import 'package:Bugaoshan/l10n/app_localizations.dart';
+import 'package:Bugaoshan/models/course.dart';
+import 'package:Bugaoshan/providers/app_config_provider.dart';
 
 class CourseCard extends StatelessWidget {
   final Course course;

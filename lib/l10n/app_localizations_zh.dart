@@ -9,7 +9,7 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get rubbishPlan => '混沌课表';
+  String get bugaoshan => 'Bugaoshan';
 
   @override
   String get selfLanguage => '中文';

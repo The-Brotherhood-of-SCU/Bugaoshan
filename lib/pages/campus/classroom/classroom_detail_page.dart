@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:rubbish_plan/l10n/app_localizations.dart';
-import 'package:rubbish_plan/pages/campus/models/building_model.dart';
-import 'package:rubbish_plan/pages/campus/models/room_model.dart';
+import 'package:Bugaoshan/l10n/app_localizations.dart';
+import 'package:Bugaoshan/pages/campus/models/building_model.dart';
+import 'package:Bugaoshan/pages/campus/models/room_model.dart';
 
 class ClassroomDetailPage extends StatelessWidget {
   final BuildingModel building;

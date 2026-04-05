@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:rubbish_plan/l10n/app_localizations.dart';
-import 'package:rubbish_plan/models/course.dart';
-import 'package:rubbish_plan/widgets/course/course_card.dart';
+import 'package:Bugaoshan/l10n/app_localizations.dart';
+import 'package:Bugaoshan/models/course.dart';
+import 'package:Bugaoshan/widgets/course/course_card.dart';
 
 List<Course> selectVisibleCoursesForDay(List<Course> courses, int displayWeek) {
   final visibleCourses =

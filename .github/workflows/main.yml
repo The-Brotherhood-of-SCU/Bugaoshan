@@ -21,7 +21,7 @@ jobs:
         run: flutter pub get
         
       - name: Build web
-        run: flutter build web --wasm --base-href "/rubbish_plan/"
+        run: flutter build web --wasm --base-href "/Bugaoshan/"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

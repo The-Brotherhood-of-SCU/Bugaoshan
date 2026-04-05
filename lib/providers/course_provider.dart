@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:rubbish_plan/models/course.dart';
-import 'package:rubbish_plan/serivces/database_service.dart';
+import 'package:Bugaoshan/models/course.dart';
+import 'package:Bugaoshan/serivces/database_service.dart';
 
 class CourseProvider {
   final DatabaseService _db;
