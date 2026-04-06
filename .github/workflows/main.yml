@@ -1,34 +1,159 @@
-name: CI
+name: Build App
 
 on:
   push:
+    branches: [main, master]
     tags:
       - 'v*'
-  workflow_dispatch: 
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
 jobs:
-  build:
+  build-android:
+    name: Android
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs || true
+
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Build App Bundle
+        run: flutter build appbundle --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/*.apk
+
+      - name: Upload App Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-aab
+          path: build/app/outputs/bundle/release/*.aab
+
+  build-ios:
+    name: iOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs || true
+
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Build iOS (no codesign)
+        run: flutter build ios --release --no-codesign
+
+      - name: Create IPA
+        run: |
+          mkdir -p build/ios/iphoneos/Payload
+          cp -R build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/
+          cd build/ios/iphoneos
+          zip -r ../Runner.ipa Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          path: build/ios/Runner.ipa
+
+  build-web-wasm:
+    name: Web (WASM for Pages)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          # If your repository depends on submodule, please see: https://github.com/actions/checkout
           submodules: recursive
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2.14.0
-  
-      - name: Install dependencies
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
+          cache: true
+
+      - name: Get dependencies
         run: flutter pub get
-        
-      - name: Build web
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs || true
+
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Build Web (WASM)
         run: flutter build web --wasm --base-href "/Bugaoshan/"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./build/web
+
+  build-windows:
+    name: Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
+          cache: true
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs || true
+
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Build Windows
+        run: flutter build windows --release
+
+      - name: Upload Windows
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: build/windows/x64/runner/Release
+
   deploy:
-    needs: build
+    needs: build-web-wasm
     permissions:
       pages: write
       id-token: write
@@ -40,3 +165,30 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  release:
+    name: Release
+    needs: [build-android, build-ios, build-web, build-windows]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+
+      - name: Create archives
+        run: |
+          zip -r windows.zip windows/
+          cd android-apk && zip ../android-apk.zip *.apk && cd ..
+          cd android-aab && zip ../android-aab.zip *.aab && cd ..
+          cd ios-ipa && zip ../ios-ipa.zip *.ipa && cd ..
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            android-apk.zip
+            android-aab.zip
+            ios-ipa.zip
+            windows.zip
+          generate_release_notes: true
