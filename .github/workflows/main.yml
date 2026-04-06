@@ -35,20 +35,11 @@ jobs:
       - name: Build APK
         run: flutter build apk --release
 
-      - name: Build App Bundle
-        run: flutter build appbundle --release || true
-
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
           path: build/app/outputs/flutter-apk/*.apk
-
-      - name: Upload App Bundle
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-aab
-          path: build/app/outputs/bundle/release/*.aab
 
   build-ios:
     name: iOS
@@ -180,7 +171,6 @@ jobs:
         run: |
           zip -r windows.zip windows/
           cd android-apk && zip ../android-apk.zip *.apk && cd ..
-          cd android-aab && zip ../android-aab.zip *.aab && cd ..
           cd ios-ipa && zip ../ios-ipa.zip *.ipa && cd ..
 
       - name: Create Release
@@ -188,7 +178,6 @@ jobs:
         with:
           files: |
             android-apk.zip
-            android-aab.zip
             ios-ipa.zip
             windows.zip
           generate_release_notes: true
