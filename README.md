@@ -2,8 +2,8 @@
 
 # 🏔️ Bugaoshan
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.10.4-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-[![Dart](https://img.shields.io/badge/Dart-3.10.4-0175C2?logo=dart&logoColor=white)](https://dart.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.41.6-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.11.4-0175C2?logo=dart&logoColor=white)](https://dart.dev)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web%20%7C%20Linux%20%7C%20macOS%20%7C%20Windows-blue)](https://flutter.dev)
 
@@ -26,14 +26,14 @@
 
 ### Prerequisites
 
-- [Flutter SDK](https://flutter.dev/docs/get-started/install) >= 3.10.4
-- [Dart SDK](https://dart.dev/get-dart) >= 3.10.4
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) >= 3.41.6
+- [Dart SDK](https://dart.dev/get-dart) >= 3.11.4
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
+git clone git@github.com:The-Brotherhood-of-SCU/Bugaoshan.git
 cd Bugaoshan
 
 # Install dependencies
