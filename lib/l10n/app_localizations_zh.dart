@@ -426,6 +426,45 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get autoSyncTime => '自动推算后续时间';
+
+  @override
+  String get scuLogin => '四川大学统一身份认证';
+
+  @override
+  String get scuStudentId => '学号';
+
+  @override
+  String get scuPassword => '密码';
+
+  @override
+  String get scuCaptcha => '验证码';
+
+  @override
+  String get scuGetCaptcha => '获取验证码';
+
+  @override
+  String get scuLoginButton => '登录';
+
+  @override
+  String get scuLogout => '退出登录';
+
+  @override
+  String get scuReLogin => '重新登录';
+
+  @override
+  String get scuNotLoggedIn => '未登录';
+
+  @override
+  String get scuSessionExpired => '登录已过期';
+
+  @override
+  String get scuSessionExpiredHint => '请重新登录';
+
+  @override
+  String get scuCardBalance => '校园卡余额';
+
+  @override
+  String get scuRefresh => '刷新';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

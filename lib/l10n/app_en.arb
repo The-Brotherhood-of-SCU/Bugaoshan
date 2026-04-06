@@ -132,5 +132,19 @@
     "evening": "Evening",
     "courseDuration": "Course Duration (mins)",
     "breakDuration": "Break Duration (mins)",
-    "autoSyncTime": "Auto-calculate subsequent times"
+    "autoSyncTime": "Auto-calculate subsequent times",
+
+    "scuLogin": "SCU Unified Login",
+    "scuStudentId": "Student ID",
+    "scuPassword": "Password",
+    "scuCaptcha": "Captcha",
+    "scuGetCaptcha": "Get Captcha",
+    "scuLoginButton": "Login",
+    "scuLogout": "Logout",
+    "scuReLogin": "Re-Login",
+    "scuNotLoggedIn": "Not logged in",
+    "scuSessionExpired": "Session expired",
+    "scuSessionExpiredHint": "Please log in again",
+    "scuCardBalance": "Card Balance",
+    "scuRefresh": "Refresh"
 }

@@ -434,4 +434,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get autoSyncTime => 'Auto-calculate subsequent times';
+
+  @override
+  String get scuLogin => 'SCU Unified Login';
+
+  @override
+  String get scuStudentId => 'Student ID';
+
+  @override
+  String get scuPassword => 'Password';
+
+  @override
+  String get scuCaptcha => 'Captcha';
+
+  @override
+  String get scuGetCaptcha => 'Get Captcha';
+
+  @override
+  String get scuLoginButton => 'Login';
+
+  @override
+  String get scuLogout => 'Logout';
+
+  @override
+  String get scuReLogin => 'Re-Login';
+
+  @override
+  String get scuNotLoggedIn => 'Not logged in';
+
+  @override
+  String get scuSessionExpired => 'Session expired';
+
+  @override
+  String get scuSessionExpiredHint => 'Please log in again';
+
+  @override
+  String get scuCardBalance => 'Card Balance';
+
+  @override
+  String get scuRefresh => 'Refresh';
 }

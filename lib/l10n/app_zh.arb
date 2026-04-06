@@ -132,5 +132,19 @@
     "evening": "晚上",
     "courseDuration": "单节课程时长 (分钟)",
     "breakDuration": "课间休息时长 (分钟)",
-    "autoSyncTime": "自动推算后续时间"
+    "autoSyncTime": "自动推算后续时间",
+
+    "scuLogin": "四川大学统一身份认证",
+    "scuStudentId": "学号",
+    "scuPassword": "密码",
+    "scuCaptcha": "验证码",
+    "scuGetCaptcha": "获取验证码",
+    "scuLoginButton": "登录",
+    "scuLogout": "退出登录",
+    "scuReLogin": "重新登录",
+    "scuNotLoggedIn": "未登录",
+    "scuSessionExpired": "登录已过期",
+    "scuSessionExpiredHint": "请重新登录",
+    "scuCardBalance": "校园卡余额",
+    "scuRefresh": "刷新"
 }

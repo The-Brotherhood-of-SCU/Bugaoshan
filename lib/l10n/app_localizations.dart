@@ -900,6 +900,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Auto-calculate subsequent times'**
   String get autoSyncTime;
+
+  /// No description provided for @scuLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'SCU Unified Login'**
+  String get scuLogin;
+
+  /// No description provided for @scuStudentId.
+  ///
+  /// In en, this message translates to:
+  /// **'Student ID'**
+  String get scuStudentId;
+
+  /// No description provided for @scuPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get scuPassword;
+
+  /// No description provided for @scuCaptcha.
+  ///
+  /// In en, this message translates to:
+  /// **'Captcha'**
+  String get scuCaptcha;
+
+  /// No description provided for @scuGetCaptcha.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Captcha'**
+  String get scuGetCaptcha;
+
+  /// No description provided for @scuLoginButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Login'**
+  String get scuLoginButton;
+
+  /// No description provided for @scuLogout.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get scuLogout;
+
+  /// No description provided for @scuReLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-Login'**
+  String get scuReLogin;
+
+  /// No description provided for @scuNotLoggedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Not logged in'**
+  String get scuNotLoggedIn;
+
+  /// No description provided for @scuSessionExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Session expired'**
+  String get scuSessionExpired;
+
+  /// No description provided for @scuSessionExpiredHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Please log in again'**
+  String get scuSessionExpiredHint;
+
+  /// No description provided for @scuCardBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Card Balance'**
+  String get scuCardBalance;
+
+  /// No description provided for @scuRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get scuRefresh;
 }
 
 class _AppLocalizationsDelegate

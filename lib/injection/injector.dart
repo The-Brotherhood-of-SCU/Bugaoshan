@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:Bugaoshan/providers/app_info_provider.dart';
 import 'package:Bugaoshan/providers/app_config_provider.dart';
 import 'package:Bugaoshan/providers/course_provider.dart';
+import 'package:Bugaoshan/providers/scu_auth_provider.dart';
 import 'package:Bugaoshan/serivces/database_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -46,8 +47,14 @@ void _configureAsyncDependencies() {
     final db = getIt<DatabaseService>();
     return CourseProvider(db);
   });
+  getIt.registerSingletonAsync<SCUAuthProvider>(() async {
+    await getIt.isReady<SharedPreferences>();
+    final prefs = getIt<SharedPreferences>();
+    return SCUAuthProvider(prefs);
+  });
 }
 
 Future<void> ensureBasicDependencies() async {
   await getIt.isReady<CourseProvider>();
+  await getIt.isReady<SCUAuthProvider>();
 }

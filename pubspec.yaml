@@ -46,6 +46,10 @@ dependencies:
   http: ^1.2.0
   hive_ce: ^2.19.3
   path_provider: ^2.1.5
+  dio: ^5.0.0
+  dio_cookie_manager: ^3.0.0
+  cookie_jar: ^4.0.0
+  dart_sm: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
