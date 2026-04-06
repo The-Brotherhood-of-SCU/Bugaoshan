@@ -105,7 +105,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
             Expanded(
               child: allCourses.isEmpty
                   ? Center(child: Text(l10n.noCourseThisWeek))
-                  : PageView.builder(
+                  : _SwipePageView(
                       controller: _pageController,
                       itemCount: totalWeeks,
                       onPageChanged: (index) {
@@ -115,7 +115,6 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
                             _visibleWeek = displayWeek;
                           });
                         }
-                        // Update current week when user swipes (index is 0-based)
                         courseProvider.updateCurrentWeek(displayWeek);
                       },
                       itemBuilder: (context, index) {
@@ -413,6 +412,92 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
     popupOrNavigate(
       context,
       CourseEditPage(prefillDayOfWeek: dayOfWeek, prefillSection: section),
+    );
+  }
+}
+
+/// A PageView wrapper that only triggers page switching when the horizontal
+/// displacement is significantly larger than vertical, so vertical scrolling
+/// inside the page is not accidentally intercepted.
+class _SwipePageView extends StatefulWidget {
+  final PageController controller;
+  final int itemCount;
+  final void Function(int index) onPageChanged;
+  final Widget Function(BuildContext context, int index) itemBuilder;
+
+  const _SwipePageView({
+    required this.controller,
+    required this.itemCount,
+    required this.onPageChanged,
+    required this.itemBuilder,
+  });
+
+  @override
+  State<_SwipePageView> createState() => _SwipePageViewState();
+}
+
+class _SwipePageViewState extends State<_SwipePageView> {
+  double _dragStartX = 0;
+  double _dragStartY = 0;
+  bool? _isHorizontalDrag; // null = undecided
+
+  void _onPanStart(DragStartDetails details) {
+    _dragStartX = details.globalPosition.dx;
+    _dragStartY = details.globalPosition.dy;
+    _isHorizontalDrag = null;
+  }
+
+  void _onPanUpdate(DragUpdateDetails details) {
+    if (_isHorizontalDrag == null) {
+      final dx = (details.globalPosition.dx - _dragStartX).abs();
+      final dy = (details.globalPosition.dy - _dragStartY).abs();
+      // Only commit to horizontal if dx is clearly dominant
+      if (dx > 8 || dy > 8) {
+        _isHorizontalDrag = dx > dy * 1.5;
+      }
+    }
+    if (_isHorizontalDrag == true) {
+      widget.controller.position.moveTo(
+        widget.controller.offset - details.delta.dx,
+        clamp: true,
+      );
+    }
+  }
+
+  void _onPanEnd(DragEndDetails details) {
+    if (_isHorizontalDrag != true) return;
+    final velocity = details.velocity.pixelsPerSecond.dx;
+    final page = widget.controller.page ?? 0;
+    final currentPage = page.round();
+    int targetPage = currentPage;
+    if (velocity < -300) {
+      targetPage = (currentPage + 1).clamp(0, widget.itemCount - 1);
+    } else if (velocity > 300) {
+      targetPage = (currentPage - 1).clamp(0, widget.itemCount - 1);
+    } else {
+      // Snap to nearest page
+      targetPage = page.round().clamp(0, widget.itemCount - 1);
+    }
+    widget.controller.animateToPage(
+      targetPage,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onPanStart: _onPanStart,
+      onPanUpdate: _onPanUpdate,
+      onPanEnd: _onPanEnd,
+      child: PageView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        controller: widget.controller,
+        itemCount: widget.itemCount,
+        onPageChanged: widget.onPageChanged,
+        itemBuilder: widget.itemBuilder,
+      ),
     );
   }
 }
