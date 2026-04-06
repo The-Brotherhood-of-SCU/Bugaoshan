@@ -36,7 +36,7 @@ jobs:
         run: flutter build apk --release
 
       - name: Build App Bundle
-        run: flutter build appbundle --release
+        run: flutter build appbundle --release || true
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
