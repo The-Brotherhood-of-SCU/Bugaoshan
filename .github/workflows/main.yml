@@ -21,9 +21,10 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2.18.0
         with:
-          flutter-version: 'stable'
+          flutter-version: '3.27.0'
+          channel: 'stable'
           cache: true
 
       - name: Get dependencies
@@ -59,9 +60,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2.18.0
         with:
-          flutter-version: 'stable'
+          flutter-version: '3.27.0'
+          channel: 'stable'
           cache: true
 
       - name: Get dependencies
@@ -98,9 +100,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           submodules: recursive
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2.18.0
         with:
-          flutter-version: 'stable'
+          flutter-version: '3.27.0'
+          channel: 'stable'
           cache: true
 
       - name: Get dependencies
