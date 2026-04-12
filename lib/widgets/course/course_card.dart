@@ -113,6 +113,7 @@ class CourseCard extends StatelessWidget {
                               fontSize: fontSize,
                               color: textColor,
                               height: 1.1,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                           if (visibleDetails.isNotEmpty)
