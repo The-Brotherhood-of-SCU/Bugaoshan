@@ -1,110 +1,115 @@
 <div align="center">
 
-# 🏔️ Bugaoshan
+# 🏔️ 不高山上 · Bugaoshan
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.41.6-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-[![Dart](https://img.shields.io/badge/Dart-3.11.4-0175C2?logo=dart&logoColor=white)](https://dart.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?logo=dart&logoColor=white)](https://dart.dev)
 [![License](https://img.shields.io/badge/License-AGPL3.0-green.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web%20%7C%20Linux%20%7C%20macOS%20%7C%20Windows-blue)](https://flutter.dev)
+[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Windows-blue)](https://flutter.dev)
 
-> A modern, cross-platform Flutter application with clean architecture.
+> 川大学生专属校园助手
 
 </div>
 
 ---
 
-## ✨ Features
+## 📖 背景
 
-- 🌐 **Multi-language** — English & Chinese localization
-- 🎨 **Dynamic Theming** — Light/Dark mode with customizable color schemes
-- 💉 **Dependency Injection** — Clean DI setup with GetIt & Injectable
-- 💾 **Local Storage** — Hive CE for fast, efficient data persistence
-- 🌍 **Network Layer** — Dio with cookie management & SM cryptography
-- 📱 **Cross-Platform** — Runs on Android, iOS, Web, Linux, macOS, Windows
+**不高山上**（Bugaoshan）是由 **The-Brotherhood-of-SCU** 团队开发的一款面向四川大学学生的校园助手 App。
 
-## 🚀 Getting Started
+"不高山"是江安校区的一处标志性地标，App 以此命名，寓意扎根校园、服务同学。
 
-### Prerequisites
+---
 
-- [Flutter SDK](https://flutter.dev/docs/get-started/install) >= 3.41.6
-- [Dart SDK](https://dart.dev/get-dart) >= 3.11.4
+## ✨ 主要功能
 
-### Installation
+- **课表管理** — 导入并查看个人课程表，清晰掌握每日课程安排
+- **空闲教室查询** — 实时查询校园内各楼栋的空闲教室情况，方便自习选座
+- **成绩统计** — 查看个人成绩，直观了解学业情况
+- **更多便捷功能** — 持续迭代中，更多校园实用工具即将上线
+
+---
+
+## 🚀 快速开始
+
+**前往[Release页面](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases)下载**
+
+**或自行开发构建⬇️**
+
+### 环境要求
+
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) >= 3.x
+- [Dart SDK](https://dart.dev/get-dart) >= 3.x
+
+### 安装运行
 
 ```bash
-# Clone the repository
+# 克隆仓库
 git clone git@github.com:The-Brotherhood-of-SCU/Bugaoshan.git
 cd Bugaoshan
 
-# Install dependencies
+# 安装依赖
 flutter pub get
 
-# Run code generation (for DI & l10n)
+# 运行代码生成（DI & 国际化）
 flutter pub run build_runner build --delete-conflicting-outputs
 
-# Run the app
+# 运行 App
 flutter run
 ```
 
-## 📁 Project Structure
+---
+
+## 📁 项目结构
 
 ```
 lib/
-├── injection/            # Dependency injection (GetIt + Injectable)
-├── l10n/                 # Internationalization (ARB files & generated locals)
-├── models/               # Data models & entities
-├── pages/                # Application screens/pages
-├── providers/            # State management providers
-├── serivces/             # Business logic & service layer
-├── utils/                # Helper utilities & constants
-├── widgets/              # Reusable UI components
-├── app.dart              # App configuration & theme
-└── main.dart             # Application entry point
+├── injection/            # 依赖注入（GetIt + Injectable）
+├── l10n/                 # 国际化（ARB 文件及生成代码）
+├── models/               # 数据模型
+├── pages/                # 页面
+├── providers/            # 状态管理
+├── services/             # 业务逻辑与服务层
+├── utils/                # 工具类与常量
+├── widgets/              # 可复用 UI 组件
+├── app.dart              # App 配置与主题
+└── main.dart             # 入口
 ```
 
-## 🛠️ Tech Stack
+---
 
-| Category | Technology |
-|----------|------------|
-| **Framework** | [Flutter](https://flutter.dev) |
-| **State Management** | Provider / ChangeNotifier |
-| **Dependency Injection** | [GetIt](https://pub.dev/packages/get_it) + [Injectable](https://pub.dev/packages/injectable) |
-| **Networking** | [Dio](https://pub.dev/packages/dio) + Cookie Manager |
-| **Local Storage** | [Hive CE](https://pub.dev/packages/hive_ce), [SharedPreferences](https://pub.dev/packages/shared_preferences) |
-| **Localization** | Flutter `flutter_localizations` |
-| **Cryptography** | [dart_sm](https://pub.dev/packages/dart_sm) (SM2/SM3/SM4) |
-| **Utilities** | [url_launcher](https://pub.dev/packages/url_launcher), [package_info_plus](https://pub.dev/packages/package_info_plus), [flutter_colorpicker](https://pub.dev/packages/flutter_colorpicker) |
+## 🛠️ 技术栈
 
-## 📸 Screenshots
+| 类别 | 技术 |
+|------|------|
+| 框架 | [Flutter](https://flutter.dev) |
+| 状态管理 | Provider / ChangeNotifier |
+| 依赖注入 | [GetIt](https://pub.dev/packages/get_it) + [Injectable](https://pub.dev/packages/injectable) |
+| 网络请求 | [Dio](https://pub.dev/packages/dio) + Cookie Manager |
+| 本地存储 | [Hive CE](https://pub.dev/packages/hive_ce)、[SharedPreferences](https://pub.dev/packages/shared_preferences) |
+| 国际化 | Flutter `flutter_localizations` |
+| 国密算法 | [dart_sm](https://pub.dev/packages/dart_sm)（SM2/SM3/SM4） |
 
-_Add screenshots here_
+---
 
-## 🌍 Localization
+## 贡献
 
-Supported languages:
+欢迎提交 Issue 和 Pull Request！
 
-| Language | Code |
-|----------|------|
-| English | `en` |
-| 简体中文 | `zh` |
+1. Fork 本仓库
+2. 创建功能分支 (`git checkout -b feature/your-feature`)
+3. 提交更改 (`git commit -m 'feat: add some feature'`)
+4. 推送分支 (`git push origin feature/your-feature`)
+5. 发起 Pull Request
 
-## 📝 Scripts
+---
 
-| Script | Description |
-|--------|-------------|
-| `_build_generator.bat` | Run code generation for DI |
-| `_build_l10n.bat` | Generate localization files |
+## 团队
 
-## 🤝 Contributing
+**The-Brotherhood-of-SCU** — 一个非官方的四川大学开源组织
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+---
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## 许可证
 
-## 📄 License
-
-This project is licensed under the AGPL-3.0 License — see the [LICENSE](LICENSE) file for details.
+本项目基于 [AGPL-3.0](LICENSE) 协议开源。
