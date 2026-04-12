@@ -80,6 +80,12 @@
     "currentWeek":"第 {week} 周",
     "thisWeek":"本周",
     "weekRange":"第 {start} - {end} 周",
+    "@weekRange": {
+        "placeholders": {
+            "start": {"type": "int"},
+            "end": {"type": "int"}
+        }
+    },
     "weekType":"周次类型",
     "everyWeek":"每周",
     "oddWeek":"单周",
