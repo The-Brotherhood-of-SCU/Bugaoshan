@@ -175,6 +175,7 @@
     "requiredCredits": "Required Cr.",
     "electiveCredits": "Elective Cr.",
     "optionalCredits": "Optional Cr.",
+    "requiredGpa": "Required GPA",
     "totalPassedCount": "Passed",
     "termCount": "Terms",
     "accumulatedCredits": "Total Credits",

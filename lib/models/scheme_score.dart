@@ -107,6 +107,20 @@ class SchemeScoreSummary {
     return totalCredits > 0 ? totalPoints / totalCredits : 0.0;
   }
 
+  /// 必修 GPA
+  double get requiredGpa {
+    double totalPoints = 0;
+    double totalCredits = 0;
+    for (final item in items) {
+      if (!item.passed || item.courseAttributeName != '必修') continue;
+      final credit = double.tryParse(item.credit) ?? 0;
+      if (credit <= 0) continue;
+      totalPoints += item.gradePointScore * credit;
+      totalCredits += credit;
+    }
+    return totalCredits > 0 ? totalPoints / totalCredits : 0.0;
+  }
+
   /// 已修学分（仅计及格课程）
   double get earnedCredits {
     return items.fold(0.0, (sum, item) {

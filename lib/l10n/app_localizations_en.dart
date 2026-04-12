@@ -567,6 +567,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get optionalCredits => 'Optional Cr.';
 
   @override
+  String get requiredGpa => 'Required GPA';
+
+  @override
   String get totalPassedCount => 'Passed';
 
   @override

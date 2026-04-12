@@ -555,6 +555,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get optionalCredits => '任选学分';
 
   @override
+  String get requiredGpa => '必修 GPA';
+
+  @override
   String get totalPassedCount => '通过门数';
 
   @override

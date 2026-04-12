@@ -147,8 +147,8 @@ class _SummaryCard extends StatelessWidget {
                   highlight: true,
                 ),
                 _StatItem(
-                  label: l10n.earnedCredits,
-                  value: summary.earnedCredits.toStringAsFixed(1),
+                  label: l10n.requiredGpa,
+                  value: summary.requiredGpa.toStringAsFixed(2),
                 ),
                 _StatItem(label: l10n.passedCount, value: '${summary.tgms}'),
                 _StatItem(
@@ -177,6 +177,10 @@ class _SummaryCard extends StatelessWidget {
             Row(
               children: [
                 _StatItem(
+                  label: l10n.earnedCredits,
+                  value: summary.earnedCredits.toStringAsFixed(1),
+                ),
+                _StatItem(
                   label: l10n.requiredCredits,
                   value: summary.requiredCredits.toStringAsFixed(1),
                 ),
@@ -188,7 +192,6 @@ class _SummaryCard extends StatelessWidget {
                   label: l10n.optionalCredits,
                   value: summary.optionalCredits.toStringAsFixed(1),
                 ),
-                const Expanded(child: SizedBox()),
               ],
             ),
           ],

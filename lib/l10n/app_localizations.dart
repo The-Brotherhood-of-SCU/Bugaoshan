@@ -1147,6 +1147,12 @@ abstract class AppLocalizations {
   /// **'Optional Cr.'**
   String get optionalCredits;
 
+  /// No description provided for @requiredGpa.
+  ///
+  /// In en, this message translates to:
+  /// **'Required GPA'**
+  String get requiredGpa;
+
   /// No description provided for @totalPassedCount.
   ///
   /// In en, this message translates to:

@@ -175,6 +175,7 @@
     "requiredCredits": "必修学分",
     "electiveCredits": "选修学分",
     "optionalCredits": "任选学分",
+    "requiredGpa": "必修 GPA",
     "totalPassedCount": "通过门数",
     "termCount": "学期数",
     "accumulatedCredits": "累计学分",
