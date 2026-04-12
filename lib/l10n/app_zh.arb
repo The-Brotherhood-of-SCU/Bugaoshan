@@ -114,7 +114,7 @@
     "importFromJwxt":"从教务系统抓包导入",
     "importDataHint":"请在此处粘贴 JSON 数据...",
     "importSuccess":"课表导入成功",
-    "importFailed":"导入失败，请检查数据格式",
+    "importFailed":"导入失败，请检查数据格式或重新登录",
     "importedScheduleDefaultName": "导入的课表",
     "importNameConflictHint": "名称 \"{name}\" 已存在，请重命名：",
     "importNameSuffix": "(导入)",

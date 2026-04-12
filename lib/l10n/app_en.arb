@@ -114,7 +114,7 @@
     "importFromJwxt":"Import from Education System",
     "importDataHint":"Paste JSON data here...",
     "importSuccess":"Schedule imported successfully",
-    "importFailed": "Import failed, please check data format",
+    "importFailed": "Import failed, please check data format or log back in.",
     "importedScheduleDefaultName": "Imported Schedule",
     "importNameConflictHint": "Name \"{name}\" already exists, please rename:",
     "importNameSuffix": "(Import)",

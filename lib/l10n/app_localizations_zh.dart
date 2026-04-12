@@ -361,7 +361,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get importSuccess => '课表导入成功';
 
   @override
-  String get importFailed => '导入失败，请检查数据格式';
+  String get importFailed => '导入失败，请检查数据格式或重新登录';
 
   @override
   String get importedScheduleDefaultName => '导入的课表';
