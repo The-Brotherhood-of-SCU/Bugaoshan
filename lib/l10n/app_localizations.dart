@@ -790,7 +790,7 @@ abstract class AppLocalizations {
   /// No description provided for @importFailed.
   ///
   /// In en, this message translates to:
-  /// **'Import failed, please check data format'**
+  /// **'Import failed, please check data format or log back in.'**
   String get importFailed;
 
   /// No description provided for @importedScheduleDefaultName.

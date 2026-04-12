@@ -368,7 +368,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importSuccess => 'Schedule imported successfully';
 
   @override
-  String get importFailed => 'Import failed, please check data format';
+  String get importFailed =>
+      'Import failed, please check data format or log back in.';
 
   @override
   String get importedScheduleDefaultName => 'Imported Schedule';
