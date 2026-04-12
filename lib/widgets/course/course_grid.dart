@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:Bugaoshan/injection/injector.dart';
 import 'package:Bugaoshan/l10n/app_localizations.dart';
 import 'package:Bugaoshan/models/course.dart';
+import 'package:Bugaoshan/providers/app_config_provider.dart';
 import 'package:Bugaoshan/widgets/course/course_card.dart';
 
 List<Course> selectVisibleCoursesForDay(List<Course> courses, int displayWeek) {
@@ -74,6 +76,7 @@ class _CourseGridState extends State<CourseGrid> {
   // Store the currently selected empty cell (dayOfWeek, section)
   int? _selectedEmptyDay;
   int? _selectedEmptySection;
+  final appConfig = getIt<AppConfigProvider>();
 
   void _handleEmptyTap(int day, int section) {
     if (_selectedEmptyDay == day && _selectedEmptySection == section) {
@@ -108,44 +111,49 @@ class _CourseGridState extends State<CourseGrid> {
     final timeSlots = widget.config.timeSlots;
     final dayCount = widget.config.showWeekend ? 7 : 5;
 
-    return Column(
-      children: [
-        // Header row: empty corner + day names
-        _buildHeaderRow(context, dayNames),
-        // Grid body
-        Expanded(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Section number + time column (fixed width)
-                _buildSectionColumn(sections, timeSlots, context),
-                // 7 or 5 day columns
-                Expanded(
-                  child: Row(
-                    children: List.generate(dayCount, (dayIndex) {
-                      final day = dayIndex + 1; // 1=Mon ... 7=Sun
-                      final dayCourses = selectVisibleCoursesForDay(
-                        widget.courses
-                            .where((c) => c.dayOfWeek == day)
-                            .toList(),
-                        widget.displayWeek,
-                      );
-                      return _buildDayColumn(
-                        context,
-                        day,
-                        sections,
-                        dayCourses,
-                      );
-                    }),
-                  ),
+    return ListenableBuilder(
+      listenable: appConfig.showCourseGrid,
+      builder: (context, _) {
+        return Column(
+          children: [
+            // Header row: empty corner + day names
+            _buildHeaderRow(context, dayNames),
+            // Grid body
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Section number + time column (fixed width)
+                    _buildSectionColumn(sections, timeSlots, context),
+                    // 7 or 5 day columns
+                    Expanded(
+                      child: Row(
+                        children: List.generate(dayCount, (dayIndex) {
+                          final day = dayIndex + 1; // 1=Mon ... 7=Sun
+                          final dayCourses = selectVisibleCoursesForDay(
+                            widget.courses
+                                .where((c) => c.dayOfWeek == day)
+                                .toList(),
+                            widget.displayWeek,
+                          );
+                          return _buildDayColumn(
+                            context,
+                            day,
+                            sections,
+                            dayCourses,
+                          );
+                        }),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 
@@ -329,34 +337,35 @@ class _CourseGridState extends State<CourseGrid> {
         height: rowHeight * sections,
         child: Stack(
           children: [
-            // Grid lines
-            ...List.generate(sections, (i) {
-              final isBoundary =
-                  (i + 1 == morningEnd) || (i + 1 == afternoonEnd);
+            // Grid lines (conditionally rendered)
+            if (appConfig.showCourseGrid.value)
+              ...List.generate(sections, (i) {
+                final isBoundary =
+                    (i + 1 == morningEnd) || (i + 1 == afternoonEnd);
 
-              return Positioned(
-                top: i * rowHeight,
-                left: 0,
-                right: 0,
-                height: rowHeight,
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: isBoundary
-                            ? theme.colorScheme.primary.withAlpha(150)
-                            : theme.colorScheme.outlineVariant,
-                        width: isBoundary ? 1.5 : 0.5,
-                      ),
-                      right: BorderSide(
-                        color: theme.colorScheme.outlineVariant,
-                        width: 0.5,
+                return Positioned(
+                  top: i * rowHeight,
+                  left: 0,
+                  right: 0,
+                  height: rowHeight,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: isBoundary
+                              ? theme.colorScheme.primary.withAlpha(150)
+                              : theme.colorScheme.outlineVariant,
+                          width: isBoundary ? 1.5 : 0.5,
+                        ),
+                        right: BorderSide(
+                          color: theme.colorScheme.outlineVariant,
+                          width: 0.5,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-            }),
+                );
+              }),
             // Course cards
             ...dayCourses.map((course) {
               final top = (course.startSection - 1) * rowHeight;

@@ -667,6 +667,12 @@ abstract class AppLocalizations {
   /// **'Font Size'**
   String get fontSize;
 
+  /// No description provided for @showCourseGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Course Grid'**
+  String get showCourseGrid;
+
   /// No description provided for @showTeacher.
   ///
   /// In en, this message translates to:

@@ -306,6 +306,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fontSize => 'Font Size';
 
   @override
+  String get showCourseGrid => 'Show Course Grid';
+
+  @override
   String get showTeacher => 'Show Teacher';
 
   @override

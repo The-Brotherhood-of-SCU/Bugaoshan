@@ -94,6 +94,7 @@
     "displaySetting":"Display Setting",
     "colorOpacity":"Color Opacity",
     "fontSize":"Font Size",
+    "showCourseGrid":"Show Course Grid",
     "showTeacher":"Show Teacher",
     "showLocation":"Show Location",
     "showWeekend":"Show Weekend",

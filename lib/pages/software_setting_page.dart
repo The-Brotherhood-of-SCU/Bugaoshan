@@ -22,6 +22,7 @@ class SoftwareSettingPage extends StatelessWidget {
       listenable: Listenable.merge([
         appConfig.colorOpacity,
         appConfig.courseCardFontSize,
+        appConfig.showCourseGrid,
       ]),
       builder: (context, _) {
         return Scaffold(
@@ -93,6 +94,14 @@ class SoftwareSettingPage extends StatelessWidget {
                       onChanged: (v) => appConfig.courseCardFontSize.value = v,
                     ),
                   ],
+                ),
+                const Divider(),
+                // Show course grid switch
+                SwitchListTile(
+                  title: Text(localizations.showCourseGrid),
+                  value: appConfig.showCourseGrid.value,
+                  onChanged: (v) => appConfig.showCourseGrid.value = v,
+                  contentPadding: EdgeInsets.zero,
                 ),
                 const Divider(),
 

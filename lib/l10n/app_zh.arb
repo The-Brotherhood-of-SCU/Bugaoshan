@@ -94,6 +94,7 @@
     "displaySetting":"显示设置",
     "colorOpacity":"颜色不透明度",
     "fontSize":"字体大小",
+    "showCourseGrid":"显示课表网格",
     "showTeacher":"显示教师",
     "showLocation":"显示教室",
     "showWeekend":"显示周末",

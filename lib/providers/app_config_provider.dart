@@ -11,6 +11,7 @@ const String _keyCardSizeAnimationDuration = 'cardSizeAnimationDuration';
 const String _keyThemeColor = 'themeColor';
 const String _keyColorOpacity = 'colorOpacity';
 const String _keyCourseCardFontSize = 'courseCardFontSize';
+const String _keyShowCourseGrid = 'showCourseGrid';
 
 class AppConfigProvider {
   final SharedPreferences _sharedPreferences;
@@ -29,6 +30,7 @@ class AppConfigProvider {
   );
   final ValueNotifier<double> colorOpacity = ValueNotifier<double>(0.85);
   final ValueNotifier<double> courseCardFontSize = ValueNotifier<double>(13.0);
+  final ValueNotifier<bool> showCourseGrid = ValueNotifier<bool>(true);
 
   void _loadLocale() {
     final localeString = _sharedPreferences.getString(_keyLocale);
@@ -43,6 +45,8 @@ class AppConfigProvider {
     colorOpacity.value = _sharedPreferences.getDouble(_keyColorOpacity) ?? 0.85;
     courseCardFontSize.value =
         _sharedPreferences.getDouble(_keyCourseCardFontSize) ?? 14.0;
+    showCourseGrid.value =
+        _sharedPreferences.getBool(_keyShowCourseGrid) ?? true;
   }
 
   void _addSaveCallback() {
@@ -70,6 +74,9 @@ class AppConfigProvider {
         _keyCourseCardFontSize,
         courseCardFontSize.value,
       );
+    });
+    showCourseGrid.addListener(() {
+      _sharedPreferences.setBool(_keyShowCourseGrid, showCourseGrid.value);
     });
   }
 

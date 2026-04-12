@@ -301,6 +301,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fontSize => '字体大小';
 
   @override
+  String get showCourseGrid => '显示课表网格';
+
+  @override
   String get showTeacher => '显示教师';
 
   @override
