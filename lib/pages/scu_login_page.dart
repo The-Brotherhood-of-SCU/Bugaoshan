@@ -1,9 +1,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:Bugaoshan/injection/injector.dart';
 import 'package:Bugaoshan/providers/scu_auth_provider.dart';
 import 'package:Bugaoshan/serivces/scu_auth_service.dart';
+
+const _keyUsername = 'scu_saved_username';
+const _keyPassword = 'scu_saved_password';
+const _keyRemember = 'scu_remember_password';
 
 class ScuLoginPage extends StatefulWidget {
   const ScuLoginPage({super.key});
@@ -17,16 +22,19 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
   final _usernameCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _captchaCtrl = TextEditingController();
+  final _storage = const FlutterSecureStorage();
 
   CaptchaResult? _captcha;
   bool _loading = false;
   bool _captchaLoading = false;
   String? _errorMsg;
   bool _obscurePassword = true;
+  bool _rememberPassword = false;
 
   @override
   void initState() {
     super.initState();
+    _loadSaved();
     _loadCaptcha();
   }
 
@@ -36,6 +44,31 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
     _passwordCtrl.dispose();
     _captchaCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadSaved() async {
+    final remember = await _storage.read(key: _keyRemember);
+    if (remember != 'true') return;
+    final username = await _storage.read(key: _keyUsername);
+    final password = await _storage.read(key: _keyPassword);
+    if (!mounted) return;
+    setState(() {
+      _rememberPassword = true;
+      if (username != null) _usernameCtrl.text = username;
+      if (password != null) _passwordCtrl.text = password;
+    });
+  }
+
+  Future<void> _saveCredentials(String username, String password) async {
+    await _storage.write(key: _keyRemember, value: 'true');
+    await _storage.write(key: _keyUsername, value: username);
+    await _storage.write(key: _keyPassword, value: password);
+  }
+
+  Future<void> _clearCredentials() async {
+    await _storage.delete(key: _keyRemember);
+    await _storage.delete(key: _keyUsername);
+    await _storage.delete(key: _keyPassword);
   }
 
   Future<void> _loadCaptcha() async {
@@ -65,13 +98,23 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       _errorMsg = null;
     });
 
+    final username = _usernameCtrl.text.trim();
+    final password = _passwordCtrl.text;
+
     try {
       await getIt<ScuAuthProvider>().login(
-        username: _usernameCtrl.text.trim(),
-        password: _passwordCtrl.text,
+        username: username,
+        password: password,
         captchaCode: _captcha!.code,
         captchaText: _captchaCtrl.text.trim(),
       );
+
+      if (_rememberPassword) {
+        await _saveCredentials(username, password);
+      } else {
+        await _clearCredentials();
+      }
+
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } on ScuLoginException catch (e) {
@@ -88,7 +131,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('四川大学统一身份认证')),
+      appBar: AppBar(title: const Text('统一身份认证')),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
@@ -137,6 +180,16 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
                     loading: _captchaLoading,
                     controller: _captchaCtrl,
                     onRefresh: _loadCaptcha,
+                  ),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _rememberPassword,
+                        onChanged: (v) =>
+                            setState(() => _rememberPassword = v ?? false),
+                      ),
+                      const Text('记住密码'),
+                    ],
                   ),
                   if (_errorMsg != null)
                     Text(
@@ -229,7 +282,6 @@ class _CaptchaRow extends StatelessWidget {
   }
 
   Uint8List _decodeBase64Image(String b64) {
-    // 可能带 data:image/...;base64, 前缀
     final comma = b64.indexOf(',');
     final raw = comma >= 0 ? b64.substring(comma + 1) : b64;
     return base64.decode(raw);

@@ -456,4 +456,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logoutConfirm => 'Are you sure you want to logout?';
+
+  @override
+  String get importFromJwxtOnline => 'Online Import from JWXT';
+
+  @override
+  String get importFromJwxtOnlineHint =>
+      'Automatically fetch this semester\'s schedule. Please login with SCU Unified Identity in the Profile page first.';
 }

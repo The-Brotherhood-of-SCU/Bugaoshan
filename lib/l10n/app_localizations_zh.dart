@@ -434,7 +434,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoSyncTime => '自动推算后续时间';
 
   @override
-  String get scuLogin => '四川大学统一身份认证登录';
+  String get scuLogin => '统一身份认证登录';
 
   @override
   String get loggedIn => '已登录';
@@ -447,6 +447,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get logoutConfirm => '确定要退出登录吗？';
+
+  @override
+  String get importFromJwxtOnline => '从教务系统在线导入';
+
+  @override
+  String get importFromJwxtOnlineHint => '将自动获取本学期课表，需要先在「我的」页面完成统一身份认证登录';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

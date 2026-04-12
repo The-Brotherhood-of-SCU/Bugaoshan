@@ -139,5 +139,7 @@
     "loggedIn": "Logged In",
     "notLoggedIn": "Not Logged In",
     "logout": "Logout",
-    "logoutConfirm": "Are you sure you want to logout?"
+    "logoutConfirm": "Are you sure you want to logout?",
+    "importFromJwxtOnline": "Online Import from JWXT",
+    "importFromJwxtOnlineHint": "Automatically fetch this semester's schedule. Please login with SCU Unified Identity in the Profile page first."
 }

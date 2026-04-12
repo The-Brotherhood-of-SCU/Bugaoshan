@@ -942,6 +942,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure you want to logout?'**
   String get logoutConfirm;
+
+  /// No description provided for @importFromJwxtOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Online Import from JWXT'**
+  String get importFromJwxtOnline;
+
+  /// No description provided for @importFromJwxtOnlineHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically fetch this semester\'s schedule. Please login with SCU Unified Identity in the Profile page first.'**
+  String get importFromJwxtOnlineHint;
 }
 
 class _AppLocalizationsDelegate

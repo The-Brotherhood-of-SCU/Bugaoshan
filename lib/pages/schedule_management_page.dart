@@ -70,6 +70,21 @@ class ScheduleManagementPage extends StatelessWidget {
                   );
                 },
               ),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                leading: const Icon(Icons.cloud_download_outlined),
+                title: Text(l10n.importFromJwxtOnline),
+                onTap: () {
+                  Navigator.pop(context);
+                  popupOrNavigate(
+                    outerContext,
+                    ImportSchedulePage(
+                      courseProvider: courseProvider,
+                      mode: ImportMode.online,
+                    ),
+                  );
+                },
+              ),
               const SizedBox(height: 8),
             ],
           ),

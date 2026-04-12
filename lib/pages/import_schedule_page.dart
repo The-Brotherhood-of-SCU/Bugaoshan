@@ -1,12 +1,15 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:Bugaoshan/injection/injector.dart';
 import 'package:Bugaoshan/l10n/app_localizations.dart';
 import 'package:Bugaoshan/models/course.dart';
 import 'package:Bugaoshan/providers/course_provider.dart';
+import 'package:Bugaoshan/providers/scu_auth_provider.dart';
+import 'package:Bugaoshan/serivces/scu_auth_service.dart';
 import 'package:Bugaoshan/widgets/dialog/dialog.dart';
 import 'package:Bugaoshan/widgets/route/router_utils.dart';
 
-enum ImportMode { share, jwxt }
+enum ImportMode { share, jwxt, online }
 
 class ImportSchedulePage extends StatefulWidget {
   final CourseProvider courseProvider;
@@ -24,6 +27,7 @@ class ImportSchedulePage extends StatefulWidget {
 
 class _ImportSchedulePageState extends State<ImportSchedulePage> {
   final _controller = TextEditingController();
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -32,6 +36,12 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
   }
 
   Future<void> _import() async {
+    // online 模式走独立流程
+    if (widget.mode == ImportMode.online) {
+      await _importOnline();
+      return;
+    }
+
     final l10n = AppLocalizations.of(context)!;
     final text = _controller.text.trim();
     if (text.isEmpty) return;
@@ -188,6 +198,86 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
     }
   }
 
+  Future<void> _importOnline() async {
+    final l10n = AppLocalizations.of(context)!;
+    final authProvider = getIt<ScuAuthProvider>();
+
+    if (!authProvider.isLoggedIn) {
+      if (mounted) {
+        showInfoDialog(title: l10n.notLoggedIn, content: l10n.scuLogin);
+      }
+      return;
+    }
+
+    setState(() => _loading = true);
+    try {
+      final data = await authProvider.service.fetchJwxtSchedule();
+
+      if (!mounted) return;
+
+      // 让用户输入课表名
+      final nameController = TextEditingController(
+        text: 'JWXT Import ${DateTime.now().month}-${DateTime.now().day}',
+      );
+      final newName = await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.importFromJwxt),
+          content: TextField(
+            controller: nameController,
+            autofocus: true,
+            decoration: InputDecoration(hintText: l10n.semesterName),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                final t = nameController.text.trim();
+                if (t.isNotEmpty) Navigator.pop(ctx, t);
+              },
+              child: Text(l10n.save),
+            ),
+          ],
+        ),
+      );
+      if (newName == null || !mounted) return;
+
+      final parsed = _parseJwxtData(data);
+      final config = parsed.config;
+      config.semesterName = newName;
+      config.id = DateTime.now().millisecondsSinceEpoch.toString();
+
+      if (widget.courseProvider.isScheduleNameTaken(config.semesterName)) {
+        config.semesterName =
+            '${config.semesterName} (${DateTime.now().millisecondsSinceEpoch % 1000})';
+      }
+
+      await widget.courseProvider.addSchedule(config);
+      for (final course in parsed.courses) {
+        await widget.courseProvider.addCourse(course);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.importSuccess)));
+        if (Navigator.of(logicRootContext).canPop()) {
+          Navigator.of(logicRootContext).pop();
+        }
+      }
+    } on ScuLoginException catch (e) {
+      if (mounted) showInfoDialog(title: l10n.importFailed, content: e.message);
+    } catch (e) {
+      if (mounted)
+        showInfoDialog(title: l10n.importFailed, content: e.toString());
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   ({ScheduleConfig config, List<Course> courses}) _parseJwxtData(dynamic data) {
     final Map<String, dynamic> jwxtData = data as Map<String, dynamic>;
     final List<dynamic> xkxx = jwxtData['xkxx'] as List<dynamic>;
@@ -276,9 +366,41 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final title = widget.mode == ImportMode.jwxt
-        ? l10n.importFromJwxt
-        : l10n.importFromShare;
+    final title = switch (widget.mode) {
+      ImportMode.jwxt => l10n.importFromJwxt,
+      ImportMode.online => l10n.importFromJwxtOnline,
+      ImportMode.share => l10n.importFromShare,
+    };
+
+    if (widget.mode == ImportMode.online) {
+      return Scaffold(
+        appBar: AppBar(title: Text(title)),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 16,
+              children: [
+                const Icon(Icons.cloud_download_outlined, size: 64),
+                Text(
+                  l10n.importFromJwxtOnlineHint,
+                  textAlign: TextAlign.center,
+                ),
+                if (_loading)
+                  const CircularProgressIndicator()
+                else
+                  FilledButton.icon(
+                    onPressed: _import,
+                    icon: const Icon(Icons.download),
+                    label: Text(l10n.importFromJwxtOnline),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
