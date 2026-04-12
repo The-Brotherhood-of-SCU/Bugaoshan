@@ -150,7 +150,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
     final dateStr = '${now.year}/${now.month}/${now.day}';
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -161,25 +161,24 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 20),
-                  child: Text(
-                    dateStr,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                Text(
+                  dateStr,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
+                const SizedBox(height: 1),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    IconButton(
-                      onPressed: week > 1 ? () => _changeWeek(week - 1) : null,
-                      icon: const Icon(Icons.chevron_left, size: 16),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(
-                        minWidth: 20,
-                        minHeight: 20,
+                    GestureDetector(
+                      onTap: week > 1 ? () => _changeWeek(week - 1) : null,
+                      child: Icon(
+                        Icons.chevron_left,
+                        size: 16,
+                        color: week > 1
+                            ? Theme.of(context).colorScheme.onSurface
+                            : Theme.of(context).disabledColor,
                       ),
                     ),
                     SizedBox(
@@ -193,15 +192,16 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
                         ),
                       ),
                     ),
-                    IconButton(
-                      onPressed: week < totalWeeks
+                    GestureDetector(
+                      onTap: week < totalWeeks
                           ? () => _changeWeek(week + 1)
                           : null,
-                      icon: const Icon(Icons.chevron_right, size: 16),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(
-                        minWidth: 20,
-                        minHeight: 20,
+                      child: Icon(
+                        Icons.chevron_right,
+                        size: 16,
+                        color: week < totalWeeks
+                            ? Theme.of(context).colorScheme.onSurface
+                            : Theme.of(context).disabledColor,
                       ),
                     ),
                     if (isCurrentCalendarWeek) ...[
@@ -259,7 +259,6 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
             ),
           ),
           Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
                 onPressed: _onImport,
