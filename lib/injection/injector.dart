@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:Bugaoshan/providers/app_info_provider.dart';
 import 'package:Bugaoshan/providers/app_config_provider.dart';
 import 'package:Bugaoshan/providers/course_provider.dart';
+import 'package:Bugaoshan/providers/grades_provider.dart';
 import 'package:Bugaoshan/providers/scu_auth_provider.dart';
 import 'package:Bugaoshan/serivces/database_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -52,9 +53,17 @@ void _configureAsyncDependencies() {
     final prefs = getIt<SharedPreferences>();
     return ScuAuthProvider(prefs);
   });
+  getIt.registerSingletonAsync<GradesProvider>(() async {
+    await getIt.isReady<SharedPreferences>();
+    await getIt.isReady<ScuAuthProvider>();
+    final prefs = getIt<SharedPreferences>();
+    final auth = getIt<ScuAuthProvider>();
+    return GradesProvider(prefs, auth);
+  });
 }
 
 Future<void> ensureBasicDependencies() async {
   await getIt.isReady<CourseProvider>();
   await getIt.isReady<ScuAuthProvider>();
+  await getIt.isReady<GradesProvider>();
 }

@@ -1,0 +1,88 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:Bugaoshan/models/scheme_score.dart';
+import 'package:Bugaoshan/providers/scu_auth_provider.dart';
+
+const _keySchemeScores = 'grades_scheme_scores';
+const _keyPassingScores = 'grades_passing_scores';
+
+enum GradesLoadState { idle, loading, loaded, error }
+
+class GradesProvider extends ChangeNotifier {
+  final SharedPreferences _prefs;
+  final ScuAuthProvider _authProvider;
+
+  GradesProvider(this._prefs, this._authProvider) {
+    final cachedScheme = _prefs.getString(_keySchemeScores);
+    if (cachedScheme != null) {
+      try {
+        _schemeScores = SchemeScoreSummary.fromJson(
+          jsonDecode(cachedScheme) as Map<String, dynamic>,
+        );
+        _schemeState = GradesLoadState.loaded;
+      } catch (_) {}
+    }
+    final cachedPassing = _prefs.getString(_keyPassingScores);
+    if (cachedPassing != null) {
+      try {
+        _passingScores = PassingScoreResult.fromJson(
+          jsonDecode(cachedPassing) as Map<String, dynamic>,
+        );
+        _passingState = GradesLoadState.loaded;
+      } catch (_) {}
+    }
+  }
+
+  // --- 方案成绩 ---
+  SchemeScoreSummary? _schemeScores;
+  GradesLoadState _schemeState = GradesLoadState.idle;
+  String? _schemeError;
+
+  SchemeScoreSummary? get schemeScores => _schemeScores;
+  GradesLoadState get schemeState => _schemeState;
+  String? get schemeError => _schemeError;
+
+  Future<void> refreshSchemeScores() async {
+    if (_schemeState == GradesLoadState.loading) return;
+    _schemeState = GradesLoadState.loading;
+    _schemeError = null;
+    notifyListeners();
+    try {
+      final data = await _authProvider.service.fetchSchemeScores();
+      _schemeScores = SchemeScoreSummary.fromJson(data);
+      _schemeState = GradesLoadState.loaded;
+      await _prefs.setString(_keySchemeScores, jsonEncode(data));
+    } catch (e) {
+      _schemeState = GradesLoadState.error;
+      _schemeError = e.toString();
+    }
+    notifyListeners();
+  }
+
+  // --- 及格成绩 ---
+  PassingScoreResult? _passingScores;
+  GradesLoadState _passingState = GradesLoadState.idle;
+  String? _passingError;
+
+  PassingScoreResult? get passingScores => _passingScores;
+  GradesLoadState get passingState => _passingState;
+  String? get passingError => _passingError;
+
+  Future<void> refreshPassingScores() async {
+    if (_passingState == GradesLoadState.loading) return;
+    _passingState = GradesLoadState.loading;
+    _passingError = null;
+    notifyListeners();
+    try {
+      final data = await _authProvider.service.fetchPassingScores();
+      _passingScores = PassingScoreResult.fromJson(data);
+      _passingState = GradesLoadState.loaded;
+      await _prefs.setString(_keyPassingScores, jsonEncode(data));
+    } catch (e) {
+      _passingState = GradesLoadState.error;
+      _passingError = e.toString();
+    }
+    notifyListeners();
+  }
+}

@@ -364,7 +364,7 @@ abstract class AppLocalizations {
   /// No description provided for @appDescription.
   ///
   /// In en, this message translates to:
-  /// **'A simple and practical course management app'**
+  /// **'Explore everything, all on the Bugaoshan'**
   String get appDescription;
 
   /// No description provided for @contactUs.
@@ -1026,6 +1026,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Network error: {error}'**
   String networkError(Object error);
+
+  /// No description provided for @gradesStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Grade Statistics'**
+  String get gradesStats;
+
+  /// No description provided for @gradesStatsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'View and analyze your academic performance'**
+  String get gradesStatsDesc;
+
+  /// No description provided for @gradesStatsComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get gradesStatsComingSoon;
+
+  /// No description provided for @schemeScores.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheme Scores'**
+  String get schemeScores;
+
+  /// No description provided for @passingScores.
+  ///
+  /// In en, this message translates to:
+  /// **'Passing Scores'**
+  String get passingScores;
+
+  /// No description provided for @gradesLoginRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please complete SCU Unified Identity login in the Profile page first'**
+  String get gradesLoginRequired;
+
+  /// No description provided for @gradesNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'No grade data'**
+  String get gradesNoData;
+
+  /// No description provided for @gradesNoPassingData.
+  ///
+  /// In en, this message translates to:
+  /// **'No passing grade data'**
+  String get gradesNoPassingData;
+
+  /// No description provided for @gradesGet.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetch Grades'**
+  String get gradesGet;
+
+  /// No description provided for @gradesRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get gradesRetry;
+
+  /// No description provided for @gpa.
+  ///
+  /// In en, this message translates to:
+  /// **'GPA'**
+  String get gpa;
+
+  /// No description provided for @overallGpa.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall GPA'**
+  String get overallGpa;
+
+  /// No description provided for @earnedCredits.
+  ///
+  /// In en, this message translates to:
+  /// **'Earned Cr.'**
+  String get earnedCredits;
+
+  /// No description provided for @passedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Passed'**
+  String get passedCount;
+
+  /// No description provided for @failedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get failedCount;
+
+  /// No description provided for @avgScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg Score'**
+  String get avgScore;
+
+  /// No description provided for @requiredAvgScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Required Avg'**
+  String get requiredAvgScore;
+
+  /// No description provided for @requiredCredits.
+  ///
+  /// In en, this message translates to:
+  /// **'Required Cr.'**
+  String get requiredCredits;
+
+  /// No description provided for @electiveCredits.
+  ///
+  /// In en, this message translates to:
+  /// **'Elective Cr.'**
+  String get electiveCredits;
+
+  /// No description provided for @optionalCredits.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional Cr.'**
+  String get optionalCredits;
+
+  /// No description provided for @totalPassedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Passed'**
+  String get totalPassedCount;
+
+  /// No description provided for @termCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms'**
+  String get termCount;
+
+  /// No description provided for @accumulatedCredits.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Credits'**
+  String get accumulatedCredits;
+
+  /// No description provided for @creditUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'{credit} cr.'**
+  String creditUnit(Object credit);
+
+  /// No description provided for @termPassedSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} courses · {credits} cr.'**
+  String termPassedSummary(Object count, Object credits);
 }
 
 class _AppLocalizationsDelegate

@@ -142,7 +142,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get description => '描述';
 
   @override
-  String get appDescription => '一款简洁实用的课程管理应用';
+  String get appDescription => '探索一切，尽在不高山上';
 
   @override
   String get contactUs => '联系我们';
@@ -492,6 +492,85 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String networkError(Object error) {
     return '网络错误: $error';
+  }
+
+  @override
+  String get gradesStats => '成绩统计';
+
+  @override
+  String get gradesStatsDesc => '查看和分析你的学业成绩';
+
+  @override
+  String get gradesStatsComingSoon => '功能即将上线';
+
+  @override
+  String get schemeScores => '方案成绩';
+
+  @override
+  String get passingScores => '及格成绩';
+
+  @override
+  String get gradesLoginRequired => '请先在「我的」页面完成统一身份认证登录';
+
+  @override
+  String get gradesNoData => '暂无成绩数据';
+
+  @override
+  String get gradesNoPassingData => '暂无及格成绩数据';
+
+  @override
+  String get gradesGet => '获取成绩';
+
+  @override
+  String get gradesRetry => '重试';
+
+  @override
+  String get gpa => 'GPA';
+
+  @override
+  String get overallGpa => '综合 GPA';
+
+  @override
+  String get earnedCredits => '已修学分';
+
+  @override
+  String get passedCount => '通过';
+
+  @override
+  String get failedCount => '未通过';
+
+  @override
+  String get avgScore => '平均成绩';
+
+  @override
+  String get requiredAvgScore => '必修均分';
+
+  @override
+  String get requiredCredits => '必修学分';
+
+  @override
+  String get electiveCredits => '选修学分';
+
+  @override
+  String get optionalCredits => '任选学分';
+
+  @override
+  String get totalPassedCount => '通过门数';
+
+  @override
+  String get termCount => '学期数';
+
+  @override
+  String get accumulatedCredits => '累计学分';
+
+  @override
+  String creditUnit(Object credit) {
+    return '$credit 学分';
+  }
+
+  @override
+  String termPassedSummary(Object count, Object credits) {
+    return '$count 门 · $credits 学分';
   }
 }
 

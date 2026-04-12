@@ -181,6 +181,129 @@ class ScuAuthService {
     }
   }
 
+  /// 获取及格成绩（需要先登录）
+  Future<Map<String, dynamic>> fetchPassingScores() async {
+    final client = await bindSession();
+    try {
+      final indexResp = await client.get(
+        Uri.parse(
+          'http://zhjw.scu.edu.cn/student/integratedQuery/scoreQuery/allPassingScores/index',
+        ),
+        headers: {
+          'Accept':
+              'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Referer': 'http://zhjw.scu.edu.cn/',
+          'User-Agent': _headers['User-Agent']!,
+        },
+      );
+      final indexBody = indexResp.body;
+      if (indexBody.trim().isEmpty || indexResp.statusCode == 302) {
+        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
+      }
+      final urlMatch = RegExp(
+        r'var\s+url\s*=\s*"(/student/integratedQuery/scoreQuery/[^/]+/allPassingScores/callback)"',
+      ).firstMatch(indexBody);
+      if (urlMatch == null) {
+        if (indexBody.contains('login') || indexBody.contains('Login')) {
+          throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
+        }
+        throw ScuLoginException('无法从页面提取 allPassingScores callback URL');
+      }
+      final callbackPath = urlMatch.group(1)!;
+      dev.log(
+        '[SCU] passingScores callbackPath: $callbackPath',
+        name: 'ScuAuth',
+      );
+
+      final callbackResp = await client.get(
+        Uri.parse('http://zhjw.scu.edu.cn$callbackPath'),
+        headers: {
+          'Accept': 'application/json, text/plain, */*',
+          'Referer':
+              'http://zhjw.scu.edu.cn/student/integratedQuery/scoreQuery/allPassingScores/index',
+          'User-Agent': _headers['User-Agent']!,
+        },
+      );
+      final body = callbackResp.body.trim();
+      if (body.startsWith('<') || callbackResp.statusCode == 302) {
+        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
+      }
+      return _parseJson(body, 'allPassingScores/callback');
+    } finally {
+      client.close();
+    }
+  }
+
+  /// 获取方案成绩（需要先登录）
+  /// 1. 请求 index 页面，提取 callback URL
+  /// 2. 请求 callback 获取 JSON 数据
+  Future<Map<String, dynamic>> fetchSchemeScores() async {
+    final client = await bindSession();
+    try {
+      // Step 1: 获取 index 页面，提取 callback URL
+      final indexResp = await client.get(
+        Uri.parse(
+          'http://zhjw.scu.edu.cn/student/integratedQuery/scoreQuery/schemeScores/index',
+        ),
+        headers: {
+          'Accept':
+              'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Referer': 'http://zhjw.scu.edu.cn/',
+          'User-Agent': _headers['User-Agent']!,
+        },
+      );
+      dev.log(
+        '[SCU] schemeScores/index status: ${indexResp.statusCode}',
+        name: 'ScuAuth',
+      );
+
+      final indexBody = indexResp.body;
+      if (indexBody.trim().isEmpty || indexResp.statusCode == 302) {
+        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
+      }
+
+      // 提取 var url = "/student/integratedQuery/scoreQuery/XXXXX/schemeScores/callback"
+      final urlMatch = RegExp(
+        r'var\s+url\s*=\s*"(/student/integratedQuery/scoreQuery/[^/]+/schemeScores/callback)"',
+      ).firstMatch(indexBody);
+      if (urlMatch == null) {
+        // 可能被重定向到登录页
+        if (indexBody.contains('login') || indexBody.contains('Login')) {
+          throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
+        }
+        throw ScuLoginException('无法从页面提取 schemeScores callback URL');
+      }
+      final callbackPath = urlMatch.group(1)!;
+      dev.log(
+        '[SCU] schemeScores callbackPath: $callbackPath',
+        name: 'ScuAuth',
+      );
+
+      // Step 2: 请求 callback 获取成绩数据
+      final callbackResp = await client.get(
+        Uri.parse('http://zhjw.scu.edu.cn$callbackPath'),
+        headers: {
+          'Accept': 'application/json, text/plain, */*',
+          'Referer':
+              'http://zhjw.scu.edu.cn/student/integratedQuery/scoreQuery/schemeScores/index',
+          'User-Agent': _headers['User-Agent']!,
+        },
+      );
+      dev.log(
+        '[SCU] schemeScores/callback status: ${callbackResp.statusCode}',
+        name: 'ScuAuth',
+      );
+
+      final body = callbackResp.body.trim();
+      if (body.startsWith('<') || callbackResp.statusCode == 302) {
+        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
+      }
+      return _parseJson(body, 'schemeScores/callback');
+    } finally {
+      client.close();
+    }
+  }
+
   void logout() {
     _accessToken = null;
   }

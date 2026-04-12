@@ -146,7 +146,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get description => 'Description';
 
   @override
-  String get appDescription => 'A simple and practical course management app';
+  String get appDescription => 'Explore everything, all on the Bugaoshan';
 
   @override
   String get contactUs => 'Contact Us';
@@ -503,5 +503,85 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String networkError(Object error) {
     return 'Network error: $error';
+  }
+
+  @override
+  String get gradesStats => 'Grade Statistics';
+
+  @override
+  String get gradesStatsDesc => 'View and analyze your academic performance';
+
+  @override
+  String get gradesStatsComingSoon => 'Coming soon';
+
+  @override
+  String get schemeScores => 'Scheme Scores';
+
+  @override
+  String get passingScores => 'Passing Scores';
+
+  @override
+  String get gradesLoginRequired =>
+      'Please complete SCU Unified Identity login in the Profile page first';
+
+  @override
+  String get gradesNoData => 'No grade data';
+
+  @override
+  String get gradesNoPassingData => 'No passing grade data';
+
+  @override
+  String get gradesGet => 'Fetch Grades';
+
+  @override
+  String get gradesRetry => 'Retry';
+
+  @override
+  String get gpa => 'GPA';
+
+  @override
+  String get overallGpa => 'Overall GPA';
+
+  @override
+  String get earnedCredits => 'Earned Cr.';
+
+  @override
+  String get passedCount => 'Passed';
+
+  @override
+  String get failedCount => 'Failed';
+
+  @override
+  String get avgScore => 'Avg Score';
+
+  @override
+  String get requiredAvgScore => 'Required Avg';
+
+  @override
+  String get requiredCredits => 'Required Cr.';
+
+  @override
+  String get electiveCredits => 'Elective Cr.';
+
+  @override
+  String get optionalCredits => 'Optional Cr.';
+
+  @override
+  String get totalPassedCount => 'Passed';
+
+  @override
+  String get termCount => 'Terms';
+
+  @override
+  String get accumulatedCredits => 'Total Credits';
+
+  @override
+  String creditUnit(Object credit) {
+    return '$credit cr.';
+  }
+
+  @override
+  String termPassedSummary(Object count, Object credits) {
+    return '$count courses · $credits cr.';
   }
 }

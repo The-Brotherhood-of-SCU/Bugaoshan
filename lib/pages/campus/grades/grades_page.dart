@@ -1,0 +1,53 @@
+import 'package:flutter/material.dart';
+import 'package:Bugaoshan/injection/injector.dart';
+import 'package:Bugaoshan/l10n/app_localizations.dart';
+import 'package:Bugaoshan/providers/grades_provider.dart';
+import 'package:Bugaoshan/providers/scu_auth_provider.dart';
+import 'scheme_scores_tab.dart';
+import 'passing_scores_tab.dart';
+
+class GradesPage extends StatelessWidget {
+  const GradesPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.gradesStats),
+          bottom: TabBar(
+            tabs: [
+              Tab(text: l10n.schemeScores),
+              Tab(text: l10n.passingScores),
+            ],
+          ),
+        ),
+        body: ListenableBuilder(
+          listenable: Listenable.merge([
+            getIt<ScuAuthProvider>(),
+            getIt<GradesProvider>(),
+          ]),
+          builder: (context, _) {
+            final auth = getIt<ScuAuthProvider>();
+            if (!auth.isLoggedIn) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    l10n.gradesLoginRequired,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              );
+            }
+            return const TabBarView(
+              children: [SchemeScoresTab(), PassingScoresTab()],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
