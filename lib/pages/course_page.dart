@@ -454,43 +454,51 @@ class _SwipePageViewState extends State<_SwipePageView> {
   double _dragStartX = 0;
   double _dragStartY = 0;
   bool? _isHorizontalDrag; // null = undecided
+  int _dragStartPage = 0;
 
   void _onPanStart(DragStartDetails details) {
     _dragStartX = details.globalPosition.dx;
     _dragStartY = details.globalPosition.dy;
     _isHorizontalDrag = null;
+    _dragStartPage = (widget.controller.page ?? 0).round();
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
     if (_isHorizontalDrag == null) {
       final dx = (details.globalPosition.dx - _dragStartX).abs();
       final dy = (details.globalPosition.dy - _dragStartY).abs();
-      // Only commit to horizontal if dx is clearly dominant
       if (dx > 8 || dy > 8) {
         _isHorizontalDrag = dx > dy * 1.5;
       }
     }
     if (_isHorizontalDrag == true) {
-      widget.controller.position.moveTo(
-        widget.controller.offset - details.delta.dx,
-        clamp: true,
+      final newOffset = (widget.controller.offset - details.delta.dx).clamp(
+        0.0,
+        widget.controller.position.maxScrollExtent,
       );
+      widget.controller.jumpTo(newOffset);
     }
   }
 
   void _onPanEnd(DragEndDetails details) {
     if (_isHorizontalDrag != true) return;
     final velocity = details.velocity.pixelsPerSecond.dx;
-    final page = widget.controller.page ?? 0;
-    final currentPage = page.round();
-    int targetPage = currentPage;
-    if (velocity < -300) {
-      targetPage = (currentPage + 1).clamp(0, widget.itemCount - 1);
-    } else if (velocity > 300) {
-      targetPage = (currentPage - 1).clamp(0, widget.itemCount - 1);
+    final dragDelta = details.globalPosition.dx - _dragStartX;
+    int targetPage;
+    // Flick gesture: any noticeable velocity flips the page
+    if (velocity < -100) {
+      targetPage = (_dragStartPage + 1).clamp(0, widget.itemCount - 1);
+    } else if (velocity > 100) {
+      targetPage = (_dragStartPage - 1).clamp(0, widget.itemCount - 1);
+    } else if (dragDelta < -50) {
+      // Dragged left far enough without much velocity
+      targetPage = (_dragStartPage + 1).clamp(0, widget.itemCount - 1);
+    } else if (dragDelta > 50) {
+      // Dragged right far enough without much velocity
+      targetPage = (_dragStartPage - 1).clamp(0, widget.itemCount - 1);
     } else {
-      // Snap to nearest page
-      targetPage = page.round().clamp(0, widget.itemCount - 1);
+      // Small drag, snap back
+      targetPage = _dragStartPage;
     }
     widget.controller.animateToPage(
       targetPage,
