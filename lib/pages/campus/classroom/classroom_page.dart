@@ -41,7 +41,9 @@ class _ClassroomPageState extends State<ClassroomPage> {
       });
     } catch (e) {
       setState(() {
-        _error = e.toString();
+        _error = e is CampusNetworkException
+            ? 'campusNetworkRequired'
+            : e.toString();
         _isLoading = false;
         _isInitialLoad = false;
       });
@@ -61,7 +63,9 @@ class _ClassroomPageState extends State<ClassroomPage> {
       });
     } catch (e) {
       setState(() {
-        _error = e.toString();
+        _error = e is CampusNetworkException
+            ? 'campusNetworkRequired'
+            : e.toString();
         _isLoading = false;
       });
     }
@@ -275,22 +279,28 @@ class _ClassroomPageState extends State<ClassroomPage> {
     return Center(
       child: GestureDetector(
         onTap: onRetry,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.loadFailed,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+        child: SizedBox(
+          width: 220,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.error_outline,
+                size: 48,
+                color: Theme.of(context).colorScheme.error,
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                _error == 'campusNetworkRequired'
+                    ? l10n.campusNetworkRequired
+                    : l10n.loadFailed,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

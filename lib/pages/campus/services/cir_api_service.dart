@@ -1,39 +1,88 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
 import 'package:Bugaoshan/pages/campus/models/building_model.dart';
 import 'package:Bugaoshan/pages/campus/models/room_model.dart';
+
+class CampusNetworkException implements Exception {}
 
 class CirApiService {
   static const String baseUrl = 'https://cir.scu.edu.cn';
 
   Future<List<BuildingModel>> fetchBuildings() async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/cir/jxlConfig'),
-      headers: {'Content-Type': 'application/json'},
-    );
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/cir/jxlConfig'),
+            headers: {'Content-Type': 'application/json'},
+          )
+          .timeout(const Duration(seconds: 15));
 
-    if (response.statusCode != 200) {
-      throw Exception('Failed to fetch buildings: ${response.statusCode}');
+      developer.log(
+        'fetchBuildings status: ${response.statusCode}',
+        name: 'CirApi',
+      );
+      developer.log('fetchBuildings body: ${response.body}', name: 'CirApi');
+
+      if (response.statusCode == 483) {
+        throw CampusNetworkException();
+      }
+      if (response.statusCode != 200) {
+        throw Exception('Failed to fetch buildings: ${response.statusCode}');
+      }
+
+      final List<dynamic> jsonList = json.decode(response.body);
+      return jsonList
+          .map((json) => BuildingModel.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e, stack) {
+      developer.log(
+        'fetchBuildings error: $e',
+        name: 'CirApi',
+        error: e,
+        stackTrace: stack,
+      );
+      rethrow;
     }
-
-    final List<dynamic> jsonList = json.decode(response.body);
-    return jsonList
-        .map((json) => BuildingModel.fromJson(json as Map<String, dynamic>))
-        .toList();
   }
 
   Future<RoomQueryResult> fetchRoomData(String buildingLocation) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/cir/XLRoomData'),
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: 'jxlname=$buildingLocation',
-    );
+    try {
+      developer.log(
+        'fetchRoomData location: $buildingLocation',
+        name: 'CirApi',
+      );
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/cir/XLRoomData'),
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'jxlname=${Uri.encodeComponent(buildingLocation)}',
+          )
+          .timeout(const Duration(seconds: 15));
 
-    if (response.statusCode != 200) {
-      throw Exception('Failed to fetch room data: ${response.statusCode}');
+      developer.log(
+        'fetchRoomData status: ${response.statusCode}',
+        name: 'CirApi',
+      );
+      developer.log('fetchRoomData body: ${response.body}', name: 'CirApi');
+
+      if (response.statusCode == 483) {
+        throw CampusNetworkException();
+      }
+      if (response.statusCode != 200) {
+        throw Exception('Failed to fetch room data: ${response.statusCode}');
+      }
+
+      final decoded = json.decode(response.body) as Map<String, dynamic>;
+      return RoomQueryResult.fromJson(decoded);
+    } catch (e, stack) {
+      developer.log(
+        'fetchRoomData error: $e',
+        name: 'CirApi',
+        error: e,
+        stackTrace: stack,
+      );
+      rethrow;
     }
-
-    final decoded = json.decode(response.body) as Map<String, dynamic>;
-    return RoomQueryResult.fromJson(decoded);
   }
 }

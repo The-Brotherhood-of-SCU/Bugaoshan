@@ -205,6 +205,12 @@ abstract class AppLocalizations {
   /// **'Load failed, tap to retry'**
   String get loadFailed;
 
+  /// No description provided for @campusNetworkRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'This feature is only available on campus network. Please connect to campus Wi-Fi or use the school VPN.'**
+  String get campusNetworkRequired;
+
   /// No description provided for @appOnly.
   ///
   /// In en, this message translates to:

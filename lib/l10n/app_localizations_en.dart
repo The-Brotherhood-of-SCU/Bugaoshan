@@ -61,6 +61,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loadFailed => 'Load failed, tap to retry';
 
   @override
+  String get campusNetworkRequired =>
+      'This feature is only available on campus network. Please connect to campus Wi-Fi or use the school VPN.';
+
+  @override
   String get appOnly => 'Available on App only';
 
   @override
