@@ -269,10 +269,14 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         }
       }
     } on ScuLoginException catch (e) {
+      if (e.sessionExpired) {
+        await authProvider.logout();
+      }
       if (mounted) showInfoDialog(title: l10n.importFailed, content: e.message);
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         showInfoDialog(title: l10n.importFailed, content: e.toString());
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }

@@ -170,7 +170,12 @@ class ScuAuthService {
         '[SCU] jwxt body[:300]: ${resp.body.substring(0, resp.body.length.clamp(0, 300))}',
         name: 'ScuAuth',
       );
-      return _parseJson(resp.body, 'jwxt/schedule');
+      // 返回 HTML 说明 session 已过期，被重定向到登录页
+      final body = resp.body.trim();
+      if (body.startsWith('<') || resp.statusCode == 302) {
+        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
+      }
+      return _parseJson(body, 'jwxt/schedule');
     } finally {
       client.close();
     }
@@ -198,7 +203,8 @@ class CaptchaResult {
 
 class ScuLoginException implements Exception {
   final String message;
-  const ScuLoginException(this.message);
+  final bool sessionExpired;
+  const ScuLoginException(this.message, {this.sessionExpired = false});
   @override
   String toString() => message;
 }
