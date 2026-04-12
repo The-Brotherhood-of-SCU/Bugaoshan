@@ -145,6 +145,18 @@ abstract class AppLocalizations {
   /// **'Check classroom availability and borrowing status'**
   String get classroomQueryDesc;
 
+  /// No description provided for @moreFeaturesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'More Features'**
+  String get moreFeaturesTitle;
+
+  /// No description provided for @moreFeaturesDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an Issue to request more features'**
+  String get moreFeaturesDesc;
+
   /// No description provided for @selectCampus.
   ///
   /// In en, this message translates to:

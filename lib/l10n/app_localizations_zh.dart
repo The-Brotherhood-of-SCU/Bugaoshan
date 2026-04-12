@@ -30,6 +30,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get classroomQueryDesc => '查询教室空闲、借用和上课信息';
 
   @override
+  String get moreFeaturesTitle => '更多功能';
+
+  @override
+  String get moreFeaturesDesc => '更多功能请创建 Issue 交流';
+
+  @override
   String get selectCampus => '选择校区';
 
   @override

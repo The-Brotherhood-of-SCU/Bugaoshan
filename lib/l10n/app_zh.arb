@@ -6,6 +6,8 @@
     "campus": "校园",
     "classroomQuery": "教室查询",
     "classroomQueryDesc": "查询教室空闲、借用和上课信息",
+    "moreFeaturesTitle": "更多功能",
+    "moreFeaturesDesc": "更多功能请创建 Issue 交流",
     "selectCampus": "选择校区",
     "selectBuilding": "选择教学楼",
     "allBuildings": "全部教学楼",

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:Bugaoshan/l10n/app_localizations.dart';
 import 'package:Bugaoshan/pages/campus/classroom/classroom_page.dart';
 import 'package:Bugaoshan/pages/campus/grades/grades_page.dart';
+import 'package:Bugaoshan/utils/constants.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CampusPage extends StatelessWidget {
   const CampusPage({super.key});
@@ -44,6 +46,8 @@ class CampusPage extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => const GradesPage()),
                 ),
               ),
+              const SizedBox(height: 8),
+              _MoreFeaturesCard(),
             ],
           ),
         ),
@@ -143,6 +147,69 @@ class _CampusCard extends StatelessWidget {
               ),
               Icon(
                 disabled ? Icons.block : Icons.chevron_right,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MoreFeaturesCard extends StatelessWidget {
+  const _MoreFeaturesCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Card(
+      child: InkWell(
+        onTap: () => launchUrl(
+          Uri.parse('$appLink/issues/new?template=feature_request.yml'),
+          mode: LaunchMode.externalApplication,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.secondaryContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.add_comment_outlined,
+                  color: Theme.of(context).colorScheme.onSecondaryContainer,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.moreFeaturesTitle,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.moreFeaturesDesc,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.open_in_new,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ],

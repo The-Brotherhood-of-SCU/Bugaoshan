@@ -31,6 +31,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Check classroom availability and borrowing status';
 
   @override
+  String get moreFeaturesTitle => 'More Features';
+
+  @override
+  String get moreFeaturesDesc => 'Create an Issue to request more features';
+
+  @override
   String get selectCampus => 'Select Campus';
 
   @override
