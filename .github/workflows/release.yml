@@ -78,38 +78,6 @@ jobs:
           name: ios-ipa
           path: build/ios/Runner.ipa
 
-  build-web-wasm:
-    name: Web (WASM for Pages)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          submodules: recursive
-
-      - uses: subosito/flutter-action@v2.18.0
-        with:
-          flutter-version: '3.41.6'
-          channel: 'stable'
-          cache: true
-
-      - name: Get dependencies
-        run: flutter pub get
-
-      - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs || true
-
-      - name: Generate localizations
-        run: flutter gen-l10n
-
-      - name: Build Web (WASM)
-        run: flutter build web --wasm --base-href "/Bugaoshan/"
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./build/web
-
   build-windows:
     name: Windows
     runs-on: windows-latest
@@ -142,20 +110,6 @@ jobs:
         with:
           name: windows
           path: build/windows/x64/runner/Release
-
-  deploy:
-    needs: build-web-wasm
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
 
   release:
     name: Release
