@@ -95,6 +95,7 @@
     "colorOpacity":"Color Opacity",
     "fontSize":"Font Size",
     "showCourseGrid":"Show Course Grid",
+    "courseRowHeight":"Course Row Height",
     "showTeacher":"Show Teacher",
     "showLocation":"Show Location",
     "showWeekend":"Show Weekend",

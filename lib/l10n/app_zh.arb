@@ -95,6 +95,7 @@
     "colorOpacity":"颜色不透明度",
     "fontSize":"字体大小",
     "showCourseGrid":"显示课表网格",
+    "courseRowHeight":"课表网格高度",
     "showTeacher":"显示教师",
     "showLocation":"显示教室",
     "showWeekend":"显示周末",

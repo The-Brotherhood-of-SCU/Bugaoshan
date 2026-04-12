@@ -673,6 +673,12 @@ abstract class AppLocalizations {
   /// **'Show Course Grid'**
   String get showCourseGrid;
 
+  /// No description provided for @courseRowHeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Row Height'**
+  String get courseRowHeight;
+
   /// No description provided for @showTeacher.
   ///
   /// In en, this message translates to:

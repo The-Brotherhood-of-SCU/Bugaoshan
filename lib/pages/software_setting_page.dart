@@ -23,6 +23,7 @@ class SoftwareSettingPage extends StatelessWidget {
         appConfig.colorOpacity,
         appConfig.courseCardFontSize,
         appConfig.showCourseGrid,
+        appConfig.courseRowHeight,
       ]),
       builder: (context, _) {
         return Scaffold(
@@ -102,6 +103,36 @@ class SoftwareSettingPage extends StatelessWidget {
                   value: appConfig.showCourseGrid.value,
                   onChanged: (v) => appConfig.showCourseGrid.value = v,
                   contentPadding: EdgeInsets.zero,
+                ),
+                // Course row height
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(child: Text(localizations.courseRowHeight)),
+                        Text('${appConfig.courseRowHeight.value.round()}'),
+                      ],
+                    ),
+                    Slider(
+                      value: appConfig.courseRowHeight.value,
+                      min: 48,
+                      max: 120,
+                      divisions: 18,
+                      onChanged: (v) => appConfig.courseRowHeight.value = v,
+                    ),
+                  ],
+                ),
+                const Divider(),
+                ButtonWithMaxWidth(
+                  onPressed: () {
+                    appConfig.colorOpacity.value = 0.85;
+                    appConfig.courseCardFontSize.value = 13.0;
+                    appConfig.showCourseGrid.value = true;
+                    appConfig.courseRowHeight.value = 72.0;
+                  },
+                  icon: const Icon(Icons.refresh),
+                  child: Text(localizations.resetToDefault),
                 ),
                 const Divider(),
 

@@ -112,7 +112,10 @@ class _CourseGridState extends State<CourseGrid> {
     final dayCount = widget.config.showWeekend ? 7 : 5;
 
     return ListenableBuilder(
-      listenable: appConfig.showCourseGrid,
+      listenable: Listenable.merge([
+        appConfig.showCourseGrid,
+        appConfig.courseRowHeight,
+      ]),
       builder: (context, _) {
         return Column(
           children: [
@@ -275,7 +278,7 @@ class _CourseGridState extends State<CourseGrid> {
           final isBoundary = (i + 1 == morningEnd) || (i + 1 == afternoonEnd);
 
           return Container(
-            height: 72,
+            height: appConfig.courseRowHeight.value,
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
@@ -325,7 +328,8 @@ class _CourseGridState extends State<CourseGrid> {
     List<Course> dayCourses,
   ) {
     final theme = Theme.of(context);
-    final rowHeight = 72.0;
+    final appConfig = getIt<AppConfigProvider>();
+    final rowHeight = appConfig.courseRowHeight.value;
 
     // Calculate boundaries
     final morningEnd = widget.config.morningSections;

@@ -304,6 +304,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get showCourseGrid => '显示课表网格';
 
   @override
+  String get courseRowHeight => '课表网格高度';
+
+  @override
   String get showTeacher => '显示教师';
 
   @override

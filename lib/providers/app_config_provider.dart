@@ -12,6 +12,7 @@ const String _keyThemeColor = 'themeColor';
 const String _keyColorOpacity = 'colorOpacity';
 const String _keyCourseCardFontSize = 'courseCardFontSize';
 const String _keyShowCourseGrid = 'showCourseGrid';
+const String _keyCourseRowHeight = 'courseRowHeight';
 
 class AppConfigProvider {
   final SharedPreferences _sharedPreferences;
@@ -31,6 +32,7 @@ class AppConfigProvider {
   final ValueNotifier<double> colorOpacity = ValueNotifier<double>(0.85);
   final ValueNotifier<double> courseCardFontSize = ValueNotifier<double>(13.0);
   final ValueNotifier<bool> showCourseGrid = ValueNotifier<bool>(true);
+  final ValueNotifier<double> courseRowHeight = ValueNotifier<double>(72.0);
 
   void _loadLocale() {
     final localeString = _sharedPreferences.getString(_keyLocale);
@@ -47,6 +49,8 @@ class AppConfigProvider {
         _sharedPreferences.getDouble(_keyCourseCardFontSize) ?? 14.0;
     showCourseGrid.value =
         _sharedPreferences.getBool(_keyShowCourseGrid) ?? true;
+    courseRowHeight.value =
+        _sharedPreferences.getDouble(_keyCourseRowHeight) ?? 72.0;
   }
 
   void _addSaveCallback() {
@@ -77,6 +81,9 @@ class AppConfigProvider {
     });
     showCourseGrid.addListener(() {
       _sharedPreferences.setBool(_keyShowCourseGrid, showCourseGrid.value);
+    });
+    courseRowHeight.addListener(() {
+      _sharedPreferences.setDouble(_keyCourseRowHeight, courseRowHeight.value);
     });
   }
 

@@ -309,6 +309,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get showCourseGrid => 'Show Course Grid';
 
   @override
+  String get courseRowHeight => 'Course Row Height';
+
+  @override
   String get showTeacher => 'Show Teacher';
 
   @override
