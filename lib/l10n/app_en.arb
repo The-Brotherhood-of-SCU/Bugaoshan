@@ -80,6 +80,12 @@
     "currentWeek":"Week {week}",
     "thisWeek":"This week",
     "weekRange":"Week {start} - {end}",
+    "@weekRange": {
+        "placeholders": {
+            "start": {"type": "int"},
+            "end": {"type": "int"}
+        }
+    },
     "weekType":"Week Type",
     "everyWeek":"Every Week",
     "oddWeek":"Odd Week",

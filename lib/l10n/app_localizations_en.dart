@@ -259,7 +259,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get thisWeek => 'This week';
 
   @override
-  String weekRange(Object end, Object start) {
+  String weekRange(int start, int end) {
     return 'Week $start - $end';
   }
 

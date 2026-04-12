@@ -581,7 +581,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Week {start} - {end}'**
-  String weekRange(Object end, Object start);
+  String weekRange(int start, int end);
 
   /// No description provided for @weekType.
   ///
