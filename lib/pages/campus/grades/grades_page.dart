@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:Bugaoshan/injection/injector.dart';
 import 'package:Bugaoshan/l10n/app_localizations.dart';
 import 'package:Bugaoshan/providers/grades_provider.dart';
@@ -14,39 +15,62 @@ class GradesPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return DefaultTabController(
       length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(l10n.gradesStats),
-          bottom: TabBar(
-            tabs: [
-              Tab(text: l10n.schemeScores),
-              Tab(text: l10n.passingScores),
-            ],
-          ),
-        ),
-        body: ListenableBuilder(
-          listenable: Listenable.merge([
-            getIt<ScuAuthProvider>(),
-            getIt<GradesProvider>(),
-          ]),
-          builder: (context, _) {
-            final auth = getIt<ScuAuthProvider>();
-            if (!auth.isLoggedIn) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(
-                    l10n.gradesLoginRequired,
-                    textAlign: TextAlign.center,
+      child: Builder(
+        builder: (context) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(l10n.gradesStats),
+              actions: [
+                if (kIsWeb ||
+                    (defaultTargetPlatform != TargetPlatform.iOS &&
+                        defaultTargetPlatform !=
+                            TargetPlatform.android)) // 为非移动平台添加刷新按钮
+                  IconButton(
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () {
+                      final tabController = DefaultTabController.of(context);
+                      final provider = getIt<GradesProvider>();
+                      if (tabController.index == 0) {
+                        provider.refreshSchemeScores();
+                      } else {
+                        provider.refreshPassingScores();
+                      }
+                    },
+                    tooltip: '刷新',
                   ),
-                ),
-              );
-            }
-            return const TabBarView(
-              children: [SchemeScoresTab(), PassingScoresTab()],
-            );
-          },
-        ),
+              ],
+              bottom: TabBar(
+                tabs: [
+                  Tab(text: l10n.schemeScores),
+                  Tab(text: l10n.passingScores),
+                ],
+              ),
+            ),
+            body: ListenableBuilder(
+              listenable: Listenable.merge([
+                getIt<ScuAuthProvider>(),
+                getIt<GradesProvider>(),
+              ]),
+              builder: (context, _) {
+                final auth = getIt<ScuAuthProvider>();
+                if (!auth.isLoggedIn) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(
+                        l10n.gradesLoginRequired,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  );
+                }
+                return const TabBarView(
+                  children: [SchemeScoresTab(), PassingScoresTab()],
+                );
+              },
+            ),
+          );
+        },
       ),
     );
   }
