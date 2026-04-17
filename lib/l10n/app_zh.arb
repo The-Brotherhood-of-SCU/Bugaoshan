@@ -194,5 +194,22 @@
     "termPassedSummary": "{count} 门 · {credits} 学分",
     "sessionExpiredTitle": "会话已过期",
     "sessionExpiredMessage": "登录会话已过期，请重新登录后继续使用该功能。",
-    "relogin": "重新登录"
+    "relogin": "重新登录",
+    "trainProgram": "培养方案",
+    "trainProgramDesc": "查询各学院各年级的培养方案",
+    "trainProgramCollege": "学院",
+    "trainProgramGrade": "年级",
+    "trainProgramAll": "全部",
+    "trainProgramSearch": "查询",
+    "trainProgramNoData": "暂无培养方案数据",
+    "trainProgramLoading": "加载中...",
+    "trainProgramLoadFailed": "加载失败",
+    "trainProgramName": "方案名称",
+    "trainProgramMajor": "专业",
+    "trainProgramDetail": "培养方案详情",
+    "trainProgramCredits": "总学分",
+    "trainProgramHours": "总学时",
+    "trainProgramCourses": "课程数",
+    "trainProgramObjective": "培养目标",
+    "trainProgramLoginRequired": "请先在「我的」页面完成统一身份认证登录"
 }

@@ -612,4 +612,57 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get relogin => 'Login Again';
+
+  @override
+  String get trainProgram => 'Training Program';
+
+  @override
+  String get trainProgramDesc =>
+      'Search training programs by college and grade';
+
+  @override
+  String get trainProgramCollege => 'College';
+
+  @override
+  String get trainProgramGrade => 'Grade';
+
+  @override
+  String get trainProgramAll => 'All';
+
+  @override
+  String get trainProgramSearch => 'Search';
+
+  @override
+  String get trainProgramNoData => 'No training program data';
+
+  @override
+  String get trainProgramLoading => 'Loading...';
+
+  @override
+  String get trainProgramLoadFailed => 'Load failed';
+
+  @override
+  String get trainProgramName => 'Program Name';
+
+  @override
+  String get trainProgramMajor => 'Major';
+
+  @override
+  String get trainProgramDetail => 'Training Program Detail';
+
+  @override
+  String get trainProgramCredits => 'Total Credits';
+
+  @override
+  String get trainProgramHours => 'Total Hours';
+
+  @override
+  String get trainProgramCourses => 'Courses';
+
+  @override
+  String get trainProgramObjective => 'Training Objective';
+
+  @override
+  String get trainProgramLoginRequired =>
+      'Please complete SCU Unified Identity login in the Profile page first';
 }

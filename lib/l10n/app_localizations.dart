@@ -1230,6 +1230,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Login Again'**
   String get relogin;
+
+  /// No description provided for @trainProgram.
+  ///
+  /// In en, this message translates to:
+  /// **'Training Program'**
+  String get trainProgram;
+
+  /// No description provided for @trainProgramDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Search training programs by college and grade'**
+  String get trainProgramDesc;
+
+  /// No description provided for @trainProgramCollege.
+  ///
+  /// In en, this message translates to:
+  /// **'College'**
+  String get trainProgramCollege;
+
+  /// No description provided for @trainProgramGrade.
+  ///
+  /// In en, this message translates to:
+  /// **'Grade'**
+  String get trainProgramGrade;
+
+  /// No description provided for @trainProgramAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get trainProgramAll;
+
+  /// No description provided for @trainProgramSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get trainProgramSearch;
+
+  /// No description provided for @trainProgramNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'No training program data'**
+  String get trainProgramNoData;
+
+  /// No description provided for @trainProgramLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get trainProgramLoading;
+
+  /// No description provided for @trainProgramLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Load failed'**
+  String get trainProgramLoadFailed;
+
+  /// No description provided for @trainProgramName.
+  ///
+  /// In en, this message translates to:
+  /// **'Program Name'**
+  String get trainProgramName;
+
+  /// No description provided for @trainProgramMajor.
+  ///
+  /// In en, this message translates to:
+  /// **'Major'**
+  String get trainProgramMajor;
+
+  /// No description provided for @trainProgramDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Training Program Detail'**
+  String get trainProgramDetail;
+
+  /// No description provided for @trainProgramCredits.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Credits'**
+  String get trainProgramCredits;
+
+  /// No description provided for @trainProgramHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Hours'**
+  String get trainProgramHours;
+
+  /// No description provided for @trainProgramCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses'**
+  String get trainProgramCourses;
+
+  /// No description provided for @trainProgramObjective.
+  ///
+  /// In en, this message translates to:
+  /// **'Training Objective'**
+  String get trainProgramObjective;
+
+  /// No description provided for @trainProgramLoginRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please complete SCU Unified Identity login in the Profile page first'**
+  String get trainProgramLoginRequired;
 }
 
 class _AppLocalizationsDelegate

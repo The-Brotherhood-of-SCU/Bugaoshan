@@ -194,5 +194,22 @@
     "termPassedSummary": "{count} courses · {credits} cr.",
     "sessionExpiredTitle": "Session Expired",
     "sessionExpiredMessage": "Your login session has expired. Please login again to continue using this feature.",
-    "relogin": "Login Again"
+    "relogin": "Login Again",
+    "trainProgram": "Training Program",
+    "trainProgramDesc": "Search training programs by college and grade",
+    "trainProgramCollege": "College",
+    "trainProgramGrade": "Grade",
+    "trainProgramAll": "All",
+    "trainProgramSearch": "Search",
+    "trainProgramNoData": "No training program data",
+    "trainProgramLoading": "Loading...",
+    "trainProgramLoadFailed": "Load failed",
+    "trainProgramName": "Program Name",
+    "trainProgramMajor": "Major",
+    "trainProgramDetail": "Training Program Detail",
+    "trainProgramCredits": "Total Credits",
+    "trainProgramHours": "Total Hours",
+    "trainProgramCourses": "Courses",
+    "trainProgramObjective": "Training Objective",
+    "trainProgramLoginRequired": "Please complete SCU Unified Identity login in the Profile page first"
 }

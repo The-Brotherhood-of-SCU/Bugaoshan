@@ -599,6 +599,57 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get relogin => '重新登录';
+
+  @override
+  String get trainProgram => '培养方案';
+
+  @override
+  String get trainProgramDesc => '查询各学院各年级的培养方案';
+
+  @override
+  String get trainProgramCollege => '学院';
+
+  @override
+  String get trainProgramGrade => '年级';
+
+  @override
+  String get trainProgramAll => '全部';
+
+  @override
+  String get trainProgramSearch => '查询';
+
+  @override
+  String get trainProgramNoData => '暂无培养方案数据';
+
+  @override
+  String get trainProgramLoading => '加载中...';
+
+  @override
+  String get trainProgramLoadFailed => '加载失败';
+
+  @override
+  String get trainProgramName => '方案名称';
+
+  @override
+  String get trainProgramMajor => '专业';
+
+  @override
+  String get trainProgramDetail => '培养方案详情';
+
+  @override
+  String get trainProgramCredits => '总学分';
+
+  @override
+  String get trainProgramHours => '总学时';
+
+  @override
+  String get trainProgramCourses => '课程数';
+
+  @override
+  String get trainProgramObjective => '培养目标';
+
+  @override
+  String get trainProgramLoginRequired => '请先在「我的」页面完成统一身份认证登录';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).
