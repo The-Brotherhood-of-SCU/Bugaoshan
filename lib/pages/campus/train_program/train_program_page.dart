@@ -686,11 +686,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
                   _buildCourseInfoRow(context, '课程类别', kc.kclbmc),
                   _buildCourseInfoRow(context, '考核方式', kc.kslxmc),
                   _buildCourseInfoRow(context, '教学方式', kc.jxfssm),
-                  _buildCourseInfoRow(
-                    context,
-                    '内含学时',
-                    '${kc.knzxs}/${kc.jkzxs}/${kc.sjzxs}/${kc.syzxs}',
-                  ),
+                  _buildCourseHoursRow(context),
                   _buildCourseInfoRow(context, '建议修读年级', kc.nrjj),
                 ],
               ),
@@ -743,6 +739,58 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
             child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCourseHoursRow(BuildContext context) {
+    final kc = _provider.currentCourseDetail!.kc;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              '内含学时',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                _buildHoursChip(context, '周学时', kc.knzxs),
+                _buildHoursChip(context, '总学时', kc.jkzxs),
+                if (kc.sjzxs.isNotEmpty && kc.sjzxs != '0')
+                  _buildHoursChip(context, '实践', kc.sjzxs),
+                if (kc.syzxs.isNotEmpty && kc.syzxs != '0')
+                  _buildHoursChip(context, '实验', kc.syzxs),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHoursChip(BuildContext context, String label, String value) {
+    if (value.isEmpty || value == '0') return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        '$label:$value',
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: Theme.of(context).colorScheme.onPrimaryContainer,
+        ),
       ),
     );
   }
