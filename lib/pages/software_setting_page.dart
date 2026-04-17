@@ -127,7 +127,7 @@ class SoftwareSettingPage extends StatelessWidget {
                 ButtonWithMaxWidth(
                   onPressed: () {
                     appConfig.colorOpacity.value = 0.85;
-                    appConfig.courseCardFontSize.value = 13.0;
+                    appConfig.courseCardFontSize.value = 14.0;
                     appConfig.showCourseGrid.value = true;
                     appConfig.courseRowHeight.value = 72.0;
                   },
