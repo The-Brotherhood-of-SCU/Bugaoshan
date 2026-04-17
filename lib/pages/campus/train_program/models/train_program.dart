@@ -228,19 +228,20 @@ class TreeNode {
 class CourseDetail {
   final String flag;
   final CourseInfo kc;
-  final CoursePlanInfo jhkc;
+  final CoursePlanInfo? jhkc;
 
-  CourseDetail({required this.flag, required this.kc, required this.jhkc});
+  CourseDetail({required this.flag, required this.kc, this.jhkc});
 
   factory CourseDetail.fromJson(Map<String, dynamic> json) {
+    final jhkcJson = json['jhkc'];
     return CourseDetail(
       flag: json['flag']?.toString() ?? '',
       kc: CourseInfo.fromJson(json['kc'] as Map<String, dynamic>? ?? {}),
-      jhkc: CoursePlanInfo.fromJson(
-        json['jhkc'] as Map<String, dynamic>? ?? {},
-      ),
+      jhkc: jhkcJson == null ? null : CoursePlanInfo.fromJson(jhkcJson as Map<String, dynamic>),
     );
   }
+
+  bool get isOpenCourse => flag == '1' && jhkc == null;
 }
 
 class CourseInfo {

@@ -82,7 +82,9 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
               child: FilledButton.icon(
                 onPressed:
                     _provider.collegesState == TrainProgramLoadState.loaded &&
-                        _provider.gradesState == TrainProgramLoadState.loaded
+                        _provider.gradesState == TrainProgramLoadState.loaded &&
+                        _provider.selectedCollege != null &&
+                        _provider.selectedGrade != null
                     ? () => _provider.searchPrograms()
                     : null,
                 icon: const Icon(Icons.search),
@@ -693,27 +695,55 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
             ),
           ),
           const SizedBox(height: 16),
-          Text(
-            '课程安排',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  _buildCourseInfoRow(context, '方案名称', jhkc.famc),
-                  _buildCourseInfoRow(context, '课程属性', jhkc.kcsxmc),
-                  _buildCourseInfoRow(context, '学年', jhkc.xnmc),
-                  _buildCourseInfoRow(context, '学期', jhkc.xqm),
-                  _buildCourseInfoRow(context, '学分', jhkc.xf),
-                ],
+          if (detail.isOpenCourse) ...[
+            Card(
+              color: Theme.of(context).colorScheme.tertiaryContainer,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.lock_open,
+                      color: Theme.of(context).colorScheme.onTertiaryContainer,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        '开放课程',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onTertiaryContainer,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
+          ] else ...[
+            Text(
+              '课程安排',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    _buildCourseInfoRow(context, '方案名称', jhkc!.famc),
+                    _buildCourseInfoRow(context, '课程属性', jhkc.kcsxmc),
+                    _buildCourseInfoRow(context, '学年', jhkc.xnmc),
+                    _buildCourseInfoRow(context, '学期', jhkc.xqm),
+                    _buildCourseInfoRow(context, '学分', jhkc.xf),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
