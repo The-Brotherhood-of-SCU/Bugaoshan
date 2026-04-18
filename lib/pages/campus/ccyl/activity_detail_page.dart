@@ -182,7 +182,11 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 const SizedBox(width: 4),
-                Text(activity.orgName),
+                Text(
+                  (_activityLib?.orgName.isNotEmpty == true)
+                      ? _activityLib!.orgName
+                      : activity.orgName,
+                ),
               ],
             ),
             if (activity.describe != null && activity.describe!.isNotEmpty) ...[
