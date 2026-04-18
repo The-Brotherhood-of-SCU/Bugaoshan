@@ -114,7 +114,7 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
             : _provider.collegesState == TrainProgramLoadState.error
             ? Text(_provider.collegesError ?? l10n.loadFailed)
             : DropdownButtonFormField<String>(
-                value: _provider.selectedCollege,
+                initialValue: _provider.selectedCollege,
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -161,7 +161,7 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
             : _provider.gradesState == TrainProgramLoadState.error
             ? Text(_provider.gradesError ?? l10n.loadFailed)
             : DropdownButtonFormField<String>(
-                value: _provider.selectedGrade,
+                initialValue: _provider.selectedGrade,
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -505,7 +505,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: rootNodes.length,
-        separatorBuilder: (_, __) => const Divider(height: 1),
+        separatorBuilder: (_, _) => const Divider(height: 1),
         itemBuilder: (context, index) {
           return _buildTreeNode(context, rootNodes[index], childMap, 0);
         },
