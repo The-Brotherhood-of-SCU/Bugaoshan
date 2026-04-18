@@ -1746,6 +1746,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No Data'**
   String get noData;
+
+  /// No description provided for @networkDeviceQuery.
+  ///
+  /// In en, this message translates to:
+  /// **'Network Device Query'**
+  String get networkDeviceQuery;
+
+  /// No description provided for @networkDeviceQueryDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Query campus network account and online devices'**
+  String get networkDeviceQueryDesc;
+
+  /// No description provided for @networkDeviceUserInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'User Information'**
+  String get networkDeviceUserInfo;
+
+  /// No description provided for @networkDeviceOnlineDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Online Devices'**
+  String get networkDeviceOnlineDevices;
+
+  /// No description provided for @networkDeviceDeviceId.
+  ///
+  /// In en, this message translates to:
+  /// **'Device ID'**
+  String get networkDeviceDeviceId;
+
+  /// No description provided for @networkDeviceIp.
+  ///
+  /// In en, this message translates to:
+  /// **'IP Address'**
+  String get networkDeviceIp;
+
+  /// No description provided for @networkDeviceLogout.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get networkDeviceLogout;
+
+  /// No description provided for @networkDeviceLogoutConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to logout all devices?'**
+  String get networkDeviceLogoutConfirm;
+
+  /// No description provided for @networkDeviceForceOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Force Offline'**
+  String get networkDeviceForceOffline;
+
+  /// No description provided for @networkDeviceConfirmOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to offline this device?'**
+  String get networkDeviceConfirmOffline;
+
+  /// No description provided for @networkDeviceOfflineSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Operation successful'**
+  String get networkDeviceOfflineSuccess;
 }
 
 class _AppLocalizationsDelegate

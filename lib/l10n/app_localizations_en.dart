@@ -875,4 +875,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noData => 'No Data';
+
+  @override
+  String get networkDeviceQuery => 'Network Device Query';
+
+  @override
+  String get networkDeviceQueryDesc =>
+      'Query campus network account and online devices';
+
+  @override
+  String get networkDeviceUserInfo => 'User Information';
+
+  @override
+  String get networkDeviceOnlineDevices => 'Online Devices';
+
+  @override
+  String get networkDeviceDeviceId => 'Device ID';
+
+  @override
+  String get networkDeviceIp => 'IP Address';
+
+  @override
+  String get networkDeviceLogout => 'Logout';
+
+  @override
+  String get networkDeviceLogoutConfirm =>
+      'Are you sure you want to logout all devices?';
+
+  @override
+  String get networkDeviceForceOffline => 'Force Offline';
+
+  @override
+  String get networkDeviceConfirmOffline =>
+      'Are you sure you want to offline this device?';
+
+  @override
+  String get networkDeviceOfflineSuccess => 'Operation successful';
 }

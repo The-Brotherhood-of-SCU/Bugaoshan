@@ -857,6 +857,39 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get noData => '暂无数据';
+
+  @override
+  String get networkDeviceQuery => '校园网设备查询';
+
+  @override
+  String get networkDeviceQueryDesc => '查询校园网账户和在线设备';
+
+  @override
+  String get networkDeviceUserInfo => '用户信息';
+
+  @override
+  String get networkDeviceOnlineDevices => '在线设备';
+
+  @override
+  String get networkDeviceDeviceId => '设备ID';
+
+  @override
+  String get networkDeviceIp => 'IP 地址';
+
+  @override
+  String get networkDeviceLogout => '下线';
+
+  @override
+  String get networkDeviceLogoutConfirm => '确定要下线所有设备吗？';
+
+  @override
+  String get networkDeviceForceOffline => '强制下线';
+
+  @override
+  String get networkDeviceConfirmOffline => '确定要下线该设备吗？';
+
+  @override
+  String get networkDeviceOfflineSuccess => '操作成功';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

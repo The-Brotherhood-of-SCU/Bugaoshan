@@ -280,5 +280,16 @@
     "ccylDisabled": "Disabled",
     "ccylSeriesName": "Series Name",
     "ccylOrganizer": "Organizer",
-    "noData": "No Data"
-}
+    "noData": "No Data",
+    "networkDeviceQuery": "Network Device Query",
+    "networkDeviceQueryDesc": "Query campus network account and online devices",
+    "networkDeviceUserInfo": "User Information",
+    "networkDeviceOnlineDevices": "Online Devices",
+    "networkDeviceDeviceId": "Device ID",
+    "networkDeviceIp": "IP Address",
+    "networkDeviceLogout": "Logout",
+    "networkDeviceLogoutConfirm": "Are you sure you want to logout all devices?",
+    "networkDeviceForceOffline": "Force Offline",
+    "networkDeviceConfirmOffline": "Are you sure you want to offline this device?",
+    "networkDeviceOfflineSuccess": "Operation successful"
+  }

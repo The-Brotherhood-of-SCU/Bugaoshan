@@ -280,5 +280,16 @@
     "ccylDisabled": "关闭",
     "ccylSeriesName": "系列名称",
     "ccylOrganizer": "主办单位",
-    "noData": "暂无数据"
-}
+    "noData": "暂无数据",
+    "networkDeviceQuery": "校园网设备查询",
+    "networkDeviceQueryDesc": "查询校园网账户和在线设备",
+    "networkDeviceUserInfo": "用户信息",
+    "networkDeviceOnlineDevices": "在线设备",
+    "networkDeviceDeviceId": "设备ID",
+    "networkDeviceIp": "IP 地址",
+    "networkDeviceLogout": "下线",
+    "networkDeviceLogoutConfirm": "确定要下线所有设备吗？",
+    "networkDeviceForceOffline": "强制下线",
+    "networkDeviceConfirmOffline": "确定要下线该设备吗？",
+    "networkDeviceOfflineSuccess": "操作成功"
+ }
