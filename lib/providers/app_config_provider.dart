@@ -2,7 +2,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Colors;
-import 'package:Bugaoshan/utils/locale_utils.dart';
+import 'package:bugaoshan/utils/locale_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 //define key

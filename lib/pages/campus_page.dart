@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:Bugaoshan/l10n/app_localizations.dart';
-import 'package:Bugaoshan/pages/campus/classroom/classroom_page.dart';
-import 'package:Bugaoshan/pages/campus/grades/grades_page.dart';
-import 'package:Bugaoshan/pages/campus/train_program/train_program_page.dart';
-import 'package:Bugaoshan/utils/constants.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/campus/classroom/classroom_page.dart';
+import 'package:bugaoshan/pages/campus/grades/grades_page.dart';
+import 'package:bugaoshan/pages/campus/train_program/train_program_page.dart';
+import 'package:bugaoshan/utils/constants.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class CampusPage extends StatelessWidget {

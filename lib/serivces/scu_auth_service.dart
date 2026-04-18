@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:developer' as dev;
 import 'package:http/http.dart' as http;
-import 'package:Bugaoshan/utils/sm2_crypto.dart';
+import 'package:bugaoshan/utils/sm2_crypto.dart';
 
 /// 四川大学统一身份认证 Service
 class ScuAuthService {

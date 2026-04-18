@@ -1,7 +1,7 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:Bugaoshan/injection/injector.dart';
-import 'package:Bugaoshan/l10n/app_localizations.dart';
-import 'package:Bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 
 class SetDurationPage extends StatefulWidget {
   const SetDurationPage({super.key});

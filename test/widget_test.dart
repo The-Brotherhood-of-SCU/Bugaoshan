@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:Bugaoshan/models/course.dart';
-import 'package:Bugaoshan/widgets/course/course_grid.dart';
+import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/widgets/course/course_grid.dart';
 
 void main() {
   group('Course week visibility', () {

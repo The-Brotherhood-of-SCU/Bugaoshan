@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:Bugaoshan/injection/injector.dart';
-import 'package:Bugaoshan/pages/home_page.dart';
-import 'package:Bugaoshan/providers/app_config_provider.dart';
-import 'package:Bugaoshan/widgets/route/router_utils.dart';
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/pages/home_page.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'l10n/app_localizations.dart';
 
 class MyApp extends StatelessWidget {

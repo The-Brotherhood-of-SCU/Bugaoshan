@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:Bugaoshan/l10n/app_localizations.dart';
-import 'package:Bugaoshan/injection/injector.dart';
-import 'package:Bugaoshan/providers/scu_auth_provider.dart';
-import 'package:Bugaoshan/serivces/scu_auth_service.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/serivces/scu_auth_service.dart';
 
 const _keyUsername = 'scu_saved_username';
 const _keyPassword = 'scu_saved_password';

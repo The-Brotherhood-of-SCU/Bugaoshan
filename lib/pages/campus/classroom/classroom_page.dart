@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:Bugaoshan/l10n/app_localizations.dart';
-import 'package:Bugaoshan/pages/campus/classroom/classroom_detail_page.dart';
-import 'package:Bugaoshan/pages/campus/models/building_model.dart';
-import 'package:Bugaoshan/pages/campus/models/room_model.dart';
-import 'package:Bugaoshan/pages/campus/services/cir_api_service.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/campus/classroom/classroom_detail_page.dart';
+import 'package:bugaoshan/pages/campus/models/building_model.dart';
+import 'package:bugaoshan/pages/campus/models/room_model.dart';
+import 'package:bugaoshan/pages/campus/services/cir_api_service.dart';
 
 class ClassroomPage extends StatefulWidget {
   const ClassroomPage({super.key});

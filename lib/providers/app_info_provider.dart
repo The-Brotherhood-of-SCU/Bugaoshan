@@ -1,7 +1,7 @@
 ﻿import 'package:flutter/foundation.dart' show kIsWeb, kIsWasm;
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:Bugaoshan/providers/environment_info/native.dart'
-    if (dart.library.js_interop) 'package:Bugaoshan/providers/environment_info/web.dart';
+import 'package:bugaoshan/providers/environment_info/native.dart'
+    if (dart.library.js_interop) 'package:bugaoshan/providers/environment_info/web.dart';
 
 class AppInfoProvider {
   PackageInfo packageInfo;

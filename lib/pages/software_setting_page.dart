@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:Bugaoshan/injection/injector.dart';
-import 'package:Bugaoshan/l10n/app_localizations.dart';
-import 'package:Bugaoshan/pages/set_duration_page.dart';
-import 'package:Bugaoshan/pages/set_language_page.dart';
-import 'package:Bugaoshan/pages/set_theme_color_page.dart';
-import 'package:Bugaoshan/providers/app_config_provider.dart';
-import 'package:Bugaoshan/providers/course_provider.dart';
-import 'package:Bugaoshan/widgets/common/styled_widget.dart';
-import 'package:Bugaoshan/widgets/dialog/dialog.dart';
-import 'package:Bugaoshan/widgets/route/router_utils.dart';
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/set_duration_page.dart';
+import 'package:bugaoshan/pages/set_language_page.dart';
+import 'package:bugaoshan/pages/set_theme_color_page.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/widgets/common/styled_widget.dart';
+import 'package:bugaoshan/widgets/dialog/dialog.dart';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 class SoftwareSettingPage extends StatelessWidget {
   const SoftwareSettingPage({super.key});

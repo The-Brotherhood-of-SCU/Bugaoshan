@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:Bugaoshan/l10n/app_localizations.dart';
-import 'package:Bugaoshan/pages/scu_login_page.dart';
-import 'package:Bugaoshan/providers/scu_auth_provider.dart';
-import 'package:Bugaoshan/widgets/route/router_utils.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/scu_login_page.dart';
+import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 /// 统一的 session 过期处理中间件
 ///
@@ -51,9 +51,9 @@ class SessionExpiryHandler {
     // 4. 如果用户选择重新登录，打开登录页面
     if (result == true) {
       if (effectiveContext.mounted) {
-        final loginResult = await Navigator.of(effectiveContext).push<bool>(
-          MaterialPageRoute(builder: (_) => const ScuLoginPage()),
-        );
+        final loginResult = await Navigator.of(
+          effectiveContext,
+        ).push<bool>(MaterialPageRoute(builder: (_) => const ScuLoginPage()));
         return loginResult == true;
       }
     }

@@ -1,9 +1,9 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:Bugaoshan/injection/injector.dart';
-import 'package:Bugaoshan/l10n/app_localizations.dart';
-import 'package:Bugaoshan/providers/app_info_provider.dart';
-import 'package:Bugaoshan/utils/open_link.dart';
-import 'package:Bugaoshan/widgets/dialog/dialog.dart';
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/providers/app_info_provider.dart';
+import 'package:bugaoshan/utils/open_link.dart';
+import 'package:bugaoshan/widgets/dialog/dialog.dart';
 
 class AboutPage extends StatelessWidget {
   AboutPage({super.key});

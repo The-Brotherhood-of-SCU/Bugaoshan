@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:Bugaoshan/l10n/app_localizations.dart';
-import 'package:Bugaoshan/models/course.dart';
-import 'package:Bugaoshan/pages/course_edit_page.dart';
-import 'package:Bugaoshan/providers/course_provider.dart';
-import 'package:Bugaoshan/widgets/dialog/dialog.dart';
-import 'package:Bugaoshan/widgets/route/router_utils.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/pages/course_edit_page.dart';
+import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/widgets/dialog/dialog.dart';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 class CourseDetailSheet extends StatelessWidget {
   final Course course;

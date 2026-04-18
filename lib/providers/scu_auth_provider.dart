@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:Bugaoshan/serivces/scu_auth_service.dart';
+import 'package:bugaoshan/serivces/scu_auth_service.dart';
 
 const _keyAccessToken = 'scu_access_token';
 

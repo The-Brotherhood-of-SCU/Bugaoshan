@@ -1,4 +1,4 @@
-﻿import 'package:Bugaoshan/utils/constants.dart';
+﻿import 'package:bugaoshan/utils/constants.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 Future<void> openLink(String link) async {

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:hive_ce/hive.dart';
-import 'package:Bugaoshan/models/course.dart';
+import 'package:bugaoshan/models/course.dart';
 
 const String _boxMetadata = 'metadata';
 const String _keyCurrentScheduleId = 'currentScheduleId';

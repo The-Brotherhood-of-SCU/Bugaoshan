@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:Bugaoshan/injection/injector.dart';
-import 'package:Bugaoshan/l10n/app_localizations.dart';
-import 'package:Bugaoshan/models/scheme_score.dart';
-import 'package:Bugaoshan/providers/grades_provider.dart';
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/models/scheme_score.dart';
+import 'package:bugaoshan/providers/grades_provider.dart';
 
 class SchemeScoresTab extends StatelessWidget {
   const SchemeScoresTab({super.key});

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:Bugaoshan/injection/injector.dart';
-import 'package:Bugaoshan/l10n/app_localizations.dart';
-import 'package:Bugaoshan/providers/grades_provider.dart';
-import 'package:Bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/providers/grades_provider.dart';
+import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'scheme_scores_tab.dart';
 import 'passing_scores_tab.dart';
 

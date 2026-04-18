@@ -1,13 +1,13 @@
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:Bugaoshan/pages/campus/train_program/train_program_provider.dart';
-import 'package:Bugaoshan/providers/app_info_provider.dart';
-import 'package:Bugaoshan/providers/app_config_provider.dart';
-import 'package:Bugaoshan/providers/course_provider.dart';
-import 'package:Bugaoshan/providers/grades_provider.dart';
-import 'package:Bugaoshan/providers/scu_auth_provider.dart';
-import 'package:Bugaoshan/serivces/database_service.dart';
+import 'package:bugaoshan/pages/campus/train_program/train_program_provider.dart';
+import 'package:bugaoshan/providers/app_info_provider.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/providers/grades_provider.dart';
+import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/serivces/database_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'injector.config.dart';

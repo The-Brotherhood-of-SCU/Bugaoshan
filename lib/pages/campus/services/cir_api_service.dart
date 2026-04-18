@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
-import 'package:Bugaoshan/pages/campus/models/building_model.dart';
-import 'package:Bugaoshan/pages/campus/models/room_model.dart';
+import 'package:bugaoshan/pages/campus/models/building_model.dart';
+import 'package:bugaoshan/pages/campus/models/room_model.dart';
 
 class CampusNetworkException implements Exception {}
 

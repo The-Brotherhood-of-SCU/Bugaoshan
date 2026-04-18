@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:Bugaoshan/injection/injector.dart';
-import 'package:Bugaoshan/l10n/app_localizations.dart';
-import 'package:Bugaoshan/pages/campus/train_program/models/train_program.dart';
-import 'package:Bugaoshan/pages/campus/train_program/train_program_provider.dart';
-import 'package:Bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/campus/train_program/models/train_program.dart';
+import 'package:bugaoshan/pages/campus/train_program/train_program_provider.dart';
+import 'package:bugaoshan/providers/scu_auth_provider.dart';
 
 class TrainProgramPage extends StatefulWidget {
   const TrainProgramPage({super.key});

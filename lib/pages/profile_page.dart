@@ -1,14 +1,14 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:Bugaoshan/injection/injector.dart';
-import 'package:Bugaoshan/l10n/app_localizations.dart';
-import 'package:Bugaoshan/pages/about_page.dart';
-import 'package:Bugaoshan/pages/course_schedule_setting.dart';
-import 'package:Bugaoshan/pages/schedule_management_page.dart';
-import 'package:Bugaoshan/pages/scu_login_page.dart';
-import 'package:Bugaoshan/pages/software_setting_page.dart';
-import 'package:Bugaoshan/providers/scu_auth_provider.dart';
-import 'package:Bugaoshan/widgets/common/styled_widget.dart';
-import 'package:Bugaoshan/widgets/route/router_utils.dart';
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/about_page.dart';
+import 'package:bugaoshan/pages/course_schedule_setting.dart';
+import 'package:bugaoshan/pages/schedule_management_page.dart';
+import 'package:bugaoshan/pages/scu_login_page.dart';
+import 'package:bugaoshan/pages/software_setting_page.dart';
+import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/widgets/common/styled_widget.dart';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
