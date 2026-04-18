@@ -243,18 +243,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
               final room = rooms[index];
               return Card(
                 margin: const EdgeInsets.only(bottom: 6),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: _getRoomStatusColor(room),
-                    child: Icon(
-                      _getRoomStatusIcon(room),
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  title: Text(room.roomName),
-                  subtitle: Text('${room.seatCount} ${l10n.seats}'),
-                  trailing: const Icon(Icons.chevron_right),
+                child: InkWell(
                   onTap: () {
                     Navigator.push(
                       context,
@@ -266,11 +255,72 @@ class _ClassroomPageState extends State<ClassroomPage> {
                       ),
                     );
                   },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                room.roomName,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${room.seatCount} ${l10n.seats}',
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ...List.generate(5, (i) {
+                              final classInfo = i < room.classUses.length
+                                  ? room.classUses[i]
+                                  : null;
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 3,
+                                ),
+                                child: Tooltip(
+                                  message: '第${i + 1}大节',
+                                  child: Icon(
+                                    _getPeriodIcon(classInfo),
+                                    color: _getPeriodColor(classInfo),
+                                    size: 24,
+                                  ),
+                                ),
+                              );
+                            }),
+                            const Padding(
+                              padding: EdgeInsets.only(left: 8),
+                              child: Icon(
+                                Icons.chevron_right,
+                                color: Colors.grey,
+                                size: 20,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               );
             },
           ),
         ),
+        const SizedBox(height: 24),
       ],
     );
   }
@@ -306,19 +356,17 @@ class _ClassroomPageState extends State<ClassroomPage> {
     );
   }
 
-  Color _getRoomStatusColor(RoomData room) {
-    final hasClass = room.classUses.any((c) => c.isInUse);
-    final isBorrowed = room.classUses.any((c) => c.isBorrowed);
-    if (isBorrowed) return Colors.orange;
-    if (hasClass) return Colors.red;
-    return Colors.green;
+  IconData _getPeriodIcon(ClassUseInfo? classInfo) {
+    if (classInfo == null) return Icons.remove_circle_outline;
+    if (classInfo.isBorrowed) return Icons.lock_outline;
+    if (classInfo.isInUse) return Icons.school;
+    return Icons.check_circle_outline;
   }
 
-  IconData _getRoomStatusIcon(RoomData room) {
-    final hasClass = room.classUses.any((c) => c.isInUse);
-    final isBorrowed = room.classUses.any((c) => c.isBorrowed);
-    if (isBorrowed) return Icons.lock_outline;
-    if (hasClass) return Icons.school;
-    return Icons.check_circle_outline;
+  Color _getPeriodColor(ClassUseInfo? classInfo) {
+    if (classInfo == null) return Colors.grey;
+    if (classInfo.isBorrowed) return Colors.orange;
+    if (classInfo.isInUse) return Colors.red;
+    return Colors.green;
   }
 }
