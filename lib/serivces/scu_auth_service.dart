@@ -22,6 +22,8 @@ class ScuAuthService {
   String? _accessToken;
   String? get accessToken => _accessToken;
 
+  _CookieClient? _cachedClient;
+
   /// 获取验证码，返回 [CaptchaResult]
   Future<CaptchaResult> fetchCaptcha() async {
     final ts = DateTime.now().millisecondsSinceEpoch;
@@ -125,6 +127,8 @@ class ScuAuthService {
   Future<_CookieClient> bindSession() async {
     if (_accessToken == null) throw ScuLoginException('未登录');
 
+    if (_cachedClient != null) return _cachedClient!;
+
     final client = _CookieClient();
 
     final resp = await client.post(
@@ -137,7 +141,6 @@ class ScuAuthService {
       throw ScuLoginException('session/save 失败: ${resp.body}');
     }
 
-    // 手动跟随 SSO 重定向链，每跳都收集 cookie
     await client.followRedirects(
       Uri.parse(
         '$_base/enduser/sp/sso/scdxplugin_jwt23'
@@ -147,6 +150,8 @@ class ScuAuthService {
     );
 
     dev.log('[SCU] cookies after SSO: ${client.cookieHeader}', name: 'ScuAuth');
+    client._reusable = true;
+    _cachedClient = client;
     return client;
   }
 
@@ -353,6 +358,7 @@ class ScuAuthService {
 
   void logout() {
     _accessToken = null;
+    _cachedClient = null;
   }
 
   /// 安全解析 JSON，失败时抛出带上下文的异常
@@ -384,6 +390,8 @@ class _CookieClient extends http.BaseClient {
   final _inner = http.Client();
   // 按域名存 cookie：domain -> {name: value}
   final _jar = <String, Map<String, String>>{};
+
+  bool _reusable = false;
 
   String get cookieHeader =>
       _allCookies().entries.map((e) => '${e.key}=${e.value}').join('; ');
@@ -478,6 +486,7 @@ class _CookieClient extends http.BaseClient {
 
   @override
   void close() {
+    if (_reusable) return;
     _inner.close();
     super.close();
   }
