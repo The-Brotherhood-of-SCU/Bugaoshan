@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:bugaoshan/pages/campus/train_program/train_program_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
@@ -54,6 +55,11 @@ void _configureAsyncDependencies() {
     final prefs = getIt<SharedPreferences>();
     return ScuAuthProvider(prefs);
   });
+  getIt.registerSingletonAsync<CcylProvider>(() async {
+    await getIt.isReady<SharedPreferences>();
+    final prefs = getIt<SharedPreferences>();
+    return CcylProvider(prefs);
+  });
   getIt.registerSingletonAsync<GradesProvider>(() async {
     await getIt.isReady<SharedPreferences>();
     await getIt.isReady<ScuAuthProvider>();
@@ -71,6 +77,7 @@ void _configureAsyncDependencies() {
 Future<void> ensureBasicDependencies() async {
   await getIt.isReady<CourseProvider>();
   await getIt.isReady<ScuAuthProvider>();
+  await getIt.isReady<CcylProvider>();
   await getIt.isReady<GradesProvider>();
   await getIt.isReady<TrainProgramProvider>();
 }

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/classroom/classroom_page.dart';
+import 'package:bugaoshan/pages/campus/ccyl/ccyl_page.dart';
 import 'package:bugaoshan/pages/campus/grades/grades_page.dart';
 import 'package:bugaoshan/pages/campus/train_program/train_program_page.dart';
 import 'package:bugaoshan/utils/constants.dart';
@@ -43,6 +44,17 @@ class CampusPage extends StatelessWidget {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const TrainProgramPage()),
+                ),
+              ),
+              const SizedBox(height: 8),
+              _CampusCard(
+                icon: Icons.event_outlined,
+                title: l10n.ccylTitle,
+                desc: l10n.ccylDesc,
+                appOnly: false,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CcylPage()),
                 ),
               ),
               const SizedBox(height: 24),

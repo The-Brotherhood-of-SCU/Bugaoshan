@@ -740,4 +740,61 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get trainProgramLoginRequired =>
       'Please complete SCU Unified Identity login in the Profile page first';
+
+  @override
+  String get ccylTitle => 'Second Classroom';
+
+  @override
+  String get ccylDesc => 'Browse activities, participate, make reservations';
+
+  @override
+  String get ccylSearchActivities => 'Activity Search';
+
+  @override
+  String get ccylMyActivities => 'My Activities';
+
+  @override
+  String get ccylOrderedActivities => 'Reserved Activities';
+
+  @override
+  String get ccylSearchHint => 'Search activity name';
+
+  @override
+  String get ccylHours => 'Hours';
+
+  @override
+  String get ccylAvailable => 'Available';
+
+  @override
+  String get ccylCompleted => 'Completed';
+
+  @override
+  String get ccylSubscribed => 'Subscribed';
+
+  @override
+  String get ccylLoginRequired =>
+      'Please complete SCU Unified Identity login in the Profile page first';
+
+  @override
+  String get ccylBindRequired =>
+      'Please bind your Second Classroom account first';
+
+  @override
+  String get ccylBindTitle => 'Bind Second Classroom';
+
+  @override
+  String get ccylBindDesc =>
+      'Bind your Second Classroom account to view activities';
+
+  @override
+  String get ccylOpenOAuth => 'Open OAuth Authorization';
+
+  @override
+  String get ccylDoBind => 'Bind Second Classroom';
+
+  @override
+  String get ccylBindHelp => 'Click button to bind automatically';
+
+  @override
+  String get noData => 'No Data';
 }

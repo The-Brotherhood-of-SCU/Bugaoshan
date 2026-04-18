@@ -725,6 +725,60 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get trainProgramLoginRequired => '请先在「我的」页面完成统一身份认证登录';
+
+  @override
+  String get ccylTitle => '第二课堂';
+
+  @override
+  String get ccylDesc => '查看活动、参与活动、预约活动';
+
+  @override
+  String get ccylSearchActivities => '活动搜索';
+
+  @override
+  String get ccylMyActivities => '我参与的活动';
+
+  @override
+  String get ccylOrderedActivities => '预约的活动';
+
+  @override
+  String get ccylSearchHint => '搜索活动名称';
+
+  @override
+  String get ccylHours => '学时';
+
+  @override
+  String get ccylAvailable => '可预约';
+
+  @override
+  String get ccylCompleted => '已结束';
+
+  @override
+  String get ccylSubscribed => '已预约';
+
+  @override
+  String get ccylLoginRequired => '请先在「我的」页面完成统一身份认证登录';
+
+  @override
+  String get ccylBindRequired => '请先绑定第二课堂账号';
+
+  @override
+  String get ccylBindTitle => '绑定第二课堂';
+
+  @override
+  String get ccylBindDesc => '绑定第二课堂账号后即可查看活动信息';
+
+  @override
+  String get ccylOpenOAuth => '打开统一认证授权页';
+
+  @override
+  String get ccylDoBind => '绑定第二课堂';
+
+  @override
+  String get ccylBindHelp => '点击按钮自动完成绑定';
+
+  @override
+  String get noData => '暂无数据';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

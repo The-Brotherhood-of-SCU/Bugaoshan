@@ -1482,6 +1482,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please complete SCU Unified Identity login in the Profile page first'**
   String get trainProgramLoginRequired;
+
+  /// No description provided for @ccylTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Second Classroom'**
+  String get ccylTitle;
+
+  /// No description provided for @ccylDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse activities, participate, make reservations'**
+  String get ccylDesc;
+
+  /// No description provided for @ccylSearchActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity Search'**
+  String get ccylSearchActivities;
+
+  /// No description provided for @ccylMyActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'My Activities'**
+  String get ccylMyActivities;
+
+  /// No description provided for @ccylOrderedActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'Reserved Activities'**
+  String get ccylOrderedActivities;
+
+  /// No description provided for @ccylSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search activity name'**
+  String get ccylSearchHint;
+
+  /// No description provided for @ccylHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Hours'**
+  String get ccylHours;
+
+  /// No description provided for @ccylAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get ccylAvailable;
+
+  /// No description provided for @ccylCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get ccylCompleted;
+
+  /// No description provided for @ccylSubscribed.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribed'**
+  String get ccylSubscribed;
+
+  /// No description provided for @ccylLoginRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please complete SCU Unified Identity login in the Profile page first'**
+  String get ccylLoginRequired;
+
+  /// No description provided for @ccylBindRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please bind your Second Classroom account first'**
+  String get ccylBindRequired;
+
+  /// No description provided for @ccylBindTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bind Second Classroom'**
+  String get ccylBindTitle;
+
+  /// No description provided for @ccylBindDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Bind your Second Classroom account to view activities'**
+  String get ccylBindDesc;
+
+  /// No description provided for @ccylOpenOAuth.
+  ///
+  /// In en, this message translates to:
+  /// **'Open OAuth Authorization'**
+  String get ccylOpenOAuth;
+
+  /// No description provided for @ccylDoBind.
+  ///
+  /// In en, this message translates to:
+  /// **'Bind Second Classroom'**
+  String get ccylDoBind;
+
+  /// No description provided for @ccylBindHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Click button to bind automatically'**
+  String get ccylBindHelp;
+
+  /// No description provided for @noData.
+  ///
+  /// In en, this message translates to:
+  /// **'No Data'**
+  String get noData;
 }
 
 class _AppLocalizationsDelegate
