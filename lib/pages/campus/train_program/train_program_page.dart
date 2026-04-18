@@ -50,7 +50,6 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
   }
 
   Widget _buildContent(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         _buildFilters(context),
