@@ -634,6 +634,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get trainProgramMajor => '专业';
 
   @override
+  String get trainProgramEducationSystem => '学制';
+
+  @override
+  String get trainProgramDegreeType => '学位类型';
+
+  @override
   String get trainProgramDetail => '培养方案详情';
 
   @override
@@ -647,6 +653,54 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get trainProgramObjective => '培养目标';
+
+  @override
+  String get trainProgramCourseStructure => '课程结构';
+
+  @override
+  String get trainProgramCourseNumber => '课程号';
+
+  @override
+  String get trainProgramOpenCollege => '开课学院';
+
+  @override
+  String get trainProgramCourseType => '课程类别';
+
+  @override
+  String get trainProgramExamType => '考核方式';
+
+  @override
+  String get trainProgramTeachingMethod => '教学方式';
+
+  @override
+  String get trainProgramCourseHoursDetail => '内含学时';
+
+  @override
+  String get trainProgramWeekHours => '周学时';
+
+  @override
+  String get trainProgramActualHours => '实践学时';
+
+  @override
+  String get trainProgramOpenCourse => '开放课程';
+
+  @override
+  String get trainProgramCourseArrangement => '课程安排';
+
+  @override
+  String get trainProgramPlanName => '方案名称';
+
+  @override
+  String get trainProgramCourseAttribute => '课程属性';
+
+  @override
+  String get trainProgramAcademicYear => '学年';
+
+  @override
+  String get trainProgramSemester => '学期';
+
+  @override
+  String get trainProgramExperimentHours => '实验学时';
 
   @override
   String get trainProgramLoginRequired => '请先在「我的」页面完成统一身份认证登录';

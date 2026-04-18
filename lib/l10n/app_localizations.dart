@@ -1297,6 +1297,18 @@ abstract class AppLocalizations {
   /// **'Major'**
   String get trainProgramMajor;
 
+  /// No description provided for @trainProgramEducationSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'Education System'**
+  String get trainProgramEducationSystem;
+
+  /// No description provided for @trainProgramDegreeType.
+  ///
+  /// In en, this message translates to:
+  /// **'Degree Type'**
+  String get trainProgramDegreeType;
+
   /// No description provided for @trainProgramDetail.
   ///
   /// In en, this message translates to:
@@ -1326,6 +1338,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Training Objective'**
   String get trainProgramObjective;
+
+  /// No description provided for @trainProgramCourseStructure.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Structure'**
+  String get trainProgramCourseStructure;
+
+  /// No description provided for @trainProgramCourseNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Number'**
+  String get trainProgramCourseNumber;
+
+  /// No description provided for @trainProgramOpenCollege.
+  ///
+  /// In en, this message translates to:
+  /// **'Offering College'**
+  String get trainProgramOpenCollege;
+
+  /// No description provided for @trainProgramCourseType.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Type'**
+  String get trainProgramCourseType;
+
+  /// No description provided for @trainProgramExamType.
+  ///
+  /// In en, this message translates to:
+  /// **'Exam Type'**
+  String get trainProgramExamType;
+
+  /// No description provided for @trainProgramTeachingMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Teaching Method'**
+  String get trainProgramTeachingMethod;
+
+  /// No description provided for @trainProgramCourseHoursDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Hours Detail'**
+  String get trainProgramCourseHoursDetail;
+
+  /// No description provided for @trainProgramWeekHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Hours'**
+  String get trainProgramWeekHours;
+
+  /// No description provided for @trainProgramActualHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice Hours'**
+  String get trainProgramActualHours;
+
+  /// No description provided for @trainProgramOpenCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Course'**
+  String get trainProgramOpenCourse;
+
+  /// No description provided for @trainProgramCourseArrangement.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Arrangement'**
+  String get trainProgramCourseArrangement;
+
+  /// No description provided for @trainProgramPlanName.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan Name'**
+  String get trainProgramPlanName;
+
+  /// No description provided for @trainProgramCourseAttribute.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Attribute'**
+  String get trainProgramCourseAttribute;
+
+  /// No description provided for @trainProgramAcademicYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Academic Year'**
+  String get trainProgramAcademicYear;
+
+  /// No description provided for @trainProgramSemester.
+  ///
+  /// In en, this message translates to:
+  /// **'Semester'**
+  String get trainProgramSemester;
+
+  /// No description provided for @trainProgramExperimentHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Experiment Hours'**
+  String get trainProgramExperimentHours;
 
   /// No description provided for @trainProgramLoginRequired.
   ///

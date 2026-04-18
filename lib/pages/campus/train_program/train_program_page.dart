@@ -381,10 +381,18 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
                   ),
                   const Divider(height: 24),
                   _buildInfoRow(context, l10n.trainProgramMajor, info.zym),
-                  _buildInfoRow(context, '学院', info.xsm),
-                  _buildInfoRow(context, '年级', info.njmc),
-                  _buildInfoRow(context, '学制', info.xzlxmc),
-                  _buildInfoRow(context, '学位类型', info.xdlxmc),
+                  _buildInfoRow(context, l10n.trainProgramCollege, info.xsm),
+                  _buildInfoRow(context, l10n.trainProgramGrade, info.njmc),
+                  _buildInfoRow(
+                    context,
+                    l10n.trainProgramEducationSystem,
+                    info.xzlxmc,
+                  ),
+                  _buildInfoRow(
+                    context,
+                    l10n.trainProgramDegreeType,
+                    info.xdlxmc,
+                  ),
                   const Divider(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -431,7 +439,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
             const SizedBox(height: 16),
           ],
           Text(
-            '课程结构',
+            l10n.trainProgramCourseStructure,
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -640,6 +648,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
     BuildContext context,
     ScrollController scrollController,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     final detail = _provider.currentCourseDetail!;
     final kc = detail.kc;
     final jhkc = detail.jhkc;
@@ -681,15 +690,39 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  _buildCourseInfoRow(context, '课程号', kc.kch),
-                  _buildCourseInfoRow(context, '学分', kc.xf),
-                  _buildCourseInfoRow(context, '学时', kc.xs),
-                  _buildCourseInfoRow(context, '开课学院', kc.xsm),
-                  _buildCourseInfoRow(context, '课程类别', kc.kclbmc),
-                  _buildCourseInfoRow(context, '考核方式', kc.kslxmc),
-                  _buildCourseInfoRow(context, '教学方式', kc.jxfssm),
+                  _buildCourseInfoRow(
+                    context,
+                    l10n.trainProgramCourseNumber,
+                    kc.kch,
+                  ),
+                  _buildCourseInfoRow(context, l10n.trainProgramCredits, kc.xf),
+                  _buildCourseInfoRow(context, l10n.trainProgramHours, kc.xs),
+                  _buildCourseInfoRow(
+                    context,
+                    l10n.trainProgramOpenCollege,
+                    kc.xsm,
+                  ),
+                  _buildCourseInfoRow(
+                    context,
+                    l10n.trainProgramCourseType,
+                    kc.kclbmc,
+                  ),
+                  _buildCourseInfoRow(
+                    context,
+                    l10n.trainProgramExamType,
+                    kc.kslxmc,
+                  ),
+                  _buildCourseInfoRow(
+                    context,
+                    l10n.trainProgramTeachingMethod,
+                    kc.jxfssm,
+                  ),
                   _buildCourseHoursRow(context),
-                  _buildCourseInfoRow(context, '内容简介', kc.nrjj),
+                  _buildCourseInfoRow(
+                    context,
+                    l10n.trainProgramObjective,
+                    kc.nrjj,
+                  ),
                 ],
               ),
             ),
@@ -709,7 +742,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        '开放课程',
+                        l10n.trainProgramOpenCourse,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(
                             context,
@@ -723,7 +756,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
             ),
           ] else ...[
             Text(
-              '课程安排',
+              l10n.trainProgramCourseArrangement,
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -734,11 +767,31 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    _buildCourseInfoRow(context, '方案名称', jhkc!.famc),
-                    _buildCourseInfoRow(context, '课程属性', jhkc.kcsxmc),
-                    _buildCourseInfoRow(context, '学年', jhkc.xnmc),
-                    _buildCourseInfoRow(context, '学期', jhkc.xqm),
-                    _buildCourseInfoRow(context, '学分', jhkc.xf),
+                    _buildCourseInfoRow(
+                      context,
+                      l10n.trainProgramPlanName,
+                      jhkc!.famc,
+                    ),
+                    _buildCourseInfoRow(
+                      context,
+                      l10n.trainProgramCourseAttribute,
+                      jhkc.kcsxmc,
+                    ),
+                    _buildCourseInfoRow(
+                      context,
+                      l10n.trainProgramAcademicYear,
+                      jhkc.xnmc,
+                    ),
+                    _buildCourseInfoRow(
+                      context,
+                      l10n.trainProgramSemester,
+                      jhkc.xqm,
+                    ),
+                    _buildCourseInfoRow(
+                      context,
+                      l10n.trainProgramCredits,
+                      jhkc.xf,
+                    ),
                   ],
                 ),
               ),
@@ -774,6 +827,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
   }
 
   Widget _buildCourseHoursRow(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final kc = _provider.currentCourseDetail!.kc;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -783,7 +837,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
           SizedBox(
             width: 100,
             child: Text(
-              '内含学时',
+              l10n.trainProgramCourseHoursDetail,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -794,12 +848,20 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
               spacing: 8,
               runSpacing: 4,
               children: [
-                _buildHoursChip(context, '周学时', kc.knzxs),
-                _buildHoursChip(context, '总学时', kc.jkzxs),
+                _buildHoursChip(context, l10n.trainProgramWeekHours, kc.knzxs),
+                _buildHoursChip(context, l10n.trainProgramHours, kc.jkzxs),
                 if (kc.sjzxs.isNotEmpty && kc.sjzxs != '0')
-                  _buildHoursChip(context, '实践', kc.sjzxs),
+                  _buildHoursChip(
+                    context,
+                    l10n.trainProgramActualHours,
+                    kc.sjzxs,
+                  ),
                 if (kc.syzxs.isNotEmpty && kc.syzxs != '0')
-                  _buildHoursChip(context, '实验', kc.syzxs),
+                  _buildHoursChip(
+                    context,
+                    l10n.trainProgramExperimentHours,
+                    kc.syzxs,
+                  ),
               ],
             ),
           ),

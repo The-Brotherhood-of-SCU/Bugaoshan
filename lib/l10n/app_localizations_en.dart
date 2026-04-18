@@ -648,6 +648,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get trainProgramMajor => 'Major';
 
   @override
+  String get trainProgramEducationSystem => 'Education System';
+
+  @override
+  String get trainProgramDegreeType => 'Degree Type';
+
+  @override
   String get trainProgramDetail => 'Training Program Detail';
 
   @override
@@ -661,6 +667,54 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get trainProgramObjective => 'Training Objective';
+
+  @override
+  String get trainProgramCourseStructure => 'Course Structure';
+
+  @override
+  String get trainProgramCourseNumber => 'Course Number';
+
+  @override
+  String get trainProgramOpenCollege => 'Offering College';
+
+  @override
+  String get trainProgramCourseType => 'Course Type';
+
+  @override
+  String get trainProgramExamType => 'Exam Type';
+
+  @override
+  String get trainProgramTeachingMethod => 'Teaching Method';
+
+  @override
+  String get trainProgramCourseHoursDetail => 'Course Hours Detail';
+
+  @override
+  String get trainProgramWeekHours => 'Weekly Hours';
+
+  @override
+  String get trainProgramActualHours => 'Practice Hours';
+
+  @override
+  String get trainProgramOpenCourse => 'Open Course';
+
+  @override
+  String get trainProgramCourseArrangement => 'Course Arrangement';
+
+  @override
+  String get trainProgramPlanName => 'Plan Name';
+
+  @override
+  String get trainProgramCourseAttribute => 'Course Attribute';
+
+  @override
+  String get trainProgramAcademicYear => 'Academic Year';
+
+  @override
+  String get trainProgramSemester => 'Semester';
+
+  @override
+  String get trainProgramExperimentHours => 'Experiment Hours';
 
   @override
   String get trainProgramLoginRequired =>
