@@ -3,11 +3,11 @@ name: Build App
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
   workflow_dispatch:
     inputs:
       version:
-        description: 'tag name'
+        description: "tag name"
         required: false
         type: string
 
@@ -21,12 +21,12 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
 
       - uses: subosito/flutter-action@v2.18.0
         with:
-          flutter-version: '3.41.6'
-          channel: 'stable'
+          flutter-version: "3.41.6"
+          channel: "stable"
           cache: true
 
       - name: Get dependencies
@@ -55,8 +55,8 @@ jobs:
 
       - uses: subosito/flutter-action@v2.18.0
         with:
-          flutter-version: '3.41.6'
-          channel: 'stable'
+          flutter-version: "3.41.6"
+          channel: "stable"
           cache: true
 
       - name: Get dependencies
@@ -92,8 +92,8 @@ jobs:
 
       - uses: subosito/flutter-action@v2.18.0
         with:
-          flutter-version: '3.41.6'
-          channel: 'stable'
+          flutter-version: "3.41.6"
+          channel: "stable"
           cache: true
 
       - name: Enable Windows desktop
@@ -119,25 +119,27 @@ jobs:
 
   release:
     name: Release
-    needs: [build-android, build-ios, build-windows]
+    needs: [ build-android, build-ios, build-windows ]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name ==
+      'workflow_dispatch'
     permissions:
       contents: write
     steps:
       - uses: actions/download-artifact@v4
 
-      - name: Create archives
+      - name: Prepare files
         run: |
-          cp android-apk/*.apk android.apk
-          cp ios-ipa/*.ipa ios.ipa
-          cd windows && zip -r ../windows.zip . && cd ..
+          VERSION=${GITHUB_REF#refs/tags/}
+          cp android-apk/*.apk bugaoshan_$VERSION.apk
+          cp ios-ipa/*.ipa bugaoshan_$VERSION.ipa
+          cd windows && zip -r ../bugaoshan_$VERSION.zip . && cd ..
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            android.apk
-            ios.ipa
-            windows.zip
+            bugaoshan_*.apk
+            bugaoshan_*.ipa
+            bugaoshan_*.zip
           generate_release_notes: true
