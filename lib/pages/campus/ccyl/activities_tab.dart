@@ -213,16 +213,25 @@ class _ActivityCard extends StatelessWidget {
                   '${activity.classHour} ${l10n.ccylHours}',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
-                if (activity.qualityName?.isNotEmpty == true) ...[
+                if (activity.star.isNotEmpty) ...[
                   const SizedBox(width: 16),
-                  Icon(
-                    Icons.star,
-                    size: 16,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ...List.generate(
+                    int.tryParse(
+                          activity.star.substring(activity.star.length - 1),
+                        ) ??
+                        0,
+                    (index) => Padding(
+                      padding: const EdgeInsets.only(right: 2),
+                      child: Icon(
+                        Icons.star,
+                        size: 16,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    activity.qualityName!,
+                    activity.starName ?? activity.star,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
