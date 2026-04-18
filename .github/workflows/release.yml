@@ -131,15 +131,15 @@ jobs:
       - name: Prepare files
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
-          cp android-apk/*.apk bugaoshan_$VERSION.apk
-          cp ios-ipa/*.ipa bugaoshan_$VERSION.ipa
-          cd windows && zip -r ../bugaoshan_$VERSION.zip . && cd ..
+          cp android-apk/*.apk bugaoshan_android_$VERSION.apk
+          cp ios-ipa/*.ipa bugaoshan_ios_$VERSION.ipa
+          cd windows && zip -r ../bugaoshan_windows_$VERSION.zip . && cd ..
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            bugaoshan_*.apk
-            bugaoshan_*.ipa
-            bugaoshan_*.zip
+            bugaoshan_android_*.apk
+            bugaoshan_ios_*.ipa
+            bugaoshan_windows_*.zip
           generate_release_notes: true
