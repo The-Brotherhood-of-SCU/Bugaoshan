@@ -1,4 +1,3 @@
-import 'dart:developer' as dev;
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 
@@ -53,7 +52,7 @@ class CcylOAuthService {
       }
 
       return null;
-    } catch (e, st) {
+    } catch (e) {
       return null;
     } finally {
       // client 是 reusable 的，close() 是空操作，不会真正关闭底层连接
