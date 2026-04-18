@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:Bugaoshan/pages/campus/train_program/models/train_program.dart';
 import 'package:Bugaoshan/pages/campus/train_program/models/train_program_model.dart';
 import 'package:Bugaoshan/providers/scu_auth_provider.dart';
@@ -11,10 +10,9 @@ import 'package:Bugaoshan/utils/session_expiry_handler.dart';
 enum TrainProgramLoadState { idle, loading, loaded, error }
 
 class TrainProgramProvider extends ChangeNotifier {
-  final SharedPreferences _prefs;
   final ScuAuthProvider _authProvider;
 
-  TrainProgramProvider(this._prefs, this._authProvider);
+  TrainProgramProvider(this._authProvider);
 
   List<College> _colleges = [];
   List<Grade> _grades = [];

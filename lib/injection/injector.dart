@@ -62,11 +62,9 @@ void _configureAsyncDependencies() {
     return GradesProvider(prefs, auth);
   });
   getIt.registerSingletonAsync<TrainProgramProvider>(() async {
-    await getIt.isReady<SharedPreferences>();
     await getIt.isReady<ScuAuthProvider>();
-    final prefs = getIt<SharedPreferences>();
     final auth = getIt<ScuAuthProvider>();
-    return TrainProgramProvider(prefs, auth);
+    return TrainProgramProvider(auth);
   });
 }
 
