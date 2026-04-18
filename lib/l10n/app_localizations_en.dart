@@ -175,6 +175,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get projectRepository => 'Project Repository';
 
   @override
+  String get checkForUpdates => 'Check for Updates';
+
+  @override
+  String get newVersionAvailable => 'New Version Available';
+
+  @override
+  String get noUpdateAvailable => 'Already on Latest Version';
+
+  @override
+  String get goToReleases => 'Go to Releases';
+
+  @override
+  String get neverMind => 'Never Mind';
+
+  @override
   String get clearAllData => 'Clear All Data';
 
   @override

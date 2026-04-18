@@ -415,6 +415,36 @@ abstract class AppLocalizations {
   /// **'Project Repository'**
   String get projectRepository;
 
+  /// No description provided for @checkForUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for Updates'**
+  String get checkForUpdates;
+
+  /// No description provided for @newVersionAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'New Version Available'**
+  String get newVersionAvailable;
+
+  /// No description provided for @noUpdateAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Already on Latest Version'**
+  String get noUpdateAvailable;
+
+  /// No description provided for @goToReleases.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Releases'**
+  String get goToReleases;
+
+  /// No description provided for @neverMind.
+  ///
+  /// In en, this message translates to:
+  /// **'Never Mind'**
+  String get neverMind;
+
   /// No description provided for @clearAllData.
   ///
   /// In en, this message translates to:

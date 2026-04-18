@@ -171,6 +171,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get projectRepository => '项目仓库';
 
   @override
+  String get checkForUpdates => '检查更新';
+
+  @override
+  String get newVersionAvailable => '发现新版本';
+
+  @override
+  String get noUpdateAvailable => '已是最新版本';
+
+  @override
+  String get goToReleases => '前往 Releases';
+
+  @override
+  String get neverMind => '算了吧';
+
+  @override
   String get clearAllData => '清除所有数据';
 
   @override

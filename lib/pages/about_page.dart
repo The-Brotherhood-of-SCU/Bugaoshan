@@ -1,13 +1,71 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
+import 'package:bugaoshan/serivces/update_service.dart';
 import 'package:bugaoshan/utils/open_link.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 
-class AboutPage extends StatelessWidget {
-  AboutPage({super.key});
+class AboutPage extends StatefulWidget {
+  const AboutPage({super.key});
+
+  @override
+  State<AboutPage> createState() => _AboutPageState();
+}
+
+class _AboutPageState extends State<AboutPage> {
   final versionProvider = getIt<AppInfoProvider>();
+  final updateService = UpdateService();
+
+  Future<void> _checkForUpdates() async {
+    final latestVersion = await updateService.getLatestVersion();
+
+    if (!mounted) return;
+
+    final localizations = AppLocalizations.of(context)!;
+
+    if (latestVersion == null) {
+      showInfoDialog(
+        title: localizations.checkForUpdates,
+        content: localizations.loadFailed,
+      );
+      return;
+    }
+
+    final currentVersion = versionProvider.currentVersion;
+    if (updateService.hasUpdate(currentVersion, latestVersion)) {
+      final shouldNavigate = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: Text(localizations.newVersionAvailable),
+            content: Text('${localizations.version}: $latestVersion'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: Text(localizations.neverMind),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: Text(localizations.goToReleases),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (!mounted) return;
+
+      if (shouldNavigate == true) {
+        await openLink(releasesUrl);
+      }
+    } else {
+      showInfoDialog(
+        title: localizations.checkForUpdates,
+        content: localizations.noUpdateAvailable,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,6 +173,11 @@ class AboutPage extends StatelessWidget {
           },
           label: Text(localizations.environmentInfo),
           icon: Icon(Icons.info_outline),
+        ),
+        ElevatedButton.icon(
+          onPressed: _checkForUpdates,
+          label: Text(localizations.checkForUpdates),
+          icon: Icon(Icons.update),
         ),
       ],
     );
