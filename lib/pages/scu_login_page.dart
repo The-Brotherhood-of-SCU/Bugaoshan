@@ -30,7 +30,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
   bool _captchaLoading = false;
   String? _errorMsg;
   bool _obscurePassword = true;
-  bool _rememberPassword = false;
+  bool _rememberPassword = true;
 
   @override
   void initState() {
