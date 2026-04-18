@@ -44,9 +44,7 @@ class CcylService {
     }
 
     _token = token;
-    _currentUser = CcylUser.fromJson(
-      json['user'] as Map<String, dynamic>,
-    );
+    _currentUser = CcylUser.fromJson(json['user'] as Map<String, dynamic>);
   }
 
   Map<String, String> _authHeaders() {
@@ -231,6 +229,7 @@ class CyclActivity {
   final String activityLibraryId;
   final String orgNo;
   final String name;
+  final String activityName;
   final String level;
   final String star;
   final List<String> quality;
@@ -262,6 +261,7 @@ class CyclActivity {
     required this.activityLibraryId,
     required this.orgNo,
     required this.name,
+    required this.activityName,
     required this.level,
     required this.star,
     required this.quality,
@@ -295,6 +295,7 @@ class CyclActivity {
       activityLibraryId: json['activityLibraryId']?.toString() ?? '',
       orgNo: json['orgNo']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
+      activityName: json['activityName']?.toString() ?? '',
       level: json['level']?.toString() ?? '',
       star: json['star']?.toString() ?? '',
       quality:
