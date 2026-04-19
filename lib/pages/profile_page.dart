@@ -26,8 +26,8 @@ class ProfilePage extends StatelessWidget {
         final loginStatusText = isLoggedIn
             ? localizations.loggedIn
             : isExpired
-                ? localizations.loginSessionExpired
-                : localizations.notLoggedIn;
+            ? localizations.loginSessionExpired
+            : localizations.notLoggedIn;
         final body = Column(
           spacing: 16,
           children: [
@@ -39,55 +39,62 @@ class ProfilePage extends StatelessWidget {
                   horizontal: 16,
                   vertical: 12,
                 ),
-                child: Row(
+                child: Column(
                   children: [
-                    CircleAvatar(
-                      backgroundColor: isLoggedIn
-                          ? Theme.of(context).colorScheme.primaryContainer
-                          : isExpired
-                              ? Theme.of(context)
-                                  .colorScheme
-                                  .tertiaryContainer
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: isLoggedIn
+                              ? Theme.of(context).colorScheme.primaryContainer
+                              : isExpired
+                              ? Theme.of(context).colorScheme.tertiaryContainer
                               : Theme.of(
                                   context,
                                 ).colorScheme.surfaceContainerHighest,
-                      child: Icon(
-                        isLoggedIn
-                            ? Icons.person
-                            : isExpired
+                          child: Icon(
+                            isLoggedIn
+                                ? Icons.person
+                                : isExpired
                                 ? Icons.access_time_filled
                                 : Icons.person_outline,
-                        color: isLoggedIn
-                            ? Theme.of(context).colorScheme.onPrimaryContainer
-                            : isExpired
-                                ? Theme.of(context)
-                                    .colorScheme
-                                    .onTertiaryContainer
-                                : Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            loginStatusText,
-                            style: Theme.of(context).textTheme.titleSmall,
+                            color: isLoggedIn
+                                ? Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimaryContainer
+                                : isExpired
+                                ? Theme.of(
+                                    context,
+                                  ).colorScheme.onTertiaryContainer
+                                : Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                           ),
-                          if (isLoggedIn)
-                            Text(
-                              localizations.scuLogin,
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          if (isExpired)
-                            Text(
-                              localizations.loginSessionExpiredDesc,
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                loginStatusText,
+                                style: Theme.of(context).textTheme.titleSmall,
+                              ),
+                              if (isLoggedIn)
+                                Text(
+                                  localizations.scuLogin,
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              if (isExpired)
+                                Text(
+                                  localizations.loginSessionExpiredDesc,
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 8),
                     isLoggedIn
                         ? TextButton(
                             onPressed: () => _confirmLogout(
