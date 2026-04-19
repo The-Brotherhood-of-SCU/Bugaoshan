@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/about_page.dart';
@@ -10,8 +11,31 @@ import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/common/styled_widget.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
-class ProfilePage extends StatelessWidget {
+const _keyUsername = 'scu_saved_username';
+
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final _storage = const FlutterSecureStorage();
+  String? _username;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsername();
+  }
+
+  Future<void> _loadUsername() async {
+    final username = await _storage.read(key: _keyUsername);
+    if (mounted) {
+      setState(() => _username = username);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +105,7 @@ class ProfilePage extends StatelessWidget {
                               ),
                               if (isLoggedIn)
                                 Text(
-                                  localizations.scuLogin,
+                                  '${localizations.scuLogin}${_username != null ? ' ($_username)' : ''}',
                                   style: Theme.of(context).textTheme.bodySmall,
                                 ),
                               if (isExpired)
@@ -155,6 +179,7 @@ class ProfilePage extends StatelessWidget {
       context,
     ).push<bool>(MaterialPageRoute(builder: (_) => const ScuLoginPage()));
     if (result == true && context.mounted) {
+      _loadUsername();
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('登录成功')));
