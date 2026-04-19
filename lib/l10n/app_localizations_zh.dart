@@ -476,7 +476,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get loginSessionExpired => '登录状态已过期';
 
   @override
-  String get loginSessionExpiredDesc => '登录会话已超过1小时，请重新登录';
+  String get loginSessionExpiredDesc => '登录会话过期，请重新登录';
 
   @override
   String get logout => '退出登录';
