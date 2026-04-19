@@ -72,8 +72,9 @@ class TrainProgramProvider extends ChangeNotifier {
 
   Future<void> fetchCollegesAndGrades() async {
     if (_collegesState == TrainProgramLoadState.loading ||
-        _gradesState == TrainProgramLoadState.loading)
+        _gradesState == TrainProgramLoadState.loading) {
       return;
+    }
 
     _collegesState = TrainProgramLoadState.loading;
     _gradesState = TrainProgramLoadState.loading;
