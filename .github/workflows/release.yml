@@ -1,8 +1,5 @@
 name: Build App
 
-env:
-  ENABLE_IOS_BUILD: false
-
 on:
   push:
     tags:
@@ -45,43 +42,36 @@ jobs:
           name: android-apk
           path: build/app/outputs/flutter-apk/*.apk
 
-  build-ios:
-    name: iOS
-    runs-on: macos-latest
-    if: env.ENABLE_IOS_BUILD == 'true'
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2.18.0
-        with:
-          flutter-version: "3.41.6"
-          channel: "stable"
-          cache: true
-
-      - name: Get dependencies
-        run: flutter pub get
-
-      - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs || true
-
-      - name: Generate localizations
-        run: flutter gen-l10n
-
-      - name: Build iOS (no codesign)
-        run: flutter build ios --release --no-codesign
-
-      - name: Create IPA
-        run: |
-          mkdir -p build/ios/iphoneos/Payload
-          cp -R build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/
-          cd build/ios/iphoneos
-          zip -r ../Runner.ipa Payload
-
-      - name: Upload IPA
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-ipa
-          path: build/ios/Runner.ipa
+  # build-ios:
+  #   name: iOS
+  #   runs-on: macos-latest
+  # 要启用 iOS 构建，请将此 job 取消注释
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: subosito/flutter-action@v2.18.0
+  #       with:
+  #         flutter-version: "3.41.6"
+  #         channel: "stable"
+  #         cache: true
+  #     - name: Get dependencies
+  #       run: flutter pub get
+  #     - name: Generate code
+  #       run: dart run build_runner build --delete-conflicting-outputs || true
+  #     - name: Generate localizations
+  #       run: flutter gen-l10n
+  #     - name: Build iOS (no codesign)
+  #       run: flutter build ios --release --no-codesign
+  #     - name: Create IPA
+  #       run: |
+  #         mkdir -p build/ios/iphoneos/Payload
+  #         cp -R build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/
+  #         cd build/ios/iphoneos
+  #         zip -r ../Runner.ipa Payload
+  #     - name: Upload IPA
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: ios-ipa
+  #         path: build/ios/Runner.ipa
 
   build-windows:
     name: Windows
