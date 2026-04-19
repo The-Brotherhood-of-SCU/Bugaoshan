@@ -1,6 +1,6 @@
 import subprocess
-import json
 import re
+import yaml
 
 
 def get_remotes():
@@ -146,9 +146,9 @@ print(f"当前远程: {remote} {url}")
 
 latest_tag = get_latest_tag()
 
-with open('package.json', 'r', encoding='utf-8') as f:
-    version = json.load(f)['version']
-print(f"当前版本(package.json): {version} ; 最新tag: {latest_tag}")
+with open('pubspec.yaml', 'r', encoding='utf-8') as f:
+    version = yaml.safe_load(f)['version']
+print(f"当前版本(pubspec.yaml): {version} ; 最新tag: {latest_tag}")
 
 uncommitted_changes, changed_files = has_unsaved_changes()
 if uncommitted_changes:
@@ -187,19 +187,19 @@ if local_exists or remote_exists:
         print("操作已取消。")
         exit(0)
 
-print(f"即将修改package.json中的版本号为:{new_version}，并创建tag {tag_name}，然后推送。")
+print(f"即将修改pubspec.yaml中的版本号为:{new_version}，并创建tag {tag_name}，然后推送。")
 print("请确认是否继续？(y/n)")
 confirm = input()
 if confirm.lower() != 'y':
     print("已取消操作。")
     exit(0)
 
-# modify package.json
-with open('package.json', 'r', encoding='utf-8') as f:
-    data = json.load(f)
+# modify pubspec.yaml
+with open('pubspec.yaml', 'r', encoding='utf-8') as f:
+    data = yaml.safe_load(f)
 data['version'] = new_version
-with open('package.json', 'w', encoding='utf-8') as f:
-    json.dump(data, f, indent=4, ensure_ascii=False)
+with open('pubspec.yaml', 'w', encoding='utf-8') as f:
+    yaml.safe_dump(data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
 
 commit_changes(new_version)
 create_tag(tag_name, force=force_needed)
