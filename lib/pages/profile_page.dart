@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/about_page.dart';
@@ -22,6 +22,12 @@ class ProfilePage extends StatelessWidget {
       listenable: authProvider,
       builder: (context, _) {
         final isLoggedIn = authProvider.isLoggedIn;
+        final isExpired = authProvider.isExpired;
+        final loginStatusText = isLoggedIn
+            ? localizations.loggedIn
+            : isExpired
+                ? localizations.loginSessionExpired
+                : localizations.notLoggedIn;
         final body = Column(
           spacing: 16,
           children: [
@@ -38,14 +44,26 @@ class ProfilePage extends StatelessWidget {
                     CircleAvatar(
                       backgroundColor: isLoggedIn
                           ? Theme.of(context).colorScheme.primaryContainer
-                          : Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerHighest,
+                          : isExpired
+                              ? Theme.of(context)
+                                  .colorScheme
+                                  .tertiaryContainer
+                              : Theme.of(
+                                  context,
+                                ).colorScheme.surfaceContainerHighest,
                       child: Icon(
-                        isLoggedIn ? Icons.person : Icons.person_outline,
+                        isLoggedIn
+                            ? Icons.person
+                            : isExpired
+                                ? Icons.access_time_filled
+                                : Icons.person_outline,
                         color: isLoggedIn
                             ? Theme.of(context).colorScheme.onPrimaryContainer
-                            : Theme.of(context).colorScheme.onSurfaceVariant,
+                            : isExpired
+                                ? Theme.of(context)
+                                    .colorScheme
+                                    .onTertiaryContainer
+                                : Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -54,14 +72,17 @@ class ProfilePage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            isLoggedIn
-                                ? localizations.loggedIn
-                                : localizations.notLoggedIn,
+                            loginStatusText,
                             style: Theme.of(context).textTheme.titleSmall,
                           ),
                           if (isLoggedIn)
                             Text(
                               localizations.scuLogin,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          if (isExpired)
+                            Text(
+                              localizations.loginSessionExpiredDesc,
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                         ],

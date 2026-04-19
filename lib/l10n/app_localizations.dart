@@ -991,6 +991,18 @@ abstract class AppLocalizations {
   /// **'Not Logged In'**
   String get notLoggedIn;
 
+  /// No description provided for @loginSessionExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Login Session Expired'**
+  String get loginSessionExpired;
+
+  /// No description provided for @loginSessionExpiredDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your login session has expired after 1 hour. Please login again.'**
+  String get loginSessionExpiredDesc;
+
   /// No description provided for @logout.
   ///
   /// In en, this message translates to:

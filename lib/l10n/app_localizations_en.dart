@@ -483,6 +483,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notLoggedIn => 'Not Logged In';
 
   @override
+  String get loginSessionExpired => 'Login Session Expired';
+
+  @override
+  String get loginSessionExpiredDesc =>
+      'Your login session has expired after 1 hour. Please login again.';
+
+  @override
   String get logout => 'Logout';
 
   @override

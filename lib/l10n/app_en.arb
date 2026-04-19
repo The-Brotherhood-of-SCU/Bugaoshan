@@ -154,6 +154,8 @@
     "scuLogin": "SCU Unified Identity Login",
     "loggedIn": "Logged In",
     "notLoggedIn": "Not Logged In",
+    "loginSessionExpired": "Login Session Expired",
+    "loginSessionExpiredDesc": "Your login session has expired after 1 hour. Please login again.",
     "logout": "Logout",
     "logoutConfirm": "Are you sure you want to logout?",
     "importFromJwxtOnline": "Online Import from JWXT",
