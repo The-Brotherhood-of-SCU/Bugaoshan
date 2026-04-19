@@ -1,15 +1,13 @@
 name: Build App
 
+env:
+  ENABLE_IOS_BUILD: false
+
 on:
   push:
     tags:
       - "v*.*.*"
   workflow_dispatch:
-    inputs:
-      version:
-        description: "tag name"
-        required: false
-        type: string
 
 jobs:
   build-android:
@@ -50,6 +48,7 @@ jobs:
   build-ios:
     name: iOS
     runs-on: macos-latest
+    if: env.ENABLE_IOS_BUILD == 'true'
     steps:
       - uses: actions/checkout@v4
 
@@ -119,20 +118,19 @@ jobs:
 
   release:
     name: Release
-    needs: [ build-android, build-ios, build-windows ]
+    needs: [ build-android, build-windows ]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name ==
       'workflow_dispatch'
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          name: ios-ipa
+        continue-on-error: true
+
+      - uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -148,34 +146,18 @@ jobs:
       - name: Prepare files
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
-          
-          # For Android
-          if [ -d "artifacts/android-apk" ]; then
-            cp artifacts/android-apk/*.apk bugaoshan_android_$VERSION.apk
-          else
-            echo "Could not find Android APK"
-          fi
-          
-          # For iOS
-          if [ -d "artifacts/ios-ipa" ]; then
-            cp artifacts/ios-ipa/*.ipa bugaoshan_ios_$VERSION.ipa
-          else
-            echo "Could not find iOS IPA"
-          fi
-          
-          # For Windows
-          if [ -d "artifacts/windows" ]; then
-            cd artifacts/windows && zip -r ../../bugaoshan_windows_$VERSION.zip . && cd ../..
-          else
-            echo "Could not find Windows build output directory"
+          cp android-apk/*.apk bugaoshan_android_$VERSION.apk
+          cd windows && zip -r ../bugaoshan_windows_$VERSION.zip . && cd ..
+          if [ -d "ios-ipa" ]; then
+            cp ios-ipa/*.ipa bugaoshan_ios_$VERSION.ipa
           fi
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: ncipollo/release-action@v1
         with:
           files: |
             bugaoshan_android_*.apk
-            bugaoshan_ios_*.ipa
             bugaoshan_windows_*.zip
-          body_path: release_notes.md
-          name: ${{ env.title }}
+            bugaoshan_ios_*.ipa
+          bodyPath: release_notes.md
+          title: ${{ env.title }}
