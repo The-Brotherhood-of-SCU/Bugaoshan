@@ -116,9 +116,6 @@ jobs:
       contents: write
     steps:
       - uses: actions/download-artifact@v4
-        with:
-          name: ios-ipa
-        continue-on-error: true
 
       - uses: actions/checkout@v4
 
