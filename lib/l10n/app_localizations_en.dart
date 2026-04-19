@@ -398,8 +398,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importSuccess => 'Schedule imported successfully';
 
   @override
-  String get importFailed =>
-      'Import failed, please check data format or log back in.';
+  String get importFailed => 'Import failed';
 
   @override
   String get importedScheduleDefaultName => 'Imported Schedule';
@@ -536,17 +535,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginButton => 'Login';
 
   @override
-  String captchaLoadFailed(Object error) {
-    return 'Failed to load captcha: $error';
-  }
+  String get captchaLoadFailed => 'Failed to load captcha';
 
   @override
   String get captchaNotLoaded => 'Please load the captcha first';
 
   @override
-  String networkError(Object error) {
-    return 'Network error: $error';
-  }
+  String get networkError => 'Network error';
 
   @override
   String get gradesStats => 'Grade Statistics';
@@ -569,6 +564,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gradesNoData => 'No grade data';
+
+  @override
+  String get gradesLoadFailed => 'Failed to load grades';
 
   @override
   String get gradesNoPassingData => 'No passing grade data';
@@ -637,6 +635,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get sessionExpiredMessage =>
       'Your login session has expired. Please login again to continue using this feature.';
+
+  @override
+  String get sessionExpired => 'Session expired';
 
   @override
   String get relogin => 'Login Again';
@@ -918,4 +919,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get networkDeviceOfflineSuccess => 'Operation successful';
+
+  @override
+  String get networkDeviceAuthFailed => 'Authentication failed';
+
+  @override
+  String get networkDeviceOperationSuccess => 'Operation successful';
+
+  @override
+  String get ccylBindFailed => 'Binding failed, please try again later';
+
+  @override
+  String get ccylActivityLoadFailed => 'Failed to load activity';
+
+  @override
+  String get networkOfflineFailed => 'Failed to offline device';
 }

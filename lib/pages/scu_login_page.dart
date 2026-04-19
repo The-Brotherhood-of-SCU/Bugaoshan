@@ -81,9 +81,10 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
         _captchaCtrl.clear();
       });
     } catch (e) {
+      debugPrint('Captcha load error: $e');
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
-      setState(() => _errorMsg = l10n.captchaLoadFailed(e.toString()));
+      setState(() => _errorMsg = l10n.captchaLoadFailed);
     } finally {
       setState(() => _captchaLoading = false);
     }
@@ -125,9 +126,10 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       setState(() => _errorMsg = e.message);
       _loadCaptcha();
     } catch (e) {
+      debugPrint('Login network error: $e');
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
-      setState(() => _errorMsg = l10n.networkError(e.toString()));
+      setState(() => _errorMsg = l10n.networkError);
       _loadCaptcha();
     } finally {
       if (mounted) setState(() => _loading = false);

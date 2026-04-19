@@ -70,7 +70,7 @@ class PassingScoresTab extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              provider.passingError ?? l10n.loadFailed,
+              _getErrorMessage(l10n, provider.passingError),
               textAlign: TextAlign.center,
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
@@ -84,6 +84,17 @@ class PassingScoresTab extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getErrorMessage(AppLocalizations l10n, String? errorKey) {
+    switch (errorKey) {
+      case 'sessionExpired':
+        return l10n.sessionExpired;
+      case 'gradesLoadFailed':
+        return l10n.gradesLoadFailed;
+      default:
+        return l10n.loadFailed;
+    }
   }
 
   Widget _buildContent(BuildContext context, GradesProvider provider) {

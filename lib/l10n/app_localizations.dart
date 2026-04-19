@@ -850,7 +850,7 @@ abstract class AppLocalizations {
   /// No description provided for @importFailed.
   ///
   /// In en, this message translates to:
-  /// **'Import failed, please check data format or log back in.'**
+  /// **'Import failed'**
   String get importFailed;
 
   /// No description provided for @importedScheduleDefaultName.
@@ -1096,8 +1096,8 @@ abstract class AppLocalizations {
   /// No description provided for @captchaLoadFailed.
   ///
   /// In en, this message translates to:
-  /// **'Failed to load captcha: {error}'**
-  String captchaLoadFailed(Object error);
+  /// **'Failed to load captcha'**
+  String get captchaLoadFailed;
 
   /// No description provided for @captchaNotLoaded.
   ///
@@ -1108,8 +1108,8 @@ abstract class AppLocalizations {
   /// No description provided for @networkError.
   ///
   /// In en, this message translates to:
-  /// **'Network error: {error}'**
-  String networkError(Object error);
+  /// **'Network error'**
+  String get networkError;
 
   /// No description provided for @gradesStats.
   ///
@@ -1152,6 +1152,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No grade data'**
   String get gradesNoData;
+
+  /// No description provided for @gradesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load grades'**
+  String get gradesLoadFailed;
 
   /// No description provided for @gradesNoPassingData.
   ///
@@ -1278,6 +1284,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your login session has expired. Please login again to continue using this feature.'**
   String get sessionExpiredMessage;
+
+  /// No description provided for @sessionExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Session expired'**
+  String get sessionExpired;
 
   /// No description provided for @relogin.
   ///
@@ -1824,6 +1836,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Operation successful'**
   String get networkDeviceOfflineSuccess;
+
+  /// No description provided for @networkDeviceAuthFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication failed'**
+  String get networkDeviceAuthFailed;
+
+  /// No description provided for @networkDeviceOperationSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Operation successful'**
+  String get networkDeviceOperationSuccess;
+
+  /// No description provided for @ccylBindFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Binding failed, please try again later'**
+  String get ccylBindFailed;
+
+  /// No description provided for @ccylActivityLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load activity'**
+  String get ccylActivityLoadFailed;
+
+  /// No description provided for @networkOfflineFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to offline device'**
+  String get networkOfflineFailed;
 }
 
 class _AppLocalizationsDelegate

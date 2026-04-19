@@ -182,6 +182,7 @@
     "passingScores": "及格成绩",
     "gradesLoginRequired": "请先在「我的」页面完成统一身份认证登录",
     "gradesNoData": "暂无成绩数据",
+    "gradesLoadFailed": "成绩加载失败",
     "gradesNoPassingData": "暂无及格成绩数据",
     "gradesGet": "获取成绩",
     "gradesRetry": "重试",
@@ -203,6 +204,7 @@
     "termPassedSummary": "{count} 门 · {credits} 学分",
     "sessionExpiredTitle": "会话已过期",
     "sessionExpiredMessage": "登录会话已过期，请重新登录后继续使用该功能。",
+    "sessionExpired": "登录会话已过期",
     "relogin": "重新登录",
     "trainProgram": "培养方案",
     "trainProgramDesc": "查询各学院各年级的培养方案",
@@ -293,5 +295,13 @@
     "networkDeviceLogoutConfirm": "确定要下线所有设备吗？",
     "networkDeviceForceOffline": "强制下线",
     "networkDeviceConfirmOffline": "确定要下线该设备吗？",
-    "networkDeviceOfflineSuccess": "操作成功"
- }
+    "networkDeviceOfflineSuccess": "操作成功",
+    "networkDeviceAuthFailed": "认证失败",
+    "networkDeviceOperationSuccess": "操作成功",
+    "captchaLoadFailed": "验证码加载失败",
+    "networkError": "网络错误",
+    "ccylBindFailed": "绑定失败，请稍后重试",
+    "ccylActivityLoadFailed": "活动加载失败",
+    "networkOfflineFailed": "下线失败",
+    "importFailed": "导入失败"
+}

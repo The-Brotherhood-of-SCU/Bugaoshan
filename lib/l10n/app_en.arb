@@ -182,6 +182,7 @@
     "passingScores": "Passing Scores",
     "gradesLoginRequired": "Please complete SCU Unified Identity login in the Profile page first",
     "gradesNoData": "No grade data",
+    "gradesLoadFailed": "Failed to load grades",
     "gradesNoPassingData": "No passing grade data",
     "gradesGet": "Fetch Grades",
     "gradesRetry": "Retry",
@@ -203,6 +204,7 @@
     "termPassedSummary": "{count} courses · {credits} cr.",
     "sessionExpiredTitle": "Session Expired",
     "sessionExpiredMessage": "Your login session has expired. Please login again to continue using this feature.",
+    "sessionExpired": "Session expired",
     "relogin": "Login Again",
     "trainProgram": "Training Program",
     "trainProgramDesc": "Search training programs by college and grade",
@@ -293,5 +295,13 @@
     "networkDeviceLogoutConfirm": "Are you sure you want to logout all devices?",
     "networkDeviceForceOffline": "Force Offline",
     "networkDeviceConfirmOffline": "Are you sure you want to offline this device?",
-    "networkDeviceOfflineSuccess": "Operation successful"
-  }
+    "networkDeviceOfflineSuccess": "Operation successful",
+    "networkDeviceAuthFailed": "Authentication failed",
+    "networkDeviceOperationSuccess": "Operation successful",
+    "captchaLoadFailed": "Failed to load captcha",
+    "networkError": "Network error",
+    "ccylBindFailed": "Binding failed, please try again later",
+    "ccylActivityLoadFailed": "Failed to load activity",
+    "networkOfflineFailed": "Failed to offline device",
+    "importFailed": "Import failed"
+}

@@ -391,7 +391,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get importSuccess => '课表导入成功';
 
   @override
-  String get importFailed => '导入失败，请检查数据格式或重新登录';
+  String get importFailed => '导入失败';
 
   @override
   String get importedScheduleDefaultName => '导入的课表';
@@ -524,17 +524,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get loginButton => '登录';
 
   @override
-  String captchaLoadFailed(Object error) {
-    return '验证码加载失败: $error';
-  }
+  String get captchaLoadFailed => '验证码加载失败';
 
   @override
   String get captchaNotLoaded => '请先加载验证码';
 
   @override
-  String networkError(Object error) {
-    return '网络错误: $error';
-  }
+  String get networkError => '网络错误';
 
   @override
   String get gradesStats => '成绩统计';
@@ -556,6 +552,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get gradesNoData => '暂无成绩数据';
+
+  @override
+  String get gradesLoadFailed => '成绩加载失败';
 
   @override
   String get gradesNoPassingData => '暂无及格成绩数据';
@@ -623,6 +622,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sessionExpiredMessage => '登录会话已过期，请重新登录后继续使用该功能。';
+
+  @override
+  String get sessionExpired => '登录会话已过期';
 
   @override
   String get relogin => '重新登录';
@@ -896,6 +898,21 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get networkDeviceOfflineSuccess => '操作成功';
+
+  @override
+  String get networkDeviceAuthFailed => '认证失败';
+
+  @override
+  String get networkDeviceOperationSuccess => '操作成功';
+
+  @override
+  String get ccylBindFailed => '绑定失败，请稍后重试';
+
+  @override
+  String get ccylActivityLoadFailed => '活动加载失败';
+
+  @override
+  String get networkOfflineFailed => '下线失败';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

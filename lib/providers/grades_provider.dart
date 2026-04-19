@@ -60,10 +60,11 @@ class GradesProvider extends ChangeNotifier {
         await SessionExpiryHandler.handle(_authProvider);
       }
       _schemeState = GradesLoadState.error;
-      _schemeError = e.toString();
+      _schemeError = 'sessionExpired';
     } catch (e) {
+      debugPrint('Scheme scores load error: $e');
       _schemeState = GradesLoadState.error;
-      _schemeError = e.toString();
+      _schemeError = 'gradesLoadFailed';
     }
     notifyListeners();
   }
@@ -92,10 +93,11 @@ class GradesProvider extends ChangeNotifier {
         await SessionExpiryHandler.handle(_authProvider);
       }
       _passingState = GradesLoadState.error;
-      _passingError = e.toString();
+      _passingError = 'sessionExpired';
     } catch (e) {
+      debugPrint('Passing scores load error: $e');
       _passingState = GradesLoadState.error;
-      _passingError = e.toString();
+      _passingError = 'gradesLoadFailed';
     }
     notifyListeners();
   }

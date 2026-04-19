@@ -42,11 +42,12 @@ class _ClassroomPageState extends State<ClassroomPage> {
         _isInitialLoad = false;
       });
     } catch (e) {
+      debugPrint('Classroom buildings load error: $e');
       if (!mounted) return;
       setState(() {
         _error = e is CampusNetworkException
             ? 'campusNetworkRequired'
-            : e.toString();
+            : 'loadFailed';
         _isLoading = false;
         _isInitialLoad = false;
       });
@@ -67,11 +68,12 @@ class _ClassroomPageState extends State<ClassroomPage> {
         _isLoading = false;
       });
     } catch (e) {
+      debugPrint('Classroom query error: $e');
       if (!mounted) return;
       setState(() {
         _error = e is CampusNetworkException
             ? 'campusNetworkRequired'
-            : e.toString();
+            : 'loadFailed';
         _isLoading = false;
       });
     }
@@ -179,7 +181,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
     if (buildings.isEmpty) {
       return Center(
         child: Text(
-          '该校区暂无教学楼数据',
+          l10n.noData,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),

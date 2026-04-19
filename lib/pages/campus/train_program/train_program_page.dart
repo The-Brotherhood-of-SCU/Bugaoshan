@@ -111,7 +111,7 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
                 child: Center(child: CircularProgressIndicator()),
               )
             : _provider.collegesState == TrainProgramLoadState.error
-            ? Text(_provider.collegesError ?? l10n.loadFailed)
+            ? Text(l10n.loadFailed)
             : DropdownButtonFormField<String>(
                 initialValue: _provider.selectedCollege,
                 decoration: InputDecoration(
@@ -158,7 +158,7 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
                 child: Center(child: CircularProgressIndicator()),
               )
             : _provider.gradesState == TrainProgramLoadState.error
-            ? Text(_provider.gradesError ?? l10n.loadFailed)
+            ? Text(l10n.loadFailed)
             : DropdownButtonFormField<String>(
                 initialValue: _provider.selectedGrade,
                 decoration: InputDecoration(

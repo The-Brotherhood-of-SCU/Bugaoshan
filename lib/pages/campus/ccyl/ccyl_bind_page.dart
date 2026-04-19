@@ -40,9 +40,10 @@ class _CcylBindPageState extends State<CcylBindPage> {
         Navigator.of(context).pop(true);
       }
     } catch (e) {
+      debugPrint('CCYL bind error: $e');
       if (mounted) {
         setState(() {
-          _error = e.toString();
+          _error = 'ccylBindFailed';
         });
       }
     } finally {
@@ -75,7 +76,7 @@ class _CcylBindPageState extends State<CcylBindPage> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: Text(
-                  _error!,
+                  _getErrorMessage(l10n, _error!),
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                   textAlign: TextAlign.center,
                 ),
@@ -103,5 +104,14 @@ class _CcylBindPageState extends State<CcylBindPage> {
         ),
       ),
     );
+  }
+
+  String _getErrorMessage(AppLocalizations l10n, String errorKey) {
+    switch (errorKey) {
+      case 'ccylBindFailed':
+        return l10n.ccylBindFailed;
+      default:
+        return l10n.loadFailed;
+    }
   }
 }

@@ -81,16 +81,18 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
         client.close();
       }
     } catch (e) {
+      debugPrint('Network device load error: $e');
       if (mounted) {
         setState(() {
           _loading = false;
-          _error = e.toString();
+          _error = 'networkError';
         });
       }
     }
   }
 
   Future<void> _forceOffline(Map<String, dynamic> device) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -135,13 +137,14 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
           debugPrint(json.toString());
           throw Exception(json['m'] ?? '操作失败');
         }
-        _showSnackBar('操作成功');
+        _showSnackBar(l10n.networkDeviceOperationSuccess);
         _loadData();
       } finally {
         client.close();
       }
     } catch (e) {
-      _showSnackBar(e.toString(), isError: true);
+      debugPrint('Force offline error: $e');
+      _showSnackBar(l10n.networkOfflineFailed, isError: true);
     }
   }
 
@@ -233,7 +236,7 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  _error!,
+                  _getErrorMessage(l10n, _error!),
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -408,5 +411,20 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
         ],
       ),
     );
+  }
+
+  String _getErrorMessage(AppLocalizations l10n, String errorKey) {
+    switch (errorKey) {
+      case 'networkError':
+        return l10n.networkError;
+      case 'ccylBindFailed':
+        return l10n.ccylBindFailed;
+      case 'ccylActivityLoadFailed':
+        return l10n.ccylActivityLoadFailed;
+      case 'campusNetworkRequired':
+        return l10n.campusNetworkRequired;
+      default:
+        return l10n.loadFailed;
+    }
   }
 }

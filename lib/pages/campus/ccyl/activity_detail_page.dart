@@ -44,9 +44,10 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
         _loading = false;
       });
     } catch (e) {
+      debugPrint('Activity detail load error: $e');
       if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        _error = 'ccylActivityLoadFailed';
         _loading = false;
       });
     }
@@ -72,7 +73,10 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(_error!, style: const TextStyle(color: Colors.red)),
+            Text(
+              _getErrorMessage(l10n, _error!),
+              style: const TextStyle(color: Colors.red),
+            ),
             const SizedBox(height: 16),
             ElevatedButton(onPressed: _loadData, child: Text(l10n.loadFailed)),
           ],
@@ -412,5 +416,14 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
         ],
       ),
     );
+  }
+
+  String _getErrorMessage(AppLocalizations l10n, String errorKey) {
+    switch (errorKey) {
+      case 'ccylActivityLoadFailed':
+        return l10n.ccylActivityLoadFailed;
+      default:
+        return l10n.loadFailed;
+    }
   }
 }

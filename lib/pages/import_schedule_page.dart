@@ -193,8 +193,9 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         }
       }
     } catch (e) {
+      debugPrint('Import from share error: $e');
       if (mounted) {
-        showInfoDialog(title: l10n.importFailed, content: e.toString());
+        showInfoDialog(title: l10n.importFailed, content: l10n.importFailed);
       }
     }
   }
@@ -222,8 +223,9 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
       if (mounted) setState(() => _loading = false);
       return;
     } catch (e) {
+      debugPrint('Import online error: $e');
       if (mounted) {
-        showInfoDialog(title: l10n.importFailed, content: e.toString());
+        showInfoDialog(title: l10n.importFailed, content: l10n.importFailed);
         setState(() => _loading = false);
       }
       return;
@@ -351,8 +353,9 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
       }
       if (mounted) showInfoDialog(title: l10n.importFailed, content: e.message);
     } catch (e) {
+      debugPrint('Import from jwxt error: $e');
       if (mounted) {
-        showInfoDialog(title: l10n.importFailed, content: e.toString());
+        showInfoDialog(title: l10n.importFailed, content: l10n.importFailed);
       }
     } finally {
       if (mounted) setState(() => _loading = false);

@@ -66,9 +66,10 @@ class _MyActivitiesTabState extends State<MyActivitiesTab> {
         _hasMore = results.length >= 10;
       });
     } catch (e) {
+      debugPrint('My activities load error: $e');
       if (mounted) {
         setState(() {
-          _error = e.toString();
+          _error = 'ccylActivityLoadFailed';
         });
       }
     } finally {
@@ -89,7 +90,10 @@ class _MyActivitiesTabState extends State<MyActivitiesTab> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(_error!, style: TextStyle(color: Colors.red)),
+                Text(
+                  _getErrorMessage(l10n, _error!),
+                  style: TextStyle(color: Colors.red),
+                ),
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _loadActivities,
@@ -119,6 +123,15 @@ class _MyActivitiesTabState extends State<MyActivitiesTab> {
               },
             ),
           );
+  }
+
+  String _getErrorMessage(AppLocalizations l10n, String errorKey) {
+    switch (errorKey) {
+      case 'ccylActivityLoadFailed':
+        return l10n.ccylActivityLoadFailed;
+      default:
+        return l10n.loadFailed;
+    }
   }
 }
 
