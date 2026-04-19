@@ -155,7 +155,7 @@
     "loggedIn": "已登录",
     "notLoggedIn": "未登录",
     "loginSessionExpired": "登录状态已过期",
-    "loginSessionExpiredDesc": "登录会话已超过1小时，请重新登录",
+    "loginSessionExpiredDesc": "登录会话过期，请重新登录",
     "logout": "退出登录",
     "logoutConfirm": "确定要退出登录吗？",
     "importFromJwxtOnline": "从教务系统在线导入",
