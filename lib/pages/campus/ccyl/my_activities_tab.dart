@@ -6,6 +6,8 @@ import 'package:bugaoshan/serivces/ccyl_service.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activity_detail_page.dart';
 
 class MyActivitiesTab extends StatefulWidget {
+  const MyActivitiesTab({super.key});
+
   @override
   State<MyActivitiesTab> createState() => _MyActivitiesTabState();
 }
