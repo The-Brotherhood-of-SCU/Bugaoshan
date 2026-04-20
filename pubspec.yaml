@@ -7,6 +7,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  photo_view: ^0.15.0
   cupertino_icons: ^1.0.8
   get_it: ^9.2.0
   injectable: null
