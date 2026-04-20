@@ -24,13 +24,13 @@ class CcylService {
   bool get isLoggedIn => _token != null;
 
   Future<void> login(String oauthCode) async {
-    final resp = await http.post(
+    final json = await _httpPost(
+      'loginByUc',
       Uri.parse('$_apiBase/app/auth/loginByUc'),
-      headers: _headers,
-      body: jsonEncode({'code': oauthCode}),
+      _headers,
+      {'code': oauthCode},
     );
 
-    final json = _parseJson(resp.body, 'loginByUc');
     if (json['code'] != 0) {
       final msg = json['msg']?.toString() ?? '登录失败';
       throw CcylException(msg);
@@ -38,7 +38,7 @@ class CcylService {
 
     final token = json['token']?.toString();
     if (token == null) {
-      throw CcylException('Token 字段缺失: ${resp.body}');
+      throw CcylException('Token 字段缺失');
     }
 
     _token = token;
@@ -61,10 +61,11 @@ class CcylService {
     String status = '',
     String quality = '',
   }) async {
-    final resp = await http.post(
+    final json = await _httpPost(
+      'list-activity-library',
       Uri.parse('$_apiBase/app/activity/list-activity-library'),
-      headers: _authHeaders(),
-      body: jsonEncode({
+      _authHeaders(),
+      {
         'pn': pageNum,
         'time': DateTime.now().millisecondsSinceEpoch.toString(),
         'ps': pageSize,
@@ -75,10 +76,8 @@ class CcylService {
         'order': order,
         'status': status,
         'quality': quality,
-      }),
+      },
     );
-
-    final json = _parseJson(resp.body, 'list-activity-library');
     if (json['code'] != 0) {
       final msg = json['msg']?.toString() ?? '获取活动列表失败';
       throw CcylException(msg);
@@ -96,17 +95,16 @@ class CcylService {
     int pageNum = 1,
     int pageSize = 10,
   }) async {
-    final resp = await http.post(
+    final json = await _httpPost(
+      'list-mine',
       Uri.parse('$_apiBase/app/activity/list-mine'),
-      headers: _authHeaders(),
-      body: jsonEncode({
+      _authHeaders(),
+      {
         'pn': pageNum,
         'time': DateTime.now().millisecondsSinceEpoch.toString(),
         'ps': pageSize,
-      }),
+      },
     );
-
-    final json = _parseJson(resp.body, 'list-mine');
     if (json['code'] != 0) {
       final msg = json['msg']?.toString() ?? '获取我参与的活动失败';
       throw CcylException(msg);
@@ -125,18 +123,17 @@ class CcylService {
     int pageSize = 10,
     String name = '',
   }) async {
-    final resp = await http.post(
+    final json = await _httpPost(
+      'list-ordered-activity-library',
       Uri.parse('$_apiBase/app/activity/list-ordered-activity-library'),
-      headers: _authHeaders(),
-      body: jsonEncode({
+      _authHeaders(),
+      {
         'pn': pageNum,
         'time': DateTime.now().millisecondsSinceEpoch.toString(),
         'ps': pageSize,
         'name': name,
-      }),
+      },
     );
-
-    final json = _parseJson(resp.body, 'list-ordered-activity-library');
     if (json['code'] != 0) {
       final msg = json['msg']?.toString() ?? '获取预约的活动失败';
       throw CcylException(msg);
@@ -151,13 +148,12 @@ class CcylService {
   }
 
   Future<List<CyclOrg>> getAllOrgs() async {
-    final resp = await http.post(
+    final json = await _httpPost(
+      'list-all',
       Uri.parse('$_apiBase/app/org/list-all'),
-      headers: _authHeaders(),
-      body: '{}',
+      _authHeaders(),
+      {},
     );
-
-    final json = _parseJson(resp.body, 'list-all');
     if (json['code'] != 0) {
       final msg = json['msg']?.toString() ?? '获取组织列表失败';
       throw CcylException(msg);
@@ -179,12 +175,11 @@ class CcylService {
     })
   >
   getActivityLibDetail(String activityLibraryId) async {
-    final resp = await http.get(
+    final json = await _httpGet(
+      'get-lib-detail',
       Uri.parse('$_apiBase/app/activity/get-lib-detail/$activityLibraryId'),
-      headers: _authHeaders(),
+      _authHeaders(),
     );
-
-    final json = _parseJson(resp.body, 'get-lib-detail');
     if (json['code'] != 0) {
       final msg = json['msg']?.toString() ?? '获取活动系列详情失败';
       throw CcylException(msg);
@@ -213,13 +208,12 @@ class CcylService {
     ({CyclActivity activity, CyclActivityLib? activityLib, bool isXtwRole})
   >
   getActivityDetail(String activityId) async {
-    final resp = await http.post(
+    final json = await _httpPost(
+      'get-detail',
       Uri.parse('$_apiBase/app/activity/get-detail'),
-      headers: _authHeaders(),
-      body: jsonEncode({'activityId': activityId}),
+      _authHeaders(),
+      {'activityId': activityId},
     );
-
-    final json = _parseJson(resp.body, 'get-detail');
     if (json['code'] != 0) {
       final msg = json['msg']?.toString() ?? '获取活动详情失败';
       throw CcylException(msg);
@@ -246,20 +240,23 @@ class CcylService {
     final results = <String, List<CyclDict>>{};
 
     for (final code in groupCodes) {
-      final resp = await http.post(
-        Uri.parse('$_apiBase/app/dict/query-by-group-code'),
-        headers: _authHeaders(),
-        body: jsonEncode({'groupCode': code}),
-      );
-
-      final json = _parseJson(resp.body, 'dict/$code');
-      if (json['code'] == 0) {
-        final list = json['list'] as List<dynamic>?;
-        if (list != null) {
-          results[code] = list
-              .map((e) => CyclDict.fromJson(e as Map<String, dynamic>))
-              .toList();
+      try {
+        final json = await _httpPost(
+          'dict/$code',
+          Uri.parse('$_apiBase/app/dict/query-by-group-code'),
+          _authHeaders(),
+          {'groupCode': code},
+        );
+        if (json['code'] == 0) {
+          final list = json['list'] as List<dynamic>?;
+          if (list != null) {
+            results[code] = list
+                .map((e) => CyclDict.fromJson(e as Map<String, dynamic>))
+                .toList();
+          }
         }
+      } on CcylException {
+        // 忽略单个字典请求失败
       }
     }
 
@@ -273,6 +270,47 @@ class CcylService {
 
   void restoreToken(String token) {
     _token = token;
+  }
+
+  Future<Map<String, dynamic>> _httpPost(
+    String api,
+    Uri uri,
+    Map<String, String> headers,
+    Map<String, dynamic> body,
+  ) async {
+    try {
+      final resp = await http.post(
+        uri,
+        headers: headers,
+        body: jsonEncode(body),
+      );
+      if (resp.statusCode != 200) {
+        throw CcylException('[$api] HTTP 错误: ${resp.statusCode}');
+      }
+      return _parseJson(resp.body, api);
+    } on CcylException {
+      rethrow;
+    } catch (e) {
+      throw CcylException('[$api] 网络请求失败: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> _httpGet(
+    String api,
+    Uri uri,
+    Map<String, String> headers,
+  ) async {
+    try {
+      final resp = await http.get(uri, headers: headers);
+      if (resp.statusCode != 200) {
+        throw CcylException('[$api] HTTP 错误: ${resp.statusCode}');
+      }
+      return _parseJson(resp.body, api);
+    } on CcylException {
+      rethrow;
+    } catch (e) {
+      throw CcylException('[$api] 网络请求失败: $e');
+    }
   }
 
   static Map<String, dynamic> _parseJson(String body, String api) {
