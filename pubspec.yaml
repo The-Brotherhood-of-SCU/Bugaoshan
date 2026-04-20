@@ -1,7 +1,7 @@
 name: bugaoshan
 description: Explore everything, all on the Bugaoshan.
 publish_to: none
-version: 0.5.3
+version: 0.5.4
 environment:
   sdk: ^3.10.4
 dependencies:
@@ -36,7 +36,7 @@ flutter:
   uses-material-design: true
   generate: true
   assets:
-  - assets/avater.png
+    - assets/avater.png
 flutter_launcher_icons:
   android: true
   ios: true
