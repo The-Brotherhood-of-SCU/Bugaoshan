@@ -1555,6 +1555,12 @@ abstract class AppLocalizations {
   /// **'Available'**
   String get ccylAvailable;
 
+  /// No description provided for @ccylInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In Progress'**
+  String get ccylInProgress;
+
   /// No description provided for @ccylCompleted.
   ///
   /// In en, this message translates to:

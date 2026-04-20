@@ -249,6 +249,7 @@
     "ccylSearchHint": "Search activity name",
     "ccylHours": "Hours",
     "ccylAvailable": "Available",
+    "ccylInProgress": "In Progress",
     "ccylCompleted": "Completed",
     "ccylSubscribed": "Subscribed",
     "ccylLoginRequired": "Please complete SCU Unified Identity login in the Profile page first",

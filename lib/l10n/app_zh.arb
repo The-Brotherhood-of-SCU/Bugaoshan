@@ -249,6 +249,7 @@
     "ccylSearchHint": "搜索活动名称",
     "ccylHours": "学时",
     "ccylAvailable": "可预约",
+    "ccylInProgress": "进行中",
     "ccylCompleted": "已结束",
     "ccylSubscribed": "已预约",
     "ccylLoginRequired": "请先在「我的」页面完成统一身份认证登录",

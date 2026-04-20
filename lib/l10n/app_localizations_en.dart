@@ -774,6 +774,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ccylAvailable => 'Available';
 
   @override
+  String get ccylInProgress => 'In Progress';
+
+  @override
   String get ccylCompleted => 'Completed';
 
   @override

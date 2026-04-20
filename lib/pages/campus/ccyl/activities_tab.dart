@@ -284,8 +284,8 @@ class _ActivityCard extends StatelessWidget {
                       activity.subscribed
                           ? l10n.ccylSubscribed
                           : (activity.doing
-                                ? l10n.ccylAvailable
-                                : l10n.ccylCompleted),
+                                ? l10n.ccylInProgress
+                                : l10n.ccylAvailable),
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: activity.doing ? Colors.green : Colors.orange,
                       ),

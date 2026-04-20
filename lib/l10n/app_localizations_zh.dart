@@ -759,6 +759,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ccylAvailable => '可预约';
 
   @override
+  String get ccylInProgress => '进行中';
+
+  @override
   String get ccylCompleted => '已结束';
 
   @override
