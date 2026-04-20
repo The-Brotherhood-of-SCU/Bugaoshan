@@ -1,16 +1,26 @@
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:flutter/widgets.dart';
+import 'package:bugaoshan/serivces/scu_auth_service.dart';
 
 class CcylOAuthService {
+  static const _idBase = 'https://id.scu.edu.cn';
   Future<String?> getOAuthCode() async {
     final auth = getIt<ScuAuthProvider>();
     if (auth.accessToken == null) return null;
 
     final client = await auth.service.bindSession();
 
+    final spLoggedUrl = Uri.parse(
+      '$_idBase/api/bff/v1.2/commons/sp_logged'
+      '?access_token=${auth.accessToken}'
+      '&sp_code=${CcylSpCode.value}'
+      '&application_key=scdxplugin_cas_apereo17',
+    );
+
     try {
-      final response = await client.get(
-        Uri.parse('https://typt.scu.edu.cn/oauth/authorize'),
+      final response = await client.followRedirects(
+        spLoggedUrl,
         headers: {
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*',
           'User-Agent':
@@ -19,21 +29,23 @@ class CcylOAuthService {
         },
       );
 
-      final body = response.body;
-
-      if (body.contains('code=')) {
-        final codeMatch = RegExp(r'code=([^&\s"<]+)').firstMatch(body);
-        if (codeMatch != null) return codeMatch.group(1);
+      final finalUrl = response.request?.url.toString() ?? '';
+      if (finalUrl.contains('code=')) {
+        final uri = Uri.parse(finalUrl);
+        final code = uri.queryParameters['code'];
+        return code;
       }
 
+      // 兜底：从响应 body 里找 code（部分情况下重定向 URL 不在 request.url 里）
+      final body = response.body;
       final bodyUri = _extractRedirectUri(body);
       if (bodyUri != null && bodyUri.contains('code=')) {
         final code = Uri.parse(bodyUri).queryParameters['code'];
         return code;
       }
-
       return null;
     } catch (e) {
+      debugPrint('CCYL OAuth] Error: $e');
       return null;
     } finally {
       client.close();
