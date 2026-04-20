@@ -1,3 +1,4 @@
+import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -143,6 +144,7 @@ class SoftwareSettingPage extends StatelessWidget {
                       content: localizations.confirmMessage,
                     );
                     if (confirm == true) {
+                      getIt<ScuAuthProvider>().logout();
                       appConfig.clearAll();
                       final courseProvider = getIt<CourseProvider>();
                       await courseProvider.clearAllData();
