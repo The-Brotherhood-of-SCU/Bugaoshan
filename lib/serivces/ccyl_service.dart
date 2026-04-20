@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 
 class CcylService {
@@ -43,6 +44,8 @@ class CcylService {
 
     _token = token;
     _currentUser = CcylUser.fromJson(json['user'] as Map<String, dynamic>);
+
+    debugPrint('Login success: userId=${_currentUser?.id}');
   }
 
   Map<String, String> _authHeaders() {
@@ -230,8 +233,65 @@ class CcylService {
     }
   }
 
+  Future<List<CyclScoreType>> getActivityScoreTypes(
+    String activityLibraryId,
+  ) async {
+    final json = await _httpPost(
+      'list-activity-score',
+      Uri.parse(
+        '$_apiBase/app/activity/list-activity-score/$activityLibraryId',
+      ),
+      _authHeaders(),
+      {},
+    );
+    if (json['code'] != 0) {
+      final msg = json['msg']?.toString() ?? '获取能力类型失败';
+      throw CcylException(msg);
+    }
+
+    final list = json['list'] as List<dynamic>?;
+    if (list == null) return [];
+
+    return list
+        .map((e) => CyclScoreType.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<void> signUpActivity(String activityId, String scoreType) async {
+    final json = await _httpPost(
+      'sign-up-act',
+      Uri.parse('$_apiBase/app/activity/sign-up-act'),
+      _authHeaders(),
+      {'activityId': activityId, 'scoreType': scoreType},
+    );
+    if (json['code'] != 0) {
+      final msg = json['msg']?.toString() ?? '报名失败';
+      throw CcylException(msg);
+    }
+  }
+
+  Future<void> cancelSignUp(String activityId) async {
+    debugPrint('cancelSignUp: _currentUser=${_currentUser?.id}');
+    if (_currentUser == null) throw CcylException('用户未登录');
+    final json = await _httpPost(
+      'cancel',
+      Uri.parse('$_apiBase/app/activity/cancel'),
+      _authHeaders(),
+      {'activityId': activityId, 'userId': _currentUser!.id},
+    );
+    if (json['code'] != 0) {
+      final msg = json['msg']?.toString() ?? '取消报名失败';
+      throw CcylException(msg);
+    }
+  }
+
   Future<
-    ({CyclActivity activity, CyclActivityLib? activityLib, bool isXtwRole})
+    ({
+      CyclActivity activity,
+      CyclActivityLib? activityLib,
+      bool isXtwRole,
+      bool signUp,
+    })
   >
   getActivityDetail(String activityId) async {
     final json = await _httpPost(
@@ -248,6 +308,7 @@ class CcylService {
     final activityJson = json['activity'] as Map<String, dynamic>?;
     final activityLibJson = json['activityLib'] as Map<String, dynamic>?;
     final isXtwRole = json['isXtwRole'] == true;
+    final signUp = json['signUp'] == true;
 
     if (activityJson == null) {
       throw const CcylException('活动数据缺失');
@@ -259,6 +320,7 @@ class CcylService {
           ? CyclActivityLib.fromJson(activityLibJson)
           : null,
       isXtwRole: isXtwRole,
+      signUp: signUp,
     );
   }
 
@@ -290,12 +352,30 @@ class CcylService {
   }
 
   void logout() {
+    debugPrint(
+      'CcylService logout: _token=$_token, _currentUser=$_currentUser',
+    );
     _token = null;
     _currentUser = null;
+    debugPrint(
+      'CcylService logout done: _token=$_token, _currentUser=$_currentUser',
+    );
   }
 
-  void restoreToken(String token) {
+  void restoreToken(String token, [String? userId]) {
+    debugPrint('restoreToken: token=$token, userId=$userId');
     _token = token;
+    if (userId != null) {
+      _currentUser = CcylUser(
+        id: userId,
+        userName: '',
+        realname: '',
+        orgName: '',
+      );
+    }
+    debugPrint(
+      'restoreToken done: _token=$_token, _currentUser=${_currentUser?.id}',
+    );
   }
 
   Future<Map<String, dynamic>> _httpPost(
@@ -473,6 +553,32 @@ class CyclOrg {
       orgNo: json['orgNo']?.toString() ?? '',
       orgName: json['orgName']?.toString() ?? '',
       parentNo: json['parentNo']?.toString(),
+    );
+  }
+}
+
+class CyclScoreType {
+  final String? id;
+  final String? groupId;
+  final String name;
+  final String value;
+  final String? code;
+
+  CyclScoreType({
+    this.id,
+    this.groupId,
+    required this.name,
+    required this.value,
+    this.code,
+  });
+
+  factory CyclScoreType.fromJson(Map<String, dynamic> json) {
+    return CyclScoreType(
+      id: json['id']?.toString(),
+      groupId: json['groupId']?.toString(),
+      name: json['name']?.toString() ?? '',
+      value: json['value']?.toString() ?? '',
+      code: json['code']?.toString(),
     );
   }
 }

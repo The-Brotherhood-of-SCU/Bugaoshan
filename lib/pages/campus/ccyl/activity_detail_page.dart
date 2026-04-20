@@ -19,6 +19,8 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
   String? _error;
   CyclActivity? _activity;
   CyclActivityLib? _activityLib;
+  bool _signedUp = false;
+  bool _actionLoading = false;
 
   @override
   void initState() {
@@ -42,6 +44,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
       setState(() {
         _activity = result.activity;
         _activityLib = result.activityLib;
+        _signedUp = result.signUp;
         _loading = false;
       });
     } catch (e) {
@@ -54,6 +57,134 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
     }
   }
 
+  Future<void> _toggleSignUp() async {
+    if (_activity == null || _actionLoading) return;
+
+    if (_signedUp) {
+      await _cancelSignUp();
+    } else {
+      await _signUp();
+    }
+  }
+
+  Future<void> _signUp() async {
+    if (_activity == null || _actionLoading) return;
+    setState(() => _actionLoading = true);
+
+    try {
+      final provider = getIt<CcylProvider>();
+      final scoreTypes = await provider.service.getActivityScoreTypes(
+        _activity!.activityLibraryId,
+      );
+      if (!mounted || !_actionLoading) return;
+
+      if (scoreTypes.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.ccylNoScoreType),
+          ),
+        );
+        setState(() => _actionLoading = false);
+        return;
+      }
+
+      final selectedType = await _showScoreTypeDialog(scoreTypes);
+      if (selectedType == null || !mounted) {
+        setState(() => _actionLoading = false);
+        return;
+      }
+
+      await provider.service.signUpActivity(
+        widget.activityId,
+        selectedType.code ?? '',
+      );
+    } catch (e) {
+      debugPrint('Sign up error: $e');
+      if (!mounted) return;
+      setState(() => _actionLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.ccylActionFailed),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _signedUp = true;
+      _actionLoading = false;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context)!.ccylSignUpSuccess)),
+    );
+  }
+
+  Future<void> _cancelSignUp() async {
+    if (_activity == null || _actionLoading) return;
+    setState(() => _actionLoading = true);
+
+    try {
+      final provider = getIt<CcylProvider>();
+      await provider.service.cancelSignUp(widget.activityId);
+    } catch (e) {
+      debugPrint('Cancel sign up error: $e');
+      if (!mounted) return;
+      setState(() => _actionLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.ccylActionFailed),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _signedUp = false;
+      _actionLoading = false;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context)!.ccylCancelSuccess)),
+    );
+  }
+
+  Future<CyclScoreType?> _showScoreTypeDialog(
+    List<CyclScoreType> scoreTypes,
+  ) async {
+    return showDialog<CyclScoreType>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.ccylSelectScoreType),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: scoreTypes.length,
+            itemBuilder: (context, index) {
+              final type = scoreTypes[index];
+              return ListTile(
+                title: Text(type.name),
+                subtitle: Text(
+                  '${AppLocalizations.of(context)!.ccylCurrentValue}: ${type.value}',
+                ),
+                onTap: () => Navigator.pop(context, type),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -61,6 +192,42 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.ccylActivityDetail)),
       body: _buildBody(l10n),
+      bottomNavigationBar: _buildBottomBar(l10n),
+    );
+  }
+
+  Widget? _buildBottomBar(AppLocalizations l10n) {
+    if (_loading || _error != null || _activity == null) return null;
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: ElevatedButton(
+          onPressed: _actionLoading ? null : _toggleSignUp,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: _signedUp
+                ? Colors.red.shade100
+                : Colors.green.shade100,
+            foregroundColor: _signedUp
+                ? Colors.red.shade700
+                : Colors.green.shade700,
+            minimumSize: const Size.fromHeight(48),
+          ),
+          child: _actionLoading
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(
+                  _signedUp ? l10n.ccylCancelSignUp : l10n.ccylSignUp,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+        ),
+      ),
     );
   }
 

@@ -783,6 +783,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ccylActionFailed => '操作失败';
 
   @override
+  String get ccylSignUp => '报名';
+
+  @override
+  String get ccylCancelSignUp => '取消报名';
+
+  @override
+  String get ccylSelectScoreType => '选择希望提升的能力类型';
+
+  @override
+  String get ccylSignUpSuccess => '报名成功';
+
+  @override
+  String get ccylNoScoreType => '暂无能力类型';
+
+  @override
+  String get ccylCurrentValue => '当前值';
+
+  @override
   String get ccylLoginRequired => '请先在「我的」页面完成统一身份认证登录';
 
   @override

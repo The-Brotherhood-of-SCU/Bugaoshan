@@ -798,6 +798,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ccylActionFailed => 'Action failed';
 
   @override
+  String get ccylSignUp => 'Sign Up';
+
+  @override
+  String get ccylCancelSignUp => 'Cancel Sign Up';
+
+  @override
+  String get ccylSelectScoreType => 'Select ability type to improve';
+
+  @override
+  String get ccylSignUpSuccess => 'Signed up successfully';
+
+  @override
+  String get ccylNoScoreType => 'No ability types available';
+
+  @override
+  String get ccylCurrentValue => 'Current value';
+
+  @override
   String get ccylLoginRequired =>
       'Please complete SCU Unified Identity login in the Profile page first';
 

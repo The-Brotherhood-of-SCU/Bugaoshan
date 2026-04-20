@@ -1603,6 +1603,42 @@ abstract class AppLocalizations {
   /// **'Action failed'**
   String get ccylActionFailed;
 
+  /// No description provided for @ccylSignUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Up'**
+  String get ccylSignUp;
+
+  /// No description provided for @ccylCancelSignUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Sign Up'**
+  String get ccylCancelSignUp;
+
+  /// No description provided for @ccylSelectScoreType.
+  ///
+  /// In en, this message translates to:
+  /// **'Select ability type to improve'**
+  String get ccylSelectScoreType;
+
+  /// No description provided for @ccylSignUpSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed up successfully'**
+  String get ccylSignUpSuccess;
+
+  /// No description provided for @ccylNoScoreType.
+  ///
+  /// In en, this message translates to:
+  /// **'No ability types available'**
+  String get ccylNoScoreType;
+
+  /// No description provided for @ccylCurrentValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Current value'**
+  String get ccylCurrentValue;
+
   /// No description provided for @ccylLoginRequired.
   ///
   /// In en, this message translates to:
