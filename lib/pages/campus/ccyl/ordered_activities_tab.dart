@@ -13,12 +13,12 @@ class OrderedActivitiesTab extends StatefulWidget {
 }
 
 class _OrderedActivitiesTabState extends State<OrderedActivitiesTab> {
-  final _scrollController = ScrollController();
   List<CyclActivity> _activities = [];
   bool _loading = false;
   String? _error;
   int _pageNum = 1;
   bool _hasMore = true;
+  final _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -87,44 +87,64 @@ class _OrderedActivitiesTabState extends State<OrderedActivitiesTab> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return _error != null
-        ? Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  _getErrorMessage(l10n, _error!),
-                  style: TextStyle(color: Colors.red),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _loadActivities,
-                  child: Text(l10n.loadFailed),
-                ),
-              ],
+    // 错误态：单独展示，不需要下拉刷新
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              _getErrorMessage(l10n, _error!),
+              style: const TextStyle(color: Colors.red),
             ),
-          )
-        : _activities.isEmpty && !_loading
-        ? Center(child: Text(l10n.noData))
-        : RefreshIndicator(
-            onRefresh: () => _loadActivities(),
-            child: ListView.builder(
-              controller: _scrollController,
-              itemCount: _activities.length + (_hasMore ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index >= _activities.length) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
-                }
-                final activity = _activities[index];
-                return _OrderedActivityCard(activity: activity);
-              },
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadActivities,
+              child: Text(l10n.loadFailed),
             ),
-          );
+          ],
+        ),
+      );
+    }
+
+    // 正常态：RefreshIndicator 包裹统一的 ListView，始终挂载 _scrollController
+    // AlwaysScrollableScrollPhysics 保证空列表时也能触发下拉刷新
+    return RefreshIndicator(
+      onRefresh: () => _loadActivities(),
+      child: ListView.builder(
+        controller: _scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
+        // 空列表时额外插入一个占位 item，使列表可滚动从而触发 RefreshIndicator
+        itemCount: _activities.isEmpty
+            ? 1
+            : _activities.length + (_hasMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          // 空列表占位
+          if (_activities.isEmpty) {
+            return SizedBox(
+              height: MediaQuery.of(context).size.height * 0.6,
+              child: Center(
+                child: _loading
+                    ? const CircularProgressIndicator()
+                    : Text(l10n.noData),
+              ),
+            );
+          }
+
+          // 加载更多指示器
+          if (index >= _activities.length) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+
+          return _OrderedActivityCard(activity: _activities[index]);
+        },
+      ),
+    );
   }
 
   String _getErrorMessage(AppLocalizations l10n, String errorKey) {
