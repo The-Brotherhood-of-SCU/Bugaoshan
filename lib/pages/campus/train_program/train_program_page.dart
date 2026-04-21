@@ -54,6 +54,7 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
       children: [
         _buildFilters(context),
         Expanded(child: _buildProgramsList(context)),
+        const SizedBox(height: 16),
       ],
     );
   }
