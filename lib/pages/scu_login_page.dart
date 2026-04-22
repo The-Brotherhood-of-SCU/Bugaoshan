@@ -36,6 +36,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
   @override
   void initState() {
     super.initState();
+    OcrService.init();
     _loadSaved();
     _loadCaptcha();
   }
@@ -45,6 +46,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
     _usernameCtrl.dispose();
     _passwordCtrl.dispose();
     _captchaCtrl.dispose();
+    OcrService.dispose();
     super.dispose();
   }
 
@@ -80,15 +82,17 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       String? recognizedText;
       try {
         final comma = captcha.captchaBase64.indexOf(',');
-        final raw = comma >= 0 ? captcha.captchaBase64.substring(comma + 1) : captcha.captchaBase64;
+        final raw = comma >= 0
+            ? captcha.captchaBase64.substring(comma + 1)
+            : captcha.captchaBase64;
         final imageBytes = base64.decode(raw);
         recognizedText = await OcrService.performOcr(imageBytes);
       } catch (e) {
         debugPrint('OCR error: $e');
       }
-      
+
       if (!mounted) return;
-      
+
       setState(() {
         _captcha = captcha;
         if (recognizedText != null && recognizedText.isNotEmpty) {
