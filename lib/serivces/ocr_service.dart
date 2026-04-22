@@ -9,8 +9,18 @@ class OcrService {
     if (_session != null) return;
     try {
       final onnxRuntime = OnnxRuntime();
+
+      // Optimize session with execution options
+      final options = OrtSessionOptions(
+        intraOpNumThreads: 2,
+        interOpNumThreads: 1,
+        providers: [OrtProvider.CPU],
+        useArena: true,
+      );
+
       _session = await onnxRuntime.createSessionFromAsset(
         'assets/universal-login-ocr.onnx',
+        options: options,
       );
     } catch (e) {
       // Ignore print in production, but helpful for debugging
@@ -62,50 +72,54 @@ class OcrService {
 
     // 4. Run inference
     final inputOrt = await OrtValue.fromList(inputData, [1, 26, 80, 3]);
+    Map<String, OrtValue>? outputs;
 
-    // In python: self.input_name = self.session.get_inputs()[0].name
-    // Let's get the input name dynamically or just use 'input' if we know it.
-    // The python code uses dynamic input name. We can get it from session metadata if needed.
-    // But let's try getting input names first.
-    final inputNames = _session!.inputNames;
-    final inputName = inputNames.isNotEmpty ? inputNames[0] : 'input';
+    try {
+      final inputNames = _session!.inputNames;
+      final inputName = inputNames.isNotEmpty ? inputNames[0] : 'input';
 
-    final outputs = await _session!.run({inputName: inputOrt});
-    await inputOrt.dispose();
+      outputs = await _session!.run({inputName: inputOrt});
 
-    final outputNames = _session!.outputNames;
-    final outputName = outputNames.isNotEmpty ? outputNames[0] : 'output';
-    final outputOrt = outputs[outputName];
+      final outputNames = _session!.outputNames;
+      final outputName = outputNames.isNotEmpty ? outputNames[0] : 'output';
+      final outputOrt = outputs[outputName];
 
-    if (outputOrt == null) {
-      throw Exception('Invalid output from OCR model');
-    }
+      if (outputOrt == null) {
+        throw Exception('Invalid output from OCR model');
+      }
 
-    final batchOutput = await outputOrt.asList();
-    await outputOrt.dispose();
+      // Use asFlattenedList for efficiency, which avoids creating nested lists
+      final logits = (await outputOrt.asFlattenedList()).cast<double>();
 
-    // 5. Decoding based on python code
-    const charList = "0123456789abcdefghijklmnopqrstuvwxyz";
-    final charLength = charList.length; // 36
+      // 5. Decoding based on python code
+      const charList = "0123456789abcdefghijklmnopqrstuvwxyz";
+      final charLength = charList.length; // 36
 
-    final res = StringBuffer();
-    // Python: output = outputs[0] -> shape [1, 144] assuming 4 * 36
-    final logits = (batchOutput[0] as List<dynamic>).cast<double>();
+      final res = StringBuffer();
 
-    for (int i = 0; i < 4; i++) {
-      int maxIndex = 0;
-      double maxProb = logits[i * charLength];
-      for (int j = 1; j < charLength; j++) {
-        final currentProb = logits[i * charLength + j];
-        if (currentProb > maxProb) {
-          maxProb = currentProb;
-          maxIndex = j;
+      for (int i = 0; i < 4; i++) {
+        int maxIndex = 0;
+        double maxProb = logits[i * charLength];
+        for (int j = 1; j < charLength; j++) {
+          final currentProb = logits[i * charLength + j];
+          if (currentProb > maxProb) {
+            maxProb = currentProb;
+            maxIndex = j;
+          }
+        }
+        res.write(charList[maxIndex]);
+      }
+
+      return res.toString();
+    } finally {
+      // Always dispose tensors to free resources
+      await inputOrt.dispose();
+      if (outputs != null) {
+        for (final tensor in outputs.values) {
+          await tensor.dispose();
         }
       }
-      res.write(charList[maxIndex]);
     }
-
-    return res.toString();
   }
 
   static Future<void> dispose() async {
