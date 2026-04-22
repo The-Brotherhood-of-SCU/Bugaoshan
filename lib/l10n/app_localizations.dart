@@ -697,6 +697,18 @@ abstract class AppLocalizations {
   /// **'Semester Start Date'**
   String get semesterStartDate;
 
+  /// No description provided for @setCurrentWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Current Week'**
+  String get setCurrentWeek;
+
+  /// No description provided for @setCurrentWeekHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically calculates the semester start date based on the current week'**
+  String get setCurrentWeekHint;
+
   /// No description provided for @semesterEndDate.
   ///
   /// In en, this message translates to:

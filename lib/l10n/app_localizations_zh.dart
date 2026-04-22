@@ -316,6 +316,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get semesterStartDate => '学期开始日期';
 
   @override
+  String get setCurrentWeek => '设置当前周数';
+
+  @override
+  String get setCurrentWeekHint => '将根据当前周数自动推算学期开始日期';
+
+  @override
   String get semesterEndDate => '学期结束日期';
 
   @override

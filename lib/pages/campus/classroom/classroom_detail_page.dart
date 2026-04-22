@@ -101,7 +101,7 @@ class ClassroomDetailPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -152,15 +152,15 @@ class ClassroomDetailPage extends StatelessWidget {
     String statusText;
 
     if (classUse.isInUse) {
-      bgColor = Colors.red.withOpacity(0.12);
+      bgColor = Colors.red.withValues(alpha: 0.12);
       icon = Icons.school;
       statusText = '上课中';
     } else if (classUse.isBorrowed) {
-      bgColor = Colors.orange.withOpacity(0.12);
+      bgColor = Colors.orange.withValues(alpha: 0.12);
       icon = Icons.lock_outline;
       statusText = '已借用';
     } else {
-      bgColor = Colors.green.withOpacity(0.12);
+      bgColor = Colors.green.withValues(alpha: 0.12);
       icon = Icons.check_circle_outline;
       statusText = '空闲';
     }

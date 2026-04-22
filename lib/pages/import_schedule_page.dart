@@ -444,6 +444,9 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
       });
     }
 
+    final hasWeekend = courses.any((c) => c.dayOfWeek == 6 || c.dayOfWeek == 7);
+    config.showWeekend = hasWeekend;
+
     return (config: config, courses: courses);
   }
 

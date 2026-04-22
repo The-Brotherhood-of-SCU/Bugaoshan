@@ -321,6 +321,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get semesterStartDate => 'Semester Start Date';
 
   @override
+  String get setCurrentWeek => 'Set Current Week';
+
+  @override
+  String get setCurrentWeekHint =>
+      'Automatically calculates the semester start date based on the current week';
+
+  @override
   String get semesterEndDate => 'Semester End Date';
 
   @override

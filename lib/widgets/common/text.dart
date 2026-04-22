@@ -1,8 +1,15 @@
 ﻿import 'package:flutter/material.dart';
 
-Widget TitleText(String title) {
-  return Text(
-    title,
-    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-  );
+class TitleText extends StatelessWidget {
+  final String title;
+
+  const TitleText(this.title, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      title,
+      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    );
+  }
 }

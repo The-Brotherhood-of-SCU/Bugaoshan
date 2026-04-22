@@ -105,6 +105,8 @@
     "semesterConfig":"学期配置",
     "semesterName":"学期名称",
     "semesterStartDate":"学期开始日期",
+    "setCurrentWeek":"设置当前周数",
+    "setCurrentWeekHint":"将根据当前周数自动推算学期开始日期",
     "semesterEndDate":"学期结束日期",
     "displaySetting":"显示设置",
     "colorOpacity":"颜色不透明度",

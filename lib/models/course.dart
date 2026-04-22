@@ -57,7 +57,7 @@ class ScheduleConfig {
     this.id = 'default',
     this.semesterName = '',
     required this.semesterStartDate,
-    this.totalWeeks = 20,
+    this.totalWeeks = 16,
     this.morningSections = 4,
     this.afternoonSections = 5,
     this.eveningSections = 3,
@@ -67,7 +67,7 @@ class ScheduleConfig {
     List<TimeSlot>? timeSlots,
     this.showTeacherName = true,
     this.showLocation = true,
-    this.showWeekend = true,
+    this.showWeekend = false,
   }) : timeSlots = timeSlots ?? _defaultTimeSlots(4, 5, 3, 45, 10);
 
   factory ScheduleConfig.fromJson(Map<String, dynamic> json) {
@@ -79,7 +79,7 @@ class ScheduleConfig {
       final endDate = DateTime.parse(json['semesterEndDate'] as String);
       totalWeeks = (endDate.difference(startDate).inDays / 7).ceil();
     } else {
-      totalWeeks = 20;
+      totalWeeks = 16;
     }
 
     int morning = json['morningSections'] as int? ?? 4;

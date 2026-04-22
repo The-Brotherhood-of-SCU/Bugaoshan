@@ -21,7 +21,7 @@ class ScuAuthService {
   String? _accessToken;
   String? get accessToken => _accessToken;
 
-  _CookieClient? _cachedClient;
+  CookieClient? _cachedClient;
 
   /// 获取验证码，返回 [CaptchaResult]
   Future<CaptchaResult> fetchCaptcha() async {
@@ -126,12 +126,12 @@ class ScuAuthService {
   /// 预热两个 SSO SP：
   ///   - scdxplugin_jwt23       → 教务系统（zhjw.scu.edu.cn）
   ///   - scdxplugin_cas_apereo17 → 团委系统（CCYL / dekt.scu.edu.cn）
-  Future<_CookieClient> bindSession() async {
+  Future<CookieClient> bindSession() async {
     if (_accessToken == null) throw ScuLoginException('未登录');
 
     if (_cachedClient != null) return _cachedClient!;
 
-    final client = _CookieClient();
+    final client = CookieClient();
 
     // ── Step 1: 保存 token 到服务端 session ──────────────────────────────────
     final sessionResp = await client.post(
@@ -383,7 +383,7 @@ class ScuLoginException implements Exception {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /// Cookie 感知的 http.Client，按域名隔离存储，发送时只带当前请求域的 cookie。
-class _CookieClient extends http.BaseClient {
+class CookieClient extends http.BaseClient {
   final _inner = http.Client();
 
   // 按域名存 cookie：host -> {name: value}

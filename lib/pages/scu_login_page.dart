@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -36,6 +37,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
   @override
   void initState() {
     super.initState();
+    OcrService.init();
     _loadSaved();
     _loadCaptcha();
   }
@@ -45,6 +47,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
     _usernameCtrl.dispose();
     _passwordCtrl.dispose();
     _captchaCtrl.dispose();
+    OcrService.dispose();
     super.dispose();
   }
 
@@ -80,15 +83,17 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       String? recognizedText;
       try {
         final comma = captcha.captchaBase64.indexOf(',');
-        final raw = comma >= 0 ? captcha.captchaBase64.substring(comma + 1) : captcha.captchaBase64;
+        final raw = comma >= 0
+            ? captcha.captchaBase64.substring(comma + 1)
+            : captcha.captchaBase64;
         final imageBytes = base64.decode(raw);
         recognizedText = await OcrService.performOcr(imageBytes);
       } catch (e) {
         debugPrint('OCR error: $e');
       }
-      
+
       if (!mounted) return;
-      
+
       setState(() {
         _captcha = captcha;
         if (recognizedText != null && recognizedText.isNotEmpty) {
@@ -138,7 +143,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       }
 
       if (!mounted) return;
-      Navigator.of(context).pop(true);
+      Navigator.of(logicRootContext).pop(true);
     } on ScuLoginException catch (e) {
       setState(() => _errorMsg = e.message);
       _loadCaptcha();

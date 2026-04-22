@@ -105,6 +105,8 @@
     "semesterConfig":"Semester Config",
     "semesterName":"Semester Name",
     "semesterStartDate":"Semester Start Date",
+    "setCurrentWeek":"Set Current Week",
+    "setCurrentWeekHint":"Automatically calculates the semester start date based on the current week",
     "semesterEndDate":"Semester End Date",
     "displaySetting":"Display Setting",
     "colorOpacity":"Color Opacity",
