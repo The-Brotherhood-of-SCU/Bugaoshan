@@ -6,6 +6,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/serivces/scu_auth_service.dart';
+import 'package:bugaoshan/serivces/ocr_service.dart';
 
 const _keyUsername = 'scu_saved_username';
 const _keyPassword = 'scu_saved_password';
@@ -76,9 +77,25 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
     setState(() => _captchaLoading = true);
     try {
       final captcha = await getIt<ScuAuthProvider>().service.fetchCaptcha();
+      String? recognizedText;
+      try {
+        final comma = captcha.captchaBase64.indexOf(',');
+        final raw = comma >= 0 ? captcha.captchaBase64.substring(comma + 1) : captcha.captchaBase64;
+        final imageBytes = base64.decode(raw);
+        recognizedText = await OcrService.performOcr(imageBytes);
+      } catch (e) {
+        debugPrint('OCR error: $e');
+      }
+      
+      if (!mounted) return;
+      
       setState(() {
         _captcha = captcha;
-        _captchaCtrl.clear();
+        if (recognizedText != null && recognizedText.isNotEmpty) {
+          _captchaCtrl.text = recognizedText;
+        } else {
+          _captchaCtrl.clear();
+        }
       });
     } catch (e) {
       debugPrint('Captcha load error: $e');

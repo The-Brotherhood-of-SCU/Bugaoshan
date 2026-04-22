@@ -25,6 +25,8 @@ dependencies:
   path_provider: ^2.1.5
   dart_sm: ^0.1.4
   flutter_secure_storage: ^9.2.4
+  flutter_onnxruntime: ^1.7.0
+  image: ^4.8.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -37,6 +39,7 @@ flutter:
   generate: true
   assets:
     - assets/avater.png
+    - assets/universal-login-ocr.onnx
 flutter_launcher_icons:
   android: true
   ios: true
