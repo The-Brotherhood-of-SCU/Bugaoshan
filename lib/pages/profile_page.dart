@@ -57,84 +57,13 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             const SizedBox(height: 16),
             // 登录状态卡片
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          backgroundColor: isLoggedIn
-                              ? Theme.of(context).colorScheme.primaryContainer
-                              : isExpired
-                              ? Theme.of(context).colorScheme.tertiaryContainer
-                              : Theme.of(
-                                  context,
-                                ).colorScheme.surfaceContainerHighest,
-                          child: Icon(
-                            isLoggedIn
-                                ? Icons.person
-                                : isExpired
-                                ? Icons.access_time_filled
-                                : Icons.person_outline,
-                            color: isLoggedIn
-                                ? Theme.of(
-                                    context,
-                                  ).colorScheme.onPrimaryContainer
-                                : isExpired
-                                ? Theme.of(
-                                    context,
-                                  ).colorScheme.onTertiaryContainer
-                                : Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                loginStatusText,
-                                style: Theme.of(context).textTheme.titleSmall,
-                              ),
-                              if (isLoggedIn)
-                                Text(
-                                  '${localizations.scuLogin}${_username != null ? ' ($_username)' : ''}',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              if (isExpired)
-                                Text(
-                                  localizations.loginSessionExpiredDesc,
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    isLoggedIn
-                        ? TextButton(
-                            onPressed: () => _confirmLogout(
-                              context,
-                              authProvider,
-                              localizations,
-                            ),
-                            child: Text(localizations.logout),
-                          )
-                        : FilledButton.tonal(
-                            onPressed: () => _openLogin(context),
-                            child: Text(localizations.scuLogin),
-                          ),
-                  ],
-                ),
-              ),
+            _buildLoginStatusCard(
+              context,
+              isLoggedIn,
+              isExpired,
+              loginStatusText,
+              localizations,
+              authProvider,
             ),
             ButtonWithMaxWidth(
               icon: const Icon(Icons.list_alt),
@@ -174,10 +103,83 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Widget _buildLoginStatusCard(
+    BuildContext context,
+    bool isLoggedIn,
+    bool isExpired,
+    String loginStatusText,
+    AppLocalizations localizations,
+    ScuAuthProvider authProvider,
+  ) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: isLoggedIn
+                      ? Theme.of(context).colorScheme.primaryContainer
+                      : isExpired
+                      ? Theme.of(context).colorScheme.tertiaryContainer
+                      : Theme.of(context).colorScheme.surfaceContainerHighest,
+                  child: Icon(
+                    isLoggedIn
+                        ? Icons.person
+                        : isExpired
+                        ? Icons.access_time_filled
+                        : Icons.person_outline,
+                    color: isLoggedIn
+                        ? Theme.of(context).colorScheme.onPrimaryContainer
+                        : isExpired
+                        ? Theme.of(context).colorScheme.onTertiaryContainer
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        loginStatusText,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      if (isLoggedIn)
+                        Text(
+                          '${localizations.scuLogin}${_username != null ? ' ($_username)' : ''}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      if (isExpired)
+                        Text(
+                          localizations.loginSessionExpiredDesc,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            isLoggedIn
+                ? TextButton(
+                    onPressed: () =>
+                        _confirmLogout(context, authProvider, localizations),
+                    child: Text(localizations.logout),
+                  )
+                : FilledButton.tonal(
+                    onPressed: () => _openLogin(context),
+                    child: Text(localizations.scuLogin),
+                  ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _openLogin(BuildContext context) async {
-    final result = await Navigator.of(
-      context,
-    ).push<bool>(MaterialPageRoute(builder: (_) => const ScuLoginPage()));
+    final result = await popupOrNavigate(context, const ScuLoginPage());
     if (result == true && context.mounted) {
       _loadUsername();
       ScaffoldMessenger.of(
