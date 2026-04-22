@@ -39,7 +39,7 @@ jobs:
         run: flutter gen-l10n
 
       - name: Build APK
-        run: flutter build apk --release
+        run: flutter build apk --release --split-per-abi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -137,7 +137,11 @@ jobs:
         run: |
           VERSION="${{ steps.vars.outputs.tag }}"
           # 将下载的 APK 重命名
-          cp android-apk/*.apk bugaoshan_$VERSION.apk
+          for file in android-apk/*.apk; do
+            filename=$(basename -- "$file")
+            arch=$(echo $filename | sed 's/app-//' | sed 's/-release.apk//')
+            cp "$file" "bugaoshan_${VERSION}_${arch}.apk"
+          done
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
