@@ -57,9 +57,81 @@ jobs:
           name: android-apk
           path: build/app/outputs/flutter-apk/*.apk
 
+  build-windows:
+    name: Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2.18.0
+        with:
+          flutter-version: "3.41.6"
+          channel: "stable"
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs || true
+
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Build Windows
+        run: flutter build windows --release
+
+      - name: Archive Windows Release
+        run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath
+          windows-release.zip
+
+      - name: Upload Windows
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          path: windows-release.zip
+
+  build-linux:
+    name: Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
+
+      - uses: subosito/flutter-action@v2.18.0
+        with:
+          flutter-version: "3.41.6"
+          channel: "stable"
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs || true
+
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Build Linux
+        run: flutter build linux --release
+
+      - name: Archive Linux Release
+        run: tar -czvf linux-release.tar.gz -C build/linux/x64/release/bundle .
+
+      - name: Upload Linux
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release
+          path: linux-release.tar.gz
+
   release:
     name: Release
-    needs: [ build-android ]
+    needs: [ build-android, build-windows, build-linux ]
     runs-on: ubuntu-latest
     # 仅在推送 tag 或手动触发时运行
     if: startsWith(github.ref, 'refs/tags/') || github.event_name ==
@@ -78,6 +150,18 @@ jobs:
         with:
           name: android-apk
           path: android-apk
+
+      - name: Download Windows
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-release
+          path: windows-release
+
+      - name: Download Linux
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-release
+          path: linux-release
 
       - name: Get version and tags
         id: vars
@@ -108,6 +192,8 @@ jobs:
         id: changelog
         run: |
           RANGE="${{ steps.vars.outputs.range }}"
+          VERSION="${{ steps.vars.outputs.tag }}"
+          REPO="https://github.com/${{ github.repository }}"
 
           # 提取不同类型的提交记录
           FEATURES=$(git log "$RANGE" --pretty="- %s (%h)" | grep -E '^- feat(\(.+\))?!?:' || true)
@@ -116,6 +202,13 @@ jobs:
 
           {
             echo "body<<EOF"
+            echo "## ⬇️ 下载 (Downloads)"
+            echo "- Android: [64位]($REPO/releases/download/$VERSION/bugaoshan_${VERSION}_arm64-v8a.apk)"
+            echo "- Windows: [x64 Zip]($REPO/releases/download/$VERSION/bugaoshan_${VERSION}_windows_x64.zip)"
+            echo "- Linux: [x64 Tar.gz]($REPO/releases/download/$VERSION/bugaoshan_${VERSION}_linux_x64.tar.gz)"
+            echo ""
+            echo "> 💡 **Note**: 当前项目优先保障 Android 端的稳定与体验。Windows 和 Linux 版本可能存在部分兼容性或体验问题。"
+            echo ""
             echo "## What's Changed"
             echo ""
             echo "> Commits from \`${{ steps.vars.outputs.prev }}\` → \`${{ steps.vars.outputs.tag }}\`"
@@ -153,6 +246,10 @@ jobs:
             cp "$file" "bugaoshan_${VERSION}_${arch}.apk"
           done
 
+          # 移动并重命名 Windows 和 Linux 压缩包
+          cp windows-release/windows-release.zip "bugaoshan_${VERSION}_windows_x64.zip"
+          cp linux-release/linux-release.tar.gz "bugaoshan_${VERSION}_linux_x64.tar.gz"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -161,6 +258,8 @@ jobs:
           body: ${{ steps.changelog.outputs.body }}
           files: |
             bugaoshan_*.apk
+            bugaoshan_*.zip
+            bugaoshan_*.tar.gz
           draft: false
           prerelease: ${{ contains(steps.vars.outputs.tag, '-') }}
           generate_release_notes: false
