@@ -53,7 +53,9 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<ScuAuthProvider>(() async {
     await getIt.isReady<SharedPreferences>();
     final prefs = getIt<SharedPreferences>();
-    return ScuAuthProvider(prefs);
+    final provider = ScuAuthProvider(prefs);
+    await provider.init();
+    return provider;
   });
   getIt.registerSingletonAsync<CcylProvider>(() async {
     await getIt.isReady<SharedPreferences>();

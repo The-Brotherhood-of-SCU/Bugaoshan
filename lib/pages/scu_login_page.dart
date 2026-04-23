@@ -2,16 +2,11 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/serivces/scu_auth_service.dart';
 import 'package:bugaoshan/serivces/ocr_service.dart';
-
-const _keyUsername = 'scu_saved_username';
-const _keyPassword = 'scu_saved_password';
-const _keyRemember = 'scu_remember_password';
 
 class ScuLoginPage extends StatefulWidget {
   const ScuLoginPage({super.key});
@@ -25,7 +20,6 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
   final _usernameCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _captchaCtrl = TextEditingController();
-  final _storage = const FlutterSecureStorage();
 
   CaptchaResult? _captcha;
   bool _loading = false;
@@ -52,28 +46,14 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
   }
 
   Future<void> _loadSaved() async {
-    final remember = await _storage.read(key: _keyRemember);
-    if (remember != 'true') return;
-    final username = await _storage.read(key: _keyUsername);
-    final password = await _storage.read(key: _keyPassword);
+    final credentials = await getIt<ScuAuthProvider>().getSavedCredentials();
+    if (credentials == null) return;
     if (!mounted) return;
     setState(() {
       _rememberPassword = true;
-      if (username != null) _usernameCtrl.text = username;
-      if (password != null) _passwordCtrl.text = password;
+      _usernameCtrl.text = credentials['username']!;
+      _passwordCtrl.text = credentials['password']!;
     });
-  }
-
-  Future<void> _saveCredentials(String username, String password) async {
-    await _storage.write(key: _keyRemember, value: 'true');
-    await _storage.write(key: _keyUsername, value: username);
-    await _storage.write(key: _keyPassword, value: password);
-  }
-
-  Future<void> _clearCredentials() async {
-    await _storage.delete(key: _keyRemember);
-    await _storage.delete(key: _keyUsername);
-    await _storage.delete(key: _keyPassword);
   }
 
   Future<void> _loadCaptcha() async {
@@ -129,7 +109,8 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
     final password = _passwordCtrl.text;
 
     try {
-      await getIt<ScuAuthProvider>().login(
+      final authProvider = getIt<ScuAuthProvider>();
+      await authProvider.login(
         username: username,
         password: password,
         captchaCode: _captcha!.code,
@@ -137,14 +118,15 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       );
 
       if (_rememberPassword) {
-        await _saveCredentials(username, password);
+        await authProvider.saveCredentials(username, password);
       } else {
-        await _clearCredentials();
+        await authProvider.clearCredentials();
       }
 
-      if (!mounted) return;
+      if (!logicRootContext.mounted) return;
       Navigator.of(logicRootContext).pop(true);
     } on ScuLoginException catch (e) {
+      if (!mounted) return;
       setState(() => _errorMsg = e.message);
       _loadCaptcha();
     } catch (e) {
