@@ -165,10 +165,10 @@ class _AboutPageState extends State<AboutPage> {
           icon: Icon(Icons.open_in_new),
         ),
         ElevatedButton.icon(
-          onPressed: () {
+          onPressed: () async {
             showInfoDialog(
               title: localizations.environmentInfo,
-              content: versionProvider.getVersionInfo(),
+              content: await versionProvider.getVersionInfo(),
             );
           },
           label: Text(localizations.environmentInfo),

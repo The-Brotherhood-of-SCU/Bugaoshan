@@ -1,6 +1,6 @@
 ﻿import 'package:web/web.dart' as html;
 
-String getEnvironmentInfo(){
+Future<String> getEnvironmentInfo() async {
   var navigator=html.window.navigator;
   var platform=navigator.platform;
   var isOnline=navigator.onLine;

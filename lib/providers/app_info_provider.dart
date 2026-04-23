@@ -15,7 +15,7 @@ class AppInfoProvider {
     return _version;
   }
 
-  String getVersionInfo() {
+  Future<String> getVersionInfo() async {
     var appName = packageInfo.appName;
     var buildNumber = packageInfo.buildNumber;
     var version = packageInfo.version;
@@ -23,7 +23,7 @@ class AppInfoProvider {
     var installerStore = packageInfo.installerStore;
     var packageName = packageInfo.packageName;
 
-    var environmentText = "---Environment---\n${getEnvironmentInfo()}";
+    var environmentText = "---Environment---\n${await getEnvironmentInfo()}";
 
     String content =
         "---APP---\n"
