@@ -1,31 +1,23 @@
 import 'dart:isolate';
 import 'dart:typed_data';
-import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
+import 'package:flutter_litert/flutter_litert.dart';
 import 'package:image/image.dart' as img;
 
 class OcrService {
-  static OrtSession? _session;
+  static Interpreter? _interpreter;
 
   static Future<void> init() async {
-    if (_session != null) return;
+    if (_interpreter != null) return;
 
-    final onnxRuntime = OnnxRuntime();
-    final options = OrtSessionOptions(
-      intraOpNumThreads: 2,
-      interOpNumThreads: 1,
-      providers: [OrtProvider.CPU],
-      useArena: true,
-    );
-
-    _session = await onnxRuntime.createSessionFromAsset(
-      'assets/universal-login-ocr.onnx',
-      options: options,
+    _interpreter = await Interpreter.fromAsset(
+      'assets/universal-login-ocr.tflite',
+      options: InterpreterOptions()..threads = 2,
     );
   }
 
   static Future<void> dispose() async {
-    await _session?.close();
-    _session = null;
+    _interpreter?.close();
+    _interpreter = null;
   }
 
   static Float32List _preprocessImage(Uint8List imageBytes) {
@@ -40,16 +32,24 @@ class OcrService {
         ? decodedImage
         : img.copyResize(decodedImage, width: 80, height: 26);
 
-    // 3. Normalize: x/255.0 and transpose to (channels, height, width) -> (3, 26, 80)
-    final inputData = Float32List(1 * 26 * 80 * 3);
+    // 3. Normalize: x/255.0 and reshape for TFLite model
+    // The ONNX model used [1, 26, 80, 3] which the converter treated as NCHW (N=1, C=26, H=80, W=3).
+    // TFLite uses NHWC, so the converted shape is [1, 80, 3, 26] (N=1, H=80, W=3, C=26).
+    // We must populate the array in the order expected by TFLite: x(H), channel(W), y(C).
+    final inputData = Float32List(1 * 80 * 3 * 26);
     int index = 0;
-    for (int y = 0; y < 26; y++) {
-      for (int x = 0; x < 80; x++) {
-        final pixel = resizedImage.getPixel(x, y);
-        // Normalize each channel
-        inputData[index++] = pixel.r / 255.0;
-        inputData[index++] = pixel.g / 255.0;
-        inputData[index++] = pixel.b / 255.0;
+    for (int x = 0; x < 80; x++) {
+      for (int c = 0; c < 3; c++) {
+        for (int y = 0; y < 26; y++) {
+          final pixel = resizedImage.getPixel(x, y);
+          if (c == 0) {
+            inputData[index++] = pixel.r / 255.0;
+          } else if (c == 1) {
+            inputData[index++] = pixel.g / 255.0;
+          } else {
+            inputData[index++] = pixel.b / 255.0;
+          }
+        }
       }
     }
     return inputData;
@@ -80,39 +80,26 @@ class OcrService {
 
   static Future<String> performOcr(Uint8List imageBytes) async {
     await init();
-    if (_session == null) throw Exception('OCR Session not initialized');
+    if (_interpreter == null) {
+      throw Exception('OCR Interpreter not initialized');
+    }
 
-    // 1. 将耗时的图像解码和预处理放在后台 Isolate 执行
-    final inputData = await Isolate.run(() => _preprocessImage(imageBytes));
+    // 1. 将耗时的图像解码、预处理以及张量准备放在后台 Isolate 执行
+    final tensors = await Isolate.run(() {
+      final data = _preprocessImage(imageBytes);
+      return {
+        'input': data.reshape([1, 80, 3, 26]),
+        'output': List.filled(144, 0.0).reshape([1, 144]),
+      };
+    });
 
     // 2. 在主线程进行推理
-    final inputOrt = await OrtValue.fromList(inputData, [1, 26, 80, 3]);
-    Map<String, OrtValue>? outputs;
+    var input = tensors['input']!;
+    var output = tensors['output']!;
 
-    try {
-      final inputNames = _session!.inputNames;
-      final inputName = inputNames.isNotEmpty ? inputNames[0] : 'input';
+    _interpreter!.run(input, output);
 
-      outputs = await _session!.run({inputName: inputOrt});
-
-      final outputNames = _session!.outputNames;
-      final outputName = outputNames.isNotEmpty ? outputNames[0] : 'output';
-      final outputOrt = outputs[outputName];
-
-      if (outputOrt == null) {
-        throw Exception('Invalid output from OCR model');
-      }
-
-      final logits = (await outputOrt.asFlattenedList()).cast<double>();
-      return _decodeLogits(logits);
-    } finally {
-      // 仅释放每次推理产生的临时张量，Session 被保留
-      await inputOrt.dispose();
-      if (outputs != null) {
-        for (final tensor in outputs.values) {
-          await tensor.dispose();
-        }
-      }
-    }
+    final logits = output[0].cast<double>();
+    return _decodeLogits(logits);
   }
 }
