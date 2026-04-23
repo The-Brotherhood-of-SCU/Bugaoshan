@@ -30,6 +30,16 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+      - name: Debug - find hvigorw
+        run: |
+          echo "=== repo root ==="
+          ls -la
+          echo "=== ohos/ ==="
+          ls -la ohos/ 2>/dev/null || echo "not found"
+          echo "=== ohos/ohos_shell/ ==="
+          ls -la ohos/ohos_shell/ 2>/dev/null || echo "not found"
+          echo "=== find result ==="
+          find . -name "hvigorw" 2>/dev/null || echo "hvigorw not found anywhere"
 
       - name: Setup OpenHarmony environment
         uses: Snapp-Mobile/oh-action@v0.1
