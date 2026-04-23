@@ -49,3 +49,8 @@ app.*.map.json
 .codebuddy/
 .trae/
 .claude/
+
+# Upload keystore
+*-keystore.jks
+android/keystore/
+android/key.properties

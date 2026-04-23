@@ -37,7 +37,17 @@ jobs:
 
       - name: Generate localizations
         run: flutter gen-l10n
+      - name: Decode Keystore
+        run: |
+          mkdir -p android/keystore
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/keystore/upload-keystore.jks
 
+      - name: Create key.properties
+        run: |
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=../keystore/upload-keystore.jks" >> android/key.properties
       - name: Build APK
         run: flutter build apk --release --split-per-abi
 
