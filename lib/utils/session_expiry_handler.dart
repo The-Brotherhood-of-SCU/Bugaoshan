@@ -28,6 +28,8 @@ class SessionExpiryHandler {
     // 2. 执行 logout，清除本地 token
     await authProvider.logout();
 
+    if (!effectiveContext.mounted) return false;
+
     // 3. 弹出会话过期提示 Dialog
     final result = await showDialog<bool>(
       context: effectiveContext,
