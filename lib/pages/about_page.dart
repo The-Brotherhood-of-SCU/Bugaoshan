@@ -4,7 +4,9 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/serivces/update_service.dart';
 import 'package:bugaoshan/utils/open_link.dart';
+import 'package:bugaoshan/pages/test_page.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
@@ -165,14 +167,9 @@ class _AboutPageState extends State<AboutPage> {
           icon: Icon(Icons.open_in_new),
         ),
         ElevatedButton.icon(
-          onPressed: () async {
-            showInfoDialog(
-              title: localizations.environmentInfo,
-              content: await versionProvider.getVersionInfo(),
-            );
-          },
-          label: Text(localizations.environmentInfo),
-          icon: Icon(Icons.info_outline),
+          onPressed: () => popupOrNavigate(context, const TestPage()),
+          label: Text(localizations.testPage),
+          icon: Icon(Icons.bug_report),
         ),
         ElevatedButton.icon(
           onPressed: _checkForUpdates,

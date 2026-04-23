@@ -195,6 +195,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get environmentInfo => '环境信息';
 
   @override
+  String get testPage => '测试页面';
+
+  @override
+  String get forceUpdate => '强制更新';
+
+  @override
   String get scheduleSetting => '课表设置';
 
   @override

@@ -463,6 +463,18 @@ abstract class AppLocalizations {
   /// **'Environment Info'**
   String get environmentInfo;
 
+  /// No description provided for @testPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Test Page'**
+  String get testPage;
+
+  /// No description provided for @forceUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Force Update'**
+  String get forceUpdate;
+
   /// No description provided for @scheduleSetting.
   ///
   /// In en, this message translates to:

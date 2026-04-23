@@ -59,6 +59,8 @@
     "clearAllData": "Clear All Data",
     "confirmMessage":"Are you sure?",
     "environmentInfo":"Environment Info",
+    "testPage":"Test Page",
+    "forceUpdate":"Force Update",
     "scheduleSetting":"Schedule Setting",
     "scheduleManagement":"Schedule Management",
     "globalSetting":"Global Setting",
