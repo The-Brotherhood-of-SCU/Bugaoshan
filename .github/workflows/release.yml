@@ -61,7 +61,7 @@ jobs:
           cp -r lib/. ohos/ohos_shell/lib/
           cp -r assets/. ohos/ohos_shell/assets/
           find ohos/ohos_shell/lib -name "*.dart" \
-            -exec sed -i 's|package:bugaoshan/|package:bugaoshan_ohos/|g' {} +
+            -exec sed -i '' 's|package:bugaoshan/|package:bugaoshan_ohos/|g' {} +
 
       - uses: actions/setup-java@v4
         with:
