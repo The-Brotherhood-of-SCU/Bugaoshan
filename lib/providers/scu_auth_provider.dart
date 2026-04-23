@@ -20,9 +20,14 @@ class ScuAuthProvider extends ChangeNotifier {
   final ScuAuthService _service = ScuAuthService();
 
   ScuAuthProvider(this._prefs) {
-    _accessToken = _prefs.getString(_keyAccessToken);
     _loginTimestamp = _prefs.getInt(_keyLoginTimestamp);
     _updateLastAppOpenTimestamp();
+  }
+
+  Future<void> init() async {
+    _accessToken = await SecureStorageProvider.instance.read(
+      key: _keyAccessToken,
+    );
   }
 
   String? _accessToken;
@@ -59,7 +64,10 @@ class ScuAuthProvider extends ChangeNotifier {
     );
     _accessToken = _service.accessToken;
     _loginTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    await _prefs.setString(_keyAccessToken, _accessToken!);
+    await SecureStorageProvider.instance.write(
+      key: _keyAccessToken,
+      value: _accessToken!,
+    );
     await _prefs.setInt(_keyLoginTimestamp, _loginTimestamp!);
     notifyListeners();
   }
@@ -68,7 +76,7 @@ class ScuAuthProvider extends ChangeNotifier {
     _service.logout();
     _accessToken = null;
     _loginTimestamp = null;
-    await _prefs.remove(_keyAccessToken);
+    await SecureStorageProvider.instance.delete(key: _keyAccessToken);
     await _prefs.remove(_keyLoginTimestamp);
     getIt<CcylProvider>().logout();
     notifyListeners();
