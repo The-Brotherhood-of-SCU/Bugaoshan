@@ -24,7 +24,7 @@ dependencies:
   hive_ce: ^2.19.3
   path_provider: ^2.1.5
   dart_sm: ^0.1.4
-  flutter_secure_storage: ^9.2.4
+  flutter_secure_storage: ^10.0.0
   flutter_litert: ^2.2.0 #note: GPU backend is manually removed in android\app\build.gradle.kts
   image: ^4.8.0
 dev_dependencies:
