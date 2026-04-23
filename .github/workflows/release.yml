@@ -49,7 +49,7 @@ jobs:
 
   build-ohos:
     name: HarmonyOS
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Checkout with submodules
         uses: actions/checkout@v4
