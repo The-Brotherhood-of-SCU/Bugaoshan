@@ -314,6 +314,14 @@
     "networkDeviceOperationSuccess": "操作成功",
     "captchaLoadFailed": "验证码加载失败",
     "networkError": "网络错误",
+    "loginFailed": "登录失败",
+    "invalidCaptcha": "验证码错误，请重试",
+    "loginFailedWillLock": "登录失败，再输错 {count} 次将锁定账户",
+    "@loginFailedWillLock": {
+        "placeholders": {
+            "count": {"type": "int"}
+        }
+    },
     "ccylBindFailed": "绑定失败，请稍后重试",
     "ccylActivityLoadFailed": "活动加载失败",
     "networkOfflineFailed": "下线失败",
