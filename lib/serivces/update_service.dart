@@ -109,26 +109,48 @@ class UpdateService {
 
     onStatus?.call('Installing...');
 
-    // Load update script from assets
     final currentExe = Platform.resolvedExecutable;
     final currentExeDir = File(currentExe).parent.path;
+
+    if (Platform.isWindows) {
+      await _installWindows(extractDir, currentExeDir, currentExe);
+    } else if (Platform.isLinux) {
+      await _installLinux(extractDir, currentExeDir);
+    } else {
+      throw UnsupportedError('Unsupported platform');
+    }
+
+    exit(0);
+  }
+
+  Future<void> _installWindows(String extractDir, String exeDir, String exePath) async {
     final scriptPath = p.join(extractDir, 'update.bat');
-    final scriptBytes =
-        await rootBundle.load('assets/scripts/update.bat');
+    final scriptBytes = await rootBundle.load('assets/scripts/update.bat');
     final script = utf8.decode(scriptBytes.buffer.asUint8List())
-        .replaceAll('{EXE_DIR}', currentExeDir)
-        .replaceAll('{EXE_PATH}', currentExe);
+        .replaceAll('{EXE_DIR}', exeDir)
+        .replaceAll('{EXE_PATH}', exePath);
     File(scriptPath).writeAsStringSync(script);
 
-    // Run update script and exit
-    final batchPath = p.join(extractDir, 'update.bat');
     await Process.start(
       'cmd.exe',
-      ['/c', 'call', batchPath],
+      ['/c', 'call', scriptPath],
       workingDirectory: extractDir,
       mode: ProcessStartMode.detached,
     );
-    exit(0);
+  }
+
+  Future<void> _installLinux(String extractDir, String exeDir) async {
+    final scriptPath = p.join(extractDir, 'update.sh');
+    final scriptBytes = await rootBundle.load('assets/scripts/update.sh');
+    final script = utf8.decode(scriptBytes.buffer.asUint8List())
+        .replaceAll('{EXE_DIR}', exeDir);
+    File(scriptPath).writeAsStringSync(script);
+
+    await Process.start(
+      'bash',
+      [scriptPath, extractDir, exeDir],
+      mode: ProcessStartMode.detached,
+    );
   }
 
   static const releasesUrl =
