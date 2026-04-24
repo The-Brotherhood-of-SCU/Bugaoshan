@@ -8,8 +8,9 @@ class OcrService {
   static Interpreter? _interpreter;
 
   static Future<void> init() async {
-    if (OS.isHarmony)
+    if (OS.isHarmony) {
       throw PlatformNotSupportedException("Harmony OS is not supported");
+    }
     if (_interpreter != null) return;
 
     _interpreter = await Interpreter.fromAsset(
