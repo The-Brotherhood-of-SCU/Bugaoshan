@@ -1,4 +1,10 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:archive/archive.dart';
 
 class UpdateService {
   static const _pubspecUrl =
@@ -45,7 +51,60 @@ class UpdateService {
       return null;
     }
   }
-}
 
-const releasesUrl =
-    'https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases';
+  Future<void> downloadAndInstall(
+    String version,
+    String downloadUrl, {
+    void Function(String status)? onStatus,
+  }) async {
+    onStatus?.call('Downloading update...');
+
+    final response = await http.get(Uri.parse(downloadUrl));
+    if (response.statusCode != 200) {
+      throw Exception('Download failed: ${response.statusCode}');
+    }
+
+    onStatus?.call('Extracting...');
+
+    // Save to temp directory
+    final tempDir = await getTemporaryDirectory();
+    final extractDir = '${tempDir.path}/bugaoshan_update';
+
+    // Extract the zip
+    final archive = ZipDecoder().decodeBytes(response.bodyBytes);
+    final extractDirObj = Directory(extractDir);
+    if (extractDirObj.existsSync()) {
+      extractDirObj.deleteSync(recursive: true);
+    }
+    extractDirObj.createSync(recursive: true);
+    for (final file in archive) {
+      final filename = '$extractDir/${file.name}';
+      if (file.isFile) {
+        final outFile = File(filename);
+        outFile.parent.createSync(recursive: true);
+        outFile.writeAsBytesSync(file.content as List<int>);
+      }
+    }
+
+    onStatus?.call('Installing...');
+
+    // Load update script from assets
+    final currentExe = Platform.resolvedExecutable;
+    final currentExeDir = File(currentExe).parent.path;
+    final scriptPath = '$extractDir/update.bat';
+    final scriptBytes =
+        await rootBundle.load('assets/scripts/update.bat');
+    final script = utf8.decode(scriptBytes.buffer.asUint8List())
+        .replaceAll('{EXE_DIR}', currentExeDir)
+        .replaceAll('{EXE_PATH}', currentExe);
+    File(scriptPath).writeAsStringSync(script);
+
+    // Run update script and exit
+    await Process.start('cmd.exe', ['/c', 'start', '', '/min', 'update.bat'],
+        workingDirectory: extractDir, runInShell: true);
+    exit(0);
+  }
+
+  static const releasesUrl =
+      'https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases';
+}

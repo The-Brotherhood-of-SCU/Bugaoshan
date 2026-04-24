@@ -47,111 +47,82 @@ Future<String?> getLatestPrereleaseFromGitHub(http.Client client) async {
   throw Exception('GitHub API error: ${response.statusCode}');
 }
 
+Matcher _httpError(int code) =>
+    throwsA(isA<Exception>().having((e) => e.toString(), 'message', contains('$code')));
+
+Matcher _parseError(String keyword) =>
+    throwsA(isA<Exception>().having((e) => e.toString(), 'message', contains(keyword)));
+
 void main() {
   group('getLatestVersionFromGitHub', () {
-    test('parses version from valid GitHub API response', () async {
-      final mockClient = MockClient((request) async {
-        return http.Response(
-          '{"tag_name": "v1.2.3", "name": "Release 1.2.3"}',
-          200,
-        );
-      });
+    MockClient mockClient(String body, [int status = 200]) =>
+        MockClient((request) async => http.Response(body, status));
 
-      final version = await getLatestVersionFromGitHub(mockClient);
+    test('parses version from valid GitHub API response', () async {
+      final version = await getLatestVersionFromGitHub(
+        mockClient('{"tag_name": "v1.2.3", "name": "Release 1.2.3"}'),
+      );
       expect(version, '1.2.3');
     });
 
     test('parses version without v prefix', () async {
-      final mockClient = MockClient((request) async {
-        return http.Response(
-          '{"tag_name": "v0.5.6", "name": "Release 0.5.6"}',
-          200,
-        );
-      });
-
-      final version = await getLatestVersionFromGitHub(mockClient);
+      final version = await getLatestVersionFromGitHub(
+        mockClient('{"tag_name": "v0.5.6", "name": "Release 0.5.6"}'),
+      );
       expect(version, '0.5.6');
     });
 
     test('throws on empty response body', () async {
-      final mockClient = MockClient((request) async {
-        return http.Response('', 200);
-      });
-
       expect(
-        getLatestVersionFromGitHub(mockClient),
-        throwsA(isA<Exception>().having((e) => e.toString(), 'message', contains('empty response'))),
+        getLatestVersionFromGitHub(mockClient('', 200)),
+        _parseError('empty response'),
       );
     });
 
     test('throws on invalid JSON without tag_name', () async {
-      final mockClient = MockClient((request) async {
-        return http.Response('{"name": "Release"}', 200);
-      });
-
       expect(
-        getLatestVersionFromGitHub(mockClient),
-        throwsA(isA<Exception>().having((e) => e.toString(), 'message', contains('Could not parse'))),
+        getLatestVersionFromGitHub(mockClient('{"name": "Release"}', 200)),
+        _parseError('Could not parse'),
       );
     });
 
     test('throws on HTTP error status', () async {
-      final mockClient = MockClient((request) async {
-        return http.Response('Not Found', 404);
-      });
-
       expect(
-        getLatestVersionFromGitHub(mockClient),
-        throwsA(isA<Exception>().having((e) => e.toString(), 'message', contains('404'))),
+        getLatestVersionFromGitHub(mockClient('Not Found', 404)),
+        _httpError(404),
       );
     });
 
     test('throws on rate limit exceeded', () async {
-      final mockClient = MockClient((request) async {
-        return http.Response('Rate limit exceeded', 403);
-      });
-
       expect(
-        getLatestVersionFromGitHub(mockClient),
-        throwsA(isA<Exception>().having((e) => e.toString(), 'message', contains('403'))),
+        getLatestVersionFromGitHub(mockClient('Rate limit exceeded', 403)),
+        _httpError(403),
       );
     });
   });
 
   group('getLatestPrereleaseFromGitHub', () {
-    test('parses prerelease version from releases list', () async {
-      final mockClient = MockClient((request) async {
-        return http.Response(
-          '[{"tag_name": "v0.5.7", "prerelease": false}, {"tag_name": "v0.6.0-beta.1", "prerelease": true}]',
-          200,
-        );
-      });
+    MockClient mockClient(String body, [int status = 200]) =>
+        MockClient((request) async => http.Response(body, status));
 
-      final version = await getLatestPrereleaseFromGitHub(mockClient);
+    test('parses prerelease version from releases list', () async {
+      final version = await getLatestPrereleaseFromGitHub(
+        mockClient('[{"tag_name": "v0.5.7", "prerelease": false}, {"tag_name": "v0.6.0-beta.1", "prerelease": true}]'),
+      );
       expect(version, '0.6.0-beta.1');
     });
 
     test('returns null when no prerelease found', () async {
-      final mockClient = MockClient((request) async {
-        return http.Response(
-          '[{"tag_name": "v0.5.6", "prerelease": false}, {"tag_name": "v0.5.7", "prerelease": false}]',
-          200,
-        );
-      });
-
-      final version = await getLatestPrereleaseFromGitHub(mockClient);
+      final version = await getLatestPrereleaseFromGitHub(
+        mockClient('[{"tag_name": "v0.5.6", "prerelease": false}, {"tag_name": "v0.5.7", "prerelease": false}]'),
+      );
       expect(version, isNull);
     });
 
     test('returns first prerelease when multiple exist', () async {
-      final mockClient = MockClient((request) async {
-        return http.Response(
-          '[{"tag_name": "v0.6.0-beta.2", "prerelease": true}, {"tag_name": "v0.6.0-beta.1", "prerelease": true}]',
-          200,
-        );
-      });
-
-      final version = await getLatestPrereleaseFromGitHub(mockClient);
+      final version = await getLatestPrereleaseFromGitHub(
+        mockClient('[{"tag_name": "v0.6.0-beta.2", "prerelease": true}, {"tag_name": "v0.6.0-beta.1", "prerelease": true}]'),
+      );
       expect(version, '0.6.0-beta.2');
     });
   });

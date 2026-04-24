@@ -59,7 +59,7 @@ class _AboutPageState extends State<AboutPage> {
       if (!mounted) return;
 
       if (shouldNavigate == true) {
-        await openLink(releasesUrl);
+        await openLink(UpdateService.releasesUrl);
       }
     } else {
       showInfoDialog(

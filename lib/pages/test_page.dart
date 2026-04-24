@@ -8,7 +8,7 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
-import 'package:bugaoshan/utils/open_link.dart';
+import 'package:bugaoshan/serivces/update_service.dart';
 
 class TestPage extends StatefulWidget {
   const TestPage({super.key});
@@ -135,10 +135,6 @@ class _TestPageState extends State<TestPage> {
     }
   }
 
-  Future<void> _downloadAndInstall(String url) async {
-    await openLink(url);
-  }
-
   void _showUpdateDialog(String latestVersion, String downloadUrl) {
     final localizations = AppLocalizations.of(context)!;
     showDialog(
@@ -164,13 +160,49 @@ class _TestPageState extends State<TestPage> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _downloadAndInstall(downloadUrl);
+              _startUpdate(latestVersion, downloadUrl);
             },
             child: Text(localizations.goToReleases),
           ),
         ],
       ),
     );
+  }
+
+  void _startUpdate(String latestVersion, String downloadUrl) async {
+    final dialogContext = context;
+    final updateService = getIt<UpdateService>();
+
+    // Show downloading dialog
+    showDialog(
+      context: dialogContext,
+      barrierDismissible: false,
+      builder: (dialogContext) => const AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 16),
+            Text('Downloading update...'),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      await updateService.downloadAndInstall(
+        latestVersion,
+        downloadUrl,
+        onStatus: (status) {
+          // Could update dialog text here if needed
+        },
+      );
+    } catch (e) {
+      if (!dialogContext.mounted) return;
+      Navigator.pop(dialogContext);
+      ScaffoldMessenger.of(dialogContext).showSnackBar(
+        SnackBar(content: Text('Update failed: $e')),
+      );
+    }
   }
 
   @override
@@ -262,7 +294,7 @@ class _TestPageState extends State<TestPage> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _downloadAndInstall(downloadUrl);
+              _startUpdate(latestVersion, downloadUrl);
             },
             child: Text(localizations.goToReleases),
           ),
