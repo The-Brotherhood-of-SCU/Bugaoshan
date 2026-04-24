@@ -8,8 +8,8 @@ import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/serivces/database_service.dart';
-import 'package:bugaoshan/serivces/update_service.dart';
+import 'package:bugaoshan/services/database_service.dart';
+import 'package:bugaoshan/services/update_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'injector.config.dart';

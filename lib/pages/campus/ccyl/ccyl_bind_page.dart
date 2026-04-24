@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
-import 'package:bugaoshan/serivces/ccyl_oauth_service.dart';
+import 'package:bugaoshan/services/ccyl_oauth_service.dart';
 
 class CcylBindPage extends StatefulWidget {
   const CcylBindPage({super.key});

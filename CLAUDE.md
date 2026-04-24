@@ -40,9 +40,10 @@ Provider + ChangeNotifier. Providers are registered in `lib/injection/injector.d
 GetIt + Injectable. `lib/injection/injector.config.dart` is auto-generated. Re-run `dart run build_runner build` after modifying `@injectable` annotations.
 
 ### Service Layer
-- **`ScuAuthService`** (`lib/serivces/scu_auth_service.dart`) — Stateful service holding the SCU access token. Handles SM2 password encryption, cookie-based session management, and all SCU API calls (login, schedule, grades).
-- **`CirApiService`** (`lib/pages/campus/services/cir_api_service.dart`) — Fetches real-time classroom availability from `cir.scu.edu.cn`.
-- **`DatabaseService`** (`lib/serivces/database_service.dart`) — Wraps Hive boxes. Manages multiple schedule configs and their associated course data via `switchSchedule()`.
+- **`ScuAuthService`** (`lib/services/scu_auth_service.dart`) — Stateful service holding the SCU access token. Handles SM2 password encryption, cookie-based session management, and all SCU API calls (login, schedule, grades).
+- **`CirApiService`** (`lib/services/cir_api_service.dart`) — Fetches real-time classroom availability from `cir.scu.edu.cn`.
+- **`DatabaseService`** (`lib/services/database_service.dart`) — Wraps Hive boxes. Manages multiple schedule configs and their associated course data via `switchSchedule()`.
+- **`UpdateService`** (`lib/services/update_service.dart`) — Handles GitHub release checking, download, and install for Windows/Linux desktop platforms.
 
 ### Providers
 - **`ScuAuthProvider`** — Persists SCU token via SharedPreferences. Wraps `ScuAuthService`.
@@ -73,7 +74,7 @@ lib/
 ├── pages/          # Screen widgets
 │   └── campus/    # Campus feature module (grades, classroom)
 ├── providers/      # ChangeNotifier state classes
-├── serivces/       # Business logic & network (note: typo, not "services")
+├── services/       # Business logic & network
 ├── utils/          # Constants, crypto, utilities
 ├── widgets/        # Shared UI components
 ├── app.dart        # MaterialApp configuration
@@ -82,7 +83,6 @@ lib/
 
 ## Notable Implementation Details
 
-- `serivces/` directory name is intentionally misspelled (single 'v'), not a typo to correct.
 - The `ScuAuthService._CookieClient` manually follows HTTP redirects to collect cookies across SSO redirect chains.
 - Grades are cached in SharedPreferences as JSON; on refresh failure with `sessionExpired`, the cached data is kept but user is logged out.
 - `flutter pub run build_runner build --delete-conflicting-outputs` is run in CI before `flutter gen-l10n` — code generation must precede localization generation.

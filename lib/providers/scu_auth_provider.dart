@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:bugaoshan/serivces/scu_auth_service.dart';
+import 'package:bugaoshan/services/scu_auth_service.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/providers/secure_storage_provider.dart';

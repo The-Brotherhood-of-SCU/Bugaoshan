@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/serivces/scu_microservice_auth_service.dart';
+import 'package:bugaoshan/services/scu_microservice_auth_service.dart';
 
 class NetworkDevicePage extends StatefulWidget {
   const NetworkDevicePage({super.key});
