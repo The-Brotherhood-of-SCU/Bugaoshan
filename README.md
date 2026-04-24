@@ -99,6 +99,7 @@ lib/
 | 本地存储 | [Hive CE](https://pub.dev/packages/hive_ce)、[SharedPreferences](https://pub.dev/packages/shared_preferences) |
 | 国际化 | Flutter `flutter_localizations` |
 | 国密算法 | [dart_sm](https://pub.dev/packages/dart_sm)（SM2/SM3/SM4） |
+| OCR | [flutter_litert](https://pub.dev/packages/flutter_litert)（TFLite 模型） |
 
 ---
 

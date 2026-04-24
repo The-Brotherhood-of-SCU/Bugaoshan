@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
-import 'package:bugaoshan/serivces/update_service.dart';
+import 'package:bugaoshan/services/update_service.dart';
 
 class _DownloadProgressState extends ChangeNotifier {
   String _status = 'Downloading...';
