@@ -148,8 +148,10 @@ class UpdateService {
     final tempDir = await getTemporaryDirectory();
     final extractDir = p.join(tempDir.path, 'bugaoshan_update');
 
-    // Extract the zip
-    final archive = ZipDecoder().decodeBytes(chunks);
+    // Extract the zip or tar.gz
+    final archive = downloadUrl.endsWith('.tar.gz')
+        ? TarDecoder().decodeBytes(GZipDecoder().decodeBytes(chunks))
+        : ZipDecoder().decodeBytes(chunks);
     final extractDirObj = Directory(extractDir);
     if (extractDirObj.existsSync()) {
       extractDirObj.deleteSync(recursive: true);
@@ -173,7 +175,7 @@ class UpdateService {
     if (Platform.isWindows) {
       await _installWindows(extractDir, currentExeDir, currentExe);
     } else if (Platform.isLinux) {
-      await _installLinux(extractDir, currentExeDir);
+      await _installLinux(extractDir, currentExeDir, currentExe);
     } else {
       throw UnsupportedError('Unsupported platform');
     }
@@ -181,10 +183,15 @@ class UpdateService {
     exit(0);
   }
 
-  Future<void> _installWindows(String extractDir, String exeDir, String exePath) async {
+  Future<void> _installWindows(
+    String extractDir,
+    String exeDir,
+    String exePath,
+  ) async {
     final scriptPath = p.join(extractDir, 'update.bat');
     final scriptBytes = await rootBundle.load('assets/scripts/update.bat');
-    final script = utf8.decode(scriptBytes.buffer.asUint8List())
+    final script = utf8
+        .decode(scriptBytes.buffer.asUint8List())
         .replaceAll('{EXE_DIR}', exeDir)
         .replaceAll('{EXE_PATH}', exePath);
     File(scriptPath).writeAsStringSync(script);
@@ -197,18 +204,26 @@ class UpdateService {
     );
   }
 
-  Future<void> _installLinux(String extractDir, String exeDir) async {
+  Future<void> _installLinux(
+    String extractDir,
+    String exeDir,
+    String exePath,
+  ) async {
     final scriptPath = p.join(extractDir, 'update.sh');
     final scriptBytes = await rootBundle.load('assets/scripts/update.sh');
-    final script = utf8.decode(scriptBytes.buffer.asUint8List())
-        .replaceAll('{EXE_DIR}', exeDir);
+    final script = utf8
+        .decode(scriptBytes.buffer.asUint8List())
+        .replaceAll('{EXE_DIR}', exeDir)
+        .replaceAll('{EXE_PATH}', exePath);
     File(scriptPath).writeAsStringSync(script);
 
-    await Process.start(
-      'bash',
-      [scriptPath, extractDir, exeDir],
-      mode: ProcessStartMode.detached,
-    );
+    await Process.run('chmod', ['+x', scriptPath]);
+
+    await Process.start('bash', [
+      scriptPath,
+      extractDir,
+      exeDir,
+    ], mode: ProcessStartMode.detached);
   }
 
   static const releasesUrl =
