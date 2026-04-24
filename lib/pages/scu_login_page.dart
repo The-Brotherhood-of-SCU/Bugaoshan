@@ -31,7 +31,9 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
   @override
   void initState() {
     super.initState();
-    OcrService.init();
+    OcrService.init().catchError((e) {
+      debugPrint('OCR Init error: $e');
+    });
     _loadSaved();
     _loadCaptcha();
   }
