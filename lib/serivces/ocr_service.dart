@@ -2,11 +2,14 @@ import 'dart:isolate';
 import 'dart:typed_data';
 import 'package:flutter_litert/flutter_litert.dart';
 import 'package:image/image.dart' as img;
+import 'package:os_type/os_type.dart';
 
 class OcrService {
   static Interpreter? _interpreter;
 
   static Future<void> init() async {
+    if (OS.isHarmony)
+      throw PlatformNotSupportedException("Harmony OS is not supported");
     if (_interpreter != null) return;
 
     _interpreter = await Interpreter.fromAsset(
@@ -102,4 +105,13 @@ class OcrService {
     final logits = output[0].cast<double>();
     return _decodeLogits(logits);
   }
+}
+
+class PlatformNotSupportedException implements Exception {
+  final String message;
+
+  PlatformNotSupportedException(this.message);
+
+  @override
+  String toString() => message;
 }

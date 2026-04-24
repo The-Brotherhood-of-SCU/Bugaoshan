@@ -27,6 +27,7 @@ dependencies:
   flutter_secure_storage: ^10.0.0
   flutter_litert: ^2.2.0 #note: GPU backend is manually removed in android\app\build.gradle.kts
   image: ^4.8.0
+  os_type: ^0.2.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
