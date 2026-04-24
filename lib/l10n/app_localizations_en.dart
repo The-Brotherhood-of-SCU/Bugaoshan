@@ -202,6 +202,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updateToPreview => 'Update to Latest (Include Preview)';
 
   @override
+  String get downloading => 'Downloading';
+
+  @override
+  String get updateFailed => 'Update failed';
+
+  @override
+  String get preReleaseWarning =>
+      'This is a pre-release version. Use with caution.';
+
+  @override
   String get neverMind => 'Never Mind';
 
   @override

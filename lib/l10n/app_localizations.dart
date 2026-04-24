@@ -469,6 +469,24 @@ abstract class AppLocalizations {
   /// **'Update to Latest (Include Preview)'**
   String get updateToPreview;
 
+  /// No description provided for @downloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading'**
+  String get downloading;
+
+  /// No description provided for @updateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Update failed'**
+  String get updateFailed;
+
+  /// No description provided for @preReleaseWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a pre-release version. Use with caution.'**
+  String get preReleaseWarning;
+
   /// No description provided for @neverMind.
   ///
   /// In en, this message translates to:
