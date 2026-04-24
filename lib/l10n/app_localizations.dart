@@ -1933,6 +1933,24 @@ abstract class AppLocalizations {
   /// **'Operation successful'**
   String get networkDeviceOperationSuccess;
 
+  /// No description provided for @loginFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Login failed'**
+  String get loginFailed;
+
+  /// No description provided for @invalidCaptcha.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid captcha, please try again'**
+  String get invalidCaptcha;
+
+  /// No description provided for @loginFailedWillLock.
+  ///
+  /// In en, this message translates to:
+  /// **'Login failed, {count} more attempt(s) will lock your account'**
+  String loginFailedWillLock(int count);
+
   /// No description provided for @ccylBindFailed.
   ///
   /// In en, this message translates to:
