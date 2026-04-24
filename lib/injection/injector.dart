@@ -9,6 +9,7 @@ import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/serivces/database_service.dart';
+import 'package:bugaoshan/serivces/update_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'injector.config.dart';
@@ -73,6 +74,9 @@ void _configureAsyncDependencies() {
     await getIt.isReady<ScuAuthProvider>();
     final auth = getIt<ScuAuthProvider>();
     return TrainProgramProvider(auth);
+  });
+  getIt.registerSingletonAsync<UpdateService>(() async {
+    return UpdateService();
   });
 }
 

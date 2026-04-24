@@ -187,6 +187,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goToReleases => 'Go to Releases';
 
   @override
+  String get startUpdate => 'Start Update';
+
+  @override
+  String get startUpdatePreview => 'Update to Preview';
+
+  @override
+  String get updateToLatest => 'Update to Latest';
+
+  @override
+  String get updateToStable => 'Update to Latest Stable';
+
+  @override
+  String get updateToPreview => 'Update to Latest (Include Preview)';
+
+  @override
+  String get downloading => 'Downloading';
+
+  @override
+  String get updateFailed => 'Update failed';
+
+  @override
+  String get preReleaseWarning =>
+      'This is a pre-release version. Use with caution.';
+
+  @override
   String get neverMind => 'Never Mind';
 
   @override
@@ -197,6 +222,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get environmentInfo => 'Environment Info';
+
+  @override
+  String get testPage => 'Test Page';
+
+  @override
+  String get forceUpdate => 'Update to Latest (Include Preview)';
 
   @override
   String get scheduleSetting => 'Schedule Setting';

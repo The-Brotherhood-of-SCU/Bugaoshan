@@ -439,6 +439,54 @@ abstract class AppLocalizations {
   /// **'Go to Releases'**
   String get goToReleases;
 
+  /// No description provided for @startUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Update'**
+  String get startUpdate;
+
+  /// No description provided for @startUpdatePreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Update to Preview'**
+  String get startUpdatePreview;
+
+  /// No description provided for @updateToLatest.
+  ///
+  /// In en, this message translates to:
+  /// **'Update to Latest'**
+  String get updateToLatest;
+
+  /// No description provided for @updateToStable.
+  ///
+  /// In en, this message translates to:
+  /// **'Update to Latest Stable'**
+  String get updateToStable;
+
+  /// No description provided for @updateToPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Update to Latest (Include Preview)'**
+  String get updateToPreview;
+
+  /// No description provided for @downloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading'**
+  String get downloading;
+
+  /// No description provided for @updateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Update failed'**
+  String get updateFailed;
+
+  /// No description provided for @preReleaseWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a pre-release version. Use with caution.'**
+  String get preReleaseWarning;
+
   /// No description provided for @neverMind.
   ///
   /// In en, this message translates to:
@@ -462,6 +510,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Environment Info'**
   String get environmentInfo;
+
+  /// No description provided for @testPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Test Page'**
+  String get testPage;
+
+  /// No description provided for @forceUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Update to Latest (Include Preview)'**
+  String get forceUpdate;
 
   /// No description provided for @scheduleSetting.
   ///
