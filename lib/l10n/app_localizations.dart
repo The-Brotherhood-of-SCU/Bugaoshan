@@ -451,6 +451,24 @@ abstract class AppLocalizations {
   /// **'Update to Preview'**
   String get startUpdatePreview;
 
+  /// No description provided for @updateToLatest.
+  ///
+  /// In en, this message translates to:
+  /// **'Update to Latest'**
+  String get updateToLatest;
+
+  /// No description provided for @updateToStable.
+  ///
+  /// In en, this message translates to:
+  /// **'Update to Latest Stable'**
+  String get updateToStable;
+
+  /// No description provided for @updateToPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Update to Latest (Include Preview)'**
+  String get updateToPreview;
+
   /// No description provided for @neverMind.
   ///
   /// In en, this message translates to:

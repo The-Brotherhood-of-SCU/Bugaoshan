@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:bugaoshan/injection/injector.dart';
@@ -17,6 +16,10 @@ class TestPage extends StatefulWidget {
 
 class _TestPageState extends State<TestPage> {
   final _versionInfoProvider = getIt<AppInfoProvider>();
+  String? _stableVersion;
+  String? _stableDownloadUrl;
+  bool _checkingStable = false;
+  String? _stableError;
   String? _prereleaseVersion;
   String? _prereleaseDownloadUrl;
   bool _isPrerelease = false;
@@ -24,6 +27,29 @@ class _TestPageState extends State<TestPage> {
   String? _prereleaseError;
 
   bool get _isWindowsOrLinux => Platform.isWindows || Platform.isLinux;
+
+  Future<void> _checkForStableUpdates() async {
+    if (!_isWindowsOrLinux) return;
+    setState(() {
+      _checkingStable = true;
+      _stableError = null;
+    });
+
+    try {
+      final updateService = getIt<UpdateService>();
+      final latest = await updateService.getLatestReleaseFromGitHub();
+      setState(() {
+        _stableVersion = latest?.$1;
+        _stableDownloadUrl = latest?.$2;
+        _checkingStable = false;
+      });
+    } catch (e) {
+      setState(() {
+        _stableError = e.toString();
+        _checkingStable = false;
+      });
+    }
+  }
 
   Future<void> _checkForPrereleaseUpdates() async {
     if (!_isWindowsOrLinux) return;
@@ -50,14 +76,14 @@ class _TestPageState extends State<TestPage> {
     }
   }
 
-  void _showPrereleaseUpdateDialog(String latestVersion, String downloadUrl) {
+  void _showUpdateDialog(String latestVersion, String downloadUrl, bool isPreview) {
     final localizations = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(_isPrerelease ? Icons.science : Icons.system_update_alt),
+            Icon(isPreview ? Icons.science : Icons.system_update_alt),
             const SizedBox(width: 8),
             Text(localizations.newVersionAvailable),
           ],
@@ -67,7 +93,7 @@ class _TestPageState extends State<TestPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('${localizations.version}: $latestVersion'),
-            if (_isPrerelease) ...[
+            if (isPreview) ...[
               const SizedBox(height: 8),
               const Text(
                 'This is a pre-release version. Use with caution.',
@@ -86,7 +112,7 @@ class _TestPageState extends State<TestPage> {
               Navigator.pop(context);
               _startUpdate(latestVersion, downloadUrl);
             },
-            child: Text(_isPrerelease ? localizations.startUpdatePreview : localizations.startUpdate),
+            child: Text(isPreview ? localizations.startUpdatePreview : localizations.startUpdate),
           ),
         ],
       ),
@@ -204,21 +230,34 @@ class _TestPageState extends State<TestPage> {
             ),
             const SizedBox(height: 32),
             if (_isWindowsOrLinux) ...[
-              _SectionTitle(title: localizations.forceUpdate),
+              _SectionTitle(title: localizations.updateToLatest),
               const SizedBox(height: 12),
-              _UpdateToLatestCard(
-                prereleaseVersion: _prereleaseVersion,
-                isPrerelease: _isPrerelease,
-                checkingPrerelease: _checkingPrerelease,
-                prereleaseError: _prereleaseError,
+              _UpdateCard(
+                icon: Icons.system_update_alt,
+                title: localizations.updateToStable,
+                version: _stableVersion,
+                isStable: true,
+                checking: _checkingStable,
+                error: _stableError,
+                onCheck: _checkForStableUpdates,
+                onUpdate: () {
+                  if (_stableVersion != null && _stableDownloadUrl != null) {
+                    _showUpdateDialog(_stableVersion!, _stableDownloadUrl!, false);
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+              _UpdateCard(
+                icon: Icons.science,
+                title: localizations.updateToPreview,
+                version: _prereleaseVersion,
+                isStable: !_isPrerelease,
+                checking: _checkingPrerelease,
+                error: _prereleaseError,
                 onCheck: _checkForPrereleaseUpdates,
                 onUpdate: () {
-                  if (_prereleaseVersion != null &&
-                      _prereleaseDownloadUrl != null) {
-                    _showPrereleaseUpdateDialog(
-                      _prereleaseVersion!,
-                      _prereleaseDownloadUrl!,
-                    );
+                  if (_prereleaseVersion != null && _prereleaseDownloadUrl != null) {
+                    _showUpdateDialog(_prereleaseVersion!, _prereleaseDownloadUrl!, _isPrerelease);
                   }
                 },
               ),
@@ -230,19 +269,23 @@ class _TestPageState extends State<TestPage> {
   }
 }
 
-class _UpdateToLatestCard extends StatelessWidget {
-  final String? prereleaseVersion;
-  final bool isPrerelease;
-  final bool checkingPrerelease;
-  final String? prereleaseError;
+class _UpdateCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String? version;
+  final bool isStable;
+  final bool checking;
+  final String? error;
   final VoidCallback onCheck;
   final VoidCallback onUpdate;
 
-  const _UpdateToLatestCard({
-    required this.prereleaseVersion,
-    required this.isPrerelease,
-    required this.checkingPrerelease,
-    required this.prereleaseError,
+  const _UpdateCard({
+    required this.icon,
+    required this.title,
+    required this.version,
+    required this.isStable,
+    required this.checking,
+    required this.error,
     required this.onCheck,
     required this.onUpdate,
   });
@@ -260,14 +303,11 @@ class _UpdateToLatestCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(isPrerelease ? Icons.science : Icons.system_update_alt, size: 20),
+                Icon(icon, size: 20),
                 const SizedBox(width: 8),
-                Text(
-                  isPrerelease ? 'Preview Version Available' : 'Update to Latest Version',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
+                Text(title, style: Theme.of(context).textTheme.bodyMedium),
                 const Spacer(),
-                if (checkingPrerelease)
+                if (checking)
                   const SizedBox(
                     width: 20,
                     height: 20,
@@ -280,23 +320,23 @@ class _UpdateToLatestCard extends StatelessWidget {
                   ),
               ],
             ),
-            if (prereleaseError != null) ...[
+            if (error != null) ...[
               const SizedBox(height: 8),
               Text(
-                'Error: $prereleaseError',
+                'Error: $error',
                 style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
             ],
-            if (prereleaseVersion != null) ...[
+            if (version != null) ...[
               const SizedBox(height: 8),
               Text(
-                isPrerelease ? 'Preview: $prereleaseVersion' : 'Latest: $prereleaseVersion',
+                isStable ? 'Stable: $version' : 'Preview: $version',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 12),
               ElevatedButton.icon(
                 onPressed: onUpdate,
-                icon: Icon(isPrerelease ? Icons.science : Icons.system_update_alt),
+                icon: Icon(icon),
                 label: Text(localizations.newVersionAvailable),
               ),
             ],
@@ -315,16 +355,13 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: Theme.of(
-        context,
-      ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
     );
   }
 }
 
 class _EnvironmentInfoButton extends StatelessWidget {
   final VoidCallback onPressed;
-
   const _EnvironmentInfoButton({required this.onPressed});
 
   @override
