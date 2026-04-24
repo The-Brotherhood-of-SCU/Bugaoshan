@@ -183,6 +183,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get goToReleases => '前往 Releases';
 
   @override
+  String get startUpdate => '开始更新';
+
+  @override
+  String get startUpdatePreview => '更新到预览版';
+
+  @override
   String get neverMind => '算了吧';
 
   @override
@@ -198,7 +204,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get testPage => '测试页面';
 
   @override
-  String get forceUpdate => '强制更新';
+  String get forceUpdate => '更新到最新版本（含预览版）';
 
   @override
   String get scheduleSetting => '课表设置';

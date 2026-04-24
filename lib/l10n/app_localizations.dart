@@ -439,6 +439,18 @@ abstract class AppLocalizations {
   /// **'Go to Releases'**
   String get goToReleases;
 
+  /// No description provided for @startUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Update'**
+  String get startUpdate;
+
+  /// No description provided for @startUpdatePreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Update to Preview'**
+  String get startUpdatePreview;
+
   /// No description provided for @neverMind.
   ///
   /// In en, this message translates to:
@@ -472,7 +484,7 @@ abstract class AppLocalizations {
   /// No description provided for @forceUpdate.
   ///
   /// In en, this message translates to:
-  /// **'Force Update'**
+  /// **'Update to Latest (Include Preview)'**
   String get forceUpdate;
 
   /// No description provided for @scheduleSetting.

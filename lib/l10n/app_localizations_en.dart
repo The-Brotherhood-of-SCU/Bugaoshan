@@ -187,6 +187,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goToReleases => 'Go to Releases';
 
   @override
+  String get startUpdate => 'Start Update';
+
+  @override
+  String get startUpdatePreview => 'Update to Preview';
+
+  @override
   String get neverMind => 'Never Mind';
 
   @override
@@ -202,7 +208,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get testPage => 'Test Page';
 
   @override
-  String get forceUpdate => 'Force Update';
+  String get forceUpdate => 'Update to Latest (Include Preview)';
 
   @override
   String get scheduleSetting => 'Schedule Setting';

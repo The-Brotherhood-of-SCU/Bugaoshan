@@ -7,9 +7,12 @@ import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive.dart';
 import 'package:path/path.dart' as p;
 
+import 'package:bugaoshan/models/release_info.dart';
+
 class UpdateService {
   static const _pubspecUrl =
       'https://raw.githubusercontent.com/The-Brotherhood-of-SCU/Bugaoshan/main/pubspec.yaml';
+  static const _repo = 'The-Brotherhood-of-SCU/Bugaoshan';
 
   Future<String?> getLatestVersion() async {
     try {
@@ -28,6 +31,61 @@ class UpdateService {
       return null;
     }
     return null;
+  }
+
+  Future<(String, String)?> getLatestReleaseFromGitHub() async {
+    final response = await http.get(
+      Uri.parse('https://api.github.com/repos/$_repo/releases/latest'),
+      headers: {'Accept': 'application/vnd.github+json'},
+    );
+    if (response.statusCode == 200) {
+      if (response.body.isEmpty) return null;
+      final data = jsonDecode(response.body);
+      final tagName = (data['tag_name'] as String);
+      final assets = data['assets'] as List<dynamic>;
+      final platform = Platform.isWindows ? 'windows' : 'linux';
+      for (final asset in assets) {
+        final name = asset['name'] as String;
+        if (name.toLowerCase().contains(platform)) {
+          return (
+            tagName.replaceFirst('v', ''),
+            asset['browser_download_url'] as String,
+          );
+        }
+      }
+    }
+    throw Exception('GitHub API error: ${response.statusCode}');
+  }
+
+  Future<(String?, String?, bool)> getLatestPrereleaseFromGitHub() async {
+    final response = await http.get(
+      Uri.parse('https://api.github.com/repos/$_repo/releases'),
+      headers: {'Accept': 'application/vnd.github+json'},
+    );
+    if (response.statusCode == 200) {
+      if (response.body.isEmpty) return (null, null, false);
+      final List<dynamic> releases = jsonDecode(response.body);
+      if (releases.isNotEmpty && releases[0]['tag_name'] != null) {
+        final tagName = (releases[0]['tag_name'] as String).replaceFirst(
+          'v',
+          '',
+        );
+        final isPrerelease = releases[0]['prerelease'] == true;
+        final assets = releases[0]['assets'] as List<dynamic>;
+        final platform = Platform.isWindows ? 'windows' : 'linux';
+        String? downloadUrl;
+        for (final asset in assets) {
+          final name = asset['name'] as String;
+          if (name.toLowerCase().contains(platform)) {
+            downloadUrl = asset['browser_download_url'] as String;
+            break;
+          }
+        }
+        return (tagName, downloadUrl, isPrerelease);
+      }
+      return (null, null, false);
+    }
+    throw Exception('GitHub API error: ${response.statusCode}');
   }
 
   bool hasUpdate(String currentVersion, String latestVersion) {
