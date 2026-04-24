@@ -948,6 +948,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get networkDeviceOperationSuccess => '操作成功';
 
   @override
+  String get loginFailed => '登录失败';
+
+  @override
+  String get invalidCaptcha => '验证码错误，请重试';
+
+  @override
+  String loginFailedWillLock(int count) {
+    return '登录失败，再输错 $count 次将锁定账户';
+  }
+
+  @override
   String get ccylBindFailed => '绑定失败，请稍后重试';
 
   @override

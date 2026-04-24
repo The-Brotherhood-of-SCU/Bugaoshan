@@ -314,6 +314,14 @@
     "networkDeviceOperationSuccess": "Operation successful",
     "captchaLoadFailed": "Failed to load captcha",
     "networkError": "Network error",
+    "loginFailed": "Login failed",
+    "invalidCaptcha": "Invalid captcha, please try again",
+    "loginFailedWillLock": "Login failed, {count} more attempt(s) will lock your account",
+    "@loginFailedWillLock": {
+        "placeholders": {
+            "count": {"type": "int"}
+        }
+    },
     "ccylBindFailed": "Binding failed, please try again later",
     "ccylActivityLoadFailed": "Failed to load activity",
     "networkOfflineFailed": "Failed to offline device",

@@ -970,6 +970,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get networkDeviceOperationSuccess => 'Operation successful';
 
   @override
+  String get loginFailed => 'Login failed';
+
+  @override
+  String get invalidCaptcha => 'Invalid captcha, please try again';
+
+  @override
+  String loginFailedWillLock(int count) {
+    return 'Login failed, $count more attempt(s) will lock your account';
+  }
+
+  @override
   String get ccylBindFailed => 'Binding failed, please try again later';
 
   @override

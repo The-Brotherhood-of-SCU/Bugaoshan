@@ -129,7 +129,8 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       Navigator.of(logicRootContext).pop(true);
     } on ScuLoginException catch (e) {
       if (!mounted) return;
-      setState(() => _errorMsg = e.message);
+      final l10n = AppLocalizations.of(context)!;
+      setState(() => _errorMsg = _localizeLoginError(e, l10n));
       _loadCaptcha();
     } catch (e) {
       debugPrint('Login network error: $e');
@@ -139,6 +140,24 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       _loadCaptcha();
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  String _localizeLoginError(ScuLoginException e, AppLocalizations l10n) {
+    if (e.sessionExpired) return l10n.sessionExpiredMessage;
+    switch (e.message) {
+      case 'invalid_captcha':
+        return l10n.invalidCaptcha;
+      case String msg when msg.startsWith('login_failed_will_lock'):
+        final parts = msg.split('_');
+        final attempted = int.tryParse(parts[4]);
+        final total = int.tryParse(parts[5]);
+        if (attempted != null && total != null && total > attempted) {
+          return l10n.loginFailedWillLock(total - attempted);
+        }
+        return l10n.loginFailed;
+      default:
+        return l10n.loginFailed;
     }
   }
 
