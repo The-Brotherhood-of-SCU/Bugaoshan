@@ -189,6 +189,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get startUpdatePreview => '更新到预览版';
 
   @override
+  String get updateToLatest => '升级到最新版本';
+
+  @override
+  String get updateToStable => '更新到最新稳定版';
+
+  @override
+  String get updateToPreview => '更新到最新版（包括预览版）';
+
+  @override
+  String get downloading => '正在下载';
+
+  @override
+  String get updateFailed => '更新失败';
+
+  @override
+  String get preReleaseWarning => '这是预发布版本，使用时请注意。';
+
+  @override
   String get neverMind => '算了吧';
 
   @override
