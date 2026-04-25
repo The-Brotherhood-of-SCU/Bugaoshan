@@ -1003,6 +1003,12 @@ abstract class AppLocalizations {
   /// **'File save canceled'**
   String get exportScheduleAsIcsCanceled;
 
+  /// No description provided for @icsTeacherLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher(s)'**
+  String get icsTeacherLabel;
+
   /// No description provided for @copySuffix.
   ///
   /// In en, this message translates to:

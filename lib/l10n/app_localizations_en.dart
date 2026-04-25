@@ -483,6 +483,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportScheduleAsIcsCanceled => 'File save canceled';
 
   @override
+  String get icsTeacherLabel => 'Teacher(s)';
+
+  @override
   String get copySuffix => ' (Copy)';
 
   @override

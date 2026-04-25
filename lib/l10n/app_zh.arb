@@ -156,6 +156,7 @@
     "exportScheduleAsIcsSuccess":"保存成功",
     "exportScheduleAsIcsFailed":"保存失败",
     "exportScheduleAsIcsCanceled":"取消保存",
+    "icsTeacherLabel":"教师",
     "copySuffix": " (副本)",
     "notThisWeek": "[非本周]",
     "actualCurrentWeek": "本周第 {week} 周",

@@ -473,6 +473,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportScheduleAsIcsCanceled => '取消保存';
 
   @override
+  String get icsTeacherLabel => '教师';
+
+  @override
   String get copySuffix => ' (副本)';
 
   @override

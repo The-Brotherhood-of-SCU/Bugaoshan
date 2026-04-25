@@ -450,7 +450,9 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
       // ics
       case ExportAction.ics:
         debugPrint("[_onExport] ics");
-        final semesterName = await exportProvider.saveIcsToTempFile();
+        final semesterName = await exportProvider.saveIcsToTempFile(
+          l10n.icsTeacherLabel,
+        );
         if (semesterName == null) {
           if (mounted) {
             scaffoldMessenger.showSnackBar(
@@ -462,7 +464,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
 
         final destinationPath = await FilePicker.saveFile(
           dialogTitle: l10n.exportScheduleAsIcsTo,
-          fileName: '${semesterName}.ics',
+          fileName: '$semesterName.ics',
         );
         if (destinationPath == null) {
           await exportProvider.cleanTempFile();

@@ -157,6 +157,7 @@
     "exportScheduleAsIcsSuccess":"File saved successfully",
     "exportScheduleAsIcsFailed":"File save failed",
     "exportScheduleAsIcsCanceled":"File save canceled",
+    "icsTeacherLabel":"Teacher(s)",
     "copySuffix": " (Copy)",
     "notThisWeek": "[Not this week]",
     "actualCurrentWeek": "Week {week}",

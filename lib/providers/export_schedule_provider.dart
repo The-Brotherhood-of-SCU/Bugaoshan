@@ -44,7 +44,7 @@ class ExportScheduleProvider {
 
   // Return the semester name for ues by the file picker while writing a temporary file
   // Return null if failed to write a temp file
-  Future<String?> saveIcsToTempFile() async {
+  Future<String?> saveIcsToTempFile(String teacherLabel) async {
     Directory tempDir;
     try {
       tempDir = await getTemporaryDirectory();
@@ -56,8 +56,13 @@ class ExportScheduleProvider {
         'course_schedule_${DateTime.now().millisecondsSinceEpoch}.ics';
     final tempFile = File('${tempDir.path}/$tempFileName');
 
-    // TODO
-    final icsContent = IcsService.genIcs();
+    final config = _courseProvider.scheduleConfig.value;
+    final courses = _courseProvider.courses.value;
+    final icsContent = IcsService.genIcs(
+      config: config,
+      courses: courses,
+      teacherLabel: teacherLabel,
+    );
 
     try {
       await tempFile.writeAsString(icsContent);
