@@ -1,4 +1,3 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -10,7 +9,7 @@ import 'package:bugaoshan/widgets/course/course_detail_sheet.dart';
 import 'package:bugaoshan/widgets/course/course_grid.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
-import 'package:bugaoshan/providers/export_schedule_provider.dart';
+import 'package:bugaoshan/utils/export_schedule_utils.dart';
 
 class CoursePage extends StatefulWidget {
   const CoursePage({super.key});
@@ -374,124 +373,8 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
     );
   }
 
-  void _onExport() async {
-    final l10n = AppLocalizations.of(context)!;
-    final exportProvider = ExportScheduleProvider.create();
-
-    final ExportAction? action = await showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 8,
-                ),
-                child: Text(
-                  l10n.exportSchedule,
-                  style: Theme.of(
-                    sheetContext,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                ),
-              ),
-              const Divider(),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-                leading: const Icon(Icons.copy),
-                title: Text(l10n.exportScheduleAsCopy),
-                onTap: () {
-                  Navigator.of(sheetContext).pop(ExportAction.copy);
-                },
-              ),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-                leading: const Icon(Icons.calendar_month),
-                title: Text(l10n.exportScheduleAsIcs),
-                onTap: () {
-                  Navigator.of(sheetContext).pop(ExportAction.ics);
-                },
-              ),
-              const SizedBox(height: 8),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    if (!mounted) return;
-
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-    switch (action) {
-      case null:
-        debugPrint("[_onExport] cancel null");
-        break;
-      // copy
-      case ExportAction.copy:
-        debugPrint("[_onExport] copy");
-        final result = await exportProvider.copyToClipBoard();
-        if (result == ExportResult.success) {
-          scaffoldMessenger.showSnackBar(
-            SnackBar(content: Text(l10n.exportScheduleAsCopySuccess)),
-          );
-        } else {
-          scaffoldMessenger.showSnackBar(
-            SnackBar(content: Text(l10n.exportScheduleAsCopyFailed)),
-          );
-        }
-        break;
-      // ics
-      case ExportAction.ics:
-        debugPrint("[_onExport] ics");
-        final semesterName = await exportProvider.saveIcsToTempFile(
-          l10n.icsTeacherLabel,
-        );
-        if (semesterName == null) {
-          if (mounted) {
-            scaffoldMessenger.showSnackBar(
-              SnackBar(content: Text(l10n.exportScheduleAsIcsFailed)),
-            );
-          }
-          return;
-        }
-
-        final destinationPath = await FilePicker.saveFile(
-          dialogTitle: l10n.exportScheduleAsIcsTo,
-          fileName: '$semesterName.ics',
-        );
-        if (destinationPath == null) {
-          await exportProvider.cleanTempFile();
-          if (mounted) {
-            scaffoldMessenger.showSnackBar(
-              SnackBar(content: Text(l10n.exportScheduleAsIcsCanceled)),
-            );
-          }
-          return;
-        }
-
-        final result = await exportProvider.moveTempToDestination(
-          destinationPath,
-        );
-        if (result == ExportResult.success && mounted) {
-          scaffoldMessenger.showSnackBar(
-            SnackBar(content: Text(l10n.exportScheduleAsIcsSuccess)),
-          );
-        } else {
-          if (mounted) {
-            scaffoldMessenger.showSnackBar(
-              SnackBar(content: Text(l10n.exportScheduleAsIcsFailed)),
-            );
-          }
-        }
-        break;
-    }
+  void _onExport() {
+    showExportScheduleSheet(context);
   }
 
   void _onAddCourse() {
