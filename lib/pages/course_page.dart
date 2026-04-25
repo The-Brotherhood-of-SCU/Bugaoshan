@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
@@ -11,6 +9,7 @@ import 'package:bugaoshan/widgets/course/course_detail_sheet.dart';
 import 'package:bugaoshan/widgets/course/course_grid.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
+import 'package:bugaoshan/providers/export_schedule_provider.dart';
 
 class CoursePage extends StatefulWidget {
   const CoursePage({super.key});
@@ -376,21 +375,72 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
 
   void _onExport() async {
     final l10n = AppLocalizations.of(context)!;
-    final config = courseProvider.scheduleConfig.value;
-    final allCourses = courseProvider.courses.value;
 
-    final data = {
-      'config': config.toJson(),
-      'courses': allCourses.map((e) => e.toJson()).toList(),
-    };
+    final ExportAction? action = await showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
+                child: Text(
+                  l10n.exportSchedule,
+                  style: Theme.of(
+                    sheetContext,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+              const Divider(),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                leading: const Icon(Icons.copy),
+                title: Text(l10n.exportScheduleAsCopy),
+                onTap: () {
+                  Navigator.of(sheetContext).pop(ExportAction.copy);
+                },
+              ),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                leading: const Icon(Icons.calendar_month),
+                title: Text(l10n.exportScheduleAsIcs),
+                onTap: () {
+                  Navigator.of(sheetContext).pop(ExportAction.ics);
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
 
-    final jsonStr = json.encode(data);
-    await Clipboard.setData(ClipboardData(text: jsonStr));
+    if (!mounted) return;
 
-    if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.exportSuccess)));
+    switch (action) {
+      case null:
+        debugPrint("_onExport: cancel null");
+        break;
+      case ExportAction.copy:
+        debugPrint("_onExport: copy");
+        //TODO: copy to clipboard
+        break;
+      case ExportAction.ics:
+        debugPrint("_onExport: ics");
+        //TODO: convert schedule to ics file
+        //  save as a tmp file
+        //  call file selector
+        //  move the file
+        break;
     }
   }
 

@@ -883,12 +883,6 @@ abstract class AppLocalizations {
   /// **'Schedule name already exists'**
   String get duplicateScheduleName;
 
-  /// No description provided for @exportSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Schedule data copied to clipboard'**
-  String get exportSuccess;
-
   /// No description provided for @importSchedule.
   ///
   /// In en, this message translates to:
@@ -960,6 +954,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Export Schedule'**
   String get exportSchedule;
+
+  /// No description provided for @exportScheduleAsCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy to Clipboard'**
+  String get exportScheduleAsCopy;
+
+  /// No description provided for @exportScheduleAsIcs.
+  ///
+  /// In en, this message translates to:
+  /// **'Export to Calendar File'**
+  String get exportScheduleAsIcs;
+
+  /// No description provided for @exportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule data copied to clipboard'**
+  String get exportSuccess;
 
   /// No description provided for @copySuffix.
   ///

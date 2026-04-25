@@ -409,9 +409,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get duplicateScheduleName => '课表名称已存在';
 
   @override
-  String get exportSuccess => '课表数据已复制到剪贴板';
-
-  @override
   String get importSchedule => '导入课表';
 
   @override
@@ -450,6 +447,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get exportSchedule => '导出课表';
+
+  @override
+  String get exportScheduleAsCopy => '复制到剪切板';
+
+  @override
+  String get exportScheduleAsIcs => '导出为日历文件';
+
+  @override
+  String get exportSuccess => '课表数据已复制到剪贴板';
 
   @override
   String get copySuffix => ' (副本)';
