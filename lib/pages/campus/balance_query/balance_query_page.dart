@@ -361,7 +361,6 @@ class _ElectricityTabState extends State<_ElectricityTab> {
       unit: '元',
       onRefresh: () => widget.provider.queryElectricInfo(),
       binding: binding,
-      provider: widget.provider,
     );
   }
 }
@@ -410,7 +409,6 @@ class _AcTabState extends State<_AcTab> {
       unit: '元',
       onRefresh: () => widget.provider.queryAcInfo(),
       binding: binding,
-      provider: widget.provider,
     );
   }
 }
@@ -423,7 +421,6 @@ class _BalanceCard extends StatefulWidget {
   final String unit;
   final Future<RoomInfo> Function() onRefresh;
   final RoomBinding binding;
-  final BalanceQueryProvider provider;
 
   const _BalanceCard({
     super.key,
@@ -434,7 +431,6 @@ class _BalanceCard extends StatefulWidget {
     required this.unit,
     required this.onRefresh,
     required this.binding,
-    required this.provider,
   });
 
   @override
@@ -444,44 +440,18 @@ class _BalanceCard extends StatefulWidget {
 class _BalanceCardState extends State<_BalanceCard> {
   bool _isLoading = false;
   String? _error;
-  RoomInfo? _localInfo;
-  int _lastIndex = -1; // 记录上次的 currentIndex
+  RoomInfo? _localInfo; // 本地持有数据，不依赖父级传入
 
   @override
   void initState() {
     super.initState();
-    _lastIndex = widget.provider.currentIndex;
-    widget.provider.addListener(_onProviderChanged);
     _loadBalance();
-  }
-
-  @override
-  void dispose() {
-    widget.provider.removeListener(_onProviderChanged);
-    super.dispose();
-  }
-
-  void _onProviderChanged() {
-    final newIndex = widget.provider.currentIndex;
-    if (newIndex != _lastIndex) {
-      _lastIndex = newIndex;
-      // index 变了但还在切换中（verificationRoom 未完成），先清空显示加载
-      if (mounted) {
-        setState(() {
-          _localInfo = null;
-          _error = null;
-        });
-      }
-    }
-    // isSwitching 从 true 变为 false，说明验证完成，现在可以查余额
-    if (!widget.provider.isSwitching && _localInfo == null && !_isLoading) {
-      _loadBalance();
-    }
   }
 
   @override
   void didUpdateWidget(_BalanceCard oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // 切换房间时（cusNo 变了），清空本地数据并重新加载
     if (oldWidget.binding.cusNo != widget.binding.cusNo) {
       _localInfo = null;
       _loadBalance();
@@ -921,7 +891,7 @@ class _BindRoomDialogState extends State<_BindRoomDialog> {
                     )
                   else
                     const SizedBox(),
-                  if (_step < 3)
+                  if (_step < (_hasUnits ? 3 : 2))
                     FilledButton(
                       onPressed: _canProceed() && !_isLoading
                           ? () => setState(() => _step++)
