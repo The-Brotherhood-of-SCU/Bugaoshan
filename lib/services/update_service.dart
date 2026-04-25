@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bugaoshan/models/release_info.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -40,7 +41,7 @@ class UpdateService {
     return null;
   }
 
-  Future<(String, String)?> getLatestReleaseFromGitHub() async {
+  Future<ReleaseInfo?> getLatestReleaseFromGitHub() async {
     final response = await http.get(
       Uri.parse('https://api.github.com/repos/$_repo/releases/latest'),
       headers: {'Accept': 'application/vnd.github+json'},
@@ -53,9 +54,9 @@ class UpdateService {
       for (final asset in assets) {
         final name = asset['name'] as String;
         if (_assetMatchesPlatform(name)) {
-          return (
-            tagName.replaceFirst('v', ''),
-            asset['browser_download_url'] as String,
+          return ReleaseInfo(
+            version: tagName.replaceFirst('v', ''),
+            downloadUrl: asset['browser_download_url'] as String,
           );
         }
       }
@@ -63,13 +64,13 @@ class UpdateService {
     throw Exception('GitHub API error: ${response.statusCode}');
   }
 
-  Future<(String?, String?, bool)> getLatestPrereleaseFromGitHub() async {
+  Future<ReleaseInfo> getLatestPrereleaseFromGitHub() async {
     final response = await http.get(
       Uri.parse('https://api.github.com/repos/$_repo/releases'),
       headers: {'Accept': 'application/vnd.github+json'},
     );
     if (response.statusCode == 200) {
-      if (response.body.isEmpty) return (null, null, false);
+      if (response.body.isEmpty) return const ReleaseInfo();
       final List<dynamic> releases = jsonDecode(response.body);
       if (releases.isNotEmpty && releases[0]['tag_name'] != null) {
         final tagName = (releases[0]['tag_name'] as String).replaceFirst(
@@ -86,9 +87,13 @@ class UpdateService {
             break;
           }
         }
-        return (tagName, downloadUrl, isPrerelease);
+        return ReleaseInfo(
+          version: tagName,
+          downloadUrl: downloadUrl,
+          isPrerelease: isPrerelease,
+        );
       }
-      return (null, null, false);
+      return const ReleaseInfo();
     }
     throw Exception('GitHub API error: ${response.statusCode}');
   }

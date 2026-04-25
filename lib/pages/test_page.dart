@@ -51,12 +51,12 @@ class _TestPageState extends State<TestPage> {
     try {
       final updateService = getIt<UpdateService>();
       if (isPreview) {
-        final (version, url, isPrerelease) = await updateService.getLatestPrereleaseFromGitHub();
-        info.setResult(version, url, isPrerelease);
+        final release = await updateService.getLatestPrereleaseFromGitHub();
+        info.setResult(release.version, release.downloadUrl, release.isPrerelease);
       } else {
         final latest = await updateService.getLatestReleaseFromGitHub();
         if (latest != null) {
-          info.setResult(latest.$1, latest.$2, null);
+          info.setResult(latest.version, latest.downloadUrl, null);
         } else {
           info.setChecking(false, 'No release found');
         }
