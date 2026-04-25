@@ -8,6 +8,14 @@ import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive.dart';
 import 'package:path/path.dart' as p;
 
+class CancelToken {
+  bool _cancelled = false;
+  bool get isCancelled => _cancelled;
+  void cancel() => _cancelled = true;
+}
+
+class UpdateCancelledException implements Exception {}
+
 class UpdateService {
   static const _pubspecUrl =
       'https://raw.githubusercontent.com/The-Brotherhood-of-SCU/Bugaoshan/main/pubspec.yaml';
@@ -121,6 +129,7 @@ class UpdateService {
   Future<void> downloadAndInstall(
     String version,
     String downloadUrl, {
+    CancelToken? cancelToken,
     void Function(String status)? onStatus,
     void Function(int received, int total)? onProgress,
   }) async {
@@ -141,12 +150,20 @@ class UpdateService {
       int received = 0;
 
       await for (final chunk in response.stream) {
+        if (cancelToken?.isCancelled ?? false) {
+          client.close();
+          throw UpdateCancelledException();
+        }
         chunks.addAll(chunk);
         received += chunk.length;
         onProgress?.call(received, contentLength);
       }
     } finally {
       client.close();
+    }
+
+    if (cancelToken?.isCancelled ?? false) {
+      throw UpdateCancelledException();
     }
 
     if (Platform.isAndroid) {
