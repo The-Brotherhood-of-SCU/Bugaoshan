@@ -5,23 +5,21 @@ import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 
 class TimeSlotSettingPage extends StatefulWidget {
-  final int morningSections;
-  final int afternoonSections;
-  final int eveningSections;
+  final List<TimeSlot> initialMorningSlots;
+  final List<TimeSlot> initialAfternoonSlots;
+  final List<TimeSlot> initialEveningSlots;
   final int initialCourseDuration;
   final int initialBreakDuration;
   final bool initialAutoSyncTime;
-  final List<TimeSlot> initialTimeSlots;
 
   const TimeSlotSettingPage({
     super.key,
-    required this.morningSections,
-    required this.afternoonSections,
-    required this.eveningSections,
+    required this.initialMorningSlots,
+    required this.initialAfternoonSlots,
+    required this.initialEveningSlots,
     required this.initialCourseDuration,
     required this.initialBreakDuration,
     required this.initialAutoSyncTime,
-    required this.initialTimeSlots,
   });
 
   @override
@@ -30,36 +28,53 @@ class TimeSlotSettingPage extends StatefulWidget {
 
 class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
   final courseProvider = getIt<CourseProvider>();
-  late int _morningSections;
-  late int _afternoonSections;
-  late int _eveningSections;
+  late List<TimeSlot> _morningSlots;
+  late List<TimeSlot> _afternoonSlots;
+  late List<TimeSlot> _eveningSlots;
   late int _courseDuration;
   late int _breakDuration;
   late bool _autoSyncTime;
-  late List<TimeSlot> _timeSlots;
+
+  List<TimeSlot> get _timeSlots => [
+        ..._morningSlots,
+        ..._afternoonSlots,
+        ..._eveningSlots,
+      ];
+
+  set _timeSlots(List<TimeSlot> flatList) {
+    int mLen = _morningSlots.length;
+    int aLen = _afternoonSlots.length;
+    int eLen = _eveningSlots.length;
+
+    _morningSlots = flatList.sublist(0, mLen);
+    _afternoonSlots = flatList.sublist(mLen, mLen + aLen);
+    _eveningSlots = flatList.sublist(mLen + aLen, mLen + aLen + eLen);
+  }
+
+  int get _morningSections => _morningSlots.length;
+  int get _afternoonSections => _afternoonSlots.length;
+  int get _eveningSections => _eveningSlots.length;
 
   @override
   void initState() {
     super.initState();
-    _morningSections = widget.morningSections;
-    _afternoonSections = widget.afternoonSections;
-    _eveningSections = widget.eveningSections;
+    _morningSlots = List.from(widget.initialMorningSlots);
+    _afternoonSlots = List.from(widget.initialAfternoonSlots);
+    _eveningSlots = List.from(widget.initialEveningSlots);
     _courseDuration = widget.initialCourseDuration;
     _breakDuration = widget.initialBreakDuration;
     _autoSyncTime = widget.initialAutoSyncTime;
-    _timeSlots = List.from(widget.initialTimeSlots);
   }
 
   void _autoSave() {
     final currentConfig = courseProvider.scheduleConfig.value;
     final config = currentConfig.copyWith(
-      morningSections: _morningSections,
-      afternoonSections: _afternoonSections,
-      eveningSections: _eveningSections,
+      morningSlots: _morningSlots,
+      afternoonSlots: _afternoonSlots,
+      eveningSlots: _eveningSlots,
       courseDuration: _courseDuration,
       breakDuration: _breakDuration,
       autoSyncTime: _autoSyncTime,
-      timeSlots: _timeSlots,
     );
     courseProvider.updateScheduleConfig(config);
   }
@@ -75,10 +90,11 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
       endIdx = _morningSections + _afternoonSections + _eveningSections;
     }
 
+    final flat = _timeSlots;
     for (int i = index + 1; i < endIdx; i++) {
-      if (i >= _timeSlots.length) break;
+      if (i >= flat.length) break;
 
-      final prevSlot = _timeSlots[i - 1];
+      final prevSlot = flat[i - 1];
       int startMin = prevSlot.endTime.minute + _breakDuration;
       int startHour = prevSlot.endTime.hour + (startMin ~/ 60);
       startMin = startMin % 60;
@@ -87,29 +103,26 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
       int endHour = startHour + (endMin ~/ 60);
       endMin = endMin % 60;
 
-      _timeSlots[i] = TimeSlot(
+      flat[i] = TimeSlot(
         startTime: TimeOfDay(hour: startHour % 24, minute: startMin),
         endTime: TimeOfDay(hour: endHour % 24, minute: endMin),
       );
     }
+    _timeSlots = flat;
   }
 
-  void _adjustTimeSlots() {
-    final totalSections =
-        _morningSections + _afternoonSections + _eveningSections;
-
-    while (_timeSlots.length < totalSections) {
-      // Just append a dummy slot, the user or sync logic can adjust it
+  void _adjustSlotList(List<TimeSlot> list, int newLength) {
+    while (list.length < newLength) {
       final hour = 8 + _timeSlots.length;
-      _timeSlots.add(
+      list.add(
         TimeSlot(
           startTime: TimeOfDay(hour: hour % 24, minute: 0),
-          endTime: TimeOfDay(hour: hour % 24, minute: 45),
+          endTime: TimeOfDay(hour: hour % 24, minute: _courseDuration),
         ),
       );
     }
-    if (_timeSlots.length > totalSections) {
-      _timeSlots = _timeSlots.sublist(0, totalSections);
+    if (list.length > newLength) {
+      list.removeRange(newLength, list.length);
     }
   }
 
@@ -138,22 +151,19 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
             ),
             _buildSectionCounter(l10n.morning, _morningSections, (v) {
               setState(() {
-                _morningSections = v;
-                _adjustTimeSlots();
+                _adjustSlotList(_morningSlots, v);
               });
               _autoSave();
             }),
             _buildSectionCounter(l10n.afternoon, _afternoonSections, (v) {
               setState(() {
-                _afternoonSections = v;
-                _adjustTimeSlots();
+                _adjustSlotList(_afternoonSlots, v);
               });
               _autoSave();
             }),
             _buildSectionCounter(l10n.evening, _eveningSections, (v) {
               setState(() {
-                _eveningSections = v;
-                _adjustTimeSlots();
+                _adjustSlotList(_eveningSlots, v);
               });
               _autoSave();
             }),
@@ -237,18 +247,20 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
                     slot: _timeSlots[i],
                     onChanged: (slot, isStart) {
                       setState(() {
+                        final flat = _timeSlots;
                         if (isStart && _autoSyncTime) {
                           int endMin = slot.startTime.minute + _courseDuration;
                           int endHour = slot.startTime.hour + (endMin ~/ 60);
-                          _timeSlots[i] = slot.copyWith(
+                          flat[i] = slot.copyWith(
                             endTime: TimeOfDay(
                               hour: endHour % 24,
                               minute: endMin % 60,
                             ),
                           );
                         } else {
-                          _timeSlots[i] = slot;
+                          flat[i] = slot;
                         }
+                        _timeSlots = flat;
 
                         if (_autoSyncTime) {
                           _syncFollowingSlots(i);
@@ -280,12 +292,7 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
               trailing: const Icon(Icons.auto_fix_high),
               onTap: () {
                 setState(() {
-                  _morningSections = 4;
-                  _afternoonSections = 5;
-                  _eveningSections = 3;
-                  // Use the hardcoded default logic for 4-5-3
-                  _timeSlots = [
-                    // Morning
+                  _morningSlots = [
                     const TimeSlot(
                       startTime: TimeOfDay(hour: 8, minute: 15),
                       endTime: TimeOfDay(hour: 9, minute: 0),
@@ -302,7 +309,8 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
                       startTime: TimeOfDay(hour: 11, minute: 10),
                       endTime: TimeOfDay(hour: 11, minute: 55),
                     ),
-                    // Afternoon
+                  ];
+                  _afternoonSlots = [
                     const TimeSlot(
                       startTime: TimeOfDay(hour: 13, minute: 50),
                       endTime: TimeOfDay(hour: 14, minute: 35),
@@ -323,7 +331,8 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
                       startTime: TimeOfDay(hour: 17, minute: 40),
                       endTime: TimeOfDay(hour: 18, minute: 25),
                     ),
-                    // Evening
+                  ];
+                  _eveningSlots = [
                     const TimeSlot(
                       startTime: TimeOfDay(hour: 19, minute: 20),
                       endTime: TimeOfDay(hour: 20, minute: 5),
@@ -351,10 +360,7 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
               trailing: const Icon(Icons.auto_fix_high),
               onTap: () {
                 setState(() {
-                  _morningSections = 4;
-                  _afternoonSections = 5;
-                  _eveningSections = 3;
-                  _timeSlots = [
+                  _morningSlots = [
                     const TimeSlot(
                       startTime: TimeOfDay(hour: 8, minute: 0),
                       endTime: TimeOfDay(hour: 8, minute: 45),
@@ -371,6 +377,8 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
                       startTime: TimeOfDay(hour: 10, minute: 55),
                       endTime: TimeOfDay(hour: 11, minute: 40),
                     ),
+                  ];
+                  _afternoonSlots = [
                     const TimeSlot(
                       startTime: TimeOfDay(hour: 14, minute: 0),
                       endTime: TimeOfDay(hour: 14, minute: 45),
@@ -391,6 +399,8 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
                       startTime: TimeOfDay(hour: 17, minute: 50),
                       endTime: TimeOfDay(hour: 18, minute: 35),
                     ),
+                  ];
+                  _eveningSlots = [
                     const TimeSlot(
                       startTime: TimeOfDay(hour: 19, minute: 30),
                       endTime: TimeOfDay(hour: 20, minute: 15),

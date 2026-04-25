@@ -1,191 +1,171 @@
 import 'dart:convert';
+import 'dart:io';
 
-import 'package:hive_ce/hive.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:path/path.dart';
 import 'package:bugaoshan/models/course.dart';
 
-const String _boxMetadata = 'metadata';
 const String _keyCurrentScheduleId = 'currentScheduleId';
-const String _keySchedules = 'schedules';
-const String _keyScheduleConfig = 'scheduleConfig'; // Legacy key
 
 class DatabaseService {
-  Box? _metadataBox;
-  Box? _coursesBox;
+  late Database _db;
+
+  // In-memory cache to keep synchronous getters working
+  String _currentScheduleId = 'default';
+  List<ScheduleConfig> _schedules = [];
+  final Map<String, Course> _coursesCache = {}; // ID to Course mapping for the current schedule
 
   Future<void> init() async {
-    await Hive.openBox(_boxMetadata);
-    _metadataBox = Hive.box(_boxMetadata);
-
-    String currentId =
-        _metadataBox!.get(_keyCurrentScheduleId, defaultValue: 'default')
-            as String;
-
-    // Migration / Initialization
-    if (!_metadataBox!.containsKey(_keySchedules)) {
-      await Hive.openBox('courses');
-      final oldCoursesBox = Hive.box('courses');
-      final jsonStr = oldCoursesBox.get(_keyScheduleConfig) as String?;
-
-      ScheduleConfig defaultConfig;
-      if (jsonStr != null && jsonStr.isNotEmpty) {
-        try {
-          defaultConfig = ScheduleConfig.fromJson(_decodeJson(jsonStr));
-          defaultConfig.id = 'default';
-          if (defaultConfig.semesterName.isEmpty) {
-            defaultConfig.semesterName = '默认课表';
-          }
-        } catch (_) {
-          defaultConfig = _defaultScheduleConfig();
-        }
-      } else {
-        defaultConfig = _defaultScheduleConfig();
-      }
-
-      await _metadataBox!.put(_keySchedules, [
-        _encodeJson(defaultConfig.toJson()),
-      ]);
-      await _metadataBox!.put(_keyCurrentScheduleId, 'default');
-      currentId = 'default';
-
-      _coursesBox = oldCoursesBox;
-    } else {
-      await _switchCoursesBox(currentId);
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      sqfliteFfiInit();
+      databaseFactory = databaseFactoryFfi;
     }
+
+    final databasesPath = await getDatabasesPath();
+    final path = join(databasesPath, 'bugaoshan.db');
+
+    _db = await openDatabase(
+      path,
+      version: 1,
+      onCreate: (db, version) async {
+        await db.execute('''
+          CREATE TABLE metadata (
+            key TEXT PRIMARY KEY,
+            value TEXT
+          )
+        ''');
+        await db.execute('''
+          CREATE TABLE schedules (
+            id TEXT PRIMARY KEY,
+            data_json TEXT
+          )
+        ''');
+        await db.execute('''
+          CREATE TABLE courses (
+            id TEXT PRIMARY KEY,
+            schedule_id TEXT,
+            data_json TEXT
+          )
+        ''');
+      },
+    );
+
+    // Initialize Metadata
+    final metaResult = await _db.query('metadata', where: 'key = ?', whereArgs: [_keyCurrentScheduleId]);
+    if (metaResult.isNotEmpty) {
+      _currentScheduleId = metaResult.first['value'] as String;
+    } else {
+      await _db.insert('metadata', {'key': _keyCurrentScheduleId, 'value': 'default'});
+      _currentScheduleId = 'default';
+    }
+
+    // Load Schedules
+    final schedulesResult = await _db.query('schedules');
+    if (schedulesResult.isNotEmpty) {
+      _schedules = schedulesResult.map((e) => ScheduleConfig.fromJson(_decodeJson(e['data_json'] as String))).toList();
+    } else {
+      // Create default
+      final defaultConfig = _defaultScheduleConfig();
+      _schedules = [defaultConfig];
+      await _db.insert('schedules', {'id': defaultConfig.id, 'data_json': _encodeJson(defaultConfig.toJson())});
+    }
+
+    // Load Courses for current schedule
+    await _loadCoursesCache(_currentScheduleId);
   }
 
-  Future<void> _switchCoursesBox(String scheduleId) async {
-    if (_coursesBox != null && _coursesBox!.isOpen) {
-      await _coursesBox!.close();
+  Future<void> _loadCoursesCache(String scheduleId) async {
+    _coursesCache.clear();
+    final coursesResult = await _db.query('courses', where: 'schedule_id = ?', whereArgs: [scheduleId]);
+    for (var row in coursesResult) {
+      final course = Course.fromJson(_decodeJson(row['data_json'] as String));
+      _coursesCache[course.id] = course;
     }
-    final boxName = scheduleId == 'default' ? 'courses' : 'courses_$scheduleId';
-    await Hive.openBox(boxName);
-    _coursesBox = Hive.box(boxName);
   }
 
   // ==================== Schedules Management ====================
 
   String getCurrentScheduleId() {
-    return _metadataBox!.get(_keyCurrentScheduleId, defaultValue: 'default')
-        as String;
+    return _currentScheduleId;
   }
 
   Future<void> switchSchedule(String scheduleId) async {
-    await _metadataBox!.put(_keyCurrentScheduleId, scheduleId);
-    await _switchCoursesBox(scheduleId);
+    _currentScheduleId = scheduleId;
+    await _db.update('metadata', {'value': scheduleId}, where: 'key = ?', whereArgs: [_keyCurrentScheduleId]);
+    await _loadCoursesCache(scheduleId);
   }
 
   List<ScheduleConfig> getAllSchedules() {
-    final list = _metadataBox!.get(_keySchedules) as List<dynamic>?;
-    if (list == null) return [_defaultScheduleConfig()];
-
-    return list
-        .map((e) => ScheduleConfig.fromJson(_decodeJson(e as String)))
-        .toList();
+    return List.unmodifiable(_schedules);
   }
 
   ScheduleConfig getScheduleConfig() {
-    final currentId = getCurrentScheduleId();
-    final schedules = getAllSchedules();
-    return schedules.firstWhere(
-      (s) => s.id == currentId,
-      orElse: () => schedules.first,
+    return _schedules.firstWhere(
+      (s) => s.id == _currentScheduleId,
+      orElse: () => _schedules.first,
     );
   }
 
   Future<void> saveScheduleConfig(ScheduleConfig config) async {
-    final schedules = getAllSchedules();
-    final index = schedules.indexWhere((s) => s.id == config.id);
+    final index = _schedules.indexWhere((s) => s.id == config.id);
     if (index >= 0) {
-      schedules[index] = config;
+      _schedules[index] = config;
+      await _db.update('schedules', {'data_json': _encodeJson(config.toJson())}, where: 'id = ?', whereArgs: [config.id]);
     } else {
-      schedules.add(config);
+      _schedules.add(config);
+      await _db.insert('schedules', {'id': config.id, 'data_json': _encodeJson(config.toJson())});
     }
-    await _saveSchedulesList(schedules);
   }
 
   Future<void> addSchedule(ScheduleConfig config) async {
-    final schedules = getAllSchedules();
-    schedules.add(config);
-    await _saveSchedulesList(schedules);
+    await saveScheduleConfig(config);
   }
 
   Future<void> deleteSchedule(String scheduleId) async {
-    final schedules = getAllSchedules();
-    schedules.removeWhere((s) => s.id == scheduleId);
-    await _saveSchedulesList(schedules);
-
-    // Clean up the courses box
-    final boxName = scheduleId == 'default' ? 'courses' : 'courses_$scheduleId';
-    if (await Hive.boxExists(boxName)) {
-      await Hive.deleteBoxFromDisk(boxName);
-    }
+    _schedules.removeWhere((s) => s.id == scheduleId);
+    await _db.delete('schedules', where: 'id = ?', whereArgs: [scheduleId]);
+    await _db.delete('courses', where: 'schedule_id = ?', whereArgs: [scheduleId]);
 
     // If we deleted the current one, switch to the first available
-    if (getCurrentScheduleId() == scheduleId && schedules.isNotEmpty) {
-      await switchSchedule(schedules.first.id);
+    if (_currentScheduleId == scheduleId && _schedules.isNotEmpty) {
+      await switchSchedule(_schedules.first.id);
     }
-  }
-
-  Future<void> _saveSchedulesList(List<ScheduleConfig> schedules) async {
-    final list = schedules.map((s) => _encodeJson(s.toJson())).toList();
-    await _metadataBox!.put(_keySchedules, list);
   }
 
   // ==================== Courses ====================
 
   List<Course> getCourses({String? scheduleId}) {
-    if (scheduleId != null) {
-      final boxName = scheduleId == 'default'
-          ? 'courses'
-          : 'courses_$scheduleId';
-      // If the box is already open (could be the current one), use it
-      if (Hive.isBoxOpen(boxName)) {
-        final box = Hive.box(boxName);
-        return box.values
-            .whereType<Map>()
-            .map((e) => Course.fromJson(Map<String, dynamic>.from(e)))
-            .toList();
-      }
-      // Note: In a real app we might want to open and close the box,
-      // but for export we'll assume it's safe to return empty if not loaded
-      // or we can handle it in provider.
-      return [];
+    // Synchronous call requires cache. We only cache the current schedule.
+    if (scheduleId == null || scheduleId == _currentScheduleId) {
+      return _coursesCache.values.toList();
     }
-
-    if (_coursesBox == null || !_coursesBox!.isOpen) return [];
-    return _coursesBox!.values
-        .whereType<Map>()
-        .map((e) => Course.fromJson(Map<String, dynamic>.from(e)))
-        .toList();
+    // If they asked for a different schedule synchronously, we can't fetch it instantly.
+    // In practice, this codebase only fetches the current one synchronously.
+    return [];
   }
 
   Future<void> addCourse(Course course) async {
-    await _coursesBox!.put(course.id, course.toJson());
+    _coursesCache[course.id] = course;
+    await _db.insert('courses', {'id': course.id, 'schedule_id': _currentScheduleId, 'data_json': _encodeJson(course.toJson())});
   }
 
   Future<void> updateCourse(Course course) async {
-    await _coursesBox!.put(course.id, course.toJson());
+    _coursesCache[course.id] = course;
+    await _db.update('courses', {'data_json': _encodeJson(course.toJson())}, where: 'id = ?', whereArgs: [course.id]);
   }
 
   Future<void> deleteCourse(String courseId) async {
-    await _coursesBox!.delete(courseId);
+    _coursesCache.remove(courseId);
+    await _db.delete('courses', where: 'id = ?', whereArgs: [courseId]);
   }
 
   Future<List<Course>> getCoursesAsync({String? scheduleId}) async {
-    if (scheduleId == null) return getCourses();
-
-    final boxName = scheduleId == 'default' ? 'courses' : 'courses_$scheduleId';
-    if (Hive.isBoxOpen(boxName)) {
-      return getCourses(scheduleId: scheduleId);
+    if (scheduleId == null || scheduleId == _currentScheduleId) {
+      return _coursesCache.values.toList();
     }
 
-    final box = await Hive.openBox(boxName);
-    final courses = box.values
-        .whereType<Map>()
-        .map((e) => Course.fromJson(Map<String, dynamic>.from(e)))
-        .toList();
-    await box.close();
-    return courses;
+    final coursesResult = await _db.query('courses', where: 'schedule_id = ?', whereArgs: [scheduleId]);
+    return coursesResult.map((row) => Course.fromJson(_decodeJson(row['data_json'] as String))).toList();
   }
 
   Future<bool> hasConflict(Course course, {String? excludeId}) async {
@@ -197,7 +177,8 @@ class DatabaseService {
   // ==================== Clear All ====================
 
   Future<void> clearAllCourseData() async {
-    await _coursesBox!.clear();
+    _coursesCache.clear();
+    await _db.delete('courses', where: 'schedule_id = ?', whereArgs: [_currentScheduleId]);
   }
 
   // ==================== Helpers ====================

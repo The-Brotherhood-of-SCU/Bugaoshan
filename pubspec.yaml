@@ -21,7 +21,9 @@ dependencies:
   web: any
   async: any
   http: ^1.2.0
-  hive_ce: ^2.19.3
+  sqflite_common: ^2.5.6+1
+  sqflite: ^2.3.3+1
+  sqflite_common_ffi: ^2.3.3
   path_provider: ^2.1.5
   path: ^1.9.0
   dart_sm: ^0.1.4

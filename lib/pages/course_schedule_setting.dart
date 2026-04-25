@@ -19,13 +19,12 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
 
   late DateTime _startDate;
   late int _totalWeeks;
-  late int _morningSections;
-  late int _afternoonSections;
-  late int _eveningSections;
+  late List<TimeSlot> _morningSlots;
+  late List<TimeSlot> _afternoonSlots;
+  late List<TimeSlot> _eveningSlots;
   late int _courseDuration;
   late int _breakDuration;
   late bool _autoSyncTime;
-  late List<TimeSlot> _timeSlots;
   late bool _showTeacher;
   late bool _showLocation;
   late bool _showWeekend;
@@ -35,13 +34,12 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
     final config = courseProvider.scheduleConfig.value;
     _startDate = config.semesterStartDate;
     _totalWeeks = config.totalWeeks;
-    _morningSections = config.morningSections;
-    _afternoonSections = config.afternoonSections;
-    _eveningSections = config.eveningSections;
+    _morningSlots = List.from(config.morningSlots);
+    _afternoonSlots = List.from(config.afternoonSlots);
+    _eveningSlots = List.from(config.eveningSlots);
     _courseDuration = config.courseDuration;
     _breakDuration = config.breakDuration;
     _autoSyncTime = config.autoSyncTime;
-    _timeSlots = List.from(config.timeSlots);
     _showTeacher = config.showTeacherName;
     _showLocation = config.showLocation;
     _showWeekend = config.showWeekend;
@@ -92,13 +90,12 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => TimeSlotSettingPage(
-                      morningSections: _morningSections,
-                      afternoonSections: _afternoonSections,
-                      eveningSections: _eveningSections,
+                      initialMorningSlots: _morningSlots,
+                      initialAfternoonSlots: _afternoonSlots,
+                      initialEveningSlots: _eveningSlots,
                       initialCourseDuration: _courseDuration,
                       initialBreakDuration: _breakDuration,
                       initialAutoSyncTime: _autoSyncTime,
-                      initialTimeSlots: _timeSlots,
                     ),
                   ),
                 );
@@ -371,13 +368,12 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
     final config = currentConfig.copyWith(
       semesterStartDate: _startDate,
       totalWeeks: _totalWeeks,
-      morningSections: _morningSections,
-      afternoonSections: _afternoonSections,
-      eveningSections: _eveningSections,
+      morningSlots: _morningSlots,
+      afternoonSlots: _afternoonSlots,
+      eveningSlots: _eveningSlots,
       courseDuration: _courseDuration,
       breakDuration: _breakDuration,
       autoSyncTime: _autoSyncTime,
-      timeSlots: _timeSlots,
       showTeacherName: _showTeacher,
       showLocation: _showLocation,
       showWeekend: _showWeekend,
