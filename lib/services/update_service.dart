@@ -55,7 +55,7 @@ class UpdateService {
         final name = asset['name'] as String;
         if (_assetMatchesPlatform(name)) {
           return ReleaseInfo(
-            version: tagName,
+            tagName: tagName,
             downloadUrl: asset['browser_download_url'] as String,
           );
         }
@@ -85,7 +85,7 @@ class UpdateService {
           }
         }
         return ReleaseInfo(
-          version: tagName,
+          tagName: tagName,
           downloadUrl: downloadUrl,
           isPrerelease: isPrerelease,
         );
