@@ -7,8 +7,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive.dart';
 import 'package:path/path.dart' as p;
 
-import 'package:bugaoshan/models/release_info.dart';
-
 class UpdateService {
   static const _pubspecUrl =
       'https://raw.githubusercontent.com/The-Brotherhood-of-SCU/Bugaoshan/main/pubspec.yaml';
