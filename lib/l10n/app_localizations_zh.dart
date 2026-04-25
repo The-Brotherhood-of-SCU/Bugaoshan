@@ -786,6 +786,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ccylOrderedActivities => '预约的活动';
 
   @override
+  String get ccylMyCredits => '成绩单';
+
+  @override
+  String get ccylSelect => '选择';
+
+  @override
+  String get ccylSelectAll => '全选';
+
+  @override
+  String get ccylExportEmail => '导出到邮箱';
+
+  @override
+  String get ccylEmailAddress => 'QQ邮箱';
+
+  @override
+  String get ccylEmailHint => '请输入接收成绩单的QQ邮箱';
+
+  @override
+  String get ccylExportSuccess => '成绩单已发送至邮箱';
+
+  @override
   String get ccylSearchHint => '搜索活动名称';
 
   @override
@@ -1007,10 +1028,4 @@ class AppLocalizationsZhHansCn extends AppLocalizationsZh {
 
   @override
   String get selfLanguage => '中文-简体-中国';
-
-  @override
-  String get utilitiesSection => '实用工具';
-
-  @override
-  String get academicSection => '学术';
 }

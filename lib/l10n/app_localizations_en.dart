@@ -803,6 +803,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ccylOrderedActivities => 'Reserved Activities';
 
   @override
+  String get ccylMyCredits => 'Credit List';
+
+  @override
+  String get ccylSelect => 'Select';
+
+  @override
+  String get ccylSelectAll => 'Select All';
+
+  @override
+  String get ccylExportEmail => 'Export to Email';
+
+  @override
+  String get ccylEmailAddress => 'QQ Email';
+
+  @override
+  String get ccylEmailHint => 'Enter QQ email to receive the report';
+
+  @override
+  String get ccylExportSuccess => 'Report sent to email';
+
+  @override
   String get ccylSearchHint => 'Search activity name';
 
   @override

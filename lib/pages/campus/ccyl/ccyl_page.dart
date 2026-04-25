@@ -3,6 +3,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activities_tab.dart';
 import 'package:bugaoshan/pages/campus/ccyl/my_activities_tab.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ordered_activities_tab.dart';
+import 'package:bugaoshan/pages/campus/ccyl/credit_list_page.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_bind_page.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
@@ -23,6 +24,7 @@ class _CcylPageState extends State<CcylPage> {
     ActivitiesTab(),
     MyActivitiesTab(),
     OrderedActivitiesTab(),
+    CreditListPage(),
   ];
 
   void _onTabTapped(int index) {
@@ -126,6 +128,11 @@ class _CcylPageState extends State<CcylPage> {
                 icon: const Icon(Icons.bookmark_outline),
                 selectedIcon: const Icon(Icons.bookmark),
                 label: l10n.ccylOrderedActivities,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.assignment_outlined),
+                selectedIcon: const Icon(Icons.assignment),
+                label: l10n.ccylMyCredits,
               ),
             ],
           ),

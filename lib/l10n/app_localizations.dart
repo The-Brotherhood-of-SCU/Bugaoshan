@@ -1609,6 +1609,48 @@ abstract class AppLocalizations {
   /// **'Reserved Activities'**
   String get ccylOrderedActivities;
 
+  /// No description provided for @ccylMyCredits.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit List'**
+  String get ccylMyCredits;
+
+  /// No description provided for @ccylSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get ccylSelect;
+
+  /// No description provided for @ccylSelectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select All'**
+  String get ccylSelectAll;
+
+  /// No description provided for @ccylExportEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Export to Email'**
+  String get ccylExportEmail;
+
+  /// No description provided for @ccylEmailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'QQ Email'**
+  String get ccylEmailAddress;
+
+  /// No description provided for @ccylEmailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter QQ email to receive the report'**
+  String get ccylEmailHint;
+
+  /// No description provided for @ccylExportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Report sent to email'**
+  String get ccylExportSuccess;
+
   /// No description provided for @ccylSearchHint.
   ///
   /// In en, this message translates to:
