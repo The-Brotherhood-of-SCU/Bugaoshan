@@ -410,6 +410,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
 
   Widget _buildTimeSection(AppLocalizations l10n) {
     final activity = _activity!;
+    final theme = Theme.of(context);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -418,21 +419,24 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
           children: [
             Text(
               l10n.ccylTimeInfo,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
-            _buildInfoRow(
+            _buildTimeRangeTile(
               Icons.play_arrow,
               l10n.ccylEnrollTime,
-              '${activity.enrollStartTime} - ${activity.enrollEndTime ?? ''}',
+              activity.enrollStartTime,
+              activity.enrollEndTime,
             ),
             if (activity.startTime != null)
-              _buildInfoRow(
+              const SizedBox(height: 12),
+            if (activity.startTime != null)
+              _buildTimeRangeTile(
                 Icons.schedule,
                 l10n.ccylActivityTime,
-                '${activity.startTime} - ${activity.endTime ?? ''}',
+                activity.startTime,
+                activity.endTime,
               ),
           ],
         ),
@@ -583,6 +587,55 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTimeRangeTile(
+    IconData icon,
+    String label,
+    String? startTime,
+    String? endTime,
+  ) {
+    final theme = Theme.of(context);
+    final mutedStyle = theme.textTheme.bodyMedium?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Icon(
+            icon,
+            size: 18,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('$label: ', style: mutedStyle),
+              const SizedBox(height: 2),
+              if (startTime != null && startTime.isNotEmpty)
+                Text(
+                  startTime,
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(fontWeight: FontWeight.w500),
+                ),
+              if (endTime != null && endTime.isNotEmpty) ...[
+                const SizedBox(height: 1),
+                Text(
+                  endTime,
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(fontWeight: FontWeight.w500),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 
