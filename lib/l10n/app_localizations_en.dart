@@ -1084,6 +1084,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inputInfo => 'Input Info';
 
   @override
+  String get stepCampus => 'Cmp';
+
+  @override
+  String get stepBuilding => 'Bld';
+
+  @override
+  String get stepUnit => 'Unit';
+
+  @override
+  String get stepInfo => 'Info';
+
+  @override
   String get inputBindingInfo => 'Input Binding Info';
 
   @override
@@ -1096,7 +1108,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get roomNumber => 'Room Number';
 
   @override
-  String get roomNumberHint => 'Enter room number, e.g. 301C、301K(suite)';
+  String get roomNumberHint => 'Enter room number, e.g. 301C';
 
   @override
   String get pricePerUnit => 'Price per unit';

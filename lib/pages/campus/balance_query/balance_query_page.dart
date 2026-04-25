@@ -917,15 +917,13 @@ class _BindRoomDialogState extends State<_BindRoomDialog> {
                   ),
                 ),
               const SizedBox(height: 16),
+              _buildStepIndicator(l10n),
+              const SizedBox(height: 16),
               Flexible(
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildStepIndicator(l10n),
-                      const SizedBox(height: 24),
-                      _buildStepContent(l10n),
-                    ],
+                    children: [_buildStepContent(l10n)],
                   ),
                 ),
               ),
@@ -976,15 +974,21 @@ class _BindRoomDialogState extends State<_BindRoomDialog> {
 
   Widget _buildStepIndicator(AppLocalizations l10n) {
     final hasUnits = _hasUnits;
-    return Row(
-      children: [
-        _stepCircle(0, l10n.selectCampus),
-        _stepLine(0),
-        _stepCircle(1, l10n.selectBuilding),
-        _stepLine(1),
-        if (hasUnits) ...[_stepCircle(2, l10n.selectUnit), _stepLine(2)],
-        _stepCircle(hasUnits ? 3 : 2, l10n.inputInfo),
-      ],
+    return Center(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _stepCircle(0, Icons.location_on, l10n.stepCampus),
+          _stepLine(0),
+          _stepCircle(1, Icons.business, l10n.stepBuilding),
+          _stepLine(1),
+          if (hasUnits) ...[
+            _stepCircle(2, Icons.home, l10n.stepUnit),
+            _stepLine(2),
+          ],
+          _stepCircle(hasUnits ? 3 : 2, Icons.edit, l10n.stepInfo),
+        ],
+      ),
     );
   }
 
@@ -994,63 +998,57 @@ class _BindRoomDialogState extends State<_BindRoomDialog> {
         : (displayStep < 2 ? displayStep : displayStep + 1);
   }
 
-  Widget _stepCircle(int step, String label) {
+  Widget _stepCircle(int step, IconData icon, String label) {
     final effectiveStep = _effectiveStep(step);
     final isActive = _step >= effectiveStep;
-    final isCurrent = _step == effectiveStep;
 
-    return Column(
-      children: [
-        Container(
-          width: 28,
-          height: 28,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: isActive
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.surfaceContainerHighest,
+    return Flexible(
+      child: Column(
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isActive
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.surfaceContainerHighest,
+            ),
+            child: Center(
+              child: Icon(
+                icon,
+                size: 16,
+                color: isActive
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
           ),
-          child: Center(
-            child: isActive && !isCurrent
-                ? Icon(
-                    Icons.check,
-                    size: 16,
-                    color: Theme.of(context).colorScheme.onPrimary,
-                  )
-                : Text(
-                    '${step + 1}',
-                    style: TextStyle(
-                      color: isActive
-                          ? Theme.of(context).colorScheme.onPrimary
-                          : Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: isActive
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: isActive
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _stepLine(int afterStep) {
     final isActive = _step > _effectiveStep(afterStep);
-    return Expanded(
-      child: Container(
-        height: 2,
-        margin: const EdgeInsets.only(bottom: 20),
-        color: isActive
-            ? Theme.of(context).colorScheme.primary
-            : Theme.of(context).colorScheme.surfaceContainerHighest,
-      ),
+    return Container(
+      width: 30,
+      height: 2,
+      margin: const EdgeInsets.only(bottom: 20),
+      color: isActive
+          ? Theme.of(context).colorScheme.primary
+          : Theme.of(context).colorScheme.surfaceContainerHighest,
     );
   }
 
@@ -1181,6 +1179,11 @@ class _BindRoomDialogState extends State<_BindRoomDialog> {
             labelText: l10n.roomNumber,
             hintText: l10n.roomNumberHint,
             border: const OutlineInputBorder(),
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
           ),
         ),
       ],

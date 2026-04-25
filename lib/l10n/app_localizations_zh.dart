@@ -1061,6 +1061,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get inputInfo => '输入信息';
 
   @override
+  String get stepCampus => '校区';
+
+  @override
+  String get stepBuilding => '楼栋';
+
+  @override
+  String get stepUnit => '单元';
+
+  @override
+  String get stepInfo => '信息';
+
+  @override
   String get inputBindingInfo => '输入绑定信息';
 
   @override
@@ -1073,7 +1085,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get roomNumber => '房间号';
 
   @override
-  String get roomNumberHint => '请输入房间号，如 301C、301K(大寝)';
+  String get roomNumberHint => '请输入房间号，如 301C';
 
   @override
   String get pricePerUnit => '单价';

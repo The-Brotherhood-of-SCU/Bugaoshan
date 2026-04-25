@@ -2155,6 +2155,30 @@ abstract class AppLocalizations {
   /// **'Input Info'**
   String get inputInfo;
 
+  /// No description provided for @stepCampus.
+  ///
+  /// In en, this message translates to:
+  /// **'Cmp'**
+  String get stepCampus;
+
+  /// No description provided for @stepBuilding.
+  ///
+  /// In en, this message translates to:
+  /// **'Bld'**
+  String get stepBuilding;
+
+  /// No description provided for @stepUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get stepUnit;
+
+  /// No description provided for @stepInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Info'**
+  String get stepInfo;
+
   /// No description provided for @inputBindingInfo.
   ///
   /// In en, this message translates to:
@@ -2182,7 +2206,7 @@ abstract class AppLocalizations {
   /// No description provided for @roomNumberHint.
   ///
   /// In en, this message translates to:
-  /// **'Enter room number, e.g. 301C、301K(suite)'**
+  /// **'Enter room number, e.g. 301C'**
   String get roomNumberHint;
 
   /// No description provided for @pricePerUnit.
