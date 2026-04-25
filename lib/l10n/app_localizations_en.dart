@@ -464,7 +464,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportScheduleAsIcs => 'Export to Calendar File';
 
   @override
-  String get exportSuccess => 'Schedule data copied to clipboard';
+  String get exportScheduleAsCopySuccess => 'Schedule data copied to clipboard';
+
+  @override
+  String get exportScheduleAsCopyFailed =>
+      'Copy failed, maybe you can try later';
 
   @override
   String get copySuffix => ' (Copy)';

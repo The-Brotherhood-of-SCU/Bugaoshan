@@ -967,11 +967,17 @@ abstract class AppLocalizations {
   /// **'Export to Calendar File'**
   String get exportScheduleAsIcs;
 
-  /// No description provided for @exportSuccess.
+  /// No description provided for @exportScheduleAsCopySuccess.
   ///
   /// In en, this message translates to:
   /// **'Schedule data copied to clipboard'**
-  String get exportSuccess;
+  String get exportScheduleAsCopySuccess;
+
+  /// No description provided for @exportScheduleAsCopyFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy failed, maybe you can try later'**
+  String get exportScheduleAsCopyFailed;
 
   /// No description provided for @copySuffix.
   ///

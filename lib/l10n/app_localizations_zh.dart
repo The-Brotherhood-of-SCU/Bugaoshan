@@ -455,7 +455,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportScheduleAsIcs => '导出为日历文件';
 
   @override
-  String get exportSuccess => '课表数据已复制到剪贴板';
+  String get exportScheduleAsCopySuccess => '课表已复制到剪切板';
+
+  @override
+  String get exportScheduleAsCopyFailed => '复制失败，您可以稍后再试';
 
   @override
   String get copySuffix => ' (副本)';

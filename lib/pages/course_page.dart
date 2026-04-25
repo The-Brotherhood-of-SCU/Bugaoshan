@@ -375,6 +375,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
 
   void _onExport() async {
     final l10n = AppLocalizations.of(context)!;
+    final exportProvider = ExportScheduleProvider.create();
 
     final ExportAction? action = await showModalBottomSheet(
       context: context,
@@ -426,16 +427,26 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
 
     if (!mounted) return;
 
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     switch (action) {
       case null:
-        debugPrint("_onExport: cancel null");
+        debugPrint("[_onExport] cancel null");
         break;
       case ExportAction.copy:
-        debugPrint("_onExport: copy");
-        //TODO: copy to clipboard
+        debugPrint("[_onExport] copy");
+        final result = await exportProvider.copyToClipBoard();
+        if (result == ExportResult.success) {
+          scaffoldMessenger.showSnackBar(
+            SnackBar(content: Text(l10n.exportScheduleAsCopySuccess)),
+          );
+        } else {
+          scaffoldMessenger.showSnackBar(
+            SnackBar(content: Text(l10n.exportScheduleAsCopyFailed)),
+          );
+        }
         break;
       case ExportAction.ics:
-        debugPrint("_onExport: ics");
+        debugPrint("[_onExport] ics");
         //TODO: convert schedule to ics file
         //  save as a tmp file
         //  call file selector

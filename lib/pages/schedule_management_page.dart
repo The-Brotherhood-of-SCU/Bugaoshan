@@ -211,7 +211,9 @@ class ScheduleManagementPage extends StatelessWidget {
                         await Clipboard.setData(ClipboardData(text: jsonStr));
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.exportSuccess)),
+                            SnackBar(
+                              content: Text(l10n.exportScheduleAsCopySuccess),
+                            ),
                           );
                         }
                       },
