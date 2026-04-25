@@ -127,26 +127,6 @@ class _BalanceQueryPageState extends State<BalanceQueryPage>
                     ),
                   );
                 }),
-                // if (_provider.bindings.length > 1)
-                //   PopupMenuItem<int>(
-                //     value: -2,
-                //     child: Row(
-                //       children: [
-                //         Icon(
-                //           Icons.delete_sweep,
-                //           color: Theme.of(context).colorScheme.error,
-                //           size: 20,
-                //         ),
-                //         const SizedBox(width: 8),
-                //         Text(
-                //           l10n.deleteRoom,
-                //           style: TextStyle(
-                //             color: Theme.of(context).colorScheme.error,
-                //           ),
-                //         ),
-                //       ],
-                //     ),
-                //   ),
                 PopupMenuItem<int>(
                   value: -1,
                   child: Row(
