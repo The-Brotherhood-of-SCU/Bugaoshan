@@ -41,10 +41,10 @@ class _TestPageState extends State<TestPage> {
   final UpdateInfo _stableInfo = UpdateInfo();
   final UpdateInfo _previewInfo = UpdateInfo();
 
-  bool get _isWindowsOrLinux => Platform.isWindows || Platform.isLinux;
+  bool get _supportsUpdate => Platform.isAndroid || Platform.isWindows || Platform.isLinux;
 
   Future<void> _checkForUpdates(bool isPreview) async {
-    if (!_isWindowsOrLinux) return;
+    if (!_supportsUpdate) return;
     final info = isPreview ? _previewInfo : _stableInfo;
     info.setChecking(true, null);
 
@@ -156,6 +156,11 @@ class _TestPageState extends State<TestPage> {
           SnackBar(content: Text('${localizations.updateFailed}: $e')),
         );
       }
+      return;
+    }
+
+    if (mounted) {
+      Navigator.of(context, rootNavigator: true).pop();
     }
   }
 
@@ -208,7 +213,7 @@ class _TestPageState extends State<TestPage> {
             const SizedBox(height: 12),
             _EnvironmentInfoButton(onPressed: () => _showEnvironmentInfoDialog(context)),
             const SizedBox(height: 32),
-            if (_isWindowsOrLinux) ...[
+            if (_supportsUpdate) ...[
               _SectionTitle(title: localizations.updateToLatest),
               const SizedBox(height: 12),
               _UpdateCard(

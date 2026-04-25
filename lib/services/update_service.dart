@@ -11,6 +11,15 @@ class UpdateService {
   static const _pubspecUrl =
       'https://raw.githubusercontent.com/The-Brotherhood-of-SCU/Bugaoshan/main/pubspec.yaml';
   static const _repo = 'The-Brotherhood-of-SCU/Bugaoshan';
+  static const _channel = MethodChannel('bugaoshan/update');
+
+  bool _assetMatchesPlatform(String assetName) {
+    final name = assetName.toLowerCase();
+    if (Platform.isAndroid) return name.endsWith('.apk');
+    if (Platform.isWindows) return name.contains('windows');
+    if (Platform.isLinux) return name.contains('linux');
+    return false;
+  }
 
   Future<String?> getLatestVersion() async {
     try {
@@ -41,10 +50,9 @@ class UpdateService {
       final data = jsonDecode(response.body);
       final tagName = (data['tag_name'] as String);
       final assets = data['assets'] as List<dynamic>;
-      final platform = Platform.isWindows ? 'windows' : 'linux';
       for (final asset in assets) {
         final name = asset['name'] as String;
-        if (name.toLowerCase().contains(platform)) {
+        if (_assetMatchesPlatform(name)) {
           return (
             tagName.replaceFirst('v', ''),
             asset['browser_download_url'] as String,
@@ -70,11 +78,10 @@ class UpdateService {
         );
         final isPrerelease = releases[0]['prerelease'] == true;
         final assets = releases[0]['assets'] as List<dynamic>;
-        final platform = Platform.isWindows ? 'windows' : 'linux';
         String? downloadUrl;
         for (final asset in assets) {
           final name = asset['name'] as String;
-          if (name.toLowerCase().contains(platform)) {
+          if (_assetMatchesPlatform(name)) {
             downloadUrl = asset['browser_download_url'] as String;
             break;
           }
@@ -140,6 +147,12 @@ class UpdateService {
       client.close();
     }
 
+    if (Platform.isAndroid) {
+      onStatus?.call('Installing...');
+      await _installAndroid(chunks);
+      return;
+    }
+
     onStatus?.call('Extracting...');
 
     // Save to temp directory
@@ -179,6 +192,14 @@ class UpdateService {
     }
 
     exit(0);
+  }
+
+  Future<void> _installAndroid(List<int> apkBytes) async {
+    final tempDir = await getTemporaryDirectory();
+    final apkPath = p.join(tempDir.path, 'bugaoshan_update.apk');
+    final apkFile = File(apkPath);
+    await apkFile.writeAsBytes(apkBytes);
+    await _channel.invokeMethod('installApk', {'path': apkPath});
   }
 
   Future<void> _installWindows(
