@@ -324,6 +324,46 @@ class CcylService {
     );
   }
 
+  Future<List<CyclCredit>> getCreditList({
+    int pageNum = 1,
+    int pageSize = 10,
+  }) async {
+    final json = await _httpPost(
+      'list-credit',
+      Uri.parse('$_apiBase/app/credit/list'),
+      _authHeaders(),
+      {'pn': pageNum, 'ps': pageSize},
+    );
+    if (json['code'] != 0) {
+      final msg = json['msg']?.toString() ?? '获取成绩单失败';
+      throw CcylException(msg);
+    }
+
+    final list = json['list'] as List<dynamic>?;
+    if (list == null) return [];
+
+    return list
+        .map((e) => CyclCredit.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<String> exportCreditsToEmail(
+    List<String> creditIds,
+    String email,
+  ) async {
+    final json = await _httpPost(
+      'export-pdf',
+      Uri.parse('$_apiBase/app/credit/exportPdfV2'),
+      _authHeaders(),
+      {'creditIds': creditIds.join(','), 'qqEmail': email},
+    );
+    if (json['code'] != 0) {
+      final msg = json['msg']?.toString() ?? '导出失败';
+      throw CcylException(msg);
+    }
+    return json['msg']?.toString() ?? '成绩单已发送至邮箱';
+  }
+
   Future<Map<String, List<CyclDict>>> getDicts(List<String> groupCodes) async {
     final results = <String, List<CyclDict>>{};
 
@@ -642,6 +682,71 @@ class CcylException implements Exception {
   const CcylException(this.message);
   @override
   String toString() => message;
+}
+
+class CyclCredit {
+  final String creditId;
+  final String? reportId;
+  final String userId;
+  final String userName;
+  final String activityName;
+  final String? activityType;
+  final double classHour;
+  final String scoreType;
+  final String? classCredit;
+  final String creditStatus;
+  final String? comment;
+  final String createTime;
+  final String? updateTime;
+  final String scoreTypeName;
+  final String? activityLevel;
+  final String? activityLevelName;
+  final String? activityStar;
+  final String creditStatusName;
+
+  CyclCredit({
+    required this.creditId,
+    this.reportId,
+    required this.userId,
+    required this.userName,
+    required this.activityName,
+    this.activityType,
+    required this.classHour,
+    required this.scoreType,
+    this.classCredit,
+    required this.creditStatus,
+    this.comment,
+    required this.createTime,
+    this.updateTime,
+    required this.scoreTypeName,
+    this.activityLevel,
+    this.activityLevelName,
+    this.activityStar,
+    required this.creditStatusName,
+  });
+
+  factory CyclCredit.fromJson(Map<String, dynamic> json) {
+    return CyclCredit(
+      creditId: json['creditId']?.toString() ?? '',
+      reportId: json['reportId']?.toString(),
+      userId: json['userId']?.toString() ?? '',
+      userName: json['userName']?.toString() ?? '',
+      activityName: json['activityName']?.toString() ?? '',
+      activityType: json['activityType']?.toString(),
+      classHour: (json['classHour'] as num?)?.toDouble() ?? 0.0,
+      scoreType: json['scoreType']?.toString() ?? '',
+      classCredit: json['classCredit']?.toString(),
+      creditStatus: json['creditStatus']?.toString() ?? '',
+      comment: json['comment']?.toString(),
+      createTime: json['createTime']?.toString() ?? '',
+      updateTime: json['updateTime']?.toString(),
+      scoreTypeName: json['scoreTypeName']?.toString() ?? '',
+      activityLevel: json['activityLevel']?.toString(),
+      activityLevelName: json['activityLevelName']?.toString(),
+      activityStar: json['activityStar']?.toString(),
+      creditStatusName: json['creditStatusName']?.toString() ?? '',
+    );
+  }
 }
 
 class CyclActivityLib {
