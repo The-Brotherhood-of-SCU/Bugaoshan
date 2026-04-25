@@ -7,6 +7,7 @@ import 'package:bugaoshan/pages/campus/grades/grades_page.dart';
 import 'package:bugaoshan/pages/campus/network_device/network_device_page.dart';
 import 'package:bugaoshan/pages/campus/train_program/train_program_page.dart';
 import 'package:bugaoshan/utils/constants.dart';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class CampusPage extends StatelessWidget {
@@ -30,9 +31,9 @@ class CampusPage extends StatelessWidget {
                 title: l10n.gradesStats,
                 desc: l10n.gradesStatsDesc,
                 appOnly: false,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const GradesPage()),
+                onTap: () => popupOrNavigate(
+                  logicRootContext,
+                  const GradesPage(),
                 ),
               ),
               const SizedBox(height: 8),
@@ -41,9 +42,9 @@ class CampusPage extends StatelessWidget {
                 title: l10n.trainProgram,
                 desc: l10n.trainProgramDesc,
                 appOnly: false,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const TrainProgramPage()),
+                onTap: () => popupOrNavigate(
+                  logicRootContext,
+                  const TrainProgramPage(),
                 ),
               ),
               const SizedBox(height: 8),
@@ -52,9 +53,9 @@ class CampusPage extends StatelessWidget {
                 title: l10n.ccylTitle,
                 desc: l10n.ccylDesc,
                 appOnly: false,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CcylPage()),
+                onTap: () => popupOrNavigate(
+                  logicRootContext,
+                  const CcylPage(),
                 ),
               ),
               const SizedBox(height: 24),
@@ -67,12 +68,10 @@ class CampusPage extends StatelessWidget {
                 appOnly: isWeb,
                 onTap: isWeb
                     ? null
-                    : () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const ClassroomPage(),
+                    : () => popupOrNavigate(
+                          logicRootContext,
+                          const ClassroomPage(),
                         ),
-                      ),
               ),
               const SizedBox(height: 8),
               _CampusCard(
@@ -80,9 +79,9 @@ class CampusPage extends StatelessWidget {
                 title: l10n.networkDeviceQuery,
                 desc: l10n.networkDeviceQueryDesc,
                 appOnly: false,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const NetworkDevicePage()),
+                onTap: () => popupOrNavigate(
+                  logicRootContext,
+                  const NetworkDevicePage(),
                 ),
               ),
               const SizedBox(height: 24),
