@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
@@ -8,6 +6,7 @@ import 'package:bugaoshan/pages/import_schedule_page.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
+import 'package:bugaoshan/utils/export_schedule_utils.dart';
 
 class ScheduleManagementPage extends StatelessWidget {
   const ScheduleManagementPage({super.key});
@@ -200,23 +199,10 @@ class ScheduleManagementPage extends StatelessWidget {
                   children: [
                     IconButton(
                       icon: const Icon(Icons.send_outlined),
-                      onPressed: () async {
-                        final courses = await courseProvider
-                            .getCoursesForSchedule(schedule.id);
-                        final data = {
-                          'config': schedule.toJson(),
-                          'courses': courses.map((e) => e.toJson()).toList(),
-                        };
-                        final jsonStr = json.encode(data);
-                        await Clipboard.setData(ClipboardData(text: jsonStr));
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.exportScheduleAsCopySuccess),
-                            ),
-                          );
-                        }
-                      },
+                      onPressed: () => showExportScheduleSheet(
+                        context,
+                        schedule: schedule,
+                      ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.edit_outlined),
