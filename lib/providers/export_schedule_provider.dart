@@ -13,7 +13,7 @@ enum ExportResult { success, failed, canceled }
 
 class ExportScheduleProvider {
   final CourseProvider _courseProvider;
-  File? tempFile;
+  File? _tempFile;
 
   ExportScheduleProvider(this._courseProvider);
 
@@ -70,7 +70,7 @@ class ExportScheduleProvider {
       debugPrint("[saveIcsToTempFile] failed to write temp file: $e");
       return null;
     }
-    this.tempFile = tempFile;
+    _tempFile = tempFile;
     debugPrint("[saveIcsToTempFile] temp file saved to ${tempFile.path}");
 
     final semesterName = _courseProvider.scheduleConfig.value.semesterName;
@@ -84,7 +84,7 @@ class ExportScheduleProvider {
 
   Future<ExportResult> moveTempToDestination(String destinationPath) async {
     try {
-      await tempFile!.copy(destinationPath);
+      await _tempFile!.copy(destinationPath);
       debugPrint("[moveTempToDestination] temp moved to $destinationPath");
       await cleanTempFile();
     } catch (e) {
@@ -97,11 +97,11 @@ class ExportScheduleProvider {
 
   Future<void> cleanTempFile() async {
     try {
-      await tempFile?.delete();
+      await _tempFile?.delete();
       debugPrint("[cleanTempFile] temp cleaned");
     } catch (e) {
       debugPrint("[cleanTempFile] $e");
     }
-    tempFile = null;
+    _tempFile = null;
   }
 }
