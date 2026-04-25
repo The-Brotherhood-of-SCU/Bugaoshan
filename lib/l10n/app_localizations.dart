@@ -2137,6 +2137,12 @@ abstract class AppLocalizations {
   /// **'Switch Room'**
   String get switchRoom;
 
+  /// No description provided for @deleteRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Room'**
+  String get deleteRoom;
+
   /// No description provided for @selectUnit.
   ///
   /// In en, this message translates to:

@@ -88,7 +88,6 @@ class BalanceQueryProvider extends ChangeNotifier {
     _acInfo = null;
     notifyListeners();
 
-    // 切换房间后重新 verificationRoom，让后端绑定到新房间
     final binding = currentBinding!;
     final client = await _ensureClient();
     await _service.verificationRoom(

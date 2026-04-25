@@ -355,6 +355,7 @@
     "bindRoom": "Bind Room",
     "bindNewRoom": "Bind New Room",
     "switchRoom": "Switch Room",
+    "deleteRoom": "Delete Room",
     "selectCampus": "Select Campus",
     "selectBuilding": "Select Building",
     "selectUnit": "Select Unit",

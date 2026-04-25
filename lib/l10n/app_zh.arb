@@ -354,6 +354,7 @@
     "bindRoom": "绑定房间",
     "bindNewRoom": "绑定新房间",
     "switchRoom": "切换房间",
+    "deleteRoom": "删除房间",
     "selectCampus": "选择校区",
     "selectBuilding": "选择楼栋",
     "selectUnit": "选择单元",

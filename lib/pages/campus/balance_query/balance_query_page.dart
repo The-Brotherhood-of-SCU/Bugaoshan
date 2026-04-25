@@ -85,6 +85,10 @@ class _BalanceQueryPageState extends State<BalanceQueryPage>
               onSelected: (index) {
                 if (index == -1) {
                   _showBindDialog();
+                } else if (index == -2) {
+                  _showDeleteAllDialog();
+                } else if (index < 0) {
+                  _showDeleteConfirmDialog(-(index + 2));
                 } else {
                   _provider.switchBinding(index);
                 }
@@ -107,10 +111,42 @@ class _BalanceQueryPageState extends State<BalanceQueryPage>
                           const SizedBox(width: 20),
                         const SizedBox(width: 8),
                         Expanded(child: Text(binding.displayName)),
+                        IconButton(
+                          icon: Icon(
+                            Icons.delete_outline,
+                            size: 20,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _showDeleteConfirmDialog(index);
+                          },
+                          tooltip: l10n.deleteRoom,
+                        ),
                       ],
                     ),
                   );
                 }),
+                // if (_provider.bindings.length > 1)
+                //   PopupMenuItem<int>(
+                //     value: -2,
+                //     child: Row(
+                //       children: [
+                //         Icon(
+                //           Icons.delete_sweep,
+                //           color: Theme.of(context).colorScheme.error,
+                //           size: 20,
+                //         ),
+                //         const SizedBox(width: 8),
+                //         Text(
+                //           l10n.deleteRoom,
+                //           style: TextStyle(
+                //             color: Theme.of(context).colorScheme.error,
+                //           ),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
                 PopupMenuItem<int>(
                   value: -1,
                   child: Row(
@@ -229,6 +265,63 @@ class _BalanceQueryPageState extends State<BalanceQueryPage>
     );
     if (result != null) {
       await _provider.addBinding(result);
+    }
+  }
+
+  Future<void> _showDeleteConfirmDialog(int index) async {
+    final binding = _provider.bindings[index];
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.deleteRoom),
+        content: Text('${l10n.deleteRoom}?\n${binding.displayName}'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: Text(l10n.confirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await _provider.removeBinding(index);
+    }
+  }
+
+  Future<void> _showDeleteAllDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.deleteRoom),
+        content: Text('${l10n.deleteRoom}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: Text(l10n.confirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      for (int i = _provider.bindings.length - 1; i >= 0; i--) {
+        await _provider.removeBinding(i);
+      }
     }
   }
 }

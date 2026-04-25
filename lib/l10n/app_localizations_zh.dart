@@ -1052,6 +1052,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get switchRoom => '切换房间';
 
   @override
+  String get deleteRoom => '删除房间';
+
+  @override
   String get selectUnit => '选择单元';
 
   @override

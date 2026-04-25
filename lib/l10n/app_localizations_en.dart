@@ -1075,6 +1075,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get switchRoom => 'Switch Room';
 
   @override
+  String get deleteRoom => 'Delete Room';
+
+  @override
   String get selectUnit => 'Select Unit';
 
   @override
