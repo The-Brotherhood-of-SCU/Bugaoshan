@@ -30,7 +30,6 @@ dependencies:
   image: ^4.8.0
   pub_semver: ^2.1.4
   archive: ^4.0.9
-  updat: ^1.4.0
   os_type: ^0.2.2
 dev_dependencies:
   flutter_test:

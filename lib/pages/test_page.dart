@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
 
 import 'package:bugaoshan/injection/injector.dart';
@@ -41,22 +42,27 @@ class _TestPageState extends State<TestPage> {
   final UpdateInfo _stableInfo = UpdateInfo();
   final UpdateInfo _previewInfo = UpdateInfo();
 
-  bool get _isWindowsOrLinux => Platform.isWindows || Platform.isLinux;
+  bool get _supportsUpdate =>
+      Platform.isAndroid || Platform.isWindows || Platform.isLinux;
 
   Future<void> _checkForUpdates(bool isPreview) async {
-    if (!_isWindowsOrLinux) return;
+    if (!_supportsUpdate) return;
     final info = isPreview ? _previewInfo : _stableInfo;
     info.setChecking(true, null);
 
     try {
       final updateService = getIt<UpdateService>();
       if (isPreview) {
-        final (version, url, isPrerelease) = await updateService.getLatestPrereleaseFromGitHub();
-        info.setResult(version, url, isPrerelease);
+        final release = await updateService.getLatestPrereleaseFromGitHub();
+        info.setResult(
+          release.tagName,
+          release.downloadUrl,
+          release.isPrerelease,
+        );
       } else {
         final latest = await updateService.getLatestReleaseFromGitHub();
         if (latest != null) {
-          info.setResult(latest.$1, latest.$2, null);
+          info.setResult(latest.tagName, latest.downloadUrl, null);
         } else {
           info.setChecking(false, 'No release found');
         }
@@ -66,7 +72,11 @@ class _TestPageState extends State<TestPage> {
     }
   }
 
-  void _showUpdateDialog(String latestVersion, String downloadUrl, bool isPreview) {
+  void _showUpdateDialog(
+    String latestVersion,
+    String downloadUrl,
+    bool isPreview,
+  ) {
     final localizations = AppLocalizations.of(context)!;
     showDialog(
       context: context,
@@ -102,7 +112,11 @@ class _TestPageState extends State<TestPage> {
               Navigator.pop(context);
               _startUpdate(latestVersion, downloadUrl);
             },
-            child: Text(isPreview ? localizations.startUpdatePreview : localizations.startUpdate),
+            child: Text(
+              isPreview
+                  ? localizations.startUpdatePreview
+                  : localizations.startUpdate,
+            ),
           ),
         ],
       ),
@@ -113,15 +127,16 @@ class _TestPageState extends State<TestPage> {
     final updateService = getIt<UpdateService>();
     final localizations = AppLocalizations.of(context)!;
     final progressState = _DownloadProgressState();
+    final cancelToken = CancelToken();
 
     showDialog(
       context: context,
       useRootNavigator: true,
       barrierDismissible: false,
-      builder: (context) => ListenableBuilder(
-        listenable: progressState,
-        builder: (context, _) => AlertDialog(
-          content: Column(
+      builder: (dialogContext) => AlertDialog(
+        content: ListenableBuilder(
+          listenable: progressState,
+          builder: (context, _) => Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const CircularProgressIndicator(),
@@ -129,7 +144,9 @@ class _TestPageState extends State<TestPage> {
               Text('${progressState.status} ${progressState.percent}%'),
               if (progressState.total > 0) ...[
                 const SizedBox(height: 8),
-                LinearProgressIndicator(value: progressState.received / progressState.total),
+                LinearProgressIndicator(
+                  value: progressState.received / progressState.total,
+                ),
                 const SizedBox(height: 4),
                 Text(
                   '${_formatBytes(progressState.received)} / ${_formatBytes(progressState.total)}',
@@ -139,6 +156,15 @@ class _TestPageState extends State<TestPage> {
             ],
           ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              cancelToken.cancel();
+              Navigator.of(dialogContext).pop();
+            },
+            child: Text(localizations.cancel),
+          ),
+        ],
       ),
     );
 
@@ -146,16 +172,25 @@ class _TestPageState extends State<TestPage> {
       await updateService.downloadAndInstall(
         latestVersion,
         downloadUrl,
+        cancelToken: cancelToken,
         onStatus: (status) => progressState.setStatus(status),
-        onProgress: (received, total) => progressState.setProgress(received, total),
+        onProgress: (received, total) =>
+            progressState.setProgress(received, total),
       );
+    } on UpdateCancelledException {
+      return; // already popped
     } catch (e) {
       if (mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
+        Navigator.of(context, rootNavigator: true).maybePop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${localizations.updateFailed}: $e')),
         );
       }
+      return;
+    }
+
+    if (mounted) {
+      Navigator.of(context, rootNavigator: true).maybePop();
     }
   }
 
@@ -206,9 +241,11 @@ class _TestPageState extends State<TestPage> {
           children: [
             _SectionTitle(title: localizations.environmentInfo),
             const SizedBox(height: 12),
-            _EnvironmentInfoButton(onPressed: () => _showEnvironmentInfoDialog(context)),
+            _EnvironmentInfoButton(
+              onPressed: () => _showEnvironmentInfoDialog(context),
+            ),
             const SizedBox(height: 32),
-            if (_isWindowsOrLinux) ...[
+            if (_supportsUpdate) ...[
               _SectionTitle(title: localizations.updateToLatest),
               const SizedBox(height: 12),
               _UpdateCard(
@@ -216,7 +253,11 @@ class _TestPageState extends State<TestPage> {
                 title: localizations.updateToStable,
                 info: _stableInfo,
                 onCheck: () => _checkForUpdates(false),
-                onUpdate: () => _showUpdateDialog(_stableInfo.version!, _stableInfo.downloadUrl!, false),
+                onUpdate: () => _showUpdateDialog(
+                  _stableInfo.version!,
+                  _stableInfo.downloadUrl!,
+                  false,
+                ),
               ),
               const SizedBox(height: 16),
               _UpdateCard(
@@ -224,7 +265,11 @@ class _TestPageState extends State<TestPage> {
                 title: localizations.updateToPreview,
                 info: _previewInfo,
                 onCheck: () => _checkForUpdates(true),
-                onUpdate: () => _showUpdateDialog(_previewInfo.version!, _previewInfo.downloadUrl!, true),
+                onUpdate: () => _showUpdateDialog(
+                  _previewInfo.version!,
+                  _previewInfo.downloadUrl!,
+                  true,
+                ),
               ),
             ],
           ],
@@ -298,20 +343,39 @@ class _UpdateCard extends StatelessWidget {
                   Text(title, style: Theme.of(context).textTheme.bodyMedium),
                   const Spacer(),
                   if (info.checking)
-                    const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   else
-                    ElevatedButton(onPressed: onCheck, child: Text(localizations.checkForUpdates)),
+                    ElevatedButton(
+                      onPressed: onCheck,
+                      child: Text(localizations.checkForUpdates),
+                    ),
                 ],
               ),
               if (info.error != null) ...[
                 const SizedBox(height: 8),
-                Text('Error: ${info.error}', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                Text(
+                  'Error: ${info.error}',
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
               ],
               if (info.hasVersion && info.downloadUrl != null) ...[
                 const SizedBox(height: 8),
-                Text(info.isPrerelease ? 'Preview: ${info.version}' : 'Stable: ${info.version}', style: Theme.of(context).textTheme.bodyMedium),
+                Text(
+                  info.isPrerelease
+                      ? 'Preview: ${info.version}'
+                      : 'Stable: ${info.version}',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
                 const SizedBox(height: 12),
-                ElevatedButton.icon(onPressed: onUpdate, icon: Icon(icon), label: Text(localizations.newVersionAvailable)),
+                ElevatedButton.icon(
+                  onPressed: onUpdate,
+                  icon: Icon(icon),
+                  label: Text(localizations.newVersionAvailable),
+                ),
               ],
             ],
           ),
@@ -327,7 +391,12 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold));
+    return Text(
+      title,
+      style: Theme.of(
+        context,
+      ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+    );
   }
 }
 
