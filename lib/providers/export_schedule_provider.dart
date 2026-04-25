@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/services/ics_service.dart';
 
@@ -13,20 +14,41 @@ enum ExportResult { success, failed, canceled }
 
 class ExportScheduleProvider {
   final CourseProvider _courseProvider;
+  // When override fields are set, they take precedence over the current schedule.
+  // This allows exporting a non-active schedule from schedule management page.
+  final ScheduleConfig? _overrideConfig;
+  final List<Course>? _overrideCourses;
+
   File? _tempFile;
 
-  ExportScheduleProvider(this._courseProvider);
+  ExportScheduleProvider(
+    this._courseProvider, {
+    ScheduleConfig? overrideConfig,
+    List<Course>? overrideCourses,
+  }) : _overrideConfig = overrideConfig,
+       _overrideCourses = overrideCourses;
 
   factory ExportScheduleProvider.create() =>
       ExportScheduleProvider(getIt<CourseProvider>());
 
-  Future<ExportResult> copyToClipBoard() async {
-    final config = _courseProvider.scheduleConfig.value;
-    final allCourses = _courseProvider.courses.value;
+  factory ExportScheduleProvider.forSchedule(
+    ScheduleConfig config,
+    List<Course> courses,
+  ) => ExportScheduleProvider(
+    getIt<CourseProvider>(),
+    overrideConfig: config,
+    overrideCourses: courses,
+  );
 
+  ScheduleConfig get _config =>
+      _overrideConfig ?? _courseProvider.scheduleConfig.value;
+  List<Course> get _courses =>
+      _overrideCourses ?? _courseProvider.courses.value;
+
+  Future<ExportResult> copyToClipBoard() async {
     final data = {
-      'config': config.toJson(),
-      'courses': allCourses.map((e) => e.toJson()).toList(),
+      'config': _config.toJson(),
+      'courses': _courses.map((e) => e.toJson()).toList(),
     };
     final jsonStr = json.encode(data);
 
@@ -56,11 +78,9 @@ class ExportScheduleProvider {
         'course_schedule_${DateTime.now().millisecondsSinceEpoch}.ics';
     final tempFile = File('${tempDir.path}/$tempFileName');
 
-    final config = _courseProvider.scheduleConfig.value;
-    final courses = _courseProvider.courses.value;
     final icsContent = IcsService.genIcs(
-      config: config,
-      courses: courses,
+      config: _config,
+      courses: _courses,
       teacherLabel: teacherLabel,
     );
 
@@ -73,7 +93,7 @@ class ExportScheduleProvider {
     _tempFile = tempFile;
     debugPrint("[saveIcsToTempFile] temp file saved to ${tempFile.path}");
 
-    final semesterName = _courseProvider.scheduleConfig.value.semesterName;
+    final semesterName = _config.semesterName;
     // replace dangerous characters by _
     final safeSemesterName = semesterName.replaceAll(
       RegExp(r'[^\w\u4e00-\u9fff]'),
