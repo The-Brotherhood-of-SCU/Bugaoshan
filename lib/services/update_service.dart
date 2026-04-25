@@ -49,13 +49,13 @@ class UpdateService {
     if (response.statusCode == 200) {
       if (response.body.isEmpty) return null;
       final data = jsonDecode(response.body);
-      final tagName = (data['tag_name'] as String);
+      final tagName = data['tag_name'] as String;
       final assets = data['assets'] as List<dynamic>;
       for (final asset in assets) {
         final name = asset['name'] as String;
         if (_assetMatchesPlatform(name)) {
           return ReleaseInfo(
-            version: tagName.replaceFirst('v', ''),
+            version: tagName,
             downloadUrl: asset['browser_download_url'] as String,
           );
         }
@@ -73,10 +73,7 @@ class UpdateService {
       if (response.body.isEmpty) return const ReleaseInfo();
       final List<dynamic> releases = jsonDecode(response.body);
       if (releases.isNotEmpty && releases[0]['tag_name'] != null) {
-        final tagName = (releases[0]['tag_name'] as String).replaceFirst(
-          'v',
-          '',
-        );
+        final tagName = releases[0]['tag_name'] as String;
         final isPrerelease = releases[0]['prerelease'] == true;
         final assets = releases[0]['assets'] as List<dynamic>;
         String? downloadUrl;
