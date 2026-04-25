@@ -307,7 +307,7 @@ class _UpdateCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text('Error: ${info.error}', style: TextStyle(color: Theme.of(context).colorScheme.error)),
               ],
-              if (info.hasVersion) ...[
+              if (info.hasVersion && info.downloadUrl != null) ...[
                 const SizedBox(height: 8),
                 Text(info.isPrerelease ? 'Preview: ${info.version}' : 'Stable: ${info.version}', style: Theme.of(context).textTheme.bodyMedium),
                 const SizedBox(height: 12),
