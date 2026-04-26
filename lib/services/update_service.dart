@@ -118,7 +118,7 @@ class UpdateService {
   }
 
   List<int>? _parseVersion(String version) {
-    final cleanVersion = version.split('+').first;
+    final cleanVersion = version.split('+').first.replaceFirst(RegExp(r'^v', caseSensitive: false), '');
     final parts = cleanVersion.split('.');
     if (parts.length < 3) return null;
     try {

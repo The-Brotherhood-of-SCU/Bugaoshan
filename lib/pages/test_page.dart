@@ -45,52 +45,56 @@ class _TestPageState extends State<TestPage> {
   bool get _supportsUpdate =>
       Platform.isAndroid || Platform.isWindows || Platform.isLinux;
 
-  Future<void> _checkForUpdates(bool isPreview) async {
+  Future<void> _checkForUpdates() async {
     if (!_supportsUpdate) return;
-    final info = isPreview ? _previewInfo : _stableInfo;
-    info.setChecking(true, null);
+    final updateService = getIt<UpdateService>();
+    final currentVersion = _versionInfoProvider.currentVersion;
 
+    _stableInfo.setChecking(true, null);
+    _previewInfo.setChecking(true, null);
+
+    await Future.wait([
+      _checkStableUpdate(updateService, currentVersion),
+      _checkPreviewUpdate(updateService, currentVersion),
+    ]);
+
+    if (!_stableInfo.hasVersion && !_previewInfo.hasVersion && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.noUpdateAvailable),
+        ),
+      );
+    }
+  }
+
+  Future<void> _checkStableUpdate(UpdateService service, String currentVersion) async {
     try {
-      final updateService = getIt<UpdateService>();
-      final currentVersion = _versionInfoProvider.currentVersion;
-      if (isPreview) {
-        final release = await updateService.getLatestPrereleaseFromGitHub();
-        if (release.tagName != null && release.downloadUrl != null) {
-          info.setResult(
-            release.tagName,
-            release.downloadUrl,
-            release.isPrerelease,
-            release.body,
-          );
-        } else {
-          info.setChecking(false, null);
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(AppLocalizations.of(context)!.noUpdateAvailable),
-              ),
-            );
-          }
-        }
+      final latest = await service.getLatestReleaseFromGitHub();
+      if (latest != null &&
+          latest.tagName != null &&
+          service.hasUpdate(currentVersion, latest.tagName!)) {
+        _stableInfo.setResult(latest.tagName, latest.downloadUrl, null, latest.body);
       } else {
-        final latest = await updateService.getLatestReleaseFromGitHub();
-        if (latest != null &&
-            latest.tagName != null &&
-            updateService.hasUpdate(currentVersion, latest.tagName!)) {
-          info.setResult(latest.tagName, latest.downloadUrl, null, latest.body);
-        } else {
-          info.setChecking(false, null);
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(AppLocalizations.of(context)!.noUpdateAvailable),
-              ),
-            );
-          }
-        }
+        _stableInfo.setChecking(false, null);
       }
     } catch (e) {
-      info.setChecking(false, e.toString());
+      _stableInfo.setChecking(false, e.toString());
+    }
+  }
+
+  Future<void> _checkPreviewUpdate(UpdateService service, String currentVersion) async {
+    try {
+      final release = await service.getLatestPrereleaseFromGitHub();
+      if (release.tagName != null && release.downloadUrl != null) {
+        _previewInfo.setResult(
+          release.tagName, release.downloadUrl,
+          release.isPrerelease, release.body,
+        );
+      } else {
+        _previewInfo.setChecking(false, null);
+      }
+    } catch (e) {
+      _previewInfo.setChecking(false, e.toString());
     }
   }
 
@@ -162,9 +166,13 @@ class _TestPageState extends State<TestPage> {
     );
   }
 
+  String _proxyDownloadUrl(String url) =>
+      'https://gh-proxy.org/$url';
+
   void _startUpdate(String latestVersion, String downloadUrl) async {
     final updateService = getIt<UpdateService>();
     final localizations = AppLocalizations.of(context)!;
+    downloadUrl = _proxyDownloadUrl(downloadUrl);
     final progressState = _DownloadProgressState();
     final cancelToken = CancelToken();
 
@@ -291,7 +299,6 @@ class _TestPageState extends State<TestPage> {
                 icon: Icons.system_update_alt,
                 title: localizations.updateToStable,
                 info: _stableInfo,
-                onCheck: () => _checkForUpdates(false),
                 onUpdate: () => _showUpdateDialog(
                   _stableInfo.version!,
                   _stableInfo.downloadUrl!,
@@ -304,12 +311,19 @@ class _TestPageState extends State<TestPage> {
                 icon: Icons.science,
                 title: localizations.updateToPreview,
                 info: _previewInfo,
-                onCheck: () => _checkForUpdates(true),
                 onUpdate: () => _showUpdateDialog(
                   _previewInfo.version!,
                   _previewInfo.downloadUrl!,
                   true,
                   _previewInfo.releaseNotes,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: ElevatedButton.icon(
+                  onPressed: _checkForUpdates,
+                  icon: const Icon(Icons.system_update),
+                  label: Text(localizations.checkForUpdates),
                 ),
               ),
             ],
@@ -361,14 +375,12 @@ class _UpdateCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final UpdateInfo info;
-  final VoidCallback onCheck;
   final VoidCallback onUpdate;
 
   const _UpdateCard({
     required this.icon,
     required this.title,
     required this.info,
-    required this.onCheck,
     required this.onUpdate,
   });
 
@@ -390,18 +402,14 @@ class _UpdateCard extends StatelessWidget {
                   Icon(icon, size: 20),
                   const SizedBox(width: 8),
                   Text(title, style: Theme.of(context).textTheme.bodyMedium),
-                  const Spacer(),
-                  if (info.checking)
+                  if (info.checking) ...[
+                    const Spacer(),
                     const SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  else
-                    ElevatedButton(
-                      onPressed: onCheck,
-                      child: Text(localizations.checkForUpdates),
                     ),
+                  ],
                 ],
               ),
               if (info.error != null) ...[
