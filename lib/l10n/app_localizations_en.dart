@@ -155,6 +155,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get version => 'Version';
 
   @override
+  String get gitTag => 'Git Tag';
+
+  @override
   String get description => 'Description';
 
   @override

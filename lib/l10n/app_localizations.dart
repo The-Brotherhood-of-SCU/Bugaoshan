@@ -379,6 +379,12 @@ abstract class AppLocalizations {
   /// **'Version'**
   String get version;
 
+  /// No description provided for @gitTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Git Tag'**
+  String get gitTag;
+
   /// No description provided for @description.
   ///
   /// In en, this message translates to:
