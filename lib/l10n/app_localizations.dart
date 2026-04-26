@@ -487,6 +487,12 @@ abstract class AppLocalizations {
   /// **'This is a pre-release version. Use with caution.'**
   String get preReleaseWarning;
 
+  /// No description provided for @releaseNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Release Notes'**
+  String get releaseNotes;
+
   /// No description provided for @neverMind.
   ///
   /// In en, this message translates to:

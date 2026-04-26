@@ -207,6 +207,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get preReleaseWarning => '这是预发布版本，使用时请注意。';
 
   @override
+  String get releaseNotes => '更新日志';
+
+  @override
   String get neverMind => '算了吧';
 
   @override

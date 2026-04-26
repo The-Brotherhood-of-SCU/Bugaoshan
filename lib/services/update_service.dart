@@ -65,6 +65,7 @@ class UpdateService {
           return ReleaseInfo(
             tagName: tagName,
             downloadUrl: asset['browser_download_url'] as String,
+            body: data['body'] as String?,
           );
         }
       }
@@ -96,6 +97,7 @@ class UpdateService {
           tagName: tagName,
           downloadUrl: downloadUrl,
           isPrerelease: isPrerelease,
+          body: releases[0]['body'] as String?,
         );
       }
       return const ReleaseInfo();

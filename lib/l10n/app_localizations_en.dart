@@ -212,6 +212,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'This is a pre-release version. Use with caution.';
 
   @override
+  String get releaseNotes => 'Release Notes';
+
+  @override
   String get neverMind => 'Never Mind';
 
   @override

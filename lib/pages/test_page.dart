@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/release_notes_page.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
 
@@ -57,11 +58,12 @@ class _TestPageState extends State<TestPage> {
           release.tagName,
           release.downloadUrl,
           release.isPrerelease,
+          release.body,
         );
       } else {
         final latest = await updateService.getLatestReleaseFromGitHub();
         if (latest != null) {
-          info.setResult(latest.tagName, latest.downloadUrl, null);
+          info.setResult(latest.tagName, latest.downloadUrl, null, latest.body);
         } else {
           info.setChecking(false, 'No release found');
         }
@@ -75,6 +77,7 @@ class _TestPageState extends State<TestPage> {
     String latestVersion,
     String downloadUrl,
     bool isPreview,
+    String? releaseNotes,
   ) {
     final localizations = AppLocalizations.of(context)!;
     showDialog(
@@ -102,6 +105,22 @@ class _TestPageState extends State<TestPage> {
           ],
         ),
         actions: [
+          if (releaseNotes != null && releaseNotes.isNotEmpty)
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ReleaseNotesPage(
+                      version: latestVersion,
+                      releaseNotes: releaseNotes,
+                    ),
+                  ),
+                );
+              },
+              child: Text(localizations.releaseNotes),
+            ),
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(localizations.neverMind),
@@ -256,6 +275,7 @@ class _TestPageState extends State<TestPage> {
                   _stableInfo.version!,
                   _stableInfo.downloadUrl!,
                   false,
+                  _stableInfo.releaseNotes,
                 ),
               ),
               const SizedBox(height: 16),
@@ -268,6 +288,7 @@ class _TestPageState extends State<TestPage> {
                   _previewInfo.version!,
                   _previewInfo.downloadUrl!,
                   true,
+                  _previewInfo.releaseNotes,
                 ),
               ),
             ],
@@ -284,12 +305,14 @@ class UpdateInfo extends ChangeNotifier {
   bool _isPrerelease = false;
   bool _checking = false;
   String? _error;
+  String? _releaseNotes;
 
   String? get version => _version;
   String? get downloadUrl => _downloadUrl;
   bool get isPrerelease => _isPrerelease;
   bool get checking => _checking;
   String? get error => _error;
+  String? get releaseNotes => _releaseNotes;
   bool get hasVersion => _version != null;
 
   void setChecking(bool checking, String? error) {
@@ -298,10 +321,16 @@ class UpdateInfo extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setResult(String? version, String? downloadUrl, bool? isPrerelease) {
+  void setResult(
+    String? version,
+    String? downloadUrl,
+    bool? isPrerelease,
+    String? releaseNotes,
+  ) {
     _version = version;
     _downloadUrl = downloadUrl;
     if (isPrerelease != null) _isPrerelease = isPrerelease;
+    _releaseNotes = releaseNotes;
     _checking = false;
     notifyListeners();
   }
