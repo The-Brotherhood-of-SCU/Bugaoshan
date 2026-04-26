@@ -114,7 +114,8 @@ jobs:
             --dart-define=BUILD_TIME=${{ steps.git_meta.outputs.BUILD_TIME }}
 
       - name: Archive Windows Release
-        run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath windows-release.zip
+        run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath
+          windows-release.zip
 
       - name: Upload Windows
         uses: actions/upload-artifact@v4
@@ -177,9 +178,10 @@ jobs:
 
   release:
     name: Release
-    needs: [build-android, build-windows, build-linux]
+    needs: [ build-android, build-windows, build-linux ]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name ==
+      'workflow_dispatch'
     permissions:
       contents: write
 
@@ -245,6 +247,7 @@ jobs:
           start_idx = -1
           end_idx = len(lines)
 
+          # Match ## [version] or ## version (optionally with date)
           pattern = rf'^##\s*\[?{re.escape(version)}\]?(?:\s*-\s*\d{{4}}-\d{{2}}-\d{{2}})?\s*$'
 
           for i, line in enumerate(lines):
