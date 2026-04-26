@@ -5,51 +5,52 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'l10n/app_localizations.dart';
 
+const _pageTransitionsTheme = PageTransitionsTheme(
+  builders: {
+    TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+    TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+  },
+);
+
+const _appBarTheme = AppBarTheme(
+  toolbarHeight: 48,
+  centerTitle: true,
+  scrolledUnderElevation: 0,
+);
+
+const _navigationBarTheme = NavigationBarThemeData(height: 64);
+
 class MyApp extends StatelessWidget {
   MyApp({super.key});
-  final AppConfigProvider appConfigService = getIt<AppConfigProvider>();
 
-  // This widget is the root of your application.
+  final AppConfigProvider _appConfig = getIt<AppConfigProvider>();
+  final _home = HomePage();
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: Listenable.merge([
-        appConfigService.locale,
-        appConfigService.themeColor,
-      ]),
-      builder: (context, child) {
-        return _build(context);
-      },
+      listenable: Listenable.merge([_appConfig.locale, _appConfig.themeColor]),
+      builder: (context, _) => MaterialApp(
+        navigatorKey: navigatorKey,
+        locale: _appConfig.locale.value,
+        onGenerateTitle: (ctx) => AppLocalizations.of(ctx)!.bugaoshan,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        theme: _buildTheme(Brightness.light),
+        darkTheme: _buildTheme(Brightness.dark),
+        themeMode: ThemeMode.system,
+        home: _home,
+      ),
     );
   }
 
-  Widget _build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: navigatorKey,
-      locale: appConfigService.locale.value,
-      onGenerateTitle: (context) => AppLocalizations.of(context)!.bugaoshan,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      title: 'Bugaoshan',
-      theme: _buildTheme(Brightness.light),
-      darkTheme: _buildTheme(Brightness.dark),
-      themeMode: ThemeMode.system,
-      home: HomePage(),
-    );
-  }
-
-  ThemeData _buildTheme(Brightness brightness) {
-    return ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: appConfigService.themeColor.value,
-        brightness: brightness,
-      ),
-      appBarTheme: const AppBarTheme(
-        toolbarHeight: 48,
-        centerTitle: true,
-        scrolledUnderElevation: 0,
-      ),
-      navigationBarTheme: const NavigationBarThemeData(height: 64),
-    );
-  }
+  ThemeData _buildTheme(Brightness brightness) => ThemeData(
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: _appConfig.themeColor.value,
+      brightness: brightness,
+    ),
+    pageTransitionsTheme: _pageTransitionsTheme,
+    appBarTheme: _appBarTheme,
+    navigationBarTheme: _navigationBarTheme,
+  );
 }
