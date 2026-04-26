@@ -1,7 +1,7 @@
 name: bugaoshan
 description: Explore everything, all on the Bugaoshan.
 publish_to: none
-version: 0.5.0
+version: 0.6.0
 environment:
   sdk: ^3.10.4
 dependencies:
@@ -32,7 +32,7 @@ dependencies:
   archive: ^4.0.9
   os_type: ^0.2.2
   file_picker: ^11.0.2
-  flutter_markdown: ^0.7.7
+  flutter_markdown_plus: ^1.0.7
 dev_dependencies:
   flutter_test:
     sdk: flutter
