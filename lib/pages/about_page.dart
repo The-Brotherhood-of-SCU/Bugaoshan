@@ -242,7 +242,7 @@ class _AboutPageState extends State<AboutPage> {
                       _buildInfoItem(
                         context,
                         Icons.local_offer,
-                        'Tag',
+                        localizations.gitTag,
                         versionProvider.gitTag,
                       ),
                     ],

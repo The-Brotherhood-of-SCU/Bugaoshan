@@ -45,6 +45,7 @@
     "projectInfo": "项目信息",
     "appName": "应用名称",
     "version": "版本",
+    "gitTag": "Git 标签",
     "description": "描述",
     "appDescription": "探索一切，尽在不高山上",
     "contactUs": "联系我们",

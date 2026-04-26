@@ -45,6 +45,7 @@
     "projectInfo": "Project Info",
     "appName": "App Name",
     "version": "Version",
+    "gitTag": "Git Tag",
     "description": "Description",
     "appDescription": "Explore everything, all on the Bugaoshan",
     "contactUs": "Contact Us",
