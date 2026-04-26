@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
@@ -11,6 +9,7 @@ import 'package:bugaoshan/widgets/course/course_detail_sheet.dart';
 import 'package:bugaoshan/widgets/course/course_grid.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
+import 'package:bugaoshan/utils/export_schedule_utils.dart';
 
 class CoursePage extends StatefulWidget {
   const CoursePage({super.key});
@@ -374,24 +373,8 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
     );
   }
 
-  void _onExport() async {
-    final l10n = AppLocalizations.of(context)!;
-    final config = courseProvider.scheduleConfig.value;
-    final allCourses = courseProvider.courses.value;
-
-    final data = {
-      'config': config.toJson(),
-      'courses': allCourses.map((e) => e.toJson()).toList(),
-    };
-
-    final jsonStr = json.encode(data);
-    await Clipboard.setData(ClipboardData(text: jsonStr));
-
-    if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.exportSuccess)));
-    }
+  void _onExport() {
+    showExportScheduleSheet(context);
   }
 
   void _onAddCourse() {

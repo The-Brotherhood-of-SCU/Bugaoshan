@@ -418,9 +418,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get duplicateScheduleName => '课表名称已存在';
 
   @override
-  String get exportSuccess => '课表数据已复制到剪贴板';
-
-  @override
   String get importSchedule => '导入课表';
 
   @override
@@ -459,6 +456,33 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get exportSchedule => '导出课表';
+
+  @override
+  String get exportScheduleAsCopy => '复制到剪切板';
+
+  @override
+  String get exportScheduleAsIcs => '导出为日历文件';
+
+  @override
+  String get exportScheduleAsCopySuccess => '课表已复制到剪切板';
+
+  @override
+  String get exportScheduleAsCopyFailed => '复制失败，您可以稍后再试';
+
+  @override
+  String get exportScheduleAsIcsTo => '保存日历文件到...';
+
+  @override
+  String get exportScheduleAsIcsSuccess => '保存成功';
+
+  @override
+  String get exportScheduleAsIcsFailed => '保存失败';
+
+  @override
+  String get exportScheduleAsIcsCanceled => '取消保存';
+
+  @override
+  String get icsTeacherLabel => '教师';
 
   @override
   String get copySuffix => ' (副本)';
