@@ -427,9 +427,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get duplicateScheduleName => 'Schedule name already exists';
 
   @override
-  String get exportSuccess => 'Schedule data copied to clipboard';
-
-  @override
   String get importSchedule => 'Import Schedule';
 
   @override
@@ -468,6 +465,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportSchedule => 'Export Schedule';
+
+  @override
+  String get exportScheduleAsCopy => 'Copy to Clipboard';
+
+  @override
+  String get exportScheduleAsIcs => 'Export to Calendar File';
+
+  @override
+  String get exportScheduleAsCopySuccess => 'Schedule data copied to clipboard';
+
+  @override
+  String get exportScheduleAsCopyFailed =>
+      'Copy failed, maybe you can try later';
+
+  @override
+  String get exportScheduleAsIcsTo => 'Save Calendar File to...';
+
+  @override
+  String get exportScheduleAsIcsSuccess => 'File saved successfully';
+
+  @override
+  String get exportScheduleAsIcsFailed => 'File save failed';
+
+  @override
+  String get exportScheduleAsIcsCanceled => 'File save canceled';
+
+  @override
+  String get icsTeacherLabel => 'Teacher(s)';
 
   @override
   String get copySuffix => ' (Copy)';

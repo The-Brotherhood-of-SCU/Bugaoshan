@@ -901,12 +901,6 @@ abstract class AppLocalizations {
   /// **'Schedule name already exists'**
   String get duplicateScheduleName;
 
-  /// No description provided for @exportSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Schedule data copied to clipboard'**
-  String get exportSuccess;
-
   /// No description provided for @importSchedule.
   ///
   /// In en, this message translates to:
@@ -978,6 +972,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Export Schedule'**
   String get exportSchedule;
+
+  /// No description provided for @exportScheduleAsCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy to Clipboard'**
+  String get exportScheduleAsCopy;
+
+  /// No description provided for @exportScheduleAsIcs.
+  ///
+  /// In en, this message translates to:
+  /// **'Export to Calendar File'**
+  String get exportScheduleAsIcs;
+
+  /// No description provided for @exportScheduleAsCopySuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule data copied to clipboard'**
+  String get exportScheduleAsCopySuccess;
+
+  /// No description provided for @exportScheduleAsCopyFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy failed, maybe you can try later'**
+  String get exportScheduleAsCopyFailed;
+
+  /// No description provided for @exportScheduleAsIcsTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Calendar File to...'**
+  String get exportScheduleAsIcsTo;
+
+  /// No description provided for @exportScheduleAsIcsSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'File saved successfully'**
+  String get exportScheduleAsIcsSuccess;
+
+  /// No description provided for @exportScheduleAsIcsFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'File save failed'**
+  String get exportScheduleAsIcsFailed;
+
+  /// No description provided for @exportScheduleAsIcsCanceled.
+  ///
+  /// In en, this message translates to:
+  /// **'File save canceled'**
+  String get exportScheduleAsIcsCanceled;
+
+  /// No description provided for @icsTeacherLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher(s)'**
+  String get icsTeacherLabel;
 
   /// No description provided for @copySuffix.
   ///

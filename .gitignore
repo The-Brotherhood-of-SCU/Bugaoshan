@@ -54,3 +54,6 @@ app.*.map.json
 *-keystore.jks
 android/keystore/
 android/key.properties
+
+# AI generated draft documents
+docs/draft/*
