@@ -15,6 +15,17 @@ class AppInfoProvider {
     return _version;
   }
 
+  String get gitTag =>
+      const String.fromEnvironment('GIT_TAG', defaultValue: 'null');
+  String get gitCommit =>
+      const String.fromEnvironment('GIT_COMMIT', defaultValue: 'null');
+  String get gitCommitDateRaw =>
+      const String.fromEnvironment('GIT_COMMIT_DATE', defaultValue: 'null');
+  String get buildTime =>
+      const String.fromEnvironment('BUILD_TIME', defaultValue: 'null');
+  String get shortCommit =>
+      gitCommit.length >= 7 ? gitCommit.substring(0, 7) : gitCommit;
+
   Future<String> getVersionInfo() async {
     var appName = packageInfo.appName;
     var buildNumber = packageInfo.buildNumber;
@@ -37,7 +48,12 @@ class AppInfoProvider {
         "---FLAG---\n"
         "Web: $kIsWeb\n"
         "WASM: $kIsWasm\n"
-        "Debug: $kDebugMode";
+        "Debug: $kDebugMode\n"
+        "---BUILD---\n"
+        "Tag: $gitTag\n"
+        "Commit: $shortCommit\n"
+        "CommitDate: $gitCommitDateRaw\n"
+        "BuildTime: $buildTime";
     return content;
   }
 }
