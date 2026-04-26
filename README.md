@@ -29,6 +29,7 @@
 - **第二课堂** — 查看、参与和预约第二课堂活动
 - **空闲教室查询** — 实时查询校园内各楼栋的空闲教室情况，方便自习选座
 - **校园网设备查询** — 查看和下线当前账号在线的校园网设备
+- **寝室电费&空调余额查询** — 查询寝室的电费和空调余额
 - **更多便捷功能** — 持续迭代中，更多校园实用工具即将上线
 
 <div align="center">
@@ -45,11 +46,9 @@
 
 ---
 
-## 团队
+## ⭐ Star History
 
-**The-Brotherhood-of-SCU** — 一个非官方的四川大学开源组织
-
----
+[![Star History Chart](https://api.star-history.com/chart?repos=The-Brotherhood-of-SCU/Bugaoshan&type=date&legend=top-left)](https://www.star-history.com/?type=date&repos=The-Brotherhood-of-SCU%2FBugaoshan)
 
 ## 许可证
 
