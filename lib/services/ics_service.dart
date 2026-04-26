@@ -15,6 +15,24 @@ class IcsService {
     buffer.writeln('PRODID:-//Bugaoshan//Course Schedule//EN');
     buffer.writeln('CALSCALE:GREGORIAN');
     buffer.writeln('METHOD:PUBLISH');
+    buffer.writeln('X-WR-TIMEZONE:Asia/Shanghai');
+    buffer.writeln('BEGIN:VTIMEZONE');
+    buffer.writeln('TZID:Asia/Shanghai');
+    buffer.writeln('BEGIN:STANDARD');
+    buffer.writeln('TZOFFSETFROM:+0800');
+    buffer.writeln('TZOFFSETTO:+0800');
+    buffer.writeln('TZNAME:CST');
+    buffer.writeln('DTSTART:19700101T000000');
+    buffer.writeln('RRULE:FREQ=YEARLY;BYDAY=1SU;BYMONTH=3');
+    buffer.writeln('END:STANDARD');
+    buffer.writeln('BEGIN:DAYLIGHT');
+    buffer.writeln('TZOFFSETFROM:+0800');
+    buffer.writeln('TZOFFSETTO:+0800');
+    buffer.writeln('TZNAME:CST');
+    buffer.writeln('DTSTART:19700101T000000');
+    buffer.writeln('RRULE:FREQ=YEARLY;BYDAY=1SU;BYMONTH=11');
+    buffer.writeln('END:DAYLIGHT');
+    buffer.writeln('END:VTIMEZONE');
 
     for (final course in courses) {
       for (int week = course.startWeek; week <= course.endWeek; week++) {
@@ -32,8 +50,8 @@ class IcsService {
         final dtEnd = _combineDateTime(courseDate, endTime);
 
         buffer.writeln('BEGIN:VEVENT');
-        buffer.writeln('DTSTART:${_formatIcsDate(dtStart)}');
-        buffer.writeln('DTEND:${_formatIcsDate(dtEnd)}');
+        buffer.writeln('DTSTART;TZID=Asia/Shanghai:${_formatIcsDate(dtStart)}');
+        buffer.writeln('DTEND;TZID=Asia/Shanghai:${_formatIcsDate(dtEnd)}');
         buffer.writeln('SUMMARY:${_escapeIcsText(course.name)}');
         buffer.writeln('LOCATION:${_escapeIcsText(course.location)}');
         buffer.writeln(
