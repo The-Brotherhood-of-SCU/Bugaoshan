@@ -11,13 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - 二课成绩单功能：支持查看和导出学时
 - 课程表非本周显示功能开关：支持开关显示非本周课程
-- 余额查询功能：支持查询照明和空调余额
-- 添加将课表导出为标准日历文件（iCalendar）功能
+- 余额查询功能：支持查询电费和空调余额
+- 课表导出功能：添加将课表导出为标准日历文件（iCalendar）功能
 
 ### Changed
 
 - 二课活动详情页时间显示改为两行布局
 - 更新服务重构：将 GitHub Release 方法移至 UpdateService
+- 版本更新：添加app内版本更新功能
 
 ## [0.6.0] - 2025-04-23
 
