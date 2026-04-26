@@ -49,6 +49,7 @@ class ScheduleConfig {
   bool showTeacherName;
   bool showLocation;
   bool showWeekend;
+  bool showNonCurrentWeekCourses;
 
   int get sectionsPerDay =>
       morningSections + afternoonSections + eveningSections;
@@ -68,6 +69,7 @@ class ScheduleConfig {
     this.showTeacherName = true,
     this.showLocation = true,
     this.showWeekend = false,
+    this.showNonCurrentWeekCourses = true,
   }) : timeSlots = timeSlots ?? _defaultTimeSlots(4, 5, 3, 45, 10);
 
   factory ScheduleConfig.fromJson(Map<String, dynamic> json) {
@@ -123,6 +125,8 @@ class ScheduleConfig {
       showTeacherName: json['showTeacherName'] as bool? ?? true,
       showLocation: json['showLocation'] as bool? ?? true,
       showWeekend: json['showWeekend'] as bool? ?? true,
+      showNonCurrentWeekCourses:
+          json['showNonCurrentWeekCourses'] as bool? ?? true,
     );
   }
 
@@ -142,6 +146,7 @@ class ScheduleConfig {
     'showTeacherName': showTeacherName,
     'showLocation': showLocation,
     'showWeekend': showWeekend,
+    'showNonCurrentWeekCourses': showNonCurrentWeekCourses,
   };
 
   static List<TimeSlot> _defaultTimeSlots(
@@ -300,6 +305,7 @@ class ScheduleConfig {
     bool? showTeacherName,
     bool? showLocation,
     bool? showWeekend,
+    bool? showNonCurrentWeekCourses,
   }) {
     return ScheduleConfig(
       id: id ?? this.id,
@@ -316,6 +322,8 @@ class ScheduleConfig {
       showTeacherName: showTeacherName ?? this.showTeacherName,
       showLocation: showLocation ?? this.showLocation,
       showWeekend: showWeekend ?? this.showWeekend,
+      showNonCurrentWeekCourses:
+          showNonCurrentWeekCourses ?? this.showNonCurrentWeekCourses,
     );
   }
 }

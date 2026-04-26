@@ -5,10 +5,20 @@ import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/course/course_card.dart';
 
-List<Course> selectVisibleCoursesForDay(List<Course> courses, int displayWeek) {
+List<Course> selectVisibleCoursesForDay(
+  List<Course> courses,
+  int displayWeek, {
+  bool showNonCurrentWeekCourses = true,
+}) {
   final visibleCourses =
       courses.where((course) => course.isInWeekRange(displayWeek)).toList()
         ..sort(_compareCoursesForLayout);
+
+  if (!showNonCurrentWeekCourses) {
+    return visibleCourses
+        .where((course) => course.isActiveInWeek(displayWeek))
+        .toList();
+  }
 
   final futureCourses =
       courses.where((course) => displayWeek < course.startWeek).toList()
@@ -140,6 +150,8 @@ class _CourseGridState extends State<CourseGrid> {
                                 .where((c) => c.dayOfWeek == day)
                                 .toList(),
                             widget.displayWeek,
+                            showNonCurrentWeekCourses:
+                                widget.config.showNonCurrentWeekCourses,
                           );
                           return _buildDayColumn(
                             context,

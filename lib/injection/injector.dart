@@ -81,9 +81,11 @@ void _configureAsyncDependencies() {
 }
 
 Future<void> ensureBasicDependencies() async {
-  await getIt.isReady<CourseProvider>();
-  await getIt.isReady<ScuAuthProvider>();
-  await getIt.isReady<CcylProvider>();
-  await getIt.isReady<GradesProvider>();
-  await getIt.isReady<TrainProgramProvider>();
+  await Future.wait([
+    getIt.isReady<CourseProvider>(),
+    getIt.isReady<ScuAuthProvider>(),
+    getIt.isReady<CcylProvider>(),
+    getIt.isReady<GradesProvider>(),
+    getIt.isReady<TrainProgramProvider>(),
+  ]);
 }

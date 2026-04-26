@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
@@ -14,6 +15,9 @@ const _keySavedUsername = 'scu_saved_username';
 const _keySavedPassword = 'scu_saved_password';
 const _keyRemember = 'scu_remember_password';
 
+const _keyUserRealname = 'scu_user_realname';
+const _keyUserNumber = 'scu_user_number';
+
 /// 持久化 SCU 登录状态的 Provider，注册为 singleton
 class ScuAuthProvider extends ChangeNotifier {
   final SharedPreferences _prefs;
@@ -28,11 +32,17 @@ class ScuAuthProvider extends ChangeNotifier {
     _accessToken = await SecureStorageProvider.instance.read(
       key: _keyAccessToken,
     );
+    _userRealname = _prefs.getString(_keyUserRealname);
+    _userNumber = _prefs.getString(_keyUserNumber);
   }
 
   String? _accessToken;
   int? _loginTimestamp;
+  String? _userRealname;
+  String? _userNumber;
   String? get accessToken => _accessToken;
+  String? get userRealname => _userRealname;
+  String? get userNumber => _userNumber;
   bool get isLoggedIn => _accessToken != null && !isExpired;
   bool get isExpired {
     if (_loginTimestamp == null) return false;
@@ -69,6 +79,7 @@ class ScuAuthProvider extends ChangeNotifier {
       value: _accessToken!,
     );
     await _prefs.setInt(_keyLoginTimestamp, _loginTimestamp!);
+    await fetchUserInfo();
     notifyListeners();
   }
 
@@ -76,10 +87,40 @@ class ScuAuthProvider extends ChangeNotifier {
     _service.logout();
     _accessToken = null;
     _loginTimestamp = null;
+    _userRealname = null;
+    _userNumber = null;
     await SecureStorageProvider.instance.delete(key: _keyAccessToken);
     await _prefs.remove(_keyLoginTimestamp);
+    await _prefs.remove(_keyUserRealname);
+    await _prefs.remove(_keyUserNumber);
     getIt<CcylProvider>().logout();
     notifyListeners();
+  }
+
+  Future<void> fetchUserInfo() async {
+    try {
+      final client = await _service.bindSession();
+      try {
+        final resp = await client.get(
+          Uri.parse('https://wfw.scu.edu.cn/uc/wap/user/get-info'),
+        );
+        final json = jsonDecode(resp.body) as Map<String, dynamic>;
+        if (json['e'] == 0 && json['d'] != null) {
+          final base = json['d']['base'] as Map<String, dynamic>?;
+          if (base != null) {
+            _userRealname = base['realname']?.toString();
+            final role = base['role'] as Map<String, dynamic>?;
+            _userNumber = role?['number']?.toString();
+            await _prefs.setString(_keyUserRealname, _userRealname ?? '');
+            await _prefs.setString(_keyUserNumber, _userNumber ?? '');
+          }
+        }
+      } finally {
+        client.close();
+      }
+    } catch (e) {
+      debugPrint('fetchUserInfo error: $e');
+    }
   }
 
   Future<Map<String, String>?> getSavedCredentials() async {

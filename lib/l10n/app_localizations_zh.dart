@@ -45,7 +45,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get selectCampus => '选择校区';
 
   @override
-  String get selectBuilding => '选择教学楼';
+  String get selectBuilding => '选择楼栋';
 
   @override
   String get allBuildings => '全部教学楼';
@@ -379,10 +379,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get showWeekend => '显示周末';
 
   @override
+  String get showNonCurrentWeekCourses => '显示非本周课程';
+
+  @override
   String get save => '保存';
 
   @override
   String get cancel => '取消';
+
+  @override
+  String get back => '上一步';
+
+  @override
+  String get next => '下一步';
 
   @override
   String get delete => '删除';
@@ -1041,6 +1050,75 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get networkOfflineFailed => '下线失败';
+
+  @override
+  String get balanceQuery => '余额查询';
+
+  @override
+  String get balanceQueryDesc => '查询电费和空调费用余额';
+
+  @override
+  String get electricityFee => '电费';
+
+  @override
+  String get acFee => '空调费';
+
+  @override
+  String get balance => '余额';
+
+  @override
+  String get bindRoom => '绑定房间';
+
+  @override
+  String get bindNewRoom => '绑定新房间';
+
+  @override
+  String get switchRoom => '切换房间';
+
+  @override
+  String get deleteRoom => '删除房间';
+
+  @override
+  String get selectUnit => '选择单元';
+
+  @override
+  String get inputInfo => '输入信息';
+
+  @override
+  String get stepCampus => '校区';
+
+  @override
+  String get stepBuilding => '楼栋';
+
+  @override
+  String get stepUnit => '单元';
+
+  @override
+  String get stepInfo => '信息';
+
+  @override
+  String get inputBindingInfo => '输入绑定信息';
+
+  @override
+  String get cusName => '姓名';
+
+  @override
+  String get cusNameHint => '请输入姓名';
+
+  @override
+  String get roomNumber => '房间号';
+
+  @override
+  String get roomNumberHint => '请输入房间号，如 301C';
+
+  @override
+  String get pricePerUnit => '单价';
+
+  @override
+  String get balanceQueryLoginRequired => '请先在「我的」页面完成统一身份认证登录';
+
+  @override
+  String get balanceQueryNoBinding => '您还没有绑定房间，请先绑定';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

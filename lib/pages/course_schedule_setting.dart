@@ -29,6 +29,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
   late bool _showTeacher;
   late bool _showLocation;
   late bool _showWeekend;
+  late bool _showNonCurrentWeekCourses;
 
   void _loadConfig() {
     final config = courseProvider.scheduleConfig.value;
@@ -44,6 +45,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
     _showTeacher = config.showTeacherName;
     _showLocation = config.showLocation;
     _showWeekend = config.showWeekend;
+    _showNonCurrentWeekCourses = config.showNonCurrentWeekCourses;
   }
 
   @override
@@ -141,6 +143,17 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
               },
               contentPadding: EdgeInsets.zero,
             ),
+            // Show non-current week courses
+            SwitchListTile(
+              title: Text(l10n.showNonCurrentWeekCourses),
+              value: _showNonCurrentWeekCourses,
+              onChanged: (v) {
+                setState(() => _showNonCurrentWeekCourses = v);
+                _save();
+              },
+              contentPadding: EdgeInsets.zero,
+            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -368,6 +381,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
       showTeacherName: _showTeacher,
       showLocation: _showLocation,
       showWeekend: _showWeekend,
+      showNonCurrentWeekCourses: _showNonCurrentWeekCourses,
     );
     await courseProvider.updateScheduleConfig(config);
   }
