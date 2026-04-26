@@ -96,11 +96,17 @@ class _CourseGridState extends State<CourseGrid> {
         _selectedEmptyDay = null;
         _selectedEmptySection = null;
       });
-    } else {
-      // First tap: select the cell
+    } else if (_selectedEmptyDay == null && _selectedEmptySection == null) {
+      // First tap: select the cell (nothing was selected before)
       setState(() {
         _selectedEmptyDay = day;
         _selectedEmptySection = section;
+      });
+    } else {
+      // Tap different cell while something was selected: dismiss
+      setState(() {
+        _selectedEmptyDay = null;
+        _selectedEmptySection = null;
       });
     }
   }

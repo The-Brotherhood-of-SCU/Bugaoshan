@@ -1136,7 +1136,4 @@ class AppLocalizationsZhHansCn extends AppLocalizationsZh {
 
   @override
   String get selfLanguage => '中文-简体-中国';
-
-  @override
-  String get gitTag => 'Git 标签';
 }
