@@ -1,16 +1,34 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bugaoshan/models/release_info.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive.dart';
 import 'package:path/path.dart' as p;
 
+class CancelToken {
+  bool _cancelled = false;
+  bool get isCancelled => _cancelled;
+  void cancel() => _cancelled = true;
+}
+
+class UpdateCancelledException implements Exception {}
+
 class UpdateService {
   static const _pubspecUrl =
       'https://raw.githubusercontent.com/The-Brotherhood-of-SCU/Bugaoshan/main/pubspec.yaml';
   static const _repo = 'The-Brotherhood-of-SCU/Bugaoshan';
+  static const _channel = MethodChannel('bugaoshan/update');
+
+  bool _assetMatchesPlatform(String assetName) {
+    final name = assetName.toLowerCase();
+    if (Platform.isAndroid) return name.endsWith('.apk');
+    if (Platform.isWindows) return name.contains('windows');
+    if (Platform.isLinux) return name.contains('linux');
+    return false;
+  }
 
   Future<String?> getLatestVersion() async {
     try {
@@ -31,7 +49,7 @@ class UpdateService {
     return null;
   }
 
-  Future<(String, String)?> getLatestReleaseFromGitHub() async {
+  Future<ReleaseInfo?> getLatestReleaseFromGitHub() async {
     final response = await http.get(
       Uri.parse('https://api.github.com/repos/$_repo/releases/latest'),
       headers: {'Accept': 'application/vnd.github+json'},
@@ -39,15 +57,14 @@ class UpdateService {
     if (response.statusCode == 200) {
       if (response.body.isEmpty) return null;
       final data = jsonDecode(response.body);
-      final tagName = (data['tag_name'] as String);
+      final tagName = data['tag_name'] as String;
       final assets = data['assets'] as List<dynamic>;
-      final platform = Platform.isWindows ? 'windows' : 'linux';
       for (final asset in assets) {
         final name = asset['name'] as String;
-        if (name.toLowerCase().contains(platform)) {
-          return (
-            tagName.replaceFirst('v', ''),
-            asset['browser_download_url'] as String,
+        if (_assetMatchesPlatform(name)) {
+          return ReleaseInfo(
+            tagName: tagName,
+            downloadUrl: asset['browser_download_url'] as String,
           );
         }
       }
@@ -55,33 +72,33 @@ class UpdateService {
     throw Exception('GitHub API error: ${response.statusCode}');
   }
 
-  Future<(String?, String?, bool)> getLatestPrereleaseFromGitHub() async {
+  Future<ReleaseInfo> getLatestPrereleaseFromGitHub() async {
     final response = await http.get(
       Uri.parse('https://api.github.com/repos/$_repo/releases'),
       headers: {'Accept': 'application/vnd.github+json'},
     );
     if (response.statusCode == 200) {
-      if (response.body.isEmpty) return (null, null, false);
+      if (response.body.isEmpty) return const ReleaseInfo();
       final List<dynamic> releases = jsonDecode(response.body);
       if (releases.isNotEmpty && releases[0]['tag_name'] != null) {
-        final tagName = (releases[0]['tag_name'] as String).replaceFirst(
-          'v',
-          '',
-        );
+        final tagName = releases[0]['tag_name'] as String;
         final isPrerelease = releases[0]['prerelease'] == true;
         final assets = releases[0]['assets'] as List<dynamic>;
-        final platform = Platform.isWindows ? 'windows' : 'linux';
         String? downloadUrl;
         for (final asset in assets) {
           final name = asset['name'] as String;
-          if (name.toLowerCase().contains(platform)) {
+          if (_assetMatchesPlatform(name)) {
             downloadUrl = asset['browser_download_url'] as String;
             break;
           }
         }
-        return (tagName, downloadUrl, isPrerelease);
+        return ReleaseInfo(
+          tagName: tagName,
+          downloadUrl: downloadUrl,
+          isPrerelease: isPrerelease,
+        );
       }
-      return (null, null, false);
+      return const ReleaseInfo();
     }
     throw Exception('GitHub API error: ${response.statusCode}');
   }
@@ -112,6 +129,7 @@ class UpdateService {
   Future<void> downloadAndInstall(
     String version,
     String downloadUrl, {
+    CancelToken? cancelToken,
     void Function(String status)? onStatus,
     void Function(int received, int total)? onProgress,
   }) async {
@@ -132,12 +150,26 @@ class UpdateService {
       int received = 0;
 
       await for (final chunk in response.stream) {
+        if (cancelToken?.isCancelled ?? false) {
+          client.close();
+          throw UpdateCancelledException();
+        }
         chunks.addAll(chunk);
         received += chunk.length;
         onProgress?.call(received, contentLength);
       }
     } finally {
       client.close();
+    }
+
+    if (cancelToken?.isCancelled ?? false) {
+      throw UpdateCancelledException();
+    }
+
+    if (Platform.isAndroid) {
+      onStatus?.call('Installing...');
+      await _installAndroid(chunks);
+      return;
     }
 
     onStatus?.call('Extracting...');
@@ -179,6 +211,14 @@ class UpdateService {
     }
 
     exit(0);
+  }
+
+  Future<void> _installAndroid(List<int> apkBytes) async {
+    final tempDir = await getTemporaryDirectory();
+    final apkPath = p.join(tempDir.path, 'bugaoshan_update.apk');
+    final apkFile = File(apkPath);
+    await apkFile.writeAsBytes(apkBytes);
+    await _channel.invokeMethod('installApk', {'path': apkPath});
   }
 
   Future<void> _installWindows(

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart' show kIsWeb, kIsWasm;
+﻿import 'package:flutter/foundation.dart' show kDebugMode, kIsWasm, kIsWeb;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:bugaoshan/providers/environment_info/native.dart'
     if (dart.library.js_interop) 'package:bugaoshan/providers/environment_info/web.dart';
@@ -36,7 +36,8 @@ class AppInfoProvider {
         "$environmentText"
         "---FLAG---\n"
         "Web: $kIsWeb\n"
-        "WASM: $kIsWasm\n";
+        "WASM: $kIsWasm\n"
+        "Debug: $kDebugMode";
     return content;
   }
 }
