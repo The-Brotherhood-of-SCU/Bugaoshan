@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
 
 import 'package:bugaoshan/injection/injector.dart';
