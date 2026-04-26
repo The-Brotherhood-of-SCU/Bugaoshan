@@ -1,12 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/campus/balance_query/balance_query_page.dart';
 import 'package:bugaoshan/pages/campus/classroom/classroom_page.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_page.dart';
 import 'package:bugaoshan/pages/campus/grades/grades_page.dart';
 import 'package:bugaoshan/pages/campus/network_device/network_device_page.dart';
 import 'package:bugaoshan/pages/campus/train_program/train_program_page.dart';
 import 'package:bugaoshan/utils/constants.dart';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class CampusPage extends StatelessWidget {
@@ -30,10 +32,8 @@ class CampusPage extends StatelessWidget {
                 title: l10n.gradesStats,
                 desc: l10n.gradesStatsDesc,
                 appOnly: false,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const GradesPage()),
-                ),
+                onTap: () =>
+                    popupOrNavigate(logicRootContext, const GradesPage()),
               ),
               const SizedBox(height: 8),
               _CampusCard(
@@ -41,10 +41,8 @@ class CampusPage extends StatelessWidget {
                 title: l10n.trainProgram,
                 desc: l10n.trainProgramDesc,
                 appOnly: false,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const TrainProgramPage()),
-                ),
+                onTap: () =>
+                    popupOrNavigate(logicRootContext, const TrainProgramPage()),
               ),
               const SizedBox(height: 8),
               _CampusCard(
@@ -52,10 +50,8 @@ class CampusPage extends StatelessWidget {
                 title: l10n.ccylTitle,
                 desc: l10n.ccylDesc,
                 appOnly: false,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CcylPage()),
-                ),
+                onTap: () =>
+                    popupOrNavigate(logicRootContext, const CcylPage()),
               ),
               const SizedBox(height: 24),
               _SectionHeader(title: l10n.utilitiesSection),
@@ -67,11 +63,9 @@ class CampusPage extends StatelessWidget {
                 appOnly: isWeb,
                 onTap: isWeb
                     ? null
-                    : () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const ClassroomPage(),
-                        ),
+                    : () => popupOrNavigate(
+                        logicRootContext,
+                        const ClassroomPage(),
                       ),
               ),
               const SizedBox(height: 8),
@@ -80,10 +74,19 @@ class CampusPage extends StatelessWidget {
                 title: l10n.networkDeviceQuery,
                 desc: l10n.networkDeviceQueryDesc,
                 appOnly: false,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const NetworkDevicePage()),
+                onTap: () => popupOrNavigate(
+                  logicRootContext,
+                  const NetworkDevicePage(),
                 ),
+              ),
+              const SizedBox(height: 8),
+              _CampusCard(
+                icon: Icons.account_balance_wallet_outlined,
+                title: l10n.balanceQuery,
+                desc: l10n.balanceQueryDesc,
+                appOnly: false,
+                onTap: () =>
+                    popupOrNavigate(logicRootContext, const BalanceQueryPage()),
               ),
               const SizedBox(height: 24),
               _MoreFeaturesCard(),

@@ -384,7 +384,12 @@ class ScuLoginException implements Exception {
 
 /// Cookie 感知的 http.Client，按域名隔离存储，发送时只带当前请求域的 cookie。
 class CookieClient extends http.BaseClient {
-  final _inner = http.Client();
+  // 在 Ubuntu 24.04 Desktop 中曾出现：教务系统对 Keep-Alive 连接比较脆弱，不能稳定复用连接的现象，
+  // 导致从教务系统获取信息失败，表现为程序输出报错日志：
+  //   Scheme scores load error: ClientException: 断开的管道, uri=http://zhjw.scu.edu.cn/index
+  // 这里修复为：增加重试机制，如果教务系统管道断开就重新连接并发送请求，
+  // 在 _inner.send 外再套一层重试的壳：sendWithClientExceptionRetry
+  http.Client _inner = http.Client();
 
   // 按域名存 cookie：host -> {name: value}
   final _jar = <String, Map<String, String>>{};
@@ -460,7 +465,8 @@ class CookieClient extends http.BaseClient {
         ..followRedirects = false
         ..headers.addAll(reqHeaders);
 
-      final streamed = await _inner.send(request);
+      // 如果教务系统管道断开，就重新连接并发送请求
+      final streamed = await sendWithClientExceptionRetry(request);
       final response = await http.Response.fromStream(streamed);
       _storeCookies(current, response);
 
@@ -487,6 +493,24 @@ class CookieClient extends http.BaseClient {
     final response = await _inner.send(request);
     _storeCookies(request.url, response);
     return response;
+  }
+
+  /// 带 http.ClientException 错误重试的请求发送函数
+  Future<http.StreamedResponse> sendWithClientExceptionRetry(
+    http.BaseRequest request,
+  ) async {
+    try {
+      return await _inner.send(request);
+    } on http.ClientException catch (_) {
+      _inner.close();
+      _inner = http.Client();
+      final retryRequest = http.Request(request.method, request.url)
+        ..followRedirects = request.followRedirects
+        ..maxRedirects = request.maxRedirects
+        ..persistentConnection = true
+        ..headers.addAll(request.headers);
+      return await _inner.send(retryRequest);
+    }
   }
 
   @override

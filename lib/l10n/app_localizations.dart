@@ -823,6 +823,12 @@ abstract class AppLocalizations {
   /// **'Show Weekend'**
   String get showWeekend;
 
+  /// No description provided for @showNonCurrentWeekCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Non-Current Week Courses'**
+  String get showNonCurrentWeekCourses;
+
   /// No description provided for @save.
   ///
   /// In en, this message translates to:
@@ -834,6 +840,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancel'**
   String get cancel;
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// No description provided for @next.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get next;
 
   /// No description provided for @delete.
   ///
@@ -2118,6 +2136,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to offline device'**
   String get networkOfflineFailed;
+
+  /// No description provided for @balanceQuery.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance Query'**
+  String get balanceQuery;
+
+  /// No description provided for @balanceQueryDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Query electricity and AC fee balance'**
+  String get balanceQueryDesc;
+
+  /// No description provided for @electricityFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Electricity'**
+  String get electricityFee;
+
+  /// No description provided for @acFee.
+  ///
+  /// In en, this message translates to:
+  /// **'AC Fee'**
+  String get acFee;
+
+  /// No description provided for @balance.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get balance;
+
+  /// No description provided for @bindRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Bind Room'**
+  String get bindRoom;
+
+  /// No description provided for @bindNewRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Bind New Room'**
+  String get bindNewRoom;
+
+  /// No description provided for @switchRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch Room'**
+  String get switchRoom;
+
+  /// No description provided for @deleteRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Room'**
+  String get deleteRoom;
+
+  /// No description provided for @selectUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Unit'**
+  String get selectUnit;
+
+  /// No description provided for @inputInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Input Info'**
+  String get inputInfo;
+
+  /// No description provided for @stepCampus.
+  ///
+  /// In en, this message translates to:
+  /// **'Cmp'**
+  String get stepCampus;
+
+  /// No description provided for @stepBuilding.
+  ///
+  /// In en, this message translates to:
+  /// **'Bld'**
+  String get stepBuilding;
+
+  /// No description provided for @stepUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get stepUnit;
+
+  /// No description provided for @stepInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Info'**
+  String get stepInfo;
+
+  /// No description provided for @inputBindingInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Input Binding Info'**
+  String get inputBindingInfo;
+
+  /// No description provided for @cusName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get cusName;
+
+  /// No description provided for @cusNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter name'**
+  String get cusNameHint;
+
+  /// No description provided for @roomNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Room Number'**
+  String get roomNumber;
+
+  /// No description provided for @roomNumberHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter room number, e.g. 301C'**
+  String get roomNumberHint;
+
+  /// No description provided for @pricePerUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Price per unit'**
+  String get pricePerUnit;
+
+  /// No description provided for @balanceQueryLoginRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please login via unified authentication in Profile page first'**
+  String get balanceQueryLoginRequired;
+
+  /// No description provided for @balanceQueryNoBinding.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t bound any room yet, please bind first'**
+  String get balanceQueryNoBinding;
 }
 
 class _AppLocalizationsDelegate

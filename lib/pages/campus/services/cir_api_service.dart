@@ -22,7 +22,6 @@ class CirApiService {
         'fetchBuildings status: ${response.statusCode}',
         name: 'CirApi',
       );
-      developer.log('fetchBuildings body: ${response.body}', name: 'CirApi');
 
       if (response.statusCode == 483) {
         throw CampusNetworkException();
@@ -64,7 +63,6 @@ class CirApiService {
         'fetchRoomData status: ${response.statusCode}',
         name: 'CirApi',
       );
-      developer.log('fetchRoomData body: ${response.body}', name: 'CirApi');
 
       if (response.statusCode == 483) {
         throw CampusNetworkException();
