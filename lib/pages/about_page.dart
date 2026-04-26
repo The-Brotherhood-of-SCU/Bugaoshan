@@ -237,6 +237,15 @@ class _AboutPageState extends State<AboutPage> {
                       localizations.version,
                       versionProvider.currentVersion,
                     ),
+                    if (versionProvider.gitTag != 'null') ...[
+                      const SizedBox(height: 12),
+                      _buildInfoItem(
+                        context,
+                        Icons.local_offer,
+                        'Tag',
+                        versionProvider.gitTag,
+                      ),
+                    ],
                     const SizedBox(height: 12),
                     _buildInfoItem(
                       context,
