@@ -5,11 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.6.1] - 2025-04-24
+## [Unreleased]
 
 ### Added
 
-- 成绩单功能：支持查看和导出学时
+- 二课成绩单功能：支持查看和导出学时
 - 课程表非本周显示功能开关：支持开关显示非本周课程
 - 余额查询功能：支持查询照明和空调余额
 
@@ -45,7 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 登录密码安全存储问题
 - 数据库文件存放位置问题
 
-## [0.5.6] - 2024-12-20
+## [0.5.6] - 2026-04-21
 
 ### Changed
 
@@ -54,13 +54,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 发布工作流重构
 - 训练计划列表底部增加间距
 - 非移动平台隐藏刷新按钮
-
-## [0.5.5] - 2024-12-06
-
-### Fixed
-
-- 登出时清除 ScuAuthProvider 状态
-
-### Changed
-
-- 移除 iOS 和 Windows 构建步骤（临时）
