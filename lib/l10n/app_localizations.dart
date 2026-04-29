@@ -1072,7 +1072,7 @@ abstract class AppLocalizations {
   /// No description provided for @notThisWeek.
   ///
   /// In en, this message translates to:
-  /// **'[Not this week]'**
+  /// **'[Not]'**
   String get notThisWeek;
 
   /// No description provided for @actualCurrentWeek.

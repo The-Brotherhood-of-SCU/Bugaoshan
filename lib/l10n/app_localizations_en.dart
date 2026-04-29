@@ -516,7 +516,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get copySuffix => ' (Copy)';
 
   @override
-  String get notThisWeek => '[Not this week]';
+  String get notThisWeek => '[Not]';
 
   @override
   String actualCurrentWeek(Object week) {
