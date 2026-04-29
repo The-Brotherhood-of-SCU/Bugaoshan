@@ -37,7 +37,10 @@ class CourseCard extends StatelessWidget {
               ? appConfig.colorOpacity.value
               : appConfig.colorOpacity.value * 0.2,
         );
-        const textColor = Colors.white;
+        final scaffoldBg = Theme.of(context).scaffoldBackgroundColor;
+        final effectiveBg = Color.alphaBlend(color, scaffoldBg);
+        final textColor =
+            effectiveBg.computeLuminance() > 0.45 ? Colors.black87 : Colors.white;
         final fontSize = appConfig.courseCardFontSize.value;
         final smallFontSize = fontSize - 1;
         final details = <({IconData icon, String text, int preferredMaxLines})>[
