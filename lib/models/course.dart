@@ -58,7 +58,7 @@ class ScheduleConfig {
     this.id = 'default',
     this.semesterName = '',
     required this.semesterStartDate,
-    this.totalWeeks = 16,
+    this.totalWeeks = 20,
     this.morningSections = 4,
     this.afternoonSections = 5,
     this.eveningSections = 3,
@@ -81,7 +81,7 @@ class ScheduleConfig {
       final endDate = DateTime.parse(json['semesterEndDate'] as String);
       totalWeeks = (endDate.difference(startDate).inDays / 7).ceil();
     } else {
-      totalWeeks = 16;
+      totalWeeks = 20;
     }
 
     int morning = json['morningSections'] as int? ?? 4;
