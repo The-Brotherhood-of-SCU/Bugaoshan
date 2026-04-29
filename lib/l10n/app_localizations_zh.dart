@@ -632,6 +632,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get gradesLoadFailed => '成绩加载失败';
 
   @override
+  String get gradesRefreshFailed => '刷新失败，显示的是缓存数据';
+
+  @override
   String get gradesNoPassingData => '暂无及格成绩数据';
 
   @override

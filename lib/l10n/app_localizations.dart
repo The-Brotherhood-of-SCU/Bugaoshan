@@ -1309,6 +1309,12 @@ abstract class AppLocalizations {
   /// **'Failed to load grades'**
   String get gradesLoadFailed;
 
+  /// No description provided for @gradesRefreshFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh failed, showing cached data'**
+  String get gradesRefreshFailed;
+
   /// No description provided for @gradesNoPassingData.
   ///
   /// In en, this message translates to:
