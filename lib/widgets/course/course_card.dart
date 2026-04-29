@@ -32,11 +32,9 @@ class CourseCard extends StatelessWidget {
       ]),
       builder: (context, _) {
         final isActive = course.isActiveInWeek(displayWeek);
-        final color = course.color.withValues(
-          alpha: isActive
-              ? appConfig.colorOpacity.value
-              : appConfig.colorOpacity.value * 0.2,
-        );
+        final color = isActive
+            ? course.color.withValues(alpha: appConfig.colorOpacity.value)
+            : _greyscale(course.color).withValues(alpha: 0.12);
         final scaffoldBg = Theme.of(context).scaffoldBackgroundColor;
         final effectiveBg = Color.alphaBlend(color, scaffoldBg);
         final textColor =
@@ -162,5 +160,11 @@ class CourseCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  static Color _greyscale(Color color) {
+    final grey =
+        (0.299 * color.r + 0.587 * color.g + 0.114 * color.b).clamp(0.0, 1.0);
+    return Color.from(green: grey, blue: grey, red: grey, alpha: 1.0);
   }
 }
