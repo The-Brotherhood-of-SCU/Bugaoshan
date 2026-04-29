@@ -385,7 +385,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get removeBackgroundImage => '移除背景图片';
 
   @override
-  String get backgroundImageOpacity => '背景图片透明度';
+  String get backgroundImageOpacity => '背景图片不透明度';
 
   @override
   String get showTeacher => '显示教师';

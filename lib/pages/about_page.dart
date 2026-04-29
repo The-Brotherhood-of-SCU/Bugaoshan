@@ -391,10 +391,12 @@ class _InfoTile extends StatelessWidget {
           const SizedBox(width: 14),
           Expanded(child: Text(label, style: theme.textTheme.bodyLarge)),
           if (value.isNotEmpty)
-            Text(
-              value,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+            Flexible(
+              child: Text(
+                value,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           if (onTap != null) ...[
