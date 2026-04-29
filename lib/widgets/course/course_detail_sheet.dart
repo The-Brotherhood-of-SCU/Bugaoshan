@@ -58,9 +58,13 @@ class CourseDetailSheet extends StatelessWidget {
                     ),
                   ),
                   IconButton(
+                    iconSize: 22,
                     icon: Icon(
                       Icons.delete_outline,
                       color: Theme.of(context).colorScheme.error,
+                    ),
+                    style: IconButton.styleFrom(
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     onPressed: () async {
                       final confirm = await showYesNoDialog(
@@ -75,15 +79,18 @@ class CourseDetailSheet extends StatelessWidget {
                       }
                     },
                   ),
-                  // Duplicate
                   IconButton(
+                    iconSize: 22,
                     icon: Icon(
                       Icons.copy,
                       color: Theme.of(context).colorScheme.primary,
                     ),
+                    style: IconButton.styleFrom(
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
                     onPressed: () {
                       Navigator.pop(context);
-                      final newCourse = course.copyWith(); // Create a new copy
+                      final newCourse = course.copyWith();
                       newCourse.name = '${course.name}${l10n.copySuffix}';
                       popupOrNavigate(
                         context,
@@ -91,11 +98,14 @@ class CourseDetailSheet extends StatelessWidget {
                       );
                     },
                   ),
-                  // Edit
                   IconButton(
+                    iconSize: 22,
                     icon: Icon(
                       Icons.edit_outlined,
                       color: Theme.of(context).colorScheme.primary,
+                    ),
+                    style: IconButton.styleFrom(
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     onPressed: () {
                       Navigator.pop(context);
