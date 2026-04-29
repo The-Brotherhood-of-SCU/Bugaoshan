@@ -216,7 +216,7 @@ class _AboutPageState extends State<AboutPage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  '不高山上',
+                  localizations.appName,
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
