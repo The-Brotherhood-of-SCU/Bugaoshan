@@ -45,6 +45,7 @@ flutter:
   generate: true
   assets:
     - assets/avater.png
+    - assets/icon.png
     - assets/universal-login-ocr.tflite
     - assets/scripts/
 flutter_launcher_icons:

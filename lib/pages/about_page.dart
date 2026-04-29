@@ -30,7 +30,9 @@ class _AboutPageState extends State<AboutPage> {
       if (latest != null &&
           latest.tagName != null &&
           updateService.hasUpdate(
-              versionProvider.currentVersion, latest.tagName!)) {
+            versionProvider.currentVersion,
+            latest.tagName!,
+          )) {
         await showDialog(
           context: context,
           builder: (dialogContext) {
@@ -45,9 +47,7 @@ class _AboutPageState extends State<AboutPage> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('${localizations.version}: ${latest.tagName}'),
-                ],
+                children: [Text('${localizations.version}: ${latest.tagName}')],
               ),
               actions: [
                 if (latest.body != null && latest.body!.isNotEmpty)
@@ -100,8 +100,7 @@ class _AboutPageState extends State<AboutPage> {
     }
   }
 
-  String _proxyDownloadUrl(String url) =>
-      'https://gh-proxy.org/$url';
+  String _proxyDownloadUrl(String url) => 'https://gh-proxy.org/$url';
 
   void _startUpdate(String latestVersion, String downloadUrl) async {
     final localizations = AppLocalizations.of(context)!;
@@ -184,149 +183,240 @@ class _AboutPageState extends State<AboutPage> {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary;
+    final surfaceColor = theme.colorScheme.surface;
+    final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
 
     return Scaffold(
       appBar: AppBar(title: Text(localizations.about)),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 32),
-            CircleAvatar(
-              radius: 60,
-              backgroundImage: const AssetImage('assets/avater.png'),
-              backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              localizations.developedBy("The Brotherhood of SCU"),
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            Card(
-              elevation: 2,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 18,
-                  horizontal: 24,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      localizations.projectInfo,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildInfoItem(
-                      context,
-                      Icons.apps,
-                      localizations.appName,
-                      localizations.bugaoshan,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildInfoItem(
-                      context,
-                      Icons.info_outline,
-                      localizations.version,
-                      versionProvider.currentVersion,
-                    ),
-                    if (versionProvider.gitTag != 'null') ...[
-                      const SizedBox(height: 12),
-                      _buildInfoItem(
-                        context,
-                        Icons.local_offer,
-                        localizations.gitTag,
-                        versionProvider.gitTag,
+      body: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        children: [
+          // Header section with icon and app name
+          Center(
+            child: Column(
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryColor.withValues(alpha: 0.2),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
                       ),
                     ],
-                    const SizedBox(height: 12),
-                    _buildInfoItem(
-                      context,
-                      Icons.description,
-                      localizations.description,
-                      localizations.appDescription,
-                    ),
-                    const SizedBox(height: 15),
-                  ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: Image.asset('assets/icon.png', fit: BoxFit.cover),
+                  ),
                 ),
+                const SizedBox(height: 16),
+                Text(
+                  '不高山上',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                // const SizedBox(height: 4),
+                // Text(
+                //   localizations.developedBy("The Brotherhood of SCU"),
+                //   style: theme.textTheme.bodyMedium?.copyWith(
+                //     color: onSurfaceVariant,
+                //   ),
+                // ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+
+          // Project info card
+          Container(
+            decoration: BoxDecoration(
+              color: surfaceColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: theme.dividerColor.withValues(alpha: 0.08),
               ),
             ),
-            const SizedBox(height: 24),
-            externalResources(localizations),
-          ],
-        ),
+            child: Column(
+              children: [
+                _InfoTile(
+                  icon: Icons.apps_rounded,
+                  label: localizations.appName,
+                  value: localizations.bugaoshan,
+                ),
+                Divider(
+                  height: 1,
+                  indent: 56,
+                  color: theme.dividerColor.withValues(alpha: 0.08),
+                ),
+                _InfoTile(
+                  icon: Icons.info_outline_rounded,
+                  label: localizations.version,
+                  value: versionProvider.currentVersion,
+                ),
+                if (versionProvider.gitTag != 'null') ...[
+                  Divider(
+                    height: 1,
+                    indent: 56,
+                    color: theme.dividerColor.withValues(alpha: 0.08),
+                  ),
+                  _InfoTile(
+                    icon: Icons.local_offer_outlined,
+                    label: localizations.gitTag,
+                    value: versionProvider.gitTag,
+                  ),
+                ],
+                Divider(
+                  height: 1,
+                  indent: 56,
+                  color: theme.dividerColor.withValues(alpha: 0.08),
+                ),
+                _InfoTile(
+                  icon: Icons.description_outlined,
+                  label: localizations.description,
+                  value: localizations.appDescription,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Links card
+          Container(
+            decoration: BoxDecoration(
+              color: surfaceColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: theme.dividerColor.withValues(alpha: 0.08),
+              ),
+            ),
+            child: Column(
+              children: [
+                _InfoTile(
+                  icon: Icons.code_rounded,
+                  label: localizations.projectRepository,
+                  value: 'GitHub',
+                  onTap: () => openProjectRepository(),
+                ),
+                Divider(
+                  height: 1,
+                  indent: 56,
+                  color: theme.dividerColor.withValues(alpha: 0.08),
+                ),
+                _InfoTile(
+                  icon: Icons.group_outlined,
+                  label: localizations.developmentTeam,
+                  value: '',
+                  onTap: () => openDeveloperTeam(),
+                ),
+                Divider(
+                  height: 1,
+                  indent: 56,
+                  color: theme.dividerColor.withValues(alpha: 0.08),
+                ),
+                _InfoTile(
+                  icon: Icons.update_rounded,
+                  label: localizations.checkForUpdates,
+                  value: '',
+                  onTap: _checkForUpdates,
+                ),
+                Divider(
+                  height: 1,
+                  indent: 56,
+                  color: theme.dividerColor.withValues(alpha: 0.08),
+                ),
+                _InfoTile(
+                  icon: Icons.bug_report_outlined,
+                  label: localizations.testPage,
+                  value: '',
+                  onTap: () => popupOrNavigate(context, const TestPage()),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Footer text
+          Center(
+            child: Text(
+              'Copyright © 2026 The-Brotherhood-of-SCU',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: onSurfaceVariant.withValues(alpha: 0.6),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
       ),
     );
   }
+}
 
-  Widget externalResources(AppLocalizations localizations) {
-    return Wrap(
-      alignment: WrapAlignment.center,
-      spacing: 24,
-      runSpacing: 16,
-      children: [
-        ElevatedButton.icon(
-          onPressed: () async {
-            await openProjectRepository();
-          },
-          label: Text(localizations.projectRepository),
-          icon: Icon(Icons.open_in_new),
-        ),
-        ElevatedButton.icon(
-          onPressed: () async {
-            await openDeveloperTeam();
-          },
-          label: Text(localizations.developmentTeam),
-          icon: Icon(Icons.open_in_new),
-        ),
-        ElevatedButton.icon(
-          onPressed: () => popupOrNavigate(context, const TestPage()),
-          label: Text(localizations.testPage),
-          icon: Icon(Icons.bug_report),
-        ),
-        ElevatedButton.icon(
-          onPressed: _checkForUpdates,
-          label: Text(localizations.checkForUpdates),
-          icon: Icon(Icons.update),
-        ),
-      ],
-    );
-  }
+class _InfoTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final VoidCallback? onTap;
 
-  Widget _buildInfoItem(
-    BuildContext context,
-    IconData icon,
-    String label,
-    String value,
-  ) {
+  const _InfoTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: theme.colorScheme.primary),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              Text(value, style: theme.textTheme.bodyMedium),
-            ],
+    final primaryColor = theme.colorScheme.primary;
+
+    final tile = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: primaryColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: primaryColor, size: 20),
           ),
-        ),
-      ],
+          const SizedBox(width: 14),
+          Expanded(child: Text(label, style: theme.textTheme.bodyLarge)),
+          if (value.isNotEmpty)
+            Text(
+              value,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          if (onTap != null) ...[
+            const SizedBox(width: 4),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+              size: 20,
+            ),
+          ],
+        ],
+      ),
     );
+
+    if (onTap != null) {
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: tile,
+      );
+    }
+    return tile;
   }
 }
 
