@@ -1,4 +1,4 @@
-﻿import 'dart:ui';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Colors;
@@ -35,10 +35,12 @@ class AppConfigProvider {
   final ValueNotifier<double> courseCardFontSize = ValueNotifier<double>(13.0);
   final ValueNotifier<bool> showCourseGrid = ValueNotifier<bool>(true);
   final ValueNotifier<double> courseRowHeight = ValueNotifier<double>(72.0);
-  final ValueNotifier<double> backgroundImageOpacity =
-      ValueNotifier<double>(0.3);
-  final ValueNotifier<String?> backgroundImagePath =
-      ValueNotifier<String?>(null);
+  final ValueNotifier<double> backgroundImageOpacity = ValueNotifier<double>(
+    0.3,
+  );
+  final ValueNotifier<String?> backgroundImagePath = ValueNotifier<String?>(
+    null,
+  );
 
   void _loadLocale() {
     final localeString = _sharedPreferences.getString(_keyLocale);
@@ -59,8 +61,9 @@ class AppConfigProvider {
         _sharedPreferences.getDouble(_keyCourseRowHeight) ?? 72.0;
     backgroundImageOpacity.value =
         _sharedPreferences.getDouble(_keyBackgroundImageOpacity) ?? 0.3;
-    backgroundImagePath.value =
-        _sharedPreferences.getString(_keyBackgroundImagePath);
+    backgroundImagePath.value = _sharedPreferences.getString(
+      _keyBackgroundImagePath,
+    );
   }
 
   void _addSaveCallback() {

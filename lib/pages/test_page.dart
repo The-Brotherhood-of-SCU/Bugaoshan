@@ -67,13 +67,21 @@ class _TestPageState extends State<TestPage> {
     }
   }
 
-  Future<void> _checkStableUpdate(UpdateService service, String currentVersion) async {
+  Future<void> _checkStableUpdate(
+    UpdateService service,
+    String currentVersion,
+  ) async {
     try {
       final latest = await service.getLatestReleaseFromGitHub();
       if (latest != null &&
           latest.tagName != null &&
           service.hasUpdate(currentVersion, latest.tagName!)) {
-        _stableInfo.setResult(latest.tagName, latest.downloadUrl, null, latest.body);
+        _stableInfo.setResult(
+          latest.tagName,
+          latest.downloadUrl,
+          null,
+          latest.body,
+        );
       } else {
         _stableInfo.setChecking(false, null);
       }
@@ -82,13 +90,18 @@ class _TestPageState extends State<TestPage> {
     }
   }
 
-  Future<void> _checkPreviewUpdate(UpdateService service, String currentVersion) async {
+  Future<void> _checkPreviewUpdate(
+    UpdateService service,
+    String currentVersion,
+  ) async {
     try {
       final release = await service.getLatestPrereleaseFromGitHub();
       if (release.tagName != null && release.downloadUrl != null) {
         _previewInfo.setResult(
-          release.tagName, release.downloadUrl,
-          release.isPrerelease, release.body,
+          release.tagName,
+          release.downloadUrl,
+          release.isPrerelease,
+          release.body,
         );
       } else {
         _previewInfo.setChecking(false, null);
@@ -166,8 +179,7 @@ class _TestPageState extends State<TestPage> {
     );
   }
 
-  String _proxyDownloadUrl(String url) =>
-      'https://gh-proxy.org/$url';
+  String _proxyDownloadUrl(String url) => 'https://gh-proxy.org/$url';
 
   void _startUpdate(String latestVersion, String downloadUrl) async {
     final updateService = getIt<UpdateService>();

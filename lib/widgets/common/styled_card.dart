@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 class StyledCard extends StatelessWidget {
   final Widget child;
@@ -26,16 +26,18 @@ class StyledCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     return Card(
       margin: margin ?? const EdgeInsets.only(bottom: 16),
       elevation: elevation ?? 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(borderRadius ?? 16),
-        side: borderSide ?? BorderSide(
-          color: colorScheme.outline.withValues(alpha: 0.2),
-          width: 1,
-        ),
+        side:
+            borderSide ??
+            BorderSide(
+              color: colorScheme.outline.withValues(alpha: 0.2),
+              width: 1,
+            ),
       ),
       color: backgroundColor ?? colorScheme.surface,
       child: InkWell(

@@ -161,9 +161,9 @@ class _CreditListPageState extends State<CreditListPage> {
   Future<void> _exportToEmail(String email) async {
     final l10n = AppLocalizations.of(context)!;
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.loading)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.loading)));
 
     try {
       final provider = getIt<CcylProvider>();
@@ -172,9 +172,7 @@ class _CreditListPageState extends State<CreditListPage> {
         email,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
       setState(() {
         _selecting = false;
         _selectedIds.clear();
@@ -183,10 +181,7 @@ class _CreditListPageState extends State<CreditListPage> {
       debugPrint('Export error: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
       );
     }
   }
@@ -194,8 +189,11 @@ class _CreditListPageState extends State<CreditListPage> {
   Map<String, double> _statsByType() {
     final stats = <String, double>{};
     for (final c in _credits) {
-      stats.update(c.scoreTypeName, (v) => v + c.classHour,
-          ifAbsent: () => c.classHour);
+      stats.update(
+        c.scoreTypeName,
+        (v) => v + c.classHour,
+        ifAbsent: () => c.classHour,
+      );
     }
     return stats;
   }
@@ -228,63 +226,63 @@ class _CreditListPageState extends State<CreditListPage> {
             ),
           )
         : _credits.isEmpty && !_loading
-            ? Center(child: Text(l10n.noData))
-            : RefreshIndicator(
-                onRefresh: () => _loadCredits(),
-                child: ListView.builder(
-                  controller: _scrollController,
-                  itemCount:
-                      1 + // selection bar
-                      _credits.length +
-                      (_hasMore ? 1 : 0) +
-                      (_credits.isNotEmpty ? 1 : 0), // stats
-                  itemBuilder: (context, index) {
-                    if (index == 0) {
-                      return _SelectionBar(
-                        selecting: _selecting,
-                        selectedCount: _selectedIds.length,
-                        totalCount: _credits.length,
-                        onToggleSelecting: _toggleSelecting,
-                        onSelectAll: _selectAll,
-                        onExport: _selectedIds.isNotEmpty
-                            ? _showExportDialog
-                            : null,
-                        l10n: l10n,
-                      );
-                    }
-                    final creditIndex = index - 1;
-                    if (creditIndex < _credits.length) {
-                      final credit = _credits[creditIndex];
-                      return _CreditCard(
-                        credit: credit,
-                        selecting: _selecting,
-                        selected: _selectedIds.contains(credit.creditId),
-                        onToggle: () => _toggleSelection(credit.creditId),
-                      );
-                    }
-                    // loading indicator
-                    final statsIndex = index - 1 - _credits.length;
-                    if (_hasMore) {
-                      if (statsIndex == 0) {
-                        return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(16),
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      }
-                      return _StatsHeader(
-                        totalHours: _totalHours,
-                        statsByType: _statsByType(),
-                      );
-                    }
-                    return _StatsHeader(
-                      totalHours: _totalHours,
-                      statsByType: _statsByType(),
+        ? Center(child: Text(l10n.noData))
+        : RefreshIndicator(
+            onRefresh: () => _loadCredits(),
+            child: ListView.builder(
+              controller: _scrollController,
+              itemCount:
+                  1 + // selection bar
+                  _credits.length +
+                  (_hasMore ? 1 : 0) +
+                  (_credits.isNotEmpty ? 1 : 0), // stats
+              itemBuilder: (context, index) {
+                if (index == 0) {
+                  return _SelectionBar(
+                    selecting: _selecting,
+                    selectedCount: _selectedIds.length,
+                    totalCount: _credits.length,
+                    onToggleSelecting: _toggleSelecting,
+                    onSelectAll: _selectAll,
+                    onExport: _selectedIds.isNotEmpty
+                        ? _showExportDialog
+                        : null,
+                    l10n: l10n,
+                  );
+                }
+                final creditIndex = index - 1;
+                if (creditIndex < _credits.length) {
+                  final credit = _credits[creditIndex];
+                  return _CreditCard(
+                    credit: credit,
+                    selecting: _selecting,
+                    selected: _selectedIds.contains(credit.creditId),
+                    onToggle: () => _toggleSelection(credit.creditId),
+                  );
+                }
+                // loading indicator
+                final statsIndex = index - 1 - _credits.length;
+                if (_hasMore) {
+                  if (statsIndex == 0) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: CircularProgressIndicator(),
+                      ),
                     );
-                  },
-                ),
-              );
+                  }
+                  return _StatsHeader(
+                    totalHours: _totalHours,
+                    statsByType: _statsByType(),
+                  );
+                }
+                return _StatsHeader(
+                  totalHours: _totalHours,
+                  statsByType: _statsByType(),
+                );
+              },
+            ),
+          );
   }
 }
 
@@ -334,16 +332,11 @@ class _SelectionBar extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(
           children: [
-            TextButton(
-              onPressed: onToggleSelecting,
-              child: Text(l10n.cancel),
-            ),
+            TextButton(onPressed: onToggleSelecting, child: Text(l10n.cancel)),
             TextButton(
               onPressed: onSelectAll,
               child: Text(
-                selectedCount == totalCount
-                    ? l10n.cancel
-                    : l10n.ccylSelectAll,
+                selectedCount == totalCount ? l10n.cancel : l10n.ccylSelectAll,
               ),
             ),
             Text(
@@ -369,10 +362,7 @@ class _StatsHeader extends StatelessWidget {
   final double totalHours;
   final Map<String, double> statsByType;
 
-  const _StatsHeader({
-    required this.totalHours,
-    required this.statsByType,
-  });
+  const _StatsHeader({required this.totalHours, required this.statsByType});
 
   @override
   Widget build(BuildContext context) {
@@ -387,12 +377,17 @@ class _StatsHeader extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.bar_chart, size: 20, color: theme.colorScheme.primary),
+                Icon(
+                  Icons.bar_chart,
+                  size: 20,
+                  color: theme.colorScheme.primary,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   '总学时: $totalHours',
-                  style: theme.textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w600),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -405,14 +400,19 @@ class _StatsHeader extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Row(
                     children: [
-                      Icon(Icons.circle, size: 8, color: theme.colorScheme.primary),
+                      Icon(
+                        Icons.circle,
+                        size: 8,
+                        color: theme.colorScheme.primary,
+                      ),
                       const SizedBox(width: 8),
                       Text(entry.key, style: theme.textTheme.bodyMedium),
                       const Spacer(),
                       Text(
                         '${entry.value} 学时',
-                        style: theme.textTheme.bodyMedium
-                            ?.copyWith(fontWeight: FontWeight.w500),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
@@ -477,8 +477,9 @@ class _CreditCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       credit.activityName,
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w600),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
