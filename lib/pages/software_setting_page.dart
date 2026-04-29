@@ -134,7 +134,9 @@ class SoftwareSettingPage extends StatelessWidget {
                           Row(
                             children: [
                               Expanded(
-                                child: Text(localizations.backgroundImageOpacity),
+                                child: Text(
+                                  localizations.backgroundImageOpacity,
+                                ),
                               ),
                               Text(
                                 '${(appConfig.backgroundImageOpacity.value * 100).round()}%',

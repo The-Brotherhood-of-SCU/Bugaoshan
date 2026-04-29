@@ -168,7 +168,7 @@
     "exportScheduleAsIcsCanceled":"File save canceled",
     "icsTeacherLabel":"Teacher(s)",
     "copySuffix": " (Copy)",
-    "notThisWeek": "[Not this week]",
+    "notThisWeek": "[Not]",
     "actualCurrentWeek": "Week {week}",
     "totalWeeksSubtitle": "{count} weeks",
     "invalidSectionRange":"End section must be greater than start section",

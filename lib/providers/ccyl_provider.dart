@@ -31,7 +31,9 @@ class CcylProvider extends ChangeNotifier {
       await _prefs.setString(_keyCcylUserId, _service.currentUser!.id);
       debugPrint('Saved userId: ${_service.currentUser!.id}');
     }
-    debugPrint('loginWithOAuthCode: _service.currentUser=${_service.currentUser?.id}');
+    debugPrint(
+      'loginWithOAuthCode: _service.currentUser=${_service.currentUser?.id}',
+    );
     notifyListeners();
   }
 

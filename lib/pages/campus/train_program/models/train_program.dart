@@ -237,7 +237,9 @@ class CourseDetail {
     return CourseDetail(
       flag: json['flag']?.toString() ?? '',
       kc: CourseInfo.fromJson(json['kc'] as Map<String, dynamic>? ?? {}),
-      jhkc: jhkcJson == null ? null : CoursePlanInfo.fromJson(jhkcJson as Map<String, dynamic>),
+      jhkc: jhkcJson == null
+          ? null
+          : CoursePlanInfo.fromJson(jhkcJson as Map<String, dynamic>),
     );
   }
 

@@ -29,9 +29,9 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
             final message = errorKey == 'sessionExpired'
                 ? l10n.sessionExpired
                 : l10n.gradesRefreshFailed;
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(message)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(message)));
           });
         }
         return switch (provider.passingState) {

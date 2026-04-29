@@ -309,6 +309,9 @@ class _CourseGridState extends State<CourseGrid> {
           final startStr = slot != null
               ? '${slot.startTime.hour.toString().padLeft(2, '0')}:${slot.startTime.minute.toString().padLeft(2, '0')}'
               : '';
+          final endStr = slot != null
+              ? '${slot.endTime.hour.toString().padLeft(2, '0')}:${slot.endTime.minute.toString().padLeft(2, '0')}'
+              : '';
 
           final isBoundary = (i + 1 == morningEnd) || (i + 1 == afternoonEnd);
 
@@ -336,7 +339,7 @@ class _CourseGridState extends State<CourseGrid> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  if (startStr.isNotEmpty)
+                  if (startStr.isNotEmpty) ...[
                     Padding(
                       padding: const EdgeInsets.only(top: 2),
                       child: Text(
@@ -347,6 +350,16 @@ class _CourseGridState extends State<CourseGrid> {
                         ),
                       ),
                     ),
+                    if (endStr.isNotEmpty &&
+                        appConfig.courseRowHeight.value >= 60)
+                      Text(
+                        endStr,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                  ],
                 ],
               ),
             ),

@@ -419,8 +419,9 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
           children: [
             Text(
               l10n.ccylTimeInfo,
-              style: theme.textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w600),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 12),
             _buildTimeRangeTile(
@@ -429,8 +430,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
               activity.enrollStartTime,
               activity.enrollEndTime,
             ),
-            if (activity.startTime != null)
-              const SizedBox(height: 12),
+            if (activity.startTime != null) const SizedBox(height: 12),
             if (activity.startTime != null)
               _buildTimeRangeTile(
                 Icons.schedule,
@@ -621,15 +621,17 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
               if (startTime != null && startTime.isNotEmpty)
                 Text(
                   startTime,
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(fontWeight: FontWeight.w500),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               if (endTime != null && endTime.isNotEmpty) ...[
                 const SizedBox(height: 1),
                 Text(
                   endTime,
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(fontWeight: FontWeight.w500),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ],
