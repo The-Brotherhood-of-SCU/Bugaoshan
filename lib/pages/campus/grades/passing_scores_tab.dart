@@ -5,15 +5,35 @@ import 'package:bugaoshan/models/scheme_score.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'scheme_scores_tab.dart' show ScoreCardWidget;
 
-class PassingScoresTab extends StatelessWidget {
+class PassingScoresTab extends StatefulWidget {
   const PassingScoresTab({super.key});
 
+  @override
+  State<PassingScoresTab> createState() => _PassingScoresTabState();
+}
+
+class _PassingScoresTabState extends State<PassingScoresTab> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: getIt<GradesProvider>(),
       builder: (context, _) {
         final provider = getIt<GradesProvider>();
+        if (provider.passingState == GradesLoadState.loaded &&
+            provider.passingError != null) {
+          final errorKey = provider.passingError;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            provider.clearPassingError();
+            if (!mounted) return;
+            final l10n = AppLocalizations.of(context)!;
+            final message = errorKey == 'sessionExpired'
+                ? l10n.sessionExpired
+                : l10n.gradesRefreshFailed;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(message)),
+            );
+          });
+        }
         return switch (provider.passingState) {
           GradesLoadState.idle => _buildEmpty(context, provider),
           GradesLoadState.loading => const Center(

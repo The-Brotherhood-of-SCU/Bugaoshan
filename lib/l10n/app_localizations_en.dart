@@ -647,6 +647,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gradesLoadFailed => 'Failed to load grades';
 
   @override
+  String get gradesRefreshFailed => 'Refresh failed, showing cached data';
+
+  @override
   String get gradesNoPassingData => 'No passing grade data';
 
   @override

@@ -209,6 +209,7 @@
     "gradesLoginRequired": "请先在「我的」页面完成统一身份认证登录",
     "gradesNoData": "暂无成绩数据",
     "gradesLoadFailed": "成绩加载失败",
+    "gradesRefreshFailed": "刷新失败，显示的是缓存数据",
     "gradesNoPassingData": "暂无及格成绩数据",
     "gradesGet": "获取成绩",
     "gradesRetry": "重试",

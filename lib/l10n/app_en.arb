@@ -209,6 +209,7 @@
     "gradesLoginRequired": "Please complete SCU Unified Identity login in the Profile page first",
     "gradesNoData": "No grade data",
     "gradesLoadFailed": "Failed to load grades",
+    "gradesRefreshFailed": "Refresh failed, showing cached data",
     "gradesNoPassingData": "No passing grade data",
     "gradesGet": "Fetch Grades",
     "gradesRetry": "Retry",

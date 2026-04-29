@@ -4,15 +4,35 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/scheme_score.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 
-class SchemeScoresTab extends StatelessWidget {
+class SchemeScoresTab extends StatefulWidget {
   const SchemeScoresTab({super.key});
 
+  @override
+  State<SchemeScoresTab> createState() => _SchemeScoresTabState();
+}
+
+class _SchemeScoresTabState extends State<SchemeScoresTab> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: getIt<GradesProvider>(),
       builder: (context, _) {
         final provider = getIt<GradesProvider>();
+        if (provider.schemeState == GradesLoadState.loaded &&
+            provider.schemeError != null) {
+          final errorKey = provider.schemeError;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            provider.clearSchemeError();
+            if (!mounted) return;
+            final l10n = AppLocalizations.of(context)!;
+            final message = errorKey == 'sessionExpired'
+                ? l10n.sessionExpired
+                : l10n.gradesRefreshFailed;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(message)),
+            );
+          });
+        }
         return switch (provider.schemeState) {
           GradesLoadState.idle => _buildEmpty(context, provider),
           GradesLoadState.loading => const Center(

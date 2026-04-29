@@ -59,14 +59,28 @@ class GradesProvider extends ChangeNotifier {
       if (e.sessionExpired) {
         await SessionExpiryHandler.handle(_authProvider);
       }
-      _schemeState = GradesLoadState.error;
-      _schemeError = 'sessionExpired';
+      if (_schemeScores != null) {
+        _schemeState = GradesLoadState.loaded;
+        _schemeError = 'sessionExpired';
+      } else {
+        _schemeState = GradesLoadState.error;
+        _schemeError = 'sessionExpired';
+      }
     } catch (e) {
       debugPrint('Scheme scores load error: $e');
-      _schemeState = GradesLoadState.error;
-      _schemeError = 'gradesLoadFailed';
+      if (_schemeScores != null) {
+        _schemeState = GradesLoadState.loaded;
+        _schemeError = 'gradesLoadFailed';
+      } else {
+        _schemeState = GradesLoadState.error;
+        _schemeError = 'gradesLoadFailed';
+      }
     }
     notifyListeners();
+  }
+
+  void clearSchemeError() {
+    _schemeError = null;
   }
 
   // --- 及格成绩 ---
@@ -92,13 +106,27 @@ class GradesProvider extends ChangeNotifier {
       if (e.sessionExpired) {
         await SessionExpiryHandler.handle(_authProvider);
       }
-      _passingState = GradesLoadState.error;
-      _passingError = 'sessionExpired';
+      if (_passingScores != null) {
+        _passingState = GradesLoadState.loaded;
+        _passingError = 'sessionExpired';
+      } else {
+        _passingState = GradesLoadState.error;
+        _passingError = 'sessionExpired';
+      }
     } catch (e) {
       debugPrint('Passing scores load error: $e');
-      _passingState = GradesLoadState.error;
-      _passingError = 'gradesLoadFailed';
+      if (_passingScores != null) {
+        _passingState = GradesLoadState.loaded;
+        _passingError = 'gradesLoadFailed';
+      } else {
+        _passingState = GradesLoadState.error;
+        _passingError = 'gradesLoadFailed';
+      }
     }
     notifyListeners();
+  }
+
+  void clearPassingError() {
+    _passingError = null;
   }
 }
