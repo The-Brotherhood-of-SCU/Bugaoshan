@@ -32,15 +32,14 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Set up Python 3
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.12"
+
       - name: Extract git metadata
         id: git_meta
-        run: |
-          TAG="${GITHUB_REF_NAME}"
-          if [[ "$TAG" == refs/heads/* ]]; then TAG=""; fi
-          echo "GIT_TAG=${TAG}" >> $GITHUB_OUTPUT
-          echo "GIT_COMMIT=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-          echo "GIT_COMMIT_DATE=$(git log -1 --format="%ci")" >> $GITHUB_OUTPUT
-          echo "BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S%z")" >> $GITHUB_OUTPUT
+        run: python .github/scripts/git_meta.py
 
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs || true
@@ -89,15 +88,14 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Set up Python 3
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.12"
+
       - name: Extract git metadata
         id: git_meta
-        run: |
-          TAG="${GITHUB_REF_NAME}"
-          if [[ "$TAG" == refs/heads/* ]]; then TAG=""; fi
-          echo "GIT_TAG=${TAG}" >> $GITHUB_OUTPUT
-          echo "GIT_COMMIT=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-          echo "GIT_COMMIT_DATE=$(git log -1 --format="%ci")" >> $GITHUB_OUTPUT
-          echo "BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S%z")" >> $GITHUB_OUTPUT
+        run: python .github/scripts/git_meta.py
 
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs || true
@@ -143,15 +141,14 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Set up Python 3
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.12"
+
       - name: Extract git metadata
         id: git_meta
-        run: |
-          TAG="${GITHUB_REF_NAME}"
-          if [[ "$TAG" == refs/heads/* ]]; then TAG=""; fi
-          echo "GIT_TAG=${TAG}" >> $GITHUB_OUTPUT
-          echo "GIT_COMMIT=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-          echo "GIT_COMMIT_DATE=$(git log -1 --format="%ci")" >> $GITHUB_OUTPUT
-          echo "BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S%z")" >> $GITHUB_OUTPUT
+        run: python .github/scripts/git_meta.py
 
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs || true
