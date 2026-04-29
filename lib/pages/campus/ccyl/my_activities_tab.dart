@@ -68,8 +68,11 @@ class _MyActivitiesTabState extends State<MyActivitiesTab> {
     } catch (e) {
       debugPrint('My activities load error: $e');
       if (mounted) {
+        final hour = DateTime.now().hour;
         setState(() {
-          _error = 'ccylActivityLoadFailed';
+          _error = (hour >= 0 && hour < 6)
+              ? 'campusNetworkRequired'
+              : 'ccylActivityLoadFailed';
         });
       }
     } finally {
@@ -129,6 +132,8 @@ class _MyActivitiesTabState extends State<MyActivitiesTab> {
     switch (errorKey) {
       case 'ccylActivityLoadFailed':
         return l10n.ccylActivityLoadFailed;
+      case 'campusNetworkRequired':
+        return l10n.campusNetworkRequired;
       default:
         return l10n.loadFailed;
     }

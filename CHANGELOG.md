@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 更新服务重构：将 GitHub Release 方法移至 UpdateService
 - 版本更新：添加app内版本更新功能
 - 优化课程卡片显示，防止卡片背景和字体颜色相近导致看不清
+- 优化第二课堂请求失败提示，晚上0点到6点提示使用校园网访问
 
 ## [0.6.0] - 2025-04-23
 

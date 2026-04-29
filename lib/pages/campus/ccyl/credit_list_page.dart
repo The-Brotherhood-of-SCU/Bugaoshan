@@ -73,8 +73,11 @@ class _CreditListPageState extends State<CreditListPage> {
     } catch (e) {
       debugPrint('Credit list load error: $e');
       if (mounted) {
+        final hour = DateTime.now().hour;
         setState(() {
-          _error = 'loadFailed';
+          _error = (hour >= 0 && hour < 6)
+              ? 'campusNetworkRequired'
+              : 'loadFailed';
         });
       }
     } finally {
@@ -210,8 +213,11 @@ class _CreditListPageState extends State<CreditListPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  l10n.loadFailed,
+                  _error == 'campusNetworkRequired'
+                      ? l10n.campusNetworkRequired
+                      : l10n.loadFailed,
                   style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(
