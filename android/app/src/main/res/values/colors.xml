@@ -4,5 +4,6 @@
     <color name="widget_background">#FFF5F5F5</color>
     <color name="widget_text_primary">#DE000000</color>
     <color name="widget_text_secondary">#8A000000</color>
+    <color name="widget_text_on_primary">#FFFFFFFF</color>
     <color name="widget_card_background">#FFFFFFFF</color>
 </resources>

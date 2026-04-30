@@ -5,8 +5,7 @@
     android:targetCellWidth="2"
     android:targetCellHeight="2"
     android:updatePeriodMillis="1800000"
-    android:initialLayout="@layout/widget_small"
+    android:initialLayout="@layout/widget_placeholder"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
-    android:previewLayout="@layout/widget_small"
     android:label="@string/widget_name_small" />

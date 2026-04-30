@@ -81,10 +81,8 @@ void _configureAsyncDependencies() {
   });
   getIt.registerSingletonAsync<WidgetUpdateService>(() async {
     await getIt.isReady<CourseProvider>();
-    await getIt.isReady<AppConfigProvider>();
     final courseProvider = getIt<CourseProvider>();
-    final appConfig = getIt<AppConfigProvider>();
-    final service = WidgetUpdateService(appConfig);
+    final service = WidgetUpdateService();
     // Wire up callback so widget updates on data changes
     courseProvider.onCoursesChanged = () {
       service.updateWidgetData().catchError((e) {
