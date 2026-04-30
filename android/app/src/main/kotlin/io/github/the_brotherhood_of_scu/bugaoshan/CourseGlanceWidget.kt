@@ -303,6 +303,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
+                .cornerRadius(16.dp)
                 .background(ColorProvider(R.color.widget_background))
                 .clickable(actionStartActivity(launchIntent))
                 .padding(8.dp),
@@ -371,6 +372,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
+                .cornerRadius(16.dp)
                 .background(ColorProvider(R.color.widget_background))
                 .clickable(actionStartActivity(launchIntent))
                 .padding(10.dp),
@@ -443,6 +445,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
+                .cornerRadius(16.dp)
                 .background(ColorProvider(R.color.widget_background))
                 .clickable(actionStartActivity(launchIntent))
                 .padding(12.dp),
