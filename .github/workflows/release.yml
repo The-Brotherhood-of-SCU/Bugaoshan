@@ -43,6 +43,8 @@ jobs:
       - name: Extract git metadata
         id: git_meta
         run: python .github/scripts/git_meta.py
+        env:
+          VERSION: ${{ github.event.inputs.version }}
 
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs || true
@@ -103,6 +105,8 @@ jobs:
       - name: Extract git metadata
         id: git_meta
         run: python .github/scripts/git_meta.py
+        env:
+          VERSION: ${{ github.event.inputs.version }}
 
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs || true
@@ -160,6 +164,8 @@ jobs:
       - name: Extract git metadata
         id: git_meta
         run: python .github/scripts/git_meta.py
+        env:
+          VERSION: ${{ github.event.inputs.version }}
 
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs || true

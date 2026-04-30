@@ -9,8 +9,10 @@ def run(cmd: list[str]) -> str:
     return subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL).strip()
 
 def main():
-    # Get most recent tag (version sorted), not derived from GITHUB_REF
-    tag = run(["git", "tag", "--sort=-version:refname"]).split("\n")[0]
+    # Use VERSION env var if provided (e.g. from workflow_dispatch), else get most recent tag
+    tag = os.environ.get("VERSION", "")
+    if not tag:
+        tag = run(["git", "tag", "--sort=-version:refname"]).split("\n")[0]
 
     git_commit = run(["git", "rev-parse", "HEAD"])
     git_commit_date = run(["git", "log", "-1", "--format=%ci"])
