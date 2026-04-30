@@ -13,8 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- 修复修改课表背景图片后，课表背景图片不刷新的问题
 - 修改课表储存方式，从 SharedPreferences 到 sqlite 数据库
+
+### Fixed
+
+- 修复修改课表背景图片后，课表背景图片不刷新的问题
+- 修复软件清除全部数据后，课表数据和账号密码数据不被删除的问题
 
 ## [0.7.0] - 2026-04-29
 
