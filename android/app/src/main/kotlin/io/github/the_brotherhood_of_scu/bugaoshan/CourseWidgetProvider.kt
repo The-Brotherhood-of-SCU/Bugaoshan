@@ -35,11 +35,16 @@ object WidgetDataLoader {
     private const val TAG = "CourseWidget"
 
     fun load(context: Context): WidgetCourseData? {
-        val dbFile = File(context.filesDir, "bugaoshan.db")
-        if (!dbFile.exists()) {
-            Log.w(TAG, "Database not found at ${dbFile.path}")
+        // Try multiple possible database locations
+        val dbFile = findDatabase(context)
+        if (dbFile == null) {
+            Log.e(TAG, "Database not found! Tried: " +
+                "${File(context.filesDir, "bugaoshan.db").path}, " +
+                "${File(context.dataDir, "databases/bugaoshan.db").path}, " +
+                "${File(context.dataDir, "files/bugaoshan.db").path}")
             return null
         }
+        Log.d(TAG, "Database found at: ${dbFile.path}")
 
         var db: SQLiteDatabase? = null
         try {
@@ -47,14 +52,21 @@ object WidgetDataLoader {
 
             // 1. Get current schedule ID
             val currentScheduleId = queryMetadata(db, "currentScheduleId") ?: "default"
+            Log.d(TAG, "currentScheduleId=$currentScheduleId")
 
             // 2. Get schedule config
-            val configJson = queryScheduleConfig(db, currentScheduleId) ?: return null
+            val configJson = queryScheduleConfig(db, currentScheduleId)
+            if (configJson == null) {
+                Log.e(TAG, "No schedule config found for id=$currentScheduleId")
+                return null
+            }
             val config = JSONObject(configJson)
+            Log.d(TAG, "configJson length=${configJson.length}")
 
             val semesterStartDate = config.optString("semesterStartDate", "")
             val totalWeeks = config.optInt("totalWeeks", 20)
             val timeSlots = config.optJSONArray("timeSlots")
+            Log.d(TAG, "semesterStartDate=$semesterStartDate totalWeeks=$totalWeeks timeSlots=${timeSlots?.length()}")
 
             // 3. Compute current week
             val currentWeek = computeCurrentWeek(semesterStartDate, totalWeeks)
@@ -62,9 +74,16 @@ object WidgetDataLoader {
             // 4. Get today's day of week (1=Mon ... 7=Sun)
             val cal = Calendar.getInstance()
             val dayOfWeek = (cal.get(Calendar.DAY_OF_WEEK) + 5) % 7 + 1 // Convert to 1=Mon
+            Log.d(TAG, "currentWeek=$currentWeek dayOfWeek=$dayOfWeek")
 
             // 5. Query today's courses
-            val courses = queryCourses(db, currentScheduleId, dayOfWeek, currentWeek)
+            var courses = queryCourses(db, currentScheduleId, dayOfWeek, currentWeek)
+            Log.d(TAG, "queryCourses returned ${courses.length()} courses for schedule=$currentScheduleId")
+            // Fallback: if no courses found and not using default, try default schedule
+            if (courses.length() == 0 && currentScheduleId != "default") {
+                courses = queryCourses(db, "default", dayOfWeek, currentWeek)
+                Log.d(TAG, "Fallback to default schedule: ${courses.length()} courses")
+            }
 
             // 6. Resolve time strings
             for (i in 0 until courses.length()) {
@@ -86,9 +105,13 @@ object WidgetDataLoader {
 
             // 8. Get theme color from SharedPreferences (still written by Flutter)
             val prefs = HomeWidgetPlugin.getData(context)
-            val themeColor = prefs.getInt("widget_theme_color", 0xFF2196F3.toInt())
+            val themeColor = try {
+                prefs.getInt("widget_theme_color", 0xFF2196F3.toInt())
+            } catch (_: ClassCastException) {
+                prefs.getLong("widget_theme_color", 0xFF2196F3.toLong()).toInt()
+            }
 
-            Log.d(TAG, "Loaded ${courses.length()} courses for week $currentWeek, day $dayOfWeek")
+            Log.d(TAG, "SUCCESS: ${courses.length()} courses for week $currentWeek, day $dayOfWeek")
 
             return WidgetCourseData(
                 courses = courses,
@@ -108,6 +131,23 @@ object WidgetDataLoader {
         }
     }
 
+    private fun findDatabase(context: Context): File? {
+        val candidates = listOf(
+            File(context.filesDir, "bugaoshan.db"),
+            File(context.dataDir, "databases/bugaoshan.db"),
+            File(context.dataDir, "files/bugaoshan.db"),
+            File("/data/data/${context.packageName}/files/bugaoshan.db"),
+            File("/data/data/${context.packageName}/databases/bugaoshan.db"),
+        )
+        for (f in candidates) {
+            if (f.exists()) {
+                Log.d(TAG, "DB found: ${f.path} (${f.length()} bytes)")
+                return f
+            }
+        }
+        return null
+    }
+
     private fun queryMetadata(db: SQLiteDatabase, key: String): String? {
         db.rawQuery("SELECT value FROM metadata WHERE key = ?", arrayOf(key)).use { cursor ->
             return if (cursor.moveToFirst()) cursor.getString(0) else null
@@ -115,12 +155,27 @@ object WidgetDataLoader {
     }
 
     private fun queryScheduleConfig(db: SQLiteDatabase, scheduleId: String): String? {
+        // Try requested schedule first
         db.rawQuery(
             "SELECT config_json FROM schedules WHERE id = ?",
             arrayOf(scheduleId)
         ).use { cursor ->
-            return if (cursor.moveToFirst()) cursor.getString(0) else null
+            if (cursor.moveToFirst()) return cursor.getString(0)
         }
+        // Fallback: try 'default' schedule
+        if (scheduleId != "default") {
+            db.rawQuery(
+                "SELECT config_json FROM schedules WHERE id = 'default'",
+                null
+            ).use { cursor ->
+                if (cursor.moveToFirst()) return cursor.getString(0)
+            }
+        }
+        // Fallback: try any schedule
+        db.rawQuery("SELECT config_json FROM schedules LIMIT 1", null).use { cursor ->
+            if (cursor.moveToFirst()) return cursor.getString(0)
+        }
+        return null
     }
 
     private fun queryCourses(
@@ -130,6 +185,20 @@ object WidgetDataLoader {
         currentWeek: Int
     ): JSONArray {
         val result = JSONArray()
+        // First, check total courses in DB for this schedule
+        db.rawQuery(
+            "SELECT COUNT(*) FROM courses WHERE schedule_id = ?",
+            arrayOf(scheduleId)
+        ).use { c ->
+            if (c.moveToFirst()) Log.d(TAG, "Total courses for schedule=$scheduleId: ${c.getInt(0)}")
+        }
+        // Check courses for today's dayOfWeek
+        db.rawQuery(
+            "SELECT COUNT(*) FROM courses WHERE schedule_id = ? AND day_of_week = ?",
+            arrayOf(scheduleId, dayOfWeek.toString())
+        ).use { c ->
+            if (c.moveToFirst()) Log.d(TAG, "Courses for day=$dayOfWeek: ${c.getInt(0)}")
+        }
         db.rawQuery(
             """SELECT name, teacher, location, start_week, end_week,
                       start_section, end_section, color_value, week_type
@@ -138,14 +207,19 @@ object WidgetDataLoader {
             arrayOf(scheduleId, dayOfWeek.toString())
         ).use { cursor ->
             while (cursor.moveToNext()) {
+                val name = cursor.getString(0) ?: ""
                 val startWeek = cursor.getInt(3)
                 val endWeek = cursor.getInt(4)
                 val weekType = cursor.getInt(8) // 0=every, 1=odd, 2=even
+                Log.d(TAG, "  course=$name weeks=$startWeek-$endWeek weekType=$weekType")
 
-                if (!isCourseActive(currentWeek, startWeek, endWeek, weekType)) continue
+                if (!isCourseActive(currentWeek, startWeek, endWeek, weekType)) {
+                    Log.d(TAG, "  -> skipped (currentWeek=$currentWeek)")
+                    continue
+                }
 
                 val obj = JSONObject()
-                obj.put("name", cursor.getString(0) ?: "")
+                obj.put("name", name)
                 obj.put("teacher", cursor.getString(1) ?: "")
                 obj.put("location", cursor.getString(2) ?: "")
                 obj.put("startSection", cursor.getInt(5))
@@ -233,6 +307,7 @@ abstract class CourseWidgetProvider : AppWidgetProvider() {
             appWidgetId: Int
         ) {
             val data = WidgetDataLoader.load(context)
+            if (data == null) Log.e(TAG, "WidgetDataLoader.load returned null!")
             val title = data?.headerTitle ?: "不高山上"
             val date = data?.dateText ?: ""
             val week = data?.weekText ?: ""
