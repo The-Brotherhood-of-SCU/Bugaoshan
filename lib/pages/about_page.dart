@@ -312,7 +312,7 @@ class _AboutPageState extends State<AboutPage> {
                 _InfoTile(
                   icon: Icons.group_outlined,
                   label: localizations.developmentTeam,
-                  value: '',
+                  value: 'The Brotherhood of SCU',
                   isLink: true,
                   onTap: () => openDeveloperTeam(),
                 ),
