@@ -301,6 +301,7 @@ class _AboutPageState extends State<AboutPage> {
                   icon: Icons.code_rounded,
                   label: localizations.projectRepository,
                   value: 'GitHub',
+                  isLink: true,
                   onTap: () => openProjectRepository(),
                 ),
                 Divider(
@@ -311,7 +312,8 @@ class _AboutPageState extends State<AboutPage> {
                 _InfoTile(
                   icon: Icons.group_outlined,
                   label: localizations.developmentTeam,
-                  value: '',
+                  value: 'The Brotherhood of SCU',
+                  isLink: true,
                   onTap: () => openDeveloperTeam(),
                 ),
                 Divider(
@@ -362,12 +364,14 @@ class _InfoTile extends StatelessWidget {
   final String label;
   final String value;
   final VoidCallback? onTap;
+  final bool isLink;
 
   const _InfoTile({
     required this.icon,
     required this.label,
     required this.value,
     this.onTap,
+    this.isLink = false,
   });
 
   @override
@@ -390,23 +394,29 @@ class _InfoTile extends StatelessWidget {
           ),
           const SizedBox(width: 14),
           Expanded(child: Text(label, style: theme.textTheme.bodyLarge)),
-          if (value.isNotEmpty)
-            Flexible(
-              child: Text(
-                value,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
+          if (value.isNotEmpty || onTap != null)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (value.isNotEmpty)
+                  Text(
+                    value,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                if (onTap != null) ...[
+                  const SizedBox(width: 4),
+                  Icon(
+                    isLink ? Icons.open_in_new : Icons.chevron_right_rounded,
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.4,
+                    ),
+                    size: isLink ? 18 : 20,
+                  ),
+                ],
+              ],
             ),
-          if (onTap != null) ...[
-            const SizedBox(width: 4),
-            Icon(
-              Icons.chevron_right_rounded,
-              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-              size: 20,
-            ),
-          ],
         ],
       ),
     );
