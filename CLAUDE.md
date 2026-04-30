@@ -42,7 +42,7 @@ GetIt + Injectable. `lib/injection/injector.config.dart` is auto-generated. Re-r
 ### Service Layer
 - **`ScuAuthService`** (`lib/services/scu_auth_service.dart`) — Stateful service holding the SCU access token. Handles SM2 password encryption, cookie-based session management, and all SCU API calls (login, schedule, grades).
 - **`CirApiService`** (`lib/services/cir_api_service.dart`) — Fetches real-time classroom availability from `cir.scu.edu.cn`.
-- **`DatabaseService`** (`lib/services/database_service.dart`) — Wraps Hive boxes. Manages multiple schedule configs and their associated course data via `switchSchedule()`.
+- **`DatabaseService`** (`lib/services/database_service.dart`) — SQLite-backed storage. Manages multiple schedule configs and their associated course data via `switchSchedule()`.
 - **`UpdateService`** (`lib/services/update_service.dart`) — Handles GitHub release checking, download, and install for Windows/Linux desktop platforms.
 
 ### Providers
@@ -53,12 +53,12 @@ GetIt + Injectable. `lib/injection/injector.config.dart` is auto-generated. Re-r
 
 ### Key Patterns
 - **Session expiry**: `ScuLoginException` carries `sessionExpired: bool`. Providers catch it and call `logout()` on auth provider.
-- **Multiple schedules**: Each schedule has its own Hive box (`courses_$id`). `DatabaseService.switchSchedule()` closes the old box and opens the new one.
+- **Multiple schedules**: Courses are stored in a single SQLite `courses` table, filtered by `schedule_id`. `DatabaseService.switchSchedule()` updates the current schedule ID and refreshes the in-memory cache.
 - **Responsive dialogs**: `popupOrNavigate()` in `router_utils.dart` shows a bottom sheet dialog on tablets/landscape, full-page navigation on phones.
 - **国密**: SM2 crypto via `dart_sm` package — used to encrypt the password before sending to SCU's auth API.
 
 ### Storage
-- **Hive CE** — Course data, schedule configs (persistent)
+- **SQLite** (`sqflite`) — Course data, schedule configs (persistent). Desktop platforms use `sqflite_common_ffi`.
 - **SharedPreferences** — Auth token, grades cache, app settings (key-value)
 
 ### Internationalization
