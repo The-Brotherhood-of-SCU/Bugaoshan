@@ -19,10 +19,13 @@ class AboutPage extends StatefulWidget {
 class _AboutPageState extends State<AboutPage> {
   final versionProvider = getIt<AppInfoProvider>();
   final updateService = UpdateService();
+  bool _isCheckingUpdate = false;
 
   Future<void> _checkForUpdates() async {
+    if (_isCheckingUpdate) return;
     final localizations = AppLocalizations.of(context)!;
 
+    setState(() => _isCheckingUpdate = true);
     try {
       final latest = await updateService.getLatestReleaseFromGitHub();
       if (!mounted) return;
@@ -97,6 +100,8 @@ class _AboutPageState extends State<AboutPage> {
           content: localizations.loadFailed,
         );
       }
+    } finally {
+      if (mounted) setState(() => _isCheckingUpdate = false);
     }
   }
 
@@ -325,6 +330,7 @@ class _AboutPageState extends State<AboutPage> {
                   icon: Icons.update_rounded,
                   label: localizations.checkForUpdates,
                   value: '',
+                  loading: _isCheckingUpdate,
                   onTap: _checkForUpdates,
                 ),
                 Divider(
@@ -365,6 +371,7 @@ class _InfoTile extends StatelessWidget {
   final String value;
   final VoidCallback? onTap;
   final bool isLink;
+  final bool loading;
 
   const _InfoTile({
     required this.icon,
@@ -372,6 +379,7 @@ class _InfoTile extends StatelessWidget {
     required this.value,
     this.onTap,
     this.isLink = false,
+    this.loading = false,
   });
 
   @override
@@ -405,7 +413,14 @@ class _InfoTile extends StatelessWidget {
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
-                if (onTap != null) ...[
+                if (loading) ...[
+                  const SizedBox(width: 4),
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ] else if (onTap != null) ...[
                   const SizedBox(width: 4),
                   Icon(
                     isLink ? Icons.open_in_new : Icons.chevron_right_rounded,

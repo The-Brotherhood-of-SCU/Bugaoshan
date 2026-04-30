@@ -31,6 +31,12 @@ flutter build windows --release
 
 **GitHub Actions release**: triggers on git tags matching `v*.*.*`; builds all 3 platforms and uploads to GitHub Releases.
 
+**HarmonyOS build**: separate workflow dispatches to `TEMP-HOMO` repo for HarmonyOS APK builds.
+
+### Commit Convention
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, etc.
+
 ## Architecture
 
 ### State Management
@@ -41,8 +47,14 @@ GetIt + Injectable. `lib/injection/injector.config.dart` is auto-generated. Re-r
 
 ### Service Layer
 - **`ScuAuthService`** (`lib/services/scu_auth_service.dart`) — Stateful service holding the SCU access token. Handles SM2 password encryption, cookie-based session management, and all SCU API calls (login, schedule, grades).
+- **`ScuMicroserviceAuthService`** (`lib/services/scu_microservice_auth_service.dart`) — Handles auth for SCU microservice-based APIs (电费, 空调余额, 校园网设备).
 - **`CirApiService`** (`lib/services/cir_api_service.dart`) — Fetches real-time classroom availability from `cir.scu.edu.cn`.
-- **`DatabaseService`** (`lib/services/database_service.dart`) — Wraps Hive boxes. Manages multiple schedule configs and their associated course data via `switchSchedule()`.
+- **`CcylService`** (`lib/services/ccyl_service.dart`) — 第二课堂 (CCYL) API client. OAuth-based login via `CcylService.login(oauthCode)`. Activities, reservations, and成绩单.
+- **`CcylOauthService`** (`lib/services/ccyl_oauth_service.dart`) — OAuth flow helper for CCYL login.
+- **`BalanceQueryService`** (`lib/services/balance_query_service.dart`) — Queries电费 and 空调余额 via `payapp.scu.edu.cn`.
+- **`DatabaseService`** (`lib/services/database_service.dart`) — SQLite-backed storage. Manages multiple schedule configs and their associated course data via `switchSchedule()`.
+- **`IcsService`** (`lib/services/ics_service.dart`) — Exports course schedules as iCalendar (.ics) files.
+- **`OcrService`** (`lib/services/ocr_service.dart`) — TFLite-based captcha recognition for SCU login.
 - **`UpdateService`** (`lib/services/update_service.dart`) — Handles GitHub release checking, download, and install for Windows/Linux desktop platforms.
 
 ### Providers
@@ -53,12 +65,12 @@ GetIt + Injectable. `lib/injection/injector.config.dart` is auto-generated. Re-r
 
 ### Key Patterns
 - **Session expiry**: `ScuLoginException` carries `sessionExpired: bool`. Providers catch it and call `logout()` on auth provider.
-- **Multiple schedules**: Each schedule has its own Hive box (`courses_$id`). `DatabaseService.switchSchedule()` closes the old box and opens the new one.
+- **Multiple schedules**: Courses are stored in a single SQLite `courses` table, filtered by `schedule_id`. `DatabaseService.switchSchedule()` updates the current schedule ID and refreshes the in-memory cache.
 - **Responsive dialogs**: `popupOrNavigate()` in `router_utils.dart` shows a bottom sheet dialog on tablets/landscape, full-page navigation on phones.
 - **国密**: SM2 crypto via `dart_sm` package — used to encrypt the password before sending to SCU's auth API.
 
 ### Storage
-- **Hive CE** — Course data, schedule configs (persistent)
+- **SQLite** (`sqflite`) — Course data, schedule configs (persistent). Desktop platforms use `sqflite_common_ffi`.
 - **SharedPreferences** — Auth token, grades cache, app settings (key-value)
 
 ### Internationalization
@@ -74,7 +86,14 @@ lib/
 ├── l10n/           # ARB files + generated localizations
 ├── models/         # Data models (Course, SchemeScore, etc.)
 ├── pages/          # Screen widgets
-│   └── campus/    # Campus feature module (grades, classroom)
+│   └── campus/    # Campus feature modules
+│       ├── balance_query/  # 电费 & 空调余额查询
+│       ├── ccyl/           # 第二课堂 (CCYL)
+│       ├── classroom/      # 空闲教室查询
+│       ├── grades/         # 成绩查询
+│       ├── network_device/ # 校园网设备管理
+│       ├── train_program/  # 培养方案查询
+│       └── services/       # Campus-specific service layer
 ├── providers/      # ChangeNotifier state classes
 ├── services/       # Business logic & network
 ├── utils/          # Constants, crypto, utilities

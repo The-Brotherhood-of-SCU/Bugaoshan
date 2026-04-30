@@ -60,7 +60,7 @@ lib/
 | 状态管理 | Provider / ChangeNotifier |
 | 依赖注入 | [GetIt](https://pub.dev/packages/get_it) + [Injectable](https://pub.dev/packages/injectable) |
 | 网络请求 | [Dio](https://pub.dev/packages/dio) + Cookie Manager |
-| 本地存储 | [Hive CE](https://pub.dev/packages/hive_ce)、[SharedPreferences](https://pub.dev/packages/shared_preferences) |
+| 本地存储 | [SQLite](https://pub.dev/packages/sqflite)、[SharedPreferences](https://pub.dev/packages/shared_preferences) |
 | 国际化 | Flutter `flutter_localizations` |
 | 国密算法 | [dart_sm](https://pub.dev/packages/dart_sm)（SM2/SM3/SM4） |
 | OCR | [flutter_litert](https://pub.dev/packages/flutter_litert)（TFLite 模型） |

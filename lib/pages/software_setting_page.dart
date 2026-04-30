@@ -204,7 +204,9 @@ class SoftwareSettingPage extends StatelessWidget {
                       content: localizations.confirmMessage,
                     );
                     if (confirm == true) {
-                      getIt<ScuAuthProvider>().logout();
+                      final scuAuth = getIt<ScuAuthProvider>();
+                      await scuAuth.logout();
+                      await scuAuth.clearCredentials();
                       appConfig.clearAll();
                       final courseProvider = getIt<CourseProvider>();
                       await courseProvider.clearAllData();
