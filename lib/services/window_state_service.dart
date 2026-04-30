@@ -28,7 +28,7 @@ class WindowStateService with WindowListener {
       WindowOptions(
         size: w != null && h != null ? Size(w, h) : null,
         center: x == null || y == null,
-        minimumSize: const Size(800, 600),
+        minimumSize: const Size(400, 400),
       ),
     );
 
