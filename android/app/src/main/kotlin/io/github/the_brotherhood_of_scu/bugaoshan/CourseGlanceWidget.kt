@@ -90,15 +90,29 @@ object WidgetDataLoader {
                 courses = queryCourses(db, "default", dayOfWeek, currentWeek)
             }
 
+            val now = Calendar.getInstance()
+            val currentHour = now.get(Calendar.HOUR_OF_DAY)
+            val currentMinute = now.get(Calendar.MINUTE)
+            val currentTimeMinutes = currentHour * 60 + currentMinute
+
+            val filteredCourses = JSONArray()
             for (i in 0 until courses.length()) {
                 val c = courses.getJSONObject(i)
                 val ss = c.optInt("startSection", 0)
                 val es = c.optInt("endSection", 0)
                 c.put("startTime", formatTime(timeSlots, ss))
                 c.put("endTime", formatTime(timeSlots, es))
-            }
 
-            val now = Calendar.getInstance()
+                // Filter out courses that have already ended
+                val endSlot = getSlotEndTime(timeSlots, es)
+                if (endSlot != null) {
+                    val endMinutes = endSlot.first * 60 + endSlot.second
+                    if (currentTimeMinutes >= endMinutes) continue
+                }
+
+                filteredCourses.put(c)
+            }
+            courses = filteredCourses
             val month = now.get(Calendar.MONTH) + 1
             val day = now.get(Calendar.DAY_OF_MONTH)
             val dayNames = arrayOf("周一", "周二", "周三", "周四", "周五", "周六", "周日")
@@ -240,6 +254,13 @@ object WidgetDataLoader {
         val m = start.optInt("minute", 0).toString().padStart(2, '0')
         return "$h:$m"
     }
+
+    private fun getSlotEndTime(timeSlots: JSONArray?, section: Int): Pair<Int, Int>? {
+        if (timeSlots == null || section < 1 || section > timeSlots.length()) return null
+        val slot = timeSlots.getJSONObject(section - 1)
+        val end = slot.optJSONObject("endTime") ?: return null
+        return Pair(end.optInt("hour", 0), end.optInt("minute", 0))
+    }
 }
 
 // ── Glance Widget ───────────────────────────────────────────────────
@@ -328,7 +349,13 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     )
                 }
             } else {
-                CourseCardSmall(courses.getJSONObject(0))
+                val limit = 2
+                for (i in 0 until minOf(courses.length(), limit)) {
+                    CourseCardSmall(courses.getJSONObject(i))
+                    if (i < minOf(courses.length(), limit) - 1) {
+                        Spacer(modifier = GlanceModifier.height(4.dp))
+                    }
+                }
             }
         }
     }
@@ -392,10 +419,11 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     )
                 }
             } else {
+                val limit = 2
                 Column(modifier = GlanceModifier.fillMaxSize()) {
-                    for (i in 0 until courses.length()) {
+                    for (i in 0 until minOf(courses.length(), limit)) {
                         CourseCardMedium(courses.getJSONObject(i))
-                        if (i < courses.length() - 1) {
+                        if (i < minOf(courses.length(), limit) - 1) {
                             Spacer(modifier = GlanceModifier.height(6.dp))
                         }
                     }
@@ -475,10 +503,11 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     )
                 }
             } else {
+                val limit = 4
                 Column(modifier = GlanceModifier.fillMaxSize()) {
-                    for (i in 0 until courses.length()) {
+                    for (i in 0 until minOf(courses.length(), limit)) {
                         CourseCardLarge(courses.getJSONObject(i))
-                        if (i < courses.length() - 1) {
+                        if (i < minOf(courses.length(), limit) - 1) {
                             Spacer(modifier = GlanceModifier.height(6.dp))
                         }
                     }
