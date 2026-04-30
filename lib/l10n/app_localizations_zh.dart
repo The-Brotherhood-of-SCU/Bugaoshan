@@ -45,13 +45,23 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wizardFeatureTitle => '探索更多功能';
 
   @override
-  String get wizardFeatureCourse => '课表管理：查看每周课程、多课表管理、分享与导出';
+  String get wizardFeatureCourse => '课表管理';
 
   @override
-  String get wizardFeatureCampus => '校园服务：空闲教室、成绩分析、第二课堂、电费查询';
+  String get wizardFeatureCourseDesc => '查看每周课程安排与多课表管理，支持从教务系统一键导入、分享与导出为日历文件';
 
   @override
-  String get wizardFeatureProfile => '个人中心：主题颜色、深色模式、语言切换';
+  String get wizardFeatureCampus => '校园服务';
+
+  @override
+  String get wizardFeatureCampusDesc =>
+      '查询空闲教室与学业成绩，参与第二课堂活动，查询电费与空调余额，管理校园网设备';
+
+  @override
+  String get wizardFeatureProfile => '个人中心';
+
+  @override
+  String get wizardFeatureProfileDesc => '使用统一身份认证登录并绑定第二课堂，自定义主题颜色、深色模式与语言偏好';
 
   @override
   String get onboardingSkip => '跳过';

@@ -125,10 +125,13 @@ class _WizardPageState extends State<WizardPage> {
                 child: Text(l10n.onboardingSkip),
               ),
               const Spacer(),
-              if (_currentPage > 0) ...[
-                TextButton(onPressed: _goBack, child: Text(l10n.back)),
-                const SizedBox(width: 8),
-              ],
+              AnimatedOpacity(
+                opacity: _currentPage > 0 ? 1 : 0,
+                curve: appCurve,
+                duration: appConfigProvider.cardSizeAnimationDuration.value,
+                child: TextButton(onPressed: _goBack, child: Text(l10n.back)),
+              ),
+              const SizedBox(width: 8),
               AnimatedSize(
                 duration: appConfigProvider.cardSizeAnimationDuration.value,
                 curve: appCurve,

@@ -178,20 +178,38 @@ abstract class AppLocalizations {
   /// No description provided for @wizardFeatureCourse.
   ///
   /// In en, this message translates to:
-  /// **'Course schedule view, multi-schedule management, sharing & export'**
+  /// **'Course Schedule'**
   String get wizardFeatureCourse;
+
+  /// No description provided for @wizardFeatureCourseDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'View weekly classes, manage multiple schedules, import from academic system, share and export as calendar files'**
+  String get wizardFeatureCourseDesc;
 
   /// No description provided for @wizardFeatureCampus.
   ///
   /// In en, this message translates to:
-  /// **'Classroom availability, grades, CCYL activities, utility balance'**
+  /// **'Campus Services'**
   String get wizardFeatureCampus;
+
+  /// No description provided for @wizardFeatureCampusDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Check classroom availability and grades, join CCYL activities, query utility balance, manage network devices'**
+  String get wizardFeatureCampusDesc;
 
   /// No description provided for @wizardFeatureProfile.
   ///
   /// In en, this message translates to:
-  /// **'Theme colors, dark mode, language preferences'**
+  /// **'Profile'**
   String get wizardFeatureProfile;
+
+  /// No description provided for @wizardFeatureProfileDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in with SCU Unified Identity, bind CCYL account, customize theme colors, dark mode and language preferences'**
+  String get wizardFeatureProfileDesc;
 
   /// No description provided for @onboardingSkip.
   ///

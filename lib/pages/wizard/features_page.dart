@@ -7,73 +7,72 @@ class FeaturesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-
-    final features = [
-      _FeatureData(
-        icon: Icons.menu_book_rounded,
-        title: l10n.wizardFeatureCourse,
-      ),
-      _FeatureData(
-        icon: Icons.school_rounded,
-        title: l10n.wizardFeatureCampus,
-      ),
-      _FeatureData(
-        icon: Icons.person_rounded,
-        title: l10n.wizardFeatureProfile,
-      ),
-    ];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Spacer(),
+          SizedBox(height: 100),
           Text(
             l10n.wizardFeatureTitle,
-            style: textTheme.headlineSmall
-                ?.copyWith(fontWeight: FontWeight.bold),
+            style: textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 32),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final crossAxisCount = constraints.maxWidth > 400 ? 3 : 2;
-              return Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: features.map((f) {
-                  final cellWidth = (constraints.maxWidth - 12 * (crossAxisCount - 1)) / crossAxisCount;
-                  return SizedBox(
-                    width: cellWidth,
-                    child: _FeatureCard(
-                      icon: f.icon,
-                      title: f.title,
-                    ),
-                  );
-                }).toList(),
-              );
-            },
+          const SizedBox(height: 24),
+          Expanded(
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                _FeatureCard(
+                  icon: Icons.menu_book_rounded,
+                  iconBackground: colorScheme.tertiaryContainer,
+                  iconColor: colorScheme.onTertiaryContainer,
+                  title: l10n.wizardFeatureCourse,
+                  description: l10n.wizardFeatureCourseDesc,
+                ),
+                const SizedBox(height: 12),
+                _FeatureCard(
+                  icon: Icons.school_rounded,
+                  iconBackground: colorScheme.secondaryContainer,
+                  iconColor: colorScheme.onSecondaryContainer,
+                  title: l10n.wizardFeatureCampus,
+                  description: l10n.wizardFeatureCampusDesc,
+                ),
+                const SizedBox(height: 12),
+                _FeatureCard(
+                  icon: Icons.person_rounded,
+                  iconBackground: colorScheme.primaryContainer,
+                  iconColor: colorScheme.onPrimaryContainer,
+                  title: l10n.wizardFeatureProfile,
+                  description: l10n.wizardFeatureProfileDesc,
+                ),
+              ],
+            ),
           ),
-          const Spacer(flex: 2),
         ],
       ),
     );
   }
 }
 
-class _FeatureData {
-  final IconData icon;
-  final String title;
-  const _FeatureData({required this.icon, required this.title});
-}
-
 class _FeatureCard extends StatelessWidget {
   final IconData icon;
+  final Color iconBackground;
+  final Color iconColor;
   final String title;
+  final String description;
 
-  const _FeatureCard({required this.icon, required this.title});
+  const _FeatureCard({
+    required this.icon,
+    required this.iconBackground,
+    required this.iconColor,
+    required this.title,
+    required this.description,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -89,30 +88,40 @@ class _FeatureCard extends StatelessWidget {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: 52,
+              height: 52,
               decoration: BoxDecoration(
-                color: colorScheme.secondaryContainer,
+                color: iconBackground,
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(
-                icon,
-                size: 24,
-                color: colorScheme.onSecondaryContainer,
-              ),
+              child: Icon(icon, size: 28, color: iconColor),
             ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: textTheme.bodyMedium?.copyWith(height: 1.3),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    description,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

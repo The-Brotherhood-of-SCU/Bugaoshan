@@ -46,16 +46,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wizardFeatureTitle => 'Explore More Features';
 
   @override
-  String get wizardFeatureCourse =>
-      'Course schedule view, multi-schedule management, sharing & export';
+  String get wizardFeatureCourse => 'Course Schedule';
 
   @override
-  String get wizardFeatureCampus =>
-      'Classroom availability, grades, CCYL activities, utility balance';
+  String get wizardFeatureCourseDesc =>
+      'View weekly classes, manage multiple schedules, import from academic system, share and export as calendar files';
 
   @override
-  String get wizardFeatureProfile =>
-      'Theme colors, dark mode, language preferences';
+  String get wizardFeatureCampus => 'Campus Services';
+
+  @override
+  String get wizardFeatureCampusDesc =>
+      'Check classroom availability and grades, join CCYL activities, query utility balance, manage network devices';
+
+  @override
+  String get wizardFeatureProfile => 'Profile';
+
+  @override
+  String get wizardFeatureProfileDesc =>
+      'Log in with SCU Unified Identity, bind CCYL account, customize theme colors, dark mode and language preferences';
 
   @override
   String get onboardingSkip => 'Skip';
