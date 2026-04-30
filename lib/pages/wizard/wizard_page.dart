@@ -1,3 +1,4 @@
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -39,6 +40,20 @@ class _WizardPageState extends State<WizardPage> {
     getIt<AppConfigProvider>().firstLaunchWizardCompleted.value = true;
   }
 
+  void _goNext() {
+    _pageController.nextPage(
+      duration: appConfigProvider.cardSizeAnimationDuration.value,
+      curve: Curves.easeInOutQuart,
+    );
+  }
+
+  void _goBack() {
+    _pageController.previousPage(
+      duration: appConfigProvider.cardSizeAnimationDuration.value,
+      curve: Curves.easeInOutQuart,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -46,42 +61,40 @@ class _WizardPageState extends State<WizardPage> {
 
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildSkipButton(l10n),
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                children: const [
-                  WelcomePage(),
-                  LoginPage(),
-                  FeaturesPage(),
-                ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Center(
+              child: SizedBox(
+                width: constraints.maxWidth > 600 ? 600 : null,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: PageView(
+                        controller: _pageController,
+                        children: const [
+                          WelcomePage(),
+                          LoginPage(),
+                          FeaturesPage(),
+                        ],
+                      ),
+                    ),
+                    _buildBottomSection(l10n, colorScheme),
+                  ],
+                ),
               ),
-            ),
-            _buildBottomSection(l10n, colorScheme),
-          ],
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildSkipButton(AppLocalizations l10n) {
-    return Align(
-      alignment: Alignment.topRight,
-      child: TextButton(
-        onPressed: _onCompleted,
-        child: Text(l10n.onboardingSkip),
-      ),
-    );
-  }
+  AppConfigProvider appConfigProvider = getIt<AppConfigProvider>();
 
-  Widget _buildBottomSection(
-    AppLocalizations l10n,
-    ColorScheme colorScheme,
-  ) {
+  Widget _buildBottomSection(AppLocalizations l10n, ColorScheme colorScheme) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 32, left: 32, right: 32),
+      padding: const EdgeInsets.only(bottom: 32, left: 24, right: 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -90,7 +103,8 @@ class _WizardPageState extends State<WizardPage> {
             children: List.generate(3, (index) {
               final isActive = _currentPage == index;
               return AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
+                duration: appConfigProvider.cardSizeAnimationDuration.value,
+                curve: appCurve,
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 width: isActive ? 24 : 8,
                 height: 8,
@@ -103,26 +117,31 @@ class _WizardPageState extends State<WizardPage> {
               );
             }),
           ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: () {
-                if (_currentPage < 2) {
-                  _pageController.nextPage(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                } else {
-                  _onCompleted();
-                }
-              },
-              child: Text(
-                _currentPage < 2
-                    ? l10n.onboardingNext
-                    : l10n.onboardingStart,
+          const SizedBox(height: 30),
+          Row(
+            children: [
+              TextButton(
+                onPressed: _onCompleted,
+                child: Text(l10n.onboardingSkip),
               ),
-            ),
+              const Spacer(),
+              if (_currentPage > 0) ...[
+                TextButton(onPressed: _goBack, child: Text(l10n.back)),
+                const SizedBox(width: 8),
+              ],
+              AnimatedSize(
+                duration: appConfigProvider.cardSizeAnimationDuration.value,
+                curve: appCurve,
+                child: FilledButton(
+                  onPressed: _currentPage < 2 ? _goNext : _onCompleted,
+                  child: Text(
+                    _currentPage < 2
+                        ? l10n.onboardingNext
+                        : l10n.onboardingStart,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

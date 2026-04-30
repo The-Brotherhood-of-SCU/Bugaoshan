@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart' show Colors;
+import 'package:flutter/material.dart' show Colors, Curve, Curves;
 import 'package:bugaoshan/utils/locale_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -16,6 +16,7 @@ const String _keyCourseRowHeight = 'courseRowHeight';
 const String _keyBackgroundImageOpacity = 'backgroundImageOpacity';
 const String _keyBackgroundImagePath = 'backgroundImagePath';
 const String _keyFirstLaunchWizardCompleted = 'firstLaunchWizardCompleted';
+const Curve appCurve = Curves.easeOutQuart;
 
 class AppConfigProvider {
   final SharedPreferences _sharedPreferences;
