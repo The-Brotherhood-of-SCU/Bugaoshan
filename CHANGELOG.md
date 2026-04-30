@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - 增加向导页面，引导用户从教务处导入课表
+- 桌面端记住窗口位置和大小，启动时自动恢复
+
 
 ### Changed
 
