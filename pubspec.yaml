@@ -10,14 +10,14 @@ dependencies:
   photo_view: ^0.15.0
   cupertino_icons: ^1.0.8
   get_it: ^9.2.0
-  injectable: null
-  shared_preferences: null
+  injectable: any
+  shared_preferences: any
   flutter_localizations:
     sdk: flutter
   intl: any
-  flutter_colorpicker: null
-  url_launcher: null
-  package_info_plus: null
+  flutter_colorpicker: any
+  url_launcher: any
+  package_info_plus: any
   web: any
   async: any
   http: ^1.2.0
@@ -36,13 +36,15 @@ dependencies:
   file_picker: ^11.0.2
   flutter_markdown_plus: ^1.0.7
   image_picker: ^1.2.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  build_runner: null
-  injectable_generator: null
+  build_runner: any
+  injectable_generator: any
   flutter_launcher_icons: ^0.14.1
+
 flutter:
   uses-material-design: true
   generate: true
