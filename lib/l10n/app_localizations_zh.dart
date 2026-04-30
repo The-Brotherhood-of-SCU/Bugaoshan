@@ -15,6 +15,64 @@ class AppLocalizationsZh extends AppLocalizations {
   String get selfLanguage => '中文';
 
   @override
+  String get wizardWelcomeTitle => '欢迎使用不高山上';
+
+  @override
+  String get wizardWelcomeDesc => '你的校园生活助手，一站式查看课表、成绩与校园服务';
+
+  @override
+  String get wizardLoginTitle => '登录与导入课表';
+
+  @override
+  String get wizardLoginStep1 => '完成统一身份认证登录';
+
+  @override
+  String get wizardLoginStep2 => '从教务系统导入课表';
+
+  @override
+  String get wizardLoginDone => '已登录';
+
+  @override
+  String get wizardLoginButton => '去登录';
+
+  @override
+  String get wizardImportButton => '导入课表';
+
+  @override
+  String get wizardImportHint => '登录后可自动获取课表';
+
+  @override
+  String get wizardFeatureTitle => '探索更多功能';
+
+  @override
+  String get wizardFeatureCourse => '课表管理';
+
+  @override
+  String get wizardFeatureCourseDesc => '查看每周课程安排与多课表管理，支持从教务系统一键导入、分享与导出为日历文件';
+
+  @override
+  String get wizardFeatureCampus => '校园服务';
+
+  @override
+  String get wizardFeatureCampusDesc =>
+      '查询空闲教室与学业成绩，参与第二课堂活动，查询电费与空调余额，管理校园网设备';
+
+  @override
+  String get wizardFeatureProfile => '个人中心';
+
+  @override
+  String get wizardFeatureProfileDesc => '使用统一身份认证登录并绑定第二课堂，自定义主题颜色、深色模式与语言偏好';
+
+  @override
+  String get onboardingSkip => '跳过';
+
+  @override
+  String get onboardingNext => '下一步';
+
+  @override
+  String get onboardingStart => '立即体验';
+
+  @override
   String get course => '课程';
 
   @override

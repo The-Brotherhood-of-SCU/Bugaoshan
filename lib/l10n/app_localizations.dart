@@ -115,6 +115,120 @@ abstract class AppLocalizations {
   /// **'English'**
   String get selfLanguage;
 
+  /// No description provided for @wizardWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Bugaoshan'**
+  String get wizardWelcomeTitle;
+
+  /// No description provided for @wizardWelcomeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your campus assistant: schedules, grades and campus services in one place'**
+  String get wizardWelcomeDesc;
+
+  /// No description provided for @wizardLoginTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Login & Import Schedule'**
+  String get wizardLoginTitle;
+
+  /// No description provided for @wizardLoginStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in with SCU Unified Identity'**
+  String get wizardLoginStep1;
+
+  /// No description provided for @wizardLoginStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Import schedule from academic system'**
+  String get wizardLoginStep2;
+
+  /// No description provided for @wizardLoginDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged in'**
+  String get wizardLoginDone;
+
+  /// No description provided for @wizardLoginButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Login'**
+  String get wizardLoginButton;
+
+  /// No description provided for @wizardImportButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Schedule'**
+  String get wizardImportButton;
+
+  /// No description provided for @wizardImportHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-fetch schedule after login'**
+  String get wizardImportHint;
+
+  /// No description provided for @wizardFeatureTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore More Features'**
+  String get wizardFeatureTitle;
+
+  /// No description provided for @wizardFeatureCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Schedule'**
+  String get wizardFeatureCourse;
+
+  /// No description provided for @wizardFeatureCourseDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'View weekly classes, manage multiple schedules, import from academic system, share and export as calendar files'**
+  String get wizardFeatureCourseDesc;
+
+  /// No description provided for @wizardFeatureCampus.
+  ///
+  /// In en, this message translates to:
+  /// **'Campus Services'**
+  String get wizardFeatureCampus;
+
+  /// No description provided for @wizardFeatureCampusDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Check classroom availability and grades, join CCYL activities, query utility balance, manage network devices'**
+  String get wizardFeatureCampusDesc;
+
+  /// No description provided for @wizardFeatureProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get wizardFeatureProfile;
+
+  /// No description provided for @wizardFeatureProfileDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in with SCU Unified Identity, bind CCYL account, customize theme colors, dark mode and language preferences'**
+  String get wizardFeatureProfileDesc;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get onboardingNext;
+
+  /// No description provided for @onboardingStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get onboardingStart;
+
   /// No description provided for @course.
   ///
   /// In en, this message translates to:
