@@ -344,7 +344,7 @@ class _UpdateCard extends StatelessWidget {
                 ),
                 AnimatedSize(
                   duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOutQuart,
+                  curve: appCurve,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -443,7 +443,7 @@ class _WizardResetButton extends StatelessWidget {
         trailing: const Icon(Icons.chevron_right),
         onTap: () {
           getIt<AppConfigProvider>().firstLaunchWizardCompleted.value = false;
-          Navigator.of(logicRootContext).pop();
+          Navigator.of(logicRootContext).popUntil((route) => route.isFirst);
         },
       ),
     );

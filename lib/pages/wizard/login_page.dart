@@ -25,16 +25,35 @@ class _LoginPageState extends State<LoginPage> {
     final textTheme = Theme.of(context).textTheme;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            l10n.wizardLoginTitle,
-            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          const Spacer(),
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Icon(
+              Icons.login_rounded,
+              size: 36,
+              color: colorScheme.onPrimaryContainer,
+            ),
           ),
           const SizedBox(height: 24),
-          _ActionCard(
+          Text(
+            l10n.wizardLoginTitle,
+            style: textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 32),
+          _StepCard(
+            step: '1',
             icon: Icons.login_rounded,
             title: l10n.wizardLoginStep1,
             trailing: ListenableBuilder(
@@ -44,10 +63,18 @@ class _LoginPageState extends State<LoginPage> {
                   return Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle,
-                          size: 18, color: colorScheme.primary),
+                      Icon(
+                        Icons.check_circle,
+                        size: 18,
+                        color: colorScheme.primary,
+                      ),
                       const SizedBox(width: 4),
-                      Text(l10n.wizardLoginDone),
+                      Text(
+                        l10n.wizardLoginDone,
+                        style: textTheme.labelMedium?.copyWith(
+                          color: colorScheme.primary,
+                        ),
+                      ),
                     ],
                   );
                 }
@@ -66,8 +93,9 @@ class _LoginPageState extends State<LoginPage> {
               },
             ),
           ),
-          const SizedBox(height: 16),
-          _ActionCard(
+          const SizedBox(height: 12),
+          _StepCard(
+            step: '2',
             icon: Icons.download_rounded,
             title: l10n.wizardLoginStep2,
             subtitle: l10n.wizardImportHint,
@@ -84,19 +112,22 @@ class _LoginPageState extends State<LoginPage> {
               child: Text(l10n.wizardImportButton),
             ),
           ),
+          const Spacer(flex: 2),
         ],
       ),
     );
   }
 }
 
-class _ActionCard extends StatelessWidget {
+class _StepCard extends StatelessWidget {
+  final String step;
   final IconData icon;
   final String title;
   final String? subtitle;
   final Widget trailing;
 
-  const _ActionCard({
+  const _StepCard({
+    required this.step,
     required this.icon,
     required this.title,
     this.subtitle,
@@ -108,24 +139,34 @@ class _ActionCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: colorScheme.outlineVariant),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 color: colorScheme.primaryContainer,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: colorScheme.onPrimaryContainer),
+              child: Center(
+                child: Text(
+                  step,
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onPrimaryContainer,
+                  ),
+                ),
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
