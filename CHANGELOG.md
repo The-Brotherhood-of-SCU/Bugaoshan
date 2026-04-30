@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+**注意：本次更新有非兼容性变更，请把旧版本卸载后安装新版本，不建议覆盖安装。**
+
 ### Added
 
 ### Changed
