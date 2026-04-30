@@ -43,9 +43,9 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- Home Screen Widgets -->
+        <!-- Home Screen Widgets (Glance) -->
         <receiver
-            android:name=".CourseWidgetProviderSmall"
+            android:name=".CourseWidgetReceiverSmall"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -56,7 +56,7 @@
         </receiver>
 
         <receiver
-            android:name=".CourseWidgetProviderMedium"
+            android:name=".CourseWidgetReceiverMedium"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -67,7 +67,7 @@
         </receiver>
 
         <receiver
-            android:name=".CourseWidgetProviderLarge"
+            android:name=".CourseWidgetReceiverLarge"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -76,11 +76,6 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_large_info" />
         </receiver>
-
-        <service
-            android:name=".CourseWidgetRemoteViewsService"
-            android:exported="false"
-            android:permission="android.permission.BIND_REMOTEVIEWS" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
