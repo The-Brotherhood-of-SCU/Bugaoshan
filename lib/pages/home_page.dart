@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -5,6 +8,7 @@ import 'package:bugaoshan/pages/campus_page.dart';
 import 'package:bugaoshan/pages/course_page.dart';
 import 'package:bugaoshan/pages/profile_page.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/widgets/common/navigation_item.dart';
 
 class HomePage extends StatefulWidget {
@@ -14,11 +18,39 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   int _currentIndex = 0;
   final _courseProvider = getIt<CourseProvider>();
   late AppLocalizations _localizations;
   late List<NavigationItemData> _navigationItems;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _updateWidget();
+    }
+  }
+
+  void _updateWidget() {
+    if (!kIsWeb && Platform.isAndroid) {
+      try {
+        getIt<WidgetUpdateService>().updateWidgetData();
+      } catch (_) {}
+    }
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
