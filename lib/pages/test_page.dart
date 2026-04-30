@@ -6,6 +6,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/release_notes_page.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/services/update_service.dart';
 
@@ -251,6 +252,10 @@ class _TestPageState extends State<TestPage> {
               onPressed: () => _showEnvironmentInfoDialog(context),
             ),
             const SizedBox(height: 32),
+            const _SectionTitle(title: 'Wizard'),
+            const SizedBox(height: 12),
+            const _WizardResetButton(),
+            const SizedBox(height: 32),
             if (_supportsUpdate) ...[
               _SectionTitle(title: localizations.updateToLatest),
               const SizedBox(height: 12),
@@ -419,6 +424,27 @@ class _EnvironmentInfoButton extends StatelessWidget {
         title: Text(AppLocalizations.of(context)!.environmentInfo),
         trailing: const Icon(Icons.chevron_right),
         onTap: onPressed,
+      ),
+    );
+  }
+}
+
+class _WizardResetButton extends StatelessWidget {
+  const _WizardResetButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 2,
+      child: ListTile(
+        leading: const Icon(Icons.auto_awesome),
+        title: const Text('Reset Wizard Status'),
+        subtitle: const Text('Set firstLaunchWizardCompleted to false'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {
+          getIt<AppConfigProvider>().firstLaunchWizardCompleted.value = false;
+          Navigator.of(logicRootContext).pop();
+        },
       ),
     );
   }

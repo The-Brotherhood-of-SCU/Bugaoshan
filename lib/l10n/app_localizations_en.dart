@@ -15,6 +15,58 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selfLanguage => 'English';
 
   @override
+  String get wizardWelcomeTitle => 'Welcome to Bugaoshan';
+
+  @override
+  String get wizardWelcomeDesc =>
+      'Your campus assistant: schedules, grades and campus services in one place';
+
+  @override
+  String get wizardLoginTitle => 'Login & Import Schedule';
+
+  @override
+  String get wizardLoginStep1 => 'Log in with SCU Unified Identity';
+
+  @override
+  String get wizardLoginStep2 => 'Import schedule from academic system';
+
+  @override
+  String get wizardLoginDone => 'Logged in';
+
+  @override
+  String get wizardLoginButton => 'Go to Login';
+
+  @override
+  String get wizardImportButton => 'Import Schedule';
+
+  @override
+  String get wizardImportHint => 'Auto-fetch schedule after login';
+
+  @override
+  String get wizardFeatureTitle => 'Explore More Features';
+
+  @override
+  String get wizardFeatureCourse =>
+      'Course schedule view, multi-schedule management, sharing & export';
+
+  @override
+  String get wizardFeatureCampus =>
+      'Classroom availability, grades, CCYL activities, utility balance';
+
+  @override
+  String get wizardFeatureProfile =>
+      'Theme colors, dark mode, language preferences';
+
+  @override
+  String get onboardingSkip => 'Skip';
+
+  @override
+  String get onboardingNext => 'Next';
+
+  @override
+  String get onboardingStart => 'Get Started';
+
+  @override
   String get course => 'Course';
 
   @override

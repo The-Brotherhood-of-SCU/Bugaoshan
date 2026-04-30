@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/pages/home_page.dart';
+import 'package:bugaoshan/pages/wizard/wizard_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'l10n/app_localizations.dart';
@@ -24,7 +25,6 @@ class MyApp extends StatelessWidget {
   MyApp({super.key});
 
   final AppConfigProvider _appConfig = getIt<AppConfigProvider>();
-  final _home = HomePage();
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +39,11 @@ class MyApp extends StatelessWidget {
         theme: _buildTheme(Brightness.light),
         darkTheme: _buildTheme(Brightness.dark),
         themeMode: ThemeMode.system,
-        home: _home,
+        home: ValueListenableBuilder<bool>(
+          valueListenable: _appConfig.firstLaunchWizardCompleted,
+          builder: (_, completed, _) =>
+              completed ? const HomePage() : const WizardPage(),
+        ),
       ),
     );
   }

@@ -15,6 +15,7 @@ const String _keyShowCourseGrid = 'showCourseGrid';
 const String _keyCourseRowHeight = 'courseRowHeight';
 const String _keyBackgroundImageOpacity = 'backgroundImageOpacity';
 const String _keyBackgroundImagePath = 'backgroundImagePath';
+const String _keyFirstLaunchWizardCompleted = 'firstLaunchWizardCompleted';
 
 class AppConfigProvider {
   final SharedPreferences _sharedPreferences;
@@ -42,6 +43,9 @@ class AppConfigProvider {
     null,
   );
   final ValueNotifier<int> backgroundImageVersion = ValueNotifier<int>(0);
+  final ValueNotifier<bool> firstLaunchWizardCompleted = ValueNotifier<bool>(
+    false,
+  );
 
   void _loadLocale() {
     final localeString = _sharedPreferences.getString(_keyLocale);
@@ -65,6 +69,8 @@ class AppConfigProvider {
     backgroundImagePath.value = _sharedPreferences.getString(
       _keyBackgroundImagePath,
     );
+    firstLaunchWizardCompleted.value =
+        _sharedPreferences.getBool(_keyFirstLaunchWizardCompleted) ?? false;
   }
 
   void _addSaveCallback() {
@@ -112,6 +118,12 @@ class AppConfigProvider {
       } else {
         _sharedPreferences.remove(_keyBackgroundImagePath);
       }
+    });
+    firstLaunchWizardCompleted.addListener(() {
+      _sharedPreferences.setBool(
+        _keyFirstLaunchWizardCompleted,
+        firstLaunchWizardCompleted.value,
+      );
     });
   }
 

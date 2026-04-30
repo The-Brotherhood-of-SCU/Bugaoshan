@@ -15,6 +15,54 @@ class AppLocalizationsZh extends AppLocalizations {
   String get selfLanguage => '中文';
 
   @override
+  String get wizardWelcomeTitle => '欢迎使用不高山上';
+
+  @override
+  String get wizardWelcomeDesc => '你的校园生活助手，一站式查看课表、成绩与校园服务';
+
+  @override
+  String get wizardLoginTitle => '登录与导入课表';
+
+  @override
+  String get wizardLoginStep1 => '完成统一身份认证登录';
+
+  @override
+  String get wizardLoginStep2 => '从教务系统导入课表';
+
+  @override
+  String get wizardLoginDone => '已登录';
+
+  @override
+  String get wizardLoginButton => '去登录';
+
+  @override
+  String get wizardImportButton => '导入课表';
+
+  @override
+  String get wizardImportHint => '登录后可自动获取课表';
+
+  @override
+  String get wizardFeatureTitle => '探索更多功能';
+
+  @override
+  String get wizardFeatureCourse => '课表管理：查看每周课程、多课表管理、分享与导出';
+
+  @override
+  String get wizardFeatureCampus => '校园服务：空闲教室、成绩分析、第二课堂、电费查询';
+
+  @override
+  String get wizardFeatureProfile => '个人中心：主题颜色、深色模式、语言切换';
+
+  @override
+  String get onboardingSkip => '跳过';
+
+  @override
+  String get onboardingNext => '下一步';
+
+  @override
+  String get onboardingStart => '立即体验';
+
+  @override
   String get course => '课程';
 
   @override
