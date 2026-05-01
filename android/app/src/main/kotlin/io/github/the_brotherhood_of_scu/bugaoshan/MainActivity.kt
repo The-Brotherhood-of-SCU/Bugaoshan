@@ -20,6 +20,9 @@ class MainActivity : FlutterActivity() {
         // Register periodic widget update via WorkManager
         WidgetUpdateWorker.enqueuePeriodic(this)
 
+        // Register midnight alarm for day-change widget updates
+        WidgetAlarmManager.registerMidnightAlarm(this)
+
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
