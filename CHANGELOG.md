@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - android可以一键在日历中导入课表
 
 ### Changed
+- 优化余额查询UI
 
 
 ## [0.8.0]
