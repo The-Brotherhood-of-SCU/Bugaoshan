@@ -1183,6 +1183,24 @@ abstract class AppLocalizations {
   /// **'Teacher(s)'**
   String get icsTeacherLabel;
 
+  /// No description provided for @exportScheduleAddToCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Import to Calendar'**
+  String get exportScheduleAddToCalendar;
+
+  /// No description provided for @exportScheduleAddToCalendarSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported to calendar'**
+  String get exportScheduleAddToCalendarSuccess;
+
+  /// No description provided for @exportScheduleAddToCalendarFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed'**
+  String get exportScheduleAddToCalendarFailed;
+
   /// No description provided for @copySuffix.
   ///
   /// In en, this message translates to:

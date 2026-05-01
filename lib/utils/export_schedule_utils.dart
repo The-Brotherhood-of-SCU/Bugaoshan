@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
@@ -59,6 +60,14 @@ Future<void> showExportScheduleSheet(
               title: Text(l10n.exportScheduleAsIcs),
               onTap: () => Navigator.of(sheetContext).pop(ExportAction.ics),
             ),
+            if (Platform.isAndroid)
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                leading: const Icon(Icons.event_available),
+                title: Text(l10n.exportScheduleAddToCalendar),
+                onTap: () =>
+                    Navigator.of(sheetContext).pop(ExportAction.addToCalendar),
+              ),
             const SizedBox(height: 8),
           ],
         ),
@@ -124,6 +133,30 @@ Future<void> showExportScheduleSheet(
       scaffoldMessenger.showSnackBar(
         SnackBar(content: Text(l10n.exportScheduleAsIcsSuccess)),
       );
+      return;
+    case ExportAction.addToCalendar:
+      debugPrint("[showExportScheduleSheet] addToCalendar");
+      try {
+        final icsPath = await exportProvider.saveIcsToCache(l10n.icsTeacherLabel);
+        const channel = MethodChannel('bugaoshan/update');
+        final result = await channel.invokeMethod<String>(
+          'importIcsToCalendar',
+          {'path': icsPath},
+        );
+        if (!context.mounted) return;
+        if (result == 'opened') {
+          scaffoldMessenger.showSnackBar(
+            SnackBar(content: Text(l10n.exportScheduleAddToCalendarSuccess)),
+          );
+        }
+        // If result == 'picker', the system picker is already shown; no snackbar needed.
+      } catch (e) {
+        debugPrint("[showExportScheduleSheet] addToCalendar failed: $e");
+        if (!context.mounted) return;
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text(l10n.exportScheduleAddToCalendarFailed)),
+        );
+      }
       return;
   }
 }

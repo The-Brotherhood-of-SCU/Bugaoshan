@@ -578,6 +578,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get icsTeacherLabel => 'Teacher(s)';
 
   @override
+  String get exportScheduleAddToCalendar => 'Import to Calendar';
+
+  @override
+  String get exportScheduleAddToCalendarSuccess => 'Imported to calendar';
+
+  @override
+  String get exportScheduleAddToCalendarFailed => 'Import failed';
+
+  @override
   String get copySuffix => ' (Copy)';
 
   @override

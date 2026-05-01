@@ -565,6 +565,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get icsTeacherLabel => '教师';
 
   @override
+  String get exportScheduleAddToCalendar => '一键导入到日历';
+
+  @override
+  String get exportScheduleAddToCalendarSuccess => '已导入到日历';
+
+  @override
+  String get exportScheduleAddToCalendarFailed => '导入失败';
+
+  @override
   String get copySuffix => ' (副本)';
 
   @override
