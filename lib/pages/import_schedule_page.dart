@@ -180,8 +180,22 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
       // Save to DB via provider
       await widget.courseProvider.addSchedule(config);
       // Switch is automatic in addSchedule, now add courses
+      // Assign new IDs to avoid PRIMARY KEY conflicts with existing courses
       for (final course in courses) {
-        await widget.courseProvider.addCourse(course);
+        await widget.courseProvider.addCourse(
+          Course(
+            name: course.name,
+            teacher: course.teacher,
+            location: course.location,
+            startWeek: course.startWeek,
+            endWeek: course.endWeek,
+            dayOfWeek: course.dayOfWeek,
+            startSection: course.startSection,
+            endSection: course.endSection,
+            colorValue: course.colorValue,
+            weekType: course.weekType,
+          ),
+        );
       }
 
       if (mounted) {
