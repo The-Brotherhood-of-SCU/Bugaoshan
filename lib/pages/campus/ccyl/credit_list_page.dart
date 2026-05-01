@@ -76,8 +76,8 @@ class _CreditListPageState extends State<CreditListPage> {
         final hour = DateTime.now().hour;
         setState(() {
           _error = (hour >= 0 && hour < 6)
-              ? 'campusNetworkRequired'
-              : 'loadFailed';
+              ? 'campusNetworkRequiredAtNight'
+              : 'ccylActivityLoadFailed';
         });
       }
     } finally {
@@ -186,6 +186,17 @@ class _CreditListPageState extends State<CreditListPage> {
     }
   }
 
+  String _getErrorMessage(AppLocalizations l10n, String errorKey) {
+    switch (errorKey) {
+      case 'ccylActivityLoadFailed':
+        return l10n.ccylActivityLoadFailed;
+      case 'campusNetworkRequiredAtNight':
+        return l10n.campusNetworkRequiredAtNight;
+      default:
+        return l10n.loadFailed;
+    }
+  }
+
   Map<String, double> _statsByType() {
     final stats = <String, double>{};
     for (final c in _credits) {
@@ -207,22 +218,29 @@ class _CreditListPageState extends State<CreditListPage> {
 
     return _error != null
         ? Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  _error == 'campusNetworkRequired'
-                      ? l10n.campusNetworkRequired
-                      : l10n.loadFailed,
-                  style: const TextStyle(color: Colors.red),
-                  textAlign: TextAlign.center,
+            child: GestureDetector(
+              onTap: _loadCredits,
+              child: SizedBox(
+                width: 220,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _getErrorMessage(l10n, _error!),
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _loadCredits,
-                  child: Text(l10n.loadFailed),
-                ),
-              ],
+              ),
             ),
           )
         : _credits.isEmpty && !_loading
