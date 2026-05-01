@@ -60,22 +60,34 @@ class ScuAuthService {
     required String captchaCode,
     required String captchaText,
   }) async {
-    // 1. 获取 SM2 公钥
-    final sm2Resp = await http.post(
-      Uri.parse('$_base/api/public/bff/v1.2/sm2_key'),
-      headers: _headers,
-      body: '{}',
-    );
-
-    final sm2Json = _parseJson(sm2Resp.body, 'sm2_key');
-    final sm2Data = sm2Json['data'] as Map<String, dynamic>?;
+    // 1. 获取 SM2 公钥（服务端偶发 500，加重试）
+    Map<String, dynamic>? sm2Data;
+    String? lastSm2Body;
+    for (int attempt = 0; attempt < 3; attempt++) {
+      final sm2Resp = await http.post(
+        Uri.parse('$_base/api/public/bff/v1.2/sm2_key'),
+        headers: _headers,
+        body: '{}',
+      );
+      lastSm2Body = sm2Resp.body;
+      final sm2Json = _parseJson(sm2Resp.body, 'sm2_key');
+      sm2Data = sm2Json['data'] as Map<String, dynamic>?;
+      if (sm2Data != null &&
+          sm2Data['publicKey'] != null &&
+          sm2Data['code'] != null) {
+        break;
+      }
+      if (attempt < 2) {
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
+    }
     if (sm2Data == null) {
-      throw ScuLoginException('SM2 公钥接口返回异常: ${sm2Resp.body}');
+      throw ScuLoginException('SM2 公钥接口返回异常: $lastSm2Body');
     }
     final publicKey = sm2Data['publicKey']?.toString();
     final sm2Code = sm2Data['code']?.toString();
     if (publicKey == null || sm2Code == null) {
-      throw ScuLoginException('SM2 公钥字段缺失: ${sm2Resp.body}');
+      throw ScuLoginException('SM2 公钥字段缺失: $lastSm2Body');
     }
 
     // 2. SM2 C1C2C3 加密密码
