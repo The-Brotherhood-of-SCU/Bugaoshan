@@ -1,12 +1,14 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/services/ics_service.dart';
+import 'package:path_provider/path_provider.dart';
 
-enum ExportAction { copy, ics }
+enum ExportAction { copy, ics, addToCalendar }
 
 enum ExportResult { success, failed, canceled }
 
@@ -82,5 +84,20 @@ class ExportScheduleProvider {
 
   Uint8List getIcsBytes() {
     return Uint8List.fromList(utf8.encode(_icsContent!));
+  }
+
+  /// Save ICS content to cache directory and return the file path.
+  /// Used for Android one-click calendar import.
+  Future<String> saveIcsToCache(String teacherLabel) async {
+    genIcs(teacherLabel);
+    final cacheDir = await getTemporaryDirectory();
+    final semesterName = _config.semesterName.replaceAll(
+      RegExp(r'[^\w\u4e00-\u9fff]'),
+      '_',
+    );
+    final file = File('${cacheDir.path}/$semesterName.ics');
+    await file.writeAsString(_icsContent!);
+    debugPrint("[saveIcsToCache] ICS saved to ${file.path}");
+    return file.path;
   }
 }
