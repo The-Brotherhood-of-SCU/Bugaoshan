@@ -101,7 +101,7 @@ object WidgetDataLoader {
                 val ss = c.optInt("startSection", 0)
                 val es = c.optInt("endSection", 0)
                 c.put("startTime", formatTime(timeSlots, ss))
-                c.put("endTime", formatTime(timeSlots, es))
+                c.put("endTime", formatTime(timeSlots, es, isEnd = true))
 
                 // Filter out courses that have already ended
                 val endSlot = getSlotEndTime(timeSlots, es)
@@ -256,12 +256,13 @@ object WidgetDataLoader {
         return week.coerceIn(1, totalWeeks)
     }
 
-    private fun formatTime(timeSlots: JSONArray?, section: Int): String {
+    private fun formatTime(timeSlots: JSONArray?, section: Int, isEnd: Boolean = false): String {
         if (timeSlots == null || section < 1 || section > timeSlots.length()) return "--:--"
         val slot = timeSlots.getJSONObject(section - 1)
-        val start = slot.optJSONObject("startTime") ?: return "--:--"
-        val h = start.optInt("hour", 0).toString().padStart(2, '0')
-        val m = start.optInt("minute", 0).toString().padStart(2, '0')
+        val key = if (isEnd) "endTime" else "startTime"
+        val time = slot.optJSONObject(key) ?: return "--:--"
+        val h = time.optInt("hour", 0).toString().padStart(2, '0')
+        val m = time.optInt("minute", 0).toString().padStart(2, '0')
         return "$h:$m"
     }
 
