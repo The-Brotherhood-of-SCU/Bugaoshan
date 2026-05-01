@@ -5,6 +5,10 @@ import 'package:bugaoshan/services/database_service.dart';
 class CourseProvider {
   final DatabaseService _db;
 
+  /// Called after any data mutation that affects displayed courses.
+  /// Set this from outside (e.g., WidgetUpdateService) to avoid circular DI.
+  VoidCallback? onCoursesChanged;
+
   CourseProvider(this._db) {
     _loadData();
   }
@@ -39,6 +43,7 @@ class CourseProvider {
       debugPrint('CourseProvider: failed to load data: $e');
     } finally {
       isLoading.value = false;
+      onCoursesChanged?.call();
     }
   }
 
@@ -93,16 +98,19 @@ class CourseProvider {
   Future<void> addCourse(Course course) async {
     await _db.addCourse(course);
     courses.value = _db.getCourses();
+    onCoursesChanged?.call();
   }
 
   Future<void> updateCourse(Course course) async {
     await _db.updateCourse(course);
     courses.value = _db.getCourses();
+    onCoursesChanged?.call();
   }
 
   Future<void> deleteCourse(String courseId) async {
     await _db.deleteCourse(courseId);
     courses.value = _db.getCourses();
+    onCoursesChanged?.call();
   }
 
   Future<void> updateScheduleConfig(ScheduleConfig config) async {
@@ -110,6 +118,7 @@ class CourseProvider {
     scheduleConfig.value = config;
     allSchedules.value = _db.getAllSchedules();
     currentWeek.value = config.getCurrentWeek();
+    onCoursesChanged?.call();
   }
 
   void updateCurrentWeek(int week) {

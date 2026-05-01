@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">不高山上</string>
+    <string name="widget_name_small">课表 (小)</string>
+    <string name="widget_name_medium">课表 (中)</string>
+    <string name="widget_name_large">课表 (大)</string>
 </resources>

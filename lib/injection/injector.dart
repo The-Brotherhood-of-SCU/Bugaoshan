@@ -10,6 +10,7 @@ import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/database_service.dart';
 import 'package:bugaoshan/services/update_service.dart';
+import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'injector.config.dart';
@@ -78,6 +79,18 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<UpdateService>(() async {
     return UpdateService();
   });
+  getIt.registerSingletonAsync<WidgetUpdateService>(() async {
+    await getIt.isReady<CourseProvider>();
+    final courseProvider = getIt<CourseProvider>();
+    final service = WidgetUpdateService();
+    // Wire up callback so widget updates on data changes
+    courseProvider.onCoursesChanged = () {
+      service.updateWidgetData().catchError((e) {
+        // Ignore widget update errors to prevent unhandled async errors
+      });
+    };
+    return service;
+  });
 }
 
 Future<void> ensureBasicDependencies() async {
@@ -87,5 +100,6 @@ Future<void> ensureBasicDependencies() async {
     getIt.isReady<CcylProvider>(),
     getIt.isReady<GradesProvider>(),
     getIt.isReady<TrainProgramProvider>(),
+    getIt.isReady<WidgetUpdateService>(),
   ]);
 }
