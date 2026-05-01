@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="widget_header_default">#FF2196F3</color>
-    <color name="widget_background">#FFF5F5F5</color>
-    <color name="widget_text_primary">#DE000000</color>
-    <color name="widget_text_secondary">#8A000000</color>
+    <color name="widget_header_light">#0F2196F3</color>
+    <color name="widget_background">#FFFAFAFA</color>
+    <color name="widget_text_primary">#E6000000</color>
+    <color name="widget_text_secondary">#99000000</color>
+    <color name="widget_text_hint">#66000000</color>
     <color name="widget_text_on_primary">#FFFFFFFF</color>
     <color name="widget_card_background">#FFFFFFFF</color>
+    <color name="widget_divider">#0F000000</color>
 </resources>
