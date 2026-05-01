@@ -62,6 +62,14 @@
 
 ---
 
+## 💖 致谢与贡献者
+
+感谢所有为 **不高山上 / Bugaoshan** 做出贡献的开发者与社区成员！
+
+[![Contributors](https://contrib.rocks/image?repo=The-Brotherhood-of-SCU/Bugaoshan)](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/graphs/contributors)
+
+---
+
 ## ⭐ Star History
 
 [![Star History Chart](https://api.star-history.com/chart?repos=The-Brotherhood-of-SCU/Bugaoshan&type=date&legend=top-left)](https://www.star-history.com/?type=date&repos=The-Brotherhood-of-SCU%2FBugaoshan)
