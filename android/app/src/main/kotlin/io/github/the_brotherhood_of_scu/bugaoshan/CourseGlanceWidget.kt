@@ -650,6 +650,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
         val startTime = course.optString("startTime", "")
         val endTime = course.optString("endTime", "")
         val location = course.optString("location", "")
+        val teacher = course.optString("teacher", "")
         val ss = course.optInt("startSection", 0)
         val es = course.optInt("endSection", 0)
         val section = if (ss == es) "第${ss}节" else "第${ss}-${es}节"
@@ -681,7 +682,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     maxLines = 1
                 )
                 Text(
-                    text = "$startTime - $endTime  $section",
+                    text = "$startTime - $endTime  $section" + if (teacher.isNotEmpty()) "  $teacher" else "",
                     style = TextStyle(
                         color = ColorProvider(R.color.widget_text_secondary),
                         fontSize = 11.sp
