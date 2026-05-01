@@ -436,14 +436,14 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 .cornerRadius(16.dp)
                 .background(ColorProvider(R.color.widget_background))
                 .clickable(actionStartActivity(launchIntent))
-                .padding(14.dp),
+                .padding(12.dp),
         ) {
             Text(
                 text = title,
                 style = TextStyle(
                     color = ColorProvider(R.color.widget_header_default),
                     fontWeight = FontWeight.Bold,
-                    fontSize = 17.sp
+                    fontSize = 16.sp
                 ),
                 maxLines = 1
             )
@@ -470,7 +470,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 )
             }
 
-            Spacer(modifier = GlanceModifier.height(12.dp))
+            Spacer(modifier = GlanceModifier.height(10.dp))
 
             if (courses.length() == 0) {
                 Box(
@@ -502,7 +502,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     for (i in 0 until minOf(courses.length(), limit)) {
                         CourseCardLarge(courses.getJSONObject(i))
                         if (i < minOf(courses.length(), limit) - 1) {
-                            Spacer(modifier = GlanceModifier.height(8.dp))
+                            Spacer(modifier = GlanceModifier.height(6.dp))
                         }
                     }
                 }
@@ -516,7 +516,6 @@ class CourseGlanceWidget : GlanceAppWidget() {
     private fun CourseCardSmall(course: JSONObject) {
         val name = course.optString("name", "")
         val startTime = course.optString("startTime", "")
-        val endTime = course.optString("endTime", "")
         val location = course.optString("location", "")
 
         Row(
@@ -524,13 +523,13 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 .fillMaxWidth()
                 .cornerRadius(12.dp)
                 .background(ColorProvider(R.color.widget_card_background))
-                .padding(10.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(8.dp),
+            verticalAlignment = Alignment.Top
         ) {
             Box(
                 modifier = GlanceModifier
                     .width(4.dp)
-                    .height(32.dp)
+                    .height(28.dp)
                     .cornerRadius(2.dp)
                     .background(ColorProvider(R.color.widget_header_default))
             ) {}
@@ -546,22 +545,14 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     maxLines = 1
                 )
                 Text(
-                    text = "$startTime - $endTime",
+                    text = "$startTime  $location",
                     style = TextStyle(
                         color = ColorProvider(R.color.widget_text_secondary),
                         fontSize = 10.sp
                     ),
-                    maxLines = 1
+                    maxLines = 2
                 )
             }
-            Text(
-                text = location,
-                style = TextStyle(
-                    color = ColorProvider(R.color.widget_text_secondary),
-                    fontSize = 10.sp
-                ),
-                maxLines = 1
-            )
         }
     }
 
@@ -623,26 +614,26 @@ class CourseGlanceWidget : GlanceAppWidget() {
         Row(
             modifier = GlanceModifier
                 .fillMaxWidth()
-                .cornerRadius(12.dp)
+                .cornerRadius(10.dp)
                 .background(ColorProvider(R.color.widget_card_background))
-                .padding(12.dp),
+                .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = GlanceModifier
                     .width(4.dp)
-                    .height(44.dp)
+                    .height(36.dp)
                     .cornerRadius(2.dp)
                     .background(ColorProvider(R.color.widget_header_default))
             ) {}
-            Spacer(modifier = GlanceModifier.width(12.dp))
+            Spacer(modifier = GlanceModifier.width(10.dp))
             Column(modifier = GlanceModifier.defaultWeight()) {
                 Text(
                     text = name,
                     style = TextStyle(
                         color = ColorProvider(R.color.widget_text_primary),
                         fontWeight = FontWeight.Medium,
-                        fontSize = 15.sp
+                        fontSize = 14.sp
                     ),
                     maxLines = 1
                 )
@@ -650,7 +641,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     text = "$startTime - $endTime  $section",
                     style = TextStyle(
                         color = ColorProvider(R.color.widget_text_secondary),
-                        fontSize = 12.sp
+                        fontSize = 11.sp
                     ),
                     maxLines = 1
                 )
@@ -658,7 +649,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     text = location,
                     style = TextStyle(
                         color = ColorProvider(R.color.widget_text_secondary),
-                        fontSize = 12.sp
+                        fontSize = 11.sp
                     ),
                     maxLines = 1
                 )
