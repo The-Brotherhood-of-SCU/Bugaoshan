@@ -66,7 +66,6 @@
     "appName": "App Name",
     "version": "Version",
     "gitTag": "Git Tag",
-    "description": "Description",
     "appDescription": "Explore everything, all on the Bugaoshan",
     "contactUs": "Contact Us",
     "developedBy":"Developed by {team}",
@@ -413,6 +412,5 @@
     "scuLoginDisclaimerPwd": "When 'Remember Password' is enabled, your password is encrypted and stored locally using system-level encryption",
     "scuLoginDisclaimerOcr": "Captcha is recognized by a local OCR model",
     "scuLoginDisclaimerPrivacy": "We do not collect any personal information",
-    "openSourceLicense": "License",
     "openSourceLicenseDesc": "This app is open-sourced under AGPL-3.0"
 }

@@ -20,7 +20,6 @@
     "onboardingSkip": "跳过",
     "onboardingNext": "下一步",
     "onboardingStart": "立即体验",
-    "gitTag": "Git 标签",
     "course": "课程",
     "profile": "我的",
     "campus": "校园",
@@ -67,7 +66,6 @@
     "appName": "应用名称",
     "version": "版本",
     "gitTag": "Git 标签",
-    "description": "描述",
     "appDescription": "探索一切，尽在不高山上",
     "contactUs": "联系我们",
     "developedBy":"由 {team} 倾情打造",
@@ -412,6 +410,5 @@
     "balanceQueryNoBinding": "您还没有绑定房间，请先绑定",
     "scuLoginDisclaimerPwd": "当使用记住密码功能时，密码通过系统级加密仅存储在本机",
     "scuLoginDisclaimerOcr": "验证码使用本地OCR模型识别",
-    "scuLoginDisclaimerPrivacy": "我们不会收集任何信息",
-    "openSourceLicense": "开源协议"
+    "scuLoginDisclaimerPrivacy": "我们不会收集任何信息"
 }

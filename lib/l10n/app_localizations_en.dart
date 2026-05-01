@@ -223,9 +223,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gitTag => 'Git Tag';
 
   @override
-  String get description => 'Description';
-
-  @override
   String get appDescription => 'Explore everything, all on the Bugaoshan';
 
   @override
@@ -1252,9 +1249,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get scuLoginDisclaimerPrivacy =>
       'We do not collect any personal information';
-
-  @override
-  String get openSourceLicense => 'License';
 
   @override
   String get openSourceLicenseDesc => 'This app is open-sourced under AGPL-3.0';

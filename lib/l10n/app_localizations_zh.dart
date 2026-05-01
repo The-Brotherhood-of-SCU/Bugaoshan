@@ -216,9 +216,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get gitTag => 'Git 标签';
 
   @override
-  String get description => '描述';
-
-  @override
   String get appDescription => '探索一切，尽在不高山上';
 
   @override
@@ -1220,9 +1217,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get scuLoginDisclaimerPrivacy => '我们不会收集任何信息';
-
-  @override
-  String get openSourceLicense => '开源协议';
 
   @override
   String get openSourceLicenseDesc => 'This app is open-sourced under AGPL-3.0';

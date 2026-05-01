@@ -505,12 +505,6 @@ abstract class AppLocalizations {
   /// **'Git Tag'**
   String get gitTag;
 
-  /// No description provided for @description.
-  ///
-  /// In en, this message translates to:
-  /// **'Description'**
-  String get description;
-
   /// No description provided for @appDescription.
   ///
   /// In en, this message translates to:
@@ -2472,12 +2466,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'We do not collect any personal information'**
   String get scuLoginDisclaimerPrivacy;
-
-  /// No description provided for @openSourceLicense.
-  ///
-  /// In en, this message translates to:
-  /// **'License'**
-  String get openSourceLicense;
 
   /// No description provided for @openSourceLicenseDesc.
   ///
