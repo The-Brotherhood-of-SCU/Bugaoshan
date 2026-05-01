@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - 增加向导页面，引导用户从教务处导入课表
 - 桌面端记住窗口位置和大小，启动时自动恢复
-
+- 添加安卓桌面小组件功能，支持在桌面端显示课表
 
 ### Changed
 

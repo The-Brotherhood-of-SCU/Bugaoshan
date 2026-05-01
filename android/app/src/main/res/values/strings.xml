@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Bugaoshan</string>
+    <string name="widget_name_small">Schedule (Small)</string>
+    <string name="widget_name_medium">Schedule (Medium)</string>
+    <string name="widget_name_large">Schedule (Large)</string>
 </resources>
