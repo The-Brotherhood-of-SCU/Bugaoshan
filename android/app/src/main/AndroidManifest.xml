@@ -33,6 +33,10 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- HyperOS Widget version — must increment on functional changes -->
+        <meta-data
+            android:name="miuiWidgetVersion"
+            android:value="1" />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -46,35 +50,68 @@
         <!-- Home Screen Widgets (Glance) -->
         <receiver
             android:name=".CourseWidgetReceiverSmall"
-            android:exported="true">
+            android:exported="true"
+            android:process=":widgetProvider">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_small_info" />
+            <!-- HyperOS widget support -->
+            <meta-data
+                android:name="miuiWidget"
+                android:value="true" />
+            <meta-data
+                android:name="miuiWidgetRefresh"
+                android:value="exposure" />
+            <meta-data
+                android:name="miuiWidgetRefreshMinInterval"
+                android:value="20000" />
         </receiver>
 
         <receiver
             android:name=".CourseWidgetReceiverMedium"
-            android:exported="true">
+            android:exported="true"
+            android:process=":widgetProvider">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_medium_info" />
+            <!-- HyperOS widget support -->
+            <meta-data
+                android:name="miuiWidget"
+                android:value="true" />
+            <meta-data
+                android:name="miuiWidgetRefresh"
+                android:value="exposure" />
+            <meta-data
+                android:name="miuiWidgetRefreshMinInterval"
+                android:value="20000" />
         </receiver>
 
         <receiver
             android:name=".CourseWidgetReceiverLarge"
-            android:exported="true">
+            android:exported="true"
+            android:process=":widgetProvider">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_large_info" />
+            <!-- HyperOS widget support -->
+            <meta-data
+                android:name="miuiWidget"
+                android:value="true" />
+            <meta-data
+                android:name="miuiWidgetRefresh"
+                android:value="exposure" />
+            <meta-data
+                android:name="miuiWidgetRefreshMinInterval"
+                android:value="20000" />
         </receiver>
     </application>
     <!-- Required to query activities that can process text, see:
