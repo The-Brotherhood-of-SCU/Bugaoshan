@@ -82,24 +82,36 @@ ARB source files in `lib/l10n/app_*.arb`. Generated to `lib/l10n/app_localizatio
 
 ```
 lib/
-├── injection/     # DI setup (GetIt + Injectable)
-├── l10n/           # ARB files + generated localizations
-├── models/         # Data models (Course, SchemeScore, etc.)
-├── pages/          # Screen widgets
-│   └── campus/    # Campus feature modules
-│       ├── balance_query/  # 电费 & 空调余额查询
-│       ├── ccyl/           # 第二课堂 (CCYL)
-│       ├── classroom/      # 空闲教室查询
-│       ├── grades/         # 成绩查询
-│       ├── network_device/ # 校园网设备管理
-│       ├── train_program/  # 培养方案查询
-│       └── services/       # Campus-specific service layer
-├── providers/      # ChangeNotifier state classes
-├── services/       # Business logic & network
-├── utils/          # Constants, crypto, utilities
-├── widgets/        # Shared UI components
-├── app.dart        # MaterialApp configuration
-└── main.dart       # Entry point, DI bootstrap
+├── injection/              # DI setup (GetIt + Injectable)
+├── l10n/                   # ARB files + generated localizations
+├── models/                 # Data models (Course, SchemeScore, etc.)
+├── pages/
+│   ├── about/             # 关于页面
+│   ├── auth/              # 登录认证
+│   ├── campus/            # 校园功能模块
+│   │   ├── balance_query/ # 电费 & 空调余额查询
+│   │   ├── ccyl/          # 第二课堂 (CCYL)
+│   │   ├── classroom/     # 空闲教室查询
+│   │   ├── grades/        # 成绩查询
+│   │   ├── models/        # 校园模块数据模型
+│   │   ├── network_device/# 校园网设备管理
+│   │   ├── services/      # 校园模块专用服务
+│   │   └── train_program/ # 培养方案查询
+│   ├── course/            # 课表管理
+│   ├── settings/          # 设置页面
+│   └── wizard/            # 引导页面
+├── providers/
+│   └── environment_info/  # 环境信息 Provider
+├── services/              # Business logic & network
+├── utils/                 # Constants, crypto, utilities
+├── widget/                # 单数 widget 目录
+├── widgets/               # Shared UI components
+│   ├── common/            # 通用组件
+│   ├── course/            # 课表相关组件
+│   ├── dialog/            # 弹窗组件
+│   └── route/             # 路由工具
+├── app.dart               # MaterialApp configuration
+└── main.dart              # Entry point, DI bootstrap
 ```
 
 ## Notable Implementation Details
@@ -107,3 +119,11 @@ lib/
 - The `ScuAuthService._CookieClient` manually follows HTTP redirects to collect cookies across SSO redirect chains.
 - Grades are cached in SharedPreferences as JSON; on refresh failure with `sessionExpired`, the cached data is kept but user is logged out.
 - `flutter pub run build_runner build --delete-conflicting-outputs` is run in CI before `flutter gen-l10n` — code generation must precede localization generation.
+
+### Build Metadata
+
+CI builds inject git metadata via `--dart-define` flags: `GIT_TAG`, `GIT_COMMIT`, `GIT_COMMIT_DATE`, `BUILD_TIME`. These are extracted by `.github/scripts/git_meta.py` and consumed in the app for version display.
+
+### Release Automation
+
+Release workflow uses Python scripts in `.github/scripts/` for changelog extraction (`release_changelog.py`), release body generation (`release_body.py`), and artifact preparation (`release_prepare.py`). The workflow runs on git tags matching `v*.*.*` or manual dispatch.
