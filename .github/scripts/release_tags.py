@@ -10,7 +10,7 @@ def run(cmd: list[str]) -> str:
 def main():
     current_tag = os.environ.get("VERSION", "").lstrip("v")
     if not current_tag:
-        current_tag = os.environ.get("GITHUB_REF_NAME", "").replace("refs/tags/", "")
+        current_tag = os.environ.get("GITHUB_REF_NAME", "").replace("refs/tags/", "").lstrip("v")
 
     all_tags = run(["git", "tag", "--sort=-version:refname"]).split("\n")
     version_tags = [t for t in all_tags if re.match(r"^v\d+\.\d+\.\d+$", t)]
