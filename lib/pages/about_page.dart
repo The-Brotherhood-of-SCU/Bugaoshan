@@ -4,7 +4,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/utils/open_link.dart'
-    show openDeveloperTeam, openLicense, openProjectRepository;
+    show openDeveloperTeam, openProjectRepository;
 import 'package:bugaoshan/pages/release_notes_page.dart';
 import 'package:bugaoshan/pages/test_page.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
@@ -227,13 +227,13 @@ class _AboutPageState extends State<AboutPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                // const SizedBox(height: 4),
-                // Text(
-                //   localizations.developedBy("The Brotherhood of SCU"),
-                //   style: theme.textTheme.bodyMedium?.copyWith(
-                //     color: onSurfaceVariant,
-                //   ),
-                // ),
+                const SizedBox(height: 4),
+                Text(
+                  localizations.appDescription,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),
@@ -277,16 +277,6 @@ class _AboutPageState extends State<AboutPage> {
                     value: versionProvider.gitTag,
                   ),
                 ],
-                Divider(
-                  height: 1,
-                  indent: 56,
-                  color: theme.dividerColor.withValues(alpha: 0.08),
-                ),
-                _InfoTile(
-                  icon: Icons.description_outlined,
-                  label: localizations.description,
-                  value: localizations.appDescription,
-                ),
               ],
             ),
           ),
@@ -328,18 +318,6 @@ class _AboutPageState extends State<AboutPage> {
                   color: theme.dividerColor.withValues(alpha: 0.08),
                 ),
                 _InfoTile(
-                  icon: Icons.balance_rounded,
-                  label: localizations.openSourceLicense,
-                  value: 'AGPL-3.0',
-                  isLink: true,
-                  onTap: () => openLicense(),
-                ),
-                Divider(
-                  height: 1,
-                  indent: 56,
-                  color: theme.dividerColor.withValues(alpha: 0.08),
-                ),
-                _InfoTile(
                   icon: Icons.update_rounded,
                   label: localizations.checkForUpdates,
                   value: '',
@@ -363,6 +341,16 @@ class _AboutPageState extends State<AboutPage> {
           const SizedBox(height: 24),
 
           // Footer text
+          Center(
+            child: Text(
+              localizations.openSourceLicenseDesc,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: onSurfaceVariant.withValues(alpha: 0.6),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 8),
           Center(
             child: Text(
               'Copyright © 2026 The-Brotherhood-of-SCU',

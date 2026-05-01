@@ -38,7 +38,7 @@
     "borrowed": "Borrowed",
     "period": "Period",
     "loading": "Loading...",
-    "loadFailed": "Load failed, tap to retry",
+    "loadFailed": "Load Failed",
     "campusNetworkRequired": "This feature is only available on campus network. Please connect to campus Wi-Fi or use the school VPN.",
     "campusNetworkRequiredAtNight": "Access is restricted to campus network during 0:00-6:00. Please connect to campus Wi-Fi or use the school VPN.",
     "appOnly": "Available on App only",
@@ -61,7 +61,7 @@
     "materialPicker": "Material",
     "advancedPicker": "Advanced",
     "about": "About",
-    "developmentTeam": "Developer Team",
+    "developmentTeam": "Dev Team",
     "projectInfo": "Project Info",
     "appName": "App Name",
     "version": "Version",
@@ -71,8 +71,8 @@
     "contactUs": "Contact Us",
     "developedBy":"Developed by {team}",
     "externalResources": "External Resources",
-    "projectRepository": "Project Repository",
-    "checkForUpdates": "Check for Updates",
+    "projectRepository": "Repository",
+    "checkForUpdates": "Check Updates",
     "newVersionAvailable": "New Version Available",
     "noUpdateAvailable": "Already on Latest Version",
     "goToReleases": "Go to Releases",
@@ -413,5 +413,6 @@
     "scuLoginDisclaimerPwd": "When 'Remember Password' is enabled, your password is encrypted and stored locally using system-level encryption",
     "scuLoginDisclaimerOcr": "Captcha is recognized by a local OCR model",
     "scuLoginDisclaimerPrivacy": "We do not collect any personal information",
-    "openSourceLicense": "Open Source License"
+    "openSourceLicense": "License",
+    "openSourceLicenseDesc": "This app is open-sourced under AGPL-3.0"
 }

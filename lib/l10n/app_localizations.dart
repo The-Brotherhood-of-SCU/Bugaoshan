@@ -340,7 +340,7 @@ abstract class AppLocalizations {
   /// No description provided for @loadFailed.
   ///
   /// In en, this message translates to:
-  /// **'Load failed, tap to retry'**
+  /// **'Load Failed'**
   String get loadFailed;
 
   /// No description provided for @campusNetworkRequired.
@@ -478,7 +478,7 @@ abstract class AppLocalizations {
   /// No description provided for @developmentTeam.
   ///
   /// In en, this message translates to:
-  /// **'Developer Team'**
+  /// **'Dev Team'**
   String get developmentTeam;
 
   /// No description provided for @projectInfo.
@@ -538,13 +538,13 @@ abstract class AppLocalizations {
   /// No description provided for @projectRepository.
   ///
   /// In en, this message translates to:
-  /// **'Project Repository'**
+  /// **'Repository'**
   String get projectRepository;
 
   /// No description provided for @checkForUpdates.
   ///
   /// In en, this message translates to:
-  /// **'Check for Updates'**
+  /// **'Check Updates'**
   String get checkForUpdates;
 
   /// No description provided for @newVersionAvailable.
@@ -2476,8 +2476,14 @@ abstract class AppLocalizations {
   /// No description provided for @openSourceLicense.
   ///
   /// In en, this message translates to:
-  /// **'Open Source License'**
+  /// **'License'**
   String get openSourceLicense;
+
+  /// No description provided for @openSourceLicenseDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'This app is open-sourced under AGPL-3.0'**
+  String get openSourceLicenseDesc;
 }
 
 class _AppLocalizationsDelegate

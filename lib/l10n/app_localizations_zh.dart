@@ -1223,6 +1223,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get openSourceLicense => '开源协议';
+
+  @override
+  String get openSourceLicenseDesc => 'This app is open-sourced under AGPL-3.0';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

@@ -131,7 +131,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loading => 'Loading...';
 
   @override
-  String get loadFailed => 'Load failed, tap to retry';
+  String get loadFailed => 'Load Failed';
 
   @override
   String get campusNetworkRequired =>
@@ -208,7 +208,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get about => 'About';
 
   @override
-  String get developmentTeam => 'Developer Team';
+  String get developmentTeam => 'Dev Team';
 
   @override
   String get projectInfo => 'Project Info';
@@ -240,10 +240,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get externalResources => 'External Resources';
 
   @override
-  String get projectRepository => 'Project Repository';
+  String get projectRepository => 'Repository';
 
   @override
-  String get checkForUpdates => 'Check for Updates';
+  String get checkForUpdates => 'Check Updates';
 
   @override
   String get newVersionAvailable => 'New Version Available';
@@ -1254,5 +1254,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'We do not collect any personal information';
 
   @override
-  String get openSourceLicense => 'Open Source License';
+  String get openSourceLicense => 'License';
+
+  @override
+  String get openSourceLicenseDesc => 'This app is open-sourced under AGPL-3.0';
 }
