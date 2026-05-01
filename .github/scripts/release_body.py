@@ -3,10 +3,10 @@
 import os
 
 def main():
-    version = os.environ.get("VERSION", "").replace("v", "")
+    version = os.environ.get("VERSION", "").lstrip("v")
     repo = os.environ.get("REPO", "")
     changelog = os.environ.get("CHANGELOG", "")
-    prev = os.environ.get("PREV", "").replace("v", "")
+    prev = os.environ.get("PREV", "").lstrip("v")
 
     body = f"""## ⬇️ 下载 (Downloads)
 - Android: [64位]({repo}/releases/download/v{version}/bugaoshan_{version}_arm64-v8a.apk)
