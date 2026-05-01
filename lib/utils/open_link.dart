@@ -12,3 +12,7 @@ Future<void> openProjectRepository() async {
 Future<void> openDeveloperTeam() async {
   await openLink(orgLink);
 }
+
+Future<void> openLicense() async {
+  await openLink("$appLink/blob/main/LICENSE");
+}

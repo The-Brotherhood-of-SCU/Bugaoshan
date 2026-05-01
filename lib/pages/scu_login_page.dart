@@ -164,91 +164,127 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+
+    final formContent = [
+      const Icon(Icons.school, size: 64, color: Colors.blue),
+      TextFormField(
+        controller: _usernameCtrl,
+        decoration: InputDecoration(
+          labelText: l10n.studentId,
+          prefixIcon: const Icon(Icons.person_outline),
+          border: const OutlineInputBorder(),
+        ),
+        keyboardType: TextInputType.number,
+        validator: (v) =>
+            (v == null || v.trim().isEmpty) ? l10n.studentIdRequired : null,
+      ),
+      TextFormField(
+        controller: _passwordCtrl,
+        decoration: InputDecoration(
+          labelText: l10n.password,
+          prefixIcon: const Icon(Icons.lock_outline),
+          border: const OutlineInputBorder(),
+          suffixIcon: IconButton(
+            icon: Icon(
+              _obscurePassword ? Icons.visibility_off : Icons.visibility,
+            ),
+            onPressed: () =>
+                setState(() => _obscurePassword = !_obscurePassword),
+          ),
+        ),
+        obscureText: _obscurePassword,
+        validator: (v) =>
+            (v == null || v.isEmpty) ? l10n.passwordRequired : null,
+      ),
+      _CaptchaRow(
+        captcha: _captcha,
+        loading: _captchaLoading,
+        controller: _captchaCtrl,
+        onRefresh: _loadCaptcha,
+      ),
+      Row(
+        children: [
+          Checkbox(
+            value: _rememberPassword,
+            onChanged: (v) => setState(() => _rememberPassword = v ?? false),
+          ),
+          Text(l10n.rememberPassword),
+        ],
+      ),
+      if (_errorMsg != null)
+        Text(
+          _errorMsg!,
+          style: TextStyle(color: Theme.of(context).colorScheme.error),
+          textAlign: TextAlign.center,
+        ),
+      FilledButton(
+        onPressed: _loading ? null : _submit,
+        child: _loading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : Text(l10n.loginButton),
+      ),
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _DisclaimerRow('· ${l10n.scuLoginDisclaimerPwd}'),
+          _DisclaimerRow('· ${l10n.scuLoginDisclaimerOcr}'),
+          _DisclaimerRow('· ${l10n.scuLoginDisclaimerPrivacy}'),
+        ],
+      ),
+    ];
+
     return Scaffold(
       appBar: AppBar(title: Text(l10n.scuUnifiedAuth)),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: Form(
-              key: _formKey,
+      body: CustomScrollView(
+        slivers: [
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                spacing: 16,
                 children: [
-                  const Icon(Icons.school, size: 64, color: Colors.blue),
-                  TextFormField(
-                    controller: _usernameCtrl,
-                    decoration: InputDecoration(
-                      labelText: l10n.studentId,
-                      prefixIcon: const Icon(Icons.person_outline),
-                      border: const OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (v) => (v == null || v.trim().isEmpty)
-                        ? l10n.studentIdRequired
-                        : null,
-                  ),
-                  TextFormField(
-                    controller: _passwordCtrl,
-                    decoration: InputDecoration(
-                      labelText: l10n.password,
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      border: const OutlineInputBorder(),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () => setState(
-                          () => _obscurePassword = !_obscurePassword,
+                  const Spacer(flex: 1),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 400),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          spacing: 16,
+                          children: formContent,
                         ),
                       ),
                     ),
-                    obscureText: _obscurePassword,
-                    validator: (v) =>
-                        (v == null || v.isEmpty) ? l10n.passwordRequired : null,
                   ),
-                  _CaptchaRow(
-                    captcha: _captcha,
-                    loading: _captchaLoading,
-                    controller: _captchaCtrl,
-                    onRefresh: _loadCaptcha,
-                  ),
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _rememberPassword,
-                        onChanged: (v) =>
-                            setState(() => _rememberPassword = v ?? false),
-                      ),
-                      Text(l10n.rememberPassword),
-                    ],
-                  ),
-                  if (_errorMsg != null)
-                    Text(
-                      _errorMsg!,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  FilledButton(
-                    onPressed: _loading ? null : _submit,
-                    child: _loading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(l10n.loginButton),
-                  ),
+                  const Spacer(flex: 2),
                 ],
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DisclaimerRow extends StatelessWidget {
+  final String text;
+  const _DisclaimerRow(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 1),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       ),
     );
