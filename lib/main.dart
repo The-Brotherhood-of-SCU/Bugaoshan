@@ -26,6 +26,5 @@ Future<void> main() async {
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     await WindowStateService.create(getIt<SharedPreferences>());
   }
-
   runApp(MyApp());
 }

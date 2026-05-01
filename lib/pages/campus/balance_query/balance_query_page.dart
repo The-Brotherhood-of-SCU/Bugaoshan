@@ -1,3 +1,5 @@
+import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -12,9 +14,7 @@ class BalanceQueryPage extends StatefulWidget {
   State<BalanceQueryPage> createState() => _BalanceQueryPageState();
 }
 
-class _BalanceQueryPageState extends State<BalanceQueryPage>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _BalanceQueryPageState extends State<BalanceQueryPage> {
   late BalanceQueryProvider _provider;
   bool _isInitializing = true;
   String? _initError;
@@ -22,7 +22,6 @@ class _BalanceQueryPageState extends State<BalanceQueryPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _provider = BalanceQueryProvider(getIt());
     _provider.addListener(_onProviderChanged);
     _initProvider();
@@ -68,7 +67,6 @@ class _BalanceQueryPageState extends State<BalanceQueryPage>
 
   @override
   void dispose() {
-    _tabController.dispose();
     _provider.removeListener(_onProviderChanged);
     _provider.dispose();
     super.dispose();
@@ -81,13 +79,6 @@ class _BalanceQueryPageState extends State<BalanceQueryPage>
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.balanceQuery),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: l10n.electricityFee),
-            Tab(text: l10n.acFee),
-          ],
-        ),
         actions: [
           if (_provider.bindings.isNotEmpty)
             PopupMenuButton<int>(
@@ -268,13 +259,7 @@ class _BalanceQueryPageState extends State<BalanceQueryPage>
       );
     }
 
-    return TabBarView(
-      controller: _tabController,
-      children: [
-        _ElectricityTab(provider: _provider),
-        _AcTab(provider: _provider),
-      ],
-    );
+    return _BalanceList(provider: _provider);
   }
 
   Future<void> _showBindDialog() async {
@@ -342,6 +327,81 @@ class _BalanceQueryPageState extends State<BalanceQueryPage>
         await _provider.removeBinding(i);
       }
     }
+  }
+}
+
+class _BalanceList extends StatefulWidget {
+  final BalanceQueryProvider provider;
+
+  const _BalanceList({required this.provider});
+
+  @override
+  State<_BalanceList> createState() => _BalanceListState();
+}
+
+class _BalanceListState extends State<_BalanceList> {
+  @override
+  void initState() {
+    super.initState();
+    widget.provider.addListener(_onProviderChanged);
+  }
+
+  void _onProviderChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    widget.provider.removeListener(_onProviderChanged);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final binding = widget.provider.currentBinding;
+
+    if (binding == null) {
+      return Center(child: Text(l10n.balanceQueryNoBinding));
+    }
+
+    final balanceKey =
+        '${binding.schoolCode}_${binding.regCode}_${binding.unitCode}_${binding.roomNo}';
+
+    return RefreshIndicator(
+      onRefresh: () async {
+        await widget.provider.queryElectricInfo();
+        await widget.provider.queryAcInfo();
+      },
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          _BalanceCard(
+            key: ValueKey('electric_$balanceKey'),
+            provider: widget.provider,
+            balanceType: 2,
+            icon: Icons.electric_bolt,
+            iconColor: Colors.amber,
+            title: l10n.electricityFee,
+            unit: '元',
+            onRefresh: () => widget.provider.queryElectricInfo(),
+            binding: binding,
+          ),
+          const SizedBox(height: 12),
+          _BalanceCard(
+            key: ValueKey('ac_$balanceKey'),
+            provider: widget.provider,
+            balanceType: 1,
+            icon: Icons.ac_unit,
+            iconColor: Colors.lightBlue,
+            title: l10n.acFee,
+            unit: '元',
+            onRefresh: () => widget.provider.queryAcInfo(),
+            binding: binding,
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -550,69 +610,60 @@ class _BalanceCardState extends State<_BalanceCard> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return RefreshIndicator(
-      onRefresh: _forceRefresh,
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: widget.iconColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(widget.icon, color: widget.iconColor, size: 28),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: widget.iconColor.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          widget.icon,
-                          color: widget.iconColor,
-                          size: 28,
+                      Text(
+                        widget.title,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        widget.binding.displayName,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.title,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              widget.binding.displayName,
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurfaceVariant,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (_isLoading)
-                        const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      else
-                        IconButton(
-                          icon: const Icon(Icons.refresh),
-                          onPressed: _forceRefresh,
-                        ),
                     ],
                   ),
-                  const Divider(height: 32),
-                  if (_error != null)
-                    Center(
+                ),
+                if (_isLoading)
+                  const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                else
+                  IconButton(
+                    icon: const Icon(Icons.refresh),
+                    onPressed: _forceRefresh,
+                  ),
+              ],
+            ),
+            const Divider(height: 32),
+            AnimatedSize(
+              duration: appConfigService.cardSizeAnimationDuration.value,
+              curve: appCurve,
+              child: _error != null
+                  ? Center(
                       child: Text(
                         _error!,
                         style: TextStyle(
@@ -620,51 +671,53 @@ class _BalanceCardState extends State<_BalanceCard> {
                         ),
                       ),
                     )
-                  else if (_localInfo == null)
-                    Center(child: Text(l10n.loading))
-                  else ...[
-                    Center(
-                      child: Column(
-                        children: [
-                          Text(
-                            l10n.balance,
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
-                                ),
+                  : _localInfo == null
+                  ? Center(child: Text(l10n.loading))
+                  : Column(
+                      children: [
+                        Center(
+                          child: Column(
+                            children: [
+                              Text(
+                                l10n.balance,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                    ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _localInfo!.balance,
+                                style: Theme.of(context).textTheme.displayMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                    ),
+                              ),
+                              Text(
+                                widget.unit,
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                    ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _localInfo!.balance,
-                            style: Theme.of(context).textTheme.displayMedium
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                          ),
-                          Text(
-                            widget.unit,
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
-                                ),
-                          ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 24),
+                        _infoRow(l10n.roomNumber, _localInfo!.roomNo),
+                        _infoRow(l10n.pricePerUnit, '${_localInfo!.price} 元/度'),
+                      ],
                     ),
-                    const SizedBox(height: 24),
-                    _infoRow(l10n.roomNumber, _localInfo!.roomNo),
-                    _infoRow(l10n.pricePerUnit, '${_localInfo!.price} 元/度'),
-                  ],
-                ],
-              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -923,10 +976,14 @@ class _BindRoomDialogState extends State<_BindRoomDialog> {
               _buildStepIndicator(l10n),
               const SizedBox(height: 16),
               Flexible(
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [_buildStepContent(l10n)],
+                child: AnimatedSize(
+                  duration: appConfigService.cardSizeAnimationDuration.value,
+                  curve: appCurve,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [_buildStepContent(l10n)],
+                    ),
                   ),
                 ),
               ),
@@ -1072,7 +1129,7 @@ class _BindRoomDialogState extends State<_BindRoomDialog> {
 
   Widget _buildCampusSelector(AppLocalizations l10n) {
     if (_isLoading && _campuses.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return placeholder();
     }
 
     return Column(
@@ -1088,6 +1145,7 @@ class _BindRoomDialogState extends State<_BindRoomDialog> {
             onChanged: (value) {
               setState(() {
                 _selectedCampus = value;
+                _step = 1;
               });
               _loadBuildings();
             },
@@ -1097,9 +1155,13 @@ class _BindRoomDialogState extends State<_BindRoomDialog> {
     );
   }
 
+  Widget placeholder() {
+    return const Center(child: CircularProgressIndicator());
+  }
+
   Widget _buildBuildingSelector(AppLocalizations l10n) {
     if (_isLoading && _buildings.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return placeholder();
     }
 
     return Column(
@@ -1118,6 +1180,7 @@ class _BindRoomDialogState extends State<_BindRoomDialog> {
             onChanged: (value) {
               setState(() {
                 _selectedBuilding = value;
+                _step = 2;
               });
               _loadUnits();
             },
@@ -1129,7 +1192,7 @@ class _BindRoomDialogState extends State<_BindRoomDialog> {
 
   Widget _buildUnitSelector(AppLocalizations l10n) {
     if (_isLoading && _units.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return placeholder();
     }
 
     return Column(
@@ -1145,6 +1208,7 @@ class _BindRoomDialogState extends State<_BindRoomDialog> {
             onChanged: (value) {
               setState(() {
                 _selectedUnit = value;
+                _step = _hasUnits ? 3 : 2;
               });
             },
           ),
