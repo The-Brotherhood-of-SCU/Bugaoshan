@@ -33,12 +33,28 @@
 - **更多便捷功能** — 持续迭代中，更多校园实用工具即将上线
 
 <div align="center">
-  <img src="./docs/course.png" width="30%" />
+  <img src="./SCREENSHOT/Screenshot_2026-05-01-11-30-19-788_io.github.the_.png" width="30%" />
   &nbsp;&nbsp;&nbsp;
-  <img src="./docs/campus20260419.png" width="30%" />
+  <img src="./SCREENSHOT/Screenshot_2026-05-01-11-37-43-061_io.github.the_.png" width="30%" />
   &nbsp;&nbsp;&nbsp;
-  <img src="./docs/score.png" width="30%" />
+  <img src="./SCREENSHOT/Screenshot_2026-05-01-11-35-23-215_io.github.the_.png" width="30%" />
 </div>
+<div align="center">
+  <img src="./SCREENSHOT/Screenshot_2026-05-01-11-30-31-665_io.github.the_.png" width="23%" />
+  &nbsp;&nbsp;&nbsp;
+  <img src="./SCREENSHOT/Screenshot_2026-05-01-11-30-58-220_io.github.the_.png" width="23%" />
+  &nbsp;&nbsp;&nbsp;
+  <img src="./SCREENSHOT/Screenshot_2026-05-01-11-31-41-756_io.github.the_.png" width="23%" />
+  &nbsp;&nbsp;&nbsp;
+  <img src="./SCREENSHOT/IMG_20260501_114729.png" width="23%" />
+</div>
+
+<div align="center">
+  <img src="./SCREENSHOT/Screenshot_2026-05-01-10-34-58-337_com.miui.home-.png" width="33%" />
+  &nbsp;&nbsp;&nbsp;
+  <img src="./SCREENSHOT/Screenshot_2026-05-01-10-35-19-389_com.miui.home-.png" width="33%" />
+</div>
+
 
 ## 📥 下载
 
