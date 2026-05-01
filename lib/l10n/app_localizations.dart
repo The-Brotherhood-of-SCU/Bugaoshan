@@ -895,6 +895,30 @@ abstract class AppLocalizations {
   /// **'Automatically calculates the semester start date based on the current week'**
   String get setCurrentWeekHint;
 
+  /// No description provided for @autoFetchCurrentWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto Fetch Current Week'**
+  String get autoFetchCurrentWeek;
+
+  /// No description provided for @autoFetchCurrentWeekHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetch current teaching week from academic system'**
+  String get autoFetchCurrentWeekHint;
+
+  /// No description provided for @fetchingCurrentWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching...'**
+  String get fetchingCurrentWeek;
+
+  /// No description provided for @pleaseLoginFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Please login to academic system first'**
+  String get pleaseLoginFirst;
+
   /// No description provided for @semesterEndDate.
   ///
   /// In en, this message translates to:

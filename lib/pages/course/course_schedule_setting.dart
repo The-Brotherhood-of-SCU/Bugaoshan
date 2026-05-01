@@ -5,6 +5,9 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/course/time_slot_setting_page.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/services/scu_auth_service.dart';
+import 'package:bugaoshan/utils/session_expiry_handler.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 class CourseScheduleSetting extends StatefulWidget {
@@ -16,6 +19,7 @@ class CourseScheduleSetting extends StatefulWidget {
 
 class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
   final courseProvider = getIt<CourseProvider>();
+  final authProvider = getIt<ScuAuthProvider>();
 
   late DateTime _startDate;
   late int _totalWeeks;
@@ -30,6 +34,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
   late bool _showLocation;
   late bool _showWeekend;
   late bool _showNonCurrentWeekCourses;
+  bool _fetchingCurrentWeek = false;
 
   void _loadConfig() {
     final config = courseProvider.scheduleConfig.value;
@@ -52,6 +57,42 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
   void initState() {
     super.initState();
     _loadConfig();
+  }
+
+  Future<void> _fetchCurrentWeek() async {
+    if (!authProvider.isLoggedIn) return;
+    setState(() => _fetchingCurrentWeek = true);
+    try {
+      final week = await authProvider.service.fetchCurrentWeek();
+      if (!mounted) return;
+      // 根据获取到的周数反推学期开始日期
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final currentMonday = today.toMonday();
+      final newStartDate = currentMonday.subtract(
+        Duration(days: (week - 1) * 7),
+      );
+      setState(() {
+        _startDate = newStartDate;
+      });
+      _save();
+    } on ScuLoginException catch (e) {
+      if (!mounted) return;
+      if (e.sessionExpired) {
+        await SessionExpiryHandler.handle(authProvider, context: context);
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    } finally {
+      if (mounted) setState(() => _fetchingCurrentWeek = false);
+    }
   }
 
   @override
@@ -79,6 +120,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
               onTap: () => _pickDate(context),
             ),
             _buildSetCurrentWeekField(context, l10n),
+            _buildAutoFetchWeekButton(context, l10n),
             _buildTotalWeeksPicker(context, l10n),
             const Divider(),
             // Time slots
@@ -196,6 +238,58 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
             l10n.currentWeek(currentWeek),
             style: TextStyle(color: Theme.of(context).colorScheme.primary),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAutoFetchWeekButton(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
+    final isLoggedIn = authProvider.isLoggedIn;
+    return StyledCard(
+      onTap: isLoggedIn && !_fetchingCurrentWeek ? _fetchCurrentWeek : null,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.autoFetchCurrentWeek,
+                  style: TextStyle(
+                    color: isLoggedIn
+                        ? null
+                        : Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  isLoggedIn
+                      ? l10n.autoFetchCurrentWeekHint
+                      : l10n.pleaseLoginFirst,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (_fetchingCurrentWeek)
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          else
+            Icon(
+              Icons.download,
+              color: isLoggedIn
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.outline,
+            ),
         ],
       ),
     );
