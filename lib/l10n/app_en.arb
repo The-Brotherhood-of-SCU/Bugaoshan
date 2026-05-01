@@ -21,6 +21,7 @@
     "loading": "Loading...",
     "loadFailed": "Load failed, tap to retry",
     "campusNetworkRequired": "This feature is only available on campus network. Please connect to campus Wi-Fi or use the school VPN.",
+    "campusNetworkRequiredAtNight": "Access is restricted to campus network during 0:00-6:00. Please connect to campus Wi-Fi or use the school VPN.",
     "appOnly": "Available on App only",
     "softwareSetting": "Software Setting",
     "followSystem": "Follow System",

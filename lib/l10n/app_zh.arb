@@ -22,6 +22,7 @@
     "loading": "加载中...",
     "loadFailed": "加载失败，点击重试",
     "campusNetworkRequired": "该功能仅限校园网访问，请连接校园网或使用学校 VPN 后重试",
+    "campusNetworkRequiredAtNight": "该时段（0:00-6:00）仅限校园网访问，请连接校园网或使用学校 VPN 后重试",
     "appOnly": "仅 App 端可使用",
     "softwareSetting": "软件设置",
     "followSystem": "跟随系统",

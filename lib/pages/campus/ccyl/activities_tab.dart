@@ -76,7 +76,7 @@ class _ActivitiesTabState extends State<ActivitiesTab> {
         final hour = DateTime.now().hour;
         setState(() {
           _error = (hour >= 0 && hour < 6)
-              ? 'campusNetworkRequired'
+              ? 'campusNetworkRequiredAtNight'
               : 'ccylActivityLoadFailed';
         });
       }
@@ -93,8 +93,8 @@ class _ActivitiesTabState extends State<ActivitiesTab> {
     switch (errorKey) {
       case 'ccylActivityLoadFailed':
         return l10n.ccylActivityLoadFailed;
-      case 'campusNetworkRequired':
-        return l10n.campusNetworkRequired;
+      case 'campusNetworkRequiredAtNight':
+        return l10n.campusNetworkRequiredAtNight;
       default:
         return l10n.loadFailed;
     }
@@ -134,19 +134,29 @@ class _ActivitiesTabState extends State<ActivitiesTab> {
         Expanded(
           child: _error != null
               ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        _getErrorMessage(l10n, _error!),
-                        style: TextStyle(color: Colors.red),
+                  child: GestureDetector(
+                    onTap: _loadActivities,
+                    child: SizedBox(
+                      width: 220,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: 48,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _getErrorMessage(l10n, _error!),
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadActivities,
-                        child: Text(l10n.loadFailed),
-                      ),
-                    ],
+                    ),
                   ),
                 )
               : _activities.isEmpty && !_loading
