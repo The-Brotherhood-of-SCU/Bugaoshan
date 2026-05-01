@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/pages/time_slot_setting_page.dart';
+import 'package:bugaoshan/pages/course/time_slot_setting_page.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 
