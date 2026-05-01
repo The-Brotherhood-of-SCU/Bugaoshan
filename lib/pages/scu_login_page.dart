@@ -128,6 +128,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       if (!logicRootContext.mounted) return;
       Navigator.of(logicRootContext).pop(true);
     } on ScuLoginException catch (e) {
+      debugPrint('Login failed: ${e.message} (sessionExpired=${e.sessionExpired})');
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       setState(() => _errorMsg = _localizeLoginError(e, l10n));
@@ -157,6 +158,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
         }
         return l10n.loginFailed;
       default:
+        debugPrint('Unlocalized login error message: ${e.message}');
         return l10n.loginFailed;
     }
   }
