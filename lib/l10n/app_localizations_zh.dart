@@ -417,6 +417,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get setCurrentWeekHint => '将根据当前周数自动推算学期开始日期';
 
   @override
+  String get autoFetchCurrentWeek => '自动获取当前周数';
+
+  @override
+  String get autoFetchCurrentWeekHint => '从教务系统获取当前教学周';
+
+  @override
+  String get fetchingCurrentWeek => '正在获取...';
+
+  @override
+  String get pleaseLoginFirst => '请先登录教务系统';
+
+  @override
   String get semesterEndDate => '学期结束日期';
 
   @override

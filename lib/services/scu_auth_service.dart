@@ -191,6 +191,34 @@ class ScuAuthService {
     return client;
   }
 
+  /// 从教务系统首页获取当前教学周数
+  Future<int> fetchCurrentWeek() async {
+    final client = await bindSession();
+    try {
+      final resp = await client.get(
+        Uri.parse('http://zhjw.scu.edu.cn/'),
+        headers: {
+          'Accept': 'text/html,*/*',
+          'Referer': 'http://zhjw.scu.edu.cn/',
+          'User-Agent': _headers['User-Agent']!,
+        },
+      );
+      final body = resp.body.trim();
+      if (body.startsWith('<html') && body.contains('login') ||
+          resp.statusCode == 302) {
+        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
+      }
+      // 匹配 "2025-2026 春  第8周   星期五" 中的周数
+      final match = RegExp(r'第(\d+)周').firstMatch(body);
+      if (match == null) {
+        throw ScuLoginException('无法获取当前周数，请检查教务系统状态');
+      }
+      return int.parse(match.group(1)!);
+    } finally {
+      client.close();
+    }
+  }
+
   /// 获取历年学期列表（需要先登录），返回 [{value: '2025-2026-2-1', label: '2025-2026学年春(当前)'}, ...]
   Future<List<({String value, String label})>> fetchSemesters() async {
     final client = await bindSession();
