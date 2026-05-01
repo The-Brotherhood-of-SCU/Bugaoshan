@@ -110,6 +110,16 @@ object WidgetDataLoader {
                     if (currentTimeMinutes >= endMinutes) continue
                 }
 
+                // Mark course status: inProgress or upcoming
+                val startSlot = getSlotStartTime(timeSlots, ss)
+                if (startSlot != null && endSlot != null) {
+                    val startMinutes = startSlot.first * 60 + startSlot.second
+                    val endMinutes = endSlot.first * 60 + endSlot.second
+                    c.put("status", if (currentTimeMinutes in startMinutes until endMinutes) "inProgress" else "upcoming")
+                } else {
+                    c.put("status", "upcoming")
+                }
+
                 filteredCourses.put(c)
             }
             courses = filteredCourses
@@ -255,6 +265,13 @@ object WidgetDataLoader {
         return "$h:$m"
     }
 
+    private fun getSlotStartTime(timeSlots: JSONArray?, section: Int): Pair<Int, Int>? {
+        if (timeSlots == null || section < 1 || section > timeSlots.length()) return null
+        val slot = timeSlots.getJSONObject(section - 1)
+        val start = slot.optJSONObject("startTime") ?: return null
+        return Pair(start.optInt("hour", 0), start.optInt("minute", 0))
+    }
+
     private fun getSlotEndTime(timeSlots: JSONArray?, section: Int): Pair<Int, Int>? {
         if (timeSlots == null || section < 1 || section > timeSlots.length()) return null
         val slot = timeSlots.getJSONObject(section - 1)
@@ -300,6 +317,32 @@ class CourseGlanceWidget : GlanceAppWidget() {
         val week = data?.weekText ?: ""
         val emptyText = data?.emptyText ?: "今天没有课程"
 
+        // Pick courses to show: current + next if in class, otherwise next 2 upcoming
+        val displayCourses = mutableListOf<JSONObject>()
+        var foundInProgress = false
+        for (i in 0 until courses.length()) {
+            val c = courses.getJSONObject(i)
+            val status = c.optString("status", "upcoming")
+            if (status == "inProgress" && !foundInProgress) {
+                displayCourses.add(c)
+                foundInProgress = true
+            } else if (status == "upcoming") {
+                displayCourses.add(c)
+            }
+            if (displayCourses.size >= 2) break
+        }
+        // If no in-progress course, ensure we show up to 2 upcoming courses
+        if (!foundInProgress) {
+            displayCourses.clear()
+            for (i in 0 until courses.length()) {
+                val c = courses.getJSONObject(i)
+                if (c.optString("status", "upcoming") == "upcoming") {
+                    displayCourses.add(c)
+                }
+                if (displayCourses.size >= 2) break
+            }
+        }
+
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
@@ -328,7 +371,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
 
             Spacer(modifier = GlanceModifier.height(8.dp))
 
-            if (courses.length() == 0) {
+            if (displayCourses.isEmpty()) {
                 Box(
                     modifier = GlanceModifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -342,10 +385,9 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     )
                 }
             } else {
-                val limit = 2
-                for (i in 0 until minOf(courses.length(), limit)) {
-                    CourseCardSmall(courses.getJSONObject(i))
-                    if (i < minOf(courses.length(), limit) - 1) {
+                for (i in displayCourses.indices) {
+                    CourseCardSmall(displayCourses[i])
+                    if (i < displayCourses.size - 1) {
                         Spacer(modifier = GlanceModifier.height(6.dp))
                     }
                 }
