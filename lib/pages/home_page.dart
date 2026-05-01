@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus_page.dart';
-import 'package:bugaoshan/pages/course_page.dart';
+import 'package:bugaoshan/pages/course/course_page.dart';
 import 'package:bugaoshan/pages/profile_page.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';

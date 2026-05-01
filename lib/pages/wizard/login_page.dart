@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/pages/import_schedule_page.dart';
-import 'package:bugaoshan/pages/scu_login_page.dart';
+import 'package:bugaoshan/pages/course/import_schedule_page.dart';
+import 'package:bugaoshan/pages/auth/scu_login_page.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
