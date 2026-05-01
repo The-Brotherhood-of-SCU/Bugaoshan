@@ -18,6 +18,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Fetch all tags
+        run: git fetch --tags --force
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -32,15 +35,16 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Set up Python 3
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.12"
+
       - name: Extract git metadata
         id: git_meta
-        run: |
-          TAG="${GITHUB_REF_NAME}"
-          if [[ "$TAG" == refs/heads/* ]]; then TAG=""; fi
-          echo "GIT_TAG=${TAG}" >> $GITHUB_OUTPUT
-          echo "GIT_COMMIT=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-          echo "GIT_COMMIT_DATE=$(git log -1 --format="%ci")" >> $GITHUB_OUTPUT
-          echo "BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S%z")" >> $GITHUB_OUTPUT
+        run: python .github/scripts/git_meta.py
+        env:
+          VERSION: ${{ github.event.inputs.version }}
 
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs || true
@@ -80,6 +84,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Fetch all tags
+        run: git fetch --tags --force
+        shell: bash
+
       - uses: subosito/flutter-action@v2.18.0
         with:
           flutter-version: "3.41.6"
@@ -89,15 +97,16 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Set up Python 3
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.12"
+
       - name: Extract git metadata
         id: git_meta
-        run: |
-          TAG="${GITHUB_REF_NAME}"
-          if [[ "$TAG" == refs/heads/* ]]; then TAG=""; fi
-          echo "GIT_TAG=${TAG}" >> $GITHUB_OUTPUT
-          echo "GIT_COMMIT=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-          echo "GIT_COMMIT_DATE=$(git log -1 --format="%ci")" >> $GITHUB_OUTPUT
-          echo "BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S%z")" >> $GITHUB_OUTPUT
+        run: python .github/scripts/git_meta.py
+        env:
+          VERSION: ${{ github.event.inputs.version }}
 
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs || true
@@ -112,6 +121,7 @@ jobs:
             --dart-define=GIT_COMMIT=${{ steps.git_meta.outputs.GIT_COMMIT }} \
             --dart-define=GIT_COMMIT_DATE=${{ steps.git_meta.outputs.GIT_COMMIT_DATE }} \
             --dart-define=BUILD_TIME=${{ steps.git_meta.outputs.BUILD_TIME }}
+        shell: bash
 
       - name: Archive Windows Release
         run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath
@@ -129,6 +139,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Fetch all tags
+        run: git fetch --tags --force
+
       - name: Install Dependencies
         run: |
           sudo apt-get update
@@ -143,15 +156,16 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Set up Python 3
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.12"
+
       - name: Extract git metadata
         id: git_meta
-        run: |
-          TAG="${GITHUB_REF_NAME}"
-          if [[ "$TAG" == refs/heads/* ]]; then TAG=""; fi
-          echo "GIT_TAG=${TAG}" >> $GITHUB_OUTPUT
-          echo "GIT_COMMIT=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-          echo "GIT_COMMIT_DATE=$(git log -1 --format="%ci")" >> $GITHUB_OUTPUT
-          echo "BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S%z")" >> $GITHUB_OUTPUT
+        run: python .github/scripts/git_meta.py
+        env:
+          VERSION: ${{ github.event.inputs.version }}
 
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs || true
@@ -209,107 +223,37 @@ jobs:
           name: linux-release
           path: linux-release
 
+      - name: Set up Python 3
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.12"
+
       - name: Get version and tags
         id: vars
-        run: |
-          CURRENT_TAG="${{ github.event.inputs.version }}"
-          if [ -z "$CURRENT_TAG" ]; then
-            CURRENT_TAG="${GITHUB_REF_NAME}"
-          fi
-          echo "tag=${CURRENT_TAG}" >> "$GITHUB_OUTPUT"
-
-          PREV_TAG=$(git tag --sort=-version:refname \
-            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
-            | grep -v "^${CURRENT_TAG}$" \
-            | head -n 1 || true)
-
-          if [ -z "$PREV_TAG" ]; then
-            PREV_TAG=$(git rev-list --max-parents=0 HEAD)
-            echo "range=${PREV_TAG}..HEAD" >> "$GITHUB_OUTPUT"
-            echo "prev=${PREV_TAG:0:7} (initial commit)" >> "$GITHUB_OUTPUT"
-          else
-            echo "range=${PREV_TAG}..HEAD" >> "$GITHUB_OUTPUT"
-            echo "prev=${PREV_TAG}" >> "$GITHUB_OUTPUT"
-          fi
+        run: python .github/scripts/release_tags.py
+        env:
+          VERSION: ${{ github.event.inputs.version }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
 
       - name: Extract changelog
         id: changelog
-        run: |
-          python3 - <<'PYEOF'
-          import os, re
-
-          version = os.environ.get('VERSION', '').lstrip('v')
-
-          with open('CHANGELOG.md', 'r', encoding='utf-8') as f:
-              content = f.read()
-
-          lines = content.split('\n')
-          start_idx = -1
-          end_idx = len(lines)
-
-          # Match ## [version] or ## version (optionally with date)
-          pattern = rf'^##\s*\[?{re.escape(version)}\]?(?:\s*-\s*\d{{4}}-\d{{2}}-\d{{2}})?\s*$'
-
-          for i, line in enumerate(lines):
-              if re.match(pattern, line.strip(), re.IGNORECASE):
-                  start_idx = i
-                  break
-
-          if start_idx == -1:
-              changelog = "*No changelog entry for this version.*"
-          else:
-              for i in range(start_idx + 1, len(lines)):
-                  if re.match(r'^##\s', lines[i].strip()):
-                      end_idx = i
-                      break
-
-              changelog_lines = lines[start_idx + 1:end_idx]
-              while changelog_lines and changelog_lines[0].strip() == '':
-                  changelog_lines.pop(0)
-              while changelog_lines and changelog_lines[-1].strip() == '':
-                  changelog_lines.pop()
-
-              changelog = '\n'.join(changelog_lines) if changelog_lines else "*No changelog entry for this version.*"
-
-          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-              f.write("changelog<<CHANGELOG_EOF\n")
-              f.write(changelog + "\n")
-              f.write("CHANGELOG_EOF\n")
-          PYEOF
+        run: python .github/scripts/release_changelog.py
         env:
           VERSION: ${{ steps.vars.outputs.tag }}
 
       - name: Build release body
         id: release_body
-        run: |
-          VERSION="${{ steps.vars.outputs.tag }}"
-          REPO="https://github.com/${{ github.repository }}"
-
-          {
-            echo "body<<EOF"
-            echo "## ⬇️ 下载 (Downloads)"
-            echo "- Android: [64位]($REPO/releases/download/$VERSION/bugaoshan_${VERSION}_arm64-v8a.apk)"
-            echo "- Windows: [x64 Zip]($REPO/releases/download/$VERSION/bugaoshan_${VERSION}_windows_x64.zip)"
-            echo "- Linux: [x64 Tar.gz]($REPO/releases/download/$VERSION/bugaoshan_${VERSION}_linux_x64.tar.gz)"
-            echo ""
-            echo "> 💡 **Note**: 当前项目优先保障 Android 端的稳定与体验。Windows 和 Linux 版本可能存在部分兼容性或体验问题。"
-            echo ""
-            echo "${{ steps.changelog.outputs.changelog }}"
-            echo ""
-            echo "**Full diff:** $REPO/compare/${{ steps.vars.outputs.prev }}...${{ steps.vars.outputs.tag }}"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
+        run: python .github/scripts/release_body.py
+        env:
+          VERSION: ${{ steps.vars.outputs.tag }}
+          REPO: https://github.com/${{ github.repository }}
+          CHANGELOG: ${{ steps.changelog.outputs.changelog }}
+          PREV: ${{ steps.vars.outputs.prev }}
 
       - name: Prepare release files
-        run: |
-          VERSION="${{ steps.vars.outputs.tag }}"
-          for file in android-apk/*.apk; do
-            filename=$(basename -- "$file")
-            arch=$(echo $filename | sed 's/app-//' | sed 's/-release.apk//')
-            cp "$file" "bugaoshan_${VERSION}_${arch}.apk"
-          done
-          cp windows-release/windows-release.zip "bugaoshan_${VERSION}_windows_x64.zip"
-          cp linux-release/linux-release.tar.gz "bugaoshan_${VERSION}_linux_x64.tar.gz"
+        run: python .github/scripts/release_prepare.py
+        env:
+          VERSION: ${{ steps.vars.outputs.tag }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

@@ -5,7 +5,7 @@
 [![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?logo=dart&logoColor=white)](https://dart.dev)
 [![License](https://img.shields.io/badge/License-AGPL3.0-green.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Windows-blue)](https://flutter.dev)
+[![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Android%20%7C%20Windows-blue)](https://flutter.dev)
 
 > 川大学生专属校园助手
 

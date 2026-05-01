@@ -15,6 +15,67 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selfLanguage => 'English';
 
   @override
+  String get wizardWelcomeTitle => 'Welcome to Bugaoshan';
+
+  @override
+  String get wizardWelcomeDesc =>
+      'Your campus assistant: schedules, grades and campus services in one place';
+
+  @override
+  String get wizardLoginTitle => 'Login & Import Schedule';
+
+  @override
+  String get wizardLoginStep1 => 'Log in with SCU Unified Identity';
+
+  @override
+  String get wizardLoginStep2 => 'Import schedule from academic system';
+
+  @override
+  String get wizardLoginDone => 'Logged in';
+
+  @override
+  String get wizardLoginButton => 'Go to Login';
+
+  @override
+  String get wizardImportButton => 'Import Schedule';
+
+  @override
+  String get wizardImportHint => 'Auto-fetch schedule after login';
+
+  @override
+  String get wizardFeatureTitle => 'Explore More Features';
+
+  @override
+  String get wizardFeatureCourse => 'Course Schedule';
+
+  @override
+  String get wizardFeatureCourseDesc =>
+      'View weekly classes, manage multiple schedules, import from academic system, share and export as calendar files';
+
+  @override
+  String get wizardFeatureCampus => 'Campus Services';
+
+  @override
+  String get wizardFeatureCampusDesc =>
+      'Check classroom availability and grades, join CCYL activities, query utility balance, manage network devices';
+
+  @override
+  String get wizardFeatureProfile => 'Profile';
+
+  @override
+  String get wizardFeatureProfileDesc =>
+      'Log in with SCU Unified Identity, bind CCYL account, customize theme colors, dark mode and language preferences';
+
+  @override
+  String get onboardingSkip => 'Skip';
+
+  @override
+  String get onboardingNext => 'Next';
+
+  @override
+  String get onboardingStart => 'Get Started';
+
+  @override
   String get course => 'Course';
 
   @override
@@ -1170,4 +1231,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get balanceQueryNoBinding =>
       'You haven\'t bound any room yet, please bind first';
+
+  @override
+  String get scuLoginDisclaimerPwd =>
+      'When \'Remember Password\' is enabled, your password is encrypted and stored locally using system-level encryption';
+
+  @override
+  String get scuLoginDisclaimerOcr =>
+      'Captcha is recognized by a local OCR model';
+
+  @override
+  String get scuLoginDisclaimerPrivacy =>
+      'We do not collect any personal information';
+
+  @override
+  String get openSourceLicense => 'Open Source License';
 }

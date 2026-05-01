@@ -16,6 +16,35 @@ class CancelToken {
 
 class UpdateCancelledException implements Exception {}
 
+enum UpdateCheckStatus { initial, checking, noUpdate, hasUpdate, error }
+
+class UpdateCheckResult {
+  final UpdateCheckStatus status;
+  final ReleaseInfo? release;
+  final String? error;
+
+  const UpdateCheckResult._(this.status, {this.release, this.error});
+
+  factory UpdateCheckResult.initial() =>
+      const UpdateCheckResult._(UpdateCheckStatus.initial);
+  factory UpdateCheckResult.checking() =>
+      const UpdateCheckResult._(UpdateCheckStatus.checking);
+  factory UpdateCheckResult.noUpdate() =>
+      const UpdateCheckResult._(UpdateCheckStatus.noUpdate);
+  factory UpdateCheckResult.hasUpdate(ReleaseInfo release) =>
+      UpdateCheckResult._(UpdateCheckStatus.hasUpdate, release: release);
+  factory UpdateCheckResult.error(String error) =>
+      UpdateCheckResult._(UpdateCheckStatus.error, error: error);
+
+  bool get hasUpdate => status == UpdateCheckStatus.hasUpdate;
+  bool get checking => status == UpdateCheckStatus.checking;
+  bool get noUpdate => status == UpdateCheckStatus.noUpdate;
+  String? get version => release?.tagName;
+  String? get downloadUrl => release?.downloadUrl;
+  bool get isPrerelease => release?.isPrerelease ?? false;
+  String? get releaseNotes => release?.body;
+}
+
 class UpdateService {
   static const _pubspecUrl =
       'https://raw.githubusercontent.com/The-Brotherhood-of-SCU/Bugaoshan/main/pubspec.yaml';
@@ -58,6 +87,7 @@ class UpdateService {
       if (response.body.isEmpty) return null;
       final data = jsonDecode(response.body);
       final tagName = data['tag_name'] as String;
+      final isPrerelease = data['prerelease'] == true;
       final assets = data['assets'] as List<dynamic>;
       for (final asset in assets) {
         final name = asset['name'] as String;
@@ -65,6 +95,7 @@ class UpdateService {
           return ReleaseInfo(
             tagName: tagName,
             downloadUrl: asset['browser_download_url'] as String,
+            isPrerelease: isPrerelease,
             body: data['body'] as String?,
           );
         }
@@ -115,6 +146,32 @@ class UpdateService {
       if (latest[i] < current[i]) return false;
     }
     return false;
+  }
+
+  Future<UpdateCheckResult> checkStableUpdate(String currentVersion) async {
+    try {
+      final latest = await getLatestReleaseFromGitHub();
+      if (latest != null &&
+          latest.tagName != null &&
+          hasUpdate(currentVersion, latest.tagName!)) {
+        return UpdateCheckResult.hasUpdate(latest);
+      }
+      return UpdateCheckResult.noUpdate();
+    } catch (e) {
+      return UpdateCheckResult.error(e.toString());
+    }
+  }
+
+  Future<UpdateCheckResult> checkPreviewUpdate(String currentVersion) async {
+    try {
+      final release = await getLatestPrereleaseFromGitHub();
+      if (release.tagName != null && release.downloadUrl != null) {
+        return UpdateCheckResult.hasUpdate(release);
+      }
+      return UpdateCheckResult.noUpdate();
+    } catch (e) {
+      return UpdateCheckResult.error(e.toString());
+    }
   }
 
   List<int>? _parseVersion(String version) {

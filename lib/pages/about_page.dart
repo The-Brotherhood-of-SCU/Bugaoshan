@@ -3,7 +3,8 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
-import 'package:bugaoshan/utils/open_link.dart';
+import 'package:bugaoshan/utils/open_link.dart'
+    show openDeveloperTeam, openLicense, openProjectRepository;
 import 'package:bugaoshan/pages/release_notes_page.dart';
 import 'package:bugaoshan/pages/test_page.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
@@ -19,10 +20,13 @@ class AboutPage extends StatefulWidget {
 class _AboutPageState extends State<AboutPage> {
   final versionProvider = getIt<AppInfoProvider>();
   final updateService = UpdateService();
+  bool _isCheckingUpdate = false;
 
   Future<void> _checkForUpdates() async {
+    if (_isCheckingUpdate) return;
     final localizations = AppLocalizations.of(context)!;
 
+    setState(() => _isCheckingUpdate = true);
     try {
       final latest = await updateService.getLatestReleaseFromGitHub();
       if (!mounted) return;
@@ -97,6 +101,8 @@ class _AboutPageState extends State<AboutPage> {
           content: localizations.loadFailed,
         );
       }
+    } finally {
+      if (mounted) setState(() => _isCheckingUpdate = false);
     }
   }
 
@@ -301,6 +307,7 @@ class _AboutPageState extends State<AboutPage> {
                   icon: Icons.code_rounded,
                   label: localizations.projectRepository,
                   value: 'GitHub',
+                  isLink: true,
                   onTap: () => openProjectRepository(),
                 ),
                 Divider(
@@ -311,8 +318,21 @@ class _AboutPageState extends State<AboutPage> {
                 _InfoTile(
                   icon: Icons.group_outlined,
                   label: localizations.developmentTeam,
-                  value: '',
+                  value: 'The Brotherhood of SCU',
+                  isLink: true,
                   onTap: () => openDeveloperTeam(),
+                ),
+                Divider(
+                  height: 1,
+                  indent: 56,
+                  color: theme.dividerColor.withValues(alpha: 0.08),
+                ),
+                _InfoTile(
+                  icon: Icons.balance_rounded,
+                  label: localizations.openSourceLicense,
+                  value: 'AGPL-3.0',
+                  isLink: true,
+                  onTap: () => openLicense(),
                 ),
                 Divider(
                   height: 1,
@@ -323,6 +343,7 @@ class _AboutPageState extends State<AboutPage> {
                   icon: Icons.update_rounded,
                   label: localizations.checkForUpdates,
                   value: '',
+                  loading: _isCheckingUpdate,
                   onTap: _checkForUpdates,
                 ),
                 Divider(
@@ -362,12 +383,16 @@ class _InfoTile extends StatelessWidget {
   final String label;
   final String value;
   final VoidCallback? onTap;
+  final bool isLink;
+  final bool loading;
 
   const _InfoTile({
     required this.icon,
     required this.label,
     required this.value,
     this.onTap,
+    this.isLink = false,
+    this.loading = false,
   });
 
   @override
@@ -390,23 +415,36 @@ class _InfoTile extends StatelessWidget {
           ),
           const SizedBox(width: 14),
           Expanded(child: Text(label, style: theme.textTheme.bodyLarge)),
-          if (value.isNotEmpty)
-            Flexible(
-              child: Text(
-                value,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
+          if (value.isNotEmpty || onTap != null)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (value.isNotEmpty)
+                  Text(
+                    value,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                if (loading) ...[
+                  const SizedBox(width: 4),
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ] else if (onTap != null) ...[
+                  const SizedBox(width: 8),
+                  Icon(
+                    isLink ? Icons.open_in_new : Icons.chevron_right_rounded,
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.4,
+                    ),
+                    size: isLink ? 18 : 20,
+                  ),
+                ],
+              ],
             ),
-          if (onTap != null) ...[
-            const SizedBox(width: 4),
-            Icon(
-              Icons.chevron_right_rounded,
-              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-              size: 20,
-            ),
-          ],
         ],
       ),
     );

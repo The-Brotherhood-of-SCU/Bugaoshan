@@ -204,7 +204,9 @@ class SoftwareSettingPage extends StatelessWidget {
                       content: localizations.confirmMessage,
                     );
                     if (confirm == true) {
-                      getIt<ScuAuthProvider>().logout();
+                      final scuAuth = getIt<ScuAuthProvider>();
+                      await scuAuth.logout();
+                      await scuAuth.clearCredentials();
                       appConfig.clearAll();
                       final courseProvider = getIt<CourseProvider>();
                       await courseProvider.clearAllData();
@@ -238,9 +240,10 @@ class SoftwareSettingPage extends StatelessWidget {
     final ext = p.extension(picked.path);
     final destPath = '${bgDir.path}/schedule_bg$ext';
 
-    // Delete old background file if exists
+    // Delete old background file and evict from image cache
     final oldPath = appConfig.backgroundImagePath.value;
     if (oldPath != null) {
+      FileImage(File(oldPath)).evict();
       final oldFile = File(oldPath);
       if (await oldFile.exists()) {
         await oldFile.delete();
@@ -248,6 +251,7 @@ class SoftwareSettingPage extends StatelessWidget {
     }
 
     await File(picked.path).copy(destPath);
+    appConfig.backgroundImageVersion.value++;
     appConfig.backgroundImagePath.value = destPath;
   }
 }
