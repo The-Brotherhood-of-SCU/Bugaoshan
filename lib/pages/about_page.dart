@@ -3,7 +3,8 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
-import 'package:bugaoshan/utils/open_link.dart';
+import 'package:bugaoshan/utils/open_link.dart'
+    show openDeveloperTeam, openLicense, openProjectRepository;
 import 'package:bugaoshan/pages/release_notes_page.dart';
 import 'package:bugaoshan/pages/test_page.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
@@ -327,6 +328,18 @@ class _AboutPageState extends State<AboutPage> {
                   color: theme.dividerColor.withValues(alpha: 0.08),
                 ),
                 _InfoTile(
+                  icon: Icons.balance_rounded,
+                  label: localizations.openSourceLicense,
+                  value: 'AGPL-3.0',
+                  isLink: true,
+                  onTap: () => openLicense(),
+                ),
+                Divider(
+                  height: 1,
+                  indent: 56,
+                  color: theme.dividerColor.withValues(alpha: 0.08),
+                ),
+                _InfoTile(
                   icon: Icons.update_rounded,
                   label: localizations.checkForUpdates,
                   value: '',
@@ -421,7 +434,7 @@ class _InfoTile extends StatelessWidget {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                 ] else if (onTap != null) ...[
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 8),
                   Icon(
                     isLink ? Icons.open_in_new : Icons.chevron_right_rounded,
                     color: theme.colorScheme.onSurfaceVariant.withValues(

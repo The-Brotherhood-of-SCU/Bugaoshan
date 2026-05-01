@@ -11,14 +11,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- 增加向导页面，引导用户从教务处导入课表
+- 桌面端记住窗口位置和大小，启动时自动恢复
+
+
 ### Changed
 
 - 修改课表储存方式，从 SharedPreferences 到 sqlite 数据库
+- about页面：优化显示效果，增加开源协议
+- login页面：优化显示效果，增加提示信息
 
 ### Fixed
 
 - 修复修改课表背景图片后，课表背景图片不刷新的问题
 - 修复软件清除全部数据后，课表数据和账号密码数据不被删除的问题
+
+
 
 ## [0.7.0] - 2026-04-29
 
