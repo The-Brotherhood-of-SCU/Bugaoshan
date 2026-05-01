@@ -306,35 +306,27 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 .cornerRadius(16.dp)
                 .background(ColorProvider(R.color.widget_background))
                 .clickable(actionStartActivity(launchIntent))
-                .padding(8.dp),
+                .padding(10.dp),
         ) {
-            Column(
-                modifier = GlanceModifier
-                    .fillMaxWidth()
-                    .cornerRadius(12.dp)
-                    .background(ColorProvider(R.color.widget_header_default))
-                    .padding(start = 10.dp, top = 8.dp, end = 10.dp, bottom = 8.dp)
-            ) {
-                Text(
-                    text = title,
-                    style = TextStyle(
-                        color = ColorProvider(R.color.widget_text_on_primary),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp
-                    ),
-                    maxLines = 1
-                )
-                Text(
-                    text = "$date  $week",
-                    style = TextStyle(
-                        color = ColorProvider(R.color.widget_text_on_primary),
-                        fontSize = 11.sp
-                    ),
-                    maxLines = 1
-                )
-            }
+            Text(
+                text = title,
+                style = TextStyle(
+                    color = ColorProvider(R.color.widget_header_default),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                ),
+                maxLines = 1
+            )
+            Text(
+                text = "$date  $week",
+                style = TextStyle(
+                    color = ColorProvider(R.color.widget_text_secondary),
+                    fontSize = 11.sp
+                ),
+                maxLines = 1
+            )
 
-            Spacer(modifier = GlanceModifier.height(6.dp))
+            Spacer(modifier = GlanceModifier.height(8.dp))
 
             if (courses.length() == 0) {
                 Box(
@@ -345,7 +337,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                         text = emptyText,
                         style = TextStyle(
                             color = ColorProvider(R.color.widget_text_secondary),
-                            fontSize = 12.sp
+                            fontSize = 13.sp
                         )
                     )
                 }
@@ -354,7 +346,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 for (i in 0 until minOf(courses.length(), limit)) {
                     CourseCardSmall(courses.getJSONObject(i))
                     if (i < minOf(courses.length(), limit) - 1) {
-                        Spacer(modifier = GlanceModifier.height(4.dp))
+                        Spacer(modifier = GlanceModifier.height(6.dp))
                     }
                 }
             }
@@ -375,22 +367,18 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 .cornerRadius(16.dp)
                 .background(ColorProvider(R.color.widget_background))
                 .clickable(actionStartActivity(launchIntent))
-                .padding(10.dp),
+                .padding(12.dp),
         ) {
             Row(
-                modifier = GlanceModifier
-                    .fillMaxWidth()
-                    .cornerRadius(12.dp)
-                    .background(ColorProvider(R.color.widget_header_default))
-                    .padding(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 8.dp),
+                modifier = GlanceModifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = title,
                     style = TextStyle(
-                        color = ColorProvider(R.color.widget_text_on_primary),
+                        color = ColorProvider(R.color.widget_header_default),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
+                        fontSize = 15.sp
                     ),
                     maxLines = 1,
                     modifier = GlanceModifier.defaultWeight()
@@ -398,14 +386,14 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 Text(
                     text = "$date  $week",
                     style = TextStyle(
-                        color = ColorProvider(R.color.widget_text_on_primary),
+                        color = ColorProvider(R.color.widget_text_secondary),
                         fontSize = 12.sp
                     ),
                     maxLines = 1
                 )
             }
 
-            Spacer(modifier = GlanceModifier.height(8.dp))
+            Spacer(modifier = GlanceModifier.height(10.dp))
 
             if (courses.length() == 0) {
                 Box(
@@ -426,7 +414,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     for (i in 0 until minOf(courses.length(), limit)) {
                         CourseCardMedium(courses.getJSONObject(i))
                         if (i < minOf(courses.length(), limit) - 1) {
-                            Spacer(modifier = GlanceModifier.height(6.dp))
+                            Spacer(modifier = GlanceModifier.height(8.dp))
                         }
                     }
                 }
@@ -448,62 +436,65 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 .cornerRadius(16.dp)
                 .background(ColorProvider(R.color.widget_background))
                 .clickable(actionStartActivity(launchIntent))
-                .padding(12.dp),
+                .padding(14.dp),
         ) {
-            Column(
-                modifier = GlanceModifier
-                    .fillMaxWidth()
-                    .cornerRadius(12.dp)
-                    .background(ColorProvider(R.color.widget_header_default))
-                    .padding(start = 14.dp, top = 10.dp, end = 14.dp, bottom = 10.dp)
+            Text(
+                text = title,
+                style = TextStyle(
+                    color = ColorProvider(R.color.widget_header_default),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 17.sp
+                ),
+                maxLines = 1
+            )
+            Row(
+                modifier = GlanceModifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = GlanceModifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = title,
-                        style = TextStyle(
-                            color = ColorProvider(R.color.widget_text_on_primary),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        ),
-                        maxLines = 1,
-                        modifier = GlanceModifier.defaultWeight()
-                    )
-                    Text(
-                        text = date,
-                        style = TextStyle(
-                            color = ColorProvider(R.color.widget_text_on_primary),
-                            fontSize = 13.sp
-                        ),
-                        maxLines = 1
-                    )
-                }
                 Text(
                     text = week,
                     style = TextStyle(
-                        color = ColorProvider(R.color.widget_text_on_primary),
+                        color = ColorProvider(R.color.widget_text_secondary),
+                        fontSize = 12.sp
+                    ),
+                    maxLines = 1,
+                    modifier = GlanceModifier.defaultWeight()
+                )
+                Text(
+                    text = date,
+                    style = TextStyle(
+                        color = ColorProvider(R.color.widget_text_secondary),
                         fontSize = 12.sp
                     ),
                     maxLines = 1
                 )
             }
 
-            Spacer(modifier = GlanceModifier.height(10.dp))
+            Spacer(modifier = GlanceModifier.height(12.dp))
 
             if (courses.length() == 0) {
                 Box(
                     modifier = GlanceModifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = emptyText,
-                        style = TextStyle(
-                            color = ColorProvider(R.color.widget_text_secondary),
-                            fontSize = 14.sp
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = emptyText,
+                            style = TextStyle(
+                                color = ColorProvider(R.color.widget_text_secondary),
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 15.sp
+                            )
                         )
-                    )
+                        Spacer(modifier = GlanceModifier.height(4.dp))
+                        Text(
+                            text = "享受轻松的一天吧",
+                            style = TextStyle(
+                                color = ColorProvider(R.color.widget_text_secondary),
+                                fontSize = 12.sp
+                            )
+                        )
+                    }
                 }
             } else {
                 val limit = 4
@@ -511,7 +502,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     for (i in 0 until minOf(courses.length(), limit)) {
                         CourseCardLarge(courses.getJSONObject(i))
                         if (i < minOf(courses.length(), limit) - 1) {
-                            Spacer(modifier = GlanceModifier.height(6.dp))
+                            Spacer(modifier = GlanceModifier.height(8.dp))
                         }
                     }
                 }
@@ -531,31 +522,31 @@ class CourseGlanceWidget : GlanceAppWidget() {
         Row(
             modifier = GlanceModifier
                 .fillMaxWidth()
-                .cornerRadius(8.dp)
+                .cornerRadius(12.dp)
                 .background(ColorProvider(R.color.widget_card_background))
-                .padding(8.dp),
+                .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = GlanceModifier
-                    .width(3.dp)
-                    .height(28.dp)
+                    .width(4.dp)
+                    .height(32.dp)
                     .cornerRadius(2.dp)
                     .background(ColorProvider(R.color.widget_header_default))
             ) {}
-            Spacer(modifier = GlanceModifier.width(6.dp))
+            Spacer(modifier = GlanceModifier.width(8.dp))
             Column(modifier = GlanceModifier.defaultWeight()) {
                 Text(
                     text = name,
                     style = TextStyle(
                         color = ColorProvider(R.color.widget_text_primary),
                         fontWeight = FontWeight.Medium,
-                        fontSize = 12.sp
+                        fontSize = 13.sp
                     ),
                     maxLines = 1
                 )
                 Text(
-                    text = "$startTime-$endTime",
+                    text = "$startTime - $endTime",
                     style = TextStyle(
                         color = ColorProvider(R.color.widget_text_secondary),
                         fontSize = 10.sp
@@ -584,46 +575,38 @@ class CourseGlanceWidget : GlanceAppWidget() {
         Row(
             modifier = GlanceModifier
                 .fillMaxWidth()
-                .cornerRadius(8.dp)
+                .cornerRadius(12.dp)
                 .background(ColorProvider(R.color.widget_card_background))
-                .padding(10.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = GlanceModifier
                     .width(4.dp)
-                    .height(32.dp)
+                    .height(36.dp)
                     .cornerRadius(2.dp)
                     .background(ColorProvider(R.color.widget_header_default))
             ) {}
-            Spacer(modifier = GlanceModifier.width(8.dp))
-            Text(
-                text = name,
-                style = TextStyle(
-                    color = ColorProvider(R.color.widget_text_primary),
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp
-                ),
-                maxLines = 1,
-                modifier = GlanceModifier.defaultWeight()
-            )
-            Text(
-                text = "$startTime-$endTime",
-                style = TextStyle(
-                    color = ColorProvider(R.color.widget_text_secondary),
-                    fontSize = 12.sp
-                ),
-                maxLines = 1
-            )
-            Spacer(modifier = GlanceModifier.width(8.dp))
-            Text(
-                text = location,
-                style = TextStyle(
-                    color = ColorProvider(R.color.widget_text_secondary),
-                    fontSize = 12.sp
-                ),
-                maxLines = 1
-            )
+            Spacer(modifier = GlanceModifier.width(10.dp))
+            Column(modifier = GlanceModifier.defaultWeight()) {
+                Text(
+                    text = name,
+                    style = TextStyle(
+                        color = ColorProvider(R.color.widget_text_primary),
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 14.sp
+                    ),
+                    maxLines = 1
+                )
+                Text(
+                    text = "$startTime - $endTime  $location",
+                    style = TextStyle(
+                        color = ColorProvider(R.color.widget_text_secondary),
+                        fontSize = 12.sp
+                    ),
+                    maxLines = 1
+                )
+            }
         }
     }
 
@@ -640,19 +623,19 @@ class CourseGlanceWidget : GlanceAppWidget() {
         Row(
             modifier = GlanceModifier
                 .fillMaxWidth()
-                .cornerRadius(8.dp)
+                .cornerRadius(12.dp)
                 .background(ColorProvider(R.color.widget_card_background))
-                .padding(10.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = GlanceModifier
                     .width(4.dp)
-                    .height(40.dp)
+                    .height(44.dp)
                     .cornerRadius(2.dp)
                     .background(ColorProvider(R.color.widget_header_default))
             ) {}
-            Spacer(modifier = GlanceModifier.width(10.dp))
+            Spacer(modifier = GlanceModifier.width(12.dp))
             Column(modifier = GlanceModifier.defaultWeight()) {
                 Text(
                     text = name,
@@ -664,7 +647,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     maxLines = 1
                 )
                 Text(
-                    text = "$startTime-$endTime  $section",
+                    text = "$startTime - $endTime  $section",
                     style = TextStyle(
                         color = ColorProvider(R.color.widget_text_secondary),
                         fontSize = 12.sp
