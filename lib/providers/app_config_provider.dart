@@ -16,6 +16,7 @@ const String _keyCourseRowHeight = 'courseRowHeight';
 const String _keyBackgroundImageOpacity = 'backgroundImageOpacity';
 const String _keyBackgroundImagePath = 'backgroundImagePath';
 const String _keyFirstLaunchWizardCompleted = 'firstLaunchWizardCompleted';
+const String _keyHasUpdateNotification = 'hasUpdateNotification';
 const Curve appCurve = Curves.easeOutQuart;
 
 class AppConfigProvider {
@@ -47,6 +48,7 @@ class AppConfigProvider {
   final ValueNotifier<bool> firstLaunchWizardCompleted = ValueNotifier<bool>(
     false,
   );
+  final ValueNotifier<bool> hasUpdateNotification = ValueNotifier<bool>(false);
 
   void _loadLocale() {
     final localeString = _sharedPreferences.getString(_keyLocale);
@@ -72,6 +74,8 @@ class AppConfigProvider {
     );
     firstLaunchWizardCompleted.value =
         _sharedPreferences.getBool(_keyFirstLaunchWizardCompleted) ?? false;
+    hasUpdateNotification.value =
+        _sharedPreferences.getBool(_keyHasUpdateNotification) ?? false;
   }
 
   void _addSaveCallback() {
@@ -124,6 +128,12 @@ class AppConfigProvider {
       _sharedPreferences.setBool(
         _keyFirstLaunchWizardCompleted,
         firstLaunchWizardCompleted.value,
+      );
+    });
+    hasUpdateNotification.addListener(() {
+      _sharedPreferences.setBool(
+        _keyHasUpdateNotification,
+        hasUpdateNotification.value,
       );
     });
   }

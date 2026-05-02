@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/utils/open_link.dart'
@@ -19,13 +20,15 @@ class AboutPage extends StatefulWidget {
 
 class _AboutPageState extends State<AboutPage> {
   final versionProvider = getIt<AppInfoProvider>();
-  final updateService = UpdateService();
+  final updateService = getIt<UpdateService>();
+  final appConfig = getIt<AppConfigProvider>();
   bool _isCheckingUpdate = false;
 
   Future<void> _checkForUpdates() async {
     if (_isCheckingUpdate) return;
     final localizations = AppLocalizations.of(context)!;
 
+    appConfig.hasUpdateNotification.value = false;
     setState(() => _isCheckingUpdate = true);
     try {
       final latest = await updateService.getLatestReleaseFromGitHub();
@@ -317,12 +320,18 @@ class _AboutPageState extends State<AboutPage> {
                   indent: 56,
                   color: theme.dividerColor.withValues(alpha: 0.08),
                 ),
-                _InfoTile(
-                  icon: Icons.update_rounded,
-                  label: localizations.checkForUpdates,
-                  value: '',
-                  loading: _isCheckingUpdate,
-                  onTap: _checkForUpdates,
+                ValueListenableBuilder<bool>(
+                  valueListenable: appConfig.hasUpdateNotification,
+                  builder: (context, hasUpdate, _) {
+                    return _InfoTile(
+                      icon: Icons.update_rounded,
+                      label: localizations.checkForUpdates,
+                      value: '',
+                      loading: _isCheckingUpdate,
+                      showBadge: hasUpdate,
+                      onTap: _checkForUpdates,
+                    );
+                  },
                 ),
                 Divider(
                   height: 1,
@@ -373,6 +382,7 @@ class _InfoTile extends StatelessWidget {
   final VoidCallback? onTap;
   final bool isLink;
   final bool loading;
+  final bool showBadge;
 
   const _InfoTile({
     required this.icon,
@@ -381,6 +391,7 @@ class _InfoTile extends StatelessWidget {
     this.onTap,
     this.isLink = false,
     this.loading = false,
+    this.showBadge = false,
   });
 
   @override
@@ -402,7 +413,24 @@ class _InfoTile extends StatelessWidget {
             child: Icon(icon, color: primaryColor, size: 20),
           ),
           const SizedBox(width: 14),
-          Expanded(child: Text(label, style: theme.textTheme.bodyLarge)),
+          Expanded(
+            child: Row(
+              children: [
+                Text(label, style: theme.textTheme.bodyLarge),
+                if (showBadge) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
           if (value.isNotEmpty || onTap != null)
             Row(
               mainAxisSize: MainAxisSize.min,

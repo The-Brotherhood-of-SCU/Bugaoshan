@@ -7,7 +7,10 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus_page.dart';
 import 'package:bugaoshan/pages/course/course_page.dart';
 import 'package:bugaoshan/pages/profile_page.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/widgets/common/navigation_item.dart';
 
@@ -28,6 +31,24 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _checkForUpdateInBackground();
+  }
+
+  Future<void> _checkForUpdateInBackground() async {
+    try {
+      await Future.wait([
+        getIt.isReady<AppInfoProvider>(),
+        getIt.isReady<UpdateService>(),
+        getIt.isReady<AppConfigProvider>(),
+      ]);
+      final updateService = getIt<UpdateService>();
+      final appInfo = getIt<AppInfoProvider>();
+      final appConfig = getIt<AppConfigProvider>();
+      final result = await updateService.checkStableUpdate(appInfo.currentVersion);
+      if (result.hasUpdate) {
+        appConfig.hasUpdateNotification.value = true;
+      }
+    } catch (_) {}
   }
 
   @override
@@ -82,7 +103,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     return _buildMainScreen();
   }
 
+  Widget _buildUpdateBadge({required Widget child, required bool showBadge}) {
+    if (!showBadge) return child;
+    return Badge(child: child);
+  }
+
   Widget _buildMainScreen() {
+    final appConfig = getIt<AppConfigProvider>();
     return OrientationBuilder(
       builder: (context, orientation) {
         if (orientation == Orientation.landscape) {
@@ -90,28 +117,43 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           return Scaffold(
             body: Row(
               children: [
-                NavigationRail(
-                  selectedIndex: _currentIndex,
-                  onDestinationSelected: (index) {
-                    setState(() {
-                      _currentIndex = index;
-                    });
-                    if (index == 0) {
-                      _courseProvider.updateCurrentWeek(
-                        _courseProvider.scheduleConfig.value.getCurrentWeek(),
-                      );
-                    }
-                  },
-                  labelType: NavigationRailLabelType.all,
-                  destinations: _navigationItems
-                      .map(
-                        (item) => NavigationRailDestination(
-                          icon: Icon(item.icon),
-                          selectedIcon: Icon(item.selectedIcon),
+                ValueListenableBuilder<bool>(
+                  valueListenable: appConfig.hasUpdateNotification,
+                  builder: (context, hasUpdate, _) {
+                    return NavigationRail(
+                      selectedIndex: _currentIndex,
+                      onDestinationSelected: (index) {
+                        setState(() {
+                          _currentIndex = index;
+                        });
+                        if (index == 0) {
+                          _courseProvider.updateCurrentWeek(
+                            _courseProvider.scheduleConfig.value.getCurrentWeek(),
+                          );
+                        }
+                      },
+                      labelType: NavigationRailLabelType.all,
+                      destinations: _navigationItems.asMap().entries.map((entry) {
+                        final item = entry.value;
+                        final isProfileTab = entry.key == 2;
+                        return NavigationRailDestination(
+                          icon: isProfileTab
+                              ? _buildUpdateBadge(
+                                  showBadge: hasUpdate,
+                                  child: Icon(item.icon),
+                                )
+                              : Icon(item.icon),
+                          selectedIcon: isProfileTab
+                              ? _buildUpdateBadge(
+                                  showBadge: hasUpdate,
+                                  child: Icon(item.selectedIcon),
+                                )
+                              : Icon(item.selectedIcon),
                           label: Text(item.label),
-                        ),
-                      )
-                      .toList(),
+                        );
+                      }).toList(),
+                    );
+                  },
                 ),
                 const VerticalDivider(thickness: 1, width: 1),
                 Expanded(
@@ -124,27 +166,42 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           // Portrait mode: use bottom navigation bar
           return Scaffold(
             body: SafeArea(child: _navigationItems[_currentIndex].page),
-            bottomNavigationBar: NavigationBar(
-              selectedIndex: _currentIndex,
-              onDestinationSelected: (index) {
-                setState(() {
-                  _currentIndex = index;
-                });
-                if (index == 0) {
-                  _courseProvider.updateCurrentWeek(
-                    _courseProvider.scheduleConfig.value.getCurrentWeek(),
-                  );
-                }
-              },
-              destinations: _navigationItems
-                  .map(
-                    (item) => NavigationDestination(
-                      icon: Icon(item.icon),
-                      selectedIcon: Icon(item.selectedIcon),
+            bottomNavigationBar: ValueListenableBuilder<bool>(
+              valueListenable: appConfig.hasUpdateNotification,
+              builder: (context, hasUpdate, _) {
+                return NavigationBar(
+                  selectedIndex: _currentIndex,
+                  onDestinationSelected: (index) {
+                    setState(() {
+                      _currentIndex = index;
+                    });
+                    if (index == 0) {
+                      _courseProvider.updateCurrentWeek(
+                        _courseProvider.scheduleConfig.value.getCurrentWeek(),
+                      );
+                    }
+                  },
+                  destinations: _navigationItems.asMap().entries.map((entry) {
+                    final item = entry.value;
+                    final isProfileTab = entry.key == 2;
+                    return NavigationDestination(
+                      icon: isProfileTab
+                          ? _buildUpdateBadge(
+                              showBadge: hasUpdate,
+                              child: Icon(item.icon),
+                            )
+                          : Icon(item.icon),
+                      selectedIcon: isProfileTab
+                          ? _buildUpdateBadge(
+                              showBadge: hasUpdate,
+                              child: Icon(item.selectedIcon),
+                            )
+                          : Icon(item.selectedIcon),
                       label: item.label,
-                    ),
-                  )
-                  .toList(),
+                    );
+                  }).toList(),
+                );
+              },
             ),
           );
         }

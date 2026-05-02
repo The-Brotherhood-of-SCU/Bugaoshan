@@ -7,6 +7,7 @@ import 'package:bugaoshan/pages/course/course_schedule_setting.dart';
 import 'package:bugaoshan/pages/course/schedule_management_page.dart';
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
 import 'package:bugaoshan/pages/settings/software_setting_page.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/common/styled_widget.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
@@ -83,7 +84,15 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Text(localizations.softwareSetting),
             ),
             ButtonWithMaxWidth(
-              icon: const Icon(Icons.info_outline),
+              icon: ValueListenableBuilder<bool>(
+                valueListenable: getIt<AppConfigProvider>().hasUpdateNotification,
+                builder: (context, hasUpdate, _) {
+                  if (hasUpdate) {
+                    return Badge(child: const Icon(Icons.info_outline));
+                  }
+                  return const Icon(Icons.info_outline);
+                },
+              ),
               onPressed: () => popupOrNavigate(context, AboutPage()),
               child: Text(localizations.about),
             ),
