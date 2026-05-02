@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Name -->
+    <string name="app_name">步高闪</string>
+
+    <!-- Navigation -->
+    <string name="course">课表</string>
+    <string name="profile">我的</string>
+    <string name="campus">校园</string>
+
+    <!-- Wizard -->
+    <string name="wizard_welcome_title">欢迎使用步高闪</string>
+    <string name="wizard_welcome_desc">你的校园助手：课表、成绩和校园服务一站搞定</string>
+    <string name="wizard_login_title">登录并导入课表</string>
+    <string name="wizard_login_step1">使用川大统一身份认证登录</string>
+    <string name="wizard_login_step2">从教务系统导入课表</string>
+    <string name="wizard_login_done">已登录</string>
+    <string name="wizard_login_button">去登录</string>
+    <string name="wizard_import_button">导入课表</string>
+    <string name="wizard_import_hint">登录后自动获取课表</string>
+    <string name="wizard_feature_title">探索更多功能</string>
+    <string name="wizard_feature_course">课程表</string>
+    <string name="wizard_feature_course_desc">查看每周课程，管理多个课表，从教务系统导入，分享和导出日历文件</string>
+    <string name="wizard_feature_campus">校园服务</string>
+    <string name="wizard_feature_campus_desc">查询教室使用情况和成绩，参加第二课堂活动，查询电费余额，管理网络设备</string>
+    <string name="wizard_feature_profile">个人中心</string>
+    <string name="wizard_feature_profile_desc">使用川大统一身份认证登录，绑定第二课堂账号，自定义主题颜色、深色模式和语言偏好</string>
+    <string name="onboarding_skip">跳过</string>
+    <string name="onboarding_next">下一步</string>
+    <string name="onboarding_start">开始使用</string>
+
+    <!-- Course -->
+    <string name="add_course">添加课程</string>
+    <string name="edit_course">编辑课程</string>
+    <string name="delete_course">删除课程</string>
+    <string name="delete_course_confirm">确定要删除这门课程吗？</string>
+    <string name="course_name">课程名称</string>
+    <string name="teacher">教师</string>
+    <string name="location">地点</string>
+    <string name="course_color">课程颜色</string>
+    <string name="week">周</string>
+    <string name="start_week">开始周</string>
+    <string name="end_week">结束周</string>
+    <string name="day_of_week">星期</string>
+    <string name="start_section">开始节</string>
+    <string name="end_section">结束节</string>
+    <string name="monday">周一</string>
+    <string name="tuesday">周二</string>
+    <string name="wednesday">周三</string>
+    <string name="thursday">周四</string>
+    <string name="friday">周五</string>
+    <string name="saturday">周六</string>
+    <string name="sunday">周日</string>
+    <string name="current_week">第%1$d周</string>
+    <string name="this_week">本周</string>
+    <string name="week_range">第%1$d-%2$d周</string>
+    <string name="week_type">周类型</string>
+    <string name="every_week">每周</string>
+    <string name="odd_week">单周</string>
+    <string name="even_week">双周</string>
+    <string name="section">节</string>
+    <string name="section_count">每天节数</string>
+    <string name="time_slot">时间段</string>
+    <string name="start_time">开始时间</string>
+    <string name="end_time">结束时间</string>
+    <string name="semester_config">学期配置</string>
+    <string name="semester_name">学期名称</string>
+    <string name="semester_start_date">学期开始日期</string>
+    <string name="semester_end_date">学期结束日期</string>
+    <string name="set_current_week">设置当前周</string>
+    <string name="set_current_week_hint">根据当前周自动计算学期开始日期</string>
+    <string name="total_weeks">共%1$d周</string>
+    <string name="morning">上午</string>
+    <string name="afternoon">下午</string>
+    <string name="evening">晚上</string>
+    <string name="course_duration">课程时长（分钟）</string>
+    <string name="break_duration">课间休息（分钟）</string>
+    <string name="auto_sync_time">自动计算后续时间</string>
+    <string name="no_course_this_week">本周没有课程</string>
+    <string name="time_conflict">时间冲突</string>
+    <string name="time_conflict_message">所选时间段与现有课程冲突。</string>
+    <string name="field_required">此字段为必填项</string>
+    <string name="invalid_week_range">结束周必须大于或等于开始周</string>
+    <string name="duplicate_schedule_name">课表名称已存在</string>
+    <string name="import_schedule">导入课表</string>
+    <string name="import_from_share">从分享导入</string>
+    <string name="import_from_jwxt">从教务系统导入</string>
+    <string name="import_data_hint">在此粘贴JSON数据...</string>
+    <string name="import_success">课表导入成功</string>
+    <string name="import_failed">导入失败</string>
+    <string name="export_schedule">导出课表</string>
+    <string name="export_schedule_as_copy">复制到剪贴板</string>
+    <string name="export_schedule_as_ics">导出为日历文件</string>
+    <string name="export_schedule_as_copy_success">课表数据已复制到剪贴板</string>
+    <string name="export_schedule_as_ics_success">文件保存成功</string>
+
+    <!-- Campus -->
+    <string name="classroom_query">教室查询</string>
+    <string name="classroom_query_desc">查询教室使用情况和借用状态</string>
+    <string name="select_campus">选择校区</string>
+    <string name="select_building">选择教学楼</string>
+    <string name="all_buildings">全部教学楼</string>
+    <string name="seats">座位</string>
+    <string name="free">空闲</string>
+    <string name="in_class">上课中</string>
+    <string name="borrowed">已借用</string>
+    <string name="classroom_can_borrow">可借用</string>
+    <string name="classroom_cannot_borrow">不可借用</string>
+    <string name="classroom_remark">备注</string>
+    <string name="period">时段</string>
+    <string name="loading">加载中...</string>
+    <string name="load_failed">加载失败</string>
+    <string name="campus_network_required">此功能仅在校园网可用。请连接校园Wi-Fi或使用学校VPN。</string>
+
+    <!-- Grades -->
+    <string name="grades_stats">成绩统计</string>
+    <string name="grades_stats_desc">查看和分析你的学业表现</string>
+    <string name="scheme_scores">方案成绩</string>
+    <string name="passing_scores">及格成绩</string>
+    <string name="grades_no_data">暂无成绩数据</string>
+    <string name="grades_get">获取成绩</string>
+    <string name="grades_retry">重试</string>
+    <string name="gpa">GPA</string>
+    <string name="overall_gpa">总GPA</string>
+    <string name="earned_credits">已获学分</string>
+    <string name="passed_count">通过</string>
+    <string name="failed_count">未通过</string>
+    <string name="avg_score">平均分</string>
+
+    <!-- Profile -->
+    <string name="scu_login">川大统一身份认证登录</string>
+    <string name="logged_in">已登录</string>
+    <string name="not_logged_in">未登录</string>
+    <string name="login_session_expired">登录会话已过期</string>
+    <string name="login_session_expired_desc">你的登录会话已过期（1小时）。请重新登录。</string>
+    <string name="logout">退出登录</string>
+    <string name="logout_confirm">确定要退出登录吗？</string>
+    <string name="student_id">学号</string>
+    <string name="student_id_required">请输入学号</string>
+    <string name="password">密码</string>
+    <string name="password_required">请输入密码</string>
+    <string name="captcha">验证码</string>
+    <string name="captcha_required">请输入验证码</string>
+    <string name="remember_password">记住密码</string>
+    <string name="login_button">登录</string>
+    <string name="captcha_load_failed">验证码加载失败</string>
+    <string name="network_error">网络错误</string>
+    <string name="login_failed">登录失败</string>
+    <string name="invalid_captcha">验证码错误，请重试</string>
+
+    <!-- Settings -->
+    <string name="software_setting">软件设置</string>
+    <string name="theme_color">主题色</string>
+    <string name="change_theme_color">更改主题色</string>
+    <string name="confirm_button">确认</string>
+    <string name="reset_to_default">恢复默认</string>
+    <string name="about">关于</string>
+    <string name="development_team">开发团队</string>
+    <string name="project_info">项目信息</string>
+    <string name="app_name_label">应用名称</string>
+    <string name="version">版本</string>
+    <string name="app_description">探索一切，尽在步高闪</string>
+    <string name="contact_us">联系我们</string>
+    <string name="developed_by">由%1$s开发</string>
+    <string name="external_resources">外部资源</string>
+    <string name="project_repository">仓库地址</string>
+    <string name="check_for_updates">检查更新</string>
+    <string name="new_version_available">有新版本可用</string>
+    <string name="no_update_available">已是最新版本</string>
+    <string name="go_to_releases">前往发布页</string>
+    <string name="release_notes">更新日志</string>
+    <string name="never_mind">取消</string>
+    <string name="clear_all_data">清除所有数据</string>
+    <string name="confirm_message">确定吗？</string>
+    <string name="environment_info">环境信息</string>
+    <string name="save">保存</string>
+    <string name="cancel">取消</string>
+    <string name="back">返回</string>
+    <string name="next">下一步</string>
+    <string name="delete">删除</string>
+    <string name="confirm">确认</string>
+    <string name="today">今天</string>
+    <string name="current">当前</string>
+    <string name="custom_color">自定义颜色</string>
+
+    <!-- CCYL -->
+    <string name="ccyl_title">第二课堂</string>
+    <string name="ccyl_desc">浏览活动、参与、预约</string>
+    <string name="ccyl_search_activities">活动搜索</string>
+    <string name="ccyl_my_activities">我的活动</string>
+    <string name="ccyl_ordered_activities">已预约</string>
+    <string name="ccyl_my_credits">学分列表</string>
+    <string name="ccyl_hours">学时</string>
+    <string name="ccyl_available">可报名</string>
+    <string name="ccyl_in_progress">进行中</string>
+    <string name="ccyl_completed">已结束</string>
+    <string name="ccyl_subscribe">预约</string>
+    <string name="ccyl_cancel_subscribe">取消预约</string>
+    <string name="ccyl_subscribe_success">预约成功</string>
+    <string name="ccyl_cancel_success">取消预约成功</string>
+    <string name="ccyl_sign_up">报名</string>
+    <string name="ccyl_cancel_sign_up">取消报名</string>
+    <string name="ccyl_sign_up_success">报名成功</string>
+    <string name="ccyl_activity_detail">活动详情</string>
+    <string name="ccyl_activity_info">活动信息</string>
+    <string name="ccyl_time_info">时间信息</string>
+    <string name="ccyl_location_info">地点信息</string>
+    <string name="ccyl_contact_info">联系信息</string>
+    <string name="ccyl_bind_title">绑定第二课堂</string>
+    <string name="ccyl_bind_desc">绑定你的第二课堂账号以查看活动</string>
+    <string name="ccyl_open_oauth">打开OAuth授权</string>
+    <string name="ccyl_do_bind">绑定第二课堂</string>
+
+    <!-- Network Device -->
+    <string name="network_device_query">网络设备查询</string>
+    <string name="network_device_query_desc">查询校园网账号和在线设备</string>
+    <string name="network_device_user_info">用户信息</string>
+    <string name="network_device_online_devices">在线设备</string>
+    <string name="network_device_device_id">设备ID</string>
+    <string name="network_device_ip">IP地址</string>
+    <string name="network_device_logout">退出登录</string>
+    <string name="network_device_logout_confirm">确定要退出所有设备吗？</string>
+    <string name="network_device_force_offline">强制下线</string>
+    <string name="network_device_confirm_offline">确定要将此设备下线吗？</string>
+    <string name="network_device_offline_success">操作成功</string>
+
+    <!-- Balance Query -->
+    <string name="balance_query">电费查询</string>
+    <string name="balance_query_desc">查询电费和空调费余额</string>
+    <string name="electricity_fee">电费</string>
+    <string name="ac_fee">空调费</string>
+    <string name="balance">余额</string>
+    <string name="bind_room">绑定房间</string>
+    <string name="bind_new_room">绑定新房间</string>
+    <string name="switch_room">切换房间</string>
+    <string name="delete_room">删除房间</string>
+
+    <!-- Train Program -->
+    <string name="train_program">培养方案</string>
+    <string name="train_program_desc">按学院和年级查询培养方案</string>
+    <string name="train_program_college">学院</string>
+    <string name="train_program_grade">年级</string>
+    <string name="train_program_all">全部</string>
+    <string name="train_program_search">搜索</string>
+    <string name="train_program_no_data">暂无培养方案数据</string>
+    <string name="train_program_loading">加载中...</string>
+    <string name="train_program_load_failed">加载失败</string>
+
+    <!-- Misc -->
+    <string name="software_setting_hint">软件设置</string>
+    <string name="follow_system">跟随系统</string>
+    <string name="modify_language">修改语言</string>
+    <string name="animation_duration">动画时长</string>
+    <string name="tips">提示</string>
+    <string name="block_picker">色块</string>
+    <string name="material_picker">Material</string>
+    <string name="advanced_picker">高级</string>
+    <string name="color_opacity">颜色透明度</string>
+    <string name="font_size">字体大小</string>
+    <string name="show_course_grid">显示课程网格</string>
+    <string name="course_row_height">课程行高</string>
+    <string name="background_image">背景图片</string>
+    <string name="show_teacher">显示教师</string>
+    <string name="show_location">显示地点</string>
+    <string name="show_weekend">显示周末</string>
+    <string name="show_non_current_week_courses">显示非当前周课程</string>
+    <string name="schedule_setting">课表设置</string>
+    <string name="schedule_management">课表管理</string>
+    <string name="global_setting">全局设置</string>
+    <string name="display_setting">显示设置</string>
+    <string name="more_features_title">更多功能</string>
+    <string name="more_features_desc">创建 Issue 以请求更多功能</string>
+    <string name="app_only">仅限App端</string>
+    <string name="session_expired">会话已过期</string>
+    <string name="session_expired_title">会话已过期</string>
+    <string name="session_expired_message">你的登录会话已过期。请重新登录以继续使用此功能。</string>
+    <string name="relogin">重新登录</string>
+</resources>

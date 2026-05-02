@@ -1,0 +1,46 @@
+-- Courses table
+CREATE TABLE courses (
+    id TEXT NOT NULL PRIMARY KEY,
+    schedule_id TEXT NOT NULL,
+    name TEXT,
+    teacher TEXT,
+    location TEXT,
+    start_week INTEGER,
+    end_week INTEGER,
+    day_of_week INTEGER,
+    start_section INTEGER,
+    end_section INTEGER,
+    color_value INTEGER,
+    week_type INTEGER,
+    FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE
+);
+
+-- Get courses for a schedule
+getCoursesBySchedule:
+SELECT * FROM courses WHERE schedule_id = ?;
+
+-- Get a course by ID
+getCourseById:
+SELECT * FROM courses WHERE id = ?;
+
+-- Insert a course
+insertCourse:
+INSERT OR REPLACE INTO courses (id, schedule_id, name, teacher, location, start_week, end_week, day_of_week, start_section, end_section, color_value, week_type)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- Update a course
+updateCourse:
+UPDATE courses SET name = ?, teacher = ?, location = ?, start_week = ?, end_week = ?, day_of_week = ?, start_section = ?, end_section = ?, color_value = ?, week_type = ?
+WHERE id = ?;
+
+-- Delete a course
+deleteCourse:
+DELETE FROM courses WHERE id = ?;
+
+-- Delete all courses for a schedule
+deleteCoursesBySchedule:
+DELETE FROM courses WHERE schedule_id = ?;
+
+-- Count courses for a schedule
+countCoursesBySchedule:
+SELECT COUNT(*) FROM courses WHERE schedule_id = ?;

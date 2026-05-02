@@ -1,0 +1,17 @@
+package io.github.the_brotherhood_of_scu.bugaoshan.di
+
+import com.russhwolf.settings.Settings
+import io.github.the_brotherhood_of_scu.bugaoshan.platform.createSettings
+import io.github.the_brotherhood_of_scu.bugaoshan.viewmodel.AppConfigViewModel
+import io.github.the_brotherhood_of_scu.bugaoshan.viewmodel.AuthViewModel
+import io.github.the_brotherhood_of_scu.bugaoshan.viewmodel.CourseViewModel
+import org.koin.core.module.dsl.factoryOf
+import org.koin.dsl.module
+
+val viewModelModule = module {
+    single<Settings> { createSettings() }
+
+    factoryOf(::AppConfigViewModel)
+    factoryOf(::AuthViewModel)
+    factoryOf(::CourseViewModel)
+}

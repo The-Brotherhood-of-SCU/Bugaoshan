@@ -1,0 +1,17 @@
+-- Metadata table for storing key-value pairs
+CREATE TABLE metadata (
+    key TEXT NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+-- Get a metadata value
+getMetadata:
+SELECT value FROM metadata WHERE key = ?;
+
+-- Set a metadata value
+setMetadata:
+INSERT OR REPLACE INTO metadata (key, value) VALUES (?, ?);
+
+-- Delete a metadata value
+deleteMetadata:
+DELETE FROM metadata WHERE key = ?;

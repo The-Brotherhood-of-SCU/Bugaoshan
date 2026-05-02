@@ -1,0 +1,25 @@
+-- Schedules table
+CREATE TABLE schedules (
+    id TEXT NOT NULL PRIMARY KEY,
+    config_json TEXT NOT NULL
+);
+
+-- Get all schedules
+getAllSchedules:
+SELECT * FROM schedules;
+
+-- Get a schedule by ID
+getScheduleById:
+SELECT * FROM schedules WHERE id = ?;
+
+-- Insert a schedule
+insertSchedule:
+INSERT OR REPLACE INTO schedules (id, config_json) VALUES (?, ?);
+
+-- Update a schedule
+updateSchedule:
+UPDATE schedules SET config_json = ? WHERE id = ?;
+
+-- Delete a schedule
+deleteSchedule:
+DELETE FROM schedules WHERE id = ?;

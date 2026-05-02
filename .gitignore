@@ -19,3 +19,4 @@ captures
 node_modules/
 
 .claude/
+server/bin/
