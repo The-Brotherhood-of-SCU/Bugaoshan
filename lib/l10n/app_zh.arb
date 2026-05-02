@@ -36,6 +36,23 @@
     "free": "空闲",
     "inClass": "上课中",
     "borrowed": "已借用",
+    "classroomPeriodExam": "考试中",
+    "classroomPeriodExperiment": "实验中",
+    "classroomTeachingWeek": "第 {week} 周",
+    "@classroomTeachingWeek": {
+        "placeholders": {
+            "week": {"type": "int"}
+        }
+    },
+    "classroomQueryDate": "查询日期: {date}",
+    "@classroomQueryDate": {
+        "placeholders": {
+            "date": {"type": "String"}
+        }
+    },
+    "classroomCanBorrow": "可借用",
+    "classroomCannotBorrow": "不可借用",
+    "classroomRemark": "备注",
     "period": "节次",
     "loading": "加载中...",
     "loadFailed": "加载失败，点击重试",

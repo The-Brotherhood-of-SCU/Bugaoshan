@@ -121,6 +121,31 @@ class AppLocalizationsZh extends AppLocalizations {
   String get borrowed => '已借用';
 
   @override
+  String get classroomPeriodExam => '考试中';
+
+  @override
+  String get classroomPeriodExperiment => '实验中';
+
+  @override
+  String classroomTeachingWeek(int week) {
+    return '第 $week 周';
+  }
+
+  @override
+  String classroomQueryDate(String date) {
+    return '查询日期: $date';
+  }
+
+  @override
+  String get classroomCanBorrow => '可借用';
+
+  @override
+  String get classroomCannotBorrow => '不可借用';
+
+  @override
+  String get classroomRemark => '备注';
+
+  @override
   String get period => '节次';
 
   @override

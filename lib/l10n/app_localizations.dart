@@ -325,6 +325,48 @@ abstract class AppLocalizations {
   /// **'Borrowed'**
   String get borrowed;
 
+  /// No description provided for @classroomPeriodExam.
+  ///
+  /// In en, this message translates to:
+  /// **'Exam'**
+  String get classroomPeriodExam;
+
+  /// No description provided for @classroomPeriodExperiment.
+  ///
+  /// In en, this message translates to:
+  /// **'Experiment'**
+  String get classroomPeriodExperiment;
+
+  /// No description provided for @classroomTeachingWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Week {week}'**
+  String classroomTeachingWeek(int week);
+
+  /// No description provided for @classroomQueryDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Query Date: {date}'**
+  String classroomQueryDate(String date);
+
+  /// No description provided for @classroomCanBorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowable'**
+  String get classroomCanBorrow;
+
+  /// No description provided for @classroomCannotBorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Borrowable'**
+  String get classroomCannotBorrow;
+
+  /// No description provided for @classroomRemark.
+  ///
+  /// In en, this message translates to:
+  /// **'Remark'**
+  String get classroomRemark;
+
   /// No description provided for @period.
   ///
   /// In en, this message translates to:

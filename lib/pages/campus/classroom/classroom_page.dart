@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/classroom/classroom_detail_page.dart';
-import 'package:bugaoshan/pages/campus/models/building_model.dart';
-import 'package:bugaoshan/pages/campus/models/room_model.dart';
-import 'package:bugaoshan/pages/campus/services/cir_api_service.dart';
+import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
+import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/services/scu_auth_service.dart';
+import 'package:bugaoshan/utils/session_expiry_handler.dart';
+
+enum _ViewMode { campus, building, room }
 
 class ClassroomPage extends StatefulWidget {
   const ClassroomPage({super.key});
@@ -13,75 +17,148 @@ class ClassroomPage extends StatefulWidget {
 }
 
 class _ClassroomPageState extends State<ClassroomPage> {
-  final _apiService = CirApiService();
-  List<BuildingModel> _buildings = [];
-  String? _selectedCampus;
-  BuildingModel? _selectedBuilding;
-  RoomQueryResult? _roomResult;
+  late final ScuAuthService _authService;
+
+  List<ClassroomCampus> _campuses = [];
+  List<ClassroomBuilding> _allBuildings = [];
+  ClassroomQueryResult? _queryResult;
+  ClassroomCampus? _selectedCampus;
+  ClassroomBuilding? _selectedBuilding;
+
+  _ViewMode _viewMode = _ViewMode.campus;
   bool _isLoading = false;
   bool _isInitialLoad = true;
   String? _error;
+  DateTime _selectedDate = DateTime.now();
 
   @override
   void initState() {
     super.initState();
-    _loadBuildings();
+    _authService = getIt<ScuAuthProvider>().service;
+    _loadIndex();
   }
 
-  Future<void> _loadBuildings() async {
+  Future<void> _loadIndex() async {
     if (!mounted) return;
     setState(() {
       _isLoading = true;
       _error = null;
     });
     try {
-      _buildings = await _apiService.fetchBuildings();
+      final result = await _authService.fetchClassroomIndex();
       if (!mounted) return;
       setState(() {
+        _campuses = result.campuses;
+        _allBuildings = result.buildings;
+        _isLoading = false;
+        _isInitialLoad = false;
+      });
+    } on ScuLoginException catch (e) {
+      if (!mounted) return;
+      if (e.sessionExpired) {
+        await SessionExpiryHandler.handle(getIt<ScuAuthProvider>());
+      }
+      setState(() {
+        _error = e.sessionExpired ? 'sessionExpired' : 'loadFailed';
         _isLoading = false;
         _isInitialLoad = false;
       });
     } catch (e) {
-      debugPrint('Classroom buildings load error: $e');
+      debugPrint('Classroom index load error: $e');
       if (!mounted) return;
       setState(() {
-        _error = e is CampusNetworkException
-            ? 'campusNetworkRequired'
-            : 'loadFailed';
+        _error = 'loadFailed';
         _isLoading = false;
         _isInitialLoad = false;
       });
     }
   }
 
-  Future<void> _queryBuilding(BuildingModel building) async {
+  Future<void> _queryBuilding(ClassroomBuilding building) async {
     if (!mounted) return;
     setState(() {
       _isLoading = true;
       _selectedBuilding = building;
+      _viewMode = _ViewMode.room;
       _error = null;
     });
     try {
-      _roomResult = await _apiService.fetchRoomData(building.location);
+      final dateStr =
+          '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
+      _queryResult = await _authService.fetchClassroomAvailability(
+        campusNumber: building.campusNumber,
+        buildingNumber: building.teachingBuildingNumber,
+        searchDate: dateStr,
+      );
       if (!mounted) return;
       setState(() {
+        _isLoading = false;
+      });
+    } on ScuLoginException catch (e) {
+      if (!mounted) return;
+      if (e.sessionExpired) {
+        await SessionExpiryHandler.handle(getIt<ScuAuthProvider>());
+      }
+      setState(() {
+        _error = e.sessionExpired ? 'sessionExpired' : 'loadFailed';
         _isLoading = false;
       });
     } catch (e) {
       debugPrint('Classroom query error: $e');
       if (!mounted) return;
       setState(() {
-        _error = e is CampusNetworkException
-            ? 'campusNetworkRequired'
-            : 'loadFailed';
+        _error = 'loadFailed';
         _isLoading = false;
       });
     }
   }
 
-  List<BuildingModel> get _filteredBuildings {
-    if (_selectedCampus == null) return _buildings;
-    return _buildings.where((b) => b.xqh == _selectedCampus).toList();
+  List<ClassroomBuilding> get _filteredBuildings {
+    if (_selectedCampus == null) return [];
+    return _allBuildings
+        .where((b) => b.campusNumber == _selectedCampus!.campusNumber)
+        .toList();
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime.now().subtract(const Duration(days: 7)),
+      lastDate: DateTime.now().add(const Duration(days: 30)),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+      if (_selectedBuilding != null) {
+        _queryBuilding(_selectedBuilding!);
+      }
+    }
+  }
+
+  void _goBack() {
+    setState(() {
+      switch (_viewMode) {
+        case _ViewMode.room:
+          _viewMode = _ViewMode.building;
+          _selectedBuilding = null;
+          _queryResult = null;
+          _error = null;
+          break;
+        case _ViewMode.building:
+          _viewMode = _ViewMode.campus;
+          _selectedCampus = null;
+          _error = null;
+          break;
+        case _ViewMode.campus:
+          break;
+      }
+    });
   }
 
   @override
@@ -89,65 +166,16 @@ class _ClassroomPageState extends State<ClassroomPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.classroomQuery)),
-      body: Column(
-        children: [
-          _buildCampusFilter(),
-          const Divider(height: 1),
-          Expanded(child: _buildContent(l10n)),
-        ],
+      appBar: AppBar(
+        title: Text(l10n.classroomQuery),
+        leading: _viewMode != _ViewMode.campus
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: _goBack,
+              )
+            : null,
       ),
-    );
-  }
-
-  Widget _buildCampusFilter() {
-    final l10n = AppLocalizations.of(context)!;
-    final campuses = [
-      {'code': '01', 'name': '望江'},
-      {'code': '02', 'name': '华西'},
-      {'code': '03', 'name': '江安'},
-    ];
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            l10n.selectCampus,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              FilterChip(
-                label: Text(l10n.allBuildings),
-                selected: _selectedCampus == null,
-                onSelected: (_) {
-                  setState(() {
-                    _selectedCampus = null;
-                  });
-                },
-              ),
-              ...campuses.map(
-                (c) => FilterChip(
-                  label: Text(c['name'] as String),
-                  selected: _selectedCampus == c['code'],
-                  onSelected: (_) {
-                    setState(() {
-                      _selectedCampus = c['code'] as String;
-                    });
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+      body: _buildContent(l10n),
     );
   }
 
@@ -156,23 +184,58 @@ class _ClassroomPageState extends State<ClassroomPage> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_error != null && _buildings.isEmpty) {
-      return _buildErrorWidget(l10n, _loadBuildings);
+    if (_error != null && _campuses.isEmpty) {
+      return _buildErrorWidget(l10n, _loadIndex);
     }
 
-    if (_selectedBuilding != null && _roomResult != null && !_isLoading) {
-      return _buildRoomList(l10n);
+    switch (_viewMode) {
+      case _ViewMode.campus:
+        return _buildCampusView(l10n);
+      case _ViewMode.building:
+        return _buildBuildingList(l10n);
+      case _ViewMode.room:
+        return _buildRoomView(l10n);
     }
+  }
 
-    if (_isLoading && _selectedBuilding != null) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_error != null && _selectedBuilding != null) {
-      return _buildErrorWidget(l10n, () => _queryBuilding(_selectedBuilding!));
-    }
-
-    return _buildBuildingList(l10n);
+  Widget _buildCampusView(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Text(
+            l10n.selectCampus,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: _campuses.length,
+            itemBuilder: (context, index) {
+              final campus = _campuses[index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  leading: const Icon(Icons.location_city_outlined),
+                  title: Text('${campus.campusName}校区'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    setState(() {
+                      _selectedCampus = campus;
+                      _viewMode = _ViewMode.building;
+                    });
+                  },
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildBuildingList(AppLocalizations l10n) {
@@ -189,29 +252,52 @@ class _ClassroomPageState extends State<ClassroomPage> {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: buildings.length,
-      itemBuilder: (context, index) {
-        final building = buildings[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 8),
-          child: ListTile(
-            leading: const Icon(Icons.apartment_outlined),
-            title: Text(building.name),
-            subtitle: Text(building.campusName),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => _queryBuilding(building),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Text(
+            l10n.selectBuilding,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
-        );
-      },
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: buildings.length,
+            itemBuilder: (context, index) {
+              final building = buildings[index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  leading: const Icon(Icons.apartment_outlined),
+                  title: Text(building.teachingBuildingName),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _queryBuilding(building),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildRoomList(AppLocalizations l10n) {
-    if (_roomResult == null) return const SizedBox.shrink();
+  Widget _buildRoomView(AppLocalizations l10n) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-    final rooms = _roomResult!.rooms;
+    if (_error != null) {
+      return _buildErrorWidget(l10n, () => _queryBuilding(_selectedBuilding!));
+    }
+
+    if (_queryResult == null) return const SizedBox.shrink();
+
+    final rooms = _queryResult!.classrooms;
 
     return Column(
       children: [
@@ -219,23 +305,26 @@ class _ClassroomPageState extends State<ClassroomPage> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  setState(() {
-                    _selectedBuilding = null;
-                    _roomResult = null;
-                  });
-                },
-              ),
               Expanded(
-                child: Text(
-                  _selectedBuilding!.name,
-                  style: Theme.of(context).textTheme.titleMedium,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _selectedBuilding!.teachingBuildingName,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    if (_queryResult!.jxzc > 0)
+                      Text(
+                        l10n.classroomTeachingWeek(_queryResult!.jxzc),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                  ],
                 ),
               ),
               Text(
-                '${rooms.length} 间教室',
+                '${rooms.length} ${l10n.seats == "座" ? "间教室" : "rooms"}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -243,93 +332,116 @@ class _ClassroomPageState extends State<ClassroomPage> {
             ],
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: ActionChip(
+            avatar: const Icon(Icons.calendar_today, size: 18),
+            label: Text(_formatDate(_selectedDate)),
+            onPressed: _pickDate,
+          ),
+        ),
         Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: rooms.length,
-            itemBuilder: (context, index) {
-              final room = rooms[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 6),
-                child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ClassroomDetailPage(
-                          building: _selectedBuilding!,
-                          room: room,
-                        ),
-                      ),
-                    );
+          child: rooms.isEmpty
+              ? Center(
+                  child: Text(
+                    l10n.noData,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: rooms.length,
+                  itemBuilder: (context, index) {
+                    final room = rooms[index];
+                    return _buildRoomCard(room, l10n);
                   },
-                  borderRadius: BorderRadius.circular(12),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Row(
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRoomCard(ClassroomInfo room, AppLocalizations l10n) {
+    final statusMap = _queryResult!.periodStatusMap(room.classroomNumber);
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 6),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ClassroomDetailPage(
+                campus: _selectedCampus!,
+                building: _selectedBuilding!,
+                room: room,
+                timeSlots: _queryResult!.slotsFor(room.classroomNumber),
+                queryDate: _queryResult!.date,
+                teachingWeek: _queryResult!.jxzc,
+              ),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                room.roomName,
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${room.seatCount} ${l10n.seats}',
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSurfaceVariant,
-                                    ),
-                              ),
-                            ],
-                          ),
+                        Text(
+                          room.classroomName,
+                          style: Theme.of(context).textTheme.titleMedium,
                         ),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ...List.generate(5, (i) {
-                              final classInfo = i < room.classUses.length
-                                  ? room.classUses[i]
-                                  : null;
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 3,
-                                ),
-                                child: Tooltip(
-                                  message: '第${i + 1}大节',
-                                  child: Icon(
-                                    _getPeriodIcon(classInfo),
-                                    color: _getPeriodColor(classInfo),
-                                    size: 24,
-                                  ),
-                                ),
-                              );
-                            }),
-                            const Padding(
-                              padding: EdgeInsets.only(left: 8),
-                              child: Icon(
-                                Icons.chevron_right,
-                                color: Colors.grey,
-                                size: 20,
+                        const SizedBox(height: 2),
+                        Text(
+                          '${room.placeNum} ${l10n.seats}',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
-                            ),
-                          ],
                         ),
                       ],
                     ),
                   ),
+                  const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+                ],
+              ),
+              const SizedBox(height: 8),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: List.generate(12, (i) {
+                    final period = i + 1;
+                    final status =
+                        statusMap[period] ?? ClassroomPeriodStatus.free;
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 1.5),
+                      child: Tooltip(
+                        message: _periodTooltip(period, status, l10n),
+                        child: Icon(
+                          _getPeriodIcon(status),
+                          color: _getPeriodColor(status),
+                          size: 18,
+                        ),
+                      ),
+                    );
+                  }),
                 ),
-              );
-            },
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 24),
-      ],
+      ),
     );
   }
 
@@ -349,8 +461,8 @@ class _ClassroomPageState extends State<ClassroomPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                _error == 'campusNetworkRequired'
-                    ? l10n.campusNetworkRequired
+                _error == 'sessionExpired'
+                    ? l10n.sessionExpired
                     : l10n.loadFailed,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -364,17 +476,60 @@ class _ClassroomPageState extends State<ClassroomPage> {
     );
   }
 
-  IconData _getPeriodIcon(ClassUseInfo? classInfo) {
-    if (classInfo == null) return Icons.remove_circle_outline;
-    if (classInfo.isBorrowed) return Icons.lock_outline;
-    if (classInfo.isInUse) return Icons.school;
-    return Icons.check_circle_outline;
+  String _periodTooltip(
+    int period,
+    ClassroomPeriodStatus status,
+    AppLocalizations l10n,
+  ) {
+    final label = _getPeriodStatusText(status, l10n);
+    return '$period - $label';
   }
 
-  Color _getPeriodColor(ClassUseInfo? classInfo) {
-    if (classInfo == null) return Colors.grey;
-    if (classInfo.isBorrowed) return Colors.orange;
-    if (classInfo.isInUse) return Colors.red;
-    return Colors.green;
+  String _getPeriodStatusText(
+    ClassroomPeriodStatus status,
+    AppLocalizations l10n,
+  ) {
+    switch (status) {
+      case ClassroomPeriodStatus.free:
+        return l10n.free;
+      case ClassroomPeriodStatus.inClass:
+        return l10n.inClass;
+      case ClassroomPeriodStatus.exam:
+        return l10n.classroomPeriodExam;
+      case ClassroomPeriodStatus.experiment:
+        return l10n.classroomPeriodExperiment;
+      case ClassroomPeriodStatus.borrowed:
+        return l10n.borrowed;
+    }
+  }
+
+  IconData _getPeriodIcon(ClassroomPeriodStatus status) {
+    switch (status) {
+      case ClassroomPeriodStatus.free:
+        return Icons.check_circle_outline;
+      case ClassroomPeriodStatus.inClass:
+        return Icons.school;
+      case ClassroomPeriodStatus.exam:
+        return Icons.assignment;
+      case ClassroomPeriodStatus.experiment:
+        return Icons.science;
+      case ClassroomPeriodStatus.borrowed:
+        return Icons.lock_outline;
+    }
+  }
+
+  Color _getPeriodColor(ClassroomPeriodStatus status) {
+    switch (status) {
+      case ClassroomPeriodStatus.free:
+        return Colors.green;
+      case ClassroomPeriodStatus.inClass:
+        return Colors.red;
+      case ClassroomPeriodStatus.exam:
+        return Colors.orange;
+      case ClassroomPeriodStatus.experiment:
+        return Colors.purple;
+      case ClassroomPeriodStatus.borrowed:
+        return Colors.amber;
+    }
   }
 }

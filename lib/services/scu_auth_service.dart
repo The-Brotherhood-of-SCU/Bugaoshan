@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
 import 'package:bugaoshan/utils/sm2_crypto.dart';
 
 /// 四川大学统一身份认证 Service
@@ -384,6 +385,134 @@ class ScuAuthService {
         throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
       }
       return _parseJson(body, 'schemeScores/callback');
+    } finally {
+      client.close();
+    }
+  }
+
+  /// 获取教室查询页面的校区和教学楼列表
+  Future<({List<ClassroomCampus> campuses, List<ClassroomBuilding> buildings})>
+      fetchClassroomIndex() async {
+    final client = await bindSession();
+    try {
+      final resp = await client.get(
+        Uri.parse(
+          'http://zhjw.scu.edu.cn/student/teachingResources/classroomUseStatus/index',
+        ),
+        headers: {
+          'Accept': 'text/html,*/*',
+          'Referer': 'http://zhjw.scu.edu.cn/',
+          'User-Agent': _headers['User-Agent']!,
+        },
+      );
+      final body = resp.body.trim();
+      if (body.startsWith('<html') && body.contains('login') ||
+          resp.statusCode == 302) {
+        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
+      }
+      final xqMatch = RegExp(
+        r"""<input[^>]+id="xqList"[^>]+value='([^']+)'""",
+      ).firstMatch(body);
+      if (xqMatch == null) {
+        throw ScuLoginException('无法解析校区列表');
+      }
+      final xqList = (jsonDecode(xqMatch.group(1)!) as List)
+          .map((e) => ClassroomCampus.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+      final jxlMatch = RegExp(
+        r"""<input[^>]+id="jxlList"[^>]+value='([^']+)'""",
+      ).firstMatch(body);
+      if (jxlMatch == null) {
+        throw ScuLoginException('无法解析教学楼列表');
+      }
+      final jxlList = (jsonDecode(jxlMatch.group(1)!) as List)
+          .map((e) => ClassroomBuilding.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+      return (campuses: xqList, buildings: jxlList);
+    } finally {
+      client.close();
+    }
+  }
+
+  /// 获取教学楼的教室类型列表
+  Future<List<ClassroomType>> fetchClassroomTypes({
+    required String campusNumber,
+    required String buildingNumber,
+    required String campusName,
+    required String buildingName,
+  }) async {
+    final client = await bindSession();
+    try {
+      final resp = await client.get(
+        Uri.parse(
+          'http://zhjw.scu.edu.cn/student/teachingResources/classroomUseStatus'
+          '/$campusNumber/$buildingNumber'
+          '/${Uri.encodeComponent(campusName)}/${Uri.encodeComponent(buildingName)}',
+        ),
+        headers: {
+          'Accept': 'text/html,*/*',
+          'Referer': 'http://zhjw.scu.edu.cn/',
+          'User-Agent': _headers['User-Agent']!,
+        },
+      );
+      final body = resp.body.trim();
+      if (body.startsWith('<html') && body.contains('login') ||
+          resp.statusCode == 302) {
+        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
+      }
+      final match = RegExp(
+        r"""<input[^>]+id="classroomTypes"[^>]+value='([^']+)'""",
+      ).firstMatch(body);
+      if (match == null) return [];
+      return (jsonDecode(match.group(1)!) as List)
+          .map((e) => ClassroomType.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } finally {
+      client.close();
+    }
+  }
+
+  /// 查询教室使用情况
+  Future<ClassroomQueryResult> fetchClassroomAvailability({
+    required String campusNumber,
+    required String buildingNumber,
+    String classroomType = '',
+    String classroomName = '',
+    String seatFrom = '',
+    String seatTo = '',
+    String searchDate = '',
+  }) async {
+    final client = await bindSession();
+    try {
+      final resp = await client.post(
+        Uri.parse(
+          'http://zhjw.scu.edu.cn/student/teachingResources/classroomUseStatus/jasInfo',
+        ),
+        headers: {
+          'Accept': 'application/json, text/javascript, */*; q=0.01',
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          'Referer':
+              'http://zhjw.scu.edu.cn/student/teachingResources/classroomUseStatus/index',
+          'User-Agent': _headers['User-Agent']!,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: 'xqh=${Uri.encodeComponent(campusNumber)}'
+            '&jxlh=${Uri.encodeComponent(buildingNumber)}'
+            '&jslx=${Uri.encodeComponent(classroomType)}'
+            '&jasm=${Uri.encodeComponent(classroomName)}'
+            '&zwFrom=${Uri.encodeComponent(seatFrom)}'
+            '&zwTo=${Uri.encodeComponent(seatTo)}'
+            '&searchDate=${Uri.encodeComponent(searchDate)}',
+      );
+      final body = resp.body.trim();
+      if (body.startsWith('<') || resp.statusCode == 302) {
+        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
+      }
+      return ClassroomQueryResult.fromJson(
+        _parseJson(body, 'classroomUseStatus/jasInfo'),
+      );
     } finally {
       client.close();
     }

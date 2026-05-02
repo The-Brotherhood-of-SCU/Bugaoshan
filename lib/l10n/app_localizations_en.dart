@@ -125,6 +125,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get borrowed => 'Borrowed';
 
   @override
+  String get classroomPeriodExam => 'Exam';
+
+  @override
+  String get classroomPeriodExperiment => 'Experiment';
+
+  @override
+  String classroomTeachingWeek(int week) {
+    return 'Week $week';
+  }
+
+  @override
+  String classroomQueryDate(String date) {
+    return 'Query Date: $date';
+  }
+
+  @override
+  String get classroomCanBorrow => 'Borrowable';
+
+  @override
+  String get classroomCannotBorrow => 'Not Borrowable';
+
+  @override
+  String get classroomRemark => 'Remark';
+
+  @override
   String get period => 'Period';
 
   @override

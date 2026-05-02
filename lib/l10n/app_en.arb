@@ -36,6 +36,23 @@
     "free": "Free",
     "inClass": "In Class",
     "borrowed": "Borrowed",
+    "classroomPeriodExam": "Exam",
+    "classroomPeriodExperiment": "Experiment",
+    "classroomTeachingWeek": "Week {week}",
+    "@classroomTeachingWeek": {
+        "placeholders": {
+            "week": {"type": "int"}
+        }
+    },
+    "classroomQueryDate": "Query Date: {date}",
+    "@classroomQueryDate": {
+        "placeholders": {
+            "date": {"type": "String"}
+        }
+    },
+    "classroomCanBorrow": "Borrowable",
+    "classroomCannotBorrow": "Not Borrowable",
+    "classroomRemark": "Remark",
     "period": "Period",
     "loading": "Loading...",
     "loadFailed": "Load Failed",
