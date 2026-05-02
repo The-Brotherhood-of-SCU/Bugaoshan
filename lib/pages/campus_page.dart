@@ -37,15 +37,6 @@ class CampusPage extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               _CampusCard(
-                icon: Icons.school_outlined,
-                title: l10n.trainProgram,
-                desc: l10n.trainProgramDesc,
-                appOnly: false,
-                onTap: () =>
-                    popupOrNavigate(logicRootContext, const TrainProgramPage()),
-              ),
-              const SizedBox(height: 8),
-              _CampusCard(
                 icon: Icons.event_outlined,
                 title: l10n.ccylTitle,
                 desc: l10n.ccylDesc,
@@ -55,6 +46,15 @@ class CampusPage extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               _SectionHeader(title: l10n.utilitiesSection),
+              const SizedBox(height: 8),
+              _CampusCard(
+                icon: Icons.school_outlined,
+                title: l10n.trainProgram,
+                desc: l10n.trainProgramDesc,
+                appOnly: false,
+                onTap: () =>
+                    popupOrNavigate(logicRootContext, const TrainProgramPage()),
+              ),
               const SizedBox(height: 8),
               _CampusCard(
                 icon: Icons.meeting_room_outlined,
