@@ -5,6 +5,7 @@ import 'package:bugaoshan/pages/campus/balance_query/balance_query_page.dart';
 import 'package:bugaoshan/pages/campus/classroom/classroom_page.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_page.dart';
 import 'package:bugaoshan/pages/campus/grades/grades_page.dart';
+import 'package:bugaoshan/pages/campus/plan_completion/plan_completion_page.dart';
 import 'package:bugaoshan/pages/campus/network_device/network_device_page.dart';
 import 'package:bugaoshan/pages/campus/train_program/train_program_page.dart';
 import 'package:bugaoshan/utils/constants.dart';
@@ -43,6 +44,17 @@ class CampusPage extends StatelessWidget {
                 appOnly: false,
                 onTap: () =>
                     popupOrNavigate(logicRootContext, const CcylPage()),
+              ),
+              const SizedBox(height: 8),
+              _CampusCard(
+                icon: Icons.assignment_turned_in_outlined,
+                title: l10n.planCompletion,
+                desc: l10n.planCompletionDesc,
+                appOnly: false,
+                onTap: () => popupOrNavigate(
+                  logicRootContext,
+                  const PlanCompletionPage(),
+                ),
               ),
               const SizedBox(height: 24),
               _SectionHeader(title: l10n.utilitiesSection),
