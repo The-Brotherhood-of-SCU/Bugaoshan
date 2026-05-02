@@ -961,11 +961,17 @@ abstract class AppLocalizations {
   /// **'Fetching...'**
   String get fetchingCurrentWeek;
 
-  /// No description provided for @pleaseLoginFirst.
+  /// No description provided for @loginRequired.
   ///
   /// In en, this message translates to:
-  /// **'Please login to academic system first'**
-  String get pleaseLoginFirst;
+  /// **'Please complete SCU Unified Identity login in the Profile page first'**
+  String get loginRequired;
+
+  /// No description provided for @goToLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Login'**
+  String get goToLogin;
 
   /// No description provided for @semesterEndDate.
   ///
@@ -2512,7 +2518,7 @@ abstract class AppLocalizations {
   /// No description provided for @balanceQueryLoginRequired.
   ///
   /// In en, this message translates to:
-  /// **'Please login via unified authentication in Profile page first'**
+  /// **'Please complete SCU Unified Identity login in the Profile page first'**
   String get balanceQueryLoginRequired;
 
   /// No description provided for @balanceQueryNoBinding.

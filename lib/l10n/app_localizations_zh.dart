@@ -454,7 +454,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fetchingCurrentWeek => '正在获取...';
 
   @override
-  String get pleaseLoginFirst => '请先登录教务系统';
+  String get loginRequired => '请先在「我的」页面完成统一身份认证登录';
+
+  @override
+  String get goToLogin => '前往登录';
 
   @override
   String get semesterEndDate => '学期结束日期';
