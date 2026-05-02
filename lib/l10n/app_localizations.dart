@@ -1912,7 +1912,7 @@ abstract class AppLocalizations {
   /// No description provided for @ccylOrderedActivities.
   ///
   /// In en, this message translates to:
-  /// **'Reserved Activities'**
+  /// **'Reserved'**
   String get ccylOrderedActivities;
 
   /// No description provided for @ccylMyCredits.
