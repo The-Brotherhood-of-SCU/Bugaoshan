@@ -964,7 +964,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ccylMyActivities => 'My Activities';
 
   @override
-  String get ccylOrderedActivities => 'Reserved Activities';
+  String get ccylOrderedActivities => 'Reserved';
 
   @override
   String get ccylMyCredits => 'Credit List';
