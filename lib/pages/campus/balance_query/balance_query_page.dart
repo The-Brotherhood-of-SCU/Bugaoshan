@@ -88,7 +88,7 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
                 final auth = getIt<ScuAuthProvider>();
                 if (!auth.isLoggedIn) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.balanceQueryLoginRequired)),
+                    SnackBar(content: Text(l10n.loginRequired)),
                   );
                   return;
                 }
@@ -162,7 +162,7 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
             final auth = getIt<ScuAuthProvider>();
             if (!auth.isLoggedIn) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.balanceQueryLoginRequired)),
+                SnackBar(content: Text(l10n.loginRequired)),
               );
               return;
             }
@@ -185,9 +185,28 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
         return Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Text(
-              l10n.balanceQueryLoginRequired,
-              textAlign: TextAlign.center,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.login,
+                  size: 48,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.loginRequired,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  },
+                  icon: const Icon(Icons.person),
+                  label: Text(l10n.goToLogin),
+                ),
+              ],
             ),
           ),
         );
@@ -244,7 +263,7 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
                   final auth = getIt<ScuAuthProvider>();
                   if (!auth.isLoggedIn) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(l10n.balanceQueryLoginRequired)),
+                      SnackBar(content: Text(l10n.loginRequired)),
                     );
                     return;
                   }

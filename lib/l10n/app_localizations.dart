@@ -325,6 +325,48 @@ abstract class AppLocalizations {
   /// **'Borrowed'**
   String get borrowed;
 
+  /// No description provided for @classroomPeriodExam.
+  ///
+  /// In en, this message translates to:
+  /// **'Exam'**
+  String get classroomPeriodExam;
+
+  /// No description provided for @classroomPeriodExperiment.
+  ///
+  /// In en, this message translates to:
+  /// **'Experiment'**
+  String get classroomPeriodExperiment;
+
+  /// No description provided for @classroomTeachingWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Week {week}'**
+  String classroomTeachingWeek(int week);
+
+  /// No description provided for @classroomQueryDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Query Date: {date}'**
+  String classroomQueryDate(String date);
+
+  /// No description provided for @classroomCanBorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowable'**
+  String get classroomCanBorrow;
+
+  /// No description provided for @classroomCannotBorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Borrowable'**
+  String get classroomCannotBorrow;
+
+  /// No description provided for @classroomRemark.
+  ///
+  /// In en, this message translates to:
+  /// **'Remark'**
+  String get classroomRemark;
+
   /// No description provided for @period.
   ///
   /// In en, this message translates to:
@@ -396,6 +438,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Confirm'**
   String get confirm;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
 
   /// No description provided for @currentAnimationDuration.
   ///
@@ -913,11 +961,17 @@ abstract class AppLocalizations {
   /// **'Fetching...'**
   String get fetchingCurrentWeek;
 
-  /// No description provided for @pleaseLoginFirst.
+  /// No description provided for @loginRequired.
   ///
   /// In en, this message translates to:
-  /// **'Please login to academic system first'**
-  String get pleaseLoginFirst;
+  /// **'Please complete SCU Unified Identity login in the Profile page first'**
+  String get loginRequired;
+
+  /// No description provided for @goToLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Login'**
+  String get goToLogin;
 
   /// No description provided for @semesterEndDate.
   ///
@@ -1870,7 +1924,7 @@ abstract class AppLocalizations {
   /// No description provided for @ccylOrderedActivities.
   ///
   /// In en, this message translates to:
-  /// **'Reserved Activities'**
+  /// **'Reserved'**
   String get ccylOrderedActivities;
 
   /// No description provided for @ccylMyCredits.
@@ -2464,7 +2518,7 @@ abstract class AppLocalizations {
   /// No description provided for @balanceQueryLoginRequired.
   ///
   /// In en, this message translates to:
-  /// **'Please login via unified authentication in Profile page first'**
+  /// **'Please complete SCU Unified Identity login in the Profile page first'**
   String get balanceQueryLoginRequired;
 
   /// No description provided for @balanceQueryNoBinding.

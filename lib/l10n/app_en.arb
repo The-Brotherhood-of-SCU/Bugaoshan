@@ -36,6 +36,23 @@
     "free": "Free",
     "inClass": "In Class",
     "borrowed": "Borrowed",
+    "classroomPeriodExam": "Exam",
+    "classroomPeriodExperiment": "Experiment",
+    "classroomTeachingWeek": "Week {week}",
+    "@classroomTeachingWeek": {
+        "placeholders": {
+            "week": {"type": "int"}
+        }
+    },
+    "classroomQueryDate": "Query Date: {date}",
+    "@classroomQueryDate": {
+        "placeholders": {
+            "date": {"type": "String"}
+        }
+    },
+    "classroomCanBorrow": "Borrowable",
+    "classroomCannotBorrow": "Not Borrowable",
+    "classroomRemark": "Remark",
     "period": "Period",
     "loading": "Loading...",
     "loadFailed": "Load Failed",
@@ -48,6 +65,7 @@
     "current": "Current",
     "animationDuration": "Duration",
     "confirm": "Confirm",
+    "today": "Today",
     "currentAnimationDuration": "Current Animation Duration: {value} ms",
     "animationDurationUpdated": "Animation Duration updated to {value} ms",
     "animationDurationHint": "Hint: Adjust the slider to preview the animation, click Confirm to save the settings",
@@ -142,7 +160,8 @@
     "autoFetchCurrentWeek":"Auto Fetch Current Week",
     "autoFetchCurrentWeekHint":"Fetch current teaching week from academic system",
     "fetchingCurrentWeek":"Fetching...",
-    "pleaseLoginFirst":"Please login to academic system first",
+    "loginRequired":"Please complete SCU Unified Identity login in the Profile page first",
+    "goToLogin":"Go to Login",
     "semesterEndDate":"Semester End Date",
     "displaySetting":"Display Setting",
     "colorOpacity":"Color Opacity",
@@ -302,7 +321,7 @@
     "ccylDesc": "Browse activities, participate, make reservations",
     "ccylSearchActivities": "Activity Search",
     "ccylMyActivities": "My Activities",
-    "ccylOrderedActivities": "Reserved Activities",
+    "ccylOrderedActivities": "Reserved",
     "ccylMyCredits": "Credit List",
     "ccylSelect": "Select",
     "ccylSelectAll": "Select All",
@@ -411,7 +430,7 @@
     "roomNumber": "Room Number",
     "roomNumberHint": "Enter room number, e.g. 301C",
     "pricePerUnit": "Price per unit",
-    "balanceQueryLoginRequired": "Please login via unified authentication in Profile page first",
+    "balanceQueryLoginRequired": "Please complete SCU Unified Identity login in the Profile page first",
     "balanceQueryNoBinding": "You haven't bound any room yet, please bind first",
     "scuLoginDisclaimerPwd": "When 'Remember Password' is enabled, your password is encrypted and stored locally using system-level encryption",
     "scuLoginDisclaimerOcr": "Captcha is recognized by a local OCR model",

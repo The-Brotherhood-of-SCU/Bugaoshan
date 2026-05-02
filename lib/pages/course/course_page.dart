@@ -102,33 +102,31 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
             const SizedBox(height: 8),
             // Course grid
             Expanded(
-              child: allCourses.isEmpty
-                  ? Center(child: Text(l10n.noCourseThisWeek))
-                  : _SwipePageView(
-                      controller: _pageController,
-                      itemCount: totalWeeks,
-                      onPageChanged: (index) {
-                        final displayWeek = index + 1;
-                        if (_visibleWeek != displayWeek) {
-                          setState(() {
-                            _visibleWeek = displayWeek;
-                          });
-                        }
-                        courseProvider.updateCurrentWeek(displayWeek);
-                      },
-                      itemBuilder: (context, index) {
-                        final displayWeek = index + 1;
-                        return CourseGrid(
-                          courses: allCourses,
-                          config: config,
-                          displayWeek: displayWeek,
-                          totalWeeks: totalWeeks,
-                          onCourseTap: _onCourseTap,
-                          onCourseLongPress: _onCourseLongPress,
-                          onEmptyTap: _onEmptyTap,
-                        );
-                      },
-                    ),
+              child: _SwipePageView(
+                controller: _pageController,
+                itemCount: totalWeeks,
+                onPageChanged: (index) {
+                  final displayWeek = index + 1;
+                  if (_visibleWeek != displayWeek) {
+                    setState(() {
+                      _visibleWeek = displayWeek;
+                    });
+                  }
+                  courseProvider.updateCurrentWeek(displayWeek);
+                },
+                itemBuilder: (context, index) {
+                  final displayWeek = index + 1;
+                  return CourseGrid(
+                    courses: allCourses,
+                    config: config,
+                    displayWeek: displayWeek,
+                    totalWeeks: totalWeeks,
+                    onCourseTap: _onCourseTap,
+                    onCourseLongPress: _onCourseLongPress,
+                    onEmptyTap: _onEmptyTap,
+                  );
+                },
+              ),
             ),
           ],
         );
