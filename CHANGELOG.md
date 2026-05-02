@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - 优化余额查询UI
+- 重构教室查询功能，移除校园网依赖
 
 ### Fixed
 - 修复课表导出后立即导入失败并产生空课表的问题
