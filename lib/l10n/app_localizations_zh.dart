@@ -936,6 +936,33 @@ class AppLocalizationsZh extends AppLocalizations {
   String get trainProgramLoginRequired => '请先在「我的」页面完成统一身份认证登录';
 
   @override
+  String get planCompletion => '方案修读情况';
+
+  @override
+  String get planCompletionDesc => '查看培养方案各模块的修读进度';
+
+  @override
+  String get planCompletionNoData => '暂无方案修读数据';
+
+  @override
+  String get planCompletionTotalEarned => '已获学分';
+
+  @override
+  String get planCompletionCompleted => '已完成模块';
+
+  @override
+  String get planCompletionCredits => '学分';
+
+  @override
+  String get planCompletionCreditsUnit => '学分';
+
+  @override
+  String get planCompletionCourses => '课程';
+
+  @override
+  String get planCompletionRateLimited => '请勿频繁刷新，请稍后再试';
+
+  @override
   String get ccylTitle => '第二课堂';
 
   @override

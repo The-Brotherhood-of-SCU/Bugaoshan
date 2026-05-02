@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.9.0] - 2026-05-02
+
+### Added
+- 新增方案修读情况页面
+- 新增自动更新检查
+
 ## [0.8.1] - 2026-05-02
 
 ### Added

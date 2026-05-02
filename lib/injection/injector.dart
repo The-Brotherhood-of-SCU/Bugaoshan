@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:bugaoshan/pages/campus/plan_completion/plan_completion_provider.dart';
 import 'package:bugaoshan/pages/campus/train_program/train_program_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
@@ -76,6 +77,13 @@ void _configureAsyncDependencies() {
     final auth = getIt<ScuAuthProvider>();
     return TrainProgramProvider(auth);
   });
+  getIt.registerSingletonAsync<PlanCompletionProvider>(() async {
+    await getIt.isReady<SharedPreferences>();
+    await getIt.isReady<ScuAuthProvider>();
+    final prefs = getIt<SharedPreferences>();
+    final auth = getIt<ScuAuthProvider>();
+    return PlanCompletionProvider(prefs, auth);
+  });
   getIt.registerSingletonAsync<UpdateService>(() async {
     return UpdateService();
   });
@@ -100,6 +108,7 @@ Future<void> ensureBasicDependencies() async {
     getIt.isReady<CcylProvider>(),
     getIt.isReady<GradesProvider>(),
     getIt.isReady<TrainProgramProvider>(),
+    getIt.isReady<PlanCompletionProvider>(),
     getIt.isReady<WidgetUpdateService>(),
   ]);
 }

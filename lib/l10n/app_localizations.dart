@@ -1897,6 +1897,60 @@ abstract class AppLocalizations {
   /// **'Please complete SCU Unified Identity login in the Profile page first'**
   String get trainProgramLoginRequired;
 
+  /// No description provided for @planCompletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan Completion'**
+  String get planCompletion;
+
+  /// No description provided for @planCompletionDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'View progress of each training program module'**
+  String get planCompletionDesc;
+
+  /// No description provided for @planCompletionNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'No plan completion data'**
+  String get planCompletionNoData;
+
+  /// No description provided for @planCompletionTotalEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'Earned Credits'**
+  String get planCompletionTotalEarned;
+
+  /// No description provided for @planCompletionCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get planCompletionCompleted;
+
+  /// No description provided for @planCompletionCredits.
+  ///
+  /// In en, this message translates to:
+  /// **'Credits'**
+  String get planCompletionCredits;
+
+  /// No description provided for @planCompletionCreditsUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'cr'**
+  String get planCompletionCreditsUnit;
+
+  /// No description provided for @planCompletionCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses'**
+  String get planCompletionCourses;
+
+  /// No description provided for @planCompletionRateLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many requests, please try again later'**
+  String get planCompletionRateLimited;
+
   /// No description provided for @ccylTitle.
   ///
   /// In en, this message translates to:

@@ -959,6 +959,35 @@ class AppLocalizationsEn extends AppLocalizations {
       'Please complete SCU Unified Identity login in the Profile page first';
 
   @override
+  String get planCompletion => 'Plan Completion';
+
+  @override
+  String get planCompletionDesc =>
+      'View progress of each training program module';
+
+  @override
+  String get planCompletionNoData => 'No plan completion data';
+
+  @override
+  String get planCompletionTotalEarned => 'Earned Credits';
+
+  @override
+  String get planCompletionCompleted => 'Completed';
+
+  @override
+  String get planCompletionCredits => 'Credits';
+
+  @override
+  String get planCompletionCreditsUnit => 'cr';
+
+  @override
+  String get planCompletionCourses => 'Courses';
+
+  @override
+  String get planCompletionRateLimited =>
+      'Too many requests, please try again later';
+
+  @override
   String get ccylTitle => 'Second Classroom';
 
   @override
