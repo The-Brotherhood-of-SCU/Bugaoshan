@@ -10,10 +10,10 @@ data class TimeSlot(
     val endMinute: Int,
 ) {
     val startTimeString: String
-        get() = "%02d:%02d".format(startHour, startMinute)
+        get() = "${startHour.toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}"
 
     val endTimeString: String
-        get() = "%02d:%02d".format(endHour, endMinute)
+        get() = "${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}"
 
     companion object {
         fun defaultSlots(

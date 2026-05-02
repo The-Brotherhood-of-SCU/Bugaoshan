@@ -5,6 +5,7 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.daysUntil
+import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
@@ -45,7 +46,7 @@ data class ScheduleConfig(
         fun defaultConfig(): ScheduleConfig {
             val now = Clock.System.now()
             val today = now.toLocalDateTime(TimeZone.currentSystemDefault()).date
-            val monday = today.minus(today.dayOfWeek.value - 1, DateTimeUnit.DAY)
+            val monday = today.minus(today.dayOfWeek.isoDayNumber - 1, DateTimeUnit.DAY)
             return ScheduleConfig(
                 id = "default",
                 semesterName = "默认课表",
