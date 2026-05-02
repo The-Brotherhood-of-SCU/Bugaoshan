@@ -135,7 +135,6 @@ class _CourseGridState extends State<CourseGrid> {
         appConfig.courseRowHeight,
         appConfig.backgroundImagePath,
         appConfig.backgroundImageOpacity,
-        appConfig.backgroundImageVersion,
       ]),
       builder: (context, _) {
         return Stack(
@@ -145,9 +144,8 @@ class _CourseGridState extends State<CourseGrid> {
               Positioned.fill(
                 child: Opacity(
                   opacity: appConfig.backgroundImageOpacity.value,
-                  child: Image.file(
-                    key: ValueKey('bg_${appConfig.backgroundImageVersion.value}'),
-                    File(appConfig.backgroundImagePath.value!),
+                  child: Image(
+                    image: FileImage(File(appConfig.backgroundImagePath.value!)),
                     fit: BoxFit.cover,
                     errorBuilder: (_, _, _) => const SizedBox.shrink(),
                   ),

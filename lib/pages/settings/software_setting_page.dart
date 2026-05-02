@@ -121,6 +121,7 @@ class SoftwareSettingPage extends StatelessWidget {
                           final oldPath = appConfig.backgroundImagePath.value;
                           appConfig.backgroundImagePath.value = null;
                           if (oldPath != null) {
+                            FileImage(File(oldPath)).evict();
                             File(oldPath).delete().ignore();
                           }
                         },
