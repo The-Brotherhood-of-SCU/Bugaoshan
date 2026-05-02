@@ -121,6 +121,31 @@ class AppLocalizationsZh extends AppLocalizations {
   String get borrowed => '已借用';
 
   @override
+  String get classroomPeriodExam => '考试中';
+
+  @override
+  String get classroomPeriodExperiment => '实验中';
+
+  @override
+  String classroomTeachingWeek(int week) {
+    return '第 $week 周';
+  }
+
+  @override
+  String classroomQueryDate(String date) {
+    return '查询日期: $date';
+  }
+
+  @override
+  String get classroomCanBorrow => '可借用';
+
+  @override
+  String get classroomCannotBorrow => '不可借用';
+
+  @override
+  String get classroomRemark => '备注';
+
+  @override
   String get period => '节次';
 
   @override
@@ -156,6 +181,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get confirm => '确认';
+
+  @override
+  String get today => '今天';
 
   @override
   String currentAnimationDuration(Object value) {
@@ -426,7 +454,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fetchingCurrentWeek => '正在获取...';
 
   @override
-  String get pleaseLoginFirst => '请先登录教务系统';
+  String get loginRequired => '请先在「我的」页面完成统一身份认证登录';
+
+  @override
+  String get goToLogin => '前往登录';
 
   @override
   String get semesterEndDate => '学期结束日期';

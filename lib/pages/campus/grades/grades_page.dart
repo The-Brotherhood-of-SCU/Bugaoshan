@@ -36,13 +36,32 @@ class _GradesPageState extends State<GradesPage> {
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.all(24),
-                    child: Text(
-                      l10n.gradesLoginRequired,
-                      textAlign: TextAlign.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.login,
+                          size: 48,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.loginRequired,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).popUntil((route) => route.isFirst);
+                          },
+                          icon: const Icon(Icons.person),
+                          label: Text(l10n.goToLogin),
+                        ),
+                      ],
                     ),
                   ),
                 )
-              : _pages[_currentIndex], // 直接显示对应索引的 Widget，无滑动冲突
+              : _pages[_currentIndex],
           bottomNavigationBar: auth.isLoggedIn
               ? BottomNavigationBar(
                   currentIndex: _currentIndex,

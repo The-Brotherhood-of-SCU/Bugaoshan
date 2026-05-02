@@ -36,6 +36,23 @@
     "free": "空闲",
     "inClass": "上课中",
     "borrowed": "已借用",
+    "classroomPeriodExam": "考试中",
+    "classroomPeriodExperiment": "实验中",
+    "classroomTeachingWeek": "第 {week} 周",
+    "@classroomTeachingWeek": {
+        "placeholders": {
+            "week": {"type": "int"}
+        }
+    },
+    "classroomQueryDate": "查询日期: {date}",
+    "@classroomQueryDate": {
+        "placeholders": {
+            "date": {"type": "String"}
+        }
+    },
+    "classroomCanBorrow": "可借用",
+    "classroomCannotBorrow": "不可借用",
+    "classroomRemark": "备注",
     "period": "节次",
     "loading": "加载中...",
     "loadFailed": "加载失败，点击重试",
@@ -48,6 +65,7 @@
     "current": "当前",
     "animationDuration": "动画时长",
     "confirm": "确认",
+    "today": "今天",
     "currentAnimationDuration": "当前动画时长: {value} ms",
     "animationDurationUpdated": "动画时长已更新为 {value} ms",
     "animationDurationHint": "提示：调整滑块查看动画效果，点击确认后才会保存设置",
@@ -141,7 +159,8 @@
     "autoFetchCurrentWeek":"自动获取当前周数",
     "autoFetchCurrentWeekHint":"从教务系统获取当前教学周",
     "fetchingCurrentWeek":"正在获取...",
-    "pleaseLoginFirst":"请先登录教务系统",
+    "loginRequired":"请先在「我的」页面完成统一身份认证登录",
+    "goToLogin":"前往登录",
     "semesterEndDate":"学期结束日期",
     "displaySetting":"显示设置",
     "colorOpacity":"颜色不透明度",

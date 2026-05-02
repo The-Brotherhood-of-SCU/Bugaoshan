@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/pages/campus/models/building_model.dart';
-import 'package:bugaoshan/pages/campus/models/room_model.dart';
+import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
 
 class ClassroomDetailPage extends StatelessWidget {
-  final BuildingModel building;
-  final RoomData room;
+  final ClassroomCampus campus;
+  final ClassroomBuilding building;
+  final ClassroomInfo room;
+  final List<ClassroomTimeSlot> timeSlots;
+  final String queryDate;
+  final int teachingWeek;
 
   const ClassroomDetailPage({
     super.key,
+    required this.campus,
     required this.building,
     required this.room,
+    required this.timeSlots,
+    required this.queryDate,
+    required this.teachingWeek,
   });
 
   @override
@@ -18,7 +25,7 @@ class ClassroomDetailPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(room.roomName)),
+      appBar: AppBar(title: Text(room.classroomName)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -26,7 +33,10 @@ class ClassroomDetailPage extends StatelessWidget {
           children: [
             _buildInfoCard(context, l10n),
             const SizedBox(height: 16),
-            Text('时段状态', style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              l10n.period,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 8),
             _buildPeriodGrid(context, l10n),
           ],
@@ -36,11 +46,37 @@ class ClassroomDetailPage extends StatelessWidget {
   }
 
   Widget _buildInfoCard(BuildContext context, AppLocalizations l10n) {
-    final freePeriods = room.classUses
-        .where((c) => !c.isInUse && !c.isBorrowed)
-        .length;
-    final classPeriods = room.classUses.where((c) => c.isInUse).length;
-    final borrowedPeriods = room.classUses.where((c) => c.isBorrowed).length;
+    final statusMap = <int, ClassroomPeriodStatus>{};
+    for (final slot in timeSlots) {
+      statusMap[slot.sessionstart] = slot.status;
+    }
+
+    var freeCount = 0;
+    var inClassCount = 0;
+    var examCount = 0;
+    var experimentCount = 0;
+    var borrowedCount = 0;
+
+    for (int i = 1; i <= 12; i++) {
+      final status = statusMap[i] ?? ClassroomPeriodStatus.free;
+      switch (status) {
+        case ClassroomPeriodStatus.free:
+          freeCount++;
+          break;
+        case ClassroomPeriodStatus.inClass:
+          inClassCount++;
+          break;
+        case ClassroomPeriodStatus.exam:
+          examCount++;
+          break;
+        case ClassroomPeriodStatus.experiment:
+          experimentCount++;
+          break;
+        case ClassroomPeriodStatus.borrowed:
+          borrowedCount++;
+          break;
+      }
+    }
 
     return Card(
       child: Padding(
@@ -48,44 +84,99 @@ class ClassroomDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(room.roomName, style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              room.classroomName,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
             const SizedBox(height: 8),
             Text(
-              '${building.name} · ${building.campusName}',
+              '${building.teachingBuildingName} · ${campus.campusName}校区',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 12),
-            Row(
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
+                _buildStatusBadge(context, l10n.free, freeCount, Colors.green),
                 _buildStatusBadge(
                   context,
-                  '空闲',
-                  '$freePeriods/${room.classUses.length}',
-                  Colors.green,
-                ),
-                const SizedBox(width: 8),
-                _buildStatusBadge(
-                  context,
-                  '上课',
-                  '$classPeriods/${room.classUses.length}',
+                  l10n.inClass,
+                  inClassCount,
                   Colors.red,
                 ),
-                const SizedBox(width: 8),
                 _buildStatusBadge(
                   context,
-                  '借用',
-                  '$borrowedPeriods/${room.classUses.length}',
+                  l10n.classroomPeriodExam,
+                  examCount,
                   Colors.orange,
+                ),
+                _buildStatusBadge(
+                  context,
+                  l10n.classroomPeriodExperiment,
+                  experimentCount,
+                  Colors.purple,
+                ),
+                _buildStatusBadge(
+                  context,
+                  l10n.borrowed,
+                  borrowedCount,
+                  Colors.amber,
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
-              '座位数: ${room.seatCount}',
+              '${l10n.seats == "座" ? "座位数" : "Seats"}: ${room.placeNum}',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
+            if (room.remark.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                '${l10n.classroomRemark}: ${room.remark}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+            if (room.sfkjy == '是') ...[
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(
+                    Icons.check_circle_outline,
+                    size: 16,
+                    color: Colors.green,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    l10n.classroomCanBorrow,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.green,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            if (teachingWeek > 0) ...[
+              const SizedBox(height: 4),
+              Text(
+                l10n.classroomTeachingWeek(teachingWeek),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+            if (queryDate.isNotEmpty) ...[
+              Text(
+                l10n.classroomQueryDate(queryDate),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -95,7 +186,7 @@ class ClassroomDetailPage extends StatelessWidget {
   Widget _buildStatusBadge(
     BuildContext context,
     String label,
-    String count,
+    int count,
     Color color,
   ) {
     return Container(
@@ -126,43 +217,58 @@ class ClassroomDetailPage extends StatelessWidget {
   }
 
   Widget _buildPeriodGrid(BuildContext context, AppLocalizations l10n) {
-    final periodLabels = ['第1节', '第2节', '第3节', '第4节', '第5节'];
+    final statusMap = <int, ClassroomPeriodStatus>{};
+    for (final slot in timeSlots) {
+      statusMap[slot.sessionstart] = slot.status;
+    }
 
     return Column(
-      children: [
-        for (int i = 0; i < room.classUses.length; i++)
-          _buildPeriodRow(context, l10n, i, periodLabels),
-      ],
+      children: List.generate(12, (i) {
+        final period = i + 1;
+        final status = statusMap[period] ?? ClassroomPeriodStatus.free;
+        return _buildPeriodRow(context, l10n, period, status);
+      }),
     );
   }
 
   Widget _buildPeriodRow(
     BuildContext context,
     AppLocalizations l10n,
-    int index,
-    List<String> periodLabels,
+    int period,
+    ClassroomPeriodStatus status,
   ) {
-    final classUse = room.classUses[index];
-    final periodLabel = index < periodLabels.length
-        ? periodLabels[index]
-        : '第${index + 1}节';
+    final periodLabel = l10n.seats == "座" ? '第$period节' : 'P$period';
 
     Color bgColor;
     IconData icon;
     String statusText;
 
-    if (classUse.isInUse) {
-      bgColor = Colors.red.withValues(alpha: 0.12);
-      icon = Icons.school;
-      statusText = '上课中';
-    } else if (classUse.isBorrowed) {
-      bgColor = Colors.orange.withValues(alpha: 0.12);
-      icon = Icons.lock_outline;
-      statusText = '已借用';
-    } else {
-      bgColor = Colors.green.withValues(alpha: 0.12);
-      icon = Icons.check_circle_outline;
-      statusText = '空闲';
+    switch (status) {
+      case ClassroomPeriodStatus.free:
+        bgColor = Colors.green.withValues(alpha: 0.12);
+        icon = Icons.check_circle_outline;
+        statusText = l10n.free;
+        break;
+      case ClassroomPeriodStatus.inClass:
+        bgColor = Colors.red.withValues(alpha: 0.12);
+        icon = Icons.school;
+        statusText = l10n.inClass;
+        break;
+      case ClassroomPeriodStatus.exam:
+        bgColor = Colors.orange.withValues(alpha: 0.12);
+        icon = Icons.assignment;
+        statusText = l10n.classroomPeriodExam;
+        break;
+      case ClassroomPeriodStatus.experiment:
+        bgColor = Colors.purple.withValues(alpha: 0.12);
+        icon = Icons.science;
+        statusText = l10n.classroomPeriodExperiment;
+        break;
+      case ClassroomPeriodStatus.borrowed:
+        bgColor = Colors.amber.withValues(alpha: 0.12);
+        icon = Icons.lock_outline;
+        statusText = l10n.borrowed;
+        break;
     }
 
     return Card(
@@ -187,37 +293,13 @@ class ClassroomDetailPage extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            Icon(icon, color: _getStatusColor(classUse), size: 20),
+            Icon(icon, color: _getStatusColor(status), size: 20),
             const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    statusText,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                      color: _getStatusColor(classUse),
-                    ),
-                  ),
-                  if (classUse.isInUse && classUse.courseName.isNotEmpty) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      classUse.courseName,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                  if (classUse.isInUse && classUse.teacherName.isNotEmpty) ...[
-                    Text(
-                      classUse.teacherName,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ],
+            Text(
+              statusText,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+                color: _getStatusColor(status),
               ),
             ),
           ],
@@ -226,9 +308,18 @@ class ClassroomDetailPage extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(ClassUseInfo classUse) {
-    if (classUse.isInUse) return Colors.red;
-    if (classUse.isBorrowed) return Colors.orange;
-    return Colors.green;
+  Color _getStatusColor(ClassroomPeriodStatus status) {
+    switch (status) {
+      case ClassroomPeriodStatus.free:
+        return Colors.green;
+      case ClassroomPeriodStatus.inClass:
+        return Colors.red;
+      case ClassroomPeriodStatus.exam:
+        return Colors.orange;
+      case ClassroomPeriodStatus.experiment:
+        return Colors.purple;
+      case ClassroomPeriodStatus.borrowed:
+        return Colors.amber;
+    }
   }
 }

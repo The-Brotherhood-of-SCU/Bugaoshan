@@ -125,6 +125,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get borrowed => 'Borrowed';
 
   @override
+  String get classroomPeriodExam => 'Exam';
+
+  @override
+  String get classroomPeriodExperiment => 'Experiment';
+
+  @override
+  String classroomTeachingWeek(int week) {
+    return 'Week $week';
+  }
+
+  @override
+  String classroomQueryDate(String date) {
+    return 'Query Date: $date';
+  }
+
+  @override
+  String get classroomCanBorrow => 'Borrowable';
+
+  @override
+  String get classroomCannotBorrow => 'Not Borrowable';
+
+  @override
+  String get classroomRemark => 'Remark';
+
+  @override
   String get period => 'Period';
 
   @override
@@ -161,6 +186,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get confirm => 'Confirm';
+
+  @override
+  String get today => 'Today';
 
   @override
   String currentAnimationDuration(Object value) {
@@ -437,7 +465,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fetchingCurrentWeek => 'Fetching...';
 
   @override
-  String get pleaseLoginFirst => 'Please login to academic system first';
+  String get loginRequired =>
+      'Please complete SCU Unified Identity login in the Profile page first';
+
+  @override
+  String get goToLogin => 'Go to Login';
 
   @override
   String get semesterEndDate => 'Semester End Date';
@@ -939,7 +971,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ccylMyActivities => 'My Activities';
 
   @override
-  String get ccylOrderedActivities => 'Reserved Activities';
+  String get ccylOrderedActivities => 'Reserved';
 
   @override
   String get ccylMyCredits => 'Credit List';
@@ -1245,7 +1277,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get balanceQueryLoginRequired =>
-      'Please login via unified authentication in Profile page first';
+      'Please complete SCU Unified Identity login in the Profile page first';
 
   @override
   String get balanceQueryNoBinding =>
