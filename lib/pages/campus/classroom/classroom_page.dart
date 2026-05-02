@@ -124,6 +124,13 @@ class _ClassroomPageState extends State<ClassroomPage> {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
+  bool get _isToday {
+    final now = DateTime.now();
+    return _selectedDate.year == now.year &&
+        _selectedDate.month == now.month &&
+        _selectedDate.day == now.day;
+  }
+
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -138,6 +145,16 @@ class _ClassroomPageState extends State<ClassroomPage> {
       if (_selectedBuilding != null) {
         _queryBuilding(_selectedBuilding!);
       }
+    }
+  }
+
+  void _goToToday() {
+    final today = DateTime.now();
+    setState(() {
+      _selectedDate = today;
+    });
+    if (_selectedBuilding != null) {
+      _queryBuilding(_selectedBuilding!);
     }
   }
 
@@ -334,10 +351,21 @@ class _ClassroomPageState extends State<ClassroomPage> {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: ActionChip(
-            avatar: const Icon(Icons.calendar_today, size: 18),
-            label: Text(_formatDate(_selectedDate)),
-            onPressed: _pickDate,
+          child: Row(
+            children: [
+              ActionChip(
+                avatar: const Icon(Icons.calendar_today, size: 18),
+                label: Text(_formatDate(_selectedDate)),
+                onPressed: _pickDate,
+              ),
+              if (!_isToday) ...[
+                const SizedBox(width: 8),
+                ActionChip(
+                  label: Text(l10n.today),
+                  onPressed: _goToToday,
+                ),
+              ],
+            ],
           ),
         ),
         Expanded(

@@ -183,6 +183,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get confirm => '确认';
 
   @override
+  String get today => '今天';
+
+  @override
   String currentAnimationDuration(Object value) {
     return '当前动画时长: $value ms';
   }

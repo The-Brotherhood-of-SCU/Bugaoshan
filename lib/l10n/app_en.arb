@@ -65,6 +65,7 @@
     "current": "Current",
     "animationDuration": "Duration",
     "confirm": "Confirm",
+    "today": "Today",
     "currentAnimationDuration": "Current Animation Duration: {value} ms",
     "animationDurationUpdated": "Animation Duration updated to {value} ms",
     "animationDurationHint": "Hint: Adjust the slider to preview the animation, click Confirm to save the settings",

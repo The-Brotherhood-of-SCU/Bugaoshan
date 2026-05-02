@@ -65,6 +65,7 @@
     "current": "当前",
     "animationDuration": "动画时长",
     "confirm": "确认",
+    "today": "今天",
     "currentAnimationDuration": "当前动画时长: {value} ms",
     "animationDurationUpdated": "动画时长已更新为 {value} ms",
     "animationDurationHint": "提示：调整滑块查看动画效果，点击确认后才会保存设置",
