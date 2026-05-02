@@ -281,9 +281,6 @@ class UpdateService {
     final apkFile = File(apkPath);
     await apkFile.writeAsBytes(apkBytes);
     await _channel.invokeMethod('installApk', {'path': apkPath});
-    if (await apkFile.exists()) {
-      await apkFile.delete();
-    }
   }
 
   Future<void> _installWindows(
