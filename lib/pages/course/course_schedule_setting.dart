@@ -269,7 +269,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
                 Text(
                   isLoggedIn
                       ? l10n.autoFetchCurrentWeekHint
-                      : l10n.pleaseLoginFirst,
+                      : l10n.loginRequired,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.outline,
                   ),

@@ -54,7 +54,7 @@ class _CcylPageState extends State<CcylPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(l10n.ccylLoginRequired, textAlign: TextAlign.center),
+                    Text(l10n.loginRequired, textAlign: TextAlign.center),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
                       onPressed: () {
@@ -63,7 +63,7 @@ class _CcylPageState extends State<CcylPage> {
                         ).popUntil((route) => route.isFirst);
                       },
                       icon: const Icon(Icons.person),
-                      label: const Text('前往登录'),
+                      label: Text(l10n.goToLogin),
                     ),
                   ],
                 ),

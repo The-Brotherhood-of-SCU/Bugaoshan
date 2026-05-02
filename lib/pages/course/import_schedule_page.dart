@@ -220,7 +220,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
 
     if (!authProvider.isLoggedIn) {
       if (mounted) {
-        showInfoDialog(title: l10n.notLoggedIn, content: l10n.scuLogin);
+        showInfoDialog(title: l10n.loginRequired, content: l10n.scuLogin);
       }
       return;
     }

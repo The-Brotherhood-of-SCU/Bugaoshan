@@ -39,6 +39,16 @@ class _ClassroomPageState extends State<ClassroomPage> {
   }
 
   Future<void> _loadIndex() async {
+    final auth = getIt<ScuAuthProvider>();
+    if (!auth.isLoggedIn) {
+      if (!mounted) return;
+      setState(() {
+        _error = 'notLoggedIn';
+        _isLoading = false;
+        _isInitialLoad = false;
+      });
+      return;
+    }
     if (!mounted) return;
     setState(() {
       _isLoading = true;
@@ -75,6 +85,15 @@ class _ClassroomPageState extends State<ClassroomPage> {
   }
 
   Future<void> _queryBuilding(ClassroomBuilding building) async {
+    final auth = getIt<ScuAuthProvider>();
+    if (!auth.isLoggedIn) {
+      if (!mounted) return;
+      setState(() {
+        _error = 'notLoggedIn';
+        _isLoading = false;
+      });
+      return;
+    }
     if (!mounted) return;
     setState(() {
       _isLoading = true;
@@ -182,17 +201,25 @@ class _ClassroomPageState extends State<ClassroomPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.classroomQuery),
-        leading: _viewMode != _ViewMode.campus
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: _goBack,
-              )
-            : null,
+    return PopScope(
+      canPop: _viewMode == _ViewMode.campus,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          _goBack();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.classroomQuery),
+          leading: _viewMode != _ViewMode.campus
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: _goBack,
+                )
+              : null,
+        ),
+        body: _buildContent(l10n),
       ),
-      body: _buildContent(l10n),
     );
   }
 
@@ -474,6 +501,33 @@ class _ClassroomPageState extends State<ClassroomPage> {
   }
 
   Widget _buildErrorWidget(AppLocalizations l10n, VoidCallback onRetry) {
+    if (_error == 'notLoggedIn') {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.login,
+                size: 48,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(height: 8),
+              Text(l10n.loginRequired, textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                },
+                icon: const Icon(Icons.person),
+                label: Text(l10n.goToLogin),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     return Center(
       child: GestureDetector(
         onTap: onRetry,
@@ -482,11 +536,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.error_outline,
-                size: 48,
-                color: Theme.of(context).colorScheme.error,
-              ),
+              const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: 8),
               Text(
                 _error == 'sessionExpired'

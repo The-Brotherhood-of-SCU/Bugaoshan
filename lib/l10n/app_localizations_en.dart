@@ -465,7 +465,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fetchingCurrentWeek => 'Fetching...';
 
   @override
-  String get pleaseLoginFirst => 'Please login to academic system first';
+  String get loginRequired =>
+      'Please complete SCU Unified Identity login in the Profile page first';
+
+  @override
+  String get goToLogin => 'Go to Login';
 
   @override
   String get semesterEndDate => 'Semester End Date';
@@ -1273,7 +1277,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get balanceQueryLoginRequired =>
-      'Please login via unified authentication in Profile page first';
+      'Please complete SCU Unified Identity login in the Profile page first';
 
   @override
   String get balanceQueryNoBinding =>
