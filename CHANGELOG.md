@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+## [0.8.1] - 2026-05-02
+
+### Added
 - android可以一键在日历中导入课表
 
 ### Changed
@@ -18,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修复课表导出后立即导入失败并产生空课表的问题
 
 
-## [0.8.0]
+## [0.8.0] - 2026-05-01
 
 **注意：本次更新有非兼容性变更，请把旧版本卸载后安装新版本，不建议覆盖安装。**
 
