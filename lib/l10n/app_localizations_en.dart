@@ -188,6 +188,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirm => 'Confirm';
 
   @override
+  String get today => 'Today';
+
+  @override
   String currentAnimationDuration(Object value) {
     return 'Current Animation Duration: $value ms';
   }
