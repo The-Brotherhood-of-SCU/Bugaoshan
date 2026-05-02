@@ -357,7 +357,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
                       _selectedBuilding!.teachingBuildingName,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
-                    if (_queryResult!.jxzc > 0)
+                    if (_queryResult!.jxzc > 0 && _isToday)
                       Text(
                         l10n.classroomTeachingWeek(_queryResult!.jxzc),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(

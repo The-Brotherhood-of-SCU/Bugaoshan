@@ -57,6 +57,11 @@ class ClassroomDetailPage extends StatelessWidget {
     var experimentCount = 0;
     var borrowedCount = 0;
 
+    final now = DateTime.now();
+    final todayStr =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final isToday = queryDate == todayStr;
+
     for (int i = 1; i <= 12; i++) {
       final status = statusMap[i] ?? ClassroomPeriodStatus.free;
       switch (status) {
@@ -160,7 +165,7 @@ class ClassroomDetailPage extends StatelessWidget {
                 ],
               ),
             ],
-            if (teachingWeek > 0) ...[
+            if (teachingWeek > 0 && isToday) ...[
               const SizedBox(height: 4),
               Text(
                 l10n.classroomTeachingWeek(teachingWeek),
