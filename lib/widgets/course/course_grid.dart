@@ -205,10 +205,13 @@ class _CourseGridState extends State<CourseGrid> {
     final today = DateTime(now.year, now.month, now.day);
     final semesterStart = widget.config.semesterStartDate;
 
+    final hasBackground = appConfig.backgroundImagePath.value != null;
     return Container(
       height: 40,
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
+        color: hasBackground
+            ? null
+            : theme.colorScheme.surfaceContainerHighest,
         border: Border(
           bottom: BorderSide(color: theme.colorScheme.outlineVariant),
         ),
