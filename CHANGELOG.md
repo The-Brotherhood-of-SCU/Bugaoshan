@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
+- 优化我的页面和登录页面UI
+
+### Fixed
+- 在线获取当前周的错误，改为从周天开始
 
 ## [0.9.0] - 2026-05-02
 
