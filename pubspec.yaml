@@ -52,6 +52,7 @@ flutter:
   assets:
     - assets/avater.png
     - assets/icon.png
+    - assets/scu.jpg
     - assets/universal-login-ocr.tflite
     - assets/scripts/
 flutter_launcher_icons:
