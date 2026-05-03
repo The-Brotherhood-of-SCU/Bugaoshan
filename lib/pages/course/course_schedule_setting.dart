@@ -65,11 +65,11 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
     try {
       final week = await authProvider.service.fetchCurrentWeek();
       if (!mounted) return;
-      // 根据获取到的周数反推学期开始日期
+      // 根据获取到的周数反推学期开始日期（教务系统以周日为每周第一天）
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
-      final currentMonday = today.toMonday();
-      final newStartDate = currentMonday.subtract(
+      final currentSunday = today.toSunday();
+      final newStartDate = currentSunday.subtract(
         Duration(days: (week - 1) * 7),
       );
       setState(() {
@@ -390,10 +390,9 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
       final today = DateTime(now.year, now.month, now.day);
 
       // Calculate new start date based on selected current week
-      // The current week's Monday is: today.toMonday()
-      // So week 1's Monday is: today.toMonday() - (selectedWeek - 1) * 7 days
-      final currentMonday = today.toMonday();
-      final newStartDate = currentMonday.subtract(
+      // 教务系统以周日为每周第一天
+      final currentSunday = today.toSunday();
+      final newStartDate = currentSunday.subtract(
         Duration(days: (selectedWeek - 1) * 7),
       );
 
@@ -445,12 +444,12 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
     );
     if (picked != null) {
       DateTime finalDate = picked;
-      if (picked.weekday != DateTime.monday) {
-        finalDate = picked.toMonday();
+      if (picked.weekday != DateTime.sunday) {
+        finalDate = picked.toSunday();
         if (mounted) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(const SnackBar(content: Text('已自动调整为该周周一')));
+          ).showSnackBar(const SnackBar(content: Text('已自动调整为该周周日')));
         }
       }
       setState(() {

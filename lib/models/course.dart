@@ -461,4 +461,9 @@ extension DateTimeExtension on DateTime {
   DateTime toMonday() {
     return subtract(Duration(days: weekday - 1));
   }
+
+  /// 教务系统以周日为每周第一天，返回本周周日
+  DateTime toSunday() {
+    return subtract(Duration(days: weekday % 7));
+  }
 }
