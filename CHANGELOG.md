@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - 修复课表时间不对应的问题
 
+### Added
+- 桌面端成绩页面添加刷新按钮
+
 ## [0.10.0] - 2026-05-03
 
 ### Added
