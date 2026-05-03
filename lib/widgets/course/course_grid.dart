@@ -231,8 +231,12 @@ class _CourseGridState extends State<CourseGrid> {
             child: Row(
               children: List.generate(visibleDays.length, (index) {
                 final name = visibleDays[index];
+                // 周一为index 0，需根据学期开始日期的星期偏移
+                final mondayOffset = (1 - semesterStart.weekday) % 7;
                 final date = semesterStart.add(
-                  Duration(days: (widget.displayWeek - 1) * 7 + index),
+                  Duration(
+                    days: (widget.displayWeek - 1) * 7 + mondayOffset + index,
+                  ),
                 );
                 final isToday = date.isAtSameMomentAs(today);
 
