@@ -9,7 +9,6 @@ import 'package:bugaoshan/pages/auth/scu_login_page.dart';
 import 'package:bugaoshan/pages/settings/software_setting_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/widgets/common/styled_widget.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 const _keyUsername = 'scu_saved_username';
@@ -42,6 +41,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     final authProvider = getIt<ScuAuthProvider>();
     final localizations = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
 
     return ListenableBuilder(
       listenable: authProvider,
@@ -53,60 +53,36 @@ class _ProfilePageState extends State<ProfilePage> {
             : isExpired
             ? localizations.loginSessionExpired
             : localizations.notLoggedIn;
-        final body = Column(
-          spacing: 16,
-          children: [
-            const SizedBox(height: 16),
-            // 登录状态卡片
-            _buildLoginStatusCard(
-              context,
-              isLoggedIn,
-              isExpired,
-              loginStatusText,
-              localizations,
-              authProvider,
-            ),
-            ButtonWithMaxWidth(
-              icon: const Icon(Icons.list_alt),
-              onPressed: () =>
-                  popupOrNavigate(context, const ScheduleManagementPage()),
-              child: Text(localizations.scheduleManagement),
-            ),
-            ButtonWithMaxWidth(
-              icon: const Icon(Icons.schedule),
-              onPressed: () =>
-                  popupOrNavigate(context, CourseScheduleSetting()),
-              child: Text(localizations.scheduleSetting),
-            ),
-            ButtonWithMaxWidth(
-              icon: const Icon(Icons.settings),
-              onPressed: () => popupOrNavigate(context, SoftwareSettingPage()),
-              child: Text(localizations.softwareSetting),
-            ),
-            ButtonWithMaxWidth(
-              icon: ValueListenableBuilder<bool>(
-                valueListenable: getIt<AppConfigProvider>().hasUpdateNotification,
-                builder: (context, hasUpdate, _) {
-                  if (hasUpdate) {
-                    return Badge(child: const Icon(Icons.info_outline));
-                  }
-                  return const Icon(Icons.info_outline);
-                },
-              ),
-              onPressed: () => popupOrNavigate(context, AboutPage()),
-              child: Text(localizations.about),
-            ),
-          ],
-        );
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: body,
-            ),
-          ),
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight - 32),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // 登录状态卡片
+                      _buildLoginStatusCard(
+                        context,
+                        theme,
+                        isLoggedIn,
+                        isExpired,
+                        loginStatusText,
+                        localizations,
+                        authProvider,
+                      ),
+                      const SizedBox(height: 12),
+                      // 功能菜单
+                      _buildMenuCard(context, theme, localizations),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
         );
       },
     );
@@ -114,25 +90,40 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildLoginStatusCard(
     BuildContext context,
+    ThemeData theme,
     bool isLoggedIn,
     bool isExpired,
     String loginStatusText,
     AppLocalizations localizations,
     ScuAuthProvider authProvider,
   ) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Column(
-          children: [
-            Row(
+    final primaryColor = theme.colorScheme.primary;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.dividerColor.withValues(alpha: 0.08),
+        ),
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
               children: [
-                CircleAvatar(
-                  backgroundColor: isLoggedIn
-                      ? Theme.of(context).colorScheme.primaryContainer
-                      : isExpired
-                      ? Theme.of(context).colorScheme.tertiaryContainer
-                      : Theme.of(context).colorScheme.surfaceContainerHighest,
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: isLoggedIn
+                        ? primaryColor.withValues(alpha: 0.1)
+                        : isExpired
+                        ? theme.colorScheme.tertiaryContainer
+                        : theme.colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                   child: Icon(
                     isLoggedIn
                         ? Icons.person
@@ -140,49 +131,205 @@ class _ProfilePageState extends State<ProfilePage> {
                         ? Icons.access_time_filled
                         : Icons.person_outline,
                     color: isLoggedIn
-                        ? Theme.of(context).colorScheme.onPrimaryContainer
+                        ? primaryColor
                         : isExpired
-                        ? Theme.of(context).colorScheme.onTertiaryContainer
-                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                        ? theme.colorScheme.onTertiaryContainer
+                        : theme.colorScheme.onSurfaceVariant,
+                    size: 24,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         loginStatusText,
-                        style: Theme.of(context).textTheme.titleSmall,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       if (isLoggedIn)
                         Text(
                           '${localizations.scuLogin}${_username != null ? ' ($_username)' : ''}',
-                          style: Theme.of(context).textTheme.bodySmall,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       if (isExpired)
                         Text(
                           localizations.loginSessionExpiredDesc,
-                          style: Theme.of(context).textTheme.bodySmall,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
                     ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            isLoggedIn
-                ? TextButton(
-                    onPressed: () =>
-                        _confirmLogout(context, authProvider, localizations),
-                    child: Text(localizations.logout),
-                  )
-                : FilledButton.tonal(
-                    onPressed: () => _openLogin(context),
-                    child: Text(localizations.scuLogin),
+          ),
+          Divider(
+            height: 1,
+            color: theme.dividerColor.withValues(alpha: 0.08),
+          ),
+          InkWell(
+            onTap: isLoggedIn
+                ? () => _confirmLogout(context, authProvider, localizations)
+                : () => _openLogin(context),
+            borderRadius: const BorderRadius.vertical(
+              bottom: Radius.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 14,
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    isLoggedIn ? Icons.logout_rounded : Icons.login_rounded,
+                    color: isLoggedIn
+                        ? theme.colorScheme.error
+                        : primaryColor,
+                    size: 20,
                   ),
-          ],
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      isLoggedIn ? localizations.logout : localizations.scuLogin,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: isLoggedIn
+                            ? theme.colorScheme.error
+                            : primaryColor,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.4,
+                    ),
+                    size: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuCard(
+    BuildContext context,
+    ThemeData theme,
+    AppLocalizations localizations,
+  ) {
+    final primaryColor = theme.colorScheme.primary;
+
+    Widget buildTile({
+      required IconData icon,
+      required String label,
+      required VoidCallback onTap,
+      Widget? trailing,
+    }) {
+      return InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: primaryColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: primaryColor, size: 20),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(label, style: theme.textTheme.bodyLarge),
+              ),
+              ?trailing,
+              Icon(
+                Icons.chevron_right_rounded,
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.4,
+                ),
+                size: 20,
+              ),
+            ],
+          ),
         ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.dividerColor.withValues(alpha: 0.08),
+        ),
+      ),
+      child: Column(
+        children: [
+          buildTile(
+            icon: Icons.list_alt_rounded,
+            label: localizations.scheduleManagement,
+            onTap: () =>
+                popupOrNavigate(context, const ScheduleManagementPage()),
+          ),
+          Divider(
+            height: 1,
+            indent: 56,
+            color: theme.dividerColor.withValues(alpha: 0.08),
+          ),
+          buildTile(
+            icon: Icons.schedule_rounded,
+            label: localizations.scheduleSetting,
+            onTap: () => popupOrNavigate(context, CourseScheduleSetting()),
+          ),
+          Divider(
+            height: 1,
+            indent: 56,
+            color: theme.dividerColor.withValues(alpha: 0.08),
+          ),
+          buildTile(
+            icon: Icons.settings_rounded,
+            label: localizations.softwareSetting,
+            onTap: () => popupOrNavigate(context, SoftwareSettingPage()),
+          ),
+          Divider(
+            height: 1,
+            indent: 56,
+            color: theme.dividerColor.withValues(alpha: 0.08),
+          ),
+          ValueListenableBuilder<bool>(
+            valueListenable: getIt<AppConfigProvider>().hasUpdateNotification,
+            builder: (context, hasUpdate, _) {
+              return buildTile(
+                icon: Icons.info_outline_rounded,
+                label: localizations.about,
+                onTap: () => popupOrNavigate(context, AboutPage()),
+                trailing: hasUpdate
+                    ? Container(
+                        width: 8,
+                        height: 8,
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                      )
+                    : null,
+              );
+            },
+          ),
+        ],
       ),
     );
   }

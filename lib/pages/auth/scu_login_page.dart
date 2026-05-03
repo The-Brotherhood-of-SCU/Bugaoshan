@@ -90,7 +90,9 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       final l10n = AppLocalizations.of(context)!;
       setState(() => _errorMsg = l10n.captchaLoadFailed);
     } finally {
-      setState(() => _captchaLoading = false);
+      if (mounted) {
+        setState(() => _captchaLoading = false);
+      }
     }
   }
 
@@ -128,7 +130,9 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       if (!logicRootContext.mounted) return;
       Navigator.of(logicRootContext).pop(true);
     } on ScuLoginException catch (e) {
-      debugPrint('Login failed: ${e.message} (sessionExpired=${e.sessionExpired})');
+      debugPrint(
+        'Login failed: ${e.message} (sessionExpired=${e.sessionExpired})',
+      );
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       setState(() => _errorMsg = _localizeLoginError(e, l10n));
@@ -168,7 +172,33 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
     final l10n = AppLocalizations.of(context)!;
 
     final formContent = [
-      const Icon(Icons.school, size: 64, color: Colors.blue),
+      const SizedBox(height: 8),
+      Container(
+        width: 88,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Image.asset('assets/scu.jpg', fit: BoxFit.cover),
+        ),
+      ),
+      const SizedBox(height: 2),
+      Text(
+        l10n.scuUnifiedAuth,
+        style: Theme.of(context).textTheme.titleMedium
+            ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)
+            .copyWith(fontSize: 24),
+        textAlign: TextAlign.center,
+      ),
+      const SizedBox(height: 2),
       TextFormField(
         controller: _usernameCtrl,
         decoration: InputDecoration(
@@ -252,15 +282,12 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
                   const Spacer(flex: 1),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 24),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 400),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          spacing: 16,
-                          children: formContent,
-                        ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        spacing: 16,
+                        children: formContent,
                       ),
                     ),
                   ),
