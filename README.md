@@ -68,6 +68,10 @@
 
 [![Contributors](https://contrib.rocks/image?repo=The-Brotherhood-of-SCU/Bugaoshan)](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/graphs/contributors)
 
+感谢 **小米MIMO** 提供的 AI 模型支持
+
+[![momo](./SCREENSHOT/mimo.png)](https://mimo.mi.com/)
+
 ---
 
 ## ⭐ Star History
