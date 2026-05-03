@@ -466,6 +466,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get displaySetting => '显示设置';
 
   @override
+  String get courseCardSection => '课程卡片';
+
+  @override
+  String get courseGridSection => '课表网格';
+
+  @override
+  String get otherSection => '其他';
+
+  @override
   String get colorOpacity => '颜色不透明度';
 
   @override

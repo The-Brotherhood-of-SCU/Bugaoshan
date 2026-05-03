@@ -985,6 +985,24 @@ abstract class AppLocalizations {
   /// **'Display Setting'**
   String get displaySetting;
 
+  /// No description provided for @courseCardSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Card'**
+  String get courseCardSection;
+
+  /// No description provided for @courseGridSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Grid'**
+  String get courseGridSection;
+
+  /// No description provided for @otherSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get otherSection;
+
   /// No description provided for @colorOpacity.
   ///
   /// In en, this message translates to:

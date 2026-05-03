@@ -64,6 +64,16 @@ class SoftwareSettingPage extends StatelessWidget {
                 ),
 
                 const Divider(),
+                // Course card section
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    localizations.courseCardSection,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
                 // Color opacity
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,6 +115,16 @@ class SoftwareSettingPage extends StatelessWidget {
                   ],
                 ),
                 const Divider(),
+                // Background image section
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    localizations.backgroundImage,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
                 // Background image
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,6 +178,16 @@ class SoftwareSettingPage extends StatelessWidget {
                   ],
                 ),
                 const Divider(),
+                // Course grid section
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    localizations.courseGridSection,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
                 // Show course grid switch
                 SwitchListTile(
                   title: Text(localizations.showCourseGrid),
@@ -185,6 +215,16 @@ class SoftwareSettingPage extends StatelessWidget {
                   ],
                 ),
                 const Divider(),
+                // Other section
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    localizations.otherSection,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
                 ButtonWithMaxWidth(
                   onPressed: () {
                     appConfig.colorOpacity.value = 0.85;

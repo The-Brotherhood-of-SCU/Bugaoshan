@@ -478,6 +478,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get displaySetting => 'Display Setting';
 
   @override
+  String get courseCardSection => 'Course Card';
+
+  @override
+  String get courseGridSection => 'Course Grid';
+
+  @override
+  String get otherSection => 'Other';
+
+  @override
   String get colorOpacity => 'Color Opacity';
 
   @override
