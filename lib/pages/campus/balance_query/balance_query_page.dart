@@ -24,6 +24,7 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
     super.initState();
     _provider = BalanceQueryProvider(getIt());
     _provider.addListener(_onProviderChanged);
+    getIt<ScuAuthProvider>().addListener(_onAuthChanged);
     _initProvider();
   }
 
@@ -31,9 +32,19 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
     if (mounted) setState(() {});
   }
 
+  void _onAuthChanged() {
+    final auth = getIt<ScuAuthProvider>();
+    if (auth.isLoggedIn && mounted) {
+      _initProvider();
+    } else if (mounted) {
+      setState(() {});
+    }
+  }
+
   Future<void> _initProvider() async {
     final auth = getIt<ScuAuthProvider>();
     if (!auth.isLoggedIn) {
+      if (auth.isAutoLoggingIn) return;
       if (mounted) {
         setState(() {
           _isInitializing = false;
@@ -68,6 +79,7 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
   @override
   void dispose() {
     _provider.removeListener(_onProviderChanged);
+    getIt<ScuAuthProvider>().removeListener(_onAuthChanged);
     _provider.dispose();
     super.dispose();
   }
@@ -177,6 +189,19 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
 
   Widget _buildBody(AppLocalizations l10n) {
     if (_isInitializing) {
+      final auth = getIt<ScuAuthProvider>();
+      if (auth.isAutoLoggingIn) {
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(l10n.autoLoggingIn),
+            ],
+          ),
+        );
+      }
       return const Center(child: CircularProgressIndicator());
     }
 

@@ -35,12 +35,29 @@ class _ClassroomPageState extends State<ClassroomPage> {
   void initState() {
     super.initState();
     _authService = getIt<ScuAuthProvider>().service;
+    getIt<ScuAuthProvider>().addListener(_onAuthChanged);
     _loadIndex();
+  }
+
+  @override
+  void dispose() {
+    getIt<ScuAuthProvider>().removeListener(_onAuthChanged);
+    super.dispose();
+  }
+
+  void _onAuthChanged() {
+    final auth = getIt<ScuAuthProvider>();
+    if (auth.isLoggedIn && mounted) {
+      _loadIndex();
+    } else if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> _loadIndex() async {
     final auth = getIt<ScuAuthProvider>();
     if (!auth.isLoggedIn) {
+      if (auth.isAutoLoggingIn) return;
       if (!mounted) return;
       setState(() {
         _error = 'notLoggedIn';
@@ -502,6 +519,18 @@ class _ClassroomPageState extends State<ClassroomPage> {
 
   Widget _buildErrorWidget(AppLocalizations l10n, VoidCallback onRetry) {
     if (_error == 'notLoggedIn') {
+      if (getIt<ScuAuthProvider>().isAutoLoggingIn) {
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(l10n.autoLoggingIn),
+            ],
+          ),
+        );
+      }
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),

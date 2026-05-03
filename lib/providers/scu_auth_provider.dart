@@ -44,9 +44,11 @@ class ScuAuthProvider extends ChangeNotifier {
   int? _loginTimestamp;
   String? _userRealname;
   String? _userNumber;
+  bool _isAutoLoggingIn = false;
   String? get accessToken => _accessToken;
   String? get userRealname => _userRealname;
   String? get userNumber => _userNumber;
+  bool get isAutoLoggingIn => _isAutoLoggingIn;
   bool get isLoggedIn => _accessToken != null && !isExpired;
   bool get isExpired {
     if (_loginTimestamp == null) return false;
@@ -176,46 +178,54 @@ class ScuAuthProvider extends ChangeNotifier {
     final username = credentials['username']!;
     final password = credentials['password']!;
 
-    const maxRetries = 5;
-    for (int attempt = 0; attempt < maxRetries; attempt++) {
-      try {
-        final captcha = await _service.fetchCaptcha();
+    _isAutoLoggingIn = true;
+    notifyListeners();
 
-        String captchaText;
+    try {
+      const maxRetries = 5;
+      for (int attempt = 0; attempt < maxRetries; attempt++) {
         try {
-          final comma = captcha.captchaBase64.indexOf(',');
-          final raw = comma >= 0
-              ? captcha.captchaBase64.substring(comma + 1)
-              : captcha.captchaBase64;
-          final imageBytes = base64.decode(raw);
-          captchaText = await OcrService.performOcr(imageBytes);
+          final captcha = await _service.fetchCaptcha();
+
+          String captchaText;
+          try {
+            final comma = captcha.captchaBase64.indexOf(',');
+            final raw = comma >= 0
+                ? captcha.captchaBase64.substring(comma + 1)
+                : captcha.captchaBase64;
+            final imageBytes = base64.decode(raw);
+            captchaText = await OcrService.performOcr(imageBytes);
+          } catch (e) {
+            debugPrint('Auto login OCR error: $e');
+            return false;
+          }
+
+          await login(
+            username: username,
+            password: password,
+            captchaCode: captcha.code,
+            captchaText: captchaText,
+          );
+          return true;
+        } on ScuLoginException catch (e) {
+          if (e.message == 'invalid_captcha') {
+            debugPrint(
+              'Auto login: invalid_captcha, retry ${attempt + 1}/$maxRetries',
+            );
+            continue;
+          }
+          debugPrint('Auto login failed (non-captcha): ${e.message}');
+          return false;
         } catch (e) {
-          debugPrint('Auto login OCR error: $e');
+          debugPrint('Auto login network error: $e');
           return false;
         }
-
-        await login(
-          username: username,
-          password: password,
-          captchaCode: captcha.code,
-          captchaText: captchaText,
-        );
-        return true;
-      } on ScuLoginException catch (e) {
-        if (e.message == 'invalid_captcha') {
-          debugPrint(
-            'Auto login: invalid_captcha, retry ${attempt + 1}/$maxRetries',
-          );
-          continue;
-        }
-        debugPrint('Auto login failed (non-captcha): ${e.message}');
-        return false;
-      } catch (e) {
-        debugPrint('Auto login network error: $e');
-        return false;
       }
+      debugPrint('Auto login: captcha retries exhausted');
+      return false;
+    } finally {
+      _isAutoLoggingIn = false;
+      notifyListeners();
     }
-    debugPrint('Auto login: captcha retries exhausted');
-    return false;
   }
 }

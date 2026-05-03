@@ -247,6 +247,7 @@
     "captchaRequired": "Please enter the captcha",
     "rememberPassword": "Remember Password",
     "autoLogin": "Auto Login",
+    "autoLoggingIn": "Logging in...",
     "loginButton": "Login",
     "captchaLoadFailed": "Failed to load captcha: {error}",
     "captchaNotLoaded": "Please load the captcha first",

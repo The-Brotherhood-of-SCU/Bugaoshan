@@ -33,6 +33,18 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
         builder: (context, _) {
           final auth = getIt<ScuAuthProvider>();
           if (!auth.isLoggedIn) {
+            if (auth.isAutoLoggingIn) {
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 16),
+                    Text(l10n.autoLoggingIn),
+                  ],
+                ),
+              );
+            }
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),

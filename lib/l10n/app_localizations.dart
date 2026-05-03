@@ -1477,6 +1477,12 @@ abstract class AppLocalizations {
   /// **'Auto Login'**
   String get autoLogin;
 
+  /// No description provided for @autoLoggingIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Logging in...'**
+  String get autoLoggingIn;
+
   /// No description provided for @loginButton.
   ///
   /// In en, this message translates to:

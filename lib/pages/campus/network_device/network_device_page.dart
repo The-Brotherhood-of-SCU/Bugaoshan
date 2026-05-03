@@ -26,12 +26,29 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
   @override
   void initState() {
     super.initState();
+    getIt<ScuAuthProvider>().addListener(_onAuthChanged);
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    getIt<ScuAuthProvider>().removeListener(_onAuthChanged);
+    super.dispose();
+  }
+
+  void _onAuthChanged() {
+    final auth = getIt<ScuAuthProvider>();
+    if (auth.isLoggedIn && mounted) {
+      _loadData();
+    } else if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> _loadData() async {
     final auth = getIt<ScuAuthProvider>();
     if (!auth.isLoggedIn) {
+      if (auth.isAutoLoggingIn) return;
       setState(() => _error = 'notLoggedIn');
       return;
     }
@@ -208,12 +225,38 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
   }
 
   Widget _buildBody(AppLocalizations l10n) {
+    final auth = getIt<ScuAuthProvider>();
+    if (!auth.isLoggedIn && auth.isAutoLoggingIn) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            Text(l10n.autoLoggingIn),
+          ],
+        ),
+      );
+    }
+
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
     }
 
     if (_error != null) {
       if (_error == 'notLoggedIn') {
+        if (getIt<ScuAuthProvider>().isAutoLoggingIn) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                Text(l10n.autoLoggingIn),
+              ],
+            ),
+          );
+        }
         return Center(
           child: Padding(
             padding: const EdgeInsets.all(24),

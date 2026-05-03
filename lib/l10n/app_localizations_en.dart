@@ -741,6 +741,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoLogin => 'Auto Login';
 
   @override
+  String get autoLoggingIn => 'Logging in...';
+
+  @override
   String get loginButton => 'Login';
 
   @override

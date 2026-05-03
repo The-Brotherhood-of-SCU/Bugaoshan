@@ -722,6 +722,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoLogin => '自动登录';
 
   @override
+  String get autoLoggingIn => '正在登录中...';
+
+  @override
   String get loginButton => '登录';
 
   @override

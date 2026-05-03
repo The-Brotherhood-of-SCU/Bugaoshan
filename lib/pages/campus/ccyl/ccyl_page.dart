@@ -46,6 +46,21 @@ class _CcylPageState extends State<CcylPage> {
 
         // 未登录校园账号
         if (!auth.isLoggedIn) {
+          if (auth.isAutoLoggingIn) {
+            return Scaffold(
+              appBar: AppBar(title: Text(l10n.ccylTitle)),
+              body: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 16),
+                    Text(l10n.autoLoggingIn),
+                  ],
+                ),
+              ),
+            );
+          }
           return Scaffold(
             appBar: AppBar(title: Text(l10n.ccylTitle)),
             body: Center(

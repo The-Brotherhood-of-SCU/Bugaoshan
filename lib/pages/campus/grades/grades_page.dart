@@ -33,34 +33,45 @@ class _GradesPageState extends State<GradesPage> {
         return Scaffold(
           appBar: AppBar(title: Text(l10n.gradesStats)),
           body: !auth.isLoggedIn
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.login,
-                          size: 48,
-                          color: Theme.of(context).colorScheme.primary,
+              ? auth.isAutoLoggingIn
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const CircularProgressIndicator(),
+                          const SizedBox(height: 16),
+                          Text(l10n.autoLoggingIn),
+                        ],
+                      ),
+                    )
+                  : Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.login,
+                              size: 48,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              l10n.loginRequired,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.of(context).popUntil((route) => route.isFirst);
+                              },
+                              icon: const Icon(Icons.person),
+                              label: Text(l10n.goToLogin),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          l10n.loginRequired,
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.of(context).popUntil((route) => route.isFirst);
-                          },
-                          icon: const Icon(Icons.person),
-                          label: Text(l10n.goToLogin),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
+                      ),
+                    )
               : _pages[_currentIndex],
           bottomNavigationBar: auth.isLoggedIn
               ? BottomNavigationBar(
