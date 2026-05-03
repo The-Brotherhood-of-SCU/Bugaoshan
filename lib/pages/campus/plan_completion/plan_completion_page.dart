@@ -345,26 +345,29 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
           node.courseName.isNotEmpty ? node.courseName : _extractCategoryDisplayName(node.name),
           style: Theme.of(context).textTheme.bodyMedium,
         ),
-        subtitle: Row(
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (node.courseCode.isNotEmpty) ...[
-              Text(
-                node.courseCode,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(width: 8),
-            ],
-            if (node.courseCredits.isNotEmpty) ...[
-              Text(
-                '${node.courseCredits}${AppLocalizations.of(context)!.planCompletionCreditsUnit}',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(width: 8),
-            ],
+            Row(
+              children: [
+                if (node.courseCode.isNotEmpty) ...[
+                  Text(
+                    node.courseCode,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                if (node.courseCredits.isNotEmpty)
+                  Text(
+                    '${node.courseCredits}${AppLocalizations.of(context)!.planCompletionCreditsUnit}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+              ],
+            ),
             if (node.academicTerm.isNotEmpty)
               Text(
                 node.academicTerm,
