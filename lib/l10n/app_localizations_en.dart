@@ -738,6 +738,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rememberPassword => 'Remember Password';
 
   @override
+  String get autoLogin => 'Auto Login';
+
+  @override
   String get loginButton => 'Login';
 
   @override

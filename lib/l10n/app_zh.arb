@@ -245,6 +245,7 @@
     "captcha": "验证码",
     "captchaRequired": "请输入验证码",
     "rememberPassword": "记住密码",
+    "autoLogin": "自动登录",
     "loginButton": "登录",
     "captchaLoadFailed": "验证码加载失败: {error}",
     "captchaNotLoaded": "请先加载验证码",

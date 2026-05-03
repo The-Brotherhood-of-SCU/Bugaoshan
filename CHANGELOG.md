@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- 新增自动登录功能
+
 ### Changed
 - 优化我的页面和登录页面UI
 

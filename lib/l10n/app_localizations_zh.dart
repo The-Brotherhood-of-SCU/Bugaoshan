@@ -719,6 +719,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rememberPassword => '记住密码';
 
   @override
+  String get autoLogin => '自动登录';
+
+  @override
   String get loginButton => '登录';
 
   @override

@@ -27,6 +27,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
   String? _errorMsg;
   bool _obscurePassword = true;
   bool _rememberPassword = true;
+  bool _autoLogin = true;
 
   @override
   void initState() {
@@ -48,14 +49,20 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
   }
 
   Future<void> _loadSaved() async {
-    final credentials = await getIt<ScuAuthProvider>().getSavedCredentials();
-    if (credentials == null) return;
+    final authProvider = getIt<ScuAuthProvider>();
+    final credentials = await authProvider.getSavedCredentials();
+    final autoLoginEnabled = await authProvider.isAutoLoginEnabled();
     if (!mounted) return;
-    setState(() {
-      _rememberPassword = true;
-      _usernameCtrl.text = credentials['username']!;
-      _passwordCtrl.text = credentials['password']!;
-    });
+    if (credentials != null) {
+      setState(() {
+        _rememberPassword = true;
+        _usernameCtrl.text = credentials['username']!;
+        _passwordCtrl.text = credentials['password']!;
+        _autoLogin = autoLoginEnabled;
+      });
+    } else {
+      setState(() => _autoLogin = autoLoginEnabled);
+    }
   }
 
   Future<void> _loadCaptcha() async {
@@ -123,8 +130,10 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
 
       if (_rememberPassword) {
         await authProvider.saveCredentials(username, password);
+        await authProvider.setAutoLogin(_autoLogin);
       } else {
         await authProvider.clearCredentials();
+        await authProvider.setAutoLogin(false);
       }
 
       if (!logicRootContext.mounted) return;
@@ -238,11 +247,24 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
         children: [
           Checkbox(
             value: _rememberPassword,
-            onChanged: (v) => setState(() => _rememberPassword = v ?? false),
+            onChanged: (v) => setState(() {
+              _rememberPassword = v ?? false;
+              if (!_rememberPassword) _autoLogin = false;
+            }),
           ),
           Text(l10n.rememberPassword),
         ],
       ),
+      if (_rememberPassword)
+        Row(
+          children: [
+            Checkbox(
+              value: _autoLogin,
+              onChanged: (v) => setState(() => _autoLogin = v ?? false),
+            ),
+            Text(l10n.autoLogin),
+          ],
+        ),
       if (_errorMsg != null)
         Text(
           _errorMsg!,

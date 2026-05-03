@@ -1471,6 +1471,12 @@ abstract class AppLocalizations {
   /// **'Remember Password'**
   String get rememberPassword;
 
+  /// No description provided for @autoLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto Login'**
+  String get autoLogin;
+
   /// No description provided for @loginButton.
   ///
   /// In en, this message translates to:

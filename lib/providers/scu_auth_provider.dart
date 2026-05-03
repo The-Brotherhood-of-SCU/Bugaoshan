@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:os_type/os_type.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:bugaoshan/services/ocr_service.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/plan_completion_provider.dart';
@@ -15,6 +17,7 @@ const _sessionDurationSeconds = 3600;
 const _keySavedUsername = 'scu_saved_username';
 const _keySavedPassword = 'scu_saved_password';
 const _keyRemember = 'scu_remember_password';
+const _keyAutoLogin = 'scu_auto_login';
 
 const _keyUserRealname = 'scu_user_realname';
 const _keyUserNumber = 'scu_user_number';
@@ -91,6 +94,7 @@ class ScuAuthProvider extends ChangeNotifier {
     _userRealname = null;
     _userNumber = null;
     await SecureStorageProvider.instance.delete(key: _keyAccessToken);
+    await SecureStorageProvider.instance.delete(key: _keyAutoLogin);
     await _prefs.remove(_keyLoginTimestamp);
     await _prefs.remove(_keyUserRealname);
     await _prefs.remove(_keyUserNumber);
@@ -149,5 +153,69 @@ class ScuAuthProvider extends ChangeNotifier {
     await storage.delete(key: _keyRemember);
     await storage.delete(key: _keySavedUsername);
     await storage.delete(key: _keySavedPassword);
+  }
+
+  Future<bool> isAutoLoginEnabled() async {
+    final storage = SecureStorageProvider.instance;
+    final value = await storage.read(key: _keyAutoLogin);
+    return value == 'true';
+  }
+
+  Future<void> setAutoLogin(bool enabled) async {
+    final storage = SecureStorageProvider.instance;
+    await storage.write(key: _keyAutoLogin, value: enabled ? 'true' : 'false');
+  }
+
+  Future<bool> autoLogin() async {
+    if (OS.isHarmony) return false;
+    if (!await isAutoLoginEnabled()) return false;
+    if (isLoggedIn) return true;
+
+    final credentials = await getSavedCredentials();
+    if (credentials == null) return false;
+    final username = credentials['username']!;
+    final password = credentials['password']!;
+
+    const maxRetries = 5;
+    for (int attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        final captcha = await _service.fetchCaptcha();
+
+        String captchaText;
+        try {
+          final comma = captcha.captchaBase64.indexOf(',');
+          final raw = comma >= 0
+              ? captcha.captchaBase64.substring(comma + 1)
+              : captcha.captchaBase64;
+          final imageBytes = base64.decode(raw);
+          captchaText = await OcrService.performOcr(imageBytes);
+        } catch (e) {
+          debugPrint('Auto login OCR error: $e');
+          return false;
+        }
+
+        await login(
+          username: username,
+          password: password,
+          captchaCode: captcha.code,
+          captchaText: captchaText,
+        );
+        return true;
+      } on ScuLoginException catch (e) {
+        if (e.message == 'invalid_captcha') {
+          debugPrint(
+            'Auto login: invalid_captcha, retry ${attempt + 1}/$maxRetries',
+          );
+          continue;
+        }
+        debugPrint('Auto login failed (non-captcha): ${e.message}');
+        return false;
+      } catch (e) {
+        debugPrint('Auto login network error: $e');
+        return false;
+      }
+    }
+    debugPrint('Auto login: captcha retries exhausted');
+    return false;
   }
 }

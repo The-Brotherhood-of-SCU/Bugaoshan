@@ -4,15 +4,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/auth/scu_login_page.dart';
 import 'package:bugaoshan/pages/campus_page.dart';
 import 'package:bugaoshan/pages/course/course_page.dart';
 import 'package:bugaoshan/pages/profile_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/widgets/common/navigation_item.dart';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -32,6 +35,25 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _checkForUpdateInBackground();
+    _attemptAutoLogin();
+  }
+
+  Future<void> _attemptAutoLogin() async {
+    try {
+      await getIt.isReady<ScuAuthProvider>();
+      final authProvider = getIt<ScuAuthProvider>();
+      if (authProvider.isLoggedIn) return;
+
+      final success = await authProvider.autoLogin();
+      if (!success && !authProvider.isLoggedIn && mounted) {
+        await Future.delayed(const Duration(milliseconds: 300));
+        if (mounted) {
+          popupOrNavigate(context, const ScuLoginPage());
+        }
+      }
+    } catch (e) {
+      debugPrint('Auto login attempt error: $e');
+    }
   }
 
   Future<void> _checkForUpdateInBackground() async {
