@@ -257,7 +257,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
         ),
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             itemCount: _campuses.length,
             itemBuilder: (context, index) {
               final campus = _campuses[index];
@@ -310,7 +310,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
         ),
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             itemCount: buildings.length,
             itemBuilder: (context, index) {
               final building = buildings[index];
@@ -406,7 +406,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
                   ),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   itemCount: rooms.length,
                   itemBuilder: (context, index) {
                     final room = rooms[index];

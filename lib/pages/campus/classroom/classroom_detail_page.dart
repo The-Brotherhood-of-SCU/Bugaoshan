@@ -27,7 +27,7 @@ class ClassroomDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(room.classroomName)),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
