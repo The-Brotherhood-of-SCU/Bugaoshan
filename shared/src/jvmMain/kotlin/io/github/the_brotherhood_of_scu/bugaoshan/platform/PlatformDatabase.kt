@@ -11,7 +11,10 @@ actual fun createSqlDriver(): SqlDriver {
         appDir.mkdirs()
     }
     val dbFile = File(appDir, "bugaoshan.db")
+    val isNew = !dbFile.exists()
     val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
-    AppDatabase.Schema.create(driver)
+    if (isNew) {
+        AppDatabase.Schema.create(driver)
+    }
     return driver
 }

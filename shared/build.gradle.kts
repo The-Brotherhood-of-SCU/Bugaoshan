@@ -22,22 +22,22 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             // Serialization
-            implementation(libs.kotlinx.serialization.json)
+            api(libs.kotlinx.serialization.json)
             // Coroutines
-            implementation(libs.kotlinx.coroutinesCore)
+            api(libs.kotlinx.coroutinesCore)
             // Ktor Client
-            implementation(libs.ktor.client.core)
+            api(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.json)
             // SQLDelight
-            implementation(libs.sqldelight.runtime)
-            implementation(libs.sqldelight.coroutines)
+            api(libs.sqldelight.runtime)
+            api(libs.sqldelight.coroutines)
             // Koin
-            implementation(libs.koin.core)
+            api(libs.koin.core)
             // Settings
-            implementation(libs.multiplatform.settings)
+            api(libs.multiplatform.settings)
             // DateTime
-            implementation(libs.kotlinx.datetime)
+            api(libs.kotlinx.datetime)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

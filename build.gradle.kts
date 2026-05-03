@@ -12,3 +12,15 @@ plugins {
     alias(libs.plugins.ktor) apply false
     alias(libs.plugins.sqldelight) apply false
 }
+
+allprojects {
+    configurations.all {
+        resolutionStrategy {
+            eachDependency {
+                if (requested.group == "org.jetbrains.kotlinx" && requested.name.startsWith("kotlinx-datetime")) {
+                    useVersion(libs.versions.datetime.get())
+                }
+            }
+        }
+    }
+}
