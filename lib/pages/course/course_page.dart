@@ -95,7 +95,6 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
           children: [
             // Top bar: date, week switcher, action buttons
             _buildTopBar(context, l10n, week, totalWeeks),
-            const SizedBox(height: 8),
             // Course grid
             Expanded(
               child: Stack(
