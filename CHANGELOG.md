@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - 桌面端成绩页面添加刷新按钮
+- 添加校历查看功能
 
 ### Changed
 - 调整课表布局，周日为第一天，对应教务处课表布局
