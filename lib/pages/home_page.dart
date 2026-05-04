@@ -186,11 +186,26 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             : dockIdProfile;
         final currentPage = _buildPage(currentId);
 
-        return OrientationBuilder(
-          builder: (context, orientation) =>
-              orientation == Orientation.landscape
-              ? _buildLandscapeLayout(visibleIds, currentPage, l10n)
-              : _buildPortraitLayout(visibleIds, currentPage, l10n),
+        return ValueListenableBuilder<bool>(
+          valueListenable: appConfig.hasUpdateNotification,
+          builder: (context, hasUpdate, _) {
+            return OrientationBuilder(
+              builder: (context, orientation) =>
+                  orientation == Orientation.landscape
+                  ? _buildLandscapeLayout(
+                      visibleIds,
+                      currentPage,
+                      l10n,
+                      hasUpdate,
+                    )
+                  : _buildPortraitLayout(
+                      visibleIds,
+                      currentPage,
+                      l10n,
+                      hasUpdate,
+                    ),
+            );
+          },
         );
       },
     );
@@ -208,26 +223,21 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     List<String> visibleIds,
     Widget currentPage,
     AppLocalizations l10n,
+    bool hasUpdate,
   ) {
-    final appConfig = getIt<AppConfigProvider>();
     return Scaffold(
       body: Row(
         children: [
-          ValueListenableBuilder<bool>(
-            valueListenable: appConfig.hasUpdateNotification,
-            builder: (context, hasUpdate, _) {
-              return NavigationRail(
-                selectedIndex: _currentIndex,
-                onDestinationSelected: (index) {
-                  setState(() => _currentIndex = index);
-                  _onTabSelected(visibleIds[index]);
-                },
-                labelType: NavigationRailLabelType.all,
-                destinations: visibleIds
-                    .map((id) => _buildRailDestination(id, hasUpdate, l10n))
-                    .toList(),
-              );
+          NavigationRail(
+            selectedIndex: _currentIndex,
+            onDestinationSelected: (index) {
+              setState(() => _currentIndex = index);
+              _onTabSelected(visibleIds[index]);
             },
+            labelType: NavigationRailLabelType.all,
+            destinations: visibleIds
+                .map((id) => _buildRailDestination(id, hasUpdate, l10n))
+                .toList(),
           ),
           const VerticalDivider(thickness: 1, width: 1),
           Expanded(child: SafeArea(child: currentPage)),
@@ -240,24 +250,19 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     List<String> visibleIds,
     Widget currentPage,
     AppLocalizations l10n,
+    bool hasUpdate,
   ) {
-    final appConfig = getIt<AppConfigProvider>();
     return Scaffold(
       body: SafeArea(child: currentPage),
-      bottomNavigationBar: ValueListenableBuilder<bool>(
-        valueListenable: appConfig.hasUpdateNotification,
-        builder: (context, hasUpdate, _) {
-          return NavigationBar(
-            selectedIndex: _currentIndex,
-            onDestinationSelected: (index) {
-              setState(() => _currentIndex = index);
-              _onTabSelected(visibleIds[index]);
-            },
-            destinations: visibleIds
-                .map((id) => _buildBarDestination(id, hasUpdate, l10n))
-                .toList(),
-          );
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) {
+          setState(() => _currentIndex = index);
+          _onTabSelected(visibleIds[index]);
         },
+        destinations: visibleIds
+            .map((id) => _buildBarDestination(id, hasUpdate, l10n))
+            .toList(),
       ),
     );
   }
