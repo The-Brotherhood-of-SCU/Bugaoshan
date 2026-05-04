@@ -149,6 +149,7 @@ class SoftwareSettingPage extends StatelessWidget {
                         onPressed: () {
                           final oldPath = appConfig.backgroundImagePath.value;
                           appConfig.backgroundImagePath.value = null;
+                          appConfig.themeColor.value = Colors.blueAccent;
                           if (oldPath != null) {
                             FileImage(File(oldPath)).evict();
                             File(oldPath).delete().ignore();
