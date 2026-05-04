@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/widgets/common/third_center.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -180,37 +181,34 @@ class _ProfilePageState extends State<ProfilePage> {
           onLogout: () => _confirmLogout(context, authProvider, localizations),
         );
 
+        final body = Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            loginStatusCard,
+
+            const SizedBox(height: 12),
+            AnimatedSize(
+              duration: appConfigService.cardSizeAnimationDuration.value,
+              curve: appCurve,
+              child: UserInfoCard(
+                isLoggedIn: isLoggedIn,
+                labelsNotifier: _labelsNotifier,
+                onRetry: _fetchUserLabels,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+            const ProfileMenuCard(),
+          ],
+        );
+
         return LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 32,
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      loginStatusCard,
-
-                      const SizedBox(height: 12),
-                      AnimatedSize(
-                        duration:
-                            appConfigService.cardSizeAnimationDuration.value,
-                        curve: appCurve,
-                        child: UserInfoCard(
-                          isLoggedIn: isLoggedIn,
-                          labelsNotifier: _labelsNotifier,
-                          onRetry: _fetchUserLabels,
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-                      const ProfileMenuCard(),
-                    ],
-                  ),
-                ),
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: ThirdCenter(child: body),
               ),
             );
           },
