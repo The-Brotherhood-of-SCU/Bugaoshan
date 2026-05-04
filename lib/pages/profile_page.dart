@@ -146,6 +146,10 @@ class _ProfilePageState extends State<ProfilePage> {
       builder: (context, _) {
         final isLoggedIn = authProvider.isLoggedIn;
         final isExpired = authProvider.isExpired;
+
+        if (isLoggedIn && !_labelsNotifier.hasData && !_labelsNotifier.loading) {
+          WidgetsBinding.instance.addPostFrameCallback((_) => _tryFetchLabels());
+        }
         final loginStatusText = isLoggedIn
             ? localizations.loggedIn
             : isExpired
