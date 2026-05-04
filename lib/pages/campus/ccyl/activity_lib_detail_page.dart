@@ -360,7 +360,7 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
               ),
               _buildInfoRow(
                 Icons.phone_outlined,
-                l10n.ccylLiableTeacherPhone,
+                l10n.ccylLiablePhone,
                 lib.liableTerPhone,
               ),
             ],

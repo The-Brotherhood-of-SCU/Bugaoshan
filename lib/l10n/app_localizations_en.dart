@@ -1150,9 +1150,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ccylLiableTeacher => 'Liable Teacher';
 
   @override
-  String get ccylLiableTeacherPhone => 'Liable Teacher Phone';
-
-  @override
   String get ccylActivities => 'Activities';
 
   @override

@@ -1122,9 +1122,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ccylLiableTeacher => '指导老师';
 
   @override
-  String get ccylLiableTeacherPhone => '指导老师电话';
-
-  @override
   String get ccylActivities => '系列活动';
 
   @override

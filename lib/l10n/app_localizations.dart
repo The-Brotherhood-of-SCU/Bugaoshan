@@ -2269,12 +2269,6 @@ abstract class AppLocalizations {
   /// **'Liable Teacher'**
   String get ccylLiableTeacher;
 
-  /// No description provided for @ccylLiableTeacherPhone.
-  ///
-  /// In en, this message translates to:
-  /// **'Liable Teacher Phone'**
-  String get ccylLiableTeacherPhone;
-
   /// No description provided for @ccylActivities.
   ///
   /// In en, this message translates to:
