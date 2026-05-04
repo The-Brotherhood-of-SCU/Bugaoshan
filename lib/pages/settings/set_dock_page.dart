@@ -142,7 +142,7 @@ class _SetDockPageState extends State<SetDockPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Switch(
-                  value: true,
+                  value: _isVisible(item.id),
                   onChanged: isProfile
                       ? null
                       : (_) => _toggleVisibility(item.id),
