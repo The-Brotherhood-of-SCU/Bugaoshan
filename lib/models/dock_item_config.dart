@@ -96,3 +96,18 @@ String dockLabel(String id, AppLocalizations l10n) => switch (id) {
   dockIdAcademicCalendar => l10n.dockLabelAcademicCalendar,
   _ => id,
 };
+
+String dockFullLabel(String id, AppLocalizations l10n) => switch (id) {
+  dockIdCourse => l10n.course,
+  dockIdCampus => l10n.campus,
+  dockIdProfile => l10n.profile,
+  dockIdGrades => l10n.gradesStats,
+  dockIdCcyl => l10n.ccylTitle,
+  dockIdPlanCompletion => l10n.planCompletion,
+  dockIdTrainProgram => l10n.trainProgram,
+  dockIdClassroom => l10n.classroomQuery,
+  dockIdNetworkDevice => l10n.networkDeviceQuery,
+  dockIdBalanceQuery => l10n.balanceQuery,
+  dockIdAcademicCalendar => l10n.academicCalendar,
+  _ => id,
+};
