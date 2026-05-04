@@ -127,8 +127,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             return LayoutBuilder(
               builder: (context, constraints) {
                 final isWide = constraints.maxWidth >= 600;
-                final showRail = isWide && visibleIds.isNotEmpty;
-                final showBar = !isWide && visibleIds.isNotEmpty;
+                final showRail = isWide && visibleIds.length >= 2;
+                final showBar = !isWide && visibleIds.length >= 2;
                 final pageContent = _buildIndexedStack(
                   visibleIds,
                   _currentIndex,
