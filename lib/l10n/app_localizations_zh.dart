@@ -1316,6 +1316,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get selectAcademicYear => '选择学年';
+
+  @override
+  String get userInfoLoading => '正在加载个人信息...';
+
+  @override
+  String get userInfoLoadFailed => '个人信息加载失败';
+
+  @override
+  String get userInfoRetry => '点击重试';
+
+  @override
+  String get labelBookBorrowCount => '图书借阅量';
+
+  @override
+  String get labelCampusCardBalance => '校园卡余额';
+
+  @override
+  String get labelNetworkFeeBalance => '网费余额';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

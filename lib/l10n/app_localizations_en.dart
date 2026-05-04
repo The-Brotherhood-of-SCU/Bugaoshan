@@ -1353,4 +1353,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectAcademicYear => 'Select Academic Year';
+
+  @override
+  String get userInfoLoading => 'Loading user info...';
+
+  @override
+  String get userInfoLoadFailed => 'Failed to load user info';
+
+  @override
+  String get userInfoRetry => 'Tap to retry';
+
+  @override
+  String get labelBookBorrowCount => 'Books Borrowed';
+
+  @override
+  String get labelCampusCardBalance => 'Card Balance';
+
+  @override
+  String get labelNetworkFeeBalance => 'Network Fee';
 }

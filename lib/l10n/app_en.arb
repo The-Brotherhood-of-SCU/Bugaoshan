@@ -458,5 +458,11 @@
     "openSourceLicenseDesc": "This app is open-sourced under AGPL-3.0",
     "academicCalendar": "Academic Calendar",
     "academicCalendarDesc": "View SCU academic calendar and semester schedule",
-    "selectAcademicYear": "Select Academic Year"
+    "selectAcademicYear": "Select Academic Year",
+    "userInfoLoading": "Loading user info...",
+    "userInfoLoadFailed": "Failed to load user info",
+    "userInfoRetry": "Tap to retry",
+    "labelBookBorrowCount": "Books Borrowed",
+    "labelCampusCardBalance": "Card Balance",
+    "labelNetworkFeeBalance": "Network Fee"
 }

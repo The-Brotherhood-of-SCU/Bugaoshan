@@ -456,5 +456,11 @@
     "scuLoginDisclaimerPrivacy": "我们不会收集任何信息",
     "academicCalendar": "校历查看",
     "academicCalendarDesc": "查看四川大学校历，了解学期安排",
-    "selectAcademicYear": "选择学年"
+    "selectAcademicYear": "选择学年",
+    "userInfoLoading": "正在加载个人信息...",
+    "userInfoLoadFailed": "个人信息加载失败",
+    "userInfoRetry": "点击重试",
+    "labelBookBorrowCount": "图书借阅量",
+    "labelCampusCardBalance": "校园卡余额",
+    "labelNetworkFeeBalance": "网费余额"
 }

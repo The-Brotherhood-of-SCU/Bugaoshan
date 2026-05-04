@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:bugaoshan/injection/injector.dart';
@@ -9,9 +11,44 @@ import 'package:bugaoshan/pages/auth/scu_login_page.dart';
 import 'package:bugaoshan/pages/settings/software_setting_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/services/scu_microservice_auth_service.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 const _keyUsername = 'scu_saved_username';
+
+class _LabelsNotifier extends ChangeNotifier {
+  List<Map<String, dynamic>>? _labels;
+  bool _loading = false;
+  bool _error = false;
+
+  List<Map<String, dynamic>>? get labels => _labels;
+  bool get loading => _loading;
+  bool get error => _error;
+  bool get hasData => _labels != null;
+
+  set loading(bool value) {
+    _loading = value;
+    notifyListeners();
+  }
+
+  set error(bool value) {
+    _error = value;
+    notifyListeners();
+  }
+
+  void setLabels(List<Map<String, dynamic>> labels) {
+    _labels = labels;
+    _error = false;
+    notifyListeners();
+  }
+
+  void clear() {
+    _labels = null;
+    _error = false;
+    _loading = false;
+    notifyListeners();
+  }
+}
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -24,10 +61,35 @@ class _ProfilePageState extends State<ProfilePage> {
   final _storage = const FlutterSecureStorage();
   String? _username;
 
+  // Static ValueNotifier survives state rebuilds across tab switches
+  static final _labelsNotifier = _LabelsNotifier();
+
   @override
   void initState() {
     super.initState();
     _loadUsername();
+    _labelsNotifier.addListener(_onLabelsChanged);
+    if (!_labelsNotifier.hasData && !_labelsNotifier.loading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _tryFetchLabels());
+    }
+  }
+
+  @override
+  void dispose() {
+    _labelsNotifier.removeListener(_onLabelsChanged);
+    super.dispose();
+  }
+
+  void _onLabelsChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _tryFetchLabels() {
+    if (!mounted) return;
+    final authProvider = getIt<ScuAuthProvider>();
+    if (authProvider.isLoggedIn && !_labelsNotifier.loading) {
+      _fetchUserLabels();
+    }
   }
 
   Future<void> _loadUsername() async {
@@ -35,6 +97,42 @@ class _ProfilePageState extends State<ProfilePage> {
     if (mounted) {
       setState(() => _username = username);
     }
+  }
+
+  Future<void> _fetchUserLabels() async {
+    _labelsNotifier.loading = true;
+
+    try {
+      final authService = ScuMicroserviceAuthService();
+      final client = await authService.getAuthenticatedClient();
+      if (client == null) {
+        _labelsNotifier.loading = false;
+        return;
+      }
+
+      final resp = await client.get(
+        Uri.parse('https://wfw.scu.edu.cn/mashupapp/wap/real/user'),
+        headers: {
+          'Accept': 'application/json, text/plain, */*',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Referer': 'https://wfw.scu.edu.cn',
+        },
+      );
+
+      final json = jsonDecode(resp.body) as Map<String, dynamic>;
+      if (json['e'] == 0 && json['d']?['labels'] != null) {
+        _labelsNotifier.setLabels(
+          (json['d']['labels'] as List)
+              .map((e) => e as Map<String, dynamic>)
+              .toList(),
+        );
+      } else {
+        _labelsNotifier.error = true;
+      }
+    } catch (e) {
+      _labelsNotifier.error = true;
+    }
+    _labelsNotifier.loading = false;
   }
 
   @override
@@ -74,6 +172,10 @@ class _ProfilePageState extends State<ProfilePage> {
                         localizations,
                         authProvider,
                       ),
+                      if (isLoggedIn) ...[
+                        const SizedBox(height: 12),
+                        _buildUserInfoCard(context, theme, localizations),
+                      ],
                       const SizedBox(height: 12),
                       // 功能菜单
                       _buildMenuCard(context, theme, localizations),
@@ -334,10 +436,159 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Widget _buildUserInfoCard(
+    BuildContext context,
+    ThemeData theme,
+    AppLocalizations localizations,
+  ) {
+    final primaryColor = theme.colorScheme.primary;
+
+    if (_labelsNotifier.loading) {
+      return Container(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: theme.dividerColor.withValues(alpha: 0.08),
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Text(
+              localizations.userInfoLoading,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_labelsNotifier.error) {
+      return InkWell(
+        onTap: _fetchUserLabels,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: theme.dividerColor.withValues(alpha: 0.08),
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Row(
+            children: [
+              Icon(
+                Icons.error_outline_rounded,
+                size: 20,
+                color: theme.colorScheme.error,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  localizations.userInfoLoadFailed,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              Text(
+                localizations.userInfoRetry,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: primaryColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final labels = _labelsNotifier.labels;
+    if (labels == null || labels.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    String localizeLabel(String apiName) {
+      return switch (apiName) {
+        '图书借阅量' => localizations.labelBookBorrowCount,
+        '校园卡余额' => localizations.labelCampusCardBalance,
+        '网费余额' => localizations.labelNetworkFeeBalance,
+        _ => apiName,
+      };
+    }
+
+    return InkWell(
+      onTap: _fetchUserLabels,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: theme.dividerColor.withValues(alpha: 0.08),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Row(
+            children: labels.map((label) {
+              final apiName = label['name'] as String? ?? '';
+              final name = localizeLabel(apiName);
+              final value = label['value'];
+              final valueStr =
+                  value is num ? value.toString() : value.toString();
+              final isLast = label == labels.last;
+
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(right: isLast ? 0 : 12),
+                  child: Column(
+                    children: [
+                      Text(
+                        valueStr,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: primaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        name,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _openLogin(BuildContext context) async {
     final result = await popupOrNavigate(context, const ScuLoginPage());
     if (result == true && context.mounted) {
       _loadUsername();
+      _labelsNotifier.clear();
+      _fetchUserLabels();
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('登录成功')));
@@ -368,6 +619,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
     if (confirmed == true) {
       await provider.logout();
+      _labelsNotifier.clear();
     }
   }
 }

@@ -26,7 +26,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   int _currentIndex = 0;
   final _courseProvider = getIt<CourseProvider>();
   late AppLocalizations _localizations;
-  late List<NavigationItemData> _navigationItems;
+  late final List<NavigationItemData> _navigationItems;
 
   @override
   void initState() {
@@ -85,30 +85,35 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
   }
 
+  bool _itemsInitialized = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _localizations = AppLocalizations.of(context)!;
-    _navigationItems = [
-      NavigationItemData(
-        icon: Icons.menu_book_outlined,
-        selectedIcon: Icons.menu_book,
-        label: _localizations.course,
-        page: CoursePage(),
-      ),
-      NavigationItemData(
-        icon: Icons.school_outlined,
-        selectedIcon: Icons.school,
-        label: _localizations.campus,
-        page: const CampusPage(),
-      ),
-      NavigationItemData(
-        icon: Icons.person_outlined,
-        selectedIcon: Icons.person,
-        label: _localizations.profile,
-        page: ProfilePage(),
-      ),
-    ];
+    if (!_itemsInitialized) {
+      _itemsInitialized = true;
+      _navigationItems = [
+        NavigationItemData(
+          icon: Icons.menu_book_outlined,
+          selectedIcon: Icons.menu_book,
+          label: _localizations.course,
+          page: CoursePage(),
+        ),
+        NavigationItemData(
+          icon: Icons.school_outlined,
+          selectedIcon: Icons.school,
+          label: _localizations.campus,
+          page: const CampusPage(),
+        ),
+        NavigationItemData(
+          icon: Icons.person_outlined,
+          selectedIcon: Icons.person,
+          label: _localizations.profile,
+          page: ProfilePage(),
+        ),
+      ];
+    }
   }
 
   @override

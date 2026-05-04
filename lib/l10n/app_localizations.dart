@@ -2652,6 +2652,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select Academic Year'**
   String get selectAcademicYear;
+
+  /// No description provided for @userInfoLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading user info...'**
+  String get userInfoLoading;
+
+  /// No description provided for @userInfoLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load user info'**
+  String get userInfoLoadFailed;
+
+  /// No description provided for @userInfoRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to retry'**
+  String get userInfoRetry;
+
+  /// No description provided for @labelBookBorrowCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Books Borrowed'**
+  String get labelBookBorrowCount;
+
+  /// No description provided for @labelCampusCardBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Card Balance'**
+  String get labelCampusCardBalance;
+
+  /// No description provided for @labelNetworkFeeBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Network Fee'**
+  String get labelNetworkFeeBalance;
 }
 
 class _AppLocalizationsDelegate
