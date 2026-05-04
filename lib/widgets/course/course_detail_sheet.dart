@@ -129,8 +129,8 @@ class CourseDetailSheet extends StatelessWidget {
                         '${course.weekType == WeekType.odd
                             ? ' ${l10n.oddWeek}'
                             : course.weekType == WeekType.even
-                                ? ' ${l10n.evenWeek}'
-                                : ''}',
+                            ? ' ${l10n.evenWeek}'
+                            : ''}',
                   ),
                   _InfoItem(
                     icon: Icons.access_time_outlined,

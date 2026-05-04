@@ -142,8 +142,10 @@ class PlanCompletionProvider extends ChangeNotifier {
   }
 
   List<PlanCompletionNode> _parseZNodes(String html) {
-    final match = RegExp(r'var\s+zNodes\s*=\s*(\[.*?\]);', dotAll: true)
-        .firstMatch(html);
+    final match = RegExp(
+      r'var\s+zNodes\s*=\s*(\[.*?\]);',
+      dotAll: true,
+    ).firstMatch(html);
     if (match == null) return [];
 
     final jsonStr = match.group(1)!;

@@ -32,7 +32,8 @@ class _GradesPageState extends State<GradesPage> {
       builder: (context, _) {
         final auth = getIt<ScuAuthProvider>();
 
-        final isDesktop = !kIsWeb &&
+        final isDesktop =
+            !kIsWeb &&
             (Platform.isWindows || Platform.isLinux || Platform.isMacOS);
         final gradesProvider = getIt<GradesProvider>();
 
@@ -51,44 +52,46 @@ class _GradesPageState extends State<GradesPage> {
           ),
           body: !auth.isLoggedIn
               ? auth.isAutoLoggingIn
-                  ? Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const CircularProgressIndicator(),
-                          const SizedBox(height: 16),
-                          Text(l10n.autoLoggingIn),
-                        ],
-                      ),
-                    )
-                  : Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
+                    ? Center(
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.login,
-                              size: 48,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              l10n.loginRequired,
-                              textAlign: TextAlign.center,
-                            ),
+                            const CircularProgressIndicator(),
                             const SizedBox(height: 16),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                Navigator.of(context).popUntil((route) => route.isFirst);
-                              },
-                              icon: const Icon(Icons.person),
-                              label: Text(l10n.goToLogin),
-                            ),
+                            Text(l10n.autoLoggingIn),
                           ],
                         ),
-                      ),
-                    )
+                      )
+                    : Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.login,
+                                size: 48,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                l10n.loginRequired,
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.of(
+                                    context,
+                                  ).popUntil((route) => route.isFirst);
+                                },
+                                icon: const Icon(Icons.person),
+                                label: Text(l10n.goToLogin),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
               : _pages[_currentIndex],
           bottomNavigationBar: auth.isLoggedIn
               ? BottomNavigationBar(

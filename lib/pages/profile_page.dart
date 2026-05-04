@@ -157,7 +157,9 @@ class _ProfilePageState extends State<ProfilePage> {
             return SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight - 32),
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight - 32,
+                ),
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -205,9 +207,7 @@ class _ProfilePageState extends State<ProfilePage> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: theme.dividerColor.withValues(alpha: 0.08),
-        ),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
       ),
       child: Column(
         children: [
@@ -271,10 +271,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ],
             ),
           ),
-          Divider(
-            height: 1,
-            color: theme.dividerColor.withValues(alpha: 0.08),
-          ),
+          Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.08)),
           InkWell(
             onTap: isLoggedIn
                 ? () => _confirmLogout(context, authProvider, localizations)
@@ -283,23 +280,20 @@ class _ProfilePageState extends State<ProfilePage> {
               bottom: Radius.circular(16),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 14,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               child: Row(
                 children: [
                   Icon(
                     isLoggedIn ? Icons.logout_rounded : Icons.login_rounded,
-                    color: isLoggedIn
-                        ? theme.colorScheme.error
-                        : primaryColor,
+                    color: isLoggedIn ? theme.colorScheme.error : primaryColor,
                     size: 20,
                   ),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Text(
-                      isLoggedIn ? localizations.logout : localizations.scuLogin,
+                      isLoggedIn
+                          ? localizations.logout
+                          : localizations.scuLogin,
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: isLoggedIn
                             ? theme.colorScheme.error
@@ -352,9 +346,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Icon(icon, color: primaryColor, size: 20),
               ),
               const SizedBox(width: 14),
-              Expanded(
-                child: Text(label, style: theme.textTheme.bodyLarge),
-              ),
+              Expanded(child: Text(label, style: theme.textTheme.bodyLarge)),
               ?trailing,
               Icon(
                 Icons.chevron_right_rounded,
@@ -373,9 +365,7 @@ class _ProfilePageState extends State<ProfilePage> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: theme.dividerColor.withValues(alpha: 0.08),
-        ),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
       ),
       child: Column(
         children: [
@@ -448,9 +438,7 @@ class _ProfilePageState extends State<ProfilePage> {
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: theme.dividerColor.withValues(alpha: 0.08),
-          ),
+          border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Row(
@@ -506,9 +494,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               Text(
                 localizations.userInfoRetry,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: primaryColor,
-                ),
+                style: theme.textTheme.bodySmall?.copyWith(color: primaryColor),
               ),
             ],
           ),
@@ -537,9 +523,7 @@ class _ProfilePageState extends State<ProfilePage> {
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: theme.dividerColor.withValues(alpha: 0.08),
-          ),
+          border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -548,8 +532,9 @@ class _ProfilePageState extends State<ProfilePage> {
               final apiName = label['name'] as String? ?? '';
               final name = localizeLabel(apiName);
               final value = label['value'];
-              final valueStr =
-                  value is num ? value.toString() : value.toString();
+              final valueStr = value is num
+                  ? value.toString()
+                  : value.toString();
               final isLast = label == labels.last;
 
               return Expanded(

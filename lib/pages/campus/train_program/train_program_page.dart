@@ -57,14 +57,13 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
                       color: Theme.of(context).colorScheme.primary,
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      l10n.loginRequired,
-                      textAlign: TextAlign.center,
-                    ),
+                    Text(l10n.loginRequired, textAlign: TextAlign.center),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
                       onPressed: () {
-                        Navigator.of(context).popUntil((route) => route.isFirst);
+                        Navigator.of(
+                          context,
+                        ).popUntil((route) => route.isFirst);
                       },
                       icon: const Icon(Icons.person),
                       label: Text(l10n.goToLogin),

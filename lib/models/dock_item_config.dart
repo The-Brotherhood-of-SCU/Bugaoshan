@@ -83,16 +83,16 @@ DockItemConfig dockConfigById(String id) =>
     dockConfigMap[id] ?? dockConfigMap[dockIdProfile]!;
 
 String dockLabel(String id, AppLocalizations l10n) => switch (id) {
-      dockIdCourse => l10n.dockLabelCourse,
-      dockIdCampus => l10n.dockLabelCampus,
-      dockIdProfile => l10n.dockLabelProfile,
-      dockIdGrades => l10n.dockLabelGrades,
-      dockIdCcyl => l10n.dockLabelCcyl,
-      dockIdPlanCompletion => l10n.dockLabelPlanCompletion,
-      dockIdTrainProgram => l10n.dockLabelTrainProgram,
-      dockIdClassroom => l10n.dockLabelClassroom,
-      dockIdNetworkDevice => l10n.dockLabelNetworkDevice,
-      dockIdBalanceQuery => l10n.dockLabelBalanceQuery,
-      dockIdAcademicCalendar => l10n.dockLabelAcademicCalendar,
-      _ => id,
-    };
+  dockIdCourse => l10n.dockLabelCourse,
+  dockIdCampus => l10n.dockLabelCampus,
+  dockIdProfile => l10n.dockLabelProfile,
+  dockIdGrades => l10n.dockLabelGrades,
+  dockIdCcyl => l10n.dockLabelCcyl,
+  dockIdPlanCompletion => l10n.dockLabelPlanCompletion,
+  dockIdTrainProgram => l10n.dockLabelTrainProgram,
+  dockIdClassroom => l10n.dockLabelClassroom,
+  dockIdNetworkDevice => l10n.dockLabelNetworkDevice,
+  dockIdBalanceQuery => l10n.dockLabelBalanceQuery,
+  dockIdAcademicCalendar => l10n.dockLabelAcademicCalendar,
+  _ => id,
+};
