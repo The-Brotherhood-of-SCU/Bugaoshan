@@ -14,6 +14,7 @@ import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/common/styled_widget.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
+import 'package:bugaoshan/providers/set_theme_color_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
@@ -302,5 +303,11 @@ class SoftwareSettingPage extends StatelessWidget {
     await File(picked.path).copy(destPath);
     appConfig.backgroundImageVersion.value++;
     appConfig.backgroundImagePath.value = destPath;
+
+    final themeColorProvider = SetThemeColorProvider(appConfig);
+    final result = await themeColorProvider.extractColorFromBackgroundImage();
+    if (result == ExtractColorResult.success && themeColorProvider.extractedColor != null) {
+      appConfig.themeColor.value = themeColorProvider.extractedColor!;
+    }
   }
 }
