@@ -162,12 +162,19 @@ class UpdateService {
     }
   }
 
-  Future<UpdateCheckResult> checkPreviewUpdate(String currentVersion,String gitTag) async {
+  Future<UpdateCheckResult> checkPreviewUpdate(
+    String currentVersion,
+    String gitTag,
+  ) async {
     try {
       final release = await getLatestPrereleaseFromGitHub();
+      if (release.tagName == gitTag) {
+        //if tag equal to gitTag, no update
+        return UpdateCheckResult.noUpdate();
+      }
       if (release.tagName != null &&
           release.downloadUrl != null &&
-          release.tagName != gitTag) {
+          hasUpdate(currentVersion, release.tagName!)) {
         return UpdateCheckResult.hasUpdate(release);
       }
       return UpdateCheckResult.noUpdate();
