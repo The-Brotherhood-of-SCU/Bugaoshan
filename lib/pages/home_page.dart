@@ -149,18 +149,20 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     return Scaffold(
       body: Row(
         children: [
-          NavigationRail(
-            selectedIndex: _currentIndex,
-            onDestinationSelected: (index) {
-              setState(() => _currentIndex = index);
-              _onTabSelected(visibleIds[index]);
-            },
-            labelType: NavigationRailLabelType.all,
-            destinations: visibleIds
-                .map((id) => _buildRailDestination(id, hasUpdate, l10n))
-                .toList(),
-          ),
-          const VerticalDivider(thickness: 1, width: 1),
+          if (visibleIds.isNotEmpty) ...[
+            NavigationRail(
+              selectedIndex: _currentIndex,
+              onDestinationSelected: (index) {
+                setState(() => _currentIndex = index);
+                _onTabSelected(visibleIds[index]);
+              },
+              labelType: NavigationRailLabelType.all,
+              destinations: visibleIds
+                  .map((id) => _buildRailDestination(id, hasUpdate, l10n))
+                  .toList(),
+            ),
+            const VerticalDivider(thickness: 1, width: 1),
+          ],
           Expanded(child: SafeArea(child: currentPage)),
         ],
       ),
@@ -175,16 +177,18 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   ) {
     return Scaffold(
       body: SafeArea(child: currentPage),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          setState(() => _currentIndex = index);
-          _onTabSelected(visibleIds[index]);
-        },
-        destinations: visibleIds
-            .map((id) => _buildBarDestination(id, hasUpdate, l10n))
-            .toList(),
-      ),
+      bottomNavigationBar: visibleIds.isNotEmpty
+          ? NavigationBar(
+              selectedIndex: _currentIndex,
+              onDestinationSelected: (index) {
+                setState(() => _currentIndex = index);
+                _onTabSelected(visibleIds[index]);
+              },
+              destinations: visibleIds
+                  .map((id) => _buildBarDestination(id, hasUpdate, l10n))
+                  .toList(),
+            )
+          : null,
     );
   }
 
