@@ -13,108 +13,202 @@ import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class CampusPage extends StatelessWidget {
+class CampusPage extends StatefulWidget {
   const CampusPage({super.key});
+
+  @override
+  State<CampusPage> createState() => _CampusPageState();
+}
+
+class _CampusPageState extends State<CampusPage>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _arrowController;
+  late final Animation<double> _arrowAnimation;
+  bool _showHint = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _arrowController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..repeat(reverse: true);
+    _arrowAnimation = Tween<double>(begin: 0, end: 6).animate(
+      CurvedAnimation(parent: _arrowController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _arrowController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll(ScrollNotification notification) {
+    if (notification.metrics.pixels > 40 && _showHint) {
+      setState(() => _showHint = false);
+    } else if (notification.metrics.pixels <= 40 && !_showHint) {
+      setState(() => _showHint = true);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isWeb = kIsWeb;
+    final bgColor = Theme.of(context).scaffoldBackgroundColor;
 
-    return CustomScrollView(
-      slivers: [
-        SliverPadding(
-          padding: const EdgeInsets.all(16),
-          sliver: SliverList.list(
-            children: [
-              _SectionHeader(title: l10n.academicSection),
-              const SizedBox(height: 8),
-              _CampusCard(
-                icon: Icons.bar_chart_outlined,
-                title: l10n.gradesStats,
-                desc: l10n.gradesStatsDesc,
-                appOnly: false,
-                onTap: () =>
-                    popupOrNavigate(logicRootContext, const GradesPage()),
-              ),
-              const SizedBox(height: 8),
-              _CampusCard(
-                icon: Icons.event_outlined,
-                title: l10n.ccylTitle,
-                desc: l10n.ccylDesc,
-                appOnly: false,
-                onTap: () =>
-                    popupOrNavigate(logicRootContext, const CcylPage()),
-              ),
-              const SizedBox(height: 8),
-              _CampusCard(
-                icon: Icons.assignment_turned_in_outlined,
-                title: l10n.planCompletion,
-                desc: l10n.planCompletionDesc,
-                appOnly: false,
-                onTap: () => popupOrNavigate(
-                  logicRootContext,
-                  const PlanCompletionPage(),
-                ),
-              ),
-              const SizedBox(height: 24),
-              _SectionHeader(title: l10n.utilitiesSection),
-              const SizedBox(height: 8),
-              _CampusCard(
-                icon: Icons.school_outlined,
-                title: l10n.trainProgram,
-                desc: l10n.trainProgramDesc,
-                appOnly: false,
-                onTap: () =>
-                    popupOrNavigate(logicRootContext, const TrainProgramPage()),
-              ),
-              const SizedBox(height: 8),
-              _CampusCard(
-                icon: Icons.meeting_room_outlined,
-                title: l10n.classroomQuery,
-                desc: l10n.classroomQueryDesc,
-                appOnly: isWeb,
-                onTap: isWeb
-                    ? null
-                    : () => popupOrNavigate(
+    return Stack(
+      children: [
+        NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            _onScroll(notification);
+            return false;
+          },
+          child: CustomScrollView(
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: SliverList.list(
+                  children: [
+                    _SectionHeader(title: l10n.academicSection),
+                    const SizedBox(height: 8),
+                    _CampusCard(
+                      icon: Icons.bar_chart_outlined,
+                      title: l10n.gradesStats,
+                      desc: l10n.gradesStatsDesc,
+                      appOnly: false,
+                      onTap: () => popupOrNavigate(
                         logicRootContext,
-                        const ClassroomPage(),
+                        const GradesPage(),
                       ),
-              ),
-              const SizedBox(height: 8),
-              _CampusCard(
-                icon: Icons.router_outlined,
-                title: l10n.networkDeviceQuery,
-                desc: l10n.networkDeviceQueryDesc,
-                appOnly: false,
-                onTap: () => popupOrNavigate(
-                  logicRootContext,
-                  const NetworkDevicePage(),
+                    ),
+                    const SizedBox(height: 8),
+                    _CampusCard(
+                      icon: Icons.event_outlined,
+                      title: l10n.ccylTitle,
+                      desc: l10n.ccylDesc,
+                      appOnly: false,
+                      onTap: () =>
+                          popupOrNavigate(logicRootContext, const CcylPage()),
+                    ),
+                    const SizedBox(height: 8),
+                    _CampusCard(
+                      icon: Icons.assignment_turned_in_outlined,
+                      title: l10n.planCompletion,
+                      desc: l10n.planCompletionDesc,
+                      appOnly: false,
+                      onTap: () => popupOrNavigate(
+                        logicRootContext,
+                        const PlanCompletionPage(),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _SectionHeader(title: l10n.utilitiesSection),
+                    const SizedBox(height: 8),
+                    _CampusCard(
+                      icon: Icons.school_outlined,
+                      title: l10n.trainProgram,
+                      desc: l10n.trainProgramDesc,
+                      appOnly: false,
+                      onTap: () => popupOrNavigate(
+                        logicRootContext,
+                        const TrainProgramPage(),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _CampusCard(
+                      icon: Icons.meeting_room_outlined,
+                      title: l10n.classroomQuery,
+                      desc: l10n.classroomQueryDesc,
+                      appOnly: isWeb,
+                      onTap: isWeb
+                          ? null
+                          : () => popupOrNavigate(
+                              logicRootContext,
+                              const ClassroomPage(),
+                            ),
+                    ),
+                    const SizedBox(height: 8),
+                    _CampusCard(
+                      icon: Icons.router_outlined,
+                      title: l10n.networkDeviceQuery,
+                      desc: l10n.networkDeviceQueryDesc,
+                      appOnly: false,
+                      onTap: () => popupOrNavigate(
+                        logicRootContext,
+                        const NetworkDevicePage(),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _CampusCard(
+                      icon: Icons.account_balance_wallet_outlined,
+                      title: l10n.balanceQuery,
+                      desc: l10n.balanceQueryDesc,
+                      appOnly: false,
+                      onTap: () => popupOrNavigate(
+                        logicRootContext,
+                        const BalanceQueryPage(),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _CampusCard(
+                      icon: Icons.calendar_month_outlined,
+                      title: l10n.academicCalendar,
+                      desc: l10n.academicCalendarDesc,
+                      appOnly: false,
+                      onTap: () => popupOrNavigate(
+                        logicRootContext,
+                        const AcademicCalendarPage(),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _MoreFeaturesCard(),
+                    const SizedBox(height: 60),
+                  ],
                 ),
               ),
-              const SizedBox(height: 8),
-              _CampusCard(
-                icon: Icons.account_balance_wallet_outlined,
-                title: l10n.balanceQuery,
-                desc: l10n.balanceQueryDesc,
-                appOnly: false,
-                onTap: () =>
-                    popupOrNavigate(logicRootContext, const BalanceQueryPage()),
-              ),
-              const SizedBox(height: 8),
-              _CampusCard(
-                icon: Icons.calendar_month_outlined,
-                title: l10n.academicCalendar,
-                desc: l10n.academicCalendarDesc,
-                appOnly: false,
-                onTap: () => popupOrNavigate(
-                  logicRootContext,
-                  const AcademicCalendarPage(),
-                ),
-              ),
-              const SizedBox(height: 24),
-              _MoreFeaturesCard(),
             ],
+          ),
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: IgnorePointer(
+            child: AnimatedOpacity(
+              opacity: _showHint ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 300),
+              child: Container(
+                height: 64,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      bgColor.withValues(alpha: 0),
+                      bgColor.withValues(alpha: 0.95),
+                    ],
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: AnimatedBuilder(
+                  animation: _arrowAnimation,
+                  builder: (context, child) => Transform.translate(
+                    offset: Offset(0, _arrowAnimation.value),
+                    child: child,
+                  ),
+                  child: Icon(
+                    Icons.keyboard_arrow_down,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurfaceVariant
+                        .withValues(alpha: 0.6),
+                    size: 28,
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ],
