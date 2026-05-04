@@ -124,7 +124,13 @@ class CourseDetailSheet extends StatelessWidget {
                   _InfoItem(
                     icon: Icons.calendar_today_outlined,
                     iconColor: Colors.teal,
-                    text: l10n.weekRange(course.startWeek, course.endWeek),
+                    text:
+                        '${l10n.weekRange(course.startWeek, course.endWeek)}'
+                        '${course.weekType == WeekType.odd
+                            ? ' ${l10n.oddWeek}'
+                            : course.weekType == WeekType.even
+                                ? ' ${l10n.evenWeek}'
+                                : ''}',
                   ),
                   _InfoItem(
                     icon: Icons.access_time_outlined,
