@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Colors, Curve, Curves;
 import 'package:bugaoshan/utils/locale_utils.dart';
+import 'package:bugaoshan/utils/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 //define key
@@ -19,12 +20,6 @@ const String _keyFirstLaunchWizardCompleted = 'firstLaunchWizardCompleted';
 const String _keyHasUpdateNotification = 'hasUpdateNotification';
 const String _keyVisibleDockIds = 'visibleDockIds';
 const Curve appCurve = Curves.easeOutQuart;
-
-const List<String> _defaultVisibleDockIds = [
-  'course',
-  'campus',
-  'profile',
-];
 
 class AppConfigProvider {
   final SharedPreferences _sharedPreferences;
@@ -87,7 +82,7 @@ class AppConfigProvider {
         _sharedPreferences.getBool(_keyHasUpdateNotification) ?? false;
     visibleDockIds.value =
         _sharedPreferences.getStringList(_keyVisibleDockIds) ??
-        List<String>.from(_defaultVisibleDockIds);
+        List<String>.from(defaultVisibleDockIds);
   }
 
   void _addSaveCallback() {
@@ -157,7 +152,7 @@ class AppConfigProvider {
   }
 
   void resetDockToDefault() {
-    visibleDockIds.value = List<String>.from(_defaultVisibleDockIds);
+    visibleDockIds.value = List<String>.from(defaultVisibleDockIds);
   }
 
   void clearAll() {

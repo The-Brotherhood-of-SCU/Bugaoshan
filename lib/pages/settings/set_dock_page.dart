@@ -69,7 +69,8 @@ class _SetDockPageState extends State<SetDockPage> {
 
     // Items shown in the preview bar (in order)
     final previewItems = _visibleIds
-        .map((id) => _allItems.firstWhere((item) => item.id == id))
+        .where((id) => _allItems.any((item) => item.id == id))
+        .map((id) => dockConfigById(id))
         .toList();
     final dockerPreview = Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -120,7 +121,7 @@ class _SetDockPageState extends State<SetDockPage> {
       onReorder: _onReorder,
       itemBuilder: (context, index) {
         final id = _visibleIds[index];
-        final item = _allItems.firstWhere((i) => i.id == id);
+        final item = dockConfigById(id);
         final isProfile = item.id == dockIdProfile;
 
         return Card(

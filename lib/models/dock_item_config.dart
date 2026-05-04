@@ -77,6 +77,14 @@ List<DockItemConfig> allDockItems() => [
       ),
     ];
 
+/// ID → DockItemConfig lookup map.
+final Map<String, DockItemConfig> _dockConfigMap = {
+  for (final item in allDockItems()) item.id: item,
+};
+
+/// Returns the [DockItemConfig] for [id], or throws if not found.
+DockItemConfig dockConfigById(String id) => _dockConfigMap[id]!;
+
 String dockLabel(String id, AppLocalizations l10n) => switch (id) {
       dockIdCourse => l10n.dockLabelCourse,
       dockIdCampus => l10n.dockLabelCampus,

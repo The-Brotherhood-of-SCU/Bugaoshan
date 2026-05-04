@@ -197,18 +197,18 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     bool hasUpdate,
     AppLocalizations l10n,
   ) {
-    final meta = dockMeta[id]!;
+    final config = dockConfigById(id);
     final isProfile = id == dockIdProfile;
     return NavigationRailDestination(
       icon: isProfile
-          ? _buildUpdateBadge(showBadge: hasUpdate, child: Icon(meta.icon))
-          : Icon(meta.icon),
+          ? _buildUpdateBadge(showBadge: hasUpdate, child: Icon(config.icon))
+          : Icon(config.icon),
       selectedIcon: isProfile
           ? _buildUpdateBadge(
               showBadge: hasUpdate,
-              child: Icon(meta.selectedIcon),
+              child: Icon(config.selectedIcon),
             )
-          : Icon(meta.selectedIcon),
+          : Icon(config.selectedIcon),
       label: Text(dockLabel(id, l10n)),
     );
   }
@@ -218,18 +218,18 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     bool hasUpdate,
     AppLocalizations l10n,
   ) {
-    final meta = dockMeta[id]!;
+    final config = dockConfigById(id);
     final isProfile = id == dockIdProfile;
     return NavigationDestination(
       icon: isProfile
-          ? _buildUpdateBadge(showBadge: hasUpdate, child: Icon(meta.icon))
-          : Icon(meta.icon),
+          ? _buildUpdateBadge(showBadge: hasUpdate, child: Icon(config.icon))
+          : Icon(config.icon),
       selectedIcon: isProfile
           ? _buildUpdateBadge(
               showBadge: hasUpdate,
-              child: Icon(meta.selectedIcon),
+              child: Icon(config.selectedIcon),
             )
-          : Icon(meta.selectedIcon),
+          : Icon(config.selectedIcon),
       label: dockLabel(id, l10n),
     );
   }
