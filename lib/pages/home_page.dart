@@ -13,6 +13,7 @@ import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/dock_utils.dart';
+import 'package:bugaoshan/widgets/common/cached_page_stack.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -105,7 +106,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         final currentId = visibleIds.isNotEmpty
             ? visibleIds[_currentIndex]
             : dockIdProfile;
-        final currentPage = buildDockPage(currentId);
 
         return ValueListenableBuilder<bool>(
           valueListenable: appConfig.hasUpdateNotification,
@@ -115,13 +115,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   orientation == Orientation.landscape
                   ? _buildLandscapeLayout(
                       visibleIds,
-                      currentPage,
+                      currentId,
                       l10n,
                       hasUpdate,
                     )
                   : _buildPortraitLayout(
                       visibleIds,
-                      currentPage,
+                      currentId,
                       l10n,
                       hasUpdate,
                     ),
@@ -142,7 +142,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   Widget _buildLandscapeLayout(
     List<String> visibleIds,
-    Widget currentPage,
+    String currentId,
     AppLocalizations l10n,
     bool hasUpdate,
   ) {
@@ -163,7 +163,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             ),
             const VerticalDivider(thickness: 1, width: 1),
           ],
-          Expanded(child: SafeArea(child: currentPage)),
+          Expanded(child: SafeArea(child: CachedPageStack(currentId: currentId, pageBuilder: buildDockPage))),
         ],
       ),
     );
@@ -171,12 +171,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   Widget _buildPortraitLayout(
     List<String> visibleIds,
-    Widget currentPage,
+    String currentId,
     AppLocalizations l10n,
     bool hasUpdate,
   ) {
     return Scaffold(
-      body: SafeArea(child: currentPage),
+      body: SafeArea(child: CachedPageStack(currentId: currentId, pageBuilder: buildDockPage)),
       bottomNavigationBar: visibleIds.isNotEmpty
           ? NavigationBar(
               selectedIndex: _currentIndex,
