@@ -1,11 +1,9 @@
-﻿import 'dart:io';
-import 'dart:ui' as ui;
-
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/set_theme_color_provider.dart';
 
 class SetThemeColorPage extends StatefulWidget {
   const SetThemeColorPage({super.key});
@@ -16,6 +14,7 @@ class SetThemeColorPage extends StatefulWidget {
 
 class _SetThemeColorPageState extends State<SetThemeColorPage> {
   final appConfigService = getIt<AppConfigProvider>();
+  final themeColorProvider = SetThemeColorProvider(getIt<AppConfigProvider>());
 
   late Color pickerColor;
   ColorScheme? colorScheme;
@@ -82,19 +81,19 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
                     ),
                   ),
                   Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: ElevatedButton(
+                      onPressed: _extractColorFromBackground,
+                      child: Text(l10n.extractColorFromBackgroundImage),
+                    ),
+                  ),
+                  Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: ElevatedButton(
                       onPressed: () {
                         changeColor(Colors.blue);
                       },
                       child: Text(l10n.resetToDefault),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: ElevatedButton(
-                      onPressed: _extractColorFromBackground,
-                      child: Text(l10n.extractColorFromBackgroundImage),
                     ),
                   ),
                 ],
@@ -116,52 +115,20 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
   }
 
   Future<void> _extractColorFromBackground() async {
-    final bgPath = appConfigService.backgroundImagePath.value;
-    if (bgPath == null) {
-      if (mounted) {
+    final result = await themeColorProvider.extractColorFromBackgroundImage();
+    if (!mounted) return;
+
+    switch (result) {
+      case ExtractColorResult.noBackgroundImage:
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.noBackgroundImageSet)),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.noBackgroundImageSet),
+          ),
         );
-      }
-      return;
-    }
-
-    final file = File(bgPath);
-    if (!await file.exists()) return;
-
-    final bytes = await file.readAsBytes();
-    final codec = await ui.instantiateImageCodec(bytes);
-    final frame = await codec.getNextFrame();
-    final image = frame.image;
-
-    final pixels = <int>[];
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
-    if (byteData == null) return;
-
-    for (int i = 0; i < byteData.lengthInBytes; i += 4) {
-      final r = byteData.getUint8(i);
-      final g = byteData.getUint8(i + 1);
-      final b = byteData.getUint8(i + 2);
-      final a = byteData.getUint8(i + 3);
-      if (a > 128) {
-        pixels.add((r << 16) | (g << 8) | b);
-      }
-    }
-
-    if (pixels.isEmpty) return;
-
-    final colorCounts = <int, int>{};
-    for (final px in pixels) {
-      final quantized = px & 0xFFF8F8F8;
-      colorCounts[quantized] = (colorCounts[quantized] ?? 0) + 1;
-    }
-
-    final dominantColorValue = colorCounts.entries
-        .reduce((a, b) => a.value > b.value ? a : b)
-        .key;
-
-    if (mounted) {
-      changeColor(Color(dominantColorValue | 0xFF000000));
+      case ExtractColorResult.success:
+        changeColor(themeColorProvider.extractedColor!);
+      case ExtractColorResult.failure:
+        break;
     }
   }
 }
@@ -219,7 +186,6 @@ class BasicCard extends StatelessWidget {
     } else {
       realChild = InkWell(
         highlightColor: Colors.transparent,
-        // 透明色
         splashColor: Colors.transparent,
         focusColor: Colors.transparent,
         onTap: () {
@@ -239,9 +205,9 @@ class BasicCard extends StatelessWidget {
           color: Theme.of(context).colorScheme.secondaryContainer,
           shadows: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1), //color of shadow
-              spreadRadius: 0.1, //spread radius
-              blurRadius: 10, // blur radius
+              color: Colors.black.withValues(alpha: 0.1),
+              spreadRadius: 0.1,
+              blurRadius: 10,
             ),
           ],
         ),
