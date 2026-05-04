@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- 修复自动登录过程中，我的页面未展示登录状态导致可点击登录按钮的问题
 - 修复课表时间不对应的问题
 - 修复中文：'学术'->'学业'
 - 修复自定义 Dock 栏切换 tab / 横竖屏时页面状态丢失的问题

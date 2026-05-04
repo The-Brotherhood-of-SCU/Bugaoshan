@@ -146,11 +146,14 @@ class _ProfilePageState extends State<ProfilePage> {
       builder: (context, _) {
         final isLoggedIn = authProvider.isLoggedIn;
         final isExpired = authProvider.isExpired;
+        final isAutoLoggingIn = authProvider.isAutoLoggingIn;
 
         if (isLoggedIn && !_labelsNotifier.hasData && !_labelsNotifier.loading) {
           WidgetsBinding.instance.addPostFrameCallback((_) => _tryFetchLabels());
         }
-        final loginStatusText = isLoggedIn
+        final loginStatusText = isAutoLoggingIn
+            ? localizations.autoLoggingIn
+            : isLoggedIn
             ? localizations.loggedIn
             : isExpired
             ? localizations.loginSessionExpired
@@ -174,6 +177,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         theme,
                         isLoggedIn,
                         isExpired,
+                        isAutoLoggingIn,
                         loginStatusText,
                         localizations,
                         authProvider,
@@ -201,6 +205,7 @@ class _ProfilePageState extends State<ProfilePage> {
     ThemeData theme,
     bool isLoggedIn,
     bool isExpired,
+    bool isAutoLoggingIn,
     String loginStatusText,
     AppLocalizations localizations,
     ScuAuthProvider authProvider,
@@ -223,26 +228,37 @@ class _ProfilePageState extends State<ProfilePage> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: isLoggedIn
+                    color: isAutoLoggingIn
+                        ? primaryColor.withValues(alpha: 0.08)
+                        : isLoggedIn
                         ? primaryColor.withValues(alpha: 0.1)
                         : isExpired
                         ? theme.colorScheme.tertiaryContainer
                         : theme.colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(
-                    isLoggedIn
-                        ? Icons.person
-                        : isExpired
-                        ? Icons.access_time_filled
-                        : Icons.person_outline,
-                    color: isLoggedIn
-                        ? primaryColor
-                        : isExpired
-                        ? theme.colorScheme.onTertiaryContainer
-                        : theme.colorScheme.onSurfaceVariant,
-                    size: 24,
-                  ),
+                  child: isAutoLoggingIn
+                      ? SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: primaryColor,
+                          ),
+                        )
+                      : Icon(
+                          isLoggedIn
+                              ? Icons.person
+                              : isExpired
+                              ? Icons.access_time_filled
+                              : Icons.person_outline,
+                          color: isLoggedIn
+                              ? primaryColor
+                              : isExpired
+                              ? theme.colorScheme.onTertiaryContainer
+                              : theme.colorScheme.onSurfaceVariant,
+                          size: 24,
+                        ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -277,7 +293,9 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.08)),
           InkWell(
-            onTap: isLoggedIn
+            onTap: isAutoLoggingIn
+                ? null
+                : isLoggedIn
                 ? () => _confirmLogout(context, authProvider, localizations)
                 : () => _openLogin(context),
             borderRadius: const BorderRadius.vertical(
@@ -287,19 +305,35 @@ class _ProfilePageState extends State<ProfilePage> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               child: Row(
                 children: [
-                  Icon(
-                    isLoggedIn ? Icons.logout_rounded : Icons.login_rounded,
-                    color: isLoggedIn ? theme.colorScheme.error : primaryColor,
-                    size: 20,
-                  ),
+                  if (isAutoLoggingIn)
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    )
+                  else
+                    Icon(
+                      isLoggedIn ? Icons.logout_rounded : Icons.login_rounded,
+                      color: isLoggedIn
+                          ? theme.colorScheme.error
+                          : primaryColor,
+                      size: 20,
+                    ),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Text(
-                      isLoggedIn
+                      isAutoLoggingIn
+                          ? localizations.autoLoggingIn
+                          : isLoggedIn
                           ? localizations.logout
                           : localizations.scuLogin,
                       style: theme.textTheme.bodyLarge?.copyWith(
-                        color: isLoggedIn
+                        color: isAutoLoggingIn
+                            ? theme.colorScheme.onSurfaceVariant
+                            : isLoggedIn
                             ? theme.colorScheme.error
                             : primaryColor,
                       ),
