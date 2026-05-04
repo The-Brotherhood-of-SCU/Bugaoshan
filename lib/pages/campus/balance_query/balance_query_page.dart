@@ -167,23 +167,6 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
         ],
       ),
       body: _buildBody(l10n),
-      floatingActionButton: Transform.translate(
-        offset: const Offset(-10, -20),
-        child: FloatingActionButton(
-          onPressed: () {
-            final auth = getIt<ScuAuthProvider>();
-            if (!auth.isLoggedIn) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.loginRequired)),
-              );
-              return;
-            }
-            _showBindDialog();
-          },
-          tooltip: l10n.bindRoom,
-          child: const Icon(Icons.add),
-        ),
-      ),
     );
   }
 
