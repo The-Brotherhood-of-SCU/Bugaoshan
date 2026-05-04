@@ -433,6 +433,7 @@
     "electricityFee": "Electricity",
     "acFee": "AC Fee",
     "balance": "Balance",
+    "unitKwh": "kWh",
     "bindRoom": "Bind Room",
     "bindNewRoom": "Bind New Room",
     "switchRoom": "Switch Room",

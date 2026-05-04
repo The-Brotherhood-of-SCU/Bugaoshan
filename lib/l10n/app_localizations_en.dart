@@ -1277,6 +1277,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get balance => 'Balance';
 
   @override
+  String get unitKwh => 'kWh';
+
+  @override
   String get bindRoom => 'Bind Room';
 
   @override

@@ -432,6 +432,7 @@
     "electricityFee": "电费",
     "acFee": "空调费",
     "balance": "余额",
+    "unitKwh": "度",
     "bindRoom": "绑定房间",
     "bindNewRoom": "绑定新房间",
     "switchRoom": "切换房间",

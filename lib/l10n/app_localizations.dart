@@ -2509,6 +2509,12 @@ abstract class AppLocalizations {
   /// **'Balance'**
   String get balance;
 
+  /// No description provided for @unitKwh.
+  ///
+  /// In en, this message translates to:
+  /// **'kWh'**
+  String get unitKwh;
+
   /// No description provided for @bindRoom.
   ///
   /// In en, this message translates to:

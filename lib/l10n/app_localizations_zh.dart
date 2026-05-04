@@ -1246,6 +1246,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get balance => '余额';
 
   @override
+  String get unitKwh => '度';
+
+  @override
   String get bindRoom => '绑定房间';
 
   @override
