@@ -2,7 +2,8 @@ class PlanCompletionNode {
   final String id;
   final String pId;
   final String flagId;
-  final String flagType; // "001" = category, "002" = subcategory, "kch" = course
+  final String
+  flagType; // "001" = category, "002" = subcategory, "kch" = course
   final String name; // plain text name (HTML stripped)
   final String rawName; // original HTML name
   final bool completed; // sfwc == "是"

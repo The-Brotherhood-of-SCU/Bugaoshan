@@ -129,7 +129,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 final isWide = constraints.maxWidth >= 600;
                 final showRail = isWide && visibleIds.isNotEmpty;
                 final showBar = !isWide && visibleIds.isNotEmpty;
-                final pageContent = _buildIndexedStack(visibleIds, _currentIndex);
+                final pageContent = _buildIndexedStack(
+                  visibleIds,
+                  _currentIndex,
+                );
                 return Scaffold(
                   body: Row(
                     children: [
@@ -144,11 +147,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                           },
                           labelType: NavigationRailLabelType.all,
                           destinations: visibleIds
-                              .map((id) => _buildRailDestination(
-                                    id,
-                                    hasUpdate,
-                                    l10n,
-                                  ))
+                              .map(
+                                (id) =>
+                                    _buildRailDestination(id, hasUpdate, l10n),
+                              )
                               .toList(),
                         ),
                       ),
@@ -168,11 +170,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                             _onTabSelected(visibleIds[index]);
                           },
                           destinations: visibleIds
-                              .map((id) => _buildBarDestination(
-                                    id,
-                                    hasUpdate,
-                                    l10n,
-                                  ))
+                              .map(
+                                (id) =>
+                                    _buildBarDestination(id, hasUpdate, l10n),
+                              )
                               .toList(),
                         )
                       : null,

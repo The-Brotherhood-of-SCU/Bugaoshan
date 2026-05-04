@@ -33,10 +33,7 @@ class ClassroomDetailPage extends StatelessWidget {
           children: [
             _buildInfoCard(context, l10n),
             const SizedBox(height: 16),
-            Text(
-              l10n.period,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text(l10n.period, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             _buildPeriodGrid(context, l10n),
           ],
@@ -158,9 +155,9 @@ class ClassroomDetailPage extends StatelessWidget {
                   const SizedBox(width: 4),
                   Text(
                     l10n.classroomCanBorrow,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.green,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.green),
                   ),
                 ],
               ),

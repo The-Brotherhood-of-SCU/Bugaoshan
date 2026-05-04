@@ -78,10 +78,8 @@ class _CampusPageState extends State<CampusPage>
                       title: l10n.gradesStats,
                       desc: l10n.gradesStatsDesc,
                       appOnly: false,
-                      onTap: () => popupOrNavigate(
-                        logicRootContext,
-                        const GradesPage(),
-                      ),
+                      onTap: () =>
+                          popupOrNavigate(logicRootContext, const GradesPage()),
                     ),
                     const SizedBox(height: 8),
                     _CampusCard(
@@ -200,10 +198,9 @@ class _CampusPageState extends State<CampusPage>
                   ),
                   child: Icon(
                     Icons.keyboard_arrow_down,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurfaceVariant
-                        .withValues(alpha: 0.6),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                     size: 28,
                   ),
                 ),

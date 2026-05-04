@@ -404,10 +404,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
               ),
               if (!_isToday) ...[
                 const SizedBox(width: 8),
-                ActionChip(
-                  label: Text(l10n.today),
-                  onPressed: _goToToday,
-                ),
+                ActionChip(label: Text(l10n.today), onPressed: _goToToday),
               ],
             ],
           ),

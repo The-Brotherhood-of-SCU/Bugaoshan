@@ -392,7 +392,7 @@ class ScuAuthService {
 
   /// 获取教室查询页面的校区和教学楼列表
   Future<({List<ClassroomCampus> campuses, List<ClassroomBuilding> buildings})>
-      fetchClassroomIndex() async {
+  fetchClassroomIndex() async {
     final client = await bindSession();
     try {
       final resp = await client.get(
@@ -498,7 +498,8 @@ class ScuAuthService {
           'User-Agent': _headers['User-Agent']!,
           'X-Requested-With': 'XMLHttpRequest',
         },
-        body: 'xqh=${Uri.encodeComponent(campusNumber)}'
+        body:
+            'xqh=${Uri.encodeComponent(campusNumber)}'
             '&jxlh=${Uri.encodeComponent(buildingNumber)}'
             '&jslx=${Uri.encodeComponent(classroomType)}'
             '&jasm=${Uri.encodeComponent(classroomName)}'

@@ -137,7 +137,9 @@ Future<void> showExportScheduleSheet(
     case ExportAction.addToCalendar:
       debugPrint("[showExportScheduleSheet] addToCalendar");
       try {
-        final icsPath = await exportProvider.saveIcsToCache(l10n.icsTeacherLabel);
+        final icsPath = await exportProvider.saveIcsToCache(
+          l10n.icsTeacherLabel,
+        );
         const channel = MethodChannel('bugaoshan/update');
         final result = await channel.invokeMethod<String>(
           'importIcsToCalendar',

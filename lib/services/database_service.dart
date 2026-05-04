@@ -114,8 +114,8 @@ class DatabaseService {
 
       // Read schedules list
       final schedulesRaw = metadataBox.get(_keySchedules) as List<dynamic>?;
-      final currentId = metadataBox.get(_keyCurrentScheduleId) as String? ??
-          'default';
+      final currentId =
+          metadataBox.get(_keyCurrentScheduleId) as String? ?? 'default';
 
       List<ScheduleConfig> schedules = [];
       if (schedulesRaw != null) {
@@ -300,10 +300,7 @@ class DatabaseService {
         whereArgs: [config.id],
       );
     } else {
-      await _db.insert('schedules', {
-        'id': config.id,
-        'config_json': json,
-      });
+      await _db.insert('schedules', {'id': config.id, 'config_json': json});
     }
     await _loadSchedulesCache();
   }
@@ -324,11 +321,7 @@ class DatabaseService {
       whereArgs: [scheduleId],
     );
     // Delete schedule config
-    await _db.delete(
-      'schedules',
-      where: 'id = ?',
-      whereArgs: [scheduleId],
-    );
+    await _db.delete('schedules', where: 'id = ?', whereArgs: [scheduleId]);
 
     await _loadSchedulesCache();
 

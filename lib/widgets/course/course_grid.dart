@@ -145,7 +145,9 @@ class _CourseGridState extends State<CourseGrid> {
                 child: Opacity(
                   opacity: appConfig.backgroundImageOpacity.value,
                   child: Image(
-                    image: FileImage(File(appConfig.backgroundImagePath.value!)),
+                    image: FileImage(
+                      File(appConfig.backgroundImagePath.value!),
+                    ),
                     fit: BoxFit.cover,
                     errorBuilder: (_, _, _) => const SizedBox.shrink(),
                   ),
@@ -211,9 +213,7 @@ class _CourseGridState extends State<CourseGrid> {
     return Container(
       height: 40,
       decoration: BoxDecoration(
-        color: hasBackground
-            ? null
-            : theme.colorScheme.surfaceContainerHighest,
+        color: hasBackground ? null : theme.colorScheme.surfaceContainerHighest,
         border: Border(
           bottom: BorderSide(color: theme.colorScheme.outlineVariant),
         ),
@@ -242,7 +242,10 @@ class _CourseGridState extends State<CourseGrid> {
                 final mondayOffset = (1 - semesterStart.weekday) % 7;
                 final date = semesterStart.add(
                   Duration(
-                    days: (widget.displayWeek - 1) * 7 + mondayOffset + daysFromMonday,
+                    days:
+                        (widget.displayWeek - 1) * 7 +
+                        mondayOffset +
+                        daysFromMonday,
                   ),
                 );
                 final isToday = date.isAtSameMomentAs(today);

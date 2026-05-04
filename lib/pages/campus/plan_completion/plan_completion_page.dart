@@ -97,14 +97,13 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
                       color: Theme.of(context).colorScheme.primary,
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      l10n.loginRequired,
-                      textAlign: TextAlign.center,
-                    ),
+                    Text(l10n.loginRequired, textAlign: TextAlign.center),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
                       onPressed: () {
-                        Navigator.of(context).popUntil((route) => route.isFirst);
+                        Navigator.of(
+                          context,
+                        ).popUntil((route) => route.isFirst);
                       },
                       icon: const Icon(Icons.person),
                       label: Text(l10n.goToLogin),
@@ -124,8 +123,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return switch (_provider.state) {
-      PlanCompletionLoadState.idle ||
-      PlanCompletionLoadState.loading =>
+      PlanCompletionLoadState.idle || PlanCompletionLoadState.loading =>
         const Center(child: CircularProgressIndicator()),
       PlanCompletionLoadState.error => Center(
         child: Column(
@@ -182,7 +180,13 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _buildSummaryCard(context, l10n, totalEarned, completedCount, categoryNodes.length),
+        _buildSummaryCard(
+          context,
+          l10n,
+          totalEarned,
+          completedCount,
+          categoryNodes.length,
+        ),
         const SizedBox(height: 16),
         ...rootNodes.map((node) => _buildCategoryTile(context, node, 0)),
       ],
@@ -238,7 +242,11 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
     );
   }
 
-  Widget _buildCategoryTile(BuildContext context, PlanCompletionNode node, int depth) {
+  Widget _buildCategoryTile(
+    BuildContext context,
+    PlanCompletionNode node,
+    int depth,
+  ) {
     final l10n = AppLocalizations.of(context)!;
     final children = _provider.getChildren(node.id);
 
@@ -268,9 +276,9 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
         ),
         title: Text(
           _extractCategoryDisplayName(node.name),
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,12 +305,16 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
               child: LinearProgressIndicator(
                 value: progress,
                 minHeight: 4,
-                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                backgroundColor: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest,
               ),
             ),
           ],
         ),
-        children: children.map((child) => _buildCategoryTile(context, child, depth + 1)).toList(),
+        children: children
+            .map((child) => _buildCategoryTile(context, child, depth + 1))
+            .toList(),
       ),
     );
   }
@@ -328,7 +340,11 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
     return '';
   }
 
-  Widget _buildCourseTile(BuildContext context, PlanCompletionNode node, int depth) {
+  Widget _buildCourseTile(
+    BuildContext context,
+    PlanCompletionNode node,
+    int depth,
+  ) {
     final hasGrade = node.gradeInfo.isNotEmpty;
     String gradeDisplay = '';
     if (hasGrade) {
@@ -351,10 +367,14 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
           size: 18,
           color: isPassed
               ? Theme.of(context).colorScheme.primary
-              : Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              : Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
         ),
         title: Text(
-          node.courseName.isNotEmpty ? node.courseName : _extractCategoryDisplayName(node.name),
+          node.courseName.isNotEmpty
+              ? node.courseName
+              : _extractCategoryDisplayName(node.name),
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         subtitle: Column(

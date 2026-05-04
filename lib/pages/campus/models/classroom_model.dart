@@ -157,11 +157,13 @@ class ClassroomQueryResult {
 
   factory ClassroomQueryResult.fromJson(Map<String, dynamic> json) {
     return ClassroomQueryResult(
-      classrooms: (json['classrooms'] as List?)
+      classrooms:
+          (json['classrooms'] as List?)
               ?.map((e) => ClassroomInfo.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      classroomTime: (json['classroomTime'] as List?)
+      classroomTime:
+          (json['classroomTime'] as List?)
               ?.map(
                 (e) => ClassroomTimeSlot.fromJson(e as Map<String, dynamic>),
               )
@@ -173,9 +175,7 @@ class ClassroomQueryResult {
   }
 
   List<ClassroomTimeSlot> slotsFor(String classroomNumber) =>
-      classroomTime
-          .where((s) => s.classroomNumber == classroomNumber)
-          .toList();
+      classroomTime.where((s) => s.classroomNumber == classroomNumber).toList();
 
   Map<int, ClassroomPeriodStatus> periodStatusMap(String classroomNumber) {
     final map = <int, ClassroomPeriodStatus>{};
