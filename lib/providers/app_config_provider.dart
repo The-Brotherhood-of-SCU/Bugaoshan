@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -86,16 +85,9 @@ class AppConfigProvider {
         _sharedPreferences.getBool(_keyFirstLaunchWizardCompleted) ?? false;
     hasUpdateNotification.value =
         _sharedPreferences.getBool(_keyHasUpdateNotification) ?? false;
-    final dockJson = _sharedPreferences.getString(_keyVisibleDockIds);
-    if (dockJson != null) {
-      try {
-        visibleDockIds.value = List<String>.from(jsonDecode(dockJson) as List);
-      } catch (_) {
-        visibleDockIds.value = List<String>.from(_defaultVisibleDockIds);
-      }
-    } else {
-      visibleDockIds.value = List<String>.from(_defaultVisibleDockIds);
-    }
+    visibleDockIds.value =
+        _sharedPreferences.getStringList(_keyVisibleDockIds) ??
+        List<String>.from(_defaultVisibleDockIds);
   }
 
   void _addSaveCallback() {
@@ -157,9 +149,9 @@ class AppConfigProvider {
       );
     });
     visibleDockIds.addListener(() {
-      _sharedPreferences.setString(
+      _sharedPreferences.setStringList(
         _keyVisibleDockIds,
-        jsonEncode(visibleDockIds.value),
+        visibleDockIds.value,
       );
     });
   }
