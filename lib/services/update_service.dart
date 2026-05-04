@@ -172,9 +172,7 @@ class UpdateService {
         //if tag equal to gitTag, no update
         return UpdateCheckResult.noUpdate();
       }
-      if (release.tagName != null &&
-          release.downloadUrl != null &&
-          hasUpdate(currentVersion, release.tagName!)) {
+      if (release.tagName != null && release.downloadUrl != null) {
         return UpdateCheckResult.hasUpdate(release);
       }
       return UpdateCheckResult.noUpdate();
