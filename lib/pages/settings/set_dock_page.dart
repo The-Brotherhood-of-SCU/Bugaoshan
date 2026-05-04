@@ -23,7 +23,7 @@ class _SetDockPageState extends State<SetDockPage> {
     super.initState();
     _appConfig = getIt<AppConfigProvider>();
     _visibleIds = List<String>.from(_appConfig.visibleDockIds.value);
-    _allItems = allDockItems();
+    _allItems = List<DockItemConfig>.from(allDockItems);
   }
 
   bool _isVisible(String id) => _visibleIds.contains(id);

@@ -4,88 +4,83 @@ import 'package:bugaoshan/utils/constants.dart';
 
 class DockItemConfig {
   final String id;
-  final int iconCodePoint;
-  final int selectedIconCodePoint;
+  final IconData icon;
+  final IconData selectedIcon;
 
   const DockItemConfig({
     required this.id,
-    required this.iconCodePoint,
-    required this.selectedIconCodePoint,
+    required this.icon,
+    required this.selectedIcon,
   });
-
-  IconData get icon => IconData(iconCodePoint, fontFamily: 'MaterialIcons');
-  IconData get selectedIcon =>
-      IconData(selectedIconCodePoint, fontFamily: 'MaterialIcons');
-
 }
 
-List<DockItemConfig> allDockItems() => [
-      DockItemConfig(
-        id: dockIdCourse,
-        iconCodePoint: Icons.menu_book_outlined.codePoint,
-        selectedIconCodePoint: Icons.menu_book.codePoint,
-      ),
-      DockItemConfig(
-        id: dockIdCampus,
-        iconCodePoint: Icons.school_outlined.codePoint,
-        selectedIconCodePoint: Icons.school.codePoint,
-      ),
-      DockItemConfig(
-        id: dockIdProfile,
-        iconCodePoint: Icons.person_outlined.codePoint,
-        selectedIconCodePoint: Icons.person.codePoint,
-      ),
-      DockItemConfig(
-        id: dockIdGrades,
-        iconCodePoint: Icons.bar_chart_outlined.codePoint,
-        selectedIconCodePoint: Icons.bar_chart.codePoint,
-      ),
-      DockItemConfig(
-        id: dockIdCcyl,
-        iconCodePoint: Icons.event_outlined.codePoint,
-        selectedIconCodePoint: Icons.event.codePoint,
-      ),
-      DockItemConfig(
-        id: dockIdPlanCompletion,
-        iconCodePoint: Icons.assignment_turned_in_outlined.codePoint,
-        selectedIconCodePoint: Icons.assignment_turned_in.codePoint,
-      ),
-      DockItemConfig(
-        id: dockIdTrainProgram,
-        iconCodePoint: Icons.school_outlined.codePoint,
-        selectedIconCodePoint: Icons.school.codePoint,
-      ),
-      DockItemConfig(
-        id: dockIdClassroom,
-        iconCodePoint: Icons.meeting_room_outlined.codePoint,
-        selectedIconCodePoint: Icons.meeting_room.codePoint,
-      ),
-      DockItemConfig(
-        id: dockIdNetworkDevice,
-        iconCodePoint: Icons.router_outlined.codePoint,
-        selectedIconCodePoint: Icons.router.codePoint,
-      ),
-      DockItemConfig(
-        id: dockIdBalanceQuery,
-        iconCodePoint: Icons.account_balance_wallet_outlined.codePoint,
-        selectedIconCodePoint: Icons.account_balance_wallet.codePoint,
-      ),
-      DockItemConfig(
-        id: dockIdAcademicCalendar,
-        iconCodePoint: Icons.calendar_month_outlined.codePoint,
-        selectedIconCodePoint: Icons.calendar_month.codePoint,
-      ),
-    ];
+const allDockItems = [
+  DockItemConfig(
+    id: dockIdCourse,
+    icon: Icons.menu_book_outlined,
+    selectedIcon: Icons.menu_book,
+  ),
+  DockItemConfig(
+    id: dockIdCampus,
+    icon: Icons.school_outlined,
+    selectedIcon: Icons.school,
+  ),
+  DockItemConfig(
+    id: dockIdProfile,
+    icon: Icons.person_outlined,
+    selectedIcon: Icons.person,
+  ),
+  DockItemConfig(
+    id: dockIdGrades,
+    icon: Icons.bar_chart_outlined,
+    selectedIcon: Icons.bar_chart,
+  ),
+  DockItemConfig(
+    id: dockIdCcyl,
+    icon: Icons.event_outlined,
+    selectedIcon: Icons.event,
+  ),
+  DockItemConfig(
+    id: dockIdPlanCompletion,
+    icon: Icons.assignment_turned_in_outlined,
+    selectedIcon: Icons.assignment_turned_in,
+  ),
+  DockItemConfig(
+    id: dockIdTrainProgram,
+    icon: Icons.school_outlined,
+    selectedIcon: Icons.school,
+  ),
+  DockItemConfig(
+    id: dockIdClassroom,
+    icon: Icons.meeting_room_outlined,
+    selectedIcon: Icons.meeting_room,
+  ),
+  DockItemConfig(
+    id: dockIdNetworkDevice,
+    icon: Icons.router_outlined,
+    selectedIcon: Icons.router,
+  ),
+  DockItemConfig(
+    id: dockIdBalanceQuery,
+    icon: Icons.account_balance_wallet_outlined,
+    selectedIcon: Icons.account_balance_wallet,
+  ),
+  DockItemConfig(
+    id: dockIdAcademicCalendar,
+    icon: Icons.calendar_month_outlined,
+    selectedIcon: Icons.calendar_month,
+  ),
+];
 
 /// ID → DockItemConfig lookup map.
-final Map<String, DockItemConfig> _dockConfigMap = {
-  for (final item in allDockItems()) item.id: item,
+final Map<String, DockItemConfig> dockConfigMap = {
+  for (final item in allDockItems) item.id: item,
 };
 
 /// Returns the [DockItemConfig] for [id].
 /// Falls back to [dockIdProfile] if [id] is not found.
 DockItemConfig dockConfigById(String id) =>
-    _dockConfigMap[id] ?? _dockConfigMap[dockIdProfile]!;
+    dockConfigMap[id] ?? dockConfigMap[dockIdProfile]!;
 
 String dockLabel(String id, AppLocalizations l10n) => switch (id) {
       dockIdCourse => l10n.dockLabelCourse,
