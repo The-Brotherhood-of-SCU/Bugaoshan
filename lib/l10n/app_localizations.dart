@@ -1441,6 +1441,12 @@ abstract class AppLocalizations {
   /// **'Import All'**
   String get importAll;
 
+  /// No description provided for @importingProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing {current}/{total}...'**
+  String importingProgress(int current, int total);
+
   /// No description provided for @scuUnifiedAuth.
   ///
   /// In en, this message translates to:

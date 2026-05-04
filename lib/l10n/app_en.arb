@@ -240,6 +240,13 @@
     "importFromJwxtOnlineHint": "Automatically fetch schedule. Please login with SCU Unified Identity in the Profile page first.",
     "selectSemester": "Select Semester",
     "importAll": "Import All",
+    "importingProgress": "Importing {current}/{total}...",
+    "@importingProgress": {
+        "placeholders": {
+            "current": {"type": "int"},
+            "total": {"type": "int"}
+        }
+    },
 
     "scuUnifiedAuth": "Unified Identity Authentication",
     "studentId": "Student ID",

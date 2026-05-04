@@ -723,6 +723,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importAll => 'Import All';
 
   @override
+  String importingProgress(int current, int total) {
+    return 'Importing $current/$total...';
+  }
+
+  @override
   String get scuUnifiedAuth => 'Unified Identity Authentication';
 
   @override

@@ -704,6 +704,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get importAll => '全部导入';
 
   @override
+  String importingProgress(int current, int total) {
+    return '正在导入 $current/$total...';
+  }
+
+  @override
   String get scuUnifiedAuth => '统一身份认证';
 
   @override

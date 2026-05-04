@@ -239,6 +239,13 @@
     "importFromJwxtOnlineHint": "将自动获取课表，需要先在「我的」页面完成统一身份认证登录",
     "selectSemester": "选择学期",
     "importAll": "全部导入",
+    "importingProgress": "正在导入 {current}/{total}...",
+    "@importingProgress": {
+        "placeholders": {
+            "current": {"type": "int"},
+            "total": {"type": "int"}
+        }
+    },
 
     "scuUnifiedAuth": "统一身份认证",
     "studentId": "学号",

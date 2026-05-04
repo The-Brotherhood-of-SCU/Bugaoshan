@@ -29,6 +29,8 @@ class ImportSchedulePage extends StatefulWidget {
 class _ImportSchedulePageState extends State<ImportSchedulePage> {
   final _controller = TextEditingController();
   bool _loading = false;
+  int _currentProgress = 0;
+  int _totalToImport = 0;
 
   @override
   void dispose() {
@@ -293,12 +295,17 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
 
     final importAll = choice == 'all';
     final toImport = importAll
-        ? semesters
+        ? semesters.reversed.toList()
         : [semesters.firstWhere((s) => s.value == selectedValue)];
 
-    setState(() => _loading = true);
+    setState(() {
+      _loading = true;
+      _totalToImport = toImport.length;
+      _currentProgress = 0;
+    });
     try {
       for (final semester in toImport) {
+        setState(() => _currentProgress++);
         final data = await authProvider.service.fetchJwxtSchedule(
           planCode: semester.value,
         );
@@ -488,9 +495,19 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
                   l10n.importFromJwxtOnlineHint,
                   textAlign: TextAlign.center,
                 ),
-                if (_loading)
-                  const CircularProgressIndicator()
-                else
+                if (_loading && _totalToImport > 1) ...[
+                  LinearProgressIndicator(
+                    value: _totalToImport > 0
+                        ? _currentProgress / _totalToImport
+                        : null,
+                  ),
+                  Text(
+                    l10n.importingProgress(_currentProgress, _totalToImport),
+                  ),
+                ],
+                if (_loading && _totalToImport <= 1)
+                  const CircularProgressIndicator(),
+                if (!_loading)
                   FilledButton.icon(
                     onPressed: _import,
                     icon: const Icon(Icons.download),
