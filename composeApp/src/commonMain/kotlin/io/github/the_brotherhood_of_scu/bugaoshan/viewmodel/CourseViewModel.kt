@@ -32,6 +32,8 @@ class CourseViewModel(private val db: DatabaseService) : ViewModel() {
         onCoursesChanged = callback
     }
 
+    private var dbInitialized = false
+
     init {
         loadData()
     }
@@ -40,6 +42,10 @@ class CourseViewModel(private val db: DatabaseService) : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
+                if (!dbInitialized) {
+                    db.init()
+                    dbInitialized = true
+                }
                 _courses.value = db.getCourses()
                 _allSchedules.value = db.getAllSchedules()
                 val config = db.getScheduleConfig()

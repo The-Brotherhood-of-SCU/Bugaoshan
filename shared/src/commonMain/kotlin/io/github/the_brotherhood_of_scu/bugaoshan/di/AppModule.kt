@@ -1,5 +1,6 @@
 package io.github.the_brotherhood_of_scu.bugaoshan.di
 
+import io.github.the_brotherhood_of_scu.bugaoshan.api.*
 import io.github.the_brotherhood_of_scu.bugaoshan.db.AppDatabase
 import io.github.the_brotherhood_of_scu.bugaoshan.db.DatabaseService
 import io.github.the_brotherhood_of_scu.bugaoshan.platform.createSqlDriver
@@ -34,4 +35,12 @@ val appModule = module {
     single {
         DatabaseService(get())
     }
+
+    // API Services
+    single { AuthService(get()) }
+    single { ClassroomApiService(get()) }
+    single { GradeApiService(get()) }
+    single { BalanceApiService(get()) }
+    single { NetworkDeviceApiService(get()) }
+    single { TrainingProgramApiService(get()) }
 }

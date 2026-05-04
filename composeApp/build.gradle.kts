@@ -99,9 +99,18 @@ compose.desktop {
         mainClass = "io.github.the_brotherhood_of_scu.bugaoshan.MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "io.github.the_brotherhood_of_scu.bugaoshan"
+            targetFormats(TargetFormat.Exe, TargetFormat.Msi)
+            packageName = "Bugaoshan"
             packageVersion = "1.0.0"
+            description = "四川大学校园助手"
+            vendor = "The Brotherhood of SCU"
+            windows {
+                menuGroup = "Bugaoshan"
+                perUserInstall = true
+                shortcut = true
+                dirChooser = true
+                upgradeUuid = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            }
         }
     }
 }

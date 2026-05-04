@@ -1,14 +1,21 @@
 package io.github.the_brotherhood_of_scu.bugaoshan.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.russhwolf.settings.Settings
 import io.github.the_brotherhood_of_scu.bugaoshan.*
+import io.github.the_brotherhood_of_scu.bugaoshan.api.AuthService
+import io.github.the_brotherhood_of_scu.bugaoshan.api.LoginResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlin.time.Clock
 
-class AuthViewModel(private val settings: Settings) : ViewModel() {
+class AuthViewModel(
+    private val settings: Settings,
+    private val authService: AuthService,
+) : ViewModel() {
     private val _isLoggedIn = MutableStateFlow(checkLoginStatus())
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
 
@@ -30,6 +37,12 @@ class AuthViewModel(private val settings: Settings) : ViewModel() {
     private val _rememberPassword = MutableStateFlow(settings.getBoolean(KEY_REMEMBER, false))
     val rememberPassword: StateFlow<Boolean> = _rememberPassword.asStateFlow()
 
+    private val _loginError = MutableStateFlow<String?>(null)
+    val loginError: StateFlow<String?> = _loginError.asStateFlow()
+
+    private val _isLoggingIn = MutableStateFlow(false)
+    val isLoggingIn: StateFlow<Boolean> = _isLoggingIn.asStateFlow()
+
     private fun checkLoginStatus(): Boolean {
         val token = settings.getString(KEY_ACCESS_TOKEN, "")
         val loginTimestamp = settings.getLong(KEY_LOGIN_TIMESTAMP, 0L)
@@ -37,6 +50,43 @@ class AuthViewModel(private val settings: Settings) : ViewModel() {
         val elapsed = now - loginTimestamp
 
         return token.isNotEmpty() && elapsed <= SESSION_DURATION_SECONDS
+    }
+
+    /**
+     * Perform real SCU OAuth login.
+     */
+    fun login(studentId: String, password: String, remember: Boolean) {
+        _loginError.value = null
+        _isLoggingIn.value = true
+
+        viewModelScope.launch {
+            when (val result = authService.login(studentId, password)) {
+                is LoginResult.Success -> {
+                    // Save token
+                    settings.putString(KEY_ACCESS_TOKEN, result.accessToken)
+                    settings.putLong(KEY_LOGIN_TIMESTAMP, Clock.System.now().toEpochMilliseconds() / 1000)
+
+                    // Save user info
+                    settings.putString(KEY_USER_REALNAME, result.realName)
+                    settings.putString(KEY_USER_NUMBER, result.studentNumber)
+
+                    // Save credentials if remember is checked
+                    saveUsernamePassword(studentId, password, remember)
+
+                    // Update state flows
+                    _accessToken.value = result.accessToken
+                    _userRealName.value = result.realName
+                    _userNumber.value = result.studentNumber
+                    _isLoggedIn.value = true
+                    _isLoggingIn.value = false
+                    _loginError.value = null
+                }
+                is LoginResult.Error -> {
+                    _loginError.value = result.message
+                    _isLoggingIn.value = false
+                }
+            }
+        }
     }
 
     fun loginSucceed(token: String) {
@@ -47,6 +97,12 @@ class AuthViewModel(private val settings: Settings) : ViewModel() {
     }
 
     fun logout() {
+        val token = _accessToken.value
+        if (token.isNotEmpty()) {
+            viewModelScope.launch {
+                authService.logout(token)
+            }
+        }
         settings.remove(KEY_ACCESS_TOKEN)
         settings.remove(KEY_LOGIN_TIMESTAMP)
         settings.remove(KEY_USER_REALNAME)
@@ -55,6 +111,10 @@ class AuthViewModel(private val settings: Settings) : ViewModel() {
         _isLoggedIn.value = false
         _userRealName.value = ""
         _userNumber.value = ""
+    }
+
+    fun clearError() {
+        _loginError.value = null
     }
 
     fun saveUserInfo(realName: String, number: String) {
