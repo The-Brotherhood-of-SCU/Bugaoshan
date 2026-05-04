@@ -3,7 +3,6 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Colors, Curve, Curves;
-import 'package:bugaoshan/models/dock_item_config.dart';
 import 'package:bugaoshan/utils/locale_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,8 +18,14 @@ const String _keyBackgroundImageOpacity = 'backgroundImageOpacity';
 const String _keyBackgroundImagePath = 'backgroundImagePath';
 const String _keyFirstLaunchWizardCompleted = 'firstLaunchWizardCompleted';
 const String _keyHasUpdateNotification = 'hasUpdateNotification';
-const String _keyDockItems = 'dockItems';
+const String _keyVisibleDockIds = 'visibleDockIds';
 const Curve appCurve = Curves.easeOutQuart;
+
+const List<String> _defaultVisibleDockIds = [
+  'course',
+  'campus',
+  'profile',
+];
 
 class AppConfigProvider {
   final SharedPreferences _sharedPreferences;
@@ -52,8 +57,8 @@ class AppConfigProvider {
     false,
   );
   final ValueNotifier<bool> hasUpdateNotification = ValueNotifier<bool>(false);
-  final ValueNotifier<List<DockItemConfig>> dockItems =
-      ValueNotifier<List<DockItemConfig>>([]);
+  final ValueNotifier<List<String>> visibleDockIds =
+      ValueNotifier<List<String>>([]);
 
   void _loadLocale() {
     final localeString = _sharedPreferences.getString(_keyLocale);
@@ -81,18 +86,15 @@ class AppConfigProvider {
         _sharedPreferences.getBool(_keyFirstLaunchWizardCompleted) ?? false;
     hasUpdateNotification.value =
         _sharedPreferences.getBool(_keyHasUpdateNotification) ?? false;
-    final dockJson = _sharedPreferences.getString(_keyDockItems);
+    final dockJson = _sharedPreferences.getString(_keyVisibleDockIds);
     if (dockJson != null) {
       try {
-        final list = (jsonDecode(dockJson) as List)
-            .map((e) => DockItemConfig.fromJson(e as Map<String, dynamic>))
-            .toList();
-        dockItems.value = list;
+        visibleDockIds.value = List<String>.from(jsonDecode(dockJson) as List);
       } catch (_) {
-        dockItems.value = defaultDockItems();
+        visibleDockIds.value = List<String>.from(_defaultVisibleDockIds);
       }
     } else {
-      dockItems.value = defaultDockItems();
+      visibleDockIds.value = List<String>.from(_defaultVisibleDockIds);
     }
   }
 
@@ -154,14 +156,16 @@ class AppConfigProvider {
         hasUpdateNotification.value,
       );
     });
-    dockItems.addListener(() {
-      final json = dockItems.value.map((e) => e.toJson()).toList();
-      _sharedPreferences.setString(_keyDockItems, jsonEncode(json));
+    visibleDockIds.addListener(() {
+      _sharedPreferences.setString(
+        _keyVisibleDockIds,
+        jsonEncode(visibleDockIds.value),
+      );
     });
   }
 
   void resetDockToDefault() {
-    dockItems.value = defaultDockItems();
+    visibleDockIds.value = List<String>.from(_defaultVisibleDockIds);
   }
 
   void clearAll() {

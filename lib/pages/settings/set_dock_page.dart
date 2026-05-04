@@ -15,37 +15,38 @@ class SetDockPage extends StatefulWidget {
 
 class _SetDockPageState extends State<SetDockPage> {
   late final AppConfigProvider _appConfig;
-  late List<DockItemConfig> _items;
+  late List<String> _visibleIds;
+  late final List<DockItemConfig> _allItems;
 
   @override
   void initState() {
     super.initState();
     _appConfig = getIt<AppConfigProvider>();
-    _items = List<DockItemConfig>.from(_appConfig.dockItems.value);
+    _visibleIds = List<String>.from(_appConfig.visibleDockIds.value);
+    _allItems = allDockItems();
   }
 
-  void _updateItems(List<DockItemConfig> items) {
-    setState(() => _items = items);
-    _appConfig.dockItems.value = items;
-  }
+  bool _isVisible(String id) => _visibleIds.contains(id);
 
-  void _toggleVisibility(int index) {
-    final item = _items[index];
-    final updated = List<DockItemConfig>.from(_items);
-    updated[index] = item.copyWith(isVisible: !item.isVisible);
-    _updateItems(updated);
+  void _toggleVisibility(String id) {
+    final updated = List<String>.from(_visibleIds);
+    if (updated.contains(id)) {
+      if (id == dockIdProfile) return; // cannot remove profile
+      updated.remove(id);
+    } else {
+      updated.add(id);
+    }
+    setState(() => _visibleIds = updated);
+    _appConfig.visibleDockIds.value = updated;
   }
 
   void _onReorder(int oldIndex, int newIndex) {
     if (oldIndex < newIndex) newIndex -= 1;
-    final updated = List<DockItemConfig>.from(_items);
+    final updated = List<String>.from(_visibleIds);
     final item = updated.removeAt(oldIndex);
     updated.insert(newIndex, item);
-    // Reassign sort orders
-    for (var i = 0; i < updated.length; i++) {
-      updated[i] = updated[i].copyWith(sortOrder: i);
-    }
-    _updateItems(updated);
+    setState(() => _visibleIds = updated);
+    _appConfig.visibleDockIds.value = updated;
   }
 
   void _resetToDefault() async {
@@ -55,7 +56,9 @@ class _SetDockPageState extends State<SetDockPage> {
     );
     if (confirm == true) {
       _appConfig.resetDockToDefault();
-      setState(() => _items = List<DockItemConfig>.from(_appConfig.dockItems.value));
+      setState(
+        () => _visibleIds = List<String>.from(_appConfig.visibleDockIds.value),
+      );
     }
   }
 
@@ -63,6 +66,11 @@ class _SetDockPageState extends State<SetDockPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+
+    // Items shown in the preview bar (in order)
+    final previewItems = _visibleIds
+        .map((id) => _allItems.firstWhere((item) => item.id == id))
+        .toList();
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.customDock)),
@@ -90,8 +98,7 @@ class _SetDockPageState extends State<SetDockPage> {
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: _items
-                        .where((item) => item.isVisible)
+                    children: previewItems
                         .map((item) => Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -110,52 +117,79 @@ class _SetDockPageState extends State<SetDockPage> {
             ),
           ),
           const Divider(),
-          // Drag reorder list
+          // Items list
           Expanded(
-            child: ReorderableListView.builder(
+            child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _items.length,
-              onReorder: _onReorder,
-              itemBuilder: (context, index) {
-                final item = _items[index];
-                return Card(
-                  key: ValueKey(item.id),
-                  margin: const EdgeInsets.symmetric(vertical: 4),
-                  child: ListTile(
-                    leading: Icon(item.icon, color: theme.colorScheme.primary),
-                    title: Text(_localizeLabel(l10n, item.labelKey)),
-                    subtitle: item.isDeletable
-                        ? null
-                        : Text(
-                            l10n.cannotDeleteProfile,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.error,
-                            ),
-                          ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (item.isDeletable)
-                          Switch(
-                            value: item.isVisible,
-                            onChanged: (_) => _toggleVisibility(index),
-                          )
-                        else
-                          Icon(
-                            Icons.lock_outline,
-                            color: theme.colorScheme.onSurfaceVariant,
-                            size: 20,
-                          ),
-                        const SizedBox(width: 8),
-                        if (item.isDeletable)
-                          const Icon(Icons.drag_handle)
-                        else
-                          const SizedBox(width: 24),
-                      ],
+              children: [
+                // Visible items (reorderable)
+                if (_visibleIds.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    child: Text(
+                      l10n.dockPreview,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: theme.colorScheme.primary,
+                      ),
                     ),
                   ),
-                );
-              },
+                  ReorderableListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _visibleIds.length,
+                    onReorder: _onReorder,
+                    itemBuilder: (context, index) {
+                      final id = _visibleIds[index];
+                      final item = _allItems.firstWhere((i) => i.id == id);
+                      final isProfile = item.id == dockIdProfile;
+
+                      return Card(
+                        key: ValueKey(item.id),
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        child: ListTile(
+                          leading: Icon(item.icon, color: theme.colorScheme.primary),
+                          title: Text(_localizeLabel(l10n, item.labelKey)),
+                          subtitle: isProfile
+                              ? Text(
+                                  l10n.cannotDeleteProfile,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.error,
+                                  ),
+                                )
+                              : null,
+                          trailing: Switch(
+                            value: true,
+                            onChanged: isProfile
+                                ? null
+                                : (_) => _toggleVisibility(item.id),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(),
+                ],
+                // Hidden items (toggle only)
+                ..._allItems
+                    .where((item) => !_isVisible(item.id))
+                    .map(
+                      (item) => Card(
+                        key: ValueKey(item.id),
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        child: ListTile(
+                          leading: Icon(
+                            item.icon,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                          title: Text(_localizeLabel(l10n, item.labelKey)),
+                          trailing: Switch(
+                            value: false,
+                            onChanged: (_) => _toggleVisibility(item.id),
+                          ),
+                        ),
+                      ),
+                    ),
+              ],
             ),
           ),
           // Reset button
@@ -177,9 +211,17 @@ class _SetDockPageState extends State<SetDockPage> {
 
   String _localizeLabel(AppLocalizations l10n, String key) {
     return switch (key) {
-      dockIdCourse => l10n.course,
-      dockIdCampus => l10n.campus,
-      dockIdProfile => l10n.profile,
+      dockIdCourse => l10n.dockLabelCourse,
+      dockIdCampus => l10n.dockLabelCampus,
+      dockIdProfile => l10n.dockLabelProfile,
+      dockIdGrades => l10n.dockLabelGrades,
+      dockIdCcyl => l10n.dockLabelCcyl,
+      dockIdPlanCompletion => l10n.dockLabelPlanCompletion,
+      dockIdTrainProgram => l10n.dockLabelTrainProgram,
+      dockIdClassroom => l10n.dockLabelClassroom,
+      dockIdNetworkDevice => l10n.dockLabelNetworkDevice,
+      dockIdBalanceQuery => l10n.dockLabelBalanceQuery,
+      dockIdAcademicCalendar => l10n.dockLabelAcademicCalendar,
       _ => key,
     };
   }

@@ -467,5 +467,16 @@
     "dockPreview": "Dock预览",
     "resetDock": "恢复默认",
     "dockResetConfirm": "确定恢复默认Dock栏配置？",
-    "cannotDeleteProfile": "不可删除"
+    "cannotDeleteProfile": "不可删除",
+    "dockLabelCourse": "课表",
+    "dockLabelCampus": "校园",
+    "dockLabelProfile": "我的",
+    "dockLabelGrades": "成绩",
+    "dockLabelCcyl": "第二课堂",
+    "dockLabelPlanCompletion": "方案",
+    "dockLabelTrainProgram": "培养方案",
+    "dockLabelClassroom": "教室",
+    "dockLabelNetworkDevice": "校园网",
+    "dockLabelBalanceQuery": "余额",
+    "dockLabelAcademicCalendar": "校历"
 }

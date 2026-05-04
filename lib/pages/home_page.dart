@@ -4,8 +4,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/models/dock_item_config.dart';
 import 'package:bugaoshan/pages/campus_page.dart';
+import 'package:bugaoshan/pages/campus/academic_calendar/academic_calendar_page.dart';
+import 'package:bugaoshan/pages/campus/balance_query/balance_query_page.dart';
+import 'package:bugaoshan/pages/campus/classroom/classroom_page.dart';
+import 'package:bugaoshan/pages/campus/ccyl/ccyl_page.dart';
+import 'package:bugaoshan/pages/campus/grades/grades_page.dart';
+import 'package:bugaoshan/pages/campus/network_device/network_device_page.dart';
+import 'package:bugaoshan/pages/campus/plan_completion/plan_completion_page.dart';
+import 'package:bugaoshan/pages/campus/train_program/train_program_page.dart';
 import 'package:bugaoshan/pages/course/course_page.dart';
 import 'package:bugaoshan/pages/profile_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
@@ -15,7 +22,6 @@ import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
-import 'package:bugaoshan/widgets/common/navigation_item.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -57,7 +63,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       final updateService = getIt<UpdateService>();
       final appInfo = getIt<AppInfoProvider>();
       final appConfig = getIt<AppConfigProvider>();
-      final result = await updateService.checkStableUpdate(appInfo.currentVersion);
+      final result = await updateService.checkStableUpdate(
+        appInfo.currentVersion,
+      );
       if (result.hasUpdate) {
         appConfig.hasUpdateNotification.value = true;
       }
@@ -85,31 +93,75 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
   }
 
-  List<NavigationItemData> _buildNavigationItems(AppLocalizations l10n) {
-    return [
-      NavigationItemData(
-        id: dockIdCourse,
-        icon: Icons.menu_book_outlined,
-        selectedIcon: Icons.menu_book,
-        label: l10n.course,
-        page: CoursePage(),
-      ),
-      NavigationItemData(
-        id: dockIdCampus,
-        icon: Icons.school_outlined,
-        selectedIcon: Icons.school,
-        label: l10n.campus,
-        page: const CampusPage(),
-      ),
-      NavigationItemData(
-        id: dockIdProfile,
-        icon: Icons.person_outlined,
-        selectedIcon: Icons.person,
-        label: l10n.profile,
-        page: ProfilePage(),
-      ),
-    ];
-  }
+  // Lightweight dock item: icon + label only, no page widget.
+  static const _dockMeta = <String, ({IconData icon, IconData selectedIcon})>{
+    dockIdCourse: (
+      icon: Icons.menu_book_outlined,
+      selectedIcon: Icons.menu_book,
+    ),
+    dockIdCampus: (icon: Icons.school_outlined, selectedIcon: Icons.school),
+    dockIdProfile: (icon: Icons.person_outlined, selectedIcon: Icons.person),
+    dockIdGrades: (
+      icon: Icons.bar_chart_outlined,
+      selectedIcon: Icons.bar_chart,
+    ),
+    dockIdCcyl: (icon: Icons.event_outlined, selectedIcon: Icons.event),
+    dockIdPlanCompletion: (
+      icon: Icons.assignment_turned_in_outlined,
+      selectedIcon: Icons.assignment_turned_in,
+    ),
+    dockIdTrainProgram: (
+      icon: Icons.school_outlined,
+      selectedIcon: Icons.school,
+    ),
+    dockIdClassroom: (
+      icon: Icons.meeting_room_outlined,
+      selectedIcon: Icons.meeting_room,
+    ),
+    dockIdNetworkDevice: (
+      icon: Icons.router_outlined,
+      selectedIcon: Icons.router,
+    ),
+    dockIdBalanceQuery: (
+      icon: Icons.account_balance_wallet_outlined,
+      selectedIcon: Icons.account_balance_wallet,
+    ),
+    dockIdAcademicCalendar: (
+      icon: Icons.calendar_month_outlined,
+      selectedIcon: Icons.calendar_month,
+    ),
+  };
+
+  String _dockLabel(String id, AppLocalizations l10n) => switch (id) {
+    dockIdCourse => l10n.dockLabelCourse,
+    dockIdCampus => l10n.dockLabelCampus,
+    dockIdProfile => l10n.dockLabelProfile,
+    dockIdGrades => l10n.dockLabelGrades,
+    dockIdCcyl => l10n.dockLabelCcyl,
+    dockIdPlanCompletion => l10n.dockLabelPlanCompletion,
+    dockIdTrainProgram => l10n.dockLabelTrainProgram,
+    dockIdClassroom => l10n.dockLabelClassroom,
+    dockIdNetworkDevice => l10n.dockLabelNetworkDevice,
+    dockIdBalanceQuery => l10n.dockLabelBalanceQuery,
+    dockIdAcademicCalendar => l10n.dockLabelAcademicCalendar,
+    _ => id,
+  };
+
+  // Only builds the page widget when actually selected.
+  Widget _buildPage(String id) => switch (id) {
+    dockIdCourse => CoursePage(),
+    dockIdCampus => const CampusPage(),
+    dockIdProfile => ProfilePage(),
+    dockIdGrades => const GradesPage(),
+    dockIdCcyl => const CcylPage(),
+    dockIdPlanCompletion => const PlanCompletionPage(),
+    dockIdTrainProgram => const TrainProgramPage(),
+    dockIdClassroom => const ClassroomPage(),
+    dockIdNetworkDevice => const NetworkDevicePage(),
+    dockIdBalanceQuery => const BalanceQueryPage(),
+    dockIdAcademicCalendar => const AcademicCalendarPage(),
+    _ => ProfilePage(),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -124,50 +176,38 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   Widget _buildMainScreen() {
     final appConfig = getIt<AppConfigProvider>();
     final l10n = AppLocalizations.of(context)!;
-    final allItems = _buildNavigationItems(l10n);
 
-    return ValueListenableBuilder<List<DockItemConfig>>(
-      valueListenable: appConfig.dockItems,
-      builder: (context, dockConfigs, _) {
-        final visibleItems = _resolveVisibleItems(dockConfigs, allItems);
-        _clampCurrentIndex(visibleItems);
-        final currentPage = visibleItems.isNotEmpty
-            ? visibleItems[_currentIndex].page
-            : ProfilePage();
+    return ValueListenableBuilder<List<String>>(
+      valueListenable: appConfig.visibleDockIds,
+      builder: (context, visibleIds, _) {
+        _clampCurrentIndex(visibleIds);
+        final currentId = visibleIds.isNotEmpty
+            ? visibleIds[_currentIndex]
+            : dockIdProfile;
+        final currentPage = _buildPage(currentId);
 
         return OrientationBuilder(
-          builder: (context, orientation) => orientation == Orientation.landscape
-              ? _buildLandscapeLayout(visibleItems, currentPage)
-              : _buildPortraitLayout(visibleItems, currentPage),
+          builder: (context, orientation) =>
+              orientation == Orientation.landscape
+              ? _buildLandscapeLayout(visibleIds, currentPage, l10n)
+              : _buildPortraitLayout(visibleIds, currentPage, l10n),
         );
       },
     );
   }
 
-  List<NavigationItemData> _resolveVisibleItems(
-    List<DockItemConfig> dockConfigs,
-    List<NavigationItemData> allItems,
-  ) {
-    return dockConfigs
-        .where((c) => c.isVisible)
-        .map((c) => allItems.firstWhere(
-              (item) => item.id == c.id,
-              orElse: () => allItems.last,
-            ))
-        .toList();
-  }
-
-  void _clampCurrentIndex(List<NavigationItemData> items) {
-    if (items.isEmpty) {
+  void _clampCurrentIndex(List<String> ids) {
+    if (ids.isEmpty) {
       _currentIndex = 0;
-    } else if (_currentIndex >= items.length) {
-      _currentIndex = items.length - 1;
+    } else if (_currentIndex >= ids.length) {
+      _currentIndex = ids.length - 1;
     }
   }
 
   Widget _buildLandscapeLayout(
-    List<NavigationItemData> visibleItems,
+    List<String> visibleIds,
     Widget currentPage,
+    AppLocalizations l10n,
   ) {
     final appConfig = getIt<AppConfigProvider>();
     return Scaffold(
@@ -180,11 +220,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 selectedIndex: _currentIndex,
                 onDestinationSelected: (index) {
                   setState(() => _currentIndex = index);
-                  _onTabSelected(visibleItems[index].id);
+                  _onTabSelected(visibleIds[index]);
                 },
                 labelType: NavigationRailLabelType.all,
-                destinations: visibleItems
-                    .map((item) => _buildRailDestination(item, hasUpdate))
+                destinations: visibleIds
+                    .map((id) => _buildRailDestination(id, hasUpdate, l10n))
                     .toList(),
               );
             },
@@ -197,8 +237,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   Widget _buildPortraitLayout(
-    List<NavigationItemData> visibleItems,
+    List<String> visibleIds,
     Widget currentPage,
+    AppLocalizations l10n,
   ) {
     final appConfig = getIt<AppConfigProvider>();
     return Scaffold(
@@ -210,10 +251,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             selectedIndex: _currentIndex,
             onDestinationSelected: (index) {
               setState(() => _currentIndex = index);
-              _onTabSelected(visibleItems[index].id);
+              _onTabSelected(visibleIds[index]);
             },
-            destinations: visibleItems
-                .map((item) => _buildBarDestination(item, hasUpdate))
+            destinations: visibleIds
+                .map((id) => _buildBarDestination(id, hasUpdate, l10n))
                 .toList(),
           );
         },
@@ -222,34 +263,44 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   NavigationRailDestination _buildRailDestination(
-    NavigationItemData item,
+    String id,
     bool hasUpdate,
+    AppLocalizations l10n,
   ) {
+    final meta = _dockMeta[id]!;
+    final isProfile = id == dockIdProfile;
     return NavigationRailDestination(
-      icon: item.id == dockIdProfile
-          ? _buildUpdateBadge(showBadge: hasUpdate, child: Icon(item.icon))
-          : Icon(item.icon),
-      selectedIcon: item.id == dockIdProfile
+      icon: isProfile
+          ? _buildUpdateBadge(showBadge: hasUpdate, child: Icon(meta.icon))
+          : Icon(meta.icon),
+      selectedIcon: isProfile
           ? _buildUpdateBadge(
-              showBadge: hasUpdate, child: Icon(item.selectedIcon))
-          : Icon(item.selectedIcon),
-      label: Text(item.label),
+              showBadge: hasUpdate,
+              child: Icon(meta.selectedIcon),
+            )
+          : Icon(meta.selectedIcon),
+      label: Text(_dockLabel(id, l10n)),
     );
   }
 
   NavigationDestination _buildBarDestination(
-    NavigationItemData item,
+    String id,
     bool hasUpdate,
+    AppLocalizations l10n,
   ) {
+    final meta = _dockMeta[id]!;
+    final isProfile = id == dockIdProfile;
     return NavigationDestination(
-      icon: item.id == dockIdProfile
-          ? _buildUpdateBadge(showBadge: hasUpdate, child: Icon(item.icon))
-          : Icon(item.icon),
-      selectedIcon: item.id == dockIdProfile
+      icon: isProfile
+          ? _buildUpdateBadge(showBadge: hasUpdate, child: Icon(meta.icon))
+          : Icon(meta.icon),
+      selectedIcon: isProfile
           ? _buildUpdateBadge(
-              showBadge: hasUpdate, child: Icon(item.selectedIcon))
-          : Icon(item.selectedIcon),
-      label: item.label,
+              showBadge: hasUpdate,
+              child: Icon(meta.selectedIcon),
+            )
+          : Icon(meta.selectedIcon),
+      label: _dockLabel(id, l10n),
     );
   }
 

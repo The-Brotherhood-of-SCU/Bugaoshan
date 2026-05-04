@@ -2718,6 +2718,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cannot be deleted'**
   String get cannotDeleteProfile;
+
+  /// No description provided for @dockLabelCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Course'**
+  String get dockLabelCourse;
+
+  /// No description provided for @dockLabelCampus.
+  ///
+  /// In en, this message translates to:
+  /// **'Campus'**
+  String get dockLabelCampus;
+
+  /// No description provided for @dockLabelProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get dockLabelProfile;
+
+  /// No description provided for @dockLabelGrades.
+  ///
+  /// In en, this message translates to:
+  /// **'Grades'**
+  String get dockLabelGrades;
+
+  /// No description provided for @dockLabelCcyl.
+  ///
+  /// In en, this message translates to:
+  /// **'CCYL'**
+  String get dockLabelCcyl;
+
+  /// No description provided for @dockLabelPlanCompletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan'**
+  String get dockLabelPlanCompletion;
+
+  /// No description provided for @dockLabelTrainProgram.
+  ///
+  /// In en, this message translates to:
+  /// **'Program'**
+  String get dockLabelTrainProgram;
+
+  /// No description provided for @dockLabelClassroom.
+  ///
+  /// In en, this message translates to:
+  /// **'Classroom'**
+  String get dockLabelClassroom;
+
+  /// No description provided for @dockLabelNetworkDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Network'**
+  String get dockLabelNetworkDevice;
+
+  /// No description provided for @dockLabelBalanceQuery.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get dockLabelBalanceQuery;
+
+  /// No description provided for @dockLabelAcademicCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get dockLabelAcademicCalendar;
 }
 
 class _AppLocalizationsDelegate
