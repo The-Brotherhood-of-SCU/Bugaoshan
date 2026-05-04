@@ -5,32 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/about/release_notes_page.dart';
+import 'package:bugaoshan/pages/test/environment_info_button.dart';
+import 'package:bugaoshan/pages/test/update_card.dart';
+import 'package:bugaoshan/pages/test/update_progress_state.dart';
+import 'package:bugaoshan/pages/test/update_result_notifier.dart';
+import 'package:bugaoshan/pages/test/wizard_reset_button.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/services/update_service.dart';
-
-class _DownloadProgressState extends ChangeNotifier {
-  String _status = 'Downloading...';
-  int _received = 0;
-  int _total = 0;
-
-  String get status => _status;
-  int get received => _received;
-  int get total => _total;
-  int get percent => _total > 0 ? ((_received / _total) * 100).toInt() : 0;
-
-  void setStatus(String status) {
-    _status = status;
-    notifyListeners();
-  }
-
-  void setProgress(int received, int total) {
-    _received = received;
-    _total = total;
-    notifyListeners();
-  }
-}
 
 class TestPage extends StatefulWidget {
   const TestPage({super.key});
@@ -41,8 +23,8 @@ class TestPage extends StatefulWidget {
 
 class _TestPageState extends State<TestPage> {
   final _versionInfoProvider = getIt<AppInfoProvider>();
-  final _stableResult = _ResultNotifier();
-  final _previewResult = _ResultNotifier();
+  final _stableResult = UpdateResultNotifier();
+  final _previewResult = UpdateResultNotifier();
 
   bool get _supportsUpdate =>
       Platform.isAndroid || Platform.isWindows || Platform.isLinux;
@@ -51,13 +33,14 @@ class _TestPageState extends State<TestPage> {
     if (!_supportsUpdate) return;
     final updateService = getIt<UpdateService>();
     final currentVersion = _versionInfoProvider.currentVersion;
+    final gitTag = _versionInfoProvider.gitTag;
 
     _stableResult.value = UpdateCheckResult.checking();
     _previewResult.value = UpdateCheckResult.checking();
 
     final results = await Future.wait([
       updateService.checkStableUpdate(currentVersion),
-      updateService.checkPreviewUpdate(currentVersion),
+      updateService.checkPreviewUpdate(currentVersion, gitTag),
     ]);
 
     _stableResult.value = results[0];
@@ -133,7 +116,7 @@ class _TestPageState extends State<TestPage> {
     final updateService = getIt<UpdateService>();
     final localizations = AppLocalizations.of(context)!;
     downloadUrl = _proxyDownloadUrl(downloadUrl);
-    final progressState = _DownloadProgressState();
+    final progressState = UpdateProgressState();
     final cancelToken = CancelToken();
 
     showDialog(
@@ -248,25 +231,25 @@ class _TestPageState extends State<TestPage> {
           children: [
             _SectionTitle(title: localizations.environmentInfo),
             const SizedBox(height: 12),
-            _EnvironmentInfoButton(
+            EnvironmentInfoButton(
               onPressed: () => _showEnvironmentInfoDialog(context),
             ),
             const SizedBox(height: 32),
             const _SectionTitle(title: 'Wizard'),
             const SizedBox(height: 12),
-            const _WizardResetButton(),
+            const WizardResetButton(),
             const SizedBox(height: 32),
             if (_supportsUpdate) ...[
               _SectionTitle(title: localizations.updateToLatest),
               const SizedBox(height: 12),
-              _UpdateCard(
+              UpdateCard(
                 icon: Icons.system_update_alt,
                 title: localizations.updateToStable,
                 result: _stableResult,
                 onUpdate: () => _showUpdateDialog(_stableResult.value),
               ),
               const SizedBox(height: 16),
-              _UpdateCard(
+              UpdateCard(
                 icon: Icons.science,
                 title: localizations.updateToPreview,
                 result: _previewResult,
@@ -288,114 +271,6 @@ class _TestPageState extends State<TestPage> {
   }
 }
 
-class _ResultNotifier extends ChangeNotifier {
-  UpdateCheckResult _value = UpdateCheckResult.initial();
-
-  UpdateCheckResult get value => _value;
-
-  set value(UpdateCheckResult v) {
-    _value = v;
-    notifyListeners();
-  }
-}
-
-class _UpdateCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final _ResultNotifier result;
-  final VoidCallback onUpdate;
-
-  const _UpdateCard({
-    required this.icon,
-    required this.title,
-    required this.result,
-    required this.onUpdate,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-
-    return ListenableBuilder(
-      listenable: result,
-      builder: (context, _) {
-        final r = result.value;
-        return Card(
-          elevation: 2,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(icon, size: 20),
-                    const SizedBox(width: 8),
-                    Text(title, style: Theme.of(context).textTheme.bodyMedium),
-                    if (r.checking) ...[
-                      const Spacer(),
-                      const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ],
-                  ],
-                ),
-                AnimatedSize(
-                  duration: const Duration(milliseconds: 300),
-                  curve: appCurve,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (r.status == UpdateCheckStatus.error) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          'Error: ${r.error}',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                        ),
-                      ],
-                      if (r.noUpdate) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          localizations.noUpdateAvailable,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
-                              ),
-                        ),
-                      ],
-                      if (r.hasUpdate && r.downloadUrl != null) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          r.isPrerelease
-                              ? 'Preview: ${r.version}'
-                              : 'Stable: ${r.version}',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        const SizedBox(height: 12),
-                        ElevatedButton.icon(
-                          onPressed: onUpdate,
-                          icon: Icon(icon),
-                          label: Text(localizations.newVersionAvailable),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
 class _SectionTitle extends StatelessWidget {
   final String title;
   const _SectionTitle({required this.title});
@@ -407,45 +282,6 @@ class _SectionTitle extends StatelessWidget {
       style: Theme.of(
         context,
       ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-    );
-  }
-}
-
-class _EnvironmentInfoButton extends StatelessWidget {
-  final VoidCallback onPressed;
-  const _EnvironmentInfoButton({required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      child: ListTile(
-        leading: const Icon(Icons.info_outline),
-        title: Text(AppLocalizations.of(context)!.environmentInfo),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onPressed,
-      ),
-    );
-  }
-}
-
-class _WizardResetButton extends StatelessWidget {
-  const _WizardResetButton();
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      child: ListTile(
-        leading: const Icon(Icons.auto_awesome),
-        title: const Text('Reset Wizard Status'),
-        subtitle: const Text('Set firstLaunchWizardCompleted to false'),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () {
-          getIt<AppConfigProvider>().firstLaunchWizardCompleted.value = false;
-          Navigator.of(logicRootContext).popUntil((route) => route.isFirst);
-        },
-      ),
     );
   }
 }

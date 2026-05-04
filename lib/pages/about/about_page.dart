@@ -7,7 +7,7 @@ import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/utils/open_link.dart'
     show openDeveloperTeam, openProjectRepository;
 import 'package:bugaoshan/pages/about/release_notes_page.dart';
-import 'package:bugaoshan/pages/about/test_page.dart';
+import 'package:bugaoshan/pages/test/test_page.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
