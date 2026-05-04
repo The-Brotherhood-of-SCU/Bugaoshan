@@ -165,7 +165,9 @@ class UpdateService {
   Future<UpdateCheckResult> checkPreviewUpdate(String currentVersion) async {
     try {
       final release = await getLatestPrereleaseFromGitHub();
-      if (release.tagName != null && release.downloadUrl != null) {
+      if (release.tagName != null &&
+          release.downloadUrl != null &&
+          release.tagName != currentVersion) {
         return UpdateCheckResult.hasUpdate(release);
       }
       return UpdateCheckResult.noUpdate();
