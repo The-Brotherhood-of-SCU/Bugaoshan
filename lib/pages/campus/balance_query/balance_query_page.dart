@@ -1,3 +1,5 @@
+import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -42,6 +44,13 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
   }
 
   Future<void> _initProvider() async {
+    if (mounted) {
+      setState(() {
+        _isInitializing = true;
+        _initError = null;
+      });
+    }
+
     final auth = getIt<ScuAuthProvider>();
     if (!auth.isLoggedIn) {
       if (auth.isAutoLoggingIn) return;
@@ -99,9 +108,9 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
               onSelected: (index) {
                 final auth = getIt<ScuAuthProvider>();
                 if (!auth.isLoggedIn) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.loginRequired)),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(l10n.loginRequired)));
                   return;
                 }
                 if (index == -1) {
@@ -202,10 +211,7 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
                   color: Theme.of(context).colorScheme.primary,
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  l10n.loginRequired,
-                  textAlign: TextAlign.center,
-                ),
+                Text(l10n.loginRequired, textAlign: TextAlign.center),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
                   onPressed: () {
@@ -273,9 +279,9 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
                 onPressed: () {
                   final auth = getIt<ScuAuthProvider>();
                   if (!auth.isLoggedIn) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(l10n.loginRequired)),
-                    );
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(l10n.loginRequired)));
                     return;
                   }
                   _showBindDialog();
@@ -359,4 +365,3 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
     }
   }
 }
-
