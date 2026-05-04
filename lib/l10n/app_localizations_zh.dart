@@ -1334,6 +1334,54 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get labelNetworkFeeBalance => '网费余额';
+
+  @override
+  String get customDock => '自定义Dock栏';
+
+  @override
+  String get dockPreview => 'Dock预览';
+
+  @override
+  String get resetDock => '恢复默认';
+
+  @override
+  String get dockResetConfirm => '确定恢复默认Dock栏配置？';
+
+  @override
+  String get cannotDeleteProfile => '不可删除';
+
+  @override
+  String get dockLabelCourse => '课表';
+
+  @override
+  String get dockLabelCampus => '校园';
+
+  @override
+  String get dockLabelProfile => '我的';
+
+  @override
+  String get dockLabelGrades => '成绩';
+
+  @override
+  String get dockLabelCcyl => '第二课堂';
+
+  @override
+  String get dockLabelPlanCompletion => '方案';
+
+  @override
+  String get dockLabelTrainProgram => '培养方案';
+
+  @override
+  String get dockLabelClassroom => '教室';
+
+  @override
+  String get dockLabelNetworkDevice => '校园网';
+
+  @override
+  String get dockLabelBalanceQuery => '余额';
+
+  @override
+  String get dockLabelAcademicCalendar => '校历';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

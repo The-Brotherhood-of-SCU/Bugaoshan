@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Colors, Curve, Curves;
 import 'package:bugaoshan/utils/locale_utils.dart';
+import 'package:bugaoshan/utils/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 //define key
@@ -17,6 +18,7 @@ const String _keyBackgroundImageOpacity = 'backgroundImageOpacity';
 const String _keyBackgroundImagePath = 'backgroundImagePath';
 const String _keyFirstLaunchWizardCompleted = 'firstLaunchWizardCompleted';
 const String _keyHasUpdateNotification = 'hasUpdateNotification';
+const String _keyVisibleDockIds = 'visibleDockIds';
 const Curve appCurve = Curves.easeOutQuart;
 
 class AppConfigProvider {
@@ -49,6 +51,8 @@ class AppConfigProvider {
     false,
   );
   final ValueNotifier<bool> hasUpdateNotification = ValueNotifier<bool>(false);
+  final ValueNotifier<List<String>> visibleDockIds =
+      ValueNotifier<List<String>>([]);
 
   void _loadLocale() {
     final localeString = _sharedPreferences.getString(_keyLocale);
@@ -76,6 +80,9 @@ class AppConfigProvider {
         _sharedPreferences.getBool(_keyFirstLaunchWizardCompleted) ?? false;
     hasUpdateNotification.value =
         _sharedPreferences.getBool(_keyHasUpdateNotification) ?? false;
+    visibleDockIds.value =
+        _sharedPreferences.getStringList(_keyVisibleDockIds) ??
+        List<String>.from(defaultVisibleDockIds);
   }
 
   void _addSaveCallback() {
@@ -136,6 +143,16 @@ class AppConfigProvider {
         hasUpdateNotification.value,
       );
     });
+    visibleDockIds.addListener(() {
+      _sharedPreferences.setStringList(
+        _keyVisibleDockIds,
+        visibleDockIds.value,
+      );
+    });
+  }
+
+  void resetDockToDefault() {
+    visibleDockIds.value = List<String>.from(defaultVisibleDockIds);
   }
 
   void clearAll() {
