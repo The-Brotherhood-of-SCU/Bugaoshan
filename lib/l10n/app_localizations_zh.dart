@@ -1333,6 +1333,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get userInfoRetry => '点击重试';
 
   @override
+  String get loginToViewUserInfo => '登录后查看个人信息';
+
+  @override
   String get labelBookBorrowCount => '图书借阅量';
 
   @override

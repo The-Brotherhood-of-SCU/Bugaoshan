@@ -462,6 +462,7 @@
     "userInfoLoading": "正在加载个人信息...",
     "userInfoLoadFailed": "个人信息加载失败",
     "userInfoRetry": "点击重试",
+    "loginToViewUserInfo": "登录后查看个人信息",
     "labelBookBorrowCount": "图书借阅量",
     "labelCampusCardBalance": "校园卡余额",
     "labelNetworkFeeBalance": "网费余额",

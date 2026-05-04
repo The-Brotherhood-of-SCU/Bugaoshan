@@ -464,6 +464,7 @@
     "userInfoLoading": "Loading user info...",
     "userInfoLoadFailed": "Failed to load user info",
     "userInfoRetry": "Tap to retry",
+    "loginToViewUserInfo": "Login to view user info",
     "labelBookBorrowCount": "Books Borrowed",
     "labelCampusCardBalance": "Card Balance",
     "labelNetworkFeeBalance": "Network Fee",

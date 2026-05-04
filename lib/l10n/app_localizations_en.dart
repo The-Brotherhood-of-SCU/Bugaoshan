@@ -1370,6 +1370,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get userInfoRetry => 'Tap to retry';
 
   @override
+  String get loginToViewUserInfo => 'Login to view user info';
+
+  @override
   String get labelBookBorrowCount => 'Books Borrowed';
 
   @override

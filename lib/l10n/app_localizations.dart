@@ -2683,6 +2683,12 @@ abstract class AppLocalizations {
   /// **'Tap to retry'**
   String get userInfoRetry;
 
+  /// No description provided for @loginToViewUserInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Login to view user info'**
+  String get loginToViewUserInfo;
+
   /// No description provided for @labelBookBorrowCount.
   ///
   /// In en, this message translates to:
