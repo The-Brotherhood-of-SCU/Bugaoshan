@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/models/dock_item_config.dart';
 import 'package:bugaoshan/pages/campus_page.dart';
 import 'package:bugaoshan/pages/campus/academic_calendar/academic_calendar_page.dart';
 import 'package:bugaoshan/pages/campus/balance_query/balance_query_page.dart';
@@ -130,21 +131,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       icon: Icons.calendar_month_outlined,
       selectedIcon: Icons.calendar_month,
     ),
-  };
-
-  String _dockLabel(String id, AppLocalizations l10n) => switch (id) {
-    dockIdCourse => l10n.dockLabelCourse,
-    dockIdCampus => l10n.dockLabelCampus,
-    dockIdProfile => l10n.dockLabelProfile,
-    dockIdGrades => l10n.dockLabelGrades,
-    dockIdCcyl => l10n.dockLabelCcyl,
-    dockIdPlanCompletion => l10n.dockLabelPlanCompletion,
-    dockIdTrainProgram => l10n.dockLabelTrainProgram,
-    dockIdClassroom => l10n.dockLabelClassroom,
-    dockIdNetworkDevice => l10n.dockLabelNetworkDevice,
-    dockIdBalanceQuery => l10n.dockLabelBalanceQuery,
-    dockIdAcademicCalendar => l10n.dockLabelAcademicCalendar,
-    _ => id,
   };
 
   // Only builds the page widget when actually selected.
@@ -284,7 +270,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               child: Icon(meta.selectedIcon),
             )
           : Icon(meta.selectedIcon),
-      label: Text(_dockLabel(id, l10n)),
+      label: Text(dockLabel(id, l10n)),
     );
   }
 
@@ -305,7 +291,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               child: Icon(meta.selectedIcon),
             )
           : Icon(meta.selectedIcon),
-      label: _dockLabel(id, l10n),
+      label: dockLabel(id, l10n),
     );
   }
 
