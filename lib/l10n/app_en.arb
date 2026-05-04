@@ -56,6 +56,7 @@
     "period": "Period",
     "loading": "Loading...",
     "loadFailed": "Load Failed",
+    "retry": "Retry",
     "campusNetworkRequired": "This feature is only available on campus network. Please connect to campus Wi-Fi or use the school VPN.",
     "campusNetworkRequiredAtNight": "Access is restricted to campus network during 0:00-6:00. Please connect to campus Wi-Fi or use the school VPN.",
     "appOnly": "Available on App only",

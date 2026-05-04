@@ -152,7 +152,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get loading => '加载中...';
 
   @override
-  String get loadFailed => '加载失败，点击重试';
+  String get loadFailed => '加载失败';
+
+  @override
+  String get retry => '重试';
 
   @override
   String get campusNetworkRequired => '该功能仅限校园网访问，请连接校园网或使用学校 VPN 后重试';

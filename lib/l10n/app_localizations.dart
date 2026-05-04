@@ -385,6 +385,12 @@ abstract class AppLocalizations {
   /// **'Load Failed'**
   String get loadFailed;
 
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
   /// No description provided for @campusNetworkRequired.
   ///
   /// In en, this message translates to:

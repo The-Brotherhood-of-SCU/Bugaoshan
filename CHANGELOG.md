@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - 修复课表时间不对应的问题
 - 修复中文：'学术'->'学业'
+- 修复自定义 Dock 栏切换 tab / 横竖屏时页面状态丢失的问题
+- 余额查询页面加载失败时添加重试按钮
 
 ### Added
 - 桌面端成绩页面添加刷新按钮
