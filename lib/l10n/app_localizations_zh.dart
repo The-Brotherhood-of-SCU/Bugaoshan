@@ -1302,6 +1302,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get openSourceLicenseDesc => 'This app is open-sourced under AGPL-3.0';
+
+  @override
+  String get academicCalendar => '校历查看';
+
+  @override
+  String get academicCalendarDesc => '查看四川大学校历，了解学期安排';
+
+  @override
+  String get selectAcademicYear => '选择学年';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

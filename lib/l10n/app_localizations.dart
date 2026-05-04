@@ -2628,6 +2628,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This app is open-sourced under AGPL-3.0'**
   String get openSourceLicenseDesc;
+
+  /// No description provided for @academicCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Academic Calendar'**
+  String get academicCalendar;
+
+  /// No description provided for @academicCalendarDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'View SCU academic calendar and semester schedule'**
+  String get academicCalendarDesc;
+
+  /// No description provided for @selectAcademicYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Academic Year'**
+  String get selectAcademicYear;
 }
 
 class _AppLocalizationsDelegate

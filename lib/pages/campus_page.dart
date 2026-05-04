@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/campus/academic_calendar/academic_calendar_page.dart';
 import 'package:bugaoshan/pages/campus/balance_query/balance_query_page.dart';
 import 'package:bugaoshan/pages/campus/classroom/classroom_page.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_page.dart';
@@ -99,6 +100,17 @@ class CampusPage extends StatelessWidget {
                 appOnly: false,
                 onTap: () =>
                     popupOrNavigate(logicRootContext, const BalanceQueryPage()),
+              ),
+              const SizedBox(height: 8),
+              _CampusCard(
+                icon: Icons.calendar_month_outlined,
+                title: l10n.academicCalendar,
+                desc: l10n.academicCalendarDesc,
+                appOnly: false,
+                onTap: () => popupOrNavigate(
+                  logicRootContext,
+                  const AcademicCalendarPage(),
+                ),
               ),
               const SizedBox(height: 24),
               _MoreFeaturesCard(),

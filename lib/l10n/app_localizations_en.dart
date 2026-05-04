@@ -1338,4 +1338,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get openSourceLicenseDesc => 'This app is open-sourced under AGPL-3.0';
+
+  @override
+  String get academicCalendar => 'Academic Calendar';
+
+  @override
+  String get academicCalendarDesc =>
+      'View SCU academic calendar and semester schedule';
+
+  @override
+  String get selectAcademicYear => 'Select Academic Year';
 }
