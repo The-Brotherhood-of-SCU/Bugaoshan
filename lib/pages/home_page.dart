@@ -13,7 +13,6 @@ import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/dock_utils.dart';
-import 'package:bugaoshan/widgets/common/cached_page_stack.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -25,6 +24,24 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   int _currentIndex = 0;
   final _courseProvider = getIt<CourseProvider>();
+  final Map<String, Widget> _pageCache = {};
+
+  /// Lazily builds and returns an [IndexedStack] of all visited pages.
+  /// Only the page at [selectedIndex] is visible; others are kept alive.
+  Widget _buildIndexedStack(List<String> visibleIds, int selectedIndex) {
+    for (final id in visibleIds) {
+      _pageCache.putIfAbsent(id, () => buildDockPage(id));
+    }
+    // Clean up pages no longer visible
+    _pageCache.keys
+        .where((id) => !visibleIds.contains(id))
+        .toList()
+        .forEach(_pageCache.remove);
+    return IndexedStack(
+      index: selectedIndex.clamp(0, visibleIds.length - 1),
+      children: visibleIds.map((id) => _pageCache[id]!).toList(),
+    );
+  }
 
   @override
   void initState() {
@@ -103,28 +120,64 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       valueListenable: appConfig.visibleDockIds,
       builder: (context, visibleIds, _) {
         _clampCurrentIndex(visibleIds);
-        final currentId = visibleIds.isNotEmpty
-            ? visibleIds[_currentIndex]
-            : dockIdProfile;
 
         return ValueListenableBuilder<bool>(
           valueListenable: appConfig.hasUpdateNotification,
           builder: (context, hasUpdate, _) {
-            return OrientationBuilder(
-              builder: (context, orientation) =>
-                  orientation == Orientation.landscape
-                  ? _buildLandscapeLayout(
-                      visibleIds,
-                      currentId,
-                      l10n,
-                      hasUpdate,
-                    )
-                  : _buildPortraitLayout(
-                      visibleIds,
-                      currentId,
-                      l10n,
-                      hasUpdate,
-                    ),
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 600;
+                final showRail = isWide && visibleIds.isNotEmpty;
+                final showBar = !isWide && visibleIds.isNotEmpty;
+                final pageContent = _buildIndexedStack(visibleIds, _currentIndex);
+                return Scaffold(
+                  body: Row(
+                    children: [
+                      // Rail placeholder: always present, hidden via Offstage
+                      Offstage(
+                        offstage: !showRail,
+                        child: NavigationRail(
+                          selectedIndex: _currentIndex,
+                          onDestinationSelected: (index) {
+                            setState(() => _currentIndex = index);
+                            _onTabSelected(visibleIds[index]);
+                          },
+                          labelType: NavigationRailLabelType.all,
+                          destinations: visibleIds
+                              .map((id) => _buildRailDestination(
+                                    id,
+                                    hasUpdate,
+                                    l10n,
+                                  ))
+                              .toList(),
+                        ),
+                      ),
+                      Offstage(
+                        offstage: !showRail,
+                        child: const VerticalDivider(thickness: 1, width: 1),
+                      ),
+                      // Page content: always at index 2
+                      Expanded(child: SafeArea(child: pageContent)),
+                    ],
+                  ),
+                  bottomNavigationBar: showBar
+                      ? NavigationBar(
+                          selectedIndex: _currentIndex,
+                          onDestinationSelected: (index) {
+                            setState(() => _currentIndex = index);
+                            _onTabSelected(visibleIds[index]);
+                          },
+                          destinations: visibleIds
+                              .map((id) => _buildBarDestination(
+                                    id,
+                                    hasUpdate,
+                                    l10n,
+                                  ))
+                              .toList(),
+                        )
+                      : null,
+                );
+              },
             );
           },
         );
@@ -138,58 +191,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     } else if (_currentIndex >= ids.length) {
       _currentIndex = ids.length - 1;
     }
-  }
-
-  Widget _buildLandscapeLayout(
-    List<String> visibleIds,
-    String currentId,
-    AppLocalizations l10n,
-    bool hasUpdate,
-  ) {
-    return Scaffold(
-      body: Row(
-        children: [
-          if (visibleIds.isNotEmpty) ...[
-            NavigationRail(
-              selectedIndex: _currentIndex,
-              onDestinationSelected: (index) {
-                setState(() => _currentIndex = index);
-                _onTabSelected(visibleIds[index]);
-              },
-              labelType: NavigationRailLabelType.all,
-              destinations: visibleIds
-                  .map((id) => _buildRailDestination(id, hasUpdate, l10n))
-                  .toList(),
-            ),
-            const VerticalDivider(thickness: 1, width: 1),
-          ],
-          Expanded(child: SafeArea(child: CachedPageStack(currentId: currentId, pageBuilder: buildDockPage))),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPortraitLayout(
-    List<String> visibleIds,
-    String currentId,
-    AppLocalizations l10n,
-    bool hasUpdate,
-  ) {
-    return Scaffold(
-      body: SafeArea(child: CachedPageStack(currentId: currentId, pageBuilder: buildDockPage)),
-      bottomNavigationBar: visibleIds.isNotEmpty
-          ? NavigationBar(
-              selectedIndex: _currentIndex,
-              onDestinationSelected: (index) {
-                setState(() => _currentIndex = index);
-                _onTabSelected(visibleIds[index]);
-              },
-              destinations: visibleIds
-                  .map((id) => _buildBarDestination(id, hasUpdate, l10n))
-                  .toList(),
-            )
-          : null,
-    );
   }
 
   NavigationRailDestination _buildRailDestination(
