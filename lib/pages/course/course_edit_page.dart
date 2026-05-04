@@ -82,13 +82,13 @@ class _CourseEditPageState extends State<CourseEditPage> {
     final totalWeeks = courseProvider.scheduleConfig.value.totalWeeks;
     final sections = courseProvider.scheduleConfig.value.sectionsPerDay;
     final dayNames = [
+      l10n.sunday,
       l10n.monday,
       l10n.tuesday,
       l10n.wednesday,
       l10n.thursday,
       l10n.friday,
       l10n.saturday,
-      l10n.sunday,
     ];
 
     return Scaffold(
@@ -223,7 +223,7 @@ class _CourseEditPageState extends State<CourseEditPage> {
               Wrap(
                 spacing: 8,
                 children: List.generate(7, (i) {
-                  final day = i + 1;
+                  final day = i == 0 ? 7 : i;
                   return ChoiceChip(
                     label: Text(dayNames[i]),
                     selected: _dayOfWeek == day,

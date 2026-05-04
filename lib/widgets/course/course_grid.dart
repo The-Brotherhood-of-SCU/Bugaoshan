@@ -117,13 +117,13 @@ class _CourseGridState extends State<CourseGrid> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final dayNames = [
+      l10n.sunday,
       l10n.monday,
       l10n.tuesday,
       l10n.wednesday,
       l10n.thursday,
       l10n.friday,
       l10n.saturday,
-      l10n.sunday,
     ];
     final sections = widget.config.sectionsPerDay;
     final timeSlots = widget.config.timeSlots;
@@ -165,7 +165,9 @@ class _CourseGridState extends State<CourseGrid> {
                         Expanded(
                           child: Row(
                             children: List.generate(dayCount, (dayIndex) {
-                              final day = dayIndex + 1;
+                              final day = widget.config.showWeekend
+                                  ? (dayIndex == 0 ? 7 : dayIndex)
+                                  : dayIndex + 1;
                               final dayCourses = selectVisibleCoursesForDay(
                                 widget.courses
                                     .where((c) => c.dayOfWeek == day)
@@ -199,7 +201,7 @@ class _CourseGridState extends State<CourseGrid> {
     final theme = Theme.of(context);
     final visibleDays = widget.config.showWeekend
         ? dayNames
-        : dayNames.sublist(0, 5);
+        : dayNames.sublist(1, 6);
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -231,11 +233,16 @@ class _CourseGridState extends State<CourseGrid> {
             child: Row(
               children: List.generate(visibleDays.length, (index) {
                 final name = visibleDays[index];
-                // 周一为index 0，需根据学期开始日期的星期偏移
+                // 周日为index 0，计算当前列对应的星期几
+                final dayOfWeek = widget.config.showWeekend
+                    ? (index == 0 ? 7 : index)
+                    : index + 1;
+                // 周日在周一之前，dayOfWeek=7时应为-1而非6
+                final daysFromMonday = dayOfWeek == 7 ? -1 : dayOfWeek - 1;
                 final mondayOffset = (1 - semesterStart.weekday) % 7;
                 final date = semesterStart.add(
                   Duration(
-                    days: (widget.displayWeek - 1) * 7 + mondayOffset + index,
+                    days: (widget.displayWeek - 1) * 7 + mondayOffset + daysFromMonday,
                   ),
                 );
                 final isToday = date.isAtSameMomentAs(today);
