@@ -499,6 +499,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get extractColorFromBackgroundImage => '从背景图取色';
 
   @override
+  String get themeColorAutoExtractedHint => '主题色已从背景图片提取，如需修改请前往软件设置->主题颜色';
+
+  @override
   String get noBackgroundImageSet => '请先设置背景图片';
 
   @override

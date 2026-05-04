@@ -511,6 +511,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get extractColorFromBackgroundImage => 'Extract Color from Background';
 
   @override
+  String get themeColorAutoExtractedHint =>
+      'Theme color extracted from background image. Go to Software Setting -> Theme Color to modify.';
+
+  @override
   String get noBackgroundImageSet => 'Please set a background image first';
 
   @override

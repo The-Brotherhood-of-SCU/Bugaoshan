@@ -1051,6 +1051,12 @@ abstract class AppLocalizations {
   /// **'Extract Color from Background'**
   String get extractColorFromBackgroundImage;
 
+  /// No description provided for @themeColorAutoExtractedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme color extracted from background image. Go to Software Setting -> Theme Color to modify.'**
+  String get themeColorAutoExtractedHint;
+
   /// No description provided for @noBackgroundImageSet.
   ///
   /// In en, this message translates to:

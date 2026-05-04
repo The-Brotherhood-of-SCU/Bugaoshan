@@ -139,7 +139,7 @@ class SoftwareSettingPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     ButtonWithMaxWidth(
-                      onPressed: () => _pickBackgroundImage(appConfig),
+                      onPressed: () => _pickBackgroundImage(context, appConfig),
                       icon: const Icon(Icons.wallpaper),
                       child: Text(localizations.setBackgroundImage),
                     ),
@@ -276,7 +276,7 @@ class SoftwareSettingPage extends StatelessWidget {
     );
   }
 
-  Future<void> _pickBackgroundImage(AppConfigProvider appConfig) async {
+  Future<void> _pickBackgroundImage(BuildContext context, AppConfigProvider appConfig) async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
     if (picked == null) return;
@@ -309,5 +309,13 @@ class SoftwareSettingPage extends StatelessWidget {
     if (result == ExtractColorResult.success && themeColorProvider.extractedColor != null) {
       appConfig.themeColor.value = themeColorProvider.extractedColor!;
     }
+
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.themeColorAutoExtractedHint),
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 }

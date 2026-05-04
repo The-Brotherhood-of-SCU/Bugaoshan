@@ -175,6 +175,7 @@
     "backgroundImage":"Background Image",
     "setBackgroundImage":"Set Background Image",
     "extractColorFromBackgroundImage":"Extract Color from Background",
+    "themeColorAutoExtractedHint":"Theme color extracted from background image. Go to Software Setting -> Theme Color to modify.",
     "noBackgroundImageSet":"Please set a background image first",
     "removeBackgroundImage":"Remove Background Image",
     "backgroundImageOpacity":"Background Image Opacity",
