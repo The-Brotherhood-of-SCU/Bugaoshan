@@ -119,6 +119,42 @@ class _SetDockPageState extends State<SetDockPage> {
       buildDefaultDragHandles: false,
       itemCount: _visibleIds.length,
       onReorder: _onReorder,
+      proxyDecorator: (child, index, animation) {
+        return AnimatedBuilder(
+          animation: animation,
+          builder: (context, child) {
+            final t = Curves.easeInOut.transform(animation.value);
+            return Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: theme.colorScheme.surface,
+                boxShadow: t > 0
+                    ? [
+                        BoxShadow(
+                          color: theme.colorScheme.shadow.withValues(
+                            alpha: 0.3 * t,
+                          ),
+                          blurRadius: 8.0 * t,
+                          offset: Offset(0, 2 * t),
+                        ),
+                      ]
+                    : null,
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Theme(
+                data: theme.copyWith(
+                  cardTheme: CardThemeData(
+                    margin: EdgeInsets.zero,
+                    elevation: 0,
+                  ),
+                ),
+                child: child!,
+              ),
+            );
+          },
+          child: child,
+        );
+      },
       itemBuilder: (context, index) {
         final id = _visibleIds[index];
         final item = dockConfigById(id);
