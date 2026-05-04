@@ -1,3 +1,4 @@
+import 'package:bugaoshan/widgets/common/third_center.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 
@@ -10,51 +11,46 @@ class FeaturesPage extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
+    final title = Text(
+      l10n.wizardFeatureTitle,
+      style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+      textAlign: TextAlign.center,
+    );
+
+    final listView = ListView(
+      shrinkWrap: true,
+      children: [
+        title,
+        const SizedBox(height: 22),
+        _FeatureCard(
+          icon: Icons.menu_book_rounded,
+          iconBackground: colorScheme.tertiaryContainer,
+          iconColor: colorScheme.onTertiaryContainer,
+          title: l10n.wizardFeatureCourse,
+          description: l10n.wizardFeatureCourseDesc,
+        ),
+        const SizedBox(height: 12),
+        _FeatureCard(
+          icon: Icons.school_rounded,
+          iconBackground: colorScheme.secondaryContainer,
+          iconColor: colorScheme.onSecondaryContainer,
+          title: l10n.wizardFeatureCampus,
+          description: l10n.wizardFeatureCampusDesc,
+        ),
+        const SizedBox(height: 12),
+        _FeatureCard(
+          icon: Icons.person_rounded,
+          iconBackground: colorScheme.primaryContainer,
+          iconColor: colorScheme.onPrimaryContainer,
+          title: l10n.wizardFeatureProfile,
+          description: l10n.wizardFeatureProfileDesc,
+        ),
+      ],
+    );
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        children: [
-          SizedBox(height: 100),
-          Text(
-            l10n.wizardFeatureTitle,
-            style: textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          Expanded(
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                _FeatureCard(
-                  icon: Icons.menu_book_rounded,
-                  iconBackground: colorScheme.tertiaryContainer,
-                  iconColor: colorScheme.onTertiaryContainer,
-                  title: l10n.wizardFeatureCourse,
-                  description: l10n.wizardFeatureCourseDesc,
-                ),
-                const SizedBox(height: 12),
-                _FeatureCard(
-                  icon: Icons.school_rounded,
-                  iconBackground: colorScheme.secondaryContainer,
-                  iconColor: colorScheme.onSecondaryContainer,
-                  title: l10n.wizardFeatureCampus,
-                  description: l10n.wizardFeatureCampusDesc,
-                ),
-                const SizedBox(height: 12),
-                _FeatureCard(
-                  icon: Icons.person_rounded,
-                  iconBackground: colorScheme.primaryContainer,
-                  iconColor: colorScheme.onPrimaryContainer,
-                  title: l10n.wizardFeatureProfile,
-                  description: l10n.wizardFeatureProfileDesc,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+      child: ThirdCenter(child: listView),
     );
   }
 }
