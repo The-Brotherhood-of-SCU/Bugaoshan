@@ -91,7 +91,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get utilitiesSection => '实用工具';
 
   @override
-  String get academicSection => '学术';
+  String get academicSection => '学业';
 
   @override
   String get moreFeaturesTitle => '更多功能';
