@@ -5,17 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/dock_item_config.dart';
-import 'package:bugaoshan/pages/campus_page.dart';
-import 'package:bugaoshan/pages/campus/academic_calendar/academic_calendar_page.dart';
-import 'package:bugaoshan/pages/campus/balance_query/balance_query_page.dart';
-import 'package:bugaoshan/pages/campus/classroom/classroom_page.dart';
-import 'package:bugaoshan/pages/campus/ccyl/ccyl_page.dart';
-import 'package:bugaoshan/pages/campus/grades/grades_page.dart';
-import 'package:bugaoshan/pages/campus/network_device/network_device_page.dart';
-import 'package:bugaoshan/pages/campus/plan_completion/plan_completion_page.dart';
-import 'package:bugaoshan/pages/campus/train_program/train_program_page.dart';
-import 'package:bugaoshan/pages/course/course_page.dart';
-import 'package:bugaoshan/pages/profile_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
@@ -23,6 +12,7 @@ import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
+import 'package:bugaoshan/utils/dock_utils.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -94,61 +84,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
   }
 
-  // Lightweight dock item: icon + label only, no page widget.
-  static const _dockMeta = <String, ({IconData icon, IconData selectedIcon})>{
-    dockIdCourse: (
-      icon: Icons.menu_book_outlined,
-      selectedIcon: Icons.menu_book,
-    ),
-    dockIdCampus: (icon: Icons.school_outlined, selectedIcon: Icons.school),
-    dockIdProfile: (icon: Icons.person_outlined, selectedIcon: Icons.person),
-    dockIdGrades: (
-      icon: Icons.bar_chart_outlined,
-      selectedIcon: Icons.bar_chart,
-    ),
-    dockIdCcyl: (icon: Icons.event_outlined, selectedIcon: Icons.event),
-    dockIdPlanCompletion: (
-      icon: Icons.assignment_turned_in_outlined,
-      selectedIcon: Icons.assignment_turned_in,
-    ),
-    dockIdTrainProgram: (
-      icon: Icons.school_outlined,
-      selectedIcon: Icons.school,
-    ),
-    dockIdClassroom: (
-      icon: Icons.meeting_room_outlined,
-      selectedIcon: Icons.meeting_room,
-    ),
-    dockIdNetworkDevice: (
-      icon: Icons.router_outlined,
-      selectedIcon: Icons.router,
-    ),
-    dockIdBalanceQuery: (
-      icon: Icons.account_balance_wallet_outlined,
-      selectedIcon: Icons.account_balance_wallet,
-    ),
-    dockIdAcademicCalendar: (
-      icon: Icons.calendar_month_outlined,
-      selectedIcon: Icons.calendar_month,
-    ),
-  };
-
-  // Only builds the page widget when actually selected.
-  Widget _buildPage(String id) => switch (id) {
-    dockIdCourse => CoursePage(),
-    dockIdCampus => const CampusPage(),
-    dockIdProfile => ProfilePage(),
-    dockIdGrades => const GradesPage(),
-    dockIdCcyl => const CcylPage(),
-    dockIdPlanCompletion => const PlanCompletionPage(),
-    dockIdTrainProgram => const TrainProgramPage(),
-    dockIdClassroom => const ClassroomPage(),
-    dockIdNetworkDevice => const NetworkDevicePage(),
-    dockIdBalanceQuery => const BalanceQueryPage(),
-    dockIdAcademicCalendar => const AcademicCalendarPage(),
-    _ => ProfilePage(),
-  };
-
   @override
   Widget build(BuildContext context) {
     return _buildMainScreen();
@@ -170,7 +105,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         final currentId = visibleIds.isNotEmpty
             ? visibleIds[_currentIndex]
             : dockIdProfile;
-        final currentPage = _buildPage(currentId);
+        final currentPage = buildDockPage(currentId);
 
         return ValueListenableBuilder<bool>(
           valueListenable: appConfig.hasUpdateNotification,
@@ -258,7 +193,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     bool hasUpdate,
     AppLocalizations l10n,
   ) {
-    final meta = _dockMeta[id]!;
+    final meta = dockMeta[id]!;
     final isProfile = id == dockIdProfile;
     return NavigationRailDestination(
       icon: isProfile
@@ -279,7 +214,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     bool hasUpdate,
     AppLocalizations l10n,
   ) {
-    final meta = _dockMeta[id]!;
+    final meta = dockMeta[id]!;
     final isProfile = id == dockIdProfile;
     return NavigationDestination(
       icon: isProfile

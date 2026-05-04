@@ -17,18 +17,6 @@ class DockItemConfig {
   IconData get selectedIcon =>
       IconData(selectedIconCodePoint, fontFamily: 'MaterialIcons');
 
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'iconCodePoint': iconCodePoint,
-        'selectedIconCodePoint': selectedIconCodePoint,
-      };
-
-  factory DockItemConfig.fromJson(Map<String, dynamic> json) =>
-      DockItemConfig(
-        id: json['id'] as String,
-        iconCodePoint: json['iconCodePoint'] as int,
-        selectedIconCodePoint: json['selectedIconCodePoint'] as int,
-      );
 }
 
 List<DockItemConfig> allDockItems() => [
