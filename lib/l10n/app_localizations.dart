@@ -2688,6 +2688,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Network Fee'**
   String get labelNetworkFeeBalance;
+
+  /// No description provided for @customDock.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Dock'**
+  String get customDock;
+
+  /// No description provided for @dockPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Dock Preview'**
+  String get dockPreview;
+
+  /// No description provided for @resetDock.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to Default'**
+  String get resetDock;
+
+  /// No description provided for @dockResetConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset dock bar to default configuration?'**
+  String get dockResetConfirm;
+
+  /// No description provided for @cannotDeleteProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot be deleted'**
+  String get cannotDeleteProfile;
+
+  /// No description provided for @dockLabelCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Course'**
+  String get dockLabelCourse;
+
+  /// No description provided for @dockLabelCampus.
+  ///
+  /// In en, this message translates to:
+  /// **'Campus'**
+  String get dockLabelCampus;
+
+  /// No description provided for @dockLabelProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get dockLabelProfile;
+
+  /// No description provided for @dockLabelGrades.
+  ///
+  /// In en, this message translates to:
+  /// **'Grades'**
+  String get dockLabelGrades;
+
+  /// No description provided for @dockLabelCcyl.
+  ///
+  /// In en, this message translates to:
+  /// **'CCYL'**
+  String get dockLabelCcyl;
+
+  /// No description provided for @dockLabelPlanCompletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan'**
+  String get dockLabelPlanCompletion;
+
+  /// No description provided for @dockLabelTrainProgram.
+  ///
+  /// In en, this message translates to:
+  /// **'Program'**
+  String get dockLabelTrainProgram;
+
+  /// No description provided for @dockLabelClassroom.
+  ///
+  /// In en, this message translates to:
+  /// **'Classroom'**
+  String get dockLabelClassroom;
+
+  /// No description provided for @dockLabelNetworkDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Network'**
+  String get dockLabelNetworkDevice;
+
+  /// No description provided for @dockLabelBalanceQuery.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get dockLabelBalanceQuery;
+
+  /// No description provided for @dockLabelAcademicCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get dockLabelAcademicCalendar;
 }
 
 class _AppLocalizationsDelegate
