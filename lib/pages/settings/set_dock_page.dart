@@ -101,7 +101,7 @@ class _SetDockPageState extends State<SetDockPage> {
                         Icon(item.icon, size: 24),
                         const SizedBox(height: 4),
                         Text(
-                          dockLabel(item.id, l10n),
+                          dockFullLabel(item.id, l10n),
                           style: theme.textTheme.labelSmall,
                         ),
                       ],
@@ -165,7 +165,7 @@ class _SetDockPageState extends State<SetDockPage> {
           margin: const EdgeInsets.symmetric(vertical: 4),
           child: ListTile(
             leading: Icon(item.icon, color: theme.colorScheme.primary),
-            title: Text(dockLabel(item.id, l10n)),
+            title: Text(dockFullLabel(item.id, l10n)),
             subtitle: isProfile
                 ? Text(
                     l10n.cannotDeleteProfile,
@@ -209,7 +209,7 @@ class _SetDockPageState extends State<SetDockPage> {
                   item.icon,
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
-                title: Text(dockLabel(item.id, l10n)),
+                title: Text(dockFullLabel(item.id, l10n)),
                 trailing: Switch(
                   value: false,
                   onChanged: (_) => _toggleVisibility(item.id),
