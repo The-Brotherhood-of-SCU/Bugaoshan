@@ -9,11 +9,12 @@ def main():
     prev = os.environ.get("PREV", "").lstrip("v")
 
     body = f"""## ⬇️ 下载 (Downloads)
-- Android: [64位]({repo}/releases/download/v{version}/bugaoshan_{version}_arm64-v8a.apk)
+- Android: [arm64 APK]({repo}/releases/download/v{version}/bugaoshan_{version}_arm64-v8a.apk)
 - Windows: [x64 Zip]({repo}/releases/download/v{version}/bugaoshan_{version}_windows_x64.zip)
 - Linux: [x64 Tar.gz]({repo}/releases/download/v{version}/bugaoshan_{version}_linux_x64.tar.gz)
+- Harmony鸿蒙: https://github.com/assumeengagetry/TEMP-HOMO/releases （需要自签名证书）
 
-> 💡 **Note**: 当前项目优先保障 Android 端的稳定与体验。 Windows 和 Linux 版本可能存在部分兼容性或体验问题。
+> 💡 **Note**: 当前项目优先保障 Android 端的稳定与体验。 Windows,Linux,Harmony 版本可能存在部分兼容性或体验问题。
 
 {changelog}
 
