@@ -446,5 +446,8 @@
     "balanceQueryNoBinding": "您还没有绑定房间，请先绑定",
     "scuLoginDisclaimerPwd": "当使用记住密码功能时，密码通过系统级加密仅存储在本机",
     "scuLoginDisclaimerOcr": "验证码使用本地OCR模型识别",
-    "scuLoginDisclaimerPrivacy": "我们不会收集任何信息"
+    "scuLoginDisclaimerPrivacy": "我们不会收集任何信息",
+    "academicCalendar": "校历查看",
+    "academicCalendarDesc": "查看四川大学校历，了解学期安排",
+    "selectAcademicYear": "选择学年"
 }
