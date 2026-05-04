@@ -218,5 +218,4 @@ class _SetDockPageState extends State<SetDockPage> {
       ),
     );
   }
-
 }
