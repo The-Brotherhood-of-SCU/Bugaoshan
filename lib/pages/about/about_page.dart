@@ -416,7 +416,13 @@ class _InfoTile extends StatelessWidget {
           Expanded(
             child: Row(
               children: [
-                Text(label, style: theme.textTheme.bodyLarge),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: theme.textTheme.bodyLarge,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
                 if (showBadge) ...[
                   const SizedBox(width: 6),
                   Container(
@@ -436,10 +442,13 @@ class _InfoTile extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (value.isNotEmpty)
-                  Text(
-                    value,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                  Flexible(
+                    child: Text(
+                      value,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 if (loading) ...[
