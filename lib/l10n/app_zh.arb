@@ -173,6 +173,8 @@
     "courseRowHeight":"课表网格高度",
     "backgroundImage":"背景图片",
     "setBackgroundImage":"设置背景图片",
+    "extractColorFromBackgroundImage":"从背景图取色",
+    "noBackgroundImageSet":"请先设置背景图片",
     "removeBackgroundImage":"移除背景图片",
     "backgroundImageOpacity":"背景图片不透明度",
     "showTeacher":"显示教师",

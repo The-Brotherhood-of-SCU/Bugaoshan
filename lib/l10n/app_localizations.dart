@@ -1045,6 +1045,18 @@ abstract class AppLocalizations {
   /// **'Set Background Image'**
   String get setBackgroundImage;
 
+  /// No description provided for @extractColorFromBackgroundImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Extract Color from Background'**
+  String get extractColorFromBackgroundImage;
+
+  /// No description provided for @noBackgroundImageSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Please set a background image first'**
+  String get noBackgroundImageSet;
+
   /// No description provided for @removeBackgroundImage.
   ///
   /// In en, this message translates to:

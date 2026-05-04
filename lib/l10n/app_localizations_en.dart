@@ -508,6 +508,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get setBackgroundImage => 'Set Background Image';
 
   @override
+  String get extractColorFromBackgroundImage => 'Extract Color from Background';
+
+  @override
+  String get noBackgroundImageSet => 'Please set a background image first';
+
+  @override
   String get removeBackgroundImage => 'Remove Background Image';
 
   @override

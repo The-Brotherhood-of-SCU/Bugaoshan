@@ -496,6 +496,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get setBackgroundImage => '设置背景图片';
 
   @override
+  String get extractColorFromBackgroundImage => '从背景图取色';
+
+  @override
+  String get noBackgroundImageSet => '请先设置背景图片';
+
+  @override
   String get removeBackgroundImage => '移除背景图片';
 
   @override
