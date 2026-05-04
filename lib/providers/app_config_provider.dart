@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Colors, Curve, Curves;
+import 'package:bugaoshan/models/dock_item_config.dart';
 import 'package:bugaoshan/utils/locale_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,6 +19,7 @@ const String _keyBackgroundImageOpacity = 'backgroundImageOpacity';
 const String _keyBackgroundImagePath = 'backgroundImagePath';
 const String _keyFirstLaunchWizardCompleted = 'firstLaunchWizardCompleted';
 const String _keyHasUpdateNotification = 'hasUpdateNotification';
+const String _keyDockItems = 'dockItems';
 const Curve appCurve = Curves.easeOutQuart;
 
 class AppConfigProvider {
@@ -49,6 +52,8 @@ class AppConfigProvider {
     false,
   );
   final ValueNotifier<bool> hasUpdateNotification = ValueNotifier<bool>(false);
+  final ValueNotifier<List<DockItemConfig>> dockItems =
+      ValueNotifier<List<DockItemConfig>>([]);
 
   void _loadLocale() {
     final localeString = _sharedPreferences.getString(_keyLocale);
@@ -76,6 +81,19 @@ class AppConfigProvider {
         _sharedPreferences.getBool(_keyFirstLaunchWizardCompleted) ?? false;
     hasUpdateNotification.value =
         _sharedPreferences.getBool(_keyHasUpdateNotification) ?? false;
+    final dockJson = _sharedPreferences.getString(_keyDockItems);
+    if (dockJson != null) {
+      try {
+        final list = (jsonDecode(dockJson) as List)
+            .map((e) => DockItemConfig.fromJson(e as Map<String, dynamic>))
+            .toList();
+        dockItems.value = list;
+      } catch (_) {
+        dockItems.value = defaultDockItems();
+      }
+    } else {
+      dockItems.value = defaultDockItems();
+    }
   }
 
   void _addSaveCallback() {
@@ -136,6 +154,14 @@ class AppConfigProvider {
         hasUpdateNotification.value,
       );
     });
+    dockItems.addListener(() {
+      final json = dockItems.value.map((e) => e.toJson()).toList();
+      _sharedPreferences.setString(_keyDockItems, jsonEncode(json));
+    });
+  }
+
+  void resetDockToDefault() {
+    dockItems.value = defaultDockItems();
   }
 
   void clearAll() {

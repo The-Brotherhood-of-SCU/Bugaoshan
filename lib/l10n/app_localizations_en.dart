@@ -1371,4 +1371,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get labelNetworkFeeBalance => 'Network Fee';
+
+  @override
+  String get customDock => 'Custom Dock';
+
+  @override
+  String get dockPreview => 'Dock Preview';
+
+  @override
+  String get resetDock => 'Reset to Default';
+
+  @override
+  String get dockResetConfirm => 'Reset dock bar to default configuration?';
+
+  @override
+  String get cannotDeleteProfile => 'Cannot be deleted';
 }

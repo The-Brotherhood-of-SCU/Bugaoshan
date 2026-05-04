@@ -462,5 +462,10 @@
     "userInfoRetry": "点击重试",
     "labelBookBorrowCount": "图书借阅量",
     "labelCampusCardBalance": "校园卡余额",
-    "labelNetworkFeeBalance": "网费余额"
+    "labelNetworkFeeBalance": "网费余额",
+    "customDock": "自定义Dock栏",
+    "dockPreview": "Dock预览",
+    "resetDock": "恢复默认",
+    "dockResetConfirm": "确定恢复默认Dock栏配置？",
+    "cannotDeleteProfile": "不可删除"
 }

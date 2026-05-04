@@ -464,5 +464,10 @@
     "userInfoRetry": "Tap to retry",
     "labelBookBorrowCount": "Books Borrowed",
     "labelCampusCardBalance": "Card Balance",
-    "labelNetworkFeeBalance": "Network Fee"
+    "labelNetworkFeeBalance": "Network Fee",
+    "customDock": "Custom Dock",
+    "dockPreview": "Dock Preview",
+    "resetDock": "Reset to Default",
+    "dockResetConfirm": "Reset dock bar to default configuration?",
+    "cannotDeleteProfile": "Cannot be deleted"
 }

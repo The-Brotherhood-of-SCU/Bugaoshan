@@ -1334,6 +1334,21 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get labelNetworkFeeBalance => '网费余额';
+
+  @override
+  String get customDock => '自定义Dock栏';
+
+  @override
+  String get dockPreview => 'Dock预览';
+
+  @override
+  String get resetDock => '恢复默认';
+
+  @override
+  String get dockResetConfirm => '确定恢复默认Dock栏配置？';
+
+  @override
+  String get cannotDeleteProfile => '不可删除';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

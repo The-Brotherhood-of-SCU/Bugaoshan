@@ -2688,6 +2688,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Network Fee'**
   String get labelNetworkFeeBalance;
+
+  /// No description provided for @customDock.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Dock'**
+  String get customDock;
+
+  /// No description provided for @dockPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Dock Preview'**
+  String get dockPreview;
+
+  /// No description provided for @resetDock.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to Default'**
+  String get resetDock;
+
+  /// No description provided for @dockResetConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset dock bar to default configuration?'**
+  String get dockResetConfirm;
+
+  /// No description provided for @cannotDeleteProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot be deleted'**
+  String get cannotDeleteProfile;
 }
 
 class _AppLocalizationsDelegate
