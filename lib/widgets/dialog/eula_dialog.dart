@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/widgets/eula_content.dart';
 
@@ -59,10 +58,7 @@ class _EulaDialogState extends State<EulaDialog> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(false);
-                      SystemNavigator.pop();
-                    },
+                    onPressed: () => Navigator.of(context).pop(false),
                     child: Text(l10n.eulaDisagree),
                   ),
                   const SizedBox(width: 8),

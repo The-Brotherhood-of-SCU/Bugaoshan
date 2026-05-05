@@ -21,10 +21,12 @@ class EulaContent extends StatefulWidget {
   State<EulaContent> createState() => _EulaContentState();
 }
 
-class _EulaContentState extends State<EulaContent> {
+class _EulaContentState extends State<EulaContent>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
   String _eulaContent = '';
   bool _isLoading = true;
-  bool _hasReadToBottom = false;
   bool _agreed = false;
   final ScrollController _scrollController = ScrollController();
 
@@ -32,23 +34,12 @@ class _EulaContentState extends State<EulaContent> {
   void initState() {
     super.initState();
     _loadEulaContent();
-    _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 50) {
-      if (!_hasReadToBottom) {
-        setState(() => _hasReadToBottom = true);
-      }
-    }
   }
 
   Future<void> _loadEulaContent() async {
@@ -79,6 +70,7 @@ class _EulaContentState extends State<EulaContent> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context);
 
@@ -119,37 +111,16 @@ class _EulaContentState extends State<EulaContent> {
         ),
         if (widget.showCheckbox) ...[
           const SizedBox(height: 8),
-          if (!_hasReadToBottom)
-            Padding(
-              padding: const EdgeInsets.only(left: 4),
-              child: Text(
-                l10n.eulaScrollToBottom,
-                style: TextStyle(
-                  color: colorScheme.colorScheme.error,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-          const SizedBox(height: 8),
           Row(
             children: [
               Checkbox(
                 value: _agreed,
-                onChanged: _hasReadToBottom ? _toggleAgreed : null,
+                onChanged: _toggleAgreed,
               ),
               Expanded(
                 child: GestureDetector(
-                  onTap: _hasReadToBottom
-                      ? () => _toggleAgreed(!_agreed)
-                      : null,
-                  child: Text(
-                    l10n.eulaAgreeCheckbox,
-                    style: TextStyle(
-                      color: _hasReadToBottom
-                          ? null
-                          : colorScheme.colorScheme.outline,
-                    ),
-                  ),
+                  onTap: () => _toggleAgreed(!_agreed),
+                  child: Text(l10n.eulaAgreeCheckbox),
                 ),
               ),
             ],

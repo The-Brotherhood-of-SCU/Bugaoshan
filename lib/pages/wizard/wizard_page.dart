@@ -1,11 +1,13 @@
+import 'dart:io';
+
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/pages/wizard/eula_page.dart';
 import 'package:bugaoshan/pages/wizard/welcome_page.dart';
 import 'package:bugaoshan/pages/wizard/login_page.dart';
 import 'package:bugaoshan/pages/wizard/features_page.dart';
+import 'package:bugaoshan/widgets/dialog/eula_dialog.dart';
 import 'package:bugaoshan/widgets/eula_content.dart';
 
 class WizardPage extends StatefulWidget {
@@ -19,7 +21,7 @@ class _WizardPageState extends State<WizardPage> {
   late final PageController _pageController;
   int _currentPage = 0;
   bool _eulaAgreed = false;
-  static const int _totalPages = 4;
+  static const int _totalPages = 3;
 
   @override
   void initState() {
@@ -45,9 +47,20 @@ class _WizardPageState extends State<WizardPage> {
     appConfig.firstLaunchWizardCompleted.value = true;
   }
 
-  void _goNext() {
-    if (_currentPage == 1 && !_eulaAgreed) {
-      return;
+  Future<void> _goNext() async {
+    if (_currentPage == 0 && !_eulaAgreed) {
+      final appConfig = getIt<AppConfigProvider>();
+      if (appConfig.acceptedEulaVersion.value >= currentEulaVersion) {
+        setState(() => _eulaAgreed = true);
+      } else {
+        final agreed = await showEulaDialog(context);
+        if (!mounted) return;
+        if (agreed) {
+          setState(() => _eulaAgreed = true);
+        } else {
+          exit(0);
+        }
+      }
     }
     _pageController.nextPage(
       duration: appConfigProvider.cardSizeAnimationDuration.value,
@@ -79,16 +92,12 @@ class _WizardPageState extends State<WizardPage> {
                     const SizedBox(height: 8),
                     Expanded(
                       child: PageView(
+                        physics: const NeverScrollableScrollPhysics(),
                         controller: _pageController,
-                        children: [
-                          const WelcomePage(),
-                          EulaPage(
-                            onAgreedChanged: (agreed) {
-                              setState(() => _eulaAgreed = agreed);
-                            },
-                          ),
-                          const LoginPage(),
-                          const FeaturesPage(),
+                        children: const [
+                          WelcomePage(),
+                          LoginPage(),
+                          FeaturesPage(),
                         ],
                       ),
                     ),
@@ -153,9 +162,7 @@ class _WizardPageState extends State<WizardPage> {
                 duration: appConfigProvider.cardSizeAnimationDuration.value,
                 curve: appCurve,
                 child: FilledButton(
-                  onPressed: isFirstPage
-                      ? (_eulaAgreed ? _goNext : null)
-                      : (isLastPage ? _onCompleted : _goNext),
+                  onPressed: isLastPage ? _onCompleted : _goNext,
                   child: Text(
                     isLastPage ? l10n.onboardingStart : l10n.onboardingNext,
                   ),
