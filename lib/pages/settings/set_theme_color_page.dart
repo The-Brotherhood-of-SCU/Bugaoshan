@@ -66,6 +66,7 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
     }
   }
 
+  @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     colorScheme ??= ColorScheme.fromSeed(
@@ -177,9 +178,21 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
           ),
         ),
       );
+      final previousMode = appConfigService.themeColorMode.value;
       setState(() {
-        _selectedMode = appConfigService.themeColorMode.value;
+        _selectedMode = previousMode;
       });
+      if (previousMode == ThemeColorMode.system) {
+        await _previewSystemColor();
+      } else if (previousMode == ThemeColorMode.custom) {
+        setState(() {
+          pickerColor = appConfigService.themeColor.value;
+          colorScheme = ColorScheme.fromSeed(
+            seedColor: pickerColor,
+            brightness: Theme.of(context).brightness,
+          );
+        });
+      }
       return;
     }
     final result = await themeColorProvider.extractColorFromBackgroundImage();
