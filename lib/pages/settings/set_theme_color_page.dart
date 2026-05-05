@@ -145,11 +145,9 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
                 ),
               ],
             ),
-            body: Padding(
+            body: SingleChildScrollView(
               padding: const EdgeInsets.all(8.0),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   commonCard(
                     context: context,
@@ -157,12 +155,7 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
                     title: l10n.tips,
                     icon: const Icon(Icons.warning_amber),
                   ),
-                  Expanded(
-                    child: MultiColorPicker(
-                      initColor: pickerColor,
-                      onColorChanged: changeColor,
-                    ),
-                  ),
+                  const SizedBox(height: 8),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: SegmentedButton<ThemeColorMode>(
@@ -189,6 +182,12 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
                       },
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  MultiColorPicker(
+                    initColor: pickerColor,
+                    onColorChanged: changeColor,
+                  ),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
@@ -231,14 +230,12 @@ class _MultiColorPickerState extends State<MultiColorPicker>
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: BlockPicker(
-          useInShowDialog: false,
-          pickerColor: widget.initColor,
-          onColorChanged: widget.onColorChanged,
-        ),
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: BlockPicker(
+        useInShowDialog: false,
+        pickerColor: widget.initColor,
+        onColorChanged: widget.onColorChanged,
       ),
     );
   }
