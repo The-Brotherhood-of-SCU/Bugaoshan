@@ -7,6 +7,7 @@ import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/utils/open_link.dart'
     show openDeveloperTeam, openProjectRepository;
 import 'package:bugaoshan/pages/about/release_notes_page.dart';
+import 'package:bugaoshan/pages/settings/eula_status_page.dart';
 import 'package:bugaoshan/pages/test/test_page.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
@@ -332,6 +333,17 @@ class _AboutPageState extends State<AboutPage> {
                       onTap: _checkForUpdates,
                     );
                   },
+                ),
+                Divider(
+                  height: 1,
+                  indent: 56,
+                  color: theme.dividerColor.withValues(alpha: 0.08),
+                ),
+                _InfoTile(
+                  icon: Icons.gavel,
+                  label: localizations.eulaTitle,
+                  value: '',
+                  onTap: () => popupOrNavigate(context, const EulaStatusPage()),
                 ),
                 Divider(
                   height: 1,
