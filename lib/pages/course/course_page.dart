@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/course/course_edit_page.dart';
 import 'package:bugaoshan/pages/course/import_schedule_page.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/course/course_detail_sheet.dart';
 import 'package:bugaoshan/widgets/course/course_grid.dart';
@@ -20,6 +23,7 @@ class CoursePage extends StatefulWidget {
 
 class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   final courseProvider = getIt<CourseProvider>();
+  final appConfig = getIt<AppConfigProvider>();
   late PageController _pageController;
   late int _visibleWeek;
 
@@ -84,6 +88,8 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
         courseProvider.scheduleConfig,
         courseProvider.currentWeek,
         courseProvider.isLoading,
+        appConfig.backgroundImagePath,
+        appConfig.backgroundImageOpacity,
       ]),
       builder: (context, _) {
         final config = courseProvider.scheduleConfig.value;
@@ -99,6 +105,20 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
             Expanded(
               child: Stack(
                 children: [
+                  // Fixed background image (doesn't swipe with pages)
+                  if (appConfig.backgroundImagePath.value != null)
+                    Positioned.fill(
+                      child: Opacity(
+                        opacity: appConfig.backgroundImageOpacity.value,
+                        child: Image(
+                          image: FileImage(
+                            File(appConfig.backgroundImagePath.value!),
+                          ),
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                        ),
+                      ),
+                    ),
                   _SwipePageView(
                     controller: _pageController,
                     itemCount: totalWeeks,

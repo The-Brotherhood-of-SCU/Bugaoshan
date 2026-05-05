@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -133,65 +131,44 @@ class _CourseGridState extends State<CourseGrid> {
       listenable: Listenable.merge([
         appConfig.showCourseGrid,
         appConfig.courseRowHeight,
-        appConfig.backgroundImagePath,
-        appConfig.backgroundImageOpacity,
       ]),
       builder: (context, _) {
-        return Stack(
+        return Column(
           children: [
-            // Background image layer
-            if (appConfig.backgroundImagePath.value != null)
-              Positioned.fill(
-                child: Opacity(
-                  opacity: appConfig.backgroundImageOpacity.value,
-                  child: Image(
-                    image: FileImage(
-                      File(appConfig.backgroundImagePath.value!),
+            _buildHeaderRow(context, dayNames),
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionColumn(sections, timeSlots, context),
+                    Expanded(
+                      child: Row(
+                        children: List.generate(dayCount, (dayIndex) {
+                          final day = widget.config.showWeekend
+                              ? (dayIndex == 0 ? 7 : dayIndex)
+                              : dayIndex + 1;
+                          final dayCourses = selectVisibleCoursesForDay(
+                            widget.courses
+                                .where((c) => c.dayOfWeek == day)
+                                .toList(),
+                            widget.displayWeek,
+                            showNonCurrentWeekCourses:
+                                widget.config.showNonCurrentWeekCourses,
+                          );
+                          return _buildDayColumn(
+                            context,
+                            day,
+                            sections,
+                            dayCourses,
+                          );
+                        }),
+                      ),
                     ),
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                  ),
+                  ],
                 ),
               ),
-            // Course grid content
-            Column(
-              children: [
-                _buildHeaderRow(context, dayNames),
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildSectionColumn(sections, timeSlots, context),
-                        Expanded(
-                          child: Row(
-                            children: List.generate(dayCount, (dayIndex) {
-                              final day = widget.config.showWeekend
-                                  ? (dayIndex == 0 ? 7 : dayIndex)
-                                  : dayIndex + 1;
-                              final dayCourses = selectVisibleCoursesForDay(
-                                widget.courses
-                                    .where((c) => c.dayOfWeek == day)
-                                    .toList(),
-                                widget.displayWeek,
-                                showNonCurrentWeekCourses:
-                                    widget.config.showNonCurrentWeekCourses,
-                              );
-                              return _buildDayColumn(
-                                context,
-                                day,
-                                sections,
-                                dayCourses,
-                              );
-                            }),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
             ),
           ],
         );
