@@ -6,7 +6,6 @@ import 'package:bugaoshan/pages/wizard/welcome_page.dart';
 import 'package:bugaoshan/pages/wizard/login_page.dart';
 import 'package:bugaoshan/pages/wizard/features_page.dart';
 import 'package:bugaoshan/widgets/dialog/eula_dialog.dart';
-import 'package:bugaoshan/widgets/eula_content.dart';
 
 class WizardPage extends StatefulWidget {
   const WizardPage({super.key});
@@ -41,14 +40,13 @@ class _WizardPageState extends State<WizardPage> {
   }
 
   void _onCompleted() {
-    _appConfig.acceptedEulaVersion.value = currentEulaVersion;
     _appConfig.firstLaunchWizardCompleted.value = true;
   }
 
   Future<void> _goNext() async {
     if (_currentPage == 0) {
-      final canContinue = await ensureEulaAgreement(context);
-      if (!mounted || !canContinue) return;
+      await ensureEulaAgreement(context);
+      if (!mounted) return;
     }
     _pageController.nextPage(
       duration: _appConfig.cardSizeAnimationDuration.value,

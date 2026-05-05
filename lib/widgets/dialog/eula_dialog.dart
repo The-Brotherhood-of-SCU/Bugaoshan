@@ -6,7 +6,7 @@ import 'package:bugaoshan/services/exit_service.dart';
 import 'package:bugaoshan/widgets/eula_content.dart';
 
 /// 显示 EULA 同意对话框
-/// 返回 true 表示用户同意，false 表示不同意
+/// 同意则自动更新 AppConfigProvider，不同意则退出应用
 Future<bool> showEulaDialog(BuildContext context) async {
   final result = await showDialog<bool>(
     context: context,
@@ -16,24 +16,11 @@ Future<bool> showEulaDialog(BuildContext context) async {
   return result ?? false;
 }
 
-/// 检查并确保用户已同意 EULA
-/// 返回 true 表示可以继续，false 表示已退出应用
-Future<bool> ensureEulaAgreement(BuildContext context) async {
-  try {
-    final appConfig = getIt<AppConfigProvider>();
-    if (appConfig.acceptedEulaVersion.value >= currentEulaVersion) return true;
-    final agreed = await showEulaDialog(context);
-    if (agreed) {
-      appConfig.acceptedEulaVersion.value = currentEulaVersion;
-      return true;
-    } else {
-      await getIt<ExitService>().exitApp();
-      return false;
-    }
-  } catch (e) {
-    debugPrint('EULA check error: $e');
-    return true;
-  }
+/// 检查并确保用户已同意 EULA，未同意时弹窗处理
+Future<void> ensureEulaAgreement(BuildContext context) async {
+  final appConfig = getIt<AppConfigProvider>();
+  if (appConfig.acceptedEulaVersion.value >= currentEulaVersion) return;
+  await showEulaDialog(context);
 }
 
 class EulaDialog extends StatefulWidget {
@@ -45,6 +32,15 @@ class EulaDialog extends StatefulWidget {
 
 class _EulaDialogState extends State<EulaDialog> {
   bool _agreed = false;
+
+  void _onAgree() {
+    getIt<AppConfigProvider>().acceptedEulaVersion.value = currentEulaVersion;
+    Navigator.of(context).pop(true);
+  }
+
+  Future<void> _onDisagree() async {
+    await getIt<ExitService>().exitApp();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,14 +77,12 @@ class _EulaDialogState extends State<EulaDialog> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
+                    onPressed: _onDisagree,
                     child: Text(l10n.eulaDisagree),
                   ),
                   const SizedBox(width: 8),
                   FilledButton(
-                    onPressed: _agreed
-                        ? () => Navigator.of(context).pop(true)
-                        : null,
+                    onPressed: _agreed ? _onAgree : null,
                     child: Text(l10n.eulaAgree),
                   ),
                 ],
