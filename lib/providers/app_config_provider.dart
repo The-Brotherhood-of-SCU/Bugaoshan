@@ -19,6 +19,7 @@ const String _keyBackgroundImagePath = 'backgroundImagePath';
 const String _keyFirstLaunchWizardCompleted = 'firstLaunchWizardCompleted';
 const String _keyHasUpdateNotification = 'hasUpdateNotification';
 const String _keyVisibleDockIds = 'visibleDockIds';
+const String _keyAcceptedEulaVersion = 'acceptedEulaVersion';
 const Curve appCurve = Curves.easeOutQuart;
 
 class AppConfigProvider {
@@ -53,6 +54,7 @@ class AppConfigProvider {
   final ValueNotifier<bool> hasUpdateNotification = ValueNotifier<bool>(false);
   final ValueNotifier<List<String>> visibleDockIds =
       ValueNotifier<List<String>>([]);
+  final ValueNotifier<int> acceptedEulaVersion = ValueNotifier<int>(0);
 
   void _loadLocale() {
     final localeString = _sharedPreferences.getString(_keyLocale);
@@ -83,6 +85,8 @@ class AppConfigProvider {
     visibleDockIds.value =
         _sharedPreferences.getStringList(_keyVisibleDockIds) ??
         List<String>.from(defaultVisibleDockIds);
+    acceptedEulaVersion.value =
+        _sharedPreferences.getInt(_keyAcceptedEulaVersion) ?? 0;
   }
 
   void _addSaveCallback() {
@@ -147,6 +151,12 @@ class AppConfigProvider {
       _sharedPreferences.setStringList(
         _keyVisibleDockIds,
         visibleDockIds.value,
+      );
+    });
+    acceptedEulaVersion.addListener(() {
+      _sharedPreferences.setInt(
+        _keyAcceptedEulaVersion,
+        acceptedEulaVersion.value,
       );
     });
   }

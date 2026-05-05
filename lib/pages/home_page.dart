@@ -13,6 +13,8 @@ import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/dock_utils.dart';
+import 'package:bugaoshan/widgets/dialog/eula_dialog.dart';
+import 'package:bugaoshan/widgets/eula_content.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -49,6 +51,23 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _checkForUpdateInBackground();
     _attemptAutoLogin();
+    _checkEulaAgreement();
+  }
+
+  Future<void> _checkEulaAgreement() async {
+    try {
+      await getIt.isReady<AppConfigProvider>();
+      final appConfig = getIt<AppConfigProvider>();
+      if (!appConfig.firstLaunchWizardCompleted.value) return;
+      if (appConfig.acceptedEulaVersion.value >= currentEulaVersion) return;
+      if (!mounted) return;
+      final agreed = await showEulaDialog(context);
+      if (agreed && mounted) {
+        appConfig.acceptedEulaVersion.value = currentEulaVersion;
+      }
+    } catch (e) {
+      debugPrint('EULA check error: $e');
+    }
   }
 
   Future<void> _attemptAutoLogin() async {

@@ -54,10 +54,7 @@ class _StartupErrorApp extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Center(
-              child: Text(
-                'Bugaoshan 启动失败',
-                textAlign: TextAlign.center,
-              ),
+              child: Text('Bugaoshan 启动失败', textAlign: TextAlign.center),
             ),
           ),
         ),

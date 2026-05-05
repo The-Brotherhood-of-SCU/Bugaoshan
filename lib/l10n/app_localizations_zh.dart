@@ -1469,6 +1469,30 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dockLabelFitnessTest => '体测';
+
+  @override
+  String get eulaTitle => '用户协议';
+
+  @override
+  String get eulaScrollToBottom => '请先阅读完协议内容';
+
+  @override
+  String get eulaAgreeCheckbox => '我已阅读并同意《用户协议》';
+
+  @override
+  String get eulaAgree => '同意';
+
+  @override
+  String get eulaDisagree => '不同意';
+
+  @override
+  String get revokeEula => '撤回用户协议同意';
+
+  @override
+  String get revokeEulaConfirm => '撤回后将需要重新同意用户协议才能继续使用，确定要撤回吗？';
+
+  @override
+  String get revokeEulaSuccess => '已撤回用户协议同意';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

@@ -55,6 +55,7 @@ flutter:
     - assets/icon.png
     - assets/scu.jpg
     - assets/universal-login-ocr.tflite
+    - assets/eula.md
     - assets/scripts/
 flutter_launcher_icons:
   android: true

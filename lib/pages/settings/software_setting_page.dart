@@ -13,6 +13,8 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/common/styled_widget.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
+import 'package:bugaoshan/widgets/dialog/eula_dialog.dart';
+import 'package:bugaoshan/widgets/eula_content.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -245,7 +247,26 @@ class SoftwareSettingPage extends StatelessWidget {
                   child: Text(localizations.resetToDefault),
                 ),
                 const Divider(),
-
+                ButtonWithMaxWidth(
+                  onPressed: () async {
+                    final confirm = await showYesNoDialog(
+                      title: localizations.revokeEula,
+                      content: localizations.revokeEulaConfirm,
+                    );
+                    if (confirm == true) {
+                      appConfig.acceptedEulaVersion.value = 0;
+                      if (context.mounted) {
+                        final agreed = await showEulaDialog(context);
+                        if (agreed && context.mounted) {
+                          appConfig.acceptedEulaVersion.value =
+                              currentEulaVersion;
+                        }
+                      }
+                    }
+                  },
+                  icon: const Icon(Icons.gavel),
+                  child: Text(localizations.revokeEula),
+                ),
                 ButtonWithMaxWidth(
                   onPressed: () async {
                     final confirm = await showYesNoDialog(

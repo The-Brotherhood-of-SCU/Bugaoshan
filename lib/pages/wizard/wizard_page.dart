@@ -2,9 +2,11 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/wizard/eula_page.dart';
 import 'package:bugaoshan/pages/wizard/welcome_page.dart';
 import 'package:bugaoshan/pages/wizard/login_page.dart';
 import 'package:bugaoshan/pages/wizard/features_page.dart';
+import 'package:bugaoshan/widgets/eula_content.dart';
 
 class WizardPage extends StatefulWidget {
   const WizardPage({super.key});
@@ -16,6 +18,8 @@ class WizardPage extends StatefulWidget {
 class _WizardPageState extends State<WizardPage> {
   late final PageController _pageController;
   int _currentPage = 0;
+  bool _eulaAgreed = false;
+  static const int _totalPages = 4;
 
   @override
   void initState() {
@@ -36,10 +40,15 @@ class _WizardPageState extends State<WizardPage> {
   }
 
   void _onCompleted() {
-    getIt<AppConfigProvider>().firstLaunchWizardCompleted.value = true;
+    final appConfig = getIt<AppConfigProvider>();
+    appConfig.acceptedEulaVersion.value = currentEulaVersion;
+    appConfig.firstLaunchWizardCompleted.value = true;
   }
 
   void _goNext() {
+    if (_currentPage == 1 && !_eulaAgreed) {
+      return;
+    }
     _pageController.nextPage(
       duration: appConfigProvider.cardSizeAnimationDuration.value,
       curve: Curves.easeInOutQuart,
@@ -71,10 +80,15 @@ class _WizardPageState extends State<WizardPage> {
                     Expanded(
                       child: PageView(
                         controller: _pageController,
-                        children: const [
-                          WelcomePage(),
-                          LoginPage(),
-                          FeaturesPage(),
+                        children: [
+                          const WelcomePage(),
+                          EulaPage(
+                            onAgreedChanged: (agreed) {
+                              setState(() => _eulaAgreed = agreed);
+                            },
+                          ),
+                          const LoginPage(),
+                          const FeaturesPage(),
                         ],
                       ),
                     ),
@@ -92,6 +106,9 @@ class _WizardPageState extends State<WizardPage> {
   AppConfigProvider appConfigProvider = getIt<AppConfigProvider>();
 
   Widget _buildBottomSection(AppLocalizations l10n, ColorScheme colorScheme) {
+    final isLastPage = _currentPage == _totalPages - 1;
+    final isFirstPage = _currentPage == 0;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 32, left: 24, right: 24),
       child: Column(
@@ -99,7 +116,7 @@ class _WizardPageState extends State<WizardPage> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(3, (index) {
+            children: List.generate(_totalPages, (index) {
               final isActive = _currentPage == index;
               return AnimatedContainer(
                 duration: appConfigProvider.cardSizeAnimationDuration.value,
@@ -119,13 +136,14 @@ class _WizardPageState extends State<WizardPage> {
           const SizedBox(height: 30),
           Row(
             children: [
-              TextButton(
-                onPressed: _onCompleted,
-                child: Text(l10n.onboardingSkip),
-              ),
+              if (!isFirstPage)
+                TextButton(
+                  onPressed: _onCompleted,
+                  child: Text(l10n.onboardingSkip),
+                ),
               const Spacer(),
               AnimatedOpacity(
-                opacity: _currentPage > 0 ? 1 : 0,
+                opacity: !isFirstPage ? 1 : 0,
                 curve: appCurve,
                 duration: appConfigProvider.cardSizeAnimationDuration.value,
                 child: TextButton(onPressed: _goBack, child: Text(l10n.back)),
@@ -135,11 +153,11 @@ class _WizardPageState extends State<WizardPage> {
                 duration: appConfigProvider.cardSizeAnimationDuration.value,
                 curve: appCurve,
                 child: FilledButton(
-                  onPressed: _currentPage < 2 ? _goNext : _onCompleted,
+                  onPressed: isFirstPage
+                      ? (_eulaAgreed ? _goNext : null)
+                      : (isLastPage ? _onCompleted : _goNext),
                   child: Text(
-                    _currentPage < 2
-                        ? l10n.onboardingNext
-                        : l10n.onboardingStart,
+                    isLastPage ? l10n.onboardingStart : l10n.onboardingNext,
                   ),
                 ),
               ),
