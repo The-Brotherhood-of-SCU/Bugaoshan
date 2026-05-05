@@ -227,13 +227,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resetToDefault => 'Reset to Default';
 
   @override
-  String get useSystemColor => 'Use System Color';
+  String get themeColorModeSystem => 'System';
 
   @override
-  String get backgroundImage => 'Background Image';
+  String get themeColorModeBackgroundImage => 'Bg Image';
 
   @override
-  String get custom => 'Custom';
+  String get themeColorModeCustom => 'Custom';
 
   @override
   String get themeColorModeBackgroundImageNotSet =>
@@ -513,6 +513,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get courseRowHeight => 'Course Row Height';
+
+  @override
+  String get backgroundImage => 'Background Image';
 
   @override
   String get setBackgroundImage => 'Set Background Image';

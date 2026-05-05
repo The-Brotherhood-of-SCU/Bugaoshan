@@ -505,23 +505,23 @@ abstract class AppLocalizations {
   /// **'Reset to Default'**
   String get resetToDefault;
 
-  /// No description provided for @useSystemColor.
+  /// No description provided for @themeColorModeSystem.
   ///
   /// In en, this message translates to:
-  /// **'Use System Color'**
-  String get useSystemColor;
+  /// **'System'**
+  String get themeColorModeSystem;
 
-  /// No description provided for @backgroundImage.
+  /// No description provided for @themeColorModeBackgroundImage.
   ///
   /// In en, this message translates to:
-  /// **'Background Image'**
-  String get backgroundImage;
+  /// **'Bg Image'**
+  String get themeColorModeBackgroundImage;
 
-  /// No description provided for @custom.
+  /// No description provided for @themeColorModeCustom.
   ///
   /// In en, this message translates to:
   /// **'Custom'**
-  String get custom;
+  String get themeColorModeCustom;
 
   /// No description provided for @themeColorModeBackgroundImageNotSet.
   ///
@@ -1056,6 +1056,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Course Row Height'**
   String get courseRowHeight;
+
+  /// No description provided for @backgroundImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Background Image'**
+  String get backgroundImage;
 
   /// No description provided for @setBackgroundImage.
   ///

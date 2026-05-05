@@ -174,17 +174,17 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
                       segments: [
                         ButtonSegment<ThemeColorMode>(
                           value: ThemeColorMode.system,
-                          label: Text(l10n.followSystem),
+                          label: Text(l10n.themeColorModeSystem),
                           icon: const Icon(Icons.settings_suggest),
                         ),
                         ButtonSegment<ThemeColorMode>(
                           value: ThemeColorMode.backgroundImage,
-                          label: Text(l10n.backgroundImage),
+                          label: Text(l10n.themeColorModeBackgroundImage),
                           icon: const Icon(Icons.wallpaper),
                         ),
                         ButtonSegment<ThemeColorMode>(
                           value: ThemeColorMode.custom,
-                          label: Text(l10n.custom),
+                          label: Text(l10n.themeColorModeCustom),
                           icon: const Icon(Icons.palette),
                         ),
                       ],

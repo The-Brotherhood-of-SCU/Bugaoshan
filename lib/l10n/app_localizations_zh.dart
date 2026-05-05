@@ -220,13 +220,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get resetToDefault => '重置为默认';
 
   @override
-  String get useSystemColor => '使用系统颜色';
+  String get themeColorModeSystem => '跟随系统';
 
   @override
-  String get backgroundImage => '背景图片';
+  String get themeColorModeBackgroundImage => '背景图';
 
   @override
-  String get custom => '自定义';
+  String get themeColorModeCustom => '自定义';
 
   @override
   String get themeColorModeBackgroundImageNotSet => '请先设置背景图片';
@@ -500,6 +500,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get courseRowHeight => '课表网格高度';
+
+  @override
+  String get backgroundImage => '背景图片';
 
   @override
   String get setBackgroundImage => '设置背景图片';
