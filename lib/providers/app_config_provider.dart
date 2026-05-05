@@ -5,6 +5,7 @@ import 'package:flutter/material.dart' show Colors, Curve, Curves;
 import 'package:bugaoshan/utils/locale_utils.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:system_theme/system_theme.dart';
 
 //define key
 const String _keyLocale = 'locale';
@@ -130,7 +131,7 @@ class AppConfigProvider {
         backgroundImageOpacity.value,
       );
     });
-    backgroundImagePath.addListener(() {
+    backgroundImagePath.addListener(() async {
       final path = backgroundImagePath.value;
       if (path != null) {
         _sharedPreferences.setString(_keyBackgroundImagePath, path);
@@ -140,6 +141,8 @@ class AppConfigProvider {
       if (path == null &&
           themeColorMode.value == ThemeColorMode.backgroundImage) {
         themeColorMode.value = ThemeColorMode.system;
+        await SystemTheme.accentColor.load();
+        themeColor.value = SystemTheme.accentColor.accent;
       }
     });
     firstLaunchWizardCompleted.addListener(() {
