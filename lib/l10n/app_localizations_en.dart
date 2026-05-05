@@ -1558,4 +1558,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get revokeEulaSuccess => 'User agreement revoked';
+
+  @override
+  String eulaAgreedVersion(String version) {
+    return 'Agreed version v$version';
+  }
 }

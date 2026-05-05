@@ -3054,6 +3054,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'User agreement revoked'**
   String get revokeEulaSuccess;
+
+  /// No description provided for @eulaAgreedVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Agreed version v{version}'**
+  String eulaAgreedVersion(String version);
 }
 
 class _AppLocalizationsDelegate

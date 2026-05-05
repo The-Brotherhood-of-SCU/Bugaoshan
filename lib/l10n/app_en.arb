@@ -525,5 +525,11 @@
     "eulaDisagree": "Disagree",
     "revokeEula": "Revoke User Agreement",
     "revokeEulaConfirm": "After revoking, you will need to agree to the user agreement again to continue using. Are you sure?",
-    "revokeEulaSuccess": "User agreement revoked"
+    "revokeEulaSuccess": "User agreement revoked",
+    "eulaAgreedVersion": "Agreed version v{version}",
+    "@eulaAgreedVersion": {
+        "placeholders": {
+            "version": {"type": "String"}
+        }
+    }
 }

@@ -523,5 +523,11 @@
     "eulaDisagree": "不同意",
     "revokeEula": "撤回用户协议同意",
     "revokeEulaConfirm": "撤回后将需要重新同意用户协议才能继续使用，确定要撤回吗？",
-    "revokeEulaSuccess": "已撤回用户协议同意"
+    "revokeEulaSuccess": "已撤回用户协议同意",
+    "eulaAgreedVersion": "已同意版本 v{version}",
+    "@eulaAgreedVersion": {
+        "placeholders": {
+            "version": {"type": "String"}
+        }
+    }
 }

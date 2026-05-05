@@ -1517,6 +1517,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get revokeEulaSuccess => '已撤回用户协议同意';
+
+  @override
+  String eulaAgreedVersion(String version) {
+    return '已同意版本 v$version';
+  }
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

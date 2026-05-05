@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/exit_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/settings/eula_status_page.dart';
 import 'package:bugaoshan/pages/settings/set_dock_page.dart';
 import 'package:bugaoshan/pages/settings/set_duration_page.dart';
 import 'package:bugaoshan/pages/settings/set_language_page.dart';
@@ -255,10 +255,11 @@ class SoftwareSettingPage extends StatelessWidget {
                 ),
                 const Divider(),
                 ButtonWithMaxWidth(
-                  onPressed: () =>
-                      _revokeEula(context, appConfig, localizations),
+                  onPressed: () {
+                    popupOrNavigate(context, const EulaStatusPage());
+                  },
                   icon: const Icon(Icons.gavel),
-                  child: Text(localizations.revokeEula),
+                  child: Text(localizations.eulaTitle),
                 ),
                 ButtonWithMaxWidth(
                   onPressed: () async {
@@ -340,18 +341,4 @@ class SoftwareSettingPage extends StatelessWidget {
     }
   }
 
-  Future<void> _revokeEula(
-    BuildContext context,
-    AppConfigProvider appConfig,
-    AppLocalizations localizations,
-  ) async {
-    final confirm = await showYesNoDialog(
-      title: localizations.revokeEula,
-      content: localizations.revokeEulaConfirm,
-    );
-    if (confirm == true) {
-      appConfig.acceptedEulaVersion.value = 0;
-      await getIt<ExitService>().exitApp();
-    }
-  }
 }
