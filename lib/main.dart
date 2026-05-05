@@ -13,35 +13,35 @@ import 'package:bugaoshan/services/window_state_service.dart';
 import 'package:system_theme/system_theme.dart';
 
 Future<void> main() async {
-  await runZonedGuarded(
-    () async {
-      WidgetsFlutterBinding.ensureInitialized();
-      if (!kIsWeb) {
-        DartPluginRegistrant.ensureInitialized();
-        if (_isDesktopPlatform) {
-          sqfliteFfiInit();
-          databaseFactory = databaseFactoryFfi;
-        }
-      }
-      configureDependencies();
-      await ensureBasicDependencies();
+  try {
+    await _initializeApp();
+    runApp(MyApp());
+  } catch (error, stackTrace) {
+    debugPrint('Startup error: $error\n$stackTrace');
+    runApp(const _StartupErrorApp());
+  }
+}
 
-      // 桌面端记住窗口位置和大小，下次启动时恢复
-      if (!kIsWeb && _isDesktopPlatform) {
-        await WindowStateService.create(getIt<SharedPreferences>());
-      }
+Future<void> _initializeApp() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  if (!kIsWeb) {
+    DartPluginRegistrant.ensureInitialized();
+    if (_isDesktopPlatform) {
+      sqfliteFfiInit();
+      databaseFactory = databaseFactoryFfi;
+    }
+  }
+  configureDependencies();
+  await ensureBasicDependencies();
 
-      // 获取系统主题颜色
-      SystemTheme.fallbackColor = Colors.blue;
-      await SystemTheme.accentColor.load();
+  // 桌面端记住窗口位置和大小，下次启动时恢复
+  if (!kIsWeb && _isDesktopPlatform) {
+    await WindowStateService.create(getIt<SharedPreferences>());
+  }
 
-      runApp(MyApp());
-    },
-    (error, stackTrace) {
-      debugPrint('Startup error: $error\n$stackTrace');
-      runApp(const _StartupErrorApp());
-    },
-  );
+  // 获取系统主题颜色
+  SystemTheme.fallbackColor = Colors.blue;
+  await SystemTheme.accentColor.load();
 }
 
 bool get _isDesktopPlatform {
