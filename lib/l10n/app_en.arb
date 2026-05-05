@@ -517,5 +517,19 @@
     "fitnessTestReadCount": "reads",
     "fitnessTestSticky": "Pinned",
     "fitnessTestNoticeDetail": "Notice Detail",
-    "dockLabelFitnessTest": "Fitness"
+    "dockLabelFitnessTest": "Fitness",
+    "eulaTitle": "User Agreement",
+    "eulaScrollToBottom": "Please read the entire agreement first",
+    "eulaAgreeCheckbox": "I have read and agree to the User Agreement",
+    "eulaAgree": "Agree",
+    "eulaDisagree": "Disagree",
+    "revokeEula": "Revoke User Agreement",
+    "revokeEulaConfirm": "After revoking, you will need to agree to the user agreement again to continue using. Are you sure?",
+    "revokeEulaSuccess": "User agreement revoked",
+    "eulaAgreedVersion": "Agreed version v{version}",
+    "@eulaAgreedVersion": {
+        "placeholders": {
+            "version": {"type": "String"}
+        }
+    }
 }

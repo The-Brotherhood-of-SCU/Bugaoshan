@@ -67,6 +67,7 @@ jobs:
       - name: Build APK
         run: |
           flutter build apk --release --split-per-abi \
+            --obfuscate --split-debug-info=build/app/outputs/symbols \
             --dart-define=GIT_TAG=${{ steps.git_meta.outputs.GIT_TAG }} \
             --dart-define=GIT_COMMIT=${{ steps.git_meta.outputs.GIT_COMMIT }} \
             --dart-define=GIT_COMMIT_DATE=${{ steps.git_meta.outputs.GIT_COMMIT_DATE }} \
