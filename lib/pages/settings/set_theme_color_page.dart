@@ -18,14 +18,14 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
   final themeColorProvider = SetThemeColorProvider(getIt<AppConfigProvider>());
 
   late Color pickerColor;
+  late ThemeColorMode _selectedMode;
   ColorScheme? colorScheme;
-  _SetThemeColorPageState() {
-    pickerColor = appConfigService.themeColor.value;
-  }
 
   @override
   void initState() {
     super.initState();
+    pickerColor = appConfigService.themeColor.value;
+    _selectedMode = appConfigService.themeColorMode.value;
   }
 
   void changeColor(Color color) {
@@ -36,6 +36,33 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
         brightness: Theme.of(context).brightness,
       );
     });
+    if (_selectedMode != ThemeColorMode.custom) {
+      setState(() {
+        _selectedMode = ThemeColorMode.custom;
+      });
+    }
+  }
+
+  void _onModeChanged(ThemeColorMode? mode) {
+    if (mode == null) return;
+    setState(() {
+      _selectedMode = mode;
+    });
+    switch (mode) {
+      case ThemeColorMode.system:
+        _previewSystemColor();
+      case ThemeColorMode.backgroundImage:
+        _previewBackgroundImageColor();
+      case ThemeColorMode.custom:
+        setState(() {
+          pickerColor = Colors.blue;
+          colorScheme = ColorScheme.fromSeed(
+            seedColor: pickerColor,
+            brightness: Theme.of(context).brightness,
+          );
+        });
+        break;
+    }
   }
 
   @override
@@ -69,7 +96,6 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
                 ),
               ],
             ),
-
             body: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
@@ -89,26 +115,29 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                      onPressed: _extractColorFromBackground,
-                      child: Text(l10n.extractColorFromBackgroundImage),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                      onPressed: _useSystemColor,
-                      child: Text(l10n.useSystemColor),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        changeColor(Colors.blue);
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: SegmentedButton<ThemeColorMode>(
+                      segments: [
+                        ButtonSegment<ThemeColorMode>(
+                          value: ThemeColorMode.system,
+                          label: Text(l10n.followSystem),
+                          icon: const Icon(Icons.settings_suggest),
+                        ),
+                        ButtonSegment<ThemeColorMode>(
+                          value: ThemeColorMode.backgroundImage,
+                          label: Text(l10n.backgroundImage),
+                          icon: const Icon(Icons.wallpaper),
+                        ),
+                        ButtonSegment<ThemeColorMode>(
+                          value: ThemeColorMode.custom,
+                          label: Text(l10n.custom),
+                          icon: const Icon(Icons.palette),
+                        ),
+                      ],
+                      selected: {_selectedMode},
+                      onSelectionChanged: (selected) {
+                        _onModeChanged(selected.first);
                       },
-                      child: Text(l10n.resetToDefault),
                     ),
                   ),
                 ],
@@ -120,30 +149,50 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
     );
   }
 
-  void _useSystemColor() async {
-    await SystemTheme.accentColor.load();
-    final systemColor = SystemTheme.accentColor.accent;
-    changeColor(systemColor);
-  }
-
   void _confirmChanges() {
     appConfigService.themeColor.value = pickerColor;
+    appConfigService.themeColorMode.value = _selectedMode;
     Navigator.of(context).pop();
   }
 
-  Future<void> _extractColorFromBackground() async {
+  void _previewSystemColor() async {
+    await SystemTheme.accentColor.load();
+    final systemColor = SystemTheme.accentColor.accent;
+    setState(() {
+      pickerColor = systemColor;
+      colorScheme = ColorScheme.fromSeed(
+        seedColor: pickerColor,
+        brightness: Theme.of(context).brightness,
+      );
+    });
+  }
+
+  void _previewBackgroundImageColor() async {
+    if (appConfigService.backgroundImagePath.value == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.themeColorModeBackgroundImageNotSet),
+        ),
+      );
+      setState(() {
+        _selectedMode = appConfigService.themeColorMode.value;
+      });
+      return;
+    }
     final result = await themeColorProvider.extractColorFromBackgroundImage();
     if (!mounted) return;
-
     switch (result) {
       case ExtractColorResult.noBackgroundImage:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.noBackgroundImageSet),
-          ),
-        );
+        break;
       case ExtractColorResult.success:
-        changeColor(themeColorProvider.extractedColor!);
+        setState(() {
+          pickerColor = themeColorProvider.extractedColor!;
+          colorScheme = ColorScheme.fromSeed(
+            seedColor: pickerColor,
+            brightness: Theme.of(context).brightness,
+          );
+        });
       case ExtractColorResult.failure:
         break;
     }

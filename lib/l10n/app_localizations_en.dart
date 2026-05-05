@@ -230,6 +230,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get useSystemColor => 'Use System Color';
 
   @override
+  String get backgroundImage => 'Background Image';
+
+  @override
+  String get custom => 'Custom';
+
+  @override
+  String get themeColorModeBackgroundImageNotSet =>
+      'Please set a background image first';
+
+  @override
   String get blockPicker => 'Block';
 
   @override
@@ -505,9 +515,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get courseRowHeight => 'Course Row Height';
 
   @override
-  String get backgroundImage => 'Background Image';
-
-  @override
   String get setBackgroundImage => 'Set Background Image';
 
   @override
@@ -525,6 +532,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backgroundImageOpacity => 'Background Image Opacity';
+
+  @override
+  String get backgroundImageSetHint =>
+      'Background image set. You can go to Theme Color to modify the theme color.';
 
   @override
   String get showTeacher => 'Show Teacher';

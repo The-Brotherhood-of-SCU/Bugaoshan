@@ -511,6 +511,24 @@ abstract class AppLocalizations {
   /// **'Use System Color'**
   String get useSystemColor;
 
+  /// No description provided for @backgroundImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Background Image'**
+  String get backgroundImage;
+
+  /// No description provided for @custom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get custom;
+
+  /// No description provided for @themeColorModeBackgroundImageNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Please set a background image first'**
+  String get themeColorModeBackgroundImageNotSet;
+
   /// No description provided for @blockPicker.
   ///
   /// In en, this message translates to:
@@ -1039,12 +1057,6 @@ abstract class AppLocalizations {
   /// **'Course Row Height'**
   String get courseRowHeight;
 
-  /// No description provided for @backgroundImage.
-  ///
-  /// In en, this message translates to:
-  /// **'Background Image'**
-  String get backgroundImage;
-
   /// No description provided for @setBackgroundImage.
   ///
   /// In en, this message translates to:
@@ -1080,6 +1092,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Background Image Opacity'**
   String get backgroundImageOpacity;
+
+  /// No description provided for @backgroundImageSetHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Background image set. You can go to Theme Color to modify the theme color.'**
+  String get backgroundImageSetHint;
 
   /// No description provided for @showTeacher.
   ///

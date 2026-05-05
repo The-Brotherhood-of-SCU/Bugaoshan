@@ -17,6 +17,7 @@ import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/providers/set_theme_color_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:system_theme/system_theme.dart';
 
 class SoftwareSettingPage extends StatelessWidget {
   const SoftwareSettingPage({super.key});
@@ -146,13 +147,16 @@ class SoftwareSettingPage extends StatelessWidget {
                     if (appConfig.backgroundImagePath.value != null) ...[
                       const SizedBox(height: 8),
                       ButtonWithMaxWidth(
-                        onPressed: () {
+                        onPressed: () async {
                           final oldPath = appConfig.backgroundImagePath.value;
                           appConfig.backgroundImagePath.value = null;
-                          appConfig.themeColor.value = Colors.blueAccent;
                           if (oldPath != null) {
                             FileImage(File(oldPath)).evict();
                             File(oldPath).delete().ignore();
+                          }
+                          if (appConfig.themeColorMode.value == ThemeColorMode.backgroundImage) {
+                            await SystemTheme.accentColor.load();
+                            appConfig.themeColor.value = SystemTheme.accentColor.accent;
                           }
                         },
                         icon: const Icon(Icons.delete_outline),
@@ -305,16 +309,18 @@ class SoftwareSettingPage extends StatelessWidget {
     appConfig.backgroundImageVersion.value++;
     appConfig.backgroundImagePath.value = destPath;
 
-    final themeColorProvider = SetThemeColorProvider(appConfig);
-    final result = await themeColorProvider.extractColorFromBackgroundImage();
-    if (result == ExtractColorResult.success && themeColorProvider.extractedColor != null) {
-      appConfig.themeColor.value = themeColorProvider.extractedColor!;
+    if (appConfig.themeColorMode.value == ThemeColorMode.backgroundImage) {
+      final themeColorProvider = SetThemeColorProvider(appConfig);
+      final result = await themeColorProvider.extractColorFromBackgroundImage();
+      if (result == ExtractColorResult.success && themeColorProvider.extractedColor != null) {
+        appConfig.themeColor.value = themeColorProvider.extractedColor!;
+      }
     }
 
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(AppLocalizations.of(context)!.themeColorAutoExtractedHint),
+        content: Text(AppLocalizations.of(context)!.backgroundImageSetHint),
         duration: const Duration(seconds: 3),
       ),
     );

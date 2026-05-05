@@ -223,6 +223,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get useSystemColor => '使用系统颜色';
 
   @override
+  String get backgroundImage => '背景图片';
+
+  @override
+  String get custom => '自定义';
+
+  @override
+  String get themeColorModeBackgroundImageNotSet => '请先设置背景图片';
+
+  @override
   String get blockPicker => '色块';
 
   @override
@@ -493,9 +502,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get courseRowHeight => '课表网格高度';
 
   @override
-  String get backgroundImage => '背景图片';
-
-  @override
   String get setBackgroundImage => '设置背景图片';
 
   @override
@@ -512,6 +518,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get backgroundImageOpacity => '背景图片不透明度';
+
+  @override
+  String get backgroundImageSetHint => '背景图片已设置，您可以前往「主题颜色」修改主题色';
 
   @override
   String get showTeacher => '显示教师';
