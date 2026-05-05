@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/pages/home_page.dart';
 import 'package:bugaoshan/pages/wizard/wizard_page.dart';
@@ -48,13 +49,19 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  ThemeData _buildTheme(Brightness brightness) => ThemeData(
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: _appConfig.themeColor.value,
-      brightness: brightness,
-    ),
-    pageTransitionsTheme: _pageTransitionsTheme,
-    appBarTheme: _appBarTheme,
-    navigationBarTheme: _navigationBarTheme,
-  );
+  ThemeData _buildTheme(Brightness brightness) {
+    final baseTheme = ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: _appConfig.themeColor.value,
+        brightness: brightness,
+      ),
+      pageTransitionsTheme: _pageTransitionsTheme,
+      appBarTheme: _appBarTheme,
+      navigationBarTheme: _navigationBarTheme,
+    );
+
+    return baseTheme.copyWith(
+      textTheme: GoogleFonts.notoSansScTextTheme(baseTheme.textTheme),
+    );
+  }
 }

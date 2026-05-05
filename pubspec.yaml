@@ -37,6 +37,7 @@ dependencies:
   flutter_markdown_plus: ^1.0.7
   image_picker: ^1.2.2
   window_manager: ^0.5.1
+  google_fonts: ^6.0.0
 
 dev_dependencies:
   flutter_test:
