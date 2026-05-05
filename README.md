@@ -81,3 +81,5 @@
 ## 许可证
 
 本项目基于 [AGPL-3.0](LICENSE) 协议开源。
+
+第三方库，请查看 [pubspec.yaml](pubspec.yaml) 文件。

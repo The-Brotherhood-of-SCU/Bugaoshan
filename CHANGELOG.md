@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 主页添加校园卡余额、图书借阅量、网费余额等信息
 - 新增自定义 Dock 栏功能：可在设置中自由开关、排序底部导航栏项目
 - 支持将成绩、第二课堂、培养方案、教室查询等校园功能独立添加到 Dock 栏
+- 合规性更新，添加eula
 
 ### Changed
 - 调整课表布局，周日为第一天，对应教务处课表布局

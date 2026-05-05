@@ -248,22 +248,7 @@ class SoftwareSettingPage extends StatelessWidget {
                 ),
                 const Divider(),
                 ButtonWithMaxWidth(
-                  onPressed: () async {
-                    final confirm = await showYesNoDialog(
-                      title: localizations.revokeEula,
-                      content: localizations.revokeEulaConfirm,
-                    );
-                    if (confirm == true) {
-                      appConfig.acceptedEulaVersion.value = 0;
-                      if (context.mounted) {
-                        final agreed = await showEulaDialog(context);
-                        if (agreed && context.mounted) {
-                          appConfig.acceptedEulaVersion.value =
-                              currentEulaVersion;
-                        }
-                      }
-                    }
-                  },
+                  onPressed: () => _revokeEula(context, appConfig, localizations),
                   icon: const Icon(Icons.gavel),
                   child: Text(localizations.revokeEula),
                 ),
@@ -323,5 +308,25 @@ class SoftwareSettingPage extends StatelessWidget {
     await File(picked.path).copy(destPath);
     appConfig.backgroundImageVersion.value++;
     appConfig.backgroundImagePath.value = destPath;
+  }
+
+  Future<void> _revokeEula(
+    BuildContext context,
+    AppConfigProvider appConfig,
+    AppLocalizations localizations,
+  ) async {
+    final confirm = await showYesNoDialog(
+      title: localizations.revokeEula,
+      content: localizations.revokeEulaConfirm,
+    );
+    if (confirm == true) {
+      appConfig.acceptedEulaVersion.value = 0;
+      if (context.mounted) {
+        final agreed = await showEulaDialog(context);
+        if (agreed && context.mounted) {
+          appConfig.acceptedEulaVersion.value = currentEulaVersion;
+        }
+      }
+    }
   }
 }
