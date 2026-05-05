@@ -50,6 +50,8 @@ class _EulaDialogState extends State<EulaDialog> {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 500;
+    final hPadding = isSmallScreen ? 10.0 : 24.0;
 
     return Dialog(
       child: ConstrainedBox(
@@ -58,15 +60,12 @@ class _EulaDialogState extends State<EulaDialog> {
           maxHeight: MediaQuery.of(context).size.height * 0.8,
         ),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.symmetric(horizontal: hPadding, vertical: 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                l10n.eulaTitle,
-                style: colorScheme.textTheme.headlineSmall,
-              ),
+              Text(l10n.eulaTitle, style: colorScheme.textTheme.headlineSmall),
               const SizedBox(height: 16),
               Expanded(
                 child: EulaContent(
