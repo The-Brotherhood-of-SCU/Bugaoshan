@@ -66,16 +66,6 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
   }
 
   Future<void> _handleSystemMode() async {
-    if (appConfigService.backgroundImagePath.value == null) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            AppLocalizations.of(context)!.themeColorModeBackgroundImageNotSet,
-          ),
-        ),
-      );
-    }
     final result = await themeColorProvider.previewSystemColor();
     if (!mounted) return;
     setState(() {
