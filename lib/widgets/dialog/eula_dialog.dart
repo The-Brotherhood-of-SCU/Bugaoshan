@@ -20,7 +20,10 @@ Future<bool> showEulaDialog(BuildContext context) async {
 Future<void> ensureEulaAgreement(BuildContext context) async {
   final appConfig = getIt<AppConfigProvider>();
   if (appConfig.acceptedEulaVersion.value >= currentEulaVersion) return;
-  await showEulaDialog(context);
+  final agreed = await showEulaDialog(context);
+  if (!agreed && context.mounted) {
+    await ensureEulaAgreement(context);
+  }
 }
 
 class EulaDialog extends StatefulWidget {
