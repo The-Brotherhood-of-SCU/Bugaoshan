@@ -4,6 +4,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/set_theme_color_provider.dart';
+import 'package:system_theme/system_theme.dart';
 
 class SetThemeColorPage extends StatefulWidget {
   const SetThemeColorPage({super.key});
@@ -88,10 +89,17 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    padding: const EdgeInsets.all(8.0),
                     child: ElevatedButton(
                       onPressed: _extractColorFromBackground,
                       child: Text(l10n.extractColorFromBackgroundImage),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      onPressed: _useSystemColor,
+                      child: Text(l10n.useSystemColor),
                     ),
                   ),
                   Padding(
@@ -110,6 +118,12 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
         },
       ),
     );
+  }
+
+  void _useSystemColor() async {
+    await SystemTheme.accentColor.load();
+    final systemColor = SystemTheme.accentColor.accent;
+    changeColor(systemColor);
   }
 
   void _confirmChanges() {

@@ -505,6 +505,12 @@ abstract class AppLocalizations {
   /// **'Reset to Default'**
   String get resetToDefault;
 
+  /// No description provided for @useSystemColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Use System Color'**
+  String get useSystemColor;
+
   /// No description provided for @blockPicker.
   ///
   /// In en, this message translates to:

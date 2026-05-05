@@ -76,6 +76,7 @@
     "customizedColorHint": "自定义颜色由颜色种子生成",
     "tips": "提示",
     "resetToDefault": "重置为默认",
+    "useSystemColor": "使用系统颜色",
     "blockPicker": "色块",
     "materialPicker": "材质",
     "advancedPicker": "高级",

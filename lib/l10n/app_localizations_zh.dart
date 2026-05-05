@@ -220,6 +220,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get resetToDefault => '重置为默认';
 
   @override
+  String get useSystemColor => '使用系统颜色';
+
+  @override
   String get blockPicker => '色块';
 
   @override

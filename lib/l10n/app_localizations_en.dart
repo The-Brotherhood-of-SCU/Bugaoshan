@@ -227,6 +227,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resetToDefault => 'Reset to Default';
 
   @override
+  String get useSystemColor => 'Use System Color';
+
+  @override
   String get blockPicker => 'Block';
 
   @override
