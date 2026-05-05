@@ -57,7 +57,7 @@ class _EulaDialogState extends State<EulaDialog> {
             maxHeight: MediaQuery.of(context).size.height * 0.88,
           ),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
