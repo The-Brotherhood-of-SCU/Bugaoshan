@@ -9,6 +9,7 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/services/exit_service.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
@@ -64,6 +65,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       final agreed = await showEulaDialog(context);
       if (agreed && mounted) {
         appConfig.acceptedEulaVersion.value = currentEulaVersion;
+      } else if (!agreed) {
+        await getIt<ExitService>().exitApp();
       }
     } catch (e) {
       debugPrint('EULA check error: $e');

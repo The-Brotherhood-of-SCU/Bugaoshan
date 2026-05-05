@@ -1,8 +1,7 @@
-import 'dart:io';
-
-import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/services/exit_service.dart';
+import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/wizard/welcome_page.dart';
 import 'package:bugaoshan/pages/wizard/login_page.dart';
@@ -58,7 +57,7 @@ class _WizardPageState extends State<WizardPage> {
         if (agreed) {
           setState(() => _eulaAgreed = true);
         } else {
-          exit(0);
+          await getIt<ExitService>().exitApp();
         }
       }
     }

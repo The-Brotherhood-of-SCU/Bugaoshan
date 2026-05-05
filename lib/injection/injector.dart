@@ -10,6 +10,7 @@ import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/database_service.dart';
+import 'package:bugaoshan/services/exit_service.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,6 +26,7 @@ final getIt = GetIt.instance;
 )
 void configureDependencies() {
   getIt.init();
+  getIt.registerSingleton<ExitService>(ExitService());
   _configureAsyncDependencies();
 }
 
