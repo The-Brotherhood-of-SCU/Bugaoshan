@@ -1391,6 +1391,84 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dockLabelAcademicCalendar => '校历';
+
+  @override
+  String get fitnessTest => '体质测试';
+
+  @override
+  String get fitnessTestDesc => '查询体测成绩和查看通知公告';
+
+  @override
+  String get fitnessTestNotices => '通知公告';
+
+  @override
+  String get fitnessTestScores => '体测成绩';
+
+  @override
+  String get fitnessTestTotalScore => '总分';
+
+  @override
+  String get fitnessTestGrade => '等级';
+
+  @override
+  String get fitnessTestYear => '查询年份';
+
+  @override
+  String get fitnessTestNoScore => '该年份暂无体测成绩';
+
+  @override
+  String get fitnessTestStudentNum => '学号';
+
+  @override
+  String get fitnessTestStudentName => '姓名';
+
+  @override
+  String get fitnessTestSex => '性别';
+
+  @override
+  String get fitnessTestReportType => '报告类型';
+
+  @override
+  String get fitnessTestReportStatus => '报告状态';
+
+  @override
+  String get fitnessTestStudentYear => '年级';
+
+  @override
+  String get fitnessTestBmi => '身高/体重';
+
+  @override
+  String get fitnessTestVitalCapacity => '肺活量';
+
+  @override
+  String get fitnessTestStandingLongJump => '立定跳远';
+
+  @override
+  String get fitnessTestSitAndReach => '坐位体前屈';
+
+  @override
+  String get fitnessTestPullUp => '引体向上';
+
+  @override
+  String get fitnessTestSitUp => '仰卧起坐';
+
+  @override
+  String get fitnessTestFiftyMeters => '50米跑';
+
+  @override
+  String get fitnessTestRun => '800/1000米跑';
+
+  @override
+  String get fitnessTestReadCount => '次阅读';
+
+  @override
+  String get fitnessTestSticky => '置顶';
+
+  @override
+  String get fitnessTestNoticeDetail => '通知详情';
+
+  @override
+  String get dockLabelFitnessTest => '体测';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

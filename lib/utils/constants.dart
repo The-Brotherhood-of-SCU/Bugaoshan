@@ -12,6 +12,7 @@ const String dockIdClassroom = 'classroom';
 const String dockIdNetworkDevice = 'network_device';
 const String dockIdBalanceQuery = 'balance_query';
 const String dockIdAcademicCalendar = 'academic_calendar';
+const String dockIdFitnessTest = 'fitness_test';
 
 const List<String> defaultVisibleDockIds = [
   dockIdCourse,

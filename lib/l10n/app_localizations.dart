@@ -2802,6 +2802,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Calendar'**
   String get dockLabelAcademicCalendar;
+
+  /// No description provided for @fitnessTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Fitness Test'**
+  String get fitnessTest;
+
+  /// No description provided for @fitnessTestDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Query fitness test scores and view notices'**
+  String get fitnessTestDesc;
+
+  /// No description provided for @fitnessTestNotices.
+  ///
+  /// In en, this message translates to:
+  /// **'Notices'**
+  String get fitnessTestNotices;
+
+  /// No description provided for @fitnessTestScores.
+  ///
+  /// In en, this message translates to:
+  /// **'Scores'**
+  String get fitnessTestScores;
+
+  /// No description provided for @fitnessTestTotalScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Score'**
+  String get fitnessTestTotalScore;
+
+  /// No description provided for @fitnessTestGrade.
+  ///
+  /// In en, this message translates to:
+  /// **'Grade'**
+  String get fitnessTestGrade;
+
+  /// No description provided for @fitnessTestYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get fitnessTestYear;
+
+  /// No description provided for @fitnessTestNoScore.
+  ///
+  /// In en, this message translates to:
+  /// **'No fitness test scores for this year'**
+  String get fitnessTestNoScore;
+
+  /// No description provided for @fitnessTestStudentNum.
+  ///
+  /// In en, this message translates to:
+  /// **'Student ID'**
+  String get fitnessTestStudentNum;
+
+  /// No description provided for @fitnessTestStudentName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get fitnessTestStudentName;
+
+  /// No description provided for @fitnessTestSex.
+  ///
+  /// In en, this message translates to:
+  /// **'Sex'**
+  String get fitnessTestSex;
+
+  /// No description provided for @fitnessTestReportType.
+  ///
+  /// In en, this message translates to:
+  /// **'Report Type'**
+  String get fitnessTestReportType;
+
+  /// No description provided for @fitnessTestReportStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Report Status'**
+  String get fitnessTestReportStatus;
+
+  /// No description provided for @fitnessTestStudentYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Year Level'**
+  String get fitnessTestStudentYear;
+
+  /// No description provided for @fitnessTestBmi.
+  ///
+  /// In en, this message translates to:
+  /// **'Height/Weight'**
+  String get fitnessTestBmi;
+
+  /// No description provided for @fitnessTestVitalCapacity.
+  ///
+  /// In en, this message translates to:
+  /// **'Vital Capacity'**
+  String get fitnessTestVitalCapacity;
+
+  /// No description provided for @fitnessTestStandingLongJump.
+  ///
+  /// In en, this message translates to:
+  /// **'Standing Long Jump'**
+  String get fitnessTestStandingLongJump;
+
+  /// No description provided for @fitnessTestSitAndReach.
+  ///
+  /// In en, this message translates to:
+  /// **'Sit and Reach'**
+  String get fitnessTestSitAndReach;
+
+  /// No description provided for @fitnessTestPullUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Pull-ups'**
+  String get fitnessTestPullUp;
+
+  /// No description provided for @fitnessTestSitUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Sit-ups'**
+  String get fitnessTestSitUp;
+
+  /// No description provided for @fitnessTestFiftyMeters.
+  ///
+  /// In en, this message translates to:
+  /// **'50m Sprint'**
+  String get fitnessTestFiftyMeters;
+
+  /// No description provided for @fitnessTestRun.
+  ///
+  /// In en, this message translates to:
+  /// **'800/1000m Run'**
+  String get fitnessTestRun;
+
+  /// No description provided for @fitnessTestReadCount.
+  ///
+  /// In en, this message translates to:
+  /// **'reads'**
+  String get fitnessTestReadCount;
+
+  /// No description provided for @fitnessTestSticky.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned'**
+  String get fitnessTestSticky;
+
+  /// No description provided for @fitnessTestNoticeDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Notice Detail'**
+  String get fitnessTestNoticeDetail;
+
+  /// No description provided for @dockLabelFitnessTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Fitness'**
+  String get dockLabelFitnessTest;
 }
 
 class _AppLocalizationsDelegate

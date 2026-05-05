@@ -4,6 +4,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/academic_calendar/academic_calendar_page.dart';
 import 'package:bugaoshan/pages/campus/balance_query/balance_query_page.dart';
 import 'package:bugaoshan/pages/campus/classroom/classroom_page.dart';
+import 'package:bugaoshan/pages/campus/fitness_test/fitness_test_page.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_page.dart';
 import 'package:bugaoshan/pages/campus/grades/grades_page.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/plan_completion_page.dart';
@@ -99,6 +100,17 @@ class _CampusPageState extends State<CampusPage>
                       onTap: () => popupOrNavigate(
                         logicRootContext,
                         const PlanCompletionPage(),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _CampusCard(
+                      icon: Icons.directions_run,
+                      title: l10n.fitnessTest,
+                      desc: l10n.fitnessTestDesc,
+                      appOnly: false,
+                      onTap: () => popupOrNavigate(
+                        logicRootContext,
+                        const FitnessTestPage(),
                       ),
                     ),
                     const SizedBox(height: 24),

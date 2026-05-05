@@ -3,6 +3,7 @@ import 'package:bugaoshan/pages/campus_page.dart';
 import 'package:bugaoshan/pages/campus/academic_calendar/academic_calendar_page.dart';
 import 'package:bugaoshan/pages/campus/balance_query/balance_query_page.dart';
 import 'package:bugaoshan/pages/campus/classroom/classroom_page.dart';
+import 'package:bugaoshan/pages/campus/fitness_test/fitness_test_page.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_page.dart';
 import 'package:bugaoshan/pages/campus/grades/grades_page.dart';
 import 'package:bugaoshan/pages/campus/network_device/network_device_page.dart';
@@ -25,5 +26,6 @@ Widget buildDockPage(String id) => switch (id) {
   dockIdNetworkDevice => const NetworkDevicePage(),
   dockIdBalanceQuery => const BalanceQueryPage(),
   dockIdAcademicCalendar => const AcademicCalendarPage(),
+  dockIdFitnessTest => const FitnessTestPage(),
   _ => ProfilePage(),
 };

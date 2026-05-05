@@ -1428,4 +1428,82 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dockLabelAcademicCalendar => 'Calendar';
+
+  @override
+  String get fitnessTest => 'Fitness Test';
+
+  @override
+  String get fitnessTestDesc => 'Query fitness test scores and view notices';
+
+  @override
+  String get fitnessTestNotices => 'Notices';
+
+  @override
+  String get fitnessTestScores => 'Scores';
+
+  @override
+  String get fitnessTestTotalScore => 'Total Score';
+
+  @override
+  String get fitnessTestGrade => 'Grade';
+
+  @override
+  String get fitnessTestYear => 'Year';
+
+  @override
+  String get fitnessTestNoScore => 'No fitness test scores for this year';
+
+  @override
+  String get fitnessTestStudentNum => 'Student ID';
+
+  @override
+  String get fitnessTestStudentName => 'Name';
+
+  @override
+  String get fitnessTestSex => 'Sex';
+
+  @override
+  String get fitnessTestReportType => 'Report Type';
+
+  @override
+  String get fitnessTestReportStatus => 'Report Status';
+
+  @override
+  String get fitnessTestStudentYear => 'Year Level';
+
+  @override
+  String get fitnessTestBmi => 'Height/Weight';
+
+  @override
+  String get fitnessTestVitalCapacity => 'Vital Capacity';
+
+  @override
+  String get fitnessTestStandingLongJump => 'Standing Long Jump';
+
+  @override
+  String get fitnessTestSitAndReach => 'Sit and Reach';
+
+  @override
+  String get fitnessTestPullUp => 'Pull-ups';
+
+  @override
+  String get fitnessTestSitUp => 'Sit-ups';
+
+  @override
+  String get fitnessTestFiftyMeters => '50m Sprint';
+
+  @override
+  String get fitnessTestRun => '800/1000m Run';
+
+  @override
+  String get fitnessTestReadCount => 'reads';
+
+  @override
+  String get fitnessTestSticky => 'Pinned';
+
+  @override
+  String get fitnessTestNoticeDetail => 'Notice Detail';
+
+  @override
+  String get dockLabelFitnessTest => 'Fitness';
 }
