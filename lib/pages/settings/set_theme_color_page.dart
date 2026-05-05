@@ -4,6 +4,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/set_theme_color_provider.dart';
+import 'package:system_theme/system_theme.dart';
 
 class SetThemeColorPage extends StatefulWidget {
   const SetThemeColorPage({super.key});
@@ -23,8 +24,12 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
   @override
   void initState() {
     super.initState();
-    pickerColor = appConfigService.themeColor.value;
     _selectedMode = appConfigService.themeColorMode.value;
+    if (_selectedMode == ThemeColorMode.system) {
+      pickerColor = SystemTheme.accentColor.accent;
+    } else {
+      pickerColor = appConfigService.themeColor.value;
+    }
   }
 
   void changeColor(Color color) {
