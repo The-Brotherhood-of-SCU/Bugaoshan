@@ -110,7 +110,8 @@ class _EulaContentState extends State<EulaContent>
                             p: colorScheme.textTheme.bodyMedium,
                             blockquoteDecoration: BoxDecoration(
                               color: colorScheme
-                                  .colorScheme.surfaceContainerHighest,
+                                  .colorScheme
+                                  .surfaceContainerHighest,
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
@@ -122,10 +123,7 @@ class _EulaContentState extends State<EulaContent>
           const SizedBox(height: 4),
           Row(
             children: [
-              Checkbox(
-                value: _agreed,
-                onChanged: _toggleAgreed,
-              ),
+              Checkbox(value: _agreed, onChanged: _toggleAgreed),
               Expanded(
                 child: GestureDetector(
                   onTap: () => _toggleAgreed(!_agreed),
