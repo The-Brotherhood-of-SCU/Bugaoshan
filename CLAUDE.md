@@ -74,10 +74,13 @@ GetIt + Injectable. `lib/injection/injector.config.dart` is auto-generated. Re-r
 - **Multiple schedules**: Courses are stored in a single SQLite `courses` table, filtered by `schedule_id`. `DatabaseService.switchSchedule()` updates the current schedule ID and refreshes the in-memory cache.
 - **Responsive dialogs**: `popupOrNavigate()` in `router_utils.dart` shows a bottom sheet dialog on tablets/landscape, full-page navigation on phones.
 - **国密**: SM2 crypto via `dart_sm` package — used to encrypt the password before sending to SCU's auth API.
+- **Dynamic navigation**: Home page uses a customizable dock system (`lib/utils/dock_utils.dart`). Users can enable/disable/reorder dock items. Pages are lazily built and cached in an `IndexedStack`.
+- **Theme system**: Supports system accent color, custom color, or color derived from background image. Background image opacity is configurable.
 
 ### Storage
 - **SQLite** (`sqflite`) — Course data, schedule configs (persistent). Desktop platforms use `sqflite_common_ffi`.
 - **SharedPreferences** — Auth token, grades cache, app settings (key-value)
+- **FlutterSecureStorage** — Sensitive data (access token, saved credentials)
 
 ### Internationalization
 ARB source files in `lib/l10n/app_*.arb`. Generated to `lib/l10n/app_localizations.dart` via `flutter gen-l10n`. No external l10n service.
@@ -126,6 +129,8 @@ lib/
 - The `ScuAuthService._CookieClient` manually follows HTTP redirects to collect cookies across SSO redirect chains.
 - Grades are cached in SharedPreferences as JSON; on refresh failure with `sessionExpired`, the cached data is kept but user is logged out.
 - `flutter pub run build_runner build --delete-conflicting-outputs` is run in CI before `flutter gen-l10n` — code generation must precede localization generation.
+- The `DatabaseService` includes a Hive-to-SQLite migration path for users upgrading from older versions.
+- Auto-login retries up to 5 times on captcha failures, using TFLite OCR to recognize captchas automatically.
 
 ### Build Metadata
 
