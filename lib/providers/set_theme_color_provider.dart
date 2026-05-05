@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -83,32 +84,37 @@ class SetThemeColorProvider {
     final frame = await codec.getNextFrame();
     final image = frame.image;
 
-    final pixels = <int>[];
     final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     if (byteData == null) {
       _lastExtractResult = ExtractColorResult.failure;
       return ExtractColorResult.failure;
     }
 
-    for (int i = 0; i < byteData.lengthInBytes; i += 4) {
-      final r = byteData.getUint8(i);
-      final g = byteData.getUint8(i + 1);
-      final b = byteData.getUint8(i + 2);
-      final a = byteData.getUint8(i + 3);
-      if (a > 128) {
-        pixels.add((r << 16) | (g << 8) | b);
+    final width = image.width;
+    final height = image.height;
+    final pixelCount = width * height;
+    final sampleStep = max(1, (pixelCount / 5000).ceil());
+
+    final colorCounts = <int, int>{};
+    final mask = 0xF8F8F8;
+
+    for (int y = 0; y < height; y += sampleStep) {
+      for (int x = 0; x < width; x += sampleStep) {
+        final offset = (y * width + x) * 4;
+        final a = byteData.getUint8(offset + 3);
+        if (a > 128) {
+          final r = byteData.getUint8(offset);
+          final g = byteData.getUint8(offset + 1);
+          final b = byteData.getUint8(offset + 2);
+          final quantized = ((r & mask) << 16) | ((g & mask) << 8) | (b & mask);
+          colorCounts[quantized] = (colorCounts[quantized] ?? 0) + 1;
+        }
       }
     }
 
-    if (pixels.isEmpty) {
+    if (colorCounts.isEmpty) {
       _lastExtractResult = ExtractColorResult.failure;
       return ExtractColorResult.failure;
-    }
-
-    final colorCounts = <int, int>{};
-    for (final px in pixels) {
-      final quantized = px & 0xFFF8F8F8;
-      colorCounts[quantized] = (colorCounts[quantized] ?? 0) + 1;
     }
 
     final dominantColorValue = colorCounts.entries
