@@ -85,15 +85,18 @@ class _EulaContentState extends State<EulaContent>
                     border: Border.all(
                       color: colorScheme.colorScheme.outlineVariant,
                     ),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(6),
                     child: Markdown(
                       data: _eulaContent,
                       selectable: true,
                       controller: _scrollController,
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       styleSheet:
                           MarkdownStyleSheet.fromTheme(
                             Theme.of(context),
@@ -110,7 +113,7 @@ class _EulaContentState extends State<EulaContent>
                 ),
         ),
         if (widget.showCheckbox) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Row(
             children: [
               Checkbox(

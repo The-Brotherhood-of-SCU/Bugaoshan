@@ -48,46 +48,49 @@ class _EulaDialogState extends State<EulaDialog> {
     final colorScheme = Theme.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
 
-    return Dialog(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: screenWidth > 600 ? 500 : screenWidth * 0.9,
-          maxHeight: MediaQuery.of(context).size.height * 0.8,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                l10n.eulaTitle,
-                style: colorScheme.textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: EulaContent(
-                  onAgreedChanged: (agreed) {
-                    setState(() => _agreed = agreed);
-                  },
+    return PopScope(
+      canPop: false,
+      child: Dialog(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: screenWidth > 600 ? 560 : screenWidth * 0.94,
+            maxHeight: MediaQuery.of(context).size.height * 0.88,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  l10n.eulaTitle,
+                  style: colorScheme.textTheme.headlineSmall,
                 ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: _onDisagree,
-                    child: Text(l10n.eulaDisagree),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: EulaContent(
+                    onAgreedChanged: (agreed) {
+                      setState(() => _agreed = agreed);
+                    },
                   ),
-                  const SizedBox(width: 8),
-                  FilledButton(
-                    onPressed: _agreed ? _onAgree : null,
-                    child: Text(l10n.eulaAgree),
-                  ),
-                ],
-              ),
-            ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: _onDisagree,
+                      child: Text(l10n.eulaDisagree),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton(
+                      onPressed: _agreed ? _onAgree : null,
+                      child: Text(l10n.eulaAgree),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
