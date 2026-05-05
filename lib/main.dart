@@ -33,7 +33,7 @@ Future<void> main() async {
     },
     (error, stackTrace) {
       debugPrint('Startup error: $error\n$stackTrace');
-      runApp(_StartupErrorApp(error: error));
+      runApp(const _StartupErrorApp());
     },
   );
 }
@@ -44,9 +44,7 @@ bool get _isDesktopPlatform {
 }
 
 class _StartupErrorApp extends StatelessWidget {
-  const _StartupErrorApp({required this.error});
-
-  final Object error;
+  const _StartupErrorApp();
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +55,7 @@ class _StartupErrorApp extends StatelessWidget {
             padding: const EdgeInsets.all(24),
             child: Center(
               child: Text(
-                'Bugaoshan 启动失败\n\n$error',
+                'Bugaoshan 启动失败',
                 textAlign: TextAlign.center,
               ),
             ),
