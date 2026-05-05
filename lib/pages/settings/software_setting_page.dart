@@ -318,11 +318,13 @@ class SoftwareSettingPage extends StatelessWidget {
     }
 
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.of(context)!.backgroundImageSetHint),
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    if (appConfig.themeColorMode.value != ThemeColorMode.backgroundImage) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.backgroundImageSetHint),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 }
