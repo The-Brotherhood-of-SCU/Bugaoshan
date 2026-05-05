@@ -3006,6 +3006,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Fitness'**
   String get dockLabelFitnessTest;
+
+  /// No description provided for @eulaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'User Agreement'**
+  String get eulaTitle;
+
+  /// No description provided for @eulaScrollToBottom.
+  ///
+  /// In en, this message translates to:
+  /// **'Please read the entire agreement first'**
+  String get eulaScrollToBottom;
+
+  /// No description provided for @eulaAgreeCheckbox.
+  ///
+  /// In en, this message translates to:
+  /// **'I have read and agree to the User Agreement'**
+  String get eulaAgreeCheckbox;
+
+  /// No description provided for @eulaAgree.
+  ///
+  /// In en, this message translates to:
+  /// **'Agree'**
+  String get eulaAgree;
+
+  /// No description provided for @eulaDisagree.
+  ///
+  /// In en, this message translates to:
+  /// **'Disagree'**
+  String get eulaDisagree;
+
+  /// No description provided for @revokeEula.
+  ///
+  /// In en, this message translates to:
+  /// **'Revoke User Agreement'**
+  String get revokeEula;
+
+  /// No description provided for @revokeEulaConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'After revoking, you will need to agree to the user agreement again to continue using. Are you sure?'**
+  String get revokeEulaConfirm;
+
+  /// No description provided for @revokeEulaSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'User agreement revoked'**
+  String get revokeEulaSuccess;
+
+  /// No description provided for @eulaAgreedVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Agreed version v{version}'**
+  String eulaAgreedVersion(String version);
 }
 
 class _AppLocalizationsDelegate
