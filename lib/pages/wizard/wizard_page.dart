@@ -1,6 +1,5 @@
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/services/exit_service.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/wizard/welcome_page.dart';
@@ -18,13 +17,14 @@ class WizardPage extends StatefulWidget {
 
 class _WizardPageState extends State<WizardPage> {
   late final PageController _pageController;
+  late final AppConfigProvider _appConfig;
   int _currentPage = 0;
-  bool _eulaAgreed = false;
   static const int _totalPages = 3;
 
   @override
   void initState() {
     super.initState();
+    _appConfig = getIt<AppConfigProvider>();
     _pageController = PageController();
     _pageController.addListener(() {
       final page = _pageController.page;
@@ -41,35 +41,24 @@ class _WizardPageState extends State<WizardPage> {
   }
 
   void _onCompleted() {
-    final appConfig = getIt<AppConfigProvider>();
-    appConfig.acceptedEulaVersion.value = currentEulaVersion;
-    appConfig.firstLaunchWizardCompleted.value = true;
+    _appConfig.acceptedEulaVersion.value = currentEulaVersion;
+    _appConfig.firstLaunchWizardCompleted.value = true;
   }
 
   Future<void> _goNext() async {
-    if (_currentPage == 0 && !_eulaAgreed) {
-      final appConfig = getIt<AppConfigProvider>();
-      if (appConfig.acceptedEulaVersion.value >= currentEulaVersion) {
-        setState(() => _eulaAgreed = true);
-      } else {
-        final agreed = await showEulaDialog(context);
-        if (!mounted) return;
-        if (agreed) {
-          setState(() => _eulaAgreed = true);
-        } else {
-          await getIt<ExitService>().exitApp();
-        }
-      }
+    if (_currentPage == 0) {
+      final canContinue = await ensureEulaAgreement(context);
+      if (!mounted || !canContinue) return;
     }
     _pageController.nextPage(
-      duration: appConfigProvider.cardSizeAnimationDuration.value,
+      duration: _appConfig.cardSizeAnimationDuration.value,
       curve: Curves.easeInOutQuart,
     );
   }
 
   void _goBack() {
     _pageController.previousPage(
-      duration: appConfigProvider.cardSizeAnimationDuration.value,
+      duration: _appConfig.cardSizeAnimationDuration.value,
       curve: Curves.easeInOutQuart,
     );
   }
@@ -111,8 +100,6 @@ class _WizardPageState extends State<WizardPage> {
     );
   }
 
-  AppConfigProvider appConfigProvider = getIt<AppConfigProvider>();
-
   Widget _buildBottomSection(AppLocalizations l10n, ColorScheme colorScheme) {
     final isLastPage = _currentPage == _totalPages - 1;
     final isFirstPage = _currentPage == 0;
@@ -127,7 +114,7 @@ class _WizardPageState extends State<WizardPage> {
             children: List.generate(_totalPages, (index) {
               final isActive = _currentPage == index;
               return AnimatedContainer(
-                duration: appConfigProvider.cardSizeAnimationDuration.value,
+                duration: _appConfig.cardSizeAnimationDuration.value,
                 curve: appCurve,
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 width: isActive ? 24 : 8,
@@ -153,12 +140,12 @@ class _WizardPageState extends State<WizardPage> {
               AnimatedOpacity(
                 opacity: !isFirstPage ? 1 : 0,
                 curve: appCurve,
-                duration: appConfigProvider.cardSizeAnimationDuration.value,
+                duration: _appConfig.cardSizeAnimationDuration.value,
                 child: TextButton(onPressed: _goBack, child: Text(l10n.back)),
               ),
               const SizedBox(width: 8),
               AnimatedSize(
-                duration: appConfigProvider.cardSizeAnimationDuration.value,
+                duration: _appConfig.cardSizeAnimationDuration.value,
                 curve: appCurve,
                 child: FilledButton(
                   onPressed: isLastPage ? _onCompleted : _goNext,

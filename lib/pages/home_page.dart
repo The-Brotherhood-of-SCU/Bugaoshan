@@ -9,13 +9,11 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/exit_service.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/dock_utils.dart';
 import 'package:bugaoshan/widgets/dialog/eula_dialog.dart';
-import 'package:bugaoshan/widgets/eula_content.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -56,19 +54,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   Future<void> _checkEulaAgreement() async {
-    try {
-      final appConfig = getIt<AppConfigProvider>();
-      if (appConfig.acceptedEulaVersion.value >= currentEulaVersion) return;
-      if (!mounted) return;
-      final agreed = await showEulaDialog(context);
-      if (agreed && mounted) {
-        appConfig.acceptedEulaVersion.value = currentEulaVersion;
-      } else if (!agreed) {
-        await getIt<ExitService>().exitApp();
-      }
-    } catch (e) {
-      debugPrint('EULA check error: $e');
-    }
+    if (!mounted) return;
+    await ensureEulaAgreement(context);
   }
 
   Future<void> _attemptAutoLogin() async {

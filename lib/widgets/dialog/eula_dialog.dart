@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/services/exit_service.dart';
 import 'package:bugaoshan/widgets/eula_content.dart';
 
 /// 显示 EULA 同意对话框
@@ -11,6 +14,26 @@ Future<bool> showEulaDialog(BuildContext context) async {
     builder: (context) => const EulaDialog(),
   );
   return result ?? false;
+}
+
+/// 检查并确保用户已同意 EULA
+/// 返回 true 表示可以继续，false 表示已退出应用
+Future<bool> ensureEulaAgreement(BuildContext context) async {
+  try {
+    final appConfig = getIt<AppConfigProvider>();
+    if (appConfig.acceptedEulaVersion.value >= currentEulaVersion) return true;
+    final agreed = await showEulaDialog(context);
+    if (agreed) {
+      appConfig.acceptedEulaVersion.value = currentEulaVersion;
+      return true;
+    } else {
+      await getIt<ExitService>().exitApp();
+      return false;
+    }
+  } catch (e) {
+    debugPrint('EULA check error: $e');
+    return true;
+  }
 }
 
 class EulaDialog extends StatefulWidget {
