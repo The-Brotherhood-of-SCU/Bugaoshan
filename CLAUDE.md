@@ -40,7 +40,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 ## Architecture
 
 ### State Management
-Provider + ChangeNotifier. Providers are registered in `lib/injection/injector.dart` and initialized asynchronously via `configureDependencies()`.
+`ValueNotifier` / `ChangeNotifier` with Flutter's built-in `ValueListenableBuilder` and `ListenableBuilder`. Providers are registered in `lib/injection/injector.dart` and initialized asynchronously via `configureDependencies()`.
 
 ### Dependency Injection
 GetIt + Injectable. `lib/injection/injector.config.dart` is auto-generated. Re-run `dart run build_runner build` after modifying `@injectable` annotations.
@@ -56,13 +56,15 @@ GetIt + Injectable. `lib/injection/injector.config.dart` is auto-generated. Re-r
 - **`OcrService`** (`lib/services/ocr_service.dart`) — TFLite-based captcha recognition for SCU login.
 - **`UpdateService`** (`lib/services/update_service.dart`) — Handles GitHub release checking, download, and install for Windows/Linux desktop platforms.
 - **`WidgetUpdateService`** (`lib/services/widget_update_service.dart`) — Android 桌面小组件数据更新，通过 MethodChannel 与原生层通信。
+- **`ExitService`** (`lib/services/exit_service.dart`) — 统一应用退出逻辑，桌面端使用 `windowManager.destroy()`，移动端使用 `exit(0)`。
 - **`WindowStateService`** (`lib/services/window_state_service.dart`) — Desktop 窗口状态持久化，保存/恢复窗口位置和大小。
 
 ### Providers
 - **`ScuAuthProvider`** — Persists SCU token via SharedPreferences. Wraps `ScuAuthService`.
 - **`GradesProvider`** — Handles `ScuLoginException.sessionExpired` by auto-calling `logout()`.
 - **`CourseProvider`** — Depends on `DatabaseService`. Provides schedule CRUD.
-- **`AppConfigProvider`** — User preferences: locale, theme color.
+- **`AppConfigProvider`** — User preferences: locale, theme color, color opacity, course card font size, course grid visibility, course row height, background image, dock items, EULA acceptance, etc.
+- **`SetThemeColorProvider`** — 从背景图片中提取主题色（像素采样 + `compute()` isolate），支持系统强调色预览。
 - **`AppInfoProvider`** — App version info and CI build metadata (git tag, commit, build time).
 - **`BalanceQueryProvider`** — 电费 & 空调余额查询状态管理，支持多房间绑定切换。
 - **`CcylProvider`** — 第二课堂登录状态持久化，管理 OAuth token。
@@ -99,15 +101,19 @@ lib/
 │   │   ├── balance_query/ # 电费 & 空调余额查询
 │   │   ├── ccyl/          # 第二课堂 (CCYL)
 │   │   ├── classroom/     # 空闲教室查询
+│   │   ├── fitness_test/  # 体测查询
 │   │   ├── grades/        # 成绩查询
 │   │   ├── models/        # 校园模块数据模型
 │   │   ├── network_device/# 校园网设备管理
 │   │   ├── plan_completion/ # 培养方案完成度
-│   │   ├── profile/       # 个人中心
 │   │   └── train_program/ # 培养方案查询
 │   ├── course/            # 课表管理
+│   ├── profile/           # 个人中心
 │   ├── settings/          # 设置页面
-│   └── wizard/            # 引导页面
+│   ├── test/              # 测试/调试页面
+│   ├── wizard/            # 引导页面
+│   ├── campus_page.dart   # 校园功能入口
+│   └── home_page.dart     # 首页
 ├── providers/
 │   └── environment_info/  # 环境信息 Provider
 ├── services/              # Business logic & network
@@ -116,14 +122,15 @@ lib/
 │   ├── common/            # 通用组件
 │   ├── course/            # 课表相关组件
 │   ├── dialog/            # 弹窗组件
-│   └── route/             # 路由工具
+│   ├── route/             # 路由工具
+│   └── eula_content.dart  # 用户协议内容
 ├── app.dart               # MaterialApp configuration
 └── main.dart              # Entry point, DI bootstrap
 ```
 
 ## Notable Implementation Details
 
-- The `ScuAuthService._CookieClient` manually follows HTTP redirects to collect cookies across SSO redirect chains.
+- The `ScuAuthService.CookieClient` manually follows HTTP redirects to collect cookies across SSO redirect chains.
 - Grades are cached in SharedPreferences as JSON; on refresh failure with `sessionExpired`, the cached data is kept but user is logged out.
 - `flutter pub run build_runner build --delete-conflicting-outputs` is run in CI before `flutter gen-l10n` — code generation must precede localization generation.
 
@@ -133,4 +140,4 @@ CI builds inject git metadata via `--dart-define` flags: `GIT_TAG`, `GIT_COMMIT`
 
 ### Release Automation
 
-Release workflow uses Python scripts in `.github/scripts/` for changelog extraction (`release_changelog.py`), release body generation (`release_body.py`), and artifact preparation (`release_prepare.py`). The workflow runs on git tags matching `v*.*.*` or manual dispatch.
+Release workflow uses Python scripts in `.github/scripts/` for changelog extraction (`release_changelog.py`), release body generation (`release_body.py`), artifact preparation (`release_prepare.py`), and version tag resolution (`release_tags.py`). The workflow runs on git tags matching `v*.*.*` or manual dispatch.
