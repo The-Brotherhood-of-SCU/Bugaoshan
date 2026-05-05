@@ -4,6 +4,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/services/ccyl_service.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activity_detail_page.dart';
+import 'package:bugaoshan/widgets/common/error_widgets.dart';
 
 class MyActivitiesTab extends StatefulWidget {
   const MyActivitiesTab({super.key});
@@ -89,31 +90,9 @@ class _MyActivitiesTabState extends State<MyActivitiesTab> {
     final l10n = AppLocalizations.of(context)!;
 
     return _error != null
-        ? Center(
-            child: GestureDetector(
-              onTap: _loadActivities,
-              child: SizedBox(
-                width: 220,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      size: 48,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _getErrorMessage(l10n, _error!),
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+        ? TappableErrorWidget(
+            message: _getErrorMessage(l10n, _error!),
+            onRetry: _loadActivities,
           )
         : _activities.isEmpty && !_loading
         ? Center(child: Text(l10n.noData))

@@ -3,6 +3,8 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/scheme_score.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
+import 'package:bugaoshan/widgets/common/error_widgets.dart';
+import 'package:bugaoshan/widgets/common/stat_item.dart';
 import 'scheme_scores_tab.dart' show ScoreCardWidget;
 
 class PassingScoresTab extends StatefulWidget {
@@ -77,32 +79,10 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
 
   Widget _buildError(BuildContext context, GradesProvider provider) {
     final l10n = AppLocalizations.of(context)!;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 56,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _getErrorMessage(l10n, provider.passingError),
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: provider.refreshPassingScores,
-              icon: const Icon(Icons.refresh),
-              label: Text(l10n.gradesRetry),
-            ),
-          ],
-        ),
-      ),
+    return RetryableErrorWidget(
+      message: _getErrorMessage(l10n, provider.passingError),
+      onRetry: provider.refreshPassingScores,
+      iconSize: 56,
     );
   }
 
@@ -154,20 +134,20 @@ class _OverallSummaryCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                _StatCol(
+                StatItem(
                   label: l10n.overallGpa,
                   value: result.gpa.toStringAsFixed(2),
                   highlight: true,
                 ),
-                _StatCol(
+                StatItem(
                   label: l10n.accumulatedCredits,
                   value: result.totalCredits.toStringAsFixed(1),
                 ),
-                _StatCol(
+                StatItem(
                   label: l10n.totalPassedCount,
                   value: '${result.totalPassed}',
                 ),
-                _StatCol(
+                StatItem(
                   label: l10n.termCount,
                   value: '${result.groups.length}',
                 ),
@@ -176,11 +156,11 @@ class _OverallSummaryCard extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                _StatCol(
+                StatItem(
                   label: l10n.avgScore,
                   value: result.weightedAvgScore.toStringAsFixed(2),
                 ),
-                _StatCol(
+                StatItem(
                   label: l10n.requiredAvgScore,
                   value: result.requiredWeightedAvgScore.toStringAsFixed(2),
                 ),
@@ -195,40 +175,6 @@ class _OverallSummaryCard extends StatelessWidget {
   }
 }
 
-class _StatCol extends StatelessWidget {
-  const _StatCol({
-    required this.label,
-    required this.value,
-    this.highlight = false,
-  });
-  final String label;
-  final String value;
-  final bool highlight;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: highlight ? Theme.of(context).colorScheme.primary : null,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _TermHeader extends StatelessWidget {
   const _TermHeader({required this.group});

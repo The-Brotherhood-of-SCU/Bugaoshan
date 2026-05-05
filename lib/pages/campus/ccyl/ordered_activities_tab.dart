@@ -4,6 +4,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/services/ccyl_service.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activity_lib_detail_page.dart';
+import 'package:bugaoshan/widgets/common/error_widgets.dart';
 
 class OrderedActivitiesTab extends StatefulWidget {
   const OrderedActivitiesTab({super.key});
@@ -92,31 +93,9 @@ class _OrderedActivitiesTabState extends State<OrderedActivitiesTab> {
 
     // 错误态：单独展示，不需要下拉刷新
     if (_error != null) {
-      return Center(
-        child: GestureDetector(
-          onTap: _loadActivities,
-          child: SizedBox(
-            width: 220,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: Theme.of(context).colorScheme.error,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _getErrorMessage(l10n, _error!),
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+      return TappableErrorWidget(
+        message: _getErrorMessage(l10n, _error!),
+        onRetry: _loadActivities,
       );
     }
 

@@ -8,6 +8,8 @@ import 'package:bugaoshan/pages/campus/ccyl/ccyl_bind_page.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/widgets/common/loading_widgets.dart';
+import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 
 class CcylPage extends StatefulWidget {
   const CcylPage({super.key});
@@ -49,41 +51,12 @@ class _CcylPageState extends State<CcylPage> {
           if (auth.isAutoLoggingIn) {
             return Scaffold(
               appBar: AppBar(title: Text(l10n.ccylTitle)),
-              body: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CircularProgressIndicator(),
-                    const SizedBox(height: 16),
-                    Text(l10n.autoLoggingIn),
-                  ],
-                ),
-              ),
+              body: const AutoLoginLoadingWidget(),
             );
           }
           return Scaffold(
             appBar: AppBar(title: Text(l10n.ccylTitle)),
-            body: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(l10n.loginRequired, textAlign: TextAlign.center),
-                    const SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.of(
-                          context,
-                        ).popUntil((route) => route.isFirst);
-                      },
-                      icon: const Icon(Icons.person),
-                      label: Text(l10n.goToLogin),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            body: const LoginRequiredWidget(),
           );
         }
 

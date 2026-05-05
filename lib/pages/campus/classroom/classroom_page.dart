@@ -6,6 +6,9 @@ import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
 import 'package:bugaoshan/utils/session_expiry_handler.dart';
+import 'package:bugaoshan/widgets/common/loading_widgets.dart';
+import 'package:bugaoshan/widgets/common/login_required_widget.dart';
+import 'package:bugaoshan/widgets/common/error_widgets.dart';
 
 enum _ViewMode { campus, building, room }
 
@@ -517,66 +520,13 @@ class _ClassroomPageState extends State<ClassroomPage> {
   Widget _buildErrorWidget(AppLocalizations l10n, VoidCallback onRetry) {
     if (_error == 'notLoggedIn') {
       if (getIt<ScuAuthProvider>().isAutoLoggingIn) {
-        return Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircularProgressIndicator(),
-              const SizedBox(height: 16),
-              Text(l10n.autoLoggingIn),
-            ],
-          ),
-        );
+        return const AutoLoginLoadingWidget();
       }
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.login,
-                size: 48,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(height: 8),
-              Text(l10n.loginRequired, textAlign: TextAlign.center),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
-                },
-                icon: const Icon(Icons.person),
-                label: Text(l10n.goToLogin),
-              ),
-            ],
-          ),
-        ),
-      );
+      return const LoginRequiredWidget();
     }
-    return Center(
-      child: GestureDetector(
-        onTap: onRetry,
-        child: SizedBox(
-          width: 220,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 8),
-              Text(
-                _error == 'sessionExpired'
-                    ? l10n.sessionExpired
-                    : l10n.loadFailed,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return TappableErrorWidget(
+      message: _error == 'sessionExpired' ? l10n.sessionExpired : l10n.loadFailed,
+      onRetry: onRetry,
     );
   }
 

@@ -6,6 +6,10 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
+import 'package:bugaoshan/widgets/common/loading_widgets.dart';
+import 'package:bugaoshan/widgets/common/login_required_widget.dart';
+import 'package:bugaoshan/widgets/common/error_widgets.dart';
+import 'package:bugaoshan/widgets/common/info_row.dart';
 
 class FitnessTestPage extends StatefulWidget {
   const FitnessTestPage({super.key});
@@ -240,16 +244,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
   Widget _buildBody(AppLocalizations l10n) {
     final auth = getIt<ScuAuthProvider>();
     if (!auth.isLoggedIn && auth.isAutoLoggingIn) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const CircularProgressIndicator(),
-            const SizedBox(height: 16),
-            Text(l10n.autoLoggingIn),
-          ],
-        ),
-      );
+      return const AutoLoginLoadingWidget();
     }
 
     if (_loading) {
@@ -259,68 +254,13 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     if (_error != null) {
       if (_error == 'notLoggedIn') {
         if (getIt<ScuAuthProvider>().isAutoLoggingIn) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircularProgressIndicator(),
-                const SizedBox(height: 16),
-                Text(l10n.autoLoggingIn),
-              ],
-            ),
-          );
+          return const AutoLoginLoadingWidget();
         }
-        return Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.login,
-                  size: 48,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(height: 8),
-                Text(l10n.loginRequired, textAlign: TextAlign.center),
-                const SizedBox(height: 16),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).popUntil((route) => route.isFirst);
-                  },
-                  icon: const Icon(Icons.person),
-                  label: Text(l10n.goToLogin),
-                ),
-              ],
-            ),
-          ),
-        );
+        return const LoginRequiredWidget();
       }
-      return Center(
-        child: GestureDetector(
-          onTap: _loadData,
-          child: SizedBox(
-            width: 220,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: Theme.of(context).colorScheme.error,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _error == 'networkError' ? l10n.networkError : l10n.loadFailed,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+      return TappableErrorWidget(
+        message: _error == 'networkError' ? l10n.networkError : l10n.loadFailed,
+        onRetry: _loadData,
       );
     }
 
@@ -745,25 +685,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
   }
 
   Widget _infoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 80,
-            child: Text(
-              label,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
-          ),
-        ],
-      ),
-    );
+    return InfoRow(label: label, value: value);
   }
 
   Widget _buildScoreItemsCard(AppLocalizations l10n) {

@@ -3,6 +3,8 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/scheme_score.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
+import 'package:bugaoshan/widgets/common/error_widgets.dart';
+import 'package:bugaoshan/widgets/common/stat_item.dart';
 
 class SchemeScoresTab extends StatefulWidget {
   const SchemeScoresTab({super.key});
@@ -76,32 +78,10 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
 
   Widget _buildError(BuildContext context, GradesProvider provider) {
     final l10n = AppLocalizations.of(context)!;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 56,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _getErrorMessage(l10n, provider.schemeError),
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: provider.refreshSchemeScores,
-              icon: const Icon(Icons.refresh),
-              label: Text(l10n.gradesRetry),
-            ),
-          ],
-        ),
-      ),
+    return RetryableErrorWidget(
+      message: _getErrorMessage(l10n, provider.schemeError),
+      onRetry: provider.refreshSchemeScores,
+      iconSize: 56,
     );
   }
 
@@ -172,17 +152,17 @@ class _SummaryCard extends StatelessWidget {
             const SizedBox(height: 12),
             Row(
               children: [
-                _StatItem(
+                StatItem(
                   label: l10n.gpa,
                   value: summary.gpa.toStringAsFixed(2),
                   highlight: true,
                 ),
-                _StatItem(
+                StatItem(
                   label: l10n.requiredGpa,
                   value: summary.requiredGpa.toStringAsFixed(2),
                 ),
-                _StatItem(label: l10n.passedCount, value: '${summary.tgms}'),
-                _StatItem(
+                StatItem(label: l10n.passedCount, value: '${summary.tgms}'),
+                StatItem(
                   label: l10n.failedCount,
                   value: '${summary.wtgms}',
                   isError: summary.wtgms > 0,
@@ -192,11 +172,11 @@ class _SummaryCard extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                _StatItem(
+                StatItem(
                   label: l10n.avgScore,
                   value: summary.weightedAvgScore.toStringAsFixed(2),
                 ),
-                _StatItem(
+                StatItem(
                   label: l10n.requiredAvgScore,
                   value: summary.requiredWeightedAvgScore.toStringAsFixed(2),
                 ),
@@ -207,19 +187,19 @@ class _SummaryCard extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                _StatItem(
+                StatItem(
                   label: l10n.earnedCredits,
                   value: summary.earnedCredits.toStringAsFixed(1),
                 ),
-                _StatItem(
+                StatItem(
                   label: l10n.requiredCredits,
                   value: summary.requiredCredits.toStringAsFixed(1),
                 ),
-                _StatItem(
+                StatItem(
                   label: l10n.electiveCredits,
                   value: summary.electiveCredits.toStringAsFixed(1),
                 ),
-                _StatItem(
+                StatItem(
                   label: l10n.optionalCredits,
                   value: summary.optionalCredits.toStringAsFixed(1),
                 ),
@@ -232,47 +212,6 @@ class _SummaryCard extends StatelessWidget {
   }
 }
 
-class _StatItem extends StatelessWidget {
-  const _StatItem({
-    required this.label,
-    required this.value,
-    this.highlight = false,
-    this.isError = false,
-  });
-  final String label;
-  final String value;
-  final bool highlight;
-  final bool isError;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isError
-        ? Theme.of(context).colorScheme.error
-        : highlight
-        ? Theme.of(context).colorScheme.primary
-        : null;
-    return Expanded(
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class ScoreCardWidget extends StatelessWidget {
   const ScoreCardWidget({super.key, required this.item});

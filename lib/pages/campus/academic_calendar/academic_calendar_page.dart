@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/widgets/common/error_widgets.dart';
 import 'package:http/http.dart' as http;
 
 class _CalendarEntry {
@@ -135,28 +136,9 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage> {
 
   Widget _buildBody(AppLocalizations l10n) {
     if (_error != null && _entries.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _error!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: _loadList,
-              icon: const Icon(Icons.refresh),
-              label: Text(l10n.gradesRetry),
-            ),
-          ],
-        ),
+      return RetryableErrorWidget(
+        message: _error!,
+        onRetry: _loadList,
       );
     }
 

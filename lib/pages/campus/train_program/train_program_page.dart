@@ -4,6 +4,10 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program.dart';
 import 'package:bugaoshan/pages/campus/train_program/train_program_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/widgets/common/loading_widgets.dart';
+import 'package:bugaoshan/widgets/common/login_required_widget.dart';
+import 'package:bugaoshan/widgets/common/error_widgets.dart';
+import 'package:bugaoshan/widgets/common/info_row.dart';
 
 class TrainProgramPage extends StatefulWidget {
   const TrainProgramPage({super.key});
@@ -34,44 +38,9 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
           final auth = getIt<ScuAuthProvider>();
           if (!auth.isLoggedIn) {
             if (auth.isAutoLoggingIn) {
-              return Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CircularProgressIndicator(),
-                    const SizedBox(height: 16),
-                    Text(l10n.autoLoggingIn),
-                  ],
-                ),
-              );
+              return const AutoLoginLoadingWidget();
             }
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.login,
-                      size: 48,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(l10n.loginRequired, textAlign: TextAlign.center),
-                    const SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.of(
-                          context,
-                        ).popUntil((route) => route.isFirst);
-                      },
-                      icon: const Icon(Icons.person),
-                      label: Text(l10n.goToLogin),
-                    ),
-                  ],
-                ),
-              ),
-            );
+            return const LoginRequiredWidget();
           }
           return _buildContent(context);
         },
@@ -234,28 +203,10 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
       TrainProgramLoadState.loading => const Center(
         child: CircularProgressIndicator(),
       ),
-      TrainProgramLoadState.error => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 56,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _provider.programsError ?? l10n.trainProgramLoadFailed,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: () => _provider.searchPrograms(),
-              icon: const Icon(Icons.refresh),
-              label: Text(l10n.gradesRetry),
-            ),
-          ],
-        ),
+      TrainProgramLoadState.error => RetryableErrorWidget(
+        message: _provider.programsError ?? l10n.trainProgramLoadFailed,
+        onRetry: () => _provider.searchPrograms(),
+        iconSize: 56,
       ),
       TrainProgramLoadState.loaded =>
         _provider.programs.isEmpty
@@ -350,28 +301,10 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
           return switch (_provider.detailState) {
             TrainProgramLoadState.idle || TrainProgramLoadState.loading =>
               const Center(child: CircularProgressIndicator()),
-            TrainProgramLoadState.error => Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 56,
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    _provider.detailError ?? l10n.trainProgramLoadFailed,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  FilledButton.icon(
-                    onPressed: () => _provider.fetchProgramDetail(widget.fajhh),
-                    icon: const Icon(Icons.refresh),
-                    label: Text(l10n.gradesRetry),
-                  ),
-                ],
-              ),
+            TrainProgramLoadState.error => RetryableErrorWidget(
+              message: _provider.detailError ?? l10n.trainProgramLoadFailed,
+              onRetry: () => _provider.fetchProgramDetail(widget.fajhh),
+              iconSize: 56,
             ),
             TrainProgramLoadState.loaded => _buildDetailContent(context),
           };
@@ -482,26 +415,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
   }
 
   Widget _buildInfoRow(BuildContext context, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 80,
-            child: Text(
-              label,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
-          ),
-        ],
-      ),
-    );
+    return InfoRow(label: label, value: value);
   }
 
   Widget _buildStatItem(BuildContext context, String label, String value) {
@@ -641,31 +555,9 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
     return switch (_provider.courseDetailState) {
       TrainProgramLoadState.idle || TrainProgramLoadState.loading =>
         const Center(child: CircularProgressIndicator()),
-      TrainProgramLoadState.error => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _provider.courseDetailError ?? l10n.trainProgramLoadFailed,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: () {
-                // Retry is not easy here since we need the urlPath
-                Navigator.pop(context);
-              },
-              icon: const Icon(Icons.refresh),
-              label: Text(l10n.gradesRetry),
-            ),
-          ],
-        ),
+      TrainProgramLoadState.error => RetryableErrorWidget(
+        message: _provider.courseDetailError ?? l10n.trainProgramLoadFailed,
+        onRetry: () => Navigator.pop(context),
       ),
       TrainProgramLoadState.loaded => _buildCourseDetailLoaded(
         context,
@@ -834,26 +726,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
 
   Widget _buildCourseInfoRow(BuildContext context, String label, String value) {
     if (value.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              label,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
-          ),
-        ],
-      ),
-    );
+    return InfoRow(label: label, value: value, labelWidth: 100);
   }
 
   Widget _buildCourseHoursRow(BuildContext context) {

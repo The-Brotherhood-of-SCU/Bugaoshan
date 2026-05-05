@@ -4,6 +4,9 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/models/plan_completion.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/plan_completion_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/widgets/common/loading_widgets.dart';
+import 'package:bugaoshan/widgets/common/login_required_widget.dart';
+import 'package:bugaoshan/widgets/common/error_widgets.dart';
 
 class PlanCompletionPage extends StatefulWidget {
   const PlanCompletionPage({super.key});
@@ -74,44 +77,9 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
           final auth = getIt<ScuAuthProvider>();
           if (!auth.isLoggedIn) {
             if (auth.isAutoLoggingIn) {
-              return Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CircularProgressIndicator(),
-                    const SizedBox(height: 16),
-                    Text(l10n.autoLoggingIn),
-                  ],
-                ),
-              );
+              return const AutoLoginLoadingWidget();
             }
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.login,
-                      size: 48,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(l10n.loginRequired, textAlign: TextAlign.center),
-                    const SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.of(
-                          context,
-                        ).popUntil((route) => route.isFirst);
-                      },
-                      icon: const Icon(Icons.person),
-                      label: Text(l10n.goToLogin),
-                    ),
-                  ],
-                ),
-              ),
-            );
+            return const LoginRequiredWidget();
           }
           return _buildContent(context);
         },
@@ -125,30 +93,12 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
     return switch (_provider.state) {
       PlanCompletionLoadState.idle || PlanCompletionLoadState.loading =>
         const Center(child: CircularProgressIndicator()),
-      PlanCompletionLoadState.error => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 56,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _provider.error == 'rateLimited'
-                  ? l10n.planCompletionRateLimited
-                  : _provider.error ?? l10n.loadFailed,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: () => _provider.fetchPlanCompletion(),
-              icon: const Icon(Icons.refresh),
-              label: Text(l10n.gradesRetry),
-            ),
-          ],
-        ),
+      PlanCompletionLoadState.error => RetryableErrorWidget(
+        message: _provider.error == 'rateLimited'
+            ? l10n.planCompletionRateLimited
+            : _provider.error ?? l10n.loadFailed,
+        onRetry: () => _provider.fetchPlanCompletion(),
+        iconSize: 56,
       ),
       PlanCompletionLoadState.loaded => _buildTree(context),
     };
