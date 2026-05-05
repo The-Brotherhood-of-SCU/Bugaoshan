@@ -1533,4 +1533,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dockLabelFitnessTest => 'Fitness';
+
+  @override
+  String get eulaTitle => 'User Agreement';
+
+  @override
+  String get eulaScrollToBottom => 'Please read the entire agreement first';
+
+  @override
+  String get eulaAgreeCheckbox => 'I have read and agree to the User Agreement';
+
+  @override
+  String get eulaAgree => 'Agree';
+
+  @override
+  String get eulaDisagree => 'Disagree';
+
+  @override
+  String get revokeEula => 'Revoke User Agreement';
+
+  @override
+  String get revokeEulaConfirm =>
+      'After revoking, you will need to agree to the user agreement again to continue using. Are you sure?';
+
+  @override
+  String get revokeEulaSuccess => 'User agreement revoked';
+
+  @override
+  String eulaAgreedVersion(String version) {
+    return 'Agreed version v$version';
+  }
 }
