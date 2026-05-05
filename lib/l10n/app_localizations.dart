@@ -505,6 +505,30 @@ abstract class AppLocalizations {
   /// **'Reset to Default'**
   String get resetToDefault;
 
+  /// No description provided for @themeColorModeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get themeColorModeSystem;
+
+  /// No description provided for @themeColorModeBackgroundImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Bg Image'**
+  String get themeColorModeBackgroundImage;
+
+  /// No description provided for @themeColorModeCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get themeColorModeCustom;
+
+  /// No description provided for @themeColorModeBackgroundImageNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Please set a background image first'**
+  String get themeColorModeBackgroundImageNotSet;
+
   /// No description provided for @blockPicker.
   ///
   /// In en, this message translates to:
@@ -1045,6 +1069,24 @@ abstract class AppLocalizations {
   /// **'Set Background Image'**
   String get setBackgroundImage;
 
+  /// No description provided for @extractColorFromBackgroundImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Extract Color from Background'**
+  String get extractColorFromBackgroundImage;
+
+  /// No description provided for @themeColorAutoExtractedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme color extracted from background image. Go to Software Setting -> Theme Color to modify.'**
+  String get themeColorAutoExtractedHint;
+
+  /// No description provided for @noBackgroundImageSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Please set a background image first'**
+  String get noBackgroundImageSet;
+
   /// No description provided for @removeBackgroundImage.
   ///
   /// In en, this message translates to:
@@ -1056,6 +1098,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Background Image Opacity'**
   String get backgroundImageOpacity;
+
+  /// No description provided for @backgroundImageSetHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Background image set. You can go to Theme Color to modify the theme color.'**
+  String get backgroundImageSetHint;
 
   /// No description provided for @showTeacher.
   ///

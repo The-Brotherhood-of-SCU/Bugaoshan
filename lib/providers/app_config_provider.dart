@@ -5,6 +5,7 @@ import 'package:flutter/material.dart' show Colors, Curve, Curves;
 import 'package:bugaoshan/utils/locale_utils.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:system_theme/system_theme.dart';
 
 //define key
 const String _keyLocale = 'locale';
@@ -19,7 +20,10 @@ const String _keyBackgroundImagePath = 'backgroundImagePath';
 const String _keyFirstLaunchWizardCompleted = 'firstLaunchWizardCompleted';
 const String _keyHasUpdateNotification = 'hasUpdateNotification';
 const String _keyVisibleDockIds = 'visibleDockIds';
+const String _keyThemeColorMode = 'themeColorMode';
 const Curve appCurve = Curves.easeOutQuart;
+
+enum ThemeColorMode { system, backgroundImage, custom }
 
 class AppConfigProvider {
   final SharedPreferences _sharedPreferences;
@@ -53,6 +57,8 @@ class AppConfigProvider {
   final ValueNotifier<bool> hasUpdateNotification = ValueNotifier<bool>(false);
   final ValueNotifier<List<String>> visibleDockIds =
       ValueNotifier<List<String>>([]);
+  final ValueNotifier<ThemeColorMode> themeColorMode =
+      ValueNotifier<ThemeColorMode>(ThemeColorMode.system);
 
   void _loadLocale() {
     final localeString = _sharedPreferences.getString(_keyLocale);
@@ -83,6 +89,8 @@ class AppConfigProvider {
     visibleDockIds.value =
         _sharedPreferences.getStringList(_keyVisibleDockIds) ??
         List<String>.from(defaultVisibleDockIds);
+    themeColorMode.value = ThemeColorMode
+        .values[_sharedPreferences.getInt(_keyThemeColorMode) ?? 0];
   }
 
   void _addSaveCallback() {
@@ -130,6 +138,10 @@ class AppConfigProvider {
       } else {
         _sharedPreferences.remove(_keyBackgroundImagePath);
       }
+      if (path == null &&
+          themeColorMode.value == ThemeColorMode.backgroundImage) {
+        _switchToSystemColor();
+      }
     });
     firstLaunchWizardCompleted.addListener(() {
       _sharedPreferences.setBool(
@@ -149,6 +161,9 @@ class AppConfigProvider {
         visibleDockIds.value,
       );
     });
+    themeColorMode.addListener(() {
+      _sharedPreferences.setInt(_keyThemeColorMode, themeColorMode.value.index);
+    });
   }
 
   void resetDockToDefault() {
@@ -158,5 +173,11 @@ class AppConfigProvider {
   void clearAll() {
     _sharedPreferences.clear();
     _loadLocale();
+  }
+
+  Future<void> _switchToSystemColor() async {
+    themeColorMode.value = ThemeColorMode.system;
+    await SystemTheme.accentColor.load();
+    themeColor.value = SystemTheme.accentColor.accent;
   }
 }

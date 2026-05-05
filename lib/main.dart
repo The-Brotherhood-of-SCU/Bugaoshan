@@ -10,6 +10,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:bugaoshan/app.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/services/window_state_service.dart';
+import 'package:system_theme/system_theme.dart';
 
 Future<void> main() async {
   await runZonedGuarded(
@@ -29,6 +30,11 @@ Future<void> main() async {
       if (!kIsWeb && _isDesktopPlatform) {
         await WindowStateService.create(getIt<SharedPreferences>());
       }
+
+      // 获取系统主题颜色
+      SystemTheme.fallbackColor = Colors.blue;
+      await SystemTheme.accentColor.load();
+
       runApp(MyApp());
     },
     (error, stackTrace) {
@@ -54,10 +60,7 @@ class _StartupErrorApp extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Center(
-              child: Text(
-                'Bugaoshan 启动失败',
-                textAlign: TextAlign.center,
-              ),
+              child: Text('Bugaoshan 启动失败', textAlign: TextAlign.center),
             ),
           ),
         ),

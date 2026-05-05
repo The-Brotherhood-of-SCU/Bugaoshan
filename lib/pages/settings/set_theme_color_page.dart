@@ -3,6 +3,8 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/set_theme_color_provider.dart';
+import 'package:system_theme/system_theme.dart';
 
 class SetThemeColorPage extends StatefulWidget {
   const SetThemeColorPage({super.key});
@@ -13,16 +15,21 @@ class SetThemeColorPage extends StatefulWidget {
 
 class _SetThemeColorPageState extends State<SetThemeColorPage> {
   final appConfigService = getIt<AppConfigProvider>();
+  final themeColorProvider = SetThemeColorProvider(getIt<AppConfigProvider>());
 
   late Color pickerColor;
+  late ThemeColorMode _selectedMode;
   ColorScheme? colorScheme;
-  _SetThemeColorPageState() {
-    pickerColor = appConfigService.themeColor.value;
-  }
 
   @override
   void initState() {
     super.initState();
+    _selectedMode = appConfigService.themeColorMode.value;
+    if (_selectedMode == ThemeColorMode.system) {
+      pickerColor = SystemTheme.accentColor.accent;
+    } else {
+      pickerColor = appConfigService.themeColor.value;
+    }
   }
 
   void changeColor(Color color) {
@@ -33,6 +40,78 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
         brightness: Theme.of(context).brightness,
       );
     });
+    if (_selectedMode != ThemeColorMode.custom) {
+      setState(() {
+        _selectedMode = ThemeColorMode.custom;
+      });
+    }
+  }
+
+  void _onModeChanged(ThemeColorMode? mode) async {
+    if (mode == null) return;
+    setState(() {
+      _selectedMode = mode;
+    });
+    switch (mode) {
+      case ThemeColorMode.system:
+        await _handleSystemMode();
+        break;
+      case ThemeColorMode.backgroundImage:
+        await _handleBackgroundImageMode();
+        break;
+      case ThemeColorMode.custom:
+        setState(() {
+          pickerColor = Colors.blue;
+          colorScheme = ColorScheme.fromSeed(
+            seedColor: pickerColor,
+            brightness: Theme.of(context).brightness,
+          );
+        });
+    }
+  }
+
+  Future<void> _handleSystemMode() async {
+    final result = await themeColorProvider.previewSystemColor();
+    if (!mounted) return;
+    setState(() {
+      pickerColor = result.color!;
+      colorScheme = ColorScheme.fromSeed(
+        seedColor: pickerColor,
+        brightness: Theme.of(context).brightness,
+      );
+    });
+  }
+
+  Future<void> _handleBackgroundImageMode() async {
+    final result = await themeColorProvider.previewBackgroundImageColor();
+    if (!mounted) return;
+    if (result.color != null && result.mode == ThemeColorMode.backgroundImage) {
+      setState(() {
+        pickerColor = result.color!;
+        colorScheme = ColorScheme.fromSeed(
+          seedColor: pickerColor,
+          brightness: Theme.of(context).brightness,
+        );
+      });
+    } else {
+      if (appConfigService.backgroundImagePath.value == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.themeColorModeBackgroundImageNotSet,
+            ),
+          ),
+        );
+      }
+      setState(() {
+        _selectedMode = result.mode;
+        pickerColor = result.color!;
+        colorScheme = ColorScheme.fromSeed(
+          seedColor: pickerColor,
+          brightness: Theme.of(context).brightness,
+        );
+      });
+    }
   }
 
   @override
@@ -53,13 +132,19 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
             appBar: AppBar(
               title: Text(l10n.themeColor),
               actions: [
-                TextButton(
-                  onPressed: _confirmChanges,
-                  child: Text(l10n.confirmButton),
+                Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                    onPressed: _confirmChanges,
+                    child: Text(l10n.confirmButton),
+                  ),
                 ),
               ],
             ),
-
             body: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
@@ -79,20 +164,33 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        changeColor(Colors.blue);
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: SegmentedButton<ThemeColorMode>(
+                      segments: [
+                        ButtonSegment<ThemeColorMode>(
+                          value: ThemeColorMode.system,
+                          label: Text(l10n.themeColorModeSystem),
+                          icon: const Icon(Icons.settings_suggest),
+                        ),
+                        ButtonSegment<ThemeColorMode>(
+                          value: ThemeColorMode.backgroundImage,
+                          label: Text(l10n.themeColorModeBackgroundImage),
+                          icon: const Icon(Icons.wallpaper),
+                        ),
+                        ButtonSegment<ThemeColorMode>(
+                          value: ThemeColorMode.custom,
+                          label: Text(l10n.themeColorModeCustom),
+                          icon: const Icon(Icons.palette),
+                        ),
+                      ],
+                      selected: {_selectedMode},
+                      onSelectionChanged: (selected) {
+                        _onModeChanged(selected.first);
                       },
-                      child: Text(l10n.resetToDefault),
                     ),
                   ),
                 ],
               ),
-            ),
-            floatingActionButton: FloatingActionButton(
-              onPressed: _confirmChanges,
-              child: const Icon(Icons.check),
             ),
           );
         },
@@ -102,6 +200,7 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
 
   void _confirmChanges() {
     appConfigService.themeColor.value = pickerColor;
+    appConfigService.themeColorMode.value = _selectedMode;
     Navigator.of(context).pop();
   }
 }
@@ -159,7 +258,6 @@ class BasicCard extends StatelessWidget {
     } else {
       realChild = InkWell(
         highlightColor: Colors.transparent,
-        // 透明色
         splashColor: Colors.transparent,
         focusColor: Colors.transparent,
         onTap: () {
@@ -179,9 +277,9 @@ class BasicCard extends StatelessWidget {
           color: Theme.of(context).colorScheme.secondaryContainer,
           shadows: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1), //color of shadow
-              spreadRadius: 0.1, //spread radius
-              blurRadius: 10, // blur radius
+              color: Colors.black.withValues(alpha: 0.1),
+              spreadRadius: 0.1,
+              blurRadius: 10,
             ),
           ],
         ),
