@@ -4,7 +4,6 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/set_theme_color_provider.dart';
-import 'package:system_theme/system_theme.dart';
 
 class SetThemeColorPage extends StatefulWidget {
   const SetThemeColorPage({super.key});
@@ -50,10 +49,10 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
     });
     switch (mode) {
       case ThemeColorMode.system:
-        await _previewSystemColor();
+        await _handleSystemMode();
         break;
       case ThemeColorMode.backgroundImage:
-        await _previewBackgroundImageColor();
+        await _handleBackgroundImageMode();
         break;
       case ThemeColorMode.custom:
         setState(() {
@@ -63,6 +62,60 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
             brightness: Theme.of(context).brightness,
           );
         });
+    }
+  }
+
+  Future<void> _handleSystemMode() async {
+    if (appConfigService.backgroundImagePath.value == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.themeColorModeBackgroundImageNotSet,
+          ),
+        ),
+      );
+    }
+    final result = await themeColorProvider.previewSystemColor();
+    if (!mounted) return;
+    setState(() {
+      pickerColor = result.color!;
+      colorScheme = ColorScheme.fromSeed(
+        seedColor: pickerColor,
+        brightness: Theme.of(context).brightness,
+      );
+    });
+  }
+
+  Future<void> _handleBackgroundImageMode() async {
+    final result = await themeColorProvider.previewBackgroundImageColor();
+    if (!mounted) return;
+    if (result.color != null && result.mode == ThemeColorMode.backgroundImage) {
+      setState(() {
+        pickerColor = result.color!;
+        colorScheme = ColorScheme.fromSeed(
+          seedColor: pickerColor,
+          brightness: Theme.of(context).brightness,
+        );
+      });
+    } else {
+      if (appConfigService.backgroundImagePath.value == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.themeColorModeBackgroundImageNotSet,
+            ),
+          ),
+        );
+      }
+      setState(() {
+        _selectedMode = result.mode;
+        pickerColor = result.color!;
+        colorScheme = ColorScheme.fromSeed(
+          seedColor: pickerColor,
+          brightness: Theme.of(context).brightness,
+        );
+      });
     }
   }
 
@@ -154,64 +207,6 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
     appConfigService.themeColor.value = pickerColor;
     appConfigService.themeColorMode.value = _selectedMode;
     Navigator.of(context).pop();
-  }
-
-  Future<void> _previewSystemColor() async {
-    await SystemTheme.accentColor.load();
-    final systemColor = SystemTheme.accentColor.accent;
-    setState(() {
-      pickerColor = systemColor;
-      colorScheme = ColorScheme.fromSeed(
-        seedColor: pickerColor,
-        brightness: Theme.of(context).brightness,
-      );
-    });
-  }
-
-  Future<void> _previewBackgroundImageColor() async {
-    if (appConfigService.backgroundImagePath.value == null) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            AppLocalizations.of(context)!.themeColorModeBackgroundImageNotSet,
-          ),
-        ),
-      );
-      final previousMode = appConfigService.themeColorMode.value;
-      setState(() {
-        _selectedMode = previousMode;
-      });
-      if (previousMode == ThemeColorMode.system) {
-        await _previewSystemColor();
-      } else if (previousMode == ThemeColorMode.custom) {
-        setState(() {
-          pickerColor = appConfigService.themeColor.value;
-          colorScheme = ColorScheme.fromSeed(
-            seedColor: pickerColor,
-            brightness: Theme.of(context).brightness,
-          );
-        });
-      }
-      return;
-    }
-    final result = await themeColorProvider.extractColorFromBackgroundImage();
-    if (!mounted) return;
-    switch (result) {
-      case ExtractColorResult.noBackgroundImage:
-        break;
-      case ExtractColorResult.success:
-        setState(() {
-          pickerColor = themeColorProvider.extractedColor!;
-          colorScheme = ColorScheme.fromSeed(
-            seedColor: pickerColor,
-            brightness: Theme.of(context).brightness,
-          );
-        });
-        break;
-      case ExtractColorResult.failure:
-        break;
-    }
   }
 }
 

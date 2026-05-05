@@ -3,8 +3,16 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:system_theme/system_theme.dart';
 
 enum ExtractColorResult { noBackgroundImage, success, failure }
+
+class ThemeColorPreviewResult {
+  final Color? color;
+  final ThemeColorMode mode;
+
+  ThemeColorPreviewResult({this.color, required this.mode});
+}
 
 class SetThemeColorProvider {
   final AppConfigProvider _appConfigProvider;
@@ -16,6 +24,46 @@ class SetThemeColorProvider {
 
   ExtractColorResult? get lastExtractResult => _lastExtractResult;
   Color? get extractedColor => _extractedColor;
+
+  Future<Color> getSystemAccentColor() async {
+    await SystemTheme.accentColor.load();
+    return SystemTheme.accentColor.accent;
+  }
+
+  Future<ThemeColorPreviewResult> previewSystemColor() async {
+    final color = await getSystemAccentColor();
+    return ThemeColorPreviewResult(color: color, mode: ThemeColorMode.system);
+  }
+
+  Future<ThemeColorPreviewResult> previewBackgroundImageColor() async {
+    final bgPath = _appConfigProvider.backgroundImagePath.value;
+    if (bgPath == null) {
+      _lastExtractResult = ExtractColorResult.noBackgroundImage;
+      final previousMode = _appConfigProvider.themeColorMode.value;
+      if (previousMode == ThemeColorMode.system) {
+        final color = await getSystemAccentColor();
+        return ThemeColorPreviewResult(color: color, mode: ThemeColorMode.system);
+      } else if (previousMode == ThemeColorMode.custom) {
+        return ThemeColorPreviewResult(
+          color: _appConfigProvider.themeColor.value,
+          mode: ThemeColorMode.custom,
+        );
+      }
+      return ThemeColorPreviewResult(
+        color: _appConfigProvider.themeColor.value,
+        mode: previousMode,
+      );
+    }
+
+    final result = await extractColorFromBackgroundImage();
+    if (result == ExtractColorResult.success && _extractedColor != null) {
+      return ThemeColorPreviewResult(color: _extractedColor, mode: ThemeColorMode.backgroundImage);
+    }
+    return ThemeColorPreviewResult(
+      color: _appConfigProvider.themeColor.value,
+      mode: _appConfigProvider.themeColorMode.value,
+    );
+  }
 
   Future<ExtractColorResult> extractColorFromBackgroundImage() async {
     final bgPath = _appConfigProvider.backgroundImagePath.value;
