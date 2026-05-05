@@ -16,8 +16,10 @@ import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/dialog/eula_dialog.dart';
 import 'package:bugaoshan/widgets/eula_content.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
+import 'package:bugaoshan/providers/set_theme_color_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:system_theme/system_theme.dart';
 
 class SoftwareSettingPage extends StatelessWidget {
   const SoftwareSettingPage({super.key});
@@ -140,19 +142,23 @@ class SoftwareSettingPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     ButtonWithMaxWidth(
-                      onPressed: () => _pickBackgroundImage(appConfig),
+                      onPressed: () => _pickBackgroundImage(context, appConfig),
                       icon: const Icon(Icons.wallpaper),
                       child: Text(localizations.setBackgroundImage),
                     ),
                     if (appConfig.backgroundImagePath.value != null) ...[
                       const SizedBox(height: 8),
                       ButtonWithMaxWidth(
-                        onPressed: () {
+                        onPressed: () async {
                           final oldPath = appConfig.backgroundImagePath.value;
                           appConfig.backgroundImagePath.value = null;
                           if (oldPath != null) {
                             FileImage(File(oldPath)).evict();
                             File(oldPath).delete().ignore();
+                          }
+                          if (appConfig.themeColorMode.value == ThemeColorMode.backgroundImage) {
+                            await SystemTheme.accentColor.load();
+                            appConfig.themeColor.value = SystemTheme.accentColor.accent;
                           }
                         },
                         icon: const Icon(Icons.delete_outline),
@@ -281,7 +287,7 @@ class SoftwareSettingPage extends StatelessWidget {
     );
   }
 
-  Future<void> _pickBackgroundImage(AppConfigProvider appConfig) async {
+  Future<void> _pickBackgroundImage(BuildContext context, AppConfigProvider appConfig) async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
     if (picked == null) return;
@@ -308,6 +314,24 @@ class SoftwareSettingPage extends StatelessWidget {
     await File(picked.path).copy(destPath);
     appConfig.backgroundImageVersion.value++;
     appConfig.backgroundImagePath.value = destPath;
+
+    if (appConfig.themeColorMode.value == ThemeColorMode.backgroundImage) {
+      final themeColorProvider = SetThemeColorProvider(appConfig);
+      final result = await themeColorProvider.extractColorFromBackgroundImage();
+      if (result == ExtractColorResult.success && themeColorProvider.extractedColor != null) {
+        appConfig.themeColor.value = themeColorProvider.extractedColor!;
+      }
+    }
+
+    if (!context.mounted) return;
+    if (appConfig.themeColorMode.value != ThemeColorMode.backgroundImage) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.backgroundImageSetHint),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
   Future<void> _revokeEula(

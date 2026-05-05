@@ -5,6 +5,7 @@ import 'package:bugaoshan/pages/home_page.dart';
 import 'package:bugaoshan/pages/wizard/wizard_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
+import 'package:system_theme/system_theme.dart';
 import 'l10n/app_localizations.dart';
 
 const _pageTransitionsTheme = PageTransitionsTheme(
@@ -30,7 +31,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: Listenable.merge([_appConfig.locale, _appConfig.themeColor]),
+      listenable: Listenable.merge([
+        _appConfig.locale,
+        _appConfig.themeColor,
+        _appConfig.themeColorMode,
+      ]),
       builder: (context, _) => MaterialApp(
         navigatorKey: navigatorKey,
         locale: _appConfig.locale.value,
@@ -50,9 +55,12 @@ class MyApp extends StatelessWidget {
   }
 
   ThemeData _buildTheme(Brightness brightness) {
+    final seedColor = _appConfig.themeColorMode.value == ThemeColorMode.system
+        ? SystemTheme.accentColor.accent
+        : _appConfig.themeColor.value;
     final baseTheme = ThemeData(
       colorScheme: ColorScheme.fromSeed(
-        seedColor: _appConfig.themeColor.value,
+        seedColor: seedColor,
         brightness: brightness,
       ),
       pageTransitionsTheme: _pageTransitionsTheme,
