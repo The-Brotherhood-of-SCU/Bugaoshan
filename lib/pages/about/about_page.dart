@@ -43,6 +43,7 @@ class _AboutPageState extends State<AboutPage> {
           )) {
         await showDialog(
           context: context,
+          barrierDismissible: false,
           builder: (dialogContext) {
             return AlertDialog(
               title: Row(
