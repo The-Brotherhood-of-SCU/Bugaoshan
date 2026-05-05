@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
@@ -17,6 +18,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     with SingleTickerProviderStateMixin {
   static const _baseUrl =
       'https://pead.scu.edu.cn/bdlp_h5_fitness_test/public/index.php';
+  static const _yearCacheKey = 'fitness_test_selected_year';
 
   late final TabController _tabController;
 
@@ -36,6 +38,11 @@ class _FitnessTestPageState extends State<FitnessTestPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    final prefs = getIt<SharedPreferences>();
+    final savedYear = prefs.getInt(_yearCacheKey);
+    if (savedYear != null) {
+      _selectedYear = savedYear;
+    }
     getIt<ScuAuthProvider>().addListener(_onAuthChanged);
     _loadData();
   }
@@ -165,6 +172,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
 
   Future<void> _onYearChanged(int year) async {
     _selectedYear = year;
+    getIt<SharedPreferences>().setInt(_yearCacheKey, year);
     final auth = getIt<ScuAuthProvider>();
     if (!auth.isLoggedIn) return;
 
@@ -220,8 +228,8 @@ class _FitnessTestPageState extends State<FitnessTestPage>
         bottom: TabBar(
           controller: _tabController,
           tabs: [
-            Tab(text: l10n.fitnessTestNotices),
             Tab(text: l10n.fitnessTestScores),
+            Tab(text: l10n.fitnessTestNotices),
           ],
         ),
       ),
@@ -319,8 +327,8 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     return TabBarView(
       controller: _tabController,
       children: [
-        _buildNoticesTab(l10n),
         _buildScoresTab(l10n),
+        _buildNoticesTab(l10n),
       ],
     );
   }
