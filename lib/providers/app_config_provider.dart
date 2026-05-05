@@ -131,7 +131,7 @@ class AppConfigProvider {
         backgroundImageOpacity.value,
       );
     });
-    backgroundImagePath.addListener(() async {
+    backgroundImagePath.addListener(() {
       final path = backgroundImagePath.value;
       if (path != null) {
         _sharedPreferences.setString(_keyBackgroundImagePath, path);
@@ -140,9 +140,7 @@ class AppConfigProvider {
       }
       if (path == null &&
           themeColorMode.value == ThemeColorMode.backgroundImage) {
-        themeColorMode.value = ThemeColorMode.system;
-        await SystemTheme.accentColor.load();
-        themeColor.value = SystemTheme.accentColor.accent;
+        _switchToSystemColor();
       }
     });
     firstLaunchWizardCompleted.addListener(() {
@@ -175,5 +173,11 @@ class AppConfigProvider {
   void clearAll() {
     _sharedPreferences.clear();
     _loadLocale();
+  }
+
+  Future<void> _switchToSystemColor() async {
+    themeColorMode.value = ThemeColorMode.system;
+    await SystemTheme.accentColor.load();
+    themeColor.value = SystemTheme.accentColor.accent;
   }
 }

@@ -43,16 +43,18 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
     }
   }
 
-  void _onModeChanged(ThemeColorMode? mode) {
+  void _onModeChanged(ThemeColorMode? mode) async {
     if (mode == null) return;
     setState(() {
       _selectedMode = mode;
     });
     switch (mode) {
       case ThemeColorMode.system:
-        _previewSystemColor();
+        await _previewSystemColor();
+        break;
       case ThemeColorMode.backgroundImage:
-        _previewBackgroundImageColor();
+        await _previewBackgroundImageColor();
+        break;
       case ThemeColorMode.custom:
         setState(() {
           pickerColor = Colors.blue;
@@ -61,11 +63,9 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
             brightness: Theme.of(context).brightness,
           );
         });
-        break;
     }
   }
 
-  @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     colorScheme ??= ColorScheme.fromSeed(
@@ -155,7 +155,7 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
     Navigator.of(context).pop();
   }
 
-  void _previewSystemColor() async {
+  Future<void> _previewSystemColor() async {
     await SystemTheme.accentColor.load();
     final systemColor = SystemTheme.accentColor.accent;
     setState(() {
@@ -167,12 +167,14 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
     });
   }
 
-  void _previewBackgroundImageColor() async {
+  Future<void> _previewBackgroundImageColor() async {
     if (appConfigService.backgroundImagePath.value == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.themeColorModeBackgroundImageNotSet),
+          content: Text(
+            AppLocalizations.of(context)!.themeColorModeBackgroundImageNotSet,
+          ),
         ),
       );
       setState(() {
@@ -193,6 +195,7 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
             brightness: Theme.of(context).brightness,
           );
         });
+        break;
       case ExtractColorResult.failure:
         break;
     }
