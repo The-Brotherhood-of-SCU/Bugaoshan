@@ -55,9 +55,16 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
             appBar: AppBar(
               title: Text(l10n.themeColor),
               actions: [
-                TextButton(
-                  onPressed: _confirmChanges,
-                  child: Text(l10n.confirmButton),
+                Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                    onPressed: _confirmChanges,
+                    child: Text(l10n.confirmButton),
+                  ),
                 ),
               ],
             ),
@@ -98,10 +105,6 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
                   ),
                 ],
               ),
-            ),
-            floatingActionButton: FloatingActionButton(
-              onPressed: _confirmChanges,
-              child: const Icon(Icons.check),
             ),
           );
         },
