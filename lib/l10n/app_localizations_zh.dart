@@ -220,6 +220,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get resetToDefault => '重置为默认';
 
   @override
+  String get themeColorModeSystem => '跟随系统';
+
+  @override
+  String get themeColorModeBackgroundImage => '背景图';
+
+  @override
+  String get themeColorModeCustom => '自定义';
+
+  @override
+  String get themeColorModeBackgroundImageNotSet => '请先设置背景图片';
+
+  @override
   String get blockPicker => '色块';
 
   @override
@@ -496,10 +508,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get setBackgroundImage => '设置背景图片';
 
   @override
+  String get extractColorFromBackgroundImage => '从背景图取色';
+
+  @override
+  String get themeColorAutoExtractedHint => '主题色已从背景图片提取，如需修改请前往软件设置->主题颜色';
+
+  @override
+  String get noBackgroundImageSet => '请先设置背景图片';
+
+  @override
   String get removeBackgroundImage => '移除背景图片';
 
   @override
   String get backgroundImageOpacity => '背景图片不透明度';
+
+  @override
+  String get backgroundImageSetHint => '背景图片已设置，您可以前往「主题颜色」修改主题色';
 
   @override
   String get showTeacher => '显示教师';

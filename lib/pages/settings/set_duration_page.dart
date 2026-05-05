@@ -75,16 +75,18 @@ class _SetDurationPageState extends State<SetDurationPage> {
     final appLang = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
+        centerTitle: false,
         title: Text(appLang.animationDuration),
         actions: [
-          TextButton(
-            onPressed: _confirmChanges,
-            child: Text(
-              appLang.confirm,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontSize: 16,
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
               ),
+              onPressed: _confirmChanges,
+              child: Text(appLang.confirmButton),
             ),
           ),
         ],
