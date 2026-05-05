@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 
 /// EULA 版本号，需要与 eula.md 中的 version 保持一致
@@ -93,6 +94,11 @@ class _EulaContentState extends State<EulaContent>
                       data: _eulaContent,
                       selectable: true,
                       controller: _scrollController,
+                      onTapLink: (text, href, title) {
+                        if (href != null) {
+                          launchUrl(Uri.parse(href));
+                        }
+                      },
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
                         vertical: 8,
