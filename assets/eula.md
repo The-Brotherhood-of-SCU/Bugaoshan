@@ -1,14 +1,12 @@
----
-title: 最终用户许可协议 (EULA)
-app_name: BugaoShan（不高山上）
-version: 1
-license: GNU Affero General Public License v3 (AGPL-3.0)
-repository: https://github.com/The-Brotherhood-of-SCU/Bugaoshan
-last_updated: 2026-05
----
-
 # 最终用户许可协议 (EULA)
 
+| 项目 | 内容 |
+|:---:|:---:|
+| **应用名称** | 不高山上 (BugaoShan) |
+| **协议版本** | 1.0 |
+| **生效日期** | 2026年5月 |
+| **许可证** | [AGPL-3.0](https://www.gnu.org/licenses/agpl-3.0.html) |
+| **源代码** | [GitHub](https://github.com/The-Brotherhood-of-SCU/Bugaoshan) |
 
 ## 重要声明
 
@@ -107,7 +105,7 @@ BugaoShan（不高山上）是一款**自由开源软件**，基于 [GNU AGPL v3
 
 ### 技术架构
 
-- 使用Flutter框架开发，支持Android、iOS、Windows等平台
+- 使用Flutter框架开发，支持 Android、iOS、macOS、Windows、Linux、Web 等平台
 - 通过调用四川大学教务系统提供的API接口获取数据
 - 使用SQLite本地数据库存储数据，使用操作系统级加密存储密码
 - 采用国密SM2算法加密传输敏感信息

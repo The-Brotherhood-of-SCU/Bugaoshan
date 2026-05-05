@@ -44,13 +44,25 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     );
   }
 
+  bool _eulaChecked = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _checkForUpdateInBackground();
     _attemptAutoLogin();
-    _checkEulaAgreement();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_eulaChecked) {
+      _eulaChecked = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkEulaAgreement();
+      });
+    }
   }
 
   Future<void> _checkEulaAgreement() async {
