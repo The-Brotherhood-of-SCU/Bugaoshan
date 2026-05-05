@@ -101,7 +101,7 @@ class _SetDockPageState extends State<SetDockPage> {
                         Icon(item.icon, size: 24),
                         const SizedBox(height: 4),
                         Text(
-                          dockFullLabel(item.id, l10n),
+                          dockLabel(item.id, l10n),
                           style: theme.textTheme.labelSmall,
                         ),
                       ],
