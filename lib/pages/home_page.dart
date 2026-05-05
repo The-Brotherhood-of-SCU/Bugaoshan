@@ -57,9 +57,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   Future<void> _checkEulaAgreement() async {
     try {
-      await getIt.isReady<AppConfigProvider>();
       final appConfig = getIt<AppConfigProvider>();
-      if (!appConfig.firstLaunchWizardCompleted.value) return;
       if (appConfig.acceptedEulaVersion.value >= currentEulaVersion) return;
       if (!mounted) return;
       final agreed = await showEulaDialog(context);
