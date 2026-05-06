@@ -1,0 +1,60 @@
+name: Setup Flutter Build Environment
+description: Common setup steps for all platform builds
+
+inputs:
+  version:
+    description: "Tag name for git metadata"
+    required: false
+    default: ""
+
+outputs:
+  GIT_TAG:
+    description: "Git tag"
+    value: ${{ steps.git_meta.outputs.GIT_TAG }}
+  GIT_COMMIT:
+    description: "Git commit hash"
+    value: ${{ steps.git_meta.outputs.GIT_COMMIT }}
+  GIT_COMMIT_DATE:
+    description: "Git commit date"
+    value: ${{ steps.git_meta.outputs.GIT_COMMIT_DATE }}
+  BUILD_TIME:
+    description: "Build time"
+    value: ${{ steps.git_meta.outputs.BUILD_TIME }}
+
+runs:
+  using: composite
+  steps:
+    - name: Fetch all tags
+      run: git fetch --tags --force
+      shell: bash
+
+    - uses: subosito/flutter-action@v2.18.0
+      with:
+        flutter-version: "3.41.9"
+        channel: "stable"
+        cache: true
+
+    - name: Get dependencies
+      run: flutter pub get
+      shell: bash
+
+    - name: Set up Python 3
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.12"
+
+    - name: Extract git metadata
+      id: git_meta
+      run: python .github/scripts/git_meta.py
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+        GITHUB_REF_NAME: ${{ github.ref_name }}
+
+    - name: Generate code
+      run: dart run build_runner build --delete-conflicting-outputs || true
+      shell: bash
+
+    - name: Generate localizations
+      run: flutter gen-l10n
+      shell: bash
