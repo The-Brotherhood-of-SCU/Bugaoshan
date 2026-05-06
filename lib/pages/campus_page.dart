@@ -33,7 +33,7 @@ class _CampusPageState extends State<CampusPage>
     _arrowController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
-    )..repeat(reverse: true);
+    ); //..repeat(reverse: true); //disabled animation
     _arrowAnimation = Tween<double>(begin: 0, end: 6).animate(
       CurvedAnimation(parent: _arrowController, curve: Curves.easeInOut),
     );
