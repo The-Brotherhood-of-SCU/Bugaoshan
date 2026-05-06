@@ -1,0 +1,126 @@
+name: bugaoshan
+description: Explore everything, all on the Bugaoshan.
+publish_to: none
+version: 0.10.0
+environment:
+  sdk: '>=3.9.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  photo_view: ^0.15.0
+  cupertino_icons: ^1.0.8
+  get_it: ^9.2.0
+  injectable: any
+  shared_preferences: any
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  flutter_colorpicker: any
+  url_launcher: any
+  package_info_plus: any
+  web: any
+  async: any
+  http: ^1.2.0
+  hive_ce: ^2.19.3
+  sqflite: ^2.4.2
+  sqflite_common_ffi: ^2.3.4
+  path_provider: ^2.1.5
+  path: ^1.9.0
+  dart_sm: ^0.1.4
+  flutter_secure_storage: ^10.0.0
+  image: ^4.8.0
+  pub_semver: ^2.1.4
+  archive: ^4.0.9
+  os_type: ^0.2.2
+  file_picker: ^11.0.2
+  flutter_markdown_plus: ^1.0.7
+  image_picker: ^1.2.2
+  window_manager: ^0.5.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: any
+  injectable_generator: any
+  flutter_launcher_icons: ^0.14.1
+
+flutter:
+  uses-material-design: true
+  generate: true
+  assets:
+    - assets/avater.png
+    - assets/icon.png
+    - assets/scu.jpg
+    - assets/universal-login-ocr.tflite
+    - assets/scripts/
+flutter_launcher_icons:
+  android: true
+  ios: true
+  web:
+    generate: true
+    image_path: assets/icon.png
+  windows:
+    generate: true
+    image_path: assets/icon.png
+  macos:
+    generate: true
+    image_path: assets/icon.png
+  linux:
+    generate: true
+    image_path: assets/icon.png
+  image_path: assets/icon.png
+
+dependency_overrides:
+  shared_preferences:
+    git:
+      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+      path: "packages/shared_preferences/shared_preferences"
+  shared_preferences_ohos:
+    git:
+      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+      path: "packages/shared_preferences/shared_preferences_ohos"
+  shared_preferences_foundation:
+    git:
+      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+      path: "packages/shared_preferences/shared_preferences_foundation"
+
+  path_provider:
+    git:
+      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+      path: "packages/path_provider/path_provider"
+  path_provider_ohos:
+    git:
+      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+      path: "packages/path_provider/path_provider_ohos"
+  path_provider_foundation:
+    git:
+      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+      path: "packages/path_provider/path_provider_foundation"
+
+  url_launcher:
+    git:
+      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+      path: "packages/url_launcher/url_launcher"
+  url_launcher_ohos:
+    git:
+      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+      path: "packages/url_launcher/url_launcher_ohos"
+
+  flutter_secure_storage:
+    git:
+      url: "https://gitcode.com/openharmony-sig/fluttertpc_flutter_secure_storage.git"
+      path: "flutter_secure_storage"
+  flutter_secure_storage_ohos:
+    git:
+      url: "https://gitcode.com/openharmony-sig/fluttertpc_flutter_secure_storage.git"
+      path: "flutter_secure_storage_ohos"
+  flutter_secure_storage_platform_interface:
+    git:
+      url: "https://gitcode.com/openharmony-sig/fluttertpc_flutter_secure_storage.git"
+      path: "flutter_secure_storage_platform_interface"
+
+  package_info_plus:
+    git:
+      url: "https://gitcode.com/openharmony-sig/flutter_plus_plugins.git"
+      path: "packages/package_info_plus/package_info_plus"

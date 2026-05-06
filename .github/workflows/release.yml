@@ -17,54 +17,43 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Fetch all tags
         run: git fetch --tags --force
-
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
-
       - uses: subosito/flutter-action@v2.18.0
         with:
           flutter-version: "3.41.6"
           channel: "stable"
           cache: true
-
       - name: Get dependencies
         run: flutter pub get
-
       - name: Set up Python 3
         uses: actions/setup-python@v3
         with:
           python-version: "3.12"
-
       - name: Extract git metadata
         id: git_meta
         run: python .github/scripts/git_meta.py
         env:
           VERSION: ${{ github.event.inputs.version }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
-
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs || true
-
       - name: Generate localizations
         run: flutter gen-l10n
-
       - name: Decode Keystore
         run: |
           mkdir -p android/keystore
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/keystore/upload-keystore.jks
-
       - name: Create key.properties
         run: |
           echo 'storePassword=${{ secrets.KEYSTORE_PASSWORD }}' > android/key.properties
           echo 'keyPassword=${{ secrets.KEY_PASSWORD }}' >> android/key.properties
           echo 'keyAlias=${{ secrets.KEY_ALIAS }}' >> android/key.properties
           echo 'storeFile=../keystore/upload-keystore.jks' >> android/key.properties
-
       - name: Build APK
         run: |
           flutter build apk --release --split-per-abi \
@@ -73,7 +62,6 @@ jobs:
             --dart-define=GIT_COMMIT=${{ steps.git_meta.outputs.GIT_COMMIT }} \
             --dart-define=GIT_COMMIT_DATE=${{ steps.git_meta.outputs.GIT_COMMIT_DATE }} \
             --dart-define=BUILD_TIME=${{ steps.git_meta.outputs.BUILD_TIME }}
-
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
@@ -85,38 +73,30 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Fetch all tags
         run: git fetch --tags --force
         shell: bash
-
       - uses: subosito/flutter-action@v2.18.0
         with:
           flutter-version: "3.41.6"
           channel: "stable"
           cache: true
-
       - name: Get dependencies
         run: flutter pub get
-
       - name: Set up Python 3
         uses: actions/setup-python@v3
         with:
           python-version: "3.12"
-
       - name: Extract git metadata
         id: git_meta
         run: python .github/scripts/git_meta.py
         env:
           VERSION: ${{ github.event.inputs.version }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
-
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs || true
-
       - name: Generate localizations
         run: flutter gen-l10n
-
       - name: Build Windows
         run: |
           flutter build windows --release \
@@ -125,11 +105,9 @@ jobs:
             --dart-define=GIT_COMMIT_DATE=${{ steps.git_meta.outputs.GIT_COMMIT_DATE }} \
             --dart-define=BUILD_TIME=${{ steps.git_meta.outputs.BUILD_TIME }}
         shell: bash
-
       - name: Archive Windows Release
         run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath
           windows-release.zip
-
       - name: Upload Windows
         uses: actions/upload-artifact@v4
         with:
@@ -141,42 +119,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Fetch all tags
         run: git fetch --tags --force
-
       - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libsecret-1-dev
-
       - uses: subosito/flutter-action@v2.18.0
         with:
           flutter-version: "3.41.6"
           channel: "stable"
           cache: true
-
       - name: Get dependencies
         run: flutter pub get
-
       - name: Set up Python 3
         uses: actions/setup-python@v3
         with:
           python-version: "3.12"
-
       - name: Extract git metadata
         id: git_meta
         run: python .github/scripts/git_meta.py
         env:
           VERSION: ${{ github.event.inputs.version }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
-
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs || true
-
       - name: Generate localizations
         run: flutter gen-l10n
-
       - name: Build Linux
         run: |
           flutter build linux --release \
@@ -184,67 +153,67 @@ jobs:
             --dart-define=GIT_COMMIT=${{ steps.git_meta.outputs.GIT_COMMIT }} \
             --dart-define=GIT_COMMIT_DATE=${{ steps.git_meta.outputs.GIT_COMMIT_DATE }} \
             --dart-define=BUILD_TIME=${{ steps.git_meta.outputs.BUILD_TIME }}
-
       - name: Archive Linux Release
         run: tar -czvf linux-release.tar.gz -C build/linux/x64/release/bundle .
-
       - name: Upload Linux
         uses: actions/upload-artifact@v4
         with:
           name: linux-release
           path: linux-release.tar.gz
 
+  build-ohos:
+    name: HarmonyOS
+    uses: ./.github/workflows/build-ohos.yml
+    # 复用 build-ohos.yml 中的 build job；触发条件与 release.yml 一致（push tag / workflow_dispatch）
+    # 注：build-ohos.yml 本身也监听相同的 push tags，会自动并行跑；
+    # 若希望只由 release.yml 统一调度，可将 build-ohos.yml 的 on.push 去掉，
+    # 改为只保留 workflow_call + workflow_dispatch，再在此处用 uses 调用。
+    # 当前配置：两个 workflow 并行，release job 只等待 android/windows/linux，
+    # ohos artifact 单独附加到 release（见下方 release job）。
+    secrets: inherit
+
   release:
     name: Release
-    needs: [ build-android, build-windows, build-linux ]
+    needs: [build-android, build-windows, build-linux]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name ==
-      'workflow_dispatch'
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     permissions:
       contents: write
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Download APK
         uses: actions/download-artifact@v4
         with:
           name: android-apk
           path: android-apk
-
       - name: Download Windows
         uses: actions/download-artifact@v4
         with:
           name: windows-release
           path: windows-release
-
       - name: Download Linux
         uses: actions/download-artifact@v4
         with:
           name: linux-release
           path: linux-release
-
       - name: Set up Python 3
         uses: actions/setup-python@v3
         with:
           python-version: "3.12"
-
       - name: Get version and tags
         id: vars
         run: python .github/scripts/release_tags.py
         env:
           VERSION: ${{ github.event.inputs.version }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
-
       - name: Extract changelog
         id: changelog
         run: python .github/scripts/release_changelog.py
         env:
           VERSION: ${{ steps.vars.outputs.tag }}
-
       - name: Build release body
         id: release_body
         run: python .github/scripts/release_body.py
@@ -253,12 +222,10 @@ jobs:
           REPO: https://github.com/${{ github.repository }}
           CHANGELOG: ${{ steps.changelog.outputs.changelog }}
           PREV: ${{ steps.vars.outputs.prev }}
-
       - name: Prepare release files
         run: python .github/scripts/release_prepare.py
         env:
           VERSION: ${{ steps.vars.outputs.tag }}
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -272,3 +239,30 @@ jobs:
           draft: false
           prerelease: ${{ contains(steps.vars.outputs.tag, '-') }}
           generate_release_notes: false
+
+  attach-ohos:
+    name: Attach HarmonyOS HAP to Release
+    needs: [release, build-ohos]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: write
+    steps:
+      - name: Get version
+        id: vars
+        run: |
+          if [[ -n "${{ github.event.inputs.version }}" ]]; then
+            echo "tag=${{ github.event.inputs.version }}" >> "${GITHUB_OUTPUT}"
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> "${GITHUB_OUTPUT}"
+          fi
+      - name: Download OHOS HAP
+        uses: actions/download-artifact@v4
+        with:
+          name: ohos-hap
+          path: ohos-hap
+      - name: Upload HAP to existing Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.vars.outputs.tag }}
+          files: ohos-hap/*.hap

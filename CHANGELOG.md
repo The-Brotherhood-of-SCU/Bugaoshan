@@ -7,30 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0] - 2026-05-06
 
-### Fixed
-- 修复自动登录过程中，我的页面未展示登录状态导致可点击登录按钮的问题
-- 修复课表时间不对应的问题
-- 修复中文：'学术'->'学业'
-- 修复自定义 Dock 栏切换 tab / 横竖屏时页面状态丢失的问题
-- 余额查询页面加载失败时添加重试按钮
-- 修复电费余额查询单位显示错误（度数误标为元）(#37)
-- preview版本检查更新，总是显示有更新可用
+### ⬇️ 下载 (Downloads)
+
+- Android: [arm64 APK](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/download/v1.0.0/bugaoshan_1.0.0_arm64-v8a.apk)
+- Windows: [x64 Zip](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/download/v1.0.0/bugaoshan_1.0.0_windows_x64.zip)
+- Linux: [x64 Tar.gz](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/download/v1.0.0/bugaoshan_1.0.0_linux_x64.tar.gz)
+- HarmonyOS 鸿蒙: [unsigned HAP](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/download/v1.0.0/bugaoshan_1.0.0_ohos_unsigned.hap)（未签名，需自行签名后安装）
+
+> 💡 当前项目优先保障 Android 端的稳定与体验。Windows、Linux、HarmonyOS 版本可能存在部分兼容性或体验问题。
+
+---
 
 ### Added
+
 - 桌面端成绩页面添加刷新按钮
 - 添加校历查看功能
 - 主页添加校园卡余额、图书借阅量、网费余额等信息
 - 新增自定义 Dock 栏功能：可在设置中自由开关、排序底部导航栏项目
 - 支持将成绩、第二课堂、培养方案、教室查询等校园功能独立添加到 Dock 栏
-- 合规性更新，添加eula
+- 合规性更新，添加 EULA
 - 增加多种主题色取色功能：跟随系统主题色和背景图取色
+- **HarmonyOS 支持**：HAP 构建正式并入主仓库 CI，与 Android/Windows/Linux 同步发布
+
+### Fixed
+
+- 修复自动登录过程中我的页面未展示登录状态、可点击登录按钮的问题
+- 修复课表时间不对应的问题
+- 修复中文错别字：'学术' → '学业'
+- 修复自定义 Dock 栏切换 Tab / 横竖屏时页面状态丢失的问题
+- 余额查询页面加载失败时添加重试按钮
+- 修复电费余额查询单位显示错误（度数误标为元）(#37)
+- 修复 preview 版本检查更新始终显示有新版本的问题
 
 ### Changed
+
 - 调整课表布局，周日为第一天，对应教务处课表布局
 - 主页导航改为动态构建，按需创建页面，优化性能
 - 移除余额查询页面右下角浮动按钮
-- 优化布局，使用1/3高度（上空白:下空白=1:2）
-- 在release APK中分离调试信息，减小体积
+- 优化布局，使用 1/3 高度（上空白:下空白 = 1:2）
+- Release APK 中分离调试信息，减小体积
+
+**Full diff:** [v0.10.0...v1.0.0](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/compare/v0.10.0...v1.0.0)
 
 ## [0.10.0] - 2026-05-03
 
