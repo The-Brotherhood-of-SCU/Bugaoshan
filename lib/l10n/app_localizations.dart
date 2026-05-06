@@ -2695,6 +2695,12 @@ abstract class AppLocalizations {
   /// **'This app is open-sourced under AGPL-3.0'**
   String get openSourceLicenseDesc;
 
+  /// No description provided for @openSourceLicenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Open-Source Licenses'**
+  String get openSourceLicenses;
+
   /// No description provided for @academicCalendar.
   ///
   /// In en, this message translates to:

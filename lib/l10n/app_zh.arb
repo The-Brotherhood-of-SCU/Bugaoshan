@@ -464,6 +464,7 @@
     "scuLoginDisclaimerPwd": "当使用记住密码功能时，密码通过系统级加密仅存储在本机",
     "scuLoginDisclaimerOcr": "验证码使用本地OCR模型识别",
     "scuLoginDisclaimerPrivacy": "我们不会收集任何信息",
+    "openSourceLicenses": "开源许可",
     "academicCalendar": "校历查看",
     "academicCalendarDesc": "查看四川大学校历，了解学期安排",
     "selectAcademicYear": "选择学年",

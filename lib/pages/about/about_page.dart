@@ -352,6 +352,21 @@ class _AboutPageState extends State<AboutPage> {
                   color: theme.dividerColor.withValues(alpha: 0.08),
                 ),
                 _InfoTile(
+                  icon: Icons.description_outlined,
+                  label: localizations.openSourceLicenses,
+                  value: '',
+                  onTap: () => showLicensePage(
+                    context: context,
+                    applicationName: localizations.bugaoshan,
+                    applicationVersion: versionProvider.currentVersion,
+                  ),
+                ),
+                Divider(
+                  height: 1,
+                  indent: 56,
+                  color: theme.dividerColor.withValues(alpha: 0.08),
+                ),
+                _InfoTile(
                   icon: Icons.bug_report_outlined,
                   label: localizations.testPage,
                   value: '',

@@ -1378,6 +1378,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openSourceLicenseDesc => 'This app is open-sourced under AGPL-3.0';
 
   @override
+  String get openSourceLicenses => 'Open-Source Licenses';
+
+  @override
   String get academicCalendar => 'Academic Calendar';
 
   @override
