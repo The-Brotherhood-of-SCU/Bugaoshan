@@ -206,7 +206,7 @@ jobs:
 
           python3 - <<'PY'
           from pathlib import Path
-          stub = '''import 'dart:typed_data';
+          stub = """import 'dart:typed_data';
 
 class OcrService {
   static Future<void> init() async {}
@@ -215,7 +215,7 @@ class OcrService {
     return '';
   }
 }
-'''
+"""
           for service_dir in ("services", "serivces"):
               path = Path("ohos_shell/lib") / service_dir / "ocr_service.dart"
               path.parent.mkdir(parents=True, exist_ok=True)
