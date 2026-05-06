@@ -1,7 +1,7 @@
 name: bugaoshan
 description: Explore everything, all on the Bugaoshan.
 publish_to: none
-version: 0.10.0
+version: 1.0.0
 environment:
   sdk: ^3.10.4
 dependencies:
