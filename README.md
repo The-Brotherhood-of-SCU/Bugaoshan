@@ -80,6 +80,6 @@
 
 ## 许可证
 
-本项目基于 [AGPL-3.0](LICENSE) 协议开源。
+本项目基于 [AGPL-3.0](LICENSE) 协议开源。使用本软件前请阅读 [EULA](assets/eula.md)。
 
 本项目使用了多项优秀的开源组件，详细列表及对应的开源协议请参阅 [pubspec.yaml](pubspec.yaml) 文件。
