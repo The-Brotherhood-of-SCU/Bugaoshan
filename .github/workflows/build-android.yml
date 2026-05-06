@@ -1,0 +1,78 @@
+name: Build Android
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "tag name"
+        required: false
+        type: string
+
+jobs:
+  build-android:
+    name: Android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch all tags
+        run: git fetch --tags --force
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2.18.0
+        with:
+          flutter-version: "3.41.6"
+          channel: "stable"
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Set up Python 3
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.12"
+
+      - name: Extract git metadata
+        id: git_meta
+        run: python .github/scripts/git_meta.py
+        env:
+          VERSION: ${{ inputs.version }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs || true
+
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Decode Keystore
+        run: |
+          mkdir -p android/keystore
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/keystore/upload-keystore.jks
+
+      - name: Create key.properties
+        run: |
+          echo 'storePassword=${{ secrets.KEYSTORE_PASSWORD }}' > android/key.properties
+          echo 'keyPassword=${{ secrets.KEY_PASSWORD }}' >> android/key.properties
+          echo 'keyAlias=${{ secrets.KEY_ALIAS }}' >> android/key.properties
+          echo 'storeFile=../keystore/upload-keystore.jks' >> android/key.properties
+
+      - name: Build APK
+        run: |
+          flutter build apk --release --split-per-abi \
+            --obfuscate --split-debug-info=build/app/outputs/symbols \
+            --dart-define=GIT_TAG=${{ steps.git_meta.outputs.GIT_TAG }} \
+            --dart-define=GIT_COMMIT=${{ steps.git_meta.outputs.GIT_COMMIT }} \
+            --dart-define=GIT_COMMIT_DATE=${{ steps.git_meta.outputs.GIT_COMMIT_DATE }} \
+            --dart-define=BUILD_TIME=${{ steps.git_meta.outputs.BUILD_TIME }}
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/*.apk
