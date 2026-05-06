@@ -161,16 +161,7 @@ jobs:
           name: linux-release
           path: linux-release.tar.gz
 
-  build-ohos:
-    name: HarmonyOS
-    uses: ./.github/workflows/build-ohos.yml
-    # 复用 build-ohos.yml 中的 build job；触发条件与 release.yml 一致（push tag / workflow_dispatch）
-    # 注：build-ohos.yml 本身也监听相同的 push tags，会自动并行跑；
-    # 若希望只由 release.yml 统一调度，可将 build-ohos.yml 的 on.push 去掉，
-    # 改为只保留 workflow_call + workflow_dispatch，再在此处用 uses 调用。
-    # 当前配置：两个 workflow 并行，release job 只等待 android/windows/linux，
-    # ohos artifact 单独附加到 release（见下方 release job）。
-    secrets: inherit
+
 
   release:
     name: Release
@@ -240,29 +231,3 @@ jobs:
           prerelease: ${{ contains(steps.vars.outputs.tag, '-') }}
           generate_release_notes: false
 
-  attach-ohos:
-    name: Attach HarmonyOS HAP to Release
-    needs: [release, build-ohos]
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
-    permissions:
-      contents: write
-    steps:
-      - name: Get version
-        id: vars
-        run: |
-          if [[ -n "${{ github.event.inputs.version }}" ]]; then
-            echo "tag=${{ github.event.inputs.version }}" >> "${GITHUB_OUTPUT}"
-          else
-            echo "tag=${GITHUB_REF_NAME}" >> "${GITHUB_OUTPUT}"
-          fi
-      - name: Download OHOS HAP
-        uses: actions/download-artifact@v4
-        with:
-          name: ohos-hap
-          path: ohos-hap
-      - name: Upload HAP to existing Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.vars.outputs.tag }}
-          files: ohos-hap/*.hap
