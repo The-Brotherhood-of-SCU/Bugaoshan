@@ -4,7 +4,6 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:os_type/os_type.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:bugaoshan/app.dart';
@@ -45,7 +44,7 @@ Future<void> _initializeApp() async {
 }
 
 bool get _isDesktopPlatform {
-  if (kIsWeb || OS.isHarmony) return false;
+  if (kIsWeb) return false;
   return Platform.isWindows || Platform.isLinux || Platform.isMacOS;
 }
 

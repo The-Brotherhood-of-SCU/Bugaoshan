@@ -21,9 +21,7 @@ Future<String> getEnvironmentInfo() async {
       "Documents Dir: ${documentsDir.path}\n"
       "Support Dir: ${supportDir.path}\n";
 
-  if (OS.isHarmony) await OS.initHarmonyDeviceType();
   environmentText +=
-      "Harmony Device: ${OS.isHarmony}\n"
       "Is PC: ${OS.isPCOS}\n"
       "Is Mobile: ${OS.isMobileOS}\n";
 

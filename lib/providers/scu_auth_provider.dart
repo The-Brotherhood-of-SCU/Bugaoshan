@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:os_type/os_type.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/services/ocr_service.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
@@ -169,7 +168,6 @@ class ScuAuthProvider extends ChangeNotifier {
   }
 
   Future<bool> autoLogin() async {
-    if (OS.isHarmony) return false;
     if (!await isAutoLoginEnabled()) return false;
     if (isLoggedIn) return true;
 

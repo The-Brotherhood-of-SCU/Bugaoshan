@@ -31,8 +31,6 @@ flutter build windows --release
 
 **GitHub Actions release**: triggers on git tags matching `v*.*.*`; builds all 3 platforms and uploads to GitHub Releases.
 
-**HarmonyOS build**: separate workflow dispatches to `TEMP-HOMO` repo for HarmonyOS APK builds.
-
 ### Commit Convention
 
 Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, etc.
