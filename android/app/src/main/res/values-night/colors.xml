@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_header_default">#FF2196F3</color>
+    <color name="widget_header_light">#1A2196F3</color>
+    <color name="widget_background">#FF1C1C1E</color>
+    <color name="widget_text_primary">#E6FFFFFF</color>
+    <color name="widget_text_secondary">#99FFFFFF</color>
+    <color name="widget_text_hint">#66FFFFFF</color>
+    <color name="widget_text_on_primary">#FFFFFFFF</color>
+    <color name="widget_card_background">#FF2C2C2E</color>
+    <color name="widget_divider">#1AFFFFFF</color>
+</resources>
