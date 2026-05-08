@@ -84,6 +84,7 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun pinWidget(size: String?): Boolean {
+        Log.d("CourseWidget", "pinWidget called with size=$size, SDK=${Build.VERSION.SDK_INT}")
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             Log.w("CourseWidget", "pinWidget requires API 26+")
             return false
@@ -100,7 +101,10 @@ class MainActivity : FlutterActivity() {
         return try {
             val mgr = AppWidgetManager.getInstance(this)
             val component = ComponentName(this, receiverClass)
-            mgr.requestPinAppWidget(component, null, null)
+            Log.d("CourseWidget", "pinWidget requesting pin for $component")
+            val result = mgr.requestPinAppWidget(component, null, null)
+            Log.d("CourseWidget", "pinWidget result=$result")
+            result
         } catch (e: Exception) {
             Log.e("CourseWidget", "pinWidget failed for size=$size", e)
             false
