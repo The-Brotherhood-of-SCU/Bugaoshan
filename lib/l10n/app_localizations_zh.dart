@@ -1529,6 +1529,42 @@ class AppLocalizationsZh extends AppLocalizations {
   String eulaAgreedVersion(String version) {
     return '已同意版本 v$version';
   }
+
+  @override
+  String get addWidgetSection => '桌面小组件';
+
+  @override
+  String get addWidgetPageTitle => '添加小组件';
+
+  @override
+  String get addWidgetDesc => '将课表小组件添加到桌面，随时查看今日课程安排。';
+
+  @override
+  String get widgetSizeSmall => '小组件 (2×2)';
+
+  @override
+  String get widgetSizeSmallDesc => '显示今天接下来的 2 节课程';
+
+  @override
+  String get widgetSizeMedium => '中组件 (4×2)';
+
+  @override
+  String get widgetSizeMediumDesc => '显示标题栏和 2 张课程卡片';
+
+  @override
+  String get widgetSizeLarge => '大组件 (4×4)';
+
+  @override
+  String get widgetSizeLargeDesc => '显示标题栏和最多 4 张课程卡片';
+
+  @override
+  String get pinWidgetButton => '添加到桌面';
+
+  @override
+  String get pinWidgetSuccess => '小组件已添加到桌面';
+
+  @override
+  String get pinWidgetNotSupported => '此设备不支持固定小组件';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

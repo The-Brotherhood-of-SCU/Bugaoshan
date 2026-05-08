@@ -531,5 +531,17 @@
         "placeholders": {
             "version": {"type": "String"}
         }
-    }
+    },
+    "addWidgetSection": "桌面小组件",
+    "addWidgetPageTitle": "添加小组件",
+    "addWidgetDesc": "将课表小组件添加到桌面，随时查看今日课程安排。",
+    "widgetSizeSmall": "小组件 (2×2)",
+    "widgetSizeSmallDesc": "显示今天接下来的 2 节课程",
+    "widgetSizeMedium": "中组件 (4×2)",
+    "widgetSizeMediumDesc": "显示标题栏和 2 张课程卡片",
+    "widgetSizeLarge": "大组件 (4×4)",
+    "widgetSizeLargeDesc": "显示标题栏和最多 4 张课程卡片",
+    "pinWidgetButton": "添加到桌面",
+    "pinWidgetSuccess": "小组件已添加到桌面",
+    "pinWidgetNotSupported": "此设备不支持固定小组件"
 }

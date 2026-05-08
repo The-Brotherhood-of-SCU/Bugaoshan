@@ -533,5 +533,17 @@
         "placeholders": {
             "version": {"type": "String"}
         }
-    }
+    },
+    "addWidgetSection": "Desktop Widget",
+    "addWidgetPageTitle": "Add Widget",
+    "addWidgetDesc": "Add course schedule widgets to your home screen for quick access.",
+    "widgetSizeSmall": "Small (2×2)",
+    "widgetSizeSmallDesc": "Shows today's next 2 courses",
+    "widgetSizeMedium": "Medium (4×2)",
+    "widgetSizeMediumDesc": "Shows header and 2 course cards",
+    "widgetSizeLarge": "Large (4×4)",
+    "widgetSizeLargeDesc": "Shows header and up to 4 course cards",
+    "pinWidgetButton": "Add to Home",
+    "pinWidgetSuccess": "Widget added to home screen",
+    "pinWidgetNotSupported": "Widget pinning is not supported on this device"
 }
