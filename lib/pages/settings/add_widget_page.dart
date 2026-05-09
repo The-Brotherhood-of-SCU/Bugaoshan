@@ -53,6 +53,32 @@ class AddWidgetPage extends StatelessWidget {
               onPressed: () => _pinWidget(context, 'large'),
               pinLabel: localizations.pinWidgetButton,
             ),
+            const SizedBox(height: 16),
+            Card(
+              color: colorScheme.surfaceContainerHighest,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      size: 20,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        localizations.pinWidgetHint,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
