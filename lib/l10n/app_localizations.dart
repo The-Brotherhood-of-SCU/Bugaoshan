@@ -3144,6 +3144,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Widget pinning is not supported on this device'**
   String get pinWidgetNotSupported;
+
+  /// No description provided for @pinWidgetHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tip: Some launchers (ColorOS, MIUI, etc.) may ignore the automatic pin request. If the widget doesn\'t appear, long-press the home screen and select \"Widgets\" to add it manually. Some systems require the \"Create desktop shortcuts\" permission to be granted.'**
+  String get pinWidgetHint;
 }
 
 class _AppLocalizationsDelegate

@@ -1608,4 +1608,8 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get pinWidgetNotSupported =>
       'Widget pinning is not supported on this device';
+
+  @override
+  String get pinWidgetHint =>
+      'Tip: Some launchers (ColorOS, MIUI, etc.) may ignore the automatic pin request. If the widget doesn\'t appear, long-press the home screen and select \"Widgets\" to add it manually. Some systems require the \"Create desktop shortcuts\" permission to be granted.';
 }

@@ -1565,6 +1565,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get pinWidgetNotSupported => '此设备不支持固定小组件';
+
+  @override
+  String get pinWidgetHint =>
+      '提示：部分系统（如 ColorOS、MIUI 等）可能会忽略自动添加请求。如果小组件未出现在桌面，请长按桌面空白处，选择「小组件」手动添加。某些系统需要授予「创建桌面快捷方式」权限。';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).
