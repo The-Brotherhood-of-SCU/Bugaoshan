@@ -364,6 +364,54 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(l10n.importSuccess)));
+
+        // 导入成功后，询问是否自动设置当前教学周
+        final setWeek = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text(l10n.autoSetCurrentWeekTitle),
+            content: Text(l10n.autoSetCurrentWeekContent),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l10n.cancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(l10n.confirm),
+              ),
+            ],
+          ),
+        );
+        if (setWeek == true && mounted) {
+          try {
+            final week = await authProvider.service.fetchCurrentWeek();
+            if (!mounted) return;
+            final now = DateTime.now();
+            final today = DateTime(now.year, now.month, now.day);
+            final currentSunday = today.toSunday();
+            final newStartDate = currentSunday.subtract(
+              Duration(days: (week - 1) * 7),
+            );
+            final currentConfig =
+                widget.courseProvider.scheduleConfig.value;
+            final updatedConfig = currentConfig.copyWith(
+              semesterStartDate: newStartDate,
+            );
+            await widget.courseProvider
+                .updateScheduleConfig(updatedConfig);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(l10n.autoSetCurrentWeekSuccess),
+                ),
+              );
+            }
+          } catch (_) {
+            // 获取失败不阻断流程，静默忽略
+          }
+        }
+
         if (Navigator.of(logicRootContext).canPop()) {
           Navigator.of(logicRootContext).pop();
         }

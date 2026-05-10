@@ -531,5 +531,8 @@
         "placeholders": {
             "version": {"type": "String"}
         }
-    }
+    },
+    "autoSetCurrentWeekTitle": "自动设置当前教学周",
+    "autoSetCurrentWeekContent": "是否从教务系统获取当前教学周并自动设置？",
+    "autoSetCurrentWeekSuccess": "已自动设置当前教学周"
 }
