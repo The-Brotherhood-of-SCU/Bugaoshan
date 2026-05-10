@@ -13,7 +13,6 @@ import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/dock_utils.dart';
-import 'package:bugaoshan/widgets/dialog/eula_dialog.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -44,30 +43,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     );
   }
 
-  bool _eulaChecked = false;
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _checkForUpdateInBackground();
     _attemptAutoLogin();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_eulaChecked) {
-      _eulaChecked = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _checkEulaAgreement();
-      });
-    }
-  }
-
-  Future<void> _checkEulaAgreement() async {
-    if (!mounted) return;
-    await ensureEulaAgreement(context);
   }
 
   Future<void> _attemptAutoLogin() async {
