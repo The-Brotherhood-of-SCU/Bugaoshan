@@ -3072,6 +3072,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Agreed version v{version}'**
   String eulaAgreedVersion(String version);
+
+  /// No description provided for @autoSetCurrentWeekTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-set Current Teaching Week'**
+  String get autoSetCurrentWeekTitle;
+
+  /// No description provided for @autoSetCurrentWeekContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetch the current teaching week from the academic system and set it automatically?'**
+  String get autoSetCurrentWeekContent;
+
+  /// No description provided for @autoSetCurrentWeekSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Current teaching week set automatically'**
+  String get autoSetCurrentWeekSuccess;
 }
 
 class _AppLocalizationsDelegate

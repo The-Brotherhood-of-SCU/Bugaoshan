@@ -1570,4 +1570,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String eulaAgreedVersion(String version) {
     return 'Agreed version v$version';
   }
+
+  @override
+  String get autoSetCurrentWeekTitle => 'Auto-set Current Teaching Week';
+
+  @override
+  String get autoSetCurrentWeekContent =>
+      'Fetch the current teaching week from the academic system and set it automatically?';
+
+  @override
+  String get autoSetCurrentWeekSuccess =>
+      'Current teaching week set automatically';
 }
