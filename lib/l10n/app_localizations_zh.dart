@@ -1529,6 +1529,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String eulaAgreedVersion(String version) {
     return '已同意版本 v$version';
   }
+
+  @override
+  String get autoSetCurrentWeekTitle => '自动设置当前教学周';
+
+  @override
+  String get autoSetCurrentWeekContent => '是否从教务系统获取当前教学周并自动设置？';
+
+  @override
+  String get autoSetCurrentWeekSuccess => '已自动设置当前教学周';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).
