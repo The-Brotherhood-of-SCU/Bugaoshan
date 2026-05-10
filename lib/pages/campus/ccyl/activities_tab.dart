@@ -134,7 +134,7 @@ class _ActivitiesTabState extends State<ActivitiesTab> {
         ),
         Expanded(
           child: _error != null
-              ? TappableErrorWidget(
+              ? RetryableErrorWidget(
                   message: _getErrorMessage(l10n, _error!),
                   onRetry: _loadActivities,
                 )

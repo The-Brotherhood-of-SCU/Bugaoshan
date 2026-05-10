@@ -245,7 +245,7 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
         }
         return const LoginRequiredWidget();
       }
-      return TappableErrorWidget(
+      return RetryableErrorWidget(
         message: _getErrorMessage(l10n, _error!),
         onRetry: _loadData,
       );

@@ -193,6 +193,22 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     }
   }
 
+  Future<void> _retryScore() async {
+    final auth = getIt<ScuAuthProvider>();
+    if (!auth.isLoggedIn) return;
+    try {
+      final client = await _ensureClient();
+      if (client == null) return;
+      try {
+        await _loadScore(client);
+      } finally {
+        client.close();
+      }
+    } catch (e) {
+      debugPrint('Retry score error: $e');
+    }
+  }
+
   Future<void> _onYearChanged(int year) async {
     _selectedYear = year;
     getIt<SharedPreferences>().setInt(_yearCacheKey, year);
@@ -277,7 +293,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
         }
         return const LoginRequiredWidget();
       }
-      return TappableErrorWidget(
+      return RetryableErrorWidget(
         message: _getErrorMessage(l10n, _error!),
         onRetry: _loadData,
       );
@@ -553,27 +569,11 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     }
 
     if (_scoreError != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.error_outline,
-                size: 48,
-                color: Theme.of(context).colorScheme.error,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _getErrorMessage(l10n, _scoreError!),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
+      return Padding(
+        padding: const EdgeInsets.all(32),
+        child: RetryableErrorWidget(
+          message: _getErrorMessage(l10n, _scoreError!),
+          onRetry: _retryScore,
         ),
       );
     }
