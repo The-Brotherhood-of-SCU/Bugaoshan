@@ -33,7 +33,7 @@ class _WizardPageState extends State<WizardPage> {
       const WelcomePage(),
       const LoginPage(),
       const FeaturesPage(),
-      if (Platform.isAndroid || true) const WidgetPage(),
+      if (Platform.isAndroid) const WidgetPage(),
     ];
     _totalPages = _pages.length;
 
