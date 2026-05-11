@@ -64,6 +64,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wizardFeatureProfileDesc => '使用统一身份认证登录并绑定第二课堂，自定义主题颜色、深色模式与语言偏好';
 
   @override
+  String get wizardFeatureWidget => '桌面小组件';
+
+  @override
+  String get wizardFeatureWidgetDesc => '将课表小组件添加到桌面，无需打开应用即可随时查看今日课程安排';
+
+  @override
   String get onboardingSkip => '跳过';
 
   @override

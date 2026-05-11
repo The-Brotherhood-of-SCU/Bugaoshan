@@ -67,6 +67,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Log in with SCU Unified Identity, bind CCYL account, customize theme colors, dark mode and language preferences';
 
   @override
+  String get wizardFeatureWidget => 'Desktop Widget';
+
+  @override
+  String get wizardFeatureWidgetDesc =>
+      'Add course schedule widgets to your home screen to check today\'s classes without opening the app';
+
+  @override
   String get onboardingSkip => 'Skip';
 
   @override

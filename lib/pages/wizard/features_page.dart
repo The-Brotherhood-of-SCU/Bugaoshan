@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:bugaoshan/pages/wizard/wizard_card.dart';
 import 'package:bugaoshan/widgets/common/third_center.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -45,6 +48,16 @@ class FeaturesPage extends StatelessWidget {
           title: l10n.wizardFeatureProfile,
           description: l10n.wizardFeatureProfileDesc,
         ),
+        if (Platform.isAndroid) ...[
+          const SizedBox(height: 12),
+          _FeatureCard(
+            icon: Icons.widgets_outlined,
+            iconBackground: colorScheme.tertiaryContainer,
+            iconColor: colorScheme.onTertiaryContainer,
+            title: l10n.wizardFeatureWidget,
+            description: l10n.wizardFeatureWidgetDesc,
+          ),
+        ],
       ],
     );
 
@@ -75,52 +88,26 @@ class _FeatureCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: iconBackground,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(icon, size: 28, color: iconColor),
+    return WizardCard(
+      icon: icon,
+      iconBackground: iconBackground,
+      iconColor: iconColor,
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            description,
+            style: textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+              height: 1.5,
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    description,
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                      height: 1.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

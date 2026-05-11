@@ -211,6 +211,18 @@ abstract class AppLocalizations {
   /// **'Log in with SCU Unified Identity, bind CCYL account, customize theme colors, dark mode and language preferences'**
   String get wizardFeatureProfileDesc;
 
+  /// No description provided for @wizardFeatureWidget.
+  ///
+  /// In en, this message translates to:
+  /// **'Desktop Widget'**
+  String get wizardFeatureWidget;
+
+  /// No description provided for @wizardFeatureWidgetDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Add course schedule widgets to your home screen to check today\'s classes without opening the app'**
+  String get wizardFeatureWidgetDesc;
+
   /// No description provided for @onboardingSkip.
   ///
   /// In en, this message translates to:

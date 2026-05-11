@@ -17,6 +17,8 @@
     "wizardFeatureCampusDesc": "查询空闲教室与学业成绩，参与第二课堂活动，查询电费与空调余额，管理校园网设备",
     "wizardFeatureProfile": "个人中心",
     "wizardFeatureProfileDesc": "使用统一身份认证登录并绑定第二课堂，自定义主题颜色、深色模式与语言偏好",
+    "wizardFeatureWidget": "桌面小组件",
+    "wizardFeatureWidgetDesc": "将课表小组件添加到桌面，无需打开应用即可随时查看今日课程安排",
     "onboardingSkip": "跳过",
     "onboardingNext": "下一步",
     "onboardingStart": "立即体验",
