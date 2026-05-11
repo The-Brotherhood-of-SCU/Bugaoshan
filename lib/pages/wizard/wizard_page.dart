@@ -106,7 +106,7 @@ class _WizardPageState extends State<WizardPage> {
     final isFirstPage = _currentPage == 0;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 32, left: 24, right: 24),
+      padding: const EdgeInsets.only(bottom: 24, left: 24, right: 24, top: 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -129,7 +129,7 @@ class _WizardPageState extends State<WizardPage> {
               );
             }),
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 16),
           Row(
             children: [
               if (!isFirstPage)
