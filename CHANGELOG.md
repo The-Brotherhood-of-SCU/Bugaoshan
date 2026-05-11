@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 添加体测页面夜间访问限制提示
 - 添加小组件夜间显示主题
+- 添加二课页面海报图片保存和分享功能
+
+### Changed
+- 优化了一些细节
 
 
 ## [1.0.0] - 2026-05-06
