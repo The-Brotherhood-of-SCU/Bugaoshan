@@ -4,6 +4,7 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import androidx.core.content.FileProvider
 import io.flutter.embedding.android.FlutterActivity
@@ -48,6 +49,11 @@ class MainActivity : FlutterActivity() {
                             result.error("INVALID_ARGUMENT", "Path is null", null)
                         }
                     }
+                    "pinWidget" -> {
+                        val size = call.argument<String>("size")
+                        val success = pinWidget(size)
+                        result.success(success)
+                    }
                     else -> result.notImplemented()
                 }
             }
@@ -74,6 +80,34 @@ class MainActivity : FlutterActivity() {
             }
         } catch (e: Exception) {
             Log.e("CourseWidget", "updateAllWidgets failed", e)
+        }
+    }
+
+    private fun pinWidget(size: String?): Boolean {
+        Log.d("CourseWidget", "pinWidget called with size=$size, SDK=${Build.VERSION.SDK_INT}")
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            Log.w("CourseWidget", "pinWidget requires API 26+")
+            return false
+        }
+        val receiverClass = when (size) {
+            "small" -> CourseWidgetReceiverSmall::class.java
+            "medium" -> CourseWidgetReceiverMedium::class.java
+            "large" -> CourseWidgetReceiverLarge::class.java
+            else -> {
+                Log.w("CourseWidget", "Unknown widget size: $size")
+                return false
+            }
+        }
+        return try {
+            val mgr = AppWidgetManager.getInstance(this)
+            val component = ComponentName(this, receiverClass)
+            Log.d("CourseWidget", "pinWidget requesting pin for $component")
+            val result = mgr.requestPinAppWidget(component, null, null)
+            Log.d("CourseWidget", "pinWidget result=$result")
+            result
+        } catch (e: Exception) {
+            Log.e("CourseWidget", "pinWidget failed for size=$size", e)
+            false
         }
     }
 

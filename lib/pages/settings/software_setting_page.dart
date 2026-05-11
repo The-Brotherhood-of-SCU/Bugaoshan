@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/settings/add_widget_page.dart';
 import 'package:bugaoshan/pages/settings/set_dock_page.dart';
 import 'package:bugaoshan/pages/settings/set_duration_page.dart';
 import 'package:bugaoshan/pages/settings/set_language_page.dart';
@@ -230,6 +231,25 @@ class SoftwareSettingPage extends StatelessWidget {
                     ),
                   ],
                 ),
+                if (Platform.isAndroid) ...[
+                  const Divider(),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      localizations.addWidgetSection,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                  ButtonWithMaxWidth(
+                    onPressed: () {
+                      popupOrNavigate(context, const AddWidgetPage());
+                    },
+                    icon: const Icon(Icons.widgets_outlined),
+                    child: Text(localizations.addWidgetPageTitle),
+                  ),
+                ],
                 const Divider(),
                 // Other section
                 Align(

@@ -1,10 +1,13 @@
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/wizard/welcome_page.dart';
 import 'package:bugaoshan/pages/wizard/login_page.dart';
 import 'package:bugaoshan/pages/wizard/features_page.dart';
+import 'package:bugaoshan/pages/wizard/widget_page.dart';
 
 class WizardPage extends StatefulWidget {
   const WizardPage({super.key});
@@ -17,13 +20,23 @@ class _WizardPageState extends State<WizardPage> {
   late final PageController _pageController;
   late final AppConfigProvider _appConfig;
   int _currentPage = 0;
-  static const int _totalPages = 3;
+  late final int _totalPages;
+  late final List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
     _appConfig = getIt<AppConfigProvider>();
     _pageController = PageController();
+
+    _pages = [
+      const WelcomePage(),
+      const LoginPage(),
+      const FeaturesPage(),
+      if (Platform.isAndroid) const WidgetPage(),
+    ];
+    _totalPages = _pages.length;
+
     _pageController.addListener(() {
       final page = _pageController.page;
       if (page != null) {
@@ -75,11 +88,7 @@ class _WizardPageState extends State<WizardPage> {
                       child: PageView(
                         physics: const NeverScrollableScrollPhysics(),
                         controller: _pageController,
-                        children: const [
-                          WelcomePage(),
-                          LoginPage(),
-                          FeaturesPage(),
-                        ],
+                        children: _pages,
                       ),
                     ),
                     _buildBottomSection(l10n, colorScheme),

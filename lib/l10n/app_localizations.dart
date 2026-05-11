@@ -211,6 +211,18 @@ abstract class AppLocalizations {
   /// **'Log in with SCU Unified Identity, bind CCYL account, customize theme colors, dark mode and language preferences'**
   String get wizardFeatureProfileDesc;
 
+  /// No description provided for @wizardFeatureWidget.
+  ///
+  /// In en, this message translates to:
+  /// **'Desktop Widget'**
+  String get wizardFeatureWidget;
+
+  /// No description provided for @wizardFeatureWidgetDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Add course schedule widgets to your home screen to check today\'s classes without opening the app'**
+  String get wizardFeatureWidgetDesc;
+
   /// No description provided for @onboardingSkip.
   ///
   /// In en, this message translates to:
@@ -3072,6 +3084,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Agreed version v{version}'**
   String eulaAgreedVersion(String version);
+
+  /// No description provided for @addWidgetSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Desktop Widget'**
+  String get addWidgetSection;
+
+  /// No description provided for @addWidgetPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Widget'**
+  String get addWidgetPageTitle;
+
+  /// No description provided for @addWidgetDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Add course schedule widgets to your home screen for quick access.'**
+  String get addWidgetDesc;
+
+  /// No description provided for @widgetSizeSmall.
+  ///
+  /// In en, this message translates to:
+  /// **'Small (2×2)'**
+  String get widgetSizeSmall;
+
+  /// No description provided for @widgetSizeSmallDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Shows today\'s next 2 courses'**
+  String get widgetSizeSmallDesc;
+
+  /// No description provided for @widgetSizeMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium (4×2)'**
+  String get widgetSizeMedium;
+
+  /// No description provided for @widgetSizeMediumDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Shows header and 2 course cards'**
+  String get widgetSizeMediumDesc;
+
+  /// No description provided for @widgetSizeLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Large (4×4)'**
+  String get widgetSizeLarge;
+
+  /// No description provided for @widgetSizeLargeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Shows header and up to 4 course cards'**
+  String get widgetSizeLargeDesc;
+
+  /// No description provided for @pinWidgetButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Home'**
+  String get pinWidgetButton;
+
+  /// No description provided for @pinWidgetSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Widget added to home screen'**
+  String get pinWidgetSuccess;
+
+  /// No description provided for @pinWidgetNotSupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Widget pinning is not supported on this device'**
+  String get pinWidgetNotSupported;
+
+  /// No description provided for @pinWidgetHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tip: Some launchers (ColorOS, MIUI, etc.) may ignore the automatic pin request. If the widget doesn\'t appear, long-press the home screen and select \"Widgets\" to add it manually. Some systems require the \"Create desktop shortcuts\" permission to be granted.'**
+  String get pinWidgetHint;
 
   /// No description provided for @autoSetCurrentWeekTitle.
   ///

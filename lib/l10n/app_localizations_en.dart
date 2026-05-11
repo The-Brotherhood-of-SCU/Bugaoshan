@@ -67,6 +67,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Log in with SCU Unified Identity, bind CCYL account, customize theme colors, dark mode and language preferences';
 
   @override
+  String get wizardFeatureWidget => 'Desktop Widget';
+
+  @override
+  String get wizardFeatureWidgetDesc =>
+      'Add course schedule widgets to your home screen to check today\'s classes without opening the app';
+
+  @override
   String get onboardingSkip => 'Skip';
 
   @override
@@ -1570,6 +1577,48 @@ class AppLocalizationsEn extends AppLocalizations {
   String eulaAgreedVersion(String version) {
     return 'Agreed version v$version';
   }
+
+  @override
+  String get addWidgetSection => 'Desktop Widget';
+
+  @override
+  String get addWidgetPageTitle => 'Add Widget';
+
+  @override
+  String get addWidgetDesc =>
+      'Add course schedule widgets to your home screen for quick access.';
+
+  @override
+  String get widgetSizeSmall => 'Small (2×2)';
+
+  @override
+  String get widgetSizeSmallDesc => 'Shows today\'s next 2 courses';
+
+  @override
+  String get widgetSizeMedium => 'Medium (4×2)';
+
+  @override
+  String get widgetSizeMediumDesc => 'Shows header and 2 course cards';
+
+  @override
+  String get widgetSizeLarge => 'Large (4×4)';
+
+  @override
+  String get widgetSizeLargeDesc => 'Shows header and up to 4 course cards';
+
+  @override
+  String get pinWidgetButton => 'Add to Home';
+
+  @override
+  String get pinWidgetSuccess => 'Widget added to home screen';
+
+  @override
+  String get pinWidgetNotSupported =>
+      'Widget pinning is not supported on this device';
+
+  @override
+  String get pinWidgetHint =>
+      'Tip: Some launchers (ColorOS, MIUI, etc.) may ignore the automatic pin request. If the widget doesn\'t appear, long-press the home screen and select \"Widgets\" to add it manually. Some systems require the \"Create desktop shortcuts\" permission to be granted.';
 
   @override
   String get autoSetCurrentWeekTitle => 'Auto-set Current Teaching Week';

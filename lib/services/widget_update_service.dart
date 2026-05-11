@@ -17,4 +17,17 @@ class WidgetUpdateService {
       debugPrint('WidgetUpdate: stack: $stack');
     }
   }
+
+  Future<bool> pinWidget(String size) async {
+    if (kIsWeb || !Platform.isAndroid) return false;
+    try {
+      final result = await _channel.invokeMethod<bool>('pinWidget', {
+        'size': size,
+      });
+      return result ?? false;
+    } catch (e) {
+      debugPrint('WidgetUpdate: pinWidget FAILED: $e');
+      return false;
+    }
+  }
 }

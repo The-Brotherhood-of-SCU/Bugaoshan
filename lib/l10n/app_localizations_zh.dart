@@ -64,6 +64,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wizardFeatureProfileDesc => '使用统一身份认证登录并绑定第二课堂，自定义主题颜色、深色模式与语言偏好';
 
   @override
+  String get wizardFeatureWidget => '桌面小组件';
+
+  @override
+  String get wizardFeatureWidgetDesc => '将课表小组件添加到桌面，无需打开应用即可随时查看今日课程安排';
+
+  @override
   String get onboardingSkip => '跳过';
 
   @override
@@ -1529,6 +1535,46 @@ class AppLocalizationsZh extends AppLocalizations {
   String eulaAgreedVersion(String version) {
     return '已同意版本 v$version';
   }
+
+  @override
+  String get addWidgetSection => '桌面小组件';
+
+  @override
+  String get addWidgetPageTitle => '添加小组件';
+
+  @override
+  String get addWidgetDesc => '将课表小组件添加到桌面，随时查看今日课程安排。';
+
+  @override
+  String get widgetSizeSmall => '小组件 (2×2)';
+
+  @override
+  String get widgetSizeSmallDesc => '显示今天接下来的 2 节课程';
+
+  @override
+  String get widgetSizeMedium => '中组件 (4×2)';
+
+  @override
+  String get widgetSizeMediumDesc => '显示标题栏和 2 张课程卡片';
+
+  @override
+  String get widgetSizeLarge => '大组件 (4×4)';
+
+  @override
+  String get widgetSizeLargeDesc => '显示标题栏和最多 4 张课程卡片';
+
+  @override
+  String get pinWidgetButton => '添加到桌面';
+
+  @override
+  String get pinWidgetSuccess => '小组件已添加到桌面';
+
+  @override
+  String get pinWidgetNotSupported => '此设备不支持固定小组件';
+
+  @override
+  String get pinWidgetHint =>
+      '提示：部分系统（如 ColorOS、MIUI 等）可能会忽略自动添加请求。如果小组件未出现在桌面，请长按桌面空白处，选择「小组件」手动添加。某些系统需要授予「创建桌面快捷方式」权限。';
 
   @override
   String get autoSetCurrentWeekTitle => '自动设置当前教学周';
