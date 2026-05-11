@@ -33,7 +33,7 @@ class _WizardPageState extends State<WizardPage> {
       const WelcomePage(),
       const LoginPage(),
       const FeaturesPage(),
-      if (Platform.isAndroid) const WidgetPage(),
+      if (Platform.isAndroid || true) const WidgetPage(),
     ];
     _totalPages = _pages.length;
 
@@ -86,7 +86,6 @@ class _WizardPageState extends State<WizardPage> {
                     const SizedBox(height: 8),
                     Expanded(
                       child: PageView(
-                        physics: const NeverScrollableScrollPhysics(),
                         controller: _pageController,
                         children: _pages,
                       ),
