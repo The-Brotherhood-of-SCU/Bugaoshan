@@ -90,7 +90,7 @@ class _MyActivitiesTabState extends State<MyActivitiesTab> {
     final l10n = AppLocalizations.of(context)!;
 
     return _error != null
-        ? TappableErrorWidget(
+        ? RetryableErrorWidget(
             message: _getErrorMessage(l10n, _error!),
             onRetry: _loadActivities,
           )

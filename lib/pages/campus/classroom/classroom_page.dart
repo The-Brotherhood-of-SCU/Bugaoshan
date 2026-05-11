@@ -524,7 +524,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
       }
       return const LoginRequiredWidget();
     }
-    return TappableErrorWidget(
+    return RetryableErrorWidget(
       message: _error == 'sessionExpired' ? l10n.sessionExpired : l10n.loadFailed,
       onRetry: onRetry,
     );

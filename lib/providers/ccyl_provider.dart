@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:bugaoshan/services/ccyl_oauth_service.dart';
 import 'package:bugaoshan/services/ccyl_service.dart';
 
 const _keyCcylToken = 'ccyl_token';
@@ -43,5 +44,16 @@ class CcylProvider extends ChangeNotifier {
     _prefs.remove(_keyCcylToken);
     _prefs.remove(_keyCcylUserId);
     notifyListeners();
+  }
+
+  /// 统一认证重新登录后，自动恢复二课登录状态
+  Future<void> reLogin() async {
+    try {
+      final oauthCode = await CcylOAuthService().getOAuthCode();
+      if (oauthCode == null) return;
+      await loginWithOAuthCode(oauthCode);
+    } catch (e) {
+      debugPrint('CcylProvider.reLogin error: $e');
+    }
   }
 }

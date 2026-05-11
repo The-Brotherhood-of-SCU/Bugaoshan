@@ -3162,6 +3162,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tip: Some launchers (ColorOS, MIUI, etc.) may ignore the automatic pin request. If the widget doesn\'t appear, long-press the home screen and select \"Widgets\" to add it manually. Some systems require the \"Create desktop shortcuts\" permission to be granted.'**
   String get pinWidgetHint;
+
+  /// No description provided for @autoSetCurrentWeekTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-set Current Teaching Week'**
+  String get autoSetCurrentWeekTitle;
+
+  /// No description provided for @autoSetCurrentWeekContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetch the current teaching week from the academic system and set it automatically?'**
+  String get autoSetCurrentWeekContent;
+
+  /// No description provided for @autoSetCurrentWeekSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Current teaching week set automatically'**
+  String get autoSetCurrentWeekSuccess;
+
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// No description provided for @saveImageToGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to Gallery'**
+  String get saveImageToGallery;
+
+  /// No description provided for @imageSavedToGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to Gallery'**
+  String get imageSavedToGallery;
+
+  /// No description provided for @imageSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save image'**
+  String get imageSaveFailed;
 }
 
 class _AppLocalizationsDelegate

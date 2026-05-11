@@ -163,7 +163,7 @@ class BalanceCardState extends State<BalanceCard> {
               child: _error != null
                   ? Center(
                       child: Text(
-                        _error!,
+                        l10n.loadFailed,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.error,
                         ),

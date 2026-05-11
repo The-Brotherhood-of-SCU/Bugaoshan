@@ -218,7 +218,7 @@ class _CreditListPageState extends State<CreditListPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return _error != null
-        ? TappableErrorWidget(
+        ? RetryableErrorWidget(
             message: _getErrorMessage(l10n, _error!),
             onRetry: _loadCredits,
           )

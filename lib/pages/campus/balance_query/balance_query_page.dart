@@ -193,7 +193,7 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
       if (_initError == 'notLoggedIn') {
         return const LoginRequiredWidget();
       }
-      return TappableErrorWidget(
+      return RetryableErrorWidget(
         message: l10n.loadFailed,
         onRetry: _initProvider,
       );

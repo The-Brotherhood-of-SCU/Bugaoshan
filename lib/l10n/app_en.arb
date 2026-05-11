@@ -548,5 +548,12 @@
     "pinWidgetButton": "Add to Home",
     "pinWidgetSuccess": "Widget added to home screen",
     "pinWidgetNotSupported": "Widget pinning is not supported on this device",
-    "pinWidgetHint": "Tip: Some launchers (ColorOS, MIUI, etc.) may ignore the automatic pin request. If the widget doesn't appear, long-press the home screen and select \"Widgets\" to add it manually. Some systems require the \"Create desktop shortcuts\" permission to be granted."
+    "pinWidgetHint": "Tip: Some launchers (ColorOS, MIUI, etc.) may ignore the automatic pin request. If the widget doesn't appear, long-press the home screen and select \"Widgets\" to add it manually. Some systems require the \"Create desktop shortcuts\" permission to be granted.",
+    "autoSetCurrentWeekTitle": "Auto-set Current Teaching Week",
+    "autoSetCurrentWeekContent": "Fetch the current teaching week from the academic system and set it automatically?",
+    "autoSetCurrentWeekSuccess": "Current teaching week set automatically",
+    "share": "Share",
+    "saveImageToGallery": "Save to Gallery",
+    "imageSavedToGallery": "Saved to Gallery",
+    "imageSaveFailed": "Failed to save image"
 }

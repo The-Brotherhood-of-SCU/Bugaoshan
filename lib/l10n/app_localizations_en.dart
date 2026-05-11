@@ -1619,4 +1619,27 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get pinWidgetHint =>
       'Tip: Some launchers (ColorOS, MIUI, etc.) may ignore the automatic pin request. If the widget doesn\'t appear, long-press the home screen and select \"Widgets\" to add it manually. Some systems require the \"Create desktop shortcuts\" permission to be granted.';
+
+  @override
+  String get autoSetCurrentWeekTitle => 'Auto-set Current Teaching Week';
+
+  @override
+  String get autoSetCurrentWeekContent =>
+      'Fetch the current teaching week from the academic system and set it automatically?';
+
+  @override
+  String get autoSetCurrentWeekSuccess =>
+      'Current teaching week set automatically';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get saveImageToGallery => 'Save to Gallery';
+
+  @override
+  String get imageSavedToGallery => 'Saved to Gallery';
+
+  @override
+  String get imageSaveFailed => 'Failed to save image';
 }

@@ -93,7 +93,7 @@ class _OrderedActivitiesTabState extends State<OrderedActivitiesTab> {
 
     // 错误态：单独展示，不需要下拉刷新
     if (_error != null) {
-      return TappableErrorWidget(
+      return RetryableErrorWidget(
         message: _getErrorMessage(l10n, _error!),
         onRetry: _loadActivities,
       );
