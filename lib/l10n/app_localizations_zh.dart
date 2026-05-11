@@ -1538,6 +1538,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get autoSetCurrentWeekSuccess => '已自动设置当前教学周';
+
+  @override
+  String get share => '分享';
+
+  @override
+  String get saveImageToGallery => '保存到相册';
+
+  @override
+  String get imageSavedToGallery => '已保存到相册';
+
+  @override
+  String get imageSaveFailed => '图片保存失败';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

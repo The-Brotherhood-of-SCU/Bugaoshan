@@ -1581,4 +1581,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get autoSetCurrentWeekSuccess =>
       'Current teaching week set automatically';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get saveImageToGallery => 'Save to Gallery';
+
+  @override
+  String get imageSavedToGallery => 'Saved to Gallery';
+
+  @override
+  String get imageSaveFailed => 'Failed to save image';
 }

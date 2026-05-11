@@ -536,5 +536,9 @@
     },
     "autoSetCurrentWeekTitle": "Auto-set Current Teaching Week",
     "autoSetCurrentWeekContent": "Fetch the current teaching week from the academic system and set it automatically?",
-    "autoSetCurrentWeekSuccess": "Current teaching week set automatically"
+    "autoSetCurrentWeekSuccess": "Current teaching week set automatically",
+    "share": "Share",
+    "saveImageToGallery": "Save to Gallery",
+    "imageSavedToGallery": "Saved to Gallery",
+    "imageSaveFailed": "Failed to save image"
 }

@@ -607,48 +607,53 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
             ),
           ],
           const SizedBox(height: 16),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  _buildCourseInfoRow(
-                    context,
-                    l10n.trainProgramCourseNumber,
-                    kc.kch,
-                  ),
-                  _buildCourseInfoRow(context, l10n.trainProgramCredits, kc.xf),
-                  _buildCourseInfoRow(context, l10n.trainProgramHours, kc.xs),
-                  _buildCourseInfoRow(
-                    context,
-                    l10n.trainProgramOpenCollege,
-                    kc.xsm,
-                  ),
-                  _buildCourseInfoRow(
-                    context,
-                    l10n.trainProgramCourseType,
-                    kc.kclbmc,
-                  ),
-                  _buildCourseInfoRow(
-                    context,
-                    l10n.trainProgramExamType,
-                    kc.kslxmc,
-                  ),
-                  _buildCourseInfoRow(
-                    context,
-                    l10n.trainProgramTeachingMethod,
-                    kc.jxfssm,
-                  ),
-                  _buildCourseHoursRow(context),
-                  _buildCourseInfoRow(
-                    context,
-                    l10n.trainProgramObjective,
-                    kc.nrjj,
-                  ),
-                ],
+          if (!detail.isOpenCourse)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    _buildCourseInfoRow(
+                      context,
+                      l10n.trainProgramCourseNumber,
+                      kc.kch,
+                    ),
+                    _buildCourseInfoRow(
+                      context,
+                      l10n.trainProgramCredits,
+                      kc.xf,
+                    ),
+                    _buildCourseInfoRow(context, l10n.trainProgramHours, kc.xs),
+                    _buildCourseInfoRow(
+                      context,
+                      l10n.trainProgramOpenCollege,
+                      kc.xsm,
+                    ),
+                    _buildCourseInfoRow(
+                      context,
+                      l10n.trainProgramCourseType,
+                      kc.kclbmc,
+                    ),
+                    _buildCourseInfoRow(
+                      context,
+                      l10n.trainProgramExamType,
+                      kc.kslxmc,
+                    ),
+                    _buildCourseInfoRow(
+                      context,
+                      l10n.trainProgramTeachingMethod,
+                      kc.jxfssm,
+                    ),
+                    _buildCourseHoursRow(context),
+                    _buildCourseInfoRow(
+                      context,
+                      l10n.trainProgramObjective,
+                      kc.nrjj,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
           const SizedBox(height: 16),
           if (detail.isOpenCourse) ...[
             Card(

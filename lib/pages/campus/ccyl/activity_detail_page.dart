@@ -1,4 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:gal/gal.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
@@ -307,31 +313,144 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
   }
 
   void _showFullScreenImage(BuildContext context, String imageUrl) {
+    final l10n = AppLocalizations.of(context)!;
+
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => Scaffold(
           backgroundColor: Colors.black,
-          appBar: AppBar(
-            backgroundColor: Colors.black,
-            iconTheme: const IconThemeData(color: Colors.white),
-          ),
-          body: PhotoView(
-            imageProvider: NetworkImage(imageUrl),
-            minScale: PhotoViewComputedScale.contained,
-            maxScale: PhotoViewComputedScale.covered * 3,
-            backgroundDecoration: const BoxDecoration(color: Colors.black),
-            errorBuilder: (context, error, stackTrace) {
-              return Center(
-                child: Container(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  child: const Icon(Icons.image_not_supported, size: 64),
+          body: Stack(
+            children: [
+              Center(
+                child: GestureDetector(
+                  onLongPress: () => _showImageActions(context, imageUrl, l10n),
+                  child: PhotoView(
+                    imageProvider: NetworkImage(imageUrl),
+                    minScale: PhotoViewComputedScale.contained,
+                    maxScale: PhotoViewComputedScale.covered * 3,
+                    backgroundDecoration: const BoxDecoration(
+                      color: Colors.black,
+                    ),
+                    errorBuilder: (context, error, stackTrace) {
+                      return Center(
+                        child: Container(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerHighest,
+                          child: const Icon(Icons.image_not_supported, size: 64),
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              );
-            },
+              ),
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 8,
+                left: 8,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 8,
+                right: 8,
+                child: IconButton(
+                  icon: const Icon(Icons.more_vert, color: Colors.white),
+                  onPressed: () =>
+                      _showImageActions(context, imageUrl, l10n),
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
+  }
+
+  void _showImageActions(
+    BuildContext context,
+    String imageUrl,
+    AppLocalizations l10n,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.save_alt),
+              title: Text(l10n.saveImageToGallery),
+              onTap: () {
+                Navigator.pop(ctx);
+                _saveImageToGallery(context, imageUrl, l10n);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.share),
+              title: Text(l10n.share),
+              onTap: () {
+                Navigator.pop(ctx);
+                _shareImage(context, imageUrl, l10n);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _saveImageToGallery(
+    BuildContext context,
+    String imageUrl,
+    AppLocalizations l10n,
+  ) async {
+    try {
+      final response = await http.get(Uri.parse(imageUrl));
+      if (response.statusCode != 200) throw Exception('Download failed');
+      await Gal.putImageBytes(response.bodyBytes);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.imageSavedToGallery)),
+        );
+      }
+    } catch (e) {
+      debugPrint('Save image error: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.imageSaveFailed),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _shareImage(
+    BuildContext context,
+    String imageUrl,
+    AppLocalizations l10n,
+  ) async {
+    try {
+      final response = await http.get(Uri.parse(imageUrl));
+      if (response.statusCode != 200) throw Exception('Download failed');
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/ccyl_image_${DateTime.now().millisecondsSinceEpoch}.jpg');
+      await file.writeAsBytes(response.bodyBytes);
+      await Share.shareXFiles([XFile(file.path)]);
+    } catch (e) {
+      debugPrint('Share image error: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.imageSaveFailed),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildHeader(AppLocalizations l10n) {

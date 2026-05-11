@@ -534,5 +534,9 @@
     },
     "autoSetCurrentWeekTitle": "自动设置当前教学周",
     "autoSetCurrentWeekContent": "是否从教务系统获取当前教学周并自动设置？",
-    "autoSetCurrentWeekSuccess": "已自动设置当前教学周"
+    "autoSetCurrentWeekSuccess": "已自动设置当前教学周",
+    "share": "分享",
+    "saveImageToGallery": "保存到相册",
+    "imageSavedToGallery": "已保存到相册",
+    "imageSaveFailed": "图片保存失败"
 }

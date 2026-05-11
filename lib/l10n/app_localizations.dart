@@ -3090,6 +3090,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Current teaching week set automatically'**
   String get autoSetCurrentWeekSuccess;
+
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// No description provided for @saveImageToGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to Gallery'**
+  String get saveImageToGallery;
+
+  /// No description provided for @imageSavedToGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to Gallery'**
+  String get imageSavedToGallery;
+
+  /// No description provided for @imageSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save image'**
+  String get imageSaveFailed;
 }
 
 class _AppLocalizationsDelegate
