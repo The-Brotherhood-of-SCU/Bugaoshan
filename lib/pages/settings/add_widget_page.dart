@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 
 class AddWidgetPage extends StatelessWidget {
@@ -89,7 +90,7 @@ class _AddWidgetContentState extends State<AddWidgetContent> {
           const SizedBox(height: 24),
         ],
         AnimatedSize(
-          duration: const Duration(milliseconds: 300),
+          duration: getIt<AppConfigProvider>().cardSizeAnimationDuration.value,
           child: switch (_status) {
             BatteryOptimizationStatus.checking => const SizedBox.shrink(),
             BatteryOptimizationStatus.enabled => _buildOptimizationsEnabledCard(colorScheme, localizations),
