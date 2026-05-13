@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -22,10 +24,52 @@ class AddWidgetPage extends StatelessWidget {
   }
 }
 
-class AddWidgetContent extends StatelessWidget {
+class AddWidgetContent extends StatefulWidget {
   final bool showDescription;
 
   const AddWidgetContent({super.key, this.showDescription = true});
+
+  @override
+  State<AddWidgetContent> createState() => _AddWidgetContentState();
+}
+
+enum BatteryOptimizationStatus {
+  checking,
+  enabled,
+  disabled,
+}
+
+class _AddWidgetContentState extends State<AddWidgetContent> {
+  BatteryOptimizationStatus _status = BatteryOptimizationStatus.checking;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBatteryOptimization();
+  }
+
+  Future<void> _checkBatteryOptimization() async {
+    if (!Platform.isAndroid) {
+      setState(() => _status = BatteryOptimizationStatus.disabled);
+      return;
+    }
+    final service = getIt<WidgetUpdateService>();
+    final isIgnoring = await service.isIgnoringBatteryOptimizations();
+    if (mounted) {
+      setState(() {
+        _status = isIgnoring ? BatteryOptimizationStatus.disabled : BatteryOptimizationStatus.enabled;
+      });
+    }
+  }
+
+  Future<void> _requestIgnoreBatteryOptimizations() async {
+    final service = getIt<WidgetUpdateService>();
+    await service.requestIgnoreBatteryOptimizations();
+    if (!mounted) return;
+    // Re-check after returning from settings
+    await Future.delayed(const Duration(milliseconds: 500));
+    await _checkBatteryOptimization();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +79,7 @@ class AddWidgetContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (showDescription) ...[
+        if (widget.showDescription) ...[
           Text(
             localizations.addWidgetDesc,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -44,6 +88,15 @@ class AddWidgetContent extends StatelessWidget {
           ),
           const SizedBox(height: 24),
         ],
+        AnimatedSize(
+          duration: const Duration(milliseconds: 300),
+          child: switch (_status) {
+            BatteryOptimizationStatus.checking => const SizedBox.shrink(),
+            BatteryOptimizationStatus.enabled => _buildOptimizationsEnabledCard(colorScheme, localizations),
+            BatteryOptimizationStatus.disabled => _buildOptimizationsDisabledCard(colorScheme, localizations),
+          },
+        ),
+        const SizedBox(height: 16),
         _WidgetSizeCard(
           icon: Icons.widgets_outlined,
           title: localizations.widgetSizeSmall,
@@ -97,6 +150,79 @@ class AddWidgetContent extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildOptimizationsEnabledCard(ColorScheme colorScheme, AppLocalizations localizations) {
+    return Card(
+      color: colorScheme.primaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.battery_alert,
+              size: 20,
+              color: colorScheme.onPrimaryContainer,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    localizations.batteryOptimizationTitle,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onPrimaryContainer,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    localizations.batteryOptimizationDesc,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  FilledButton.tonal(
+                    onPressed: _requestIgnoreBatteryOptimizations,
+                    child: Text(localizations.batteryOptimizationButton),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOptimizationsDisabledCard(ColorScheme colorScheme, AppLocalizations localizations) {
+    return Card(
+      color: colorScheme.surfaceContainerHighest,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Icon(
+              Icons.check_circle,
+              size: 20,
+              color: colorScheme.primary,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                localizations.batteryOptimizationAlreadyDisabled,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
