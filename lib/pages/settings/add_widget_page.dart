@@ -92,7 +92,7 @@ class _AddWidgetContentState extends State<AddWidgetContent> {
         AnimatedSize(
           duration: getIt<AppConfigProvider>().cardSizeAnimationDuration.value,
           child: switch (_status) {
-            BatteryOptimizationStatus.checking => const SizedBox.shrink(),
+            BatteryOptimizationStatus.checking => _buildLoadingCard(colorScheme, localizations),
             BatteryOptimizationStatus.enabled => _buildOptimizationsEnabledCard(colorScheme, localizations),
             BatteryOptimizationStatus.disabled => _buildOptimizationsDisabledCard(colorScheme, localizations),
           },
@@ -151,6 +151,34 @@ class _AddWidgetContentState extends State<AddWidgetContent> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildLoadingCard(ColorScheme colorScheme, AppLocalizations localizations) {
+    return Card(
+      color: colorScheme.surfaceContainerHighest,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colorScheme.primary,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              localizations.loading,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
