@@ -67,9 +67,24 @@ class _AddWidgetContentState extends State<AddWidgetContent> {
     final service = getIt<WidgetUpdateService>();
     await service.requestIgnoreBatteryOptimizations();
     if (!mounted) return;
-    // Re-check after returning from settings
     await Future.delayed(const Duration(milliseconds: 500));
     await _checkBatteryOptimization();
+  }
+
+  Future<void> _pinWidget(BuildContext context, String size) async {
+    final localizations = AppLocalizations.of(context)!;
+    final service = getIt<WidgetUpdateService>();
+    final success = await service.pinWidget(size);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? localizations.pinWidgetSuccess
+              : localizations.pinWidgetNotSupported,
+        ),
+      ),
+    );
   }
 
   @override
@@ -89,13 +104,9 @@ class _AddWidgetContentState extends State<AddWidgetContent> {
           ),
           const SizedBox(height: 24),
         ],
-        AnimatedSize(
-          duration: getIt<AppConfigProvider>().cardSizeAnimationDuration.value,
-          child: switch (_status) {
-            BatteryOptimizationStatus.checking => _buildLoadingCard(colorScheme, localizations),
-            BatteryOptimizationStatus.enabled => _buildOptimizationsEnabledCard(colorScheme, localizations),
-            BatteryOptimizationStatus.disabled => _buildOptimizationsDisabledCard(colorScheme, localizations),
-          },
+        BatteryOptimizationCard(
+          status: _status,
+          onRequestIgnore: _requestIgnoreBatteryOptimizations,
         ),
         const SizedBox(height: 16),
         _WidgetSizeCard(
@@ -125,36 +136,55 @@ class _AddWidgetContentState extends State<AddWidgetContent> {
           pinLabel: localizations.pinWidgetButton,
         ),
         const SizedBox(height: 16),
-        Card(
-          color: colorScheme.surfaceContainerHighest,
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  Icons.info_outline,
-                  size: 20,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    localizations.pinWidgetHint,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        _HintCard(hint: localizations.pinWidgetHint),
       ],
     );
   }
+}
 
-  Widget _buildLoadingCard(ColorScheme colorScheme, AppLocalizations localizations) {
+class BatteryOptimizationCard extends StatelessWidget {
+  final BatteryOptimizationStatus status;
+  final VoidCallback onRequestIgnore;
+
+  const BatteryOptimizationCard({
+    super.key,
+    required this.status,
+    required this.onRequestIgnore,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final duration = getIt<AppConfigProvider>().cardSizeAnimationDuration.value;
+
+    return AnimatedSize(
+      duration: duration,
+      child: switch (status) {
+        BatteryOptimizationStatus.checking => _LoadingCard(localizations: localizations),
+        BatteryOptimizationStatus.enabled => _OptimizationEnabledCard(
+            localizations: localizations,
+            colorScheme: colorScheme,
+            onRequestIgnore: onRequestIgnore,
+          ),
+        BatteryOptimizationStatus.disabled => _OptimizationDisabledCard(
+            localizations: localizations,
+            colorScheme: colorScheme,
+          ),
+      },
+    );
+  }
+}
+
+class _LoadingCard extends StatelessWidget {
+  final AppLocalizations localizations;
+
+  const _LoadingCard({required this.localizations});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Card(
       color: colorScheme.surfaceContainerHighest,
       child: Padding(
@@ -181,8 +211,21 @@ class _AddWidgetContentState extends State<AddWidgetContent> {
       ),
     );
   }
+}
 
-  Widget _buildOptimizationsEnabledCard(ColorScheme colorScheme, AppLocalizations localizations) {
+class _OptimizationEnabledCard extends StatelessWidget {
+  final AppLocalizations localizations;
+  final ColorScheme colorScheme;
+  final VoidCallback onRequestIgnore;
+
+  const _OptimizationEnabledCard({
+    required this.localizations,
+    required this.colorScheme,
+    required this.onRequestIgnore,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
       color: colorScheme.primaryContainer,
       child: Padding(
@@ -216,7 +259,7 @@ class _AddWidgetContentState extends State<AddWidgetContent> {
                   ),
                   const SizedBox(height: 8),
                   FilledButton.tonal(
-                    onPressed: _requestIgnoreBatteryOptimizations,
+                    onPressed: onRequestIgnore,
                     child: Text(localizations.batteryOptimizationButton),
                   ),
                 ],
@@ -227,8 +270,19 @@ class _AddWidgetContentState extends State<AddWidgetContent> {
       ),
     );
   }
+}
 
-  Widget _buildOptimizationsDisabledCard(ColorScheme colorScheme, AppLocalizations localizations) {
+class _OptimizationDisabledCard extends StatelessWidget {
+  final AppLocalizations localizations;
+  final ColorScheme colorScheme;
+
+  const _OptimizationDisabledCard({
+    required this.localizations,
+    required this.colorScheme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
       color: colorScheme.surfaceContainerHighest,
       child: Padding(
@@ -254,18 +308,39 @@ class _AddWidgetContentState extends State<AddWidgetContent> {
       ),
     );
   }
+}
 
-  Future<void> _pinWidget(BuildContext context, String size) async {
-    final localizations = AppLocalizations.of(context)!;
-    final service = getIt<WidgetUpdateService>();
-    final success = await service.pinWidget(size);
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success
-              ? localizations.pinWidgetSuccess
-              : localizations.pinWidgetNotSupported,
+class _HintCard extends StatelessWidget {
+  final String hint;
+
+  const _HintCard({required this.hint});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Card(
+      color: colorScheme.surfaceContainerHighest,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.info_outline,
+              size: 20,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                hint,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
