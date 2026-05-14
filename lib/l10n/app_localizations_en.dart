@@ -1395,6 +1395,27 @@ class AppLocalizationsEn extends AppLocalizations {
       'View SCU academic calendar and semester schedule';
 
   @override
+  String get campusNotices => 'Notices';
+
+  @override
+  String get campusNoticesDesc => 'View SCU Academic Affairs notices';
+
+  @override
+  String get campusNoticesSearchHint => 'Search notice title';
+
+  @override
+  String get campusNoticesAllDates => 'All dates';
+
+  @override
+  String get campusNoticesClearDate => 'Clear filter';
+
+  @override
+  String get campusNoticesPinned => 'Pinned';
+
+  @override
+  String get campusNoticesLoadFailed => 'Load failed, please check network';
+
+  @override
   String get selectAcademicYear => 'Select Academic Year';
 
   @override
