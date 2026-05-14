@@ -707,16 +707,29 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
       color: Theme.of(context).colorScheme.primary,
     );
 
+    // Collect table ranges first so we can exclude inner elements.
+    final tableRanges = <_Range>[];
+    final tableElements = <_ContentElement>[];
+    for (final match in _tableReg.allMatches(html)) {
+      tableRanges.add(_Range(match.start, match.end));
+      tableElements.add(_ContentElement(match.start, match.group(0)!, _ElementType.table));
+    }
+
+    bool insideTable(int offset) =>
+        tableRanges.any((r) => offset >= r.start && offset < r.end);
+
     final elements = <_ContentElement>[];
     for (final match in _paragraphReg.allMatches(html)) {
-      elements.add(_ContentElement(match.start, match.group(0)!, _ElementType.paragraph));
+      if (!insideTable(match.start)) {
+        elements.add(_ContentElement(match.start, match.group(0)!, _ElementType.paragraph));
+      }
     }
     for (final match in _imgReg.allMatches(html)) {
-      elements.add(_ContentElement(match.start, match.group(0)!, _ElementType.image));
+      if (!insideTable(match.start)) {
+        elements.add(_ContentElement(match.start, match.group(0)!, _ElementType.image));
+      }
     }
-    for (final match in _tableReg.allMatches(html)) {
-      elements.add(_ContentElement(match.start, match.group(0)!, _ElementType.table));
-    }
+    elements.addAll(tableElements);
     elements.sort((a, b) => a.offset.compareTo(b.offset));
 
     final seenImages = <String>{};
@@ -1195,4 +1208,11 @@ class _InlineElement {
   final String? href;
 
   _InlineElement(this.text, this.href);
+}
+
+class _Range {
+  final int start;
+  final int end;
+
+  _Range(this.start, this.end);
 }
