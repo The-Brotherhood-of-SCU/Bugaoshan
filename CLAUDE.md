@@ -57,6 +57,18 @@ GetIt + Injectable. `lib/injection/injector.config.dart` is auto-generated. Re-r
 - **`ExitService`** (`lib/services/exit_service.dart`) — 统一应用退出逻辑，桌面端使用 `windowManager.destroy()`，移动端使用 `exit(0)`。
 - **`WindowStateService`** (`lib/services/window_state_service.dart`) — Desktop 窗口状态持久化，保存/恢复窗口位置和大小。
 
+### Notice Page (`lib/pages/campus/notice/campus_notice_page.dart`)
+Fetches and displays SCU Academic Affairs notices from `jwc.scu.edu.cn`.
+
+- **List source**: `https://jwc.scu.edu.cn/tzgg.htm` (paginated: `tzgg/{num}.htm` descending from 200 to 1).
+- **Pinned detection**: Parses homepage `index.htm` for `[置顶]` markers via `_pinnedReg` regex.
+- **Paginated loading**: Scroll-driven infinite scroll with `_scrollLoadThreshold = 160px` trigger.
+  - Page 1: `tzgg.htm` → page 2: `tzgg/200.htm` → page 3: `tzgg/199.htm` → ... → `tzgg/1.htm`.
+- **HTTP client**: `_NoticeHttp` singleton with cookie jar for session continuity across list/detail requests.
+  - Cookies extracted from `set-cookie` headers; handles joined multi-header format by splitting on `', (?=\w[\w.]*=)'`.
+- **Detail parsing**: Extracts article content from `v_news_content` / `vsb_content` / fallback HTML-to-text.
+  - Encoding errors logged via `_decodeBody()` wrapper instead of silently allowing malformed data.
+
 ### Providers
 - **`ScuAuthProvider`** — Persists SCU token via SharedPreferences. Wraps `ScuAuthService`.
 - **`GradesProvider`** — Handles `ScuLoginException.sessionExpired` by auto-calling `logout()`.
