@@ -2725,6 +2725,48 @@ abstract class AppLocalizations {
   /// **'View SCU academic calendar and semester schedule'**
   String get academicCalendarDesc;
 
+  /// No description provided for @campusNotices.
+  ///
+  /// In en, this message translates to:
+  /// **'Notices'**
+  String get campusNotices;
+
+  /// No description provided for @campusNoticesDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'View SCU Academic Affairs notices'**
+  String get campusNoticesDesc;
+
+  /// No description provided for @campusNoticesSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search notice title'**
+  String get campusNoticesSearchHint;
+
+  /// No description provided for @campusNoticesAllDates.
+  ///
+  /// In en, this message translates to:
+  /// **'All dates'**
+  String get campusNoticesAllDates;
+
+  /// No description provided for @campusNoticesClearDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filter'**
+  String get campusNoticesClearDate;
+
+  /// No description provided for @campusNoticesPinned.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned'**
+  String get campusNoticesPinned;
+
+  /// No description provided for @campusNoticesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Load failed, please check network'**
+  String get campusNoticesLoadFailed;
+
   /// No description provided for @selectAcademicYear.
   ///
   /// In en, this message translates to:

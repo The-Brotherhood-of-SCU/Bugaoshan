@@ -1354,6 +1354,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get academicCalendarDesc => '查看四川大学校历，了解学期安排';
 
   @override
+  String get campusNotices => '通知公告';
+
+  @override
+  String get campusNoticesDesc => '查看四川大学教务处通知公告';
+
+  @override
+  String get campusNoticesSearchHint => '搜索通知标题';
+
+  @override
+  String get campusNoticesAllDates => '全部时间';
+
+  @override
+  String get campusNoticesClearDate => '清除筛选';
+
+  @override
+  String get campusNoticesPinned => '置顶';
+
+  @override
+  String get campusNoticesLoadFailed => '加载失败，请检查网络';
+
+  @override
   String get selectAcademicYear => '选择学年';
 
   @override

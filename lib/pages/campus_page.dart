@@ -9,6 +9,7 @@ import 'package:bugaoshan/pages/campus/ccyl/ccyl_page.dart';
 import 'package:bugaoshan/pages/campus/grades/grades_page.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/plan_completion_page.dart';
 import 'package:bugaoshan/pages/campus/network_device/network_device_page.dart';
+import 'package:bugaoshan/pages/campus/notice/campus_notice_page.dart';
 import 'package:bugaoshan/pages/campus/train_program/train_program_page.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
@@ -170,6 +171,17 @@ class _CampusPageState extends State<CampusPage>
                       onTap: () => popupOrNavigate(
                         logicRootContext,
                         const AcademicCalendarPage(),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _CampusCard(
+                      icon: Icons.campaign_outlined,
+                      title: l10n.campusNotices,
+                      desc: l10n.campusNoticesDesc,
+                      appOnly: false,
+                      onTap: () => popupOrNavigate(
+                        logicRootContext,
+                        const CampusNoticePage(),
                       ),
                     ),
                     const SizedBox(height: 24),
