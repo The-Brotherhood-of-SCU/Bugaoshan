@@ -1621,6 +1621,24 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tip: Some launchers (ColorOS, MIUI, etc.) may ignore the automatic pin request. If the widget doesn\'t appear, long-press the home screen and select \"Widgets\" to add it manually. Some systems require the \"Create desktop shortcuts\" permission to be granted.';
 
   @override
+  String get batteryOptimizationTitle => 'Disable Battery Optimization';
+
+  @override
+  String get batteryOptimizationDesc =>
+      'To ensure the widget updates reliably, please disable battery optimization for this app. This prevents the system from delaying background tasks.';
+
+  @override
+  String get batteryOptimizationButton => 'Disable Now';
+
+  @override
+  String get batteryOptimizationAlreadyDisabled =>
+      'Battery optimization is already disabled';
+
+  @override
+  String get batteryOptimizationSuccess =>
+      'Battery optimization disabled successfully';
+
+  @override
   String get autoSetCurrentWeekTitle => 'Auto-set Current Teaching Week';
 
   @override

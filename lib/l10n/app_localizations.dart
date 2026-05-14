@@ -3163,6 +3163,36 @@ abstract class AppLocalizations {
   /// **'Tip: Some launchers (ColorOS, MIUI, etc.) may ignore the automatic pin request. If the widget doesn\'t appear, long-press the home screen and select \"Widgets\" to add it manually. Some systems require the \"Create desktop shortcuts\" permission to be granted.'**
   String get pinWidgetHint;
 
+  /// No description provided for @batteryOptimizationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Disable Battery Optimization'**
+  String get batteryOptimizationTitle;
+
+  /// No description provided for @batteryOptimizationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'To ensure the widget updates reliably, please disable battery optimization for this app. This prevents the system from delaying background tasks.'**
+  String get batteryOptimizationDesc;
+
+  /// No description provided for @batteryOptimizationButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Disable Now'**
+  String get batteryOptimizationButton;
+
+  /// No description provided for @batteryOptimizationAlreadyDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Battery optimization is already disabled'**
+  String get batteryOptimizationAlreadyDisabled;
+
+  /// No description provided for @batteryOptimizationSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Battery optimization disabled successfully'**
+  String get batteryOptimizationSuccess;
+
   /// No description provided for @autoSetCurrentWeekTitle.
   ///
   /// In en, this message translates to:
