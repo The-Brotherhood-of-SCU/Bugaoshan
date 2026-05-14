@@ -144,30 +144,12 @@ final _tableReg = RegExp(r'<table[^>]*>([\s\S]*?)</table>', caseSensitive: false
 final _tableRowReg = RegExp(r'<tr[^>]*>([\s\S]*?)</tr>', caseSensitive: false);
 final _tableCellReg = RegExp(r'<t[dh][^>]*>([\s\S]*?)</t[dh]>', caseSensitive: false);
 
-final _contentPatterns = <RegExp>[
-  RegExp(
-    r'<div[^>]+class="v_news_content"[^>]*>([\s\S]*?)</div>',
-    caseSensitive: false,
-  ),
-  RegExp(
-    r'<div[^>]+id="vsb_content"[^>]*>([\s\S]*?)</div>',
-    caseSensitive: false,
-  ),
-  RegExp(
-    r'<div[^>]+class="detail-text"[^>]*>([\s\S]*?)</div>',
-    caseSensitive: false,
-  ),
-  RegExp(
-    r'<div[^>]+class="art-text"[^>]*>([\s\S]*?)</div>',
-    caseSensitive: false,
-  ),
-  RegExp(r'<div[^>]+class="jxgl"[^>]*>([\s\S]*?)</div>', caseSensitive: false),
-  RegExp(
-    r'<div[^>]+class="content"[^>]*>([\s\S]*?)</div>',
-    caseSensitive: false,
-  ),
-  RegExp(r'<article[^>]*>([\s\S]*?)</article>', caseSensitive: false),
-];
+final _contentContainerReg = RegExp(
+  r'<div[^>]+(?:class="v_news_content"|id="vsb_content"|class="detail-text"|class="art-text"|class="jxgl"|class="content"|class="wp_articlecontent")[^>]*>',
+  caseSensitive: false,
+);
+
+final _articleOpenReg = RegExp(r'<article[^>]*>', caseSensitive: false);
 
 String _normalizeNoticeUrl(String url) {
   if (url.startsWith('http://') || url.startsWith('https://')) {
@@ -691,10 +673,48 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
   }
 
   String? _extractContentHtml(String html) {
-    for (final reg in _contentPatterns) {
-      final match = reg.firstMatch(html);
-      if (match != null) {
-        return match.group(1) ?? '';
+    // Try div-based containers with proper nested-div handling.
+    final divMatch = _contentContainerReg.firstMatch(html);
+    if (divMatch != null) {
+      return _extractNestedDivContent(html, divMatch.end);
+    }
+    // Try <article> tag.
+    final articleMatch = _articleOpenReg.firstMatch(html);
+    if (articleMatch != null) {
+      final endTag = '</article>';
+      final endIdx = html.indexOf(endTag, articleMatch.end);
+      if (endIdx != -1) {
+        return html.substring(articleMatch.end, endIdx);
+      }
+    }
+    return null;
+  }
+
+  /// Extracts content between a matched opening <div> and its corresponding
+  /// closing </div>, properly handling nested divs by counting depth.
+  String? _extractNestedDivContent(String html, int start) {
+    var depth = 1;
+    var i = start;
+    final openDiv = RegExp(r'<div[\s>]', caseSensitive: false);
+    final closeDiv = '</div>';
+
+    while (i < html.length && depth > 0) {
+      final nextOpen = openDiv.firstMatch(html.substring(i));
+      final nextClose = html.indexOf(closeDiv, i);
+
+      if (nextClose == -1) return null;
+
+      final openPos = nextOpen != null ? i + nextOpen.start : -1;
+
+      if (openPos != -1 && openPos < nextClose) {
+        depth++;
+        i = openPos + 1;
+      } else {
+        depth--;
+        if (depth == 0) {
+          return html.substring(start, nextClose);
+        }
+        i = nextClose + closeDiv.length;
       }
     }
     return null;
