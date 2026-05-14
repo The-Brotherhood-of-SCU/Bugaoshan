@@ -1577,6 +1577,21 @@ class AppLocalizationsZh extends AppLocalizations {
       '提示：部分系统（如 ColorOS、MIUI 等）可能会忽略自动添加请求。如果小组件未出现在桌面，请长按桌面空白处，选择「小组件」手动添加。某些系统需要授予「创建桌面快捷方式」权限。';
 
   @override
+  String get batteryOptimizationTitle => '关闭省电优化';
+
+  @override
+  String get batteryOptimizationDesc => '为确保小组件可靠更新，请关闭本应用的省电优化。这可以防止系统延迟后台任务。';
+
+  @override
+  String get batteryOptimizationButton => '立即关闭';
+
+  @override
+  String get batteryOptimizationAlreadyDisabled => '省电优化已关闭';
+
+  @override
+  String get batteryOptimizationSuccess => '省电优化已关闭';
+
+  @override
   String get autoSetCurrentWeekTitle => '自动设置当前教学周';
 
   @override

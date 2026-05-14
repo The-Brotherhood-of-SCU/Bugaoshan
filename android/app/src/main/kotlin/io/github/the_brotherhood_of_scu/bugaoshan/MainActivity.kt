@@ -2,9 +2,12 @@
 
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.PowerManager
+import android.provider.Settings
 import android.util.Log
 import androidx.core.content.FileProvider
 import io.flutter.embedding.android.FlutterActivity
@@ -53,6 +56,14 @@ class MainActivity : FlutterActivity() {
                         val size = call.argument<String>("size")
                         val success = pinWidget(size)
                         result.success(success)
+                    }
+                    "requestIgnoreBatteryOptimizations" -> {
+                        val success = requestIgnoreBatteryOptimizations()
+                        result.success(success)
+                    }
+                    "isIgnoringBatteryOptimizations" -> {
+                        val isIgnoring = isIgnoringBatteryOptimizations()
+                        result.success(isIgnoring)
                     }
                     else -> result.notImplemented()
                 }
@@ -186,5 +197,37 @@ class MainActivity : FlutterActivity() {
             setDataAndType(uri, "application/vnd.android.package-archive")
         }
         startActivity(intent)
+    }
+
+    private fun isIgnoringBatteryOptimizations(): Boolean {
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        return powerManager.isIgnoringBatteryOptimizations(packageName)
+    }
+
+    private fun requestIgnoreBatteryOptimizations(): Boolean {
+        if (isIgnoringBatteryOptimizations()) {
+            return true
+        }
+        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+            data = Uri.parse("package:$packageName")
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        try {
+            startActivity(intent)
+            return true
+        } catch (e: Exception) {
+            Log.e("CourseWidget", "requestIgnoreBatteryOptimizations failed", e)
+            // Fallback to general battery settings
+            try {
+                val fallbackIntent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                startActivity(fallbackIntent)
+                return true
+            } catch (e2: Exception) {
+                Log.e("CourseWidget", "Fallback to battery settings also failed", e2)
+                return false
+            }
+        }
     }
 }
