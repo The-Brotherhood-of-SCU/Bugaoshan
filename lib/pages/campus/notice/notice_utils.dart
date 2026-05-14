@@ -59,9 +59,44 @@ final _articleOpenReg = RegExp(r'<article[^>]*>', caseSensitive: false);
 /// and other inline script artifacts from content HTML.
 final _scriptCallReg = RegExp(r'_showDynClicks\s*\([^)]*\)', caseSensitive: false);
 
-/// Chinese punctuation characters that may appear in URLs or text content
-/// from the SCU website, causing rendering issues.
-final _chinesePunctReg = RegExp(r'[　-〿＀-￯‘’“”—–]');
+/// Detects bare HTTP(S) URLs in plain text that are not wrapped in `<a>`
+/// tags.  Stops at whitespace, CJK characters, or fullwidth punctuation.
+final _bareUrlReg = RegExp(
+  r'https?://[^\s一-鿿　-〿＀-￯，。、；：？！“”‘’（）【】《》]+',
+  caseSensitive: false,
+);
+
+/// Splits [text] into segments, promoting bare HTTP(S) URLs to clickable
+/// link entries in [parts].
+void _extractBareUrls(String text, List<_InlineElement> parts) {
+  var lastEnd = 0;
+  for (final match in _bareUrlReg.allMatches(text)) {
+    if (match.start > lastEnd) {
+      parts.add(_InlineElement(text.substring(lastEnd, match.start), null));
+    }
+    parts.add(_InlineElement(match.group(0)!, match.group(0)!));
+    lastEnd = match.end;
+  }
+  if (lastEnd < text.length) {
+    parts.add(_InlineElement(text.substring(lastEnd), null));
+  }
+}
+
+/// Chinese/fullwidth punctuation characters that may leak into raw href
+/// attributes on the SCU website.  Only used to clean URLs; display text
+/// retains its original punctuation.
+/// Narrows the Fullwidth Forms block to actual punctuation, excluding
+/// fullwidth letters (Ａ-Ｚ, ａ-ｚ) and digits (０-９).
+final _chinesePunctReg = RegExp(
+  r'[　-〿'          // CJK Symbols & Punctuation ( 。、〃 etc.)
+  r'！-／'           // ！＂＃＄％＆＇（）＊＋，－．／
+  r'：-＠'           // ：；＜＝＞？＠
+  r'［-｀'           // ［＼］＾＿｀
+  r'｛-～'           // ｛｜｝～
+  r'‘’“”' // ‘’“”
+  r'–—'             // –—
+  r']',
+);
 
 // ── Utility functions ──────────────────────────────────────────────────────────
 
@@ -96,8 +131,6 @@ String _stripTags(String input) {
 
 String _normalizeText(String input) {
   var text = input;
-  // Strip Chinese punctuation that leaks from raw HTML content.
-  text = text.replaceAll(_chinesePunctReg, '');
   text = text.replaceAll(RegExp(r'[ \t]+\n'), '\n');
   text = text.replaceAll(RegExp(r'\n[ \t]+'), '\n');
   text = text.replaceAll(RegExp(r'[ \t]{2,}'), ' ');

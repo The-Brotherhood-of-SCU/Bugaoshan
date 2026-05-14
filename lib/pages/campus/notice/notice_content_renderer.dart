@@ -141,25 +141,35 @@ List<Widget> _parseParagraphContent(
   for (final match in _linkReg.allMatches(innerHtml)) {
     if (match.start > lastEnd) {
       var text = _stripTags(innerHtml.substring(lastEnd, match.start));
-      text = text.replaceAll(_chinesePunctReg, '');
-      if (text.isNotEmpty) parts.add(_InlineElement(text, null));
+      if (text.isNotEmpty) _extractBareUrls(text, parts);
     }
     final href = _normalizeNoticeUrl(match.group(1)!, baseUrl: baseUrl);
     var label = _stripTags(match.group(2)!);
-    label = label.replaceAll(_chinesePunctReg, '');
-    parts.add(_InlineElement(label.isNotEmpty ? label : href, href));
+    if (label.isEmpty) {
+      parts.add(_InlineElement(href, href));
+    } else {
+      // SCU's href attributes are often malformed (e.g. punycode + stray
+      // chars) while the real URL is embedded in the label text.  Detect
+      // bare URLs in the label and prefer them.
+      final before = parts.length;
+      _extractBareUrls(label, parts);
+      if (before == parts.length) {
+        // No bare URL found in label — use href attribute as fallback.
+        parts.add(_InlineElement(label, href));
+      }
+    }
     lastEnd = match.end;
   }
   if (lastEnd < innerHtml.length) {
     var text = _stripTags(innerHtml.substring(lastEnd));
-    text = text.replaceAll(_chinesePunctReg, '');
-    if (text.isNotEmpty) parts.add(_InlineElement(text, null));
+    if (text.isNotEmpty) _extractBareUrls(text, parts);
   }
 
   if (parts.isEmpty) {
-    final text = _normalizeText(_stripTags(innerHtml));
+    var text = _normalizeText(_stripTags(innerHtml));
     if (text.isEmpty) return [];
-    return [SelectableText(text, style: bodyStyle)];
+    _extractBareUrls(text, parts);
+    if (parts.isEmpty) return [SelectableText(text, style: bodyStyle)];
   }
 
   final spans = <InlineSpan>[];
@@ -196,14 +206,82 @@ Widget? _buildNoticeTable(BuildContext context, String tableHtml) {
   for (final rowMatch in _tableRowReg.allMatches(tableHtml)) {
     final cells = <Widget>[];
     for (final cellMatch in _tableCellReg.allMatches(rowMatch.group(1)!)) {
-      var text = cellMatch.group(1) ?? '';
-      text = text.replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n');
-      text = _stripTags(text);
-      text = _normalizeText(text);
+      var cellHtml = cellMatch.group(1) ?? '';
+      cellHtml = cellHtml.replaceAll(
+        RegExp(r'<br\s*/?>', caseSensitive: false),
+        '\n',
+      );
+
+      // Parse <a> tags so links remain clickable in table cells.
+      final parts = <_InlineElement>[];
+      var lastEnd = 0;
+      for (final linkMatch in _linkReg.allMatches(cellHtml)) {
+        if (linkMatch.start > lastEnd) {
+          var text = _stripTags(cellHtml.substring(lastEnd, linkMatch.start));
+          if (text.isNotEmpty) parts.add(_InlineElement(text, null));
+        }
+        final href = _normalizeNoticeUrl(linkMatch.group(1)!);
+        var label = _stripTags(linkMatch.group(2)!);
+        if (label.isEmpty) {
+          parts.add(_InlineElement(href, href));
+        } else {
+          final before = parts.length;
+          _extractBareUrls(label, parts);
+          if (before == parts.length) {
+            parts.add(_InlineElement(label, href));
+          }
+        }
+        lastEnd = linkMatch.end;
+      }
+      if (lastEnd < cellHtml.length) {
+        var text = _stripTags(cellHtml.substring(lastEnd));
+        if (text.isNotEmpty) _extractBareUrls(text, parts);
+      }
+
+      final bodyStyle = Theme.of(context).textTheme.bodySmall;
+      final linkStyle = bodyStyle?.copyWith(
+        color: Theme.of(context).colorScheme.primary,
+      );
+
+      late Widget cellWidget;
+      if (parts.isEmpty) {
+        // No <a> tags — check for bare URLs
+        var text = _stripTags(cellHtml);
+        text = _normalizeText(text);
+        _extractBareUrls(text, parts);
+      }
+      if (parts.isNotEmpty) {
+        // Has links (from <a> tags or bare URLs) — rich text
+        final spans = <InlineSpan>[];
+        for (final part in parts) {
+          if (part.href != null) {
+            spans.add(
+              TextSpan(
+                text: part.text,
+                style: linkStyle,
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () => launchUrl(
+                        Uri.parse(part.href!),
+                        mode: LaunchMode.externalApplication,
+                      ),
+              ),
+            );
+          } else {
+            spans.add(TextSpan(text: part.text, style: bodyStyle));
+          }
+        }
+        cellWidget = SelectableText.rich(
+          TextSpan(children: spans, style: bodyStyle),
+        );
+      } else {
+        final plainText = _normalizeText(_stripTags(cellHtml));
+        cellWidget = Text(plainText, style: bodyStyle);
+      }
+
       cells.add(
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          child: Text(text, style: Theme.of(context).textTheme.bodySmall),
+          child: cellWidget,
         ),
       );
     }
