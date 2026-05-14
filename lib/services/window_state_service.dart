@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
+
+import 'package:screen_retriever/screen_retriever.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -23,22 +25,60 @@ class WindowStateService with WindowListener {
     final y = prefs.getDouble(_keyY);
     final w = prefs.getDouble(_keyW);
     final h = prefs.getDouble(_keyH);
+    final size = w != null && h != null ? Size(w, h) : null;
+    final position = x != null && y != null ? Offset(x, y) : null;
+
+    // Validate saved position against current screen layout.
+    // If the display configuration changed (resolution lowered, monitor
+    // unplugged), the window could appear off-screen.
+    final validPosition = position != null &&
+        size != null &&
+        await _isPositionOnScreen(position, size);
 
     await windowManager.waitUntilReadyToShow(
       WindowOptions(
-        size: w != null && h != null ? Size(w, h) : null,
-        center: x == null || y == null,
+        size: size,
+        center: !validPosition,
         minimumSize: const Size(400, 400),
       ),
     );
 
-    if (x != null && y != null) {
-      await windowManager.setPosition(Offset(x, y));
+    if (validPosition) {
+      await windowManager.setPosition(position);
     }
 
     windowManager.addListener(service);
     await windowManager.show();
     return service;
+  }
+
+  /// Returns true if at least a significant portion of the window is visible
+  /// on any connected display. Uses [screenRetriever] to get per-display
+  /// positions from native APIs, correctly handling multi-monitor setups
+  /// and resolution changes.
+  static Future<bool> _isPositionOnScreen(Offset pos, Size size) async {
+    try {
+      final displays = await screenRetriever.getAllDisplays();
+      if (displays.isEmpty) return true;
+
+      final windowRect = Rect.fromLTWH(pos.dx, pos.dy, size.width, size.height);
+      for (final display in displays) {
+        final screenRect = Rect.fromLTWH(
+          display.visiblePosition?.dx ?? 0,
+          display.visiblePosition?.dy ?? 0,
+          display.visibleSize?.width ?? display.size.width,
+          display.visibleSize?.height ?? display.size.height,
+        );
+        final intersection = screenRect.intersect(windowRect);
+        if (intersection.width > 100 && intersection.height > 50) {
+          return true;
+        }
+      }
+      return false;
+    } catch (_) {
+      // If screen_retriever fails, accept the saved position.
+      return true;
+    }
   }
 
   void _save() {
