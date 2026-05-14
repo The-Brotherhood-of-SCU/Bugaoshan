@@ -37,13 +37,27 @@ class AddWidgetContent extends StatefulWidget {
   State<AddWidgetContent> createState() => _AddWidgetContentState();
 }
 
-class _AddWidgetContentState extends State<AddWidgetContent> {
+class _AddWidgetContentState extends State<AddWidgetContent> with WidgetsBindingObserver {
   BatteryOptimizationStatus _status = BatteryOptimizationStatus.checking;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _checkBatteryOptimization();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkBatteryOptimization();
+    }
   }
 
   Future<void> _checkBatteryOptimization() async {
@@ -63,9 +77,6 @@ class _AddWidgetContentState extends State<AddWidgetContent> {
   Future<void> _requestIgnoreBatteryOptimizations() async {
     final service = getIt<WidgetUpdateService>();
     await service.requestIgnoreBatteryOptimizations();
-    if (!mounted) return;
-    await Future.delayed(const Duration(milliseconds: 500));
-    await _checkBatteryOptimization();
   }
 
   Future<void> _pinWidget(BuildContext context, String size) async {
