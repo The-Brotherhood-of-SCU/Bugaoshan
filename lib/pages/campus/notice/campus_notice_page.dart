@@ -151,12 +151,17 @@ final _contentContainerReg = RegExp(
 
 final _articleOpenReg = RegExp(r'<article[^>]*>', caseSensitive: false);
 
-String _normalizeNoticeUrl(String url) {
+String _normalizeNoticeUrl(String url, {String? baseUrl}) {
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return url;
   }
   if (url.startsWith('/')) {
     return '$_noticeBase$url';
+  }
+  // Relative path: resolve against the current page URL to preserve
+  // path prefix (e.g., /info/1069/10336.htm → /info/1069/10337.htm).
+  if (baseUrl != null) {
+    return Uri.parse(baseUrl).resolve(url).toString();
   }
   return '$_noticeBase/$url';
 }
@@ -652,7 +657,7 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
         throw Exception('No content container found');
       }
 
-      final widgets = _buildContentWidgets(contentHtml);
+      final widgets = _buildContentWidgets(contentHtml, baseUrl: widget.entry.url);
       if (widgets.isEmpty) {
         throw Exception('No content found');
       }
@@ -720,7 +725,7 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
     return null;
   }
 
-  List<Widget> _buildContentWidgets(String html) {
+  List<Widget> _buildContentWidgets(String html, {String? baseUrl}) {
     final widgets = <Widget>[];
     final bodyStyle = Theme.of(context).textTheme.bodyMedium;
     final linkStyle = bodyStyle?.copyWith(
@@ -760,6 +765,7 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
             element.html,
             bodyStyle,
             linkStyle,
+            baseUrl: baseUrl,
           );
           if (textWidgets.isNotEmpty) {
             widgets.addAll(textWidgets);
@@ -791,8 +797,9 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
   List<Widget> _parseParagraphContent(
     String paragraphHtml,
     TextStyle? bodyStyle,
-    TextStyle? linkStyle,
-  ) {
+    TextStyle? linkStyle, {
+    String? baseUrl,
+  }) {
     // Extract paragraph inner HTML.
     final pMatch = _paragraphReg.firstMatch(paragraphHtml);
     var innerHtml = pMatch?.group(1) ?? paragraphHtml;
@@ -811,7 +818,7 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
         final text = _stripTags(innerHtml.substring(lastEnd, match.start));
         if (text.isNotEmpty) parts.add(_InlineElement(text, null));
       }
-      final href = _normalizeNoticeUrl(match.group(1)!);
+      final href = _normalizeNoticeUrl(match.group(1)!, baseUrl: baseUrl);
       final label = _stripTags(match.group(2)!);
       parts.add(_InlineElement(label.isNotEmpty ? label : href, href));
       lastEnd = match.end;
