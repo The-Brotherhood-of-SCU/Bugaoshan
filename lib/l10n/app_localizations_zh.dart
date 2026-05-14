@@ -1375,6 +1375,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get campusNoticesLoadFailed => '加载失败，请检查网络';
 
   @override
+  String get campusNoticesOpenOriginal => '在浏览器中查看';
+
+  @override
   String get selectAcademicYear => '选择学年';
 
   @override

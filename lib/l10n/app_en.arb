@@ -478,6 +478,7 @@
     "campusNoticesClearDate": "Clear filter",
     "campusNoticesPinned": "Pinned",
     "campusNoticesLoadFailed": "Load failed, please check network",
+    "campusNoticesOpenOriginal": "View in browser",
     "selectAcademicYear": "Select Academic Year",
     "userInfoLoading": "Loading user info...",
     "userInfoLoadFailed": "Failed to load user info",

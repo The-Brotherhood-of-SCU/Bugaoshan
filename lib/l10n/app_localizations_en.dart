@@ -1416,6 +1416,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get campusNoticesLoadFailed => 'Load failed, please check network';
 
   @override
+  String get campusNoticesOpenOriginal => 'View in browser';
+
+  @override
   String get selectAcademicYear => 'Select Academic Year';
 
   @override

@@ -1,10 +1,11 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 
 const _noticeBase = 'https://jwc.scu.edu.cn';
 const _noticeListUrl = '$_noticeBase/tzgg.htm';
@@ -83,14 +84,6 @@ class _NoticeHttp {
   static void clearCookies() {
     _cookieJar.clear();
   }
-
-  /// Release the underlying HTTP client. Should be called when notices
-  /// are no longer needed (e.g. when the app transitions to background).
-  static void dispose() {
-    _client?.close();
-    _client = null;
-    _cookieJar.clear();
-  }
 }
 
 /// Decodes response bytes to UTF-8, logging any encoding errors instead of
@@ -122,13 +115,25 @@ final _listItemReg = RegExp(
   caseSensitive: false,
 );
 
+final _pageNumReg = RegExp(r'tzgg/(\d+)\.htm$');
+
 final _pinnedReg = RegExp(
   r'<li[^>]*>\s*<a[^>]+href="([^"]+)"[^>]*>'
   r'(?:(?!</li>)[\s\S])*?<div class="bq">\s*\[置顶\]',
   caseSensitive: false,
 );
 
-final _pageNumReg = RegExp(r'tzgg/(\d+)\.htm$');
+final _imgReg = RegExp(
+  r'<img[^>]+src="([^"]+)"[^>]*>',
+  caseSensitive: false,
+);
+
+final _linkReg = RegExp(
+  r'<a[^>]+href="([^"]+)"[^>]*>([\s\S]*?)</a>',
+  caseSensitive: false,
+);
+
+final _paragraphReg = RegExp(r'<p[^>]*>([\s\S]*?)</p>', caseSensitive: false);
 
 final _contentPatterns = <RegExp>[
   RegExp(
@@ -184,48 +189,6 @@ String _normalizeText(String input) {
   text = text.replaceAll(RegExp(r'[ \t]{2,}'), ' ');
   text = text.replaceAll(RegExp(r'\n{3,}'), '\n\n');
   return text.trim();
-}
-
-String _htmlToText(String html) {
-  var text = html;
-  text = text.replaceAll(
-    RegExp(r'<script[\s\S]*?</script>', caseSensitive: false),
-    '',
-  );
-  text = text.replaceAll(
-    RegExp(r'<style[\s\S]*?</style>', caseSensitive: false),
-    '',
-  );
-  text = text.replaceAllMapped(
-    RegExp(r'<a[^>]+href="([^"]+)"[^>]*>([\s\S]*?)</a>', caseSensitive: false),
-    (match) {
-      final link = _normalizeNoticeUrl(match.group(1)!);
-      final label = _stripTags(match.group(2)!);
-      if (label.isEmpty) return link;
-      return '$label ($link)';
-    },
-  );
-  text = text.replaceAll(RegExp(r'</p\s*>', caseSensitive: false), '\n\n');
-  text = text.replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n');
-  text = text.replaceAll(RegExp(r'</li\s*>', caseSensitive: false), '\n');
-  text = _stripTags(text);
-  return _normalizeText(text);
-}
-
-String? _extractParagraphs(String html) {
-  final paragraphReg = RegExp(r'<p[^>]*>([\s\S]*?)</p>', caseSensitive: false);
-  final paragraphs = <String>[];
-  for (final match in paragraphReg.allMatches(html)) {
-    var text = match.group(1) ?? '';
-    text = text.replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n');
-    text = _stripTags(text);
-    text = _normalizeText(text);
-    if (text.isNotEmpty) {
-      paragraphs.add(text);
-    }
-  }
-  if (paragraphs.isEmpty) return null;
-  return paragraphs.join('\n\n');
 }
 
 String _formatDate(DateTime date) {
@@ -291,7 +254,6 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
         _pinnedUrls.clear();
       });
       _NoticeHttp.clearCookies();
-      // Fetch homepage to discover pinned notices
       await _fetchPinnedUrls();
     }
 
@@ -358,8 +320,7 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
       final resp = await _NoticeHttp.get('$_noticeBase/index.htm');
       if (resp.statusCode != 200) return;
       final body = _decodeBody(resp.bodyBytes);
-      final pinnedReg = _pinnedReg;
-      for (final match in pinnedReg.allMatches(body)) {
+      for (final match in _pinnedReg.allMatches(body)) {
         _pinnedUrls.add(_normalizeNoticeUrl(match.group(1)!));
       }
     } catch (e) {
@@ -368,10 +329,8 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
   }
 
   List<_NoticeEntry> _parseNotices(String html, Set<String> pinnedUrls) {
-    final itemReg = _listItemReg;
-
     final entries = <_NoticeEntry>[];
-    for (final match in itemReg.allMatches(html)) {
+    for (final match in _listItemReg.allMatches(html)) {
       final url = _normalizeNoticeUrl(match.group(1)!);
       final monthDay = match.group(2)!;
       final year = match.group(3)!;
@@ -553,7 +512,9 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
 
     final showFooter = _loadingMore || _hasMore;
 
-    return ListView.builder(
+    return RefreshIndicator(
+      onRefresh: () => _loadNotices(),
+      child: ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       itemCount: entries.length + (showFooter ? 1 : 0),
@@ -616,6 +577,7 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
           ),
         );
       },
+    ),
     );
   }
 
@@ -663,7 +625,7 @@ class CampusNoticeDetailPage extends StatefulWidget {
 class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
   bool _loading = true;
   String? _error;
-  String? _content;
+  List<Widget>? _contentWidgets;
 
   @override
   void initState() {
@@ -685,10 +647,6 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
 
       final body = _decodeBody(resp.bodyBytes);
 
-      // Validate this is an actual notice detail page by checking for known
-      // content containers specific to the jwc.scu.edu.cn template.
-      // Simple string search is sufficient here since these markers are unique
-      // to article pages and unlikely to appear in error/redirect pages.
       if (!body.contains('v_news_content') &&
           !body.contains('vsb_content') &&
           !body.contains('ArticleTitle') &&
@@ -698,14 +656,19 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
         );
       }
 
-      final content = _extractContent(body);
-      if (content == null || content.trim().isEmpty) {
+      final contentHtml = _extractContentHtml(body);
+      if (contentHtml == null) {
+        throw Exception('No content container found');
+      }
+
+      final widgets = _buildContentWidgets(contentHtml);
+      if (widgets.isEmpty) {
         throw Exception('No content found');
       }
 
       if (!mounted) return;
       setState(() {
-        _content = content;
+        _contentWidgets = widgets;
         _loading = false;
       });
     } catch (e) {
@@ -718,28 +681,188 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
     }
   }
 
-  String? _extractContent(String html) {
-    final contentHtml = _extractContentHtml(html);
-    // If no recognizable content container was found, it's not a valid detail page
-    if (contentHtml == null) return null;
-    final paragraphs = _extractParagraphs(contentHtml);
-    if (paragraphs != null && paragraphs.trim().isNotEmpty) {
-      return paragraphs;
-    }
-    return _htmlToText(contentHtml);
-  }
-
   String? _extractContentHtml(String html) {
-    final patterns = _contentPatterns;
-
-    for (final reg in patterns) {
+    for (final reg in _contentPatterns) {
       final match = reg.firstMatch(html);
       if (match != null) {
         return match.group(1) ?? '';
       }
     }
-
     return null;
+  }
+
+  List<Widget> _buildContentWidgets(String html) {
+    final widgets = <Widget>[];
+    final bodyStyle = Theme.of(context).textTheme.bodyMedium;
+    final linkStyle = bodyStyle?.copyWith(
+      color: Theme.of(context).colorScheme.primary,
+    );
+
+    // Collect all content elements with their positions for ordered rendering.
+    final elements = <_ContentElement>[];
+
+    for (final match in _paragraphReg.allMatches(html)) {
+      elements.add(_ContentElement(match.start, match.group(0)!, true));
+    }
+    for (final match in _imgReg.allMatches(html)) {
+      elements.add(_ContentElement(match.start, match.group(0)!, false));
+    }
+    elements.sort((a, b) => a.offset.compareTo(b.offset));
+
+    final seenImages = <String>{};
+    for (final element in elements) {
+      if (element.isParagraph) {
+        final textWidgets = _parseParagraphContent(
+          element.html,
+          bodyStyle,
+          linkStyle,
+        );
+        if (textWidgets.isNotEmpty) {
+          widgets.addAll(textWidgets);
+          widgets.add(const SizedBox(height: 10));
+        }
+      } else {
+        final src = _imgReg.firstMatch(element.html)?.group(1);
+        if (src == null || src.startsWith('data:')) continue;
+        final imageUrl = _normalizeNoticeUrl(src);
+        if (!seenImages.add(imageUrl)) continue;
+        widgets.add(_buildNoticeImage(imageUrl));
+        widgets.add(const SizedBox(height: 10));
+      }
+    }
+
+    if (widgets.isNotEmpty && widgets.last is SizedBox) {
+      widgets.removeLast();
+    }
+
+    return widgets;
+  }
+
+  List<Widget> _parseParagraphContent(
+    String paragraphHtml,
+    TextStyle? bodyStyle,
+    TextStyle? linkStyle,
+  ) {
+    // Extract paragraph inner HTML.
+    final pMatch = _paragraphReg.firstMatch(paragraphHtml);
+    var innerHtml = pMatch?.group(1) ?? paragraphHtml;
+
+    // Strip <br> tags.
+    innerHtml = innerHtml.replaceAll(
+      RegExp(r'<br\s*/?>', caseSensitive: false),
+      '\n',
+    );
+
+    // Split by links to create mixed text/link spans.
+    final parts = <_InlineElement>[];
+    var lastEnd = 0;
+    for (final match in _linkReg.allMatches(innerHtml)) {
+      if (match.start > lastEnd) {
+        final text = _stripTags(innerHtml.substring(lastEnd, match.start));
+        if (text.isNotEmpty) parts.add(_InlineElement(text, null));
+      }
+      final href = _normalizeNoticeUrl(match.group(1)!);
+      final label = _stripTags(match.group(2)!);
+      parts.add(_InlineElement(label.isNotEmpty ? label : href, href));
+      lastEnd = match.end;
+    }
+    if (lastEnd < innerHtml.length) {
+      final text = _stripTags(innerHtml.substring(lastEnd));
+      if (text.isNotEmpty) parts.add(_InlineElement(text, null));
+    }
+
+    // If no links found, just strip all tags.
+    if (parts.isEmpty) {
+      final text = _normalizeText(_stripTags(innerHtml));
+      if (text.isEmpty) return [];
+      return [SelectableText(text, style: bodyStyle)];
+    }
+
+    // Build a RichText with mixed text and link spans.
+    final spans = <InlineSpan>[];
+    for (final part in parts) {
+      if (part.href != null) {
+        spans.add(
+          TextSpan(
+            text: part.text,
+            style: linkStyle,
+            recognizer: TapGestureRecognizer()
+              ..onTap = () => launchUrl(
+                Uri.parse(part.href!),
+                mode: LaunchMode.externalApplication,
+              ),
+          ),
+        );
+      } else {
+        spans.add(TextSpan(text: part.text, style: bodyStyle));
+      }
+    }
+
+    final text = parts.map((p) => p.text).join();
+    if (text.trim().isEmpty) return [];
+
+    return [
+      SelectableText.rich(
+        TextSpan(children: spans, style: bodyStyle),
+      ),
+    ];
+  }
+
+  Widget _buildNoticeImage(String imageUrl) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: InteractiveViewer(
+        maxScale: 5,
+        child: Image.network(
+          imageUrl,
+          fit: BoxFit.fitWidth,
+          headers: _NoticeHttp._buildHeaders(),
+          loadingBuilder: (context, child, progress) {
+            if (progress == null) return child;
+            return Container(
+              height: 200,
+              alignment: Alignment.center,
+              child: CircularProgressIndicator(
+                value: progress.expectedTotalBytes != null
+                    ? progress.cumulativeBytesLoaded /
+                          progress.expectedTotalBytes!
+                    : null,
+              ),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              height: 200,
+              alignment: Alignment.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.broken_image,
+                    size: 48,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    AppLocalizations.of(context)!.loadFailed,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  void _openOriginal() {
+    launchUrl(
+      Uri.parse(widget.entry.url),
+      mode: LaunchMode.externalApplication,
+    );
   }
 
   @override
@@ -747,13 +870,22 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.entry.title)),
+      appBar: AppBar(
+        title: Text(widget.entry.title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.open_in_browser),
+            tooltip: l10n.campusNoticesOpenOriginal,
+            onPressed: _openOriginal,
+          ),
+        ],
+      ),
       body: _buildBody(l10n),
     );
   }
 
   Widget _buildBody(AppLocalizations l10n) {
-    if (_error != null && _content == null) {
+    if (_error != null && _contentWidgets == null) {
       return RetryableErrorWidget(
         message: '${l10n.loadFailed}\n$_error',
         onRetry: _loadDetail,
@@ -764,8 +896,7 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final content = _content?.trim();
-    if (content == null || content.isEmpty) {
+    if (_contentWidgets == null || _contentWidgets!.isEmpty) {
       return Center(child: Text(l10n.noData));
     }
 
@@ -793,7 +924,7 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
         const SizedBox(height: 12),
         Divider(color: Theme.of(context).colorScheme.outlineVariant),
         const SizedBox(height: 12),
-        SelectableText(content, style: Theme.of(context).textTheme.bodyMedium),
+        ..._contentWidgets!,
       ],
     );
   }
@@ -812,4 +943,19 @@ class _NoticeEntry {
     required this.date,
     this.isPinned = false,
   }) : normalizedTitle = title.toLowerCase().replaceAll(_filterSpaceReg, '');
+}
+
+class _ContentElement {
+  final int offset;
+  final String html;
+  final bool isParagraph;
+
+  _ContentElement(this.offset, this.html, this.isParagraph);
+}
+
+class _InlineElement {
+  final String text;
+  final String? href;
+
+  _InlineElement(this.text, this.href);
 }

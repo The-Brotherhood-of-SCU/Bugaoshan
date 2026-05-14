@@ -2767,6 +2767,12 @@ abstract class AppLocalizations {
   /// **'Load failed, please check network'**
   String get campusNoticesLoadFailed;
 
+  /// No description provided for @campusNoticesOpenOriginal.
+  ///
+  /// In en, this message translates to:
+  /// **'View in browser'**
+  String get campusNoticesOpenOriginal;
+
   /// No description provided for @selectAcademicYear.
   ///
   /// In en, this message translates to:
