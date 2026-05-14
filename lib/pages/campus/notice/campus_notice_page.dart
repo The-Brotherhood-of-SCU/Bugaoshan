@@ -140,6 +140,10 @@ final _linkReg = RegExp(
 
 final _paragraphReg = RegExp(r'<p[^>]*>([\s\S]*?)</p>', caseSensitive: false);
 
+final _tableReg = RegExp(r'<table[^>]*>([\s\S]*?)</table>', caseSensitive: false);
+final _tableRowReg = RegExp(r'<tr[^>]*>([\s\S]*?)</tr>', caseSensitive: false);
+final _tableCellReg = RegExp(r'<t[dh][^>]*>([\s\S]*?)</t[dh]>', caseSensitive: false);
+
 final _contentPatterns = <RegExp>[
   RegExp(
     r'<div[^>]+class="v_news_content"[^>]*>([\s\S]*?)</div>',
@@ -703,36 +707,44 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
       color: Theme.of(context).colorScheme.primary,
     );
 
-    // Collect all content elements with their positions for ordered rendering.
     final elements = <_ContentElement>[];
-
     for (final match in _paragraphReg.allMatches(html)) {
-      elements.add(_ContentElement(match.start, match.group(0)!, true));
+      elements.add(_ContentElement(match.start, match.group(0)!, _ElementType.paragraph));
     }
     for (final match in _imgReg.allMatches(html)) {
-      elements.add(_ContentElement(match.start, match.group(0)!, false));
+      elements.add(_ContentElement(match.start, match.group(0)!, _ElementType.image));
+    }
+    for (final match in _tableReg.allMatches(html)) {
+      elements.add(_ContentElement(match.start, match.group(0)!, _ElementType.table));
     }
     elements.sort((a, b) => a.offset.compareTo(b.offset));
 
     final seenImages = <String>{};
     for (final element in elements) {
-      if (element.isParagraph) {
-        final textWidgets = _parseParagraphContent(
-          element.html,
-          bodyStyle,
-          linkStyle,
-        );
-        if (textWidgets.isNotEmpty) {
-          widgets.addAll(textWidgets);
+      switch (element.type) {
+        case _ElementType.paragraph:
+          final textWidgets = _parseParagraphContent(
+            element.html,
+            bodyStyle,
+            linkStyle,
+          );
+          if (textWidgets.isNotEmpty) {
+            widgets.addAll(textWidgets);
+            widgets.add(const SizedBox(height: 10));
+          }
+        case _ElementType.image:
+          final src = _imgReg.firstMatch(element.html)?.group(1);
+          if (src == null || src.startsWith('data:')) continue;
+          final imageUrl = _normalizeNoticeUrl(src);
+          if (!seenImages.add(imageUrl)) continue;
+          widgets.add(_buildNoticeImage(imageUrl));
           widgets.add(const SizedBox(height: 10));
-        }
-      } else {
-        final src = _imgReg.firstMatch(element.html)?.group(1);
-        if (src == null || src.startsWith('data:')) continue;
-        final imageUrl = _normalizeNoticeUrl(src);
-        if (!seenImages.add(imageUrl)) continue;
-        widgets.add(_buildNoticeImage(imageUrl));
-        widgets.add(const SizedBox(height: 10));
+        case _ElementType.table:
+          final table = _buildNoticeTable(element.html);
+          if (table != null) {
+            widgets.add(table);
+            widgets.add(const SizedBox(height: 10));
+          }
       }
     }
 
@@ -811,6 +823,73 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
         TextSpan(children: spans, style: bodyStyle),
       ),
     ];
+  }
+
+  Widget? _buildNoticeTable(String tableHtml) {
+    final rows = <TableRow>[];
+    for (final rowMatch in _tableRowReg.allMatches(tableHtml)) {
+      final cells = <Widget>[];
+      for (final cellMatch in _tableCellReg.allMatches(rowMatch.group(1)!)) {
+        var text = cellMatch.group(1) ?? '';
+        text = text.replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n');
+        text = _stripTags(text);
+        text = _normalizeText(text);
+        cells.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            child: Text(text, style: Theme.of(context).textTheme.bodySmall),
+          ),
+        );
+      }
+      if (cells.isEmpty) continue;
+
+      final isHeader = rowMatch.group(0)!.contains('<th');
+      rows.add(
+        TableRow(
+          decoration: isHeader
+              ? BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                )
+              : null,
+          children: cells.map((cell) {
+            if (!isHeader) return cell;
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              child: DefaultTextStyle(
+                style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+                child: cell,
+              ),
+            );
+          }).toList(),
+        ),
+      );
+    }
+
+    if (rows.isEmpty) return null;
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Table(
+          defaultColumnWidth: const IntrinsicColumnWidth(),
+          border: TableBorder.symmetric(
+            inside: BorderSide(
+              color: Theme.of(context).colorScheme.outlineVariant,
+              width: 0.5,
+            ),
+          ),
+          children: rows,
+        ),
+      ),
+    );
   }
 
   Widget _buildNoticeImage(String imageUrl) {
@@ -1101,12 +1180,14 @@ class _NoticeEntry {
   }) : normalizedTitle = title.toLowerCase().replaceAll(_filterSpaceReg, '');
 }
 
+enum _ElementType { paragraph, image, table }
+
 class _ContentElement {
   final int offset;
   final String html;
-  final bool isParagraph;
+  final _ElementType type;
 
-  _ContentElement(this.offset, this.html, this.isParagraph);
+  _ContentElement(this.offset, this.html, this.type);
 }
 
 class _InlineElement {
