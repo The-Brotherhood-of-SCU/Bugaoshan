@@ -5,19 +5,22 @@ part of 'campus_notice_page.dart';
 // ═══════════════════════════════════════════════════════════════════════════════
 
 String? _extractContentHtml(String html) {
+  String? contentHtml;
   final divMatch = _contentContainerReg.firstMatch(html);
   if (divMatch != null) {
-    return _extractNestedDivContent(html, divMatch.end);
-  }
-  final articleMatch = _articleOpenReg.firstMatch(html);
-  if (articleMatch != null) {
-    const endTag = '</article>';
-    final endIdx = html.indexOf(endTag, articleMatch.end);
-    if (endIdx != -1) {
-      return html.substring(articleMatch.end, endIdx);
+    contentHtml = _extractNestedDivContent(html, divMatch.end);
+  } else {
+    final articleMatch = _articleOpenReg.firstMatch(html);
+    if (articleMatch != null) {
+      const endTag = '</article>';
+      final endIdx = html.indexOf(endTag, articleMatch.end);
+      if (endIdx != -1) {
+        contentHtml = html.substring(articleMatch.end, endIdx);
+      }
     }
   }
-  return null;
+
+  return contentHtml;
 }
 
 String? _extractNestedDivContent(String html, int start) {
@@ -48,9 +51,47 @@ String? _extractNestedDivContent(String html, int start) {
   return null;
 }
 
-List<Widget> _buildContentWidgets(BuildContext context, String html,
-    {String? baseUrl}) {
+List<Widget> _buildContentWidgets(
+  BuildContext context,
+  String html, {
+  String? baseUrl,
+}) {
+  // Remove inline script calls and known footer/pagination artifacts that
+  // are not part of the article content.
   html = html.replaceAll(_scriptCallReg, '');
+  // Remove click-count / view-count blocks such as: 访问量：<span...>...</span>
+  html = html.replaceAll(
+    RegExp(r'访问量[：:]?[\s\S]*?(</p>|</div>)', caseSensitive: false),
+    '',
+  );
+  // Remove variations like "点击次数：123" or inline blocks that start with 点击次数
+  html = html.replaceAll(
+    RegExp(r'点击次数[：:]?[\s\S]*?(</p>|</div>)', caseSensitive: false),
+    '',
+  );
+  html = html.replaceAll(RegExp(r'点击次数[：:]?\s*\d+', caseSensitive: false), '');
+  // Remove "上一条/下一条/上一篇/下一篇" inline anchors that link to
+  // adjacent articles — these are handled externally by the app, so strip
+  // them from the rendered content to avoid duplication.
+  html = html.replaceAll(
+    RegExp(
+      r'<a[^>]*>(?:\s|&nbsp;)*(?:上一条|下一条|上一篇|下一篇)(?:\s|&nbsp;)*</a>',
+      caseSensitive: false,
+    ),
+    '',
+  );
+  // Remove surrounding pagination blocks (common structure on SCU site).
+  html = html.replaceAll(
+    RegExp(
+      r'''<div[^>]+class=['"]?page['"]?[^>]*>[\s\S]*?</div>''',
+      caseSensitive: false,
+    ),
+    '',
+  );
+  html = html.replaceAll(
+    RegExp(r'<p>\s*<span>\s*(?:上一条|下一条)[\s\S]*?</p>', caseSensitive: false),
+    '',
+  );
 
   final widgets = <Widget>[];
   final bodyStyle = Theme.of(context).textTheme.bodyMedium;
@@ -62,8 +103,9 @@ List<Widget> _buildContentWidgets(BuildContext context, String html,
   final tableElements = <_ContentElement>[];
   for (final match in _tableReg.allMatches(html)) {
     tableRanges.add(_Range(match.start, match.end));
-    tableElements
-        .add(_ContentElement(match.start, match.group(0)!, _ElementType.table));
+    tableElements.add(
+      _ContentElement(match.start, match.group(0)!, _ElementType.table),
+    );
   }
 
   bool insideTable(int offset) =>
@@ -72,14 +114,16 @@ List<Widget> _buildContentWidgets(BuildContext context, String html,
   final elements = <_ContentElement>[];
   for (final match in _paragraphReg.allMatches(html)) {
     if (!insideTable(match.start)) {
-      elements.add(_ContentElement(
-          match.start, match.group(0)!, _ElementType.paragraph));
+      elements.add(
+        _ContentElement(match.start, match.group(0)!, _ElementType.paragraph),
+      );
     }
   }
   for (final match in _imgReg.allMatches(html)) {
     if (!insideTable(match.start)) {
-      elements
-          .add(_ContentElement(match.start, match.group(0)!, _ElementType.image));
+      elements.add(
+        _ContentElement(match.start, match.group(0)!, _ElementType.image),
+      );
     }
   }
   elements.addAll(tableElements);
@@ -102,12 +146,16 @@ List<Widget> _buildContentWidgets(BuildContext context, String html,
       case _ElementType.image:
         final src = _imgReg.firstMatch(element.html)?.group(1);
         if (src == null || src.startsWith('data:')) continue;
-        final imageUrl = _normalizeNoticeUrl(src);
+        final imageUrl = _normalizeNoticeUrl(src, baseUrl: baseUrl);
         if (!seenImages.add(imageUrl)) continue;
         widgets.add(_buildNoticeImage(context, imageUrl));
         widgets.add(const SizedBox(height: 10));
       case _ElementType.table:
-        final table = _buildNoticeTable(context, element.html);
+        final table = _buildNoticeTable(
+          context,
+          element.html,
+          baseUrl: baseUrl,
+        );
         if (table != null) {
           widgets.add(table);
           widgets.add(const SizedBox(height: 10));
@@ -119,6 +167,76 @@ List<Widget> _buildContentWidgets(BuildContext context, String html,
     widgets.removeLast();
   }
 
+  // Directly extract attachment links from the original page HTML and
+  // append them as clickable rows. This handles cases where the fjxz
+  // block or other attachment sections are outside the main content div.
+  final attachmentLinks = _extractAttachmentLinks(
+    context,
+    html,
+    baseUrl: baseUrl,
+  );
+  if (attachmentLinks.isNotEmpty) {
+    widgets.add(const SizedBox(height: 12));
+    widgets.addAll(attachmentLinks);
+  }
+
+  return widgets;
+}
+
+/// Scans [html] for `<a>` download links typically found in attachment
+/// sections and returns clickable widgets for each one, keyed by label
+/// to avoid duplicates.
+List<Widget> _extractAttachmentLinks(
+  BuildContext context,
+  String html, {
+  String? baseUrl,
+}) {
+  final widgets = <Widget>[];
+  final seen = <String>{};
+  final linkColor = Theme.of(context).colorScheme.primary;
+  // Match any <a href="...">...</a> where the URL looks like a download
+  // (contains /download/ or ends with a file extension).
+  // The regex uses character-class alternatives for quoting to avoid
+  // string-literal issues.
+  final aReg = RegExp(
+    r'''<a\s[^>]*?href=(["'])((?:[^"'/]*(?:/download/|\.(?:xlsx?|docx?|pdf|zip|rar))[^"' ]*))\1[^>]*>([\s\S]*?)</a>''',
+    caseSensitive: false,
+  );
+  for (final match in aReg.allMatches(html)) {
+    final rawHref = match.group(2) ?? '';
+    if (rawHref.isEmpty) continue;
+    final href = _normalizeNoticeUrl(rawHref, baseUrl: baseUrl);
+    if (!seen.add(href)) continue;
+    var label = _stripTags(match.group(3) ?? '');
+    if (label.isEmpty) label = href;
+    widgets.add(
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: GestureDetector(
+          onTap: () {
+            try {
+              launchUrl(Uri.parse(href), mode: LaunchMode.externalApplication);
+            } catch (_) {
+              debugPrint('Failed to open attachment: $href');
+            }
+          },
+          child: Row(
+            children: [
+              Icon(Icons.attach_file, size: 16, color: linkColor),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(color: linkColor),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
   return widgets;
 }
 
@@ -143,8 +261,10 @@ List<Widget> _parseParagraphContent(
       var text = _stripTags(innerHtml.substring(lastEnd, match.start));
       if (text.isNotEmpty) _extractBareUrls(text, parts);
     }
-    final href = _normalizeNoticeUrl(match.group(1)!, baseUrl: baseUrl);
-    var label = _stripTags(match.group(2)!);
+    // href may be captured in group(1) (double-quoted) or group(2) (single-quoted)
+    final rawHref = match.group(1) ?? match.group(2) ?? '';
+    final href = _normalizeNoticeUrl(rawHref, baseUrl: baseUrl);
+    var label = _stripTags(match.group(3) ?? '');
     if (label.isEmpty) {
       parts.add(_InlineElement(href, href));
     } else {
@@ -153,9 +273,22 @@ List<Widget> _parseParagraphContent(
       // bare URLs in the label and prefer them.
       final before = parts.length;
       _extractBareUrls(label, parts);
-      if (before == parts.length) {
-        // No bare URL found in label — use href attribute as fallback.
-        parts.add(_InlineElement(label, href));
+      // If _extractBareUrls added at least one part with a real href,
+      // those bare-URL parts replace the original link.  Otherwise
+      // fall back to the href attribute.
+      final hasBareUrl = parts
+          .getRange(before, parts.length)
+          .any((p) => p.href != null);
+      if (!hasBareUrl) {
+        // Either no new parts were added (before == parts.length) or
+        // only plain-text parts were added — use href attribute instead.
+        if (before == parts.length) {
+          parts.add(_InlineElement(label, href));
+        } else {
+          // Undo the plain-text-only split and use href attribute.
+          parts.length = before;
+          parts.add(_InlineElement(label, href));
+        }
       }
     }
     lastEnd = match.end;
@@ -181,9 +314,9 @@ List<Widget> _parseParagraphContent(
           style: linkStyle,
           recognizer: TapGestureRecognizer()
             ..onTap = () => launchUrl(
-                  Uri.parse(part.href!),
-                  mode: LaunchMode.externalApplication,
-                ),
+              Uri.parse(part.href!),
+              mode: LaunchMode.externalApplication,
+            ),
         ),
       );
     } else {
@@ -194,14 +327,14 @@ List<Widget> _parseParagraphContent(
   final text = parts.map((p) => p.text).join();
   if (text.trim().isEmpty) return [];
 
-  return [
-    SelectableText.rich(
-      TextSpan(children: spans, style: bodyStyle),
-    ),
-  ];
+  return [SelectableText.rich(TextSpan(children: spans, style: bodyStyle))];
 }
 
-Widget? _buildNoticeTable(BuildContext context, String tableHtml) {
+Widget? _buildNoticeTable(
+  BuildContext context,
+  String tableHtml, {
+  String? baseUrl,
+}) {
   final rows = <TableRow>[];
   for (final rowMatch in _tableRowReg.allMatches(tableHtml)) {
     final cells = <Widget>[];
@@ -220,15 +353,24 @@ Widget? _buildNoticeTable(BuildContext context, String tableHtml) {
           var text = _stripTags(cellHtml.substring(lastEnd, linkMatch.start));
           if (text.isNotEmpty) parts.add(_InlineElement(text, null));
         }
-        final href = _normalizeNoticeUrl(linkMatch.group(1)!);
-        var label = _stripTags(linkMatch.group(2)!);
+        final rawHref = linkMatch.group(1) ?? linkMatch.group(2) ?? '';
+        final href = _normalizeNoticeUrl(rawHref, baseUrl: baseUrl);
+        var label = _stripTags(linkMatch.group(3) ?? '');
         if (label.isEmpty) {
           parts.add(_InlineElement(href, href));
         } else {
           final before = parts.length;
           _extractBareUrls(label, parts);
-          if (before == parts.length) {
-            parts.add(_InlineElement(label, href));
+          final hasBareUrl = parts
+              .getRange(before, parts.length)
+              .any((p) => p.href != null);
+          if (!hasBareUrl) {
+            if (before == parts.length) {
+              parts.add(_InlineElement(label, href));
+            } else {
+              parts.length = before;
+              parts.add(_InlineElement(label, href));
+            }
           }
         }
         lastEnd = linkMatch.end;
@@ -261,9 +403,9 @@ Widget? _buildNoticeTable(BuildContext context, String tableHtml) {
                 style: linkStyle,
                 recognizer: TapGestureRecognizer()
                   ..onTap = () => launchUrl(
-                        Uri.parse(part.href!),
-                        mode: LaunchMode.externalApplication,
-                      ),
+                    Uri.parse(part.href!),
+                    mode: LaunchMode.externalApplication,
+                  ),
               ),
             );
           } else {
@@ -300,9 +442,9 @@ Widget? _buildNoticeTable(BuildContext context, String tableHtml) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             child: DefaultTextStyle(
-              style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall!.copyWith(fontWeight: FontWeight.bold),
               child: cell,
             ),
           );
@@ -317,9 +459,7 @@ Widget? _buildNoticeTable(BuildContext context, String tableHtml) {
     scrollDirection: Axis.horizontal,
     child: Container(
       decoration: BoxDecoration(
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outlineVariant,
-        ),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Table(

@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:html/parser.dart' as html_parser;
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -155,21 +156,39 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
 
   List<_NoticeEntry> _parseNotices(String html, Set<String> pinnedUrls) {
     final entries = <_NoticeEntry>[];
-    for (final match in _listItemReg.allMatches(html)) {
-      final url = _normalizeNoticeUrl(match.group(1)!);
-      final monthDay = match.group(2)!;
-      final year = match.group(3)!;
-      final title = _stripTags(match.group(4)!);
-      final date = _parseDate(year, monthDay);
-      if (date == null || title.isEmpty) continue;
-      entries.add(
-        _NoticeEntry(
-          title: title,
-          url: url,
-          date: date,
-          isPinned: pinnedUrls.contains(url),
-        ),
-      );
+    try {
+      final doc = html_parser.parse(html);
+      // The list items are structured under <li> elements; iterate and
+      // extract anchor href, date (.date p and span), and title (.text p).
+      for (final li in doc.querySelectorAll('li')) {
+        final a = li.querySelector('a');
+        if (a == null) continue;
+        final rawHref = a.attributes['href'];
+        if (rawHref == null || rawHref.isEmpty) continue;
+        final url = _normalizeNoticeUrl(rawHref);
+
+        final dateDiv = li.querySelector('.date');
+        final monthDay = dateDiv?.querySelector('p')?.text.trim();
+        final year = dateDiv?.querySelector('span')?.text.trim();
+        if (monthDay == null || year == null) continue;
+        final date = _parseDate(year, monthDay);
+        if (date == null) continue;
+
+        final titleElement = li.querySelector('.text')?.querySelector('p');
+        final title = titleElement?.text.trim() ?? '';
+        if (title.isEmpty) continue;
+
+        entries.add(
+          _NoticeEntry(
+            title: title,
+            url: url,
+            date: date,
+            isPinned: pinnedUrls.contains(url),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('_parseNotices DOM parse error: $e');
     }
 
     return entries;
@@ -207,7 +226,11 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
     final rawQuery = _query.trim();
     final terms = rawQuery.isEmpty
         ? <String>[]
-        : rawQuery.toLowerCase().split(_filterSpaceReg).where((t) => t.isNotEmpty).toList();
+        : rawQuery
+              .toLowerCase()
+              .split(_filterSpaceReg)
+              .where((t) => t.isNotEmpty)
+              .toList();
     return _entries.where((entry) {
       final inRange =
           _selectedRange == null ||
@@ -344,69 +367,70 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
     return RefreshIndicator(
       onRefresh: () => _loadNotices(),
       child: ListView.builder(
-      controller: _scrollController,
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-      itemCount: entries.length + (showFooter ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index >= entries.length) {
-          if (_loadingMore) {
-            return const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Center(child: CircularProgressIndicator()),
-            );
+        controller: _scrollController,
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        itemCount: entries.length + (showFooter ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index >= entries.length) {
+            if (_loadingMore) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+            return const SizedBox(height: 24);
           }
-          return const SizedBox(height: 24);
-        }
-        final entry = entries[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 8),
-          child: ListTile(
-            leading: _buildDateBadge(context, entry),
-            title: Row(
-              children: [
-                if (entry.isPinned)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 1,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.error,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        l10n.campusNoticesPinned,
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onError,
-                          fontSize: 10,
-                          height: 1.4,
+          final entry = entries[index];
+          return Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: ListTile(
+              leading: _buildDateBadge(context, entry),
+              title: Row(
+                children: [
+                  if (entry.isPinned)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 1,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.error,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          l10n.campusNoticesPinned,
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.onError,
+                                fontSize: 10,
+                                height: 1.4,
+                              ),
                         ),
                       ),
                     ),
+                  Expanded(
+                    child: Text(
+                      entry.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                Expanded(
-                  child: Text(
-                    entry.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                ],
+              ),
+              subtitle: Text(_formatDate(entry.date)),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CampusNoticeDetailPage(entry: entry),
                 ),
-              ],
-            ),
-            subtitle: Text(_formatDate(entry.date)),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => CampusNoticeDetailPage(entry: entry),
               ),
             ),
-          ),
-        );
-      },
-    ),
+          );
+        },
+      ),
     );
   }
 

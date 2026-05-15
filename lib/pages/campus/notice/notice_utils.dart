@@ -32,21 +32,27 @@ final _pinnedReg = RegExp(
   caseSensitive: false,
 );
 
-final _imgReg = RegExp(
-  r'<img[^>]+src="([^"]+)"[^>]*>',
-  caseSensitive: false,
-);
+final _imgReg = RegExp(r'<img[^>]+src="([^"]+)"[^>]*>', caseSensitive: false);
 
+// Match <a href="...">...</a> or <a href='...'>...</a>, capturing the
+// href in either group 1 (double-quoted) or group 2 (single-quoted) and
+// the inner HTML in group 3.
 final _linkReg = RegExp(
-  r'<a[^>]+href="([^"]+)"[^>]*>([\s\S]*?)</a>',
+  r"""<a\s[^>]*?href=(?:"([^"]+)"|'([^']+)')[^>]*>([\s\S]*?)</a>""",
   caseSensitive: false,
 );
 
 final _paragraphReg = RegExp(r'<p[^>]*>([\s\S]*?)</p>', caseSensitive: false);
 
-final _tableReg = RegExp(r'<table[^>]*>([\s\S]*?)</table>', caseSensitive: false);
+final _tableReg = RegExp(
+  r'<table[^>]*>([\s\S]*?)</table>',
+  caseSensitive: false,
+);
 final _tableRowReg = RegExp(r'<tr[^>]*>([\s\S]*?)</tr>', caseSensitive: false);
-final _tableCellReg = RegExp(r'<t[dh][^>]*>([\s\S]*?)</t[dh]>', caseSensitive: false);
+final _tableCellReg = RegExp(
+  r'<t[dh][^>]*>([\s\S]*?)</t[dh]>',
+  caseSensitive: false,
+);
 
 final _contentContainerReg = RegExp(
   r'<div[^>]+(?:class="v_news_content"|id="vsb_content"|class="detail-text"|class="art-text"|class="jxgl"|class="content"|class="wp_articlecontent")[^>]*>',
@@ -57,7 +63,10 @@ final _articleOpenReg = RegExp(r'<article[^>]*>', caseSensitive: false);
 
 /// Strips JS click-tracking calls (e.g. _showDynClicks("wbnews", ...))
 /// and other inline script artifacts from content HTML.
-final _scriptCallReg = RegExp(r'_showDynClicks\s*\([^)]*\)', caseSensitive: false);
+final _scriptCallReg = RegExp(
+  r'_showDynClicks\s*\([^)]*\)',
+  caseSensitive: false,
+);
 
 /// Detects bare HTTP(S) URLs in plain text that are not wrapped in `<a>`
 /// tags.  Stops at whitespace, CJK characters, or fullwidth punctuation.
@@ -88,20 +97,22 @@ void _extractBareUrls(String text, List<_InlineElement> parts) {
 /// Narrows the Fullwidth Forms block to actual punctuation, excluding
 /// fullwidth letters (Ａ-Ｚ, ａ-ｚ) and digits (０-９).
 final _chinesePunctReg = RegExp(
-  r'[　-〿'          // CJK Symbols & Punctuation ( 。、〃 etc.)
-  r'！-／'           // ！＂＃＄％＆＇（）＊＋，－．／
-  r'：-＠'           // ：；＜＝＞？＠
-  r'［-｀'           // ［＼］＾＿｀
-  r'｛-～'           // ｛｜｝～
+  r'[　-〿' // CJK Symbols & Punctuation ( 。、〃 etc.)
+  r'！-／' // ！＂＃＄％＆＇（）＊＋，－．／
+  r'：-＠' // ：；＜＝＞？＠
+  r'［-｀' // ［＼］＾＿｀
+  r'｛-～' // ｛｜｝～
   r'‘’“”' // ‘’“”
-  r'–—'             // –—
+  r'–—' // –—
   r']',
 );
 
 // ── Utility functions ──────────────────────────────────────────────────────────
 
 String _normalizeNoticeUrl(String url, {String? baseUrl}) {
-  // Strip Chinese punctuation that may appear in raw href attributes.
+  // Strip Chinese punctuation that may appear in raw href attributes
+  // and decode HTML entities.
+  url = url.replaceAll('&amp;', '&');
   url = url.replaceAll(_chinesePunctReg, '');
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return url;
@@ -112,7 +123,9 @@ String _normalizeNoticeUrl(String url, {String? baseUrl}) {
   // Relative path: resolve against the current page URL to preserve
   // path prefix (e.g., /info/1069/10336.htm → /info/1069/10337.htm).
   if (baseUrl != null) {
-    return Uri.parse(baseUrl.replaceAll(_chinesePunctReg, '')).resolve(url).toString();
+    return Uri.parse(
+      baseUrl.replaceAll(_chinesePunctReg, ''),
+    ).resolve(url).toString();
   }
   return '$_noticeBase/$url';
 }

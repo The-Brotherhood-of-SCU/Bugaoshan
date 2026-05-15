@@ -42,6 +42,8 @@ dependencies:
   google_fonts: ^6.0.0
   share_plus: ^10.0.0
   gal: ^2.3.0
+  # HTML DOM parser used to robustly parse remote pages instead of regex
+  html: ^0.15.0
 
 dev_dependencies:
   flutter_test:
