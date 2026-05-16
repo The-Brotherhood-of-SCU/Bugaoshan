@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Colors, Curve, Curves;
 import 'package:bugaoshan/utils/locale_utils.dart';
 import 'package:bugaoshan/utils/constants.dart';
+import 'package:bugaoshan/widgets/eula_content.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:system_theme/system_theme.dart';
 
@@ -85,14 +86,15 @@ class AppConfigProvider {
       _keyBackgroundImagePath,
     );
     firstLaunchWizardCompleted.value =
-        _sharedPreferences.getBool(_keyFirstLaunchWizardCompleted) ?? false;
+        _sharedPreferences.getBool(_keyFirstLaunchWizardCompleted) ?? kDebugMode;
     hasUpdateNotification.value =
         _sharedPreferences.getBool(_keyHasUpdateNotification) ?? false;
     visibleDockIds.value =
         _sharedPreferences.getStringList(_keyVisibleDockIds) ??
         List<String>.from(defaultVisibleDockIds);
     acceptedEulaVersion.value =
-        _sharedPreferences.getInt(_keyAcceptedEulaVersion) ?? 0;
+        _sharedPreferences.getInt(_keyAcceptedEulaVersion) ??
+        (kDebugMode ? currentEulaVersion : 114514);
     themeColorMode.value = ThemeColorMode
         .values[_sharedPreferences.getInt(_keyThemeColorMode) ?? 0];
   }

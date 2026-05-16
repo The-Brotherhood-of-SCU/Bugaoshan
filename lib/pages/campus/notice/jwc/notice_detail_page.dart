@@ -117,7 +117,7 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
         title: Text(widget.entry.title),
         actions: [
           IconButton(
-            icon: const Icon(Icons.open_in_browser),
+            icon: const Icon(Icons.open_in_new),
             tooltip: l10n.campusNoticesOpenOriginal,
             onPressed: _openOriginal,
           ),
@@ -147,7 +147,7 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                Icons.open_in_browser,
+                Icons.open_in_new,
                 size: 64,
                 color: Theme.of(context).colorScheme.primary,
               ),

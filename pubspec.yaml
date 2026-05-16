@@ -43,6 +43,7 @@ dependencies:
   share_plus: ^10.0.0
   gal: ^2.3.0
   open_filex: ^4.7.0
+  webview_all: ^1.0.3
 
 dev_dependencies:
   flutter_test:
@@ -64,6 +65,7 @@ flutter:
     - assets/universal-login-ocr.tflite
     - assets/eula.md
     - assets/scripts/
+    - assets/js/
 flutter_launcher_icons:
   android: true
   ios: true

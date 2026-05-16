@@ -9,7 +9,8 @@ import 'package:bugaoshan/pages/campus/ccyl/ccyl_page.dart';
 import 'package:bugaoshan/pages/campus/grades/grades_page.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/plan_completion_page.dart';
 import 'package:bugaoshan/pages/campus/network_device/network_device_page.dart';
-import 'package:bugaoshan/pages/campus/notice/campus_notice_page.dart';
+import 'package:bugaoshan/pages/campus/notice/jwc/campus_notice_page.dart';
+import 'package:bugaoshan/pages/campus/notice/xgb/party_notice_page.dart';
 import 'package:bugaoshan/pages/campus/train_program/train_program_page.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
@@ -182,6 +183,17 @@ class _CampusPageState extends State<CampusPage>
                       onTap: () => popupOrNavigate(
                         logicRootContext,
                         const CampusNoticePage(),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _CampusCard(
+                      icon: Icons.flag_outlined,
+                      title: '党委学工部通知',
+                      desc: '查看四川大学党委学生工作部通知公告',
+                      appOnly: false,
+                      onTap: () => popupOrNavigate(
+                        logicRootContext,
+                        const PartyNoticePage(),
                       ),
                     ),
                     const SizedBox(height: 24),
