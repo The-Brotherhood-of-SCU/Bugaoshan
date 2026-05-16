@@ -40,6 +40,7 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
   final _dirConfigs = [
     _DirConfig(kNoticeAttachmentDir, '教务处通知'),
     _DirConfig(kPartyAttachmentDir, '党委学工部通知'),
+    _DirConfig(kTuanweiAttachmentDir, '青春川大通知'),
   ];
 
   late final TabController _tabController;

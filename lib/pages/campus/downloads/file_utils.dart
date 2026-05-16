@@ -12,6 +12,9 @@ const kNoticeAttachmentDir = 'notice_attachments';
 /// Subdirectory name under `Bugaoshan/` for party notice downloads.
 const kPartyAttachmentDir = 'party_notices';
 
+/// Subdirectory name under `Bugaoshan/` for tuanwei notice downloads.
+const kTuanweiAttachmentDir = 'tuanwei_notices';
+
 // ── File utilities ─────────────────────────────────────────────────────────────────
 
 Future<Directory> getNoticeBaseDir() async {
