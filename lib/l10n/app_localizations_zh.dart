@@ -1369,13 +1369,35 @@ class AppLocalizationsZh extends AppLocalizations {
   String get campusNoticesClearDate => '清除筛选';
 
   @override
-  String get campusNoticesPinned => '置顶';
-
-  @override
   String get campusNoticesLoadFailed => '加载失败，请检查网络';
 
   @override
   String get campusNoticesOpenOriginal => '在浏览器中查看';
+
+  @override
+  String get campusNoticesExternalLink => '该链接为外部页面，请在浏览器中打开查看';
+
+  @override
+  String get campusNoticesOpenInBrowser => '在浏览器中打开';
+
+  @override
+  String get campusNoticesSearch => '搜索';
+
+  @override
+  String campusNoticesSearchResults(int count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '共 $countString 条结果',
+      zero: '无结果',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get selectAcademicYear => '选择学年';
@@ -1635,6 +1657,20 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get imageSaveFailed => '图片保存失败';
+
+  @override
+  String get attachments => '附件';
+
+  @override
+  String get download => '下载';
+
+  @override
+  String attachmentSaved(String path) {
+    return '附件已保存到：$path';
+  }
+
+  @override
+  String get attachmentDownloadFailed => '附件下载失败';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

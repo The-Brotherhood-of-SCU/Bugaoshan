@@ -474,9 +474,20 @@
     "campusNoticesSearchHint": "搜索通知标题",
     "campusNoticesAllDates": "全部时间",
     "campusNoticesClearDate": "清除筛选",
-    "campusNoticesPinned": "置顶",
     "campusNoticesLoadFailed": "加载失败，请检查网络",
     "campusNoticesOpenOriginal": "在浏览器中查看",
+    "campusNoticesExternalLink": "该链接为外部页面，请在浏览器中打开查看",
+    "campusNoticesOpenInBrowser": "在浏览器中打开",
+    "campusNoticesSearch": "搜索",
+    "campusNoticesSearchResults": "{count, plural, =0{无结果} other{共 {count} 条结果}}",
+    "@campusNoticesSearchResults": {
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "format": "compact"
+        }
+      }
+    },
     "selectAcademicYear": "选择学年",
     "userInfoLoading": "正在加载个人信息...",
     "userInfoLoadFailed": "个人信息加载失败",
@@ -566,5 +577,16 @@
     "share": "分享",
     "saveImageToGallery": "保存到相册",
     "imageSavedToGallery": "已保存到相册",
-    "imageSaveFailed": "图片保存失败"
+    "imageSaveFailed": "图片保存失败",
+    "attachments": "附件",
+    "download": "下载",
+    "attachmentSaved": "附件已保存到：{path}",
+    "@attachmentSaved": {
+        "placeholders": {
+            "path": {
+                "type": "String"
+            }
+        }
+    },
+    "attachmentDownloadFailed": "附件下载失败"
 }
