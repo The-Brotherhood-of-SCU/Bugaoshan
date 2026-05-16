@@ -379,6 +379,22 @@ Widget? _buildNoticeTable(BuildContext context, String tableHtml) {
 
   if (rows.isEmpty) return null;
 
+  // Pad rows so every row has the same number of cells (Table requires it).
+  final maxCells = rows.fold<int>(0, (m, r) => r.children.length > m ? r.children.length : m);
+  for (var i = 0; i < rows.length; i++) {
+    final row = rows[i];
+    if (row.children.length < maxCells) {
+      rows[i] = TableRow(
+        decoration: row.decoration,
+        children: [
+          ...row.children,
+          for (var j = row.children.length; j < maxCells; j++)
+            const SizedBox.shrink(),
+        ],
+      );
+    }
+  }
+
   return SingleChildScrollView(
     scrollDirection: Axis.horizontal,
     child: Container(
