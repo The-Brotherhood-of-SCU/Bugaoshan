@@ -43,7 +43,7 @@ final _tableRowReg = RegExp(r'<tr[^>]*>([\s\S]*?)</tr>', caseSensitive: false);
 final _tableCellReg = RegExp(r'<t[dh][^>]*>([\s\S]*?)</t[dh]>', caseSensitive: false);
 
 final _contentContainerReg = RegExp(
-  r'<div[^>]+(?:class="v_news_content"|id="vsb_content"|class="detail-text"|class="art-text"|class="jxgl"|class="content"|class="wp_articlecontent")[^>]*>',
+  r"""<div[^>]+(?:class=["']v_news_content["']|id=["']vsb_content["']|class=["']detail-text["']|class=["']art-text["']|class=["']jxgl["']|class=["']content["']|class=["']wp_articlecontent["'])[^>]*>""",
   caseSensitive: false,
 );
 

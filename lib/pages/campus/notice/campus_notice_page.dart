@@ -98,7 +98,7 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
       }
 
       final body = _decodeBody(resp.bodyBytes);
-      final entries = _parseNotices(body);
+      final entries = _parseNotices(body, pageUrl: url);
       if (!loadMore && entries.isEmpty) {
         throw Exception('No notices found');
       }
@@ -139,10 +139,10 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
     }
   }
 
-  List<_NoticeEntry> _parseNotices(String html) {
+  List<_NoticeEntry> _parseNotices(String html, {required String pageUrl}) {
     final entries = <_NoticeEntry>[];
     for (final match in _listItemReg.allMatches(html)) {
-      final url = _normalizeNoticeUrl(match.group(1)!);
+      final url = _normalizeNoticeUrl(match.group(1)!, baseUrl: pageUrl);
       final monthDay = match.group(2)!;
       final year = match.group(3)!;
       final title = _stripTags(match.group(4)!);

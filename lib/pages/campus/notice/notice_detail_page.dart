@@ -34,7 +34,7 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
     try {
       final resp = await _NoticeHttp.get(widget.entry.url);
       if (resp.statusCode != 200) {
-        throw Exception('HTTP ${resp.statusCode}');
+        throw Exception('${widget.entry.url} HTTP ${resp.statusCode}');
       }
 
       final body = _decodeBody(resp.bodyBytes);
@@ -54,13 +54,18 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
       }
 
       // Extract attachment links and remove them from rendered content.
-      final result =
-          _extractAttachments(contentHtml, baseUrl: widget.entry.url);
+      final result = _extractAttachments(
+        contentHtml,
+        baseUrl: widget.entry.url,
+      );
       final cleanedHtml = result.$1;
       final attachments = result.$2;
 
-      final widgets =
-          _buildContentWidgets(context, cleanedHtml, baseUrl: widget.entry.url);
+      final widgets = _buildContentWidgets(
+        context,
+        cleanedHtml,
+        baseUrl: widget.entry.url,
+      );
       if (widgets.isEmpty && attachments.isEmpty) {
         throw Exception('No content found');
       }
@@ -75,7 +80,7 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
       debugPrint('Notice detail error: $e');
       if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        _error = "";
         _loading = false;
       });
     }
@@ -110,8 +115,7 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
             if (_attachments.isNotEmpty)
               _AttachmentFab(
                 attachments: _attachments,
-                boundarySize:
-                    Size(constraints.maxWidth, constraints.maxHeight),
+                boundarySize: Size(constraints.maxWidth, constraints.maxHeight),
               ),
           ],
         ),
@@ -122,7 +126,7 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
   Widget _buildBody(AppLocalizations l10n) {
     if (_error != null && _contentWidgets == null) {
       return RetryableErrorWidget(
-        message: '${l10n.loadFailed}\n$_error',
+        message: l10n.loadFailed,
         onRetry: _loadDetail,
       );
     }
@@ -138,8 +142,7 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text(widget.entry.title,
-            style: Theme.of(context).textTheme.titleLarge),
+        Text(widget.entry.title, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8),
         Row(
           children: [
@@ -152,8 +155,8 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
             Text(
               _formatDate(widget.entry.date),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
