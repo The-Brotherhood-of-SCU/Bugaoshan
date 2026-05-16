@@ -1674,6 +1674,52 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get attachmentDownloadFailed => '附件下载失败';
+
+  @override
+  String get downloadedAttachments => '已下载附件';
+
+  @override
+  String get open => '打开';
+
+  @override
+  String get noDownloadedAttachments => '暂无已下载附件';
+
+  @override
+  String get fileDeleted => '文件已删除';
+
+  @override
+  String get attachmentSavedTapToOpen => '附件已保存，点击打开';
+
+  @override
+  String get confirmDelete => '确认删除';
+
+  @override
+  String get confirmDeleteFile => '确认删除此文件？';
+
+  @override
+  String deleteSelected(int count) {
+    return '删除 ($count)';
+  }
+
+  @override
+  String get selectAll => '全选';
+
+  @override
+  String confirmDeleteSelected(int count) {
+    return '确认删除选中的 $count 个文件？';
+  }
+
+  @override
+  String get sortByTime => '按时间';
+
+  @override
+  String get sortByName => '按名称';
+
+  @override
+  String get sortBySize => '按大小';
+
+  @override
+  String get searchAttachmentsHint => '搜索附件...';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

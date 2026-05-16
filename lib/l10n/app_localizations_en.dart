@@ -1724,4 +1724,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get attachmentDownloadFailed => 'Failed to download attachment';
+
+  @override
+  String get downloadedAttachments => 'Downloaded Attachments';
+
+  @override
+  String get open => 'Open';
+
+  @override
+  String get noDownloadedAttachments => 'No downloaded attachments';
+
+  @override
+  String get fileDeleted => 'File deleted';
+
+  @override
+  String get attachmentSavedTapToOpen => 'Attachment saved, tap to open';
+
+  @override
+  String get confirmDelete => 'Confirm Delete';
+
+  @override
+  String get confirmDeleteFile => 'Delete this file?';
+
+  @override
+  String deleteSelected(int count) {
+    return 'Delete ($count)';
+  }
+
+  @override
+  String get selectAll => 'Select All';
+
+  @override
+  String confirmDeleteSelected(int count) {
+    return 'Delete $count selected file(s)?';
+  }
+
+  @override
+  String get sortByTime => 'By Time';
+
+  @override
+  String get sortByName => 'By Name';
+
+  @override
+  String get sortBySize => 'By Size';
+
+  @override
+  String get searchAttachmentsHint => 'Search attachments...';
 }

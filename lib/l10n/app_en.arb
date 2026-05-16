@@ -591,5 +591,30 @@
             }
         }
     },
-    "attachmentDownloadFailed": "Failed to download attachment"
+    "attachmentDownloadFailed": "Failed to download attachment",
+    "downloadedAttachments": "Downloaded Attachments",
+    "open": "Open",
+    "delete": "Delete",
+    "noDownloadedAttachments": "No downloaded attachments",
+    "fileDeleted": "File deleted",
+    "attachmentSavedTapToOpen": "Attachment saved, tap to open",
+    "confirmDelete": "Confirm Delete",
+    "confirmDeleteFile": "Delete this file?",
+    "deleteSelected": "Delete ({count})",
+    "@deleteSelected": {
+        "placeholders": {
+            "count": { "type": "int" }
+        }
+    },
+    "selectAll": "Select All",
+    "confirmDeleteSelected": "Delete {count} selected file(s)?",
+    "@confirmDeleteSelected": {
+        "placeholders": {
+            "count": { "type": "int" }
+        }
+    },
+    "sortByTime": "By Time",
+    "sortByName": "By Name",
+    "sortBySize": "By Size",
+    "searchAttachmentsHint": "Search attachments..."
 }

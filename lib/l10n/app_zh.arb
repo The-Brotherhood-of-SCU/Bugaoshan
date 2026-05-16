@@ -589,5 +589,30 @@
             }
         }
     },
-    "attachmentDownloadFailed": "附件下载失败"
+    "attachmentDownloadFailed": "附件下载失败",
+    "downloadedAttachments": "已下载附件",
+    "open": "打开",
+    "delete": "删除",
+    "noDownloadedAttachments": "暂无已下载附件",
+    "fileDeleted": "文件已删除",
+    "attachmentSavedTapToOpen": "附件已保存，点击打开",
+    "confirmDelete": "确认删除",
+    "confirmDeleteFile": "确认删除此文件？",
+    "deleteSelected": "删除 ({count})",
+    "@deleteSelected": {
+        "placeholders": {
+            "count": { "type": "int" }
+        }
+    },
+    "selectAll": "全选",
+    "confirmDeleteSelected": "确认删除选中的 {count} 个文件？",
+    "@confirmDeleteSelected": {
+        "placeholders": {
+            "count": { "type": "int" }
+        }
+    },
+    "sortByTime": "按时间",
+    "sortByName": "按名称",
+    "sortBySize": "按大小",
+    "searchAttachmentsHint": "搜索附件..."
 }

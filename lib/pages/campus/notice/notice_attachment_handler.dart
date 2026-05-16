@@ -177,6 +177,24 @@ class _AttachmentTile extends StatefulWidget {
 
 class _AttachmentTileState extends State<_AttachmentTile> {
   bool _downloading = false;
+  String? _downloadedPath;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkExisting();
+  }
+
+  Future<void> _checkExisting() async {
+    final dir = await getApplicationDocumentsDirectory();
+    final saveDir = Directory('${dir.path}/Bugaoshan/notice_attachments');
+    if (!saveDir.existsSync()) return;
+    final filePath = '${saveDir.path}/${widget.attachment.fileName}';
+    if (File(filePath).existsSync()) {
+      if (!mounted) return;
+      setState(() => _downloadedPath = filePath);
+    }
+  }
 
   IconData _fileIcon() {
     final name = widget.attachment.fileName.toLowerCase();
@@ -235,18 +253,7 @@ class _AttachmentTileState extends State<_AttachmentTile> {
       await file.writeAsBytes(bytes);
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.attachmentSaved(filePath)),
-          duration: const Duration(seconds: 3),
-        ),
-      );
-
-      // Try to open the file.
-      final uri = Uri.file(filePath);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
+      setState(() => _downloadedPath = filePath);
     } catch (e) {
       debugPrint('Attachment download error: $e');
       if (!mounted) return;
@@ -259,6 +266,17 @@ class _AttachmentTileState extends State<_AttachmentTile> {
     } finally {
       if (mounted) setState(() => _downloading = false);
     }
+  }
+
+  void _openFile() {
+    if (_downloadedPath == null) return;
+    final uri = Uri.file(_downloadedPath!);
+    launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  void _shareFile() {
+    if (_downloadedPath == null) return;
+    Share.shareXFiles([XFile(_downloadedPath!)]);
   }
 
   @override
@@ -278,11 +296,29 @@ class _AttachmentTileState extends State<_AttachmentTile> {
               height: 24,
               child: CircularProgressIndicator(strokeWidth: 2),
             )
-          : IconButton(
-              icon: const Icon(Icons.download),
-              tooltip: l10n.download,
-              onPressed: _download,
-            ),
+          : _downloadedPath != null
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.share,
+                          color: Theme.of(context).colorScheme.primary),
+                      tooltip: l10n.share,
+                      onPressed: _shareFile,
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.check_circle,
+                          color: Theme.of(context).colorScheme.primary),
+                      tooltip: l10n.open,
+                      onPressed: _openFile,
+                    ),
+                  ],
+                )
+              : IconButton(
+                  icon: const Icon(Icons.download),
+                  tooltip: l10n.download,
+                  onPressed: _download,
+                ),
     );
   }
 }
