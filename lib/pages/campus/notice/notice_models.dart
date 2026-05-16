@@ -4,14 +4,12 @@ class _NoticeEntry {
   final String title;
   final String url;
   final DateTime date;
-  final bool isPinned;
   final String normalizedTitle;
 
   _NoticeEntry({
     required this.title,
     required this.url,
     required this.date,
-    this.isPinned = false,
   }) : normalizedTitle = title.toLowerCase().replaceAll(_filterSpaceReg, '');
 }
 

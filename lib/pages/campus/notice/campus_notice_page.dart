@@ -39,7 +39,6 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
   List<_NoticeEntry> _entries = [];
   String? _nextPageUrl = _noticeListUrl;
   final Set<String> _seenUrls = {};
-  final Set<String> _pinnedUrls = {};
   DateTimeRange? _selectedRange;
   String _query = '';
 
@@ -76,10 +75,8 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
         _hasMore = true;
         _nextPageUrl = _noticeListUrl;
         _seenUrls.clear();
-        _pinnedUrls.clear();
       });
       _NoticeHttp.clearCookies();
-      await _fetchPinnedUrls();
     }
 
     final url = _nextPageUrl;
@@ -99,7 +96,7 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
       }
 
       final body = _decodeBody(resp.bodyBytes);
-      final entries = _parseNotices(body, _pinnedUrls);
+      final entries = _parseNotices(body);
       if (!loadMore && entries.isEmpty) {
         throw Exception('No notices found');
       }
@@ -140,20 +137,7 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
     }
   }
 
-  Future<void> _fetchPinnedUrls() async {
-    try {
-      final resp = await _NoticeHttp.get('$_noticeBase/index.htm');
-      if (resp.statusCode != 200) return;
-      final body = _decodeBody(resp.bodyBytes);
-      for (final match in _pinnedReg.allMatches(body)) {
-        _pinnedUrls.add(_normalizeNoticeUrl(match.group(1)!));
-      }
-    } catch (e) {
-      debugPrint('_fetchPinnedUrls error: $e');
-    }
-  }
-
-  List<_NoticeEntry> _parseNotices(String html, Set<String> pinnedUrls) {
+  List<_NoticeEntry> _parseNotices(String html) {
     final entries = <_NoticeEntry>[];
     for (final match in _listItemReg.allMatches(html)) {
       final url = _normalizeNoticeUrl(match.group(1)!);
@@ -167,7 +151,6 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
           title: title,
           url: url,
           date: date,
-          isPinned: pinnedUrls.contains(url),
         ),
       );
     }
@@ -362,38 +345,10 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
           margin: const EdgeInsets.only(bottom: 8),
           child: ListTile(
             leading: _buildDateBadge(context, entry),
-            title: Row(
-              children: [
-                if (entry.isPinned)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 1,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.error,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        l10n.campusNoticesPinned,
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onError,
-                          fontSize: 10,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ),
-                Expanded(
-                  child: Text(
-                    entry.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
+            title: Text(
+              entry.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
             subtitle: Text(_formatDate(entry.date)),
             trailing: const Icon(Icons.chevron_right),

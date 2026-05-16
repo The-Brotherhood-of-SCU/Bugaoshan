@@ -26,12 +26,6 @@ final _listItemReg = RegExp(
 
 final _pageNumReg = RegExp(r'tzgg/(\d+)\.htm$');
 
-final _pinnedReg = RegExp(
-  r'<li[^>]*>\s*<a[^>]+href="([^"]+)"[^>]*>'
-  r'(?:(?!</li>)[\s\S])*?<div class="bq">\s*\[置顶\]',
-  caseSensitive: false,
-);
-
 final _imgReg = RegExp(
   r'<img[^>]+src="([^"]+)"[^>]*>',
   caseSensitive: false,

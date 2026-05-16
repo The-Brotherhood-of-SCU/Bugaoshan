@@ -1369,9 +1369,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get campusNoticesClearDate => '清除筛选';
 
   @override
-  String get campusNoticesPinned => '置顶';
-
-  @override
   String get campusNoticesLoadFailed => '加载失败，请检查网络';
 
   @override

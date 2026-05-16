@@ -1410,9 +1410,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get campusNoticesClearDate => 'Clear filter';
 
   @override
-  String get campusNoticesPinned => 'Pinned';
-
-  @override
   String get campusNoticesLoadFailed => 'Load failed, please check network';
 
   @override

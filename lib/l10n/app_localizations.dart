@@ -2755,12 +2755,6 @@ abstract class AppLocalizations {
   /// **'Clear filter'**
   String get campusNoticesClearDate;
 
-  /// No description provided for @campusNoticesPinned.
-  ///
-  /// In en, this message translates to:
-  /// **'Pinned'**
-  String get campusNoticesPinned;
-
   /// No description provided for @campusNoticesLoadFailed.
   ///
   /// In en, this message translates to:
