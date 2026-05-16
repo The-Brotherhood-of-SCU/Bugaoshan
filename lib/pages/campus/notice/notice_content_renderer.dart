@@ -273,10 +273,11 @@ Widget? _buildNoticeTable(BuildContext context, String tableHtml) {
     final cells = <Widget>[];
     for (final cellMatch in _tableCellReg.allMatches(rowMatch.group(1)!)) {
       var cellHtml = cellMatch.group(1) ?? '';
-      cellHtml = cellHtml.replaceAll(
-        RegExp(r'<br\s*/?>', caseSensitive: false),
-        '\n',
-      );
+      cellHtml = cellHtml
+          .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
+          .replaceAll(RegExp(r'</p>\s*<p[^>]*>', caseSensitive: false), '\n')
+          .replaceAll(RegExp(r'<p[^>]*>', caseSensitive: false), '')
+          .replaceAll(RegExp(r'</p>', caseSensitive: false), '\n');
 
       // Check if the cell contains an image.
       final imgMatch = _imgReg.firstMatch(cellHtml);
