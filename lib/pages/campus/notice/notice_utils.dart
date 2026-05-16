@@ -105,6 +105,15 @@ final _chinesePunctReg = RegExp(
 
 // ── Utility functions ──────────────────────────────────────────────────────────
 
+bool _isExternalUrl(String url) {
+  try {
+    final uri = Uri.parse(url);
+    return uri.host.isNotEmpty && uri.host != 'jwc.scu.edu.cn';
+  } catch (_) {
+    return false;
+  }
+}
+
 String _normalizeNoticeUrl(String url, {String? baseUrl}) {
   // Strip Chinese punctuation that may appear in raw href attributes.
   url = url.replaceAll(_chinesePunctReg, '');

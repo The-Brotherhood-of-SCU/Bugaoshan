@@ -1375,6 +1375,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get campusNoticesOpenOriginal => '在浏览器中查看';
 
   @override
+  String get campusNoticesExternalLink => '该链接为外部页面，请在浏览器中打开查看';
+
+  @override
+  String get campusNoticesOpenInBrowser => '在浏览器中打开';
+
+  @override
   String get selectAcademicYear => '选择学年';
 
   @override

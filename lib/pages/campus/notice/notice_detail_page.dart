@@ -18,11 +18,17 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
   String? _error;
   List<Widget>? _contentWidgets;
   List<_NoticeAttachment> _attachments = [];
+  bool _isExternal = false;
 
   @override
   void initState() {
     super.initState();
-    _loadDetail();
+    if (_isExternalUrl(widget.entry.url)) {
+      _isExternal = true;
+      _loading = false;
+    } else {
+      _loadDetail();
+    }
   }
 
   Future<void> _loadDetail() async {
@@ -124,6 +130,36 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
   }
 
   Widget _buildBody(AppLocalizations l10n) {
+    if (_isExternal) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.open_in_browser,
+                size: 64,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                l10n.campusNoticesExternalLink,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: _openOriginal,
+                icon: const Icon(Icons.open_in_new),
+                label: Text(l10n.campusNoticesOpenInBrowser),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     if (_error != null && _contentWidgets == null) {
       return RetryableErrorWidget(
         message: l10n.loadFailed,

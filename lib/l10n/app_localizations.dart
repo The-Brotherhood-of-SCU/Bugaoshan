@@ -2767,6 +2767,18 @@ abstract class AppLocalizations {
   /// **'View in browser'**
   String get campusNoticesOpenOriginal;
 
+  /// No description provided for @campusNoticesExternalLink.
+  ///
+  /// In en, this message translates to:
+  /// **'This is an external page, please open in browser to view'**
+  String get campusNoticesExternalLink;
+
+  /// No description provided for @campusNoticesOpenInBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in browser'**
+  String get campusNoticesOpenInBrowser;
+
   /// No description provided for @selectAcademicYear.
   ///
   /// In en, this message translates to:

@@ -478,6 +478,8 @@
     "campusNoticesClearDate": "Clear filter",
     "campusNoticesLoadFailed": "Load failed, please check network",
     "campusNoticesOpenOriginal": "View in browser",
+    "campusNoticesExternalLink": "This is an external page, please open in browser to view",
+    "campusNoticesOpenInBrowser": "Open in browser",
     "selectAcademicYear": "Select Academic Year",
     "userInfoLoading": "Loading user info...",
     "userInfoLoadFailed": "Failed to load user info",

@@ -1416,6 +1416,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get campusNoticesOpenOriginal => 'View in browser';
 
   @override
+  String get campusNoticesExternalLink =>
+      'This is an external page, please open in browser to view';
+
+  @override
+  String get campusNoticesOpenInBrowser => 'Open in browser';
+
+  @override
   String get selectAcademicYear => 'Select Academic Year';
 
   @override
