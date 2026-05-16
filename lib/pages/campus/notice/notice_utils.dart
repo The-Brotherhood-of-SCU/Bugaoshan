@@ -57,6 +57,13 @@ final _clickCountReg = RegExp(
   caseSensitive: false,
 );
 
+/// Matches the "上一条" / "下一条" navigation paragraphs at the bottom of
+/// SCU notice pages (e.g. `<p><span>上一条：</span><a href="...">...</a></p>`).
+final _prevNextReg = RegExp(
+  r'<p[^>]*>\s*<span>\s*[上下]一条[：:]?\s*</span>[\s\S]*?</p>',
+  caseSensitive: false,
+);
+
 /// Detects bare HTTP(S) URLs in plain text that are not wrapped in `<a>`
 /// tags.  Stops at whitespace, CJK characters, or fullwidth punctuation.
 final _bareUrlReg = RegExp(
