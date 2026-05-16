@@ -622,5 +622,7 @@
     "sortByTime": "按时间",
     "sortByName": "按名称",
     "sortBySize": "按大小",
-    "searchAttachmentsHint": "搜索附件..."
+    "searchAttachmentsHint": "搜索附件...",
+    "openFolder": "打开文件夹",
+    "openFolderFailed": "打开文件夹失败"
 }
