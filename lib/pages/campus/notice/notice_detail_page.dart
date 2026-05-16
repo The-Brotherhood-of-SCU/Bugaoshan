@@ -65,7 +65,16 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
         baseUrl: widget.entry.url,
       );
       final cleanedHtml = result.$1;
-      final attachments = result.$2;
+      final fjxzAttachments = _extractFjxzAttachments(
+        body,
+        baseUrl: widget.entry.url,
+      );
+      // Merge attachments from vsb_content and fjxz, deduplicating by URL.
+      final seen = <String>{};
+      final attachments = <_NoticeAttachment>[];
+      for (final a in [...result.$2, ...fjxzAttachments]) {
+        if (seen.add(a.url)) attachments.add(a);
+      }
 
       final widgets = _buildContentWidgets(
         context,

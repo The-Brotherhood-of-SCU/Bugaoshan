@@ -85,6 +85,39 @@ final _attachmentExtReg = RegExp(
   return (html, attachments);
 }
 
+/// Extracts attachment links from the `<div class="fjxz">` (附件下载) section
+/// that lives outside `vsb_content` on SCU notice pages.
+List<_NoticeAttachment> _extractFjxzAttachments(String html, {String? baseUrl}) {
+  final attachments = <_NoticeAttachment>[];
+  final fjxzReg = RegExp(
+    r"""<div[^>]+class=["']fjxz["'][^>]*>""",
+    caseSensitive: false,
+  );
+  final fjxzMatch = fjxzReg.firstMatch(html);
+  if (fjxzMatch == null) return attachments;
+
+  // Extract the fjxz div content (non-greedy — it's a flat container).
+  final contentReg = RegExp(
+    r"""<div[^>]+class=["']fjxz["'][^>]*>([\s\S]*?)</div>""",
+    caseSensitive: false,
+  );
+  final contentMatch = contentReg.firstMatch(html);
+  if (contentMatch == null) return attachments;
+
+  final content = contentMatch.group(1)!;
+  for (final match in _attachmentLinkReg.allMatches(content)) {
+    final href = match.group(1) ?? '';
+    final label = _stripTags(match.group(2)!);
+    if (label.isEmpty) continue;
+    attachments.add(_NoticeAttachment(
+      url: _normalizeNoticeUrl(href, baseUrl: baseUrl),
+      text: label.trim(),
+      fileName: label.trim(),
+    ));
+  }
+  return attachments;
+}
+
 String? _extractNestedDivContent(String html, int start) {
   var depth = 1;
   var i = start;
@@ -142,6 +175,17 @@ List<Widget> _buildContentWidgets(BuildContext context, String html,
           match.start, match.group(0)!, _ElementType.paragraph));
     }
   }
+  // Some old pages use <div> instead of <p> for content paragraphs.
+  // Only fall back to <div> matching when no <p> tags were found.
+  if (elements.isEmpty) {
+    final divReg = RegExp(r'<div[^>]*>([\s\S]*?)</div>', caseSensitive: false);
+    for (final match in divReg.allMatches(html)) {
+      if (!insideTable(match.start)) {
+        elements.add(_ContentElement(
+            match.start, match.group(0)!, _ElementType.paragraph));
+      }
+    }
+  }
   for (final match in _imgReg.allMatches(html)) {
     if (!insideTable(match.start)) {
       elements
@@ -195,7 +239,12 @@ List<Widget> _parseParagraphContent(
   String? baseUrl,
 }) {
   final pMatch = _paragraphReg.firstMatch(paragraphHtml);
-  var innerHtml = pMatch?.group(1) ?? paragraphHtml;
+  var innerHtml = pMatch?.group(1);
+  // Fall back to <div> content for old pages that use <div> instead of <p>.
+  innerHtml ??= RegExp(r'<div[^>]*>([\s\S]*?)</div>', caseSensitive: false)
+          .firstMatch(paragraphHtml)
+          ?.group(1) ??
+      paragraphHtml;
 
   innerHtml = innerHtml.replaceAll(
     RegExp(r'<br\s*/?>', caseSensitive: false),
