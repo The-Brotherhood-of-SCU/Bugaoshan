@@ -62,7 +62,7 @@ class _PartyNoticePageState extends State<PartyNoticePage> {
             final back = await _controller.canGoBack();
             final forward = await _controller.canGoForward();
             //wait for dom to be ready
-            await Future.delayed(const Duration(milliseconds: 80));
+            await Future.delayed(const Duration(milliseconds: 100));
             setState(() {
               _loading = false;
               _canGoBack = back;
@@ -188,22 +188,11 @@ class _PartyNoticePageState extends State<PartyNoticePage> {
               ),
               if (_loading) const Center(child: CircularProgressIndicator()),
               if (_pageAttachments.isNotEmpty)
-                Positioned(
-                  right: 16,
-                  bottom: 32,
-                  child: FloatingActionButton(
-                    heroTag: 'party_attach_fab',
-                    mini: true,
-                    onPressed: () => showAttachmentsSheet(
-                      context,
-                      items: _pageAttachments,
-                      dirName: kPartyAttachmentDir,
-                    ),
-                    child: Badge(
-                      label: Text('${_pageAttachments.length}'),
-                      child: const Icon(Icons.attach_file),
-                    ),
-                  ),
+                NoticeAttachmentFab(
+                  items: _pageAttachments,
+                  dirName: kPartyAttachmentDir,
+                  boundarySize: Size(constraints.maxWidth, constraints.maxHeight),
+                  heroTag: 'party_attach_fab',
                 ),
             ],
           ),

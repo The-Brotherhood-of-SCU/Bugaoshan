@@ -128,8 +128,12 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
           children: [
             _buildBody(l10n),
             if (_attachments.isNotEmpty)
-              _AttachmentFab(
-                attachments: _attachments,
+              NoticeAttachmentFab(
+                items: _attachments
+                    .map((a) => AttachItem(url: a.url, name: a.text))
+                    .toList(),
+                dirName: kNoticeAttachmentDir,
+                downloadHeaders: _NoticeHttp._buildHeaders(),
                 boundarySize: Size(constraints.maxWidth, constraints.maxHeight),
               ),
           ],

@@ -19,7 +19,6 @@ part 'notice_http_client.dart';
 part 'notice_models.dart';
 part 'notice_content_renderer.dart';
 part 'notice_image_handler.dart';
-part 'notice_attachment_handler.dart';
 part 'notice_detail_page.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════════
