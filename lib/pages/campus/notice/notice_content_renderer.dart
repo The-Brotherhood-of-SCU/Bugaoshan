@@ -278,6 +278,22 @@ Widget? _buildNoticeTable(BuildContext context, String tableHtml) {
         '\n',
       );
 
+      // Check if the cell contains an image.
+      final imgMatch = _imgReg.firstMatch(cellHtml);
+      if (imgMatch != null) {
+        final src = imgMatch.group(1)!;
+        if (!src.startsWith('data:')) {
+          final imageUrl = _normalizeNoticeUrl(src);
+          cells.add(
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              child: _buildNoticeImage(context, imageUrl),
+            ),
+          );
+          continue;
+        }
+      }
+
       // Parse <a> tags so links remain clickable in table cells.
       final parts = <_InlineElement>[];
       var lastEnd = 0;
