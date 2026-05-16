@@ -81,6 +81,7 @@ final _attachmentExtReg = RegExp(
       url: _normalizeNoticeUrl(href, baseUrl: baseUrl),
       text: label.trim(),
       fileName: label.trim(),
+      noticeUrl: baseUrl ?? '',
     ));
   }
   // Remove matched attachment paragraphs.
@@ -103,6 +104,7 @@ final _attachmentExtReg = RegExp(
       url: normalized,
       text: label.trim(),
       fileName: label.trim(),
+      noticeUrl: baseUrl ?? '',
     ));
   }
 
@@ -137,6 +139,7 @@ List<_NoticeAttachment> _extractFjxzAttachments(String html, {String? baseUrl}) 
       url: _normalizeNoticeUrl(href, baseUrl: baseUrl),
       text: label.trim(),
       fileName: label.trim(),
+      noticeUrl: baseUrl ?? '',
     ));
   }
   return attachments;

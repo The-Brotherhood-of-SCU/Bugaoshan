@@ -19,11 +19,13 @@ class _NoticeAttachment {
   final String url;
   final String text;
   final String fileName;
+  final String noticeUrl;
 
   _NoticeAttachment({
     required this.url,
     required this.text,
     required this.fileName,
+    required this.noticeUrl,
   });
 }
 

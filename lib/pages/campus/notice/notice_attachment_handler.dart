@@ -180,20 +180,52 @@ class _AttachmentTileState extends State<_AttachmentTile> {
   bool _downloading = false;
   String? _downloadedPath;
 
+  String get _noticeDirName {
+    final hash = widget.attachment.noticeUrl.hashCode.toRadixString(16);
+    return hash;
+  }
+
   @override
   void initState() {
     super.initState();
     _checkExisting();
   }
 
+  Future<Directory> _getSaveDir() async {
+    final dir = await getApplicationDocumentsDirectory();
+    final saveDir = Directory(
+      '${dir.path}/Bugaoshan/notice_attachments/$_noticeDirName',
+    );
+    if (!saveDir.existsSync()) {
+      saveDir.createSync(recursive: true);
+    }
+    return saveDir;
+  }
+
   Future<void> _checkExisting() async {
     final dir = await getApplicationDocumentsDirectory();
-    final saveDir = Directory('${dir.path}/Bugaoshan/notice_attachments');
+    final saveDir = Directory(
+      '${dir.path}/Bugaoshan/notice_attachments/$_noticeDirName',
+    );
     if (!saveDir.existsSync()) return;
-    final filePath = '${saveDir.path}/${widget.attachment.fileName}';
-    if (File(filePath).existsSync()) {
+    final fileName = widget.attachment.fileName;
+    // Check exact match first.
+    final exactPath = '${saveDir.path}/$fileName';
+    if (File(exactPath).existsSync()) {
       if (!mounted) return;
-      setState(() => _downloadedPath = filePath);
+      setState(() => _downloadedPath = exactPath);
+      return;
+    }
+    // Check deduplicated variants: "name (1).ext", "name (2).ext", …
+    final baseName = p.basenameWithoutExtension(fileName);
+    final ext = p.extension(fileName);
+    for (var i = 1; i <= 99; i++) {
+      final variantPath = '${saveDir.path}/$baseName ($i)$ext';
+      if (File(variantPath).existsSync()) {
+        if (!mounted) return;
+        setState(() => _downloadedPath = variantPath);
+        return;
+      }
     }
   }
 
@@ -230,12 +262,8 @@ class _AttachmentTileState extends State<_AttachmentTile> {
       final bytes = response.bodyBytes;
       final fileName = widget.attachment.fileName;
 
-      // Save to app documents directory.
-      final dir = await getApplicationDocumentsDirectory();
-      final saveDir = Directory('${dir.path}/Bugaoshan/notice_attachments');
-      if (!saveDir.existsSync()) {
-        saveDir.createSync(recursive: true);
-      }
+      // Save to per-notice subdirectory.
+      final saveDir = await _getSaveDir();
 
       // Deduplicate file names.
       var filePath = '${saveDir.path}/$fileName';

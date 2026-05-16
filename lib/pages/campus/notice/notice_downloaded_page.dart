@@ -52,7 +52,11 @@ class _DownloadedAttachmentsPageState
       });
       return;
     }
-    final files = dir.listSync().whereType<File>().toList();
+    // Files are stored in per-notice subdirectories.
+    final files = <File>[];
+    for (final sub in dir.listSync().whereType<Directory>()) {
+      files.addAll(sub.listSync().whereType<File>());
+    }
     _sortFiles(files);
     if (!mounted) return;
     setState(() {
@@ -141,6 +145,13 @@ class _DownloadedAttachmentsPageState
     for (final path in _selected) {
       final file = File(path);
       if (file.existsSync()) await file.delete();
+    }
+    // Clean up empty subdirectories.
+    final dir = await _attachmentsDir();
+    if (dir.existsSync()) {
+      for (final sub in dir.listSync().whereType<Directory>()) {
+        if (sub.listSync().isEmpty) sub.deleteSync();
+      }
     }
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
