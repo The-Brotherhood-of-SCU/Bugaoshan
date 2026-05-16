@@ -270,8 +270,7 @@ class _AttachmentTileState extends State<_AttachmentTile> {
 
   void _openFile() {
     if (_downloadedPath == null) return;
-    final uri = Uri.file(_downloadedPath!);
-    launchUrl(uri, mode: LaunchMode.externalApplication);
+    OpenFilex.open(_downloadedPath!);
   }
 
   void _shareFile() {

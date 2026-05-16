@@ -177,11 +177,8 @@ class _DownloadedAttachmentsPageState
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
-  Future<void> _openFile(File file) async {
-    final uri = Uri.file(file.path);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+  void _openFile(File file) {
+    OpenFilex.open(file.path);
   }
 
   void _shareFile(File file) {
