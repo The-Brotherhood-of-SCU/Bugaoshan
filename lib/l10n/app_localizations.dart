@@ -2791,6 +2791,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, =0{No results} other{{count} results}}'**
   String campusNoticesSearchResults(int count);
 
+  /// No description provided for @campusNoticesConfirmOpenLink.
+  ///
+  /// In en, this message translates to:
+  /// **'This link will open in an external browser. Continue?\n\n{url}'**
+  String campusNoticesConfirmOpenLink(String url);
+
   /// No description provided for @selectAcademicYear.
   ///
   /// In en, this message translates to:

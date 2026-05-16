@@ -490,6 +490,14 @@
         }
       }
     },
+    "campusNoticesConfirmOpenLink": "This link will open in an external browser. Continue?\n\n{url}",
+    "@campusNoticesConfirmOpenLink": {
+      "placeholders": {
+        "url": {
+          "type": "String"
+        }
+      }
+    },
     "selectAcademicYear": "Select Academic Year",
     "userInfoLoading": "Loading user info...",
     "userInfoLoadFailed": "Failed to load user info",

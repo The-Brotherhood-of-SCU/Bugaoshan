@@ -4,6 +4,30 @@ part of 'campus_notice_page.dart';
 //  Content extraction & HTML → Widget rendering (top-level functions)
 // ═══════════════════════════════════════════════════════════════════════════════
 
+Future<void> _confirmAndLaunchUrl(BuildContext context, String url) async {
+  final l10n = AppLocalizations.of(context)!;
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(l10n.campusNoticesOpenInBrowser),
+      content: Text(l10n.campusNoticesConfirmOpenLink(url)),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: Text(l10n.confirm),
+        ),
+      ],
+    ),
+  );
+  if (confirmed == true) {
+    launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+  }
+}
+
 String? _extractContentHtml(String html) {
   final divMatch = _contentContainerReg.firstMatch(html);
   if (divMatch != null) {
@@ -200,6 +224,7 @@ List<Widget> _buildContentWidgets(BuildContext context, String html,
     switch (element.type) {
       case _ElementType.paragraph:
         final textWidgets = _parseParagraphContent(
+          context,
           element.html,
           bodyStyle,
           linkStyle,
@@ -233,6 +258,7 @@ List<Widget> _buildContentWidgets(BuildContext context, String html,
 }
 
 List<Widget> _parseParagraphContent(
+  BuildContext context,
   String paragraphHtml,
   TextStyle? bodyStyle,
   TextStyle? linkStyle, {
@@ -295,10 +321,7 @@ List<Widget> _parseParagraphContent(
           text: part.text,
           style: linkStyle,
           recognizer: TapGestureRecognizer()
-            ..onTap = () => launchUrl(
-                  Uri.parse(part.href!),
-                  mode: LaunchMode.externalApplication,
-                ),
+            ..onTap = () => _confirmAndLaunchUrl(context, part.href!),
         ),
       );
     } else {
@@ -392,10 +415,7 @@ Widget? _buildNoticeTable(BuildContext context, String tableHtml) {
                 text: part.text,
                 style: linkStyle,
                 recognizer: TapGestureRecognizer()
-                  ..onTap = () => launchUrl(
-                        Uri.parse(part.href!),
-                        mode: LaunchMode.externalApplication,
-                      ),
+                  ..onTap = () => _confirmAndLaunchUrl(context, part.href!),
               ),
             );
           } else {

@@ -20,6 +20,7 @@ class _AttachmentFab extends StatefulWidget {
 class _AttachmentFabState extends State<_AttachmentFab> {
   static const _fabSize = 56.0;
   static const _margin = 16.0;
+  static const _bottomMargin = 32.0;
 
   late Offset _offset;
   bool _initialized = false;
@@ -31,7 +32,7 @@ class _AttachmentFabState extends State<_AttachmentFab> {
     final boundary = widget.boundarySize;
     if (boundary == Size.zero) return offset;
     final maxX = boundary.width - _fabSize - _margin;
-    final maxY = boundary.height - _fabSize - _margin;
+    final maxY = boundary.height - _fabSize - _bottomMargin;
     return Offset(
       offset.dx.clamp(_margin, maxX),
       offset.dy.clamp(_margin, maxY),
@@ -46,7 +47,7 @@ class _AttachmentFabState extends State<_AttachmentFab> {
       _initialized = true;
       _offset = Offset(
         widget.boundarySize.width - _fabSize - _margin,
-        widget.boundarySize.height - _fabSize - _margin,
+        widget.boundarySize.height - _fabSize - _bottomMargin,
       );
     }
 
