@@ -1400,6 +1400,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String campusNoticesConfirmOpenLink(String url) {
+    return '该链接将在外部浏览器中打开，是否继续？\n\n$url';
+  }
+
+  @override
   String get selectAcademicYear => '选择学年';
 
   @override

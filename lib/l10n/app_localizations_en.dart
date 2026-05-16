@@ -1442,6 +1442,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String campusNoticesConfirmOpenLink(String url) {
+    return 'This link will open in an external browser. Continue?\n\n$url';
+  }
+
+  @override
   String get selectAcademicYear => 'Select Academic Year';
 
   @override

@@ -185,7 +185,7 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
     }
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       children: [
         Text(widget.entry.title, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8),

@@ -488,6 +488,14 @@
         }
       }
     },
+    "campusNoticesConfirmOpenLink": "该链接将在外部浏览器中打开，是否继续？\n\n{url}",
+    "@campusNoticesConfirmOpenLink": {
+      "placeholders": {
+        "url": {
+          "type": "String"
+        }
+      }
+    },
     "selectAcademicYear": "选择学年",
     "userInfoLoading": "正在加载个人信息...",
     "userInfoLoadFailed": "个人信息加载失败",
