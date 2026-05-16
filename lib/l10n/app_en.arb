@@ -541,6 +541,7 @@
     "fitnessTestNoticeDetail": "Notice Detail",
     "fitnessTestCampusNetworkRequiredAtNight": "Access is restricted to campus network during 23:00-6:00. Please connect to campus Wi-Fi or use the school VPN.",
     "dockLabelFitnessTest": "Fitness",
+    "dockLabelNotice": "Notice",
     "eulaTitle": "User Agreement",
     "eulaScrollToBottom": "Please read the entire agreement first",
     "eulaAgreeCheckbox": "I have read and agree to the User Agreement",

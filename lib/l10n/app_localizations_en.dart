@@ -1596,6 +1596,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dockLabelFitnessTest => 'Fitness';
 
   @override
+  String get dockLabelNotice => 'Notice';
+
+  @override
   String get eulaTitle => 'User Agreement';
 
   @override

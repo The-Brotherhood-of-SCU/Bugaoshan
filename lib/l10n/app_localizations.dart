@@ -3097,6 +3097,12 @@ abstract class AppLocalizations {
   /// **'Fitness'**
   String get dockLabelFitnessTest;
 
+  /// No description provided for @dockLabelNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Notice'**
+  String get dockLabelNotice;
+
   /// No description provided for @eulaTitle.
   ///
   /// In en, this message translates to:

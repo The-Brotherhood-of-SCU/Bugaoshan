@@ -75,6 +75,11 @@ const allDockItems = [
     icon: Icons.directions_run,
     selectedIcon: Icons.directions_run,
   ),
+  DockItemConfig(
+    id: dockIdNotice,
+    icon: Icons.campaign_outlined,
+    selectedIcon: Icons.campaign,
+  ),
 ];
 
 /// ID → DockItemConfig lookup map.
@@ -100,6 +105,7 @@ String dockLabel(String id, AppLocalizations l10n) => switch (id) {
   dockIdBalanceQuery => l10n.dockLabelBalanceQuery,
   dockIdAcademicCalendar => l10n.dockLabelAcademicCalendar,
   dockIdFitnessTest => l10n.dockLabelFitnessTest,
+  dockIdNotice => l10n.dockLabelNotice,
   _ => id,
 };
 
@@ -116,5 +122,6 @@ String dockFullLabel(String id, AppLocalizations l10n) => switch (id) {
   dockIdBalanceQuery => l10n.balanceQuery,
   dockIdAcademicCalendar => l10n.academicCalendar,
   dockIdFitnessTest => l10n.fitnessTest,
+  dockIdNotice => l10n.campusNotices,
   _ => id,
 };

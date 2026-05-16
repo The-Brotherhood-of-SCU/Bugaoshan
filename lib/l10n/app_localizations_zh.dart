@@ -1554,6 +1554,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dockLabelFitnessTest => '体测';
 
   @override
+  String get dockLabelNotice => '通知';
+
+  @override
   String get eulaTitle => '用户协议';
 
   @override
