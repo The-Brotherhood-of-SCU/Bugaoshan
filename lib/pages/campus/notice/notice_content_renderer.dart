@@ -50,7 +50,7 @@ String? _extractNestedDivContent(String html, int start) {
 
 List<Widget> _buildContentWidgets(BuildContext context, String html,
     {String? baseUrl}) {
-  html = html.replaceAll(_scriptCallReg, '');
+  html = html.replaceAll(_clickCountReg, '');
 
   final widgets = <Widget>[];
   final bodyStyle = Theme.of(context).textTheme.bodyMedium;

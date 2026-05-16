@@ -49,9 +49,13 @@ final _contentContainerReg = RegExp(
 
 final _articleOpenReg = RegExp(r'<article[^>]*>', caseSensitive: false);
 
-/// Strips JS click-tracking calls (e.g. _showDynClicks("wbnews", ...))
-/// and other inline script artifacts from content HTML.
-final _scriptCallReg = RegExp(r'_showDynClicks\s*\([^)]*\)', caseSensitive: false);
+/// Strips the "点击次数：" label together with its inline `<script>` block
+/// (e.g. `_showDynClicks("wbnews", ...)`), since the JS cannot execute
+/// in a non-browser context and leaving the label produces a bare prefix.
+final _clickCountReg = RegExp(
+  r'点击次数[：:]\s*<script[^>]*>\s*_showDynClicks\s*\([^)]*\)\s*</script>',
+  caseSensitive: false,
+);
 
 /// Detects bare HTTP(S) URLs in plain text that are not wrapped in `<a>`
 /// tags.  Stops at whitespace, CJK characters, or fullwidth punctuation.
