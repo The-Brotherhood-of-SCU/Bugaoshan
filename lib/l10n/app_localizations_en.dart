@@ -1410,13 +1410,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get campusNoticesClearDate => 'Clear filter';
 
   @override
-  String get campusNoticesPinned => 'Pinned';
-
-  @override
   String get campusNoticesLoadFailed => 'Load failed, please check network';
 
   @override
   String get campusNoticesOpenOriginal => 'View in browser';
+
+  @override
+  String get campusNoticesExternalLink =>
+      'This is an external page, please open in browser to view';
+
+  @override
+  String get campusNoticesOpenInBrowser => 'Open in browser';
+
+  @override
+  String get campusNoticesSearch => 'Search';
+
+  @override
+  String campusNoticesSearchResults(int count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString results',
+      zero: 'No results',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get selectAcademicYear => 'Select Academic Year';
@@ -1684,4 +1707,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get imageSaveFailed => 'Failed to save image';
+
+  @override
+  String get attachments => 'Attachments';
+
+  @override
+  String get download => 'Download';
+
+  @override
+  String attachmentSaved(String path) {
+    return 'Attachment saved to: $path';
+  }
+
+  @override
+  String get attachmentDownloadFailed => 'Failed to download attachment';
 }

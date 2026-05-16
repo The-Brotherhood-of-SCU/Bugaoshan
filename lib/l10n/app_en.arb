@@ -476,9 +476,20 @@
     "campusNoticesSearchHint": "Search notice title",
     "campusNoticesAllDates": "All dates",
     "campusNoticesClearDate": "Clear filter",
-    "campusNoticesPinned": "Pinned",
     "campusNoticesLoadFailed": "Load failed, please check network",
     "campusNoticesOpenOriginal": "View in browser",
+    "campusNoticesExternalLink": "This is an external page, please open in browser to view",
+    "campusNoticesOpenInBrowser": "Open in browser",
+    "campusNoticesSearch": "Search",
+    "campusNoticesSearchResults": "{count, plural, =0{No results} other{{count} results}}",
+    "@campusNoticesSearchResults": {
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "format": "compact"
+        }
+      }
+    },
     "selectAcademicYear": "Select Academic Year",
     "userInfoLoading": "Loading user info...",
     "userInfoLoadFailed": "Failed to load user info",
@@ -568,5 +579,16 @@
     "share": "Share",
     "saveImageToGallery": "Save to Gallery",
     "imageSavedToGallery": "Saved to Gallery",
-    "imageSaveFailed": "Failed to save image"
+    "imageSaveFailed": "Failed to save image",
+    "attachments": "Attachments",
+    "download": "Download",
+    "attachmentSaved": "Attachment saved to: {path}",
+    "@attachmentSaved": {
+        "placeholders": {
+            "path": {
+                "type": "String"
+            }
+        }
+    },
+    "attachmentDownloadFailed": "Failed to download attachment"
 }

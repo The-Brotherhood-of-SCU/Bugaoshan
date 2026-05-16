@@ -2755,12 +2755,6 @@ abstract class AppLocalizations {
   /// **'Clear filter'**
   String get campusNoticesClearDate;
 
-  /// No description provided for @campusNoticesPinned.
-  ///
-  /// In en, this message translates to:
-  /// **'Pinned'**
-  String get campusNoticesPinned;
-
   /// No description provided for @campusNoticesLoadFailed.
   ///
   /// In en, this message translates to:
@@ -2772,6 +2766,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View in browser'**
   String get campusNoticesOpenOriginal;
+
+  /// No description provided for @campusNoticesExternalLink.
+  ///
+  /// In en, this message translates to:
+  /// **'This is an external page, please open in browser to view'**
+  String get campusNoticesExternalLink;
+
+  /// No description provided for @campusNoticesOpenInBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in browser'**
+  String get campusNoticesOpenInBrowser;
+
+  /// No description provided for @campusNoticesSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get campusNoticesSearch;
+
+  /// No description provided for @campusNoticesSearchResults.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No results} other{{count} results}}'**
+  String campusNoticesSearchResults(int count);
 
   /// No description provided for @selectAcademicYear.
   ///
@@ -3282,6 +3300,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to save image'**
   String get imageSaveFailed;
+
+  /// No description provided for @attachments.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachments'**
+  String get attachments;
+
+  /// No description provided for @download.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get download;
+
+  /// No description provided for @attachmentSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachment saved to: {path}'**
+  String attachmentSaved(String path);
+
+  /// No description provided for @attachmentDownloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to download attachment'**
+  String get attachmentDownloadFailed;
 }
 
 class _AppLocalizationsDelegate
