@@ -42,7 +42,6 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
   List<_NoticeEntry> _entries = [];
   String? _nextPageUrl = _noticeListUrl;
   final Set<String> _seenUrls = {};
-  DateTimeRange? _selectedRange;
   String _query = '';
   bool _searchMode = false;
   String _searchEncodedKey = '';
@@ -323,48 +322,16 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
   }
 
   List<_NoticeEntry> get _filteredEntries {
-    if (_searchMode) {
-      // Server-side results: only apply date range filter.
-      if (_selectedRange == null) return _entries;
-      return _entries.where((entry) {
-        return !entry.date.isBefore(_selectedRange!.start) &&
-            !entry.date.isAfter(_selectedRange!.end);
-      }).toList();
-    }
-    // Normal mode: client-side filter by query terms and date range.
+    if (_searchMode) return _entries;
+    // Normal mode: client-side filter by query terms.
     final rawQuery = _query.trim();
     final terms = rawQuery.isEmpty
         ? <String>[]
         : rawQuery.toLowerCase().split(_filterSpaceReg).where((t) => t.isNotEmpty).toList();
+    if (terms.isEmpty) return _entries;
     return _entries.where((entry) {
-      final inRange =
-          _selectedRange == null ||
-          (!entry.date.isBefore(_selectedRange!.start) &&
-              !entry.date.isAfter(_selectedRange!.end));
-      if (!inRange) return false;
-      if (terms.isEmpty) return true;
-      // All search terms must appear in the normalized title.
       return terms.every((t) => entry.normalizedTitle.contains(t));
     }).toList();
-  }
-
-  Future<void> _pickDateRange() async {
-    final now = DateTime.now();
-    final picked = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime(now.year - 10, 1, 1),
-      lastDate: DateTime(now.year + 1, 12, 31),
-      initialDateRange: _selectedRange,
-    );
-    if (picked != null && mounted) {
-      setState(() => _selectedRange = picked);
-    }
-  }
-
-  String _rangeLabel(AppLocalizations l10n) {
-    if (_selectedRange == null) return l10n.campusNoticesAllDates;
-    return '${_formatDate(_selectedRange!.start)} - '
-        '${_formatDate(_selectedRange!.end)}';
   }
 
   @override
@@ -458,26 +425,6 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
                 ),
               ),
             ],
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _pickDateRange,
-                    icon: const Icon(Icons.date_range),
-                    label: Text(_rangeLabel(l10n)),
-                  ),
-                ),
-                if (_selectedRange != null) ...[
-                  const SizedBox(width: 8),
-                  IconButton(
-                    tooltip: l10n.campusNoticesClearDate,
-                    icon: const Icon(Icons.clear),
-                    onPressed: () => setState(() => _selectedRange = null),
-                  ),
-                ],
-              ],
-            ),
           ],
         ),
       ),
