@@ -1725,6 +1725,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get searchAttachmentsHint => '搜索附件...';
+
+  @override
+  String get openFolder => '打开文件夹';
+
+  @override
+  String get openFolderFailed => '打开文件夹失败';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

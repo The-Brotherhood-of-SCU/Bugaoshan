@@ -3420,6 +3420,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search attachments...'**
   String get searchAttachmentsHint;
+
+  /// No description provided for @openFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Open folder'**
+  String get openFolder;
+
+  /// No description provided for @openFolderFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to open folder'**
+  String get openFolderFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -10,7 +10,6 @@ const _noticeUserAgent =
 const _scrollLoadThreshold = 160.0;
 const _noticePageFirstNum = 200;
 const _searchUrl = '$_noticeBase/ssjgy.jsp?wbtreeid=1001';
-
 // ── Shared RegExp constants ────────────────────────────────────────────────────
 
 final _filterSpaceReg = RegExp(r'\s+');
@@ -40,10 +39,7 @@ final _searchItemReg = RegExp(
 /// Matches the total result count in search response: "共有 X,XXX 条"
 final _searchTotalReg = RegExp(r'共有\s*([\d,]+)\s*条');
 
-final _imgReg = RegExp(
-  r'<img[^>]+src="([^"]+)"[^>]*>',
-  caseSensitive: false,
-);
+final _imgReg = RegExp(r'<img[^>]+src="([^"]+)"[^>]*>', caseSensitive: false);
 
 final _linkReg = RegExp(
   r'<a[^>]+href="([^"]+)"[^>]*>([\s\S]*?)</a>',
@@ -52,9 +48,15 @@ final _linkReg = RegExp(
 
 final _paragraphReg = RegExp(r'<p[^>]*>([\s\S]*?)</p>', caseSensitive: false);
 
-final _tableReg = RegExp(r'<table[^>]*>([\s\S]*?)</table>', caseSensitive: false);
+final _tableReg = RegExp(
+  r'<table[^>]*>([\s\S]*?)</table>',
+  caseSensitive: false,
+);
 final _tableRowReg = RegExp(r'<tr[^>]*>([\s\S]*?)</tr>', caseSensitive: false);
-final _tableCellReg = RegExp(r'<t[dh][^>]*>([\s\S]*?)</t[dh]>', caseSensitive: false);
+final _tableCellReg = RegExp(
+  r'<t[dh][^>]*>([\s\S]*?)</t[dh]>',
+  caseSensitive: false,
+);
 
 final _contentContainerReg = RegExp(
   r"""<div[^>]+(?:class=["']v_news_content["']|id=["']vsb_content["']|class=["']detail-text["']|class=["']art-text["']|class=["']content["']|class=["']wp_articlecontent["'])[^>]*>""",
@@ -107,13 +109,13 @@ void _extractBareUrls(String text, List<_InlineElement> parts) {
 /// Narrows the Fullwidth Forms block to actual punctuation, excluding
 /// fullwidth letters (Ａ-Ｚ, ａ-ｚ) and digits (０-９).
 final _chinesePunctReg = RegExp(
-  r'[　-〿'          // CJK Symbols & Punctuation ( 。、〃 etc.)
-  r'！-／'           // ！＂＃＄％＆＇（）＊＋，－．／
-  r'：-＠'           // ：；＜＝＞？＠
-  r'［-｀'           // ［＼］＾＿｀
-  r'｛-～'           // ｛｜｝～
+  r'[　-〿' // CJK Symbols & Punctuation ( 。、〃 etc.)
+  r'！-／' // ！＂＃＄％＆＇（）＊＋，－．／
+  r'：-＠' // ：；＜＝＞？＠
+  r'［-｀' // ［＼］＾＿｀
+  r'｛-～' // ｛｜｝～
   r'‘’“”' // ‘’“”
-  r'–—'             // –—
+  r'–—' // –—
   r']',
 );
 
@@ -140,7 +142,9 @@ String _normalizeNoticeUrl(String url, {String? baseUrl}) {
   // Relative path: resolve against the current page URL to preserve
   // path prefix (e.g., /info/1069/10336.htm → /info/1069/10337.htm).
   if (baseUrl != null) {
-    return Uri.parse(baseUrl.replaceAll(_chinesePunctReg, '')).resolve(url).toString();
+    return Uri.parse(
+      baseUrl.replaceAll(_chinesePunctReg, ''),
+    ).resolve(url).toString();
   }
   return '$_noticeBase/$url';
 }
@@ -172,3 +176,4 @@ String _formatDate(DateTime date) {
   final d = date.day.toString().padLeft(2, '0');
   return '$y-$m-$d';
 }
+

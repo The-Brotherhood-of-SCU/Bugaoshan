@@ -8,6 +8,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   screen_retriever_linux
   system_theme
   url_launcher_linux
+  webview_all_linux
   window_manager
 )
 

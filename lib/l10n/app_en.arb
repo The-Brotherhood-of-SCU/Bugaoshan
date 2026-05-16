@@ -624,5 +624,7 @@
     "sortByTime": "By Time",
     "sortByName": "By Name",
     "sortBySize": "By Size",
-    "searchAttachmentsHint": "Search attachments..."
+    "searchAttachmentsHint": "Search attachments...",
+    "openFolder": "Open folder",
+    "openFolderFailed": "Failed to open folder"
 }

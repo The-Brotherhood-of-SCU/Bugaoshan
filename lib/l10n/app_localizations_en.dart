@@ -1775,4 +1775,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchAttachmentsHint => 'Search attachments...';
+
+  @override
+  String get openFolder => 'Open folder';
+
+  @override
+  String get openFolderFailed => 'Failed to open folder';
 }

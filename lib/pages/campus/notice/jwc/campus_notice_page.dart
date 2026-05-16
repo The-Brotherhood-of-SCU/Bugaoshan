@@ -5,8 +5,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
 import 'package:http/http.dart' as http;
-import 'package:open_filex/open_filex.dart';
-import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:share_plus/share_plus.dart';
@@ -14,13 +12,14 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:bugaoshan/pages/campus/downloads/shared_notice_downloads.dart';
+
 part 'notice_utils.dart';
 part 'notice_http_client.dart';
 part 'notice_models.dart';
 part 'notice_content_renderer.dart';
 part 'notice_image_handler.dart';
 part 'notice_attachment_handler.dart';
-part 'notice_downloaded_page.dart';
 part 'notice_detail_page.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -44,7 +43,6 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
   List<_NoticeEntry> _entries = [];
   String? _nextPageUrl = _noticeListUrl;
   final Set<String> _seenUrls = {};
-  String _query = '';
   bool _searchMode = false;
   String _searchEncodedKey = '';
   int _searchPage = 0;
@@ -156,7 +154,7 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
       if (_loadingMore || !_hasMore) return;
       setState(() => _loadingMore = true);
     } else {
-      final raw = _query.trim();
+      final raw = _searchController.text.trim();
       if (raw.isEmpty) {
         _exitSearchMode();
         return;
@@ -184,7 +182,7 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
     final referer = '$_noticeBase/index.htm';
 
     try {
-      final raw = _query.trim();
+      final raw = _searchController.text.trim();
       final resp = await _NoticeHttp.post(
         url,
         referer: referer,
@@ -203,8 +201,9 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
       final result = _parseSearchResults(body);
 
       if (!mounted) return;
-      final newEntries =
-          result.entries.where((e) => _seenUrls.add(e.url)).toList();
+      final newEntries = result.entries
+          .where((e) => _seenUrls.add(e.url))
+          .toList();
       setState(() {
         _entries.addAll(newEntries);
         _searchTotal = result.total;
@@ -283,13 +282,7 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
       final title = _stripTags(match.group(4)!);
       final date = _parseDate(year, monthDay);
       if (date == null || title.isEmpty) continue;
-      entries.add(
-        _NoticeEntry(
-          title: title,
-          url: url,
-          date: date,
-        ),
-      );
+      entries.add(_NoticeEntry(title: title, url: url, date: date));
     }
 
     return entries;
@@ -323,18 +316,7 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
     return DateTime(y, month, day);
   }
 
-  List<_NoticeEntry> get _filteredEntries {
-    if (_searchMode) return _entries;
-    // Normal mode: client-side filter by query terms.
-    final rawQuery = _query.trim();
-    final terms = rawQuery.isEmpty
-        ? <String>[]
-        : rawQuery.toLowerCase().split(_filterSpaceReg).where((t) => t.isNotEmpty).toList();
-    if (terms.isEmpty) return _entries;
-    return _entries.where((entry) {
-      return terms.every((t) => entry.normalizedTitle.contains(t));
-    }).toList();
-  }
+  List<_NoticeEntry> get _filteredEntries => _entries;
 
   @override
   Widget build(BuildContext context) {
@@ -350,7 +332,7 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => const _DownloadedAttachmentsPage(),
+                builder: (_) => const NoticeDownloadedPage(),
               ),
             ),
           ),
@@ -389,56 +371,45 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
   }
 
   Widget _buildFilters(AppLocalizations l10n) {
-    return Card(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: (value) => setState(() => _query = value),
-                    onSubmitted: _onSearchSubmitted,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.search),
-                      hintText: l10n.campusNoticesSearchHint,
-                      border: const OutlineInputBorder(),
-                      isDense: true,
-                      suffixIcon: _query.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() => _query = '');
-                                if (_searchMode) _exitSearchMode();
-                              },
-                            )
-                          : null,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                FilledButton(
-                  onPressed: () => _onSearchSubmitted(_query),
-                  child: Text(l10n.campusNoticesSearch),
-                ),
-              ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SearchBar(
+            controller: _searchController,
+            onSubmitted: _onSearchSubmitted,
+            hintText: l10n.campusNoticesSearchHint,
+            leading: const Padding(
+              padding: EdgeInsets.only(left: 4),
+              child: Icon(Icons.search),
             ),
-            if (_searchMode && _searchTotal > 0) ...[
-              const SizedBox(height: 8),
-              Text(
-                l10n.campusNoticesSearchResults(_searchTotal),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+            trailing: [
+              if (_searchController.text.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _searchController.clear();
+                    if (_searchMode) _exitSearchMode();
+                  },
                 ),
+              FilledButton.icon(
+                onPressed: () => _onSearchSubmitted(_searchController.text),
+                icon: const Icon(Icons.search),
+                label: Text(l10n.campusNoticesSearch),
               ),
             ],
+          ),
+          if (_searchMode && _searchTotal > 0) ...[
+            const SizedBox(height: 8),
+            Text(
+              l10n.campusNoticesSearchResults(_searchTotal),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -463,44 +434,43 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
     final showFooter = _loadingMore || _hasMore;
 
     return RefreshIndicator(
-      onRefresh: () =>
-          _searchMode ? _searchNotices() : _loadNotices(),
+      onRefresh: () => _searchMode ? _searchNotices() : _loadNotices(),
       child: ListView.builder(
-      controller: _scrollController,
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-      itemCount: entries.length + (showFooter ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index >= entries.length) {
-          if (_loadingMore) {
-            return const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Center(child: CircularProgressIndicator()),
-            );
+        controller: _scrollController,
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        itemCount: entries.length + (showFooter ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index >= entries.length) {
+            if (_loadingMore) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+            return const SizedBox(height: 24);
           }
-          return const SizedBox(height: 24);
-        }
-        final entry = entries[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 8),
-          child: ListTile(
-            leading: _buildDateBadge(context, entry),
-            title: Text(
-              entry.title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: Text(_formatDate(entry.date)),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => CampusNoticeDetailPage(entry: entry),
+          final entry = entries[index];
+          return Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: ListTile(
+              leading: _buildDateBadge(context, entry),
+              title: Text(
+                entry.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Text(_formatDate(entry.date)),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CampusNoticeDetailPage(entry: entry),
+                ),
               ),
             ),
-          ),
-        );
-      },
-    ),
+          );
+        },
+      ),
     );
   }
 
