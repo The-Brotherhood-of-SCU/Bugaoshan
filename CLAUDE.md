@@ -50,6 +50,7 @@ GetIt + Injectable. `lib/injection/injector.config.dart` is auto-generated. Re-r
 - **`CcylOauthService`** (`lib/services/ccyl_oauth_service.dart`) — OAuth flow helper for CCYL login.
 - **`BalanceQueryService`** (`lib/services/balance_query_service.dart`) — Queries电费 and 空调余额 via `payapp.scu.edu.cn`.
 - **`DatabaseService`** (`lib/services/database_service.dart`) — SQLite-backed storage. Manages multiple schedule configs and their associated course data via `switchSchedule()`.
+- **`DownloadManager`** (`lib/services/download_manager.dart`) — `ChangeNotifier` that tracks download task lifecycle (pending → downloading → done/error). Used by `showAttachmentsSheet` to reflect per-file state in the UI.
 - **`IcsService`** (`lib/services/ics_service.dart`) — Exports course schedules as iCalendar (.ics) files.
 - **`OcrService`** (`lib/services/ocr_service.dart`) — TFLite-based captcha recognition for SCU login.
 - **`UpdateService`** (`lib/services/update_service.dart`) — Handles GitHub release checking, download, and install for Windows/Linux desktop platforms.
@@ -57,17 +58,29 @@ GetIt + Injectable. `lib/injection/injector.config.dart` is auto-generated. Re-r
 - **`ExitService`** (`lib/services/exit_service.dart`) — 统一应用退出逻辑，桌面端使用 `windowManager.destroy()`，移动端使用 `exit(0)`。
 - **`WindowStateService`** (`lib/services/window_state_service.dart`) — Desktop 窗口状态持久化，保存/恢复窗口位置和大小。
 
-### Notice Page (`lib/pages/campus/notice/campus_notice_page.dart`)
-Fetches and displays SCU Academic Affairs notices from `jwc.scu.edu.cn`.
+### Notice Pages
 
+Two notice sources, each in its own subdirectory under `lib/pages/campus/notice/`:
+
+**JWC Academic Affairs** (`jwc/`) — `jwc.scu.edu.cn`教务处通知。
+
+- `campus_notice_page.dart` — list page with search, date filters, infinite scroll.
+- `notice_detail_page.dart` — detail page with HTML content rendering, image gallery, and attachment extraction.
+- **Part files** (`notice_*.dart` in `jwc/`): HTTP client, models, content renderer, image handler, utils. All `part of 'campus_notice_page.dart'`.
 - **List source**: `https://jwc.scu.edu.cn/tzgg.htm` (paginated: `tzgg/{num}.htm` descending from 200 to 1).
-- **Pinned detection**: Parses homepage `index.htm` for `[置顶]` markers via `_pinnedReg` regex.
-- **Paginated loading**: Scroll-driven infinite scroll with `_scrollLoadThreshold = 160px` trigger.
-  - Page 1: `tzgg.htm` → page 2: `tzgg/200.htm` → page 3: `tzgg/199.htm` → ... → `tzgg/1.htm`.
-- **HTTP client**: `_NoticeHttp` singleton with cookie jar for session continuity across list/detail requests.
-  - Cookies extracted from `set-cookie` headers; handles joined multi-header format by splitting on `', (?=\w[\w.]*=)'`.
-- **Detail parsing**: Extracts article content from `v_news_content` / `vsb_content` / fallback HTML-to-text.
-  - Encoding errors logged via `_decodeBody()` wrapper instead of silently allowing malformed data.
+- **Pinned detection**: Parses homepage `index.htm` for `[置顶]` markers.
+- **HTTP client**: `_NoticeHttp` singleton with cookie jar; cookies extracted from `set-cookie` headers.
+
+**Party/XGB** (`xgb/`) — `xgb.scu.edu.cn`党委学工部通知。
+
+- `party_notice_page.dart` — WebView-based page with JS beautify injection and attachment extraction via `AttachmentsChannel`.
+
+**Shared downloads module** (`lib/pages/campus/downloads/`):
+- `NoticeAttachmentFab` — draggable FAB showing attachment count, opens `showAttachmentsSheet` on tap. Shared by both notice pages.
+- `attachments_sheet.dart` — `showAttachmentsSheet()` modal bottom sheet with download/share/open per attachment.
+- `file_utils.dart` — `kNoticeAttachmentDir`, `kPartyAttachmentDir`, `downloadFile()`, `checkDownloadedFile()`.
+- `notice_downloaded_page.dart` — tabbed management page for downloaded attachments from both sources.
+- `DownloadManager` (`lib/services/download_manager.dart`) — tracks download task state (pending/downloading/done/error).
 
 ### Providers
 - **`ScuAuthProvider`** — Persists SCU token via SharedPreferences. Wraps `ScuAuthService`.
@@ -114,10 +127,12 @@ lib/
 │   │   ├── balance_query/ # 电费 & 空调余额查询
 │   │   ├── ccyl/          # 第二课堂 (CCYL)
 │   │   ├── classroom/     # 空闲教室查询
+│   │   ├── downloads/     # 共享下载模块（附件 FAB、下载 Sheet、文件工具）
 │   │   ├── fitness_test/  # 体测查询
 │   │   ├── grades/        # 成绩查询
 │   │   ├── models/        # 校园模块数据模型
 │   │   ├── network_device/# 校园网设备管理
+│   │   ├── notice/        # 通知公告（jwc/ 教务处 + xgb/ 学工部）
 │   │   ├── plan_completion/ # 培养方案完成度
 │   │   └── train_program/ # 培养方案查询
 │   ├── course/            # 课表管理
