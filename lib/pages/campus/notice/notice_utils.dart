@@ -9,6 +9,7 @@ const _noticeUserAgent =
     '(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 const _scrollLoadThreshold = 160.0;
 const _noticePageFirstNum = 200;
+const _searchUrl = '$_noticeBase/ssjgy.jsp?wbtreeid=1001';
 
 // ── Shared RegExp constants ────────────────────────────────────────────────────
 
@@ -25,6 +26,19 @@ final _listItemReg = RegExp(
 );
 
 final _pageNumReg = RegExp(r'tzgg/(\d+)\.htm$');
+
+/// Matches search result items from the search API response.
+/// Format: <li><a href="info/{catId}/{artId}.htm">title</a><span>date</span></li>
+/// The href must point to an article page (info/...) to exclude navigation items.
+final _searchItemReg = RegExp(
+  r'<li>\s*<a[^>]+href="(info/[^"]+)"[^>]*>'
+  r'([\s\S]*?)</a>'
+  r'\s*<span>(\d{4}-\d{2}-\d{2})</span>',
+  caseSensitive: false,
+);
+
+/// Matches the total result count in search response: "共有 X,XXX 条"
+final _searchTotalReg = RegExp(r'共有\s*([\d,]+)\s*条');
 
 final _imgReg = RegExp(
   r'<img[^>]+src="([^"]+)"[^>]*>',

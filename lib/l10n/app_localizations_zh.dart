@@ -1381,6 +1381,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get campusNoticesOpenInBrowser => '在浏览器中打开';
 
   @override
+  String get campusNoticesSearch => '搜索';
+
+  @override
+  String campusNoticesSearchResults(int count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '共 $countString 条结果',
+      zero: '无结果',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get selectAcademicYear => '选择学年';
 
   @override

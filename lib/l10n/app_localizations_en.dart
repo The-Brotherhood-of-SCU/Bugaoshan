@@ -1423,6 +1423,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get campusNoticesOpenInBrowser => 'Open in browser';
 
   @override
+  String get campusNoticesSearch => 'Search';
+
+  @override
+  String campusNoticesSearchResults(int count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString results',
+      zero: 'No results',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get selectAcademicYear => 'Select Academic Year';
 
   @override

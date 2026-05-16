@@ -2779,6 +2779,18 @@ abstract class AppLocalizations {
   /// **'Open in browser'**
   String get campusNoticesOpenInBrowser;
 
+  /// No description provided for @campusNoticesSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get campusNoticesSearch;
+
+  /// No description provided for @campusNoticesSearchResults.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No results} other{{count} results}}'**
+  String campusNoticesSearchResults(int count);
+
   /// No description provided for @selectAcademicYear.
   ///
   /// In en, this message translates to:

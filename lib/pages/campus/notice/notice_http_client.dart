@@ -66,6 +66,24 @@ class _NoticeHttp {
     return resp;
   }
 
+  static Future<http.Response> post(
+    String url, {
+    String? referer,
+    Map<String, String>? body,
+  }) async {
+    final client = _getClient();
+    final resp = await client.post(
+      Uri.parse(url),
+      headers: {
+        ..._buildHeaders(referer ?? url),
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: body,
+    );
+    _collectCookies(resp);
+    return resp;
+  }
+
   static void clearCookies() {
     _cookieJar.clear();
   }

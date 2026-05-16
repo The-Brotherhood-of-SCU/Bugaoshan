@@ -34,6 +34,7 @@ class CampusNoticePage extends StatefulWidget {
 
 class _CampusNoticePageState extends State<CampusNoticePage> {
   late final ScrollController _scrollController;
+  late final TextEditingController _searchController;
   bool _loading = true;
   bool _loadingMore = false;
   bool _hasMore = true;
@@ -43,17 +44,23 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
   final Set<String> _seenUrls = {};
   DateTimeRange? _selectedRange;
   String _query = '';
+  bool _searchMode = false;
+  String _searchEncodedKey = '';
+  int _searchPage = 0;
+  int _searchTotal = 0;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController()..addListener(_onScroll);
+    _searchController = TextEditingController();
     _loadNotices();
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -61,7 +68,11 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
     if (!_scrollController.hasClients || _loadingMore || !_hasMore) return;
     final position = _scrollController.position;
     if (position.pixels >= position.maxScrollExtent - _scrollLoadThreshold) {
-      _loadNotices(loadMore: true);
+      if (_searchMode) {
+        _searchNotices(loadMore: true);
+      } else {
+        _loadNotices(loadMore: true);
+      }
     }
   }
 
@@ -139,6 +150,129 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
     }
   }
 
+  Future<void> _searchNotices({bool loadMore = false}) async {
+    if (loadMore) {
+      if (_loadingMore || !_hasMore) return;
+      setState(() => _loadingMore = true);
+    } else {
+      final raw = _query.trim();
+      if (raw.isEmpty) {
+        _exitSearchMode();
+        return;
+      }
+      setState(() {
+        _loading = true;
+        _error = null;
+        _entries = [];
+        _hasMore = true;
+        _searchMode = true;
+        _searchPage = 1;
+        _searchTotal = 0;
+        _seenUrls.clear();
+      });
+      _NoticeHttp.clearCookies();
+      // Encode keyword: UTF-8 → Base64
+      _searchEncodedKey = base64Encode(utf8.encode(raw));
+    }
+
+    final page = _searchPage;
+    // Build URL: page 1 has no pagination params, page 2+ adds currentnum & newskeycode2
+    final url = page == 1
+        ? _searchUrl
+        : '$_searchUrl&currentnum=$page&newskeycode2=$_searchEncodedKey';
+    final referer = '$_noticeBase/index.htm';
+
+    try {
+      final raw = _query.trim();
+      final resp = await _NoticeHttp.post(
+        url,
+        referer: referer,
+        body: {
+          'lucenenewssearchkey': _searchEncodedKey,
+          '_lucenesearchtype': '1',
+          'searchScope': '0',
+          'showkeycode': raw,
+        },
+      );
+      if (resp.statusCode != 200) {
+        throw Exception('HTTP ${resp.statusCode}');
+      }
+
+      final body = _decodeBody(resp.bodyBytes);
+      final result = _parseSearchResults(body);
+
+      if (!mounted) return;
+      final newEntries =
+          result.entries.where((e) => _seenUrls.add(e.url)).toList();
+      setState(() {
+        _entries.addAll(newEntries);
+        _searchTotal = result.total;
+        _loading = false;
+        _loadingMore = false;
+        _searchPage = page + 1;
+        _hasMore = newEntries.isNotEmpty && _entries.length < result.total;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      if (loadMore) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.campusNoticesLoadFailed,
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+      setState(() {
+        if (!loadMore) {
+          _error = e.toString();
+          _loading = false;
+        }
+        _loadingMore = false;
+        _hasMore = false;
+      });
+    }
+  }
+
+  ({List<_NoticeEntry> entries, int total}) _parseSearchResults(String html) {
+    final entries = <_NoticeEntry>[];
+    for (final match in _searchItemReg.allMatches(html)) {
+      final url = _normalizeNoticeUrl(match.group(1)!, baseUrl: _searchUrl);
+      final title = _stripTags(match.group(2)!);
+      final dateStr = match.group(3)!;
+      final date = DateTime.tryParse(dateStr);
+      if (date == null || title.isEmpty) continue;
+      entries.add(_NoticeEntry(title: title, url: url, date: date));
+    }
+    // Extract total count
+    var total = entries.length;
+    final totalMatch = _searchTotalReg.firstMatch(html);
+    if (totalMatch != null) {
+      total = int.tryParse(totalMatch.group(1)!.replaceAll(',', '')) ?? total;
+    }
+    return (entries: entries, total: total);
+  }
+
+  void _exitSearchMode() {
+    setState(() {
+      _searchMode = false;
+      _searchEncodedKey = '';
+      _searchPage = 0;
+      _searchTotal = 0;
+    });
+    _loadNotices();
+  }
+
+  void _onSearchSubmitted(String value) {
+    final q = value.trim();
+    if (q.isEmpty) {
+      if (_searchMode) _exitSearchMode();
+      return;
+    }
+    _searchNotices();
+  }
+
   List<_NoticeEntry> _parseNotices(String html, {required String pageUrl}) {
     final entries = <_NoticeEntry>[];
     for (final match in _listItemReg.allMatches(html)) {
@@ -189,6 +323,15 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
   }
 
   List<_NoticeEntry> get _filteredEntries {
+    if (_searchMode) {
+      // Server-side results: only apply date range filter.
+      if (_selectedRange == null) return _entries;
+      return _entries.where((entry) {
+        return !entry.date.isBefore(_selectedRange!.start) &&
+            !entry.date.isAfter(_selectedRange!.end);
+      }).toList();
+    }
+    // Normal mode: client-side filter by query terms and date range.
     final rawQuery = _query.trim();
     final terms = rawQuery.isEmpty
         ? <String>[]
@@ -240,7 +383,9 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.refresh),
-            onPressed: _loading ? null : _loadNotices,
+            onPressed: _loading
+                ? null
+                : () => _searchMode ? _searchNotices() : _loadNotices(),
           ),
         ],
       ),
@@ -252,7 +397,7 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
     if (_error != null && _entries.isEmpty) {
       return RetryableErrorWidget(
         message: l10n.loadFailed,
-        onRetry: _loadNotices,
+        onRetry: _searchMode ? _searchNotices : _loadNotices,
       );
     }
 
@@ -272,15 +417,47 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              onChanged: (value) => setState(() => _query = value),
-              decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search),
-                hintText: l10n.campusNoticesSearchHint,
-                border: const OutlineInputBorder(),
-                isDense: true,
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (value) => setState(() => _query = value),
+                    onSubmitted: _onSearchSubmitted,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.search),
+                      hintText: l10n.campusNoticesSearchHint,
+                      border: const OutlineInputBorder(),
+                      isDense: true,
+                      suffixIcon: _query.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() => _query = '');
+                                if (_searchMode) _exitSearchMode();
+                              },
+                            )
+                          : null,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                FilledButton(
+                  onPressed: () => _onSearchSubmitted(_query),
+                  child: Text(l10n.campusNoticesSearch),
+                ),
+              ],
             ),
+            if (_searchMode && _searchTotal > 0) ...[
+              const SizedBox(height: 8),
+              Text(
+                l10n.campusNoticesSearchResults(_searchTotal),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
             const SizedBox(height: 12),
             Row(
               children: [
@@ -327,7 +504,8 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
     final showFooter = _loadingMore || _hasMore;
 
     return RefreshIndicator(
-      onRefresh: () => _loadNotices(),
+      onRefresh: () =>
+          _searchMode ? _searchNotices() : _loadNotices(),
       child: ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
