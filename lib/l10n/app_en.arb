@@ -567,5 +567,16 @@
     "share": "Share",
     "saveImageToGallery": "Save to Gallery",
     "imageSavedToGallery": "Saved to Gallery",
-    "imageSaveFailed": "Failed to save image"
+    "imageSaveFailed": "Failed to save image",
+    "attachments": "Attachments",
+    "download": "Download",
+    "attachmentSaved": "Attachment saved to: {path}",
+    "@attachmentSaved": {
+        "placeholders": {
+            "path": {
+                "type": "String"
+            }
+        }
+    },
+    "attachmentDownloadFailed": "Failed to download attachment"
 }

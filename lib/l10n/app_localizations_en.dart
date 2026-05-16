@@ -1681,4 +1681,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get imageSaveFailed => 'Failed to save image';
+
+  @override
+  String get attachments => 'Attachments';
+
+  @override
+  String get download => 'Download';
+
+  @override
+  String attachmentSaved(String path) {
+    return 'Attachment saved to: $path';
+  }
+
+  @override
+  String get attachmentDownloadFailed => 'Failed to download attachment';
 }

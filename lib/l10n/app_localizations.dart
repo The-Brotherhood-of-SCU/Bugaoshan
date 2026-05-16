@@ -3276,6 +3276,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to save image'**
   String get imageSaveFailed;
+
+  /// No description provided for @attachments.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachments'**
+  String get attachments;
+
+  /// No description provided for @download.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get download;
+
+  /// No description provided for @attachmentSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachment saved to: {path}'**
+  String attachmentSaved(String path);
+
+  /// No description provided for @attachmentDownloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to download attachment'**
+  String get attachmentDownloadFailed;
 }
 
 class _AppLocalizationsDelegate

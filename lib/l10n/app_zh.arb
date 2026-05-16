@@ -565,5 +565,16 @@
     "share": "分享",
     "saveImageToGallery": "保存到相册",
     "imageSavedToGallery": "已保存到相册",
-    "imageSaveFailed": "图片保存失败"
+    "imageSaveFailed": "图片保存失败",
+    "attachments": "附件",
+    "download": "下载",
+    "attachmentSaved": "附件已保存到：{path}",
+    "@attachmentSaved": {
+        "placeholders": {
+            "path": {
+                "type": "String"
+            }
+        }
+    },
+    "attachmentDownloadFailed": "附件下载失败"
 }

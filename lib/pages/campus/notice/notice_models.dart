@@ -15,6 +15,18 @@ class _NoticeEntry {
 
 enum _ElementType { paragraph, image, table }
 
+class _NoticeAttachment {
+  final String url;
+  final String text;
+  final String fileName;
+
+  _NoticeAttachment({
+    required this.url,
+    required this.text,
+    required this.fileName,
+  });
+}
+
 class _ContentElement {
   final int offset;
   final String html;

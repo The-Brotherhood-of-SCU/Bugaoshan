@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:share_plus/share_plus.dart';
@@ -17,6 +18,7 @@ part 'notice_http_client.dart';
 part 'notice_models.dart';
 part 'notice_content_renderer.dart';
 part 'notice_image_handler.dart';
+part 'notice_attachment_handler.dart';
 part 'notice_detail_page.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════════

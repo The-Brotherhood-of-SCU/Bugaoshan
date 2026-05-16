@@ -20,6 +20,71 @@ String? _extractContentHtml(String html) {
   return null;
 }
 
+/// Regex matching SCU download links (download.jsp) or links whose text
+/// ends with a common document file extension.
+final _attachmentLinkReg = RegExp(
+  r'<a[^>]+href="([^"]*)"[^>]*>([\s\S]*?)</a>',
+  caseSensitive: false,
+);
+
+final _attachmentExtReg = RegExp(
+  r'\.(docx?|xlsx?|pptx?|pdf|zip|rar|7z|txt|csv|rtf)$',
+  caseSensitive: false,
+);
+
+/// Extracts attachment links from [contentHtml] and returns them as a list.
+/// Removes the attachment paragraphs from [contentHtml] in-place (via return
+/// of cleaned HTML) so they don't appear as plain text in the rendered content.
+(String, List<_NoticeAttachment>) _extractAttachments(
+  String contentHtml, {
+  String? baseUrl,
+}) {
+  final attachments = <_NoticeAttachment>[];
+  var html = contentHtml;
+
+  // Match paragraphs that contain attachment links.
+  // Pattern: 附件【<a href="...">text</a>】  or similar wrapping.
+  final attachmentParaReg = RegExp(
+    r'<p[^>]*>\s*附件[【\[]?\s*<a[^>]+href="([^"]*)"[^>]*>([\s\S]*?)</a>\s*[】\]]?\s*</p>',
+    caseSensitive: false,
+  );
+
+  for (final match in attachmentParaReg.allMatches(html)) {
+    final href = match.group(1)!;
+    final label = _stripTags(match.group(2)!);
+    if (label.isEmpty) continue;
+    attachments.add(_NoticeAttachment(
+      url: _normalizeNoticeUrl(href, baseUrl: baseUrl),
+      text: label.trim(),
+      fileName: label.trim(),
+    ));
+  }
+  // Remove matched attachment paragraphs.
+  html = html.replaceAll(attachmentParaReg, '');
+
+  // Also detect standalone <a> tags with download.jsp or file-extension links
+  // that weren't caught by the paragraph pattern above.
+  for (final match in _attachmentLinkReg.allMatches(html)) {
+    final href = match.group(1) ?? '';
+    final label = _stripTags(match.group(2)!);
+    if (label.isEmpty) continue;
+    final normalized = _normalizeNoticeUrl(href, baseUrl: baseUrl);
+    // Skip if already collected.
+    if (attachments.any((a) => a.url == normalized)) continue;
+    final isDownload = href.contains('download.jsp') ||
+        href.contains('downloadAttach') ||
+        _attachmentExtReg.hasMatch(label);
+    if (!isDownload) continue;
+    attachments.add(_NoticeAttachment(
+      url: normalized,
+      text: label.trim(),
+      fileName: label.trim(),
+    ));
+  }
+
+  return (html, attachments);
+}
+
 String? _extractNestedDivContent(String html, int start) {
   var depth = 1;
   var i = start;

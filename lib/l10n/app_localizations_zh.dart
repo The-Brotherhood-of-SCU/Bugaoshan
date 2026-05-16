@@ -1632,6 +1632,20 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get imageSaveFailed => '图片保存失败';
+
+  @override
+  String get attachments => '附件';
+
+  @override
+  String get download => '下载';
+
+  @override
+  String attachmentSaved(String path) {
+    return '附件已保存到：$path';
+  }
+
+  @override
+  String get attachmentDownloadFailed => '附件下载失败';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

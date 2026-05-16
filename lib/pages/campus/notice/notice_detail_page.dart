@@ -17,6 +17,7 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
   bool _loading = true;
   String? _error;
   List<Widget>? _contentWidgets;
+  List<_NoticeAttachment> _attachments = [];
 
   @override
   void initState() {
@@ -52,15 +53,22 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
         throw Exception('No content container found');
       }
 
+      // Extract attachment links and remove them from rendered content.
+      final result =
+          _extractAttachments(contentHtml, baseUrl: widget.entry.url);
+      final cleanedHtml = result.$1;
+      final attachments = result.$2;
+
       final widgets =
-          _buildContentWidgets(context, contentHtml, baseUrl: widget.entry.url);
-      if (widgets.isEmpty) {
+          _buildContentWidgets(context, cleanedHtml, baseUrl: widget.entry.url);
+      if (widgets.isEmpty && attachments.isEmpty) {
         throw Exception('No content found');
       }
 
       if (!mounted) return;
       setState(() {
         _contentWidgets = widgets;
+        _attachments = attachments;
         _loading = false;
       });
     } catch (e) {
@@ -95,7 +103,19 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
           ),
         ],
       ),
-      body: _buildBody(l10n),
+      body: LayoutBuilder(
+        builder: (context, constraints) => Stack(
+          children: [
+            _buildBody(l10n),
+            if (_attachments.isNotEmpty)
+              _AttachmentFab(
+                attachments: _attachments,
+                boundarySize:
+                    Size(constraints.maxWidth, constraints.maxHeight),
+              ),
+          ],
+        ),
+      ),
     );
   }
 
