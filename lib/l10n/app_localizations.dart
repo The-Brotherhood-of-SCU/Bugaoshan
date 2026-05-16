@@ -3330,6 +3330,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to download attachment'**
   String get attachmentDownloadFailed;
+
+  /// No description provided for @downloadedAttachments.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded Attachments'**
+  String get downloadedAttachments;
+
+  /// No description provided for @open.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get open;
+
+  /// No description provided for @noDownloadedAttachments.
+  ///
+  /// In en, this message translates to:
+  /// **'No downloaded attachments'**
+  String get noDownloadedAttachments;
+
+  /// No description provided for @fileDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'File deleted'**
+  String get fileDeleted;
+
+  /// No description provided for @attachmentSavedTapToOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachment saved, tap to open'**
+  String get attachmentSavedTapToOpen;
+
+  /// No description provided for @confirmDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Delete'**
+  String get confirmDelete;
+
+  /// No description provided for @confirmDeleteFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this file?'**
+  String get confirmDeleteFile;
+
+  /// No description provided for @deleteSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete ({count})'**
+  String deleteSelected(int count);
+
+  /// No description provided for @selectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select All'**
+  String get selectAll;
+
+  /// No description provided for @confirmDeleteSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {count} selected file(s)?'**
+  String confirmDeleteSelected(int count);
+
+  /// No description provided for @sortByTime.
+  ///
+  /// In en, this message translates to:
+  /// **'By Time'**
+  String get sortByTime;
+
+  /// No description provided for @sortByName.
+  ///
+  /// In en, this message translates to:
+  /// **'By Name'**
+  String get sortByName;
+
+  /// No description provided for @sortBySize.
+  ///
+  /// In en, this message translates to:
+  /// **'By Size'**
+  String get sortBySize;
+
+  /// No description provided for @searchAttachmentsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search attachments...'**
+  String get searchAttachmentsHint;
 }
 
 class _AppLocalizationsDelegate

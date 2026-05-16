@@ -19,6 +19,7 @@ part 'notice_models.dart';
 part 'notice_content_renderer.dart';
 part 'notice_image_handler.dart';
 part 'notice_attachment_handler.dart';
+part 'notice_downloaded_page.dart';
 part 'notice_detail_page.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -342,6 +343,16 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
       appBar: AppBar(
         title: Text(l10n.campusNotices),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.folder_open),
+            tooltip: l10n.downloadedAttachments,
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const _DownloadedAttachmentsPage(),
+              ),
+            ),
+          ),
           IconButton(
             icon: _loading
                 ? const SizedBox(
