@@ -19,26 +19,32 @@
       padding: 0 !important;
       list-style: none !important;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+      overflow: hidden !important;
     }
     ul[class] li {
-      border-bottom: 1px solid #f0f0f0 !important;
+      display: flex !important;
+      align-items: flex-start !important;
+      gap: 10px !important;
+      padding: 14px 16px !important;
     }
-    ul[class] li:last-child {
-      border-bottom: none !important;
+    ul[class] li + li {
+      border-top: 1px solid #f0f0f0 !important;
+    }
+    ul[class] li time {
+      flex-shrink: 0 !important;
+      font-size: 12px !important;
+      color: #999 !important;
+      padding-top: 3px !important;
+      white-space: nowrap !important;
     }
     ul[class] li a {
-      display: block !important;
-      padding: 14px 16px !important;
+      flex: 1 !important;
+      min-width: 0 !important;
       text-decoration: none !important;
       font-size: 15px !important;
       line-height: 1.5 !important;
       color: #333 !important;
-    }
-    time {
-      display: block !important;
-      font-size: 12px !important;
-      color: #999 !important;
-      margin-bottom: 2px !important;
+      word-break: break-word !important;
     }
     .pb_sys_common {
       display: flex !important;
@@ -123,9 +129,9 @@
       p, span, strong, em, u, s { color: #e0e0e0 !important; background: transparent !important; }
       input, select, textarea { background: #333 !important; color: #e0e0e0 !important; border-color: #555 !important; }
       ul[class] { background: #1e1e1e !important; box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important; }
-      ul[class] li { border-bottom-color: #333 !important; }
+      ul[class] li + li { border-top-color: #333 !important; }
       ul[class] li a { color: #e0e0e0 !important; }
-      time { color: #999 !important; }
+      ul[class] li time { color: #999 !important; }
       .detail-title, .article-title, h1 { border-bottom-color: #333 !important; }
       .p_pages .p_no a, .p_pages .p_fun a { background: #2a2a2a !important; color: #e0e0e0 !important; border-color: #444 !important; }
       .p_pages .p_no a:hover, .p_pages .p_fun a:hover { background: #333 !important; }
@@ -139,16 +145,16 @@
   document.head.appendChild(css);
 
   // Remove target attributes so links navigate inside the WebView.
-  document.querySelectorAll('a[target]').forEach(function(a) { a.removeAttribute('target'); });
+  document.querySelectorAll('a[target]').forEach(function (a) { a.removeAttribute('target'); });
 
   // Extract download attachment links, style them, and send to Flutter.
   var items = [];
-  document.querySelectorAll('a[href*="download.jsp"]').forEach(function(a) {
+  document.querySelectorAll('a[href*="download.jsp"]').forEach(function (a) {
     var href = a.getAttribute('href');
     href = href.replace(/&amp;/g, '&');
     if (href.startsWith('/')) href = window.location.origin + href;
     var name = a.textContent.trim();
-    items.push({url: href, name: btoa(unescape(encodeURIComponent(name)))});
+    items.push({ url: href, name: btoa(unescape(encodeURIComponent(name))) });
     a.style.cssText = 'display:inline-block !important;padding:10px 16px !important;margin:6px 0 !important;background:#d32f2f !important;color:#fff !important;border-radius:8px !important;text-decoration:none !important;font-size:14px !important;';
     a.innerHTML = '📎 ' + name;
   });
