@@ -183,50 +183,20 @@
   `;
   document.head.appendChild(css);
 
+  // Remove target attributes so links navigate inside the WebView.
+  document.querySelectorAll('a[target]').forEach(function(a) { a.removeAttribute('target'); });
+
   // Extract download attachment links and send to Flutter.
-  try {
-    var items = [];
-    document.querySelectorAll('a[href*="download.jsp"]').forEach(function (a) {
-      var href = a.getAttribute('href');
-      if (!href) return;
-      href = href.replace(/&amp;/g, '&');
-      if (href.startsWith('/')) href = window.location.origin + href;
-      var name = a.textContent.trim();
-      // Convert UTF-16 JS string to UTF-8 bytes then base64, so Flutter can
-      // reliably decode it with utf8.decode(base64Decode(...)).
-      var utf8Bytes = [];
-      for (var i = 0; i < name.length; i++) {
-        var c = name.charCodeAt(i);
-        if (c < 0x80) {
-          utf8Bytes.push(c);
-        } else if (c < 0x800) {
-          utf8Bytes.push(0xc0 | (c >> 6), 0x80 | (c & 0x3f));
-        } else if (c < 0xd800 || c >= 0xe000) {
-          utf8Bytes.push(0xe0 | (c >> 12), 0x80 | ((c >> 6) & 0x3f), 0x80 | (c & 0x3f));
-        } else {
-          // surrogate pair
-          i++;
-          var c2 = name.charCodeAt(i);
-          var cp = 0x10000 + ((c & 0x3ff) << 10) + (c2 & 0x3ff);
-          utf8Bytes.push(
-            0xf0 | (cp >> 18),
-            0x80 | ((cp >> 12) & 0x3f),
-            0x80 | ((cp >> 6) & 0x3f),
-            0x80 | (cp & 0x3f)
-          );
-        }
-      }
-      var binary = '';
-      for (var j = 0; j < utf8Bytes.length; j++) {
-        binary += String.fromCharCode(utf8Bytes[j]);
-      }
-      items.push({ url: href, name: btoa(binary) });
-      a.style.display = 'none';
-    });
-    if (items.length > 0) {
-      AttachmentsChannel.postMessage(JSON.stringify(items));
-    }
-  } catch (e) {
-    console.log('TuanweiNotice attachment error: ' + e);
+  var items = [];
+  document.querySelectorAll('a[href*="download.jsp"]').forEach(function(a) {
+    var href = a.getAttribute('href');
+    href = href.replace(/&amp;/g, '&');
+    if (href.startsWith('/')) href = window.location.origin + href;
+    var name = a.textContent.trim();
+    items.push({url: href, name: btoa(unescape(encodeURIComponent(name)))});
+    a.style.display = 'none';
+  });
+  if (items.length > 0) {
+    AttachmentsChannel.postMessage(JSON.stringify(items));
   }
 })();
