@@ -270,7 +270,10 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
               InAppWebView(
                 onWebViewCreated: _onWebViewCreated,
                 initialUrlRequest: URLRequest(url: WebUri(widget.url)),
-                initialSettings: InAppWebViewSettings(javaScriptEnabled: true),
+                initialSettings: InAppWebViewSettings(
+                  javaScriptEnabled: true,
+                  useWideViewPort: false,
+                ),
                 onDownloadStarting: _onDownloadStarting,
                 onLoadStart: _onLoadStart,
                 onLoadStop: _onLoadStop,
