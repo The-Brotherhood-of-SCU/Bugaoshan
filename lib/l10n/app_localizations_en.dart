@@ -1604,6 +1604,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dockLabelNotice => 'Notice';
 
   @override
+  String get dockLabelNoticeParty => 'XGB';
+
+  @override
+  String get dockLabelNoticeTuanwei => 'Youth';
+
+  @override
+  String get dockLabelDownloads => 'Downloads';
+
+  @override
   String get eulaTitle => 'User Agreement';
 
   @override

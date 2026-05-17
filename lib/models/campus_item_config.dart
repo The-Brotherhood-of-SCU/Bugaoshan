@@ -117,8 +117,8 @@ final campusItemFitnessTest = CampusItemConfig(
 
 final campusItemTrainProgram = CampusItemConfig(
   id: dockIdTrainProgram,
-  icon: Icons.school_outlined,
-  selectedIcon: Icons.school,
+  icon: Icons.history_edu_outlined,
+  selectedIcon: Icons.history_edu,
   dockLabel: (l10n) => l10n.dockLabelTrainProgram,
   dockFullLabel: (l10n) => l10n.trainProgram,
   desc: (l10n) => l10n.trainProgramDesc,
@@ -179,7 +179,7 @@ final campusItemNoticeParty = CampusItemConfig(
   id: dockIdNoticeParty,
   icon: Icons.flag_outlined,
   selectedIcon: Icons.flag,
-  dockLabel: (l10n) => '学工部',
+  dockLabel: (l10n) => l10n.dockLabelNoticeParty,
   dockFullLabel: (l10n) => l10n.partyNotice,
   desc: (l10n) => l10n.partyNoticeDesc,
   page: () => const PartyNoticePage(),
@@ -189,7 +189,7 @@ final campusItemNoticeTuanwei = CampusItemConfig(
   id: dockIdNoticeTuanwei,
   icon: Icons.volunteer_activism_outlined,
   selectedIcon: Icons.volunteer_activism,
-  dockLabel: (l10n) => '团委',
+  dockLabel: (l10n) => l10n.dockLabelNoticeTuanwei,
   dockFullLabel: (l10n) => l10n.tuanweiNotice,
   desc: (l10n) => l10n.tuanweiNoticeDesc,
   page: () => const TuanweiNoticePage(),
@@ -199,7 +199,7 @@ final campusItemDownloads = CampusItemConfig(
   id: dockIdDownloadedAttachments,
   icon: Icons.folder_open,
   selectedIcon: Icons.folder_open,
-  dockLabel: (l10n) => '附件',
+  dockLabel: (l10n) => l10n.dockLabelDownloads,
   dockFullLabel: (l10n) => l10n.downloadedAttachments,
   desc: (l10n) => l10n.downloadedAttachmentsDesc,
   page: () => const NoticeDownloadedPage(),
@@ -243,11 +243,7 @@ final allCampusItems = [
   ...campusSections.expand((s) => s.items),
 ];
 
-const defaultVisibleDockIds = [
-  dockIdCourse,
-  dockIdCampus,
-  dockIdProfile,
-];
+const defaultVisibleDockIds = [dockIdCourse, dockIdCampus, dockIdProfile];
 
 CampusItemConfig campusItemConfigById(String id) => allCampusItems.firstWhere(
   (item) => item.id == id,

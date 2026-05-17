@@ -3109,6 +3109,24 @@ abstract class AppLocalizations {
   /// **'Notice'**
   String get dockLabelNotice;
 
+  /// No description provided for @dockLabelNoticeParty.
+  ///
+  /// In en, this message translates to:
+  /// **'XGB'**
+  String get dockLabelNoticeParty;
+
+  /// No description provided for @dockLabelNoticeTuanwei.
+  ///
+  /// In en, this message translates to:
+  /// **'Youth'**
+  String get dockLabelNoticeTuanwei;
+
+  /// No description provided for @dockLabelDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads'**
+  String get dockLabelDownloads;
+
   /// No description provided for @eulaTitle.
   ///
   /// In en, this message translates to:

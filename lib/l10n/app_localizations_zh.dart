@@ -1562,6 +1562,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dockLabelNotice => '通知';
 
   @override
+  String get dockLabelNoticeParty => '学工部';
+
+  @override
+  String get dockLabelNoticeTuanwei => '团委';
+
+  @override
+  String get dockLabelDownloads => '附件';
+
+  @override
   String get eulaTitle => '用户协议';
 
   @override
