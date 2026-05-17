@@ -3432,6 +3432,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to open folder'**
   String get openFolderFailed;
+
+  /// No description provided for @noticeSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Notices'**
+  String get noticeSection;
+
+  /// No description provided for @partyNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Party Notices'**
+  String get partyNotice;
+
+  /// No description provided for @partyNoticeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'SCU Party Affairs notices'**
+  String get partyNoticeDesc;
+
+  /// No description provided for @tuanweiNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Youth SCU Notices'**
+  String get tuanweiNotice;
+
+  /// No description provided for @tuanweiNoticeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'SCU Youth League notices'**
+  String get tuanweiNoticeDesc;
+
+  /// No description provided for @downloadedAttachmentsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage downloaded notice attachments'**
+  String get downloadedAttachmentsDesc;
 }
 
 class _AppLocalizationsDelegate

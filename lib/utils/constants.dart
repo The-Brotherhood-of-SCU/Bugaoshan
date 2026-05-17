@@ -1,4 +1,4 @@
-﻿const String orgLink = "https://github.com/The-Brotherhood-of-SCU";
+const String orgLink = "https://github.com/The-Brotherhood-of-SCU";
 const String appLink = "https://github.com/The-Brotherhood-of-SCU/Bugaoshan";
 
 const String dockIdCourse = 'course';
@@ -14,9 +14,6 @@ const String dockIdBalanceQuery = 'balance_query';
 const String dockIdAcademicCalendar = 'academic_calendar';
 const String dockIdFitnessTest = 'fitness_test';
 const String dockIdNotice = 'notice';
-
-const List<String> defaultVisibleDockIds = [
-  dockIdCourse,
-  dockIdCampus,
-  dockIdProfile,
-];
+const String dockIdNoticeParty = 'notice_party';
+const String dockIdNoticeTuanwei = 'notice_tuanwei';
+const String dockIdDownloadedAttachments = 'downloaded_attachments';

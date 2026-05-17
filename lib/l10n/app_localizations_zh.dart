@@ -1731,6 +1731,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get openFolderFailed => '打开文件夹失败';
+
+  @override
+  String get noticeSection => '通知公告';
+
+  @override
+  String get partyNotice => '党委学工部通知';
+
+  @override
+  String get partyNoticeDesc => '查看四川大学党委学生工作部通知公告';
+
+  @override
+  String get tuanweiNotice => '青春川大通知';
+
+  @override
+  String get tuanweiNoticeDesc => '查看四川大学团委通知公告';
+
+  @override
+  String get downloadedAttachmentsDesc => '管理已下载的通知附件';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

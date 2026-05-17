@@ -1781,4 +1781,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get openFolderFailed => 'Failed to open folder';
+
+  @override
+  String get noticeSection => 'Notices';
+
+  @override
+  String get partyNotice => 'Party Notices';
+
+  @override
+  String get partyNoticeDesc => 'SCU Party Affairs notices';
+
+  @override
+  String get tuanweiNotice => 'Youth SCU Notices';
+
+  @override
+  String get tuanweiNoticeDesc => 'SCU Youth League notices';
+
+  @override
+  String get downloadedAttachmentsDesc =>
+      'Manage downloaded notice attachments';
 }

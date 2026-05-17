@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/models/dock_item_config.dart';
+import 'package:bugaoshan/models/campus_item_config.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
@@ -16,14 +16,12 @@ class SetDockPage extends StatefulWidget {
 class _SetDockPageState extends State<SetDockPage> {
   late final AppConfigProvider _appConfig;
   late List<String> _visibleIds;
-  late final List<DockItemConfig> _allItems;
 
   @override
   void initState() {
     super.initState();
     _appConfig = getIt<AppConfigProvider>();
     _visibleIds = List<String>.from(_appConfig.visibleDockIds.value);
-    _allItems = List<DockItemConfig>.from(allDockItems);
   }
 
   bool _isVisible(String id) => _visibleIds.contains(id);
@@ -69,8 +67,8 @@ class _SetDockPageState extends State<SetDockPage> {
 
     // Items shown in the preview bar (in order)
     final previewItems = _visibleIds
-        .where((id) => _allItems.any((item) => item.id == id))
-        .map((id) => dockConfigById(id))
+        .where((id) => allCampusItems.any((item) => item.id == id))
+        .map((id) => campusItemConfigById(id))
         .toList();
     final dockerPreview = Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -101,7 +99,7 @@ class _SetDockPageState extends State<SetDockPage> {
                         Icon(item.icon, size: 24),
                         const SizedBox(height: 4),
                         Text(
-                          dockLabel(item.id, l10n),
+                          item.dockLabel(l10n),
                           style: theme.textTheme.labelSmall,
                         ),
                       ],
@@ -157,7 +155,7 @@ class _SetDockPageState extends State<SetDockPage> {
       },
       itemBuilder: (context, index) {
         final id = _visibleIds[index];
-        final item = dockConfigById(id);
+        final item = campusItemConfigById(id);
         final isProfile = item.id == dockIdProfile;
 
         return Card(
@@ -165,7 +163,7 @@ class _SetDockPageState extends State<SetDockPage> {
           margin: const EdgeInsets.symmetric(vertical: 4),
           child: ListTile(
             leading: Icon(item.icon, color: theme.colorScheme.primary),
-            title: Text(dockFullLabel(item.id, l10n)),
+            title: Text(item.dockFullLabel(l10n)),
             subtitle: isProfile
                 ? Text(
                     l10n.cannotDeleteProfile,
@@ -198,7 +196,7 @@ class _SetDockPageState extends State<SetDockPage> {
       },
     );
     final hiddenItems = [
-      ..._allItems
+      ...allCampusItems
           .where((item) => !_isVisible(item.id))
           .map(
             (item) => Card(
@@ -209,7 +207,7 @@ class _SetDockPageState extends State<SetDockPage> {
                   item.icon,
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
-                title: Text(dockFullLabel(item.id, l10n)),
+                title: Text(item.dockFullLabel(l10n)),
                 trailing: Switch(
                   value: false,
                   onChanged: (_) => _toggleVisibility(item.id),

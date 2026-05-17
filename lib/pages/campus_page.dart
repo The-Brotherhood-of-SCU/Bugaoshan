@@ -1,18 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/pages/campus/academic_calendar/academic_calendar_page.dart';
-import 'package:bugaoshan/pages/campus/balance_query/balance_query_page.dart';
-import 'package:bugaoshan/pages/campus/classroom/classroom_page.dart';
-import 'package:bugaoshan/pages/campus/fitness_test/fitness_test_page.dart';
-import 'package:bugaoshan/pages/campus/ccyl/ccyl_page.dart';
-import 'package:bugaoshan/pages/campus/grades/grades_page.dart';
-import 'package:bugaoshan/pages/campus/plan_completion/plan_completion_page.dart';
-import 'package:bugaoshan/pages/campus/network_device/network_device_page.dart';
-import 'package:bugaoshan/pages/campus/notice/jwc/campus_notice_page.dart';
-import 'package:bugaoshan/pages/campus/notice/xgb/party_notice_page.dart';
-import 'package:bugaoshan/pages/campus/notice/tuanwei/tuanwei_notice_page.dart';
-import 'package:bugaoshan/pages/campus/train_program/train_program_page.dart';
+import 'package:bugaoshan/models/campus_item_config.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -59,7 +47,6 @@ class _CampusPageState extends State<CampusPage>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isWeb = kIsWeb;
     final bgColor = Theme.of(context).scaffoldBackgroundColor;
 
     return Stack(
@@ -75,140 +62,23 @@ class _CampusPageState extends State<CampusPage>
                 padding: const EdgeInsets.all(16),
                 sliver: SliverList.list(
                   children: [
-                    _SectionHeader(title: l10n.academicSection),
-                    const SizedBox(height: 8),
-                    _CampusCard(
-                      icon: Icons.bar_chart_outlined,
-                      title: l10n.gradesStats,
-                      desc: l10n.gradesStatsDesc,
-                      appOnly: false,
-                      onTap: () =>
-                          popupOrNavigate(logicRootContext, const GradesPage()),
-                    ),
-                    const SizedBox(height: 8),
-                    _CampusCard(
-                      icon: Icons.event_outlined,
-                      title: l10n.ccylTitle,
-                      desc: l10n.ccylDesc,
-                      appOnly: false,
-                      onTap: () =>
-                          popupOrNavigate(logicRootContext, const CcylPage()),
-                    ),
-                    const SizedBox(height: 8),
-                    _CampusCard(
-                      icon: Icons.assignment_turned_in_outlined,
-                      title: l10n.planCompletion,
-                      desc: l10n.planCompletionDesc,
-                      appOnly: false,
-                      onTap: () => popupOrNavigate(
-                        logicRootContext,
-                        const PlanCompletionPage(),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _CampusCard(
-                      icon: Icons.directions_run,
-                      title: l10n.fitnessTest,
-                      desc: l10n.fitnessTestDesc,
-                      appOnly: false,
-                      onTap: () => popupOrNavigate(
-                        logicRootContext,
-                        const FitnessTestPage(),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    _SectionHeader(title: l10n.utilitiesSection),
-                    const SizedBox(height: 8),
-                    _CampusCard(
-                      icon: Icons.school_outlined,
-                      title: l10n.trainProgram,
-                      desc: l10n.trainProgramDesc,
-                      appOnly: false,
-                      onTap: () => popupOrNavigate(
-                        logicRootContext,
-                        const TrainProgramPage(),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _CampusCard(
-                      icon: Icons.meeting_room_outlined,
-                      title: l10n.classroomQuery,
-                      desc: l10n.classroomQueryDesc,
-                      appOnly: isWeb,
-                      onTap: isWeb
-                          ? null
-                          : () => popupOrNavigate(
-                              logicRootContext,
-                              const ClassroomPage(),
-                            ),
-                    ),
-                    const SizedBox(height: 8),
-                    _CampusCard(
-                      icon: Icons.router_outlined,
-                      title: l10n.networkDeviceQuery,
-                      desc: l10n.networkDeviceQueryDesc,
-                      appOnly: false,
-                      onTap: () => popupOrNavigate(
-                        logicRootContext,
-                        const NetworkDevicePage(),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _CampusCard(
-                      icon: Icons.account_balance_wallet_outlined,
-                      title: l10n.balanceQuery,
-                      desc: l10n.balanceQueryDesc,
-                      appOnly: false,
-                      onTap: () => popupOrNavigate(
-                        logicRootContext,
-                        const BalanceQueryPage(),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _CampusCard(
-                      icon: Icons.calendar_month_outlined,
-                      title: l10n.academicCalendar,
-                      desc: l10n.academicCalendarDesc,
-                      appOnly: false,
-                      onTap: () => popupOrNavigate(
-                        logicRootContext,
-                        const AcademicCalendarPage(),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _CampusCard(
-                      icon: Icons.campaign_outlined,
-                      title: l10n.campusNotices,
-                      desc: l10n.campusNoticesDesc,
-                      appOnly: false,
-                      onTap: () => popupOrNavigate(
-                        logicRootContext,
-                        const CampusNoticePage(),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _CampusCard(
-                      icon: Icons.flag_outlined,
-                      title: '党委学工部通知',
-                      desc: '查看四川大学党委学生工作部通知公告',
-                      appOnly: false,
-                      onTap: () => popupOrNavigate(
-                        logicRootContext,
-                        const PartyNoticePage(),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _CampusCard(
-                      icon: Icons.volunteer_activism_outlined,
-                      title: '青春川大通知',
-                      desc: '查看四川大学团委通知公告',
-                      appOnly: false,
-                      onTap: () => popupOrNavigate(
-                        logicRootContext,
-                        const TuanweiNoticePage(),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
+                    for (final section in campusSections) ...[
+                      _SectionHeader(title: section.title(l10n)),
+                      const SizedBox(height: 8),
+                      for (final item in section.items) ...[
+                        _CampusCard(
+                          icon: item.icon,
+                          title: item.dockFullLabel(l10n),
+                          desc: item.desc(l10n),
+                          onTap: () => popupOrNavigate(
+                            logicRootContext,
+                            item.page(),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                      const SizedBox(height: 16),
+                    ],
                     _MoreFeaturesCard(),
                     const SizedBox(height: 60),
                   ],
@@ -266,21 +136,16 @@ class _CampusCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.desc,
-    required this.appOnly,
-    this.onTap,
+    required this.onTap,
   });
 
   final IconData icon;
   final String title;
   final String desc;
-  final bool appOnly;
-  final VoidCallback? onTap;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final disabled = appOnly;
-
     return Card(
       child: InkWell(
         onTap: onTap,
@@ -292,16 +157,12 @@ class _CampusCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: disabled
-                      ? Theme.of(context).colorScheme.surfaceContainerHighest
-                      : Theme.of(context).colorScheme.primaryContainer,
+                  color: Theme.of(context).colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   icon,
-                  color: disabled
-                      ? Theme.of(context).colorScheme.onSurfaceVariant
-                      : Theme.of(context).colorScheme.onPrimaryContainer,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
                   size: 28,
                 ),
               ),
@@ -314,9 +175,6 @@ class _CampusCard extends StatelessWidget {
                       title,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: disabled
-                            ? Theme.of(context).colorScheme.onSurfaceVariant
-                            : null,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -326,32 +184,11 @@ class _CampusCard extends StatelessWidget {
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
-                    if (disabled) ...[
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            size: 14,
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            l10n.appOnly,
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: Theme.of(context).colorScheme.error,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ],
                   ],
                 ),
               ),
               Icon(
-                disabled ? Icons.block : Icons.chevron_right,
+                Icons.chevron_right,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ],
