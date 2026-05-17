@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import 'package:bugaoshan/pages/campus/downloads/file_utils.dart';
+
 /// Mutable cancellation token for in-progress downloads.
 class CancelToken {
   bool _cancelled = false;
@@ -82,6 +84,34 @@ class DownloadManager extends ChangeNotifier {
       task.completedAt = DateTime.now();
     }
     notifyListeners();
+  }
+
+  /// Download a file, tracking state from enqueue → downloading → done/error.
+  /// Returns the saved path. The task is always created or updated on the
+  /// manager so [ListenableBuilder] consumers react to every state change.
+  Future<String> download(
+    String url,
+    String dirName,
+    String fileName, {
+    Map<String, String>? headers,
+    CancelToken? cancelToken,
+  }) async {
+    final task = enqueue(url, dirName, fileName, headers: headers);
+    updateTask(task, status: DownloadStatus.downloading);
+    try {
+      final path = await downloadFile(
+        url,
+        dirName,
+        fileName,
+        headers: headers,
+        cancelToken: cancelToken,
+      );
+      updateTask(task, status: DownloadStatus.done, downloadedPath: path);
+      return path;
+    } catch (e) {
+      updateTask(task, status: DownloadStatus.error, errorMessage: e.toString());
+      rethrow;
+    }
   }
 
   void cancel(String dirName, String fileName) {

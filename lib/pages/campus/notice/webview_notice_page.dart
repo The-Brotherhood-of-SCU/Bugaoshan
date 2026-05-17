@@ -131,22 +131,12 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
         if (cookies.isNotEmpty)
           'Cookie': cookies.map((c) => '${c.name}=${c.value}').join('; '),
       };
-      final path = await downloadFile(
+      await getIt<DownloadManager>().download(
         url,
         widget.attachmentDir,
         request.suggestedFilename ?? 'download',
         headers: headers,
       );
-
-      // Sync with DownloadManager so the bottom-sheet UI reflects completion.
-      final manager = getIt<DownloadManager>();
-      for (final t in manager.tasks.values) {
-        if (t.url == url && t.dirName == widget.attachmentDir) {
-          manager.updateTask(t, status: DownloadStatus.done, downloadedPath: path);
-          break;
-        }
-      }
-
       if (mounted) {
         ScaffoldMessenger.of(
           context,

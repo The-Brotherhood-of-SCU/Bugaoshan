@@ -137,24 +137,14 @@ class _SheetAttachmentTile extends StatelessWidget {
   void _share(String path) => Share.shareXFiles([XFile(path)]);
 
   Future<void> _startDownload(DownloadManager manager) async {
-    final task = manager.enqueue(item.url, dirName, item.name, headers: downloadHeaders);
-
     if (onWebViewDownload != null) {
       // Let the host WebView handle the download with its session cookies.
       // The WebView's onDownloadStartRequest will update the manager when done.
+      manager.enqueue(item.url, dirName, item.name, headers: downloadHeaders);
       onWebViewDownload!(item.url);
       return;
     }
-
-    manager.updateTask(task, status: DownloadStatus.downloading);
-    try {
-      final path = await downloadFile(item.url, dirName, item.name, headers: downloadHeaders);
-      if (task.status != DownloadStatus.error) {
-        manager.updateTask(task, status: DownloadStatus.done, downloadedPath: path);
-      }
-    } catch (e) {
-      manager.updateTask(task, status: DownloadStatus.error, errorMessage: e.toString());
-    }
+    await manager.download(item.url, dirName, item.name, headers: downloadHeaders);
   }
 
   @override
