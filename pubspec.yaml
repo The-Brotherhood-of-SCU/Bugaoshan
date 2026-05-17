@@ -39,8 +39,8 @@ dependencies:
   window_manager: ^0.5.1
   screen_retriever: ^0.2.0
   system_theme: ^3.2.0
-  google_fonts: ^6.0.0
-  share_plus: ^10.0.0
+  google_fonts: ^8.1.0
+  share_plus: ^12.0.2
   gal: ^2.3.0
   open_filex: ^4.7.0
   flutter_inappwebview: ^6.2.0-beta.3
