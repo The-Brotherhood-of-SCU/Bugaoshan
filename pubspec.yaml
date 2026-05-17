@@ -45,10 +45,6 @@ dependencies:
   open_filex: ^4.7.0
   zikzak_inappwebview: ^4.0.10
 
-dependency_overrides:
-  zikzak_inappwebview_windows:
-    path: local/zikzak_inappwebview_windows
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1485,11 +1485,12 @@ packages:
     source: hosted
     version: "4.0.10"
   zikzak_inappwebview_windows:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
-      path: "local/zikzak_inappwebview_windows"
-      relative: true
-    source: path
+      name: zikzak_inappwebview_windows
+      sha256: "99f6aa2803e72097fe61baae8f3abcb31fa7deb8ad9b107ab8b2cf724f1f5abe"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
     version: "4.0.10"
 sdks:
   dart: ">=3.11.0 <4.0.0"
