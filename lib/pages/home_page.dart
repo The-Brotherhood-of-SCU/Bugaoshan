@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/models/dock_item_config.dart';
+import 'package:bugaoshan/models/campus_item_config.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
@@ -12,7 +12,6 @@ import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
-import 'package:bugaoshan/utils/dock_utils.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -30,7 +29,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   /// Only the page at [selectedIndex] is visible; others are kept alive.
   Widget _buildIndexedStack(List<String> visibleIds, int selectedIndex) {
     for (final id in visibleIds) {
-      _pageCache.putIfAbsent(id, () => buildDockPage(id));
+      _pageCache.putIfAbsent(id, () => campusItemConfigById(id).page());
     }
     // Clean up pages no longer visible
     _pageCache.keys
@@ -199,7 +198,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     bool hasUpdate,
     AppLocalizations l10n,
   ) {
-    final config = dockConfigById(id);
+    final config = campusItemConfigById(id);
     final isProfile = id == dockIdProfile;
     return NavigationRailDestination(
       icon: isProfile
@@ -211,7 +210,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               child: Icon(config.selectedIcon),
             )
           : Icon(config.selectedIcon),
-      label: Text(dockLabel(id, l10n)),
+      label: Text(config.dockLabel(l10n)),
     );
   }
 
@@ -220,7 +219,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     bool hasUpdate,
     AppLocalizations l10n,
   ) {
-    final config = dockConfigById(id);
+    final config = campusItemConfigById(id);
     final isProfile = id == dockIdProfile;
     return NavigationDestination(
       icon: isProfile
@@ -232,7 +231,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               child: Icon(config.selectedIcon),
             )
           : Icon(config.selectedIcon),
-      label: dockLabel(id, l10n),
+      label: config.dockLabel(l10n),
     );
   }
 

@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Colors, Curve, Curves;
 import 'package:bugaoshan/utils/locale_utils.dart';
-import 'package:bugaoshan/utils/constants.dart';
+import 'package:bugaoshan/models/campus_item_config.dart';
 import 'package:bugaoshan/widgets/eula_content.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:system_theme/system_theme.dart';

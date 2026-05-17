@@ -626,5 +626,11 @@
     "sortBySize": "By Size",
     "searchAttachmentsHint": "Search attachments...",
     "openFolder": "Open folder",
-    "openFolderFailed": "Failed to open folder"
+    "openFolderFailed": "Failed to open folder",
+    "noticeSection": "Notices",
+    "partyNotice": "Party Notices",
+    "partyNoticeDesc": "SCU Party Affairs notices",
+    "tuanweiNotice": "Youth SCU Notices",
+    "tuanweiNoticeDesc": "SCU Youth League notices",
+    "downloadedAttachmentsDesc": "Manage downloaded notice attachments"
 }

@@ -99,7 +99,7 @@ Two notice sources, each in its own subdirectory under `lib/pages/campus/notice/
 - **Multiple schedules**: Courses are stored in a single SQLite `courses` table, filtered by `schedule_id`. `DatabaseService.switchSchedule()` updates the current schedule ID and refreshes the in-memory cache.
 - **Responsive dialogs**: `popupOrNavigate()` in `router_utils.dart` shows a bottom sheet dialog on tablets/landscape, full-page navigation on phones.
 - **国密**: SM2 crypto via `dart_sm` package — used to encrypt the password before sending to SCU's auth API.
-- **Dynamic navigation**: Home page uses a customizable dock system (`lib/utils/dock_utils.dart`). Users can enable/disable/reorder dock items. Pages are lazily built and cached in an `IndexedStack`.
+- **Dynamic navigation**: Home page uses a customizable dock system (`lib/models/campus_item_config.dart`). Users can enable/disable/reorder dock items. Pages are lazily built and cached in an `IndexedStack`.
 - **Theme system**: Supports system accent color, custom color, or color derived from background image. Background image opacity is configurable.
 
 ### Storage
