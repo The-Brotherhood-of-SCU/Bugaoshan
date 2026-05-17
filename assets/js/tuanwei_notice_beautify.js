@@ -1,45 +1,49 @@
 (function () {
-  // Remove all existing stylesheets and style tags for a clean slate.
   document.querySelectorAll('link[rel="stylesheet"], style').forEach(function (el) { el.remove(); });
 
   var css = document.createElement('style');
   css.textContent = `
     .header, .M_header, .picture, .left-menu, .location-bar,
-    .footer, .door, .link, .Foot , .flexslider , .Tops , .naver , .sidenav { display: none !important; }
-    .listContent { width: 100% !important; padding: 0 !important; margin: 0 !important; }
-    .main-box { width: 100% !important; max-width: 640px !important; float: none !important; margin: 0 auto !important; }
-    .main-box ul { padding: 0 !important; margin: 0 !important; }
-    .news-list {
-      background: #fff !important;
-      border-radius: 12px !important;
+    .footer, .door, .link, .Foot, .flexslider, .Tops, .naver, .sidenav,
+    .toolbar, .paging { display: none !important; }
+
+    body { margin: 0 !important; padding: 0 !important; font-family: -apple-system, BlinkMacSystemFont, sans-serif !important; background: #f2f2f2 !important; }
+
+    .main-box, .listContent { width: 100% !important; padding: 0 !important; margin: 0 !important; max-width: 640px !important; float: none !important; margin: 0 auto !important; }
+
+    ul:not(.p_pages) {
+      list-style: none !important;
       margin: 8px 16px !important;
       padding: 0 !important;
-      list-style: none !important;
+      background: #fff !important;
+      border-radius: 12px !important;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+      overflow: hidden !important;
     }
-    .news-list a {
+    ul:not(.p_pages) li {
+      padding: 0 !important;
+    }
+    ul:not(.p_pages) li + li {
+      border-top: 1px solid #eee !important;
+    }
+    ul:not(.p_pages) li a {
       display: block !important;
-      padding: 14px 16px !important;
+      padding: 12px 16px !important;
       text-decoration: none !important;
+      font-size: 15px !important;
+      line-height: 1.5 !important;
+      color: #222 !important;
     }
-    .news-list .news-box { }
-    .news-list .title { font-size: 16px !important; line-height: 1.5 !important; font-weight: 500 !important; }
-    .news-list .title a { color: #333 !important; }
-    .news-list .content { font-size: 14px !important; color: #888 !important; margin-top: 4px !important; }
-    .date-box {
-      display: inline-flex !important;
-      align-items: baseline !important;
-      gap: 4px !important;
-      margin-top: 8px !important;
-      padding: 2px 8px !important;
-      background: #f5f5f5 !important;
-      border-radius: 4px !important;
-      font-size: 12px !important;
+    ul:not(.p_pages) time {
+      display: block !important;
+      font-size: 11px !important;
       color: #999 !important;
+      padding: 10px 16px 0 !important;
     }
-    .date-box .date { font-size: 12px !important; font-weight: bold !important; color: #d32f2f !important; }
-    .year-month { font-size: 12px !important; color: #999 !important; }
-    .page { padding: 16px !important; text-align: center !important; }
+    ul:not(.p_pages) time + a {
+      padding-top: 2px !important;
+    }
+
     .pb_sys_common {
       display: flex !important;
       align-items: center !important;
@@ -102,7 +106,18 @@
       border: 1px solid #e0e0e0 !important; border-radius: 6px !important; font-size: 13px !important;
       text-decoration: none !important; cursor: pointer !important; box-sizing: border-box !important;
     }
-    body { margin: 0 !important; padding: 0 !important; font-family: -apple-system, BlinkMacSystemFont, sans-serif !important; background: #f2f2f2 !important; }
+
+    /* detail page */
+    .detail-title, .article-title, h1 {
+      font-size: 22px !important; font-weight: bold !important; line-height: 1.4 !important;
+      padding: 16px 16px 12px !important; margin: 0 !important;
+      border-bottom: 1px solid #ddd !important;
+    }
+    .v_news_content, .content, .article-content {
+      padding: 16px !important; font-size: 16px !important; line-height: 1.8 !important;
+    }
+    img { max-width: 100% !important; height: auto !important; }
+    table { width: 100% !important; max-width: 100% !important; border-collapse: collapse !important; }
 
     @media (prefers-color-scheme: dark) {
       body { background: #121212 !important; color: #e0e0e0 !important; }
@@ -111,12 +126,10 @@
       td, th { border-color: #333 !important; color: #e0e0e0 !important; background: transparent !important; }
       p, span, strong, em, u, s { color: #e0e0e0 !important; background: transparent !important; }
       input, select, textarea { background: #333 !important; color: #e0e0e0 !important; border-color: #555 !important; }
-      .news-list { background: #1e1e1e !important; box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important; }
-      .news-list .title a { color: #e0e0e0 !important; }
-      .news-list .content { color: #999 !important; }
-      .date-box { background: #2a2a2a !important; }
-      .date-box .date { color: #ef5350 !important; }
-      .year-month { color: #999 !important; }
+      ul:not(.p_pages) { background: #1e1e1e !important; box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important; }
+      ul:not(.p_pages) li + li { border-top-color: #333 !important; }
+      ul:not(.p_pages) li a { color: #e0e0e0 !important; }
+      ul:not(.p_pages) time { color: #999 !important; }
       .detail-title, .article-title, h1 { border-bottom-color: #333 !important; }
       .p_pages .p_no a, .p_pages .p_fun a { background: #2a2a2a !important; color: #e0e0e0 !important; border-color: #444 !important; }
       .p_pages .p_no a:hover, .p_pages .p_fun a:hover { background: #333 !important; }
@@ -126,37 +139,20 @@
       .p_pages a.p_goto { background: #2a2a2a !important; color: #e0e0e0 !important; border-color: #444 !important; }
       .pb_sys_common .p_goto a { background: #2a2a2a !important; color: #e0e0e0 !important; border-color: #444 !important; }
     }
-
-    /* detail page */
-    .detail-title, .article-title, h1 {
-      font-size: 22px !important;
-      font-weight: bold !important;
-      line-height: 1.4 !important;
-      padding: 16px 16px 12px !important;
-      margin: 0 !important;
-      border-bottom: 1px solid #ddd !important;
-    }
-    .v_news_content, .content, .article-content {
-      padding: 16px !important;
-      font-size: 16px !important;
-      line-height: 1.8 !important;
-    }
-    img { max-width: 100% !important; height: auto !important; }
-    table { width: 100% !important; max-width: 100% !important; border-collapse: collapse !important; }
   `;
   document.head.appendChild(css);
 
   // Remove target attributes so links navigate inside the WebView.
-  document.querySelectorAll('a[target]').forEach(function(a) { a.removeAttribute('target'); });
+  document.querySelectorAll('a[target]').forEach(function (a) { a.removeAttribute('target'); });
 
   // Extract download attachment links, style them, and send to Flutter.
   var items = [];
-  document.querySelectorAll('a[href*="download.jsp"]').forEach(function(a) {
+  document.querySelectorAll('a[href*="download.jsp"]').forEach(function (a) {
     var href = a.getAttribute('href');
     href = href.replace(/&amp;/g, '&');
     if (href.startsWith('/')) href = window.location.origin + href;
     var name = a.textContent.trim();
-    items.push({url: href, name: btoa(unescape(encodeURIComponent(name)))});
+    items.push({ url: href, name: btoa(unescape(encodeURIComponent(name))) });
     a.style.cssText = 'display:inline-block !important;padding:10px 16px !important;margin:6px 0 !important;background:#d32f2f !important;color:#fff !important;border-radius:8px !important;text-decoration:none !important;font-size:14px !important;';
     a.innerHTML = '📎 ' + name;
   });
