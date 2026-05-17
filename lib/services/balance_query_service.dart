@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/utils/constants.dart';
+import 'package:bugaoshan/utils/json_utils.dart';
 
 class BalanceQueryService {
   static const _base = 'https://payapp.scu.edu.cn/eleFees';
@@ -11,9 +13,7 @@ class BalanceQueryService {
     'Content-Type': 'application/json;charset=UTF-8',
     'Origin': _base,
     'Referer': _base,
-    'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-        '(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0',
+    'User-Agent': kDefaultUserAgent,
   };
 
   Future<http.Client> getAuthenticatedClient() async {
@@ -42,7 +42,7 @@ class BalanceQueryService {
       headers: _headers,
       body: '{}',
     );
-    final json = _parseJson(resp.body, 'getCampus');
+    final json = parseJson(resp.body, 'getCampus', (msg) => BalanceQueryException(msg));
     if (json['respCode'] != '00') {
       throw BalanceQueryException(json['respDesc'] ?? '获取校区失败');
     }
@@ -61,7 +61,7 @@ class BalanceQueryService {
       headers: _headers,
       body: jsonEncode({'schoolCode': schoolCode}),
     );
-    final json = _parseJson(resp.body, 'getArchitecture');
+    final json = parseJson(resp.body, 'getArchitecture', (msg) => BalanceQueryException(msg));
     if (json['respCode'] != '00') {
       throw BalanceQueryException(json['respDesc'] ?? '获取楼栋失败');
     }
@@ -81,7 +81,7 @@ class BalanceQueryService {
       headers: _headers,
       body: jsonEncode({'schoolCode': schoolCode, 'regCode': regCode}),
     );
-    final json = _parseJson(resp.body, 'getUnit');
+    final json = parseJson(resp.body, 'getUnit', (msg) => BalanceQueryException(msg));
     if (json['respCode'] != '00') {
       throw BalanceQueryException(json['respDesc'] ?? '获取单元失败');
     }
@@ -114,7 +114,7 @@ class BalanceQueryService {
         'roomNo': roomNo,
       }),
     );
-    final json = _parseJson(resp.body, 'verificationRoom');
+    final json = parseJson(resp.body, 'verificationRoom', (msg) => BalanceQueryException(msg));
     if (json['respCode'] != '00') {
       throw BalanceQueryException(json['respDesc'] ?? '验证房间失败');
     }
@@ -132,19 +132,11 @@ class BalanceQueryService {
       headers: _headers,
       body: jsonEncode({'cusNo': cusNo, 'type': type, 'cusName': cusName}),
     );
-    final json = _parseJson(resp.body, 'queryRoomInfo');
+    final json = parseJson(resp.body, 'queryRoomInfo', (msg) => BalanceQueryException(msg));
     if (json['respCode'] != '00') {
       throw BalanceQueryException(json['respDesc'] ?? '查询失败');
     }
     return RoomInfo.fromJson(json['data'] as Map<String, dynamic>);
-  }
-
-  Map<String, dynamic> _parseJson(String body, String api) {
-    try {
-      return jsonDecode(body) as Map<String, dynamic>;
-    } catch (e) {
-      throw BalanceQueryException('[$api] JSON 解析失败: $body');
-    }
   }
 }
 

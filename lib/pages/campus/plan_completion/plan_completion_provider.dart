@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/models/plan_completion.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
+import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/session_expiry_handler.dart';
 
 const _keyPlanCompletion = 'plan_completion_nodes';
@@ -66,9 +67,7 @@ class PlanCompletionProvider extends ChangeNotifier {
           headers: {
             'Accept': 'text/html,*/*',
             'Referer': 'http://zhjw.scu.edu.cn/',
-            'User-Agent':
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-                '(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+            'User-Agent': kDefaultUserAgent,
           },
         );
 

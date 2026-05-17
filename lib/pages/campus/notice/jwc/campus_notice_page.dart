@@ -11,6 +11,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:bugaoshan/utils/constants.dart';
 
 import 'package:bugaoshan/pages/campus/downloads/shared_notice_downloads.dart';
 

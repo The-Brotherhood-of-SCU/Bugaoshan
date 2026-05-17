@@ -4,9 +4,7 @@ part of 'campus_notice_page.dart';
 
 const _noticeBase = 'https://jwc.scu.edu.cn';
 const _noticeListUrl = '$_noticeBase/tzgg.htm';
-const _noticeUserAgent =
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-    '(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+const _noticeUserAgent = kDefaultUserAgent;
 const _scrollLoadThreshold = 160.0;
 const _noticePageFirstNum = 200;
 const _searchUrl = '$_noticeBase/ssjgy.jsp?wbtreeid=1001';
