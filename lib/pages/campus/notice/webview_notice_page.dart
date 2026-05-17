@@ -207,10 +207,16 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: !_canGoBack,
+      canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
-        await _goBack();
+        final ctrl = _controller;
+        if (ctrl != null && await ctrl.canGoBack()) {
+          setState(() => _loading = true);
+          await ctrl.goBack();
+        } else if (mounted) {
+          Navigator.of(logicRootContext).pop();
+        }
       },
       child: Scaffold(
         appBar: AppBar(
