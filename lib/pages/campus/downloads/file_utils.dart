@@ -6,11 +6,6 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:bugaoshan/services/download_manager.dart';
 
-class CaptchaRequiredException implements Exception {
-  final String captchaUrl;
-  const CaptchaRequiredException(this.captchaUrl);
-}
-
 /// Default subdirectory name under `Bugaoshan/` for jwc notice downloads.
 const kNoticeAttachmentDir = 'notice_attachments';
 
@@ -69,24 +64,13 @@ Future<String> downloadFile(
   };
 
   final response = await http.get(Uri.parse(url), headers: mergedHeaders);
-  if (response.statusCode != 200 && response.statusCode != 202) {
-    //202 require captcha
+  if (response.statusCode != 200) {
     throw Exception('Download failed: HTTP ${response.statusCode}');
   }
 
   if (cancelToken?.isCancelled ?? false) throw DownloadCancelledException();
 
   final bytes = response.bodyBytes;
-
-  // Detect HTML captcha/anti-bot page.
-  final contentType = response.headers['content-type'] ?? '';
-  final isHtml =
-      contentType.contains('text/html') ||
-      (bytes.length > 100 &&
-          String.fromCharCodes(
-            bytes.take(100),
-          ).trimLeft().toLowerCase().startsWith(RegExp(r'<!doctype|<html')));
-  if (isHtml) throw CaptchaRequiredException(url);
 
   // Prefer filename from Content-Disposition header.
   var actualFileName = fileName;
