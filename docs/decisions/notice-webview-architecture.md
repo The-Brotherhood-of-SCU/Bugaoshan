@@ -66,7 +66,7 @@ document.head.appendChild(css);
 }
 ```
 
-**3. 附件提取** — 扫描页面中的下载链接 (`a[href*="download.jsp"]`)，通过 `flutter_inappwebview.callHandler` 将 URL 和文件名传给 Flutter 端，Flutter 用 `DownloadManager` 接管下载：
+**3. (optional)附件提取** — 扫描页面中的下载链接 (`a[href*="download.jsp"]`)，通过 `flutter_inappwebview.callHandler` 将 URL 和文件名传给 Flutter 端，Flutter 用 `DownloadManager` 接管下载：
 ```js
 var items = [];
 document.querySelectorAll('a[href*="download.jsp"]').forEach(function(a) {
@@ -76,7 +76,8 @@ document.querySelectorAll('a[href*="download.jsp"]').forEach(function(a) {
 window.flutter_inappwebview.callHandler('AttachmentsChannel', JSON.stringify(items));
 ```
 
-**4. DOM Ready 通知** — JS 执行完毕后通过 `callHandler('DOMReady')` 通知 Flutter 移除 loading 状态，确保页面完全渲染后才显示：
+*: 如果不使用这个channel，问题也不大，webview仍然会接管下载请求。若使用channel，会显示一个悬浮按钮，弹出一个下载列表，用户可以选择下载。
+
 ```js
 // dom_ready.js — 双重 requestAnimationFrame 确保布局稳定后通知
 requestAnimationFrame(() => {
