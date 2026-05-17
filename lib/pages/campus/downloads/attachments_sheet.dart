@@ -131,7 +131,7 @@ class _SheetAttachmentTile extends StatelessWidget {
   void _open(String path) => OpenFilex.open(path);
   void _share(String path) => Share.shareXFiles([XFile(path)]);
 
-  Future<void> _startDownload(DownloadManager manager, BuildContext context) async {
+  Future<void> _startDownload(DownloadManager manager) async {
     final task = manager.enqueue(item.url, dirName, item.name, headers: downloadHeaders);
     manager.updateTask(task, status: DownloadStatus.downloading);
     try {
@@ -141,7 +141,7 @@ class _SheetAttachmentTile extends StatelessWidget {
       }
     } on CaptchaRequiredException catch (e) {
       final path = await popupOrNavigate(
-        context,
+        logicRootContext,
         CaptchaWebViewPage(
           captchaUrl: e.captchaUrl,
           dirName: dirName,
@@ -149,7 +149,7 @@ class _SheetAttachmentTile extends StatelessWidget {
           downloadHeaders: downloadHeaders,
         ),
       );
-      if (path != null && context.mounted) {
+      if (path != null) {
         manager.updateTask(task, status: DownloadStatus.done, downloadedPath: path as String);
       } else {
         manager.updateTask(task, status: DownloadStatus.error, errorMessage: '需要验证');
@@ -197,7 +197,7 @@ class _SheetAttachmentTile extends StatelessWidget {
                 Icon(Icons.error, color: Theme.of(context).colorScheme.error, size: 20),
                 IconButton(
                   icon: const Icon(Icons.refresh),
-                  onPressed: () => _startDownload(manager, context),
+                  onPressed: () => _startDownload(manager),
                 ),
               ],
             ),
@@ -235,7 +235,7 @@ class _SheetAttachmentTile extends StatelessWidget {
           return IconButton(
             icon: const Icon(Icons.download),
             tooltip: '下载',
-            onPressed: () => _startDownload(manager, context),
+            onPressed: () => _startDownload(manager),
           );
         },
       ),
