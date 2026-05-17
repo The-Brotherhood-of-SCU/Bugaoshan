@@ -2,7 +2,9 @@ import 'dart:convert';
 
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/pages/campus/downloads/shared_notice_downloads.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/download_manager.dart';
+import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -102,7 +104,7 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
 
   Future<void> _finishLoading() async {
     if (!mounted) return;
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future.delayed(const Duration(milliseconds: 50));
     final ctrl = _controller;
     if (ctrl == null) return;
     final back = await ctrl.canGoBack();
@@ -126,8 +128,6 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
       // DOMReady handler will invoke _finishLoading after JS finishes.
       return;
     }
-    //fallback
-    await Future.delayed(const Duration(seconds: 1));
     await _finishLoading();
   }
 
@@ -267,23 +267,31 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
         body: LayoutBuilder(
           builder: (context, constraints) => Stack(
             children: [
-              Opacity(
-                opacity: _loading ? 0.01 : 1,
-                child: InAppWebView(
-                  onWebViewCreated: _onWebViewCreated,
-                  initialUrlRequest: URLRequest(url: WebUri(widget.url)),
-                  initialSettings: InAppWebViewSettings(
-                    javaScriptEnabled: true,
+              InAppWebView(
+                onWebViewCreated: _onWebViewCreated,
+                initialUrlRequest: URLRequest(url: WebUri(widget.url)),
+                initialSettings: InAppWebViewSettings(javaScriptEnabled: true),
+                onDownloadStarting: _onDownloadStarting,
+                onLoadStart: _onLoadStart,
+                onLoadStop: _onLoadStop,
+                onReceivedError: (controller, request, error) {
+                  debugPrint('${widget.debugLabel} WebView error: $error');
+                },
+              ),
+              IgnorePointer(
+                ignoring: !_loading,
+                child: AnimatedOpacity(
+                  opacity: _loading ? 0.99 : 0,
+                  duration: _loading
+                      ? Duration.zero
+                      : appConfigService.cardSizeAnimationDuration.value,
+                  curve: appCurve,
+                  child: Container(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    child: const Center(child: CircularProgressIndicator()),
                   ),
-                  onDownloadStarting: _onDownloadStarting,
-                  onLoadStart: _onLoadStart,
-                  onLoadStop: _onLoadStop,
-                  onReceivedError: (controller, request, error) {
-                    debugPrint('${widget.debugLabel} WebView error: $error');
-                  },
                 ),
               ),
-              if (_loading) const Center(child: CircularProgressIndicator()),
               if (_pageAttachments.isNotEmpty)
                 NoticeAttachmentFab(
                   items: _pageAttachments,
