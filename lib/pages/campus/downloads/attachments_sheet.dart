@@ -5,6 +5,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/services/download_manager.dart';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
+import 'captcha_webview_page.dart';
 import 'file_utils.dart';
 
 /// Data for a single attachment item in the sheet.
@@ -129,13 +131,28 @@ class _SheetAttachmentTile extends StatelessWidget {
   void _open(String path) => OpenFilex.open(path);
   void _share(String path) => Share.shareXFiles([XFile(path)]);
 
-  Future<void> _startDownload(DownloadManager manager) async {
+  Future<void> _startDownload(DownloadManager manager, BuildContext context) async {
     final task = manager.enqueue(item.url, dirName, item.name, headers: downloadHeaders);
     manager.updateTask(task, status: DownloadStatus.downloading);
     try {
       final path = await downloadFile(item.url, dirName, item.name, headers: downloadHeaders);
       if (task.status != DownloadStatus.error) {
         manager.updateTask(task, status: DownloadStatus.done, downloadedPath: path);
+      }
+    } on CaptchaRequiredException catch (e) {
+      final path = await popupOrNavigate(
+        context,
+        CaptchaWebViewPage(
+          captchaUrl: e.captchaUrl,
+          dirName: dirName,
+          fileName: item.name,
+          downloadHeaders: downloadHeaders,
+        ),
+      );
+      if (path != null && context.mounted) {
+        manager.updateTask(task, status: DownloadStatus.done, downloadedPath: path as String);
+      } else {
+        manager.updateTask(task, status: DownloadStatus.error, errorMessage: '需要验证');
       }
     } catch (e) {
       manager.updateTask(task, status: DownloadStatus.error, errorMessage: e.toString());
@@ -180,7 +197,7 @@ class _SheetAttachmentTile extends StatelessWidget {
                 Icon(Icons.error, color: Theme.of(context).colorScheme.error, size: 20),
                 IconButton(
                   icon: const Icon(Icons.refresh),
-                  onPressed: () => _startDownload(manager),
+                  onPressed: () => _startDownload(manager, context),
                 ),
               ],
             ),
@@ -218,7 +235,7 @@ class _SheetAttachmentTile extends StatelessWidget {
           return IconButton(
             icon: const Icon(Icons.download),
             tooltip: '下载',
-            onPressed: () => _startDownload(manager),
+            onPressed: () => _startDownload(manager, context),
           );
         },
       ),
