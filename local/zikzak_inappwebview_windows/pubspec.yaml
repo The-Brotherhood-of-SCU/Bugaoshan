@@ -1,0 +1,33 @@
+name: zikzak_inappwebview_windows
+description: The Windows implementation of zikzak_inappwebview.
+version: 4.0.10
+homepage: https://github.com/arrrrny/zikzak_inappwebview
+
+environment:
+  sdk: ">=3.8.0 <4.0.0"
+  flutter: ">=3.29.0"
+
+flutter:
+  plugin:
+    implements: zikzak_inappwebview
+    platforms:
+      windows:
+        pluginClass: ZikzakInAppWebViewWindows
+        dartPluginClass: ZikzakInAppWebViewWindows
+        fileName: zikzak_inappwebview_windows.dart
+
+dependencies:
+  flutter:
+    sdk: flutter
+  zikzak_inappwebview_platform_interface: ^4.0.10
+  webview_windows: ^0.4.0
+  path: ^1.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+dependency_overrides:
+  zikzak_inappwebview_platform_interface: ^4.0.10
+  zikzak_inappwebview_internal_annotations: ^4.0.10
