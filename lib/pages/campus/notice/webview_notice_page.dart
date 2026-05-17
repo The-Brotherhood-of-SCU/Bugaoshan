@@ -41,6 +41,7 @@ class WebViewNoticePage extends StatefulWidget {
 class _WebViewNoticePageState extends State<WebViewNoticePage> {
   InAppWebViewController? _controller;
   String _beautifyScript = '';
+  String _domReadyScript = '';
   bool _loading = true;
   bool _canGoBack = false;
   bool _canGoForward = false;
@@ -52,6 +53,9 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
     rootBundle.loadString(widget.beautifyAsset).then((s) {
       if (mounted) setState(() => _beautifyScript = s);
     });
+    rootBundle.loadString('assets/js/dom_ready.js').then((s) {
+      _domReadyScript = s;
+    });
   }
 
   void _onWebViewCreated(InAppWebViewController controller) {
@@ -59,6 +63,10 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
     controller.addJavaScriptHandler(
       handlerName: 'AttachmentsChannel',
       callback: _onAttachmentsMessage,
+    );
+    controller.addJavaScriptHandler(
+      handlerName: 'DOMReady',
+      callback: (_) => _onDomReady(),
     );
   }
 
@@ -92,6 +100,21 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
     });
   }
 
+  Future<void> _finishLoading() async {
+    if (!mounted) return;
+    await Future.delayed(const Duration(milliseconds: 100));
+    final ctrl = _controller;
+    if (ctrl == null) return;
+    final back = await ctrl.canGoBack();
+    final forward = await ctrl.canGoForward();
+    if (!mounted) return;
+    setState(() {
+      _loading = false;
+      _canGoBack = back;
+      _canGoForward = forward;
+    });
+  }
+
   Future<void> _onLoadStop(InAppWebViewController controller, Uri? url) async {
     if (_beautifyScript.isNotEmpty) {
       try {
@@ -99,16 +122,17 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
       } catch (e) {
         debugPrint('${widget.debugLabel} beautify script error: $e');
       }
+      await controller.evaluateJavascript(source: _domReadyScript);
+      // DOMReady handler will invoke _finishLoading after JS finishes.
+      return;
     }
-    if (!mounted) return;
-    final back = await controller.canGoBack();
-    final forward = await controller.canGoForward();
-    await Future.delayed(const Duration(milliseconds: 100));
-    setState(() {
-      _loading = false;
-      _canGoBack = back;
-      _canGoForward = forward;
-    });
+    //fallback
+    await Future.delayed(const Duration(seconds: 1));
+    await _finishLoading();
+  }
+
+  Future<void> _onDomReady() async {
+    await _finishLoading();
   }
 
   @override
