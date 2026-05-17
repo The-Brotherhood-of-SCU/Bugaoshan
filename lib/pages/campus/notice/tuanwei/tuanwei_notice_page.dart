@@ -16,6 +16,7 @@ class TuanweiNoticePage extends StatelessWidget {
       heroTag: 'tuanwei_attach_fab',
       downloadHeaders: {'Referer': 'https://tuanwei.scu.edu.cn'},
       debugLabel: 'TuanweiNotice',
+      useWebViewDownload: true,
     );
   }
 }

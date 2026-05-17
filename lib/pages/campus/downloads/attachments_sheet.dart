@@ -5,8 +5,6 @@ import 'package:share_plus/share_plus.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/services/download_manager.dart';
-import 'package:bugaoshan/widgets/route/router_utils.dart';
-import 'captcha_webview_page.dart';
 import 'file_utils.dart';
 
 /// Data for a single attachment item in the sheet.
@@ -22,6 +20,7 @@ void showAttachmentsSheet(
   required List<AttachItem> items,
   required String dirName,
   Map<String, String>? downloadHeaders,
+  void Function(String url)? onWebViewDownload,
 }) {
   final manager = getIt<DownloadManager>();
   // Prime the manager: enqueue tasks for items that already exist on disk.
@@ -43,6 +42,7 @@ void showAttachmentsSheet(
       items: items,
       dirName: dirName,
       downloadHeaders: downloadHeaders,
+      onWebViewDownload: onWebViewDownload,
     ),
   );
 }
@@ -52,11 +52,13 @@ class _AttachmentsSheetContent extends StatelessWidget {
     required this.items,
     required this.dirName,
     this.downloadHeaders,
+    this.onWebViewDownload,
   });
 
   final List<AttachItem> items;
   final String dirName;
   final Map<String, String>? downloadHeaders;
+  final void Function(String url)? onWebViewDownload;
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +100,7 @@ class _AttachmentsSheetContent extends StatelessWidget {
                 item: items[index],
                 dirName: dirName,
                 downloadHeaders: downloadHeaders,
+                onWebViewDownload: onWebViewDownload,
               ),
             ),
           ),
@@ -112,11 +115,13 @@ class _SheetAttachmentTile extends StatelessWidget {
     required this.item,
     required this.dirName,
     this.downloadHeaders,
+    this.onWebViewDownload,
   });
 
   final AttachItem item;
   final String dirName;
   final Map<String, String>? downloadHeaders;
+  final void Function(String url)? onWebViewDownload;
 
   IconData _fileIcon() {
     final lower = item.name.toLowerCase();
@@ -133,26 +138,19 @@ class _SheetAttachmentTile extends StatelessWidget {
 
   Future<void> _startDownload(DownloadManager manager) async {
     final task = manager.enqueue(item.url, dirName, item.name, headers: downloadHeaders);
+
+    if (onWebViewDownload != null) {
+      // Let the host WebView handle the download with its session cookies.
+      // The WebView's onDownloadStartRequest will update the manager when done.
+      onWebViewDownload!(item.url);
+      return;
+    }
+
     manager.updateTask(task, status: DownloadStatus.downloading);
     try {
       final path = await downloadFile(item.url, dirName, item.name, headers: downloadHeaders);
       if (task.status != DownloadStatus.error) {
         manager.updateTask(task, status: DownloadStatus.done, downloadedPath: path);
-      }
-    } on CaptchaRequiredException catch (e) {
-      final path = await popupOrNavigate(
-        logicRootContext,
-        CaptchaWebViewPage(
-          captchaUrl: e.captchaUrl,
-          dirName: dirName,
-          fileName: item.name,
-          downloadHeaders: downloadHeaders,
-        ),
-      );
-      if (path != null) {
-        manager.updateTask(task, status: DownloadStatus.done, downloadedPath: path as String);
-      } else {
-        manager.updateTask(task, status: DownloadStatus.error, errorMessage: '需要验证');
       }
     } catch (e) {
       manager.updateTask(task, status: DownloadStatus.error, errorMessage: e.toString());

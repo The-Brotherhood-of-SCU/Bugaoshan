@@ -1,11 +1,13 @@
 import 'dart:convert';
 
+import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/pages/campus/downloads/shared_notice_downloads.dart';
+import 'package:bugaoshan/services/download_manager.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:webview_all/webview_all.dart';
 
 /// Shared WebView-based notice page used by party/XGB and tuanwei/Youth SCU.
 class WebViewNoticePage extends StatefulWidget {
@@ -19,6 +21,7 @@ class WebViewNoticePage extends StatefulWidget {
     required this.heroTag,
     required this.debugLabel,
     this.downloadHeaders,
+    this.useWebViewDownload = false,
   });
 
   final String url;
@@ -29,13 +32,14 @@ class WebViewNoticePage extends StatefulWidget {
   final String heroTag;
   final String debugLabel;
   final Map<String, String>? downloadHeaders;
+  final bool useWebViewDownload;
 
   @override
   State<WebViewNoticePage> createState() => _WebViewNoticePageState();
 }
 
 class _WebViewNoticePageState extends State<WebViewNoticePage> {
-  late final WebViewController _controller;
+  InAppWebViewController? _controller;
   String _beautifyScript = '';
   bool _loading = true;
   bool _canGoBack = false;
@@ -48,54 +52,20 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
     rootBundle.loadString(widget.beautifyAsset).then((s) {
       if (mounted) setState(() => _beautifyScript = s);
     });
-    _initWebView();
   }
 
-  void _initWebView() {
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..addJavaScriptChannel(
-        'AttachmentsChannel',
-        onMessageReceived: _onAttachmentsMessage,
-      )
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (_) {
-            if (!mounted) return;
-            setState(() {
-              _loading = true;
-              _pageAttachments = [];
-            });
-          },
-          onPageFinished: (_) async {
-            if (_beautifyScript.isNotEmpty) {
-              try {
-                await _controller.runJavaScript(_beautifyScript);
-              } catch (e) {
-                debugPrint('${widget.debugLabel} beautify script error: $e');
-              }
-            }
-            if (!mounted) return;
-            final back = await _controller.canGoBack();
-            final forward = await _controller.canGoForward();
-            await Future.delayed(const Duration(milliseconds: 100));
-            setState(() {
-              _loading = false;
-              _canGoBack = back;
-              _canGoForward = forward;
-            });
-          },
-          onWebResourceError: (error) {
-            debugPrint('${widget.debugLabel} WebView error: $error');
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse(widget.url));
+  void _onWebViewCreated(InAppWebViewController controller) {
+    _controller = controller;
+    controller.addJavaScriptHandler(
+      handlerName: 'AttachmentsChannel',
+      callback: _onAttachmentsMessage,
+    );
   }
 
-  void _onAttachmentsMessage(JavaScriptMessage message) {
+  void _onAttachmentsMessage(List<dynamic> args) {
+    if (args.isEmpty) return;
     try {
-      final data = jsonDecode(message.message) as List;
+      final data = jsonDecode(args[0] as String) as List;
       final attachments = data
           .map(
             (e) => AttachItem(
@@ -110,32 +80,108 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
     }
   }
 
+  void _onWebViewDownload(String url) {
+    _controller?.loadUrl(urlRequest: URLRequest(url: WebUri(url)));
+  }
+
+  Future<void> _onLoadStart(InAppWebViewController controller, Uri? url) async {
+    if (!mounted) return;
+    setState(() {
+      _loading = true;
+      _pageAttachments = [];
+    });
+  }
+
+  Future<void> _onLoadStop(InAppWebViewController controller, Uri? url) async {
+    if (_beautifyScript.isNotEmpty) {
+      try {
+        await controller.evaluateJavascript(source: _beautifyScript);
+      } catch (e) {
+        debugPrint('${widget.debugLabel} beautify script error: $e');
+      }
+    }
+    if (!mounted) return;
+    final back = await controller.canGoBack();
+    final forward = await controller.canGoForward();
+    await Future.delayed(const Duration(milliseconds: 100));
+    setState(() {
+      _loading = false;
+      _canGoBack = back;
+      _canGoForward = forward;
+    });
+  }
+
   @override
   void dispose() {
-    // ignore: unused_result
-    _controller.loadRequest(Uri.parse('about:blank'));
+    _controller?.loadUrl(urlRequest: URLRequest(url: WebUri('about:blank')));
     super.dispose();
   }
 
+  void _onDownloadStartRequest(
+    InAppWebViewController controller,
+    DownloadStartRequest request,
+  ) async {
+    final url = request.url.toString();
+    try {
+      final cookies = await CookieManager.instance().getCookies(
+        url: WebUri(url),
+      );
+      final headers = <String, String>{
+        if (widget.downloadHeaders != null) ...widget.downloadHeaders!,
+        if (cookies.isNotEmpty)
+          'Cookie': cookies.map((c) => '${c.name}=${c.value}').join('; '),
+      };
+      final path = await downloadFile(
+        url,
+        widget.attachmentDir,
+        request.suggestedFilename ?? 'download',
+        headers: headers,
+      );
+
+      // Sync with DownloadManager so the bottom-sheet UI reflects completion.
+      final manager = getIt<DownloadManager>();
+      for (final t in manager.tasks.values) {
+        if (t.url == url && t.dirName == widget.attachmentDir) {
+          manager.updateTask(t, status: DownloadStatus.done, downloadedPath: path);
+          break;
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('下载完成')));
+      }
+    } catch (e) {
+      debugPrint('${widget.debugLabel} download error: $e');
+    }
+  }
+
   Future<void> _openInBrowser() async {
-    final current = await _controller.currentUrl();
-    final uri = Uri.parse(current ?? widget.url);
+    final ctrl = _controller;
+    if (ctrl == null) return;
+    final current = await ctrl.getUrl();
+    final uri = current ?? Uri.parse(widget.url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 
   Future<void> _goBack() async {
-    if (await _controller.canGoBack()) {
+    final ctrl = _controller;
+    if (ctrl == null) return;
+    if (await ctrl.canGoBack()) {
       setState(() => _loading = true);
-      await _controller.goBack();
+      await ctrl.goBack();
     }
   }
 
   Future<void> _goForward() async {
-    if (await _controller.canGoForward()) {
+    final ctrl = _controller;
+    if (ctrl == null) return;
+    if (await ctrl.canGoForward()) {
       setState(() => _loading = true);
-      await _controller.goForward();
+      await ctrl.goForward();
     }
   }
 
@@ -198,7 +244,19 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
             children: [
               Opacity(
                 opacity: _loading ? 0.01 : 1,
-                child: WebViewWidget(controller: _controller),
+                child: InAppWebView(
+                  onWebViewCreated: _onWebViewCreated,
+                  initialUrlRequest: URLRequest(url: WebUri(widget.url)),
+                  initialSettings: InAppWebViewSettings(
+                    javaScriptEnabled: true,
+                  ),
+                  onDownloadStartRequest: _onDownloadStartRequest,
+                  onLoadStart: _onLoadStart,
+                  onLoadStop: _onLoadStop,
+                  onReceivedError: (controller, request, error) {
+                    debugPrint('${widget.debugLabel} WebView error: $error');
+                  },
+                ),
               ),
               if (_loading) const Center(child: CircularProgressIndicator()),
               if (_pageAttachments.isNotEmpty)
@@ -206,6 +264,9 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
                   items: _pageAttachments,
                   dirName: widget.attachmentDir,
                   downloadHeaders: widget.downloadHeaders,
+                  onWebViewDownload: widget.useWebViewDownload
+                      ? _onWebViewDownload
+                      : null,
                   boundarySize: Size(
                     constraints.maxWidth,
                     constraints.maxHeight,
