@@ -39,7 +39,7 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
   bool _loadingMore = false;
   bool _hasMore = true;
   String? _error;
-  List<_NoticeEntry> _entries = [];
+  List<NoticeEntry> _entries = [];
   String? _nextPageUrl = _noticeListUrl;
   final Set<String> _seenUrls = {};
   bool _searchMode = false;
@@ -234,15 +234,15 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
     }
   }
 
-  ({List<_NoticeEntry> entries, int total}) _parseSearchResults(String html) {
-    final entries = <_NoticeEntry>[];
+  ({List<NoticeEntry> entries, int total}) _parseSearchResults(String html) {
+    final entries = <NoticeEntry>[];
     for (final match in _searchItemReg.allMatches(html)) {
       final url = _normalizeNoticeUrl(match.group(1)!, baseUrl: _searchUrl);
       final title = _stripTags(match.group(2)!);
       final dateStr = match.group(3)!;
       final date = DateTime.tryParse(dateStr);
       if (date == null || title.isEmpty) continue;
-      entries.add(_NoticeEntry(title: title, url: url, date: date));
+      entries.add(NoticeEntry(title: title, url: url, date: date));
     }
     // Extract total count
     var total = entries.length;
@@ -272,8 +272,8 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
     _searchNotices();
   }
 
-  List<_NoticeEntry> _parseNotices(String html, {required String pageUrl}) {
-    final entries = <_NoticeEntry>[];
+  List<NoticeEntry> _parseNotices(String html, {required String pageUrl}) {
+    final entries = <NoticeEntry>[];
     for (final match in _listItemReg.allMatches(html)) {
       final url = _normalizeNoticeUrl(match.group(1)!, baseUrl: pageUrl);
       final monthDay = match.group(2)!;
@@ -281,7 +281,7 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
       final title = _stripTags(match.group(4)!);
       final date = _parseDate(year, monthDay);
       if (date == null || title.isEmpty) continue;
-      entries.add(_NoticeEntry(title: title, url: url, date: date));
+      entries.add(NoticeEntry(title: title, url: url, date: date));
     }
 
     return entries;
@@ -315,7 +315,7 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
     return DateTime(y, month, day);
   }
 
-  List<_NoticeEntry> get _filteredEntries => _entries;
+  List<NoticeEntry> get _filteredEntries => _entries;
 
   @override
   Widget build(BuildContext context) {
@@ -473,7 +473,7 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
     );
   }
 
-  Widget _buildDateBadge(BuildContext context, _NoticeEntry entry) {
+  Widget _buildDateBadge(BuildContext context, NoticeEntry entry) {
     final month = entry.date.month.toString().padLeft(2, '0');
     final day = entry.date.day.toString().padLeft(2, '0');
 

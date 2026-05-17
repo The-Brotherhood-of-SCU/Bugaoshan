@@ -398,26 +398,28 @@ class BindRoomDialogState extends State<BindRoomDialog> {
       return placeholder();
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(l10n.selectCampus, style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 12),
-        ..._campuses.map(
-          (campus) => RadioListTile<CampusItem>(
-            title: Text(campus.name),
-            value: campus,
-            groupValue: _selectedCampus,
-            onChanged: (value) {
-              setState(() {
-                _selectedCampus = value;
-                _step = 1;
-              });
-              _loadBuildings();
-            },
+    return RadioGroup<CampusItem>(
+      groupValue: _selectedCampus,
+      onChanged: (value) {
+        setState(() {
+          _selectedCampus = value;
+          _step = 1;
+        });
+        if (value != null) _loadBuildings();
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l10n.selectCampus, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 12),
+          ..._campuses.map(
+            (campus) => RadioListTile<CampusItem>(
+              title: Text(campus.name),
+              value: campus,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -430,29 +432,31 @@ class BindRoomDialogState extends State<BindRoomDialog> {
       return placeholder();
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          l10n.selectBuilding,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 12),
-        ..._buildings.map(
-          (building) => RadioListTile<BuildingItem>(
-            title: Text(building.name),
-            value: building,
-            groupValue: _selectedBuilding,
-            onChanged: (value) {
-              setState(() {
-                _selectedBuilding = value;
-                _step = 2;
-              });
-              _loadUnits();
-            },
+    return RadioGroup<BuildingItem>(
+      groupValue: _selectedBuilding,
+      onChanged: (value) {
+        setState(() {
+          _selectedBuilding = value;
+          _step = 2;
+        });
+        if (value != null) _loadUnits();
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.selectBuilding,
+            style: Theme.of(context).textTheme.titleMedium,
           ),
-        ),
-      ],
+          const SizedBox(height: 12),
+          ..._buildings.map(
+            (building) => RadioListTile<BuildingItem>(
+              title: Text(building.name),
+              value: building,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -461,25 +465,27 @@ class BindRoomDialogState extends State<BindRoomDialog> {
       return placeholder();
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(l10n.selectUnit, style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 12),
-        ..._units.map(
-          (unit) => RadioListTile<UnitItem>(
-            title: Text(unit.name),
-            value: unit,
-            groupValue: _selectedUnit,
-            onChanged: (value) {
-              setState(() {
-                _selectedUnit = value;
-                _step = _hasUnits ? 3 : 2;
-              });
-            },
+    return RadioGroup<UnitItem>(
+      groupValue: _selectedUnit,
+      onChanged: (value) {
+        setState(() {
+          _selectedUnit = value;
+          _step = _hasUnits ? 3 : 2;
+        });
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l10n.selectUnit, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 12),
+          ..._units.map(
+            (unit) => RadioListTile<UnitItem>(
+              title: Text(unit.name),
+              value: unit,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

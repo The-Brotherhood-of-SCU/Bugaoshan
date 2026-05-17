@@ -7,7 +7,7 @@ part of 'campus_notice_page.dart';
 class CampusNoticeDetailPage extends StatefulWidget {
   const CampusNoticeDetailPage({super.key, required this.entry});
 
-  final _NoticeEntry entry;
+  final NoticeEntry entry;
 
   @override
   State<CampusNoticeDetailPage> createState() => _CampusNoticeDetailPageState();
@@ -76,6 +76,7 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
         if (seen.add(a.url)) attachments.add(a);
       }
 
+      if (!mounted) return;
       final widgets = _buildContentWidgets(
         context,
         cleanedHtml,

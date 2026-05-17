@@ -47,6 +47,7 @@ class SessionExpiryHandler {
     }
 
     // 5. 自动登录未启用或失败，弹出会话过期提示 Dialog
+    if (!effectiveContext.mounted) return false;
     final result = await showDialog<bool>(
       context: effectiveContext,
       barrierDismissible: false, // 防止用户点击外部关闭

@@ -1,12 +1,12 @@
 part of 'campus_notice_page.dart';
 
-class _NoticeEntry {
+class NoticeEntry {
   final String title;
   final String url;
   final DateTime date;
   final String normalizedTitle;
 
-  _NoticeEntry({
+  NoticeEntry({
     required this.title,
     required this.url,
     required this.date,
