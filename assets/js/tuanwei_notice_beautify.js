@@ -156,7 +156,8 @@
     a.style.cssText = 'display:inline-block !important;padding:10px 16px !important;margin:6px 0 !important;background:#d32f2f !important;color:#fff !important;border-radius:8px !important;text-decoration:none !important;font-size:14px !important;';
     a.innerHTML = '📎 ' + name;
   });
-  if (items.length > 0) {
-    window.flutter_inappwebview.callHandler('AttachmentsChannel', JSON.stringify(items));
-  }
+  // 不集成，让用户自己点击下载
+  // if (items.length > 0) {
+  //   window.flutter_inappwebview.callHandler('AttachmentsChannel', JSON.stringify(items));
+  // }
 })();
