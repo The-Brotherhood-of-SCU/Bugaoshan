@@ -183,7 +183,7 @@
   `;
   document.head.appendChild(css);
 
-  // Extract download attachment links and send to Flutter.
+  // Extract download attachment links, style them, and send to Flutter.
   var items = [];
   document.querySelectorAll('a[href*="download.jsp"]').forEach(function(a) {
     var href = a.getAttribute('href');
@@ -191,9 +191,10 @@
     if (href.startsWith('/')) href = window.location.origin + href;
     var name = a.textContent.trim();
     items.push({url: href, name: btoa(unescape(encodeURIComponent(name)))});
-    a.style.display = 'none';
+    a.style.cssText = 'display:inline-block !important;padding:10px 16px !important;margin:6px 0 !important;background:#d32f2f !important;color:#fff !important;border-radius:8px !important;text-decoration:none !important;font-size:14px !important;';
+    a.innerHTML = '📎 ' + name;
   });
   if (items.length > 0) {
-    AttachmentsChannel.postMessage(JSON.stringify(items));
+    window.flutter_inappwebview.callHandler('AttachmentsChannel', JSON.stringify(items));
   }
 })();

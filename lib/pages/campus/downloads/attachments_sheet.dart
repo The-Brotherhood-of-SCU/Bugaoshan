@@ -20,6 +20,7 @@ void showAttachmentsSheet(
   required List<AttachItem> items,
   required String dirName,
   Map<String, String>? downloadHeaders,
+  void Function(String url)? onWebViewDownload,
 }) {
   final manager = getIt<DownloadManager>();
   // Prime the manager: enqueue tasks for items that already exist on disk.
@@ -41,6 +42,7 @@ void showAttachmentsSheet(
       items: items,
       dirName: dirName,
       downloadHeaders: downloadHeaders,
+      onWebViewDownload: onWebViewDownload,
     ),
   );
 }
@@ -50,11 +52,13 @@ class _AttachmentsSheetContent extends StatelessWidget {
     required this.items,
     required this.dirName,
     this.downloadHeaders,
+    this.onWebViewDownload,
   });
 
   final List<AttachItem> items;
   final String dirName;
   final Map<String, String>? downloadHeaders;
+  final void Function(String url)? onWebViewDownload;
 
   @override
   Widget build(BuildContext context) {
@@ -96,6 +100,7 @@ class _AttachmentsSheetContent extends StatelessWidget {
                 item: items[index],
                 dirName: dirName,
                 downloadHeaders: downloadHeaders,
+                onWebViewDownload: onWebViewDownload,
               ),
             ),
           ),
@@ -110,11 +115,13 @@ class _SheetAttachmentTile extends StatelessWidget {
     required this.item,
     required this.dirName,
     this.downloadHeaders,
+    this.onWebViewDownload,
   });
 
   final AttachItem item;
   final String dirName;
   final Map<String, String>? downloadHeaders;
+  final void Function(String url)? onWebViewDownload;
 
   IconData _fileIcon() {
     final lower = item.name.toLowerCase();
@@ -130,16 +137,14 @@ class _SheetAttachmentTile extends StatelessWidget {
   void _share(String path) => Share.shareXFiles([XFile(path)]);
 
   Future<void> _startDownload(DownloadManager manager) async {
-    final task = manager.enqueue(item.url, dirName, item.name, headers: downloadHeaders);
-    manager.updateTask(task, status: DownloadStatus.downloading);
-    try {
-      final path = await downloadFile(item.url, dirName, item.name, headers: downloadHeaders);
-      if (task.status != DownloadStatus.error) {
-        manager.updateTask(task, status: DownloadStatus.done, downloadedPath: path);
-      }
-    } catch (e) {
-      manager.updateTask(task, status: DownloadStatus.error, errorMessage: e.toString());
+    if (onWebViewDownload != null) {
+      // Let the host WebView handle the download with its session cookies.
+      // The WebView's onDownloadStarting will update the manager when done.
+      manager.enqueue(item.url, dirName, item.name, headers: downloadHeaders);
+      onWebViewDownload!(item.url);
+      return;
     }
+    await manager.download(item.url, dirName, item.name, headers: downloadHeaders);
   }
 
   @override

@@ -12,6 +12,9 @@ const kNoticeAttachmentDir = 'notice_attachments';
 /// Subdirectory name under `Bugaoshan/` for party notice downloads.
 const kPartyAttachmentDir = 'party_notices';
 
+/// Subdirectory name under `Bugaoshan/` for tuanwei notice downloads.
+const kTuanweiAttachmentDir = 'tuanwei_notices';
+
 // ── File utilities ─────────────────────────────────────────────────────────────────
 
 Future<Directory> getNoticeBaseDir() async {
@@ -60,10 +63,7 @@ Future<String> downloadFile(
     if (headers != null) ...headers,
   };
 
-  final response = await http.get(
-    Uri.parse(url),
-    headers: mergedHeaders,
-  );
+  final response = await http.get(Uri.parse(url), headers: mergedHeaders);
   if (response.statusCode != 200) {
     throw Exception('Download failed: HTTP ${response.statusCode}');
   }

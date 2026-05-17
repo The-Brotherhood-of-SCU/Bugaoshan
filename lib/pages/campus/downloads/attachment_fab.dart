@@ -13,6 +13,7 @@ class NoticeAttachmentFab extends StatefulWidget {
     required this.boundarySize,
     this.downloadHeaders,
     this.heroTag,
+    this.onWebViewDownload,
   });
 
   final List<AttachItem> items;
@@ -20,6 +21,7 @@ class NoticeAttachmentFab extends StatefulWidget {
   final Map<String, String>? downloadHeaders;
   final Size boundarySize;
   final String? heroTag;
+  final void Function(String url)? onWebViewDownload;
 
   @override
   State<NoticeAttachmentFab> createState() => _NoticeAttachmentFabState();
@@ -79,6 +81,7 @@ class _NoticeAttachmentFabState extends State<NoticeAttachmentFab> {
               items: widget.items,
               dirName: widget.dirName,
               downloadHeaders: widget.downloadHeaders,
+              onWebViewDownload: widget.onWebViewDownload,
             );
           }
         },
