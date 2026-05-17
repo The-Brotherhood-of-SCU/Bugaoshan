@@ -6,7 +6,7 @@ import 'package:bugaoshan/services/download_manager.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:zikzak_inappwebview/zikzak_inappwebview.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Shared WebView-based notice page used by party/XGB and tuanwei/Youth SCU.

@@ -43,7 +43,7 @@ dependencies:
   share_plus: ^10.0.0
   gal: ^2.3.0
   open_filex: ^4.7.0
-  flutter_inappwebview: ^6.1.5
+  zikzak_inappwebview: ^4.0.10
 
 dev_dependencies:
   flutter_test:
