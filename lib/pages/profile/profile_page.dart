@@ -71,8 +71,19 @@ class _ProfilePageState extends State<ProfilePage> {
     _labelsNotifier.loading = true;
 
     try {
+      final authProvider = getIt<ScuAuthProvider>();
+      final accessToken = authProvider.accessToken;
+      if (accessToken == null) {
+        _labelsNotifier.loading = false;
+        return;
+      }
+      final bindResult = await authProvider.service.bindSession();
+
       final authService = ScuMicroserviceAuthService();
-      final client = await authService.getAuthenticatedClient();
+      final client = await authService.getAuthenticatedClient(
+        accessToken: accessToken,
+        bindSessionResult: bindResult,
+      );
       if (client == null) {
         _labelsNotifier.loading = false;
         return;

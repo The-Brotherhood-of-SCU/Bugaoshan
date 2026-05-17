@@ -64,7 +64,13 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
     });
 
     try {
-      final client = await _authService.getAuthenticatedClient();
+      final auth = getIt<ScuAuthProvider>();
+      final accessToken = auth.accessToken!;
+      final bindResult = await auth.service.bindSession();
+      final client = await _authService.getAuthenticatedClient(
+        accessToken: accessToken,
+        bindSessionResult: bindResult,
+      );
       if (client == null) {
         setState(() {
           _loading = false;
@@ -139,7 +145,13 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
     if (confirm != true) return;
 
     try {
-      final client = await _authService.getAuthenticatedClient();
+      final auth = getIt<ScuAuthProvider>();
+      final accessToken = auth.accessToken!;
+      final bindResult = await auth.service.bindSession();
+      final client = await _authService.getAuthenticatedClient(
+        accessToken: accessToken,
+        bindSessionResult: bindResult,
+      );
       if (client == null) {
         _showSnackBar('认证失败', isError: true);
         return;

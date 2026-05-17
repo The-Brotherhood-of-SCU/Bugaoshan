@@ -1,12 +1,11 @@
-import 'package:http/http.dart' as http;
-import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/services/scu_auth_service.dart';
 
 class ScuMicroserviceAuthService {
-  Future<http.Client?> getAuthenticatedClient() async {
-    final auth = getIt<ScuAuthProvider>();
-    if (auth.accessToken == null) return null;
-
-    return await auth.service.bindSession();
+  Future<CookieClient?> getAuthenticatedClient({
+    required String accessToken,
+    required CookieClient? bindSessionResult,
+  }) async {
+    if (accessToken.isEmpty) return null;
+    return bindSessionResult;
   }
 }

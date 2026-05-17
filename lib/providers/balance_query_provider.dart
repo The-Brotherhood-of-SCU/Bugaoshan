@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/balance_query_service.dart';
 
@@ -180,7 +182,16 @@ class BalanceQueryProvider extends ChangeNotifier {
 
   Future<http.Client> _ensureClient() async {
     if (_client != null) return _client!;
-    _client = await _service.getAuthenticatedClient();
+    final auth = getIt<ScuAuthProvider>();
+    final accessToken = auth.accessToken;
+    if (accessToken == null) {
+      throw BalanceQueryAuthException('notLoggedIn');
+    }
+    final bindResult = await auth.service.bindSession();
+    _client = await _service.getAuthenticatedClient(
+      accessToken: accessToken,
+      bindSessionResult: bindResult,
+    );
     return _client!;
   }
 
