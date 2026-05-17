@@ -162,9 +162,9 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
         headers: headers,
       );
       // Navigate back after download — the WebView left the notice page.
-      if (await controller.canGoBack()) {
-        await controller.goBack();
-      }
+      // if (await controller.canGoBack()) {
+      //   await controller.goBack();
+      // }
       if (mounted) {
         ScaffoldMessenger.of(
           context,
