@@ -139,7 +139,7 @@ class _SheetAttachmentTile extends StatelessWidget {
   Future<void> _startDownload(DownloadManager manager) async {
     if (onWebViewDownload != null) {
       // Let the host WebView handle the download with its session cookies.
-      // The WebView's onDownloadStartRequest will update the manager when done.
+      // The WebView's onDownloadStarting will update the manager when done.
       manager.enqueue(item.url, dirName, item.name, headers: downloadHeaders);
       onWebViewDownload!(item.url);
       return;

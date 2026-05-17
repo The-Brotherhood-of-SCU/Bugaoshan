@@ -307,6 +307,78 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_inappwebview:
+    dependency: "direct main"
+    description:
+      name: flutter_inappwebview
+      sha256: "3952d116ee93bad2946401377e7ade87b5ef200e95ecb5ba1affa1b6329a6867"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "6.2.0-beta.3"
+  flutter_inappwebview_android:
+    dependency: transitive
+    description:
+      name: flutter_inappwebview_android
+      sha256: "8dfb76bd4e507112c3942c2272eeb01fab2e42be11374e5eb226f58698e7a04b"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.2.0-beta.3"
+  flutter_inappwebview_internal_annotations:
+    dependency: transitive
+    description:
+      name: flutter_inappwebview_internal_annotations
+      sha256: e30fba942e3debea7b7e6cdd4f0f59ce89dd403a9865193e3221293b6d1544c6
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.3.0"
+  flutter_inappwebview_ios:
+    dependency: transitive
+    description:
+      name: flutter_inappwebview_ios
+      sha256: ae8a78829398771be863aa3c8804a9d40728e1815e66c9c966f86d2cc3ae4fd9
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.2.0-beta.3"
+  flutter_inappwebview_linux:
+    dependency: transitive
+    description:
+      name: flutter_inappwebview_linux
+      sha256: "2e1a3b09bb911fb5a8bb155cb7f1eb1428a19b6e20363b9db48beef428b8cef5"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.1.0-beta.1"
+  flutter_inappwebview_macos:
+    dependency: transitive
+    description:
+      name: flutter_inappwebview_macos
+      sha256: "545148cb5c46475ce669ab21621e9f2ad66e05f8e80b2cf49d4018879ab52393"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.2.0-beta.3"
+  flutter_inappwebview_platform_interface:
+    dependency: transitive
+    description:
+      name: flutter_inappwebview_platform_interface
+      sha256: e3522c76e6760d1c0a9ff690e30e1503f226783d3277fa4d26675911977e9766
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.4.0-beta.3"
+  flutter_inappwebview_web:
+    dependency: transitive
+    description:
+      name: flutter_inappwebview_web
+      sha256: e98b8875ccb6a3fd255873318db45c18ab135ed0ed22d20169abad9f5c810eb9
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.2.0-beta.3"
+  flutter_inappwebview_windows:
+    dependency: transitive
+    description:
+      name: flutter_inappwebview_windows
+      sha256: "902edd6f6326952af822e21aa928f7426d723d45c94c15e6ce3c2d5640d28ad7"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.7.0-beta.3"
   flutter_launcher_icons:
     dependency: "direct dev"
     description:
@@ -1364,14 +1436,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.1.0"
-  webview_windows:
-    dependency: transitive
-    description:
-      name: webview_windows
-      sha256: "47fcad5875a45db29dbb5c9e6709bf5c88dcc429049872701343f91ed7255730"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.4.0"
   win32:
     dependency: transitive
     description:
@@ -1420,78 +1484,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.1.3"
-  zikzak_inappwebview:
-    dependency: "direct main"
-    description:
-      name: zikzak_inappwebview
-      sha256: "969d64221c6b4dce96c1b616703823b9d62bec11760a158d5c85438afdfee9fb"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "4.0.10"
-  zikzak_inappwebview_android:
-    dependency: transitive
-    description:
-      name: zikzak_inappwebview_android
-      sha256: "0225641d7626a208559ad4db78f6777aa137f6c34f19535617b556fc44dccaf5"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "4.0.10"
-  zikzak_inappwebview_internal_annotations:
-    dependency: transitive
-    description:
-      name: zikzak_inappwebview_internal_annotations
-      sha256: "15ec738f03ee4cad2362d6b79aac23f39e8a8d48546def641e2fbdf0533d060f"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "4.0.10"
-  zikzak_inappwebview_ios:
-    dependency: transitive
-    description:
-      name: zikzak_inappwebview_ios
-      sha256: fab50014bc1af97a9c654ed38ddfc84d09819b2b6ebc17e229ff97905d1cb9d2
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "4.0.10"
-  zikzak_inappwebview_linux:
-    dependency: transitive
-    description:
-      name: zikzak_inappwebview_linux
-      sha256: be253882deca010107cd2c8ffd7a5fad7d32e7e59c59bd3c4055443c36bae716
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "4.0.10"
-  zikzak_inappwebview_macos:
-    dependency: transitive
-    description:
-      name: zikzak_inappwebview_macos
-      sha256: "9699906a296b360404faad36ce834fae55c8075df73ed3faf91cee125892fd5d"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "4.0.10"
-  zikzak_inappwebview_platform_interface:
-    dependency: transitive
-    description:
-      name: zikzak_inappwebview_platform_interface
-      sha256: e51d0fc1fa03a5616a9545aa418999b512f864bfb3cbb9bdc554a43338156a95
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "4.0.10"
-  zikzak_inappwebview_web:
-    dependency: transitive
-    description:
-      name: zikzak_inappwebview_web
-      sha256: ccc1427867f96ad190288d019835de2c25935bccb5319b20b98a533685699c09
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "4.0.10"
-  zikzak_inappwebview_windows:
-    dependency: transitive
-    description:
-      name: zikzak_inappwebview_windows
-      sha256: "99f6aa2803e72097fe61baae8f3abcb31fa7deb8ad9b107ab8b2cf724f1f5abe"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "4.0.10"
 sdks:
   dart: ">=3.11.0 <4.0.0"
   flutter: ">=3.38.4"

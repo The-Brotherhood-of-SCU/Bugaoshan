@@ -6,7 +6,7 @@ import 'package:bugaoshan/services/download_manager.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:zikzak_inappwebview/zikzak_inappwebview.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Shared WebView-based notice page used by party/XGB and tuanwei/Youth SCU.
@@ -117,7 +117,7 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
     super.dispose();
   }
 
-  void _onDownloadStartRequest(
+  Future<DownloadStartResponse?> _onDownloadStarting(
     InAppWebViewController controller,
     DownloadStartRequest request,
   ) async {
@@ -145,6 +145,7 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
     } catch (e) {
       debugPrint('${widget.debugLabel} download error: $e');
     }
+    return DownloadStartResponse(handled: true);
   }
 
   Future<void> _openInBrowser() async {
@@ -240,7 +241,7 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
                   initialSettings: InAppWebViewSettings(
                     javaScriptEnabled: true,
                   ),
-                  onDownloadStartRequest: _onDownloadStartRequest,
+                  onDownloadStarting: _onDownloadStarting,
                   onLoadStart: _onLoadStart,
                   onLoadStop: _onLoadStop,
                   onReceivedError: (controller, request, error) {
