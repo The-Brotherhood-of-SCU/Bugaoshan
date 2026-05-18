@@ -40,7 +40,8 @@ jobs:
           apt-get update
           apt-get install -y \
             git clang cmake ninja-build pkg-config \
-            libgtk-3-dev libsecret-1-dev libepoxy-dev libwayland-dev \
+            libgtk-3-dev liblzma-dev libstdc++-12-dev \
+            libsecret-1-dev libepoxy-dev libwayland-dev \
             libwpewebkit-2.0-dev
 
       - name: Setup build environment
