@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
+import 'package:bugaoshan/utils/constants.dart';
+import 'package:bugaoshan/utils/json_utils.dart';
 import 'package:bugaoshan/utils/sm2_crypto.dart';
 
 /// 四川大学统一身份认证 Service
@@ -14,9 +16,7 @@ class ScuAuthService {
     'Content-Type': 'application/json;charset=UTF-8',
     'Origin': _base,
     'Referer': '$_base/frontend/login',
-    'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-        '(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0',
+    'User-Agent': kDefaultUserAgent,
   };
 
   String? _accessToken;
@@ -33,7 +33,7 @@ class ScuAuthService {
     );
     final resp = await http.get(uri, headers: _headers);
 
-    final json = _parseJson(resp.body, 'captcha');
+    final json = parseJson(resp.body, 'captcha', (msg) => ScuLoginException(msg));
     final data = json['data'];
     if (data == null) {
       throw ScuLoginException('验证码接口返回异常: ${resp.body}');
@@ -71,7 +71,7 @@ class ScuAuthService {
         body: '{}',
       );
       lastSm2Body = sm2Resp.body;
-      final sm2Json = _parseJson(sm2Resp.body, 'sm2_key');
+      final sm2Json = parseJson(sm2Resp.body, 'sm2_key', (msg) => ScuLoginException(msg));
       sm2Data = sm2Json['data'] as Map<String, dynamic>?;
       if (sm2Data != null &&
           sm2Data['publicKey'] != null &&
@@ -116,7 +116,7 @@ class ScuAuthService {
       body: payload,
     );
 
-    final result = _parseJson(tokenResp.body, 'rest_token');
+    final result = parseJson(tokenResp.body, 'rest_token', (msg) => ScuLoginException(msg));
     if (result['success'] != true) {
       final msg =
           result['message']?.toString() ?? result['msg']?.toString() ?? '登录失败';
@@ -152,7 +152,7 @@ class ScuAuthService {
       headers: {..._headers, 'Authorization': 'Bearer $_accessToken'},
       body: '{}',
     );
-    final sessionResult = _parseJson(sessionResp.body, 'session/save');
+    final sessionResult = parseJson(sessionResp.body, 'session/save', (msg) => ScuLoginException(msg));
     if (sessionResult['success'] != true) {
       throw ScuLoginException('session/save 失败: ${sessionResp.body}');
     }
@@ -205,10 +205,7 @@ class ScuAuthService {
         },
       );
       final body = resp.body.trim();
-      if (body.startsWith('<html') && body.contains('login') ||
-          resp.statusCode == 302) {
-        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
-      }
+      _checkSessionExpiry(body, resp.statusCode);
       // 匹配 "2025-2026 春  第8周   星期五" 中的周数
       final match = RegExp(r'第(\d+)周').firstMatch(body);
       if (match == null) {
@@ -236,10 +233,7 @@ class ScuAuthService {
         },
       );
       final body = resp.body.trim();
-      if (body.startsWith('<html') && body.contains('login') ||
-          resp.statusCode == 302) {
-        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
-      }
+      _checkSessionExpiry(body, resp.statusCode);
       final regex = RegExp(
         r'<option[^>]+value="([^"]+)"[^>]*>(.*?)</option>',
         dotAll: true,
@@ -281,10 +275,8 @@ class ScuAuthService {
         body: 'planCode=$planCode',
       );
       final body = resp.body.trim();
-      if (body.startsWith('<') || resp.statusCode == 302) {
-        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
-      }
-      return _parseJson(body, 'jwxt/schedule');
+      _checkSessionExpiry(body, resp.statusCode);
+      return parseJson(body, 'jwxt/schedule', (msg) => ScuLoginException(msg));
     } finally {
       client.close();
     }
@@ -306,9 +298,7 @@ class ScuAuthService {
         },
       );
       final indexBody = indexResp.body;
-      if (indexBody.trim().isEmpty || indexResp.statusCode == 302) {
-        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
-      }
+      _checkSessionExpiry(indexBody, indexResp.statusCode);
       final urlMatch = RegExp(
         r'var\s+url\s*=\s*"(/student/integratedQuery/scoreQuery/[^/]+/allPassingScores/callback)"',
       ).firstMatch(indexBody);
@@ -330,10 +320,8 @@ class ScuAuthService {
         },
       );
       final body = callbackResp.body.trim();
-      if (body.startsWith('<') || callbackResp.statusCode == 302) {
-        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
-      }
-      return _parseJson(body, 'allPassingScores/callback');
+      _checkSessionExpiry(body, callbackResp.statusCode);
+      return parseJson(body, 'allPassingScores/callback', (msg) => ScuLoginException(msg));
     } finally {
       client.close();
     }
@@ -356,9 +344,7 @@ class ScuAuthService {
       );
 
       final indexBody = indexResp.body;
-      if (indexBody.trim().isEmpty || indexResp.statusCode == 302) {
-        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
-      }
+      _checkSessionExpiry(indexBody, indexResp.statusCode);
 
       final urlMatch = RegExp(
         r'var\s+url\s*=\s*"(/student/integratedQuery/scoreQuery/[^/]+/schemeScores/callback)"',
@@ -381,10 +367,8 @@ class ScuAuthService {
       );
 
       final body = callbackResp.body.trim();
-      if (body.startsWith('<') || callbackResp.statusCode == 302) {
-        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
-      }
-      return _parseJson(body, 'schemeScores/callback');
+      _checkSessionExpiry(body, callbackResp.statusCode);
+      return parseJson(body, 'schemeScores/callback', (msg) => ScuLoginException(msg));
     } finally {
       client.close();
     }
@@ -406,10 +390,7 @@ class ScuAuthService {
         },
       );
       final body = resp.body.trim();
-      if (body.startsWith('<html') && body.contains('login') ||
-          resp.statusCode == 302) {
-        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
-      }
+      _checkSessionExpiry(body, resp.statusCode);
       final xqMatch = RegExp(
         r"""<input[^>]+id="xqList"[^>]+value='([^']+)'""",
       ).firstMatch(body);
@@ -458,10 +439,7 @@ class ScuAuthService {
         },
       );
       final body = resp.body.trim();
-      if (body.startsWith('<html') && body.contains('login') ||
-          resp.statusCode == 302) {
-        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
-      }
+      _checkSessionExpiry(body, resp.statusCode);
       final match = RegExp(
         r"""<input[^>]+id="classroomTypes"[^>]+value='([^']+)'""",
       ).firstMatch(body);
@@ -508,11 +486,9 @@ class ScuAuthService {
             '&searchDate=${Uri.encodeComponent(searchDate)}',
       );
       final body = resp.body.trim();
-      if (body.startsWith('<') || resp.statusCode == 302) {
-        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
-      }
+      _checkSessionExpiry(body, resp.statusCode);
       return ClassroomQueryResult.fromJson(
-        _parseJson(body, 'classroomUseStatus/jasInfo'),
+        parseJson(body, 'classroomUseStatus/jasInfo', (msg) => ScuLoginException(msg)),
       );
     } finally {
       client.close();
@@ -524,14 +500,19 @@ class ScuAuthService {
     _cachedClient = null;
   }
 
-  /// 安全解析 JSON，失败时抛出带上下文的异常
-  static Map<String, dynamic> _parseJson(String body, String api) {
-    try {
-      return jsonDecode(body) as Map<String, dynamic>;
-    } catch (e) {
-      throw ScuLoginException('[$api] JSON 解析失败: $body');
+  /// 检查会话是否过期，过期则抛出 [ScuLoginException]。
+  void _checkSessionExpiry(String body, int statusCode) {
+    if (statusCode == 302) {
+      throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
+    }
+    if (body.trim().isEmpty) {
+      throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
+    }
+    if (body.startsWith('<') && body.contains('login')) {
+      throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
     }
   }
+
 }
 
 class CaptchaResult {

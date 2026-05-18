@@ -6,6 +6,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
+import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
@@ -247,9 +248,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     'Pragma': 'no-cache',
     'Referer':
         'https://pead.scu.edu.cn/bdlp_h5_fitness_test/public/index.php/index/index',
-    'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-        '(KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0',
+    'User-Agent': kDefaultUserAgent,
     'X-Requested-With': 'XMLHttpRequest',
     'sec-ch-ua':
         '"Microsoft Edge";v="147", "Not.A/Brand";v="8", "Chromium";v="147"',

@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
+import 'package:bugaoshan/utils/constants.dart';
+import 'package:bugaoshan/utils/json_utils.dart';
 
 class CcylService {
   static const _base = 'https://dekt.scu.edu.cn';
@@ -11,9 +13,7 @@ class CcylService {
     'Content-Type': 'application/json;charset=UTF-8',
     'Origin': _base,
     'Referer': _base,
-    'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-        '(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0',
+    'User-Agent': kDefaultUserAgent,
   };
 
   String? _token;
@@ -433,7 +433,7 @@ class CcylService {
       if (resp.statusCode != 200) {
         throw CcylException('[$api] HTTP 错误: ${resp.statusCode}');
       }
-      return _parseJson(resp.body, api);
+      return parseJson(resp.body, api, (msg) => CcylException(msg));
     } on CcylException {
       rethrow;
     } catch (e) {
@@ -451,19 +451,11 @@ class CcylService {
       if (resp.statusCode != 200) {
         throw CcylException('[$api] HTTP 错误: ${resp.statusCode}');
       }
-      return _parseJson(resp.body, api);
+      return parseJson(resp.body, api, (msg) => CcylException(msg));
     } on CcylException {
       rethrow;
     } catch (e) {
       throw CcylException('[$api] 网络请求失败: $e');
-    }
-  }
-
-  static Map<String, dynamic> _parseJson(String body, String api) {
-    try {
-      return jsonDecode(body) as Map<String, dynamic>;
-    } catch (e) {
-      throw CcylException('[$api] JSON 解析失败: $body');
     }
   }
 }

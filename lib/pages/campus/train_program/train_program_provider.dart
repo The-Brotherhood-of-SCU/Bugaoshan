@@ -5,6 +5,7 @@ import 'package:bugaoshan/pages/campus/train_program/models/train_program.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program_model.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
+import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/session_expiry_handler.dart';
 
 enum TrainProgramLoadState { idle, loading, loaded, error }
@@ -92,9 +93,7 @@ class TrainProgramProvider extends ChangeNotifier {
           headers: {
             'Accept': 'text/html,*/*',
             'Referer': 'http://zhjw.scu.edu.cn/',
-            'User-Agent':
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-                '(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+            'User-Agent': kDefaultUserAgent,
           },
         );
 
@@ -186,9 +185,7 @@ class TrainProgramProvider extends ChangeNotifier {
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
             'Referer':
                 'http://zhjw.scu.edu.cn/student/comprehensiveQuery/search/trainProgram/index',
-            'User-Agent':
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-                '(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+            'User-Agent': kDefaultUserAgent,
           },
           body:
               'famc=&jhmc=&nj=${_selectedGrade ?? ''}&xw=&xzlx=&xdlx=00001&xsh=${_selectedCollege ?? ''}&pageNum=1&pageSize=100',
@@ -239,9 +236,7 @@ class TrainProgramProvider extends ChangeNotifier {
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
             'Referer':
                 'http://zhjw.scu.edu.cn/student/comprehensiveQuery/search/trainProgram/index',
-            'User-Agent':
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-                '(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+            'User-Agent': kDefaultUserAgent,
           },
           body: 'fajhh=$fajhh&lx=1',
         );
@@ -292,9 +287,7 @@ class TrainProgramProvider extends ChangeNotifier {
             'Accept': 'application/json, */*',
             'Referer':
                 'http://zhjw.scu.edu.cn/student/comprehensiveQuery/search/trainProgram/index',
-            'User-Agent':
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-                '(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+            'User-Agent': kDefaultUserAgent,
           },
         );
 

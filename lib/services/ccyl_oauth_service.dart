@@ -2,6 +2,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:flutter/widgets.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
+import 'package:bugaoshan/utils/constants.dart';
 
 class CcylOAuthService {
   static const _idBase = 'https://id.scu.edu.cn';
@@ -23,9 +24,7 @@ class CcylOAuthService {
         spLoggedUrl,
         headers: {
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*',
-          'User-Agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-              '(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0',
+          'User-Agent': kDefaultUserAgent,
         },
       );
 

@@ -17,3 +17,7 @@ const String dockIdNotice = 'notice';
 const String dockIdNoticeParty = 'notice_party';
 const String dockIdNoticeTuanwei = 'notice_tuanwei';
 const String dockIdDownloadedAttachments = 'downloaded_attachments';
+
+const String kDefaultUserAgent =
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+    '(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0';
