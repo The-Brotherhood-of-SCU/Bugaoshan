@@ -66,6 +66,7 @@ flutter:
     - assets/eula.md
     - assets/scripts/
     - assets/js/
+    - assets/webview_error.html
 flutter_launcher_icons:
   android: true
   ios: true

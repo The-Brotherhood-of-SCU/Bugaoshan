@@ -49,6 +49,7 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
   bool _canGoBack = false;
   bool _canGoForward = false;
   List<AttachItem> _pageAttachments = [];
+  String _errorHtmlTemplate = '';
 
   @override
   void initState() {
@@ -58,6 +59,9 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
     });
     rootBundle.loadString('assets/js/dom_ready.js').then((s) {
       _domReadyScript = s;
+    });
+    rootBundle.loadString('assets/webview_error.html').then((s) {
+      _errorHtmlTemplate = s;
     });
   }
 
@@ -280,39 +284,13 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
                 onLoadStop: _onLoadStop,
                 onReceivedError: (controller, request, error) {
                   debugPrint('${widget.debugLabel} WebView error: $error');
-                  if (request.isForMainFrame ?? false) {
-                    controller.loadData(data: '''
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  body {
-    margin: 0; padding: 40px 24px;
-    font-family: -apple-system, sans-serif;
-    text-align: center;
-    color: #666;
-    background: #fafafa;
-  }
-  .icon { font-size: 48px; margin-bottom: 16px; }
-  h2 { color: #333; margin: 0 0 8px; font-size: 18px; }
-  p { margin: 0 0 24px; font-size: 14px; line-height: 1.5; }
-  button {
-    padding: 10px 32px; border: none; border-radius: 8px;
-    background: #1976d2; color: #fff; font-size: 15px;
-    cursor: pointer;
-  }
-  button:active { opacity: 0.8; }
-</style>
-</head>
-<body>
-  <div class="icon">📡</div>
-  <h2>页面加载失败</h2>
-  <p>请检查网络连接后重试</p>
-  <button onclick="location.reload()">重新加载</button>
-</body>
-</html>
-''');
+                  if (request.isForMainFrame ?? false &&
+                      _errorHtmlTemplate.isNotEmpty) {
+                    final html = _errorHtmlTemplate.replaceAll(
+                      '{{error}}',
+                      '${error.description} (${error.type})',
+                    );
+                    controller.loadData(data: html);
                   }
                 },
               ),
