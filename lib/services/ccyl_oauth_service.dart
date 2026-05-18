@@ -1,7 +1,6 @@
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:flutter/widgets.dart';
-import 'package:bugaoshan/services/scu_auth_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 class CcylOAuthService {
@@ -15,7 +14,7 @@ class CcylOAuthService {
     final spLoggedUrl = Uri.parse(
       '$_idBase/api/bff/v1.2/commons/sp_logged'
       '?access_token=${auth.accessToken}'
-      '&sp_code=${CcylSpCode.value}'
+      '&sp_code=$kCcylSpCode'
       '&application_key=scdxplugin_cas_apereo17',
     );
 

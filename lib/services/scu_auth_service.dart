@@ -31,7 +31,7 @@ class ScuAuthService {
       '$_base/api/public/bff/v1.2/one_time_login/captcha'
       '?_enterprise_id=$_enterpriseId&timestamp=$ts',
     );
-    final resp = await http.get(uri, headers: _headers);
+    final resp = await http.get(uri, headers: _headers).timeout(kHttpTimeout);
 
     final json = parseJson(resp.body, 'captcha', (msg) => ScuLoginException(msg));
     final data = json['data'];
@@ -69,7 +69,7 @@ class ScuAuthService {
         Uri.parse('$_base/api/public/bff/v1.2/sm2_key'),
         headers: _headers,
         body: '{}',
-      );
+      ).timeout(kHttpTimeout);
       lastSm2Body = sm2Resp.body;
       final sm2Json = parseJson(sm2Resp.body, 'sm2_key', (msg) => ScuLoginException(msg));
       sm2Data = sm2Json['data'] as Map<String, dynamic>?;
@@ -114,7 +114,7 @@ class ScuAuthService {
       Uri.parse('$_base/api/public/bff/v1.2/rest_token'),
       headers: _headers,
       body: payload,
-    );
+    ).timeout(kHttpTimeout);
 
     final result = parseJson(tokenResp.body, 'rest_token', (msg) => ScuLoginException(msg));
     if (result['success'] != true) {
@@ -178,7 +178,7 @@ class ScuAuthService {
       Uri.parse(
         '$_base/api/bff/v1.2/commons/sp_logged'
         '?access_token=$_accessToken'
-        '&sp_code=${CcylSpCode.value}'
+        '&sp_code=$kCcylSpCode'
         '&application_key=scdxplugin_cas_apereo17',
       ),
       headers: {
@@ -641,7 +641,7 @@ class CookieClient extends http.BaseClient {
           .map((e) => '${e.key}=${e.value}')
           .join('; ');
     }
-    final response = await _inner.send(request);
+    final response = await _inner.send(request).timeout(kHttpTimeout);
     _storeCookies(request.url, response);
     return response;
   }
@@ -651,7 +651,7 @@ class CookieClient extends http.BaseClient {
     http.BaseRequest request,
   ) async {
     try {
-      return await _inner.send(request);
+      return await _inner.send(request).timeout(kHttpTimeout);
     } on http.ClientException catch (_) {
       _inner.close();
       _inner = http.Client();
@@ -660,7 +660,7 @@ class CookieClient extends http.BaseClient {
         ..maxRedirects = request.maxRedirects
         ..persistentConnection = true
         ..headers.addAll(request.headers);
-      return await _inner.send(retryRequest);
+      return await _inner.send(retryRequest).timeout(kHttpTimeout);
     }
   }
 
@@ -670,12 +670,4 @@ class CookieClient extends http.BaseClient {
     _inner.close();
     super.close();
   }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 将 sp_code 集中在一处，CcylOAuthService 和 bindSession 共用同一个值
-// ─────────────────────────────────────────────────────────────────────────────
-abstract class CcylSpCode {
-  static const value =
-      'bDBhREE1WDMzK3llSzZyVFZNeE81czRDd1hESTI4NWxGaFdsTnlvcGt3eVdTb2cxSjN5a1FJTDVMWTBEQkFFd2k1bWZRMy82OXN6V21ZYzFLd2NlSDdUaWlVcVJ1emxVVnF4Q3RZNWxjWlVoTEZqUktVSWVmY1ZaKzBLYUlBWDYvaU5MS1E5Y25nT1BoSzRIM0FIOWVCQjMxMXd5b0JrenNuWDBDM1BKU0FwUVVnZHdoSWYrc0hKZmEwSHRQbFZDV1o2dzFtQ3Nuci9wV1ExZHRMMytueHpLZVg5djJJcGFRbkJxZFJCQWJZWHI2dlpQNHVxNFNhcHM3Y3RkK2g1dWFuUEtNT1JZblFXRFBLUEdrcGdxNHR5eEcxclh5YXQ5a2FXN3JSZ2g2OTAxWCt0TUdTNXJDRVdNeDNTU3duTk1nNW9RSyt4WkdzSjNkR3NvVEFDMzFCQmJHUVcrVitybmszQVd0djFpUUJ5dDJySlRTajZIem1qZFYwMjVWcVpEaUtKd1AwQzI3TUpZd3FyY1hqdkxUZkFCd3JwL3ltczdXcmlTUzhZYVJPR0QwOXk2aDJIdUlCUTAvbEJWd0xzcUZXSElxaENpR0pseG1XYTZRbWlFaklERTd6TlhBQkJLdTZGUS8rNTBBYWRkcDVrRXdBM0tqejMvd1AvTklkZW5oNll4MllINlFiNVRucXNhZWtzUlh3d1BOQzBrMERSM0tId3dyS1hONkF6VDZwRGl3S3h1aDNLSGVmcTBRTktXUXMxTTZxeW1lcmgzYVlGWDNmVHdvUnJkWXVhbHN0aEtHKzU5TnFuVm1NbXU4dnhZQk8zKzQrdnV3aTJEaGY4VXRnV3lHeTVBcFFnWlUyQTFsWjdsR1RyNHh1TjV5dUlVc1VNNTRlbEtETTVVYWZoYnFPTXFrM2MxUHVNSHVHLzRtUFk4cmZzaXNUVkovWlhuSkhWWXpYQUJ4UDE4bGt2NXJkMFlXZHM0cFlYVVduKy9ZWGNKTlBDNEVrSzE3R0NVWDNxcCtiQkVyaXMzaTRXam1wWTFzYkpWZTAxYzZ0VGlxcGkvcEYyLzJPND0=';
 }
