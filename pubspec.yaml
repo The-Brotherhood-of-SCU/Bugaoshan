@@ -59,13 +59,7 @@ flutter:
   uses-material-design: true
   generate: true
   assets:
-    - assets/avater.png
-    - assets/icon.png
-    - assets/scu.jpg
-    - assets/universal-login-ocr.tflite
-    - assets/eula.md
-    - assets/scripts/
-    - assets/js/
+    - assets/
 flutter_launcher_icons:
   android: true
   ios: true

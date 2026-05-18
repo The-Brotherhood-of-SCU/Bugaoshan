@@ -48,12 +48,16 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
   bool _canGoBack = false;
   bool _canGoForward = false;
   List<AttachItem> _pageAttachments = [];
+  String _errorHtmlTemplate = '';
 
   @override
   void initState() {
     super.initState();
     rootBundle.loadString(widget.beautifyAsset).then((s) {
       if (mounted) setState(() => _beautifyScript = s);
+    });
+    rootBundle.loadString('assets/webview_error.html').then((s) {
+      _errorHtmlTemplate = s;
     });
     rootBundle.loadString('assets/js/dom_ready.js').then((s) {
       _domReadyScript = s;
@@ -279,6 +283,14 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
                 onLoadStop: _onLoadStop,
                 onReceivedError: (controller, request, error) {
                   debugPrint('${widget.debugLabel} WebView error: $error');
+                  if ((request.isForMainFrame ?? false) &&
+                      _errorHtmlTemplate.isNotEmpty) {
+                    final html = _errorHtmlTemplate.replaceAll(
+                      '{{error}}',
+                      '${error.description} (${error.type})',
+                    );
+                    controller.loadData(data: html);
+                  }
                 },
               ),
               IgnorePointer(
