@@ -46,7 +46,7 @@ class BalanceQueryService {
     if (json['respCode'] != '00') {
       throw BalanceQueryException(json['respDesc'] ?? '获取校区失败');
     }
-    final datas = json['data']['datas'] as List? ?? [];
+    final datas = (json['data'] as Map<String, dynamic>?)?['datas'] as List? ?? [];
     return datas
         .map((e) => CampusItem.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -65,7 +65,7 @@ class BalanceQueryService {
     if (json['respCode'] != '00') {
       throw BalanceQueryException(json['respDesc'] ?? '获取楼栋失败');
     }
-    final datas = json['data']['datas'] as List? ?? [];
+    final datas = (json['data'] as Map<String, dynamic>?)?['datas'] as List? ?? [];
     return datas
         .map((e) => BuildingItem.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -85,7 +85,7 @@ class BalanceQueryService {
     if (json['respCode'] != '00') {
       throw BalanceQueryException(json['respDesc'] ?? '获取单元失败');
     }
-    final datas = json['data']['datas'] as List? ?? [];
+    final datas = (json['data'] as Map<String, dynamic>?)?['datas'] as List? ?? [];
     return datas
         .map((e) => UnitItem.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -118,7 +118,7 @@ class BalanceQueryService {
     if (json['respCode'] != '00') {
       throw BalanceQueryException(json['respDesc'] ?? '验证房间失败');
     }
-    return json['data']['status'] == true;
+    return (json['data'] as Map<String, dynamic>?)?['status'] == true;
   }
 
   Future<RoomInfo> queryRoomInfo(
@@ -136,7 +136,11 @@ class BalanceQueryService {
     if (json['respCode'] != '00') {
       throw BalanceQueryException(json['respDesc'] ?? '查询失败');
     }
-    return RoomInfo.fromJson(json['data'] as Map<String, dynamic>);
+    final data = json['data'] as Map<String, dynamic>?;
+    if (data == null) {
+      throw BalanceQueryException('查询数据为空');
+    }
+    return RoomInfo.fromJson(data);
   }
 }
 
