@@ -416,17 +416,34 @@ class Course {
   bool conflictsWith(Course other, {String? excludeId}) {
     if (excludeId != null && id == excludeId) return false;
     if (dayOfWeek != other.dayOfWeek) return false;
-    // Check week overlap considering week types
-    for (int w = startWeek; w <= endWeek; w++) {
-      if (isActiveInWeek(w) && other.isActiveInWeek(w)) {
-        // Same week, check section overlap
-        if (!(endSection < other.startSection ||
-            startSection > other.endSection)) {
-          return true;
-        }
-      }
+    // Section overlap check (O(1) interval intersection)
+    if (endSection < other.startSection || startSection > other.endSection) {
+      return false;
     }
-    return false;
+    // Week overlap check considering WeekType (O(1))
+    final overlapStart = startWeek > other.startWeek ? startWeek : other.startWeek;
+    final overlapEnd = endWeek < other.endWeek ? endWeek : other.endWeek;
+    if (overlapStart > overlapEnd) return false;
+    return _hasSharedWeek(overlapStart, overlapEnd, weekType, other.weekType);
+  }
+
+  static bool _hasSharedWeek(
+    int start,
+    int end,
+    WeekType a,
+    WeekType b,
+  ) {
+    if (a == WeekType.even && b == WeekType.odd) return false;
+    if (a == WeekType.odd && b == WeekType.even) return false;
+    if (a == WeekType.every && b == WeekType.every) return true;
+    final needOdd = a == WeekType.odd || b == WeekType.odd;
+    int first;
+    if (needOdd) {
+      first = start.isOdd ? start : start + 1;
+    } else {
+      first = start.isEven ? start : start + 1;
+    }
+    return first <= end;
   }
 
   Course copyWith({
