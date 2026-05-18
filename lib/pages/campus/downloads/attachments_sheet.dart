@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:open_filex/open_filex.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:share_plus/share_plus.dart' show ShareParams, XFile, SharePlus;
 
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -134,7 +134,7 @@ class _SheetAttachmentTile extends StatelessWidget {
   }
 
   void _open(String path) => OpenFilex.open(path);
-  void _share(String path) => Share.shareXFiles([XFile(path)]);
+  void _share(String path) => SharePlus.instance.share(ShareParams(files: [XFile(path)]));
 
   Future<void> _startDownload(DownloadManager manager) async {
     if (onWebViewDownload != null) {
