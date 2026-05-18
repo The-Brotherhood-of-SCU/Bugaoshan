@@ -13,8 +13,13 @@ class CcylProvider extends ChangeNotifier {
   final FlutterSecureStorage _secure;
   final CcylService _service = CcylService();
 
-  CcylProvider(this._prefs) : _secure = SecureStorageProvider.instance {
-    _initFromSecureStorage();
+  CcylProvider._(this._prefs, this._secure);
+
+  static Future<CcylProvider> create(SharedPreferences prefs) async {
+    final secure = SecureStorageProvider.instance;
+    final provider = CcylProvider._(prefs, secure);
+    await provider._initFromSecureStorage();
+    return provider;
   }
 
   Future<void> _initFromSecureStorage() async {
@@ -53,7 +58,6 @@ class CcylProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 统一认证重新登录后，自动恢复二课登录状态
   Future<void> reLogin() async {
     try {
       final oauthCode = await CcylOAuthService().getOAuthCode();
