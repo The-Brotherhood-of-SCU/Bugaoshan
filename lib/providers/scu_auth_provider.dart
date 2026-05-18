@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/services/ocr_service.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
 import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/pages/campus/plan_completion/plan_completion_provider.dart';
+import 'package:bugaoshan/providers/plan_completion_provider.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/providers/secure_storage_provider.dart';
 

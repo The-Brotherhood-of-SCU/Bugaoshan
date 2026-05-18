@@ -40,6 +40,14 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 ### State Management
 `ValueNotifier` / `ChangeNotifier` with Flutter's built-in `ValueListenableBuilder` and `ListenableBuilder`. Providers are registered in `lib/injection/injector.dart` and initialized asynchronously via `configureDependencies()`.
 
+Two patterns coexist by design:
+
+- **ChangeNotifier** — Use for providers with coarse-grained state changes (auth state, load states, error states). UI consumes via `ListenableBuilder(listenable: providerInstance)`. Examples: `ScuAuthProvider`, `GradesProvider`, `TrainProgramProvider`.
+- **多 ValueNotifier 字段** — Use for providers with many independent config/setting fields where widgets should only rebuild when specific fields change. UI consumes via `ListenableBuilder(listenable: Listenable.merge([field1, field2]))` or `ValueListenableBuilder`. Examples: `AppConfigProvider` (14 fields), `CourseProvider` (5 fields).
+- **手动 addListener** — Use only for imperative side-effects (animations, SnackBars, triggering data loads), never for pure rebuild triggers.
+
+**Directory convention:** All DI-registered providers live in `lib/providers/`. Page-specific non-DI utility classes may live in page directories.
+
 ### Dependency Injection
 GetIt + Injectable. `lib/injection/injector.config.dart` is auto-generated. Re-run `dart run build_runner build` after modifying `@injectable` annotations.
 
@@ -91,6 +99,8 @@ Two notice sources, each in its own subdirectory under `lib/pages/campus/notice/
 - **`AppInfoProvider`** — App version info and CI build metadata (git tag, commit, build time).
 - **`BalanceQueryProvider`** — 电费 & 空调余额查询状态管理，支持多房间绑定切换。
 - **`CcylProvider`** — 第二课堂登录状态持久化，管理 OAuth token。
+- **`TrainProgramProvider`** — 培养方案查询，管理学院/年级/方案列表及详情加载状态。
+- **`PlanCompletionProvider`** — 培养方案完成度，缓存到 SharedPreferences，支持速率限制处理。
 - **`ExportScheduleProvider`** — 课表导出（剪贴板 JSON / .ics 文件 / 系统日历）。
 - **`SecureStorageProvider`** — `FlutterSecureStorage` 单例封装，统一管理安全存储。
 
@@ -143,7 +153,9 @@ lib/
 │   ├── campus_page.dart   # 校园功能入口
 │   └── home_page.dart     # 首页
 ├── providers/
-│   └── environment_info/  # 环境信息 Provider
+│   ├── environment_info/  # 环境信息 Provider
+│   ├── train_program_provider.dart # 培养方案查询
+│   └── plan_completion_provider.dart # 培养方案完成度
 ├── services/              # Business logic & network
 ├── utils/                 # Constants, crypto, utilities
 ├── widgets/               # Shared UI components
