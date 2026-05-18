@@ -392,18 +392,14 @@ class CcylService {
   }
 
   void logout() {
-    debugPrint(
-      'CcylService logout: _token=$_token, _currentUser=$_currentUser',
-    );
+    debugPrint('CcylService logout: userId=${_currentUser?.id}');
     _token = null;
     _currentUser = null;
-    debugPrint(
-      'CcylService logout done: _token=$_token, _currentUser=$_currentUser',
-    );
+    debugPrint('CcylService logout done');
   }
 
   void restoreToken(String token, [String? userId]) {
-    debugPrint('restoreToken: token=$token, userId=$userId');
+    debugPrint('restoreToken: userId=$userId');
     _token = token;
     if (userId != null) {
       _currentUser = CcylUser(
@@ -413,9 +409,7 @@ class CcylService {
         orgName: '',
       );
     }
-    debugPrint(
-      'restoreToken done: _token=$_token, _currentUser=${_currentUser?.id}',
-    );
+    debugPrint('restoreToken done: userId=${_currentUser?.id}');
   }
 
   Future<Map<String, dynamic>> _httpPost(
