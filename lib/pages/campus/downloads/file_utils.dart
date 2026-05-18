@@ -10,10 +10,10 @@ import 'package:bugaoshan/services/download_manager.dart';
 const kNoticeAttachmentDir = 'notice_attachments';
 
 /// Subdirectory name under `Bugaoshan/` for party notice downloads.
-const kPartyAttachmentDir = 'party_notices';
+const kPartyAttachmentDir = 'party_attachments';
 
 /// Subdirectory name under `Bugaoshan/` for tuanwei notice downloads.
-const kTuanweiAttachmentDir = 'tuanwei_notices';
+const kTuanweiAttachmentDir = 'tuanwei_attachments';
 
 // ── File utilities ─────────────────────────────────────────────────────────────────
 
