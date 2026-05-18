@@ -439,7 +439,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
       final dir = await getTemporaryDirectory();
       final file = File('${dir.path}/ccyl_image_${DateTime.now().millisecondsSinceEpoch}.jpg');
       await file.writeAsBytes(response.bodyBytes);
-      await Share.shareXFiles([XFile(file.path)]);
+      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
     } catch (e) {
       debugPrint('Share image error: $e');
       if (context.mounted) {

@@ -134,7 +134,8 @@ class _SheetAttachmentTile extends StatelessWidget {
   }
 
   void _open(String path) => OpenFilex.open(path);
-  void _share(String path) => Share.shareXFiles([XFile(path)]);
+  void _share(String path) =>
+      SharePlus.instance.share(ShareParams(files: [XFile(path)]));
 
   Future<void> _startDownload(DownloadManager manager) async {
     if (onWebViewDownload != null) {
