@@ -284,7 +284,7 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
                 onLoadStop: _onLoadStop,
                 onReceivedError: (controller, request, error) {
                   debugPrint('${widget.debugLabel} WebView error: $error');
-                  if (request.isForMainFrame ?? false &&
+                  if ((request.isForMainFrame ?? false) &&
                       _errorHtmlTemplate.isNotEmpty) {
                     final html = _errorHtmlTemplate.replaceAll(
                       '{{error}}',
