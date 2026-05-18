@@ -429,7 +429,7 @@ class CcylService {
         uri,
         headers: headers,
         body: jsonEncode(body),
-      );
+      ).timeout(kHttpTimeout);
       if (resp.statusCode != 200) {
         throw CcylException('[$api] HTTP 错误: ${resp.statusCode}');
       }
@@ -447,7 +447,7 @@ class CcylService {
     Map<String, String> headers,
   ) async {
     try {
-      final resp = await http.get(uri, headers: headers);
+      final resp = await http.get(uri, headers: headers).timeout(kHttpTimeout);
       if (resp.statusCode != 200) {
         throw CcylException('[$api] HTTP 错误: ${resp.statusCode}');
       }
