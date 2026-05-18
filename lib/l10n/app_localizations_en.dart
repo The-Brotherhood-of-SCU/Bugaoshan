@@ -1795,6 +1795,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noticeSection => 'Notices';
 
   @override
+  String get noticeTabJwc => 'JWC';
+
+  @override
   String get partyNotice => 'Party Notices';
 
   @override

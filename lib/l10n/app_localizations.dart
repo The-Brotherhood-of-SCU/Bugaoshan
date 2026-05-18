@@ -3457,6 +3457,12 @@ abstract class AppLocalizations {
   /// **'Notices'**
   String get noticeSection;
 
+  /// No description provided for @noticeTabJwc.
+  ///
+  /// In en, this message translates to:
+  /// **'JWC'**
+  String get noticeTabJwc;
+
   /// No description provided for @partyNotice.
   ///
   /// In en, this message translates to:

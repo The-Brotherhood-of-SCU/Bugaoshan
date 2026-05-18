@@ -68,7 +68,9 @@ GetIt + Injectable. `lib/injection/injector.config.dart` is auto-generated. Re-r
 
 ### Notice Pages
 
-Two notice sources, each in its own subdirectory under `lib/pages/campus/notice/`:
+Three notice sources, unified under a single `NoticePage` with `TabBar` + `TabBarView`. Each tab hosts one notice source:
+
+**NoticePage** (`notice_page.dart`) — TabView container with 3 tabs (教务处/学工部/团委).
 
 **JWC Academic Affairs** (`jwc/`) — `jwc.scu.edu.cn`教务处通知。
 
@@ -82,6 +84,10 @@ Two notice sources, each in its own subdirectory under `lib/pages/campus/notice/
 **Party/XGB** (`xgb/`) — `xgb.scu.edu.cn`党委学工部通知。
 
 - `party_notice_page.dart` — WebView-based page with JS beautify injection and attachment extraction via `AttachmentsChannel`.
+
+**Tuanwei/Youth** (`tuanwei/`) — `tuanwei.scu.edu.cn`青春川大通知。
+
+- `tuanwei_notice_page.dart` — WebView-based page, same architecture as Party.
 
 **Shared downloads module** (`lib/pages/campus/downloads/`):
 - `NoticeAttachmentFab` — draggable FAB showing attachment count, opens `showAttachmentsSheet` on tap. Shared by both notice pages.
@@ -143,7 +149,7 @@ lib/
 │   │   ├── grades/        # 成绩查询
 │   │   ├── models/        # 校园模块数据模型
 │   │   ├── network_device/# 校园网设备管理
-│   │   ├── notice/        # 通知公告（jwc/ 教务处 + xgb/ 学工部）
+│   │   ├── notice/        # 通知公告 TabView（jwc/ 教务处 + xgb/ 学工部 + tuanwei/ 团委）
 │   │   ├── plan_completion/ # 培养方案完成度
 │   │   └── train_program/ # 培养方案查询
 │   ├── course/            # 课表管理

@@ -1745,6 +1745,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noticeSection => '通知公告';
 
   @override
+  String get noticeTabJwc => '教务处';
+
+  @override
   String get partyNotice => '党委学工部通知';
 
   @override
