@@ -95,8 +95,10 @@ class AppConfigProvider {
     acceptedEulaVersion.value =
         _sharedPreferences.getInt(_keyAcceptedEulaVersion) ??
         (kDebugMode ? currentEulaVersion : 114514);
-    themeColorMode.value = ThemeColorMode
-        .values[_sharedPreferences.getInt(_keyThemeColorMode) ?? 0];
+    final themeColorIndex = _sharedPreferences.getInt(_keyThemeColorMode) ?? 0;
+    themeColorMode.value = themeColorIndex < ThemeColorMode.values.length
+        ? ThemeColorMode.values[themeColorIndex]
+        : ThemeColorMode.custom;
   }
 
   void _addSaveCallback() {
