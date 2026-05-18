@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:share_plus/share_plus.dart' show ShareParams, XFile, SharePlus;
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
@@ -439,7 +439,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
       final dir = await getTemporaryDirectory();
       final file = File('${dir.path}/ccyl_image_${DateTime.now().millisecondsSinceEpoch}.jpg');
       await file.writeAsBytes(response.bodyBytes);
-      await Share.shareXFiles([XFile(file.path)]);
+      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
     } catch (e) {
       debugPrint('Share image error: $e');
       if (context.mounted) {

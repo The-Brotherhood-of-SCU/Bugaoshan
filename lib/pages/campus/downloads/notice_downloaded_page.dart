@@ -5,7 +5,7 @@ import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
-import 'package:share_plus/share_plus.dart';
+import 'package:share_plus/share_plus.dart' show ShareParams, XFile, SharePlus;
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -314,11 +314,11 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
 
   void _openFile(File file) => OpenFilex.open(file.path);
 
-  void _shareFile(File file) => Share.shareXFiles([XFile(file.path)]);
+  void _shareFile(File file) => SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
 
   void _shareSelected() {
     final files = _selected.map((p) => XFile(p)).toList();
-    Share.shareXFiles(files);
+    SharePlus.instance.share(ShareParams(files: files));
   }
 
   void _showFilterMenu() {
