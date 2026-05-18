@@ -15,6 +15,9 @@ jobs:
     container:
       image: debian:trixie
     steps:
+      - name: Install git for checkout
+        run: apt-get update && apt-get install -y git
+
       - uses: actions/checkout@v4
 
       - name: Mark workspace as safe for git
@@ -52,6 +55,8 @@ jobs:
         uses: ./.github/actions/setup
         with:
           version: ${{ inputs.version }}
+        env:
+          GIT_DISCOVERY_ACROSS_FILESYSTEM: 1
 
       - name: Build Linux
         run: |
