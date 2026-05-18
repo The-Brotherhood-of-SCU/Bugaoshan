@@ -24,7 +24,6 @@ class WebViewNoticePage extends StatefulWidget {
     required this.debugLabel,
     this.downloadHeaders,
     this.useWebViewDownload = false,
-    this.showNavigation = true,
   });
 
   final String url;
@@ -36,7 +35,6 @@ class WebViewNoticePage extends StatefulWidget {
   final String debugLabel;
   final Map<String, String>? downloadHeaders;
   final bool useWebViewDownload;
-  final bool showNavigation;
 
   @override
   State<WebViewNoticePage> createState() => _WebViewNoticePageState();
@@ -227,34 +225,27 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
       },
       child: Scaffold(
         appBar: AppBar(
-          leadingWidth: widget.showNavigation ? 152 : null,
-          automaticallyImplyLeading: !widget.showNavigation,
+          leadingWidth: 96,
+          automaticallyImplyLeading: false,
           title: Text(widget.title),
-          leading: widget.showNavigation
-              ? Padding(
-                  padding: const EdgeInsets.only(left: 4),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        tooltip: '关闭',
-                        onPressed: () => Navigator.of(logicRootContext).pop(),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back),
-                        tooltip: '后退',
-                        onPressed: _canGoBack ? _goBack : null,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.arrow_forward),
-                        tooltip: '前进',
-                        onPressed: _canGoForward ? _goForward : null,
-                      ),
-                    ],
-                  ),
-                )
-              : null,
+          leading: Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  tooltip: '后退',
+                  onPressed: _canGoBack ? _goBack : null,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.arrow_forward),
+                  tooltip: '前进',
+                  onPressed: _canGoForward ? _goForward : null,
+                ),
+              ],
+            ),
+          ),
           actions: [
             IconButton(
               icon: const Icon(Icons.folder_open),
