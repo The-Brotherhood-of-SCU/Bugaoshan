@@ -56,7 +56,7 @@ class _NoticePageState extends State<NoticePage>
           const WebViewNoticePage(
             url: 'https://xgb.scu.edu.cn/index/tzgg.htm',
             beautifyAsset: 'assets/js/party_notice_beautify.js',
-            title: '党委学工部通知',
+            title: '党委学工部',
             initialTab: 1,
             attachmentDir: kPartyAttachmentDir,
             heroTag: 'party_attach_fab',
@@ -66,7 +66,7 @@ class _NoticePageState extends State<NoticePage>
           const WebViewNoticePage(
             url: 'https://tuanwei.scu.edu.cn/index/gg.htm',
             beautifyAsset: 'assets/js/tuanwei_notice_beautify.js',
-            title: '青春川大通知',
+            title: '青春川大',
             initialTab: 2,
             attachmentDir: kTuanweiAttachmentDir,
             heroTag: 'tuanwei_attach_fab',
