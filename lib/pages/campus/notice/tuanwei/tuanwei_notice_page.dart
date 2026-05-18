@@ -10,7 +10,7 @@ class TuanweiNoticePage extends StatelessWidget {
     return const WebViewNoticePage(
       url: 'https://tuanwei.scu.edu.cn/index/gg.htm',
       beautifyAsset: 'assets/js/tuanwei_notice_beautify.js',
-      title: '青春川大通知',
+      title: '青春川大',
       initialTab: 2,
       attachmentDir: kTuanweiAttachmentDir,
       heroTag: 'tuanwei_attach_fab',

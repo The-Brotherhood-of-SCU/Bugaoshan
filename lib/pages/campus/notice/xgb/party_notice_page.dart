@@ -10,7 +10,7 @@ class PartyNoticePage extends StatelessWidget {
     return const WebViewNoticePage(
       url: 'https://xgb.scu.edu.cn/index/tzgg.htm',
       beautifyAsset: 'assets/js/party_notice_beautify.js',
-      title: '党委学工部通知',
+      title: '党委学工部',
       initialTab: 1,
       attachmentDir: kPartyAttachmentDir,
       heroTag: 'party_attach_fab',
