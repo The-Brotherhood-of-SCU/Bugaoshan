@@ -14,8 +14,6 @@ const String dockIdBalanceQuery = 'balance_query';
 const String dockIdAcademicCalendar = 'academic_calendar';
 const String dockIdFitnessTest = 'fitness_test';
 const String dockIdNotice = 'notice';
-const String dockIdNoticeParty = 'notice_party';
-const String dockIdNoticeTuanwei = 'notice_tuanwei';
 const String dockIdDownloadedAttachments = 'downloaded_attachments';
 
 const Duration kHttpTimeout = Duration(seconds: 15);

@@ -9,9 +9,7 @@ import 'package:bugaoshan/pages/campus/downloads/notice_downloaded_page.dart';
 import 'package:bugaoshan/pages/campus/fitness_test/fitness_test_page.dart';
 import 'package:bugaoshan/pages/campus/grades/grades_page.dart';
 import 'package:bugaoshan/pages/campus/network_device/network_device_page.dart';
-import 'package:bugaoshan/pages/campus/notice/jwc/campus_notice_page.dart';
-import 'package:bugaoshan/pages/campus/notice/tuanwei/tuanwei_notice_page.dart';
-import 'package:bugaoshan/pages/campus/notice/xgb/party_notice_page.dart';
+import 'package:bugaoshan/pages/campus/notice/notice_page.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/plan_completion_page.dart';
 import 'package:bugaoshan/pages/campus/train_program/train_program_page.dart';
 import 'package:bugaoshan/pages/campus_page.dart';
@@ -165,34 +163,14 @@ final campusItemAcademicCalendar = CampusItemConfig(
   page: () => const AcademicCalendarPage(),
 );
 
-final campusItemNoticeJwc = CampusItemConfig(
+final campusItemNotice = CampusItemConfig(
   id: dockIdNotice,
   icon: Icons.campaign_outlined,
   selectedIcon: Icons.campaign,
   dockLabel: (l10n) => l10n.dockLabelNotice,
-  dockFullLabel: (l10n) => l10n.campusNotices,
+  dockFullLabel: (l10n) => l10n.noticeSection,
   desc: (l10n) => l10n.campusNoticesDesc,
-  page: () => const CampusNoticePage(),
-);
-
-final campusItemNoticeParty = CampusItemConfig(
-  id: dockIdNoticeParty,
-  icon: Icons.flag_outlined,
-  selectedIcon: Icons.flag,
-  dockLabel: (l10n) => l10n.dockLabelNoticeParty,
-  dockFullLabel: (l10n) => l10n.partyNotice,
-  desc: (l10n) => l10n.partyNoticeDesc,
-  page: () => const PartyNoticePage(),
-);
-
-final campusItemNoticeTuanwei = CampusItemConfig(
-  id: dockIdNoticeTuanwei,
-  icon: Icons.volunteer_activism_outlined,
-  selectedIcon: Icons.volunteer_activism,
-  dockLabel: (l10n) => l10n.dockLabelNoticeTuanwei,
-  dockFullLabel: (l10n) => l10n.tuanweiNotice,
-  desc: (l10n) => l10n.tuanweiNoticeDesc,
-  page: () => const TuanweiNoticePage(),
+  page: () => const NoticePage(),
 );
 
 final campusItemDownloads = CampusItemConfig(
@@ -228,9 +206,7 @@ final campusSections = [
   CampusSection(
     title: (l10n) => l10n.noticeSection,
     items: [
-      campusItemNoticeJwc,
-      campusItemNoticeParty,
-      campusItemNoticeTuanwei,
+      campusItemNotice,
       campusItemDownloads,
     ],
   ),
