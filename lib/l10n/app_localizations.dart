@@ -2728,7 +2728,7 @@ abstract class AppLocalizations {
   /// No description provided for @campusNotices.
   ///
   /// In en, this message translates to:
-  /// **'Notices'**
+  /// **'JWC Notices'**
   String get campusNotices;
 
   /// No description provided for @campusNoticesDesc.
