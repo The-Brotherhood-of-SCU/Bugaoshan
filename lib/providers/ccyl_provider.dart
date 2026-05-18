@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:bugaoshan/providers/secure_storage_provider.dart';
 import 'package:bugaoshan/services/ccyl_oauth_service.dart';
 import 'package:bugaoshan/services/ccyl_service.dart';
 
@@ -8,11 +10,21 @@ const _keyCcylUserId = 'ccyl_user_id';
 
 class CcylProvider extends ChangeNotifier {
   final SharedPreferences _prefs;
+  final FlutterSecureStorage _secure;
   final CcylService _service = CcylService();
 
-  CcylProvider(this._prefs) {
-    _token = _prefs.getString(_keyCcylToken);
-    final userId = _prefs.getString(_keyCcylUserId);
+  CcylProvider._(this._prefs, this._secure);
+
+  static Future<CcylProvider> create(SharedPreferences prefs) async {
+    final secure = SecureStorageProvider.instance;
+    final provider = CcylProvider._(prefs, secure);
+    await provider._initFromSecureStorage();
+    return provider;
+  }
+
+  Future<void> _initFromSecureStorage() async {
+    _token = await _secure.read(key: _keyCcylToken);
+    final userId = await _secure.read(key: _keyCcylUserId);
     if (_token != null) {
       _service.restoreToken(_token!, userId);
     }
@@ -27,9 +39,9 @@ class CcylProvider extends ChangeNotifier {
   Future<void> loginWithOAuthCode(String code) async {
     await _service.login(code);
     _token = _service.token;
-    await _prefs.setString(_keyCcylToken, _token!);
+    await _secure.write(key: _keyCcylToken, value: _token!);
     if (_service.currentUser != null) {
-      await _prefs.setString(_keyCcylUserId, _service.currentUser!.id);
+      await _secure.write(key: _keyCcylUserId, value: _service.currentUser!.id);
       debugPrint('Saved userId: ${_service.currentUser!.id}');
     }
     debugPrint(
@@ -41,12 +53,11 @@ class CcylProvider extends ChangeNotifier {
   void logout() {
     _service.logout();
     _token = null;
-    _prefs.remove(_keyCcylToken);
-    _prefs.remove(_keyCcylUserId);
+    _secure.delete(key: _keyCcylToken);
+    _secure.delete(key: _keyCcylUserId);
     notifyListeners();
   }
 
-  /// 统一认证重新登录后，自动恢复二课登录状态
   Future<void> reLogin() async {
     try {
       final oauthCode = await CcylOAuthService().getOAuthCode();
