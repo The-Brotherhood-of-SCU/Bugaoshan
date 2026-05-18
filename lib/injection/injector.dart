@@ -67,7 +67,7 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<CcylProvider>(() async {
     await getIt.isReady<SharedPreferences>();
     final prefs = getIt<SharedPreferences>();
-    return CcylProvider(prefs);
+    return CcylProvider.create(prefs);
   });
   getIt.registerSingletonAsync<GradesProvider>(() async {
     await getIt.isReady<SharedPreferences>();
