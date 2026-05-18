@@ -33,7 +33,8 @@ class CampusNoticePage extends StatefulWidget {
   State<CampusNoticePage> createState() => _CampusNoticePageState();
 }
 
-class _CampusNoticePageState extends State<CampusNoticePage> {
+class _CampusNoticePageState extends State<CampusNoticePage>
+    with AutomaticKeepAliveClientMixin {
   late final ScrollController _scrollController;
   late final TextEditingController _searchController;
   bool _loading = true;
@@ -319,22 +320,24 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
   List<NoticeEntry> get _filteredEntries => _entries;
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(l10n.campusNotices),
+        title: Text(l10n.noticeTabJwc),
         actions: [
           IconButton(
             icon: const Icon(Icons.folder_open),
             tooltip: l10n.downloadedAttachments,
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (_) => const NoticeDownloadedPage(),
-              ),
+              MaterialPageRoute(builder: (_) => const NoticeDownloadedPage()),
             ),
           ),
           IconButton(

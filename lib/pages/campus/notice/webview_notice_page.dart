@@ -42,7 +42,8 @@ class WebViewNoticePage extends StatefulWidget {
   State<WebViewNoticePage> createState() => _WebViewNoticePageState();
 }
 
-class _WebViewNoticePageState extends State<WebViewNoticePage> {
+class _WebViewNoticePageState extends State<WebViewNoticePage>
+    with AutomaticKeepAliveClientMixin {
   InAppWebViewController? _controller;
   String _beautifyScript = '';
   String _domReadyScript = '';
@@ -207,7 +208,11 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
