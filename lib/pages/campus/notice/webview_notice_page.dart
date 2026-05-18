@@ -137,7 +137,7 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
 
   @override
   void dispose() {
-    _controller?.loadUrl(urlRequest: URLRequest(url: WebUri('about:blank')));
+    _controller?.dispose();
     super.dispose();
   }
 
