@@ -246,18 +246,21 @@ class DatabaseService {
   };
 
   Course _rowToCourse(Map<String, dynamic> row) {
+    final weekTypeIndex = row['week_type'] as int? ?? 0;
     return Course(
       id: row['id'] as String,
-      name: row['name'] as String,
-      teacher: row['teacher'] as String,
-      location: row['location'] as String,
+      name: row['name'] as String? ?? '',
+      teacher: row['teacher'] as String? ?? '',
+      location: row['location'] as String? ?? '',
       startWeek: row['start_week'] as int,
       endWeek: row['end_week'] as int,
       dayOfWeek: row['day_of_week'] as int,
       startSection: row['start_section'] as int,
       endSection: row['end_section'] as int,
       colorValue: row['color_value'] as int,
-      weekType: WeekType.values[row['week_type'] as int],
+      weekType: weekTypeIndex < WeekType.values.length
+          ? WeekType.values[weekTypeIndex]
+          : WeekType.every,
     );
   }
 
@@ -314,14 +317,10 @@ class DatabaseService {
   }
 
   Future<void> deleteSchedule(String scheduleId) async {
-    // Delete courses for this schedule
-    await _db.delete(
-      'courses',
-      where: 'schedule_id = ?',
-      whereArgs: [scheduleId],
-    );
-    // Delete schedule config
-    await _db.delete('schedules', where: 'id = ?', whereArgs: [scheduleId]);
+    await _db.transaction((txn) async {
+      await txn.delete('courses', where: 'schedule_id = ?', whereArgs: [scheduleId]);
+      await txn.delete('schedules', where: 'id = ?', whereArgs: [scheduleId]);
+    });
 
     await _loadSchedulesCache();
 
@@ -381,19 +380,19 @@ class DatabaseService {
   // ==================== Clear ====================
 
   Future<void> clearAllCourseData() async {
-    await _db.delete('courses');
-    await _db.delete('schedules');
-    await _db.delete('metadata');
-
-    // Re-create default schedule
     final defaultConfig = _defaultScheduleConfig();
-    await _db.insert('schedules', {
-      'id': defaultConfig.id,
-      'config_json': _encodeJson(defaultConfig.toJson()),
-    });
-    await _db.insert('metadata', {
-      'key': _keyCurrentScheduleId,
-      'value': 'default',
+    await _db.transaction((txn) async {
+      await txn.delete('courses');
+      await txn.delete('schedules');
+      await txn.delete('metadata');
+      await txn.insert('schedules', {
+        'id': defaultConfig.id,
+        'config_json': _encodeJson(defaultConfig.toJson()),
+      });
+      await txn.insert('metadata', {
+        'key': _keyCurrentScheduleId,
+        'value': 'default',
+      });
     });
     _currentScheduleId = 'default';
 
