@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:bugaoshan/services/scu_auth_service.dart';
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/json_utils.dart';
 
