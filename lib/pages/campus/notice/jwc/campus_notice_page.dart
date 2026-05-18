@@ -324,6 +324,7 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text(l10n.campusNotices),
         actions: [
           IconButton(

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/campus/downloads/shared_notice_downloads.dart';
 import 'package:bugaoshan/pages/campus/notice/jwc/campus_notice_page.dart';
-import 'package:bugaoshan/pages/campus/notice/xgb/party_notice_page.dart';
-import 'package:bugaoshan/pages/campus/notice/tuanwei/tuanwei_notice_page.dart';
+import 'package:bugaoshan/pages/campus/notice/webview_notice_page.dart';
 
 class NoticePage extends StatefulWidget {
   const NoticePage({super.key, this.initialTab = 0});
@@ -51,10 +51,30 @@ class _NoticePageState extends State<NoticePage>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: const [
-          CampusNoticePage(),
-          PartyNoticePage(),
-          TuanweiNoticePage(),
+        children: [
+          const CampusNoticePage(),
+          const WebViewNoticePage(
+            url: 'https://xgb.scu.edu.cn/index/tzgg.htm',
+            beautifyAsset: 'assets/js/party_notice_beautify.js',
+            title: '党委学工部通知',
+            initialTab: 1,
+            attachmentDir: kPartyAttachmentDir,
+            heroTag: 'party_attach_fab',
+            debugLabel: 'PartyNotice',
+            showNavigation: false,
+          ),
+          const WebViewNoticePage(
+            url: 'https://tuanwei.scu.edu.cn/index/gg.htm',
+            beautifyAsset: 'assets/js/tuanwei_notice_beautify.js',
+            title: '青春川大通知',
+            initialTab: 2,
+            attachmentDir: kTuanweiAttachmentDir,
+            heroTag: 'tuanwei_attach_fab',
+            downloadHeaders: {'Referer': 'https://tuanwei.scu.edu.cn'},
+            debugLabel: 'TuanweiNotice',
+            useWebViewDownload: true,
+            showNavigation: false,
+          ),
         ],
       ),
     );
