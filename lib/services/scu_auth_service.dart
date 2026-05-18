@@ -23,6 +23,7 @@ class ScuAuthService {
   String? get accessToken => _accessToken;
 
   CookieClient? _cachedClient;
+  Future<CookieClient>? _bindSessionFuture;
 
   /// 获取验证码，返回 [CaptchaResult]
   Future<CaptchaResult> fetchCaptcha() async {
@@ -33,7 +34,11 @@ class ScuAuthService {
     );
     final resp = await http.get(uri, headers: _headers).timeout(kHttpTimeout);
 
-    final json = parseJson(resp.body, 'captcha', (msg) => ScuLoginException(msg));
+    final json = parseJson(
+      resp.body,
+      'captcha',
+      (msg) => ScuLoginException(msg),
+    );
     final data = json['data'];
     if (data == null) {
       throw ScuLoginException('验证码接口返回异常: ${resp.body}');
@@ -65,13 +70,19 @@ class ScuAuthService {
     Map<String, dynamic>? sm2Data;
     String? lastSm2Body;
     for (int attempt = 0; attempt < 3; attempt++) {
-      final sm2Resp = await http.post(
-        Uri.parse('$_base/api/public/bff/v1.2/sm2_key'),
-        headers: _headers,
-        body: '{}',
-      ).timeout(kHttpTimeout);
+      final sm2Resp = await http
+          .post(
+            Uri.parse('$_base/api/public/bff/v1.2/sm2_key'),
+            headers: _headers,
+            body: '{}',
+          )
+          .timeout(kHttpTimeout);
       lastSm2Body = sm2Resp.body;
-      final sm2Json = parseJson(sm2Resp.body, 'sm2_key', (msg) => ScuLoginException(msg));
+      final sm2Json = parseJson(
+        sm2Resp.body,
+        'sm2_key',
+        (msg) => ScuLoginException(msg),
+      );
       sm2Data = sm2Json['data'] as Map<String, dynamic>?;
       if (sm2Data != null &&
           sm2Data['publicKey'] != null &&
@@ -110,13 +121,19 @@ class ScuAuthService {
       'cap_text': captchaText,
     });
 
-    final tokenResp = await http.post(
-      Uri.parse('$_base/api/public/bff/v1.2/rest_token'),
-      headers: _headers,
-      body: payload,
-    ).timeout(kHttpTimeout);
+    final tokenResp = await http
+        .post(
+          Uri.parse('$_base/api/public/bff/v1.2/rest_token'),
+          headers: _headers,
+          body: payload,
+        )
+        .timeout(kHttpTimeout);
 
-    final result = parseJson(tokenResp.body, 'rest_token', (msg) => ScuLoginException(msg));
+    final result = parseJson(
+      tokenResp.body,
+      'rest_token',
+      (msg) => ScuLoginException(msg),
+    );
     if (result['success'] != true) {
       final msg =
           result['message']?.toString() ?? result['msg']?.toString() ?? '登录失败';
@@ -144,6 +161,18 @@ class ScuAuthService {
 
     if (_cachedClient != null) return _cachedClient!;
 
+    // 并发保护：多个调用者同时 bindSession 时，只执行一次 SSO 握手
+    if (_bindSessionFuture != null) return _bindSessionFuture!;
+
+    _bindSessionFuture = _doBindSession();
+    try {
+      return await _bindSessionFuture!;
+    } finally {
+      _bindSessionFuture = null;
+    }
+  }
+
+  Future<CookieClient> _doBindSession() async {
     final client = CookieClient();
 
     // ── Step 1: 保存 token 到服务端 session ──────────────────────────────────
@@ -152,7 +181,11 @@ class ScuAuthService {
       headers: {..._headers, 'Authorization': 'Bearer $_accessToken'},
       body: '{}',
     );
-    final sessionResult = parseJson(sessionResp.body, 'session/save', (msg) => ScuLoginException(msg));
+    final sessionResult = parseJson(
+      sessionResp.body,
+      'session/save',
+      (msg) => ScuLoginException(msg),
+    );
     if (sessionResult['success'] != true) {
       throw ScuLoginException('session/save 失败: ${sessionResp.body}');
     }
@@ -195,62 +228,54 @@ class ScuAuthService {
   /// 从教务系统首页获取当前教学周数
   Future<int> fetchCurrentWeek() async {
     final client = await bindSession();
-    try {
-      final resp = await client.get(
-        Uri.parse('http://zhjw.scu.edu.cn/'),
-        headers: {
-          'Accept': 'text/html,*/*',
-          'Referer': 'http://zhjw.scu.edu.cn/',
-          'User-Agent': _headers['User-Agent']!,
-        },
-      );
-      final body = resp.body.trim();
-      _checkSessionExpiry(body, resp.statusCode);
-      // 匹配 "2025-2026 春  第8周   星期五" 中的周数
-      final match = RegExp(r'第(\d+)周').firstMatch(body);
-      if (match == null) {
-        throw ScuLoginException('无法获取当前周数，请检查教务系统状态');
-      }
-      return int.parse(match.group(1)!);
-    } finally {
-      client.close();
+    final resp = await client.get(
+      Uri.parse('http://zhjw.scu.edu.cn/'),
+      headers: {
+        'Accept': 'text/html,*/*',
+        'Referer': 'http://zhjw.scu.edu.cn/',
+        'User-Agent': _headers['User-Agent']!,
+      },
+    );
+    final body = resp.body.trim();
+    _checkSessionExpiry(body, resp.statusCode);
+    // 匹配 "2025-2026 春  第8周   星期五" 中的周数
+    final match = RegExp(r'第(\d+)周').firstMatch(body);
+    if (match == null) {
+      throw ScuLoginException('无法获取当前周数，请检查教务系统状态');
     }
+    return int.parse(match.group(1)!);
   }
 
   /// 获取历年学期列表（需要先登录），返回 [{value: '2025-2026-2-1', label: '2025-2026学年春(当前)'}, ...]
   Future<List<({String value, String label})>> fetchSemesters() async {
     final client = await bindSession();
-    try {
-      final resp = await client.get(
-        Uri.parse(
-          'http://zhjw.scu.edu.cn/student/courseSelect'
-          '/calendarSemesterCurriculum/index',
-        ),
-        headers: {
-          'Accept': 'text/html,*/*',
-          'Referer': 'http://zhjw.scu.edu.cn/',
-          'User-Agent': _headers['User-Agent']!,
-        },
-      );
-      final body = resp.body.trim();
-      _checkSessionExpiry(body, resp.statusCode);
-      final regex = RegExp(
-        r'<option[^>]+value="([^"]+)"[^>]*>(.*?)</option>',
-        dotAll: true,
-      );
-      final matches = regex.allMatches(body);
-      final semesters = matches.map((m) {
-        final value = m.group(1)!.trim();
-        final label = m.group(2)!.replaceAll(RegExp(r'<[^>]+>'), '').trim();
-        return (value: value, label: label);
-      }).toList();
-      if (semesters.isEmpty) {
-        throw ScuLoginException('无法获取学期列表，请检查登录状态');
-      }
-      return semesters;
-    } finally {
-      client.close();
+    final resp = await client.get(
+      Uri.parse(
+        'http://zhjw.scu.edu.cn/student/courseSelect'
+        '/calendarSemesterCurriculum/index',
+      ),
+      headers: {
+        'Accept': 'text/html,*/*',
+        'Referer': 'http://zhjw.scu.edu.cn/',
+        'User-Agent': _headers['User-Agent']!,
+      },
+    );
+    final body = resp.body.trim();
+    _checkSessionExpiry(body, resp.statusCode);
+    final regex = RegExp(
+      r'<option[^>]+value="([^"]+)"[^>]*>(.*?)</option>',
+      dotAll: true,
+    );
+    final matches = regex.allMatches(body);
+    final semesters = matches.map((m) {
+      final value = m.group(1)!.trim();
+      final label = m.group(2)!.replaceAll(RegExp(r'<[^>]+>'), '').trim();
+      return (value: value, label: label);
+    }).toList();
+    if (semesters.isEmpty) {
+      throw ScuLoginException('无法获取学期列表，请检查登录状态');
     }
+    return semesters;
   }
 
   /// 获取指定学期课表 JSON（需要先登录），[planCode] 如 '2025-2026-2-1'
@@ -258,163 +283,155 @@ class ScuAuthService {
     required String planCode,
   }) async {
     final client = await bindSession();
-    try {
-      final resp = await client.post(
-        Uri.parse(
-          'http://zhjw.scu.edu.cn/student/courseSelect'
-          '/thisSemesterCurriculum/ajaxStudentSchedule/callback',
-        ),
-        headers: {
-          'Accept': 'application/json, text/javascript, */*; q=0.01',
-          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-          'Referer':
-              'http://zhjw.scu.edu.cn/student/courseSelect/calendarSemesterCurriculum/index',
-          'User-Agent': _headers['User-Agent']!,
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: 'planCode=$planCode',
-      );
-      final body = resp.body.trim();
-      _checkSessionExpiry(body, resp.statusCode);
-      return parseJson(body, 'jwxt/schedule', (msg) => ScuLoginException(msg));
-    } finally {
-      client.close();
-    }
+    final resp = await client.post(
+      Uri.parse(
+        'http://zhjw.scu.edu.cn/student/courseSelect'
+        '/thisSemesterCurriculum/ajaxStudentSchedule/callback',
+      ),
+      headers: {
+        'Accept': 'application/json, text/javascript, */*; q=0.01',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'Referer':
+            'http://zhjw.scu.edu.cn/student/courseSelect/calendarSemesterCurriculum/index',
+        'User-Agent': _headers['User-Agent']!,
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      body: 'planCode=$planCode',
+    );
+    final body = resp.body.trim();
+    _checkSessionExpiry(body, resp.statusCode);
+    return parseJson(body, 'jwxt/schedule', (msg) => ScuLoginException(msg));
   }
 
   /// 获取及格成绩（需要先登录）
   Future<Map<String, dynamic>> fetchPassingScores() async {
     final client = await bindSession();
-    try {
-      final indexResp = await client.get(
-        Uri.parse(
-          'http://zhjw.scu.edu.cn/student/integratedQuery/scoreQuery/allPassingScores/index',
-        ),
-        headers: {
-          'Accept':
-              'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Referer': 'http://zhjw.scu.edu.cn/',
-          'User-Agent': _headers['User-Agent']!,
-        },
-      );
-      final indexBody = indexResp.body;
-      _checkSessionExpiry(indexBody, indexResp.statusCode);
-      final urlMatch = RegExp(
-        r'var\s+url\s*=\s*"(/student/integratedQuery/scoreQuery/[^/]+/allPassingScores/callback)"',
-      ).firstMatch(indexBody);
-      if (urlMatch == null) {
-        if (indexBody.contains('login') || indexBody.contains('Login')) {
-          throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
-        }
-        throw ScuLoginException('无法从页面提取 allPassingScores callback URL');
+    final indexResp = await client.get(
+      Uri.parse(
+        'http://zhjw.scu.edu.cn/student/integratedQuery/scoreQuery/allPassingScores/index',
+      ),
+      headers: {
+        'Accept':
+            'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Referer': 'http://zhjw.scu.edu.cn/',
+        'User-Agent': _headers['User-Agent']!,
+      },
+    );
+    final indexBody = indexResp.body;
+    _checkSessionExpiry(indexBody, indexResp.statusCode);
+    final urlMatch = RegExp(
+      r'var\s+url\s*=\s*"(/student/integratedQuery/scoreQuery/[^/]+/allPassingScores/callback)"',
+    ).firstMatch(indexBody);
+    if (urlMatch == null) {
+      if (indexBody.contains('login') || indexBody.contains('Login')) {
+        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
       }
-      final callbackPath = urlMatch.group(1)!;
-
-      final callbackResp = await client.get(
-        Uri.parse('http://zhjw.scu.edu.cn$callbackPath'),
-        headers: {
-          'Accept': 'application/json, text/plain, */*',
-          'Referer':
-              'http://zhjw.scu.edu.cn/student/integratedQuery/scoreQuery/allPassingScores/index',
-          'User-Agent': _headers['User-Agent']!,
-        },
-      );
-      final body = callbackResp.body.trim();
-      _checkSessionExpiry(body, callbackResp.statusCode);
-      return parseJson(body, 'allPassingScores/callback', (msg) => ScuLoginException(msg));
-    } finally {
-      client.close();
+      throw ScuLoginException('无法从页面提取 allPassingScores callback URL');
     }
+    final callbackPath = urlMatch.group(1)!;
+
+    final callbackResp = await client.get(
+      Uri.parse('http://zhjw.scu.edu.cn$callbackPath'),
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Referer':
+            'http://zhjw.scu.edu.cn/student/integratedQuery/scoreQuery/allPassingScores/index',
+        'User-Agent': _headers['User-Agent']!,
+      },
+    );
+    final body = callbackResp.body.trim();
+    _checkSessionExpiry(body, callbackResp.statusCode);
+    return parseJson(
+      body,
+      'allPassingScores/callback',
+      (msg) => ScuLoginException(msg),
+    );
   }
 
   /// 获取方案成绩（需要先登录）
   Future<Map<String, dynamic>> fetchSchemeScores() async {
     final client = await bindSession();
-    try {
-      final indexResp = await client.get(
-        Uri.parse(
-          'http://zhjw.scu.edu.cn/student/integratedQuery/scoreQuery/schemeScores/index',
-        ),
-        headers: {
-          'Accept':
-              'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Referer': 'http://zhjw.scu.edu.cn/',
-          'User-Agent': _headers['User-Agent']!,
-        },
-      );
+    final indexResp = await client.get(
+      Uri.parse(
+        'http://zhjw.scu.edu.cn/student/integratedQuery/scoreQuery/schemeScores/index',
+      ),
+      headers: {
+        'Accept':
+            'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Referer': 'http://zhjw.scu.edu.cn/',
+        'User-Agent': _headers['User-Agent']!,
+      },
+    );
 
-      final indexBody = indexResp.body;
-      _checkSessionExpiry(indexBody, indexResp.statusCode);
+    final indexBody = indexResp.body;
+    _checkSessionExpiry(indexBody, indexResp.statusCode);
 
-      final urlMatch = RegExp(
-        r'var\s+url\s*=\s*"(/student/integratedQuery/scoreQuery/[^/]+/schemeScores/callback)"',
-      ).firstMatch(indexBody);
-      if (urlMatch == null) {
-        if (indexBody.contains('login') || indexBody.contains('Login')) {
-          throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
-        }
-        throw ScuLoginException('无法从页面提取 schemeScores callback URL');
+    final urlMatch = RegExp(
+      r'var\s+url\s*=\s*"(/student/integratedQuery/scoreQuery/[^/]+/schemeScores/callback)"',
+    ).firstMatch(indexBody);
+    if (urlMatch == null) {
+      if (indexBody.contains('login') || indexBody.contains('Login')) {
+        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
       }
-      final callbackPath = urlMatch.group(1)!;
-      final callbackResp = await client.get(
-        Uri.parse('http://zhjw.scu.edu.cn$callbackPath'),
-        headers: {
-          'Accept': 'application/json, text/plain, */*',
-          'Referer':
-              'http://zhjw.scu.edu.cn/student/integratedQuery/scoreQuery/schemeScores/index',
-          'User-Agent': _headers['User-Agent']!,
-        },
-      );
-
-      final body = callbackResp.body.trim();
-      _checkSessionExpiry(body, callbackResp.statusCode);
-      return parseJson(body, 'schemeScores/callback', (msg) => ScuLoginException(msg));
-    } finally {
-      client.close();
+      throw ScuLoginException('无法从页面提取 schemeScores callback URL');
     }
+    final callbackPath = urlMatch.group(1)!;
+    final callbackResp = await client.get(
+      Uri.parse('http://zhjw.scu.edu.cn$callbackPath'),
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Referer':
+            'http://zhjw.scu.edu.cn/student/integratedQuery/scoreQuery/schemeScores/index',
+        'User-Agent': _headers['User-Agent']!,
+      },
+    );
+
+    final body = callbackResp.body.trim();
+    _checkSessionExpiry(body, callbackResp.statusCode);
+    return parseJson(
+      body,
+      'schemeScores/callback',
+      (msg) => ScuLoginException(msg),
+    );
   }
 
   /// 获取教室查询页面的校区和教学楼列表
   Future<({List<ClassroomCampus> campuses, List<ClassroomBuilding> buildings})>
   fetchClassroomIndex() async {
     final client = await bindSession();
-    try {
-      final resp = await client.get(
-        Uri.parse(
-          'http://zhjw.scu.edu.cn/student/teachingResources/classroomUseStatus/index',
-        ),
-        headers: {
-          'Accept': 'text/html,*/*',
-          'Referer': 'http://zhjw.scu.edu.cn/',
-          'User-Agent': _headers['User-Agent']!,
-        },
-      );
-      final body = resp.body.trim();
-      _checkSessionExpiry(body, resp.statusCode);
-      final xqMatch = RegExp(
-        r"""<input[^>]+id="xqList"[^>]+value='([^']+)'""",
-      ).firstMatch(body);
-      if (xqMatch == null) {
-        throw ScuLoginException('无法解析校区列表');
-      }
-      final xqList = (jsonDecode(xqMatch.group(1)!) as List)
-          .map((e) => ClassroomCampus.fromJson(e as Map<String, dynamic>))
-          .toList();
-
-      final jxlMatch = RegExp(
-        r"""<input[^>]+id="jxlList"[^>]+value='([^']+)'""",
-      ).firstMatch(body);
-      if (jxlMatch == null) {
-        throw ScuLoginException('无法解析教学楼列表');
-      }
-      final jxlList = (jsonDecode(jxlMatch.group(1)!) as List)
-          .map((e) => ClassroomBuilding.fromJson(e as Map<String, dynamic>))
-          .toList();
-
-      return (campuses: xqList, buildings: jxlList);
-    } finally {
-      client.close();
+    final resp = await client.get(
+      Uri.parse(
+        'http://zhjw.scu.edu.cn/student/teachingResources/classroomUseStatus/index',
+      ),
+      headers: {
+        'Accept': 'text/html,*/*',
+        'Referer': 'http://zhjw.scu.edu.cn/',
+        'User-Agent': _headers['User-Agent']!,
+      },
+    );
+    final body = resp.body.trim();
+    _checkSessionExpiry(body, resp.statusCode);
+    final xqMatch = RegExp(
+      r"""<input[^>]+id="xqList"[^>]+value='([^']+)'""",
+    ).firstMatch(body);
+    if (xqMatch == null) {
+      throw ScuLoginException('无法解析校区列表');
     }
+    final xqList = (jsonDecode(xqMatch.group(1)!) as List)
+        .map((e) => ClassroomCampus.fromJson(e as Map<String, dynamic>))
+        .toList();
+
+    final jxlMatch = RegExp(
+      r"""<input[^>]+id="jxlList"[^>]+value='([^']+)'""",
+    ).firstMatch(body);
+    if (jxlMatch == null) {
+      throw ScuLoginException('无法解析教学楼列表');
+    }
+    final jxlList = (jsonDecode(jxlMatch.group(1)!) as List)
+        .map((e) => ClassroomBuilding.fromJson(e as Map<String, dynamic>))
+        .toList();
+
+    return (campuses: xqList, buildings: jxlList);
   }
 
   /// 获取教学楼的教室类型列表
@@ -425,31 +442,27 @@ class ScuAuthService {
     required String buildingName,
   }) async {
     final client = await bindSession();
-    try {
-      final resp = await client.get(
-        Uri.parse(
-          'http://zhjw.scu.edu.cn/student/teachingResources/classroomUseStatus'
-          '/$campusNumber/$buildingNumber'
-          '/${Uri.encodeComponent(campusName)}/${Uri.encodeComponent(buildingName)}',
-        ),
-        headers: {
-          'Accept': 'text/html,*/*',
-          'Referer': 'http://zhjw.scu.edu.cn/',
-          'User-Agent': _headers['User-Agent']!,
-        },
-      );
-      final body = resp.body.trim();
-      _checkSessionExpiry(body, resp.statusCode);
-      final match = RegExp(
-        r"""<input[^>]+id="classroomTypes"[^>]+value='([^']+)'""",
-      ).firstMatch(body);
-      if (match == null) return [];
-      return (jsonDecode(match.group(1)!) as List)
-          .map((e) => ClassroomType.fromJson(e as Map<String, dynamic>))
-          .toList();
-    } finally {
-      client.close();
-    }
+    final resp = await client.get(
+      Uri.parse(
+        'http://zhjw.scu.edu.cn/student/teachingResources/classroomUseStatus'
+        '/$campusNumber/$buildingNumber'
+        '/${Uri.encodeComponent(campusName)}/${Uri.encodeComponent(buildingName)}',
+      ),
+      headers: {
+        'Accept': 'text/html,*/*',
+        'Referer': 'http://zhjw.scu.edu.cn/',
+        'User-Agent': _headers['User-Agent']!,
+      },
+    );
+    final body = resp.body.trim();
+    _checkSessionExpiry(body, resp.statusCode);
+    final match = RegExp(
+      r"""<input[^>]+id="classroomTypes"[^>]+value='([^']+)'""",
+    ).firstMatch(body);
+    if (match == null) return [];
+    return (jsonDecode(match.group(1)!) as List)
+        .map((e) => ClassroomType.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   /// 查询教室使用情况
@@ -463,36 +476,36 @@ class ScuAuthService {
     String searchDate = '',
   }) async {
     final client = await bindSession();
-    try {
-      final resp = await client.post(
-        Uri.parse(
-          'http://zhjw.scu.edu.cn/student/teachingResources/classroomUseStatus/jasInfo',
-        ),
-        headers: {
-          'Accept': 'application/json, text/javascript, */*; q=0.01',
-          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-          'Referer':
-              'http://zhjw.scu.edu.cn/student/teachingResources/classroomUseStatus/index',
-          'User-Agent': _headers['User-Agent']!,
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        body:
-            'xqh=${Uri.encodeComponent(campusNumber)}'
-            '&jxlh=${Uri.encodeComponent(buildingNumber)}'
-            '&jslx=${Uri.encodeComponent(classroomType)}'
-            '&jasm=${Uri.encodeComponent(classroomName)}'
-            '&zwFrom=${Uri.encodeComponent(seatFrom)}'
-            '&zwTo=${Uri.encodeComponent(seatTo)}'
-            '&searchDate=${Uri.encodeComponent(searchDate)}',
-      );
-      final body = resp.body.trim();
-      _checkSessionExpiry(body, resp.statusCode);
-      return ClassroomQueryResult.fromJson(
-        parseJson(body, 'classroomUseStatus/jasInfo', (msg) => ScuLoginException(msg)),
-      );
-    } finally {
-      client.close();
-    }
+    final resp = await client.post(
+      Uri.parse(
+        'http://zhjw.scu.edu.cn/student/teachingResources/classroomUseStatus/jasInfo',
+      ),
+      headers: {
+        'Accept': 'application/json, text/javascript, */*; q=0.01',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'Referer':
+            'http://zhjw.scu.edu.cn/student/teachingResources/classroomUseStatus/index',
+        'User-Agent': _headers['User-Agent']!,
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      body:
+          'xqh=${Uri.encodeComponent(campusNumber)}'
+          '&jxlh=${Uri.encodeComponent(buildingNumber)}'
+          '&jslx=${Uri.encodeComponent(classroomType)}'
+          '&jasm=${Uri.encodeComponent(classroomName)}'
+          '&zwFrom=${Uri.encodeComponent(seatFrom)}'
+          '&zwTo=${Uri.encodeComponent(seatTo)}'
+          '&searchDate=${Uri.encodeComponent(searchDate)}',
+    );
+    final body = resp.body.trim();
+    _checkSessionExpiry(body, resp.statusCode);
+    return ClassroomQueryResult.fromJson(
+      parseJson(
+        body,
+        'classroomUseStatus/jasInfo',
+        (msg) => ScuLoginException(msg),
+      ),
+    );
   }
 
   void logout() {
@@ -512,7 +525,6 @@ class ScuAuthService {
       throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
     }
   }
-
 }
 
 class CaptchaResult {
@@ -660,6 +672,9 @@ class CookieClient extends http.BaseClient {
         ..maxRedirects = request.maxRedirects
         ..persistentConnection = true
         ..headers.addAll(request.headers);
+      if (request is http.Request) {
+        retryRequest.body = request.body;
+      }
       return await _inner.send(retryRequest).timeout(kHttpTimeout);
     }
   }

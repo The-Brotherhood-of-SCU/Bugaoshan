@@ -89,11 +89,12 @@ class CourseDetailSheet extends StatelessWidget {
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     onPressed: () {
+                      final rootCtx = logicRootContext;
                       Navigator.pop(context);
                       final newCourse = course.copyWith();
                       newCourse.name = '${course.name}${l10n.copySuffix}';
                       popupOrNavigate(
-                        context,
+                        rootCtx,
                         CourseEditPage(course: newCourse),
                       );
                     },
@@ -108,8 +109,9 @@ class CourseDetailSheet extends StatelessWidget {
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     onPressed: () {
+                      final rootCtx = logicRootContext;
                       Navigator.pop(context);
-                      popupOrNavigate(context, CourseEditPage(course: course));
+                      popupOrNavigate(rootCtx, CourseEditPage(course: course));
                     },
                   ),
                 ],

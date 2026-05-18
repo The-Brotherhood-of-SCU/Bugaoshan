@@ -50,7 +50,7 @@ class ScuAuthProvider extends ChangeNotifier {
   bool get isAutoLoggingIn => _isAutoLoggingIn;
   bool get isLoggedIn => _accessToken != null && !isExpired;
   bool get isExpired {
-    if (_loginTimestamp == null) return false;
+    if (_loginTimestamp == null) return true;
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     if (now - _loginTimestamp! > _sessionDurationSeconds) return true;
     final lastAppOpen = _prefs.getInt(_keyLastAppOpenTimestamp);
@@ -95,7 +95,6 @@ class ScuAuthProvider extends ChangeNotifier {
     _userRealname = null;
     _userNumber = null;
     await SecureStorageProvider.instance.delete(key: _keyAccessToken);
-    await SecureStorageProvider.instance.delete(key: _keyAutoLogin);
     await _prefs.remove(_keyLoginTimestamp);
     await _prefs.remove(_keyUserRealname);
     await _prefs.remove(_keyUserNumber);

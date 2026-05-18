@@ -77,8 +77,8 @@ class ScheduleConfig {
     if (json.containsKey('totalWeeks')) {
       totalWeeks = json['totalWeeks'] as int;
     } else if (json.containsKey('semesterEndDate')) {
-      final startDate = DateTime.parse(json['semesterStartDate'] as String);
-      final endDate = DateTime.parse(json['semesterEndDate'] as String);
+      final startDate = DateTime.tryParse(json['semesterStartDate'] as String? ?? '') ?? DateTime.now();
+      final endDate = DateTime.tryParse(json['semesterEndDate'] as String? ?? '') ?? DateTime.now();
       totalWeeks = (endDate.difference(startDate).inDays / 7).ceil();
     } else {
       totalWeeks = 20;
@@ -103,7 +103,7 @@ class ScheduleConfig {
     return ScheduleConfig(
       id: json['id'] as String? ?? 'default',
       semesterName: json['semesterName'] as String? ?? '',
-      semesterStartDate: DateTime.parse(json['semesterStartDate'] as String),
+      semesterStartDate: DateTime.tryParse(json['semesterStartDate'] as String? ?? '') ?? DateTime.now(),
       totalWeeks: totalWeeks,
       morningSections: morning,
       afternoonSections: afternoon,
@@ -124,7 +124,7 @@ class ScheduleConfig {
           ),
       showTeacherName: json['showTeacherName'] as bool? ?? true,
       showLocation: json['showLocation'] as bool? ?? true,
-      showWeekend: json['showWeekend'] as bool? ?? true,
+      showWeekend: json['showWeekend'] as bool? ?? false,
       showNonCurrentWeekCourses:
           json['showNonCurrentWeekCourses'] as bool? ?? true,
     );
@@ -318,7 +318,7 @@ class ScheduleConfig {
       courseDuration: courseDuration ?? this.courseDuration,
       breakDuration: breakDuration ?? this.breakDuration,
       autoSyncTime: autoSyncTime ?? this.autoSyncTime,
-      timeSlots: timeSlots ?? this.timeSlots,
+      timeSlots: timeSlots ?? List.of(this.timeSlots),
       showTeacherName: showTeacherName ?? this.showTeacherName,
       showLocation: showLocation ?? this.showLocation,
       showWeekend: showWeekend ?? this.showWeekend,
@@ -365,19 +365,20 @@ class Course {
   }
 
   factory Course.fromJson(Map<String, dynamic> json) {
+    final weekTypeIndex = json['weekType'] as int?;
     return Course(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      teacher: json['teacher'] as String,
-      location: json['location'] as String,
-      startWeek: json['startWeek'] as int,
-      endWeek: json['endWeek'] as int,
-      dayOfWeek: json['dayOfWeek'] as int,
-      startSection: json['startSection'] as int,
-      endSection: json['endSection'] as int,
-      colorValue: json['colorValue'] as int,
-      weekType: json['weekType'] != null
-          ? WeekType.values[json['weekType'] as int]
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      teacher: json['teacher'] as String? ?? '',
+      location: json['location'] as String? ?? '',
+      startWeek: json['startWeek'] as int? ?? 1,
+      endWeek: json['endWeek'] as int? ?? 20,
+      dayOfWeek: json['dayOfWeek'] as int? ?? 1,
+      startSection: json['startSection'] as int? ?? 1,
+      endSection: json['endSection'] as int? ?? 1,
+      colorValue: json['colorValue'] as int? ?? 0xFF2196F3,
+      weekType: weekTypeIndex != null && weekTypeIndex < WeekType.values.length
+          ? WeekType.values[weekTypeIndex]
           : WeekType.every,
     );
   }
