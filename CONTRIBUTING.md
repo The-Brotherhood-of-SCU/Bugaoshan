@@ -14,7 +14,7 @@
 
 - [Flutter SDK](https://flutter.dev/docs/get-started/install) >= 3.x
 - [Dart SDK](https://dart.dev/get-dart) >= 3.x
-- [Nuget CLI](https://learn.microsoft.com/en-us/nuget/install-nuget-client-tools?tabs=windows#nugetexe-cli)  required by `flutter_inappwebview`
+- [Nuget CLI](https://learn.microsoft.com/en-us/nuget/install-nuget-client-tools?tabs=windows#nugetexe-cli)  required by `flutter_inappwebview` (windows target)
 
 ### 安装运行
 
