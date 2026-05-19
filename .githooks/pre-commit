@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Auto-format staged Dart files before commit
+staged_dart_files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.dart$')
+
+if [ -n "$staged_dart_files" ]; then
+  echo "Running dart format on staged files..."
+  echo "$staged_dart_files" | xargs dart format
+
+  # Re-stage formatted files
+  echo "$staged_dart_files" | xargs git add
+fi

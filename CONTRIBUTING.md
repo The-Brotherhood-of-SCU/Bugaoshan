@@ -16,6 +16,20 @@
 - [Dart SDK](https://dart.dev/get-dart) >= 3.x
 - [Nuget CLI](https://learn.microsoft.com/en-us/nuget/install-nuget-client-tools?tabs=windows#nugetexe-cli)  required by `flutter_inappwebview` (windows target)
 
+### Pre-commit Hook
+
+项目内置了 pre-commit hook，会在提交时自动对暂存的 `.dart` 文件执行 `dart format`。
+
+克隆仓库后，将 hook 链接到 `.git/hooks/`：
+
+```bash
+# Linux / macOS
+ln -sf ../../.githooks/pre-commit .git/hooks/pre-commit
+
+# Windows (Git Bash)
+cp .githooks/pre-commit .git/hooks/pre-commit
+```
+
 ### 安装运行
 
 ```bash
