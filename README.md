@@ -38,11 +38,11 @@
 - **更多便捷功能** — 持续迭代中，更多校园实用工具即将上线
 
 <div align="center">
-  <img src="./SCREENSHOT/Screenshot_2026-05-01-11-37-43-061_io.github.the_.png" width="30%" />
+  <img src="./SCREENSHOT/screenshot-course.webp" width="30%" />
   &nbsp;&nbsp;&nbsp;
-  <img src="./SCREENSHOT/Screenshot_2026-05-08-21-24-51-488_io.github.the_.png" width="30%" />
+  <img src="./SCREENSHOT/screenshot-campus.webp" width="30%" />
   &nbsp;&nbsp;&nbsp;
-  <img src="./SCREENSHOT/Screenshot_2026-05-01-10-34-58-337_com.miui.home-.png" width="30%" />
+  <img src="./SCREENSHOT/screenshot-widget.webp" width="30%" />
 </div>
 
 
@@ -60,7 +60,7 @@
 
 感谢 **小米MIMO** 提供的 AI 模型支持
 
-[![momo](./SCREENSHOT/mimo.png)](https://mimo.mi.com/)
+[![momo](./SCREENSHOT/mimo.webp)](https://mimo.mi.com/)
 
 ---
 

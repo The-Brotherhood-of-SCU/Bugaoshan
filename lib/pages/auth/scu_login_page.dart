@@ -196,7 +196,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: Image.asset('assets/scu.jpg', fit: BoxFit.cover),
+          child: Image.asset('assets/scu.webp', fit: BoxFit.cover),
         ),
       ),
       const SizedBox(height: 2),
