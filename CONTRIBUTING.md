@@ -36,8 +36,24 @@ cp .githooks/pre-commit .git/hooks/pre-commit
 # 克隆仓库
 git clone git@github.com:The-Brotherhood-of-SCU/Bugaoshan.git
 cd Bugaoshan
+```
 
-# 安装依赖
+> 安装依赖前设置国内镜像源，否则 `pubspec.lock` 会变国际源，导致工作区产生不必要的 diff。
+>
+> 持久化设置：
+>
+> ```bash
+> # Windows (管理员 PowerShell)
+> setx PUB_HOSTED_URL "https://pub.flutter-io.cn" /M
+> setx FLUTTER_STORAGE_BASE_URL "https://storage.flutter-io.cn" /M
+>
+> # Linux / macOS (添加到 shell 配置文件 ~/.bashrc, ~/.zshrc 等)
+> export PUB_HOSTED_URL=https://pub.flutter-io.cn
+> export FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn
+> ```
+
+```bash
+# 安装依赖（已设镜像则直接执行）
 flutter pub get
 
 # 运行代码生成（DI & 国际化）
