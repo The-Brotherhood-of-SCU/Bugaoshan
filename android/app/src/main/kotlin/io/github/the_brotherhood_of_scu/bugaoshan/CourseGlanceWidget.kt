@@ -37,6 +37,8 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.util.Calendar
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 // ── Data loaded from SQLite for the widget ──────────────────────────
 
@@ -49,6 +51,7 @@ data class WidgetCourseData(
     val sectionPrefix: String,
     val sectionSuffix: String,
     val themeColor: Int,
+    val isTomorrow: Boolean = false,
 )
 
 // ── SQLite data loader ──────────────────────────────────────────────
@@ -95,40 +98,61 @@ object WidgetDataLoader {
             val currentMinute = now.get(Calendar.MINUTE)
             val currentTimeMinutes = currentHour * 60 + currentMinute
 
-            val filteredCourses = JSONArray()
-            for (i in 0 until courses.length()) {
-                val c = courses.getJSONObject(i)
-                val ss = c.optInt("startSection", 0)
-                val es = c.optInt("endSection", 0)
-                c.put("startTime", formatTime(timeSlots, ss))
-                c.put("endTime", formatTime(timeSlots, es, isEnd = true))
-
-                // Filter out courses that have already ended
-                val endSlot = getSlotEndTime(timeSlots, es)
-                if (endSlot != null) {
-                    val endMinutes = endSlot.first * 60 + endSlot.second
-                    if (currentTimeMinutes >= endMinutes) continue
+            courses = attachTimesAndStatuses(courses, timeSlots, currentTimeMinutes, false)
+            var showingTomorrow = false
+            var tomorrowCal: Calendar? = null
+            var weekForTomorrow = currentWeek
+            // If no remaining courses today and user enabled the setting, try to show tomorrow's courses
+            if (courses.length() == 0) {
+                try {
+                    val prefs = context.getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
+                    // Flutter SharedPreferences stores keys with a "flutter." prefix on Android.
+                    val rawKey = "widget_show_tomorrow"
+                    val flutterKey = "flutter.$rawKey"
+                    var showTomorrow = prefs?.getBoolean(flutterKey, false) ?: false
+                    // Backward compatibility: also check unprefixed key
+                    if (!showTomorrow) {
+                        showTomorrow = prefs?.getBoolean(rawKey, false) ?: false
+                    }
+                    if (showTomorrow) {
+                        tomorrowCal = Calendar.getInstance().apply { add(Calendar.DATE, 1) }
+                        val nextDayOfWeek = (tomorrowCal!!.get(Calendar.DAY_OF_WEEK) + 5) % 7 + 1
+                        weekForTomorrow = computeWeekForDate(semesterStartDate, totalWeeks, tomorrowCal!!)
+                        var tomorrowCourses = queryCourses(db, currentScheduleId, nextDayOfWeek, weekForTomorrow)
+                        if (tomorrowCourses.length() == 0 && currentScheduleId != "default") {
+                            tomorrowCourses = queryCourses(db, "default", nextDayOfWeek, weekForTomorrow)
+                        }
+                        if (tomorrowCourses.length() > 0) {
+                            // attach times and mark as upcoming
+                            courses = attachTimesAndStatuses(tomorrowCourses, timeSlots, null, true)
+                            showingTomorrow = true
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to read widget setting", e)
                 }
-
-                // Mark course status: inProgress or upcoming
-                val startSlot = getSlotStartTime(timeSlots, ss)
-                if (startSlot != null && endSlot != null) {
-                    val startMinutes = startSlot.first * 60 + startSlot.second
-                    val endMinutes = endSlot.first * 60 + endSlot.second
-                    c.put("status", if (currentTimeMinutes in startMinutes until endMinutes) "inProgress" else "upcoming")
-                } else {
-                    c.put("status", "upcoming")
-                }
-
-                filteredCourses.put(c)
             }
-            courses = filteredCourses
-            val month = now.get(Calendar.MONTH) + 1
-            val day = now.get(Calendar.DAY_OF_MONTH)
-            val dayNames = arrayOf("周一", "周二", "周三", "周四", "周五", "周六", "周日")
-            val dayName = dayNames[dayOfWeek - 1]
-            val dateText = "$month/$day $dayName"
-            val weekText = "第${currentWeek}周"
+
+            var month = now.get(Calendar.MONTH) + 1
+            var day = now.get(Calendar.DAY_OF_MONTH)
+            val locale = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                context.resources.configuration.locales.get(0)
+            } else {
+                context.resources.configuration.locale
+            }
+
+            val dayFormat = SimpleDateFormat("EEE", locale)
+            var dateText = "$month/$day ${dayFormat.format(now.time)}"
+            if (showingTomorrow && tomorrowCal != null) {
+                month = tomorrowCal.get(Calendar.MONTH) + 1
+                day = tomorrowCal.get(Calendar.DAY_OF_MONTH)
+                val dayName = dayFormat.format(tomorrowCal.time)
+                val tomorrowLabel = context.getString(R.string.tomorrow)
+                dateText = "$month/$day $dayName $tomorrowLabel"
+            }
+
+            val weekNumber = if (showingTomorrow) weekForTomorrow else currentWeek
+            val weekText = context.getString(R.string.widget_week_format, weekNumber)
 
             val themeColor = 0xFF2196F3.toInt()
 
@@ -137,10 +161,11 @@ object WidgetDataLoader {
                 dateText = dateText,
                 weekText = weekText,
                 headerTitle = "不高山上",
-                emptyText = "今天没有课程",
+                emptyText = context.getString(R.string.widget_empty_today),
                 sectionPrefix = "第",
                 sectionSuffix = "节",
                 themeColor = themeColor,
+                isTomorrow = showingTomorrow,
             )
         } catch (e: Exception) {
             Log.e(TAG, "WidgetDataLoader.load failed", e)
@@ -229,6 +254,47 @@ object WidgetDataLoader {
         return JSONArray().apply { sorted.forEach { put(it) } }
     }
 
+    private fun attachTimesAndStatuses(
+        courses: JSONArray,
+        timeSlots: JSONArray?,
+        currentTimeMinutes: Int?,
+        forceUpcoming: Boolean = false
+    ): JSONArray {
+        val updated = JSONArray()
+        for (i in 0 until courses.length()) {
+            val c = courses.getJSONObject(i)
+            val ss = c.optInt("startSection", 0)
+            val es = c.optInt("endSection", 0)
+            c.put("startTime", formatTime(timeSlots, ss))
+            c.put("endTime", formatTime(timeSlots, es, isEnd = true))
+
+            if (!forceUpcoming && currentTimeMinutes != null) {
+                // Filter out courses that have already ended
+                val endSlot = getSlotEndTime(timeSlots, es)
+                if (endSlot != null) {
+                    val endMinutes = endSlot.first * 60 + endSlot.second
+                    if (currentTimeMinutes >= endMinutes) continue
+                }
+
+                // Mark course status: inProgress or upcoming
+                val startSlot = getSlotStartTime(timeSlots, ss)
+                if (startSlot != null && endSlot != null) {
+                    val startMinutes = startSlot.first * 60 + startSlot.second
+                    val endMinutes = endSlot.first * 60 + endSlot.second
+                    c.put("status", if (currentTimeMinutes in startMinutes until endMinutes) "inProgress" else "upcoming")
+                } else {
+                    c.put("status", "upcoming")
+                }
+            } else {
+                // For tomorrow or forced upcoming, mark as upcoming
+                c.put("status", "upcoming")
+            }
+
+            updated.put(c)
+        }
+        return updated
+    }
+
     private fun isCourseActive(week: Int, startWeek: Int, endWeek: Int, weekType: Int): Boolean {
         if (week < startWeek || week > endWeek) return false
         if (weekType == 1 && week % 2 == 0) return false
@@ -238,6 +304,7 @@ object WidgetDataLoader {
 
     private fun computeCurrentWeek(semesterStartDate: String, totalWeeks: Int): Int {
         if (semesterStartDate.isEmpty()) return 1
+        if (totalWeeks <= 0) return 1
         val parts = semesterStartDate.split("-")
         if (parts.size != 3) return 1
         val startCal = Calendar.getInstance().apply {
@@ -253,7 +320,31 @@ object WidgetDataLoader {
         if (now.before(startCal)) return 1
         val days = ((now.timeInMillis - startCal.timeInMillis) / (1000 * 60 * 60 * 24)).toInt()
         val week = days / 7 + 1
-        return week.coerceIn(1, totalWeeks)
+        val maxWeek = if (totalWeeks >= 1) totalWeeks else week
+        return week.coerceIn(1, maxWeek)
+    }
+
+    private fun computeWeekForDate(semesterStartDate: String, totalWeeks: Int, cal: Calendar): Int {
+        if (semesterStartDate.isEmpty()) return 1
+        if (totalWeeks <= 0) return 1
+        val parts = semesterStartDate.split("-")
+        if (parts.size != 3) return 1
+        val startCal = Calendar.getInstance().apply {
+            set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt(), 0, 0, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        val target = Calendar.getInstance().apply {
+            timeInMillis = cal.timeInMillis
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        if (target.before(startCal)) return 1
+        val days = ((target.timeInMillis - startCal.timeInMillis) / (1000 * 60 * 60 * 24)).toInt()
+        val week = days / 7 + 1
+        val maxWeek = if (totalWeeks >= 1) totalWeeks else week
+        return week.coerceIn(1, maxWeek)
     }
 
     private fun formatTime(timeSlots: JSONArray?, section: Int, isEnd: Boolean = false): String {
@@ -302,21 +393,21 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 val isLarge = widthDp >= 300 && heightDp >= 250
 
                 when {
-                    isSmall -> SmallWidget(data, launchIntent)
-                    isLarge -> LargeWidget(data, launchIntent)
-                    else -> MediumWidget(data, launchIntent)
+                    isSmall -> SmallWidget(data, launchIntent, data?.emptyText ?: context.getString(R.string.widget_empty_today))
+                    isLarge -> LargeWidget(data, launchIntent, data?.emptyText ?: context.getString(R.string.widget_empty_today))
+                    else -> MediumWidget(data, launchIntent, data?.emptyText ?: context.getString(R.string.widget_empty_today))
                 }
             }
         }
     }
 
     @Composable
-    private fun SmallWidget(data: WidgetCourseData?, launchIntent: Intent) {
+    private fun SmallWidget(data: WidgetCourseData?, launchIntent: Intent, emptyTextParam: String) {
         val courses = data?.courses ?: JSONArray()
         val title = data?.headerTitle ?: "不高山上"
         val date = data?.dateText ?: ""
         val week = data?.weekText ?: ""
-        val emptyText = data?.emptyText ?: "今天没有课程"
+        val emptyText = data?.emptyText ?: emptyTextParam
 
         // Pick courses to show: current + next if in class, otherwise next 2 upcoming
         val displayCourses = mutableListOf<JSONObject>()
@@ -386,8 +477,9 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     )
                 }
             } else {
-                for (i in displayCourses.indices) {
-                    CourseCardSmall(displayCourses[i])
+                    val isTomorrow = data?.isTomorrow ?: false
+                    for (i in displayCourses.indices) {
+                        CourseCardSmall(displayCourses[i], isTomorrow)
                     if (i < displayCourses.size - 1) {
                         Spacer(modifier = GlanceModifier.height(6.dp))
                     }
@@ -397,12 +489,12 @@ class CourseGlanceWidget : GlanceAppWidget() {
     }
 
     @Composable
-    private fun MediumWidget(data: WidgetCourseData?, launchIntent: Intent) {
+    private fun MediumWidget(data: WidgetCourseData?, launchIntent: Intent, emptyTextParam: String) {
         val courses = data?.courses ?: JSONArray()
         val title = data?.headerTitle ?: "不高山上"
         val date = data?.dateText ?: ""
         val week = data?.weekText ?: ""
-        val emptyText = data?.emptyText ?: "今天没有课程"
+        val emptyText = data?.emptyText ?: emptyTextParam
 
         Column(
             modifier = GlanceModifier
@@ -454,8 +546,9 @@ class CourseGlanceWidget : GlanceAppWidget() {
             } else {
                 val limit = 2
                 Column(modifier = GlanceModifier.fillMaxSize()) {
+                    val isTomorrow = data?.isTomorrow ?: false
                     for (i in 0 until minOf(courses.length(), limit)) {
-                        CourseCardMedium(courses.getJSONObject(i))
+                        CourseCardMedium(courses.getJSONObject(i), isTomorrow)
                         if (i < minOf(courses.length(), limit) - 1) {
                             Spacer(modifier = GlanceModifier.height(8.dp))
                         }
@@ -466,12 +559,12 @@ class CourseGlanceWidget : GlanceAppWidget() {
     }
 
     @Composable
-    private fun LargeWidget(data: WidgetCourseData?, launchIntent: Intent) {
+    private fun LargeWidget(data: WidgetCourseData?, launchIntent: Intent, emptyTextParam: String) {
         val courses = data?.courses ?: JSONArray()
         val title = data?.headerTitle ?: "不高山上"
         val date = data?.dateText ?: ""
         val week = data?.weekText ?: ""
-        val emptyText = data?.emptyText ?: "今天没有课程"
+        val emptyText = data?.emptyText ?: emptyTextParam
 
         Column(
             modifier = GlanceModifier
@@ -542,8 +635,9 @@ class CourseGlanceWidget : GlanceAppWidget() {
             } else {
                 val limit = 4
                 Column(modifier = GlanceModifier.fillMaxSize()) {
+                    val isTomorrow = data?.isTomorrow ?: false
                     for (i in 0 until minOf(courses.length(), limit)) {
-                        CourseCardLarge(courses.getJSONObject(i))
+                        CourseCardLarge(courses.getJSONObject(i), isTomorrow)
                         if (i < minOf(courses.length(), limit) - 1) {
                             Spacer(modifier = GlanceModifier.height(6.dp))
                         }
@@ -556,7 +650,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
     // ── Course card composables ──────────────────────────────────────
 
     @Composable
-    private fun CourseCardSmall(course: JSONObject) {
+    private fun CourseCardSmall(course: JSONObject, isTomorrow: Boolean) {
         val name = course.optString("name", "")
         val startTime = course.optString("startTime", "")
         val location = course.optString("location", "")
@@ -569,19 +663,23 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 .padding(8.dp),
             verticalAlignment = Alignment.Top
         ) {
-            Box(
+                val leftColor = if (isTomorrow) R.color.widget_tomorrow_accent else R.color.widget_header_default
+                val nameColor = if (isTomorrow) R.color.widget_tomorrow_text_primary else R.color.widget_text_primary
+                val metaColor = if (isTomorrow) R.color.widget_tomorrow_text_secondary else R.color.widget_text_secondary
+
+                Box(
                 modifier = GlanceModifier
                     .width(4.dp)
                     .height(28.dp)
                     .cornerRadius(2.dp)
-                    .background(ColorProvider(R.color.widget_header_default))
+                    .background(ColorProvider(leftColor))
             ) {}
             Spacer(modifier = GlanceModifier.width(8.dp))
             Column(modifier = GlanceModifier.defaultWeight()) {
                 Text(
                     text = name,
                     style = TextStyle(
-                        color = ColorProvider(R.color.widget_text_primary),
+                        color = ColorProvider(nameColor),
                         fontWeight = FontWeight.Medium,
                         fontSize = 13.sp
                     ),
@@ -590,7 +688,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 Text(
                     text = "$startTime  $location",
                     style = TextStyle(
-                        color = ColorProvider(R.color.widget_text_secondary),
+                        color = ColorProvider(metaColor),
                         fontSize = 10.sp
                     ),
                     maxLines = 2
@@ -600,7 +698,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
     }
 
     @Composable
-    private fun CourseCardMedium(course: JSONObject) {
+    private fun CourseCardMedium(course: JSONObject, isTomorrow: Boolean) {
         val name = course.optString("name", "")
         val startTime = course.optString("startTime", "")
         val endTime = course.optString("endTime", "")
@@ -614,19 +712,23 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
+                val leftColor = if (isTomorrow) R.color.widget_tomorrow_accent else R.color.widget_header_default
+                val nameColor = if (isTomorrow) R.color.widget_tomorrow_text_primary else R.color.widget_text_primary
+                val metaColor = if (isTomorrow) R.color.widget_tomorrow_text_secondary else R.color.widget_text_secondary
+
+                Box(
                 modifier = GlanceModifier
                     .width(4.dp)
                     .height(36.dp)
                     .cornerRadius(2.dp)
-                    .background(ColorProvider(R.color.widget_header_default))
+                    .background(ColorProvider(leftColor))
             ) {}
             Spacer(modifier = GlanceModifier.width(10.dp))
             Column(modifier = GlanceModifier.defaultWeight()) {
                 Text(
                     text = name,
                     style = TextStyle(
-                        color = ColorProvider(R.color.widget_text_primary),
+                        color = ColorProvider(nameColor),
                         fontWeight = FontWeight.Medium,
                         fontSize = 14.sp
                     ),
@@ -635,7 +737,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 Text(
                     text = "$startTime - $endTime  $location",
                     style = TextStyle(
-                        color = ColorProvider(R.color.widget_text_secondary),
+                        color = ColorProvider(metaColor),
                         fontSize = 12.sp
                     ),
                     maxLines = 1
@@ -645,7 +747,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
     }
 
     @Composable
-    private fun CourseCardLarge(course: JSONObject) {
+    private fun CourseCardLarge(course: JSONObject, isTomorrow: Boolean) {
         val name = course.optString("name", "")
         val startTime = course.optString("startTime", "")
         val endTime = course.optString("endTime", "")
@@ -663,19 +765,23 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
+                val leftColor = if (isTomorrow) R.color.widget_tomorrow_accent else R.color.widget_header_default
+                val nameColor = if (isTomorrow) R.color.widget_tomorrow_text_primary else R.color.widget_text_primary
+                val metaColor = if (isTomorrow) R.color.widget_tomorrow_text_secondary else R.color.widget_text_secondary
+
+                Box(
                 modifier = GlanceModifier
                     .width(4.dp)
                     .height(36.dp)
                     .cornerRadius(2.dp)
-                    .background(ColorProvider(R.color.widget_header_default))
+                    .background(ColorProvider(leftColor))
             ) {}
             Spacer(modifier = GlanceModifier.width(10.dp))
             Column(modifier = GlanceModifier.defaultWeight()) {
                 Text(
                     text = name,
                     style = TextStyle(
-                        color = ColorProvider(R.color.widget_text_primary),
+                        color = ColorProvider(nameColor),
                         fontWeight = FontWeight.Medium,
                         fontSize = 14.sp
                     ),
@@ -684,7 +790,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 Text(
                     text = "$startTime - $endTime  $section" + if (teacher.isNotEmpty()) "  $teacher" else "",
                     style = TextStyle(
-                        color = ColorProvider(R.color.widget_text_secondary),
+                        color = ColorProvider(metaColor),
                         fontSize = 11.sp
                     ),
                     maxLines = 1
@@ -692,7 +798,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 Text(
                     text = location,
                     style = TextStyle(
-                        color = ColorProvider(R.color.widget_text_secondary),
+                        color = ColorProvider(metaColor),
                         fontSize = 11.sp
                     ),
                     maxLines = 1

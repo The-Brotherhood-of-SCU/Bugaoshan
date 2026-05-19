@@ -70,6 +70,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wizardFeatureWidgetDesc => '将课表小组件添加到桌面，无需打开应用即可随时查看今日课程安排';
 
   @override
+  String get widgetShowTomorrowAfterEnd => '当天课程结束后显示第二天课程';
+
+  @override
   String get onboardingSkip => '跳过';
 
   @override

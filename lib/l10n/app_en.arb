@@ -19,6 +19,10 @@
     "wizardFeatureProfileDesc": "Log in with SCU Unified Identity, bind CCYL account, customize theme colors, dark mode and language preferences",
     "wizardFeatureWidget": "Desktop Widget",
     "wizardFeatureWidgetDesc": "Add course schedule widgets to your home screen to check today's classes without opening the app",
+    "widgetShowTomorrowAfterEnd": "Show next day's courses after today's classes finish",
+    "@widgetShowTomorrowAfterEnd": {
+        "description": "Toggle to show next day's courses in the home screen widget when today's classes are finished."
+    },
     "onboardingSkip": "Skip",
     "onboardingNext": "Next",
     "onboardingStart": "Get Started",

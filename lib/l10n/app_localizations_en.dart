@@ -74,6 +74,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add course schedule widgets to your home screen to check today\'s classes without opening the app';
 
   @override
+  String get widgetShowTomorrowAfterEnd =>
+      'Show next day\'s courses after today\'s classes finish';
+
+  @override
   String get onboardingSkip => 'Skip';
 
   @override

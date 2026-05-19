@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tomorrow">明天</string>
+    <string name="widget_week_format">第%1$d周</string>
+    <string name="widget_empty_today">今天没有课程</string>
+</resources>

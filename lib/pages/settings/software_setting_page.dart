@@ -11,6 +11,7 @@ import 'package:bugaoshan/pages/settings/set_duration_page.dart';
 import 'package:bugaoshan/pages/settings/set_language_page.dart';
 import 'package:bugaoshan/pages/settings/set_theme_color_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/common/styled_widget.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
@@ -36,6 +37,7 @@ class SoftwareSettingPage extends StatelessWidget {
         appConfig.courseRowHeight,
         appConfig.backgroundImagePath,
         appConfig.backgroundImageOpacity,
+        appConfig.widgetShowTomorrow,
       ]),
       builder: (context, _) {
         return Scaffold(
@@ -248,6 +250,24 @@ class SoftwareSettingPage extends StatelessWidget {
                     },
                     icon: const Icon(Icons.widgets_outlined),
                     child: Text(localizations.addWidgetPageTitle),
+                  ),
+                  const SizedBox(height: 8),
+                  // Show tomorrow setting for widget
+                  SwitchListTile(
+                    title: Text(localizations.widgetShowTomorrowAfterEnd),
+                    value: appConfig.widgetShowTomorrow.value,
+                    onChanged: (v) async {
+                      appConfig.widgetShowTomorrow.value = v;
+                      // Trigger widget update immediately (force)
+                      final service = getIt<WidgetUpdateService>();
+                      try {
+                        await service.updateWidgetData(force: true);
+                      } catch (e, st) {
+                        debugPrint('WidgetUpdate toggle failed: $e');
+                        debugPrint('$st');
+                      }
+                    },
+                    contentPadding: EdgeInsets.zero,
                   ),
                 ],
                 const Divider(),

@@ -223,6 +223,12 @@ abstract class AppLocalizations {
   /// **'Add course schedule widgets to your home screen to check today\'s classes without opening the app'**
   String get wizardFeatureWidgetDesc;
 
+  /// Toggle to show next day's courses in the home screen widget when today's classes are finished.
+  ///
+  /// In en, this message translates to:
+  /// **'Show next day\'s courses after today\'s classes finish'**
+  String get widgetShowTomorrowAfterEnd;
+
   /// No description provided for @onboardingSkip.
   ///
   /// In en, this message translates to:

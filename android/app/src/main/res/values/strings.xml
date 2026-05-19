@@ -4,4 +4,7 @@
     <string name="widget_name_small">Schedule (Small)</string>
     <string name="widget_name_medium">Schedule (Medium)</string>
     <string name="widget_name_large">Schedule (Large)</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="widget_week_format">Week %1$d</string>
+    <string name="widget_empty_today">No classes today</string>
 </resources>
