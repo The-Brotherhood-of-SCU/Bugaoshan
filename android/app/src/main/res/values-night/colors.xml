@@ -9,4 +9,11 @@
     <color name="widget_text_on_primary">#FFFFFFFF</color>
     <color name="widget_card_background">#FF2C2C2E</color>
     <color name="widget_divider">#1AFFFFFF</color>
+    <color name="widget_tomorrow_accent">#E0E0E0</color>
+    <color name="widget_tomorrow_text_primary">#F5F5F5</color>
+    <color name="widget_tomorrow_text_secondary">#E0E0E0</color>
+    <!-- Backwards-compatible aliases for older references -->
+    <color name="widget_gray_left">@color/widget_tomorrow_accent</color>
+    <color name="widget_gray_name">@color/widget_tomorrow_text_primary</color>
+    <color name="widget_gray_meta">@color/widget_tomorrow_text_secondary</color>
 </resources>

@@ -96,34 +96,7 @@ object WidgetDataLoader {
             val currentMinute = now.get(Calendar.MINUTE)
             val currentTimeMinutes = currentHour * 60 + currentMinute
 
-            val filteredCourses = JSONArray()
-            for (i in 0 until courses.length()) {
-                val c = courses.getJSONObject(i)
-                val ss = c.optInt("startSection", 0)
-                val es = c.optInt("endSection", 0)
-                c.put("startTime", formatTime(timeSlots, ss))
-                c.put("endTime", formatTime(timeSlots, es, isEnd = true))
-
-                // Filter out courses that have already ended
-                val endSlot = getSlotEndTime(timeSlots, es)
-                if (endSlot != null) {
-                    val endMinutes = endSlot.first * 60 + endSlot.second
-                    if (currentTimeMinutes >= endMinutes) continue
-                }
-
-                // Mark course status: inProgress or upcoming
-                val startSlot = getSlotStartTime(timeSlots, ss)
-                if (startSlot != null && endSlot != null) {
-                    val startMinutes = startSlot.first * 60 + startSlot.second
-                    val endMinutes = endSlot.first * 60 + endSlot.second
-                    c.put("status", if (currentTimeMinutes in startMinutes until endMinutes) "inProgress" else "upcoming")
-                } else {
-                    c.put("status", "upcoming")
-                }
-
-                filteredCourses.put(c)
-            }
-            courses = filteredCourses
+            courses = attachTimesAndStatuses(courses, timeSlots, currentTimeMinutes, false)
             var showingTomorrow = false
             var tomorrowCal: Calendar? = null
             var weekForTomorrow = currentWeek
@@ -149,17 +122,7 @@ object WidgetDataLoader {
                         }
                         if (tomorrowCourses.length() > 0) {
                             // attach times and mark as upcoming
-                            val updated = JSONArray()
-                            for (i in 0 until tomorrowCourses.length()) {
-                                val c = tomorrowCourses.getJSONObject(i)
-                                val ss = c.optInt("startSection", 0)
-                                val es = c.optInt("endSection", 0)
-                                c.put("startTime", formatTime(timeSlots, ss))
-                                c.put("endTime", formatTime(timeSlots, es, isEnd = true))
-                                c.put("status", "upcoming")
-                                updated.put(c)
-                            }
-                            courses = updated
+                            courses = attachTimesAndStatuses(tomorrowCourses, timeSlots, null, true)
                             showingTomorrow = true
                         }
                     }
@@ -285,6 +248,47 @@ object WidgetDataLoader {
             .map { result.getJSONObject(it) }
             .sortedBy { it.optInt("startSection", 0) }
         return JSONArray().apply { sorted.forEach { put(it) } }
+    }
+
+    private fun attachTimesAndStatuses(
+        courses: JSONArray,
+        timeSlots: JSONArray?,
+        currentTimeMinutes: Int?,
+        forceUpcoming: Boolean = false
+    ): JSONArray {
+        val updated = JSONArray()
+        for (i in 0 until courses.length()) {
+            val c = courses.getJSONObject(i)
+            val ss = c.optInt("startSection", 0)
+            val es = c.optInt("endSection", 0)
+            c.put("startTime", formatTime(timeSlots, ss))
+            c.put("endTime", formatTime(timeSlots, es, isEnd = true))
+
+            if (!forceUpcoming && currentTimeMinutes != null) {
+                // Filter out courses that have already ended
+                val endSlot = getSlotEndTime(timeSlots, es)
+                if (endSlot != null) {
+                    val endMinutes = endSlot.first * 60 + endSlot.second
+                    if (currentTimeMinutes >= endMinutes) continue
+                }
+
+                // Mark course status: inProgress or upcoming
+                val startSlot = getSlotStartTime(timeSlots, ss)
+                if (startSlot != null && endSlot != null) {
+                    val startMinutes = startSlot.first * 60 + startSlot.second
+                    val endMinutes = endSlot.first * 60 + endSlot.second
+                    c.put("status", if (currentTimeMinutes in startMinutes until endMinutes) "inProgress" else "upcoming")
+                } else {
+                    c.put("status", "upcoming")
+                }
+            } else {
+                // For tomorrow or forced upcoming, mark as upcoming
+                c.put("status", "upcoming")
+            }
+
+            updated.put(c)
+        }
+        return updated
     }
 
     private fun isCourseActive(week: Int, startWeek: Int, endWeek: Int, weekType: Int): Boolean {
@@ -655,9 +659,9 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 .padding(8.dp),
             verticalAlignment = Alignment.Top
         ) {
-                val leftColor = if (isTomorrow) R.color.widget_gray_left else R.color.widget_header_default
-                val nameColor = if (isTomorrow) R.color.widget_gray_name else R.color.widget_text_primary
-                val metaColor = if (isTomorrow) R.color.widget_gray_meta else R.color.widget_text_secondary
+                val leftColor = if (isTomorrow) R.color.widget_tomorrow_accent else R.color.widget_header_default
+                val nameColor = if (isTomorrow) R.color.widget_tomorrow_text_primary else R.color.widget_text_primary
+                val metaColor = if (isTomorrow) R.color.widget_tomorrow_text_secondary else R.color.widget_text_secondary
 
                 Box(
                 modifier = GlanceModifier
@@ -704,9 +708,9 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-                val leftColor = if (isTomorrow) R.color.widget_gray_left else R.color.widget_header_default
-                val nameColor = if (isTomorrow) R.color.widget_gray_name else R.color.widget_text_primary
-                val metaColor = if (isTomorrow) R.color.widget_gray_meta else R.color.widget_text_secondary
+                val leftColor = if (isTomorrow) R.color.widget_tomorrow_accent else R.color.widget_header_default
+                val nameColor = if (isTomorrow) R.color.widget_tomorrow_text_primary else R.color.widget_text_primary
+                val metaColor = if (isTomorrow) R.color.widget_tomorrow_text_secondary else R.color.widget_text_secondary
 
                 Box(
                 modifier = GlanceModifier
@@ -757,9 +761,9 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-                val leftColor = if (isTomorrow) R.color.widget_gray_left else R.color.widget_header_default
-                val nameColor = if (isTomorrow) R.color.widget_gray_name else R.color.widget_text_primary
-                val metaColor = if (isTomorrow) R.color.widget_gray_meta else R.color.widget_text_secondary
+                val leftColor = if (isTomorrow) R.color.widget_tomorrow_accent else R.color.widget_header_default
+                val nameColor = if (isTomorrow) R.color.widget_tomorrow_text_primary else R.color.widget_text_primary
+                val metaColor = if (isTomorrow) R.color.widget_tomorrow_text_secondary else R.color.widget_text_secondary
 
                 Box(
                 modifier = GlanceModifier
