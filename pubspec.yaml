@@ -60,6 +60,7 @@ flutter:
   generate: true
   assets:
     - assets/
+    - assets/js/
 flutter_launcher_icons:
   android: true
   ios: true
