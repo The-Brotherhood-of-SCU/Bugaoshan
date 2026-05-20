@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:bugaoshan/app.dart';
@@ -14,7 +15,8 @@ import 'package:system_theme/system_theme.dart';
 Future<void> main() async {
   try {
     await _initializeApp();
-    runApp(MyApp());
+    await LiquidGlassWidgets.initialize();
+    runApp(LiquidGlassWidgets.wrap(child: MyApp(), adaptiveQuality: true));
   } catch (error, stackTrace) {
     debugPrint('Startup error: $error\n$stackTrace');
     runApp(const _StartupErrorApp());

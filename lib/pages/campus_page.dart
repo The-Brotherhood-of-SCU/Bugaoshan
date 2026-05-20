@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
 import 'package:bugaoshan/utils/constants.dart';
@@ -144,7 +145,8 @@ class _CampusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return GlassCard(
+      padding: EdgeInsets.zero,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -224,7 +226,8 @@ class _MoreFeaturesCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Card(
+    return GlassCard(
+      padding: EdgeInsets.zero,
       child: InkWell(
         onTap: () => launchUrl(
           Uri.parse('$appLink/issues/new?template=feature_request.yml'),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 
@@ -51,12 +52,8 @@ class LoginStatusCard extends StatelessWidget {
     final localizations = AppLocalizations.of(context)!;
     final primaryColor = theme.colorScheme.primary;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
-      ),
+    return GlassCard(
+      padding: EdgeInsets.zero,
       child: Column(
         children: [
           Padding(

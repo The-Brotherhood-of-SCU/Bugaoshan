@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/pages/home_page.dart';
 import 'package:bugaoshan/pages/wizard/eula_gate_page.dart';
@@ -48,6 +49,8 @@ class MyApp extends StatelessWidget {
         theme: _buildTheme(Brightness.light),
         darkTheme: _buildTheme(Brightness.dark),
         themeMode: ThemeMode.system,
+        builder: (context, child) =>
+            GlassTheme(data: const GlassThemeData(), child: child!),
         home: ValueListenableBuilder<int>(
           valueListenable: _appConfig.acceptedEulaVersion,
           builder: (_, eulaVersion, _) {

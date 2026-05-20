@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
@@ -135,45 +136,39 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 return Scaffold(
                   body: Row(
                     children: [
-                      // Rail placeholder: always present, hidden via Offstage
+                      // Glass sidebar for wide screens
                       Offstage(
                         offstage: !showRail,
-                        child: NavigationRail(
-                          selectedIndex: _currentIndex,
-                          onDestinationSelected: (index) {
-                            setState(() => _currentIndex = index);
-                            _onTabSelected(visibleIds[index]);
-                          },
-                          labelType: NavigationRailLabelType.all,
-                          destinations: visibleIds
+                        child: GlassSideBar(
+                          width: 200,
+                          children: visibleIds
+                              .asMap()
+                              .entries
                               .map(
-                                (id) =>
-                                    _buildRailDestination(id, hasUpdate, l10n),
+                                (entry) => _buildSideBarItem(
+                                  entry.value,
+                                  entry.key,
+                                  hasUpdate,
+                                  l10n,
+                                ),
                               )
                               .toList(),
                         ),
                       ),
-                      Offstage(
-                        offstage: !showRail,
-                        child: const VerticalDivider(thickness: 1, width: 1),
-                      ),
-                      // Page content: always at index 2
+                      // Page content
                       Expanded(child: SafeArea(child: pageContent)),
                     ],
                   ),
                   bottomNavigationBar: showBar
-                      ? NavigationBar(
+                      ? GlassBottomBar(
+                          tabs: visibleIds
+                              .map((id) => _buildGlassTab(id, hasUpdate, l10n))
+                              .toList(),
                           selectedIndex: _currentIndex,
-                          onDestinationSelected: (index) {
+                          onTabSelected: (index) {
                             setState(() => _currentIndex = index);
                             _onTabSelected(visibleIds[index]);
                           },
-                          destinations: visibleIds
-                              .map(
-                                (id) =>
-                                    _buildBarDestination(id, hasUpdate, l10n),
-                              )
-                              .toList(),
                         )
                       : null,
                 );
@@ -193,44 +188,47 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
   }
 
-  NavigationRailDestination _buildRailDestination(
+  GlassSideBarItem _buildSideBarItem(
     String id,
+    int index,
     bool hasUpdate,
     AppLocalizations l10n,
   ) {
     final config = campusItemConfigById(id);
     final isProfile = id == dockIdProfile;
-    return NavigationRailDestination(
-      icon: isProfile
-          ? _buildUpdateBadge(showBadge: hasUpdate, child: Icon(config.icon))
-          : Icon(config.icon),
-      selectedIcon: isProfile
-          ? _buildUpdateBadge(
-              showBadge: hasUpdate,
-              child: Icon(config.selectedIcon),
-            )
-          : Icon(config.selectedIcon),
-      label: Text(config.dockLabel(l10n)),
+    final icon = isProfile
+        ? _buildUpdateBadge(showBadge: hasUpdate, child: Icon(config.icon))
+        : Icon(config.icon);
+    return GlassSideBarItem(
+      icon: icon,
+      label: config.dockLabel(l10n),
+      isSelected: _currentIndex == index,
+      onTap: () {
+        setState(() => _currentIndex = index);
+        _onTabSelected(id);
+      },
     );
   }
 
-  NavigationDestination _buildBarDestination(
+  GlassBottomBarTab _buildGlassTab(
     String id,
     bool hasUpdate,
     AppLocalizations l10n,
   ) {
     final config = campusItemConfigById(id);
     final isProfile = id == dockIdProfile;
-    return NavigationDestination(
-      icon: isProfile
-          ? _buildUpdateBadge(showBadge: hasUpdate, child: Icon(config.icon))
-          : Icon(config.icon),
-      selectedIcon: isProfile
-          ? _buildUpdateBadge(
-              showBadge: hasUpdate,
-              child: Icon(config.selectedIcon),
-            )
-          : Icon(config.selectedIcon),
+    final icon = isProfile
+        ? _buildUpdateBadge(showBadge: hasUpdate, child: Icon(config.icon))
+        : Icon(config.icon);
+    final activeIcon = isProfile
+        ? _buildUpdateBadge(
+            showBadge: hasUpdate,
+            child: Icon(config.selectedIcon),
+          )
+        : Icon(config.selectedIcon);
+    return GlassBottomBarTab(
+      icon: icon,
+      activeIcon: activeIcon,
       label: config.dockLabel(l10n),
     );
   }
