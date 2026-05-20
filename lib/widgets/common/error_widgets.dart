@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 
 class TappableErrorWidget extends StatelessWidget {
@@ -66,10 +67,22 @@ class RetryableErrorWidget extends StatelessWidget {
           const SizedBox(height: 16),
           Text(message, textAlign: TextAlign.center),
           const SizedBox(height: 24),
-          FilledButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh),
-            label: Text(l10n.gradesRetry),
+          GlassButton.custom(
+            onTap: onRetry,
+            width: 140,
+            height: 44,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.refresh, size: 18, color: Colors.white),
+                const SizedBox(width: 6),
+                Text(
+                  l10n.gradesRetry,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                ),
+              ],
+            ),
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 
 class AutoLoginLoadingWidget extends StatelessWidget {
@@ -11,7 +12,7 @@ class AutoLoginLoadingWidget extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const CircularProgressIndicator(),
+          GlassProgressIndicator.circular(),
           const SizedBox(height: 16),
           Text(l10n.autoLoggingIn),
         ],

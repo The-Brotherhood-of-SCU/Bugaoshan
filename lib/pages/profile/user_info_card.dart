@@ -75,13 +75,10 @@ class UserInfoCard extends StatelessWidget {
   Widget _buildLoadingContent(ThemeData theme, AppLocalizations localizations) {
     return Row(
       children: [
-        SizedBox(
-          width: 16,
-          height: 16,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
+        GlassProgressIndicator.circular(
+          size: 16,
+          strokeWidth: 2,
+          color: theme.colorScheme.onSurfaceVariant,
         ),
         const SizedBox(width: 14),
         Text(

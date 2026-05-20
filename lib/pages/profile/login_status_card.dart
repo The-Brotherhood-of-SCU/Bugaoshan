@@ -92,7 +92,7 @@ class LoginStatusCard extends StatelessWidget {
               ],
             ),
           ),
-          Divider(height: 1, color: theme.dividerColor.withValues(alpha: 0.08)),
+          const GlassDivider(),
           _buildActionButton(theme, localizations, primaryColor),
         ],
       ),
@@ -114,13 +114,10 @@ class LoginStatusCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
       ),
       child: status.isAutoLoggingIn
-          ? SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                color: primaryColor,
-              ),
+          ? GlassProgressIndicator.circular(
+              size: 24,
+              strokeWidth: 2.5,
+              color: primaryColor,
             )
           : Icon(
               status.isLoggedIn
@@ -155,13 +152,10 @@ class LoginStatusCard extends StatelessWidget {
         child: Row(
           children: [
             if (status.isAutoLoggingIn)
-              SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+              GlassProgressIndicator.circular(
+                size: 20,
+                strokeWidth: 2,
+                color: theme.colorScheme.onSurfaceVariant,
               )
             else
               Icon(

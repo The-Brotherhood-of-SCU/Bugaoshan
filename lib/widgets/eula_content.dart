@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -80,7 +81,7 @@ class _EulaContentState extends State<EulaContent>
       children: [
         Expanded(
           child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? Center(child: GlassProgressIndicator.circular())
               : Container(
                   decoration: BoxDecoration(
                     border: Border.all(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 
 class LoginRequiredWidget extends StatelessWidget {
@@ -21,12 +22,24 @@ class LoginRequiredWidget extends StatelessWidget {
             const SizedBox(height: 8),
             Text(l10n.loginRequired, textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () {
+            GlassButton.custom(
+              onTap: () {
                 Navigator.of(context).popUntil((route) => route.isFirst);
               },
-              icon: const Icon(Icons.person),
-              label: Text(l10n.goToLogin),
+              width: 160,
+              height: 44,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.person, size: 18, color: Colors.white),
+                  const SizedBox(width: 6),
+                  Text(
+                    l10n.goToLogin,
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

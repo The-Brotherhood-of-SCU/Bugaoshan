@@ -1,5 +1,6 @@
 ﻿import 'package:async/async.dart';
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
@@ -12,23 +13,16 @@ Future showInfoDialog({
   String content = "",
   String button = "OK",
 }) {
-  return showDialog(
+  return GlassDialog.show(
     context: logicRootContext,
-    useRootNavigator: false,
-    builder: (context) {
-      return AlertDialog(
-        title: Text(title),
-        content: Text(content),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text(button),
-          ),
-        ],
-      );
-    },
+    title: title,
+    message: content,
+    actions: [
+      GlassDialogAction(
+        label: button,
+        onPressed: () => Navigator.of(logicRootContext).pop(),
+      ),
+    ],
   );
 }
 
@@ -37,29 +31,21 @@ Future<bool?> showYesNoDialog({
   String title = "",
   String content = "",
 }) {
-  return showDialog(
+  return GlassDialog.show<bool>(
     context: logicRootContext,
-    useRootNavigator: false,
-    builder: (context) {
-      return AlertDialog(
-        title: Text(title),
-        content: Text(content),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(true);
-            },
-            child: const Text("Yes"),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(false);
-            },
-            child: const Text("No"),
-          ),
-        ],
-      );
-    },
+    title: title,
+    message: content,
+    actions: [
+      GlassDialogAction(
+        label: "Yes",
+        isPrimary: true,
+        onPressed: () => Navigator.of(logicRootContext).pop(true),
+      ),
+      GlassDialogAction(
+        label: "No",
+        onPressed: () => Navigator.of(logicRootContext).pop(false),
+      ),
+    ],
   );
 }
 
@@ -101,11 +87,11 @@ Future showLoadingDialog({
       contextWrapper.context = context;
       return AlertDialog(
         title: Text(title),
-        content: const Padding(
-          padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+        content: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [CircularProgressIndicator()],
+            children: [GlassProgressIndicator.circular()],
           ),
         ),
         actions: [
@@ -170,7 +156,7 @@ Future showLoadingDialogWithErrorString({
               children: [
                 isError
                     ? Text(onErrorMessage)
-                    : const CircularProgressIndicator(),
+                    : GlassProgressIndicator.circular(),
               ],
             ),
           ),

@@ -4,6 +4,7 @@ import 'package:bugaoshan/widgets/common/third_center.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
@@ -79,22 +80,21 @@ class _ProfilePageState extends State<ProfilePage> {
     ScuAuthProvider provider,
     AppLocalizations localizations,
   ) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await GlassDialog.show<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(localizations.confirmMessage),
-        content: Text(localizations.logoutConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(localizations.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(localizations.logout),
-          ),
-        ],
-      ),
+      title: localizations.confirmMessage,
+      message: localizations.logoutConfirm,
+      actions: [
+        GlassDialogAction(
+          label: localizations.cancel,
+          onPressed: () => Navigator.pop(context, false),
+        ),
+        GlassDialogAction(
+          label: localizations.logout,
+          isDestructive: true,
+          onPressed: () => Navigator.pop(context, true),
+        ),
+      ],
     );
     if (confirmed == true) {
       await provider.logout();

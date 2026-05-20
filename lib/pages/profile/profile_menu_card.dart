@@ -65,31 +65,19 @@ class ProfileMenuCard extends StatelessWidget {
             onTap: () =>
                 popupOrNavigate(context, const ScheduleManagementPage()),
           ),
-          Divider(
-            height: 1,
-            indent: 56,
-            color: theme.dividerColor.withValues(alpha: 0.08),
-          ),
+          const GlassDivider(indent: 56),
           buildTile(
             icon: Icons.schedule_rounded,
             label: localizations.scheduleSetting,
             onTap: () => popupOrNavigate(context, CourseScheduleSetting()),
           ),
-          Divider(
-            height: 1,
-            indent: 56,
-            color: theme.dividerColor.withValues(alpha: 0.08),
-          ),
+          const GlassDivider(indent: 56),
           buildTile(
             icon: Icons.settings_rounded,
             label: localizations.softwareSetting,
             onTap: () => popupOrNavigate(context, SoftwareSettingPage()),
           ),
-          Divider(
-            height: 1,
-            indent: 56,
-            color: theme.dividerColor.withValues(alpha: 0.08),
-          ),
+          const GlassDivider(indent: 56),
           ValueListenableBuilder<bool>(
             valueListenable: getIt<AppConfigProvider>().hasUpdateNotification,
             builder: (context, hasUpdate, _) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
@@ -48,23 +49,21 @@ class SessionExpiryHandler {
 
     // 5. 自动登录未启用或失败，弹出会话过期提示 Dialog
     if (!effectiveContext.mounted) return false;
-    final result = await showDialog<bool>(
+    final result = await GlassDialog.show<bool>(
       context: effectiveContext,
-      barrierDismissible: false, // 防止用户点击外部关闭
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.sessionExpiredTitle),
-        content: Text(l10n.sessionExpiredMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.relogin),
-          ),
-        ],
-      ),
+      title: l10n.sessionExpiredTitle,
+      message: l10n.sessionExpiredMessage,
+      actions: [
+        GlassDialogAction(
+          label: l10n.cancel,
+          onPressed: () => Navigator.pop(effectiveContext, false),
+        ),
+        GlassDialogAction(
+          label: l10n.relogin,
+          isPrimary: true,
+          onPressed: () => Navigator.pop(effectiveContext, true),
+        ),
+      ],
     );
 
     // 6. 如果用户选择重新登录，打开登录页面
