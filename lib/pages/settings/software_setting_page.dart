@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/settings/add_widget/add_widget_page.dart';
@@ -41,7 +42,10 @@ class SoftwareSettingPage extends StatelessWidget {
       ]),
       builder: (context, _) {
         return Scaffold(
-          appBar: AppBar(title: Text(localizations.softwareSetting)),
+          appBar: GlassAppBar(
+            useOwnLayer: true,
+            title: Text(localizations.softwareSetting),
+          ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
             child: Column(
@@ -76,7 +80,7 @@ class SoftwareSettingPage extends StatelessWidget {
                   child: Text(localizations.customDock),
                 ),
 
-                const Divider(),
+                const GlassDivider(),
                 // Course card section
                 Align(
                   alignment: Alignment.centerLeft,
@@ -99,7 +103,7 @@ class SoftwareSettingPage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Slider(
+                    GlassSlider(
                       value: appConfig.colorOpacity.value,
                       min: 0.3,
                       max: 1.0,
@@ -118,7 +122,7 @@ class SoftwareSettingPage extends StatelessWidget {
                         Text('${appConfig.courseCardFontSize.value.round()}'),
                       ],
                     ),
-                    Slider(
+                    GlassSlider(
                       value: appConfig.courseCardFontSize.value,
                       min: 8,
                       max: 20,
@@ -127,7 +131,7 @@ class SoftwareSettingPage extends StatelessWidget {
                     ),
                   ],
                 ),
-                const Divider(),
+                const GlassDivider(),
                 // Background image section
                 Align(
                   alignment: Alignment.centerLeft,
@@ -183,7 +187,7 @@ class SoftwareSettingPage extends StatelessWidget {
                               ),
                             ],
                           ),
-                          Slider(
+                          GlassSlider(
                             value: appConfig.backgroundImageOpacity.value,
                             min: 0.05,
                             max: 0.8,
@@ -196,7 +200,7 @@ class SoftwareSettingPage extends StatelessWidget {
                     ],
                   ],
                 ),
-                const Divider(),
+                const GlassDivider(),
                 // Course grid section
                 Align(
                   alignment: Alignment.centerLeft,
@@ -208,11 +212,14 @@ class SoftwareSettingPage extends StatelessWidget {
                   ),
                 ),
                 // Show course grid switch
-                SwitchListTile(
-                  title: Text(localizations.showCourseGrid),
-                  value: appConfig.showCourseGrid.value,
-                  onChanged: (v) => appConfig.showCourseGrid.value = v,
-                  contentPadding: EdgeInsets.zero,
+                Row(
+                  children: [
+                    Expanded(child: Text(localizations.showCourseGrid)),
+                    GlassSwitch(
+                      value: appConfig.showCourseGrid.value,
+                      onChanged: (v) => appConfig.showCourseGrid.value = v,
+                    ),
+                  ],
                 ),
                 // Course row height
                 Column(
@@ -224,7 +231,7 @@ class SoftwareSettingPage extends StatelessWidget {
                         Text('${appConfig.courseRowHeight.value.round()}'),
                       ],
                     ),
-                    Slider(
+                    GlassSlider(
                       value: appConfig.courseRowHeight.value,
                       min: 48,
                       max: 120,
@@ -234,7 +241,7 @@ class SoftwareSettingPage extends StatelessWidget {
                   ],
                 ),
                 if (Platform.isAndroid) ...[
-                  const Divider(),
+                  const GlassDivider(),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
@@ -253,24 +260,28 @@ class SoftwareSettingPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   // Show tomorrow setting for widget
-                  SwitchListTile(
-                    title: Text(localizations.widgetShowTomorrowAfterEnd),
-                    value: appConfig.widgetShowTomorrow.value,
-                    onChanged: (v) async {
-                      appConfig.widgetShowTomorrow.value = v;
-                      // Trigger widget update immediately (force)
-                      final service = getIt<WidgetUpdateService>();
-                      try {
-                        await service.updateWidgetData(force: true);
-                      } catch (e, st) {
-                        debugPrint('WidgetUpdate toggle failed: $e');
-                        debugPrint('$st');
-                      }
-                    },
-                    contentPadding: EdgeInsets.zero,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(localizations.widgetShowTomorrowAfterEnd),
+                      ),
+                      GlassSwitch(
+                        value: appConfig.widgetShowTomorrow.value,
+                        onChanged: (v) async {
+                          appConfig.widgetShowTomorrow.value = v;
+                          final service = getIt<WidgetUpdateService>();
+                          try {
+                            await service.updateWidgetData(force: true);
+                          } catch (e, st) {
+                            debugPrint('WidgetUpdate toggle failed: $e');
+                            debugPrint('$st');
+                          }
+                        },
+                      ),
+                    ],
                   ),
                 ],
-                const Divider(),
+                const GlassDivider(),
                 // Other section
                 Align(
                   alignment: Alignment.centerLeft,
@@ -292,7 +303,7 @@ class SoftwareSettingPage extends StatelessWidget {
                   icon: const Icon(Icons.refresh),
                   child: Text(localizations.resetToDefault),
                 ),
-                const Divider(),
+                const GlassDivider(),
                 ButtonWithMaxWidth(
                   onPressed: () async {
                     final confirm = await showYesNoDialog(
