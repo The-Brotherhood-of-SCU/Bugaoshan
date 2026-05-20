@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
 import 'package:http/http.dart' as http;
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:share_plus/share_plus.dart' show ShareParams, XFile, SharePlus;
@@ -323,7 +324,8 @@ class _CampusNoticePageState extends State<CampusNoticePage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: GlassAppBar(
+        useOwnLayer: true,
         title: Text(l10n.campusNotices),
         actions: [
           IconButton(

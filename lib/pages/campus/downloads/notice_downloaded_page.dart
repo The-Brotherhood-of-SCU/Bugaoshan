@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart' show ShareParams, XFile, SharePlus;
@@ -433,7 +434,8 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
 
   PreferredSizeWidget _buildAppBar() {
     final l10n = AppLocalizations.of(context)!;
-    return AppBar(
+    return GlassAppBar(
+      useOwnLayer: true,
       title: Text(l10n.downloadedAttachments),
       actions: [
         IconButton(

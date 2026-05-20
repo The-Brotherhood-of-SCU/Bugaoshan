@@ -10,6 +10,7 @@ import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 class CcylPage extends StatefulWidget {
   const CcylPage({super.key});
@@ -50,12 +51,15 @@ class _CcylPageState extends State<CcylPage> {
         if (!auth.isLoggedIn) {
           if (auth.isAutoLoggingIn) {
             return Scaffold(
-              appBar: AppBar(title: Text(l10n.ccylTitle)),
+              appBar: GlassAppBar(
+                useOwnLayer: true,
+                title: Text(l10n.ccylTitle),
+              ),
               body: const AutoLoginLoadingWidget(),
             );
           }
           return Scaffold(
-            appBar: AppBar(title: Text(l10n.ccylTitle)),
+            appBar: GlassAppBar(useOwnLayer: true, title: Text(l10n.ccylTitle)),
             body: const LoginRequiredWidget(),
           );
         }
@@ -63,7 +67,7 @@ class _CcylPageState extends State<CcylPage> {
         // 未绑定第二课堂账号
         if (!ccyl.isLoggedIn) {
           return Scaffold(
-            appBar: AppBar(title: Text(l10n.ccylTitle)),
+            appBar: GlassAppBar(useOwnLayer: true, title: Text(l10n.ccylTitle)),
             body: Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
@@ -95,7 +99,7 @@ class _CcylPageState extends State<CcylPage> {
 
         // 正常态：底部导航
         return Scaffold(
-          appBar: AppBar(title: Text(l10n.ccylTitle)),
+          appBar: GlassAppBar(useOwnLayer: true, title: Text(l10n.ccylTitle)),
           // IndexedStack 保持各子页面状态（滚动位置、已加载数据）不因切换丢失
           body: IndexedStack(index: _currentIndex, children: _tabs),
           bottomNavigationBar: NavigationBar(

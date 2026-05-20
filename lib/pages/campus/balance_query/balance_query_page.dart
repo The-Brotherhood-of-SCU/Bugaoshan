@@ -7,6 +7,7 @@ import 'package:bugaoshan/services/balance_query_service.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'widgets/balance_list.dart';
 import 'widgets/bind_room_dialog.dart';
 
@@ -99,7 +100,8 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: GlassAppBar(
+        useOwnLayer: true,
         title: Text(l10n.balanceQuery),
         actions: [
           if (_provider.bindings.isNotEmpty)

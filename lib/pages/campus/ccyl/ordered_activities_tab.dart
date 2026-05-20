@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
@@ -117,7 +118,7 @@ class _OrderedActivitiesTabState extends State<OrderedActivitiesTab> {
               height: MediaQuery.of(context).size.height * 0.6,
               child: Center(
                 child: _loading
-                    ? const CircularProgressIndicator()
+                    ? GlassProgressIndicator.circular()
                     : Text(l10n.noData),
               ),
             );
@@ -125,10 +126,10 @@ class _OrderedActivitiesTabState extends State<OrderedActivitiesTab> {
 
           // 加载更多指示器
           if (index >= _activities.length) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.all(16),
-                child: CircularProgressIndicator(),
+                padding: const EdgeInsets.all(16),
+                child: GlassProgressIndicator.circular(),
               ),
             );
           }

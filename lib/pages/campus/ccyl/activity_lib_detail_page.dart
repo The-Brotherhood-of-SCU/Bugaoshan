@@ -4,6 +4,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/services/ccyl_service.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activity_detail_page.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 class ActivityLibDetailPage extends StatefulWidget {
   final String activityLibraryId;
@@ -100,7 +101,10 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.ccylActivitySeries)),
+      appBar: GlassAppBar(
+        useOwnLayer: true,
+        title: Text(l10n.ccylActivitySeries),
+      ),
       body: _buildBody(l10n),
       bottomNavigationBar: _buildBottomBar(l10n),
     );

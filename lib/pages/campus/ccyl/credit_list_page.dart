@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
@@ -261,10 +262,10 @@ class _CreditListPageState extends State<CreditListPage> {
                 final statsIndex = index - 1 - _credits.length;
                 if (_hasMore) {
                   if (statsIndex == 0) {
-                    return const Center(
+                    return Center(
                       child: Padding(
-                        padding: EdgeInsets.all(16),
-                        child: CircularProgressIndicator(),
+                        padding: const EdgeInsets.all(16),
+                        child: GlassProgressIndicator.circular(),
                       ),
                     );
                   }
@@ -390,7 +391,7 @@ class _StatsHeader extends StatelessWidget {
             ),
             if (statsByType.isNotEmpty) ...[
               const SizedBox(height: 12),
-              const Divider(height: 1),
+              const GlassDivider(height: 1),
               const SizedBox(height: 12),
               ...statsByType.entries.map((entry) {
                 return Padding(

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
 import 'package:http/http.dart' as http;
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart' show ShareParams, XFile, SharePlus;
 import 'package:bugaoshan/injection/injector.dart';
@@ -196,7 +197,10 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.ccylActivityDetail)),
+      appBar: GlassAppBar(
+        useOwnLayer: true,
+        title: Text(l10n.ccylActivityDetail),
+      ),
       body: _buildBody(l10n),
       bottomNavigationBar: _buildBottomBar(l10n),
     );

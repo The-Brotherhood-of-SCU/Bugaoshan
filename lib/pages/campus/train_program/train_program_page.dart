@@ -8,6 +8,7 @@ import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
 import 'package:bugaoshan/widgets/common/info_row.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 class TrainProgramPage extends StatefulWidget {
   const TrainProgramPage({super.key});
@@ -31,7 +32,7 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.trainProgram)),
+      appBar: GlassAppBar(useOwnLayer: true, title: Text(l10n.trainProgram)),
       body: ListenableBuilder(
         listenable: Listenable.merge([getIt<ScuAuthProvider>(), _provider]),
         builder: (context, _) {
@@ -294,7 +295,10 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.trainProgramDetail)),
+      appBar: GlassAppBar(
+        useOwnLayer: true,
+        title: Text(l10n.trainProgramDetail),
+      ),
       body: ListenableBuilder(
         listenable: _provider,
         builder: (context, _) {

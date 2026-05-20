@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
@@ -218,7 +219,7 @@ class _SetDockPageState extends State<SetDockPage> {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.customDock)),
+      appBar: GlassAppBar(useOwnLayer: true, title: Text(l10n.customDock)),
       body: Column(
         children: [
           // Dock preview

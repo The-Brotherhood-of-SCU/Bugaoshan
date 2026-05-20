@@ -114,7 +114,8 @@ class _CampusNoticeDetailPageState extends State<CampusNoticeDetailPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: GlassAppBar(
+        useOwnLayer: true,
         title: Text(widget.entry.title),
         actions: [
           IconButton(

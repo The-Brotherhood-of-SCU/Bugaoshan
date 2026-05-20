@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/services/balance_query_service.dart';
@@ -144,10 +145,10 @@ class BalanceCardState extends State<BalanceCard> {
                   ),
                 ),
                 if (_isLoading)
-                  const SizedBox(
+                  SizedBox(
                     width: 24,
                     height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: GlassProgressIndicator.circular(strokeWidth: 2),
                   )
                 else
                   IconButton(
@@ -156,7 +157,7 @@ class BalanceCardState extends State<BalanceCard> {
                   ),
               ],
             ),
-            const Divider(height: 32),
+            const GlassDivider(height: 32),
             AnimatedSize(
               duration: appConfigService.cardSizeAnimationDuration.value,
               curve: appCurve,

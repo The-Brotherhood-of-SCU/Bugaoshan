@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/classroom/classroom_detail_page.dart';
@@ -229,7 +230,8 @@ class _ClassroomPageState extends State<ClassroomPage> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(
+        appBar: GlassAppBar(
+          useOwnLayer: true,
           title: Text(l10n.classroomQuery),
           leading: _viewMode != _ViewMode.campus
               ? IconButton(

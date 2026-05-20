@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/course/course_edit_page.dart';
@@ -117,7 +118,7 @@ class CourseDetailSheet extends StatelessWidget {
                 ],
               ),
             ),
-            const Divider(),
+            const GlassDivider(),
             // Info List
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

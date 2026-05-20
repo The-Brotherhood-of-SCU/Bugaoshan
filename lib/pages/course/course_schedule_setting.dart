@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
@@ -105,7 +106,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.scheduleSetting)),
+      appBar: GlassAppBar(useOwnLayer: true, title: Text(l10n.scheduleSetting)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

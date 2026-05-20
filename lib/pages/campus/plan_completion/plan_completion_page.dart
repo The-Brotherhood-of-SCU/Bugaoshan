@@ -7,6 +7,7 @@ import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 class PlanCompletionPage extends StatefulWidget {
   const PlanCompletionPage({super.key});
@@ -49,7 +50,8 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: GlassAppBar(
+        useOwnLayer: true,
         title: Text(l10n.planCompletion),
         actions: [
           ListenableBuilder(

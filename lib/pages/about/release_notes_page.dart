@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import 'package:bugaoshan/l10n/app_localizations.dart';
 
@@ -18,7 +19,10 @@ class ReleaseNotesPage extends StatelessWidget {
     final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text('${localizations.releaseNotes} ($version)')),
+      appBar: GlassAppBar(
+        useOwnLayer: true,
+        title: Text('${localizations.releaseNotes} ($version)'),
+      ),
       body: Markdown(
         data: releaseNotes,
         selectable: true,

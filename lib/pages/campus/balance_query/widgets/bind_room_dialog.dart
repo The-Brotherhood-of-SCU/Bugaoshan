@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
@@ -272,10 +273,10 @@ class BindRoomDialogState extends State<BindRoomDialog> {
                           ? () => setState(() => _step++)
                           : null,
                       child: _isLoading
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(
+                              child: GlassProgressIndicator.circular(
                                 strokeWidth: 2,
                                 color: Colors.white,
                               ),
@@ -427,7 +428,7 @@ class BindRoomDialogState extends State<BindRoomDialog> {
   }
 
   Widget placeholder() {
-    return const Center(child: CircularProgressIndicator());
+    return Center(child: GlassProgressIndicator.circular());
   }
 
   Widget _buildBuildingSelector(AppLocalizations l10n) {

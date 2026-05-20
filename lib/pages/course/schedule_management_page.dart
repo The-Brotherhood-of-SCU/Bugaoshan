@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
@@ -99,7 +100,8 @@ class ScheduleManagementPage extends StatelessWidget {
 
     return ScaffoldMessenger(
       child: Scaffold(
-        appBar: AppBar(
+        appBar: GlassAppBar(
+          useOwnLayer: true,
           title: Text(l10n.scheduleManagement),
           actions: [
             IconButton(

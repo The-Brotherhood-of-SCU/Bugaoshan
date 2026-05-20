@@ -10,6 +10,7 @@ import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
 import 'package:bugaoshan/widgets/common/info_row.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 class NetworkDevicePage extends StatefulWidget {
   const NetworkDevicePage({super.key});
@@ -213,7 +214,8 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: GlassAppBar(
+        useOwnLayer: true,
         title: Text(l10n.networkDeviceQuery),
         actions: [
           IconButton(

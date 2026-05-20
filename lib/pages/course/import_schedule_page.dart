@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
@@ -526,7 +527,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
 
     if (widget.mode == ImportMode.online) {
       return Scaffold(
-        appBar: AppBar(title: Text(title)),
+        appBar: GlassAppBar(useOwnLayer: true, title: Text(title)),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(32),
@@ -565,7 +566,8 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
     }
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: GlassAppBar(
+        useOwnLayer: true,
         title: Text(title),
         actions: [TextButton(onPressed: _import, child: Text(l10n.save))],
       ),

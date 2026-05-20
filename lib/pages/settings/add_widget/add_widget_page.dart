@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
@@ -17,7 +18,10 @@ class AddWidgetPage extends StatelessWidget {
     final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(localizations.addWidgetPageTitle)),
+      appBar: GlassAppBar(
+        useOwnLayer: true,
+        title: Text(localizations.addWidgetPageTitle),
+      ),
       body: const SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: AddWidgetContent(),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/notice/jwc/campus_notice_page.dart';
 import 'package:bugaoshan/pages/campus/notice/xgb/party_notice_page.dart';
@@ -13,7 +14,7 @@ class NoticePage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.noticeSection)),
+      appBar: GlassAppBar(useOwnLayer: true, title: Text(l10n.noticeSection)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

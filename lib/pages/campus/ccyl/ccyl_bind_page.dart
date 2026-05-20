@@ -3,6 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/services/ccyl_oauth_service.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 class CcylBindPage extends StatefulWidget {
   const CcylBindPage({super.key});
@@ -60,7 +61,7 @@ class _CcylBindPageState extends State<CcylBindPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.ccylBindTitle)),
+      appBar: GlassAppBar(useOwnLayer: true, title: Text(l10n.ccylBindTitle)),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(

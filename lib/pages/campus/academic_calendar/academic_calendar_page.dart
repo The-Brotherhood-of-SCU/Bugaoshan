@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
 import 'package:http/http.dart' as http;
@@ -129,7 +130,10 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.academicCalendar)),
+      appBar: GlassAppBar(
+        useOwnLayer: true,
+        title: Text(l10n.academicCalendar),
+      ),
       body: _buildBody(l10n),
     );
   }

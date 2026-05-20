@@ -18,7 +18,7 @@ Widget _buildNoticeImage(BuildContext context, String imageUrl) {
           return Container(
             height: 200,
             alignment: Alignment.center,
-            child: CircularProgressIndicator(
+            child: GlassProgressIndicator.circular(
               value: progress.expectedTotalBytes != null
                   ? progress.cumulativeBytesLoaded /
                         progress.expectedTotalBytes!

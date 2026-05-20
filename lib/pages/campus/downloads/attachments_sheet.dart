@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart' show ShareParams, XFile, SharePlus;
 
@@ -100,7 +101,7 @@ class _AttachmentsSheetContent extends StatelessWidget {
               ],
             ),
           ),
-          const Divider(height: 1),
+          const GlassDivider(height: 1),
           Expanded(
             child: ListView.builder(
               controller: scrollController,
@@ -197,10 +198,10 @@ class _SheetAttachmentTile extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            trailing: const SizedBox(
+            trailing: SizedBox(
               width: 24,
               height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2),
+              child: GlassProgressIndicator.circular(strokeWidth: 2),
             ),
           );
         }
@@ -248,10 +249,10 @@ class _SheetAttachmentTile extends StatelessWidget {
         future: checkDownloadedFile(dirName, item.name),
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return const SizedBox(
+            return SizedBox(
               width: 24,
               height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2),
+              child: GlassProgressIndicator.circular(strokeWidth: 2),
             );
           }
           if (snapshot.data != null) {

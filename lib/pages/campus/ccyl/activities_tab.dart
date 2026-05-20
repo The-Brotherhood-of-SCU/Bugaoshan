@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
@@ -147,10 +148,10 @@ class _ActivitiesTabState extends State<ActivitiesTab> {
                     itemCount: _activities.length + (_hasMore ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index >= _activities.length) {
-                        return const Center(
+                        return Center(
                           child: Padding(
-                            padding: EdgeInsets.all(16),
-                            child: CircularProgressIndicator(),
+                            padding: const EdgeInsets.all(16),
+                            child: GlassProgressIndicator.circular(),
                           ),
                         );
                       }

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
@@ -292,7 +293,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.scuUnifiedAuth)),
+      appBar: GlassAppBar(useOwnLayer: true, title: Text(l10n.scuUnifiedAuth)),
       body: CustomScrollView(
         slivers: [
           SliverFillRemaining(

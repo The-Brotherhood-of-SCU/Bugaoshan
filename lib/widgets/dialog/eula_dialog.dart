@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
@@ -78,14 +79,27 @@ class _EulaDialogState extends State<EulaDialog> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    TextButton(
-                      onPressed: _onDisagree,
-                      child: Text(l10n.eulaDisagree),
+                    GlassButton.custom(
+                      onTap: _onDisagree,
+                      width: 100,
+                      height: 40,
+                      child: Text(
+                        l10n.eulaDisagree,
+                        style: const TextStyle(color: Colors.white),
+                      ),
                     ),
                     const SizedBox(width: 8),
-                    FilledButton(
-                      onPressed: _agreed ? _onAgree : null,
-                      child: Text(l10n.eulaAgree),
+                    GlassButton.custom(
+                      onTap: _agreed ? _onAgree : () {},
+                      width: 100,
+                      height: 40,
+                      enabled: _agreed,
+                      child: Text(
+                        l10n.eulaAgree,
+                        style: TextStyle(
+                          color: _agreed ? Colors.white : Colors.white54,
+                        ),
+                      ),
                     ),
                   ],
                 ),

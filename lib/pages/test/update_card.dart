@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/test/update_result_notifier.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
@@ -40,10 +41,10 @@ class UpdateCard extends StatelessWidget {
                     Text(title, style: Theme.of(context).textTheme.bodyMedium),
                     if (r.checking) ...[
                       const Spacer(),
-                      const SizedBox(
+                      SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: GlassProgressIndicator.circular(strokeWidth: 2),
                       ),
                     ],
                   ],
