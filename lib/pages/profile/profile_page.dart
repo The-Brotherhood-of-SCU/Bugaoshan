@@ -34,7 +34,11 @@ class _ProfilePageState extends State<ProfilePage> {
     super.initState();
     _labelsProvider = getIt<ProfileLabelsProvider>();
     _labelsListener = () {
-      if (mounted) setState(() {});
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) setState(() {});
+        });
+      }
     };
     _labelsProvider.addListener(_labelsListener);
     _loadUsername();
