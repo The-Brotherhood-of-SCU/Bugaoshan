@@ -56,65 +56,70 @@ class ProfileMenuCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
       ),
-      child: Column(
-        children: [
-          buildTile(
-            icon: Icons.list_alt_rounded,
-            label: localizations.scheduleManagement,
-            onTap: () =>
-                popupOrNavigate(context, const ScheduleManagementPage()),
-          ),
-          Divider(
-            height: 1,
-            indent: 56,
-            color: theme.dividerColor.withValues(alpha: 0.08),
-          ),
-          buildTile(
-            icon: Icons.schedule_rounded,
-            label: localizations.scheduleSetting,
-            onTap: () => popupOrNavigate(context, CourseScheduleSetting()),
-          ),
-          Divider(
-            height: 1,
-            indent: 56,
-            color: theme.dividerColor.withValues(alpha: 0.08),
-          ),
-          buildTile(
-            icon: Icons.settings_rounded,
-            label: localizations.softwareSetting,
-            onTap: () => popupOrNavigate(context, SoftwareSettingPage()),
-          ),
-          Divider(
-            height: 1,
-            indent: 56,
-            color: theme.dividerColor.withValues(alpha: 0.08),
-          ),
-          ValueListenableBuilder<bool>(
-            valueListenable: getIt<AppConfigProvider>().hasUpdateNotification,
-            builder: (context, hasUpdate, _) {
-              return buildTile(
-                icon: Icons.info_outline_rounded,
-                label: localizations.about,
-                onTap: () => popupOrNavigate(context, AboutPage()),
-                trailing: hasUpdate
-                    ? Container(
-                        width: 8,
-                        height: 8,
-                        margin: const EdgeInsets.only(right: 8),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                      )
-                    : null,
-              );
-            },
-          ),
-        ],
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        color: theme.colorScheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          children: [
+            buildTile(
+              icon: Icons.list_alt_rounded,
+              label: localizations.scheduleManagement,
+              onTap: () =>
+                  popupOrNavigate(context, const ScheduleManagementPage()),
+            ),
+            Divider(
+              height: 1,
+              indent: 56,
+              color: theme.dividerColor.withValues(alpha: 0.08),
+            ),
+            buildTile(
+              icon: Icons.schedule_rounded,
+              label: localizations.scheduleSetting,
+              onTap: () => popupOrNavigate(context, CourseScheduleSetting()),
+            ),
+            Divider(
+              height: 1,
+              indent: 56,
+              color: theme.dividerColor.withValues(alpha: 0.08),
+            ),
+            buildTile(
+              icon: Icons.settings_rounded,
+              label: localizations.softwareSetting,
+              onTap: () => popupOrNavigate(context, SoftwareSettingPage()),
+            ),
+            Divider(
+              height: 1,
+              indent: 56,
+              color: theme.dividerColor.withValues(alpha: 0.08),
+            ),
+            ValueListenableBuilder<bool>(
+              valueListenable: getIt<AppConfigProvider>().hasUpdateNotification,
+              builder: (context, hasUpdate, _) {
+                return buildTile(
+                  icon: Icons.info_outline_rounded,
+                  label: localizations.about,
+                  onTap: () => popupOrNavigate(context, AboutPage()),
+                  trailing: hasUpdate
+                      ? Container(
+                          width: 8,
+                          height: 8,
+                          margin: const EdgeInsets.only(right: 8),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                        )
+                      : null,
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
