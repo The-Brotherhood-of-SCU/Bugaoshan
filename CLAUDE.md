@@ -29,7 +29,7 @@ flutter build ios --release --no-codesign
 flutter build windows --release
 ```
 
-**GitHub Actions release**: triggers on git tags matching `v*.*.*`; builds all 3 platforms and uploads to GitHub Releases.
+**GitHub Actions release**: triggers on git tags matching `v*.*.*`; builds Android, iOS, and Windows and uploads to GitHub Releases. The project also supports Linux, macOS, and Web platforms.
 
 ### Commit Convention
 
@@ -49,12 +49,12 @@ Two patterns coexist by design:
 **Directory convention:** All DI-registered providers live in `lib/providers/`. Page-specific non-DI utility classes may live in page directories.
 
 ### Dependency Injection
-GetIt + Injectable. `lib/injection/injector.config.dart` is auto-generated. Re-run `dart run build_runner build` after modifying `@injectable` annotations.
+GetIt + Injectable. All Provider/Service registrations are done manually in `lib/injection/injector.dart` (not via `@injectable` annotations). `lib/injection/injector.config.dart` is auto-generated but currently only contains an empty `init()` extension. Re-run `dart run build_runner build` if `@injectable` annotations are ever added.
 
 ### Service Layer
 - **`ScuAuthService`** (`lib/services/scu_auth_service.dart`) — Stateful service holding the SCU access token. Handles SM2 password encryption, cookie-based session management, and all SCU API calls (login, schedule, grades).
 - **`ScuMicroserviceAuthService`** (`lib/services/scu_microservice_auth_service.dart`) — Handles auth for SCU microservice-based APIs (电费, 空调余额, 校园网设备).
-- **`CcylService`** (`lib/services/ccyl_service.dart`) — 第二课堂 (CCYL) API client. OAuth-based login via `CcylService.login(oauthCode)`. Activities, reservations, and成绩单.
+- **`CcylService`** (`lib/services/ccyl_service.dart`) — 第二课堂 (CCYL) API client. OAuth-based login via `CcylService.login(oauthCode)`. Activities, reservations, and 成绩单.
 - **`CcylOauthService`** (`lib/services/ccyl_oauth_service.dart`) — OAuth flow helper for CCYL login.
 - **`BalanceQueryService`** (`lib/services/balance_query_service.dart`) — Queries电费 and 空调余额 via `payapp.scu.edu.cn`.
 - **`DatabaseService`** (`lib/services/database_service.dart`) — SQLite-backed storage. Manages multiple schedule configs and their associated course data via `switchSchedule()`.
@@ -68,7 +68,7 @@ GetIt + Injectable. `lib/injection/injector.config.dart` is auto-generated. Re-r
 
 ### Notice Pages
 
-Two notice sources, each in its own subdirectory under `lib/pages/campus/notice/`:
+Three notice sources, each in its own subdirectory under `lib/pages/campus/notice/`:
 
 **JWC Academic Affairs** (`jwc/`) — `jwc.scu.edu.cn`教务处通知。
 
@@ -83,6 +83,10 @@ Two notice sources, each in its own subdirectory under `lib/pages/campus/notice/
 
 - `party_notice_page.dart` — WebView-based page with JS beautify injection and attachment extraction via `AttachmentsChannel`.
 
+**Tuanwei** (`tuanwei/`) — `tuanwei.scu.edu.cn`团委（青春川大）通知。
+
+- `tuanwei_notice_page.dart` — WebView-based page, shares `WebViewNoticePage` base class with XGB. Uses `tuanwei_notice_beautify.js` for content beautification.
+
 **Shared downloads module** (`lib/pages/campus/downloads/`):
 - `NoticeAttachmentFab` — draggable FAB showing attachment count, opens `showAttachmentsSheet` on tap. Shared by both notice pages.
 - `attachments_sheet.dart` — `showAttachmentsSheet()` modal bottom sheet with download/share/open per attachment.
@@ -91,14 +95,14 @@ Two notice sources, each in its own subdirectory under `lib/pages/campus/notice/
 - `DownloadManager` (`lib/services/download_manager.dart`) — tracks download task state (pending/downloading/done/error).
 
 ### Providers
-- **`ScuAuthProvider`** — Persists SCU token via SharedPreferences. Wraps `ScuAuthService`.
-- **`GradesProvider`** — Handles `ScuLoginException.sessionExpired` by auto-calling `logout()`.
+- **`ScuAuthProvider`** — Persists SCU access token in `FlutterSecureStorage`, login timestamp and user info in `SharedPreferences`. Wraps `ScuAuthService`. Handles session expiry detection (1-hour TTL + last app open timestamp comparison), auto-login with OCR captcha solving (up to 5 retries), credential save/remember, and user profile fetching from `wfw.scu.edu.cn`.
+- **`GradesProvider`** — Handles `ScuLoginException.sessionExpired` via `SessionExpiryHandler` (attempts silent auto-login first, falls back to re-login dialog).
 - **`CourseProvider`** — Depends on `DatabaseService`. Provides schedule CRUD.
 - **`AppConfigProvider`** — User preferences: locale, theme color, color opacity, course card font size, course grid visibility, course row height, background image, dock items, EULA acceptance, etc.
 - **`SetThemeColorProvider`** — 从背景图片中提取主题色（像素采样 + `compute()` isolate），支持系统强调色预览。
 - **`AppInfoProvider`** — App version info and CI build metadata (git tag, commit, build time).
 - **`BalanceQueryProvider`** — 电费 & 空调余额查询状态管理，支持多房间绑定切换。
-- **`CcylProvider`** — 第二课堂登录状态持久化，管理 OAuth token。
+- **`CcylProvider`** — 第二课堂登录状态持久化，OAuth token 和 user ID 存储在 `FlutterSecureStorage`。支持 `CcylProvider.create()` 工厂方法异步初始化。
 - **`TrainProgramProvider`** — 培养方案查询，管理学院/年级/方案列表及详情加载状态。
 - **`PlanCompletionProvider`** — 培养方案完成度，缓存到 SharedPreferences，支持速率限制处理。
 - **`ExportScheduleProvider`** — 课表导出（剪贴板 JSON / .ics 文件 / 系统日历）。
@@ -115,7 +119,7 @@ Two notice sources, each in its own subdirectory under `lib/pages/campus/notice/
 
 ### Storage
 - **SQLite** (`sqflite`) — Course data, schedule configs (persistent). Desktop platforms use `sqflite_common_ffi`.
-- **SharedPreferences** — Auth token, grades cache, app settings (key-value)
+- **SharedPreferences** — Login timestamp, user info, grades cache, app settings (key-value)
 - **FlutterSecureStorage** — Sensitive data (access token, saved credentials)
 
 ### Internationalization
@@ -143,7 +147,7 @@ lib/
 │   │   ├── grades/        # 成绩查询
 │   │   ├── models/        # 校园模块数据模型
 │   │   ├── network_device/# 校园网设备管理
-│   │   ├── notice/        # 通知公告（jwc/ 教务处 + xgb/ 学工部）
+│   │   ├── notice/        # 通知公告（jwc/ 教务处 + xgb/ 学工部 + tuanwei/ 团委）
 │   │   ├── plan_completion/ # 培养方案完成度
 │   │   └── train_program/ # 培养方案查询
 │   ├── course/            # 课表管理

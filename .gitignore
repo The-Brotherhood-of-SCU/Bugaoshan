@@ -48,7 +48,6 @@ app.*.map.json
 .vscode/
 .codebuddy/
 .trae/
-.claude/
 
 # Upload keystore
 *-keystore.jks
