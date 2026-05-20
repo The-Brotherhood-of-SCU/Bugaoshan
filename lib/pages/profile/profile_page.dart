@@ -1,6 +1,5 @@
-import 'dart:convert';
-
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/profile_labels_provider.dart';
 import 'package:bugaoshan/widgets/common/third_center.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:flutter/material.dart';
@@ -9,11 +8,9 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
 import 'package:bugaoshan/pages/profile/login_status_card.dart';
-import 'package:bugaoshan/pages/profile/profile_labels_notifier.dart';
 import 'package:bugaoshan/pages/profile/profile_menu_card.dart';
 import 'package:bugaoshan/pages/profile/user_info_card.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/scu_microservice_auth_service.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 const _keyUsername = 'scu_saved_username';
@@ -29,34 +26,32 @@ class _ProfilePageState extends State<ProfilePage> {
   final _storage = const FlutterSecureStorage();
   String? _username;
 
-  // Static ValueNotifier survives state rebuilds across tab switches
-  static final _labelsNotifier = ProfileLabelsNotifier();
+  late final ProfileLabelsProvider _labelsProvider;
+  late final VoidCallback _labelsListener;
 
   @override
   void initState() {
     super.initState();
+    _labelsProvider = getIt<ProfileLabelsProvider>();
+    _labelsListener = () {
+      if (mounted) setState(() {});
+    };
+    _labelsProvider.addListener(_labelsListener);
     _loadUsername();
-    _labelsNotifier.addListener(_onLabelsChanged);
-    if (!_labelsNotifier.hasData && !_labelsNotifier.loading) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _tryFetchLabels());
-    }
+    _tryFetchLabels();
   }
 
   @override
   void dispose() {
-    _labelsNotifier.removeListener(_onLabelsChanged);
+    _labelsProvider.removeListener(_labelsListener);
     super.dispose();
-  }
-
-  void _onLabelsChanged() {
-    if (mounted) setState(() {});
   }
 
   void _tryFetchLabels() {
     if (!mounted) return;
     final authProvider = getIt<ScuAuthProvider>();
-    if (authProvider.isLoggedIn && !_labelsNotifier.loading) {
-      _fetchUserLabels();
+    if (authProvider.isLoggedIn && !_labelsProvider.loading) {
+      _labelsProvider.fetchLabels();
     }
   }
 
@@ -67,48 +62,12 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  Future<void> _fetchUserLabels() async {
-    _labelsNotifier.loading = true;
-
-    try {
-      final authService = ScuMicroserviceAuthService();
-      final client = await authService.getAuthenticatedClient();
-      if (client == null) {
-        _labelsNotifier.loading = false;
-        return;
-      }
-
-      final resp = await client.get(
-        Uri.parse('https://wfw.scu.edu.cn/mashupapp/wap/real/user'),
-        headers: {
-          'Accept': 'application/json, text/plain, */*',
-          'X-Requested-With': 'XMLHttpRequest',
-          'Referer': 'https://wfw.scu.edu.cn',
-        },
-      );
-
-      final json = jsonDecode(resp.body) as Map<String, dynamic>;
-      if (json['e'] == 0 && json['d']?['labels'] != null) {
-        _labelsNotifier.setLabels(
-          (json['d']['labels'] as List)
-              .map((e) => e as Map<String, dynamic>)
-              .toList(),
-        );
-      } else {
-        _labelsNotifier.error = true;
-      }
-    } catch (e) {
-      _labelsNotifier.error = true;
-    }
-    _labelsNotifier.loading = false;
-  }
-
   Future<void> _openLogin(BuildContext context) async {
     final result = await popupOrNavigate(context, const ScuLoginPage());
     if (result == true && context.mounted) {
       _loadUsername();
-      _labelsNotifier.clear();
-      _fetchUserLabels();
+      _labelsProvider.clear();
+      _labelsProvider.fetchLabels();
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('登录成功')));
@@ -139,7 +98,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
     if (confirmed == true) {
       await provider.logout();
-      _labelsNotifier.clear();
     }
   }
 
@@ -154,8 +112,8 @@ class _ProfilePageState extends State<ProfilePage> {
         final status = LoginStatus.from(authProvider);
 
         if (status.isLoggedIn &&
-            !_labelsNotifier.hasData &&
-            !_labelsNotifier.loading) {
+            !_labelsProvider.hasData &&
+            !_labelsProvider.loading) {
           WidgetsBinding.instance.addPostFrameCallback(
             (_) => _tryFetchLabels(),
           );
@@ -180,8 +138,8 @@ class _ProfilePageState extends State<ProfilePage> {
               curve: appCurve,
               child: UserInfoCard(
                 isLoggedIn: status.isLoggedIn,
-                labelsNotifier: _labelsNotifier,
-                onRetry: _fetchUserLabels,
+                labelsProvider: _labelsProvider,
+                onRetry: _tryFetchLabels,
               ),
             ),
 

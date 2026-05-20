@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:bugaoshan/providers/plan_completion_provider.dart';
+import 'package:bugaoshan/providers/profile_labels_provider.dart';
 import 'package:bugaoshan/providers/train_program_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
@@ -29,6 +30,7 @@ void configureDependencies() {
   getIt.init();
   getIt.registerSingleton<ExitService>(ExitService());
   getIt.registerSingleton<DownloadManager>(DownloadManager());
+  getIt.registerSingleton<ProfileLabelsProvider>(ProfileLabelsProvider());
   _configureAsyncDependencies();
 }
 

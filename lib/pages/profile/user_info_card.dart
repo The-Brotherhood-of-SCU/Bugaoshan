@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/pages/profile/profile_labels_notifier.dart';
+import 'package:bugaoshan/providers/profile_labels_provider.dart';
 
 class UserInfoCard extends StatelessWidget {
-  final ProfileLabelsNotifier labelsNotifier;
+  final ProfileLabelsProvider labelsProvider;
   final VoidCallback onRetry;
   final bool isLoggedIn;
 
   const UserInfoCard({
     super.key,
-    required this.labelsNotifier,
+    required this.labelsProvider,
     required this.onRetry,
     required this.isLoggedIn,
   });
@@ -41,14 +41,14 @@ class UserInfoCard extends StatelessWidget {
         ],
       );
       onTap = null;
-    } else if (labelsNotifier.loading) {
+    } else if (labelsProvider.loading) {
       child = _buildLoadingContent(theme, localizations);
       onTap = null;
-    } else if (labelsNotifier.error) {
+    } else if (labelsProvider.error) {
       child = _buildErrorContent(theme, localizations, primaryColor);
       onTap = onRetry;
     } else {
-      final labels = labelsNotifier.labels;
+      final labels = labelsProvider.labels;
       if (labels == null || labels.isEmpty) {
         return const SizedBox.shrink();
       }

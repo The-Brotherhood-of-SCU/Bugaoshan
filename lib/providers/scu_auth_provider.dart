@@ -5,6 +5,7 @@ import 'package:bugaoshan/services/ocr_service.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/plan_completion_provider.dart';
+import 'package:bugaoshan/providers/profile_labels_provider.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/providers/secure_storage_provider.dart';
 
@@ -100,6 +101,7 @@ class ScuAuthProvider extends ChangeNotifier {
     await _prefs.remove(_keyUserNumber);
     getIt<CcylProvider>().logout();
     getIt<PlanCompletionProvider>().clearCache();
+    getIt<ProfileLabelsProvider>().clear();
     notifyListeners();
   }
 
