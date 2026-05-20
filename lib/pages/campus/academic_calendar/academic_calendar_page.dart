@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
+import 'package:bugaoshan/widgets/common/image_viewer.dart';
 import 'package:http/http.dart' as http;
 
 class _CalendarEntry {
@@ -180,12 +180,6 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage> {
   }
 
   Widget _buildImageList(AppLocalizations l10n) {
-    final isMobile =
-        !kIsWeb &&
-        defaultTargetPlatform != TargetPlatform.windows &&
-        defaultTargetPlatform != TargetPlatform.macOS &&
-        defaultTargetPlatform != TargetPlatform.linux;
-
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       itemCount: _imageUrls.length,
@@ -194,12 +188,11 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage> {
           padding: EdgeInsets.only(
             bottom: index < _imageUrls.length - 1 ? 12 : 0,
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: InteractiveViewer(
-              scaleEnabled: isMobile,
-              panEnabled: isMobile,
-              maxScale: 5,
+          child: GestureDetector(
+            onTap: () =>
+                showFullScreenImageViewer(context, imageUrl: _imageUrls[index]),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
               child: Image.network(
                 _imageUrls[index],
                 fit: BoxFit.fitWidth,
