@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
+import 'package:bugaoshan/models/widget_size.dart';
 
 import 'battery_optimization_card.dart';
 import 'hint_card.dart';
-import 'widget_size_card.dart';
 
 class AddWidgetPage extends StatelessWidget {
   const AddWidgetPage({super.key});
@@ -80,10 +80,10 @@ class _AddWidgetContentState extends State<AddWidgetContent>
     await service.requestIgnoreBatteryOptimizations();
   }
 
-  Future<void> _pinWidget(BuildContext context, String size) async {
+  Future<void> _pinWidget(BuildContext context, WidgetSize size) async {
     final localizations = AppLocalizations.of(context)!;
     final service = getIt<WidgetUpdateService>();
-    final success = await service.pinWidget(size);
+    final success = await service.pinWidget(size.toPinArgument());
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -117,35 +117,135 @@ class _AddWidgetContentState extends State<AddWidgetContent>
           onRequestIgnore: _requestIgnoreBatteryOptimizations,
         ),
         const SizedBox(height: 16),
-        WidgetSizeCard(
-          icon: Icons.widgets_outlined,
-          title: localizations.widgetSizeSmall,
-          description: localizations.widgetSizeSmallDesc,
-          sizeLabel: '2×2',
-          onPressed: () => _pinWidget(context, 'small'),
-          pinLabel: localizations.pinWidgetButton,
-        ),
-        const SizedBox(height: 12),
-        WidgetSizeCard(
-          icon: Icons.view_module_outlined,
-          title: localizations.widgetSizeMedium,
-          description: localizations.widgetSizeMediumDesc,
-          sizeLabel: '4×2',
-          onPressed: () => _pinWidget(context, 'medium'),
-          pinLabel: localizations.pinWidgetButton,
-        ),
-        const SizedBox(height: 12),
-        WidgetSizeCard(
-          icon: Icons.dashboard_outlined,
-          title: localizations.widgetSizeLarge,
-          description: localizations.widgetSizeLargeDesc,
-          sizeLabel: '4×4',
-          onPressed: () => _pinWidget(context, 'large'),
-          pinLabel: localizations.pinWidgetButton,
-        ),
+        // Consolidated single card with size choices
+        _WidgetPickerCard(onPin: _pinWidget),
         const SizedBox(height: 16),
         HintCard(hint: localizations.pinWidgetHint),
       ],
+    );
+  }
+}
+
+class _WidgetPickerCard extends StatefulWidget {
+  final Future<void> Function(BuildContext, WidgetSize) onPin;
+
+  const _WidgetPickerCard({required this.onPin});
+
+  @override
+  State<_WidgetPickerCard> createState() => _WidgetPickerCardState();
+}
+
+class _WidgetPickerCardState extends State<_WidgetPickerCard> {
+  WidgetSize _selected = WidgetSize.small;
+  bool _isPinning = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.widgets_outlined,
+                    size: 28,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.addWidgetPageTitle,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        l10n.addWidgetDesc,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            RadioListTile<WidgetSize>(
+              value: WidgetSize.small,
+              groupValue: _selected,
+              title: Text(l10n.widgetSizeSmall),
+              subtitle: Text(l10n.widgetSizeSmallDesc),
+              onChanged: (v) {
+                if (v == null) return;
+                setState(() => _selected = v);
+              },
+            ),
+            RadioListTile<WidgetSize>(
+              value: WidgetSize.medium,
+              groupValue: _selected,
+              title: Text(l10n.widgetSizeMedium),
+              subtitle: Text(l10n.widgetSizeMediumDesc),
+              onChanged: (v) {
+                if (v == null) return;
+                setState(() => _selected = v);
+              },
+            ),
+            RadioListTile<WidgetSize>(
+              value: WidgetSize.large,
+              groupValue: _selected,
+              title: Text(l10n.widgetSizeLarge),
+              subtitle: Text(l10n.widgetSizeLargeDesc),
+              onChanged: (v) {
+                if (v == null) return;
+                setState(() => _selected = v);
+              },
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.tonal(
+                    onPressed: _isPinning
+                        ? null
+                        : () async {
+                            setState(() => _isPinning = true);
+                            try {
+                              await widget.onPin(context, _selected);
+                            } finally {
+                              if (mounted) setState(() => _isPinning = false);
+                            }
+                          },
+                    child: _isPinning
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(l10n.pinWidgetButton),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

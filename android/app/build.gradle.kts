@@ -60,6 +60,7 @@ android {
             }
         }
         getByName("debug") {
+            applicationIdSuffix = ".debug"
             if (keystorePropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("release")
             }

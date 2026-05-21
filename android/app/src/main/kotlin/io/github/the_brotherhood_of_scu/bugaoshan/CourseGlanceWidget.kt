@@ -1,7 +1,6 @@
 package io.github.the_brotherhood_of_scu.bugaoshan
 
 import android.content.Context
-import android.content.Intent
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import androidx.compose.runtime.Composable
@@ -11,11 +10,18 @@ import androidx.glance.GlanceTheme
 import androidx.glance.LocalSize
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import android.content.Intent
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
+import androidx.glance.appwidget.lazy.LazyColumn
+import androidx.glance.appwidget.lazy.items
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -37,11 +43,93 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.util.Calendar
+import java.util.LinkedHashMap
+import kotlin.math.roundToInt
 import java.text.SimpleDateFormat
 import java.util.Locale
+    
 
-// ── Data loaded from SQLite for the widget ──────────────────────────
+// Parse appWidgetId token from GlanceId string
+private fun parseAppWidgetId(idString: String): Int? {
+    // Prefer explicit token match like "appWidgetId=123" or "appWidgetId: 123"
+    val tokenRegex = Regex("appWidgetId\\W*=?\\W*(\\d+)", RegexOption.IGNORE_CASE)
+    tokenRegex.find(idString)?.let { m -> return m.groupValues.getOrNull(1)?.toIntOrNull() }
 
+    // Common alternate form: AppWidgetId(123)
+    val altRegex = Regex("AppWidgetId\\W*\\(\\s*(\\d+)\\s*\\)", RegexOption.IGNORE_CASE)
+    altRegex.find(idString)?.let { m -> return m.groupValues.getOrNull(1)?.toIntOrNull() }
+
+    // Fallback: no reliable id token found -> return null to avoid accidental matches
+    return null
+}
+
+// Layout thresholds (units: dp for comparisons using integer dp values)
+private const val TOTAL_HORIZONTAL_PADDING_DP = 24 // 12dp each side
+private const val TITLE_ONE_LINE_WIDTH_DP = 180
+private const val TITLE_BAR_HEIGHT_DP = 80
+private const val VERTICAL_PADDING_DP = 24
+private const val CARD_MODE_HEIGHT_THRESHOLD_DP = 100
+private const val SHORT_TIME_WIDTH_THRESHOLD_DP = 200
+
+// Visual sizes and spacing (Dp/Sp)
+private val WIDGET_CORNER_RADIUS_DP = 16.dp
+private val CARD_CORNER_RADIUS_DP = 12.dp
+private val CARD_INDICATOR_WIDTH_DP = 4.dp
+private val CARD_INDICATOR_HEIGHT_DP = 36.dp
+private val CONTENT_PADDING_DP = 12.dp
+private val CARD_PADDING_DP = 8.dp
+private val CONTENT_SPACER_HEIGHT_DP = 10.dp
+private val ITEM_SPACER_HEIGHT_DP = 6.dp
+
+private val HEADER_FONT_SIZE_SP = 15.sp
+private val TITLE_FONT_SIZE_SP = 14.sp
+private val META_FONT_SIZE_SP = 13.sp
+private val META_SMALL_FONT_SIZE_SP = 11.sp
+private val EMPTY_FONT_SIZE_SP = 13.sp
+
+// Cached layout parameters per widget instance
+data class CachedLayout(
+    val width: Int,
+    val height: Int,
+    val oneLineTitle: Boolean,
+    val cardMode: Int // 2 = two-line (time+section on first line, location on second), 1 = single-line (time+location same line)
+)
+
+object WidgetLayoutCache {
+    private const val MAX_ENTRIES = 64
+
+    // accessOrder = true for LRU behavior
+    private val map: LinkedHashMap<Int, CachedLayout> = object : LinkedHashMap<Int, CachedLayout>(16, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, CachedLayout>?): Boolean {
+            return this.size > MAX_ENTRIES
+        }
+    }
+
+    @Synchronized
+    fun getIfSameSize(appWidgetId: Int?, w: Int, h: Int): CachedLayout? {
+        if (appWidgetId == null) return null
+        val c = map[appWidgetId] ?: return null
+        return if (c.width == w && c.height == h) c else null
+    }
+
+    @Synchronized
+    fun put(appWidgetId: Int?, layout: CachedLayout) {
+        if (appWidgetId == null) return
+        map[appWidgetId] = layout
+    }
+
+    @Synchronized
+    fun remove(appWidgetId: Int) {
+        map.remove(appWidgetId)
+    }
+
+    @Synchronized
+    fun clear() {
+        map.clear()
+    }
+}
+
+// Data loaded from SQLite for the widget
 data class WidgetCourseData(
     val courses: JSONArray,
     val dateText: String,
@@ -54,8 +142,7 @@ data class WidgetCourseData(
     val isTomorrow: Boolean = false,
 )
 
-// ── SQLite data loader ──────────────────────────────────────────────
-
+// SQLite data loader
 object WidgetDataLoader {
     private const val TAG = "CourseWidget"
 
@@ -65,52 +152,40 @@ object WidgetDataLoader {
             Log.e(TAG, "Database not found!")
             return null
         }
-
         var db: SQLiteDatabase? = null
         try {
             db = SQLiteDatabase.openDatabase(dbFile.path, null, SQLiteDatabase.OPEN_READONLY)
-
             val currentScheduleId = queryMetadata(db, "currentScheduleId") ?: "default"
-
             val configJson = queryScheduleConfig(db, currentScheduleId)
             if (configJson == null) {
                 Log.e(TAG, "No schedule config found for id=$currentScheduleId")
                 return null
             }
             val config = JSONObject(configJson)
-
             val semesterStartDate = config.optString("semesterStartDate", "")
             val totalWeeks = config.optInt("totalWeeks", 20)
             val timeSlots = config.optJSONArray("timeSlots")
-
             val currentWeek = computeCurrentWeek(semesterStartDate, totalWeeks)
-
             val cal = Calendar.getInstance()
             val dayOfWeek = (cal.get(Calendar.DAY_OF_WEEK) + 5) % 7 + 1
-
             var courses = queryCourses(db, currentScheduleId, dayOfWeek, currentWeek)
             if (courses.length() == 0 && currentScheduleId != "default") {
                 courses = queryCourses(db, "default", dayOfWeek, currentWeek)
             }
-
             val now = Calendar.getInstance()
             val currentHour = now.get(Calendar.HOUR_OF_DAY)
             val currentMinute = now.get(Calendar.MINUTE)
             val currentTimeMinutes = currentHour * 60 + currentMinute
-
             courses = attachTimesAndStatuses(courses, timeSlots, currentTimeMinutes, false)
             var showingTomorrow = false
             var tomorrowCal: Calendar? = null
             var weekForTomorrow = currentWeek
-            // If no remaining courses today and user enabled the setting, try to show tomorrow's courses
             if (courses.length() == 0) {
                 try {
                     val prefs = context.getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
-                    // Flutter SharedPreferences stores keys with a "flutter." prefix on Android.
                     val rawKey = "widget_show_tomorrow"
                     val flutterKey = "flutter.$rawKey"
                     var showTomorrow = prefs?.getBoolean(flutterKey, false) ?: false
-                    // Backward compatibility: also check unprefixed key
                     if (!showTomorrow) {
                         showTomorrow = prefs?.getBoolean(rawKey, false) ?: false
                     }
@@ -123,7 +198,6 @@ object WidgetDataLoader {
                             tomorrowCourses = queryCourses(db, "default", nextDayOfWeek, weekForTomorrow)
                         }
                         if (tomorrowCourses.length() > 0) {
-                            // attach times and mark as upcoming
                             courses = attachTimesAndStatuses(tomorrowCourses, timeSlots, null, true)
                             showingTomorrow = true
                         }
@@ -132,7 +206,6 @@ object WidgetDataLoader {
                     Log.e(TAG, "Failed to read widget setting", e)
                 }
             }
-
             var month = now.get(Calendar.MONTH) + 1
             var day = now.get(Calendar.DAY_OF_MONTH)
             val locale = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
@@ -140,7 +213,6 @@ object WidgetDataLoader {
             } else {
                 context.resources.configuration.locale
             }
-
             val dayFormat = SimpleDateFormat("EEE", locale)
             var dateText = "$month/$day ${dayFormat.format(now.time)}"
             if (showingTomorrow && tomorrowCal != null) {
@@ -150,17 +222,14 @@ object WidgetDataLoader {
                 val tomorrowLabel = context.getString(R.string.tomorrow)
                 dateText = "$month/$day $dayName $tomorrowLabel"
             }
-
             val weekNumber = if (showingTomorrow) weekForTomorrow else currentWeek
             val weekText = context.getString(R.string.widget_week_format, weekNumber)
-
             val themeColor = 0xFF2196F3.toInt()
-
             return WidgetCourseData(
                 courses = courses,
                 dateText = dateText,
                 weekText = weekText,
-                headerTitle = "不高山上",
+                headerTitle = context.getString(R.string.widget_header_title),
                 emptyText = context.getString(R.string.widget_empty_today),
                 sectionPrefix = "第",
                 sectionSuffix = "节",
@@ -235,9 +304,7 @@ object WidgetDataLoader {
                 val startWeek = cursor.getInt(3)
                 val endWeek = cursor.getInt(4)
                 val weekType = cursor.getInt(8)
-
                 if (!isCourseActive(currentWeek, startWeek, endWeek, weekType)) continue
-
                 val obj = JSONObject()
                 obj.put("name", name)
                 obj.put("teacher", cursor.getString(1) ?: "")
@@ -267,16 +334,12 @@ object WidgetDataLoader {
             val es = c.optInt("endSection", 0)
             c.put("startTime", formatTime(timeSlots, ss))
             c.put("endTime", formatTime(timeSlots, es, isEnd = true))
-
             if (!forceUpcoming && currentTimeMinutes != null) {
-                // Filter out courses that have already ended
                 val endSlot = getSlotEndTime(timeSlots, es)
                 if (endSlot != null) {
                     val endMinutes = endSlot.first * 60 + endSlot.second
                     if (currentTimeMinutes >= endMinutes) continue
                 }
-
-                // Mark course status: inProgress or upcoming
                 val startSlot = getSlotStartTime(timeSlots, ss)
                 if (startSlot != null && endSlot != null) {
                     val startMinutes = startSlot.first * 60 + startSlot.second
@@ -286,10 +349,8 @@ object WidgetDataLoader {
                     c.put("status", "upcoming")
                 }
             } else {
-                // For tomorrow or forced upcoming, mark as upcoming
                 c.put("status", "upcoming")
             }
-
             updated.put(c)
         }
         return updated
@@ -372,8 +433,7 @@ object WidgetDataLoader {
     }
 }
 
-// ── Glance Widget ───────────────────────────────────────────────────
-
+// Glance Widget
 class CourseGlanceWidget : GlanceAppWidget() {
 
     override val sizeMode = SizeMode.Exact
@@ -384,151 +444,129 @@ class CourseGlanceWidget : GlanceAppWidget() {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
 
+        // prepare localized format strings from Android resources
+        val headerDefault = context.getString(R.string.widget_header_title)
+        val sectionSingleFmt = context.getString(R.string.widget_section_single)
+        val sectionRangeFmt = context.getString(R.string.widget_section_range)
+        val emptyDefault = context.getString(R.string.widget_empty_today)
+
         provideContent {
             GlanceTheme {
                 val size = LocalSize.current
-                val widthDp = size.width.value.toInt()
-                val heightDp = size.height.value.toInt()
-                val isSmall = widthDp < 180
-                val isLarge = widthDp >= 300 && heightDp >= 250
+                val widthDp = size.width.value.roundToInt()
+                val heightDp = size.height.value.roundToInt()
 
-                when {
-                    isSmall -> SmallWidget(data, launchIntent, data?.emptyText ?: context.getString(R.string.widget_empty_today))
-                    isLarge -> LargeWidget(data, launchIntent, data?.emptyText ?: context.getString(R.string.widget_empty_today))
-                    else -> MediumWidget(data, launchIntent, data?.emptyText ?: context.getString(R.string.widget_empty_today))
+                val parsedId = try {
+                    parseAppWidgetId(id.toString())
+                } catch (e: Exception) { null }
+
+                val cached = WidgetLayoutCache.getIfSameSize(parsedId, widthDp, heightDp)
+
+                val layoutParams = if (cached != null) {
+                    cached
+                } else {
+                    val availableWidth = widthDp - TOTAL_HORIZONTAL_PADDING_DP
+                        val oneLineTitle = availableWidth >= TITLE_ONE_LINE_WIDTH_DP
+
+                        // Fixed title bar height estimation (avoids dynamic calculation)
+                        val titleBarHeight = TITLE_BAR_HEIGHT_DP
+                        val verticalPadding = VERTICAL_PADDING_DP
+                        val availableForCards = heightDp - titleBarHeight - verticalPadding
+                        val cardMode = if (availableForCards > CARD_MODE_HEIGHT_THRESHOLD_DP) 2 else 1
+
+                    val computed = CachedLayout(widthDp, heightDp, oneLineTitle, cardMode)
+                    WidgetLayoutCache.put(parsedId, computed)
+                    computed
                 }
+
+                // pass Android context and resource ids to allow resource-based formatting inside composables
+                UnifiedWidget(
+                    context,
+                    data,
+                    launchIntent,
+                    layoutParams,
+                    headerDefault,
+                    R.string.widget_section_single,
+                    R.string.widget_section_range,
+                    R.string.widget_empty_today
+                )
             }
         }
     }
 
     @Composable
-    private fun SmallWidget(data: WidgetCourseData?, launchIntent: Intent, emptyTextParam: String) {
+    private fun UnifiedWidget(
+        ctx: Context,
+        data: WidgetCourseData?,
+        launchIntent: Intent,
+        layout: CachedLayout,
+        headerDefault: String,
+        sectionSingleRes: Int,
+        sectionRangeRes: Int,
+        emptyRes: Int
+    ) {
         val courses = data?.courses ?: JSONArray()
-        val title = data?.headerTitle ?: "不高山上"
+        val title = if (!data?.headerTitle.isNullOrEmpty()) data!!.headerTitle else headerDefault
         val date = data?.dateText ?: ""
         val week = data?.weekText ?: ""
-        val emptyText = data?.emptyText ?: emptyTextParam
+        val emptyText = data?.emptyText ?: ctx.getString(emptyRes)
+        val isTomorrow = data?.isTomorrow ?: false
 
-        // Pick courses to show: current + next if in class, otherwise next 2 upcoming
-        val displayCourses = mutableListOf<JSONObject>()
-        var foundInProgress = false
-        for (i in 0 until courses.length()) {
-            val c = courses.getJSONObject(i)
-            val status = c.optString("status", "upcoming")
-            if (status == "inProgress" && !foundInProgress) {
-                displayCourses.add(c)
-                foundInProgress = true
-            } else if (status == "upcoming") {
-                displayCourses.add(c)
-            }
-            if (displayCourses.size >= 2) break
-        }
-        // If no in-progress course, ensure we show up to 2 upcoming courses
-        if (!foundInProgress) {
-            displayCourses.clear()
-            for (i in 0 until courses.length()) {
-                val c = courses.getJSONObject(i)
-                if (c.optString("status", "upcoming") == "upcoming") {
-                    displayCourses.add(c)
-                }
-                if (displayCourses.size >= 2) break
-            }
-        }
+        val fullDate = if (week.isNotEmpty()) "$date  $week" else date
 
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
-                .cornerRadius(16.dp)
+                .cornerRadius(WIDGET_CORNER_RADIUS_DP)
                 .background(ColorProvider(R.color.widget_background))
                 .clickable(actionStartActivity(launchIntent))
-                .padding(10.dp),
+                .padding(CONTENT_PADDING_DP),
         ) {
-            Text(
-                text = title,
-                style = TextStyle(
-                    color = ColorProvider(R.color.widget_header_default),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
-                ),
-                maxLines = 1
-            )
-            Text(
-                text = "$date  $week",
-                style = TextStyle(
-                    color = ColorProvider(R.color.widget_text_secondary),
-                    fontSize = 11.sp
-                ),
-                maxLines = 1
-            )
-
-            Spacer(modifier = GlanceModifier.height(8.dp))
-
-            if (displayCourses.isEmpty()) {
-                Box(
-                    modifier = GlanceModifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+            if (layout.oneLineTitle) {
+                Row(
+                    modifier = GlanceModifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = emptyText,
+                        text = title,
+                        style = TextStyle(
+                            color = ColorProvider(R.color.widget_header_default),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = HEADER_FONT_SIZE_SP
+                        ),
+                        maxLines = 1,
+                        modifier = GlanceModifier.defaultWeight()
+                    )
+                    Text(
+                        text = fullDate,
                         style = TextStyle(
                             color = ColorProvider(R.color.widget_text_secondary),
-                            fontSize = 13.sp
-                        )
+                            fontSize = META_SMALL_FONT_SIZE_SP
+                        ),
+                        maxLines = 1
                     )
                 }
             } else {
-                    val isTomorrow = data?.isTomorrow ?: false
-                    for (i in displayCourses.indices) {
-                        CourseCardSmall(displayCourses[i], isTomorrow)
-                    if (i < displayCourses.size - 1) {
-                        Spacer(modifier = GlanceModifier.height(6.dp))
-                    }
-                }
-            }
-        }
-    }
-
-    @Composable
-    private fun MediumWidget(data: WidgetCourseData?, launchIntent: Intent, emptyTextParam: String) {
-        val courses = data?.courses ?: JSONArray()
-        val title = data?.headerTitle ?: "不高山上"
-        val date = data?.dateText ?: ""
-        val week = data?.weekText ?: ""
-        val emptyText = data?.emptyText ?: emptyTextParam
-
-        Column(
-            modifier = GlanceModifier
-                .fillMaxSize()
-                .cornerRadius(16.dp)
-                .background(ColorProvider(R.color.widget_background))
-                .clickable(actionStartActivity(launchIntent))
-                .padding(12.dp),
-        ) {
-            Row(
-                modifier = GlanceModifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
                 Text(
                     text = title,
                     style = TextStyle(
                         color = ColorProvider(R.color.widget_header_default),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp
+                        fontSize = HEADER_FONT_SIZE_SP
                     ),
-                    maxLines = 1,
-                    modifier = GlanceModifier.defaultWeight()
+                    maxLines = 1
                 )
                 Text(
-                    text = "$date  $week",
+                    text = fullDate,
                     style = TextStyle(
                         color = ColorProvider(R.color.widget_text_secondary),
-                        fontSize = 12.sp
+                        fontSize = META_SMALL_FONT_SIZE_SP
                     ),
                     maxLines = 1
                 )
             }
 
-            Spacer(modifier = GlanceModifier.height(10.dp))
+            Spacer(modifier = GlanceModifier.height(CONTENT_SPACER_HEIGHT_DP))
 
             if (courses.length() == 0) {
                 Box(
@@ -539,18 +577,26 @@ class CourseGlanceWidget : GlanceAppWidget() {
                         text = emptyText,
                         style = TextStyle(
                             color = ColorProvider(R.color.widget_text_secondary),
-                            fontSize = 13.sp
+                            fontSize = EMPTY_FONT_SIZE_SP
                         )
                     )
                 }
             } else {
-                val limit = 2
-                Column(modifier = GlanceModifier.fillMaxSize()) {
-                    val isTomorrow = data?.isTomorrow ?: false
-                    for (i in 0 until minOf(courses.length(), limit)) {
-                        CourseCardMedium(courses.getJSONObject(i), isTomorrow)
-                        if (i < minOf(courses.length(), limit) - 1) {
-                            Spacer(modifier = GlanceModifier.height(8.dp))
+                LazyColumn(modifier = GlanceModifier.fillMaxSize()) {
+                    items(courses.length()) { index ->
+                        val course = courses.getJSONObject(index)
+                        CourseCard(
+                            ctx,
+                            course,
+                            isTomorrow,
+                            layout.cardMode,
+                            layout.width,
+                            layout.oneLineTitle,
+                            sectionSingleRes,
+                            sectionRangeRes
+                        )
+                        if (index < courses.length() - 1) {
+                            Spacer(modifier = GlanceModifier.height(ITEM_SPACER_HEIGHT_DP))
                         }
                     }
                 }
@@ -559,265 +605,186 @@ class CourseGlanceWidget : GlanceAppWidget() {
     }
 
     @Composable
-    private fun LargeWidget(data: WidgetCourseData?, launchIntent: Intent, emptyTextParam: String) {
-        val courses = data?.courses ?: JSONArray()
-        val title = data?.headerTitle ?: "不高山上"
-        val date = data?.dateText ?: ""
-        val week = data?.weekText ?: ""
-        val emptyText = data?.emptyText ?: emptyTextParam
-
-        Column(
-            modifier = GlanceModifier
-                .fillMaxSize()
-                .cornerRadius(16.dp)
-                .background(ColorProvider(R.color.widget_background))
-                .clickable(actionStartActivity(launchIntent))
-                .padding(12.dp),
-        ) {
-            Text(
-                text = title,
-                style = TextStyle(
-                    color = ColorProvider(R.color.widget_header_default),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                ),
-                maxLines = 1
-            )
-            Row(
-                modifier = GlanceModifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = week,
-                    style = TextStyle(
-                        color = ColorProvider(R.color.widget_text_secondary),
-                        fontSize = 12.sp
-                    ),
-                    maxLines = 1,
-                    modifier = GlanceModifier.defaultWeight()
-                )
-                Text(
-                    text = date,
-                    style = TextStyle(
-                        color = ColorProvider(R.color.widget_text_secondary),
-                        fontSize = 12.sp
-                    ),
-                    maxLines = 1
-                )
-            }
-
-            Spacer(modifier = GlanceModifier.height(10.dp))
-
-            if (courses.length() == 0) {
-                Box(
-                    modifier = GlanceModifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = emptyText,
-                            style = TextStyle(
-                                color = ColorProvider(R.color.widget_text_secondary),
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 15.sp
-                            )
-                        )
-                        Spacer(modifier = GlanceModifier.height(4.dp))
-                        Text(
-                            text = "享受轻松的一天吧",
-                            style = TextStyle(
-                                color = ColorProvider(R.color.widget_text_secondary),
-                                fontSize = 12.sp
-                            )
-                        )
-                    }
-                }
-            } else {
-                val limit = 4
-                Column(modifier = GlanceModifier.fillMaxSize()) {
-                    val isTomorrow = data?.isTomorrow ?: false
-                    for (i in 0 until minOf(courses.length(), limit)) {
-                        CourseCardLarge(courses.getJSONObject(i), isTomorrow)
-                        if (i < minOf(courses.length(), limit) - 1) {
-                            Spacer(modifier = GlanceModifier.height(6.dp))
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // ── Course card composables ──────────────────────────────────────
-
-    @Composable
-    private fun CourseCardSmall(course: JSONObject, isTomorrow: Boolean) {
-        val name = course.optString("name", "")
-        val startTime = course.optString("startTime", "")
-        val location = course.optString("location", "")
-
-        Row(
-            modifier = GlanceModifier
-                .fillMaxWidth()
-                .cornerRadius(12.dp)
-                .background(ColorProvider(R.color.widget_card_background))
-                .padding(8.dp),
-            verticalAlignment = Alignment.Top
-        ) {
-                val leftColor = if (isTomorrow) R.color.widget_tomorrow_accent else R.color.widget_header_default
-                val nameColor = if (isTomorrow) R.color.widget_tomorrow_text_primary else R.color.widget_text_primary
-                val metaColor = if (isTomorrow) R.color.widget_tomorrow_text_secondary else R.color.widget_text_secondary
-
-                Box(
-                modifier = GlanceModifier
-                    .width(4.dp)
-                    .height(28.dp)
-                    .cornerRadius(2.dp)
-                    .background(ColorProvider(leftColor))
-            ) {}
-            Spacer(modifier = GlanceModifier.width(8.dp))
-            Column(modifier = GlanceModifier.defaultWeight()) {
-                Text(
-                    text = name,
-                    style = TextStyle(
-                        color = ColorProvider(nameColor),
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 13.sp
-                    ),
-                    maxLines = 1
-                )
-                Text(
-                    text = "$startTime  $location",
-                    style = TextStyle(
-                        color = ColorProvider(metaColor),
-                        fontSize = 10.sp
-                    ),
-                    maxLines = 2
-                )
-            }
-        }
-    }
-
-    @Composable
-    private fun CourseCardMedium(course: JSONObject, isTomorrow: Boolean) {
+    private fun CourseCard(
+        ctx: Context,
+        course: JSONObject,
+        isTomorrow: Boolean,
+        cardMode: Int,
+        parentWidthDp: Int,
+        oneLineTitle: Boolean,
+        sectionSingleRes: Int,
+        sectionRangeRes: Int
+    ) {
         val name = course.optString("name", "")
         val startTime = course.optString("startTime", "")
         val endTime = course.optString("endTime", "")
         val location = course.optString("location", "")
-
-        Row(
-            modifier = GlanceModifier
-                .fillMaxWidth()
-                .cornerRadius(12.dp)
-                .background(ColorProvider(R.color.widget_card_background))
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-                val leftColor = if (isTomorrow) R.color.widget_tomorrow_accent else R.color.widget_header_default
-                val nameColor = if (isTomorrow) R.color.widget_tomorrow_text_primary else R.color.widget_text_primary
-                val metaColor = if (isTomorrow) R.color.widget_tomorrow_text_secondary else R.color.widget_text_secondary
-
-                Box(
-                modifier = GlanceModifier
-                    .width(4.dp)
-                    .height(36.dp)
-                    .cornerRadius(2.dp)
-                    .background(ColorProvider(leftColor))
-            ) {}
-            Spacer(modifier = GlanceModifier.width(10.dp))
-            Column(modifier = GlanceModifier.defaultWeight()) {
-                Text(
-                    text = name,
-                    style = TextStyle(
-                        color = ColorProvider(nameColor),
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp
-                    ),
-                    maxLines = 1
-                )
-                Text(
-                    text = "$startTime - $endTime  $location",
-                    style = TextStyle(
-                        color = ColorProvider(metaColor),
-                        fontSize = 12.sp
-                    ),
-                    maxLines = 1
-                )
-            }
-        }
-    }
-
-    @Composable
-    private fun CourseCardLarge(course: JSONObject, isTomorrow: Boolean) {
-        val name = course.optString("name", "")
-        val startTime = course.optString("startTime", "")
-        val endTime = course.optString("endTime", "")
-        val location = course.optString("location", "")
-        val teacher = course.optString("teacher", "")
         val ss = course.optInt("startSection", 0)
         val es = course.optInt("endSection", 0)
-        val section = if (ss == es) "第${ss}节" else "第${ss}-${es}节"
+        val section = if (ss > 0) {
+            if (ss == es) ctx.getString(sectionSingleRes, ss)
+            else ctx.getString(sectionRangeRes, ss, es)
+        } else ""
+
+        val leftColor = if (isTomorrow) R.color.widget_tomorrow_accent else R.color.widget_header_default
+        val nameColor = if (isTomorrow) R.color.widget_tomorrow_text_primary else R.color.widget_text_primary
+        val metaColor = if (isTomorrow) R.color.widget_tomorrow_text_secondary else R.color.widget_text_secondary
 
         Row(
             modifier = GlanceModifier
                 .fillMaxWidth()
-                .cornerRadius(10.dp)
+                .cornerRadius(CARD_CORNER_RADIUS_DP)
                 .background(ColorProvider(R.color.widget_card_background))
-                .padding(10.dp),
+                .padding(CARD_PADDING_DP),
             verticalAlignment = Alignment.CenterVertically
         ) {
-                val leftColor = if (isTomorrow) R.color.widget_tomorrow_accent else R.color.widget_header_default
-                val nameColor = if (isTomorrow) R.color.widget_tomorrow_text_primary else R.color.widget_text_primary
-                val metaColor = if (isTomorrow) R.color.widget_tomorrow_text_secondary else R.color.widget_text_secondary
-
-                Box(
+            Box(
                 modifier = GlanceModifier
-                    .width(4.dp)
-                    .height(36.dp)
+                    .width(CARD_INDICATOR_WIDTH_DP)
+                    .height(CARD_INDICATOR_HEIGHT_DP)
                     .cornerRadius(2.dp)
                     .background(ColorProvider(leftColor))
             ) {}
             Spacer(modifier = GlanceModifier.width(10.dp))
+
             Column(modifier = GlanceModifier.defaultWeight()) {
                 Text(
                     text = name,
                     style = TextStyle(
                         color = ColorProvider(nameColor),
                         fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp
+                        fontSize = TITLE_FONT_SIZE_SP
                     ),
                     maxLines = 1
                 )
-                Text(
-                    text = "$startTime - $endTime  $section" + if (teacher.isNotEmpty()) "  $teacher" else "",
-                    style = TextStyle(
-                        color = ColorProvider(metaColor),
-                        fontSize = 11.sp
-                    ),
-                    maxLines = 1
-                )
-                Text(
-                    text = location,
-                    style = TextStyle(
-                        color = ColorProvider(metaColor),
-                        fontSize = 11.sp
-                    ),
-                    maxLines = 1
-                )
+
+                if (cardMode == 2) {
+                    // Two-line mode
+                    Row(
+                        modifier = GlanceModifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        val timeRange = if (endTime.isNotEmpty()) "$startTime - $endTime" else startTime
+                        Text(
+                            text = timeRange,
+                            style = TextStyle(color = ColorProvider(metaColor), fontSize = META_FONT_SIZE_SP),
+                            maxLines = 1,
+                            modifier = GlanceModifier.defaultWeight()
+                        )
+                        // Section appears only when title is one-line and card mode is two-line
+                        if (oneLineTitle && section.isNotEmpty()) {
+                            Spacer(modifier = GlanceModifier.defaultWeight())
+                            Text(
+                                text = section,
+                                style = TextStyle(color = ColorProvider(metaColor), fontSize = META_SMALL_FONT_SIZE_SP),
+                                maxLines = 1
+                            )
+                        }
+                    }
+                    Text(
+                        text = location,
+                        style = TextStyle(color = ColorProvider(metaColor), fontSize = META_FONT_SIZE_SP),
+                        maxLines = 2
+                    )
+                } else {
+                    // Single-line mode: decide based on parent width
+                    val useShortTime = parentWidthDp < SHORT_TIME_WIDTH_THRESHOLD_DP
+                    val timeText = if (useShortTime) startTime else if (endTime.isNotEmpty()) "$startTime - $endTime" else startTime
+                    val fontSize = if (useShortTime) META_SMALL_FONT_SIZE_SP else META_FONT_SIZE_SP
+                    Text(
+                        text = "$timeText  $location",
+                        style = TextStyle(color = ColorProvider(metaColor), fontSize = fontSize),
+                        maxLines = 2,
+                        modifier = GlanceModifier.fillMaxWidth()
+                    )
+                }
             }
         }
     }
 }
 
-// ── Widget Receivers ────────────────────────────────────────────────
-
+// Widget Receivers
 class CourseWidgetReceiverSmall : GlanceAppWidgetReceiver() {
     override val glanceAppWidget = CourseGlanceWidget()
+
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
+        if (intent.action == Intent.ACTION_LOCALE_CHANGED) {
+            WidgetLayoutCache.clear()
+            GlobalScope.launch(Dispatchers.Default) {
+                try {
+                    val manager = GlanceAppWidgetManager(context)
+                    val ids = manager.getGlanceIds(CourseGlanceWidget::class.java)
+                    ids.forEach { CourseGlanceWidget().update(context, it) }
+                } catch (_: Exception) { /* best-effort */ }
+            }
+        }
+    }
+
+    override fun onDeleted(context: Context, appWidgetIds: IntArray) {
+        super.onDeleted(context, appWidgetIds)
+        for (id in appWidgetIds) WidgetLayoutCache.remove(id)
+    }
+
+    override fun onDisabled(context: Context) {
+        super.onDisabled(context)
+        WidgetLayoutCache.clear()
+    }
 }
 
 class CourseWidgetReceiverMedium : GlanceAppWidgetReceiver() {
     override val glanceAppWidget = CourseGlanceWidget()
+
+    override fun onDeleted(context: Context, appWidgetIds: IntArray) {
+        super.onDeleted(context, appWidgetIds)
+        for (id in appWidgetIds) WidgetLayoutCache.remove(id)
+    }
+
+    override fun onDisabled(context: Context) {
+        super.onDisabled(context)
+        WidgetLayoutCache.clear()
+    }
+
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
+        if (intent.action == Intent.ACTION_LOCALE_CHANGED) {
+            WidgetLayoutCache.clear()
+            GlobalScope.launch(Dispatchers.Default) {
+                try {
+                    val manager = GlanceAppWidgetManager(context)
+                    val ids = manager.getGlanceIds(CourseGlanceWidget::class.java)
+                    ids.forEach { CourseGlanceWidget().update(context, it) }
+                } catch (_: Exception) { }
+            }
+        }
+    }
 }
+
 
 class CourseWidgetReceiverLarge : GlanceAppWidgetReceiver() {
     override val glanceAppWidget = CourseGlanceWidget()
+
+    override fun onDeleted(context: Context, appWidgetIds: IntArray) {
+        super.onDeleted(context, appWidgetIds)
+        for (id in appWidgetIds) WidgetLayoutCache.remove(id)
+    }
+
+    override fun onDisabled(context: Context) {
+        super.onDisabled(context)
+        WidgetLayoutCache.clear()
+    }
+
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
+        if (intent.action == Intent.ACTION_LOCALE_CHANGED) {
+            WidgetLayoutCache.clear()
+            GlobalScope.launch(Dispatchers.Default) {
+                try {
+                    val manager = GlanceAppWidgetManager(context)
+                    val ids = manager.getGlanceIds(CourseGlanceWidget::class.java)
+                    ids.forEach { CourseGlanceWidget().update(context, it) }
+                } catch (_: Exception) { }
+            }
+        }
+    }
 }

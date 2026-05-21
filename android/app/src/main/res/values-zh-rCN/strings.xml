@@ -3,4 +3,7 @@
     <string name="tomorrow">明天</string>
     <string name="widget_week_format">第%1$d周</string>
     <string name="widget_empty_today">今天没有课程</string>
+    <string name="widget_section_single">第%1$d节</string>
+    <string name="widget_section_range">第%1$d-%2$d节</string>
+    <string name="widget_header_title">不高山上</string>
 </resources>
