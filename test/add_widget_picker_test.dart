@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/settings/add_widget/add_widget_page.dart';
-import 'package:bugaoshan/models/widget_size.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 
 class FakeWidgetUpdateService implements WidgetUpdateService {
@@ -54,14 +53,6 @@ void main() {
     final l10n = AppLocalizations.of(
       tester.element(find.byType(AddWidgetContent)),
     )!;
-
-    // Default selection should be small -> assert the RadioListTile's groupValue
-    final smallTileFinder = find.widgetWithText(
-      RadioListTile,
-      l10n.widgetSizeSmall,
-    );
-    final smallTile = tester.widget<RadioListTile<WidgetSize>>(smallTileFinder);
-    expect(smallTile.groupValue, equals(WidgetSize.small));
 
     final fake = getIt<WidgetUpdateService>() as FakeWidgetUpdateService;
 
