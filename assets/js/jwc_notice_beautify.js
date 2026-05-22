@@ -175,6 +175,7 @@
     .v_news_content p {
       margin: 0 0 12px !important;
     }
+    .art-text .page { display: none !important; }
     img { max-width: 100% !important; height: auto !important; }
     table { width: 100% !important; max-width: 100% !important; border-collapse: collapse !important; }
     td, th { border: 1px solid #ddd !important; padding: 8px !important; font-size: 14px !important; }
