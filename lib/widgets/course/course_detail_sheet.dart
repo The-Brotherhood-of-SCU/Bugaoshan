@@ -93,10 +93,12 @@ class CourseDetailSheet extends StatelessWidget {
                       Navigator.pop(context);
                       final newCourse = course.copyWith();
                       newCourse.name = '${course.name}${l10n.copySuffix}';
-                      popupOrNavigate(
-                        rootCtx,
-                        CourseEditPage(course: newCourse),
-                      );
+                      if (rootCtx.mounted) {
+                        popupOrNavigate(
+                          rootCtx,
+                          CourseEditPage(course: newCourse),
+                        );
+                      }
                     },
                   ),
                   IconButton(
@@ -111,7 +113,12 @@ class CourseDetailSheet extends StatelessWidget {
                     onPressed: () {
                       final rootCtx = logicRootContext;
                       Navigator.pop(context);
-                      popupOrNavigate(rootCtx, CourseEditPage(course: course));
+                      if (rootCtx.mounted) {
+                        popupOrNavigate(
+                          rootCtx,
+                          CourseEditPage(course: course),
+                        );
+                      }
                     },
                   ),
                 ],

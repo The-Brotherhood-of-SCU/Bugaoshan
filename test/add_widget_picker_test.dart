@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/settings/add_widget/add_widget_page.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 
 class FakeWidgetUpdateService implements WidgetUpdateService {
   String? lastSizeArg;
@@ -30,6 +32,14 @@ class FakeWidgetUpdateService implements WidgetUpdateService {
 void main() {
   setUp(() async {
     await getIt.reset();
+
+    // 设置 Mock SharedPreferences
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final appConfigProvider = AppConfigProvider(prefs);
+
+    // 注册依赖
+    getIt.registerSingleton<AppConfigProvider>(appConfigProvider);
     getIt.registerSingleton<WidgetUpdateService>(FakeWidgetUpdateService());
   });
 

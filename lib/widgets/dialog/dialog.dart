@@ -192,5 +192,7 @@ Future showLoadingDialogWithErrorString({
 }
 
 void popDialog([dynamic result]) {
-  Navigator.of(logicRootContext).pop(result);
+  if (logicRootContext.mounted) {
+    Navigator.of(logicRootContext).pop(result);
+  }
 }

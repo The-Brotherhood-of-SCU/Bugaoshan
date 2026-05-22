@@ -187,35 +187,32 @@ class _WidgetPickerCardState extends State<_WidgetPickerCard> {
               ],
             ),
             const SizedBox(height: 12),
-            RadioListTile<WidgetSize>(
-              value: WidgetSize.small,
+            RadioGroup<WidgetSize>(
               groupValue: _selected,
-              title: Text(l10n.widgetSizeSmall),
-              subtitle: Text(l10n.widgetSizeSmallDesc),
-              onChanged: (v) {
-                if (v == null) return;
-                setState(() => _selected = v);
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => _selected = value);
+                }
               },
-            ),
-            RadioListTile<WidgetSize>(
-              value: WidgetSize.medium,
-              groupValue: _selected,
-              title: Text(l10n.widgetSizeMedium),
-              subtitle: Text(l10n.widgetSizeMediumDesc),
-              onChanged: (v) {
-                if (v == null) return;
-                setState(() => _selected = v);
-              },
-            ),
-            RadioListTile<WidgetSize>(
-              value: WidgetSize.large,
-              groupValue: _selected,
-              title: Text(l10n.widgetSizeLarge),
-              subtitle: Text(l10n.widgetSizeLargeDesc),
-              onChanged: (v) {
-                if (v == null) return;
-                setState(() => _selected = v);
-              },
+              child: Column(
+                children: [
+                  RadioListTile<WidgetSize>(
+                    value: WidgetSize.small,
+                    title: Text(l10n.widgetSizeSmall),
+                    subtitle: Text(l10n.widgetSizeSmallDesc),
+                  ),
+                  RadioListTile<WidgetSize>(
+                    value: WidgetSize.medium,
+                    title: Text(l10n.widgetSizeMedium),
+                    subtitle: Text(l10n.widgetSizeMediumDesc),
+                  ),
+                  RadioListTile<WidgetSize>(
+                    value: WidgetSize.large,
+                    title: Text(l10n.widgetSizeLarge),
+                    subtitle: Text(l10n.widgetSizeLargeDesc),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 12),
             Row(

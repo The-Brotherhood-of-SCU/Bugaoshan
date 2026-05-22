@@ -620,7 +620,7 @@ class CookieClient extends http.BaseClient {
       // 只发当前域的 cookie，而非全部域
       final cookies = _cookiesFor(current);
       final reqHeaders = <String, String>{
-        if (headers != null) ...headers,
+        ...?headers,
         if (cookies.isNotEmpty)
           'Cookie': cookies.entries
               .map((e) => '${e.key}=${e.value}')

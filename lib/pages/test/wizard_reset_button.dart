@@ -17,7 +17,9 @@ class WizardResetButton extends StatelessWidget {
         trailing: const Icon(Icons.chevron_right),
         onTap: () {
           getIt<AppConfigProvider>().firstLaunchWizardCompleted.value = false;
-          Navigator.of(logicRootContext).popUntil((route) => route.isFirst);
+          if (logicRootContext.mounted) {
+            Navigator.of(logicRootContext).popUntil((route) => route.isFirst);
+          }
         },
       ),
     );

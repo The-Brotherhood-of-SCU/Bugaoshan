@@ -60,7 +60,7 @@ Future<String> downloadFile(
 
   final mergedHeaders = <String, String>{
     'Referer': 'https://xgb.scu.edu.cn',
-    if (headers != null) ...headers,
+    ...?headers,
   };
 
   final response = await http.get(Uri.parse(url), headers: mergedHeaders);

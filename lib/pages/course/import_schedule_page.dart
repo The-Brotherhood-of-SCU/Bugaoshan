@@ -59,6 +59,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         final nameController = TextEditingController(
           text: 'JWXT Import ${DateTime.now().month}-${DateTime.now().day}',
         );
+        if (!mounted) return;
         final newName = await showDialog<String>(
           context: context,
           builder: (context) => AlertDialog(
@@ -70,14 +71,14 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(logicRootContext),
+                onPressed: () => Navigator.pop(context),
                 child: Text(l10n.cancel),
               ),
               TextButton(
                 onPressed: () {
                   final t = nameController.text.trim();
                   if (t.isNotEmpty) {
-                    Navigator.pop(logicRootContext, t);
+                    Navigator.pop(context, t);
                   }
                 },
                 child: Text(l10n.save),
@@ -124,6 +125,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
           // If it still conflicts (or if it already had '(导入)'), show rename dialog
           if (widget.courseProvider.isScheduleNameTaken(finalName)) {
             final controller = TextEditingController(text: finalName);
+            if (!mounted) return;
             final newName = await showDialog<String>(
               context: context,
               builder: (context) => AlertDialog(
@@ -142,7 +144,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
                 ),
                 actions: [
                   TextButton(
-                    onPressed: () => Navigator.pop(logicRootContext),
+                    onPressed: () => Navigator.pop(context),
                     child: Text(l10n.cancel),
                   ),
                   TextButton(
@@ -155,7 +157,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
                             SnackBar(content: Text(l10n.duplicateScheduleName)),
                           );
                         } else {
-                          Navigator.pop(logicRootContext, text);
+                          Navigator.pop(context, text);
                         }
                       }
                     },
@@ -204,7 +206,8 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(l10n.importSuccess)));
-        if (Navigator.of(logicRootContext).canPop()) {
+        if (logicRootContext.mounted &&
+            Navigator.of(logicRootContext).canPop()) {
           Navigator.of(logicRootContext).pop();
         }
       }
@@ -316,6 +319,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         // 单个导入时让用户自定义名称
         if (!importAll) {
           final nameController = TextEditingController(text: scheduleName);
+          if (!mounted) return;
           final newName = await showDialog<String>(
             context: context,
             builder: (ctx) => AlertDialog(
@@ -366,6 +370,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         ).showSnackBar(SnackBar(content: Text(l10n.importSuccess)));
 
         // 导入成功后，询问是否自动设置当前教学周
+        if (!mounted) return;
         final setWeek = await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
@@ -408,7 +413,8 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
           }
         }
 
-        if (Navigator.of(logicRootContext).canPop()) {
+        if (logicRootContext.mounted &&
+            Navigator.of(logicRootContext).canPop()) {
           Navigator.of(logicRootContext).pop();
         }
       }

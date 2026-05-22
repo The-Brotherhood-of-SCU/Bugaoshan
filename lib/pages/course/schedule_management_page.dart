@@ -193,7 +193,7 @@ class ScheduleManagementPage extends StatelessWidget {
                   subtitle: Text(l10n.totalWeeksSubtitle(schedule.totalWeeks)),
                   onTap: () {
                     courseProvider.switchSchedule(schedule.id);
-                    Navigator.pop(logicRootContext);
+                    Navigator.pop(context);
                   },
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,

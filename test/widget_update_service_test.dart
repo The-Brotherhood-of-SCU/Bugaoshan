@@ -8,18 +8,20 @@ import 'package:bugaoshan/services/widget_update_service.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   tearDown(() {
-    MethodChannel('bugaoshan/update').setMockMethodCallHandler(null);
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(MethodChannel('bugaoshan/update'), null);
   });
 
   test('debounce collapses repeated calls', () {
     fakeAsync((fa) {
       int calls = 0;
-      MethodChannel('bugaoshan/update').setMockMethodCallHandler((
-        MethodCall call,
-      ) async {
-        calls++;
-        return null;
-      });
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(MethodChannel('bugaoshan/update'), (
+            MethodCall call,
+          ) async {
+            calls++;
+            return null;
+          });
 
       final service = WidgetUpdateService(
         debounceDuration: Duration(milliseconds: 40),
@@ -39,12 +41,13 @@ void main() {
 
   test('force triggers immediate run', () async {
     int calls = 0;
-    MethodChannel('bugaoshan/update').setMockMethodCallHandler((
-      MethodCall call,
-    ) async {
-      calls++;
-      return null;
-    });
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(MethodChannel('bugaoshan/update'), (
+          MethodCall call,
+        ) async {
+          calls++;
+          return null;
+        });
 
     final service = WidgetUpdateService(platformChecker: () => true);
     final future = service.updateWidgetData(force: true);
@@ -58,17 +61,18 @@ void main() {
     final block = Completer<void>();
     final started = Completer<void>();
 
-    MethodChannel('bugaoshan/update').setMockMethodCallHandler((
-      MethodCall call,
-    ) async {
-      calls++;
-      if (!started.isCompleted) started.complete();
-      if (calls == 1) {
-        // block the first invocation until we schedule the follow-up
-        await block.future;
-      }
-      return null;
-    });
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(MethodChannel('bugaoshan/update'), (
+          MethodCall call,
+        ) async {
+          calls++;
+          if (!started.isCompleted) started.complete();
+          if (calls == 1) {
+            // block the first invocation until we schedule the follow-up
+            await block.future;
+          }
+          return null;
+        });
 
     final service = WidgetUpdateService(platformChecker: () => true);
     final first = service.updateWidgetData(force: true);
@@ -93,11 +97,12 @@ void main() {
   });
 
   test('errors complete waiting callers', () async {
-    MethodChannel('bugaoshan/update').setMockMethodCallHandler((
-      MethodCall call,
-    ) async {
-      throw PlatformException(code: 'ERR', message: 'failed');
-    });
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(MethodChannel('bugaoshan/update'), (
+          MethodCall call,
+        ) async {
+          throw PlatformException(code: 'ERR', message: 'failed');
+        });
 
     final service = WidgetUpdateService(platformChecker: () => true);
     final future = service.updateWidgetData(force: true);
@@ -112,13 +117,14 @@ void main() {
 
   test('dispose completes pending futures with StateError', () async {
     final block = Completer<void>();
-    MethodChannel('bugaoshan/update').setMockMethodCallHandler((
-      MethodCall call,
-    ) async {
-      // never completes to simulate long-running native call
-      await block.future;
-      return null;
-    });
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(MethodChannel('bugaoshan/update'), (
+          MethodCall call,
+        ) async {
+          // never completes to simulate long-running native call
+          await block.future;
+          return null;
+        });
 
     final service = WidgetUpdateService(
       debounceDuration: Duration(milliseconds: 50),

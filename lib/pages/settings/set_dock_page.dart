@@ -38,8 +38,7 @@ class _SetDockPageState extends State<SetDockPage> {
     _appConfig.visibleDockIds.value = updated;
   }
 
-  void _onReorder(int oldIndex, int newIndex) {
-    if (oldIndex < newIndex) newIndex -= 1;
+  void _onReorderItem(int oldIndex, int newIndex) {
     final updated = List<String>.from(_visibleIds);
     final item = updated.removeAt(oldIndex);
     updated.insert(newIndex, item);
@@ -116,7 +115,7 @@ class _SetDockPageState extends State<SetDockPage> {
       physics: const NeverScrollableScrollPhysics(),
       buildDefaultDragHandles: false,
       itemCount: _visibleIds.length,
-      onReorder: _onReorder,
+      onReorderItem: _onReorderItem,
       proxyDecorator: (child, index, animation) {
         return AnimatedBuilder(
           animation: animation,

@@ -219,7 +219,7 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
           setState(() => _loading = true);
           await ctrl.goBack();
         } else if (mounted) {
-          Navigator.of(logicRootContext).pop();
+          if (logicRootContext.mounted) Navigator.of(logicRootContext).pop();
         }
       },
       child: Scaffold(
@@ -234,7 +234,11 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
                 IconButton(
                   icon: const Icon(Icons.close),
                   tooltip: '关闭',
-                  onPressed: () => Navigator.of(logicRootContext).pop(),
+                  onPressed: () {
+                    if (logicRootContext.mounted) {
+                      Navigator.of(logicRootContext).pop();
+                    }
+                  },
                 ),
                 IconButton(
                   icon: const Icon(Icons.arrow_back),

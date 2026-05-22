@@ -446,7 +446,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
       DateTime finalDate = picked;
       if (picked.weekday != DateTime.sunday) {
         finalDate = picked.toSunday();
-        if (mounted) {
+        if (context.mounted) {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text('已自动调整为该周周日')));

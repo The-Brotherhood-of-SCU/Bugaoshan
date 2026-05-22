@@ -7,7 +7,6 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
-import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 class CourseEditPage extends StatefulWidget {
   final Course? course;
@@ -453,7 +452,7 @@ class _CourseEditPageState extends State<CourseEditPage> {
       await courseProvider.addCourse(course);
     }
 
-    if (mounted) Navigator.pop(logicRootContext);
+    if (mounted) Navigator.pop(context);
   }
 
   Future<void> _deleteCourse() async {
@@ -464,7 +463,7 @@ class _CourseEditPageState extends State<CourseEditPage> {
     );
     if (confirm == true && widget.course != null) {
       await courseProvider.deleteCourse(widget.course!.id);
-      if (mounted) Navigator.pop(logicRootContext);
+      if (mounted) Navigator.pop(context);
     }
   }
 
