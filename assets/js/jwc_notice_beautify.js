@@ -180,7 +180,7 @@
       margin: 0 0 12px !important;
     }
     .art-text .page { display: none !important; }
-    img { max-width: 100% !important; height: auto !important; }
+    img { max-width: 100% !important; height: auto !important; float: none !important; display: block !important; margin: 0 auto !important; }
     table { width: 100% !important; max-width: 100% !important; border-collapse: collapse !important; }
     td, th { border: 1px solid #ddd !important; padding: 8px !important; font-size: 14px !important; }
 
@@ -353,13 +353,13 @@
         var year = dateParts.length === 3 ? dateParts[0] : '';
         li.innerHTML = '<a href="' + href + '" style="display:flex;align-items:flex-start;padding:14px 16px;text-decoration:none;color:#222;">' +
           '<span class="date" style="flex-shrink:0;text-align:center;padding:6px 10px;margin-right:14px;background:#f5f5f5;border-radius:8px;line-height:1.3;">' +
-            '<p style="display:block;margin:0;font-size:16px;font-weight:bold;color:#d32f2f;">' + mmdd + '</p>' +
-            '<span style="display:block;margin:0;font-size:12px;color:#999;">' + year + '</span>' +
+          '<p style="display:block;margin:0;font-size:16px;font-weight:bold;color:#d32f2f;">' + mmdd + '</p>' +
+          '<span style="display:block;margin:0;font-size:12px;color:#999;">' + year + '</span>' +
           '</span>' +
           '<span class="text" style="flex:1;min-width:0;">' +
-            '<p style="margin:0;font-size:16px;line-height:1.6;font-weight:500;color:#333;">' + title + '</p>' +
+          '<p style="margin:0;font-size:16px;line-height:1.6;font-weight:500;color:#333;">' + title + '</p>' +
           '</span>' +
-        '</a>';
+          '</a>';
       });
       // Rename class so .tz-list CSS applies
       listDiv.className = 'tz-list';
@@ -376,6 +376,22 @@
       newP.appendChild(a);
       p.parentNode.replaceChild(newP, p);
     });
+  });
+
+  // Fix content images: reset parent span margin, center image.
+  document.querySelectorAll('#vsb_content img').forEach(function (img) {
+    var parent = img.parentElement;
+    if (parent && parent.tagName === 'SPAN') {
+      parent.style.margin = '0';
+      parent.style.display = 'block';
+      parent.style.width = 'auto';
+      parent.style.textAlign = 'center';
+    }
+    img.style.float = 'none';
+    img.style.display = 'inline-block';
+    img.style.margin = '0 auto';
+    img.style.maxWidth = '100%';
+    img.style.height = 'auto';
   });
 
   // Extract download attachment links, style them, and send to Flutter.
