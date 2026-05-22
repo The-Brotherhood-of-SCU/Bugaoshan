@@ -182,6 +182,42 @@
       margin: 0 0 12px !important;
     }
     .detail .page { display: none !important; }
+    .turn-page { display: none !important; }
+
+    /* ── Attachment links ── */
+    #div_vote_id { display: none !important; }
+    .fjxz {
+      padding: 12px 16px !important;
+      margin: 0 16px 8px !important;
+      background: #fff !important;
+      border-radius: 0 0 12px 12px !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+      counter-reset: fjxz-counter !important;
+      list-style: none !important;
+    }
+    .fjxz li {
+      margin: 0 !important;
+      padding: 4px 0 !important;
+      font-size: 14px !important;
+      color: #666 !important;
+      counter-increment: fjxz-counter !important;
+      line-height: 1.6 !important;
+    }
+    .fjxz li::before {
+      content: counter(fjxz-counter) '. ' !important;
+      color: #999 !important;
+    }
+    .fjxz a {
+      display: inline !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      background: none !important;
+      color: #666 !important;
+      border-radius: 0 !important;
+      text-decoration: none !important;
+      font-size: 14px !important;
+      font-weight: normal !important;
+    }
     img { max-width: 100% !important; height: auto !important; float: none !important; display: block !important; margin: 0 auto !important; }
     table { width: 100% !important; max-width: 100% !important; border-collapse: collapse !important; }
     td, th { border: 1px solid #ddd !important; padding: 8px !important; font-size: 14px !important; }
@@ -222,6 +258,7 @@
       .p_pages .p_first_d, .p_pages .p_prev_d { background: #333 !important; color: #666 !important; border-color: #444 !important; }
       .p_pages .p_next a, .p_pages .p_last a { background: #2a2a2a !important; color: #e0e0e0 !important; border-color: #444 !important; }
       .p_t, .p_dot { color: #666 !important; }
+      .fjxz { background: #1e1e1e !important; box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important; }
     }
   `;
   document.head.appendChild(css);
@@ -331,6 +368,27 @@
           '<p class="title" style="margin:0;font-size:16px;line-height:1.6;font-weight:500;color:#333;">' + title + '</p>' +
           '</div>' +
           '</a>';
+      });
+    }
+  }
+
+  // Clean up attachment list: remove "附件【" prefix, "】已下载X次" suffix, add .fjxz class.
+  var vsb = document.querySelector('.detail-content');
+  if (vsb) {
+    var sib = vsb.nextElementSibling;
+    while (sib && sib.tagName !== 'UL') sib = sib.nextElementSibling;
+    if (sib && sib.tagName === 'UL') {
+      sib.className = 'fjxz';
+      sib.removeAttribute('style');
+      // Remove bottom border-radius from detail-content when attachments follow
+      vsb.style.borderRadius = '0 0 0 0';
+      vsb.style.marginBottom = '0';
+      sib.querySelectorAll('li').forEach(function (li) {
+        var a = li.querySelector('a');
+        if (!a) return;
+        var newLi = document.createElement('li');
+        newLi.appendChild(a.cloneNode(true));
+        li.parentNode.replaceChild(newLi, li);
       });
     }
   }
