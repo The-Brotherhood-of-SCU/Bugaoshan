@@ -64,22 +64,12 @@
     }
     .tz-list .text p {
       margin: 0 !important;
-      font-size: 15px !important;
-      line-height: 1.5 !important;
+      font-size: 16px !important;
+      line-height: 1.6 !important;
+      font-weight: 500 !important;
       color: #333 !important;
-      overflow: hidden !important;
-      text-overflow: ellipsis !important;
-      display: -webkit-box !important;
-      -webkit-line-clamp: 2 !important;
-      -webkit-box-orient: vertical !important;
     }
-    .tz-list .more {
-      flex-shrink: 0 !important;
-      margin-left: 12px !important;
-      font-size: 13px !important;
-      color: #999 !important;
-      white-space: nowrap !important;
-    }
+    .tz-list .more { display: none !important; }
 
     /* ── Pagination ── */
     .pagination { margin: 16px !important; text-align: center !important; }
