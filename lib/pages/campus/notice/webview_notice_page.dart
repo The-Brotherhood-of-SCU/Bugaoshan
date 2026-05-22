@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/pages/campus/downloads/shared_notice_downloads.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/widgets/common/image_viewer.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/download_manager.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
@@ -78,6 +81,14 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
       handlerName: 'DownloadAttachment',
       callback: _onDownloadAttachment,
     );
+    controller.addJavaScriptHandler(
+      handlerName: 'OpenImage',
+      callback: _onOpenImage,
+    );
+    controller.addJavaScriptHandler(
+      handlerName: 'OpenExternalLink',
+      callback: _onOpenExternalLink,
+    );
   }
 
   void _onAttachmentsMessage(List<dynamic> args) {
@@ -141,6 +152,43 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
 
   Future<void> _onDomReady() async {
     await _finishLoading();
+  }
+
+  void _onOpenImage(List<dynamic> args) {
+    if (args.isEmpty) return;
+    final url = args[0] as String;
+    if (url.isEmpty) return;
+    showFullScreenImageViewer(context, imageUrl: url);
+  }
+
+  void _onOpenExternalLink(List<dynamic> args) {
+    if (args.isEmpty) return;
+    final url = args[0] as String;
+    if (url.isEmpty) return;
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+    final l10n = AppLocalizations.of(context)!;
+    showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.campusNoticesExternalLink),
+        content: Text(l10n.campusNoticesConfirmOpenLink(url)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.campusNoticesOpenInBrowser),
+          ),
+        ],
+      ),
+    ).then((confirmed) {
+      if (confirmed == true) {
+        launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    });
   }
 
   Future<void> _onDownloadAttachment(List<dynamic> args) async {

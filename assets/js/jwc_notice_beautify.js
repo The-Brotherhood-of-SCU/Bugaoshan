@@ -320,18 +320,23 @@
     }
   }
 
-  // Remove target="_blank" so links navigate inside the WebView.
-  document.querySelectorAll('a[target="_blank"]').forEach(function (a) {
+  // Handle links: external links → ask Flutter to open in browser.
+  var host = location.hostname;
+  document.querySelectorAll('a').forEach(function (a) {
     a.removeAttribute('target');
-  });
-
-  // Remove click-count script blocks (点击次数：...)
-  document.querySelectorAll('script').forEach(function (s) {
-    if (s.textContent.indexOf('_showDynClicks') !== -1) {
-      var prev = s.previousElementSibling;
-      if (prev && prev.textContent.indexOf('点击次数') !== -1) prev.remove();
-      s.remove();
-    }
+    a.addEventListener('click', function (e) {
+      var href = a.getAttribute('href');
+      if (!href || href === '#' || href.indexOf('javascript:') === 0) return;
+      if (href.startsWith('/')) return;
+      try {
+        var url = new URL(href, location.href);
+        if (url.hostname !== host) {
+          e.preventDefault();
+          e.stopPropagation();
+          window.flutter_inappwebview.callHandler('OpenExternalLink', url.href);
+        }
+      } catch (err) { }
+    }, true);
   });
 
   // Rewrite search results (.list) to match .tz-list structure.
@@ -378,8 +383,8 @@
     });
   });
 
-  // Fix content images: reset parent span margin, center image.
-  document.querySelectorAll('#vsb_content img').forEach(function (img) {
+  // Fix content images: reset parent span margin, center, add click to preview.
+  document.querySelectorAll('#vsb_content img, .v_news_content img').forEach(function (img) {
     var parent = img.parentElement;
     if (parent && parent.tagName === 'SPAN') {
       parent.style.margin = '0';
@@ -392,6 +397,14 @@
     img.style.margin = '0 auto';
     img.style.maxWidth = '100%';
     img.style.height = 'auto';
+    img.style.cursor = 'pointer';
+    img.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var src = img.getAttribute('src') || '';
+      if (src && src.indexOf('/') === 0) src = window.location.origin + src;
+      window.flutter_inappwebview.callHandler('OpenImage', src);
+    });
   });
 
   // Extract download attachment links, style them, and send to Flutter.
