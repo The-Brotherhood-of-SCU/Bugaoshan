@@ -72,23 +72,21 @@ Three notice sources, each in its own subdirectory under `lib/pages/campus/notic
 
 **JWC Academic Affairs** (`jwc/`) — `jwc.scu.edu.cn`教务处通知。
 
-- `campus_notice_page.dart` — list page with search, date filters, infinite scroll.
-- `notice_detail_page.dart` — detail page with HTML content rendering, image gallery, and attachment extraction.
-- **Part files** (`notice_*.dart` in `jwc/`): HTTP client, models, content renderer, image handler, utils. All `part of 'campus_notice_page.dart'`.
-- **List source**: `https://jwc.scu.edu.cn/tzgg.htm` (paginated: `tzgg/{num}.htm` descending from 200 to 1).
-- **Pinned detection**: Parses homepage `index.htm` for `[置顶]` markers.
-- **HTTP client**: `_NoticeHttp` singleton with cookie jar; cookies extracted from `set-cookie` headers.
+- `campus_notice_page.dart` — thin `StatelessWidget` wrapper around `WebViewNoticePage`. Uses `jwc_notice_beautify.js` for content beautification and attachment extraction.
 
 **Party/XGB** (`xgb/`) — `xgb.scu.edu.cn`党委学工部通知。
 
-- `party_notice_page.dart` — WebView-based page with JS beautify injection and attachment extraction via `AttachmentsChannel`.
+- `party_notice_page.dart` — thin `StatelessWidget` wrapper around `WebViewNoticePage`. Uses `party_notice_beautify.js`.
 
 **Tuanwei** (`tuanwei/`) — `tuanwei.scu.edu.cn`团委（青春川大）通知。
 
-- `tuanwei_notice_page.dart` — WebView-based page, shares `WebViewNoticePage` base class with XGB. Uses `tuanwei_notice_beautify.js` for content beautification.
+- `tuanwei_notice_page.dart` — thin `StatelessWidget` wrapper around `WebViewNoticePage`. Uses `tuanwei_notice_beautify.js`. Uses `useWebViewDownload: true` for cookie-based downloads.
+
+**Shared WebView page** (`lib/pages/campus/notice/webview_notice_page.dart`):
+- `WebViewNoticePage` — shared `StatefulWidget` used by all three notice pages. Loads the notice URL in an `InAppWebView`, injects a beautify JS asset on each page load, extracts attachments via `AttachmentsChannel` JS handler, and shows a `NoticeAttachmentFab` when attachments are found.
 
 **Shared downloads module** (`lib/pages/campus/downloads/`):
-- `NoticeAttachmentFab` — draggable FAB showing attachment count, opens `showAttachmentsSheet` on tap. Shared by both notice pages.
+- `NoticeAttachmentFab` — draggable FAB showing attachment count, opens `showAttachmentsSheet` on tap. Shared by all notice pages.
 - `attachments_sheet.dart` — `showAttachmentsSheet()` modal bottom sheet with download/share/open per attachment.
 - `file_utils.dart` — `kNoticeAttachmentDir`, `kPartyAttachmentDir`, `kTuanweiAttachmentDir`, `downloadFile()`, `checkDownloadedFile()`.
 - `notice_downloaded_page.dart` — tabbed management page for downloaded attachments from both sources.

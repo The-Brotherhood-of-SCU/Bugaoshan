@@ -1,7 +1,4 @@
 (function () {
-  // Remove all existing stylesheets and style tags for a clean slate.
-  document.querySelectorAll('link[rel="stylesheet"], style').forEach(function (el) { el.remove(); });
-
   var css = document.createElement('style');
   css.textContent = `
     .header, .M_header, .picture, .left-menu, .location-bar,

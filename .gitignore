@@ -56,3 +56,6 @@ android/key.properties
 
 # AI generated draft documents
 docs/draft/*
+
+# mcp
+.playwright-mcp/
