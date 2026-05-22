@@ -645,6 +645,7 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
     }
+    final filtered = _allFilteredFiles;
     return Column(
       children: [
         TabBar(
@@ -652,8 +653,7 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
           tabs: [
             for (final cfg in _dirConfigs)
               Tab(
-                text:
-                    '${cfg.label} (${(_filesByDir[cfg.dirName] ?? []).length})',
+                text: '${cfg.label} (${(filtered[cfg.dirName] ?? []).length})',
               ),
           ],
         ),
@@ -662,7 +662,7 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
             controller: _tabController,
             children: [
               for (final cfg in _dirConfigs)
-                _buildFileList(_filesByDir[cfg.dirName] ?? [], l10n),
+                _buildFileList(filtered[cfg.dirName] ?? [], l10n),
             ],
           ),
         ),
@@ -673,7 +673,9 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
   Widget _buildFileList(List<File> files, AppLocalizations l10n) {
     if (files.isEmpty) {
       return _buildEmptyHint(
-        _query.isNotEmpty ? l10n.noData : l10n.noDownloadedAttachments,
+        (_query.isNotEmpty || _filterExt.isNotEmpty)
+            ? l10n.noData
+            : l10n.noDownloadedAttachments,
       );
     }
     return ListView.builder(
