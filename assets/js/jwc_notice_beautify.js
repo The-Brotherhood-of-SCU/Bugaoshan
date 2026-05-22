@@ -188,18 +188,44 @@
       border-radius: 12px !important;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
     }
-    .fjxz a, a[href*="download.jsp"], a[href*="downloadAttach"] {
-      display: inline-block !important;
-      padding: 10px 16px !important;
-      margin: 6px 4px !important;
-      background: #d32f2f !important;
-      color: #fff !important;
-      border-radius: 8px !important;
+    .fjxz {
+      padding: 12px 16px !important;
+      margin: 8px 16px !important;
+      background: #fff !important;
+      border-radius: 12px !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+      counter-reset: fjxz-counter !important;
+    }
+    .fjxz p {
+      margin: 0 !important;
+      padding: 4px 0 !important;
+      font-size: 14px !important;
+      color: #666 !important;
+      counter-increment: fjxz-counter !important;
+    }
+    .fjxz p::before {
+      content: counter(fjxz-counter) '. ' !important;
+      color: #999 !important;
+    }
+    .fjxz a {
+      display: inline !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      background: none !important;
+      color: #666 !important;
+      border-radius: 0 !important;
       text-decoration: none !important;
       font-size: 14px !important;
     }
-    .fjxz a::before, a[href*="download.jsp"]::before, a[href*="downloadAttach"]::before {
-      content: '📎 ' !important;
+    a[href*="download.jsp"], a[href*="downloadAttach"] {
+      display: inline !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      background: none !important;
+      color: #666 !important;
+      border-radius: 0 !important;
+      text-decoration: none !important;
+      font-size: 14px !important;
     }
 
     /* ── Dark mode ── */
@@ -244,6 +270,18 @@
       if (prev && prev.textContent.indexOf('点击次数') !== -1) prev.remove();
       s.remove();
     }
+  });
+
+  // Clean up .fjxz: remove "附件【" prefix and "】" suffix, keep <a> tags intact.
+  document.querySelectorAll('.fjxz').forEach(function (el) {
+    // Remove wrapper text nodes like "附件【" and "】"
+    el.querySelectorAll('p').forEach(function (p) {
+      var a = p.querySelector('a');
+      if (!a) return;
+      var newP = document.createElement('p');
+      newP.appendChild(a);
+      p.parentNode.replaceChild(newP, p);
+    });
   });
 
   // Extract download attachment links, style them, and send to Flutter.
