@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 注意：本页的更新日志应当存放一些通俗显著的更新内容，而非技术更新或者内部优化，请勿搬运git log记录。
 
-## [Unreleased]
+## [1.1.0] - 2026-05-23
 
 ### Added
 - 添加体测页面夜间访问限制提示
