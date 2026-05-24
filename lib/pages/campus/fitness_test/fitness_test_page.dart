@@ -38,6 +38,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
   Map<String, dynamic>? _scoreData;
   bool _scoreLoading = false;
   String? _scoreError;
+  bool _privacyHidden = true;
 
   @override
   void initState() {
@@ -663,19 +664,52 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     );
   }
 
+  String _maskText(String text, {int visibleStart = 1, int visibleEnd = 0}) {
+    if (text.length <= visibleStart + visibleEnd) return '*' * text.length;
+    final start = text.substring(0, visibleStart);
+    final end = visibleEnd > 0 ? text.substring(text.length - visibleEnd) : '';
+    final masked = '*' * (text.length - visibleStart - visibleEnd);
+    return '$start$masked$end';
+  }
+
   Widget _buildInfoCard(AppLocalizations l10n) {
+    final name = _scoreData!['student_name'] ?? '-';
+    final studentNum = _scoreData!['student_num'] ?? '-';
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _infoRow(
-              l10n.fitnessTestStudentName,
-              _scoreData!['student_name'] ?? '-',
+            GestureDetector(
+              onTap: () => setState(() => _privacyHidden = !_privacyHidden),
+              child: _infoRow(
+                l10n.fitnessTestStudentName,
+                _privacyHidden ? _maskText(name) : name,
+                trailing: Icon(
+                  _privacyHidden
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
             ),
-            _infoRow(
-              l10n.fitnessTestStudentNum,
-              _scoreData!['student_num'] ?? '-',
+            GestureDetector(
+              onTap: () => setState(() => _privacyHidden = !_privacyHidden),
+              child: _infoRow(
+                l10n.fitnessTestStudentNum,
+                _privacyHidden
+                    ? _maskText(studentNum, visibleStart: 2, visibleEnd: 2)
+                    : studentNum,
+                trailing: Icon(
+                  _privacyHidden
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
             ),
             _infoRow(l10n.fitnessTestSex, _scoreData!['sex'] ?? '-'),
             _infoRow(
@@ -696,8 +730,8 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     );
   }
 
-  Widget _infoRow(String label, String value) {
-    return InfoRow(label: label, value: value);
+  Widget _infoRow(String label, String value, {Widget? trailing}) {
+    return InfoRow(label: label, value: value, trailing: trailing);
   }
 
   Widget _buildScoreItemsCard(AppLocalizations l10n) {

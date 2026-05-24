@@ -6,11 +6,13 @@ class InfoRow extends StatelessWidget {
     required this.label,
     required this.value,
     this.labelWidth = 80,
+    this.trailing,
   });
 
   final String label;
   final String value;
   final double labelWidth;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +38,7 @@ class InfoRow extends StatelessWidget {
               ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
             ),
           ),
+          if (trailing != null) ...[const SizedBox(width: 8), trailing!],
         ],
       ),
     );

@@ -27,6 +27,7 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
   String? _error;
   Map<String, dynamic>? _userInfo;
   List<Map<String, dynamic>> _devices = [];
+  bool _privacyHidden = true;
 
   @override
   void initState() {
@@ -263,6 +264,42 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
     );
   }
 
+  String _maskText(String text, {int visibleStart = 1, int visibleEnd = 0}) {
+    if (text.length <= visibleStart + visibleEnd) return '*' * text.length;
+    final start = text.substring(0, visibleStart);
+    final end = visibleEnd > 0 ? text.substring(text.length - visibleEnd) : '';
+    final masked = '*' * (text.length - visibleStart - visibleEnd);
+    return '$start$masked$end';
+  }
+
+  Widget _buildPrivacyRow(
+    String label,
+    String value, {
+    int visibleStart = 1,
+    int visibleEnd = 0,
+  }) {
+    return GestureDetector(
+      onTap: () => setState(() => _privacyHidden = !_privacyHidden),
+      child: _infoRow(
+        label,
+        _privacyHidden
+            ? _maskText(
+                value,
+                visibleStart: visibleStart,
+                visibleEnd: visibleEnd,
+              )
+            : value,
+        trailing: Icon(
+          _privacyHidden
+              ? Icons.visibility_off_outlined
+              : Icons.visibility_outlined,
+          size: 16,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
+    );
+  }
+
   Widget _buildUserInfoCard(AppLocalizations l10n) {
     final user = _userInfo;
     final role = user?['role'] as Map<String, dynamic>?;
@@ -290,12 +327,22 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
               ],
             ),
             const Divider(height: 24),
-            _infoRow('姓名', user?['realname'] ?? '-'),
+            _buildPrivacyRow('姓名', user?['realname'] ?? '-'),
             _infoRow('性别', user?['sex'] ?? '-'),
-            _infoRow('学号', role?['number'] ?? '-'),
+            _buildPrivacyRow(
+              '学号',
+              role?['number'] ?? '-',
+              visibleStart: 2,
+              visibleEnd: 2,
+            ),
             _infoRow('身份', role?['identity'] ?? '-'),
-            _infoRow('邮箱', user?['email'] ?? '-'),
-            _infoRow('手机', user?['mobile'] ?? '-'),
+            _buildPrivacyRow('邮箱', user?['email'] ?? '-'),
+            _buildPrivacyRow(
+              '手机',
+              user?['mobile'] ?? '-',
+              visibleStart: 3,
+              visibleEnd: 2,
+            ),
             _infoRow('学院', departs?.values.join(', ') ?? '-'),
           ],
         ),
@@ -303,8 +350,8 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
     );
   }
 
-  Widget _infoRow(String label, String value) {
-    return InfoRow(label: label, value: value);
+  Widget _infoRow(String label, String value, {Widget? trailing}) {
+    return InfoRow(label: label, value: value, trailing: trailing);
   }
 
   Widget _buildDeviceListCard(AppLocalizations l10n) {
