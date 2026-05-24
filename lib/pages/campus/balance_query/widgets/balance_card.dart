@@ -35,6 +35,7 @@ class BalanceCardState extends State<BalanceCard> {
   bool _isLoading = false;
   String? _error;
   RoomInfo? _localInfo; // 本地持有数据，不依赖父级传入
+  bool _privacyHidden = true;
 
   @override
   void initState() {
@@ -134,10 +135,37 @@ class BalanceCardState extends State<BalanceCard> {
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        widget.binding.displayName,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      GestureDetector(
+                        onTap: () =>
+                            setState(() => _privacyHidden = !_privacyHidden),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _privacyHidden
+                                  ? widget.binding.displayName
+                                        .split(' ')
+                                        .take(2)
+                                        .join(' ')
+                                  : widget.binding.displayName,
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                                  ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(
+                              _privacyHidden
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              size: 14,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                            ),
+                          ],
                         ),
                       ),
                     ],
