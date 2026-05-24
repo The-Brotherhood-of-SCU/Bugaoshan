@@ -1264,19 +1264,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get networkOfflineFailed => '下线失败';
 
   @override
-  String get balanceQuery => '余额查询';
+  String get balanceQuery => '电费查询';
 
   @override
-  String get balanceQueryDesc => '查询电费和空调费用余额';
+  String get balanceQueryDesc => '查询照明和空调电费余额';
 
   @override
-  String get electricityFee => '电费';
+  String get electricityFee => '照明电量';
 
   @override
-  String get acFee => '空调费';
+  String get acFee => '空调电量';
 
   @override
-  String get balance => '余额';
+  String get balance => '剩余电量';
 
   @override
   String get unitKwh => '度';
@@ -1474,7 +1474,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dockLabelNetworkDevice => '校园网';
 
   @override
-  String get dockLabelBalanceQuery => '余额';
+  String get dockLabelBalanceQuery => '电费';
 
   @override
   String get dockLabelAcademicCalendar => '校历';

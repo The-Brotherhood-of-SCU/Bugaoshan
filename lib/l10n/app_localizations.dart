@@ -2548,31 +2548,31 @@ abstract class AppLocalizations {
   /// No description provided for @balanceQuery.
   ///
   /// In en, this message translates to:
-  /// **'Balance Query'**
+  /// **'Electricity Query'**
   String get balanceQuery;
 
   /// No description provided for @balanceQueryDesc.
   ///
   /// In en, this message translates to:
-  /// **'Query electricity and AC fee balance'**
+  /// **'Query lighting and AC electricity balance'**
   String get balanceQueryDesc;
 
   /// No description provided for @electricityFee.
   ///
   /// In en, this message translates to:
-  /// **'Electricity'**
+  /// **'Lighting'**
   String get electricityFee;
 
   /// No description provided for @acFee.
   ///
   /// In en, this message translates to:
-  /// **'AC Fee'**
+  /// **'AC Power'**
   String get acFee;
 
   /// No description provided for @balance.
   ///
   /// In en, this message translates to:
-  /// **'Balance'**
+  /// **'Remaining'**
   String get balance;
 
   /// No description provided for @unitKwh.
@@ -2938,7 +2938,7 @@ abstract class AppLocalizations {
   /// No description provided for @dockLabelBalanceQuery.
   ///
   /// In en, this message translates to:
-  /// **'Balance'**
+  /// **'Electricity'**
   String get dockLabelBalanceQuery;
 
   /// No description provided for @dockLabelAcademicCalendar.

@@ -1300,19 +1300,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get networkOfflineFailed => 'Failed to offline device';
 
   @override
-  String get balanceQuery => 'Balance Query';
+  String get balanceQuery => 'Electricity Query';
 
   @override
-  String get balanceQueryDesc => 'Query electricity and AC fee balance';
+  String get balanceQueryDesc => 'Query lighting and AC electricity balance';
 
   @override
-  String get electricityFee => 'Electricity';
+  String get electricityFee => 'Lighting';
 
   @override
-  String get acFee => 'AC Fee';
+  String get acFee => 'AC Power';
 
   @override
-  String get balance => 'Balance';
+  String get balance => 'Remaining';
 
   @override
   String get unitKwh => 'kWh';
@@ -1517,7 +1517,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dockLabelNetworkDevice => 'Network';
 
   @override
-  String get dockLabelBalanceQuery => 'Balance';
+  String get dockLabelBalanceQuery => 'Electricity';
 
   @override
   String get dockLabelAcademicCalendar => 'Calendar';
