@@ -31,8 +31,9 @@ enum ThemeColorMode { system, backgroundImage, custom }
 class AppConfigProvider {
   final SharedPreferences _sharedPreferences;
 
-  AppConfigProvider(this._sharedPreferences) {
-    _loadLocale();
+  AppConfigProvider(this._sharedPreferences);
+  Future<void> init() async {
+    await _loadPreferences();
     _addSaveCallback();
   }
 
@@ -65,7 +66,7 @@ class AppConfigProvider {
       ValueNotifier<ThemeColorMode>(ThemeColorMode.system);
   final ValueNotifier<bool> widgetShowTomorrow = ValueNotifier<bool>(false);
 
-  void _loadLocale() {
+  Future<void> _loadPreferences() async {
     final localeString = _sharedPreferences.getString(_keyLocale);
     locale.value = parseLocale(localeString);
     cardSizeAnimationDuration.value = Duration(
@@ -87,7 +88,7 @@ class AppConfigProvider {
     final savedPath = _sharedPreferences.getString(_keyBackgroundImagePath);
     if (savedPath != null) {
       final file = File(savedPath);
-      if (file.existsSync()) {
+      if (await file.exists()) {
         backgroundImagePath.value = savedPath;
       } else {
         backgroundImagePath.value = null;
@@ -203,9 +204,9 @@ class AppConfigProvider {
     visibleDockIds.value = List<String>.from(defaultVisibleDockIds);
   }
 
-  void clearAll() {
-    _sharedPreferences.clear();
-    _loadLocale();
+  Future<void> clearAll() async {
+    await _sharedPreferences.clear();
+    await _loadPreferences();
   }
 
   Future<void> _switchToSystemColor() async {

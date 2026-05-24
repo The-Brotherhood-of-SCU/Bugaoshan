@@ -303,7 +303,7 @@ class SoftwareSettingPage extends StatelessWidget {
                       final scuAuth = getIt<ScuAuthProvider>();
                       await scuAuth.logout();
                       await scuAuth.clearCredentials();
-                      appConfig.clearAll();
+                      await appConfig.clearAll();
                       final courseProvider = getIt<CourseProvider>();
                       await courseProvider.clearAllData();
                     }

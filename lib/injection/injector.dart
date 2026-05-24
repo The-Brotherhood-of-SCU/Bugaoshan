@@ -41,7 +41,9 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<AppConfigProvider>(() async {
     await getIt.isReady<SharedPreferences>();
     final prefs = getIt<SharedPreferences>();
-    return AppConfigProvider(prefs);
+    final instance = AppConfigProvider(prefs);
+    await instance.init();
+    return instance;
   });
   getIt.registerSingletonAsync<PackageInfo>(() => PackageInfo.fromPlatform());
   getIt.registerSingletonAsync<AppInfoProvider>(() async {
