@@ -29,7 +29,7 @@ enum LoginStatus {
   bool get isAutoLoggingIn => this == LoginStatus.autoLoggingIn;
 }
 
-class LoginStatusCard extends StatelessWidget {
+class LoginStatusCard extends StatefulWidget {
   final LoginStatus status;
   final String? username;
   final ScuAuthProvider authProvider;
@@ -44,6 +44,18 @@ class LoginStatusCard extends StatelessWidget {
     required this.onLogin,
     required this.onLogout,
   });
+
+  @override
+  State<LoginStatusCard> createState() => _LoginStatusCardState();
+}
+
+class _LoginStatusCardState extends State<LoginStatusCard> {
+  bool _privacyHidden = true;
+
+  String _maskUsername(String username) {
+    if (username.length <= 4) return '*' * username.length;
+    return '${username.substring(0, 2)}${'*' * (username.length - 4)}${username.substring(username.length - 2)}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,19 +82,36 @@ class LoginStatusCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        status.displayText(localizations),
+                        widget.status.displayText(localizations),
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      if (status.isLoggedIn)
-                        Text(
-                          '${localizations.scuLogin}${username != null ? ' ($username)' : ''}',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
+                      if (widget.status.isLoggedIn)
+                        GestureDetector(
+                          onTap: () =>
+                              setState(() => _privacyHidden = !_privacyHidden),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '${localizations.scuLogin}${widget.username != null ? ' (${_privacyHidden ? _maskUsername(widget.username!) : widget.username})' : ''}',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(
+                                _privacyHidden
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                size: 14,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ],
                           ),
                         ),
-                      if (status.isSessionExpired)
+                      if (widget.status.isSessionExpired)
                         Text(
                           localizations.loginSessionExpiredDesc,
                           style: theme.textTheme.bodySmall?.copyWith(
@@ -107,16 +136,16 @@ class LoginStatusCard extends StatelessWidget {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: status.isAutoLoggingIn
+        color: widget.status.isAutoLoggingIn
             ? primaryColor.withValues(alpha: 0.08)
-            : status.isLoggedIn
+            : widget.status.isLoggedIn
             ? primaryColor.withValues(alpha: 0.1)
-            : status.isSessionExpired
+            : widget.status.isSessionExpired
             ? theme.colorScheme.tertiaryContainer
             : theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(14),
       ),
-      child: status.isAutoLoggingIn
+      child: widget.status.isAutoLoggingIn
           ? SizedBox(
               width: 24,
               height: 24,
@@ -126,14 +155,14 @@ class LoginStatusCard extends StatelessWidget {
               ),
             )
           : Icon(
-              status.isLoggedIn
+              widget.status.isLoggedIn
                   ? Icons.person
-                  : status.isSessionExpired
+                  : widget.status.isSessionExpired
                   ? Icons.access_time_filled
                   : Icons.person_outline,
-              color: status.isLoggedIn
+              color: widget.status.isLoggedIn
                   ? primaryColor
-                  : status.isSessionExpired
+                  : widget.status.isSessionExpired
                   ? theme.colorScheme.onTertiaryContainer
                   : theme.colorScheme.onSurfaceVariant,
               size: 24,
@@ -147,17 +176,17 @@ class LoginStatusCard extends StatelessWidget {
     Color primaryColor,
   ) {
     return InkWell(
-      onTap: status.isAutoLoggingIn
+      onTap: widget.status.isAutoLoggingIn
           ? null
-          : status.isLoggedIn
-          ? onLogout
-          : onLogin,
+          : widget.status.isLoggedIn
+          ? widget.onLogout
+          : widget.onLogin,
       borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         child: Row(
           children: [
-            if (status.isAutoLoggingIn)
+            if (widget.status.isAutoLoggingIn)
               SizedBox(
                 width: 20,
                 height: 20,
@@ -168,8 +197,10 @@ class LoginStatusCard extends StatelessWidget {
               )
             else
               Icon(
-                status.isLoggedIn ? Icons.logout_rounded : Icons.login_rounded,
-                color: status.isLoggedIn
+                widget.status.isLoggedIn
+                    ? Icons.logout_rounded
+                    : Icons.login_rounded,
+                color: widget.status.isLoggedIn
                     ? theme.colorScheme.error
                     : primaryColor,
                 size: 20,
@@ -177,15 +208,15 @@ class LoginStatusCard extends StatelessWidget {
             const SizedBox(width: 14),
             Expanded(
               child: Text(
-                status.isAutoLoggingIn
+                widget.status.isAutoLoggingIn
                     ? localizations.autoLoggingIn
-                    : status.isLoggedIn
+                    : widget.status.isLoggedIn
                     ? localizations.logout
                     : localizations.scuLogin,
                 style: theme.textTheme.bodyLarge?.copyWith(
-                  color: status.isAutoLoggingIn
+                  color: widget.status.isAutoLoggingIn
                       ? theme.colorScheme.onSurfaceVariant
-                      : status.isLoggedIn
+                      : widget.status.isLoggedIn
                       ? theme.colorScheme.error
                       : primaryColor,
                 ),
