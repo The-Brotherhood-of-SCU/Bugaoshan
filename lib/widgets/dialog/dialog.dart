@@ -3,19 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
-import 'package:bugaoshan/l10n/app_localizations.dart';
 
 final appConfigService = getIt<AppConfigProvider>();
 
 Future showInfoDialog({
-  BuildContext? context,
+  BuildContext? context, //this is no need anymore
   String title = "",
   String content = "",
   String button = "OK",
 }) {
-  final ctx = context ?? logicRootContext;
   return showDialog(
-    context: ctx,
+    context: logicRootContext,
     useRootNavigator: false,
     builder: (context) {
       return AlertDialog(
@@ -35,16 +33,14 @@ Future showInfoDialog({
 }
 
 Future<bool?> showYesNoDialog({
-  BuildContext? context,
+  BuildContext? context, //no need
   String title = "",
   String content = "",
 }) {
-  final ctx = context ?? logicRootContext;
   return showDialog(
-    context: ctx,
+    context: logicRootContext,
     useRootNavigator: false,
     builder: (context) {
-      final l10n = AppLocalizations.of(context);
       return AlertDialog(
         title: Text(title),
         content: Text(content),
@@ -53,13 +49,13 @@ Future<bool?> showYesNoDialog({
             onPressed: () {
               Navigator.of(context).pop(true);
             },
-            child: Text(l10n?.confirm ?? 'Yes'),
+            child: const Text("Yes"),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(context).pop(false);
             },
-            child: Text(l10n?.cancel ?? 'No'),
+            child: const Text("No"),
           ),
         ],
       );

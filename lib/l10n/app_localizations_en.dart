@@ -561,23 +561,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Background image set. You can go to Theme Color to modify the theme color.';
 
   @override
-  String get backgroundImageCompressTitle => 'Compress background image?';
-
-  @override
-  String get backgroundImageCompressContent =>
-      'Compressing the image will significantly reduce load latency but may lower image quality. Compress now?';
-
-  @override
-  String get backgroundImageCompressedSnackbar =>
-      'Background image compressed and set. You can go to Theme Color to modify the theme color.';
-
-  @override
-  String get yes => 'Yes';
-
-  @override
-  String get no => 'No';
-
-  @override
   String get showTeacher => 'Show Teacher';
 
   @override
