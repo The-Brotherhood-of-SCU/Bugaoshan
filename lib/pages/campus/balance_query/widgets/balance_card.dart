@@ -198,7 +198,48 @@ class BalanceCardState extends State<BalanceCard> {
                       ),
                     )
                   : _localInfo == null
-                  ? Center(child: Text(l10n.loading))
+                  ? Column(
+                      children: [
+                        Center(
+                          child: Column(
+                            children: [
+                              Text(
+                                l10n.balance,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                    ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                l10n.loading,
+                                style: Theme.of(context).textTheme.displayMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                    ),
+                              ),
+                              Text(
+                                widget.unit,
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        _infoRow(l10n.roomNumber, '—'),
+                        _infoRow(l10n.pricePerUnit, '—'),
+                      ],
+                    )
                   : Column(
                       children: [
                         Center(
