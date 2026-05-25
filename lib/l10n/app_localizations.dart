@@ -1141,6 +1141,36 @@ abstract class AppLocalizations {
   /// **'Background image set. You can go to Theme Color to modify the theme color.'**
   String get backgroundImageSetHint;
 
+  /// Title asking user whether to compress the selected background image
+  ///
+  /// In en, this message translates to:
+  /// **'Compress background image?'**
+  String get backgroundImageCompressTitle;
+
+  /// Detailed prompt asking whether to compress the background image
+  ///
+  /// In en, this message translates to:
+  /// **'Compressing the image will significantly reduce load latency but may lower image quality. Compress now?'**
+  String get backgroundImageCompressContent;
+
+  /// Snackbar message shown after image compression
+  ///
+  /// In en, this message translates to:
+  /// **'Background image compressed and set. You can go to Theme Color to modify the theme color.'**
+  String get backgroundImageCompressedSnackbar;
+
+  /// Confirm button short label
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get yes;
+
+  /// Cancel button short label
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get no;
+
   /// No description provided for @showTeacher.
   ///
   /// In en, this message translates to:

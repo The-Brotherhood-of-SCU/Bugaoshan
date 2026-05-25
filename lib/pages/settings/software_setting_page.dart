@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
@@ -19,6 +21,10 @@ import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/providers/set_theme_color_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'dart:math' as math;
+import 'package:image/image.dart' as img;
+// 'dart:typed_data' not needed; Flutter's foundation provides Uint8List
+import 'package:flutter/foundation.dart';
 import 'package:system_theme/system_theme.dart';
 
 class SoftwareSettingPage extends StatelessWidget {
@@ -148,7 +154,6 @@ class SoftwareSettingPage extends StatelessWidget {
                       child: Text(localizations.setBackgroundImage),
                     ),
                     if (appConfig.backgroundImagePath.value != null) ...[
-                      const SizedBox(height: 8),
                       ButtonWithMaxWidth(
                         onPressed: () async {
                           final oldPath = appConfig.backgroundImagePath.value;
@@ -336,7 +341,7 @@ class SoftwareSettingPage extends StatelessWidget {
       await bgDir.create(recursive: true);
     }
 
-    final ext = p.extension(picked.path);
+    final ext = p.extension(picked.path).toLowerCase();
     final destPath = '${bgDir.path}/schedule_bg$ext';
 
     // Delete old background file and evict from image cache
@@ -349,7 +354,58 @@ class SoftwareSettingPage extends StatelessWidget {
       }
     }
 
-    await File(picked.path).copy(destPath);
+    try {
+      final mq = MediaQuery.of(logicRootContext);
+      final maxW = (mq.size.width * mq.devicePixelRatio).round();
+      final maxH = (mq.size.height * mq.devicePixelRatio).round();
+      final bytes = await picked.readAsBytes();
+
+      final compress = await showYesNoDialog(
+        context: logicRootContext,
+        title: AppLocalizations.of(
+          logicRootContext,
+        )!.backgroundImageCompressTitle,
+        content: AppLocalizations.of(
+          logicRootContext,
+        )!.backgroundImageCompressContent,
+      );
+
+      if (!logicRootContext.mounted) return;
+
+      if (compress == true) {
+        try {
+          final outBytes = await compute(_resizeImageIsolate, {
+            'bytes': bytes,
+            'ext': ext,
+            'maxW': maxW,
+            'maxH': maxH,
+          });
+          if (outBytes.isEmpty) {
+            await File(picked.path).copy(destPath);
+          } else {
+            await File(destPath).writeAsBytes(outBytes, flush: true);
+          }
+          if (!logicRootContext.mounted) return;
+          ScaffoldMessenger.of(logicRootContext).showSnackBar(
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(
+                  logicRootContext,
+                )!.backgroundImageCompressedSnackbar,
+              ),
+            ),
+          );
+        } catch (e) {
+          debugPrint('Background image resize failed: $e');
+          await File(picked.path).copy(destPath);
+        }
+      } else {
+        await File(picked.path).copy(destPath);
+      }
+    } catch (e) {
+      debugPrint('Background image handling failed: $e');
+      await File(picked.path).copy(destPath);
+    }
     appConfig.backgroundImagePath.value = destPath;
 
     if (appConfig.themeColorMode.value == ThemeColorMode.backgroundImage) {
@@ -361,14 +417,43 @@ class SoftwareSettingPage extends StatelessWidget {
       }
     }
 
-    if (!context.mounted) return;
+    if (!logicRootContext.mounted) return;
     if (appConfig.themeColorMode.value != ThemeColorMode.backgroundImage) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(logicRootContext).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.backgroundImageSetHint),
+          content: Text(
+            AppLocalizations.of(logicRootContext)!.backgroundImageSetHint,
+          ),
           duration: const Duration(seconds: 3),
         ),
       );
     }
+  }
+}
+
+// Runs in a separate isolate. Expects a Map with keys: 'bytes' (List<int>),
+// 'ext' (String), 'maxW' (int), 'maxH' (int). Returns encoded image bytes.
+List<int> _resizeImageIsolate(Map<String, dynamic> params) {
+  final bytes = params['bytes'] as List<int>;
+  final ext = params['ext'] as String? ?? '.jpg';
+  final maxW = params['maxW'] as int? ?? 1920;
+  final maxH = params['maxH'] as int? ?? 1080;
+
+  final src = img.decodeImage(Uint8List.fromList(bytes));
+  if (src == null) return bytes;
+
+  int targetW = src.width;
+  int targetH = src.height;
+  if (src.width > maxW || src.height > maxH) {
+    final scale = math.min(maxW / src.width, maxH / src.height);
+    targetW = math.max(1, (src.width * scale).round());
+    targetH = math.max(1, (src.height * scale).round());
+  }
+
+  final resized = img.copyResize(src, width: targetW, height: targetH);
+  if (ext == '.png') {
+    return img.encodePng(resized);
+  } else {
+    return img.encodeJpg(resized, quality: 88);
   }
 }

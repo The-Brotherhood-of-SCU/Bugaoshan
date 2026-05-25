@@ -204,6 +204,25 @@
     "removeBackgroundImage":"移除背景图片",
     "backgroundImageOpacity":"背景图片不透明度",
     "backgroundImageSetHint":"背景图片已设置，您可以前往「主题颜色」修改主题色",
+    "backgroundImageCompressTitle": "压缩背景图？",
+    "@backgroundImageCompressTitle": {
+        "description": "提示用户是否压缩背景图的标题",
+        "type": "text"
+    },
+    "backgroundImageCompressContent": "压缩图片会显著减少加载延迟，但可能降低画质。是否牙刷？",
+    "@backgroundImageCompressContent": {
+        "description": "提示用户压缩背景图的详细说明",
+        "type": "text"
+    },
+    "backgroundImageCompressedSnackbar": "背景图片已压缩并设置，您可以前往「主题颜色」修改主题色",
+    "@backgroundImageCompressedSnackbar": {
+        "description": "压缩并保存背景图后的提示消息",
+        "type": "text"
+    },
+    "yes": "是",
+    "@yes": { "description": "确认按钮短文案", "type": "text" },
+    "no": "否",
+    "@no": { "description": "取消按钮短文案", "type": "text" },
     "showTeacher":"显示教师",
     "showLocation":"显示教室",
     "showWeekend":"显示周末",

@@ -544,6 +544,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get backgroundImageSetHint => '背景图片已设置，您可以前往「主题颜色」修改主题色';
 
   @override
+  String get backgroundImageCompressTitle => '压缩背景图？';
+
+  @override
+  String get backgroundImageCompressContent => '压缩图片会显著减少加载延迟，但可能降低画质。是否牙刷？';
+
+  @override
+  String get backgroundImageCompressedSnackbar => '背景图片已压缩并设置，您可以前往「主题颜色」修改主题色';
+
+  @override
+  String get yes => '是';
+
+  @override
+  String get no => '否';
+
+  @override
   String get showTeacher => '显示教师';
 
   @override

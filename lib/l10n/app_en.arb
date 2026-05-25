@@ -205,6 +205,25 @@
     "removeBackgroundImage":"Remove Background Image",
     "backgroundImageOpacity":"Background Image Opacity",
     "backgroundImageSetHint":"Background image set. You can go to Theme Color to modify the theme color.",
+    "backgroundImageCompressTitle": "Compress background image?",
+    "@backgroundImageCompressTitle": {
+        "description": "Title asking user whether to compress the selected background image",
+        "type": "text"
+    },
+    "backgroundImageCompressContent": "Compressing the image will significantly reduce load latency but may lower image quality. Compress now?",
+    "@backgroundImageCompressContent": {
+        "description": "Detailed prompt asking whether to compress the background image",
+        "type": "text"
+    },
+    "backgroundImageCompressedSnackbar": "Background image compressed and set. You can go to Theme Color to modify the theme color.",
+    "@backgroundImageCompressedSnackbar": {
+        "description": "Snackbar message shown after image compression",
+        "type": "text"
+    },
+    "yes": "Yes",
+    "@yes": { "description": "Confirm button short label", "type": "text" },
+    "no": "No",
+    "@no": { "description": "Cancel button short label", "type": "text" },
     "showTeacher":"Show Teacher",
     "showLocation":"Show Location",
     "showWeekend":"Show Weekend",
