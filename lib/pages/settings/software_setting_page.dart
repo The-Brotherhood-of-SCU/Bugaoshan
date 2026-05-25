@@ -153,52 +153,72 @@ class SoftwareSettingPage extends StatelessWidget {
                       icon: const Icon(Icons.wallpaper),
                       child: Text(localizations.setBackgroundImage),
                     ),
-                    if (appConfig.backgroundImagePath.value != null) ...[
-                      ButtonWithMaxWidth(
-                        onPressed: () async {
-                          final oldPath = appConfig.backgroundImagePath.value;
-                          appConfig.backgroundImagePath.value = null;
-                          if (oldPath != null) {
-                            FileImage(File(oldPath)).evict();
-                            File(oldPath).delete().ignore();
-                          }
-                          if (appConfig.themeColorMode.value ==
-                              ThemeColorMode.backgroundImage) {
-                            await SystemTheme.accentColor.load();
-                            appConfig.themeColor.value =
-                                SystemTheme.accentColor.accent;
-                          }
-                        },
-                        icon: const Icon(Icons.delete_outline),
-                        child: Text(localizations.removeBackgroundImage),
-                      ),
-                      const SizedBox(height: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  localizations.backgroundImageOpacity,
+                    FutureBuilder<bool>(
+                      future: () async {
+                        final path = appConfig.backgroundImagePath.value;
+                        if (path == null) return false;
+                        try {
+                          return await File(path).exists();
+                        } catch (_) {
+                          return false;
+                        }
+                      }(),
+                      builder: (context, snapshot) {
+                        final exists = snapshot.data == true;
+                        if (!exists) return const SizedBox.shrink();
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ButtonWithMaxWidth(
+                              onPressed: () async {
+                                final oldPath =
+                                    appConfig.backgroundImagePath.value;
+                                appConfig.backgroundImagePath.value = null;
+                                if (oldPath != null) {
+                                  FileImage(File(oldPath)).evict();
+                                  File(oldPath).delete().ignore();
+                                }
+                                if (appConfig.themeColorMode.value ==
+                                    ThemeColorMode.backgroundImage) {
+                                  await SystemTheme.accentColor.load();
+                                  appConfig.themeColor.value =
+                                      SystemTheme.accentColor.accent;
+                                }
+                              },
+                              icon: const Icon(Icons.delete_outline),
+                              child: Text(localizations.removeBackgroundImage),
+                            ),
+                            const SizedBox(height: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        localizations.backgroundImageOpacity,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${(appConfig.backgroundImageOpacity.value * 100).round()}%',
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              Text(
-                                '${(appConfig.backgroundImageOpacity.value * 100).round()}%',
-                              ),
-                            ],
-                          ),
-                          Slider(
-                            value: appConfig.backgroundImageOpacity.value,
-                            min: 0.05,
-                            max: 0.8,
-                            divisions: 15,
-                            onChanged: (v) =>
-                                appConfig.backgroundImageOpacity.value = v,
-                          ),
-                        ],
-                      ),
-                    ],
+                                Slider(
+                                  value: appConfig.backgroundImageOpacity.value,
+                                  min: 0.05,
+                                  max: 0.8,
+                                  divisions: 15,
+                                  onChanged: (v) =>
+                                      appConfig.backgroundImageOpacity.value =
+                                          v,
+                                ),
+                              ],
+                            ),
+                          ],
+                        );
+                      },
+                    ),
                   ],
                 ),
                 const Divider(),

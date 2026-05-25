@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -84,17 +83,10 @@ class AppConfigProvider {
         _sharedPreferences.getDouble(_keyCourseRowHeight) ?? 72.0;
     backgroundImageOpacity.value =
         _sharedPreferences.getDouble(_keyBackgroundImageOpacity) ?? 0.3;
+    // Load the saved path immediately to allow early image loading.
+    // Existence will be checked later in the Settings UI when needed.
     final savedPath = _sharedPreferences.getString(_keyBackgroundImagePath);
-    if (savedPath != null) {
-      final file = File(savedPath);
-      if (await file.exists()) {
-        backgroundImagePath.value = savedPath;
-      } else {
-        backgroundImagePath.value = null;
-      }
-    } else {
-      backgroundImagePath.value = null;
-    }
+    backgroundImagePath.value = savedPath;
     firstLaunchWizardCompleted.value =
         _sharedPreferences.getBool(_keyFirstLaunchWizardCompleted) ??
         kDebugMode;
