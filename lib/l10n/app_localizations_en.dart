@@ -22,6 +22,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your campus assistant: schedules, grades and campus services in one place';
 
   @override
+  String get wizard => 'Wizard';
+
+  @override
+  String get resetWizardTitle => 'Reset Wizard Status';
+
+  @override
+  String get resetWizardSubtitle => 'Set firstLaunchWizardCompleted to false';
+
+  @override
   String get wizardLoginTitle => 'Login & Import Schedule';
 
   @override

@@ -21,6 +21,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wizardWelcomeDesc => '你的校园生活助手，一站式查看课表、成绩与校园服务';
 
   @override
+  String get wizard => '向导';
+
+  @override
+  String get resetWizardTitle => '重置引导状态';
+
+  @override
+  String get resetWizardSubtitle => '将 firstLaunchWizardCompleted 设为 false';
+
+  @override
   String get wizardLoginTitle => '登录与导入课表';
 
   @override
@@ -1781,4 +1790,13 @@ class AppLocalizationsZhHansCn extends AppLocalizationsZh {
 
   @override
   String get selfLanguage => '中文-简体-中国';
+
+  @override
+  String get wizard => '向导';
+
+  @override
+  String get resetWizardTitle => '重置引导状态';
+
+  @override
+  String get resetWizardSubtitle => '将 firstLaunchWizardCompleted 设为 false';
 }

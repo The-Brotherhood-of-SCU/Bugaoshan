@@ -235,7 +235,7 @@ class _TestPageState extends State<TestPage> {
               onPressed: () => _showEnvironmentInfoDialog(context),
             ),
             const SizedBox(height: 32),
-            const _SectionTitle(title: 'Wizard'),
+            _SectionTitle(title: localizations.wizard),
             const SizedBox(height: 12),
             const WizardResetButton(),
             const SizedBox(height: 32),

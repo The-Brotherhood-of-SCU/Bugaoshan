@@ -3,6 +3,21 @@
     "selfLanguage": "English",
     "wizardWelcomeTitle": "Welcome to Bugaoshan",
     "wizardWelcomeDesc": "Your campus assistant: schedules, grades and campus services in one place",
+    "wizard": "Wizard",
+    "@wizard": {
+        "description": "Section title for the onboarding wizard (short). Shown in the Test page and headings.",
+        "type": "text"
+    },
+    "resetWizardTitle": "Reset Wizard Status",
+    "@resetWizardTitle": {
+        "description": "Title for the action that resets the onboarding/wizard status so the wizard runs again.",
+        "type": "text"
+    },
+    "resetWizardSubtitle": "Set firstLaunchWizardCompleted to false",
+    "@resetWizardSubtitle": {
+        "description": "Short description explaining that the action sets firstLaunchWizardCompleted to false so the wizard will re-run on next launch.",
+        "type": "text"
+    },
     "wizardLoginTitle": "Login & Import Schedule",
     "wizardLoginStep1": "Log in with SCU Unified Identity",
     "wizardLoginStep2": "Import schedule from academic system",

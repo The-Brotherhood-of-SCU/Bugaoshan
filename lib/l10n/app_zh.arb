@@ -3,6 +3,21 @@
     "selfLanguage": "中文",
     "wizardWelcomeTitle": "欢迎使用不高山上",
     "wizardWelcomeDesc": "你的校园生活助手，一站式查看课表、成绩与校园服务",
+    "wizard": "向导",
+    "@wizard": {
+        "description": "引导（向导）章节的标题，通常用于测试页面或设置中的引导相关标题。",
+        "type": "text"
+    },
+    "resetWizardTitle": "重置引导状态",
+    "@resetWizardTitle": {
+        "description": "重置引导状态的操作标题，用户点击后会重新显示首次引导流程。",
+        "type": "text"
+    },
+    "resetWizardSubtitle": "将 firstLaunchWizardCompleted 设为 false",
+    "@resetWizardSubtitle": {
+        "description": "说明性文字：将 firstLaunchWizardCompleted 设为 false，使应用在下次启动时重新显示引导。",
+        "type": "text"
+    },
     "wizardLoginTitle": "登录与导入课表",
     "wizardLoginStep1": "完成统一身份认证登录",
     "wizardLoginStep2": "从教务系统导入课表",

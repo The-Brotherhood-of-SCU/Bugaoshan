@@ -127,6 +127,24 @@ abstract class AppLocalizations {
   /// **'Your campus assistant: schedules, grades and campus services in one place'**
   String get wizardWelcomeDesc;
 
+  /// No description provided for @wizard.
+  ///
+  /// In en, this message translates to:
+  /// **'Wizard'**
+  String get wizard;
+
+  /// No description provided for @resetWizardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Wizard Status'**
+  String get resetWizardTitle;
+
+  /// No description provided for @resetWizardSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set firstLaunchWizardCompleted to false'**
+  String get resetWizardSubtitle;
+
   /// No description provided for @wizardLoginTitle.
   ///
   /// In en, this message translates to:
