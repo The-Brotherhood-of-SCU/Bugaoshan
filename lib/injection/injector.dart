@@ -10,6 +10,7 @@ import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/services/background_cache_service.dart';
 import 'package:bugaoshan/services/database_service.dart';
 import 'package:bugaoshan/services/download_manager.dart';
 import 'package:bugaoshan/services/exit_service.dart';
@@ -92,6 +93,11 @@ void _configureAsyncDependencies() {
   });
   getIt.registerSingletonAsync<UpdateService>(() async {
     return UpdateService();
+  });
+  getIt.registerSingletonAsync<BackgroundCacheService>(() async {
+    await getIt.isReady<AppConfigProvider>();
+    final appConfig = getIt<AppConfigProvider>();
+    return BackgroundCacheService(appConfig);
   });
   getIt.registerSingletonAsync<WidgetUpdateService>(() async {
     await getIt.isReady<CourseProvider>();

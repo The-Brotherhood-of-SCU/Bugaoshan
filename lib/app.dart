@@ -1,8 +1,6 @@
 // 这个库是为了在iOS上使用CupertinoPageTransitionsBuilder，flutter新版已经分离出来了，不要删
 import 'package:flutter/cupertino.dart';
 
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:bugaoshan/injection/injector.dart';
@@ -10,6 +8,7 @@ import 'package:bugaoshan/pages/home_page.dart';
 import 'package:bugaoshan/pages/wizard/eula_gate_page.dart';
 import 'package:bugaoshan/pages/wizard/wizard_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/services/background_cache_service.dart';
 import 'package:bugaoshan/widgets/eula_content.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:system_theme/system_theme.dart';
@@ -39,65 +38,20 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final AppConfigProvider _appConfig = getIt<AppConfigProvider>();
-  ImageStream? _bgImageStream;
-  ImageStreamListener? _bgImageListener;
+  late final BackgroundCacheService _bgCache = getIt<BackgroundCacheService>();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final path = _appConfig.backgroundImagePath.value;
-      if (path == null) return;
-      try {
-        if (!mounted) return;
-        final file = File(path);
-        // 使用屏幕逻辑像素与 devicePixelRatio 计算目标解码尺寸，避免缓存全分辨率大图
-        final mq = MediaQuery.of(context);
-        final dpr = mq.devicePixelRatio;
-        final widthPx = (mq.size.width * dpr).round();
-        final heightPx = (mq.size.height * dpr).round();
-
-        // 为避免强制拉伸，仅指定屏幕的长边作为目标尺寸，保持原始宽高比
-        final longSide = widthPx >= heightPx ? widthPx : heightPx;
-        final provider = (widthPx >= heightPx)
-            ? ResizeImage(FileImage(file), width: longSide)
-            : ResizeImage(FileImage(file), height: longSide);
-        // 通过 ImageStream 监听完成并在 dispose 中移除监听，避免与 Widget 生命周期脱钩造成内存泄漏
-        _bgImageStream = provider.resolve(
-          ImageConfiguration(devicePixelRatio: dpr),
-        );
-        _bgImageListener = ImageStreamListener(
-          (_, __) {
-            try {
-              _bgImageStream?.removeListener(_bgImageListener!);
-            } catch (_) {}
-            _bgImageStream = null;
-            _bgImageListener = null;
-          },
-          onError: (_, __) {
-            try {
-              _bgImageStream?.removeListener(_bgImageListener!);
-            } catch (_) {}
-            _bgImageStream = null;
-            _bgImageListener = null;
-          },
-        );
-        _bgImageStream?.addListener(_bgImageListener!);
-      } catch (_) {
-        // ignore precache/resolve errors
-      }
+      if (!mounted) return;
+      _bgCache.precache(context);
     });
   }
 
   @override
   void dispose() {
-    if (_bgImageStream != null && _bgImageListener != null) {
-      try {
-        _bgImageStream!.removeListener(_bgImageListener!);
-      } catch (_) {}
-      _bgImageStream = null;
-      _bgImageListener = null;
-    }
+    _bgCache.dispose();
     super.dispose();
   }
 
