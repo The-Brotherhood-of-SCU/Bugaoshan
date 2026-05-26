@@ -92,7 +92,12 @@ void _configureAsyncDependencies() {
     return PlanCompletionProvider(prefs, auth);
   });
   getIt.registerSingletonAsync<UpdateService>(() async {
-    return UpdateService();
+    await getIt.isReady<SharedPreferences>();
+    await getIt.isReady<AppInfoProvider>();
+    return UpdateService(
+      getIt<SharedPreferences>(),
+      getIt<AppInfoProvider>().currentVersion,
+    );
   });
   getIt.registerSingletonAsync<BackgroundCacheService>(() async {
     await getIt.isReady<AppConfigProvider>();

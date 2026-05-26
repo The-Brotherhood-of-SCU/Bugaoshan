@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive.dart';
 import 'package:path/path.dart' as p;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CancelToken {
   bool _cancelled = false;
@@ -51,6 +52,11 @@ class UpdateService {
       'https://raw.githubusercontent.com/The-Brotherhood-of-SCU/Bugaoshan/main/pubspec.yaml';
   static const _repo = 'The-Brotherhood-of-SCU/Bugaoshan';
   static const _channel = MethodChannel('bugaoshan/update');
+
+  final SharedPreferences _prefs;
+  final String _currentVersion;
+
+  UpdateService(this._prefs, this._currentVersion);
 
   bool _assetMatchesPlatform(String assetName) {
     final name = assetName.toLowerCase();
@@ -147,6 +153,34 @@ class UpdateService {
       if (latest[i] < current[i]) return false;
     }
     return false;
+  }
+
+  static const _keyLastInstalledVersion = 'last_installed_version';
+
+  /// 清理临时目录中旧版本的安装包，仅在版本变化时执行一次。
+  Future<void> cleanupOldPackages() async {
+    if (!Platform.isAndroid) return;
+    final lastVersion = _prefs.getString(_keyLastInstalledVersion);
+    if (lastVersion == _currentVersion) return;
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final dir = Directory(tempDir.path);
+      if (await dir.exists()) {
+        await for (final ent in dir.list(recursive: false)) {
+          if (ent is File) {
+            final name = p.basename(ent.path).toLowerCase();
+            if (name.endsWith('.apk') &&
+                (name.startsWith('bugaoshan_v') ||
+                    name.startsWith('bugaoshan_update'))) {
+              try {
+                await ent.delete();
+              } catch (_) {}
+            }
+          }
+        }
+      }
+    } catch (_) {}
+    await _prefs.setString(_keyLastInstalledVersion, _currentVersion);
   }
 
   Future<UpdateCheckResult> checkStableUpdate(String currentVersion) async {

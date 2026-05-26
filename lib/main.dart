@@ -10,9 +10,7 @@ import 'package:bugaoshan/app.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/services/window_state_service.dart';
 import 'package:system_theme/system_theme.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
-import 'package:bugaoshan/providers/app_info_provider.dart';
+import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 
 Future<void> main() async {
@@ -38,40 +36,7 @@ Future<void> _initializeApp() async {
   await ensureBasicDependencies();
 
   // 清理下载的安装包（首次打开或更新后）。
-  try {
-    final prefs = getIt<SharedPreferences>();
-    final appInfo = getIt<AppInfoProvider>();
-    final currentVersion = appInfo.currentVersion;
-    const keyLastInstalledVersion = 'last_installed_version';
-    final lastVersion = prefs.getString(keyLastInstalledVersion);
-    if (lastVersion != currentVersion) {
-      try {
-        final tempDir = await getTemporaryDirectory();
-        final dir = Directory(tempDir.path);
-        if (dir.existsSync()) {
-          for (final ent in dir.listSync(recursive: false)) {
-            if (ent is File) {
-              final name = p.basename(ent.path).toLowerCase();
-              if (name.endsWith('.apk') &&
-                  (name.startsWith('bugaoshan_v') ||
-                      name.startsWith('bugaoshan_update'))) {
-                try {
-                  ent.deleteSync();
-                } catch (e) {
-                  // ignore delete errors
-                }
-              }
-            }
-          }
-        }
-      } catch (e) {
-        // ignore cleanup errors
-      }
-      prefs.setString(keyLastInstalledVersion, currentVersion);
-    }
-  } catch (e) {
-    // ignore errors if DI not ready for some reason
-  }
+  getIt<UpdateService>().cleanupOldPackages();
 
   // 桌面端记住窗口位置和大小，下次启动时恢复
   if (!kIsWeb && _isDesktopPlatform) {
