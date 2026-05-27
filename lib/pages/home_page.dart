@@ -93,11 +93,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
   }
 
-  void _updateWidget() {
+  Future<void> _updateWidget() async {
     if (!kIsWeb && Platform.isAndroid) {
       try {
-        getIt<WidgetUpdateService>().updateWidgetData();
-      } catch (_) {}
+        await getIt<WidgetUpdateService>().updateWidgetData();
+      } catch (e) {
+        debugPrint('Widget update failed: $e');
+      }
     }
   }
 

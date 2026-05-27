@@ -142,9 +142,11 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
       } catch (e) {
         debugPrint('${widget.debugLabel} beautify script error: $e');
       }
-      await controller.evaluateJavascript(source: _domReadyScript);
-      // DOMReady handler will invoke _finishLoading after JS finishes.
-      return;
+      if (_domReadyScript.isNotEmpty) {
+        await controller.evaluateJavascript(source: _domReadyScript);
+        // DOMReady handler will invoke _finishLoading after JS finishes.
+        return;
+      }
     }
     await _finishLoading();
   }

@@ -29,15 +29,16 @@ class ScuAuthProvider extends ChangeNotifier {
 
   ScuAuthProvider(this._prefs) {
     _loginTimestamp = _prefs.getInt(_keyLoginTimestamp);
-    _updateLastAppOpenTimestamp();
   }
 
   Future<void> init() async {
     _accessToken = await SecureStorageProvider.instance.read(
       key: _keyAccessToken,
     );
+    _service.restoreAccessToken(_accessToken);
     _userRealname = _prefs.getString(_keyUserRealname);
     _userNumber = _prefs.getString(_keyUserNumber);
+    await _updateLastAppOpenTimestamp();
   }
 
   String? _accessToken;
@@ -55,7 +56,10 @@ class ScuAuthProvider extends ChangeNotifier {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     if (now - _loginTimestamp! > _sessionDurationSeconds) return true;
     final lastAppOpen = _prefs.getInt(_keyLastAppOpenTimestamp);
-    if (lastAppOpen != null && _loginTimestamp! < lastAppOpen) return true;
+    if (lastAppOpen != null &&
+        lastAppOpen - _loginTimestamp! > _sessionDurationSeconds) {
+      return true;
+    }
     return false;
   }
 

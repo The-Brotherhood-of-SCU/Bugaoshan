@@ -114,7 +114,7 @@ class DatabaseService {
 
       // Read schedules list
       final schedulesRaw = metadataBox.get(_keySchedules) as List<dynamic>?;
-      final currentId =
+      var currentId =
           metadataBox.get(_keyCurrentScheduleId) as String? ?? 'default';
 
       List<ScheduleConfig> schedules = [];
@@ -150,6 +150,10 @@ class DatabaseService {
         }
       }
 
+      if (!schedules.any((s) => s.id == currentId)) {
+        currentId = schedules.first.id;
+      }
+
       // Insert schedules into SQLite
       for (final s in schedules) {
         await _db.insert('schedules', {
@@ -165,6 +169,7 @@ class DatabaseService {
       });
 
       // Migrate courses from each Hive box
+      final migratedCourseIds = <String>{};
       for (final s in schedules) {
         final boxName = s.id == 'default' ? 'courses' : 'courses_${s.id}';
         try {
@@ -174,7 +179,12 @@ class DatabaseService {
             if (value is Map) {
               final courseMap = Map<String, dynamic>.from(value);
               final course = Course.fromJson(courseMap);
-              await _db.insert('courses', _courseToRow(course, s.id));
+              final safeCourse =
+                  course.id.isEmpty || migratedCourseIds.contains(course.id)
+                  ? _copyCourseWithFreshId(course)
+                  : course;
+              migratedCourseIds.add(safeCourse.id);
+              await _db.insert('courses', _courseToRow(safeCourse, s.id));
             }
           }
           await box.close();
@@ -261,6 +271,21 @@ class DatabaseService {
       weekType: weekTypeIndex < WeekType.values.length
           ? WeekType.values[weekTypeIndex]
           : WeekType.every,
+    );
+  }
+
+  Course _copyCourseWithFreshId(Course course) {
+    return Course(
+      name: course.name,
+      teacher: course.teacher,
+      location: course.location,
+      startWeek: course.startWeek,
+      endWeek: course.endWeek,
+      dayOfWeek: course.dayOfWeek,
+      startSection: course.startSection,
+      endSection: course.endSection,
+      colorValue: course.colorValue,
+      weekType: course.weekType,
     );
   }
 

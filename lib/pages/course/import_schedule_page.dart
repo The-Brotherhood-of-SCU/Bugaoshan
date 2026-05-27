@@ -106,6 +106,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
       }
 
       config.id = DateTime.now().millisecondsSinceEpoch.toString();
+      _validateImportedSchedule(config, courses);
 
       // For share mode, check for conflict. For jwxt, we already got a name from user.
       if (widget.mode == ImportMode.share) {
@@ -352,6 +353,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         final config = parsed.config;
         config.semesterName = scheduleName;
         config.id = DateTime.now().millisecondsSinceEpoch.toString();
+        _validateImportedSchedule(config, parsed.courses);
 
         if (widget.courseProvider.isScheduleNameTaken(config.semesterName)) {
           config.semesterName =
@@ -519,6 +521,25 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
     config.showWeekend = hasWeekend;
 
     return (config: config, courses: courses);
+  }
+
+  void _validateImportedSchedule(ScheduleConfig config, List<Course> courses) {
+    if (config.totalWeeks < 1 || config.timeSlots.isEmpty) {
+      throw const FormatException('Invalid schedule config');
+    }
+    final maxSection = config.timeSlots.length;
+    for (final course in courses) {
+      if (course.startWeek < 1 ||
+          course.endWeek < course.startWeek ||
+          course.endWeek > config.totalWeeks ||
+          course.dayOfWeek < 1 ||
+          course.dayOfWeek > 7 ||
+          course.startSection < 1 ||
+          course.endSection < course.startSection ||
+          course.endSection > maxSection) {
+        throw FormatException('Invalid course range: ${course.name}');
+      }
+    }
   }
 
   @override

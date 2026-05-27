@@ -47,6 +47,16 @@ String formatDate(DateTime date) {
   return '$y-$m-$d';
 }
 
+String sanitizeDownloadFileName(String rawName) {
+  final normalized = rawName.replaceAll('\\', '/');
+  var fileName = p.posix.basename(normalized).trim();
+  if (fileName.isEmpty || fileName == '.' || fileName == '..') {
+    fileName = 'download';
+  }
+  fileName = fileName.replaceAll(RegExp(r'[<>:"/\\|?*\x00-\x1F]'), '_');
+  return fileName.isEmpty ? 'download' : fileName;
+}
+
 /// Downloads a file from [url] into `Bugaoshan/{dirName}/`.
 /// Returns the final local path.
 Future<String> downloadFile(
@@ -73,7 +83,7 @@ Future<String> downloadFile(
   final bytes = response.bodyBytes;
 
   // Prefer filename from Content-Disposition header.
-  var actualFileName = fileName;
+  var actualFileName = sanitizeDownloadFileName(fileName);
   final cd = response.headers['content-disposition'];
   if (cd != null) {
     // RFC 5987: filename*=UTF-8''percent-encoded-value
@@ -82,13 +92,15 @@ Future<String> downloadFile(
       caseSensitive: false,
     ).firstMatch(cd);
     if (rfc5987 != null) {
-      actualFileName = Uri.decodeComponent(rfc5987.group(1)!);
+      actualFileName = sanitizeDownloadFileName(
+        Uri.decodeComponent(rfc5987.group(1)!),
+      );
     } else {
       final fnMatch = RegExp(
         r'''filename\s*=\s*["']?([^"';]+)["']?''',
       ).firstMatch(cd);
       if (fnMatch != null) {
-        actualFileName = fnMatch.group(1)!;
+        actualFileName = sanitizeDownloadFileName(fnMatch.group(1)!);
       }
     }
   }
@@ -119,11 +131,12 @@ Future<String?> checkDownloadedFile(String dirName, String fileName) async {
   final saveDir = Directory('${base.path}/Bugaoshan/$dirName');
   if (!saveDir.existsSync()) return null;
 
-  final exactPath = '${saveDir.path}/$fileName';
+  final safeFileName = sanitizeDownloadFileName(fileName);
+  final exactPath = '${saveDir.path}/$safeFileName';
   if (File(exactPath).existsSync()) return exactPath;
 
-  final baseName = p.basenameWithoutExtension(fileName);
-  final ext = p.extension(fileName);
+  final baseName = p.basenameWithoutExtension(safeFileName);
+  final ext = p.extension(safeFileName);
   for (var i = 1; i <= 99; i++) {
     final variantPath = '${saveDir.path}/$baseName ($i)$ext';
     if (File(variantPath).existsSync()) return variantPath;

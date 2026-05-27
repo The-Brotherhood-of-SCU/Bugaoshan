@@ -28,6 +28,11 @@ class ScuAuthService {
   CookieClient? _cachedClient;
   Future<CookieClient>? _bindSessionFuture;
 
+  void restoreAccessToken(String? token) {
+    _accessToken = token;
+    _cachedClient = null;
+  }
+
   /// 获取验证码，返回 [CaptchaResult]
   Future<CaptchaResult> fetchCaptcha() async {
     final ts = DateTime.now().millisecondsSinceEpoch;
