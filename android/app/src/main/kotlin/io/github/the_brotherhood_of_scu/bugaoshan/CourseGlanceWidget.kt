@@ -79,7 +79,8 @@ private val CARD_INDICATOR_HEIGHT_DP = 36.dp
 private val CONTENT_PADDING_DP = 12.dp
 private val CARD_PADDING_DP = 8.dp
 private val CONTENT_SPACER_HEIGHT_DP = 10.dp
-private val ITEM_SPACER_HEIGHT_DP = 6.dp
+private val ITEM_SPACER_HEIGHT_DP = 0.dp
+private val ITEM_VERTICAL_PADDING_DP = 2.dp
 
 private val HEADER_FONT_SIZE_SP = 15.sp
 private val TITLE_FONT_SIZE_SP = 14.sp
@@ -585,18 +586,17 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 LazyColumn(modifier = GlanceModifier.fillMaxSize()) {
                     items(courses.length()) { index ->
                         val course = courses.getJSONObject(index)
-                        CourseCard(
-                            ctx,
-                            course,
-                            isTomorrow,
-                            layout.cardMode,
-                            layout.width,
-                            layout.oneLineTitle,
-                            sectionSingleRes,
-                            sectionRangeRes
-                        )
-                        if (index < courses.length() - 1) {
-                            Spacer(modifier = GlanceModifier.height(ITEM_SPACER_HEIGHT_DP))
+                        Box(modifier = GlanceModifier.padding(vertical = ITEM_VERTICAL_PADDING_DP)) {
+                            CourseCard(
+                                ctx,
+                                course,
+                                isTomorrow,
+                                layout.cardMode,
+                                layout.width,
+                                layout.oneLineTitle,
+                                sectionSingleRes,
+                                sectionRangeRes
+                            )
                         }
                     }
                 }

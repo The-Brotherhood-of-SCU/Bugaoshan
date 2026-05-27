@@ -16,28 +16,33 @@
 - [Dart SDK](https://dart.dev/get-dart) >= 3.x
 - [Nuget CLI](https://learn.microsoft.com/en-us/nuget/install-nuget-client-tools?tabs=windows#nugetexe-cli)  required by `flutter_inappwebview` (windows target)
 
-### Pre-commit Hook
-
-项目内置了 pre-commit hook，会在提交时自动对暂存的 `.dart` 文件执行 `dart format`。
-
-克隆仓库后，将 hook 链接到 `.git/hooks/`：
-
-```bash
-# Linux / macOS
-ln -sf ../../.githooks/pre-commit .git/hooks/pre-commit
-
-# Windows (Git Bash)
-cp .githooks/pre-commit .git/hooks/pre-commit
-```
-
 ### 安装运行
 
 ```bash
 # 克隆仓库
 git clone git@github.com:The-Brotherhood-of-SCU/Bugaoshan.git
+# 或
+git clone https://github.com/The-Brotherhood-of-SCU/Bugaoshan.git
+
 cd Bugaoshan
 ```
 
+> #### Pre-commit Hook
+>
+> 项目内置了 pre-commit hook，会在提交时自动对暂存的 `.dart` 文件执行 `dart format`。
+>
+> 克隆仓库后，将 hook 链接或复制到 `.git/hooks/`：
+>
+> ```bash
+> # Linux / macOS
+> ln -sf ../../.githooks/pre-commit .git/hooks/pre-commit
+>
+> # Windows (Git Bash)
+> cp .githooks/pre-commit .git/hooks/pre-commit
+> ```
+
+> #### 设置镜像源
+>
 > 安装依赖前设置国内镜像源，否则 `pubspec.lock` 会变国际源，导致工作区产生不必要的 diff。
 >
 > 持久化设置：
@@ -85,16 +90,16 @@ lib/
 
 ## 🛠️ 技术栈
 
-| 类别 | 技术 |
-|------|------|
-| 框架 | [Flutter](https://flutter.dev) |
-| 状态管理 | Provider / ChangeNotifier |
-| 依赖注入 | [GetIt](https://pub.dev/packages/get_it) + [Injectable](https://pub.dev/packages/injectable) |
-| 网络请求 | [Dio](https://pub.dev/packages/dio) + Cookie Manager |
+| 类别     | 技术                                                                                                         |
+| -------- | ------------------------------------------------------------------------------------------------------------ |
+| 框架     | [Flutter](https://flutter.dev)                                                                               |
+| 状态管理 | Provider / ChangeNotifier                                                                                    |
+| 依赖注入 | [GetIt](https://pub.dev/packages/get_it) + [Injectable](https://pub.dev/packages/injectable)                 |
+| 网络请求 | [Dio](https://pub.dev/packages/dio) + Cookie Manager                                                         |
 | 本地存储 | [SQLite](https://pub.dev/packages/sqflite)、[SharedPreferences](https://pub.dev/packages/shared_preferences) |
-| 国际化 | Flutter `flutter_localizations` |
-| 国密算法 | [dart_sm](https://pub.dev/packages/dart_sm)（SM2/SM3/SM4） |
-| OCR | [flutter_litert](https://pub.dev/packages/flutter_litert)（TFLite 模型） |
+| 国际化   | Flutter `flutter_localizations`                                                                              |
+| 国密算法 | [dart_sm](https://pub.dev/packages/dart_sm)（SM2/SM3/SM4）                                                   |
+| OCR      | [flutter_litert](https://pub.dev/packages/flutter_litert)（TFLite 模型）                                     |
 
 ---
 

@@ -140,6 +140,17 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
       child: Image(
         image: FileImage(File(path)),
         fit: BoxFit.cover,
+        // 使用 frameBuilder 监听第一帧完成并做淡入动画，避免白屏突变
+        frameBuilder:
+            (BuildContext ctx, Widget child, int? frame, bool wasSync) {
+              final visible = frame != null || wasSync;
+              return AnimatedOpacity(
+                opacity: visible ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                child: child,
+              );
+            },
         color: Colors.white.withAlpha(
           (appConfig.backgroundImageOpacity.value * 255).round(),
         ),

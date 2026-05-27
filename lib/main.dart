@@ -12,6 +12,9 @@ import 'package:bugaoshan/services/window_state_service.dart';
 import 'package:system_theme/system_theme.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
+import 'package:bugaoshan/providers/app_info_provider.dart';
 
 Future<void> main() async {
   try {
@@ -47,40 +50,7 @@ Future<void> _initializeApp() async {
   SystemTheme.fallbackColor = Colors.blue;
   await SystemTheme.accentColor.load();
 
-  // 尝试在进入 runApp 前预加载背景图片，缩短首帧前的图片准备时间，减少白屏闪烁。
-  try {
-    final appConfig = getIt<AppConfigProvider>();
-    final bgPath = appConfig.backgroundImagePath.value;
-    if (bgPath != null) {
-      final f = File(bgPath);
-      if (await f.exists()) {
-        final provider = FileImage(f);
-        final stream = provider.resolve(const ImageConfiguration());
-        final completer = Completer<void>();
-        late ImageStreamListener listener;
-        listener = ImageStreamListener(
-          (_, _) {
-            if (!completer.isCompleted) completer.complete();
-          },
-          onError: (_, _) {
-            if (!completer.isCompleted) completer.complete();
-          },
-        );
-        stream.addListener(listener);
-        // 等待短时间内解码完成，避免阻塞过久
-        try {
-          await Future.any([
-            completer.future,
-            Future.delayed(const Duration(milliseconds: 300)),
-          ]);
-        } finally {
-          stream.removeListener(listener);
-        }
-      }
-    }
-  } catch (_) {
-    // ignore preload errors
-  }
+  // 启动时不再在 main 进行图片解码或等待；预加载交由 app 层在 post-frame 时处理，以避免重复加载与启动阻塞。
 }
 
 bool get _isDesktopPlatform {
