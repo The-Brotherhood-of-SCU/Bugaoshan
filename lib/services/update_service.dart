@@ -287,17 +287,17 @@ class UpdateService {
         ? TarDecoder().decodeBytes(GZipDecoder().decodeBytes(chunks))
         : ZipDecoder().decodeBytes(chunks);
     final extractDirObj = Directory(extractDir);
-    if (extractDirObj.existsSync()) {
-      extractDirObj.deleteSync(recursive: true);
+    if (await extractDirObj.exists()) {
+      await extractDirObj.delete(recursive: true);
     }
-    extractDirObj.createSync(recursive: true);
-    final extractRoot = extractDirObj.resolveSymbolicLinksSync();
+    await extractDirObj.create(recursive: true);
+    final extractRoot = await extractDirObj.resolveSymbolicLinks();
     for (final file in archive) {
       final filename = _safeArchivePath(extractRoot, file.name);
       if (file.isFile) {
         final outFile = File(filename);
-        outFile.parent.createSync(recursive: true);
-        outFile.writeAsBytesSync(file.content as List<int>);
+        await outFile.parent.create(recursive: true);
+        await outFile.writeAsBytes(file.content as List<int>);
       }
     }
 
