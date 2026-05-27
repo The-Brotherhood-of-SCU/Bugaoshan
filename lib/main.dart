@@ -11,10 +11,6 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/services/window_state_service.dart';
 import 'package:system_theme/system_theme.dart';
 import 'package:bugaoshan/services/update_service.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
-import 'package:bugaoshan/providers/app_info_provider.dart';
 
 Future<void> main() async {
   try {
