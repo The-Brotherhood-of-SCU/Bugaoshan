@@ -826,6 +826,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get gradesNoPassingData => '暂无及格成绩数据';
 
   @override
+  String get gradesSearchHint => '搜索课程名称';
+
+  @override
+  String get gradesNoSearchResults => '未找到匹配的课程';
+
+  @override
   String get gradesGet => '获取成绩';
 
   @override

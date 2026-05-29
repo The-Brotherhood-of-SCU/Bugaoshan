@@ -1681,6 +1681,18 @@ abstract class AppLocalizations {
   /// **'No passing grade data'**
   String get gradesNoPassingData;
 
+  /// No description provided for @gradesSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search course name'**
+  String get gradesSearchHint;
+
+  /// No description provided for @gradesNoSearchResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching courses found'**
+  String get gradesNoSearchResults;
+
   /// No description provided for @gradesGet.
   ///
   /// In en, this message translates to:

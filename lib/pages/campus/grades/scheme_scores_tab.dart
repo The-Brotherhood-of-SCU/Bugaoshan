@@ -7,7 +7,9 @@ import 'package:bugaoshan/widgets/common/error_widgets.dart';
 import 'package:bugaoshan/widgets/common/stat_item.dart';
 
 class SchemeScoresTab extends StatefulWidget {
-  const SchemeScoresTab({super.key});
+  const SchemeScoresTab({super.key, this.searchQuery = ''});
+
+  final String searchQuery;
 
   @override
   State<SchemeScoresTab> createState() => _SchemeScoresTabState();
@@ -98,33 +100,68 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
 
   Widget _buildContent(BuildContext context, GradesProvider provider) {
     final summary = provider.schemeScores!;
-    final groups = summary.groupedByTerm;
+    final query = widget.searchQuery.trim();
+    final allGroups = summary.groupedByTerm;
+
+    // Filter items by course name, remove empty groups
+    final groups = allGroups
+        .map(
+          (g) => (
+            label: g.label,
+            items: g.items
+                .where(
+                  (item) => item.courseName.toLowerCase().contains(
+                    query.toLowerCase(),
+                  ),
+                )
+                .toList(),
+          ),
+        )
+        .where((g) => g.items.isNotEmpty)
+        .toList();
+
     return RefreshIndicator(
       onRefresh: provider.refreshSchemeScores,
-      child: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(child: _SummaryCard(summary: summary)),
-          for (final group in groups) ...[
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-                child: Text(
-                  group.label,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+      child: groups.isEmpty && query.isNotEmpty
+          ? CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: _SummaryCard(summary: summary)),
+                SliverFillRemaining(
+                  child: Center(
+                    child: Text(
+                      AppLocalizations.of(context)!.gradesNoSearchResults,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
+            )
+          : CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: _SummaryCard(summary: summary)),
+                for (final group in groups) ...[
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                      child: Text(
+                        group.label,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SliverList.builder(
+                    itemCount: group.items.length,
+                    itemBuilder: (context, i) =>
+                        ScoreCardWidget(item: group.items[i]),
+                  ),
+                ],
+                const SliverToBoxAdapter(child: SizedBox(height: 16)),
+              ],
             ),
-            SliverList.builder(
-              itemCount: group.items.length,
-              itemBuilder: (context, i) =>
-                  ScoreCardWidget(item: group.items[i]),
-            ),
-          ],
-          const SliverToBoxAdapter(child: SizedBox(height: 16)),
-        ],
-      ),
     );
   }
 }

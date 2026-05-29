@@ -302,6 +302,8 @@
     "gradesLoadFailed": "Failed to load grades",
     "gradesRefreshFailed": "Refresh failed, showing cached data",
     "gradesNoPassingData": "No passing grade data",
+    "gradesSearchHint": "Search course name",
+    "gradesNoSearchResults": "No matching courses found",
     "gradesGet": "Fetch Grades",
     "gradesRetry": "Retry",
     "gpa": "GPA",

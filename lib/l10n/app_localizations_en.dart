@@ -851,6 +851,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gradesNoPassingData => 'No passing grade data';
 
   @override
+  String get gradesSearchHint => 'Search course name';
+
+  @override
+  String get gradesNoSearchResults => 'No matching courses found';
+
+  @override
   String get gradesGet => 'Fetch Grades';
 
   @override

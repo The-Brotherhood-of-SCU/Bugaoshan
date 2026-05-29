@@ -19,8 +19,38 @@ class GradesPage extends StatefulWidget {
 
 class _GradesPageState extends State<GradesPage> {
   int _currentIndex = 0;
+  String _searchQuery = '';
+  bool _isSearching = false;
+  final _searchController = TextEditingController();
+  final _searchFocusNode = FocusNode();
 
-  final List<Widget> _pages = const [SchemeScoresTab(), PassingScoresTab()];
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  List<Widget> get _pages => [
+    SchemeScoresTab(searchQuery: _searchQuery),
+    PassingScoresTab(searchQuery: _searchQuery),
+  ];
+
+  void _startSearch() {
+    setState(() {
+      _isSearching = true;
+    });
+    _searchFocusNode.requestFocus();
+  }
+
+  void _stopSearch() {
+    setState(() {
+      _isSearching = false;
+      _searchQuery = '';
+      _searchController.clear();
+    });
+    _searchFocusNode.unfocus();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,8 +73,30 @@ class _GradesPageState extends State<GradesPage> {
           length: 2,
           child: Scaffold(
             appBar: AppBar(
-              title: Text(l10n.gradesStats),
+              title: _isSearching
+                  ? TextField(
+                      controller: _searchController,
+                      focusNode: _searchFocusNode,
+                      autofocus: true,
+                      style: Theme.of(context).textTheme.titleMedium,
+                      decoration: InputDecoration(
+                        hintText: l10n.gradesSearchHint,
+                        border: InputBorder.none,
+                        isDense: true,
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value;
+                        });
+                      },
+                    )
+                  : Text(l10n.gradesStats),
               actions: [
+                if (auth.isLoggedIn)
+                  IconButton(
+                    onPressed: _isSearching ? _stopSearch : _startSearch,
+                    icon: Icon(_isSearching ? Icons.close : Icons.search),
+                  ),
                 if (isDesktop && auth.isLoggedIn)
                   IconButton(
                     onPressed: _currentIndex == 0
