@@ -91,6 +91,8 @@ class ScuAuthProvider extends ChangeNotifier {
     await _prefs.setInt(_keyLoginTimestamp, _loginTimestamp!);
     await fetchUserInfo();
     notifyListeners();
+    // 统一认证登录成功后自动绑定第二课堂，失败则回退到手动绑定页面
+    getIt<CcylProvider>().reLogin();
   }
 
   Future<void> logout() async {

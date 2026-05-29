@@ -851,6 +851,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gradesNoPassingData => 'No passing grade data';
 
   @override
+  String get gradesSearchHint => 'Search course name';
+
+  @override
+  String get gradesNoSearchResults => 'No matching courses found';
+
+  @override
+  String get customStats => 'Custom Stats';
+
+  @override
+  String get deselectAll => 'Deselect All';
+
+  @override
+  String get customStatsSelectHint =>
+      'Select courses to calculate custom statistics';
+
+  @override
+  String selectedCount(Object count) {
+    return '$count selected';
+  }
+
+  @override
   String get gradesGet => 'Fetch Grades';
 
   @override

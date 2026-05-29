@@ -9,6 +9,7 @@ import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'scheme_scores_tab.dart';
 import 'passing_scores_tab.dart';
+import 'custom_stats_tab.dart';
 
 class GradesPage extends StatefulWidget {
   const GradesPage({super.key});
@@ -19,8 +20,39 @@ class GradesPage extends StatefulWidget {
 
 class _GradesPageState extends State<GradesPage> {
   int _currentIndex = 0;
+  String _searchQuery = '';
+  bool _isSearching = false;
+  final _searchController = TextEditingController();
+  final _searchFocusNode = FocusNode();
 
-  final List<Widget> _pages = const [SchemeScoresTab(), PassingScoresTab()];
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  List<Widget> get _pages => [
+    SchemeScoresTab(searchQuery: _searchQuery),
+    PassingScoresTab(searchQuery: _searchQuery),
+    CustomStatsTab(searchQuery: _searchQuery),
+  ];
+
+  void _startSearch() {
+    setState(() {
+      _isSearching = true;
+    });
+    _searchFocusNode.requestFocus();
+  }
+
+  void _stopSearch() {
+    setState(() {
+      _isSearching = false;
+      _searchQuery = '';
+      _searchController.clear();
+    });
+    _searchFocusNode.unfocus();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,14 +72,36 @@ class _GradesPageState extends State<GradesPage> {
         final gradesProvider = getIt<GradesProvider>();
 
         return DefaultTabController(
-          length: 2,
+          length: 3,
           child: Scaffold(
             appBar: AppBar(
-              title: Text(l10n.gradesStats),
+              title: _isSearching
+                  ? TextField(
+                      controller: _searchController,
+                      focusNode: _searchFocusNode,
+                      autofocus: true,
+                      style: Theme.of(context).textTheme.titleMedium,
+                      decoration: InputDecoration(
+                        hintText: l10n.gradesSearchHint,
+                        border: InputBorder.none,
+                        isDense: true,
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value;
+                        });
+                      },
+                    )
+                  : Text(l10n.gradesStats),
               actions: [
+                if (auth.isLoggedIn)
+                  IconButton(
+                    onPressed: _isSearching ? _stopSearch : _startSearch,
+                    icon: Icon(_isSearching ? Icons.close : Icons.search),
+                  ),
                 if (isDesktop && auth.isLoggedIn)
                   IconButton(
-                    onPressed: _currentIndex == 0
+                    onPressed: _currentIndex == 0 || _currentIndex == 2
                         ? gradesProvider.refreshSchemeScores
                         : gradesProvider.refreshPassingScores,
                     icon: const Icon(Icons.refresh),
@@ -74,6 +128,7 @@ class _GradesPageState extends State<GradesPage> {
                       tabs: [
                         Tab(text: l10n.schemeScores),
                         Tab(text: l10n.passingScores),
+                        Tab(text: l10n.customStats),
                       ],
                     )
                   : null,
@@ -82,7 +137,7 @@ class _GradesPageState extends State<GradesPage> {
                 ? auth.isAutoLoggingIn
                       ? const AutoLoginLoadingWidget()
                       : const LoginRequiredWidget()
-                : _pages[_currentIndex],
+                : IndexedStack(index: _currentIndex, children: _pages),
           ),
         );
       },

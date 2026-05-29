@@ -19,9 +19,20 @@ class _DirConfig {
   final String label;
 }
 
-class _SearchEntry {
-  const _SearchEntry(this.file, this.category);
+/// Lightweight data object holding a [File] and its pre-computed metadata.
+///
+/// File size and modification time are computed once during directory listing
+/// so that [ListView.itemBuilder] never calls synchronous I/O on the UI thread.
+class _FileInfo {
+  const _FileInfo(this.file, this.size, this.modified);
   final File file;
+  final int size;
+  final DateTime modified;
+}
+
+class _SearchEntry {
+  const _SearchEntry(this.info, this.category);
+  final _FileInfo info;
   final String category;
 }
 
@@ -46,7 +57,10 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
   late final TabController _tabController;
   bool _initialized = false;
 
-  final Map<String, List<File>> _filesByDir = {};
+  /// Pre-computed file metadata keyed by directory name.
+  /// File sizes and modification times are computed once in [_loadDir] and
+  /// reused in [ListView.itemBuilder] to avoid synchronous I/O on the UI thread.
+  final Map<String, List<_FileInfo>> _filesByDir = {};
   final Map<String, bool> _loadedByDir = {};
 
   bool _loading = true;
@@ -110,8 +124,8 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
   Future<void> _openFolder() async {
     final l10n = AppLocalizations.of(context)!;
     final dir = await _attachmentsDir(_currentDir);
-    if (!dir.existsSync()) {
-      dir.createSync(recursive: true);
+    if (!await dir.exists()) {
+      await dir.create(recursive: true);
     }
 
     try {
@@ -140,37 +154,47 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
     setState(() => _loading = false);
   }
 
+  /// Lists files in [dirName] asynchronously and pre-computes metadata (size,
+  /// modification time) for each file so that the UI never calls synchronous
+  /// I/O in [ListView.itemBuilder].
   Future<void> _loadDir(String dirName) async {
     final dir = await _attachmentsDir(dirName);
-    List<File> files;
-    if (!dir.existsSync()) {
-      files = [];
+    List<_FileInfo> infos;
+    if (!await dir.exists()) {
+      infos = [];
     } else {
-      files = dir.listSync().whereType<File>().toList();
-      _sortFiles(files);
+      final entries = await dir.list().toList();
+      infos = [
+        for (final entry in entries)
+          if (entry is File)
+            _FileInfo(entry, await entry.length(), await entry.lastModified()),
+      ];
+      _sortInfos(infos);
     }
     if (!mounted) return;
     setState(() {
-      _filesByDir[dirName] = files;
+      _filesByDir[dirName] = infos;
       _loadedByDir[dirName] = true;
     });
   }
 
-  void _sortFiles(List<File> files) {
+  /// Sorts pre-computed [_FileInfo] objects by the active [_sortMode].
+  ///
+  /// All metadata (size, modification time) has already been computed during
+  /// [_loadDir]; no synchronous I/O is performed during sorting.
+  void _sortInfos(List<_FileInfo> infos) {
     switch (_sortMode) {
       case _SortMode.time:
-        files.sort(
-          (a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()),
-        );
+        infos.sort((a, b) => b.modified.compareTo(a.modified));
       case _SortMode.name:
-        files.sort(
+        infos.sort(
           (a, b) => p
-              .basename(a.path)
+              .basename(a.file.path)
               .toLowerCase()
-              .compareTo(p.basename(b.path).toLowerCase()),
+              .compareTo(p.basename(b.file.path).toLowerCase()),
         );
       case _SortMode.size:
-        files.sort((a, b) => b.lengthSync().compareTo(a.lengthSync()));
+        infos.sort((a, b) => b.size.compareTo(a.size));
     }
   }
 
@@ -178,31 +202,34 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
     setState(() {
       _sortMode = mode;
       for (final cfg in _dirConfigs) {
-        final files = _filesByDir[cfg.dirName];
-        if (files != null) _sortFiles(files);
+        final infos = _filesByDir[cfg.dirName];
+        if (infos != null) _sortInfos(infos);
       }
     });
   }
 
-  bool _fileMatchesFilter(File f) {
+  bool _fileMatchesFilter(_FileInfo info) {
     if (_filterExt.isNotEmpty &&
-        !p.extension(f.path).toLowerCase().endsWith(_filterExt)) {
+        !p.extension(info.file.path).toLowerCase().endsWith(_filterExt)) {
       return false;
     }
     if (_query.isNotEmpty &&
-        !p.basename(f.path).toLowerCase().contains(_query.toLowerCase())) {
+        !p
+            .basename(info.file.path)
+            .toLowerCase()
+            .contains(_query.toLowerCase())) {
       return false;
     }
     return true;
   }
 
-  List<File> get _currentFiles {
+  List<_FileInfo> get _currentInfos {
     final all = _filesByDir[_currentDir] ?? [];
     return all.where(_fileMatchesFilter).toList();
   }
 
-  Map<String, List<File>> get _allFilteredFiles {
-    final result = <String, List<File>>{};
+  Map<String, List<_FileInfo>> get _allFilteredInfos {
+    final result = <String, List<_FileInfo>>{};
     for (final cfg in _dirConfigs) {
       final all = _filesByDir[cfg.dirName] ?? [];
       result[cfg.dirName] = all.where(_fileMatchesFilter).toList();
@@ -212,17 +239,17 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
 
   int get _totalMatches {
     var count = 0;
-    for (final files in _allFilteredFiles.values) {
-      count += files.length;
+    for (final infos in _allFilteredInfos.values) {
+      count += infos.length;
     }
     return count;
   }
 
-  void _enterSelection(File file) {
+  void _enterSelection(_FileInfo info) {
     setState(() {
       _selecting = true;
       _selected.clear();
-      _selected.add(file.path);
+      _selected.add(info.file.path);
     });
   }
 
@@ -233,20 +260,20 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
     });
   }
 
-  void _toggleSelect(File file) {
+  void _toggleSelect(_FileInfo info) {
     setState(() {
-      if (_selected.contains(file.path)) {
-        _selected.remove(file.path);
+      if (_selected.contains(info.file.path)) {
+        _selected.remove(info.file.path);
         if (_selected.isEmpty) _selecting = false;
       } else {
-        _selected.add(file.path);
+        _selected.add(info.file.path);
       }
     });
   }
 
   void _selectAll() {
     setState(() {
-      _selected.addAll(_currentFiles.map((f) => f.path));
+      _selected.addAll(_currentInfos.map((info) => info.file.path));
     });
   }
 
@@ -274,7 +301,7 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
     final manager = getIt<DownloadManager>();
     for (final path in _selected) {
       final file = File(path);
-      if (file.existsSync()) await file.delete();
+      if (await file.exists()) await file.delete();
       // Remove stale task from DownloadManager so the attachment sheet
       // won't show a deleted file as "already downloaded".
       final fileName = p.basename(path);
@@ -288,9 +315,12 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
     }
     for (final cfg in _dirConfigs) {
       final dir = await _attachmentsDir(cfg.dirName);
-      if (dir.existsSync()) {
-        for (final sub in dir.listSync().whereType<Directory>()) {
-          if (sub.listSync().isEmpty) sub.deleteSync();
+      if (await dir.exists()) {
+        final entries = await dir.list().toList();
+        for (final sub in entries.whereType<Directory>()) {
+          if (await sub.list().toList().then((l) => l.isEmpty)) {
+            await sub.delete();
+          }
         }
       }
     }
@@ -491,15 +521,16 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
   }
 
   Widget _buildFileTile({
-    required File file,
+    required _FileInfo info,
     required String name,
     required String subtitle,
     required bool isSelected,
   }) {
     final l10n = AppLocalizations.of(context)!;
+    final file = info.file;
     return ListTile(
       leading: _selecting
-          ? Checkbox(value: isSelected, onChanged: (_) => _toggleSelect(file))
+          ? Checkbox(value: isSelected, onChanged: (_) => _toggleSelect(info))
           : Icon(_fileIcon(name), color: Theme.of(context).colorScheme.primary),
       title: Text(name, maxLines: 2, overflow: TextOverflow.ellipsis),
       subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
@@ -532,8 +563,8 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
                 ),
               ],
             ),
-      onTap: _selecting ? () => _toggleSelect(file) : () => _openFile(file),
-      onLongPress: _selecting ? null : () => _enterSelection(file),
+      onTap: _selecting ? () => _toggleSelect(info) : () => _openFile(file),
+      onLongPress: _selecting ? null : () => _enterSelection(info),
     );
   }
 
@@ -602,8 +633,8 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
   List<_SearchEntry> _buildSearchEntries() {
     final entries = <_SearchEntry>[];
     for (final cfg in _dirConfigs) {
-      for (final f in _allFilteredFiles[cfg.dirName] ?? []) {
-        entries.add(_SearchEntry(f, cfg.label));
+      for (final info in _allFilteredInfos[cfg.dirName] ?? <_FileInfo>[]) {
+        entries.add(_SearchEntry(info, cfg.label));
       }
     }
     return entries;
@@ -623,17 +654,15 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
       itemCount: entries.length,
       itemBuilder: (ctx, index) {
         final entry = entries[index];
-        final file = entry.file;
-        final name = p.basename(file.path);
-        final size = file.lengthSync();
-        final modified = file.lastModifiedSync();
-        final isSelected = _selected.contains(file.path);
+        final info = entry.info;
+        final name = p.basename(info.file.path);
+        final isSelected = _selected.contains(info.file.path);
 
         return _buildFileTile(
-          file: file,
+          info: info,
           name: name,
           subtitle:
-              '${entry.category}  ·  ${_formatSize(size)}  ·  ${formatDate(modified)}',
+              '${entry.category}  ·  ${_formatSize(info.size)}  ·  ${formatDate(info.modified)}',
           isSelected: isSelected,
         );
       },
@@ -645,7 +674,7 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
     }
-    final filtered = _allFilteredFiles;
+    final filtered = _allFilteredInfos;
     return Column(
       children: [
         TabBar(
@@ -670,8 +699,8 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
     );
   }
 
-  Widget _buildFileList(List<File> files, AppLocalizations l10n) {
-    if (files.isEmpty) {
+  Widget _buildFileList(List<_FileInfo> infos, AppLocalizations l10n) {
+    if (infos.isEmpty) {
       return _buildEmptyHint(
         (_query.isNotEmpty || _filterExt.isNotEmpty)
             ? l10n.noData
@@ -680,18 +709,17 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
     }
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      itemCount: files.length,
+      itemCount: infos.length,
       itemBuilder: (ctx, index) {
-        final file = files[index];
-        final name = p.basename(file.path);
-        final size = file.lengthSync();
-        final modified = file.lastModifiedSync();
-        final isSelected = _selected.contains(file.path);
+        final info = infos[index];
+        final name = p.basename(info.file.path);
+        final isSelected = _selected.contains(info.file.path);
 
         return _buildFileTile(
-          file: file,
+          info: info,
           name: name,
-          subtitle: '${_formatSize(size)}  ·  ${formatDate(modified)}',
+          subtitle:
+              '${_formatSize(info.size)}  ·  ${formatDate(info.modified)}',
           isSelected: isSelected,
         );
       },

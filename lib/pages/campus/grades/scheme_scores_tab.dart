@@ -7,7 +7,9 @@ import 'package:bugaoshan/widgets/common/error_widgets.dart';
 import 'package:bugaoshan/widgets/common/stat_item.dart';
 
 class SchemeScoresTab extends StatefulWidget {
-  const SchemeScoresTab({super.key});
+  const SchemeScoresTab({super.key, this.searchQuery = ''});
+
+  final String searchQuery;
 
   @override
   State<SchemeScoresTab> createState() => _SchemeScoresTabState();
@@ -98,33 +100,68 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
 
   Widget _buildContent(BuildContext context, GradesProvider provider) {
     final summary = provider.schemeScores!;
-    final groups = summary.groupedByTerm;
+    final query = widget.searchQuery.trim();
+    final allGroups = summary.groupedByTerm;
+
+    // Filter items by course name, remove empty groups
+    final groups = allGroups
+        .map(
+          (g) => (
+            label: g.label,
+            items: g.items
+                .where(
+                  (item) => item.courseName.toLowerCase().contains(
+                    query.toLowerCase(),
+                  ),
+                )
+                .toList(),
+          ),
+        )
+        .where((g) => g.items.isNotEmpty)
+        .toList();
+
     return RefreshIndicator(
       onRefresh: provider.refreshSchemeScores,
-      child: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(child: _SummaryCard(summary: summary)),
-          for (final group in groups) ...[
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-                child: Text(
-                  group.label,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+      child: groups.isEmpty && query.isNotEmpty
+          ? CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: _SummaryCard(summary: summary)),
+                SliverFillRemaining(
+                  child: Center(
+                    child: Text(
+                      AppLocalizations.of(context)!.gradesNoSearchResults,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
+            )
+          : CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: _SummaryCard(summary: summary)),
+                for (final group in groups) ...[
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                      child: Text(
+                        group.label,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SliverList.builder(
+                    itemCount: group.items.length,
+                    itemBuilder: (context, i) =>
+                        ScoreCardWidget(item: group.items[i]),
+                  ),
+                ],
+                const SliverToBoxAdapter(child: SizedBox(height: 16)),
+              ],
             ),
-            SliverList.builder(
-              itemCount: group.items.length,
-              itemBuilder: (context, i) =>
-                  ScoreCardWidget(item: group.items[i]),
-            ),
-          ],
-          const SliverToBoxAdapter(child: SizedBox(height: 16)),
-        ],
-      ),
     );
   }
 }
@@ -213,8 +250,15 @@ class _SummaryCard extends StatelessWidget {
 }
 
 class ScoreCardWidget extends StatelessWidget {
-  const ScoreCardWidget({super.key, required this.item});
+  const ScoreCardWidget({
+    super.key,
+    required this.item,
+    this.selected,
+    this.onTap,
+  });
   final SchemeScoreItem item;
+  final bool? selected;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -236,12 +280,18 @@ class ScoreCardWidget extends StatelessWidget {
       _ => Theme.of(context).colorScheme.onTertiaryContainer,
     };
 
-    return Card(
+    Widget card = Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
+            if (selected != null)
+              Checkbox(
+                value: selected,
+                onChanged: (_) => onTap?.call(),
+                visualDensity: VisualDensity.compact,
+              ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -304,5 +354,15 @@ class ScoreCardWidget extends StatelessWidget {
         ),
       ),
     );
+
+    if (onTap != null) {
+      card = InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: card,
+      );
+    }
+
+    return card;
   }
 }
