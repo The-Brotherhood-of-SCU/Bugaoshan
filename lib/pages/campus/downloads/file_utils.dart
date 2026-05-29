@@ -34,9 +34,9 @@ Future<Directory> getNoticeBaseDir() async {
 Future<Directory> _getDir(String dirName) async {
   final base = await getNoticeBaseDir();
   final saveDir = Directory('${base.path}/Bugaoshan/$dirName');
-  if (!saveDir.existsSync()) {
-    saveDir.createSync(recursive: true);
-  }
+  // create(recursive: true) is a no-op if the directory already exists,
+  // so we can skip the explicit exists check entirely.
+  await saveDir.create(recursive: true);
   return saveDir;
 }
 
@@ -110,11 +110,11 @@ Future<String> downloadFile(
   // Deduplicate file names.
   var filePath = '${saveDir.path}/$actualFileName';
   var file = File(filePath);
-  if (file.existsSync()) {
+  if (await file.exists()) {
     final baseName = p.basenameWithoutExtension(actualFileName);
     final ext = p.extension(actualFileName);
     var counter = 1;
-    while (file.existsSync()) {
+    while (await file.exists()) {
       filePath = '${saveDir.path}/$baseName ($counter)$ext';
       file = File(filePath);
       counter++;
@@ -129,17 +129,17 @@ Future<String> downloadFile(
 Future<String?> checkDownloadedFile(String dirName, String fileName) async {
   final base = await getNoticeBaseDir();
   final saveDir = Directory('${base.path}/Bugaoshan/$dirName');
-  if (!saveDir.existsSync()) return null;
+  if (!await saveDir.exists()) return null;
 
   final safeFileName = sanitizeDownloadFileName(fileName);
   final exactPath = '${saveDir.path}/$safeFileName';
-  if (File(exactPath).existsSync()) return exactPath;
+  if (await File(exactPath).exists()) return exactPath;
 
   final baseName = p.basenameWithoutExtension(safeFileName);
   final ext = p.extension(safeFileName);
   for (var i = 1; i <= 99; i++) {
     final variantPath = '${saveDir.path}/$baseName ($i)$ext';
-    if (File(variantPath).existsSync()) return variantPath;
+    if (await File(variantPath).exists()) return variantPath;
   }
   return null;
 }

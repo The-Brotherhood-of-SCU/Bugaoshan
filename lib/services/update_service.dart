@@ -360,7 +360,7 @@ class UpdateService {
         .decode(scriptBytes.buffer.asUint8List())
         .replaceAll('{EXE_DIR}', exeDir)
         .replaceAll('{EXE_PATH}', exePath);
-    File(scriptPath).writeAsStringSync(script);
+    await File(scriptPath).writeAsString(script);
 
     await Process.start(
       'cmd.exe',
@@ -381,7 +381,7 @@ class UpdateService {
         .decode(scriptBytes.buffer.asUint8List())
         .replaceAll('{EXE_DIR}', exeDir)
         .replaceAll('{EXE_PATH}', exePath);
-    File(scriptPath).writeAsStringSync(script);
+    await File(scriptPath).writeAsString(script);
 
     await Process.run('chmod', ['+x', scriptPath]);
 
