@@ -1693,6 +1693,30 @@ abstract class AppLocalizations {
   /// **'No matching courses found'**
   String get gradesNoSearchResults;
 
+  /// No description provided for @customStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Stats'**
+  String get customStats;
+
+  /// No description provided for @deselectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect All'**
+  String get deselectAll;
+
+  /// No description provided for @customStatsSelectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select courses to calculate custom statistics'**
+  String get customStatsSelectHint;
+
+  /// No description provided for @selectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String selectedCount(Object count);
+
   /// No description provided for @gradesGet.
   ///
   /// In en, this message translates to:

@@ -250,8 +250,15 @@ class _SummaryCard extends StatelessWidget {
 }
 
 class ScoreCardWidget extends StatelessWidget {
-  const ScoreCardWidget({super.key, required this.item});
+  const ScoreCardWidget({
+    super.key,
+    required this.item,
+    this.selected,
+    this.onTap,
+  });
   final SchemeScoreItem item;
+  final bool? selected;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -273,12 +280,18 @@ class ScoreCardWidget extends StatelessWidget {
       _ => Theme.of(context).colorScheme.onTertiaryContainer,
     };
 
-    return Card(
+    Widget card = Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
+            if (selected != null)
+              Checkbox(
+                value: selected,
+                onChanged: (_) => onTap?.call(),
+                visualDensity: VisualDensity.compact,
+              ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -341,5 +354,15 @@ class ScoreCardWidget extends StatelessWidget {
         ),
       ),
     );
+
+    if (onTap != null) {
+      card = InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: card,
+      );
+    }
+
+    return card;
   }
 }

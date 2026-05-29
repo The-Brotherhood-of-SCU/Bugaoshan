@@ -9,6 +9,7 @@ import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'scheme_scores_tab.dart';
 import 'passing_scores_tab.dart';
+import 'custom_stats_tab.dart';
 
 class GradesPage extends StatefulWidget {
   const GradesPage({super.key});
@@ -34,6 +35,7 @@ class _GradesPageState extends State<GradesPage> {
   List<Widget> get _pages => [
     SchemeScoresTab(searchQuery: _searchQuery),
     PassingScoresTab(searchQuery: _searchQuery),
+    CustomStatsTab(searchQuery: _searchQuery),
   ];
 
   void _startSearch() {
@@ -70,7 +72,7 @@ class _GradesPageState extends State<GradesPage> {
         final gradesProvider = getIt<GradesProvider>();
 
         return DefaultTabController(
-          length: 2,
+          length: 3,
           child: Scaffold(
             appBar: AppBar(
               title: _isSearching
@@ -99,7 +101,7 @@ class _GradesPageState extends State<GradesPage> {
                   ),
                 if (isDesktop && auth.isLoggedIn)
                   IconButton(
-                    onPressed: _currentIndex == 0
+                    onPressed: _currentIndex == 0 || _currentIndex == 2
                         ? gradesProvider.refreshSchemeScores
                         : gradesProvider.refreshPassingScores,
                     icon: const Icon(Icons.refresh),
@@ -126,6 +128,7 @@ class _GradesPageState extends State<GradesPage> {
                       tabs: [
                         Tab(text: l10n.schemeScores),
                         Tab(text: l10n.passingScores),
+                        Tab(text: l10n.customStats),
                       ],
                     )
                   : null,
@@ -134,7 +137,7 @@ class _GradesPageState extends State<GradesPage> {
                 ? auth.isAutoLoggingIn
                       ? const AutoLoginLoadingWidget()
                       : const LoginRequiredWidget()
-                : _pages[_currentIndex],
+                : IndexedStack(index: _currentIndex, children: _pages),
           ),
         );
       },
