@@ -13,9 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 
 ### Added
-- 添加更多国际化文本
 - 添加首次打开或更新后自动清理下载的 APK 安装包功能
 - 课表背景图渐变显示
+- 成绩统计添加自定义统计功能
 
 ### Fixed
 - 修复小组件课程之间没有间隔的问题
