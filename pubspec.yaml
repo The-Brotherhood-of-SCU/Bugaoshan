@@ -17,7 +17,6 @@ dependencies:
   flutter_colorpicker: any
   url_launcher: any
   package_info_plus: any
-  web: any
   async: any
   http: ^1.2.0
   hive_ce: ^2.19.3
@@ -32,14 +31,14 @@ dependencies:
   archive: ^4.0.9
   os_type: ^0.2.2
   crypto: ^3.0.0
-  file_picker: ^11.0.2
+  file_picker: ^12.0.0-beta.5
   flutter_markdown_plus: ^1.0.7
   image_picker: ^1.2.2
   window_manager: ^0.5.1
   screen_retriever: ^0.2.0
   system_theme: ^3.2.0
   google_fonts: ^8.1.0
-  share_plus: ^12.0.2
+  share_plus: ^13.1.0
   gal: ^2.3.0
   open_filex: ^4.7.0
   flutter_inappwebview: ^6.2.0-beta.3
