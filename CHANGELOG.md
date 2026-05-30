@@ -19,9 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - 修复小组件课程之间没有间隔的问题
+- 修复登录时单一认证节点无法使用导致全部功能无法使用的问题
 
 ### Changed
-- 余额查询卡片刷新时避免高度弹动
+- 电费查询卡片刷新时避免高度弹动
 - 优化自动更新功能
 - 性能优化
 
