@@ -17,7 +17,6 @@ dependencies:
   flutter_colorpicker: any
   url_launcher: any
   package_info_plus: any
-  web: any
   async: any
   http: ^1.2.0
   hive_ce: ^2.19.3
