@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/balance_query_service.dart';
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/services/auth/auth_manager.dart';
+import 'package:bugaoshan/services/balance_query_service.dart';
 
 const _keyBindingInfo = 'balance_query_binding';
 const _keyCurrentRoomIndex = 'balance_query_current_room';
@@ -14,6 +15,8 @@ class BalanceQueryProvider extends ChangeNotifier {
   BalanceQueryProvider(this._prefs) {
     _loadBindingInfo();
   }
+
+  AuthManager get _authManager => getIt<AuthManager>();
 
   List<RoomBinding> _bindings = [];
   List<RoomBinding> get bindings => _bindings;
@@ -34,9 +37,6 @@ class BalanceQueryProvider extends ChangeNotifier {
 
   RoomInfo? _acInfo;
   RoomInfo? get acInfo => _acInfo;
-
-  http.Client? _client;
-  http.Client? get client => _client;
 
   void _loadBindingInfo() {
     final json = _prefs.getString(_keyBindingInfo);
@@ -90,40 +90,44 @@ class BalanceQueryProvider extends ChangeNotifier {
     _electricInfo = null;
     _acInfo = null;
     _isSwitching = true;
-    notifyListeners(); // 先通知 UI 切换房间名、显示加载状态
+    notifyListeners();
 
     try {
       final binding = currentBinding!;
-      final client = await _ensureClient();
-      await _service.verificationRoom(
-        client,
-        binding.cusNo,
-        1,
-        binding.cusName,
-        binding.schoolCode,
-        binding.regCode,
-        binding.unitCode,
-        binding.roomNo,
+      await _authManager.payApp.request(
+        (client) => _service.verificationRoom(
+          client,
+          binding.cusNo,
+          1,
+          binding.cusName,
+          binding.schoolCode,
+          binding.regCode,
+          binding.unitCode,
+          binding.roomNo,
+        ),
       );
     } finally {
       _isSwitching = false;
-      notifyListeners(); // 验证完成，通知 BalanceCard 可以查询余额了
+      notifyListeners();
     }
   }
 
   Future<List<CampusItem>> getCampusList() async {
-    final client = await _ensureClient();
-    return await _service.getCampus(client);
+    return await _authManager.payApp.request(
+      (client) => _service.getCampus(client),
+    );
   }
 
   Future<List<BuildingItem>> getArchitectureList(String schoolCode) async {
-    final client = await _ensureClient();
-    return await _service.getArchitecture(client, schoolCode);
+    return await _authManager.payApp.request(
+      (client) => _service.getArchitecture(client, schoolCode),
+    );
   }
 
   Future<List<UnitItem>> getUnitList(String schoolCode, String regCode) async {
-    final client = await _ensureClient();
-    return await _service.getUnit(client, schoolCode, regCode);
+    return await _authManager.payApp.request(
+      (client) => _service.getUnit(client, schoolCode, regCode),
+    );
   }
 
   Future<bool> verifyRoom(
@@ -135,16 +139,17 @@ class BalanceQueryProvider extends ChangeNotifier {
     String unitCode,
     String roomNo,
   ) async {
-    final client = await _ensureClient();
-    return await _service.verificationRoom(
-      client,
-      cusNo,
-      type,
-      cusName,
-      schoolCode,
-      regCode,
-      unitCode,
-      roomNo,
+    return await _authManager.payApp.request(
+      (client) => _service.verificationRoom(
+        client,
+        cusNo,
+        type,
+        cusName,
+        schoolCode,
+        regCode,
+        unitCode,
+        roomNo,
+      ),
     );
   }
 
@@ -152,12 +157,9 @@ class BalanceQueryProvider extends ChangeNotifier {
     final binding = currentBinding;
     if (binding == null) throw BalanceQueryException('未绑定房间');
 
-    final client = await _ensureClient();
-    _electricInfo = await _service.queryRoomInfo(
-      client,
-      binding.cusNo,
-      1,
-      binding.cusName,
+    _electricInfo = await _authManager.payApp.request(
+      (client) =>
+          _service.queryRoomInfo(client, binding.cusNo, 1, binding.cusName),
     );
     notifyListeners();
     return _electricInfo!;
@@ -167,32 +169,17 @@ class BalanceQueryProvider extends ChangeNotifier {
     final binding = currentBinding;
     if (binding == null) throw BalanceQueryException('未绑定房间');
 
-    final client = await _ensureClient();
-    _acInfo = await _service.queryRoomInfo(
-      client,
-      binding.cusNo,
-      2,
-      binding.cusName,
+    _acInfo = await _authManager.payApp.request(
+      (client) =>
+          _service.queryRoomInfo(client, binding.cusNo, 2, binding.cusName),
     );
     notifyListeners();
     return _acInfo!;
   }
 
-  Future<http.Client> _ensureClient() async {
-    if (_client != null) return _client!;
-    _client = await _service.getAuthenticatedClient();
-    return _client!;
-  }
-
   void clearError() {
     _error = null;
     notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    _client?.close();
-    super.dispose();
   }
 }
 

@@ -33,6 +33,11 @@ class ScuAuthService {
     _cachedClient = null;
   }
 
+  /// 清除缓存的 Client，下次 [bindSession] 会重新执行 SSO 握手。
+  void invalidateCachedClient() {
+    _cachedClient = null;
+  }
+
   /// 获取验证码，返回 [CaptchaResult]
   Future<CaptchaResult> fetchCaptcha() async {
     final ts = DateTime.now().millisecondsSinceEpoch;
@@ -198,8 +203,18 @@ class ScuAuthService {
       throw ScuLoginException('session/save 失败: ${sessionResp.body}');
     }
 
-    // ── Step 2: 预热 JWT SSO（教务系统 zhjw.scu.edu.cn 用）──────────────────
-    // 教务系统在非校园网环境（尤其是夜间）可能不可达，失败不应阻断其他服务。
+    // ── Step 2 & 3: 预热 JWT SSO + CAS Apereo SSO（相互独立，并行执行）─────
+    // JWT SSO 为教务系统（zhjw.scu.edu.cn）准备，夜间非校园网可能超时。
+    // CAS Apereo SSO 为 CCYL 团委系统准备。
+    // 两者任一失败均不阻断整体流程。
+    await Future.wait([_warmupJwtSso(client), _warmupCasSso(client)]);
+
+    client._reusable = true;
+    _cachedClient = client;
+    return client;
+  }
+
+  Future<void> _warmupJwtSso(CookieClient client) async {
     try {
       await client.followRedirects(
         Uri.parse(
@@ -213,13 +228,11 @@ class ScuAuthService {
         },
       );
     } catch (_) {
-      // JWT SSO 预热失败不影响电费查询等非教务功能
+      // JWT SSO 预热失败不影响非教务功能
     }
+  }
 
-    // ── Step 3: 预热 CAS Apereo SSO（CCYL 团委系统用）──────────────────────
-    // 必须在这里先走一次 sp_logged，让服务端在当前 session 里记录
-    // scdxplugin_cas_apereo17 这个 SP 已被授权。
-    // 此处 sp_code 使用固定值（与 CcylOAuthService 保持一致）。
+  Future<void> _warmupCasSso(CookieClient client) async {
     try {
       await client.followRedirects(
         Uri.parse(
@@ -234,12 +247,8 @@ class ScuAuthService {
         },
       );
     } catch (_) {
-      // CAS SSO 预热失败不影响教务等非 CCYL 功能
+      // CAS SSO 预热失败不影响非 CCYL 功能
     }
-
-    client._reusable = true;
-    _cachedClient = client;
-    return client;
   }
 
   /// 从教务系统首页获取当前教学周数

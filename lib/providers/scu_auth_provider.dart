@@ -1,74 +1,55 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:bugaoshan/services/ocr_service.dart';
-import 'package:bugaoshan/services/scu_auth_service.dart';
 import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/providers/plan_completion_provider.dart';
 import 'package:bugaoshan/providers/profile_labels_provider.dart';
-import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/providers/secure_storage_provider.dart';
+import 'package:bugaoshan/services/auth/auth_manager.dart';
+import 'package:bugaoshan/services/ocr_service.dart';
+import 'package:bugaoshan/services/scu_auth_service.dart';
 
-const _keyAccessToken = 'scu_access_token';
-const _keyLoginTimestamp = 'scu_login_timestamp';
-const _keyLastAppOpenTimestamp = 'scu_last_app_open_timestamp';
-const _sessionDurationSeconds = 3600;
-
-const _keySavedUsername = 'scu_saved_username';
-const _keySavedPassword = 'scu_saved_password';
-const _keyRemember = 'scu_remember_password';
 const _keyAutoLogin = 'scu_auto_login';
-
 const _keyUserRealname = 'scu_user_realname';
 const _keyUserNumber = 'scu_user_number';
 
-/// 持久化 SCU 登录状态的 Provider，注册为 singleton
+/// 持久化 SCU 登录状态的 Provider，注册为 singleton。
+///
+/// 内部委托给 [AuthManager.scu]（[ScuAuthSession]）执行实际鉴权逻辑。
 class ScuAuthProvider extends ChangeNotifier {
-  final SharedPreferences _prefs;
-  final ScuAuthService _service = ScuAuthService();
+  final AuthManager _authManager;
 
-  ScuAuthProvider(this._prefs) {
-    _loginTimestamp = _prefs.getInt(_keyLoginTimestamp);
+  ScuAuthProvider(this._authManager) {
+    _authManager.addListener(_onAuthChanged);
   }
+
+  void _onAuthChanged() => notifyListeners();
 
   Future<void> init() async {
-    _accessToken = await SecureStorageProvider.instance.read(
-      key: _keyAccessToken,
-    );
-    _service.restoreAccessToken(_accessToken);
-    _userRealname = _prefs.getString(_keyUserRealname);
-    _userNumber = _prefs.getString(_keyUserNumber);
-    await _updateLastAppOpenTimestamp();
+    final prefs = getIt<SharedPreferences>();
+    _userRealname = prefs.getString(_keyUserRealname);
+    _userNumber = prefs.getString(_keyUserNumber);
   }
 
-  String? _accessToken;
-  int? _loginTimestamp;
   String? _userRealname;
   String? _userNumber;
   bool _isAutoLoggingIn = false;
-  String? get accessToken => _accessToken;
+
+  @override
+  void dispose() {
+    _authManager.removeListener(_onAuthChanged);
+    super.dispose();
+  }
+
+  String? get accessToken => _authManager.scu.accessToken;
   String? get userRealname => _userRealname;
   String? get userNumber => _userNumber;
   bool get isAutoLoggingIn => _isAutoLoggingIn;
-  bool get isLoggedIn => _accessToken != null && !isExpired;
-  bool get isExpired {
-    if (_loginTimestamp == null) return true;
-    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    if (now - _loginTimestamp! > _sessionDurationSeconds) return true;
-    final lastAppOpen = _prefs.getInt(_keyLastAppOpenTimestamp);
-    if (lastAppOpen != null &&
-        lastAppOpen - _loginTimestamp! > _sessionDurationSeconds) {
-      return true;
-    }
-    return false;
-  }
-
-  ScuAuthService get service => _service;
-
-  Future<void> _updateLastAppOpenTimestamp() async {
-    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    await _prefs.setInt(_keyLastAppOpenTimestamp, now);
-  }
+  bool get isLoggedIn => _authManager.isScuLoggedIn;
+  bool get isExpired => _authManager.scu.isExpired;
+  ScuAuthService get service => _authManager.scu.service;
 
   Future<void> login({
     required String username,
@@ -76,36 +57,26 @@ class ScuAuthProvider extends ChangeNotifier {
     required String captchaCode,
     required String captchaText,
   }) async {
-    await _service.login(
+    await _authManager.scu.login(
       username: username,
       password: password,
       captchaCode: captchaCode,
       captchaText: captchaText,
     );
-    _accessToken = _service.accessToken;
-    _loginTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    await SecureStorageProvider.instance.write(
-      key: _keyAccessToken,
-      value: _accessToken!,
-    );
-    await _prefs.setInt(_keyLoginTimestamp, _loginTimestamp!);
-    await fetchUserInfo();
+
+    // 获取用户信息 与 绑定第二课堂 互相独立，并行执行
+    await Future.wait([fetchUserInfo(), getIt<CcylProvider>().reLogin()]);
+
     notifyListeners();
-    // 统一认证登录成功后自动绑定第二课堂，失败则回退到手动绑定页面
-    getIt<CcylProvider>().reLogin();
   }
 
   Future<void> logout() async {
-    _service.logout();
-    _accessToken = null;
-    _loginTimestamp = null;
+    await _authManager.logoutAll();
     _userRealname = null;
     _userNumber = null;
-    await SecureStorageProvider.instance.delete(key: _keyAccessToken);
-    await _prefs.remove(_keyLoginTimestamp);
-    await _prefs.remove(_keyUserRealname);
-    await _prefs.remove(_keyUserNumber);
-    await getIt<CcylProvider>().logout();
+    final prefs = getIt<SharedPreferences>();
+    await prefs.remove(_keyUserRealname);
+    await prefs.remove(_keyUserNumber);
     getIt<PlanCompletionProvider>().clearCache();
     getIt<ProfileLabelsProvider>().clear();
     notifyListeners();
@@ -113,7 +84,7 @@ class ScuAuthProvider extends ChangeNotifier {
 
   Future<void> fetchUserInfo() async {
     try {
-      final client = await _service.bindSession();
+      final client = await _authManager.scu.getClient();
       try {
         final resp = await client.get(
           Uri.parse('https://wfw.scu.edu.cn/uc/wap/user/get-info'),
@@ -125,8 +96,9 @@ class ScuAuthProvider extends ChangeNotifier {
             _userRealname = base['realname']?.toString();
             final role = base['role'] as Map<String, dynamic>?;
             _userNumber = role?['number']?.toString();
-            await _prefs.setString(_keyUserRealname, _userRealname ?? '');
-            await _prefs.setString(_keyUserNumber, _userNumber ?? '');
+            final prefs = getIt<SharedPreferences>();
+            await prefs.setString(_keyUserRealname, _userRealname ?? '');
+            await prefs.setString(_keyUserNumber, _userNumber ?? '');
           }
         }
       } finally {
@@ -138,29 +110,15 @@ class ScuAuthProvider extends ChangeNotifier {
   }
 
   Future<Map<String, String>?> getSavedCredentials() async {
-    final storage = SecureStorageProvider.instance;
-    final remember = await storage.read(key: _keyRemember);
-    if (remember != 'true') return null;
-    final username = await storage.read(key: _keySavedUsername);
-    final password = await storage.read(key: _keySavedPassword);
-    if (username != null && password != null) {
-      return {'username': username, 'password': password};
-    }
-    return null;
+    return await _authManager.scu.getSavedCredentials();
   }
 
   Future<void> saveCredentials(String username, String password) async {
-    final storage = SecureStorageProvider.instance;
-    await storage.write(key: _keyRemember, value: 'true');
-    await storage.write(key: _keySavedUsername, value: username);
-    await storage.write(key: _keySavedPassword, value: password);
+    await _authManager.scu.saveCredentials(username, password);
   }
 
   Future<void> clearCredentials() async {
-    final storage = SecureStorageProvider.instance;
-    await storage.delete(key: _keyRemember);
-    await storage.delete(key: _keySavedUsername);
-    await storage.delete(key: _keySavedPassword);
+    await _authManager.scu.clearCredentials();
   }
 
   Future<bool> isAutoLoginEnabled() async {
@@ -190,7 +148,7 @@ class ScuAuthProvider extends ChangeNotifier {
       const maxRetries = 5;
       for (int attempt = 0; attempt < maxRetries; attempt++) {
         try {
-          final captcha = await _service.fetchCaptcha();
+          final captcha = await _authManager.scu.service.fetchCaptcha();
 
           String captchaText;
           try {

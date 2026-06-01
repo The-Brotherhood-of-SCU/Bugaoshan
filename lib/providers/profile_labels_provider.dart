@@ -1,6 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/services/scu_auth_service.dart';
 import 'package:bugaoshan/services/scu_microservice_auth_service.dart';
+import 'package:bugaoshan/utils/session_expiry_handler.dart';
 
 class ProfileLabelsProvider extends ChangeNotifier {
   List<Map<String, dynamic>>? _labels;
@@ -49,24 +53,33 @@ class ProfileLabelsProvider extends ChangeNotifier {
         return;
       }
 
-      final resp = await client.get(
-        Uri.parse('https://wfw.scu.edu.cn/mashupapp/wap/real/user'),
-        headers: {
-          'Accept': 'application/json, text/plain, */*',
-          'X-Requested-With': 'XMLHttpRequest',
-          'Referer': 'https://wfw.scu.edu.cn',
-        },
-      );
+      try {
+        final resp = await client.get(
+          Uri.parse('https://wfw.scu.edu.cn/mashupapp/wap/real/user'),
+          headers: {
+            'Accept': 'application/json, text/plain, */*',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Referer': 'https://wfw.scu.edu.cn',
+          },
+        );
 
-      final json = jsonDecode(resp.body) as Map<String, dynamic>;
-      if (json['e'] == 0 && json['d']?['labels'] != null) {
-        _labels = (json['d']['labels'] as List)
-            .map((e) => e as Map<String, dynamic>)
-            .toList();
-        _error = false;
-      } else {
-        _error = true;
+        final json = jsonDecode(resp.body) as Map<String, dynamic>;
+        if (json['e'] == 0 && json['d']?['labels'] != null) {
+          _labels = (json['d']['labels'] as List)
+              .map((e) => e as Map<String, dynamic>)
+              .toList();
+          _error = false;
+        } else {
+          _error = true;
+        }
+      } finally {
+        client.close();
       }
+    } on ScuLoginException catch (e) {
+      if (e.sessionExpired) {
+        await SessionExpiryHandler.handle(getIt<ScuAuthProvider>());
+      }
+      _error = true;
     } catch (e) {
       _error = true;
     }
