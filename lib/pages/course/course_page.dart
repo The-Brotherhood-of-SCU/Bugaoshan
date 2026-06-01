@@ -125,12 +125,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
                 listenable: courseDataListenable,
                 builder: (context, _) => courseProvider.hasSchedule
                     ? _buildCourseGrid(context, null)
-                    : _NoScheduleView(
-                        onOpenManagement: () =>
-                            _openScheduleManagement(context),
-                        onImport: _onImport,
-                        onAddSchedule: () => _openAddScheduleDialog(context),
-                      ),
+                    : _buildNoScheduleView(context, null),
               ),
               ValueListenableBuilder<bool>(
                 valueListenable: courseProvider.isLoading,
@@ -197,6 +192,14 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
           onEmptyTap: _onEmptyTap,
         );
       },
+    );
+  }
+
+  Widget _buildNoScheduleView(BuildContext context, Widget? _) {
+    return _NoScheduleView(
+      onOpenManagement: () => _openScheduleManagement(context),
+      onImport: _onImport,
+      onAddSchedule: () => _openAddScheduleDialog(context),
     );
   }
 
