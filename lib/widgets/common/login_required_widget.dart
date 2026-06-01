@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/auth/scu_login_page.dart';
 
 class LoginRequiredWidget extends StatelessWidget {
   const LoginRequiredWidget({super.key});
@@ -23,7 +24,9 @@ class LoginRequiredWidget extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () {
-                Navigator.of(context).popUntil((route) => route.isFirst);
+                Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (_) => const ScuLoginPage()));
               },
               icon: const Icon(Icons.person),
               label: Text(l10n.goToLogin),

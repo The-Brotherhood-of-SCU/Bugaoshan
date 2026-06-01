@@ -126,6 +126,13 @@ class _FitnessTestPageState extends State<FitnessTestPage>
         }
         return true;
       });
+    } on ScuLoginException catch (_) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = 'notLoggedIn';
+        });
+      }
     } catch (e) {
       debugPrint('Fitness test load error: $e');
       if (mounted) {

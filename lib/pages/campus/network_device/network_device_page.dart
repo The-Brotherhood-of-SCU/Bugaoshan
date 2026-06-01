@@ -5,6 +5,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/auth/auth_manager.dart';
+import 'package:bugaoshan/services/scu_auth_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
@@ -92,6 +93,13 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
         }
         return true;
       });
+    } on ScuLoginException catch (_) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = 'notLoggedIn';
+        });
+      }
     } catch (e) {
       debugPrint('Network device load error: $e');
       if (mounted) {
@@ -148,6 +156,8 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
         _loadData();
         return true;
       });
+    } on ScuLoginException catch (_) {
+      _showSnackBar(l10n.networkOfflineFailed, isError: true);
     } catch (e) {
       debugPrint('Force offline error: $e');
       _showSnackBar(l10n.networkOfflineFailed, isError: true);
