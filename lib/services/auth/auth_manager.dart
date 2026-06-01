@@ -66,7 +66,7 @@ class AuthManager {
   /// 依赖 SCU 的 session（PayApp、Fitness）在 SCU 刷新成功后自动恢复。
   Future<void> refreshAll() async {
     // SCU 与 CCYL 互相独立，可并行
-    final results = await Future.wait([scu.refresh(), ccyl.reLogin()]);
+    final results = await Future.wait([scu.refresh(), ccyl.refresh()]);
 
     if (results[0] == true) {
       // SCU 刷新成功 → 依赖 SCU 的 session 也标记为就绪

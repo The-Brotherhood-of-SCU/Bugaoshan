@@ -52,9 +52,9 @@ class PayAppAuthSession extends AuthSession<http.Client> {
       state = AuthState.ready;
     }
 
-    // 缓存并返回会话专属的 client 副本（避免调用者关闭影响后续复用）
+    // 缓存 client，后续调用复用同一实例
     _cachedClient ??= client;
-    return client;
+    return _cachedClient!;
   }
 
   @override
@@ -73,6 +73,7 @@ class PayAppAuthSession extends AuthSession<http.Client> {
   @override
   Future<void> logout() async {
     _warrantedClient = null;
+    _cachedClient?.close();
     _cachedClient = null;
     state = AuthState.unknown;
   }

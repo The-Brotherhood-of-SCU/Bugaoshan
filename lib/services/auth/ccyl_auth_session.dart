@@ -105,7 +105,8 @@ class CcylAuthSession extends AuthSession<http.Client> {
   }
 }
 
-/// 自动注入 CCYL Bearer token 的 HTTP Client 包装。
+/// 自动注入 CCYL token 请求头的 HTTP Client 包装。
+/// 使用与 [CcylService._authHeaders] 一致的 `token` 头。
 class _CcylAuthClient extends http.BaseClient {
   final String token;
   final http.Client _inner = http.Client();
@@ -114,7 +115,7 @@ class _CcylAuthClient extends http.BaseClient {
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) {
-    request.headers['Authorization'] = 'Bearer $token';
+    request.headers['token'] = token;
     return _inner.send(request);
   }
 
