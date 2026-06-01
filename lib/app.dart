@@ -10,6 +10,7 @@ import 'package:bugaoshan/pages/wizard/wizard_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/background_cache_service.dart';
 import 'package:bugaoshan/widgets/eula_content.dart';
+import 'package:bugaoshan/widgets/route/mouse_back_handler.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:system_theme/system_theme.dart';
 import 'l10n/app_localizations.dart';
@@ -69,6 +70,7 @@ class _MyAppState extends State<MyApp> {
       ]),
       builder: (context, _) => MaterialApp(
         navigatorKey: navigatorKey,
+        builder: (context, child) => MouseBackHandler(child: child!),
         locale: _appConfig.locale.value,
         onGenerateTitle: (ctx) => AppLocalizations.of(ctx)!.bugaoshan,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
