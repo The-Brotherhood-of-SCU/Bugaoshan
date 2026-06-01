@@ -781,6 +781,24 @@ abstract class AppLocalizations {
   /// **'Global Setting'**
   String get globalSetting;
 
+  /// No description provided for @noSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'No schedule yet'**
+  String get noSchedule;
+
+  /// No description provided for @noScheduleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Import or create a schedule to get started'**
+  String get noScheduleHint;
+
+  /// No description provided for @addSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Schedule'**
+  String get addSchedule;
+
   /// No description provided for @addCourse.
   ///
   /// In en, this message translates to:

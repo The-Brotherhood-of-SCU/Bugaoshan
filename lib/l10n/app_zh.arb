@@ -137,6 +137,9 @@
     "scheduleSetting":"课表设置",
     "scheduleManagement":"课表管理",
     "globalSetting":"全局设置",
+    "noSchedule":"暂无课表",
+    "noScheduleHint":"导入或新建一个课表开始使用",
+    "addSchedule":"新建课表",
 
     "addCourse":"添加课程",
     "editCourse":"编辑课程",

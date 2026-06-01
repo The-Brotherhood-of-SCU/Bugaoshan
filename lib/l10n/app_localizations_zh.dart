@@ -360,6 +360,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get globalSetting => '全局设置';
 
   @override
+  String get noSchedule => '暂无课表';
+
+  @override
+  String get noScheduleHint => '导入或新建一个课表开始使用';
+
+  @override
+  String get addSchedule => '新建课表';
+
+  @override
   String get addCourse => '添加课程';
 
   @override

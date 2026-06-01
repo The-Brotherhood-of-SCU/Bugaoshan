@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
@@ -364,15 +363,6 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         await widget.courseProvider.addSchedule(config);
         for (final course in parsed.courses) {
           await widget.courseProvider.addCourse(course);
-        }
-      }
-
-      // 首次引导尚未完成且默认课表为空 → 删除默认课表
-      if (!getIt<AppConfigProvider>().firstLaunchWizardCompleted.value) {
-        final defaultCourses = await widget.courseProvider
-            .getCoursesForSchedule('default');
-        if (defaultCourses.isEmpty) {
-          await widget.courseProvider.deleteSchedule('default');
         }
       }
 

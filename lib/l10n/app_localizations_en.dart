@@ -371,6 +371,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get globalSetting => 'Global Setting';
 
   @override
+  String get noSchedule => 'No schedule yet';
+
+  @override
+  String get noScheduleHint => 'Import or create a schedule to get started';
+
+  @override
+  String get addSchedule => 'Add Schedule';
+
+  @override
   String get addCourse => 'Add Course';
 
   @override

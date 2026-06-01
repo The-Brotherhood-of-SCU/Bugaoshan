@@ -138,6 +138,9 @@
     "scheduleSetting":"Schedule Setting",
     "scheduleManagement":"Schedule Management",
     "globalSetting":"Global Setting",
+    "noSchedule":"No schedule yet",
+    "noScheduleHint":"Import or create a schedule to get started",
+    "addSchedule":"Add Schedule",
 
     "addCourse":"Add Course",
     "editCourse":"Edit Course",
