@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - 首次启动时不再自动创建默认课表
+- 优化登录流程，减少登录耗时
 
 ## [1.2.0] - 2026-05-30
 
