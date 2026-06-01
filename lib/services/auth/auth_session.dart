@@ -21,6 +21,10 @@ abstract class AuthSession<T extends http.Client> extends ChangeNotifier {
   /// 服务名称（用于日志 / 调试）
   String get serviceName;
 
+  /// 当 session 过期且自动刷新失败时调用。
+  /// 用于在 UI 层显示提示（如 snackbar），由 [AuthManager] 统一注册。
+  void Function()? onSessionExpired;
+
   @protected
   set state(AuthState value) {
     if (_state != value) {
@@ -92,6 +96,7 @@ abstract class AuthSession<T extends http.Client> extends ChangeNotifier {
       final refreshed = await _synchronizedRefresh();
       if (!refreshed) {
         state = AuthState.error;
+        onSessionExpired?.call();
         rethrow;
       }
 
@@ -111,6 +116,7 @@ abstract class AuthSession<T extends http.Client> extends ChangeNotifier {
 
       if (!refreshed) {
         state = AuthState.error;
+        onSessionExpired?.call();
         rethrow;
       }
 

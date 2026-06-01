@@ -55,6 +55,14 @@ class AuthManager {
     ccyl.removeListener(listener);
   }
 
+  /// 注册全局 session 过期回调。任一 session 刷新失败时触发。
+  void onSessionExpired(void Function() callback) {
+    scu.onSessionExpired = callback;
+    payApp.onSessionExpired = callback;
+    fitness.onSessionExpired = callback;
+    ccyl.onSessionExpired = callback;
+  }
+
   /// 初始化所有 session（从持久化存储恢复 token 等）。
   Future<void> init() async {
     await Future.wait([scu.init(), ccyl.init()]);

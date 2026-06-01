@@ -1,8 +1,5 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/scu_auth_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/json_utils.dart';
 
@@ -16,31 +13,6 @@ class BalanceQueryService {
     'Referer': _base,
     'User-Agent': kDefaultUserAgent,
   };
-
-  Future<http.Client> getAuthenticatedClient() async {
-    final auth = getIt<ScuAuthProvider>();
-    if (auth.accessToken == null) {
-      throw BalanceQueryAuthException('notLoggedIn');
-    }
-
-    // 检查 token 是否已过期
-    if (auth.isExpired) {
-      throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
-    }
-
-    final client = await auth.service.bindSession();
-
-    await client.followRedirects(
-      Uri.parse('$_base/oauth/airWarrant'),
-      headers: {
-        'Accept': 'text/html,application/xhtml+xml,*/*',
-        'User-Agent': _headers['User-Agent']!,
-        'Authorization': 'Bearer ${auth.accessToken}',
-      },
-    );
-
-    return client;
-  }
 
   Future<List<CampusItem>> getCampus(http.Client client) async {
     final resp = await client.post(
