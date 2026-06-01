@@ -1,0 +1,104 @@
+/// 中国法定节假日检测工具
+///
+/// 包含常见法定节假日列表，由于国务院每年公布具体安排，
+/// 这里仅包含近年的主要节日日期。用户可在 UI 中自行增删。
+class HolidayUtils {
+  HolidayUtils._();
+
+  /// 法定节假日名称 → 日期集合（月-日，跨年通用）
+  ///
+  /// 农历节日（春节、清明、端午、中秋）的公历日期每年变化，
+  /// 请在 [byYear] 中按年补充具体日期。
+  static const Map<String, Set<String>> _fixedHolidays = {
+    '元旦': {'01-01'},
+    '劳动节': {'05-01'},
+    '国庆节': {'10-01', '10-02', '10-03'},
+    '清明节': {'04-04', '04-05'},
+  };
+
+  /// 按年份补充的农历节日具体日期（公历）
+  static const Map<int, Map<String, Set<String>>> byYear = {
+    2024: {
+      '春节': {'02-10', '02-11', '02-12', '02-13', '02-14', '02-15', '02-16'},
+      '清明节': {'04-04'},
+      '端午节': {'06-08', '06-09', '06-10'},
+      '中秋节': {'09-15', '09-16', '09-17'},
+      '国庆节': {'10-01', '10-02', '10-03', '10-04', '10-05', '10-06', '10-07'},
+    },
+    2025: {
+      '元旦': {'01-01'},
+      '春节': {
+        '01-28',
+        '01-29',
+        '01-30',
+        '01-31',
+        '02-01',
+        '02-02',
+        '02-03',
+        '02-04',
+      },
+      '清明节': {'04-04', '04-05', '04-06'},
+      '劳动节': {'05-01', '05-02', '05-03', '05-04', '05-05'},
+      '端午节': {'05-31', '06-01', '06-02'},
+      '中秋节': {'10-06'},
+      '国庆节': {
+        '10-01',
+        '10-02',
+        '10-03',
+        '10-04',
+        '10-05',
+        '10-06',
+        '10-07',
+        '10-08',
+      },
+    },
+    2026: {
+      '春节': {'02-15', '02-16', '02-17', '02-18', '02-19', '02-20', '02-21'},
+      '清明节': {'04-04', '04-05', '04-06'},
+      '劳动节': {'05-01', '05-02', '05-03', '05-04', '05-05'},
+      '端午节': {'06-19', '06-20', '06-21'},
+      '中秋节': {'10-04'},
+      '国庆节': {'10-01', '10-02', '10-03', '10-04', '10-05', '10-06', '10-07'},
+    },
+  };
+
+  /// 判断 [date] 是否是法定节假日
+  static bool isStatutoryHoliday(DateTime date) {
+    return getHolidayName(date) != null;
+  }
+
+  /// 获取 [date] 对应的法定节假日名称，如 '国庆节'
+  /// 如果不是法定节假日则返回 null
+  static String? getHolidayName(DateTime date) {
+    final mmdd = _mmdd(date);
+    final year = date.year;
+
+    // 先查当年按年补充的
+    final yearMap = byYear[year];
+    if (yearMap != null) {
+      for (final entry in yearMap.entries) {
+        if (entry.value.contains(mmdd)) return entry.key;
+      }
+    }
+
+    // 再查固定节假日
+    for (final entry in _fixedHolidays.entries) {
+      if (entry.value.contains(mmdd)) return entry.key;
+    }
+
+    return null;
+  }
+
+  /// 获取 [holidayName] 在 [year] 的总假期天数
+  static int getHolidayTotalDays(String holidayName, int year) {
+    final yearMap = byYear[year];
+    if (yearMap != null && yearMap.containsKey(holidayName)) {
+      return yearMap[holidayName]!.length;
+    }
+    return _fixedHolidays[holidayName]?.length ?? 0;
+  }
+
+  /// 格式化日期为 MM-DD 字符串
+  static String _mmdd(DateTime d) =>
+      '${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+}
