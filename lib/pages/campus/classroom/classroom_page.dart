@@ -5,7 +5,6 @@ import 'package:bugaoshan/pages/campus/classroom/classroom_detail_page.dart';
 import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
-import 'package:bugaoshan/utils/session_expiry_handler.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
@@ -85,9 +84,6 @@ class _ClassroomPageState extends State<ClassroomPage> {
       });
     } on ScuLoginException catch (e) {
       if (!mounted) return;
-      if (e.sessionExpired) {
-        await SessionExpiryHandler.handle(getIt<ScuAuthProvider>());
-      }
       setState(() {
         _error = e.sessionExpired ? 'sessionExpired' : 'loadFailed';
         _isLoading = false;
@@ -135,9 +131,6 @@ class _ClassroomPageState extends State<ClassroomPage> {
       });
     } on ScuLoginException catch (e) {
       if (!mounted) return;
-      if (e.sessionExpired) {
-        await SessionExpiryHandler.handle(getIt<ScuAuthProvider>());
-      }
       setState(() {
         _error = e.sessionExpired ? 'sessionExpired' : 'loadFailed';
         _isLoading = false;

@@ -16,9 +16,11 @@ class DatabaseService {
   late Database _db;
 
   // In-memory cache to support synchronous read methods
-  String _currentScheduleId = 'default';
+  String _currentScheduleId = '';
   List<ScheduleConfig> _schedulesCache = [];
   List<Course> _coursesCache = [];
+
+  bool get hasSchedule => _schedulesCache.isNotEmpty;
 
   Future<void> init() async {
     final dir = await getApplicationSupportDirectory();
@@ -73,19 +75,9 @@ class DatabaseService {
       _currentScheduleId = metaRows.first['value'] as String;
     }
 
-    // Ensure a default schedule exists
-    final scheduleRows = await _db.query('schedules');
-    if (scheduleRows.isEmpty) {
-      final defaultConfig = _defaultScheduleConfig();
-      await _db.insert('schedules', {
-        'id': defaultConfig.id,
-        'config_json': _encodeJson(defaultConfig.toJson()),
-      });
-      await _db.insert('metadata', {
-        'key': _keyCurrentScheduleId,
-        'value': 'default',
-      });
-    }
+    // 不再自动创建默认课表。新安装的 schedules 表为空，
+    // _currentScheduleId 保持 '' 直到用户切换到一个真实课表。
+    // 老用户：schedules 表非空，上面加载的 _currentScheduleId 继续生效。
 
     // Load caches
     await _loadSchedulesCache();
@@ -143,14 +135,14 @@ class DatabaseService {
             }
             schedules.add(config);
           } catch (_) {
-            schedules.add(_defaultScheduleConfig());
+            // 旧数据无法解析，迁移到空 schedules 表。
           }
-        } else {
-          schedules.add(_defaultScheduleConfig());
         }
+        // 不再为「无 legacy 数据」的情况自动插入默认课表。
+        // 老用户没课表就保持空，让 UI 显示「暂无课表」空状态。
       }
 
-      if (!schedules.any((s) => s.id == currentId)) {
+      if (schedules.isNotEmpty && !schedules.any((s) => s.id == currentId)) {
         currentId = schedules.first.id;
       }
 
@@ -294,6 +286,11 @@ class DatabaseService {
   String getCurrentScheduleId() => _currentScheduleId;
 
   Future<void> switchSchedule(String scheduleId) async {
+    // 未知 id 早返回，避免把空 '' 写进 metadata 并触发 courses 缓存重载。
+    if (_schedulesCache.indexWhere((s) => s.id == scheduleId) < 0) {
+      debugPrint('DatabaseService.switchSchedule: unknown id $scheduleId');
+      return;
+    }
     _currentScheduleId = scheduleId;
     await _db.update(
       'metadata',
@@ -307,6 +304,7 @@ class DatabaseService {
   List<ScheduleConfig> getAllSchedules() => List.unmodifiable(_schedulesCache);
 
   ScheduleConfig getScheduleConfig() {
+    if (_schedulesCache.isEmpty) return _placeholderScheduleConfig();
     return _schedulesCache.firstWhere(
       (s) => s.id == _currentScheduleId,
       orElse: () => _schedulesCache.first,
@@ -353,9 +351,20 @@ class DatabaseService {
 
     await _loadSchedulesCache();
 
-    // If we deleted the current one, switch to the first available
-    if (_currentScheduleId == scheduleId && _schedulesCache.isNotEmpty) {
-      await switchSchedule(_schedulesCache.first.id);
+    // 如果删的是当前课表：剩余 → 切到第一个；不剩 → 清空 currentScheduleId
+    if (_currentScheduleId == scheduleId) {
+      if (_schedulesCache.isNotEmpty) {
+        await switchSchedule(_schedulesCache.first.id);
+      } else {
+        _currentScheduleId = '';
+        await _db.update(
+          'metadata',
+          {'value': ''},
+          where: 'key = ?',
+          whereArgs: [_keyCurrentScheduleId],
+        );
+        await _loadCoursesCache();
+      }
     }
   }
 
@@ -371,11 +380,19 @@ class DatabaseService {
   }
 
   Future<void> addCourse(Course course) async {
+    if (_currentScheduleId.isEmpty) {
+      debugPrint('DatabaseService.addCourse: no current schedule');
+      return;
+    }
     await _db.insert('courses', _courseToRow(course, _currentScheduleId));
     await _loadCoursesCache();
   }
 
   Future<void> updateCourse(Course course) async {
+    if (_currentScheduleId.isEmpty) {
+      debugPrint('DatabaseService.updateCourse: no current schedule');
+      return;
+    }
     await _db.update(
       'courses',
       _courseToRow(course, _currentScheduleId),
@@ -521,33 +538,25 @@ class DatabaseService {
   // ==================== Clear ====================
 
   Future<void> clearAllCourseData() async {
-    final defaultConfig = _defaultScheduleConfig();
     await _db.transaction((txn) async {
       await txn.delete('courses');
       await txn.delete('schedules');
       await txn.delete('metadata');
-      await txn.insert('schedules', {
-        'id': defaultConfig.id,
-        'config_json': _encodeJson(defaultConfig.toJson()),
-      });
-      await txn.insert('metadata', {
-        'key': _keyCurrentScheduleId,
-        'value': 'default',
-      });
     });
-    _currentScheduleId = 'default';
-
-    await _loadSchedulesCache();
-    await _loadCoursesCache();
+    _currentScheduleId = '';
+    _schedulesCache = [];
+    _coursesCache = [];
   }
 
   // ==================== Helpers ====================
 
-  ScheduleConfig _defaultScheduleConfig() {
+  /// 占位用 ScheduleConfig，仅在 _schedulesCache 为空时返回，
+  /// 用于周次/总周数等算术保护，**不会**被持久化。
+  ScheduleConfig _placeholderScheduleConfig() {
     final now = DateTime.now();
     return ScheduleConfig(
-      id: 'default',
-      semesterName: '默认课表',
+      id: '',
+      semesterName: '',
       semesterStartDate: now.toMonday(),
       totalWeeks: 20,
     );

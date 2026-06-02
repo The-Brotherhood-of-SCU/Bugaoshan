@@ -6,6 +6,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/course/course_edit_page.dart';
 import 'package:bugaoshan/pages/course/import_schedule_page.dart';
+import 'package:bugaoshan/pages/course/schedule_management_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/course/course_detail_sheet.dart';
@@ -19,6 +20,7 @@ import 'package:bugaoshan/utils/holiday_utils.dart';
 part 'course_page_swipe_page_view.dart';
 part 'course_page_top_bar.dart';
 part 'course_page_actions.dart';
+part 'course_page_no_schedule_view.dart';
 
 class CoursePage extends StatefulWidget {
   const CoursePage({super.key});
@@ -124,7 +126,9 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
               ),
               ListenableBuilder(
                 listenable: courseDataListenable,
-                builder: _buildCourseGrid,
+                builder: (context, _) => courseProvider.hasSchedule
+                    ? _buildCourseGrid(context, null)
+                    : _buildNoScheduleView(context, null),
               ),
               ValueListenableBuilder<bool>(
                 valueListenable: courseProvider.isLoading,
@@ -135,6 +139,14 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
         ),
       ],
     );
+  }
+
+  void _openScheduleManagement(BuildContext context) {
+    popupOrNavigate(context, const ScheduleManagementPage());
+  }
+
+  void _openAddScheduleDialog(BuildContext context) {
+    promptForNewScheduleConfig(context, courseProvider);
   }
 
   Widget _buildBackgroundImage(BuildContext context, Widget? _) {
@@ -186,6 +198,14 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
           onEmptyTap: _onEmptyTap,
         );
       },
+    );
+  }
+
+  Widget _buildNoScheduleView(BuildContext context, Widget? _) {
+    return _NoScheduleView(
+      onOpenManagement: () => _openScheduleManagement(context),
+      onImport: _onImport,
+      onAddSchedule: () => _openAddScheduleDialog(context),
     );
   }
 

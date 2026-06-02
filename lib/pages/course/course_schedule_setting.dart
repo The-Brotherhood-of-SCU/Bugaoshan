@@ -7,7 +7,6 @@ import 'package:bugaoshan/pages/course/time_slot_setting_page.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
-import 'package:bugaoshan/utils/session_expiry_handler.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 class CourseScheduleSetting extends StatefulWidget {
@@ -78,13 +77,9 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
       _save();
     } on ScuLoginException catch (e) {
       if (!mounted) return;
-      if (e.sessionExpired) {
-        await SessionExpiryHandler.handle(authProvider, context: context);
-      } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.message)));
-      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(

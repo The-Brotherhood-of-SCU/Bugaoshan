@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/scu_microservice_auth_service.dart';
+import 'package:bugaoshan/services/auth/auth_manager.dart';
+import 'package:bugaoshan/services/scu_auth_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
@@ -20,8 +21,6 @@ class NetworkDevicePage extends StatefulWidget {
 
 class _NetworkDevicePageState extends State<NetworkDevicePage> {
   static const _base = 'https://wfw.scu.edu.cn';
-
-  final _authService = ScuMicroserviceAuthService();
 
   bool _loading = false;
   String? _error;
@@ -65,16 +64,8 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
     });
 
     try {
-      final client = await _authService.getAuthenticatedClient();
-      if (client == null) {
-        setState(() {
-          _loading = false;
-          _error = 'authFailed';
-        });
-        return;
-      }
-
-      try {
+      final mgr = getIt<AuthManager>();
+      await mgr.scu.request((client) async {
         final userResp = await client.get(
           Uri.parse('$_base/uc/wap/user/get-info'),
           headers: _headers,
@@ -100,8 +91,14 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
         if (mounted) {
           setState(() => _loading = false);
         }
-      } finally {
-        client.close();
+        return true;
+      });
+    } on ScuLoginException catch (_) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = 'notLoggedIn';
+        });
       }
     } catch (e) {
       debugPrint('Network device load error: $e');
@@ -140,18 +137,13 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
     if (confirm != true) return;
 
     try {
-      final client = await _authService.getAuthenticatedClient();
-      if (client == null) {
-        _showSnackBar('认证失败', isError: true);
-        return;
-      }
-
-      try {
+      final mgr = getIt<AuthManager>();
+      await mgr.scu.request((client) async {
         final resp = await client.post(
           Uri.parse('$_base/netclient/wap/default/offline'),
           headers: {
             ..._headers,
-            'Content-Type': 'application/x-www-form-urlencoded', // 覆盖
+            'Content-Type': 'application/x-www-form-urlencoded',
           },
           body: 'device_id=${device['device_id']}&ip=${device['ip']}',
         );
@@ -162,9 +154,10 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
         }
         _showSnackBar(l10n.networkDeviceOperationSuccess);
         _loadData();
-      } finally {
-        client.close();
-      }
+        return true;
+      });
+    } on ScuLoginException catch (_) {
+      _showSnackBar(l10n.networkOfflineFailed, isError: true);
     } catch (e) {
       debugPrint('Force offline error: $e');
       _showSnackBar(l10n.networkOfflineFailed, isError: true);

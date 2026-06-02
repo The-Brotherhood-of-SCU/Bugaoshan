@@ -9,7 +9,9 @@ import 'package:bugaoshan/pages/wizard/eula_gate_page.dart';
 import 'package:bugaoshan/pages/wizard/wizard_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/background_cache_service.dart';
+import 'package:bugaoshan/widgets/common/session_expired_listener.dart';
 import 'package:bugaoshan/widgets/eula_content.dart';
+import 'package:bugaoshan/widgets/route/mouse_back_handler.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:system_theme/system_theme.dart';
 import 'l10n/app_localizations.dart';
@@ -76,6 +78,9 @@ class _MyAppState extends State<MyApp> {
         theme: _buildTheme(Brightness.light),
         darkTheme: _buildTheme(Brightness.dark),
         themeMode: ThemeMode.system,
+        builder: (context, child) => MouseBackHandler(
+          child: SessionExpiredListener(child: child ?? const SizedBox()),
+        ),
         home: ValueListenableBuilder<int>(
           valueListenable: _appConfig.acceptedEulaVersion,
           builder: (_, eulaVersion, _) {

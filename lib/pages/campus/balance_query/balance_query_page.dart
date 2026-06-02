@@ -121,7 +121,19 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
                 } else if (index < 0) {
                   _showDeleteConfirmDialog(-(index + 2));
                 } else {
-                  _provider.switchBinding(index);
+                  _provider.switchBinding(index).catchError((e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            e is BalanceQueryException
+                                ? e.message
+                                : l10n.networkError,
+                          ),
+                        ),
+                      );
+                    }
+                  });
                 }
               },
               itemBuilder: (context) => [

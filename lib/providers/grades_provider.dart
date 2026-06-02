@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/models/scheme_score.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
-import 'package:bugaoshan/utils/session_expiry_handler.dart';
 
 const _keySchemeScores = 'grades_scheme_scores';
 const _keyPassingScores = 'grades_passing_scores';
@@ -55,10 +54,7 @@ class GradesProvider extends ChangeNotifier {
       _schemeScores = SchemeScoreSummary.fromJson(data);
       _schemeState = GradesLoadState.loaded;
       await _prefs.setString(_keySchemeScores, jsonEncode(data));
-    } on ScuLoginException catch (e) {
-      if (e.sessionExpired) {
-        await SessionExpiryHandler.handle(_authProvider);
-      }
+    } on ScuLoginException {
       if (_schemeScores != null) {
         _schemeState = GradesLoadState.loaded;
         _schemeError = 'sessionExpired';
@@ -102,10 +98,7 @@ class GradesProvider extends ChangeNotifier {
       _passingScores = PassingScoreResult.fromJson(data);
       _passingState = GradesLoadState.loaded;
       await _prefs.setString(_keyPassingScores, jsonEncode(data));
-    } on ScuLoginException catch (e) {
-      if (e.sessionExpired) {
-        await SessionExpiryHandler.handle(_authProvider);
-      }
+    } on ScuLoginException {
       if (_passingScores != null) {
         _passingState = GradesLoadState.loaded;
         _passingError = 'sessionExpired';

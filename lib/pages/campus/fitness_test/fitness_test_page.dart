@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/services/auth/auth_manager.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
@@ -82,20 +83,13 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     }
   }
 
-  Future<CookieClient?> _ensureClient() async {
-    final auth = getIt<ScuAuthProvider>();
-    if (auth.accessToken == null) return null;
-    final client = await auth.service.bindSession();
-    // Follow SSO redirect to activate fitness test session
-    await client.followRedirects(
-      Uri.parse('$_baseUrl/index/login/scuMsLogin'),
-      headers: {
-        'Accept': 'text/html,application/xhtml+xml,*/*',
-        'User-Agent': _headers['User-Agent']!,
-        'Authorization': 'Bearer ${auth.accessToken}',
-      },
-    );
-    return client;
+  /// 通过 AuthSession.request 发送带自动刷新+重试的请求。
+  /// [fn] 接收已认证的 CookieClient 并返回响应数据。
+  Future<T> _fitnessRequest<T>(
+    Future<T> Function(CookieClient client) fn,
+  ) async {
+    final mgr = getIt<AuthManager>();
+    return await mgr.fitness.request(fn);
   }
 
   Future<void> _loadData() async {
@@ -112,17 +106,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     });
 
     try {
-      final client = await _ensureClient();
-      if (client == null) {
-        setState(() {
-          _loading = false;
-          _error = 'authFailed';
-        });
-        return;
-      }
-
-      try {
-        // Load notices
+      await _fitnessRequest((client) async {
         final noticeResp = await client.post(
           Uri.parse('$_baseUrl/index/News/getSchoolNoticeList'),
           headers: _headers,
@@ -135,14 +119,19 @@ class _FitnessTestPageState extends State<FitnessTestPage>
             .map((e) => e as Map<String, dynamic>)
             .toList();
 
-        // Load scores for selected year
         await _loadScore(client);
 
         if (mounted) {
           setState(() => _loading = false);
         }
-      } finally {
-        client.close();
+        return true;
+      });
+    } on ScuLoginException catch (_) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = 'notLoggedIn';
+        });
       }
     } catch (e) {
       debugPrint('Fitness test load error: $e');
@@ -199,13 +188,10 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     final auth = getIt<ScuAuthProvider>();
     if (!auth.isLoggedIn) return;
     try {
-      final client = await _ensureClient();
-      if (client == null) return;
-      try {
+      await _fitnessRequest((client) async {
         await _loadScore(client);
-      } finally {
-        client.close();
-      }
+        return true;
+      });
     } catch (e) {
       debugPrint('Retry score error: $e');
     }
@@ -218,13 +204,10 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     if (!auth.isLoggedIn) return;
 
     try {
-      final client = await _ensureClient();
-      if (client == null) return;
-      try {
+      await _fitnessRequest((client) async {
         await _loadScore(client);
-      } finally {
-        client.close();
-      }
+        return true;
+      });
     } catch (e) {
       debugPrint('Year change error: $e');
     }

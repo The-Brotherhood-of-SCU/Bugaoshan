@@ -48,7 +48,12 @@ class CourseProvider {
       allSchedules.value = _db.getAllSchedules();
       final config = _db.getScheduleConfig();
       scheduleConfig.value = config;
-      currentWeek.value = config.getCurrentWeek();
+      // 无课表时 currentWeek 兜底为 1，避免占位 config 算出意外的周数
+      if (allSchedules.value.isEmpty) {
+        currentWeek.value = 1;
+      } else {
+        currentWeek.value = config.getCurrentWeek();
+      }
     } catch (e) {
       debugPrint('CourseProvider: failed to load data: $e');
     } finally {

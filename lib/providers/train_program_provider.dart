@@ -6,7 +6,6 @@ import 'package:bugaoshan/pages/campus/train_program/models/train_program_model.
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/scu_auth_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
-import 'package:bugaoshan/utils/session_expiry_handler.dart';
 
 enum TrainProgramLoadState { idle, loading, loaded, error }
 
@@ -84,8 +83,7 @@ class TrainProgramProvider extends ChangeNotifier {
     _safeNotify();
 
     try {
-      final client = await _authProvider.service.bindSession();
-      try {
+      final body = await _authProvider.service.request((client) async {
         final resp = await client.get(
           Uri.parse(
             '$kZhjwBase/student/comprehensiveQuery/search/trainProgram/index',
@@ -96,24 +94,14 @@ class TrainProgramProvider extends ChangeNotifier {
             'User-Agent': kDefaultUserAgent,
           },
         );
+        return resp.body;
+      });
 
-        final body = resp.body;
-        _colleges = _parseOptions(body, 'xsh');
-        _grades = _parseGradeOptions(body, 'nj');
+      _colleges = _parseOptions(body, 'xsh');
+      _grades = _parseGradeOptions(body, 'nj');
 
-        _collegesState = TrainProgramLoadState.loaded;
-        _gradesState = TrainProgramLoadState.loaded;
-      } finally {
-        client.close();
-      }
-    } on ScuLoginException catch (e) {
-      if (e.sessionExpired) {
-        await SessionExpiryHandler.handle(_authProvider);
-      }
-      _collegesState = TrainProgramLoadState.error;
-      _gradesState = TrainProgramLoadState.error;
-      _collegesError = e.toString();
-      _gradesError = e.toString();
+      _collegesState = TrainProgramLoadState.loaded;
+      _gradesState = TrainProgramLoadState.loaded;
     } catch (e) {
       _collegesState = TrainProgramLoadState.error;
       _gradesState = TrainProgramLoadState.error;
@@ -174,8 +162,7 @@ class TrainProgramProvider extends ChangeNotifier {
     _safeNotify();
 
     try {
-      final client = await _authProvider.service.bindSession();
-      try {
+      final body = await _authProvider.service.request((client) async {
         final resp = await client.post(
           Uri.parse(
             '$kZhjwBase/student/comprehensiveQuery/search/trainProgram/load',
@@ -190,27 +177,19 @@ class TrainProgramProvider extends ChangeNotifier {
           body:
               'famc=&jhmc=&nj=${_selectedGrade ?? ''}&xw=&xzlx=&xdlx=00001&xsh=${_selectedCollege ?? ''}&pageNum=1&pageSize=100',
         );
+        return resp.body.trim();
+      });
 
-        final body = resp.body.trim();
-        if (body.startsWith('<')) {
-          throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
-        }
+      if (body.startsWith('<')) {
+        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
+      }
 
-        final json = jsonDecode(body) as Map<String, dynamic>;
-        final records = json['data']['records'] as List<dynamic>? ?? [];
-        _programs = records
-            .map((e) => TrainProgram.fromJson(e as Map<String, dynamic>))
-            .toList();
-        _programsState = TrainProgramLoadState.loaded;
-      } finally {
-        client.close();
-      }
-    } on ScuLoginException catch (e) {
-      if (e.sessionExpired) {
-        await SessionExpiryHandler.handle(_authProvider);
-      }
-      _programsState = TrainProgramLoadState.error;
-      _programsError = e.toString();
+      final json = jsonDecode(body) as Map<String, dynamic>;
+      final records = json['data']['records'] as List<dynamic>? ?? [];
+      _programs = records
+          .map((e) => TrainProgram.fromJson(e as Map<String, dynamic>))
+          .toList();
+      _programsState = TrainProgramLoadState.loaded;
     } catch (e) {
       _programsState = TrainProgramLoadState.error;
       _programsError = e.toString();
@@ -225,8 +204,7 @@ class TrainProgramProvider extends ChangeNotifier {
     _safeNotify();
 
     try {
-      final client = await _authProvider.service.bindSession();
-      try {
+      final body = await _authProvider.service.request((client) async {
         final resp = await client.post(
           Uri.parse(
             '$kZhjwBase/student/comprehensiveQuery/search/trainProgram/detail',
@@ -240,24 +218,16 @@ class TrainProgramProvider extends ChangeNotifier {
           },
           body: 'fajhh=$fajhh&lx=1',
         );
+        return resp.body.trim();
+      });
 
-        final body = resp.body.trim();
-        if (body.startsWith('<')) {
-          throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
-        }
+      if (body.startsWith('<')) {
+        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
+      }
 
-        final json = jsonDecode(body) as Map<String, dynamic>;
-        _currentDetail = TrainProgramDetail.fromJson(json);
-        _detailState = TrainProgramLoadState.loaded;
-      } finally {
-        client.close();
-      }
-    } on ScuLoginException catch (e) {
-      if (e.sessionExpired) {
-        await SessionExpiryHandler.handle(_authProvider);
-      }
-      _detailState = TrainProgramLoadState.error;
-      _detailError = e.toString();
+      final json = jsonDecode(body) as Map<String, dynamic>;
+      _currentDetail = TrainProgramDetail.fromJson(json);
+      _detailState = TrainProgramLoadState.loaded;
     } catch (e) {
       _detailState = TrainProgramLoadState.error;
       _detailError = e.toString();
@@ -278,8 +248,7 @@ class TrainProgramProvider extends ChangeNotifier {
     _safeNotify();
 
     try {
-      final client = await _authProvider.service.bindSession();
-      try {
+      final body = await _authProvider.service.request((client) async {
         final fullUrl = '$kZhjwBase$urlPath';
         final resp = await client.get(
           Uri.parse(fullUrl),
@@ -290,24 +259,16 @@ class TrainProgramProvider extends ChangeNotifier {
             'User-Agent': kDefaultUserAgent,
           },
         );
+        return resp.body.trim();
+      });
 
-        final body = resp.body.trim();
-        if (body.startsWith('<')) {
-          throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
-        }
+      if (body.startsWith('<')) {
+        throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
+      }
 
-        final json = jsonDecode(body) as Map<String, dynamic>;
-        _currentCourseDetail = CourseDetail.fromJson(json);
-        _courseDetailState = TrainProgramLoadState.loaded;
-      } finally {
-        client.close();
-      }
-    } on ScuLoginException catch (e) {
-      if (e.sessionExpired) {
-        await SessionExpiryHandler.handle(_authProvider);
-      }
-      _courseDetailState = TrainProgramLoadState.error;
-      _courseDetailError = e.toString();
+      final json = jsonDecode(body) as Map<String, dynamic>;
+      _currentCourseDetail = CourseDetail.fromJson(json);
+      _courseDetailState = TrainProgramLoadState.loaded;
     } catch (e) {
       _courseDetailState = TrainProgramLoadState.error;
       _courseDetailError = e.toString();

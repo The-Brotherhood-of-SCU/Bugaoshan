@@ -10,6 +10,7 @@ import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/services/auth/auth_manager.dart';
 import 'package:bugaoshan/services/background_cache_service.dart';
 import 'package:bugaoshan/services/database_service.dart';
 import 'package:bugaoshan/services/download_manager.dart';
@@ -62,15 +63,23 @@ void _configureAsyncDependencies() {
     final db = getIt<DatabaseService>();
     return CourseProvider(db);
   });
-  getIt.registerSingletonAsync<ScuAuthProvider>(() async {
+  // AuthManager — 统一认证管理（初始化所有 session）
+  getIt.registerSingletonAsync<AuthManager>(() async {
     await getIt.isReady<SharedPreferences>();
     final prefs = getIt<SharedPreferences>();
-    final provider = ScuAuthProvider(prefs);
+    final mgr = AuthManager(prefs);
+    await mgr.init();
+    return mgr;
+  });
+  getIt.registerSingletonAsync<ScuAuthProvider>(() async {
+    await getIt.isReady<AuthManager>();
+    final provider = ScuAuthProvider(getIt<AuthManager>());
     await provider.init();
     return provider;
   });
   getIt.registerSingletonAsync<CcylProvider>(() async {
-    return CcylProvider.create();
+    await getIt.isReady<AuthManager>();
+    return CcylProvider.create(getIt<AuthManager>());
   });
   getIt.registerSingletonAsync<GradesProvider>(() async {
     await getIt.isReady<SharedPreferences>();
@@ -108,7 +117,6 @@ void _configureAsyncDependencies() {
     await getIt.isReady<CourseProvider>();
     final courseProvider = getIt<CourseProvider>();
     final service = WidgetUpdateService();
-    // Wire up callback so widget updates on data changes
     courseProvider.onCoursesChanged = () {
       service.updateWidgetData().catchError((e) {
         // Ignore widget update errors to prevent unhandled async errors
