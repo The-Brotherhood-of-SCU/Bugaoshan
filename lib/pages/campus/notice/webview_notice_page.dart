@@ -13,6 +13,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
+/// 搜索自动跳转的最大时间间隔（毫秒），约 9 个月
+const _searchAutoNavigateMaxDiff = 9 * 30 * 24 * 60 * 60 * 1000;
+
 /// Shared WebView-based notice page used by party/XGB and tuanwei/Youth SCU.
 class WebViewNoticePage extends StatefulWidget {
   const WebViewNoticePage({
@@ -290,7 +293,7 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
   });
 
   /* 如果找到符合条件的通知且间隔 < 9 个月，自动跳转 */
-  if (bestUrl && bestDiff < 9 * 30 * 24 * 60 * 60 * 1000) {
+  if (bestUrl && bestDiff < $_searchAutoNavigateMaxDiff) {
     /* 补全相对路径 */
     if (bestUrl.indexOf('http') !== 0) {
       if (bestUrl.indexOf('/') === 0) {
