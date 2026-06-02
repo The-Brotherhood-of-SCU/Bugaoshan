@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/campus/notice/jwc/campus_notice_page.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 /// 点击课表表头的特殊日（假/节/气）后弹出的统一信息悬浮窗
 ///
@@ -204,6 +206,21 @@ Future<void> _showHolidaySheet(
                 _pickMakeupDate(context, date);
               },
             ),
+            // 查询调休安排
+            if (info.name != null)
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                leading: const Icon(Icons.search, color: Colors.blue),
+                title: const Text('查询调休安排'),
+                subtitle: const Text('在教务处通知中搜索相关安排'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  popupOrNavigate(
+                    logicRootContext,
+                    CampusNoticePage(searchQuery: info.name, searchDate: date),
+                  );
+                },
+              ),
             const SizedBox(height: 8),
           ],
         ),

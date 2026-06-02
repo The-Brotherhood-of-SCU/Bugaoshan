@@ -26,6 +26,8 @@ class WebViewNoticePage extends StatefulWidget {
     required this.debugLabel,
     this.downloadHeaders,
     this.useWebViewDownload = false,
+    this.searchQuery,
+    this.searchDate,
   });
 
   final String url;
@@ -38,6 +40,12 @@ class WebViewNoticePage extends StatefulWidget {
   final Map<String, String>? downloadHeaders;
   final bool useWebViewDownload;
 
+  /// 页面加载后自动搜索的关键词（对支持搜索的页面生效）。
+  final String? searchQuery;
+
+  /// 与 [searchQuery] 对应的假日日期，用于搜索结果的时间间隔判断。
+  final DateTime? searchDate;
+
   @override
   State<WebViewNoticePage> createState() => _WebViewNoticePageState();
 }
@@ -48,6 +56,7 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
   String _domReadyScript = '';
   bool _loading = true;
   bool _canGoBack = false;
+  bool _searchTriggered = false;
   bool _canGoForward = false;
   List<AttachItem> _pageAttachments = [];
   String _errorHtmlTemplate = '';
@@ -153,6 +162,148 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
 
   Future<void> _onDomReady() async {
     await _finishLoading();
+    _performSearchIfNeeded();
+  }
+
+  /// 两阶段搜索逻辑：
+  /// 1. 首次加载 → 通过 POST 提交搜索关键词
+  /// 2. 搜索结果显示后 → 解析结果条目，找到距假日最近的通知并自动跳转
+  Future<void> _performSearchIfNeeded() async {
+    final query = widget.searchQuery;
+    if (query == null || query.isEmpty) return;
+
+    try {
+      if (!_searchTriggered) {
+        // ── 阶段 1：提交搜索 ──
+        _searchTriggered = true;
+        await _controller?.evaluateJavascript(source: _buildSearchJs(query));
+      } else {
+        // ── 阶段 2：解析搜索结果 ──
+        final date = widget.searchDate;
+        if (date == null) return;
+        await _controller?.evaluateJavascript(
+          source: _buildParseResultsJs(query, date),
+        );
+      }
+    } catch (e) {
+      debugPrint('${widget.debugLabel} search/parse error: $e');
+    }
+  }
+
+  /// 构造搜索提交 JS：与 beautify 脚本的 doSearch 逻辑一致
+  String _buildSearchJs(String query) {
+    return '''
+(function() {
+  var keyword = ${jsonEncode(query)};
+  if (!keyword) return;
+
+  /* 尝试使用 beautify 脚本已创建的搜索框 */
+  var input = document.querySelector('input[placeholder="搜索通知..."]');
+  if (input) {
+    input.value = keyword;
+    var btn = input.nextElementSibling;
+    if (btn && btn.tagName === 'BUTTON') { btn.click(); return; }
+  }
+
+  /* 直接构造 POST 表单提交 */
+  var encodedKey = btoa(unescape(encodeURIComponent(keyword)));
+  var f = document.createElement('form');
+  f.method = 'POST';
+  f.action = 'ssjgy.jsp?wbtreeid=1069';
+  var params = {
+    lucenenewssearchkey: encodedKey,
+    _lucenesearchtype: '1',
+    searchScope: '0',
+    showkeycode: keyword,
+  };
+  for (var k in params) {
+    var h = document.createElement('input');
+    h.type = 'hidden'; h.name = k; h.value = params[k];
+    f.appendChild(h);
+  }
+  document.body.appendChild(f);
+  f.submit();
+})();
+''';
+  }
+
+  /// 构造搜索结果解析 JS：提取通知日期，找到距假日最近的通知并自动跳转
+  String _buildParseResultsJs(String query, DateTime holidayDate) {
+    final holidayDateStr =
+        '${holidayDate.year}-${holidayDate.month.toString().padLeft(2, '0')}-${holidayDate.day.toString().padLeft(2, '0')}';
+    return '''
+(function() {
+  var holidayDate = new Date(${jsonEncode(holidayDateStr)});
+  if (isNaN(holidayDate.getTime())) return;
+  var holidayName = ${jsonEncode(query)};
+
+  /* 找到所有通知条目 */
+  var items = document.querySelectorAll('.tz-list li, .list li');
+  if (!items.length) return;
+
+  var bestUrl = null;
+  var bestDiff = Infinity;
+
+  items.forEach(function(item) {
+    var link = item.querySelector('a');
+    if (!link) return;
+    var href = link.getAttribute('href');
+    if (!href) return;
+
+    /* 提取日期 */
+    var dateEl = item.querySelector('.date');
+    var dayEl = dateEl ? dateEl.querySelector('p') : null;
+    var yearEl = dateEl ? dateEl.querySelector(':scope > span') : null;
+
+    var year = yearEl ? yearEl.textContent.trim() : '';
+    var mmdd = dayEl ? dayEl.textContent.trim() : '';
+
+    /* 尝试从完整文本中提取日期（MM/DD YYYY 格式） */
+    if (!year || !mmdd) {
+      var text = item.textContent;
+      var m = text.match(/(\\d{4})\\D(\\d{1,2})\\D(\\d{1,2})/);
+      if (m) {
+        year = m[1]; mmdd = m[2] + '/' + m[3];
+      }
+    }
+
+    if (!year || !mmdd) return;
+
+    /* 解析 MM/DD */
+    var parts = mmdd.split('/');
+    if (parts.length !== 2) return;
+    var month = parseInt(parts[0], 10);
+    var day = parseInt(parts[1], 10);
+    if (isNaN(month) || isNaN(day)) return;
+
+    var notifDate = new Date(parseInt(year, 10), month - 1, day);
+    if (isNaN(notifDate.getTime())) return;
+
+    /* 只考虑假日之前的通知 */
+    if (notifDate >= holidayDate) return;
+
+    var diff = holidayDate.getTime() - notifDate.getTime();
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      bestUrl = href;
+    }
+  });
+
+  /* 如果找到符合条件的通知且间隔 < 9 个月，自动跳转 */
+  if (bestUrl && bestDiff < 9 * 30 * 24 * 60 * 60 * 1000) {
+    /* 补全相对路径 */
+    if (bestUrl.indexOf('http') !== 0) {
+      if (bestUrl.indexOf('/') === 0) {
+        bestUrl = window.location.origin + bestUrl;
+      } else {
+        bestUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1) + bestUrl;
+      }
+    }
+    /* 短暂延迟后跳转，让浏览器有时间处理当前页面 */
+    setTimeout(function() { window.location.href = bestUrl; }, 300);
+  }
+})();
+''';
   }
 
   void _onOpenImage(List<dynamic> args) {
