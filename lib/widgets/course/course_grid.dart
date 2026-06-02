@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/models/holiday_override.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/utils/holiday_utils.dart';
 import 'package:bugaoshan/widgets/course/course_card.dart';
 
 List<Course> selectVisibleCoursesForDay(
@@ -67,6 +69,12 @@ class CourseGrid extends StatefulWidget {
   final void Function(Course course)? onCourseLongPress;
   final void Function(int dayOfWeek, int section)? onEmptyTap;
 
+  /// 调休记录映射，key = "YYYY-MM-DD"
+  final Map<String, HolidayOverride> holidayOverrides;
+
+  /// 点击表头日期回调
+  final void Function(DateTime date)? onHeaderTap;
+
   const CourseGrid({
     super.key,
     required this.courses,
@@ -76,6 +84,8 @@ class CourseGrid extends StatefulWidget {
     this.onCourseTap,
     this.onCourseLongPress,
     this.onEmptyTap,
+    this.holidayOverrides = const {},
+    this.onHeaderTap,
   });
 
   @override
@@ -149,7 +159,27 @@ class _CourseGridState extends State<CourseGrid> {
                           final day = widget.config.showWeekend
                               ? (dayIndex == 0 ? 7 : dayIndex)
                               : dayIndex + 1;
-                          final dayCourses = selectVisibleCoursesForDay(
+                          final date = _getDateForDayColumn(day);
+                          final dateKey = _dateKey(date);
+                          final shouldHide = _shouldHideCourses(date);
+
+                          // 放假且 active 的日期不显示课程
+                          if (shouldHide) {
+                            final hasMakeup =
+                                widget.holidayOverrides[dateKey]?.makeupDate !=
+                                null;
+                            return _buildDayColumn(
+                              context,
+                              day,
+                              sections,
+                              [],
+                              isHoliday: true,
+                              hasMakeup: hasMakeup,
+                            );
+                          }
+
+                          // 正常课程
+                          var dayCourses = selectVisibleCoursesForDay(
                             widget.courses
                                 .where((c) => c.dayOfWeek == day)
                                 .toList(),
@@ -157,6 +187,40 @@ class _CourseGridState extends State<CourseGrid> {
                             showNonCurrentWeekCourses:
                                 widget.config.showNonCurrentWeekCourses,
                           );
+
+                          // 检查是否有其他调休日把课程调到了今天
+                          for (final override
+                              in widget.holidayOverrides.values) {
+                            if (override.makeupDate != null &&
+                                _dateKey(override.makeupDate!) == dateKey) {
+                              // 调休日：显示被调休那天的课程
+                              final makeupDayOfWeek = override.date.weekday == 7
+                                  ? 7
+                                  : override.date.weekday;
+                              final makeupCourses = selectVisibleCoursesForDay(
+                                widget.courses
+                                    .where(
+                                      (c) => c.dayOfWeek == makeupDayOfWeek,
+                                    )
+                                    .toList(),
+                                widget.displayWeek,
+                                showNonCurrentWeekCourses:
+                                    widget.config.showNonCurrentWeekCourses,
+                              );
+                              // 合并课程，去重（按 id）
+                              final existingIds = dayCourses
+                                  .map((c) => c.id)
+                                  .toSet();
+                              for (final mc in makeupCourses) {
+                                if (!existingIds.contains(mc.id)) {
+                                  dayCourses = [...dayCourses, mc];
+                                  existingIds.add(mc.id);
+                                }
+                              }
+                              dayCourses.sort(_compareCoursesForLayout);
+                            }
+                          }
+
                           return _buildDayColumn(
                             context,
                             day,
@@ -176,6 +240,35 @@ class _CourseGridState extends State<CourseGrid> {
     );
   }
 
+  /// 计算某一列对应的实际日期
+  DateTime _getDateForDayColumn(int dayOfWeek) {
+    final semesterStart = widget.config.semesterStartDate;
+    final daysFromMonday = dayOfWeek == 7 ? -1 : dayOfWeek - 1;
+    final mondayOffset = (1 - semesterStart.weekday) % 7;
+    return semesterStart.add(
+      Duration(
+        days: (widget.displayWeek - 1) * 7 + mondayOffset + daysFromMonday,
+      ),
+    );
+  }
+
+  String _dateKey(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  /// 判断某天是否为节假日（不受 [active] 影响）。
+  bool _isHoliday(DateTime date) {
+    if (HolidayUtils.isStatutoryHoliday(date)) return true;
+    final key = _dateKey(date);
+    return widget.holidayOverrides.containsKey(key);
+  }
+
+  /// 判断某天是否应隐藏课程并显示覆盖层（受 [active] 影响）。
+  bool _shouldHideCourses(DateTime date) {
+    final key = _dateKey(date);
+    final override = widget.holidayOverrides[key];
+    return override?.active ?? HolidayUtils.isStatutoryHoliday(date);
+  }
+
   Widget _buildHeaderRow(BuildContext context, List<String> dayNames) {
     final theme = Theme.of(context);
     final visibleDays = widget.config.showWeekend
@@ -184,7 +277,6 @@ class _CourseGridState extends State<CourseGrid> {
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final semesterStart = widget.config.semesterStartDate;
 
     final hasBackground = appConfig.backgroundImagePath.value != null;
     return Container(
@@ -214,61 +306,97 @@ class _CourseGridState extends State<CourseGrid> {
                 final dayOfWeek = widget.config.showWeekend
                     ? (index == 0 ? 7 : index)
                     : index + 1;
-                // 周日在周一之前，dayOfWeek=7时应为-1而非6
-                final daysFromMonday = dayOfWeek == 7 ? -1 : dayOfWeek - 1;
-                final mondayOffset = (1 - semesterStart.weekday) % 7;
-                final date = semesterStart.add(
-                  Duration(
-                    days:
-                        (widget.displayWeek - 1) * 7 +
-                        mondayOffset +
-                        daysFromMonday,
-                  ),
-                );
+                final date = _getDateForDayColumn(dayOfWeek);
                 final isToday = date.isAtSameMomentAs(today);
+                final isHoliday = _isHoliday(date);
+                // 标签是否显示取决于法定节假日检测，不受用户取消影响
+                final showLabel =
+                    HolidayUtils.isStatutoryHoliday(date) || isHoliday;
+                // 检查当天是否为某个调休日的上课日
+                final dateKey = _dateKey(date);
+                final isMakeupDay = widget.holidayOverrides.values.any(
+                  (o) =>
+                      o.makeupDate != null &&
+                      _dateKey(o.makeupDate!) == dateKey &&
+                      o.active,
+                );
 
                 return Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: isToday
-                          ? theme.colorScheme.primaryContainer.withAlpha(180)
-                          : null,
-                      border: Border(
-                        right: BorderSide(
-                          color: theme.colorScheme.outlineVariant,
-                          width: 0.5,
+                  child: GestureDetector(
+                    onTap: isHoliday && widget.onHeaderTap != null
+                        ? () => widget.onHeaderTap!(date)
+                        : null,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isHoliday
+                            ? Colors.red.withAlpha(15)
+                            : isToday
+                            ? theme.colorScheme.primaryContainer.withAlpha(180)
+                            : null,
+                        border: Border(
+                          right: BorderSide(
+                            color: theme.colorScheme.outlineVariant,
+                            width: 0.5,
+                          ),
                         ),
                       ),
-                    ),
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            name,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: isToday
-                                  ? FontWeight.bold
-                                  : FontWeight.w600,
-                              color: isToday
-                                  ? theme.colorScheme.primary
-                                  : theme.colorScheme.onSurface,
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              name,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: isToday
+                                    ? FontWeight.bold
+                                    : FontWeight.w600,
+                                color: isToday
+                                    ? theme.colorScheme.primary
+                                    : theme.colorScheme.onSurface,
+                              ),
                             ),
-                          ),
-                          Text(
-                            '${date.month}-${date.day}',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: isToday
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              color: isToday
-                                  ? theme.colorScheme.primary.withAlpha(200)
-                                  : theme.colorScheme.onSurfaceVariant,
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '${date.month}-${date.day}',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: isToday
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    color: showLabel
+                                        ? Colors.red
+                                        : isToday
+                                        ? theme.colorScheme.primary.withAlpha(
+                                            200,
+                                          )
+                                        : theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                if (showLabel)
+                                  Text(
+                                    ' 假',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                if (isMakeupDay)
+                                  Text(
+                                    ' 调',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                              ],
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -363,12 +491,68 @@ class _CourseGridState extends State<CourseGrid> {
     );
   }
 
+  /// 生成上午/下午/晚上三段的放假覆盖层
+  List<Widget> _buildHolidayOverlay(bool hasMakeup, double rowHeight) {
+    final morningEnd = widget.config.morningSections;
+    final afternoonEnd =
+        widget.config.morningSections + widget.config.afternoonSections;
+    final total =
+        morningEnd +
+        widget.config.afternoonSections +
+        widget.config.eveningSections;
+
+    final label = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          '放假',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.red.withAlpha(80),
+          ),
+        ),
+        if (hasMakeup)
+          Text(
+            '调休',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.orange.withAlpha(120),
+            ),
+          ),
+      ],
+    );
+
+    final sections = [
+      (start: 0, end: morningEnd), // 上午
+      (start: morningEnd, end: afternoonEnd), // 下午
+      (start: afternoonEnd, end: total), // 晚上
+    ];
+
+    return [
+      for (final sec in sections)
+        Positioned(
+          top: sec.start * rowHeight,
+          left: 0,
+          right: 0,
+          height: (sec.end - sec.start) * rowHeight,
+          child: Container(
+            decoration: BoxDecoration(color: Colors.red.withAlpha(8)),
+            child: Center(child: Transform.rotate(angle: -0.3, child: label)),
+          ),
+        ),
+    ];
+  }
+
   Widget _buildDayColumn(
     BuildContext context,
     int day,
     int sections,
-    List<Course> dayCourses,
-  ) {
+    List<Course> dayCourses, {
+    bool isHoliday = false,
+    bool hasMakeup = false,
+  }) {
     final theme = Theme.of(context);
     final appConfig = getIt<AppConfigProvider>();
     final rowHeight = appConfig.courseRowHeight.value;
@@ -383,6 +567,8 @@ class _CourseGridState extends State<CourseGrid> {
         height: rowHeight * sections,
         child: Stack(
           children: [
+            // 放假覆盖层（上午/下午/晚上各一块）
+            if (isHoliday) ..._buildHolidayOverlay(hasMakeup, rowHeight),
             // Grid lines (conditionally rendered)
             if (appConfig.showCourseGrid.value)
               ...List.generate(sections, (i) {
