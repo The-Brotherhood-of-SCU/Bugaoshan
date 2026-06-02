@@ -13,7 +13,7 @@ class HolidayOverride {
   Map<String, dynamic> toJson() => {
     'date': _fmt(date),
     if (makeupDate != null) 'makeupDate': _fmt(makeupDate!),
-    if (!active) 'active': false,
+    'active': active,
   };
 
   factory HolidayOverride.fromJson(Map<String, dynamic> json) {
