@@ -406,6 +406,70 @@ class DatabaseService {
     );
   }
 
+  // ==================== Holiday Overrides ====================
+
+  static const String _keyHolidayOverrides = 'holiday_overrides';
+
+  /// 读取所有调休记录，返回 { 'YYYY-MM-DD': { 'date': ..., 'makeupDate': ... } }
+  Future<Map<String, Map<String, dynamic>>> getHolidayOverrides() async {
+    final rows = await _db.query(
+      'metadata',
+      where: 'key = ?',
+      whereArgs: [_keyHolidayOverrides],
+    );
+    if (rows.isEmpty) return {};
+    final raw = rows.first['value'] as String;
+    try {
+      final decoded = json.decode(raw) as Map<String, dynamic>;
+      return decoded.map((k, v) => MapEntry(k, v as Map<String, dynamic>));
+    } catch (_) {
+      return {};
+    }
+  }
+
+  /// 保存一条调休记录
+  Future<void> saveHolidayOverride(Map<String, dynamic> overrideData) async {
+    final overrides = await getHolidayOverrides();
+    final date = overrideData['date'] as String;
+    overrides[date] = overrideData;
+    await _setHolidayOverrides(overrides);
+  }
+
+  /// 删除某天的调休记录
+  Future<void> removeHolidayOverride(DateTime date) async {
+    final key = _dateKey(date);
+    final overrides = await getHolidayOverrides();
+    overrides.remove(key);
+    await _setHolidayOverrides(overrides);
+  }
+
+  Future<void> _setHolidayOverrides(
+    Map<String, Map<String, dynamic>> data,
+  ) async {
+    final jsonStr = json.encode(data);
+    final existing = await _db.query(
+      'metadata',
+      where: 'key = ?',
+      whereArgs: [_keyHolidayOverrides],
+    );
+    if (existing.isNotEmpty) {
+      await _db.update(
+        'metadata',
+        {'value': jsonStr},
+        where: 'key = ?',
+        whereArgs: [_keyHolidayOverrides],
+      );
+    } else {
+      await _db.insert('metadata', {
+        'key': _keyHolidayOverrides,
+        'value': jsonStr,
+      });
+    }
+  }
+
+  String _dateKey(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
   // ==================== Clear ====================
 
   Future<void> clearAllCourseData() async {
