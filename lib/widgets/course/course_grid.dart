@@ -537,7 +537,11 @@ class _CourseGridState extends State<CourseGrid> {
   }
 
   /// 生成上午/下午/晚上三段的放假覆盖层
-  List<Widget> _buildHolidayOverlay(bool hasMakeup, double rowHeight) {
+  List<Widget> _buildHolidayOverlay(
+    BuildContext context,
+    bool hasMakeup,
+    double rowHeight,
+  ) {
     final morningEnd = widget.config.morningSections;
     final afternoonEnd =
         widget.config.morningSections + widget.config.afternoonSections;
@@ -546,11 +550,12 @@ class _CourseGridState extends State<CourseGrid> {
         widget.config.afternoonSections +
         widget.config.eveningSections;
 
+    final l10n = AppLocalizations.of(context)!;
     final label = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          '放假',
+          l10n.holidayOverlay,
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
@@ -559,7 +564,7 @@ class _CourseGridState extends State<CourseGrid> {
         ),
         if (hasMakeup)
           Text(
-            '调休',
+            l10n.makeupOverlay,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -613,7 +618,8 @@ class _CourseGridState extends State<CourseGrid> {
         child: Stack(
           children: [
             // 放假覆盖层（上午/下午/晚上各一块）
-            if (isHoliday) ..._buildHolidayOverlay(hasMakeup, rowHeight),
+            if (isHoliday)
+              ..._buildHolidayOverlay(context, hasMakeup, rowHeight),
             // Grid lines (conditionally rendered)
             if (appConfig.showCourseGrid.value)
               ...List.generate(sections, (i) {

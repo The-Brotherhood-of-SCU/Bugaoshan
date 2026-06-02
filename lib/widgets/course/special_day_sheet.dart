@@ -211,8 +211,8 @@ Future<void> _showHolidaySheet(
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 24),
                 leading: const Icon(Icons.search, color: Colors.blue),
-                title: const Text('查询调休安排'),
-                subtitle: const Text('在教务处通知中搜索相关安排'),
+                title: Text(l10n.searchHolidaySchedule),
+                subtitle: Text(l10n.searchHolidayScheduleDesc),
                 onTap: () {
                   Navigator.pop(ctx);
                   popupOrNavigate(
@@ -250,10 +250,12 @@ Future<void> _pickMakeupDate(BuildContext context, DateTime holidayDate) async {
   if (picked != null) {
     if (!context.mounted) return;
 
-    // 检查调休日当天是否有课
-    final displayWeek = courseProvider.currentWeek.value;
+    // 计算调休日所在的教学周
+    final config = courseProvider.scheduleConfig.value;
+    final diff = picked.difference(config.semesterStartDate).inDays;
+    final pickedWeek = ((diff + config.semesterStartDate.weekday - 1) ~/ 7) + 1;
     final hasCoursesOnDay = courseProvider.courses.value.any(
-      (c) => c.dayOfWeek == picked.weekday && c.isActiveInWeek(displayWeek),
+      (c) => c.dayOfWeek == picked.weekday && c.isActiveInWeek(pickedWeek),
     );
     if (hasCoursesOnDay) {
       await showDialog(
@@ -275,9 +277,10 @@ Future<void> _pickMakeupDate(BuildContext context, DateTime holidayDate) async {
     // 如果选择了周末且课表未显示周末，提示用户
     if (picked.weekday == DateTime.saturday ||
         picked.weekday == DateTime.sunday) {
-      final config = courseProvider.scheduleConfig.value;
       if (!config.showWeekend) {
-        final weekdayName = picked.weekday == DateTime.saturday ? '周六' : '周日';
+        final weekdayName = picked.weekday == DateTime.saturday
+            ? l10n.saturday
+            : l10n.sunday;
         if (!context.mounted) return;
         await showDialog(
           context: context,

@@ -1907,4 +1907,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enableWeekend => 'Show Weekends';
+
+  @override
+  String get searchHolidaySchedule => 'Search Holiday Schedule';
+
+  @override
+  String get searchHolidayScheduleDesc =>
+      'Search related notices in academic affairs';
+
+  @override
+  String get holidayOverlay => 'Holiday';
+
+  @override
+  String get makeupOverlay => 'Make-up Day';
 }

@@ -687,5 +687,10 @@
 
     "holidayWeekendWarningTitle": "周末调休提醒",
     "holidayWeekendWarningBody": "所选日期为周末，但当前课表未显示周末。调休课程可能不会在课表中显示。",
-    "enableWeekend": "设置显示周末"
+    "enableWeekend": "设置显示周末",
+
+    "searchHolidaySchedule": "查询调休安排",
+    "searchHolidayScheduleDesc": "在教务处通知中搜索相关安排",
+    "holidayOverlay": "放假",
+    "makeupOverlay": "调休"
 }

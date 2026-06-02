@@ -689,5 +689,10 @@
 
     "holidayWeekendWarningTitle": "Weekend Make-up Reminder",
     "holidayWeekendWarningBody": "The selected date is a weekend, but weekends are not shown in your schedule. Make-up courses may not display.",
-    "enableWeekend": "Show Weekends"
+    "enableWeekend": "Show Weekends",
+
+    "searchHolidaySchedule": "Search Holiday Schedule",
+    "searchHolidayScheduleDesc": "Search related notices in academic affairs",
+    "holidayOverlay": "Holiday",
+    "makeupOverlay": "Make-up Day"
 }

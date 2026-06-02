@@ -1852,6 +1852,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get enableWeekend => '设置显示周末';
+
+  @override
+  String get searchHolidaySchedule => '查询调休安排';
+
+  @override
+  String get searchHolidayScheduleDesc => '在教务处通知中搜索相关安排';
+
+  @override
+  String get holidayOverlay => '放假';
+
+  @override
+  String get makeupOverlay => '调休';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

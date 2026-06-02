@@ -3666,6 +3666,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show Weekends'**
   String get enableWeekend;
+
+  /// No description provided for @searchHolidaySchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Search Holiday Schedule'**
+  String get searchHolidaySchedule;
+
+  /// No description provided for @searchHolidayScheduleDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Search related notices in academic affairs'**
+  String get searchHolidayScheduleDesc;
+
+  /// No description provided for @holidayOverlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Holiday'**
+  String get holidayOverlay;
+
+  /// No description provided for @makeupOverlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Make-up Day'**
+  String get makeupOverlay;
 }
 
 class _AppLocalizationsDelegate
