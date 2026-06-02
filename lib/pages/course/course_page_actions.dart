@@ -120,4 +120,8 @@ extension _CoursePageActions on _CoursePageState {
       CourseEditPage(prefillDayOfWeek: dayOfWeek, prefillSection: section),
     );
   }
+
+  void _onHeaderTap(DateTime date) {
+    showHolidaySheet(context, date);
+  }
 }

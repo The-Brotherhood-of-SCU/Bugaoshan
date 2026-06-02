@@ -10,6 +10,7 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/course/course_detail_sheet.dart';
 import 'package:bugaoshan/widgets/course/course_grid.dart';
+import 'package:bugaoshan/widgets/course/holiday_bottom_sheet.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/utils/export_schedule_utils.dart';
@@ -88,6 +89,8 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
       courseProvider.courses,
       courseProvider.scheduleConfig,
       courseProvider.currentWeek,
+      courseProvider.allSchedules,
+      courseProvider.holidayOverrides,
     ]);
     final bgImageListenable = Listenable.merge([
       appConfig.backgroundImagePath,
@@ -164,6 +167,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
     final config = courseProvider.scheduleConfig.value;
     final allCourses = courseProvider.courses.value;
     final totalWeeks = config.totalWeeks;
+    final holidayMap = courseProvider.holidayOverrides.value;
     return _SwipePageView(
       controller: _pageController,
       itemCount: totalWeeks,
@@ -174,6 +178,8 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
           config: config,
           displayWeek: index + 1,
           totalWeeks: totalWeeks,
+          holidayOverrides: holidayMap,
+          onHeaderTap: _onHeaderTap,
           onCourseTap: _onCourseTap,
           onCourseLongPress: _onCourseLongPress,
           onEmptyTap: _onEmptyTap,
