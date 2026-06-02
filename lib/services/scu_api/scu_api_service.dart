@@ -2,18 +2,18 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
 import 'package:bugaoshan/services/auth/auth_manager.dart';
-import 'package:bugaoshan/services/scu_auth/cookie_client.dart';
-import 'package:bugaoshan/services/scu_auth/scu_auth_models.dart';
+import 'package:bugaoshan/services/scu_api/cookie_client.dart';
+import 'package:bugaoshan/services/scu_api/scu_api_models.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/json_utils.dart';
 import 'package:bugaoshan/utils/sm2_crypto.dart';
 
-part 'scu_auth_schedule.dart';
-part 'scu_auth_grades.dart';
-part 'scu_auth_classroom.dart';
+part 'scu_api_schedule.dart';
+part 'scu_api_grades.dart';
+part 'scu_api_classroom.dart';
 
-/// 四川大学统一身份认证 Service
-class ScuAuthService {
+/// 四川大学教务系统 API Service
+class ScuApiService {
   static const _base = 'https://id.scu.edu.cn';
   static const _clientId = '1371cbeda563697537f28d99b4744a973uDKtgYqL5B';
   static const _enterpriseId = 'scdx';

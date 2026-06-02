@@ -4,7 +4,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/classroom/classroom_detail_page.dart';
 import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/scu_auth_service.dart';
+import 'package:bugaoshan/services/scu_api_service.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
@@ -19,7 +19,7 @@ class ClassroomPage extends StatefulWidget {
 }
 
 class _ClassroomPageState extends State<ClassroomPage> {
-  late final ScuAuthService _authService;
+  late final ScuApiService _authService;
 
   List<ClassroomCampus> _campuses = [];
   List<ClassroomBuilding> _allBuildings = [];

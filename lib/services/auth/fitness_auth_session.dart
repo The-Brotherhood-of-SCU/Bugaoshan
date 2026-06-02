@@ -1,7 +1,7 @@
 import 'package:bugaoshan/services/auth/auth_session.dart';
 import 'package:bugaoshan/services/auth/auth_state.dart';
 import 'package:bugaoshan/services/auth/scu_auth_session.dart';
-import 'package:bugaoshan/services/scu_auth_service.dart';
+import 'package:bugaoshan/services/scu_api_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 /// 体测系统的认证会话。

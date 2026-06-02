@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/scu_auth_service.dart';
+import 'package:bugaoshan/services/scu_api_service.dart';
 import 'package:bugaoshan/services/ocr_service.dart';
 
 class ScuLoginPage extends StatefulWidget {

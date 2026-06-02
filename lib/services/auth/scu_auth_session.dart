@@ -8,7 +8,7 @@ import 'package:bugaoshan/providers/secure_storage_provider.dart';
 import 'package:bugaoshan/services/auth/auth_session.dart';
 import 'package:bugaoshan/services/auth/auth_state.dart';
 import 'package:bugaoshan/services/ocr_service.dart';
-import 'package:bugaoshan/services/scu_auth_service.dart';
+import 'package:bugaoshan/services/scu_api_service.dart';
 
 const _keyAccessToken = 'scu_access_token';
 const _keyLoginTimestamp = 'scu_login_timestamp';
@@ -23,13 +23,13 @@ const _sessionDurationSeconds = 3600;
 class ScuAuthSession extends AuthSession<CookieClient> {
   final SharedPreferences _prefs;
 
-  final ScuAuthService _service;
+  final ScuApiService _service;
 
   String? _accessToken;
   int? _loginTimestamp;
 
-  ScuAuthSession(this._prefs, {ScuAuthService? service})
-    : _service = service ?? ScuAuthService();
+  ScuAuthSession(this._prefs, {ScuApiService? service})
+    : _service = service ?? ScuApiService();
 
   /// 从安全存储恢复 token（应用启动时调用）。
   Future<void> init() async {
@@ -49,7 +49,7 @@ class ScuAuthSession extends AuthSession<CookieClient> {
 
   String? get accessToken => _accessToken;
   int? get loginTimestamp => _loginTimestamp;
-  ScuAuthService get service => _service;
+  ScuApiService get service => _service;
 
   @override
   bool get isExpired {
