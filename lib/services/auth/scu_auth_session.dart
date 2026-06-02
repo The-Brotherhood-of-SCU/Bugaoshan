@@ -8,7 +8,8 @@ import 'package:bugaoshan/providers/secure_storage_provider.dart';
 import 'package:bugaoshan/services/auth/auth_session.dart';
 import 'package:bugaoshan/services/auth/auth_state.dart';
 import 'package:bugaoshan/services/ocr_service.dart';
-import 'package:bugaoshan/services/scu_auth_service.dart';
+import 'package:bugaoshan/services/scu_api/cookie_client.dart';
+import 'package:bugaoshan/services/scu_auth/scu_auth_service.dart';
 
 const _keyAccessToken = 'scu_access_token';
 const _keyLoginTimestamp = 'scu_login_timestamp';
@@ -49,7 +50,7 @@ class ScuAuthSession extends AuthSession<CookieClient> {
 
   String? get accessToken => _accessToken;
   int? get loginTimestamp => _loginTimestamp;
-  ScuAuthService get service => _service;
+  ScuAuthService get authService => _service;
 
   @override
   bool get isExpired {

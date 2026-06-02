@@ -1,18 +1,17 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
-import 'package:bugaoshan/services/auth/auth_manager.dart';
-import 'package:bugaoshan/services/scu_auth/cookie_client.dart';
-import 'package:bugaoshan/services/scu_auth/scu_auth_models.dart';
+import 'package:bugaoshan/services/scu_api/cookie_client.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/json_utils.dart';
 import 'package:bugaoshan/utils/sm2_crypto.dart';
 
-part 'scu_auth_schedule.dart';
-part 'scu_auth_grades.dart';
-part 'scu_auth_classroom.dart';
+/// 教务系统 base URL（该服务器不支持 HTTPS）
+const kZhjwBase = 'http://zhjw.scu.edu.cn';
 
-/// 四川大学统一身份认证 Service
+/// SCU 统一身份认证 Service — 仅负责认证（login / bindSession / fetchCaptcha / logout）。
+///
+/// 状态管理（token、cookie）由 [ScuAuthSession] 持有，调用本 service 完成具体 HTTP。
+/// **无 AuthManager 依赖**，可独立单测。
 class ScuAuthService {
   static const _base = 'https://id.scu.edu.cn';
   static const _clientId = '1371cbeda563697537f28d99b4744a973uDKtgYqL5B';
@@ -26,16 +25,14 @@ class ScuAuthService {
     'User-Agent': kDefaultUserAgent,
   };
 
-  late AuthManager _authManager;
+  /// 公开访问，供 scu_api 的 extension 使用（它们在不同 library）。
+  static Map<String, String> get requestHeaders => _headers;
 
   String? _accessToken;
   String? get accessToken => _accessToken;
 
   CookieClient? _cachedClient;
   Future<CookieClient>? _bindSessionFuture;
-
-  /// 绑定 [AuthManager] 引用，使 fetchXxx 方法可以使用 `request()` 自动重试。
-  void bindAuthManager(AuthManager mgr) => _authManager = mgr;
 
   void restoreAccessToken(String? token) {
     _accessToken = token;
@@ -46,13 +43,6 @@ class ScuAuthService {
   void invalidateCachedClient() {
     _cachedClient = null;
   }
-
-  /// 通用请求包装，供不走 fetchXxx 的调用方使用（如 ProfileLabelsProvider）。
-  Future<T> request<T>(Future<T> Function(CookieClient client) fn) async {
-    return _authManager.scu.request(fn);
-  }
-
-  // ─── 登录认证 ─────────────────────────────────────────────────────────────
 
   /// 获取验证码，返回 [CaptchaResult]
   Future<CaptchaResult> fetchCaptcha() async {
@@ -181,6 +171,10 @@ class ScuAuthService {
   }
 
   /// 将 token 绑定到服务端 session，返回携带 cookie 的 Client。
+  ///
+  /// 预热两个 SSO SP：
+  ///   - scdxplugin_jwt23       → 教务系统（zhjw.scu.edu.cn）
+  ///   - scdxplugin_cas_apereo17 → 团委系统（CCYL / dekt.scu.edu.cn）
   Future<CookieClient> bindSession() async {
     if (_accessToken == null) throw ScuLoginException('未登录');
 
@@ -264,19 +258,18 @@ class ScuAuthService {
     _accessToken = null;
     _cachedClient = null;
   }
+}
 
-  // ─── 内部工具 ─────────────────────────────────────────────────────────────
+class CaptchaResult {
+  final String code;
+  final String captchaBase64;
+  const CaptchaResult({required this.code, required this.captchaBase64});
+}
 
-  /// 检查会话是否过期，过期则抛出 [ScuLoginException]。
-  void _checkSessionExpiry(String body, int statusCode) {
-    if (statusCode == 302) {
-      throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
-    }
-    if (body.trim().isEmpty) {
-      throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
-    }
-    if (body.startsWith('<') && body.contains('login')) {
-      throw ScuLoginException('登录已过期，请重新登录', sessionExpired: true);
-    }
-  }
+class ScuLoginException implements Exception {
+  final String message;
+  final bool sessionExpired;
+  const ScuLoginException(this.message, {this.sessionExpired = false});
+  @override
+  String toString() => message;
 }

@@ -1,7 +1,7 @@
-part of 'scu_auth_service.dart';
+part of 'scu_api_service.dart';
 
 /// 教室查询相关的教务系统 API。
-extension ScuAuthClassroom on ScuAuthService {
+extension ScuApiClassroom on ScuApiService {
   /// 获取教室查询页面的校区和教学楼列表
   Future<({List<ClassroomCampus> campuses, List<ClassroomBuilding> buildings})>
   fetchClassroomIndex() async {
@@ -13,7 +13,7 @@ extension ScuAuthClassroom on ScuAuthService {
         headers: {
           'Accept': 'text/html,*/*',
           'Referer': '$kZhjwBase/',
-          'User-Agent': ScuAuthService._headers['User-Agent']!,
+          'User-Agent': ScuAuthService.requestHeaders['User-Agent']!,
         },
       );
       final body = resp.body.trim();
@@ -59,7 +59,7 @@ extension ScuAuthClassroom on ScuAuthService {
         headers: {
           'Accept': 'text/html,*/*',
           'Referer': '$kZhjwBase/',
-          'User-Agent': ScuAuthService._headers['User-Agent']!,
+          'User-Agent': ScuAuthService.requestHeaders['User-Agent']!,
         },
       );
       final body = resp.body.trim();
@@ -94,7 +94,7 @@ extension ScuAuthClassroom on ScuAuthService {
           'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
           'Referer':
               '$kZhjwBase/student/teachingResources/classroomUseStatus/index',
-          'User-Agent': ScuAuthService._headers['User-Agent']!,
+          'User-Agent': ScuAuthService.requestHeaders['User-Agent']!,
           'X-Requested-With': 'XMLHttpRequest',
         },
         body:

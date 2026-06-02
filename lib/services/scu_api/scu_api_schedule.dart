@@ -1,7 +1,7 @@
-part of 'scu_auth_service.dart';
+part of 'scu_api_service.dart';
 
 /// 课表与学期相关的教务系统 API。
-extension ScuAuthSchedule on ScuAuthService {
+extension ScuApiSchedule on ScuApiService {
   /// 从教务系统首页获取当前教学周数
   Future<int> fetchCurrentWeek() async {
     return _authManager.scu.request((client) async {
@@ -10,7 +10,7 @@ extension ScuAuthSchedule on ScuAuthService {
         headers: {
           'Accept': 'text/html,*/*',
           'Referer': '$kZhjwBase/',
-          'User-Agent': ScuAuthService._headers['User-Agent']!,
+          'User-Agent': ScuAuthService.requestHeaders['User-Agent']!,
         },
       );
       final body = resp.body.trim();
@@ -34,7 +34,7 @@ extension ScuAuthSchedule on ScuAuthService {
         headers: {
           'Accept': 'text/html,*/*',
           'Referer': '$kZhjwBase/',
-          'User-Agent': ScuAuthService._headers['User-Agent']!,
+          'User-Agent': ScuAuthService.requestHeaders['User-Agent']!,
         },
       );
       final body = resp.body.trim();
@@ -71,7 +71,7 @@ extension ScuAuthSchedule on ScuAuthService {
           'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
           'Referer':
               '$kZhjwBase/student/courseSelect/calendarSemesterCurriculum/index',
-          'User-Agent': ScuAuthService._headers['User-Agent']!,
+          'User-Agent': ScuAuthService.requestHeaders['User-Agent']!,
           'X-Requested-With': 'XMLHttpRequest',
         },
         body: 'planCode=$planCode',

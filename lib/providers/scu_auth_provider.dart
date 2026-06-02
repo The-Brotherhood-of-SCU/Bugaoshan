@@ -9,7 +9,7 @@ import 'package:bugaoshan/providers/profile_labels_provider.dart';
 import 'package:bugaoshan/providers/secure_storage_provider.dart';
 import 'package:bugaoshan/services/auth/auth_manager.dart';
 import 'package:bugaoshan/services/ocr_service.dart';
-import 'package:bugaoshan/services/scu_auth_service.dart';
+import 'package:bugaoshan/services/scu_api_service.dart';
 
 const _keyAutoLogin = 'scu_auto_login';
 const _keyUserRealname = 'scu_user_realname';
@@ -44,12 +44,13 @@ class ScuAuthProvider extends ChangeNotifier {
   }
 
   String? get accessToken => _authManager.scu.accessToken;
+  ScuAuthService get authService => _authManager.scu.authService;
   String? get userRealname => _userRealname;
   String? get userNumber => _userNumber;
   bool get isAutoLoggingIn => _isAutoLoggingIn;
   bool get isLoggedIn => _authManager.isScuLoggedIn;
   bool get isExpired => _authManager.scu.isExpired;
-  ScuAuthService get service => _authManager.scu.service;
+  ScuApiService get service => _authManager.apiService;
 
   Future<void> login({
     required String username,
@@ -148,7 +149,7 @@ class ScuAuthProvider extends ChangeNotifier {
       const maxRetries = 5;
       for (int attempt = 0; attempt < maxRetries; attempt++) {
         try {
-          final captcha = await _authManager.scu.service.fetchCaptcha();
+          final captcha = await _authManager.scu.authService.fetchCaptcha();
 
           String captchaText;
           try {

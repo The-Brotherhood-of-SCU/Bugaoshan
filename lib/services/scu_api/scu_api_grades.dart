@@ -1,7 +1,7 @@
-part of 'scu_auth_service.dart';
+part of 'scu_api_service.dart';
 
 /// 成绩查询相关的教务系统 API。
-extension ScuAuthGrades on ScuAuthService {
+extension ScuApiGrades on ScuApiService {
   /// 获取及格成绩
   Future<Map<String, dynamic>> fetchPassingScores() async {
     return _authManager.scu.request((client) async {
@@ -13,7 +13,7 @@ extension ScuAuthGrades on ScuAuthService {
           'Accept':
               'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'Referer': '$kZhjwBase/',
-          'User-Agent': ScuAuthService._headers['User-Agent']!,
+          'User-Agent': ScuAuthService.requestHeaders['User-Agent']!,
         },
       );
       final indexBody = indexResp.body;
@@ -35,7 +35,7 @@ extension ScuAuthGrades on ScuAuthService {
           'Accept': 'application/json, text/plain, */*',
           'Referer':
               '$kZhjwBase/student/integratedQuery/scoreQuery/allPassingScores/index',
-          'User-Agent': ScuAuthService._headers['User-Agent']!,
+          'User-Agent': ScuAuthService.requestHeaders['User-Agent']!,
         },
       );
       final body = callbackResp.body.trim();
@@ -59,7 +59,7 @@ extension ScuAuthGrades on ScuAuthService {
           'Accept':
               'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'Referer': '$kZhjwBase/',
-          'User-Agent': ScuAuthService._headers['User-Agent']!,
+          'User-Agent': ScuAuthService.requestHeaders['User-Agent']!,
         },
       );
 
@@ -82,7 +82,7 @@ extension ScuAuthGrades on ScuAuthService {
           'Accept': 'application/json, text/plain, */*',
           'Referer':
               '$kZhjwBase/student/integratedQuery/scoreQuery/schemeScores/index',
-          'User-Agent': ScuAuthService._headers['User-Agent']!,
+          'User-Agent': ScuAuthService.requestHeaders['User-Agent']!,
         },
       );
 

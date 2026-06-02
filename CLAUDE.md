@@ -52,8 +52,8 @@ Two patterns coexist by design:
 GetIt + Injectable. All Provider/Service registrations are done manually in `lib/injection/injector.dart` (not via `@injectable` annotations). `lib/injection/injector.config.dart` is auto-generated but currently only contains an empty `init()` extension. Re-run `dart run build_runner build` if `@injectable` annotations are ever added.
 
 ### Service Layer
-- **`ScuAuthService`** (`lib/services/scu_auth_service.dart`) — Stateful service holding the SCU access token. Handles SM2 password encryption, cookie-based session management, and all SCU API calls (login, schedule, grades).
-- **`ScuMicroserviceAuthService`** (`lib/services/scu_microservice_auth_service.dart`) — Handles auth for SCU microservice-based APIs (电费, 空调余额, 校园网设备).
+- **`ScuAuthService`** (`lib/services/scu_auth/scu_auth_service.dart`) — SCU 统一身份认证实现。`login()` / `fetchCaptcha()` / `bindSession()` / `logout()`，管理 token、cookie、SSO 预热（JWT + CAS Apereo）。**无 AuthManager 依赖**（单向），可独立单测。被 `ScuAuthSession` 持有。定义 `ScuLoginException` / `CaptchaResult` / `kZhjwBase`。
+- **`ScuApiService`** (`lib/services/scu_api/scu_api_service.dart`) — SCU 教务系统**数据** API。`scu_api/` 文件夹下按 `extension + part of` 拆分为：主类（`bindAuthManager()` + `request()` 通用包装 + `_checkSessionExpiry()`）、`scu_api_schedule.dart`（课表/学期）、`scu_api_grades.dart`（成绩）、`scu_api_classroom.dart`（教室）、`cookie_client.dart`。所有 `fetchXxx()` 内部走 `_authManager.scu.request()` 自动重试。`ScuLoginException` / `CaptchaResult` 从 `scu_auth_service.dart` 导入。
 - **`CcylService`** (`lib/services/ccyl_service.dart`) — 第二课堂 (CCYL) API client. OAuth-based login via `CcylService.login(oauthCode)`. Activities, reservations, and 成绩单.
 - **`CcylOauthService`** (`lib/services/ccyl_oauth_service.dart`) — OAuth flow helper for CCYL login.
 - **`BalanceQueryService`** (`lib/services/balance_query_service.dart`) — Queries电费 and 空调余额 via `payapp.scu.edu.cn`.
@@ -93,8 +93,8 @@ Three notice sources, each in its own subdirectory under `lib/pages/campus/notic
 - `DownloadManager` (`lib/services/download_manager.dart`) — tracks download task state (pending/downloading/done/error).
 
 ### Providers
-- **`ScuAuthProvider`** — Persists SCU access token in `FlutterSecureStorage`, login timestamp and user info in `SharedPreferences`. Wraps `ScuAuthService`. Handles session expiry detection (1-hour TTL + last app open timestamp comparison), auto-login with OCR captcha solving (up to 5 retries), credential save/remember, and user profile fetching from `wfw.scu.edu.cn`.
-- **`GradesProvider`** — Handles `ScuLoginException.sessionExpired` via `SessionExpiryHandler` (attempts silent auto-login first, falls back to re-login dialog).
+- **`ScuAuthProvider`** — Persists SCU access token in `FlutterSecureStorage`, login timestamp and user info in `SharedPreferences`. Wraps `AuthManager`. Handles session expiry detection (1-hour TTL + last app open timestamp comparison), auto-login with OCR captcha solving (up to 5 retries), credential save/remember, and user profile fetching from `wfw.scu.edu.cn`. Exposes `service` getter returning `ScuApiService` (for business providers to call `fetchXxx()`) and `authService` getter returning `ScuAuthService` (for login page to call `fetchCaptcha()`).
+- **`GradesProvider`** — Calls `service.fetchXxx()` directly; session expired handling delegated to `AuthSession.request()` (auto-refresh + retry + global snackbar via `SessionExpiredListener`).
 - **`CourseProvider`** — Depends on `DatabaseService`. Provides schedule CRUD.
 - **`AppConfigProvider`** — User preferences: locale, theme color, color opacity, course card font size, course grid visibility, course row height, background image, dock items, EULA acceptance, etc.
 - **`SetThemeColorProvider`** — 从背景图片中提取主题色（像素采样 + `compute()` isolate），支持系统强调色预览。
@@ -107,7 +107,7 @@ Three notice sources, each in its own subdirectory under `lib/pages/campus/notic
 - **`SecureStorageProvider`** — `FlutterSecureStorage` 单例封装，统一管理安全存储。
 
 ### Key Patterns
-- **Session expiry**: `ScuLoginException` carries `sessionExpired: bool`. Providers catch it and call `logout()` on auth provider.
+- **Session expiry**: `ScuLoginException` carries `sessionExpired: bool`. `AuthSession.request()` catches it, calls `_synchronizedRefresh()` (mutex-protected), and retries once with new client. If refresh fails, `onSessionExpired()` fires → global `SessionExpiredListener` shows SnackBar with "前往登录" action. Business providers do not handle expiry manually.
 - **Multiple schedules**: Courses are stored in a single SQLite `courses` table, filtered by `schedule_id`. `DatabaseService.switchSchedule()` updates the current schedule ID and refreshes the in-memory cache.
 - **Responsive dialogs**: `popupOrNavigate(context, page)` in `router_utils.dart` shows a dialog on tablets/landscape (width/2), a dialog on big portrait (2/3 width+height), or full-page navigation on phones. Automatically falls back to `Navigator.push` if already inside a popup (`PopupContext.of(context)`).
 - **`logicRootContext`**: Global getter (`navigatorKey.currentContext!`) in `router_utils.dart`. Use when you need a `BuildContext` that outlives the current widget — e.g., after `Navigator.pop(context)` the local `context` is disposed, so capture `logicRootContext` beforehand. Common pattern: `final rootCtx = logicRootContext; Navigator.pop(context); popupOrNavigate(rootCtx, ...)`.
@@ -173,7 +173,9 @@ lib/
 
 ## Notable Implementation Details
 
-- The `ScuAuthService.CookieClient` manually follows HTTP redirects to collect cookies across SSO redirect chains.
+- `CookieClient` (`lib/services/scu_api/cookie_client.dart`) — Cookie 感知的 http.Client，按域名隔离存储，发送时只带当前请求域的 cookie。`followRedirects()` 手动跟随重定向并收集每跳的 Set-Cookie。被 `ScuAuthService.bindSession()` 用来执行 SSO 跳转链。
+- `AuthSession.request()` (`lib/services/auth/auth_session.dart`) — 统一请求包装：`getClient()` → 业务 HTTP → 过期检测 → `_synchronizedRefresh()`（Completer 互斥，N 并发 = 1 次刷新）→ 自动重试一次。业务方只需 `await service.fetchXxx()`，不碰 token/cookie/重试细节。
+- Session 过期统一由 `SessionExpiredListener` (`lib/widgets/common/session_expired_listener.dart`) 监听 `AuthManager.onSessionExpired()`，全局弹 SnackBar 带「前往登录」action 按钮（5 秒防抖），替代了原 `SessionExpiryHandler` 的阻塞式 dialog。
 - Grades are cached in SharedPreferences as JSON; on refresh failure with `sessionExpired`, the cached data is kept but user is logged out.
 - `flutter pub run build_runner build --delete-conflicting-outputs` is run in CI before `flutter gen-l10n` — code generation must precede localization generation.
 - The `DatabaseService` includes a Hive-to-SQLite migration path for users upgrading from older versions.

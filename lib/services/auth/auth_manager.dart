@@ -6,6 +6,7 @@ import 'package:bugaoshan/services/auth/scu_auth_session.dart';
 import 'package:bugaoshan/services/auth/payapp_auth_session.dart';
 import 'package:bugaoshan/services/auth/fitness_auth_session.dart';
 import 'package:bugaoshan/services/auth/ccyl_auth_session.dart';
+import 'package:bugaoshan/services/scu_api/scu_api_service.dart';
 
 /// 认证管理器 — 持有所有 [AuthSession] 实例，提供统一的生命周期管理。
 ///
@@ -32,9 +33,13 @@ class AuthManager {
   /// 第二课堂（CCYL）
   late final CcylAuthSession ccyl;
 
+  /// SCU 教务系统数据 API Service
+  late final ScuApiService apiService;
+
   AuthManager(SharedPreferences prefs) {
     scu = ScuAuthSession(prefs);
-    scu.service.bindAuthManager(this);
+    apiService = ScuApiService();
+    apiService.bindAuthManager(this);
     payApp = PayAppAuthSession(scu);
     fitness = FitnessAuthSession(scu);
     ccyl = CcylAuthSession();
