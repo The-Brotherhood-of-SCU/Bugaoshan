@@ -244,8 +244,8 @@ object WidgetDataLoader {
                         specialDayGreeting = info.optString("greeting", null)
                         specialDayType = info.optString("type", null)
                     }
-                } catch (_: Exception) {
-                    // 忽略
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to parse special day calendar", e)
                 }
             }
 
@@ -288,13 +288,17 @@ object WidgetDataLoader {
                                             courses = attachTimesAndStatuses(makeupCourses, timeSlots, null, false)
                                             showingTomorrow = false
                                         }
-                                    } catch (_: Exception) { }
+                                    } catch (e: Exception) {
+                                        Log.e(TAG, "Failed to parse makeup source date", e)
+                                    }
                                     break
                                 }
                             }
                         }
                     }
-                } catch (_: Exception) { }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to parse holiday_overrides", e)
+                }
             }
 
             return WidgetCourseData(
