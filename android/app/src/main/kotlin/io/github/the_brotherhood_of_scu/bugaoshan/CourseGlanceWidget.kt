@@ -43,6 +43,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.util.Calendar
+import java.util.Date
 import java.util.LinkedHashMap
 import kotlin.math.roundToInt
 import java.text.SimpleDateFormat
@@ -141,6 +142,8 @@ data class WidgetCourseData(
     val sectionSuffix: String,
     val themeColor: Int,
     val isTomorrow: Boolean = false,
+    val specialDayGreeting: String? = null,
+    val specialDayType: String? = null,
 )
 
 // SQLite data loader
@@ -226,6 +229,74 @@ object WidgetDataLoader {
             val weekNumber = if (showingTomorrow) weekForTomorrow else currentWeek
             val weekText = context.getString(R.string.widget_week_format, weekNumber)
             val themeColor = 0xFF2196F3.toInt()
+
+            // 读取特殊日日历
+            val sdcJson = queryMetadata(db, "widget_special_day_calendar")
+            // 从特殊日日历读取祝福语（仅用于显示，不控制课程）
+            var specialDayGreeting: String? = null
+            var specialDayType: String? = null
+            if (sdcJson != null) {
+                try {
+                    val calendar = JSONObject(sdcJson)
+                    val todayKey = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                    if (calendar.has(todayKey)) {
+                        val info = calendar.getJSONObject(todayKey)
+                        specialDayGreeting = info.optString("greeting", null)
+                        specialDayType = info.optString("type", null)
+                    }
+                } catch (_: Exception) {
+                    // 忽略
+                }
+            }
+
+            // 直接从 holiday_overrides 读取 active 状态，控制课程显示/隐藏
+            val hoJson = queryMetadata(db, "holiday_overrides")
+            if (hoJson != null) {
+                try {
+                    val ho = JSONObject(hoJson)
+                    val todayKey = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+
+                    // 检查今天是否有 active=true（已设置的放假）
+                    if (ho.has(todayKey)) {
+                        val todayOverride = ho.getJSONObject(todayKey)
+                        if (todayOverride.optBoolean("active", false)) {
+                            courses = JSONArray()
+                            showingTomorrow = false
+                        }
+                    }
+
+                    // 如果课程未被隐藏，检查是否有调休目标日是今天
+                    if (courses.length() > 0) {
+                        val keys = ho.names()
+                        if (keys != null) {
+                            for (j in 0 until keys.length()) {
+                                val k = keys.getString(j)
+                                val override = ho.getJSONObject(k)
+                                val makeupDate = override.optString("makeupDate", null)
+                                if (makeupDate != null && makeupDate == todayKey && override.optBoolean("active", false)) {
+                                    // 显示原始放假日的课程
+                                    try {
+                                        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                                        val srcDate = sdf.parse(k)
+                                        if (srcDate != null) {
+                                            val srcCal = Calendar.getInstance().apply { time = srcDate }
+                                            val srcDayOfWeek = (srcCal.get(Calendar.DAY_OF_WEEK) + 5) % 7 + 1
+                                            var makeupCourses = queryCourses(db, currentScheduleId, srcDayOfWeek, currentWeek)
+                                            if (makeupCourses.length() == 0 && currentScheduleId != "default") {
+                                                makeupCourses = queryCourses(db, "default", srcDayOfWeek, currentWeek)
+                                            }
+                                            courses = attachTimesAndStatuses(makeupCourses, timeSlots, null, false)
+                                            showingTomorrow = false
+                                        }
+                                    } catch (_: Exception) { }
+                                    break
+                                }
+                            }
+                        }
+                    }
+                } catch (_: Exception) { }
+            }
+
             return WidgetCourseData(
                 courses = courses,
                 dateText = dateText,
@@ -236,6 +307,8 @@ object WidgetDataLoader {
                 sectionSuffix = "节",
                 themeColor = themeColor,
                 isTomorrow = showingTomorrow,
+                specialDayGreeting = specialDayGreeting,
+                specialDayType = specialDayType,
             )
         } catch (e: Exception) {
             Log.e(TAG, "WidgetDataLoader.load failed", e)
@@ -513,6 +586,17 @@ class CourseGlanceWidget : GlanceAppWidget() {
         val emptyText = data?.emptyText ?: ctx.getString(emptyRes)
         val isTomorrow = data?.isTomorrow ?: false
 
+        // 特殊日祝福语
+        val specialDayGreeting = data?.specialDayGreeting
+        val specialDayType = data?.specialDayType
+        val greetingColorRes = when (specialDayType) {
+            "holiday" -> R.color.widget_holiday_accent
+            "festival" -> R.color.widget_festival_accent
+            "solarTerm" -> R.color.widget_solar_term_accent
+            else -> null
+        }
+        val hasGreeting = specialDayGreeting != null && greetingColorRes != null
+
         val fullDate = if (week.isNotEmpty()) "$date  $week" else date
 
         Column(
@@ -567,6 +651,19 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 )
             }
 
+            // ★ 特殊日祝福语：有课程时显示在标题栏下方
+            if (hasGreeting && courses.length() > 0) {
+                Text(
+                    text = specialDayGreeting!!,
+                    style = TextStyle(
+                        color = ColorProvider(greetingColorRes!!),
+                        fontWeight = FontWeight.Medium,
+                        fontSize = META_FONT_SIZE_SP
+                    ),
+                    maxLines = 1
+                )
+            }
+
             Spacer(modifier = GlanceModifier.height(CONTENT_SPACER_HEIGHT_DP))
 
             if (courses.length() == 0) {
@@ -574,10 +671,14 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     modifier = GlanceModifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
+                    // ★ 无课程时：用祝福语覆盖"今天没有课程"
                     Text(
-                        text = emptyText,
+                        text = if (hasGreeting) specialDayGreeting!! else emptyText,
                         style = TextStyle(
-                            color = ColorProvider(R.color.widget_text_secondary),
+                            color = ColorProvider(
+                                if (hasGreeting) greetingColorRes!!
+                                else R.color.widget_text_secondary
+                            ),
                             fontSize = EMPTY_FONT_SIZE_SP
                         )
                     )

@@ -3,6 +3,9 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/services/database_service.dart';
+import 'package:bugaoshan/utils/holiday_utils.dart';
 
 class WidgetUpdateService {
   static const _channel = MethodChannel('bugaoshan/update');
@@ -80,6 +83,9 @@ class WidgetUpdateService {
       var continueRun = true;
       while (continueRun) {
         try {
+          // 写入未来31天的特殊日日历，供小组件读取
+          await _updateSpecialDayCalendar();
+
           debugPrint('WidgetUpdate: starting update...');
           await _channel.invokeMethod('updateWidget');
           debugPrint('WidgetUpdate: completed successfully');
@@ -114,6 +120,38 @@ class WidgetUpdateService {
       // Ensure follow-up flag is cleared to avoid leaking state
       _needsRunAgain = false;
       _inFlight = false;
+    }
+  }
+
+  /// 写入未来31天的特殊日日历到 SQLite metadata，供小组件显示祝福语
+  /// 课程隐藏/调休由 Kotlin 侧直接读取 holiday_overrides 的 active 状态处理
+  Future<void> _updateSpecialDayCalendar() async {
+    try {
+      final db = getIt<DatabaseService>();
+      final now = DateTime.now();
+      final calendar = <String, Map<String, dynamic>>{};
+
+      for (int i = 0; i < 31; i++) {
+        final date = now.add(Duration(days: i));
+        final key =
+            '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
+        final info = HolidayUtils.getSpecialDay(date);
+        if (info.type != SpecialDayType.ordinary && info.name != null) {
+          String greeting;
+          if (info.type == SpecialDayType.holiday) {
+            greeting = '${info.name}快乐！';
+          } else {
+            greeting = '今天是：${info.name}';
+          }
+          calendar[key] = {'greeting': greeting, 'type': info.type.name};
+        }
+      }
+      await db.setWidgetSpecialDayCalendar(
+        calendar.isNotEmpty ? calendar : null,
+      );
+    } catch (e) {
+      debugPrint('WidgetUpdate: failed to update special day calendar: $e');
     }
   }
 

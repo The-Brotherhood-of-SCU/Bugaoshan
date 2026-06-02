@@ -158,6 +158,7 @@ class CourseProvider {
     current[key] = HolidayOverride(date: date, active: true);
     holidayOverrides.value = current;
     await _db.saveHolidayOverride(current[key]!.toJson());
+    onCoursesChanged?.call();
   }
 
   /// 设置放假并调休：[holidayDate] 放假，课程调到 [makeupDate]
@@ -174,6 +175,7 @@ class CourseProvider {
     );
     holidayOverrides.value = current;
     await _db.saveHolidayOverride(current[key]!.toJson());
+    onCoursesChanged?.call();
   }
 
   /// 取消某天的放假设置（同时清除调休）。
@@ -195,6 +197,7 @@ class CourseProvider {
       holidayOverrides.value = current;
       await _db.removeHolidayOverride(date);
     }
+    onCoursesChanged?.call();
   }
 
   /// 仅取消调休，保留放假设置。
@@ -208,6 +211,7 @@ class CourseProvider {
       holidayOverrides.value = current;
       await _db.saveHolidayOverride(current[key]!.toJson());
     }
+    onCoursesChanged?.call();
   }
 
   String _dateKey(DateTime d) =>

@@ -467,6 +467,54 @@ class DatabaseService {
     }
   }
 
+  // ==================== Widget Special Day Calendar ====================
+
+  static const String _keyWidgetSpecialDayCalendar =
+      'widget_special_day_calendar';
+
+  /// 读取小组件特殊日日历（日期 → { greeting, type }）
+  Future<Map<String, Map<String, dynamic>>?>
+  getWidgetSpecialDayCalendar() async {
+    final rows = await _db.query(
+      'metadata',
+      where: 'key = ?',
+      whereArgs: [_keyWidgetSpecialDayCalendar],
+    );
+    if (rows.isEmpty) return null;
+    final raw = rows.first['value'] as String;
+    try {
+      final decoded = json.decode(raw) as Map<String, dynamic>;
+      return decoded.map((k, v) => MapEntry(k, v as Map<String, dynamic>));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 写入小组件特殊日日历
+  Future<void> setWidgetSpecialDayCalendar(
+    Map<String, Map<String, dynamic>>? data,
+  ) async {
+    final jsonStr = json.encode(data ?? {});
+    final existing = await _db.query(
+      'metadata',
+      where: 'key = ?',
+      whereArgs: [_keyWidgetSpecialDayCalendar],
+    );
+    if (existing.isNotEmpty) {
+      await _db.update(
+        'metadata',
+        {'value': jsonStr},
+        where: 'key = ?',
+        whereArgs: [_keyWidgetSpecialDayCalendar],
+      );
+    } else {
+      await _db.insert('metadata', {
+        'key': _keyWidgetSpecialDayCalendar,
+        'value': jsonStr,
+      });
+    }
+  }
+
   String _dateKey(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 

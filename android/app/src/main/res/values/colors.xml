@@ -16,4 +16,9 @@
     <color name="widget_gray_left">@color/widget_tomorrow_accent</color>
     <color name="widget_gray_name">@color/widget_tomorrow_text_primary</color>
     <color name="widget_gray_meta">@color/widget_tomorrow_text_secondary</color>
+
+    <!-- Special day accent colors (matching Flutter holiday/festival/solarTerm) -->
+    <color name="widget_holiday_accent">#FFE53935</color>
+    <color name="widget_festival_accent">#FFFF9800</color>
+    <color name="widget_solar_term_accent">#FF4CAF50</color>
 </resources>
