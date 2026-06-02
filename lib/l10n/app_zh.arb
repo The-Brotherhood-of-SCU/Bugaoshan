@@ -661,5 +661,31 @@
     "downloadedAttachmentsDesc": "管理已下载的通知附件",
     "jwcTabLabel": "教务处",
     "xgbTabLabel": "党委学工部",
-    "tuanweiTabLabel": "青春川大"
+    "tuanweiTabLabel": "青春川大",
+
+    "setHoliday": "设置放假",
+    "setHolidayDesc": "当天课程将不会显示",
+    "setHolidayWithMakeup": "设置放假并调休",
+    "setHolidayWithMakeupDesc": "选择调休至上课的日期",
+    "cancelHoliday": "取消设置放假",
+    "cancelHolidayDesc": "恢复当天课程显示",
+    "cancelMakeup": "取消调休",
+    "cancelMakeupDesc": "仅取消调休，保留放假",
+    "modifyMakeupDate": "修改调休日期",
+    "modifyMakeupDateDesc": "重新选择调休至上课的日期",
+    "selectMakeupDate": "选择调休日期",
+
+    "makeupDateHasCoursesTitle": "该日已有课程",
+    "makeupDateHasCoursesBody": "所选日期已有课程安排，无法作为调休日期。",
+
+    "holidayTotalDays": "假期共 {days} 天",
+    "@holidayTotalDays": {
+        "placeholders": {
+            "days": {"type": "int"}
+        }
+    },
+
+    "holidayWeekendWarningTitle": "周末调休提醒",
+    "holidayWeekendWarningBody": "所选日期为周末，但当前课表未显示周末。调休课程可能不会在课表中显示。",
+    "enableWeekend": "设置显示周末"
 }

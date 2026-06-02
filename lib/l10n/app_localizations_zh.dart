@@ -1799,6 +1799,59 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tuanweiTabLabel => '青春川大';
+
+  @override
+  String get setHoliday => '设置放假';
+
+  @override
+  String get setHolidayDesc => '当天课程将不会显示';
+
+  @override
+  String get setHolidayWithMakeup => '设置放假并调休';
+
+  @override
+  String get setHolidayWithMakeupDesc => '选择调休至上课的日期';
+
+  @override
+  String get cancelHoliday => '取消设置放假';
+
+  @override
+  String get cancelHolidayDesc => '恢复当天课程显示';
+
+  @override
+  String get cancelMakeup => '取消调休';
+
+  @override
+  String get cancelMakeupDesc => '仅取消调休，保留放假';
+
+  @override
+  String get modifyMakeupDate => '修改调休日期';
+
+  @override
+  String get modifyMakeupDateDesc => '重新选择调休至上课的日期';
+
+  @override
+  String get selectMakeupDate => '选择调休日期';
+
+  @override
+  String get makeupDateHasCoursesTitle => '该日已有课程';
+
+  @override
+  String get makeupDateHasCoursesBody => '所选日期已有课程安排，无法作为调休日期。';
+
+  @override
+  String holidayTotalDays(int days) {
+    return '假期共 $days 天';
+  }
+
+  @override
+  String get holidayWeekendWarningTitle => '周末调休提醒';
+
+  @override
+  String get holidayWeekendWarningBody => '所选日期为周末，但当前课表未显示周末。调休课程可能不会在课表中显示。';
+
+  @override
+  String get enableWeekend => '设置显示周末';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

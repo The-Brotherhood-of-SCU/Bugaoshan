@@ -1852,4 +1852,59 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tuanweiTabLabel => 'Youth SCU';
+
+  @override
+  String get setHoliday => 'Set as Holiday';
+
+  @override
+  String get setHolidayDesc => 'Courses on this day will be hidden';
+
+  @override
+  String get setHolidayWithMakeup => 'Set Holiday with Make-up Day';
+
+  @override
+  String get setHolidayWithMakeupDesc => 'Pick a make-up date for courses';
+
+  @override
+  String get cancelHoliday => 'Cancel Holiday';
+
+  @override
+  String get cancelHolidayDesc => 'Restore courses on this day';
+
+  @override
+  String get cancelMakeup => 'Cancel Make-up Day';
+
+  @override
+  String get cancelMakeupDesc => 'Remove make-up, keep holiday';
+
+  @override
+  String get modifyMakeupDate => 'Change Make-up Date';
+
+  @override
+  String get modifyMakeupDateDesc => 'Pick a different make-up date';
+
+  @override
+  String get selectMakeupDate => 'Select Make-up Date';
+
+  @override
+  String get makeupDateHasCoursesTitle => 'Courses Already Scheduled';
+
+  @override
+  String get makeupDateHasCoursesBody =>
+      'This day already has courses scheduled and cannot be used as a make-up date.';
+
+  @override
+  String holidayTotalDays(int days) {
+    return 'Total $days days';
+  }
+
+  @override
+  String get holidayWeekendWarningTitle => 'Weekend Make-up Reminder';
+
+  @override
+  String get holidayWeekendWarningBody =>
+      'The selected date is a weekend, but weekends are not shown in your schedule. Make-up courses may not display.';
+
+  @override
+  String get enableWeekend => 'Show Weekends';
 }

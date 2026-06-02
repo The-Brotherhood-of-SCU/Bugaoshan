@@ -3564,6 +3564,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Youth SCU'**
   String get tuanweiTabLabel;
+
+  /// No description provided for @setHoliday.
+  ///
+  /// In en, this message translates to:
+  /// **'Set as Holiday'**
+  String get setHoliday;
+
+  /// No description provided for @setHolidayDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses on this day will be hidden'**
+  String get setHolidayDesc;
+
+  /// No description provided for @setHolidayWithMakeup.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Holiday with Make-up Day'**
+  String get setHolidayWithMakeup;
+
+  /// No description provided for @setHolidayWithMakeupDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a make-up date for courses'**
+  String get setHolidayWithMakeupDesc;
+
+  /// No description provided for @cancelHoliday.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Holiday'**
+  String get cancelHoliday;
+
+  /// No description provided for @cancelHolidayDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore courses on this day'**
+  String get cancelHolidayDesc;
+
+  /// No description provided for @cancelMakeup.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Make-up Day'**
+  String get cancelMakeup;
+
+  /// No description provided for @cancelMakeupDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove make-up, keep holiday'**
+  String get cancelMakeupDesc;
+
+  /// No description provided for @modifyMakeupDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Make-up Date'**
+  String get modifyMakeupDate;
+
+  /// No description provided for @modifyMakeupDateDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a different make-up date'**
+  String get modifyMakeupDateDesc;
+
+  /// No description provided for @selectMakeupDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Make-up Date'**
+  String get selectMakeupDate;
+
+  /// No description provided for @makeupDateHasCoursesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses Already Scheduled'**
+  String get makeupDateHasCoursesTitle;
+
+  /// No description provided for @makeupDateHasCoursesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This day already has courses scheduled and cannot be used as a make-up date.'**
+  String get makeupDateHasCoursesBody;
+
+  /// No description provided for @holidayTotalDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Total {days} days'**
+  String holidayTotalDays(int days);
+
+  /// No description provided for @holidayWeekendWarningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekend Make-up Reminder'**
+  String get holidayWeekendWarningTitle;
+
+  /// No description provided for @holidayWeekendWarningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected date is a weekend, but weekends are not shown in your schedule. Make-up courses may not display.'**
+  String get holidayWeekendWarningBody;
+
+  /// No description provided for @enableWeekend.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Weekends'**
+  String get enableWeekend;
 }
 
 class _AppLocalizationsDelegate

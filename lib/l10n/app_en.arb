@@ -663,5 +663,31 @@
     "downloadedAttachmentsDesc": "Manage downloaded notice attachments",
     "jwcTabLabel": "Academic",
     "xgbTabLabel": "Party Affairs",
-    "tuanweiTabLabel": "Youth SCU"
+    "tuanweiTabLabel": "Youth SCU",
+
+    "setHoliday": "Set as Holiday",
+    "setHolidayDesc": "Courses on this day will be hidden",
+    "setHolidayWithMakeup": "Set Holiday with Make-up Day",
+    "setHolidayWithMakeupDesc": "Pick a make-up date for courses",
+    "cancelHoliday": "Cancel Holiday",
+    "cancelHolidayDesc": "Restore courses on this day",
+    "cancelMakeup": "Cancel Make-up Day",
+    "cancelMakeupDesc": "Remove make-up, keep holiday",
+    "modifyMakeupDate": "Change Make-up Date",
+    "modifyMakeupDateDesc": "Pick a different make-up date",
+    "selectMakeupDate": "Select Make-up Date",
+
+    "makeupDateHasCoursesTitle": "Courses Already Scheduled",
+    "makeupDateHasCoursesBody": "This day already has courses scheduled and cannot be used as a make-up date.",
+
+    "holidayTotalDays": "Total {days} days",
+    "@holidayTotalDays": {
+        "placeholders": {
+            "days": {"type": "int"}
+        }
+    },
+
+    "holidayWeekendWarningTitle": "Weekend Make-up Reminder",
+    "holidayWeekendWarningBody": "The selected date is a weekend, but weekends are not shown in your schedule. Make-up courses may not display.",
+    "enableWeekend": "Show Weekends"
 }
