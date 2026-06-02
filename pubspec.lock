@@ -1300,6 +1300,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.7.11"
+  tyme:
+    dependency: "direct main"
+    description:
+      name: tyme
+      sha256: a6ef4802b02d67ddb472a1ee78ac39b54b245b268c3c8029687e9ad2fd598efb
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.4.4"
   typed_data:
     dependency: transitive
     description:
