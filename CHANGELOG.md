@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 课表为空时显示空状态页面，提供「导入课表」「新建课表」等快捷入口
 - 桌面端支持鼠标侧键 X1 返回上一页
+- 重构登录认证功能，大部分页面支持无感登录、自动刷新凭证
+
+### Fixed
+- 修复课程编辑页在big screen模式下关闭后产生阴影的问题
 
 ### Changed
 - 首次启动时不再自动创建默认课表
