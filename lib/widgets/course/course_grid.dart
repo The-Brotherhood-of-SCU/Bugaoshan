@@ -72,8 +72,8 @@ class CourseGrid extends StatefulWidget {
   /// 调休记录映射，key = "YYYY-MM-DD"
   final Map<String, HolidayOverride> holidayOverrides;
 
-  /// 点击表头日期回调
-  final void Function(DateTime date)? onHeaderTap;
+  /// 点击表头特殊日回调
+  final void Function(DateTime date, SpecialDayInfo info)? onSpecialDayTap;
 
   const CourseGrid({
     super.key,
@@ -85,7 +85,7 @@ class CourseGrid extends StatefulWidget {
     this.onCourseLongPress,
     this.onEmptyTap,
     this.holidayOverrides = const {},
-    this.onHeaderTap,
+    this.onSpecialDayTap,
   });
 
   @override
@@ -161,7 +161,7 @@ class _CourseGridState extends State<CourseGrid> {
                               : dayIndex + 1;
                           final date = _getDateForDayColumn(day);
                           final dateKey = _dateKey(date);
-                          final shouldHide = _shouldHideCourses(date);
+                          final shouldHide = _shouldApplyHoliday(date);
 
                           // 放假且 active 的日期不显示课程
                           if (shouldHide) {
@@ -255,18 +255,36 @@ class _CourseGridState extends State<CourseGrid> {
   String _dateKey(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
-  /// 判断某天是否为节假日（不受 [active] 影响）。
-  bool _isHoliday(DateTime date) {
-    if (HolidayUtils.isStatutoryHoliday(date)) return true;
-    final key = _dateKey(date);
-    return widget.holidayOverrides.containsKey(key);
-  }
-
-  /// 判断某天是否应隐藏课程并显示覆盖层（受 [active] 影响）。
-  bool _shouldHideCourses(DateTime date) {
+  /// 判断放假效果是否应对某天生效（受 override.active 影响）。
+  /// 内置法定假默认生效，用户取消后失效。
+  bool _shouldApplyHoliday(DateTime date) {
     final key = _dateKey(date);
     final override = widget.holidayOverrides[key];
     return override?.active ?? HolidayUtils.isStatutoryHoliday(date);
+  }
+
+  /// 获取某天的有效特殊日信息（考虑内置数据 + 用户调休记录）
+  ///
+  /// 用户手动设置的放假优先于内置的节/气，但不覆盖内置的法定假。
+  SpecialDayInfo _getSpecialDay(DateTime date) {
+    final builtIn = HolidayUtils.getSpecialDay(date);
+    final key = _dateKey(date);
+    final override = widget.holidayOverrides[key];
+
+    if (override != null) {
+      // 用户有调休记录 → 该天视为放假，active 跟随用户设置
+      final name = builtIn.type == SpecialDayType.holiday ? builtIn.name : null;
+      final subtitle = builtIn.type == SpecialDayType.holiday
+          ? builtIn.subtitle
+          : null;
+      return SpecialDayInfo(
+        type: SpecialDayType.holiday,
+        name: name,
+        subtitle: subtitle,
+      );
+    }
+
+    return builtIn;
   }
 
   Widget _buildHeaderRow(BuildContext context, List<String> dayNames) {
@@ -308,10 +326,11 @@ class _CourseGridState extends State<CourseGrid> {
                     : index + 1;
                 final date = _getDateForDayColumn(dayOfWeek);
                 final isToday = date.isAtSameMomentAs(today);
-                final isHoliday = _isHoliday(date);
-                // 标签是否显示取决于法定节假日检测，不受用户取消影响
-                final showLabel =
-                    HolidayUtils.isStatutoryHoliday(date) || isHoliday;
+                final specialDay = _getSpecialDay(date);
+                final isHoliday = specialDay.type == SpecialDayType.holiday;
+                final isFestival = specialDay.type == SpecialDayType.festival;
+                final isSolarTerm = specialDay.type == SpecialDayType.solarTerm;
+                final isSpecial = isHoliday || isFestival || isSolarTerm;
                 // 检查当天是否为某个调休日的上课日
                 final dateKey = _dateKey(date);
                 final isMakeupDay = widget.holidayOverrides.values.any(
@@ -323,13 +342,17 @@ class _CourseGridState extends State<CourseGrid> {
 
                 return Expanded(
                   child: GestureDetector(
-                    onTap: isHoliday && widget.onHeaderTap != null
-                        ? () => widget.onHeaderTap!(date)
+                    onTap: isSpecial && widget.onSpecialDayTap != null
+                        ? () => widget.onSpecialDayTap!(date, specialDay)
                         : null,
                     child: Container(
                       decoration: BoxDecoration(
                         color: isHoliday
                             ? Colors.red.withAlpha(15)
+                            : isFestival
+                            ? Colors.orange.withAlpha(15)
+                            : isSolarTerm
+                            ? Colors.green.withAlpha(15)
                             : isToday
                             ? theme.colorScheme.primaryContainer.withAlpha(180)
                             : null,
@@ -366,8 +389,12 @@ class _CourseGridState extends State<CourseGrid> {
                                     fontWeight: isToday
                                         ? FontWeight.bold
                                         : FontWeight.normal,
-                                    color: showLabel
+                                    color: isHoliday
                                         ? Colors.red
+                                        : isFestival
+                                        ? Colors.orange
+                                        : isSolarTerm
+                                        ? Colors.green
                                         : isToday
                                         ? theme.colorScheme.primary.withAlpha(
                                             200,
@@ -375,7 +402,7 @@ class _CourseGridState extends State<CourseGrid> {
                                         : theme.colorScheme.onSurfaceVariant,
                                   ),
                                 ),
-                                if (showLabel)
+                                if (isHoliday)
                                   Text(
                                     ' 假',
                                     style: TextStyle(
@@ -391,6 +418,24 @@ class _CourseGridState extends State<CourseGrid> {
                                       fontSize: 10,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.red,
+                                    ),
+                                  ),
+                                if (isFestival)
+                                  Text(
+                                    ' 节',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.orange,
+                                    ),
+                                  ),
+                                if (isSolarTerm)
+                                  Text(
+                                    ' 气',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
                                     ),
                                   ),
                               ],

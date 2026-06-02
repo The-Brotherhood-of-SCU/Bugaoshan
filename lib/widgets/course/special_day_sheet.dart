@@ -4,16 +4,101 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
 
-/// 点击课表表头的日期后弹出的调休操作悬浮窗
-Future<void> showHolidaySheet(BuildContext context, DateTime date) async {
+/// 点击课表表头的特殊日（假/节/气）后弹出的统一信息悬浮窗
+///
+/// 如果是放假类型，下方还会显示调休操作按钮。
+Future<void> showSpecialDaySheet(
+  BuildContext context,
+  DateTime date,
+  SpecialDayInfo info,
+) async {
+  switch (info.type) {
+    case SpecialDayType.holiday:
+      await _showHolidaySheet(context, date, info);
+    case SpecialDayType.festival:
+      await _showSimpleSheet(context, date, info, Colors.orange);
+    case SpecialDayType.solarTerm:
+      await _showSimpleSheet(context, date, info, Colors.green);
+    case SpecialDayType.ordinary:
+      break;
+  }
+}
+
+/// 简单展示型弹窗（节 / 气）
+Future<void> _showSimpleSheet(
+  BuildContext context,
+  DateTime date,
+  SpecialDayInfo info,
+  Color color,
+) async {
+  await showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (ctx) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    info.name ?? '${date.month}月${date.day}日',
+                    style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  if (info.subtitle != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 2),
+                      child: Text(
+                        info.subtitle!,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  Text(
+                    '${date.month}月${date.day}日',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// 放假操作型弹窗（假）
+Future<void> _showHolidaySheet(
+  BuildContext context,
+  DateTime date,
+  SpecialDayInfo info,
+) async {
   final l10n = AppLocalizations.of(context)!;
   final courseProvider = getIt<CourseProvider>();
-
-  final shouldApply = courseProvider.shouldApplyHoliday(date);
-  final holidayName = HolidayUtils.getHolidayName(date);
   final dateKey =
       '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   final override = courseProvider.holidayOverrides.value[dateKey];
+
+  final shouldApply = override?.active ?? HolidayUtils.isStatutoryHoliday(date);
   final hasMakeup = override?.makeupDate != null;
 
   await showModalBottomSheet(
@@ -30,38 +115,37 @@ Future<void> showHolidaySheet(BuildContext context, DateTime date) async {
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: holidayName != null
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          holidayName,
-                          style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red,
-                          ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    info.name ?? '${date.month}月${date.day}日',
+                    style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  if (info.subtitle != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 2),
+                      child: Text(
+                        info.subtitle!,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Theme.of(ctx).colorScheme.onSurfaceVariant,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          l10n.holidayTotalDays(
-                            HolidayUtils.getHolidayTotalDays(
-                              holidayName,
-                              date.year,
-                            ),
-                          ),
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Theme.of(ctx).colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    )
-                  : Text(
-                      '${date.month}月${date.day}日',
-                      style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
+                  Text(
+                    '${date.month}月${date.day}日',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
             ),
             const Divider(),
             // 取消设置放假（当前是放假状态）

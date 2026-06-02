@@ -10,10 +10,11 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/course/course_detail_sheet.dart';
 import 'package:bugaoshan/widgets/course/course_grid.dart';
-import 'package:bugaoshan/widgets/course/holiday_bottom_sheet.dart';
+import 'package:bugaoshan/widgets/course/special_day_sheet.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/utils/export_schedule_utils.dart';
+import 'package:bugaoshan/utils/holiday_utils.dart';
 
 part 'course_page_swipe_page_view.dart';
 part 'course_page_top_bar.dart';
@@ -179,7 +180,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
           displayWeek: index + 1,
           totalWeeks: totalWeeks,
           holidayOverrides: holidayMap,
-          onHeaderTap: _onHeaderTap,
+          onSpecialDayTap: _onSpecialDayTap,
           onCourseTap: _onCourseTap,
           onCourseLongPress: _onCourseLongPress,
           onEmptyTap: _onEmptyTap,

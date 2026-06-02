@@ -151,24 +151,6 @@ class CourseProvider {
     }
   }
 
-  /// 判断某天是否为节假日（不受 [active] 影响）。
-  ///
-  /// 用于表头标签显示和点击判定。
-  bool isHoliday(DateTime date) {
-    if (HolidayUtils.isStatutoryHoliday(date)) return true;
-    final key = _dateKey(date);
-    return holidayOverrides.value.containsKey(key);
-  }
-
-  /// 判断某天是否应应用节假日效果（隐藏课程、覆盖层）。
-  ///
-  /// 受 [active] 影响：用户取消后不再应用效果，但仍属节假日。
-  bool shouldApplyHoliday(DateTime date) {
-    final key = _dateKey(date);
-    final override = holidayOverrides.value[key];
-    return override?.active ?? HolidayUtils.isStatutoryHoliday(date);
-  }
-
   /// 设置某天为放假
   Future<void> setHoliday(DateTime date) async {
     final key = _dateKey(date);

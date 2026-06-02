@@ -1,3 +1,15 @@
+/// 特殊日类型
+enum SpecialDayType { ordinary, festival, holiday, solarTerm }
+
+/// 特殊日信息
+class SpecialDayInfo {
+  final SpecialDayType type;
+  final String? name;
+  final String? subtitle;
+
+  SpecialDayInfo({required this.type, this.name, this.subtitle});
+}
+
 /// 中国法定节假日检测工具
 ///
 /// 包含常见法定节假日列表，由于国务院每年公布具体安排，
@@ -96,6 +108,125 @@ class HolidayUtils {
       return yearMap[holidayName]!.length;
     }
     return _fixedHolidays[holidayName]?.length ?? 0;
+  }
+
+  /// 不放假但值得标记的传统节日（按年）
+  static const Map<int, Map<String, Set<String>>> festivalsByYear = {
+    2024: {
+      '元宵节': {'02-24'},
+      '七夕节': {'08-10'},
+      '重阳节': {'10-11'},
+    },
+    2025: {
+      '元宵节': {'02-12'},
+      '七夕节': {'08-29'},
+      '重阳节': {'10-29'},
+    },
+    2026: {
+      '元宵节': {'03-03'},
+      '七夕节': {'08-19'},
+      '重阳节': {'10-18'},
+    },
+  };
+
+  /// 固定日期节日（不放假）
+  static const Map<String, Set<String>> _fixedFestivals = {
+    '植树节': {'03-12'},
+    '儿童节': {'06-01'},
+    '建党节': {'07-01'},
+    '建军节': {'08-01'},
+    '教师节': {'09-10'},
+  };
+
+  /// 二十四节气（近似日期，月-日）
+  static const Map<String, String> _solarTerms = {
+    '立春': '02-04',
+    '雨水': '02-19',
+    '惊蛰': '03-06',
+    '春分': '03-21',
+    '清明': '04-05',
+    '谷雨': '04-20',
+    '立夏': '05-06',
+    '小满': '05-21',
+    '芒种': '06-06',
+    '夏至': '06-21',
+    '小暑': '07-07',
+    '大暑': '07-23',
+    '立秋': '08-07',
+    '处暑': '08-23',
+    '白露': '09-08',
+    '秋分': '09-23',
+    '寒露': '10-08',
+    '霜降': '10-23',
+    '立冬': '11-07',
+    '小雪': '11-22',
+    '大雪': '12-07',
+    '冬至': '12-22',
+    '小寒': '01-06',
+    '大寒': '01-20',
+  };
+
+  /// 判断 [date] 是否为标记节日（不放假）
+  static bool isFestival(DateTime date) {
+    return getFestivalName(date) != null;
+  }
+
+  /// 获取 [date] 对应的节日名称，如 '元宵节'
+  static String? getFestivalName(DateTime date) {
+    final mmdd = _mmdd(date);
+    // 先查按年补充的传统节日
+    final yearMap = festivalsByYear[date.year];
+    if (yearMap != null) {
+      for (final entry in yearMap.entries) {
+        if (entry.value.contains(mmdd)) return entry.key;
+      }
+    }
+    // 再查固定日期节日
+    for (final entry in _fixedFestivals.entries) {
+      if (entry.value.contains(mmdd)) return entry.key;
+    }
+    return null;
+  }
+
+  /// 判断 [date] 是否为节气
+  static bool isSolarTerm(DateTime date) {
+    return getSolarTermName(date) != null;
+  }
+
+  /// 获取 [date] 对应的节气名称，如 '立春'
+  static String? getSolarTermName(DateTime date) {
+    final mmdd = _mmdd(date);
+    for (final entry in _solarTerms.entries) {
+      if (entry.value == mmdd) return entry.key;
+    }
+    return null;
+  }
+
+  /// 获取 [date] 对应的特殊日信息（含类型、名称、备注等）
+  ///
+  /// 优先级：假 > 节 > 气 > 普通日
+  static SpecialDayInfo getSpecialDay(DateTime date) {
+    final holidayName = getHolidayName(date);
+    if (holidayName != null) {
+      final totalDays = getHolidayTotalDays(holidayName, date.year);
+      return SpecialDayInfo(
+        type: SpecialDayType.holiday,
+        name: holidayName,
+        subtitle: '共$totalDays天假',
+      );
+    }
+
+    final festivalName = getFestivalName(date);
+    if (festivalName != null) {
+      return SpecialDayInfo(type: SpecialDayType.festival, name: festivalName);
+    }
+
+    final termName = getSolarTermName(date);
+    if (termName != null) {
+      return SpecialDayInfo(type: SpecialDayType.solarTerm, name: termName);
+    }
+
+    return SpecialDayInfo(type: SpecialDayType.ordinary);
   }
 
   /// 格式化日期为 MM-DD 字符串

@@ -121,7 +121,7 @@ extension _CoursePageActions on _CoursePageState {
     );
   }
 
-  void _onHeaderTap(DateTime date) {
-    showHolidaySheet(context, date);
+  void _onSpecialDayTap(DateTime date, SpecialDayInfo info) {
+    showSpecialDaySheet(context, date, info);
   }
 }
