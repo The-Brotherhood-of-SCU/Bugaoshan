@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/models/holiday_override.dart';
 import 'package:bugaoshan/services/database_service.dart';
+import 'package:bugaoshan/utils/holiday_utils.dart';
 
 class CourseProvider {
   final DatabaseService _db;
@@ -11,6 +13,7 @@ class CourseProvider {
 
   CourseProvider(this._db) {
     _loadData();
+    _loadHolidayOverrides();
   }
 
   final ValueNotifier<List<Course>> courses = ValueNotifier<List<Course>>([]);
@@ -20,6 +23,13 @@ class CourseProvider {
       ValueNotifier<List<ScheduleConfig>>([]);
   final ValueNotifier<int> currentWeek = ValueNotifier<int>(1);
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
+
+  /// 调休记录，key 为 "YYYY-MM-DD"，value 为 HolidayOverride
+  final ValueNotifier<Map<String, HolidayOverride>> holidayOverrides =
+      ValueNotifier<Map<String, HolidayOverride>>({});
+
+  /// 当前数据库中是否存在课表。UI 据此在「暂无课表」空状态和 grid 之间切换。
+  bool get hasSchedule => allSchedules.value.isNotEmpty;
 
   static ScheduleConfig _defaultConfig() {
     final now = DateTime.now();
@@ -125,6 +135,101 @@ class CourseProvider {
     final totalWeeks = scheduleConfig.value.totalWeeks;
     currentWeek.value = week.clamp(1, totalWeeks);
   }
+
+  // ==================== Holiday Overrides ====================
+
+  Future<void> _loadHolidayOverrides() async {
+    try {
+      final raw = await _db.getHolidayOverrides();
+      final map = <String, HolidayOverride>{};
+      for (final entry in raw.entries) {
+        map[entry.key] = HolidayOverride.fromJson(entry.value);
+      }
+      holidayOverrides.value = map;
+    } catch (e) {
+      debugPrint('CourseProvider: failed to load holiday overrides: $e');
+    }
+  }
+
+  /// 判断某天是否为节假日（不受 [active] 影响）。
+  ///
+  /// 用于表头标签显示和点击判定。
+  bool isHoliday(DateTime date) {
+    if (HolidayUtils.isStatutoryHoliday(date)) return true;
+    final key = _dateKey(date);
+    return holidayOverrides.value.containsKey(key);
+  }
+
+  /// 判断某天是否应应用节假日效果（隐藏课程、覆盖层）。
+  ///
+  /// 受 [active] 影响：用户取消后不再应用效果，但仍属节假日。
+  bool shouldApplyHoliday(DateTime date) {
+    final key = _dateKey(date);
+    final override = holidayOverrides.value[key];
+    return override?.active ?? HolidayUtils.isStatutoryHoliday(date);
+  }
+
+  /// 设置某天为放假
+  Future<void> setHoliday(DateTime date) async {
+    final key = _dateKey(date);
+    final current = Map<String, HolidayOverride>.from(holidayOverrides.value);
+    current[key] = HolidayOverride(date: date, active: true);
+    holidayOverrides.value = current;
+    await _db.saveHolidayOverride(current[key]!.toJson());
+  }
+
+  /// 设置放假并调休：[holidayDate] 放假，课程调到 [makeupDate]
+  Future<void> setHolidayWithMakeup(
+    DateTime holidayDate,
+    DateTime makeupDate,
+  ) async {
+    final key = _dateKey(holidayDate);
+    final current = Map<String, HolidayOverride>.from(holidayOverrides.value);
+    current[key] = HolidayOverride(
+      date: holidayDate,
+      makeupDate: makeupDate,
+      active: true,
+    );
+    holidayOverrides.value = current;
+    await _db.saveHolidayOverride(current[key]!.toJson());
+  }
+
+  /// 取消某天的放假设置（同时清除调休）。
+  ///
+  /// - 法定节假日 → 存入 `active: false`，一次性取消放假和调休
+  /// - 手动设置的放假 → 删除记录
+  Future<void> cancelHoliday(DateTime date) async {
+    final key = _dateKey(date);
+    final current = Map<String, HolidayOverride>.from(holidayOverrides.value);
+
+    if (HolidayUtils.isStatutoryHoliday(date)) {
+      // 法定节假日 → 存入 active: false，清除调休
+      current[key] = HolidayOverride(date: date, active: false);
+      holidayOverrides.value = current;
+      await _db.saveHolidayOverride(current[key]!.toJson());
+    } else {
+      // 手动设置的放假 → 删除记录
+      current.remove(key);
+      holidayOverrides.value = current;
+      await _db.removeHolidayOverride(date);
+    }
+  }
+
+  /// 仅取消调休，保留放假设置。
+  Future<void> cancelMakeup(DateTime date) async {
+    final key = _dateKey(date);
+    final current = Map<String, HolidayOverride>.from(holidayOverrides.value);
+    final existing = current[key];
+
+    if (existing != null) {
+      current[key] = HolidayOverride(date: date, active: existing.active);
+      holidayOverrides.value = current;
+      await _db.saveHolidayOverride(current[key]!.toJson());
+    }
+  }
+
+  String _dateKey(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   Future<void> clearAllData() async {
     await _db.clearAllCourseData();
