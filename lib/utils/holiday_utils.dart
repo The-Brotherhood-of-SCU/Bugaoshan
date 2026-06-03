@@ -83,24 +83,49 @@ class HolidayUtils {
     DateTime? near,
   }) {
     int count = 0;
+
     if (near != null) {
-      // 在 near 前后 30 天内搜索（覆盖最长假期）
-      final start = near.subtract(const Duration(days: 30));
-      final end = near.add(const Duration(days: 30));
-      for (var d = start; !d.isAfter(end); d = d.add(const Duration(days: 1))) {
-        if (d.year != year) continue;
+      // date 本身必定是节假日，向前往后遍历直到非节假日或不同假日名称
+      count = 1;
+      // 向前遍历
+      var d = near.subtract(const Duration(days: 1));
+      while (d.year == year) {
         try {
           final legalHoliday = SolarDay(
             d.year,
             d.month,
             d.day,
           ).getLegalHoliday();
-          if (legalHoliday != null &&
-              !legalHoliday.isWork() &&
-              legalHoliday.getName() == holidayName) {
-            count++;
+          if (legalHoliday == null ||
+              legalHoliday.isWork() ||
+              legalHoliday.getName() != holidayName) {
+            break;
           }
-        } catch (_) {}
+          count++;
+        } catch (_) {
+          break;
+        }
+        d = d.subtract(const Duration(days: 1));
+      }
+      // 向后遍历
+      d = near.add(const Duration(days: 1));
+      while (d.year == year) {
+        try {
+          final legalHoliday = SolarDay(
+            d.year,
+            d.month,
+            d.day,
+          ).getLegalHoliday();
+          if (legalHoliday == null ||
+              legalHoliday.isWork() ||
+              legalHoliday.getName() != holidayName) {
+            break;
+          }
+          count++;
+        } catch (_) {
+          break;
+        }
+        d = d.add(const Duration(days: 1));
       }
     } else {
       for (var month = 1; month <= 12; month++) {
