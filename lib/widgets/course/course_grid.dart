@@ -138,7 +138,7 @@ class _CourseGridState extends State<CourseGrid> {
       builder: (context, _) {
         return Column(
           children: [
-            _buildHeaderRow(context, dayNames),
+            _buildHeaderRow(context, dayNames, l10n),
             Expanded(
               child: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
@@ -179,7 +179,11 @@ class _CourseGridState extends State<CourseGrid> {
     );
   }
 
-  Widget _buildHeaderRow(BuildContext context, List<String> dayNames) {
+  Widget _buildHeaderRow(
+    BuildContext context,
+    List<String> dayNames,
+    AppLocalizations l10n,
+  ) {
     final theme = Theme.of(context);
     final visibleDays = widget.config.showWeekend
         ? dayNames
@@ -278,7 +282,7 @@ class _CourseGridState extends State<CourseGrid> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  '${date.month}-${date.day}',
+                                  l10n.dateMonthDay(date.month, date.day),
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: isToday
@@ -297,33 +301,27 @@ class _CourseGridState extends State<CourseGrid> {
                                         : theme.colorScheme.onSurfaceVariant,
                                   ),
                                 ),
-                                if (isHoliday)
-                                  const Text(
-                                    ' 假',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.red,
-                                    ),
+                                if (isHoliday) ...[
+                                  const SizedBox(width: 2),
+                                  _buildLabelBadge(
+                                    l10n.holidayLabel,
+                                    Colors.red,
                                   ),
-                                if (isFestival)
-                                  const Text(
-                                    ' 节',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.orange,
-                                    ),
+                                ],
+                                if (isFestival) ...[
+                                  const SizedBox(width: 2),
+                                  _buildLabelBadge(
+                                    l10n.festivalLabel,
+                                    Colors.orange,
                                   ),
-                                if (isSolarTerm)
-                                  const Text(
-                                    ' 气',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.green,
-                                    ),
+                                ],
+                                if (isSolarTerm) ...[
+                                  const SizedBox(width: 2),
+                                  _buildLabelBadge(
+                                    l10n.solarTermLabel,
+                                    Colors.green,
                                   ),
+                                ],
                               ],
                             ),
                           ],
@@ -336,6 +334,24 @@ class _CourseGridState extends State<CourseGrid> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLabelBadge(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(3),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 9,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
       ),
     );
   }

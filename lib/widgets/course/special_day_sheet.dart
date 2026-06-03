@@ -26,6 +26,14 @@ Future<void> _showSheet(
   SpecialDayInfo info,
   Color color,
 ) async {
+  final l10n = AppLocalizations.of(context)!;
+  final typeLabel = switch (info.type) {
+    SpecialDayType.holiday => l10n.holidayTypeLabel,
+    SpecialDayType.festival => l10n.festivalTypeLabel,
+    SpecialDayType.solarTerm => l10n.solarTermTypeLabel,
+    _ => '',
+  };
+
   await showModalBottomSheet(
     context: context,
     shape: const RoundedRectangleBorder(
@@ -43,32 +51,50 @@ Future<void> _showSheet(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Type badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: color.withAlpha(30),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      typeLabel,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: color,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Holiday/festival/term name
                   Text(
-                    info.name ??
-                        AppLocalizations.of(
-                          ctx,
-                        )!.dateMonthDay(date.month, date.day),
+                    info.name ?? l10n.dateMonthDay(date.month, date.day),
                     style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: color,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  if (info.subtitle != null)
+                  // Holiday total days subtitle
+                  if (info.holidayTotalDays != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 2),
                       child: Text(
-                        info.subtitle!,
+                        l10n.holidayTotalDays(info.holidayTotalDays!),
                         style: TextStyle(
                           fontSize: 13,
                           color: Theme.of(ctx).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ),
+                  // Date
                   Text(
-                    AppLocalizations.of(
-                      ctx,
-                    )!.dateMonthDay(date.month, date.day),
+                    l10n.dateMonthDay(date.month, date.day),
                     style: TextStyle(
                       fontSize: 13,
                       color: Theme.of(ctx).colorScheme.onSurfaceVariant,

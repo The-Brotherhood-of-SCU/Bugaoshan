@@ -673,5 +673,36 @@
             "month": {"type": "int"},
             "day": {"type": "int"}
         }
+    },
+    "holidayLabel": "Hol",
+    "@holidayLabel": {
+        "description": "Short label for statutory holiday displayed in course grid date header"
+    },
+    "festivalLabel": "Fes",
+    "@festivalLabel": {
+        "description": "Short label for festival displayed in course grid date header"
+    },
+    "solarTermLabel": "Term",
+    "@solarTermLabel": {
+        "description": "Short label for solar term displayed in course grid date header"
+    },
+    "holidayTypeLabel": "Holiday",
+    "@holidayTypeLabel": {
+        "description": "Label for statutory holiday type shown in special day detail sheet"
+    },
+    "festivalTypeLabel": "Festival",
+    "@festivalTypeLabel": {
+        "description": "Label for festival type shown in special day detail sheet"
+    },
+    "solarTermTypeLabel": "Solar Term",
+    "@solarTermTypeLabel": {
+        "description": "Label for solar term type shown in special day detail sheet"
+    },
+    "holidayTotalDays": "{days}-day holiday",
+    "@holidayTotalDays": {
+        "description": "Shows total holiday days, e.g. '3-day holiday'",
+        "placeholders": {
+            "days": {"type": "int"}
+        }
     }
 }

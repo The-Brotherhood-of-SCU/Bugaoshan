@@ -1813,6 +1813,29 @@ class AppLocalizationsZh extends AppLocalizations {
   String dateMonthDay(int month, int day) {
     return '$month月$day日';
   }
+
+  @override
+  String get holidayLabel => '假';
+
+  @override
+  String get festivalLabel => '节';
+
+  @override
+  String get solarTermLabel => '气';
+
+  @override
+  String get holidayTypeLabel => '节假日';
+
+  @override
+  String get festivalTypeLabel => '节日';
+
+  @override
+  String get solarTermTypeLabel => '节气';
+
+  @override
+  String holidayTotalDays(int days) {
+    return '共$days天假';
+  }
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

@@ -1866,4 +1866,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String dateMonthDay(int month, int day) {
     return '$month/$day';
   }
+
+  @override
+  String get holidayLabel => 'Hol';
+
+  @override
+  String get festivalLabel => 'Fes';
+
+  @override
+  String get solarTermLabel => 'Term';
+
+  @override
+  String get holidayTypeLabel => 'Holiday';
+
+  @override
+  String get festivalTypeLabel => 'Festival';
+
+  @override
+  String get solarTermTypeLabel => 'Solar Term';
+
+  @override
+  String holidayTotalDays(int days) {
+    return '$days-day holiday';
+  }
 }

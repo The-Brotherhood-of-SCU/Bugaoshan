@@ -7,9 +7,9 @@ enum SpecialDayType { ordinary, festival, holiday, solarTerm }
 class SpecialDayInfo {
   final SpecialDayType type;
   final String? name;
-  final String? subtitle;
+  final int? holidayTotalDays;
 
-  SpecialDayInfo({required this.type, this.name, this.subtitle});
+  SpecialDayInfo({required this.type, this.name, this.holidayTotalDays});
 }
 
 /// 兜底用固定日期节假日映射。
@@ -174,7 +174,7 @@ class HolidayUtils {
           return SpecialDayInfo(
             type: SpecialDayType.holiday,
             name: legalHoliday.getName(),
-            subtitle: '共$totalDays天假',
+            holidayTotalDays: totalDays,
           );
         }
         // tyme 标记为上班 → 不放假，不继续降级

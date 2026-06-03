@@ -671,5 +671,36 @@
             "month": {"type": "int"},
             "day": {"type": "int"}
         }
+    },
+    "holidayLabel": "假",
+    "@holidayLabel": {
+        "description": "Short label for statutory holiday displayed in course grid date header"
+    },
+    "festivalLabel": "节",
+    "@festivalLabel": {
+        "description": "Short label for festival displayed in course grid date header"
+    },
+    "solarTermLabel": "气",
+    "@solarTermLabel": {
+        "description": "Short label for solar term displayed in course grid date header"
+    },
+    "holidayTypeLabel": "节假日",
+    "@holidayTypeLabel": {
+        "description": "Label for statutory holiday type shown in special day detail sheet"
+    },
+    "festivalTypeLabel": "节日",
+    "@festivalTypeLabel": {
+        "description": "Label for festival type shown in special day detail sheet"
+    },
+    "solarTermTypeLabel": "节气",
+    "@solarTermTypeLabel": {
+        "description": "Label for solar term type shown in special day detail sheet"
+    },
+    "holidayTotalDays": "共{days}天假",
+    "@holidayTotalDays": {
+        "description": "Shows total holiday days, e.g. '共3天假'",
+        "placeholders": {
+            "days": {"type": "int"}
+        }
     }
 }
