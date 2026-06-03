@@ -5,7 +5,6 @@ import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
 import 'package:bugaoshan/widgets/course/course_card.dart';
-import 'package:bugaoshan/widgets/course/special_day_sheet.dart';
 
 List<Course> selectVisibleCoursesForDay(
   List<Course> courses,
@@ -231,30 +230,25 @@ class _CourseGridState extends State<CourseGrid> {
                 );
                 final isToday = date.isAtSameMomentAs(today);
                 final specialDay = HolidayUtils.getSpecialDay(date);
-                final hasSpecialDay =
-                    specialDay.type != SpecialDayType.ordinary;
-
-                Color? labelColor;
-                String? label;
-                if (specialDay.type == SpecialDayType.holiday) {
-                  labelColor = Colors.red;
-                  label = '假';
-                } else if (specialDay.type == SpecialDayType.festival) {
-                  labelColor = Colors.orange;
-                  label = '节';
-                } else if (specialDay.type == SpecialDayType.solarTerm) {
-                  labelColor = Colors.green;
-                  label = '气';
-                }
+                final isHoliday = specialDay.type == SpecialDayType.holiday;
+                final isFestival = specialDay.type == SpecialDayType.festival;
+                final isSolarTerm = specialDay.type == SpecialDayType.solarTerm;
+                final isSpecial = isHoliday || isFestival || isSolarTerm;
 
                 return Expanded(
                   child: GestureDetector(
-                    onTap: hasSpecialDay && widget.onSpecialDayTap != null
+                    onTap: isSpecial && widget.onSpecialDayTap != null
                         ? () => widget.onSpecialDayTap!(date, specialDay)
                         : null,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: isToday
+                        color: isHoliday
+                            ? Colors.red.withAlpha(15)
+                            : isFestival
+                            ? Colors.orange.withAlpha(15)
+                            : isSolarTerm
+                            ? Colors.green.withAlpha(15)
+                            : isToday
                             ? theme.colorScheme.primaryContainer.withAlpha(180)
                             : null,
                         border: Border(
@@ -280,30 +274,58 @@ class _CourseGridState extends State<CourseGrid> {
                                     : theme.colorScheme.onSurface,
                               ),
                             ),
-                            Text(
-                              '${date.month}-${date.day}',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: isToday
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                                color: isToday
-                                    ? theme.colorScheme.primary.withAlpha(200)
-                                    : theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                            if (label != null)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 1),
-                                child: Text(
-                                  label,
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '${date.month}-${date.day}',
                                   style: TextStyle(
                                     fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: labelColor,
+                                    fontWeight: isToday
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    color: isHoliday
+                                        ? Colors.red
+                                        : isFestival
+                                        ? Colors.orange
+                                        : isSolarTerm
+                                        ? Colors.green
+                                        : isToday
+                                        ? theme.colorScheme.primary.withAlpha(
+                                            200,
+                                          )
+                                        : theme.colorScheme.onSurfaceVariant,
                                   ),
                                 ),
-                              ),
+                                if (isHoliday)
+                                  const Text(
+                                    ' 假',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                if (isFestival)
+                                  const Text(
+                                    ' 节',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.orange,
+                                    ),
+                                  ),
+                                if (isSolarTerm)
+                                  const Text(
+                                    ' 气',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
