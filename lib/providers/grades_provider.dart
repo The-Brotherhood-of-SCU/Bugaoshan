@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/models/scheme_score.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
-import 'package:bugaoshan/services/exceptions/scu_exceptions.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 
 const _keySchemeScores = 'grades_scheme_scores';
 const _keyPassingScores = 'grades_passing_scores';

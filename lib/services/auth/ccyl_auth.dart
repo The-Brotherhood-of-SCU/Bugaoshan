@@ -2,9 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:bugaoshan/providers/secure_storage_provider.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
-import 'package:bugaoshan/services/ccyl_oauth_service.dart';
-import 'package:bugaoshan/services/ccyl_service.dart';
-import 'package:bugaoshan/services/exceptions/scu_exceptions.dart';
+import 'package:bugaoshan/services/auth/ccyl_oauth_service.dart';
+import 'package:bugaoshan/services/ccyl/ccyl_service.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 
 const _keyCcylToken = 'ccyl_token';
 const _keyCcylUserId = 'ccyl_user_id';

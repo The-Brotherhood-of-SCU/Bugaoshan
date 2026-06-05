@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/services/api/payapp_api_service.dart';
-import 'package:bugaoshan/services/balance_query_service.dart';
+import 'package:bugaoshan/services/balance/balance_query_service.dart';
 
 const _keyBindingInfo = 'balance_query_binding';
 const _keyCurrentRoomIndex = 'balance_query_current_room';

@@ -1,7 +1,7 @@
 import 'package:bugaoshan/services/auth/payapp_auth.dart';
-import 'package:bugaoshan/services/balance_query_service.dart';
-import 'package:bugaoshan/services/exceptions/scu_exceptions.dart';
-import 'package:bugaoshan/services/scu_api/cookie_client.dart';
+import 'package:bugaoshan/services/balance/balance_query_service.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/services/auth/cookie_client.dart';
 
 /// 缴费平台 API Service（第1层）
 ///

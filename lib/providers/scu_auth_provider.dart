@@ -9,7 +9,7 @@ import 'package:bugaoshan/providers/profile_labels_provider.dart';
 import 'package:bugaoshan/providers/secure_storage_provider.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/ccyl_auth.dart';
-import 'package:bugaoshan/services/exceptions/scu_exceptions.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/ocr_service.dart';
 
 const _keyAutoLogin = 'scu_auto_login';

@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:bugaoshan/services/auth/wfw_auth.dart';
-import 'package:bugaoshan/services/exceptions/scu_exceptions.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 
 /// 微服务 API Service（第1层）
 ///

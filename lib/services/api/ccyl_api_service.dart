@@ -1,6 +1,6 @@
 import 'package:bugaoshan/services/auth/ccyl_auth.dart';
-import 'package:bugaoshan/services/ccyl_service.dart';
-import 'package:bugaoshan/services/exceptions/scu_exceptions.dart';
+import 'package:bugaoshan/services/ccyl/ccyl_service.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 
 /// 第二课堂 API Service（第1层）
 ///

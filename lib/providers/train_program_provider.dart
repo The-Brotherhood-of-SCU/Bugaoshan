@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program_model.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
-import 'package:bugaoshan/services/exceptions/scu_exceptions.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 
 enum TrainProgramLoadState { idle, loading, loaded, error }
 

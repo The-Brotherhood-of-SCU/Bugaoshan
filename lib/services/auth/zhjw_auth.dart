@@ -1,5 +1,5 @@
 import 'package:bugaoshan/services/auth/scu_auth.dart';
-import 'package:bugaoshan/services/scu_api/cookie_client.dart';
+import 'package:bugaoshan/services/auth/cookie_client.dart';
 
 /// 教务系统认证（第2层）
 ///

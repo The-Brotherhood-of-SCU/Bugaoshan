@@ -5,8 +5,8 @@ import 'package:bugaoshan/pages/campus/plan_completion/models/plan_completion.da
 import 'package:bugaoshan/pages/campus/train_program/models/train_program.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program_model.dart';
 import 'package:bugaoshan/services/auth/zhjw_auth.dart';
-import 'package:bugaoshan/services/exceptions/scu_exceptions.dart';
-import 'package:bugaoshan/services/scu_api/cookie_client.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart' show kZhjwBase;
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/json_utils.dart';

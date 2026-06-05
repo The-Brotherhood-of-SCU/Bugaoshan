@@ -1,6 +1,6 @@
 import 'package:bugaoshan/services/auth/scu_auth.dart';
-import 'package:bugaoshan/services/exceptions/scu_exceptions.dart';
-import 'package:bugaoshan/services/scu_api/cookie_client.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 /// 缴费平台认证（第2层）

@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/services/api/wfw_api_service.dart';
-import 'package:bugaoshan/services/exceptions/scu_exceptions.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 
 class ProfileLabelsProvider extends ChangeNotifier {
   final WfwApiService _wfwApi;

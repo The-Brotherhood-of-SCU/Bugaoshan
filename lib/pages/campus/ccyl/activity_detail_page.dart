@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
-import 'package:bugaoshan/services/ccyl_service.dart';
+import 'package:bugaoshan/services/ccyl/ccyl_service.dart';
 import 'package:bugaoshan/widgets/common/image_viewer.dart';
 
 class ActivityDetailPage extends StatefulWidget {
