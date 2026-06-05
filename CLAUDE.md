@@ -107,21 +107,21 @@ Three notice sources, each in its own subdirectory under `lib/pages/campus/notic
 - `DownloadManager` (`lib/services/download_manager.dart`) — tracks download task state (pending/downloading/done/error).
 
 ### Providers
-- **`ScuAuthProvider`** — Persists SCU access token in `FlutterSecureStorage`, login timestamp and user info in `SharedPreferences`. Wraps `AuthManager`. Handles session expiry detection (1-hour TTL + last app open timestamp comparison), auto-login with OCR captcha solving (up to 5 retries), credential save/remember, and user profile fetching from `wfw.scu.edu.cn`. Exposes `service` getter returning `ScuApiService` (for business providers to call `fetchXxx()`) and `authService` getter returning `ScuAuthService` (for login page to call `fetchCaptcha()`).
-- **`GradesProvider`** — Calls `service.fetchXxx()` directly; session expired handling delegated to `AuthSession.request()` (auto-refresh + retry + global snackbar via `SessionExpiredListener`).
+- **`ScuAuthProvider`** — Persists SCU access token in `FlutterSecureStorage`, login timestamp and user info in `SharedPreferences`. Wraps `ScuAuth` + `CcylAuth`. Handles session expiry detection (1-hour TTL + last app open timestamp comparison), auto-login with OCR captcha solving (up to 5 retries), credential save/remember, and user profile fetching via `WfwApiService`.
+- **`GradesProvider`** — Holds `ZhjwApiService` field; calls `fetchSchemeScores()` / `fetchPassingScores()` directly. Session expired handling delegated to `retryOnUnauthenticated` (auto-refresh + retry + global snackbar via `SessionExpiredListener`). Caches grades to SharedPreferences.
 - **`CourseProvider`** — Depends on `DatabaseService`. Provides schedule CRUD.
 - **`AppConfigProvider`** — User preferences: locale, theme color, color opacity, course card font size, course grid visibility, course row height, background image, dock items, EULA acceptance, etc.
 - **`SetThemeColorProvider`** — 从背景图片中提取主题色（像素采样 + `compute()` isolate），支持系统强调色预览。
 - **`AppInfoProvider`** — App version info and CI build metadata (git tag, commit, build time).
 - **`BalanceQueryProvider`** — 电费 & 空调余额查询状态管理，支持多房间绑定切换。
-- **`CcylProvider`** — 第二课堂登录状态持久化，OAuth token 和 user ID 存储在 `FlutterSecureStorage`。支持 `CcylProvider.create()` 工厂方法异步初始化。
+- **`CcylProvider`** — 第二课堂登录状态管理。委托 `CcylAuth` 处理 OAuth token 持久化（`FlutterSecureStorage`）。通过 `CcylApiService`（`service` getter）提供 API 访问。
 - **`TrainProgramProvider`** — 培养方案查询，管理学院/年级/方案列表及详情加载状态。
 - **`PlanCompletionProvider`** — 培养方案完成度，缓存到 SharedPreferences，支持速率限制处理。
 - **`ExportScheduleProvider`** — 课表导出（剪贴板 JSON / .ics 文件 / 系统日历）。
 - **`SecureStorageProvider`** — `FlutterSecureStorage` 单例封装，统一管理安全存储。
 
 ### Key Patterns
-- **Session expiry**: `ScuLoginException` carries `sessionExpired: bool`. `AuthSession.request()` catches it, calls `_synchronizedRefresh()` (mutex-protected), and retries once with new client. If refresh fails, `onSessionExpired()` fires → global `SessionExpiredListener` shows SnackBar with "前往登录" action. Business providers do not handle expiry manually.
+- **Session expiry**: `ScuAuth.getClient()` checks TTL (1-hour), calls `_synchronizedRefresh()` (Completer mutex, N concurrent = 1 refresh) on expiry. Refresh fails → `onSessionExpired` callback fires → `SessionExpiredListener` shows SnackBar with "前往登录" action (5s debounce). API Service layer uses `retryOnUnauthenticated(getClient, fn)` to catch `UnauthenticatedException` and retry once. Business providers catch `UnauthenticatedException` / `ServiceException` for UI state.
 - **Multiple schedules**: Courses are stored in a single SQLite `courses` table, filtered by `schedule_id`. `DatabaseService.switchSchedule()` updates the current schedule ID and refreshes the in-memory cache.
 - **Responsive dialogs**: `popupOrNavigate(context, page)` in `router_utils.dart` shows a dialog on tablets/landscape (width/2), a dialog on big portrait (2/3 width+height), or full-page navigation on phones. Automatically falls back to `Navigator.push` if already inside a popup (`PopupContext.of(context)`).
 - **`logicRootContext`**: Global getter (`navigatorKey.currentContext!`) in `router_utils.dart`. Use when you need a `BuildContext` that outlives the current widget — e.g., after `Navigator.pop(context)` the local `context` is disposed, so capture `logicRootContext` beforehand. Common pattern: `final rootCtx = logicRootContext; Navigator.pop(context); popupOrNavigate(rootCtx, ...)`.
