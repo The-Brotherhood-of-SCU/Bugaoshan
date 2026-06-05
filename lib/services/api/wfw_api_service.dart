@@ -21,6 +21,11 @@ class WfwApiService {
     final json = await _request((client) async {
       final resp = await client.get(
         Uri.parse('https://wfw.scu.edu.cn/mashupapp/wap/real/user'),
+        headers: {
+          'Accept': 'application/json, text/plain, */*',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Referer': 'https://wfw.scu.edu.cn',
+        },
       );
       return jsonDecode(resp.body) as Map<String, dynamic>;
     });
