@@ -90,7 +90,6 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
   void dispose() {
     _provider.removeListener(_onProviderChanged);
     getIt<ScuAuthProvider>().removeListener(_onAuthChanged);
-    _provider.dispose();
     super.dispose();
   }
 
