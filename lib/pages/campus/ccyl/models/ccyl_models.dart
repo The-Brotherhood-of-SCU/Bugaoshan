@@ -1,4 +1,5 @@
 /// 第二课堂数据模型
+library;
 
 class CyclActivity {
   final String? activityId;
