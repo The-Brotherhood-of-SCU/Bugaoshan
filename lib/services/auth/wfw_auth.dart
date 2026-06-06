@@ -14,6 +14,9 @@ class WfwAuth extends ChangeNotifier {
     _scuAuth.addListener(notifyListeners);
   }
 
+  bool get isReady => _scuAuth.isReady;
+  bool get isExpired => _scuAuth.isExpired;
+
   /// 获取已认证的 CookieClient（SSO session）。
   Future<CookieClient> getClient() => _scuAuth.getClient();
 

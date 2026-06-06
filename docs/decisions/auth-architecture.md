@@ -226,9 +226,9 @@ stateDiagram-v2
     ready --> expired : TTL 过期（1小时）
     expired --> ready : refresh() 成功
     expired --> error : refresh() 失败
-    error --> Snackbar : onSessionExpired()
+    error --> ready : 登录成功
     ready --> unknown : logout()
-    Snackbar --> ready : 登录成功
+    note right of error : 触发 onSessionExpired() → Snackbar
 ```
 
 ## 全局错误处理
@@ -255,7 +255,9 @@ lib/providers/                     # 第1层 · Provider（有状态）
 ├── ccyl_provider.dart             # 监听 CcylAuth，持有 CcylApiService
 ├── course_provider.dart           # 纯本地数据
 ├── app_config_provider.dart       # 纯本地配置
-└── app_info_provider.dart         # 版本信息
+├── app_info_provider.dart         # 版本信息
+├── set_theme_color_provider.dart  # 背景图主题色提取
+└── export_schedule_provider.dart  # 课表导出工具
 
 lib/services/api/                  # 第1层 · API Service（无状态）
 ├── api_request.dart               # retryOnUnauthenticated()
@@ -301,8 +303,7 @@ graph TD
     CA --> CCYL["CcylApiService"]
     SCU --> SAP["ScuAuthProvider"]
     CA --> SAP
-    SCU --> UIP["UserInfoProvider"]
-    WA --> UIP
+    WA --> UIP["UserInfoProvider"]
     WFW --> UIP
     ZHJW --> GP["GradesProvider"]
     ZHJW --> TPP["TrainProgramProvider"]
@@ -344,6 +345,8 @@ ScuAuthProvider 是"认证控制器"，负责：
 - 这些操作需要直接调用 ScuAuth 方法
 
 它不是普通的业务 Provider，而是认证层的 UI 入口。
+
+其他 Provider（如 UserInfoProvider）不应直接持有 ScuAuth，而是通过 L2 Auth（如 WfwAuth.isReady）感知状态。
 
 ### 5. 为什么用 `_synchronizedRefresh` 而非简单重试
 

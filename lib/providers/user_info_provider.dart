@@ -1,9 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/wfw_api_service.dart';
-import 'package:bugaoshan/services/auth/auth_state.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/wfw_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 
@@ -16,11 +15,10 @@ const _keyUserNumber = 'scu_user_number';
 /// - WfwAuth 状态变化时自动获取用户信息标签和用户基本信息
 /// - 登出时自动清空
 class UserInfoProvider extends ChangeNotifier {
-  final ScuAuth _scuAuth;
   final WfwAuth _wfwAuth;
   final WfwApiService _wfwApi;
 
-  UserInfoProvider(this._scuAuth, this._wfwAuth, this._wfwApi) {
+  UserInfoProvider(this._wfwAuth, this._wfwApi) {
     _wfwAuth.addListener(_onAuthChanged);
   }
 
@@ -39,9 +37,10 @@ class UserInfoProvider extends ChangeNotifier {
   String? get userNumber => _userNumber;
 
   void _onAuthChanged() {
-    if (_scuAuth.isReady) {
+    if (_wfwAuth.isReady) {
       _fetchAll();
-    } else if (_scuAuth.state == AuthState.unknown) {
+    } else if (!_wfwAuth.isReady && !_wfwAuth.isExpired) {
+      // unknown 状态（logout）
       clear();
     }
   }
@@ -54,7 +53,6 @@ class UserInfoProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // 并行获取用户基本信息和标签
       final results = await Future.wait([
         _wfwApi.fetchUserProfile(),
         _wfwApi.fetchProfileLabels(),
@@ -66,10 +64,11 @@ class UserInfoProvider extends ChangeNotifier {
         _userRealname = profile['realname']?.toString();
         final role = profile['role'] as Map<String, dynamic>?;
         _userNumber = role?['number']?.toString();
-        // 持久化
         final prefs = getIt<SharedPreferences>();
         await prefs.setString(_keyUserRealname, _userRealname ?? '');
         await prefs.setString(_keyUserNumber, _userNumber ?? '');
+        // 同步到 ScuAuthProvider（向后兼容）
+        getIt<ScuAuthProvider>().setUserInfo(_userRealname, _userNumber);
       }
 
       // 更新标签
@@ -86,7 +85,7 @@ class UserInfoProvider extends ChangeNotifier {
 
   Future<void> fetchLabels() async {
     if (_loading) return;
-    if (!_scuAuth.isReady) return;
+    if (!_wfwAuth.isReady) return;
 
     _loading = true;
     _error = false;

@@ -58,7 +58,7 @@ GetIt + Injectable. All Provider/Service registrations are done manually in `lib
 
 **Layer 2 — Subsystem Auth:**
 - **`ZhjwAuth`** (`lib/services/auth/zhjw_auth.dart`) — 教务系统 SSO，代理 `ScuAuth.getClient()`。
-- **`WfwAuth`** (`lib/services/auth/wfw_auth.dart`) — 微服务 Bearer token 注入。
+- **`WfwAuth`** (`lib/services/auth/wfw_auth.dart`) — 微服务认证，共享 ScuAuth 的 CookieClient（SSO session）。
 - **`PayAppAuth`** (`lib/services/auth/payapp_auth.dart`) — 缴费平台 OAuth warrant 跳转。
 - **`FitnessAuth`** (`lib/services/auth/fitness_auth.dart`) — 体测 SSO 跳转。
 - **`CcylAuth`** (`lib/services/auth/ccyl_auth.dart`) — 第二课堂 OAuth token 管理。
@@ -107,7 +107,8 @@ Three notice sources, each in its own subdirectory under `lib/pages/campus/notic
 - `DownloadManager` (`lib/services/download_manager.dart`) — tracks download task state (pending/downloading/done/error).
 
 ### Providers
-- **`ScuAuthProvider`** — Persists SCU access token in `FlutterSecureStorage`, login timestamp and user info in `SharedPreferences`. Wraps `ScuAuth` + `CcylAuth`. Handles session expiry detection (1-hour TTL + last app open timestamp comparison), auto-login with OCR captcha solving (up to 5 retries), credential save/remember, and user profile fetching via `WfwApiService`.
+- **`ScuAuthProvider`** — 认证控制器。管理 SCU 登录/登出/自动登录（OCR 验证码，最多 5 次重试）/凭据保存。直接持有 `ScuAuth` + `CcylAuth`。
+- **`UserInfoProvider`** — 监听 `WfwAuth` 状态变化，自动获取用户信息（realname/number）和标签（图书借阅量/校园卡余额/网费余额）。登录后自动 fetch，登出自动 clear。
 - **`GradesProvider`** — Holds `ZhjwApiService` field; calls `fetchSchemeScores()` / `fetchPassingScores()` directly. Session expired handling delegated to `retryOnUnauthenticated` (auto-refresh + retry + global snackbar via `SessionExpiredListener`). Caches grades to SharedPreferences.
 - **`CourseProvider`** — Depends on `DatabaseService`. Provides schedule CRUD.
 - **`AppConfigProvider`** — User preferences: locale, theme color, color opacity, course card font size, course grid visibility, course row height, background image, dock items, EULA acceptance, etc.
