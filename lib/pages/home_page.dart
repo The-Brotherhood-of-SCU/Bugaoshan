@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -9,6 +10,7 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/services/auth/auth_coordinator.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
@@ -54,7 +56,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     try {
       await getIt.isReady<ScuAuthProvider>();
       final authProvider = getIt<ScuAuthProvider>();
-      if (authProvider.isLoggedIn) return;
+      if (authProvider.isLoggedIn) {
+        unawaited(getIt<AuthCoordinator>().warmUpAll());
+        return;
+      }
       await authProvider.autoLogin();
     } catch (e) {
       debugPrint('Auto login attempt error: $e');

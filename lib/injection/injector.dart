@@ -15,6 +15,7 @@ import 'package:bugaoshan/services/api/ccyl_api_service.dart';
 import 'package:bugaoshan/services/api/payapp_api_service.dart';
 import 'package:bugaoshan/services/api/wfw_api_service.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
+import 'package:bugaoshan/services/auth/auth_coordinator.dart';
 import 'package:bugaoshan/services/auth/auth_state.dart';
 import 'package:bugaoshan/services/auth/ccyl_auth.dart';
 import 'package:bugaoshan/services/auth/fitness_auth.dart';
@@ -94,7 +95,8 @@ void _configureAsyncDependencies() {
   });
   getIt.registerSingletonAsync<PayAppAuth>(() async {
     await getIt.isReady<ScuAuth>();
-    return PayAppAuth(getIt<ScuAuth>());
+    await getIt.isReady<WfwAuth>();
+    return PayAppAuth(getIt<ScuAuth>(), getIt<WfwAuth>());
   });
   getIt.registerSingletonAsync<FitnessAuth>(() async {
     await getIt.isReady<ScuAuth>();
@@ -105,6 +107,20 @@ void _configureAsyncDependencies() {
     final auth = CcylAuth(getIt<ScuAuth>());
     await auth.init();
     return auth;
+  });
+  getIt.registerSingletonAsync<AuthCoordinator>(() async {
+    await getIt.isReady<ZhjwAuth>();
+    await getIt.isReady<WfwAuth>();
+    await getIt.isReady<PayAppAuth>();
+    await getIt.isReady<FitnessAuth>();
+    await getIt.isReady<CcylAuth>();
+    return AuthCoordinator([
+      getIt<ZhjwAuth>(),
+      getIt<WfwAuth>(),
+      getIt<PayAppAuth>(),
+      getIt<FitnessAuth>(),
+      getIt<CcylAuth>(),
+    ]);
   });
 
   // ── 第1层：API Service ──────────────────────────────────────────
@@ -129,7 +145,12 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<ScuAuthProvider>(() async {
     await getIt.isReady<ScuAuth>();
     await getIt.isReady<CcylAuth>();
-    final provider = ScuAuthProvider(getIt<ScuAuth>(), getIt<CcylAuth>());
+    await getIt.isReady<AuthCoordinator>();
+    final provider = ScuAuthProvider(
+      getIt<ScuAuth>(),
+      getIt<CcylAuth>(),
+      getIt<AuthCoordinator>(),
+    );
     await provider.init();
     return provider;
   });
@@ -139,9 +160,9 @@ void _configureAsyncDependencies() {
     return CcylProvider(getIt<CcylAuth>(), getIt<CcylApiService>());
   });
   getIt.registerSingletonAsync<UserInfoProvider>(() async {
-    await getIt.isReady<ScuAuth>();
+    await getIt.isReady<WfwAuth>();
     await getIt.isReady<WfwApiService>();
-    return UserInfoProvider(getIt<ScuAuth>(), getIt<WfwApiService>());
+    return UserInfoProvider(getIt<WfwAuth>(), getIt<WfwApiService>());
   });
   getIt.registerSingletonAsync<GradesProvider>(() async {
     await getIt.isReady<SharedPreferences>();

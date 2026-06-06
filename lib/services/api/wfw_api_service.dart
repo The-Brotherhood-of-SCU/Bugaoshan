@@ -13,7 +13,11 @@ class WfwApiService {
   WfwApiService(this._auth);
 
   Future<T> _request<T>(Future<T> Function(CookieClient client) fn) {
-    return retryOnUnauthenticated(_auth.getClient, fn);
+    return retryOnUnauthenticated(
+      _auth.getClient,
+      fn,
+      invalidate: _auth.invalidate,
+    );
   }
 
   void _checkSessionExpiry(String body, int statusCode) {

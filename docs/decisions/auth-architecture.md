@@ -2,14 +2,16 @@
 
 ## 概述
 
-三层架构 + 响应式通知链，统一管理 SCU 统一认证、教务系统、微服务、缴费平台、体测、第二课堂六个后端服务的认证与数据访问。
+三层架构 + 子模块认证 + 响应式通知链，统一管理 SCU 统一认证、教务系统、微服务、缴费平台、体测、第二课堂六个后端服务的认证与数据访问。
 
 核心原则：
 1. **三层分离**：业务层 (L1) → 子系统 Auth (L2) → ScuAuth (L3)
 2. **L1 内部分工**：Provider（有状态，管理 UI）+ API Service（无状态，HTTP 工具）
-3. **响应式通知链**：L3 状态变化 → L2 监听并转发 → Provider 监听并自动获取数据
-4. **异常冒泡**：`UnauthenticatedException` 从 L3 穿透到 Provider
-5. **并发安全**：`_synchronizedRefresh` 确保 N 并发 = 1 次刷新
+3. **子模块认证契约**：每个子系统通过 `SubsystemAuth` 声明自己的鉴权方式和依赖关系
+4. **显式依赖 & 并行预热**：`AuthCoordinator` 按依赖分层，无依赖模块并行，有依赖串行
+5. **L2 自管就绪**：`WfwAuth` 等模块持有自己的 `_ready`，仅 session 绑定后才通知 Provider 发起请求
+6. **异常冒泡 + 自动重试**：`UnauthException` 穿透 → `invalidate()` → 重新鉴权 → 重试一次
+7. **并发安全**：`_synchronizedRefresh` 确保 N 并发 = 1 次刷新
 
 ## 三层架构 + 响应式链
 
@@ -40,10 +42,11 @@ graph TD
         PA["PayAppAuth"]
         FA["FitnessAuth"]
         CA["CcylAuth"]
+        AC["AuthCoordinator<br/>子模块后台预热 / 依赖调度"]
     end
 
     subgraph L3["第3层 · 统一认证（有状态）"]
-        SCU["ScuAuth<br/>login / bindSession / token<br/>SSO 预热 / 自动续期 / 并发互斥"]
+        SCU["ScuAuth<br/>login / bindSession / token<br/>自动续期 / 并发互斥"]
     end
 
     %% 响应式通知链（粗线）：L3 → L2 → Provider
@@ -51,7 +54,6 @@ graph TD
     SCU ==>|"notifyListeners"| ZA
     SCU ==>|"notifyListeners"| PA
     SCU ==>|"notifyListeners"| FA
-    SCU ==>|"notifyListeners"| CA
     WA ==>|"notifyListeners"| UIP
     CA ==>|"notifyListeners"| CP
 
@@ -78,6 +80,12 @@ graph TD
 
     %% ScuAuthProvider 直接操作 ScuAuth（认证控制器）
     SAP -->|"login/logout"| SCU
+    SAP -->|"warmUpAll"| AC
+    AC -->|"parallel layer"| ZA
+    AC -->|"parallel layer"| WA
+    AC -->|"parallel layer"| FA
+    AC -->|"parallel layer"| CA
+    AC -->|"after WfwAuth"| PA
 ```
 
 ### 三层职责
@@ -89,27 +97,43 @@ graph TD
 | **L2 子系统认证** | ZhjwAuth / WfwAuth / ... | ✅ 有状态 | 子系统认证 + 监听 L3 转发通知给 L1 |
 | **L3 统一认证** | ScuAuth | ✅ 有状态 | 登录 / token / SSO / 自动续期 / 并发互斥 |
 
-### 关键设计：响应式通知链
+## AuthCoordinator：子系统预热与依赖调度
 
-```mermaid
-sequenceDiagram
-    participant User as 用户
-    participant SAP as ScuAuthProvider
-    participant SCU as ScuAuth (L3)
-    participant WA as WfwAuth (L2)
-    participant UIP as UserInfoProvider
-    participant WFW as WfwApiService (L1)
+`AuthCoordinator` 在统一认证成功后后台预热所有子模块。每个模块通过 `SubsystemAuth.dependencies` 声明前置依赖：
 
-    User->>SAP: login()
-    SAP->>SCU: login()
-    SCU->>SCU: state = ready
-    SCU->>WA: notifyListeners()
-    WA->>UIP: notifyListeners()
-    UIP->>UIP: _onAuthChanged() → _fetchAll()
-    UIP->>WFW: fetchUserProfile()
-    UIP->>WFW: fetchProfileLabels()
-    WFW-->>UIP: 数据
-    UIP->>UIP: notifyListeners()
+```text
+zhjw    → 无依赖
+wfw     → 无依赖
+fitness → 无依赖
+ccyl    → 无依赖
+payapp  → 依赖 wfw
+```
+
+- 第一层（无依赖）：`zhjw + wfw + fitness + ccyl` 并行执行
+- 第二层：`payapp` 只等 `wfw` 完成，不等 `zhjw`/`fitness`/`ccyl`
+- 依赖失败只跳过下游，其他模块不受影响
+
+预热也由 [home_page.dart](E:/repo/Bugaoshan/lib/pages/home_page.dart:55) 在 app 启动、token 有效时直接触发，确保子系统 session 在 Provider 首次请求前已就绪。
+
+## WfwAuth 自管就绪
+
+`WfwAuth.isReady` 不再代理 `ScuAuth.isReady`，而是由内部 `_ready` 标志控制：
+
+- 初始 `false`
+- `ensureAuthenticated()` 或 `getClient()` 成功后置 `true` 并 `notifyListeners()`
+- `ScuAuth` 登出时重置为 `false`
+- `invalidate()` 也重置，配合重试清除过期状态
+
+这样 `UserInfoProvider` 构造时不会立即发起请求；只有 session 绑定完成后才收到通知并开始获取数据。
+
+### 响应式通知链
+
+```text
+ScuAuth token 恢复 → HomePage 触发 warmUpAll()
+  → WfwAuth.ensureAuthenticated() → getClient() → bindSession() 成功
+  → WfwAuth._ready = true → notifyListeners()
+  → UserInfoProvider._onAuthChanged() → _fetchAll()
+  → loading = true → UI 显示加载中 → API 完成 → UI 显示数据
 ```
 
 ### 依赖规则
@@ -137,15 +161,17 @@ graph TD
     FIT["FitnessAuth<br/>pead.scu.edu.cn<br/>ChangeNotifier"]
     CCYL["CcylAuth<br/>dekt.scu.edu.cn<br/>ChangeNotifier"]
 
-    SCU -->|"getClient() 共享 CookieClient"| ZHJW
-    SCU -->|"getClient() CookieClient"| WFW
+    SCU -->|"getClient() + JWT SSO"| ZHJW
+    SCU -->|"getClient()"| WFW
+    WFW -->|"dependency"| PAY
     SCU -->|"getClient() + OAuth warrant"| PAY
     SCU -->|"getClient() + SSO redirect"| FIT
     CCYL -.->|"OAuth code via CcylOAuthService"| SCU
 ```
 
-- **ZhjwAuth / WfwAuth**：共享 ScuAuth 的 CookieClient（SSO session）
-- **PayAppAuth / FitnessAuth**：继承 `SsoRelayAuth` 基类，做 SSO 跳转
+- **ZhjwAuth**：通过 SCU JWT SSO 获取教务 session cookie
+- **WfwAuth**：直接使用 SCU 统一认证 session，不依赖教务
+- **PayAppAuth / FitnessAuth**：继承 `SsoRelayAuth` 基类，做 SSO 跳转；PayAppAuth 显式依赖 WfwAuth
 - **CcylAuth**：独立 token，通过 `CcylOAuthService(ScuAuth)` 桥接 SCU
 
 ## 异常体系
@@ -231,7 +257,42 @@ stateDiagram-v2
     note right of error : 触发 onSessionExpired() → Snackbar
 ```
 
-## 全局错误处理
+## 重试与恢复
+
+### 认证重试（retryOnUnauthenticated）
+
+```dart
+Future<T> retryOnUnauthenticated<T, C>(
+    Future<C> Function() getClient,
+    Future<T> Function(C client) fn, {
+    void Function()? invalidate,
+}) async {
+    try {
+        final client = await getClient();
+        return await fn(client);
+    } on UnauthenticatedException {
+        invalidate?.call();      // 清除过期缓存
+        final client = await getClient();  // 重新鉴权
+        return await fn(client); // 重试请求
+    }
+}
+```
+
+ZHJW / WFW / PAYAPP 的 `_request()` 都传入对应 Auth 的 `invalidate`，确保重试前清除的是本模块缓存。
+
+### CCYL token 过期重试
+
+CCYL token 过期时服务端返回业务错误码（`CcylException`），而非 `UnauthenticatedException`。`CcylApiService._retryOnCcylAuthError()` 捕获 `CcylException` 后：
+
+1. `CcylAuth.invalidate()` 清除旧 token 和 reLogin future
+2. `CcylAuth.reLogin()` 通过 SCU OAuth 换新 token
+3. 重试原请求
+
+### HTTP 层 ClientException 重试
+
+`CookieClient.send()` 使用 `sendWithClientExceptionRetry()`，遇到 `http.ClientException`（连接断开等）时重建 `http.Client` 并重试一次。`followRedirects()` 早已使用相同逻辑。
+
+### 全局错误处理
 
 ```mermaid
 graph TD
@@ -272,6 +333,8 @@ lib/services/auth/                 # 第2+3层 · 认证（有状态）
 ├── cookie_client.dart             # 按域隔离 cookie
 ├── scu_exceptions.dart            # 异常体系
 ├── scu_auth.dart                  # 第3层 · 统一认证（ChangeNotifier）
+├── subsystem_auth.dart            # 第2层 · 子系统认证契约
+├── auth_coordinator.dart          # 第2层 · 子系统后台预热与依赖调度
 ├── sso_relay_auth.dart            # SSO 中继基类（ChangeNotifier）
 ├── zhjw_auth.dart                 # 第2层 · 教务 SSO（ChangeNotifier）
 ├── wfw_auth.dart                  # 第2层 · 微服务（ChangeNotifier）
@@ -352,10 +415,27 @@ ScuAuthProvider 是"认证控制器"，负责：
 
 100 个并发请求同时触发过期，不应执行 100 次 refresh。`Completer` 互斥确保 N 并发 = 1 次刷新。
 
-### 6. 为什么 PayAppAuth/FitnessAuth 继承 SsoRelayAuth
+### 6. 子模块认证契约（SubsystemAuth）
+
+```dart
+abstract interface class SubsystemAuth {
+  String get moduleId;                   // 稳定标识
+  List<SubsystemAuth> get dependencies;  // 前置依赖声明
+  Future<void> ensureAuthenticated();    // 执行本模块鉴权
+  void invalidate();                     // 清除缓存状态
+}
+```
+
+每个子模块 Auth 实现此接口。`AuthCoordinator` 据此决定并行/串行调度。新增模块只需实现契约并在 `injector.dart` 注册。
+
+### 7. 为什么 PayAppAuth/FitnessAuth 继承 SsoRelayAuth
 
 两个类逻辑完全相同：获取 SCU CookieClient → SSO 跳转 → 缓存。唯一差异是 URL。基类消除重复。
 
-### 7. 为什么 CCYL 独立于 SCU
+### 8. 为什么 WfwAuth 自管 _ready
+
+`WfwAuth.isReady` 若简单代理 `ScuAuth.isReady`，Provider 在 token 恢复后立即发起请求，此时 session 尚未绑定（`session/save` 未执行），请求失败。自管 `_ready` 后，Provider 仅在 session 绑定完成后才收到通知，保证请求时 session 已就绪。
+
+### 9. 为什么 CCYL 独立于 SCU
 
 CCYL 有自己的 OAuth token 体系。通过 SCU 的 CAS SSO 获取 OAuth code，然后用 code 换 token。后续请求完全独立。

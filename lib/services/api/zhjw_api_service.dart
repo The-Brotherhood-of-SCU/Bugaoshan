@@ -21,7 +21,11 @@ class ZhjwApiService {
   ZhjwApiService(this._auth);
 
   Future<T> _request<T>(Future<T> Function(CookieClient client) fn) {
-    return retryOnUnauthenticated(_auth.getClient, fn);
+    return retryOnUnauthenticated(
+      _auth.getClient,
+      fn,
+      invalidate: _auth.invalidate,
+    );
   }
 
   /// 检查会话是否过期。

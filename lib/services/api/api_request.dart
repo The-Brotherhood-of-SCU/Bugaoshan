@@ -8,12 +8,14 @@ import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 /// 第二次仍失败 → UnauthenticatedException 穿透到调用方。
 Future<T> retryOnUnauthenticated<T, C>(
   Future<C> Function() getClient,
-  Future<T> Function(C client) fn,
-) async {
+  Future<T> Function(C client) fn, {
+  void Function()? invalidate,
+}) async {
   try {
     final client = await getClient();
     return await fn(client);
   } on UnauthenticatedException {
+    invalidate?.call();
     final client = await getClient();
     return await fn(client);
   }

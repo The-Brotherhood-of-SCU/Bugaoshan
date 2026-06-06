@@ -5,6 +5,7 @@ import 'package:bugaoshan/services/auth/ccyl_oauth_service.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/ccyl/ccyl_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/services/auth/subsystem_auth.dart';
 
 const _keyCcylToken = 'ccyl_token';
 const _keyCcylUserId = 'ccyl_user_id';
@@ -14,12 +15,19 @@ const _keyCcylUserId = 'ccyl_user_id';
 /// 管理 CCYL 的 token、用户信息、登录/登出。
 /// CCYL 拥有独立于 SCU 的 OAuth token 体系，不共享 session cookie。
 /// reLogin 时通过 [CcylOAuthService] 从 SCU 获取 OAuth code。
-class CcylAuth extends ChangeNotifier {
+class CcylAuth extends ChangeNotifier implements SubsystemAuth {
   final ScuAuth _scuAuth;
   String? _token;
   CcylUser? _currentUser;
+  Future<bool>? _reLoginFuture;
 
   CcylAuth(this._scuAuth);
+
+  @override
+  String get moduleId => 'ccyl';
+
+  @override
+  List<SubsystemAuth> get dependencies => const [];
 
   String? get token => _token;
   bool get isLoggedIn => _token != null;
@@ -46,6 +54,13 @@ class CcylAuth extends ChangeNotifier {
     return _token!;
   }
 
+  @override
+  Future<void> ensureAuthenticated() async {
+    if (_token != null) return;
+    final ok = await reLogin();
+    if (!ok) throw const UnauthenticatedException('第二课堂未登录');
+  }
+
   /// 获取当前用户 ID，未登录时抛 [UnauthenticatedException]。
   String requireUserId() {
     if (_currentUser == null) throw const UnauthenticatedException('第二课堂未登录');
@@ -63,6 +78,16 @@ class CcylAuth extends ChangeNotifier {
 
   /// 通过 SCU 自动恢复 CCYL 登录（OAuth 静默绑定）。
   Future<bool> reLogin() async {
+    if (_reLoginFuture != null) return _reLoginFuture!;
+    _reLoginFuture = _doReLogin();
+    try {
+      return await _reLoginFuture!;
+    } finally {
+      _reLoginFuture = null;
+    }
+  }
+
+  Future<bool> _doReLogin() async {
     try {
       final oauth = CcylOAuthService(_scuAuth);
       final oauthCode = await oauth.getOAuthCode();
@@ -79,6 +104,11 @@ class CcylAuth extends ChangeNotifier {
     }
   }
 
+  @override
+  void invalidate() {
+    _reLoginFuture = null;
+  }
+
   Future<void> _saveToSecure() async {
     final secure = SecureStorageProvider.instance;
     await secure.write(key: _keyCcylToken, value: _token!);
@@ -90,6 +120,7 @@ class CcylAuth extends ChangeNotifier {
   Future<void> logout() async {
     _token = null;
     _currentUser = null;
+    _reLoginFuture = null;
     final secure = SecureStorageProvider.instance;
     await secure.delete(key: _keyCcylToken);
     await secure.delete(key: _keyCcylUserId);

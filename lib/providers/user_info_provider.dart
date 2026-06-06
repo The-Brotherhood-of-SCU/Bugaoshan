@@ -4,26 +4,26 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/wfw_api_service.dart';
 import 'package:bugaoshan/services/auth/auth_state.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/services/auth/wfw_auth.dart';
 
 const _keyUserRealname = 'scu_user_realname';
 const _keyUserNumber = 'scu_user_number';
 
 /// 用户信息 Provider（单例）
 ///
-/// 监听 [ScuAuth] 状态变化：
+/// 监听 [WfwAuth] 状态变化：
 /// - 登录成功（ready）→ 自动获取用户信息标签和用户基本信息
 /// - 登出（unknown）→ 自动清空
 class UserInfoProvider extends ChangeNotifier {
-  final ScuAuth _scuAuth;
+  final WfwAuth _wfwAuth;
   final WfwApiService _wfwApi;
 
-  UserInfoProvider(this._scuAuth, this._wfwApi) {
-    _scuAuth.addListener(_onAuthChanged);
+  UserInfoProvider(this._wfwAuth, this._wfwApi) {
+    _wfwAuth.addListener(_onAuthChanged);
     // ScuAuth.init() 在 DI 阶段完成，此时本 Provider 还没创建，
     // init() 的 notifyListeners 没人接收。构造后主动检查一次。
-    if (_scuAuth.isReady) {
+    if (_wfwAuth.isReady) {
       Future.microtask(_fetchAll);
     }
   }
@@ -43,9 +43,9 @@ class UserInfoProvider extends ChangeNotifier {
   String? get userNumber => _userNumber;
 
   void _onAuthChanged() {
-    if (_scuAuth.state == AuthState.ready) {
+    if (_wfwAuth.state == AuthState.ready) {
       _fetchAll();
-    } else if (_scuAuth.state == AuthState.unknown) {
+    } else if (_wfwAuth.state == AuthState.unknown) {
       clear();
     }
   }
@@ -90,7 +90,7 @@ class UserInfoProvider extends ChangeNotifier {
 
   Future<void> fetchLabels() async {
     if (_loading) return;
-    if (!_scuAuth.isReady) return;
+    if (!_wfwAuth.isReady) return;
 
     _loading = true;
     _error = false;
@@ -124,7 +124,7 @@ class UserInfoProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    _scuAuth.removeListener(_onAuthChanged);
+    _wfwAuth.removeListener(_onAuthChanged);
     super.dispose();
   }
 }

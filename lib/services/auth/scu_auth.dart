@@ -25,7 +25,7 @@ const _sessionDurationSeconds = 3600;
 /// 合并原 ScuAuthService + ScuAuthSession，职责：
 /// - 登录（密码 + SM2 加密 + 验证码）
 /// - token 持久化（FlutterSecureStorage）
-/// - SSO session 绑定（CookieClient）
+/// - 统一认证 session 绑定（CookieClient）
 /// - 过期检测（1小时 TTL）+ 自动续期（bindSession → autoLogin）
 /// - 并发安全的刷新互斥（_synchronizedRefresh）
 ///
@@ -233,11 +233,8 @@ class ScuAuth extends ChangeNotifier {
 
   // ─── Session 绑定 ─────────────────────────────────────────────
 
-  /// 将 token 绑定到服务端 session，返回携带 cookie 的 Client。
-  ///
-  /// 预热两个 SSO SP：
-  ///   - scdxplugin_jwt23       → 教务系统（zhjw.scu.edu.cn）
-  ///   - scdxplugin_cas_apereo17 → 团委系统（CCYL / dekt.scu.edu.cn）
+  /// 将 token 绑定到统一认证服务端 session，返回携带 id.scu.edu.cn cookie 的 Client。
+  /// 子系统 SSO 由各自的 Auth 模块负责，避免互不依赖的模块相互阻塞。
   Future<CookieClient> bindSession() async {
     if (_accessToken == null) {
       throw const UnauthenticatedException('未登录');
@@ -274,49 +271,9 @@ class ScuAuth extends ChangeNotifier {
       throw ScuLoginException('session/save 失败: ${sessionResp.body}');
     }
 
-    // ── Step 2 & 3: 预热 JWT SSO + CAS Apereo SSO（并行）
-    await Future.wait([_warmupJwtSso(client), _warmupCasSso(client)]);
-
     client.reusable = true;
     _cachedClient = client;
     return client;
-  }
-
-  Future<void> _warmupJwtSso(CookieClient client) async {
-    try {
-      await client.followRedirects(
-        Uri.parse(
-          '$_base/enduser/sp/sso/scdxplugin_jwt23'
-          '?enterpriseId=scdx&target_url=index',
-        ),
-        headers: {
-          'Accept': 'text/html,application/xhtml+xml,*/*',
-          'User-Agent': _headers['User-Agent']!,
-          'Authorization': 'Bearer $_accessToken',
-        },
-      );
-    } catch (_) {
-      // JWT SSO 预热失败不影响非教务功能
-    }
-  }
-
-  Future<void> _warmupCasSso(CookieClient client) async {
-    try {
-      await client.followRedirects(
-        Uri.parse(
-          '$_base/api/bff/v1.2/commons/sp_logged'
-          '?access_token=$_accessToken'
-          '&sp_code=$kCcylSpCode'
-          '&application_key=scdxplugin_cas_apereo17',
-        ),
-        headers: {
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*',
-          'User-Agent': _headers['User-Agent']!,
-        },
-      );
-    } catch (_) {
-      // CAS SSO 预热失败不影响非 CCYL 功能
-    }
   }
 
   /// 清除缓存的 Client，下次 [bindSession] 会重新执行 SSO 握手。

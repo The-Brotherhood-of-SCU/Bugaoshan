@@ -100,7 +100,7 @@ class CookieClient extends http.BaseClient {
           .map((e) => '${e.key}=${e.value}')
           .join('; ');
     }
-    final response = await _inner.send(request).timeout(kHttpTimeout);
+    final response = await sendWithClientExceptionRetry(request);
     _storeCookies(request.url, response);
     return response;
   }

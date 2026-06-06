@@ -1,7 +1,7 @@
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/services/auth/ccyl_auth.dart';
-import 'package:bugaoshan/services/ccyl/ccyl_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/services/ccyl/ccyl_service.dart';
 
 /// 第二课堂 API Service（第1层）
 ///
@@ -10,11 +10,25 @@ class CcylApiService {
   final CcylAuth _auth;
   CcylApiService(this._auth);
 
+  /// 带 auth 重试的请求包装。
+  /// CCYL token 过期时服务端返回业务错误码而非 [UnauthenticatedException]。
+  /// 这里捕获 [CcylException] 后清除旧 token、重新鉴权、再试一次。
+  Future<T> _retryOnCcylAuthError<T>(Future<T> Function() fn) async {
+    // 首次保证 token 存在
+    await _ensureToken();
+    try {
+      return await fn();
+    } on CcylException {
+      _auth.invalidate();
+      final ok = await _auth.reLogin();
+      if (!ok) throw const UnauthenticatedException('第二课堂 token 过期，重新登录失败');
+      return await fn();
+    }
+  }
+
   /// 获取 token，未登录时自动尝试 reLogin，失败抛 [UnauthenticatedException]。
   Future<String> _ensureToken() async {
-    if (_auth.isLoggedIn) return _auth.token!;
-    final ok = await _auth.reLogin();
-    if (!ok) throw const UnauthenticatedException('第二课堂未登录');
+    await _auth.ensureAuthenticated();
     return _auth.token!;
   }
 
@@ -29,31 +43,35 @@ class CcylApiService {
     String? status,
     String? quality,
   }) async {
-    final token = await _ensureToken();
-    return CcylService.searchActivities(
-      token: token,
-      pageNum: pageNum,
-      pageSize: pageSize,
-      name: name ?? '',
-      level: level ?? '',
-      scoreType: scoreType ?? '',
-      org: org ?? '',
-      order: order ?? '',
-      status: status ?? '',
-      quality: quality ?? '',
-    );
+    return _retryOnCcylAuthError(() {
+      final token = _auth.token!;
+      return CcylService.searchActivities(
+        token: token,
+        pageNum: pageNum,
+        pageSize: pageSize,
+        name: name ?? '',
+        level: level ?? '',
+        scoreType: scoreType ?? '',
+        org: org ?? '',
+        order: order ?? '',
+        status: status ?? '',
+        quality: quality ?? '',
+      );
+    });
   }
 
   Future<List<CyclActivity>> getMyActivities({
     int pageNum = 1,
     int pageSize = 10,
   }) async {
-    final token = await _ensureToken();
-    return CcylService.getMyActivities(
-      token: token,
-      pageNum: pageNum,
-      pageSize: pageSize,
-    );
+    return _retryOnCcylAuthError(() {
+      final token = _auth.token!;
+      return CcylService.getMyActivities(
+        token: token,
+        pageNum: pageNum,
+        pageSize: pageSize,
+      );
+    });
   }
 
   Future<List<CyclActivity>> getOrderedActivities({
@@ -61,18 +79,22 @@ class CcylApiService {
     int pageSize = 10,
     String? name,
   }) async {
-    final token = await _ensureToken();
-    return CcylService.getOrderedActivities(
-      token: token,
-      pageNum: pageNum,
-      pageSize: pageSize,
-      name: name ?? '',
-    );
+    return _retryOnCcylAuthError(() {
+      final token = _auth.token!;
+      return CcylService.getOrderedActivities(
+        token: token,
+        pageNum: pageNum,
+        pageSize: pageSize,
+        name: name ?? '',
+      );
+    });
   }
 
   Future<List<CyclOrg>> getAllOrgs() async {
-    final token = await _ensureToken();
-    return CcylService.getAllOrgs(token: token);
+    return _retryOnCcylAuthError(() {
+      final token = _auth.token!;
+      return CcylService.getAllOrgs(token: token);
+    });
   }
 
   Future<
@@ -83,48 +105,60 @@ class CcylApiService {
     })
   >
   getActivityLibDetail(String id) async {
-    final token = await _ensureToken();
-    return CcylService.getActivityLibDetail(
-      token: token,
-      activityLibraryId: id,
-    );
+    return _retryOnCcylAuthError(() {
+      final token = _auth.token!;
+      return CcylService.getActivityLibDetail(
+        token: token,
+        activityLibraryId: id,
+      );
+    });
   }
 
   Future<void> subscribeActivity(String id) async {
-    final token = await _ensureToken();
-    return CcylService.subscribeActivity(token: token, activityLibraryId: id);
+    return _retryOnCcylAuthError(() {
+      final token = _auth.token!;
+      return CcylService.subscribeActivity(token: token, activityLibraryId: id);
+    });
   }
 
   Future<void> cancelSubscribe(String id) async {
-    final token = await _ensureToken();
-    return CcylService.cancelSubscribe(token: token, activityLibraryId: id);
+    return _retryOnCcylAuthError(() {
+      final token = _auth.token!;
+      return CcylService.cancelSubscribe(token: token, activityLibraryId: id);
+    });
   }
 
   Future<List<CyclScoreType>> getActivityScoreTypes(String id) async {
-    final token = await _ensureToken();
-    return CcylService.getActivityScoreTypes(
-      token: token,
-      activityLibraryId: id,
-    );
+    return _retryOnCcylAuthError(() {
+      final token = _auth.token!;
+      return CcylService.getActivityScoreTypes(
+        token: token,
+        activityLibraryId: id,
+      );
+    });
   }
 
   Future<void> signUpActivity(String activityId, String scoreType) async {
-    final token = await _ensureToken();
-    return CcylService.signUpActivity(
-      token: token,
-      activityId: activityId,
-      scoreType: scoreType,
-    );
+    return _retryOnCcylAuthError(() {
+      final token = _auth.token!;
+      return CcylService.signUpActivity(
+        token: token,
+        activityId: activityId,
+        scoreType: scoreType,
+      );
+    });
   }
 
   Future<void> cancelSignUp(String activityId) async {
-    final token = await _ensureToken();
-    final userId = _auth.requireUserId();
-    return CcylService.cancelSignUp(
-      token: token,
-      activityId: activityId,
-      userId: userId,
-    );
+    return _retryOnCcylAuthError(() {
+      final token = _auth.token!;
+      final userId = _auth.requireUserId();
+      return CcylService.cancelSignUp(
+        token: token,
+        activityId: activityId,
+        userId: userId,
+      );
+    });
   }
 
   Future<
@@ -136,36 +170,47 @@ class CcylApiService {
     })
   >
   getActivityDetail(String activityId) async {
-    final token = await _ensureToken();
-    return CcylService.getActivityDetail(token: token, activityId: activityId);
+    return _retryOnCcylAuthError(() {
+      final token = _auth.token!;
+      return CcylService.getActivityDetail(
+        token: token,
+        activityId: activityId,
+      );
+    });
   }
 
   Future<List<CyclCredit>> getCreditList({
     int pageNum = 1,
     int pageSize = 10,
   }) async {
-    final token = await _ensureToken();
-    return CcylService.getCreditList(
-      token: token,
-      pageNum: pageNum,
-      pageSize: pageSize,
-    );
+    return _retryOnCcylAuthError(() {
+      final token = _auth.token!;
+      return CcylService.getCreditList(
+        token: token,
+        pageNum: pageNum,
+        pageSize: pageSize,
+      );
+    });
   }
 
   Future<String> exportCreditsToEmail(
     List<String> creditIds,
     String email,
   ) async {
-    final token = await _ensureToken();
-    return CcylService.exportCreditsToEmail(
-      token: token,
-      creditIds: creditIds,
-      email: email,
-    );
+    return _retryOnCcylAuthError(() {
+      final token = _auth.token!;
+      return CcylService.exportCreditsToEmail(
+        token: token,
+        creditIds: creditIds,
+        email: email,
+      );
+    });
   }
 
   Future<Map<String, List<CyclDict>>> getDicts(List<String> groupCodes) async {
-    final token = await _ensureToken();
-    return CcylService.getDicts(token: token, groupCodes: groupCodes);
+    return _retryOnCcylAuthError(() {
+      final token = _auth.token!;
+      return CcylService.getDicts(token: token, groupCodes: groupCodes);
+    });
   }
 }

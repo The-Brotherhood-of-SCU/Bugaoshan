@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/utils/secure_storage.dart';
+import 'package:bugaoshan/services/auth/auth_coordinator.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/ccyl_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
@@ -15,12 +17,13 @@ const _keyUserNumber = 'scu_user_number';
 /// 持久化 SCU 登录状态的 Provider，注册为 singleton。
 ///
 /// 认证控制器：管理登录/登出/自动登录/凭据。
-/// 用户信息获取由 [UserInfoProvider] 通过监听 [WfwAuth] 自动触发。
+/// 子系统登录由 [AuthCoordinator] 按依赖后台预热。
 class ScuAuthProvider extends ChangeNotifier {
   final ScuAuth _scuAuth;
   final CcylAuth _ccylAuth;
+  final AuthCoordinator _authCoordinator;
 
-  ScuAuthProvider(this._scuAuth, this._ccylAuth) {
+  ScuAuthProvider(this._scuAuth, this._ccylAuth, this._authCoordinator) {
     _scuAuth.addListener(_onAuthChanged);
   }
 
@@ -68,13 +71,15 @@ class ScuAuthProvider extends ChangeNotifier {
       captchaCode: captchaCode,
       captchaText: captchaText,
     );
-    // 登录成功后 ScuAuth state → ready，WfwAuth/CcylAuth 自动感知并触发后续流程
+    // 登录成功后后台预热子模块；页面不等待慢模块。
+    unawaited(_authCoordinator.warmUpAll());
     notifyListeners();
   }
 
   Future<void> logout() async {
-    _scuAuth.logout();
-    _ccylAuth.logout();
+    await _scuAuth.logout();
+    await _ccylAuth.logout();
+    _authCoordinator.invalidateAll();
     _userRealname = null;
     _userNumber = null;
     final prefs = getIt<SharedPreferences>();
@@ -146,7 +151,6 @@ class ScuAuthProvider extends ChangeNotifier {
             captchaCode: captcha.code,
             captchaText: captchaText,
           );
-          // 登录后 ScuAuth → ready，WfwAuth/CcylAuth 自动感知触发后续流程
           return true;
         } on ScuLoginException catch (e) {
           if (e.message == 'invalid_captcha') {

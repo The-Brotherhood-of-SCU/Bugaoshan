@@ -10,4 +10,7 @@ class FitnessAuth extends SsoRelayAuth {
         scuAuth,
         'https://pead.scu.edu.cn/bdlp_h5_fitness_test/public/index.php/index/login/scuMsLogin',
       );
+
+  @override
+  String get moduleId => 'fitness';
 }
