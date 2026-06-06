@@ -1,16 +1,12 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:hive_ce/hive.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:bugaoshan/models/course.dart';
 
 const String _keyCurrentScheduleId = 'currentScheduleId';
-const String _keySchedules = 'schedules';
-const String _keyScheduleConfig = 'scheduleConfig'; // Legacy Hive key
 
 class DatabaseService {
   late Database _db;
@@ -62,9 +58,6 @@ class DatabaseService {
       },
     );
 
-    // Try migrating from Hive if old data exists
-    await _migrateFromHiveIfNeeded(dir.path);
-
     // Load current schedule ID from metadata
     final metaRows = await _db.query(
       'metadata',
@@ -82,136 +75,6 @@ class DatabaseService {
     // Load caches
     await _loadSchedulesCache();
     await _loadCoursesCache();
-  }
-
-  // ==================== Hive Migration ====================
-
-  Future<void> _migrateFromHiveIfNeeded(String appDirPath) async {
-    // Check if Hive metadata box file exists
-    final hiveMetaFile = File(p.join(appDirPath, 'metadata.hive'));
-    if (!hiveMetaFile.existsSync()) return;
-
-    // Check if SQLite already has data (don't re-migrate)
-    final existingSchedules = await _db.query('schedules');
-    if (existingSchedules.isNotEmpty) return;
-
-    debugPrint('Migrating data from Hive to SQLite...');
-
-    try {
-      Hive.init(appDirPath);
-
-      // Open metadata box
-      await Hive.openBox('metadata');
-      final metadataBox = Hive.box('metadata');
-
-      // Read schedules list
-      final schedulesRaw = metadataBox.get(_keySchedules) as List<dynamic>?;
-      var currentId =
-          metadataBox.get(_keyCurrentScheduleId) as String? ?? 'default';
-
-      List<ScheduleConfig> schedules = [];
-      if (schedulesRaw != null) {
-        for (final item in schedulesRaw) {
-          try {
-            final map = Map<String, dynamic>.from(
-              json.decode(item as String) as Map,
-            );
-            schedules.add(ScheduleConfig.fromJson(map));
-          } catch (_) {}
-        }
-      }
-
-      // If no schedules found, try legacy single-schedule format
-      if (schedules.isEmpty) {
-        final legacyJson = metadataBox.get(_keyScheduleConfig) as String?;
-        if (legacyJson != null && legacyJson.isNotEmpty) {
-          try {
-            final config = ScheduleConfig.fromJson(
-              Map<String, dynamic>.from(json.decode(legacyJson) as Map),
-            );
-            config.id = 'default';
-            if (config.semesterName.isEmpty) {
-              config.semesterName = '默认课表';
-            }
-            schedules.add(config);
-          } catch (_) {
-            // 旧数据无法解析，迁移到空 schedules 表。
-          }
-        }
-        // 不再为「无 legacy 数据」的情况自动插入默认课表。
-        // 老用户没课表就保持空，让 UI 显示「暂无课表」空状态。
-      }
-
-      if (schedules.isNotEmpty && !schedules.any((s) => s.id == currentId)) {
-        currentId = schedules.first.id;
-      }
-
-      // Insert schedules into SQLite
-      for (final s in schedules) {
-        await _db.insert('schedules', {
-          'id': s.id,
-          'config_json': _encodeJson(s.toJson()),
-        });
-      }
-
-      // Insert current schedule ID
-      await _db.insert('metadata', {
-        'key': _keyCurrentScheduleId,
-        'value': currentId,
-      });
-
-      // Migrate courses from each Hive box
-      final migratedCourseIds = <String>{};
-      for (final s in schedules) {
-        final boxName = s.id == 'default' ? 'courses' : 'courses_${s.id}';
-        try {
-          await Hive.openBox(boxName);
-          final box = Hive.box(boxName);
-          for (final value in box.values) {
-            if (value is Map) {
-              final courseMap = Map<String, dynamic>.from(value);
-              final course = Course.fromJson(courseMap);
-              final safeCourse =
-                  course.id.isEmpty || migratedCourseIds.contains(course.id)
-                  ? _copyCourseWithFreshId(course)
-                  : course;
-              migratedCourseIds.add(safeCourse.id);
-              await _db.insert('courses', _courseToRow(safeCourse, s.id));
-            }
-          }
-          await box.close();
-        } catch (e) {
-          debugPrint('Failed to migrate courses for schedule ${s.id}: $e');
-        }
-      }
-
-      await metadataBox.close();
-
-      // Delete old Hive files
-      _deleteHiveFiles(appDirPath);
-
-      debugPrint('Hive migration completed successfully.');
-    } catch (e) {
-      debugPrint('Hive migration failed: $e');
-    }
-  }
-
-  void _deleteHiveFiles(String dirPath) {
-    try {
-      final dir = Directory(dirPath);
-      for (final file in dir.listSync()) {
-        if (file is File) {
-          final name = p.basename(file.path);
-          if (name.endsWith('.hive') ||
-              name.endsWith('.lock') ||
-              name.endsWith('.hive.crc')) {
-            file.deleteSync();
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint('Failed to delete Hive files: $e');
-    }
   }
 
   // ==================== Cache Helpers ====================
@@ -263,21 +126,6 @@ class DatabaseService {
       weekType: weekTypeIndex < WeekType.values.length
           ? WeekType.values[weekTypeIndex]
           : WeekType.every,
-    );
-  }
-
-  Course _copyCourseWithFreshId(Course course) {
-    return Course(
-      name: course.name,
-      teacher: course.teacher,
-      location: course.location,
-      startWeek: course.startWeek,
-      endWeek: course.endWeek,
-      dayOfWeek: course.dayOfWeek,
-      startSection: course.startSection,
-      endSection: course.endSection,
-      colorValue: course.colorValue,
-      weekType: course.weekType,
     );
   }
 
