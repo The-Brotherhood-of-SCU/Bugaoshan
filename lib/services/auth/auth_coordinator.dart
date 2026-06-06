@@ -61,6 +61,7 @@ class AuthCoordinator {
   }
 
   void invalidateAll() {
+    _warmUpFuture = null;
     for (final module in _modules) {
       module.invalidate();
     }

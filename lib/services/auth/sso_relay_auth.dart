@@ -81,6 +81,7 @@ abstract class SsoRelayAuth extends ChangeNotifier implements SubsystemAuth {
   void invalidate() {
     _cachedClient = null;
     _loginFuture = null;
+    _lastScuClient = null;
   }
 
   @override

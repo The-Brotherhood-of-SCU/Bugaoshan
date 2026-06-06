@@ -222,6 +222,7 @@ class ScuAuth extends ChangeNotifier {
     // 登录成功
     _accessToken = token;
     _cachedClient = null;
+    _bindSessionFuture = null;
     _loginTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     await SecureStorageProvider.instance.write(
       key: _keyAccessToken,
@@ -392,6 +393,8 @@ class ScuAuth extends ChangeNotifier {
   Future<void> logout() async {
     _accessToken = null;
     _cachedClient = null;
+    _bindSessionFuture = null;
+    _refreshCompleter = null;
     _loginTimestamp = null;
     await SecureStorageProvider.instance.delete(key: _keyAccessToken);
     await _prefs.remove(_keyLoginTimestamp);
