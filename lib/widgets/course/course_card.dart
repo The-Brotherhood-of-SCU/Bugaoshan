@@ -51,7 +51,7 @@ class CourseCard extends StatelessWidget {
             (text: course.teacher, preferredMaxLines: 2),
           (
             text: l10n.weekRange(course.startWeek, course.endWeek),
-            preferredMaxLines: 2,
+            preferredMaxLines: 1,
           ),
         ];
 
