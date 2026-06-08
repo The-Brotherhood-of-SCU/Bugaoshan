@@ -64,7 +64,7 @@ class CourseGrid extends StatefulWidget {
   final ScheduleConfig config;
   final int displayWeek;
   final int totalWeeks;
-  final bool forceActive;
+  final bool showAllWeeks;
   final void Function(Course course)? onCourseTap;
   final void Function(Course course)? onCourseLongPress;
   final void Function(int dayOfWeek, int section)? onEmptyTap;
@@ -76,7 +76,7 @@ class CourseGrid extends StatefulWidget {
     required this.config,
     required this.displayWeek,
     required this.totalWeeks,
-    this.forceActive = false,
+    this.showAllWeeks = false,
     this.onCourseTap,
     this.onCourseLongPress,
     this.onEmptyTap,
@@ -155,7 +155,7 @@ class _CourseGridState extends State<CourseGrid> {
                               ? (dayIndex == 0 ? 7 : dayIndex)
                               : dayIndex + 1;
                           List<Course> dayCourses;
-                          if (widget.forceActive) {
+                          if (widget.showAllWeeks) {
                             dayCourses = widget.courses
                                 .where((c) => c.dayOfWeek == day)
                                 .toList();
@@ -243,25 +243,25 @@ class _CourseGridState extends State<CourseGrid> {
                   ),
                 );
                 final isToday =
-                    !widget.forceActive && date.isAtSameMomentAs(today);
-                final specialDay = !widget.forceActive
+                    !widget.showAllWeeks && date.isAtSameMomentAs(today);
+                final specialDay = !widget.showAllWeeks
                     ? HolidayUtils.getSpecialDay(date)
                     : SpecialDayInfo(type: SpecialDayType.ordinary);
                 final isHoliday =
-                    !widget.forceActive &&
+                    !widget.showAllWeeks &&
                     specialDay.type == SpecialDayType.holiday;
                 final isFestival =
-                    !widget.forceActive &&
+                    !widget.showAllWeeks &&
                     specialDay.type == SpecialDayType.festival;
                 final isSolarTerm =
-                    !widget.forceActive &&
+                    !widget.showAllWeeks &&
                     specialDay.type == SpecialDayType.solarTerm;
                 final isSpecial = isHoliday || isFestival || isSolarTerm;
 
                 return Expanded(
                   child: GestureDetector(
                     onTap:
-                        !widget.forceActive &&
+                        !widget.showAllWeeks &&
                             isSpecial &&
                             widget.onSpecialDayTap != null
                         ? () => widget.onSpecialDayTap!(date, specialDay)
@@ -300,7 +300,7 @@ class _CourseGridState extends State<CourseGrid> {
                                     : theme.colorScheme.onSurface,
                               ),
                             ),
-                            if (!widget.forceActive)
+                            if (!widget.showAllWeeks)
                               Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
@@ -476,116 +476,212 @@ class _CourseGridState extends State<CourseGrid> {
     final afternoonEnd =
         widget.config.morningSections + widget.config.afternoonSections;
 
+    // Compute track assignments for all-weeks overlay mode
+    final trackInfos = widget.showAllWeeks && dayCourses.length > 1
+        ? _assignCourseTracks(dayCourses)
+        : null;
+
     return Expanded(
       child: SizedBox(
         height: rowHeight * sections,
-        child: Stack(
-          children: [
-            // Grid lines (conditionally rendered)
-            if (appConfig.showCourseGrid.value)
-              ...List.generate(sections, (i) {
-                final isBoundary =
-                    (i + 1 == morningEnd) || (i + 1 == afternoonEnd);
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final columnWidth = constraints.maxWidth;
+            return Stack(
+              children: [
+                // Grid lines (conditionally rendered)
+                if (appConfig.showCourseGrid.value)
+                  ...List.generate(sections, (i) {
+                    final isBoundary =
+                        (i + 1 == morningEnd) || (i + 1 == afternoonEnd);
 
-                return Positioned(
-                  top: i * rowHeight,
-                  left: 0,
-                  right: 0,
-                  height: rowHeight,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: isBoundary
-                              ? theme.colorScheme.primary.withAlpha(150)
-                              : theme.colorScheme.outlineVariant,
-                          width: isBoundary ? 1.5 : 0.5,
-                        ),
-                        right: BorderSide(
-                          color: theme.colorScheme.outlineVariant,
-                          width: 0.5,
+                    return Positioned(
+                      top: i * rowHeight,
+                      left: 0,
+                      right: 0,
+                      height: rowHeight,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: isBoundary
+                                  ? theme.colorScheme.primary.withAlpha(150)
+                                  : theme.colorScheme.outlineVariant,
+                              width: isBoundary ? 1.5 : 0.5,
+                            ),
+                            right: BorderSide(
+                              color: theme.colorScheme.outlineVariant,
+                              width: 0.5,
+                            ),
+                          ),
                         ),
                       ),
+                    );
+                  }),
+                // Course cards
+                ...dayCourses.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final course = entry.value;
+                  final top = (course.startSection - 1) * rowHeight;
+                  final courseHeight =
+                      (course.endSection - course.startSection + 1) *
+                          rowHeight -
+                      2;
+
+                  final cardWidget = SizedBox(
+                    child: CourseCard(
+                      course: course,
+                      config: widget.config,
+                      displayWeek: widget.displayWeek,
+                      showAllWeeks: widget.showAllWeeks,
+                      onTap: widget.onCourseTap != null
+                          ? () => widget.onCourseTap!(course)
+                          : null,
+                      onLongPress: widget.onCourseLongPress != null
+                          ? () => widget.onCourseLongPress!(course)
+                          : null,
                     ),
-                  ),
-                );
-              }),
-            // Course cards
-            ...dayCourses.map((course) {
-              final top = (course.startSection - 1) * rowHeight;
-              final courseHeight =
-                  (course.endSection - course.startSection + 1) * rowHeight - 2;
-              return Positioned(
-                top: top + 1,
-                left: 1,
-                right: 1,
-                height: courseHeight,
-                child: SizedBox(
-                  child: CourseCard(
-                    course: course,
-                    config: widget.config,
-                    displayWeek: widget.displayWeek,
-                    forceActive: widget.forceActive,
-                    onTap: widget.onCourseTap != null
-                        ? () => widget.onCourseTap!(course)
-                        : null,
-                    onLongPress: widget.onCourseLongPress != null
-                        ? () => widget.onCourseLongPress!(course)
-                        : null,
-                  ),
-                ),
-              );
-            }),
-            // Invisible tap targets for empty cells, and Add icon for selected empty cell
-            ...List.generate(sections, (i) {
-              final section = i + 1;
-              // Skip sections that are covered by a course card
-              final hasCourse = dayCourses.any(
-                (c) => section >= c.startSection && section <= c.endSection,
-              );
-              if (hasCourse) return const SizedBox.shrink();
+                  );
 
-              final isSelected =
-                  _selectedEmptyDay == day && _selectedEmptySection == section;
+                  if (widget.showAllWeeks && trackInfos != null) {
+                    final info = trackInfos[index];
+                    final trackWidth = columnWidth / info.totalTracks;
+                    return Positioned(
+                      top: top + 1,
+                      left: info.track * trackWidth + 1,
+                      width: trackWidth - 2,
+                      height: courseHeight,
+                      child: cardWidget,
+                    );
+                  }
 
-              return Positioned(
-                top: i * rowHeight,
-                left: 0,
-                right: 0,
-                height: rowHeight,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onTap: widget.onEmptyTap != null
-                      ? () => _handleEmptyTap(day, section)
-                      : null,
-                  child: isSelected
-                      ? Container(
-                          margin: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withAlpha(
-                              100,
-                            ), // e.g. pinkish/primary with opacity
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: theme.colorScheme.primary.withAlpha(150),
-                              width: 1,
-                            ),
-                          ),
-                          child: Center(
-                            child: Icon(
-                              Icons.add,
-                              color: theme.colorScheme.onPrimaryContainer,
-                              size: 32,
-                            ),
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-              );
-            }),
-          ],
+                  return Positioned(
+                    top: top + 1,
+                    left: 1,
+                    right: 1,
+                    height: courseHeight,
+                    child: cardWidget,
+                  );
+                }),
+                // Invisible tap targets for empty cells, and Add icon for selected empty cell
+                if (!widget.showAllWeeks)
+                  ...List.generate(sections, (i) {
+                    final section = i + 1;
+                    // Skip sections that are covered by a course card
+                    final hasCourse = dayCourses.any(
+                      (c) =>
+                          section >= c.startSection && section <= c.endSection,
+                    );
+                    if (hasCourse) return const SizedBox.shrink();
+
+                    final isSelected =
+                        _selectedEmptyDay == day &&
+                        _selectedEmptySection == section;
+
+                    return Positioned(
+                      top: i * rowHeight,
+                      left: 0,
+                      right: 0,
+                      height: rowHeight,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: widget.onEmptyTap != null
+                            ? () => _handleEmptyTap(day, section)
+                            : null,
+                        child: isSelected
+                            ? Container(
+                                margin: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primary.withAlpha(
+                                    100,
+                                  ), // e.g. pinkish/primary with opacity
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: theme.colorScheme.primary.withAlpha(
+                                      150,
+                                    ),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Icon(
+                                    Icons.add,
+                                    color: theme.colorScheme.onPrimaryContainer,
+                                    size: 32,
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    );
+                  }),
+              ],
+            );
+          },
         ),
       ),
     );
   }
+}
+
+/// Track assignment info for side-by-side course layout in all-weeks mode.
+class _TrackInfo {
+  final int track;
+  final int totalTracks;
+  const _TrackInfo({required this.track, required this.totalTracks});
+}
+
+/// Assigns overlapping courses to vertical tracks for side-by-side layout.
+List<_TrackInfo> _assignCourseTracks(List<Course> courses) {
+  if (courses.isEmpty) return [];
+  if (courses.length == 1) {
+    return [const _TrackInfo(track: 0, totalTracks: 1)];
+  }
+
+  // Sort by start section, then longer courses first for stability
+  final indexed = courses.asMap().entries.toList()
+    ..sort((a, b) {
+      final cmp = a.value.startSection.compareTo(b.value.startSection);
+      if (cmp != 0) return cmp;
+      final aDuration = a.value.endSection - a.value.startSection;
+      final bDuration = b.value.endSection - b.value.startSection;
+      return bDuration.compareTo(aDuration);
+    });
+
+  final trackEnds = <int>[];
+  final assignments = List<int>.filled(courses.length, -1);
+
+  for (final entry in indexed) {
+    final originalIndex = entry.key;
+    final course = entry.value;
+
+    int assignedTrack = -1;
+    for (int t = 0; t < trackEnds.length; t++) {
+      if (trackEnds[t] < course.startSection) {
+        assignedTrack = t;
+        break;
+      }
+    }
+    if (assignedTrack == -1) {
+      assignedTrack = trackEnds.length;
+      trackEnds.add(0);
+    }
+    trackEnds[assignedTrack] = course.endSection;
+    assignments[originalIndex] = assignedTrack;
+  }
+
+  // Remap: for each course, recompute track/totalTracks based only on
+  // courses that actually overlap at its time slot (not global maximum).
+  return List.generate(courses.length, (i) {
+    final course = courses[i];
+    final overlapping = <int>[];
+    for (int j = 0; j < courses.length; j++) {
+      if (_coursesOverlapInSections(courses[j], course)) {
+        overlapping.add(j);
+      }
+    }
+    overlapping.sort((a, b) => assignments[a].compareTo(assignments[b]));
+    final localTrack = overlapping.indexOf(i);
+    return _TrackInfo(track: localTrack, totalTracks: overlapping.length);
+  });
 }

@@ -175,7 +175,7 @@ class _ClassScheduleInquiryDetailPageState
               config: gridConfig,
               displayWeek: 1,
               totalWeeks: 20,
-              forceActive: true,
+              showAllWeeks: true,
             ),
           ),
           const SizedBox(height: 24),

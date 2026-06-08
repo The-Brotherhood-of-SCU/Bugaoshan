@@ -8,7 +8,7 @@ class CourseCard extends StatelessWidget {
   final Course course;
   final ScheduleConfig config;
   final int displayWeek;
-  final bool forceActive;
+  final bool showAllWeeks;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
 
@@ -17,7 +17,7 @@ class CourseCard extends StatelessWidget {
     required this.course,
     required this.config,
     required this.displayWeek,
-    this.forceActive = false,
+    this.showAllWeeks = false,
     this.onTap,
     this.onLongPress,
   });
@@ -33,7 +33,7 @@ class CourseCard extends StatelessWidget {
         appConfig.courseCardFontSize,
       ]),
       builder: (context, _) {
-        final isActive = forceActive || course.isActiveInWeek(displayWeek);
+        final isActive = showAllWeeks || course.isActiveInWeek(displayWeek);
         final color = isActive
             ? course.color.withValues(alpha: appConfig.colorOpacity.value)
             : _greyscale(course.color).withValues(alpha: 0.12);
