@@ -27,6 +27,7 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
   bool _hasMore = true;
   int _pageNum = 1;
   static const int _pageSize = 30;
+  int _requestSeq = 0;
   String? _error;
 
   // 筛选选项
@@ -92,6 +93,7 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
   }
 
   Future<void> _loadSubjects(String departmentNum) async {
+    final seq = ++_requestSeq;
     if (departmentNum.isEmpty) {
       setState(() {
         _subjects = [];
@@ -101,7 +103,7 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
     }
     try {
       final subjects = await _zhjwApi.fetchSubjectsByDepartment(departmentNum);
-      if (!mounted) return;
+      if (!mounted || seq != _requestSeq) return;
       setState(() {
         _subjects = subjects;
         _selectedSubject = '';
@@ -112,6 +114,7 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
   }
 
   Future<void> _loadClassOptions() async {
+    final seq = ++_requestSeq;
     if (_selectedGrade.isEmpty || _selectedDepartment.isEmpty) {
       setState(() {
         _classOptions = [];
@@ -125,7 +128,7 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
         departmentNum: _selectedDepartment,
         subjectNum: _selectedSubject,
       );
-      if (!mounted) return;
+      if (!mounted || seq != _requestSeq) return;
       setState(() {
         _classOptions = options;
         _selectedClass = '';
@@ -307,7 +310,7 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
                         .toList(),
                     onChanged: (v) {
                       setState(() => _selectedGrade = v);
-                      _loadClassOptions();
+                      if (_selectedDepartment.isNotEmpty) _loadClassOptions();
                     },
                     hint: l10n.classScheduleInquiryGrade,
                   ),
@@ -407,11 +410,11 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
     required ValueChanged<String> onChanged,
     required String hint,
   }) {
+    final hasEmptyOption = items.any((i) => i.value == '');
+    final initialValue = value.isEmpty ? (hasEmptyOption ? '' : null) : value;
     return DropdownButtonFormField<String>(
       key: ValueKey('dropdown_$value'),
-      initialValue: value.isEmpty && items.any((i) => i.value == '')
-          ? ''
-          : (value.isEmpty ? null : value),
+      initialValue: initialValue,
       decoration: const InputDecoration(
         contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         border: OutlineInputBorder(),

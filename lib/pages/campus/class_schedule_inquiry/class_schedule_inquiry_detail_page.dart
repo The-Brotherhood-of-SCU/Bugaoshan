@@ -152,6 +152,10 @@ class _ClassScheduleInquiryDetailPageState
   Widget _buildScheduleGrid(BuildContext context) {
     final theme = Theme.of(context);
 
+    // 检测是否有周末课程，决定显示5天还是7天
+    final hasWeekend = _courses.any((c) => c.dayOfWeek > 5);
+    final dayCount = hasWeekend ? 7 : 5;
+
     // Build a map: dayOfWeek -> (startPeriod -> [courses])
     final Map<int, Map<int, List<ClassScheduleInquiryItem>>> gridMap = {};
     for (final course in _courses) {
@@ -197,7 +201,7 @@ class _ClassScheduleInquiryDetailPageState
                   ),
                 ),
               ),
-              ...List.generate(5, (dayIndex) {
+              ...List.generate(dayCount, (dayIndex) {
                 return Expanded(
                   child: Container(
                     decoration: BoxDecoration(
@@ -228,7 +232,7 @@ class _ClassScheduleInquiryDetailPageState
             ],
           ),
         ),
-        // Grid content: section column + 5 day stacks
+        // Grid content: section column + dayCount day stacks
         SizedBox(
           height: totalPeriods * rowHeight,
           child: Row(
@@ -242,7 +246,7 @@ class _ClassScheduleInquiryDetailPageState
               ),
               Expanded(
                 child: Row(
-                  children: List.generate(5, (dayIndex) {
+                  children: List.generate(dayCount, (dayIndex) {
                     return Expanded(
                       child: _buildDayColumn(
                         context,
@@ -355,7 +359,7 @@ class _ClassScheduleInquiryDetailPageState
               left: 1,
               right: 1,
               height: courseHeight,
-              child: _buildCourseCell(context, [course]),
+              child: _buildCourseCell(context, course),
             );
           }),
         ],
@@ -363,6 +367,8 @@ class _ClassScheduleInquiryDetailPageState
     );
   }
 
+  /// 将 API 课程项转为 Course 对象供 CourseCard 使用。
+  /// 班级课表不涉及周次切换，固定 1-20 周 + every 即可保证始终可见。
   Course _toCourse(ClassScheduleInquiryItem item) {
     return Course(
       name: item.courseName,
@@ -381,14 +387,12 @@ class _ClassScheduleInquiryDetailPageState
     );
   }
 
-  Widget _buildCourseCell(
-    BuildContext context,
-    List<ClassScheduleInquiryItem> items,
-  ) {
-    final item = items.first;
+  Widget _buildCourseCell(BuildContext context, ClassScheduleInquiryItem item) {
     final course = _toCourse(item);
+    // semesterStartDate 不影响显示：displayWeek=1 且 weekType=every 时
+    // CourseCard 不依赖实际日期计算，保持无状态即可。
     final config = ScheduleConfig(
-      semesterStartDate: DateTime.now(),
+      semesterStartDate: DateTime(2025, 9, 1),
       showTeacherName: true,
       showLocation: true,
     );
