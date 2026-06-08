@@ -25,15 +25,15 @@ class _ClassScheduleInquiryDetailPageState
   bool _isLoading = true;
   String? _error;
 
-  static const List<String> _dayLabels = [
+  static List<String> _buildDayLabels(AppLocalizations l10n) => [
     '',
-    '周一',
-    '周二',
-    '周三',
-    '周四',
-    '周五',
-    '周六',
-    '周日',
+    l10n.monday,
+    l10n.tuesday,
+    l10n.wednesday,
+    l10n.thursday,
+    l10n.friday,
+    l10n.saturday,
+    l10n.sunday,
   ];
 
   @override
@@ -151,6 +151,8 @@ class _ClassScheduleInquiryDetailPageState
 
   Widget _buildScheduleGrid(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final dayLabels = _buildDayLabels(l10n);
 
     // 检测是否有周末课程，决定显示5天还是7天
     final hasWeekend = _courses.any((c) => c.dayOfWeek > 5);
@@ -218,7 +220,7 @@ class _ClassScheduleInquiryDetailPageState
                     ),
                     child: Center(
                       child: Text(
-                        _dayLabels[dayIndex + 1],
+                        dayLabels[dayIndex + 1],
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
