@@ -1546,6 +1546,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dockLabelBalanceQuery => '电费';
 
   @override
+  String get dockLabelClassScheduleInquiry => '班级课表';
+
+  @override
   String get dockLabelAcademicCalendar => '校历';
 
   @override
@@ -1862,6 +1865,45 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get solarTermTypeLabel => '节气';
+
+  @override
+  String get classScheduleInquiry => '班级课表';
+
+  @override
+  String get classScheduleInquiryDesc => '查看各班级的课表信息';
+
+  @override
+  String get classScheduleInquiryNoData => '暂无班级数据';
+
+  @override
+  String get classScheduleInquiryNoSchedule => '暂无课表数据';
+
+  @override
+  String get classScheduleInquiryDetail => '课程详情';
+
+  @override
+  String get classScheduleInquiryFilter => '查询条件';
+
+  @override
+  String get classScheduleInquirySemester => '学年学期';
+
+  @override
+  String get classScheduleInquiryGrade => '年级';
+
+  @override
+  String get classScheduleInquiryDepartment => '院系';
+
+  @override
+  String get classScheduleInquirySubject => '专业';
+
+  @override
+  String get classScheduleInquiryClass => '班级';
+
+  @override
+  String get classScheduleInquirySearch => '查询';
+
+  @override
+  String get classScheduleInquiryLoadMore => '加载更多';
 
   @override
   String holidayTotalDays(int days) {

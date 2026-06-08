@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart';
 import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/models/plan_completion.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program.dart';
@@ -489,8 +490,222 @@ class ZhjwApiService {
   }
 
   // ═══════════════════════════════════════════════════════════════════
+  //  班级课表
+  // ═══════════════════════════════════════════════════════════════════
+
+  /// 获取班级课表首页的筛选选项
+  Future<
+    ({
+      List<SemesterOption> semesters,
+      List<String> grades,
+      List<DepartmentOption> departments,
+    })
+  >
+  fetchClassScheduleInquiryIndex() {
+    return _request((client) async {
+      final resp = await client.get(
+        Uri.parse('$kZhjwBase/student/teachingResources/classCurriculum/index'),
+        headers: {
+          'Accept': 'text/html,*/*',
+          'Referer': '$kZhjwBase/',
+          'User-Agent': kDefaultUserAgent,
+        },
+      );
+      final body = resp.body.trim();
+      _checkSessionExpiry(body, resp.statusCode);
+
+      // 解析学年学期
+      final semesterOptions = _parseSelectOptions(
+        body,
+        'executiveEducationPlanNum',
+      );
+      final semesters = semesterOptions
+          .where((o) => o.value.isNotEmpty)
+          .map((o) => SemesterOption(value: o.value, label: o.label))
+          .toList();
+
+      // 解析年级
+      final gradeOptions = _parseSelectOptions(body, 'yearNum');
+      final grades = gradeOptions
+          .where((o) => o.value.isNotEmpty)
+          .map((o) => o.value)
+          .toList();
+
+      // 解析院系
+      final deptOptions = _parseSelectOptions(body, 'departmentNum');
+      final departments = deptOptions
+          .where((o) => o.value.isNotEmpty)
+          .map((o) => DepartmentOption(value: o.value, name: o.label))
+          .toList();
+
+      return (semesters: semesters, grades: grades, departments: departments);
+    });
+  }
+
+  /// 根据院系获取专业列表
+  Future<List<SubjectOption>> fetchSubjectsByDepartment(String departmentNum) {
+    return _request((client) async {
+      final resp = await client.get(
+        Uri.parse(
+          '$kZhjwBase/student/teachingResources/gradeAndClassCurriculum/subjectJson'
+          '?departmentNum=${Uri.encodeComponent(departmentNum)}',
+        ),
+        headers: {
+          'Accept': 'application/json, text/javascript, */*; q=0.01',
+          'Referer':
+              '$kZhjwBase/student/teachingResources/classCurriculum/index',
+          'User-Agent': kDefaultUserAgent,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      );
+      final body = resp.body.trim();
+      _checkSessionExpiry(body, resp.statusCode);
+      final list = jsonDecode(body) as List<dynamic>;
+      return list
+          .map((e) => SubjectOption.fromJson(e as Map<String, dynamic>))
+          .toList();
+    });
+  }
+
+  /// 根据年级、院系、专业获取班级列表
+  Future<List<ClassOption>> fetchClassOptions({
+    required String yearNum,
+    required String departmentNum,
+    String subjectNum = '',
+  }) {
+    return _request((client) async {
+      final resp = await client.get(
+        Uri.parse(
+          '$kZhjwBase/student/teachingResources/gradeAndClassCurriculum/classJson'
+          '?departmentNum=${Uri.encodeComponent(departmentNum)}'
+          '&subjectNum=${Uri.encodeComponent(subjectNum)}'
+          '&yearNum=${Uri.encodeComponent(yearNum)}',
+        ),
+        headers: {
+          'Accept': 'application/json, text/javascript, */*; q=0.01',
+          'Referer':
+              '$kZhjwBase/student/teachingResources/classCurriculum/index',
+          'User-Agent': kDefaultUserAgent,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      );
+      final body = resp.body.trim();
+      _checkSessionExpiry(body, resp.statusCode);
+      final list = jsonDecode(body) as List<dynamic>;
+      return list
+          .map((e) => ClassOption.fromJson(e as Map<String, dynamic>))
+          .toList();
+    });
+  }
+
+  /// 搜索班级列表（支持筛选）
+  Future<({List<ClassInfo> classes, int totalCount})> fetchClassList({
+    int pageNum = 1,
+    int pageSize = 30,
+    String executiveEducationPlanNum = '',
+    String yearNum = '',
+    String departmentNum = '',
+    String subjectNum = '',
+    String classNum = '',
+  }) {
+    return _request((client) async {
+      final resp = await client.post(
+        Uri.parse(
+          '$kZhjwBase/student/teachingResources/classCurriculum/search',
+        ),
+        headers: {
+          'Accept': 'application/json, text/javascript, */*; q=0.01',
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          'Referer':
+              '$kZhjwBase/student/teachingResources/classCurriculum/index',
+          'User-Agent': kDefaultUserAgent,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body:
+            'executiveEducationPlanNum=${Uri.encodeComponent(executiveEducationPlanNum)}'
+            '&yearNum=${Uri.encodeComponent(yearNum)}'
+            '&departmentNum=${Uri.encodeComponent(departmentNum)}'
+            '&subjectNum=${Uri.encodeComponent(subjectNum)}'
+            '&classNum=${Uri.encodeComponent(classNum)}'
+            '&pageNum=$pageNum&pageSize=$pageSize',
+      );
+      final body = resp.body.trim();
+      _checkSessionExpiry(body, resp.statusCode);
+      final json = jsonDecode(body) as List<dynamic>;
+      final first = json.isNotEmpty
+          ? json[0] as Map<String, dynamic>
+          : <String, dynamic>{};
+      final records = (first['records'] as List<dynamic>?) ?? [];
+      final totalCount =
+          (first['pageContext']?['totalCount'] as num?)?.toInt() ?? 0;
+      final classes = records
+          .map((e) => ClassInfo.fromJson(e as Map<String, dynamic>))
+          .toList();
+      return (classes: classes, totalCount: totalCount);
+    });
+  }
+
+  /// 获取指定班级的课表
+  Future<List<ClassScheduleInquiryItem>> fetchClassSchedule({
+    required String planCode,
+    required String classCode,
+  }) {
+    return _request((client) async {
+      final resp = await client.get(
+        Uri.parse(
+          '$kZhjwBase/student/teachingResources/classCurriculum/searchCurriculumInfo/callback'
+          '?planCode=${Uri.encodeComponent(planCode)}'
+          '&classCode=${Uri.encodeComponent(classCode)}',
+        ),
+        headers: {
+          'Accept': 'application/json, text/javascript, */*; q=0.01',
+          'Referer':
+              '$kZhjwBase/student/teachingResources/classCurriculum/index',
+          'User-Agent': kDefaultUserAgent,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      );
+      final body = resp.body.trim();
+      _checkSessionExpiry(body, resp.statusCode);
+      final json = jsonDecode(body) as List<dynamic>;
+      final list = (json.isNotEmpty ? json[0] : []) as List<dynamic>;
+      return list
+          .map(
+            (e) => ClassScheduleInquiryItem.fromJson(e as Map<String, dynamic>),
+          )
+          .toList();
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
   //  HTML 解析工具
   // ═══════════════════════════════════════════════════════════════════
+
+  /// 从 HTML 中解析 select 元素的选项列表
+  List<({String value, String label})> _parseSelectOptions(
+    String html,
+    String selectId,
+  ) {
+    final selectRegex = RegExp(
+      '''<select[^>]*name="$selectId"[^>]*>([\\s\\S]*?)</select>''',
+    );
+    final match = selectRegex.firstMatch(html);
+    if (match == null) return [];
+
+    final optionsRegex = RegExp(
+      '''<option[^>]*value="([^"]*)"[^>]*>([\\s\\S]*?)</option>''',
+    );
+    final options = optionsRegex.allMatches(match.group(1)!);
+    return options
+        .where((m) => m.group(1)!.isNotEmpty)
+        .map(
+          (m) => (
+            value: m.group(1)!,
+            label: m.group(2)!.replaceAll(RegExp(r'<[^>]+>'), '').trim(),
+          ),
+        )
+        .toList();
+  }
 
   List<College> _parseOptions(String html, String selectId) {
     final selectRegex = RegExp(
@@ -500,7 +715,7 @@ class ZhjwApiService {
     if (match == null) return [];
 
     final optionsRegex = RegExp(
-      '''<option[^>]*value="([^"]*)"[^>]*>(.*?)</option>''',
+      '''<option[^>]*value="([^"]*)"[^>]*>([\\s\\S]*?)</option>''',
     );
     final options = optionsRegex.allMatches(match.group(1)!);
     return options
@@ -522,7 +737,7 @@ class ZhjwApiService {
     if (match == null) return [];
 
     final optionsRegex = RegExp(
-      '''<option[^>]*value="([^"]*)"[^>]*>(.*?)</option>''',
+      '''<option[^>]*value="([^"]*)"[^>]*>([\\s\\S]*?)</option>''',
     );
     final options = optionsRegex.allMatches(match.group(1)!);
     return options

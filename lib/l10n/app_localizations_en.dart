@@ -1592,6 +1592,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dockLabelBalanceQuery => 'Electricity';
 
   @override
+  String get dockLabelClassScheduleInquiry => 'Class Schedule Inquiry';
+
+  @override
   String get dockLabelAcademicCalendar => 'Calendar';
 
   @override
@@ -1917,6 +1920,45 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get solarTermTypeLabel => 'Solar Term';
+
+  @override
+  String get classScheduleInquiry => 'Class Schedule Inquiry';
+
+  @override
+  String get classScheduleInquiryDesc => 'View course schedules for each class';
+
+  @override
+  String get classScheduleInquiryNoData => 'No class data';
+
+  @override
+  String get classScheduleInquiryNoSchedule => 'No schedule data';
+
+  @override
+  String get classScheduleInquiryDetail => 'Course Details';
+
+  @override
+  String get classScheduleInquiryFilter => 'Filter';
+
+  @override
+  String get classScheduleInquirySemester => 'Semester';
+
+  @override
+  String get classScheduleInquiryGrade => 'Grade';
+
+  @override
+  String get classScheduleInquiryDepartment => 'Department';
+
+  @override
+  String get classScheduleInquirySubject => 'Major';
+
+  @override
+  String get classScheduleInquiryClass => 'Class';
+
+  @override
+  String get classScheduleInquirySearch => 'Search';
+
+  @override
+  String get classScheduleInquiryLoadMore => 'Load More';
 
   @override
   String holidayTotalDays(int days) {

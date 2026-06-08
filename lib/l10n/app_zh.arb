@@ -563,6 +563,7 @@
     "dockLabelClassroom": "教室",
     "dockLabelNetworkDevice": "校园网",
     "dockLabelBalanceQuery": "电费",
+    "dockLabelClassScheduleInquiry": "班级课表",
     "dockLabelAcademicCalendar": "校历",
     "fitnessTest": "体质测试",
     "fitnessTestDesc": "查询体测成绩和查看通知公告",
@@ -712,6 +713,19 @@
     "@solarTermTypeLabel": {
         "description": "Label for solar term type shown in special day detail sheet"
     },
+    "classScheduleInquiry": "班级课表",
+    "classScheduleInquiryDesc": "查看各班级的课表信息",
+    "classScheduleInquiryNoData": "暂无班级数据",
+    "classScheduleInquiryNoSchedule": "暂无课表数据",
+    "classScheduleInquiryDetail": "课程详情",
+    "classScheduleInquiryFilter": "查询条件",
+    "classScheduleInquirySemester": "学年学期",
+    "classScheduleInquiryGrade": "年级",
+    "classScheduleInquiryDepartment": "院系",
+    "classScheduleInquirySubject": "专业",
+    "classScheduleInquiryClass": "班级",
+    "classScheduleInquirySearch": "查询",
+    "classScheduleInquiryLoadMore": "加载更多",
     "holidayTotalDays": "共{days}天假",
     "@holidayTotalDays": {
         "description": "Shows total holiday days, e.g. '共3天假'",

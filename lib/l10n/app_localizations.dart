@@ -3067,6 +3067,12 @@ abstract class AppLocalizations {
   /// **'Electricity'**
   String get dockLabelBalanceQuery;
 
+  /// No description provided for @dockLabelClassScheduleInquiry.
+  ///
+  /// In en, this message translates to:
+  /// **'Class Schedule Inquiry'**
+  String get dockLabelClassScheduleInquiry;
+
   /// No description provided for @dockLabelAcademicCalendar.
   ///
   /// In en, this message translates to:
@@ -3678,6 +3684,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Solar Term'**
   String get solarTermTypeLabel;
+
+  /// No description provided for @classScheduleInquiry.
+  ///
+  /// In en, this message translates to:
+  /// **'Class Schedule Inquiry'**
+  String get classScheduleInquiry;
+
+  /// No description provided for @classScheduleInquiryDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'View course schedules for each class'**
+  String get classScheduleInquiryDesc;
+
+  /// No description provided for @classScheduleInquiryNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'No class data'**
+  String get classScheduleInquiryNoData;
+
+  /// No description provided for @classScheduleInquiryNoSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'No schedule data'**
+  String get classScheduleInquiryNoSchedule;
+
+  /// No description provided for @classScheduleInquiryDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Details'**
+  String get classScheduleInquiryDetail;
+
+  /// No description provided for @classScheduleInquiryFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter'**
+  String get classScheduleInquiryFilter;
+
+  /// No description provided for @classScheduleInquirySemester.
+  ///
+  /// In en, this message translates to:
+  /// **'Semester'**
+  String get classScheduleInquirySemester;
+
+  /// No description provided for @classScheduleInquiryGrade.
+  ///
+  /// In en, this message translates to:
+  /// **'Grade'**
+  String get classScheduleInquiryGrade;
+
+  /// No description provided for @classScheduleInquiryDepartment.
+  ///
+  /// In en, this message translates to:
+  /// **'Department'**
+  String get classScheduleInquiryDepartment;
+
+  /// No description provided for @classScheduleInquirySubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Major'**
+  String get classScheduleInquirySubject;
+
+  /// No description provided for @classScheduleInquiryClass.
+  ///
+  /// In en, this message translates to:
+  /// **'Class'**
+  String get classScheduleInquiryClass;
+
+  /// No description provided for @classScheduleInquirySearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get classScheduleInquirySearch;
+
+  /// No description provided for @classScheduleInquiryLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load More'**
+  String get classScheduleInquiryLoadMore;
 
   /// Shows total holiday days, e.g. '3-day holiday'
   ///

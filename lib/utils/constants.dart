@@ -15,6 +15,7 @@ const String dockIdAcademicCalendar = 'academic_calendar';
 const String dockIdFitnessTest = 'fitness_test';
 const String dockIdNotice = 'notice';
 const String dockIdDownloadedAttachments = 'downloaded_attachments';
+const String dockIdClassScheduleInquiry = 'class_schedule_inquiry';
 
 const Duration kHttpTimeout = Duration(seconds: 15);
 

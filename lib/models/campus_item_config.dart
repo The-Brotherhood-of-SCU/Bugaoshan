@@ -4,6 +4,7 @@ import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/pages/campus/academic_calendar/academic_calendar_page.dart';
 import 'package:bugaoshan/pages/campus/balance_query/balance_query_page.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_page.dart';
+import 'package:bugaoshan/pages/campus/class_schedule_inquiry/class_schedule_inquiry_page.dart';
 import 'package:bugaoshan/pages/campus/classroom/classroom_page.dart';
 import 'package:bugaoshan/pages/campus/downloads/notice_downloaded_page.dart';
 import 'package:bugaoshan/pages/campus/fitness_test/fitness_test_page.dart';
@@ -133,6 +134,16 @@ final campusItemClassroom = CampusItemConfig(
   page: () => const ClassroomPage(),
 );
 
+final campusItemClassScheduleInquiry = CampusItemConfig(
+  id: dockIdClassScheduleInquiry,
+  icon: Icons.calendar_view_week_outlined,
+  selectedIcon: Icons.calendar_view_week,
+  dockLabel: (l10n) => l10n.dockLabelClassScheduleInquiry,
+  dockFullLabel: (l10n) => l10n.classScheduleInquiry,
+  desc: (l10n) => l10n.classScheduleInquiryDesc,
+  page: () => const ClassScheduleInquiryPage(),
+);
+
 final campusItemNetworkDevice = CampusItemConfig(
   id: dockIdNetworkDevice,
   icon: Icons.router_outlined,
@@ -197,6 +208,7 @@ final campusSections = [
     title: (l10n) => l10n.utilitiesSection,
     items: [
       campusItemTrainProgram,
+      campusItemClassScheduleInquiry,
       campusItemClassroom,
       campusItemNetworkDevice,
       campusItemBalanceQuery,

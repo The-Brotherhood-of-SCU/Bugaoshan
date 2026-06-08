@@ -568,6 +568,7 @@
     "dockLabelClassroom": "Classroom",
     "dockLabelNetworkDevice": "Network",
     "dockLabelBalanceQuery": "Electricity",
+    "dockLabelClassScheduleInquiry": "Class Schedule Inquiry",
     "dockLabelAcademicCalendar": "Calendar",
     "fitnessTest": "Fitness Test",
     "fitnessTestDesc": "Query fitness test scores and view notices",
@@ -717,6 +718,19 @@
     "@solarTermTypeLabel": {
         "description": "Label for solar term type shown in special day detail sheet"
     },
+    "classScheduleInquiry": "Class Schedule Inquiry",
+    "classScheduleInquiryDesc": "View course schedules for each class",
+    "classScheduleInquiryNoData": "No class data",
+    "classScheduleInquiryNoSchedule": "No schedule data",
+    "classScheduleInquiryDetail": "Course Details",
+    "classScheduleInquiryFilter": "Filter",
+    "classScheduleInquirySemester": "Semester",
+    "classScheduleInquiryGrade": "Grade",
+    "classScheduleInquiryDepartment": "Department",
+    "classScheduleInquirySubject": "Major",
+    "classScheduleInquiryClass": "Class",
+    "classScheduleInquirySearch": "Search",
+    "classScheduleInquiryLoadMore": "Load More",
     "holidayTotalDays": "{days}-day holiday",
     "@holidayTotalDays": {
         "description": "Shows total holiday days, e.g. '3-day holiday'",
