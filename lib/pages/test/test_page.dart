@@ -34,19 +34,28 @@ class _TestPageState extends State<TestPage> {
   Future<void> _checkForUpdates() async {
     if (!_supportsUpdate) return;
     final updateService = getIt<UpdateService>();
-    final currentVersion = _versionInfoProvider.currentVersion;
-    final gitTag = _versionInfoProvider.gitTag;
 
     _stableResult.value = UpdateCheckResult.checking();
     _previewResult.value = UpdateCheckResult.checking();
 
-    final results = await Future.wait([
-      updateService.checkStableUpdate(currentVersion),
-      updateService.checkPreviewUpdate(currentVersion, gitTag),
-    ]);
-
-    _stableResult.value = results[0];
-    _previewResult.value = results[1];
+    try {
+      final currentVersion = _versionInfoProvider.currentVersion;
+      final gitTag = _versionInfoProvider.gitTag;
+      final (stable, preview) = await updateService.getAllLatestReleases();
+      _stableResult.value =
+          stable != null &&
+              stable.tagName != null &&
+              updateService.hasUpdate(currentVersion, stable.tagName!)
+          ? UpdateCheckResult.hasUpdate(stable)
+          : UpdateCheckResult.noUpdate();
+      _previewResult.value = preview != null && preview.tagName != gitTag
+          ? UpdateCheckResult.hasUpdate(preview)
+          : UpdateCheckResult.noUpdate();
+    } catch (e) {
+      final error = UpdateCheckResult.error(e.toString());
+      _stableResult.value = error;
+      _previewResult.value = error;
+    }
   }
 
   void _showUpdateDialog(UpdateCheckResult result) {

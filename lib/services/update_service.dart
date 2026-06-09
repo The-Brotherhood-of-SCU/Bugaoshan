@@ -143,6 +143,51 @@ class UpdateService {
     throw Exception('GitHub API error: ${response.statusCode}');
   }
 
+  Future<(ReleaseInfo? latestStable, ReleaseInfo? latestPreview)>
+  getAllLatestReleases() async {
+    final response = await http.get(
+      Uri.parse('https://api.github.com/repos/$_repo/releases'),
+      headers: {'Accept': 'application/vnd.github+json'},
+    );
+    if (response.statusCode != 200) {
+      throw Exception('GitHub API error: ${response.statusCode}');
+    }
+    if (response.body.isEmpty) return (null, null);
+
+    final List<dynamic> releases = jsonDecode(response.body);
+    ReleaseInfo? latestStable;
+    ReleaseInfo? latestPreview;
+
+    for (final release in releases) {
+      if (release['tag_name'] == null) continue;
+      final isPrerelease = release['prerelease'] == true;
+      final assets = release['assets'] as List<dynamic>;
+      String? downloadUrl;
+      for (final asset in assets) {
+        final name = asset['name'] as String;
+        if (_assetMatchesPlatform(name)) {
+          downloadUrl = asset['browser_download_url'] as String;
+          break;
+        }
+      }
+      final info = ReleaseInfo(
+        tagName: release['tag_name'] as String,
+        downloadUrl: downloadUrl,
+        isPrerelease: isPrerelease,
+        body: release['body'] as String?,
+      );
+      if (isPrerelease && latestPreview == null) {
+        latestPreview = info;
+      } else if (!isPrerelease && latestStable == null) {
+        latestStable = info;
+      }
+      if (latestStable != null && latestPreview != null) break;
+    }
+    // Fallback: 列表中全是 prerelease，用 /releases/latest 单独取 stable
+    latestStable ??= await getLatestReleaseFromGitHub();
+    return (latestStable, latestPreview);
+  }
+
   bool hasUpdate(String currentVersion, String latestVersion) {
     final current = _parseVersion(currentVersion);
     final latest = _parseVersion(latestVersion);
