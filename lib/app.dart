@@ -51,7 +51,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _bgCache.precache(context);
+      _bgCache.precache();
     });
   }
 

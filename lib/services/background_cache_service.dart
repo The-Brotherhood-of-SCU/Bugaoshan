@@ -11,26 +11,15 @@ class BackgroundCacheService {
 
   BackgroundCacheService(this._appConfig);
 
-  /// 预加载背景图片到 ImageCache，避免全分辨率大图占用内存。
-  /// 需在 [MediaQuery] 可用后调用（如 [WidgetsBinding.instance.addPostFrameCallback]）。
-  void precache(BuildContext context) {
+  /// 预加载背景图片到 ImageCache。
+  void precache() {
     final path = _appConfig.backgroundImagePath.value;
     if (path == null) return;
     try {
       final file = File(path);
-      final mq = MediaQuery.of(context);
-      final dpr = mq.devicePixelRatio;
-      final widthPx = (mq.size.width * dpr).round();
-      final heightPx = (mq.size.height * dpr).round();
+      final provider = FileImage(file);
 
-      final longSide = widthPx >= heightPx ? widthPx : heightPx;
-      final provider = (widthPx >= heightPx)
-          ? ResizeImage(FileImage(file), width: longSide)
-          : ResizeImage(FileImage(file), height: longSide);
-
-      _bgImageStream = provider.resolve(
-        ImageConfiguration(devicePixelRatio: dpr),
-      );
+      _bgImageStream = provider.resolve(ImageConfiguration.empty);
       _bgImageListener = ImageStreamListener(
         (_, _) => _cleanup(),
         onError: (_, _) => _cleanup(),
