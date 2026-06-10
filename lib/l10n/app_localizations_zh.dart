@@ -525,7 +525,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get courseGridSection => '课表网格';
 
   @override
-  String get courseStyleSetting => '课程样式';
+  String get courseStyleSetting => '课程表样式';
 
   @override
   String get otherSection => '其他';

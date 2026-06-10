@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修复课程编辑页在big screen模式下关闭后产生阴影的问题
 
 ### Changed
+- 课程卡片与课表网格设置移入独立子页面，支持实时预览课表样式
 - 首次启动时不再自动创建默认课表
 - 彻底重构登录流程，减少登录耗时，优化登录体验
 - 课程表增加UI动画

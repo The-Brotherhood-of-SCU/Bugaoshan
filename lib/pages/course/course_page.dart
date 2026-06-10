@@ -23,7 +23,9 @@ part 'course_page_actions.dart';
 part 'course_page_no_schedule_view.dart';
 
 class CoursePage extends StatefulWidget {
-  const CoursePage({super.key});
+  const CoursePage({super.key, this.demoMode = false});
+
+  final bool demoMode;
 
   @override
   State<CoursePage> createState() => _CoursePageState();
@@ -101,21 +103,23 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
 
     return Column(
       children: [
-        ListenableBuilder(
-          listenable: courseDataListenable,
-          builder: (context, _) => _TopBar(
-            week: courseProvider.currentWeek.value,
-            totalWeeks: courseProvider.scheduleConfig.value.totalWeeks,
-            visibleWeek: _visibleWeek,
-            onPreviousWeek: () =>
-                _changeWeek(courseProvider.currentWeek.value - 1),
-            onNextWeek: () => _changeWeek(courseProvider.currentWeek.value + 1),
-            onGoToCurrentWeek: _goToCurrentWeek,
-            onImport: _onImport,
-            onExport: _onExport,
-            onAddCourse: _onAddCourse,
+        if (!widget.demoMode)
+          ListenableBuilder(
+            listenable: courseDataListenable,
+            builder: (context, _) => _TopBar(
+              week: courseProvider.currentWeek.value,
+              totalWeeks: courseProvider.scheduleConfig.value.totalWeeks,
+              visibleWeek: _visibleWeek,
+              onPreviousWeek: () =>
+                  _changeWeek(courseProvider.currentWeek.value - 1),
+              onNextWeek: () =>
+                  _changeWeek(courseProvider.currentWeek.value + 1),
+              onGoToCurrentWeek: _goToCurrentWeek,
+              onImport: _onImport,
+              onExport: _onExport,
+              onAddCourse: _onAddCourse,
+            ),
           ),
-        ),
         Expanded(
           child: Stack(
             children: [
@@ -189,10 +193,10 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
           config: config,
           displayWeek: index + 1,
           totalWeeks: totalWeeks,
-          onCourseTap: _onCourseTap,
-          onCourseLongPress: _onCourseLongPress,
-          onEmptyTap: _onEmptyTap,
-          onSpecialDayTap: _onSpecialDayTap,
+          onCourseTap: widget.demoMode ? null : _onCourseTap,
+          onCourseLongPress: widget.demoMode ? null : _onCourseLongPress,
+          onEmptyTap: widget.demoMode ? null : _onEmptyTap,
+          onSpecialDayTap: widget.demoMode ? null : _onSpecialDayTap,
         );
       },
     );

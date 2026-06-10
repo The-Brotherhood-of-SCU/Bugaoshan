@@ -32,7 +32,7 @@ class SetCourseStylePage extends StatelessWidget {
                   height: 400,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: const CoursePage(),
+                    child: const CoursePage(demoMode: true),
                   ),
                 ),
                 ..._buildSettings(context, localizations, appConfig),
