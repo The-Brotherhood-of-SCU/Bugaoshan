@@ -46,7 +46,7 @@ class SetCourseStylePage extends StatelessWidget {
                   SizedBox(
                     height: previewHeight,
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 16, 8, 0),
+                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: const CoursePage(demoMode: true),
@@ -86,69 +86,6 @@ class SetCourseStylePage extends StatelessWidget {
   ) {
     return [
       const Divider(),
-      // Background image section
-      Align(
-        alignment: Alignment.centerLeft,
-        child: Text(
-          localizations.backgroundImage,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            color: Theme.of(context).colorScheme.primary,
-          ),
-        ),
-      ),
-      // Background image
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ButtonWithMaxWidth(
-            onPressed: () => _pickBackgroundImage(context, appConfig),
-            icon: const Icon(Icons.wallpaper),
-            child: Text(localizations.setBackgroundImage),
-          ),
-          if (appConfig.backgroundImagePath.value != null) ...[
-            const SizedBox(height: 8),
-            ButtonWithMaxWidth(
-              onPressed: () async {
-                final oldPath = appConfig.backgroundImagePath.value;
-                appConfig.backgroundImagePath.value = null;
-                if (oldPath != null) {
-                  FileImage(File(oldPath)).evict();
-                  File(oldPath).delete().ignore();
-                }
-                if (appConfig.themeColorMode.value ==
-                    ThemeColorMode.backgroundImage) {
-                  await SystemTheme.accentColor.load();
-                  appConfig.themeColor.value = SystemTheme.accentColor.accent;
-                }
-              },
-              icon: const Icon(Icons.delete_outline),
-              child: Text(localizations.removeBackgroundImage),
-            ),
-            const SizedBox(height: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(child: Text(localizations.backgroundImageOpacity)),
-                    Text(
-                      '${(appConfig.backgroundImageOpacity.value * 100).round()}%',
-                    ),
-                  ],
-                ),
-                Slider(
-                  value: appConfig.backgroundImageOpacity.value,
-                  min: 0.05,
-                  max: 0.8,
-                  divisions: 15,
-                  onChanged: (v) => appConfig.backgroundImageOpacity.value = v,
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
-      const Divider(),
       // Course card settings
       Align(
         alignment: Alignment.centerLeft,
@@ -162,6 +99,7 @@ class SetCourseStylePage extends StatelessWidget {
       // Color opacity
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 4,
         children: [
           Row(
             children: [
@@ -257,19 +195,7 @@ class SetCourseStylePage extends StatelessWidget {
           if (appConfig.backgroundImagePath.value != null) ...[
             const SizedBox(height: 8),
             ButtonWithMaxWidth(
-              onPressed: () async {
-                final oldPath = appConfig.backgroundImagePath.value;
-                appConfig.backgroundImagePath.value = null;
-                if (oldPath != null) {
-                  FileImage(File(oldPath)).evict();
-                  File(oldPath).delete().ignore();
-                }
-                if (appConfig.themeColorMode.value ==
-                    ThemeColorMode.backgroundImage) {
-                  await SystemTheme.accentColor.load();
-                  appConfig.themeColor.value = SystemTheme.accentColor.accent;
-                }
-              },
+              onPressed: () => _removeBackgroundImage(appConfig),
               icon: const Icon(Icons.delete_outline),
               child: Text(localizations.removeBackgroundImage),
             ),
@@ -314,6 +240,19 @@ class SetCourseStylePage extends StatelessWidget {
         ),
       ),
     ];
+  }
+
+  Future<void> _removeBackgroundImage(AppConfigProvider appConfig) async {
+    final oldPath = appConfig.backgroundImagePath.value;
+    appConfig.backgroundImagePath.value = null;
+    if (oldPath != null) {
+      FileImage(File(oldPath)).evict();
+      File(oldPath).delete().ignore();
+    }
+    if (appConfig.themeColorMode.value == ThemeColorMode.backgroundImage) {
+      await SystemTheme.accentColor.load();
+      appConfig.themeColor.value = SystemTheme.accentColor.accent;
+    }
   }
 
   Future<void> _pickBackgroundImage(
