@@ -57,7 +57,7 @@ class CourseCard extends StatelessWidget {
               (
                 text: l10n.weekRange(course.startWeek, course.endWeek),
                 preferredMaxLines: 1,
-                renderMaxLines: 2,
+                renderMaxLines: 4,
               ),
             ];
 
@@ -102,34 +102,39 @@ class CourseCard extends StatelessWidget {
                   ),
                   padding: const EdgeInsets.all(4),
                   child: SizedBox.expand(
-                    child: SingleChildScrollView(
-                      physics: const NeverScrollableScrollPhysics(),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            isActive
-                                ? course.name
-                                : '${l10n.notThisWeek} ${course.name}',
-                            maxLines: titleMaxLines,
-                            style: TextStyle(
-                              fontSize: fontSize,
-                              color: textColor,
-                              height: 1.1,
-                              fontWeight: FontWeight.bold,
+                    child: ScrollConfiguration(
+                      behavior: ScrollConfiguration.of(
+                        context,
+                      ).copyWith(scrollbars: false),
+                      child: SingleChildScrollView(
+                        physics: const NeverScrollableScrollPhysics(),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isActive
+                                  ? course.name
+                                  : '${l10n.notThisWeek} ${course.name}',
+                              maxLines: titleMaxLines,
+                              style: TextStyle(
+                                fontSize: fontSize,
+                                color: textColor,
+                                height: 1.1,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                          if (visibleDetails.isNotEmpty)
-                            const SizedBox(height: 2),
-                          ...visibleDetails.map(
-                            (detail) => _buildIconText(
-                              detail.text,
-                              smallFontSize,
-                              textColor,
-                              maxLines: detail.renderMaxLines,
+                            if (visibleDetails.isNotEmpty)
+                              const SizedBox(height: 2),
+                            ...visibleDetails.map(
+                              (detail) => _buildIconText(
+                                detail.text,
+                                smallFontSize,
+                                textColor,
+                                maxLines: detail.renderMaxLines,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
