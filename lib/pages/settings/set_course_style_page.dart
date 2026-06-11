@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/course/course_page.dart';
@@ -28,26 +28,51 @@ class SetCourseStylePage extends StatelessWidget {
         appConfig.courseCardFontSize,
         appConfig.showCourseGrid,
         appConfig.courseRowHeight,
+        appConfig.backgroundImagePath,
+        appConfig.backgroundImageOpacity,
       ]),
       builder: (context, _) {
         return Scaffold(
           appBar: AppBar(title: Text(localizations.courseStyleSetting)),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-            child: Column(
-              spacing: 16,
-              children: [
-                // Preview section
-                SizedBox(
-                  height: 400,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: const CoursePage(demoMode: true),
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              final previewHeight = (constraints.maxHeight * 0.5).clamp(
+                200.0,
+                400.0,
+              );
+              return Column(
+                children: [
+                  // Preview section
+                  SizedBox(
+                    height: previewHeight,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 16, 8, 0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: const CoursePage(demoMode: true),
+                      ),
+                    ),
                   ),
-                ),
-                ..._buildSettings(context, localizations, appConfig),
-              ],
-            ),
+                  // Settings section
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                      child: Column(
+                        spacing: 16,
+                        children: _buildSettings(
+                          context,
+                          localizations,
+                          appConfig,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         );
       },
@@ -210,6 +235,69 @@ class SetCourseStylePage extends StatelessWidget {
         ],
       ),
       const Divider(),
+      // Background image settings
+      Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          localizations.backgroundImage,
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+      ),
+      // Background image
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ButtonWithMaxWidth(
+            onPressed: () => _pickBackgroundImage(context, appConfig),
+            icon: const Icon(Icons.wallpaper),
+            child: Text(localizations.setBackgroundImage),
+          ),
+          if (appConfig.backgroundImagePath.value != null) ...[
+            const SizedBox(height: 8),
+            ButtonWithMaxWidth(
+              onPressed: () async {
+                final oldPath = appConfig.backgroundImagePath.value;
+                appConfig.backgroundImagePath.value = null;
+                if (oldPath != null) {
+                  FileImage(File(oldPath)).evict();
+                  File(oldPath).delete().ignore();
+                }
+                if (appConfig.themeColorMode.value ==
+                    ThemeColorMode.backgroundImage) {
+                  await SystemTheme.accentColor.load();
+                  appConfig.themeColor.value = SystemTheme.accentColor.accent;
+                }
+              },
+              icon: const Icon(Icons.delete_outline),
+              child: Text(localizations.removeBackgroundImage),
+            ),
+            const SizedBox(height: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(child: Text(localizations.backgroundImageOpacity)),
+                    Text(
+                      '${(appConfig.backgroundImageOpacity.value * 100).round()}%',
+                    ),
+                  ],
+                ),
+                Slider(
+                  value: appConfig.backgroundImageOpacity.value,
+                  min: 0.05,
+                  max: 0.8,
+                  divisions: 15,
+                  onChanged: (v) => appConfig.backgroundImageOpacity.value = v,
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+      const Divider(),
       // Reset to default
       Align(
         alignment: Alignment.center,
@@ -228,7 +316,7 @@ class SetCourseStylePage extends StatelessWidget {
     ];
   }
 
-  static Future<void> _pickBackgroundImage(
+  Future<void> _pickBackgroundImage(
     BuildContext context,
     AppConfigProvider appConfig,
   ) async {

@@ -111,24 +111,6 @@ class SoftwareSettingPage extends StatelessWidget {
                   ),
                 ],
                 const Divider(),
-                // Other section
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    localizations.otherSection,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ),
-                ButtonWithMaxWidth(
-                  onPressed: () {
-                    appConfig.backgroundImageOpacity.value = 0.3;
-                  },
-                  icon: const Icon(Icons.refresh),
-                  child: Text(localizations.resetToDefault),
-                ),
-                const Divider(),
                 ButtonWithMaxWidth(
                   onPressed: () async {
                     final confirm = await showYesNoDialog(
