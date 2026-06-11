@@ -88,7 +88,7 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
       debugPrint('ClassScheduleInquiry index load error: $e');
       if (!mounted) return;
       setState(() {
-        _error = 'loadFailed';
+        _error = campusNetworkErrorKey('loadFailed');
         _isLoadingIndex = false;
       });
     }
@@ -195,7 +195,7 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
       debugPrint('ClassScheduleInquiry load error: $e');
       if (!mounted) return;
       setState(() {
-        _error = 'loadFailed';
+        _error = campusNetworkErrorKey('loadFailed');
         _isLoading = false;
         _isLoadingMore = false;
       });

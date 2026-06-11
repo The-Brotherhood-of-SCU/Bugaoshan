@@ -560,7 +560,10 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
       TrainProgramLoadState.idle || TrainProgramLoadState.loading =>
         const Center(child: CircularProgressIndicator()),
       TrainProgramLoadState.error => RetryableErrorWidget(
-        message: _provider.courseDetailError ?? l10n.trainProgramLoadFailed,
+        message: getCampusNetworkErrorMessage(
+          l10n,
+          _provider.courseDetailError,
+        ),
         onRetry: () => Navigator.pop(context),
       ),
       TrainProgramLoadState.loaded => _buildCourseDetailLoaded(

@@ -98,8 +98,8 @@ class TrainProgramProvider extends ChangeNotifier {
     } on ServiceException catch (e) {
       _collegesState = TrainProgramLoadState.error;
       _gradesState = TrainProgramLoadState.error;
-      _collegesError = e.message;
-      _gradesError = e.message;
+      _collegesError = campusNetworkErrorKey(e.message);
+      _gradesError = campusNetworkErrorKey(e.message);
     } catch (e) {
       _collegesState = TrainProgramLoadState.error;
       _gradesState = TrainProgramLoadState.error;
@@ -126,7 +126,7 @@ class TrainProgramProvider extends ChangeNotifier {
       _programsError = 'unauthenticated';
     } on ServiceException catch (e) {
       _programsState = TrainProgramLoadState.error;
-      _programsError = e.message;
+      _programsError = campusNetworkErrorKey(e.message);
     } catch (e) {
       _programsState = TrainProgramLoadState.error;
       _programsError = campusNetworkErrorKey(e.toString());
@@ -148,7 +148,7 @@ class TrainProgramProvider extends ChangeNotifier {
       _detailError = 'unauthenticated';
     } on ServiceException catch (e) {
       _detailState = TrainProgramLoadState.error;
-      _detailError = e.message;
+      _detailError = campusNetworkErrorKey(e.message);
     } catch (e) {
       _detailState = TrainProgramLoadState.error;
       _detailError = campusNetworkErrorKey(e.toString());
@@ -176,7 +176,7 @@ class TrainProgramProvider extends ChangeNotifier {
       _courseDetailError = 'unauthenticated';
     } on ServiceException catch (e) {
       _courseDetailState = TrainProgramLoadState.error;
-      _courseDetailError = e.message;
+      _courseDetailError = campusNetworkErrorKey(e.message);
     } catch (e) {
       _courseDetailState = TrainProgramLoadState.error;
       _courseDetailError = campusNetworkErrorKey(e.toString());

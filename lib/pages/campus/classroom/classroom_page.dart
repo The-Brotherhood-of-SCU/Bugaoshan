@@ -95,7 +95,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
       debugPrint('Classroom index load error: $e');
       if (!mounted) return;
       setState(() {
-        _error = 'loadFailed';
+        _error = campusNetworkErrorKey('loadFailed');
         _isLoading = false;
         _isInitialLoad = false;
       });
@@ -141,7 +141,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
       debugPrint('Classroom query error: $e');
       if (!mounted) return;
       setState(() {
-        _error = 'loadFailed';
+        _error = campusNetworkErrorKey('loadFailed');
         _isLoading = false;
       });
     }
