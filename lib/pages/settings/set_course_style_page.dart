@@ -1,8 +1,16 @@
+import 'dart:io';
+
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/course/course_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/widgets/common/styled_widget.dart';
+import 'package:bugaoshan/providers/set_theme_color_provider.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
+import 'package:system_theme/system_theme.dart';
 
 class SetCourseStylePage extends StatelessWidget {
   const SetCourseStylePage({super.key});
@@ -14,6 +22,8 @@ class SetCourseStylePage extends StatelessWidget {
 
     return ListenableBuilder(
       listenable: Listenable.merge([
+        appConfig.backgroundImagePath,
+        appConfig.backgroundImageOpacity,
         appConfig.colorOpacity,
         appConfig.courseCardFontSize,
         appConfig.showCourseGrid,
@@ -50,6 +60,69 @@ class SetCourseStylePage extends StatelessWidget {
     AppConfigProvider appConfig,
   ) {
     return [
+      const Divider(),
+      // Background image section
+      Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          localizations.backgroundImage,
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+      ),
+      // Background image
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ButtonWithMaxWidth(
+            onPressed: () => _pickBackgroundImage(context, appConfig),
+            icon: const Icon(Icons.wallpaper),
+            child: Text(localizations.setBackgroundImage),
+          ),
+          if (appConfig.backgroundImagePath.value != null) ...[
+            const SizedBox(height: 8),
+            ButtonWithMaxWidth(
+              onPressed: () async {
+                final oldPath = appConfig.backgroundImagePath.value;
+                appConfig.backgroundImagePath.value = null;
+                if (oldPath != null) {
+                  FileImage(File(oldPath)).evict();
+                  File(oldPath).delete().ignore();
+                }
+                if (appConfig.themeColorMode.value ==
+                    ThemeColorMode.backgroundImage) {
+                  await SystemTheme.accentColor.load();
+                  appConfig.themeColor.value = SystemTheme.accentColor.accent;
+                }
+              },
+              icon: const Icon(Icons.delete_outline),
+              child: Text(localizations.removeBackgroundImage),
+            ),
+            const SizedBox(height: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(child: Text(localizations.backgroundImageOpacity)),
+                    Text(
+                      '${(appConfig.backgroundImageOpacity.value * 100).round()}%',
+                    ),
+                  ],
+                ),
+                Slider(
+                  value: appConfig.backgroundImageOpacity.value,
+                  min: 0.05,
+                  max: 0.8,
+                  divisions: 15,
+                  onChanged: (v) => appConfig.backgroundImageOpacity.value = v,
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
       const Divider(),
       // Course card settings
       Align(
@@ -146,11 +219,62 @@ class SetCourseStylePage extends StatelessWidget {
             appConfig.courseCardFontSize.value = 14.0;
             appConfig.showCourseGrid.value = true;
             appConfig.courseRowHeight.value = 72.0;
+            appConfig.backgroundImageOpacity.value = 0.3;
           },
           icon: const Icon(Icons.refresh),
           label: Text(localizations.resetToDefault),
         ),
       ),
     ];
+  }
+
+  static Future<void> _pickBackgroundImage(
+    BuildContext context,
+    AppConfigProvider appConfig,
+  ) async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked == null) return;
+
+    final appDir = await getApplicationDocumentsDirectory();
+    final bgDir = Directory('${appDir.path}/backgrounds');
+    if (!await bgDir.exists()) {
+      await bgDir.create(recursive: true);
+    }
+
+    final ext = p.extension(picked.path);
+    final destPath = '${bgDir.path}/schedule_bg$ext';
+
+    // Delete old background file and evict from image cache
+    final oldPath = appConfig.backgroundImagePath.value;
+    if (oldPath != null) {
+      FileImage(File(oldPath)).evict();
+      final oldFile = File(oldPath);
+      if (await oldFile.exists()) {
+        await oldFile.delete();
+      }
+    }
+
+    await File(picked.path).copy(destPath);
+    appConfig.backgroundImagePath.value = destPath;
+
+    if (appConfig.themeColorMode.value == ThemeColorMode.backgroundImage) {
+      final themeColorProvider = SetThemeColorProvider(appConfig);
+      final result = await themeColorProvider.extractColorFromBackgroundImage();
+      if (result == ExtractColorResult.success &&
+          themeColorProvider.extractedColor != null) {
+        appConfig.themeColor.value = themeColorProvider.extractedColor!;
+      }
+    }
+
+    if (!context.mounted) return;
+    if (appConfig.themeColorMode.value != ThemeColorMode.backgroundImage) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.backgroundImageSetHint),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 }
