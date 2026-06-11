@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 重构登录认证功能，大部分页面支持无感登录、自动刷新凭证
 - 增加始终使用最新版本（包括预览版）选项
 - 课表日期栏添加节假日节气标识
+- 添加班级课表查询功能，可查询各个年级和班级的课表
 
 ### Fixed
 - 修复课程编辑页在big screen模式下关闭后产生阴影的问题
