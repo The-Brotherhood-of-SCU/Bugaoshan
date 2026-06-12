@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Bugaoshan (不高山上) — A campus assistant app for Sichuan University students, covering course schedules, classroom availability, and grades.
 
+> **⚠️ Flutter 版本要求**: 本项目需要 **Flutter >= 3.44**（Dart SDK >= 3.10.4）才能正常编译。详情见 `CONTRIBUTING.md`。
+
 ## Build Commands
 
 **IMPORTANT**: All `flutter` and `dart` commands **must** run outside the sandbox (`sandbox_permissions: require_escalated`). Running them inside the sandbox hangs indefinitely due to Flutter's asset download and build tooling.

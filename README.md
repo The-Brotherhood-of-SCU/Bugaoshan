@@ -2,8 +2,8 @@
 
 # 🏔️ 不高山上 · Bugaoshan
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-[![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?logo=dart&logoColor=white)](https://dart.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.44-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.10-0175C2?logo=dart&logoColor=white)](https://dart.dev)
 [![License](https://img.shields.io/badge/License-AGPL3.0-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Android%20%7C%20Windows-blue)](https://flutter.dev)
 
@@ -18,6 +18,10 @@
 **不高山上**（Bugaoshan）是由 **The-Brotherhood-of-SCU** 团队开发的一款面向四川大学学生的校园助手 App。
 
 "不高山"是江安校区的一处标志性地标，App 以此命名，寓意扎根校园、服务同学。
+
+---
+
+> **⚠️ 版本要求**: 本项目需要 **Flutter >= 3.44**（Dart SDK >= 3.10.4）才能正常编译。详情见 `CONTRIBUTING.md`。
 
 ---
 

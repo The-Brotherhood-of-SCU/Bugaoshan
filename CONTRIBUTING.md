@@ -12,8 +12,8 @@
 
 ### 环境要求
 
-- [Flutter SDK](https://flutter.dev/docs/get-started/install) >= 3.x
-- [Dart SDK](https://dart.dev/get-dart) >= 3.x
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) >= 3.44（Dart SDK 3.10+）
+- [Dart SDK](https://dart.dev/get-dart) >= 3.10.4
 - [Nuget CLI](https://learn.microsoft.com/en-us/nuget/install-nuget-client-tools?tabs=windows#nugetexe-cli)  required by `flutter_inappwebview` (windows target)
 
 ### 安装运行
