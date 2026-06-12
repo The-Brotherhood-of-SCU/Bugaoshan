@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
@@ -89,7 +90,7 @@ class CourseCard extends StatelessWidget {
               final titleMaxLines = 6;
 
               return ClipRRect(
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: AppRadius.sm.borderRadius,
                 child: Container(
                   decoration: BoxDecoration(
                     color: color,

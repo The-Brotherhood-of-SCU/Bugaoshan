@@ -3,6 +3,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/services/api/balance_query_service.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 
 class BalanceCard extends StatefulWidget {
@@ -121,7 +122,7 @@ class BalanceCardState extends State<BalanceCard> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: widget.iconColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.md.borderRadius,
                   ),
                   child: Icon(widget.icon, color: widget.iconColor, size: 28),
                 ),

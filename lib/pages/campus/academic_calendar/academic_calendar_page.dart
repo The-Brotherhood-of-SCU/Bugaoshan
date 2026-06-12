@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 import 'package:bugaoshan/widgets/common/image_viewer.dart';
 import 'package:http/http.dart' as http;
 
@@ -192,7 +193,7 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage> {
             onTap: () =>
                 showFullScreenImageViewer(context, imageUrl: _imageUrls[index]),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.md.borderRadius,
               child: Image.network(
                 _imageUrls[index],
                 fit: BoxFit.fitWidth,

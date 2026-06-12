@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 
 class StatusChip extends StatelessWidget {
   const StatusChip({
@@ -19,7 +20,7 @@ class StatusChip extends StatelessWidget {
       decoration: BoxDecoration(
         color:
             backgroundColor ?? Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: AppRadius.xs.borderRadius,
       ),
       child: Text(
         label,

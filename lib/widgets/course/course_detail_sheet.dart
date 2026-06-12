@@ -5,6 +5,8 @@ import 'package:bugaoshan/pages/course/course_edit_page.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
+import 'package:bugaoshan/theme/semantic_colors.dart';
 
 class CourseDetailSheet extends StatelessWidget {
   final Course course;
@@ -26,6 +28,7 @@ class CourseDetailSheet extends StatelessWidget {
     final config =
         courseProvider?.scheduleConfig.value ??
         ScheduleConfig(semesterStartDate: DateTime(2025, 9, 1));
+    final semantics = SemanticColors.of(context);
 
     String timeRange = '';
     if (course.startSection > 0 &&
@@ -39,7 +42,7 @@ class CourseDetailSheet extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: AppShapes.sheetTopRadius,
       ),
       child: SafeArea(
         child: Column(
@@ -136,7 +139,7 @@ class CourseDetailSheet extends StatelessWidget {
                 children: [
                   _InfoItem(
                     icon: Icons.calendar_today_outlined,
-                    iconColor: Colors.teal,
+                    iconColor: semantics.infoTeal,
                     text:
                         '${l10n.weekRange(course.startWeek, course.endWeek)}'
                         '${course.weekType == WeekType.odd
@@ -147,20 +150,20 @@ class CourseDetailSheet extends StatelessWidget {
                   ),
                   _InfoItem(
                     icon: Icons.access_time_outlined,
-                    iconColor: Colors.orange,
+                    iconColor: semantics.warnOrange,
                     text:
                         '${l10n.sectionRange(course.startSection, course.endSection)}   $timeRange',
                   ),
                   if (course.teacher.isNotEmpty)
                     _InfoItem(
                       icon: Icons.person_outline,
-                      iconColor: Colors.blue,
+                      iconColor: semantics.linkBlue,
                       text: course.teacher,
                     ),
                   if (course.location.isNotEmpty)
                     _InfoItem(
                       icon: Icons.location_on_outlined,
-                      iconColor: Colors.redAccent,
+                      iconColor: semantics.errorAccent,
                       text: course.location,
                     ),
                   const SizedBox(height: 16),

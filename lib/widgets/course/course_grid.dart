@@ -5,6 +5,8 @@ import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
 import 'package:bugaoshan/widgets/course/course_card.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
+import 'package:bugaoshan/theme/semantic_colors.dart';
 
 List<Course> selectVisibleCoursesForDay(
   List<Course> courses,
@@ -196,6 +198,7 @@ class _CourseGridState extends State<CourseGrid> {
     AppLocalizations l10n,
   ) {
     final theme = Theme.of(context);
+    final semantics = SemanticColors.of(context);
     final visibleDays = widget.config.showWeekend
         ? dayNames
         : dayNames.sublist(1, 6);
@@ -270,11 +273,11 @@ class _CourseGridState extends State<CourseGrid> {
                     child: Container(
                       decoration: BoxDecoration(
                         color: isHoliday
-                            ? Colors.red.withAlpha(15)
+                            ? semantics.holiday.withAlpha(15)
                             : isFestival
-                            ? Colors.orange.withAlpha(15)
+                            ? semantics.festival.withAlpha(15)
                             : isSolarTerm
-                            ? Colors.green.withAlpha(15)
+                            ? semantics.solarTerm.withAlpha(15)
                             : isToday
                             ? theme.colorScheme.primaryContainer.withAlpha(180)
                             : null,
@@ -313,11 +316,11 @@ class _CourseGridState extends State<CourseGrid> {
                                           ? FontWeight.bold
                                           : FontWeight.normal,
                                       color: isHoliday
-                                          ? Colors.red
+                                          ? semantics.holiday
                                           : isFestival
-                                          ? Colors.orange
+                                          ? semantics.festival
                                           : isSolarTerm
-                                          ? Colors.green
+                                          ? semantics.solarTerm
                                           : isToday
                                           ? theme.colorScheme.primary.withAlpha(
                                               200,
@@ -329,21 +332,21 @@ class _CourseGridState extends State<CourseGrid> {
                                     const SizedBox(width: 2),
                                     _buildLabelBadge(
                                       l10n.holidayLabel,
-                                      Colors.red,
+                                      semantics.holiday,
                                     ),
                                   ],
                                   if (isFestival) ...[
                                     const SizedBox(width: 2),
                                     _buildLabelBadge(
                                       l10n.festivalLabel,
-                                      Colors.orange,
+                                      semantics.festival,
                                     ),
                                   ],
                                   if (isSolarTerm) ...[
                                     const SizedBox(width: 2),
                                     _buildLabelBadge(
                                       l10n.solarTermLabel,
-                                      Colors.green,
+                                      semantics.solarTerm,
                                     ),
                                   ],
                                 ],
@@ -367,7 +370,7 @@ class _CourseGridState extends State<CourseGrid> {
       padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: AppRadius.xs.borderRadius,
       ),
       child: Text(
         label,
@@ -596,7 +599,7 @@ class _CourseGridState extends State<CourseGrid> {
                                   color: theme.colorScheme.primary.withAlpha(
                                     100,
                                   ), // e.g. pinkish/primary with opacity
-                                  borderRadius: BorderRadius.circular(6),
+                                  borderRadius: AppRadius.sm.borderRadius,
                                   border: Border.all(
                                     color: theme.colorScheme.primary.withAlpha(
                                       150,

@@ -9,6 +9,8 @@ import 'package:bugaoshan/pages/wizard/eula_gate_page.dart';
 import 'package:bugaoshan/pages/wizard/wizard_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/background_cache_service.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
+import 'package:bugaoshan/theme/semantic_colors.dart';
 import 'package:bugaoshan/widgets/common/session_expired_listener.dart';
 import 'package:bugaoshan/widgets/eula_content.dart';
 import 'package:bugaoshan/widgets/route/mouse_back_handler.dart';
@@ -103,14 +105,36 @@ class _MyAppState extends State<MyApp> {
     final seedColor = _appConfig.themeColorMode.value == ThemeColorMode.system
         ? SystemTheme.accentColor.accent
         : _appConfig.themeColor.value;
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: seedColor,
+      brightness: brightness,
+    );
     final baseTheme = ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: seedColor,
-        brightness: brightness,
-      ),
+      useMaterial3: true,
+      colorScheme: colorScheme,
       pageTransitionsTheme: _pageTransitionsTheme,
       appBarTheme: _appBarTheme,
       navigationBarTheme: _navigationBarTheme,
+      cardTheme: CardThemeData(
+        elevation: 0,
+        margin: const EdgeInsets.only(bottom: 16),
+        shape: AppShapes.outlined(
+          radius: AppRadius.lg,
+          outlineColor: colorScheme.outline.withValues(alpha: 0.2),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(20)),
+          ),
+        ),
+      ),
+      extensions: <ThemeExtension<dynamic>>[
+        brightness == Brightness.dark
+            ? SemanticColors.dark
+            : SemanticColors.light,
+      ],
     );
 
     TextTheme textTheme = baseTheme.textTheme;

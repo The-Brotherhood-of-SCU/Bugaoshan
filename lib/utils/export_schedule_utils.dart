@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/export_schedule_provider.dart';
@@ -28,9 +29,7 @@ Future<void> showExportScheduleSheet(
 
   final ExportAction? action = await showModalBottomSheet(
     context: context,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
+    shape: const RoundedRectangleBorder(borderRadius: AppShapes.sheetTopRadius),
     builder: (sheetContext) => SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),

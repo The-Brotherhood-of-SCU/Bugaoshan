@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 
 class WizardCard extends StatelessWidget {
   final IconData icon;
@@ -27,7 +28,7 @@ class WizardCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppRadius.lg.borderRadius,
           border: Border.all(
             color: colorScheme.outlineVariant.withValues(alpha: 0.5),
           ),
@@ -42,7 +43,7 @@ class WizardCard extends StatelessWidget {
                 height: 52,
                 decoration: BoxDecoration(
                   color: iconBackground,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: AppRadius.md.borderRadius,
                 ),
                 child: Icon(icon, size: 28, color: iconColor),
               ),

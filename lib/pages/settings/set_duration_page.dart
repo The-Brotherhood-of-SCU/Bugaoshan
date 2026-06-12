@@ -2,6 +2,7 @@
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 
 class SetDurationPage extends StatefulWidget {
   const SetDurationPage({super.key});
@@ -126,7 +127,7 @@ class _SetDurationPageState extends State<SetDurationPage> {
               child: Container(
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.md.borderRadius,
                 ),
                 child: Center(
                   child: AnimatedContainer(

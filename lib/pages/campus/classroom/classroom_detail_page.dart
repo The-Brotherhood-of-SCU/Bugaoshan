@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 
 class ClassroomDetailPage extends StatelessWidget {
   final ClassroomCampus campus;
@@ -195,7 +196,7 @@ class ClassroomDetailPage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: AppRadius.sm.borderRadius,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -284,7 +285,7 @@ class ClassroomDetailPage extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 4),
               decoration: BoxDecoration(
                 color: bgColor,
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: AppRadius.sm.borderRadius,
               ),
               child: Text(
                 periodLabel,

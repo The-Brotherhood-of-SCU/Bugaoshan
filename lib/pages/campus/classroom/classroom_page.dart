@@ -3,6 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/classroom/classroom_detail_page.dart';
 import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
@@ -451,7 +452,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
             ),
           );
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.md.borderRadius,
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(

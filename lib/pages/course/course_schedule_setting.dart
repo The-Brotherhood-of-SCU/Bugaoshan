@@ -9,6 +9,7 @@ import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 
 class CourseScheduleSetting extends StatefulWidget {
   const CourseScheduleSetting({super.key});
@@ -302,9 +303,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
     return showModalBottomSheet<int>(
       context: context,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.lg.borderRadius),
       builder: (BuildContext context) {
         return SizedBox(
           height: 350,

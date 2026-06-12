@@ -5,6 +5,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 
 enum LoginStatus {
   autoLoggingIn,
@@ -123,7 +124,7 @@ class _LoginStatusCardState extends State<LoginStatusCard> {
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.lg.borderRadius,
         border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
       ),
       child: Column(
@@ -200,7 +201,7 @@ class _LoginStatusCardState extends State<LoginStatusCard> {
             : status.isSessionExpired
             ? theme.colorScheme.tertiaryContainer
             : theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: AppRadius.md.borderRadius,
       ),
       child: status.isAutoLoggingIn
           ? SizedBox(
@@ -239,7 +240,7 @@ class _LoginStatusCardState extends State<LoginStatusCard> {
           : status.isLoggedIn
           ? _onLogout
           : _onLogin,
-      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
+      borderRadius: AppRadius.lg.borderRadius,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         child: Row(

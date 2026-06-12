@@ -109,11 +109,27 @@ class _TopBar extends StatelessWidget {
                 tooltip: l10n.exportSchedule,
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
               ),
-              IconButton(
-                onPressed: onAddCourse,
-                icon: const Icon(Icons.add_circle_rounded, size: 24),
-                tooltip: l10n.addCourse,
-                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              Material(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                shape: const StadiumBorder(),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: onAddCourse,
+                  child: Tooltip(
+                    message: l10n.addCourse,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      child: Icon(
+                        Icons.add_rounded,
+                        size: 20,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -156,7 +172,7 @@ class _WeekBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
       decoration: BoxDecoration(
         color: isCurrent ? scheme.primaryContainer : scheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: AppRadius.full.borderRadius,
       ),
       child: AnimatedSize(
         duration: appConfigService.cardSizeAnimationDuration.value,

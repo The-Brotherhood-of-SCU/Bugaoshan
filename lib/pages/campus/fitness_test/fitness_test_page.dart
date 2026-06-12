@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/auth/fitness_auth.dart';
@@ -326,7 +327,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
       margin: const EdgeInsets.only(bottom: 8),
       child: InkWell(
         onTap: () => _showNoticeDetail(notice, l10n),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.md.borderRadius,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -342,7 +343,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                       ),
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: AppRadius.xs.borderRadius,
                       ),
                       child: Text(
                         l10n.fitnessTestSticky,
@@ -634,7 +635,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                     ),
                     decoration: BoxDecoration(
                       color: gradeColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.md.borderRadius,
                     ),
                     child: Text(
                       totalGrade,

@@ -3,6 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program.dart';
 import 'package:bugaoshan/providers/train_program_provider.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
@@ -231,7 +232,7 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: AppRadius.sm.borderRadius,
                         ),
                         child: Icon(
                           Icons.school_outlined,
@@ -519,9 +520,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
               return Container(
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(16),
-                  ),
+                  borderRadius: AppRadius.lg.borderRadius,
                 ),
                 child: Column(
                   children: [
@@ -531,7 +530,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
                       height: 4,
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        borderRadius: BorderRadius.circular(2),
+                        borderRadius: AppRadius.xs.borderRadius,
                       ),
                     ),
                     Expanded(
@@ -791,7 +790,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: AppRadius.xs.borderRadius,
       ),
       child: Text(
         '$label:$value',

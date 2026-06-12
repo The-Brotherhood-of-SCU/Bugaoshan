@@ -1,10 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/set_theme_color_provider.dart';
 import 'package:system_theme/system_theme.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 
 class SetThemeColorPage extends StatefulWidget {
   const SetThemeColorPage({super.key});
@@ -265,23 +266,15 @@ class BasicCard extends StatelessWidget {
     }
     return Padding(
       padding: const EdgeInsets.all(10),
-      child: Container(
-        alignment: Alignment.topLeft,
-        decoration: ShapeDecoration(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadiusDirectional.circular(20),
-          ),
-          color: Theme.of(context).colorScheme.secondaryContainer,
-          shadows: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              spreadRadius: 0.1,
-              blurRadius: 10,
-            ),
-          ],
+      child: Card(
+        elevation: 1,
+        margin: EdgeInsets.zero,
+        color: Theme.of(context).colorScheme.secondaryContainer,
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.xl.borderRadius),
+        child: SizedBox(
+          width: double.infinity,
+          child: Align(alignment: Alignment.topLeft, child: realChild),
         ),
-        width: double.infinity,
-        child: realChild,
       ),
     );
   }

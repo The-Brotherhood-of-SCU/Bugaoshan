@@ -8,6 +8,7 @@ import 'package:bugaoshan/utils/open_link.dart'
     show openDeveloperTeam, openProjectRepository;
 import 'package:bugaoshan/pages/about/release_notes_page.dart';
 import 'package:bugaoshan/pages/settings/eula_status_page.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 import 'package:bugaoshan/pages/test/test_page.dart';
 import 'package:bugaoshan/widgets/common/info_card.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
@@ -211,7 +212,7 @@ class _AboutPageState extends State<AboutPage> {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: AppRadius.xxl.borderRadius,
               boxShadow: [
                 BoxShadow(
                   color: primaryColor.withValues(alpha: 0.2),
@@ -221,7 +222,7 @@ class _AboutPageState extends State<AboutPage> {
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: AppRadius.xxl.borderRadius,
               child: Image.asset('assets/icon.png', fit: BoxFit.cover),
             ),
           ),

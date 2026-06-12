@@ -8,6 +8,7 @@ import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/models/widget_size.dart';
 
 import 'battery_optimization_card.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 import 'hint_card.dart';
 
 class AddWidgetPage extends StatelessWidget {
@@ -186,7 +187,7 @@ class _WidgetPickerCardState extends State<_WidgetPickerCard> {
                   height: 56,
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.md.borderRadius,
                   ),
                   child: Icon(
                     Icons.widgets_outlined,

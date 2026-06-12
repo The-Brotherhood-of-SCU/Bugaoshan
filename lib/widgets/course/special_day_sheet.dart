@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
+import 'package:bugaoshan/theme/semantic_colors.dart';
 
 /// 点击课表表头的特殊日（假/节/气）后弹出的信息悬浮窗
 Future<void> showSpecialDaySheet(
@@ -8,13 +10,14 @@ Future<void> showSpecialDaySheet(
   DateTime date,
   SpecialDayInfo info,
 ) async {
+  final semantics = SemanticColors.of(context);
   switch (info.type) {
     case SpecialDayType.holiday:
-      await _showSheet(context, date, info, Colors.red);
+      await _showSheet(context, date, info, semantics.holiday);
     case SpecialDayType.festival:
-      await _showSheet(context, date, info, Colors.orange);
+      await _showSheet(context, date, info, semantics.festival);
     case SpecialDayType.solarTerm:
-      await _showSheet(context, date, info, Colors.green);
+      await _showSheet(context, date, info, semantics.solarTerm);
     case SpecialDayType.ordinary:
       break;
   }
@@ -36,9 +39,7 @@ Future<void> _showSheet(
 
   await showModalBottomSheet(
     context: context,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
+    shape: const RoundedRectangleBorder(borderRadius: AppShapes.sheetTopRadius),
     builder: (ctx) => SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -59,7 +60,7 @@ Future<void> _showSheet(
                     ),
                     decoration: BoxDecoration(
                       color: color.withAlpha(30),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: AppRadius.xs.borderRadius,
                     ),
                     child: Text(
                       typeLabel,

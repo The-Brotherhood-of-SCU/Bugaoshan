@@ -3,6 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/scheme_score.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
 import 'package:bugaoshan/widgets/common/stat_item.dart';
 import 'scheme_scores_tab.dart' show ScoreCardWidget;
@@ -356,7 +357,7 @@ class _TermSelectHeader extends StatelessWidget {
           ),
           InkWell(
             onTap: allSelected ? onDeselectAllInTerm : onSelectAllInTerm,
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: AppRadius.xs.borderRadius,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               child: Row(

@@ -3,6 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
 
 class CreditListPage extends StatefulWidget {
@@ -448,7 +449,7 @@ class _CreditCard extends StatelessWidget {
       color: selected ? theme.colorScheme.primaryContainer : null,
       child: InkWell(
         onTap: selecting ? onToggle : null,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.md.borderRadius,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -528,7 +529,7 @@ class _StatusChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: color.withAlpha(25),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: AppRadius.xs.borderRadius,
       ),
       child: Text(
         label,

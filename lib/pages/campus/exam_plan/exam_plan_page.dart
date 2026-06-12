@@ -3,6 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/exam_plan/models/exam_info.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
@@ -231,7 +232,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
                           ),
                           decoration: BoxDecoration(
                             color: primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: AppRadius.sm.borderRadius,
                           ),
                           child: Text(
                             exam.week,
@@ -292,7 +293,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
                           color: colorScheme.surfaceContainerHighest.withValues(
                             alpha: 0.5,
                           ),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: AppRadius.sm.borderRadius,
                         ),
                         child: Row(
                           children: [

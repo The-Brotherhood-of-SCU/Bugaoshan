@@ -25,7 +25,8 @@ const String _keyThemeColorMode = 'themeColorMode';
 const String _keyWidgetShowTomorrow = 'widget_show_tomorrow';
 const String _keyUsePreviewUpdateSource = 'usePreviewUpdateSource';
 const String _keyUseGoogleFonts = 'useGoogleFonts';
-const Curve appCurve = Curves.easeOutQuart;
+// M3E emphasized-decelerate (Flutter 内置 easeOutCubic 近似;无新依赖)。
+const Curve appCurve = Curves.easeOutCubic;
 
 enum ThemeColorMode { system, backgroundImage, custom }
 

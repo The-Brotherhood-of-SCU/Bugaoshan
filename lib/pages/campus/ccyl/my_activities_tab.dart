@@ -3,6 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activity_detail_page.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
 
@@ -150,7 +151,7 @@ class _MyActivityCard extends StatelessWidget {
             ),
           );
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.md.borderRadius,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -236,7 +237,7 @@ class _MyActivityCard extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: _getStatusColor(activity.statusName),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: AppRadius.xs.borderRadius,
                     ),
                     child: Text(
                       activity.statusName ?? activity.status,

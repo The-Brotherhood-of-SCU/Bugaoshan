@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart' show CaptchaResult;
@@ -183,7 +184,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       Container(
         width: 88,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.md.borderRadius,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.08),
@@ -193,7 +194,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.md.borderRadius,
           child: Image.asset('assets/scu.webp', fit: BoxFit.cover),
         ),
       ),
@@ -379,7 +380,7 @@ class _CaptchaRow extends StatelessWidget {
             height: 56,
             decoration: BoxDecoration(
               border: Border.all(color: Theme.of(context).dividerColor),
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: AppRadius.xs.borderRadius,
             ),
             child: loading
                 ? const Center(
@@ -391,7 +392,7 @@ class _CaptchaRow extends StatelessWidget {
                   )
                 : captcha != null
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(3),
+                    borderRadius: AppRadius.xs.borderRadius,
                     child: Image.memory(
                       _decodeBase64Image(captcha!.captchaBase64),
                       fit: BoxFit.contain,

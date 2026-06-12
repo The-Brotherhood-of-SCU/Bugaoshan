@@ -3,6 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/models/plan_completion.dart';
 import 'package:bugaoshan/providers/plan_completion_provider.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
@@ -260,7 +261,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
             ),
             const SizedBox(height: 4),
             ClipRRect(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: AppRadius.xs.borderRadius,
               child: LinearProgressIndicator(
                 value: progress,
                 minHeight: 4,
@@ -375,7 +376,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
                   color: isPassed
                       ? Theme.of(context).colorScheme.primaryContainer
                       : Theme.of(context).colorScheme.errorContainer,
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: AppRadius.xs.borderRadius,
                 ),
                 child: Text(
                   gradeDisplay,

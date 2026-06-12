@@ -3,6 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 import 'package:bugaoshan/widgets/common/image_viewer.dart';
 
 class ActivityDetailPage extends StatefulWidget {
@@ -288,7 +289,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
       onTap: () =>
           showFullScreenImageViewer(context, imageUrl: _activity!.poster),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.md.borderRadius,
         child: Image.network(
           _activity!.poster,
           width: double.infinity,
@@ -336,7 +337,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                         : activity.status == 'A05'
                         ? Colors.blue.shade100
                         : Colors.orange.shade100,
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: AppRadius.xs.borderRadius,
                   ),
                   child: Text(
                     activity.statusName ?? activity.status,

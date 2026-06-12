@@ -3,6 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/scheme_score.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
 import 'package:bugaoshan/widgets/common/stat_item.dart';
 
@@ -314,7 +315,7 @@ class ScoreCardWidget extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: attrColor,
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: AppRadius.xs.borderRadius,
                         ),
                         child: Text(
                           item.courseAttributeName,
@@ -360,7 +361,7 @@ class ScoreCardWidget extends StatelessWidget {
     if (onTap != null) {
       card = InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.md.borderRadius,
         child: card,
       );
     }

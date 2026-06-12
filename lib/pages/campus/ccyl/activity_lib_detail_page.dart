@@ -3,6 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activity_detail_page.dart';
 
 class ActivityLibDetailPage extends StatefulWidget {
@@ -210,7 +211,7 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
                     ),
                     decoration: BoxDecoration(
                       color: Colors.green.shade100,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: AppRadius.xs.borderRadius,
                     ),
                     child: Text(
                       l10n.ccylSubscribed,
@@ -241,7 +242,7 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
                     ),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: AppRadius.xs.borderRadius,
                     ),
                     child: Text(
                       lib.levelName!,
@@ -436,7 +437,7 @@ class _ActivityCard extends StatelessWidget {
             ),
           );
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.md.borderRadius,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -449,7 +450,7 @@ class _ActivityCard extends StatelessWidget {
                     height: 24,
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.md.borderRadius,
                     ),
                     child: Center(
                       child: Text(
@@ -478,7 +479,7 @@ class _ActivityCard extends StatelessWidget {
                       color: activity.status == 'A03'
                           ? Colors.green.shade100
                           : Colors.orange.shade100,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: AppRadius.xs.borderRadius,
                     ),
                     child: Text(
                       activity.statusName ?? activity.status,

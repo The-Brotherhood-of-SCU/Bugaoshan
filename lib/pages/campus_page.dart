@@ -4,6 +4,7 @@ import 'package:bugaoshan/models/campus_item_config.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
 
 class CampusPage extends StatefulWidget {
   const CampusPage({super.key});
@@ -151,7 +152,7 @@ class _CampusCard extends StatelessWidget {
     return Card(
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.md.borderRadius,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -160,7 +161,7 @@ class _CampusCard extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.md.borderRadius,
                 ),
                 child: Icon(
                   icon,
@@ -234,7 +235,7 @@ class _MoreFeaturesCard extends StatelessWidget {
           Uri.parse('$appLink/issues/new?template=feature_request.yml'),
           mode: LaunchMode.externalApplication,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.md.borderRadius,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -243,7 +244,7 @@ class _MoreFeaturesCard extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.secondaryContainer,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.md.borderRadius,
                 ),
                 child: Icon(
                   Icons.add_comment_outlined,

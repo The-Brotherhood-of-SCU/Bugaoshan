@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/theme/m3e_tokens.dart';
+import 'package:bugaoshan/theme/semantic_colors.dart';
 
 /// Base tile with padding and optional InkWell tap.
 class BaseTile extends StatelessWidget {
@@ -16,7 +18,7 @@ class BaseTile extends StatelessWidget {
     if (onTap != null) {
       return InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.lg.borderRadius,
         child: tile,
       );
     }
@@ -39,7 +41,7 @@ class TileIcon extends StatelessWidget {
       height: 36,
       decoration: BoxDecoration(
         color: primaryColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: AppRadius.sm.borderRadius,
       ),
       child: Icon(icon, color: primaryColor, size: 20),
     );
@@ -143,6 +145,7 @@ class BadgedTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final semantics = SemanticColors.of(context);
     if (!showBadge && trailing == null) {
       return IconTile(
         icon: icon,
@@ -163,8 +166,8 @@ class BadgedTile extends StatelessWidget {
             Container(
               width: 8,
               height: 8,
-              decoration: const BoxDecoration(
-                color: Colors.red,
+              decoration: BoxDecoration(
+                color: semantics.statusBadge,
                 shape: BoxShape.circle,
               ),
             ),
