@@ -21,10 +21,6 @@
 
 ---
 
-> **⚠️ 版本要求**: 本项目需要 **Flutter >= 3.44**（Dart SDK >= 3.10.4）才能正常编译。详情见 `CONTRIBUTING.md`。
-
----
-
 ## ✨ 主要功能
 
 - **课表管理** — 导入并查看个人课程表，清晰掌握每日课程安排，还有课表小组件方便查看
@@ -55,6 +51,12 @@
 ## 📥 下载
 
 **前往 [Release 页面](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/latest) 下载最新版本**
+
+---
+
+## 🛠️ 开发
+
+如需参与开发或自行编译，请参阅 [CONTRIBUTING.md](CONTRIBUTING.md) 了解环境配置、构建命令等详细指引。
 
 ---
 
