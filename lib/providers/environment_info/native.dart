@@ -1,10 +1,11 @@
 import 'dart:io';
-
+import 'package:flutter_litert/flutter_litert.dart' as flutter_litert;
 import 'package:os_type/os_type.dart';
 import 'package:path_provider/path_provider.dart';
 
 Future<String> getEnvironmentInfo() async {
   var dartVersion = Platform.version;
+  var liteRtVersion = flutter_litert.version;
   var system = Platform.operatingSystem;
   var env = Platform.executableArguments;
   var exe = Platform.executable;
@@ -14,6 +15,7 @@ Future<String> getEnvironmentInfo() async {
 
   var environmentText =
       "Dart: $dartVersion\n"
+      "LiteRt: $liteRtVersion\n"
       "System: $system\n"
       "System Ver: $systemVersion\n"
       "exe: $exe\n"
