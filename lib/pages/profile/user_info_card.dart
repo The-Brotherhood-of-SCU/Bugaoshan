@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/user_info_provider.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 
 class UserInfoCard extends StatefulWidget {
   const UserInfoCard({super.key});
@@ -61,7 +62,7 @@ class _UserInfoCardState extends State<UserInfoCard> {
     final card = Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
         border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -71,7 +72,7 @@ class _UserInfoCardState extends State<UserInfoCard> {
     if (onTap != null) {
       return InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
         child: card,
       );
     }

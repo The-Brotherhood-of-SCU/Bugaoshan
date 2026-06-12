@@ -7,6 +7,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/course/course_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/common/styled_widget.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:bugaoshan/providers/set_theme_color_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -48,7 +49,7 @@ class SetCourseStylePage extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppShapes.medium),
                         child: const CoursePage(demoMode: true),
                       ),
                     ),

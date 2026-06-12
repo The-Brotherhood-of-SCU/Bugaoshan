@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 
 /// A card container that groups child widgets with dividers between them.
 ///
@@ -16,13 +17,13 @@ class InfoCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
         border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
       ),
       clipBehavior: Clip.antiAlias,
       child: Material(
         color: surfaceColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
         clipBehavior: Clip.antiAlias,
         child: Column(
           mainAxisSize: MainAxisSize.min,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
@@ -229,7 +230,7 @@ class BindRoomDialogState extends State<BindRoomDialog> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.errorContainer,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppShapes.small),
                   ),
                   child: Text(
                     _error!,
@@ -505,7 +506,7 @@ class BindRoomDialogState extends State<BindRoomDialog> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppShapes.small),
             ),
             child: Row(
               children: [Text('${auth.userRealname} (${auth.userNumber})')],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/course/course_edit_page.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
@@ -39,7 +40,9 @@ class CourseDetailSheet extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppShapes.extraLarge),
+        ),
       ),
       child: SafeArea(
         child: Column(

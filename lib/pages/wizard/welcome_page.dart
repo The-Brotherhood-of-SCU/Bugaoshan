@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 
 class WelcomePage extends StatelessWidget {
@@ -20,7 +21,7 @@ class WelcomePage extends StatelessWidget {
             width: 96,
             height: 96,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
               boxShadow: [
                 BoxShadow(
                   color: colorScheme.primary.withValues(alpha: 0.2),
@@ -30,7 +31,7 @@ class WelcomePage extends StatelessWidget {
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
               child: Image.asset('assets/icon.png', fit: BoxFit.cover),
             ),
           ),

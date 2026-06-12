@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 
 /// EULA 版本号，需要与 eula.md 中的 version 保持一致
 const int currentEulaVersion = 1;
@@ -86,10 +87,10 @@ class _EulaContentState extends State<EulaContent>
                     border: Border.all(
                       color: colorScheme.colorScheme.outlineVariant,
                     ),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(AppShapes.small),
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(AppShapes.small),
                     child: Markdown(
                       data: _eulaContent,
                       selectable: true,
@@ -112,7 +113,9 @@ class _EulaContentState extends State<EulaContent>
                               color: colorScheme
                                   .colorScheme
                                   .surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(
+                                AppShapes.small,
+                              ),
                             ),
                           ),
                     ),

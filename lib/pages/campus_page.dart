@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -151,7 +152,7 @@ class _CampusCard extends StatelessWidget {
     return Card(
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppShapes.large),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -160,7 +161,7 @@ class _CampusCard extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppShapes.medium),
                 ),
                 child: Icon(
                   icon,
@@ -234,7 +235,7 @@ class _MoreFeaturesCard extends StatelessWidget {
           Uri.parse('$appLink/issues/new?template=feature_request.yml'),
           mode: LaunchMode.externalApplication,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppShapes.large),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -243,7 +244,7 @@ class _MoreFeaturesCard extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.secondaryContainer,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppShapes.medium),
                 ),
                 child: Icon(
                   Icons.add_comment_outlined,

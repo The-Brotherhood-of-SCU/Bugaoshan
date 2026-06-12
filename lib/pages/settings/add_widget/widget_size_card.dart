@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 
 class WidgetSizeCard extends StatelessWidget {
   final IconData icon;
@@ -33,7 +34,7 @@ class WidgetSizeCard extends StatelessWidget {
               height: 56,
               decoration: BoxDecoration(
                 color: colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppShapes.medium),
               ),
               child: Icon(
                 icon,

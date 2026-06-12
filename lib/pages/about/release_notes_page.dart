@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 
 class ReleaseNotesPage extends StatelessWidget {
   final String version;
@@ -26,7 +27,7 @@ class ReleaseNotesPage extends StatelessWidget {
         styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
           blockquoteDecoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(10.0),
+            borderRadius: BorderRadius.circular(AppShapes.small),
           ),
         ),
       ),

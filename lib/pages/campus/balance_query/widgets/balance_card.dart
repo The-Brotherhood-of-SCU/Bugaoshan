@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/services/api/balance_query_service.dart';
@@ -121,7 +122,7 @@ class BalanceCardState extends State<BalanceCard> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: widget.iconColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppShapes.medium),
                   ),
                   child: Icon(widget.icon, color: widget.iconColor, size: 28),
                 ),

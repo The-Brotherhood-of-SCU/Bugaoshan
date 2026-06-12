@@ -8,6 +8,7 @@ import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/utils/export_schedule_utils.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 
 /// 弹窗让用户输入新课表名称，校验重名后通过 [courseProvider.addSchedule] 添加。
 /// 复用当前选中的课表配置（timeSlots 等）作为模板。
@@ -70,7 +71,9 @@ class ScheduleManagementPage extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppShapes.extraLarge),
+        ),
       ),
       builder: (context) => SafeArea(
         child: Padding(

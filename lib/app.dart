@@ -9,6 +9,7 @@ import 'package:bugaoshan/pages/wizard/eula_gate_page.dart';
 import 'package:bugaoshan/pages/wizard/wizard_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/background_cache_service.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:bugaoshan/widgets/common/session_expired_listener.dart';
 import 'package:bugaoshan/widgets/eula_content.dart';
 import 'package:bugaoshan/widgets/route/mouse_back_handler.dart';
@@ -34,6 +35,51 @@ const _appBarTheme = AppBarTheme(
 );
 
 const _navigationBarTheme = NavigationBarThemeData(height: 64);
+
+/// MD3 Expressive 组件形状覆盖
+const _cardTheme = CardThemeData(
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.all(Radius.circular(AppShapes.largeIncreased)),
+  ),
+);
+
+const _dialogTheme = DialogThemeData(
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.all(Radius.circular(AppShapes.extraLarge)),
+  ),
+);
+
+const _bottomSheetTheme = BottomSheetThemeData(
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.vertical(
+      top: Radius.circular(AppShapes.extraLarge),
+    ),
+  ),
+);
+
+const _chipTheme = ChipThemeData(shape: StadiumBorder());
+
+const _filledButtonTheme = FilledButtonThemeData(
+  style: ButtonStyle(shape: WidgetStatePropertyAll(StadiumBorder())),
+);
+
+const _elevatedButtonTheme = ElevatedButtonThemeData(
+  style: ButtonStyle(shape: WidgetStatePropertyAll(StadiumBorder())),
+);
+
+const _outlinedButtonTheme = OutlinedButtonThemeData(
+  style: ButtonStyle(shape: WidgetStatePropertyAll(StadiumBorder())),
+);
+
+const _textButtonTheme = TextButtonThemeData(
+  style: ButtonStyle(shape: WidgetStatePropertyAll(StadiumBorder())),
+);
+
+const _snackBarTheme = SnackBarThemeData(
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.all(Radius.circular(AppShapes.medium)),
+  ),
+);
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -111,6 +157,16 @@ class _MyAppState extends State<MyApp> {
       pageTransitionsTheme: _pageTransitionsTheme,
       appBarTheme: _appBarTheme,
       navigationBarTheme: _navigationBarTheme,
+      // MD3 Expressive 组件形状覆盖
+      cardTheme: _cardTheme,
+      dialogTheme: _dialogTheme,
+      bottomSheetTheme: _bottomSheetTheme,
+      chipTheme: _chipTheme,
+      filledButtonTheme: _filledButtonTheme,
+      elevatedButtonTheme: _elevatedButtonTheme,
+      outlinedButtonTheme: _outlinedButtonTheme,
+      textButtonTheme: _textButtonTheme,
+      snackBarTheme: _snackBarTheme,
     );
 
     TextTheme textTheme = baseTheme.textTheme;

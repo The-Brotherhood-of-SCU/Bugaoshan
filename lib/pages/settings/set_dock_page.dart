@@ -5,6 +5,7 @@ import 'package:bugaoshan/models/campus_item_config.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 
 class SetDockPage extends StatefulWidget {
   const SetDockPage({super.key});
@@ -86,7 +87,7 @@ class _SetDockPageState extends State<SetDockPage> {
             height: 64,
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -123,7 +124,7 @@ class _SetDockPageState extends State<SetDockPage> {
             final t = Curves.easeInOut.transform(animation.value);
             return Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppShapes.medium),
                 color: theme.colorScheme.surface,
                 boxShadow: t > 0
                     ? [

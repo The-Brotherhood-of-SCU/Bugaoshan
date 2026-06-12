@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/exam_plan/models/exam_info.dart';
@@ -292,7 +293,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
                           color: colorScheme.surfaceContainerHighest.withValues(
                             alpha: 0.5,
                           ),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(AppShapes.small),
                         ),
                         child: Row(
                           children: [

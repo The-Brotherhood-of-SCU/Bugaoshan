@@ -7,7 +7,9 @@ extension _CoursePageActions on _CoursePageState {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppShapes.extraLarge),
+        ),
       ),
       builder: (context) => SafeArea(
         child: Padding(
@@ -95,7 +97,9 @@ extension _CoursePageActions on _CoursePageState {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppShapes.extraLarge),
+        ),
       ),
       builder: (context) =>
           CourseDetailSheet(course: course, courseProvider: courseProvider),

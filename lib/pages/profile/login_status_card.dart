@@ -4,6 +4,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 enum LoginStatus {
@@ -123,7 +124,7 @@ class _LoginStatusCardState extends State<LoginStatusCard> {
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
         border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
       ),
       child: Column(
@@ -200,7 +201,7 @@ class _LoginStatusCardState extends State<LoginStatusCard> {
             : status.isSessionExpired
             ? theme.colorScheme.tertiaryContainer
             : theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppShapes.medium),
       ),
       child: status.isAutoLoggingIn
           ? SizedBox(
@@ -239,7 +240,9 @@ class _LoginStatusCardState extends State<LoginStatusCard> {
           : status.isLoggedIn
           ? _onLogout
           : _onLogin,
-      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
+      borderRadius: const BorderRadius.vertical(
+        bottom: Radius.circular(AppShapes.largeIncreased),
+      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         child: Row(

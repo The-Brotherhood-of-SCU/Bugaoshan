@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/course/import_schedule_page.dart';
@@ -35,7 +36,7 @@ class _LoginPageState extends State<LoginPage> {
             height: 72,
             decoration: BoxDecoration(
               color: colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
             ),
             child: Icon(
               Icons.login_rounded,
@@ -142,7 +143,7 @@ class _StepCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
         border: Border.all(
           color: colorScheme.outlineVariant.withValues(alpha: 0.5),
         ),
@@ -156,7 +157,7 @@ class _StepCard extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 color: colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppShapes.medium),
               ),
               child: Center(
                 child: Text(

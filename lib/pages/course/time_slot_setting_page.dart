@@ -3,6 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 
 class TimeSlotSettingPage extends StatefulWidget {
   final int morningSections;
@@ -490,7 +491,7 @@ class _TimeSlotEditor extends StatelessWidget {
                       border: Border.all(
                         color: Theme.of(context).colorScheme.outline,
                       ),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppShapes.small),
                     ),
                     child: Text(startStr),
                   ),
@@ -510,7 +511,7 @@ class _TimeSlotEditor extends StatelessWidget {
                       border: Border.all(
                         color: Theme.of(context).colorScheme.outline,
                       ),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppShapes.small),
                     ),
                     child: Text(endStr),
                   ),

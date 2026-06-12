@@ -6,6 +6,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/models/widget_size.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 
 import 'battery_optimization_card.dart';
 import 'hint_card.dart';
@@ -186,7 +187,7 @@ class _WidgetPickerCardState extends State<_WidgetPickerCard> {
                   height: 56,
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppShapes.medium),
                   ),
                   child: Icon(
                     Icons.widgets_outlined,

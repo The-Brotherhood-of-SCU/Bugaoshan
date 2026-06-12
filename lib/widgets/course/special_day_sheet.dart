@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 
 /// 点击课表表头的特殊日（假/节/气）后弹出的信息悬浮窗
 Future<void> showSpecialDaySheet(
@@ -37,7 +38,9 @@ Future<void> _showSheet(
   await showModalBottomSheet(
     context: context,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(AppShapes.extraLarge),
+      ),
     ),
     builder: (ctx) => SafeArea(
       child: Padding(

@@ -8,6 +8,7 @@ import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart' show CaptchaResult;
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/ocr_service.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 
 class ScuLoginPage extends StatefulWidget {
   const ScuLoginPage({super.key});
@@ -183,7 +184,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       Container(
         width: 88,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppShapes.medium),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.08),
@@ -193,7 +194,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppShapes.medium),
           child: Image.asset('assets/scu.webp', fit: BoxFit.cover),
         ),
       ),

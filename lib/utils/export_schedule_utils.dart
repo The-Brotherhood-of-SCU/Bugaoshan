@@ -6,6 +6,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/export_schedule_provider.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:flutter/services.dart';
 
 Future<void> showExportScheduleSheet(
@@ -29,7 +30,9 @@ Future<void> showExportScheduleSheet(
   final ExportAction? action = await showModalBottomSheet(
     context: context,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(AppShapes.extraLarge),
+      ),
     ),
     builder: (sheetContext) => SafeArea(
       child: Padding(

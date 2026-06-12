@@ -4,6 +4,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:bugaoshan/utils/open_link.dart'
     show openDeveloperTeam, openProjectRepository;
 import 'package:bugaoshan/pages/about/release_notes_page.dart';
@@ -211,7 +212,7 @@ class _AboutPageState extends State<AboutPage> {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
               boxShadow: [
                 BoxShadow(
                   color: primaryColor.withValues(alpha: 0.2),
@@ -221,7 +222,7 @@ class _AboutPageState extends State<AboutPage> {
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
               child: Image.asset('assets/icon.png', fit: BoxFit.cover),
             ),
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
@@ -288,7 +289,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
       onTap: () =>
           showFullScreenImageViewer(context, imageUrl: _activity!.poster),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppShapes.medium),
         child: Image.network(
           _activity!.poster,
           width: double.infinity,

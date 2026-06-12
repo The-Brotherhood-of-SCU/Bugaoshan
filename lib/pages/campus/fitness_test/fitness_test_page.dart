@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -326,7 +327,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
       margin: const EdgeInsets.only(bottom: 8),
       child: InkWell(
         onTap: () => _showNoticeDetail(notice, l10n),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppShapes.medium),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -634,7 +635,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                     ),
                     decoration: BoxDecoration(
                       color: gradeColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppShapes.medium),
                     ),
                     child: Text(
                       totalGrade,

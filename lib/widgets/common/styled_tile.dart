@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 
 /// Base tile with padding and optional InkWell tap.
 class BaseTile extends StatelessWidget {
@@ -16,7 +17,7 @@ class BaseTile extends StatelessWidget {
     if (onTap != null) {
       return InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
         child: tile,
       );
     }
@@ -39,7 +40,7 @@ class TileIcon extends StatelessWidget {
       height: 36,
       decoration: BoxDecoration(
         color: primaryColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppShapes.medium),
       ),
       child: Icon(icon, color: primaryColor, size: 20),
     );
