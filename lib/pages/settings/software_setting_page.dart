@@ -44,20 +44,9 @@ class SoftwareSettingPage extends StatelessWidget {
                 onTap: () => popupOrNavigate(context, SetDurationPage()),
               ),
               IconTile(
-                icon: Icons.color_lens,
-                label: localizations.themeColor,
-                onTap: () => popupOrNavigate(context, SetThemeColorPage()),
-              ),
-              IconTile(
                 icon: Icons.dock_outlined,
                 label: localizations.customDock,
                 onTap: () => popupOrNavigate(context, const SetDockPage()),
-              ),
-              IconTile(
-                icon: Icons.style,
-                label: localizations.courseStyleSetting,
-                onTap: () =>
-                    popupOrNavigate(context, const SetCourseStylePage()),
               ),
               if (Platform.isAndroid)
                 IconTile(
@@ -65,6 +54,23 @@ class SoftwareSettingPage extends StatelessWidget {
                   label: localizations.addWidgetPageTitle,
                   onTap: () => popupOrNavigate(context, const AddWidgetPage()),
                 ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          _SectionTitle(title: localizations.settingsStyle),
+          InfoCard(
+            children: [
+              IconTile(
+                icon: Icons.color_lens,
+                label: localizations.themeColor,
+                onTap: () => popupOrNavigate(context, SetThemeColorPage()),
+              ),
+              IconTile(
+                icon: Icons.style,
+                label: localizations.courseStyleSetting,
+                onTap: () =>
+                    popupOrNavigate(context, const SetCourseStylePage()),
+              ),
             ],
           ),
           const SizedBox(height: 14),

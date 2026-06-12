@@ -538,6 +538,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsGeneral => '通用';
 
   @override
+  String get settingsStyle => '样式';
+
+  @override
   String get settingsDanger => '危险操作';
 
   @override

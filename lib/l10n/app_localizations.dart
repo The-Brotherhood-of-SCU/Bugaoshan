@@ -1123,6 +1123,12 @@ abstract class AppLocalizations {
   /// **'General'**
   String get settingsGeneral;
 
+  /// No description provided for @settingsStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Style'**
+  String get settingsStyle;
+
   /// No description provided for @settingsDanger.
   ///
   /// In en, this message translates to:
