@@ -261,24 +261,20 @@ class ScheduleManagementPage extends StatelessWidget {
                           }
                         },
                       ),
-                      if (allSchedules.length > 1)
-                        IconButton(
-                          icon: const Icon(
-                            Icons.delete_outline,
-                            color: Colors.red,
-                          ),
-                          onPressed: () async {
-                            final confirm = await showYesNoDialog(
-                              title: l10n.delete,
-                              content: l10n.deleteScheduleConfirm(
-                                schedule.semesterName,
-                              ),
-                            );
-                            if (confirm == true) {
-                              await courseProvider.deleteSchedule(schedule.id);
-                            }
-                          },
-                        ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () async {
+                          final confirm = await showYesNoDialog(
+                            title: l10n.delete,
+                            content: l10n.deleteScheduleConfirm(
+                              schedule.semesterName,
+                            ),
+                          );
+                          if (confirm == true) {
+                            await courseProvider.deleteSchedule(schedule.id);
+                          }
+                        },
+                      ),
                     ],
                   ),
                 );
