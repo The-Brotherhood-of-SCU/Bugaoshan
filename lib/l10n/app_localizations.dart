@@ -139,10 +139,10 @@ abstract class AppLocalizations {
   /// **'Reset Wizard Status'**
   String get resetWizardTitle;
 
-  /// Short description explaining that the action sets firstLaunchWizardCompleted to false so the wizard will re-run on next launch.
+  /// No description provided for @resetWizardSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Set firstLaunchWizardCompleted to false'**
+  /// **'After resetting, you will enter the Wizard page'**
   String get resetWizardSubtitle;
 
   /// No description provided for @wizardLoginTitle.

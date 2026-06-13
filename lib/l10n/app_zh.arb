@@ -13,11 +13,7 @@
         "description": "重置引导状态的操作标题，用户点击后会重新显示首次引导流程。",
         "type": "text"
     },
-    "resetWizardSubtitle": "将 firstLaunchWizardCompleted 设为 false",
-    "@resetWizardSubtitle": {
-        "description": "说明性文字：将 firstLaunchWizardCompleted 设为 false，使应用在下次启动时重新显示引导。",
-        "type": "text"
-    },
+    "resetWizardSubtitle": "重置后将进入Wizard页面",
     "wizardLoginTitle": "登录与导入课表",
     "wizardLoginStep1": "完成统一身份认证登录",
     "wizardLoginStep2": "从教务系统导入课表",

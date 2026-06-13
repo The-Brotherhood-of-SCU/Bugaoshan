@@ -28,7 +28,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resetWizardTitle => 'Reset Wizard Status';
 
   @override
-  String get resetWizardSubtitle => 'Set firstLaunchWizardCompleted to false';
+  String get resetWizardSubtitle =>
+      'After resetting, you will enter the Wizard page';
 
   @override
   String get wizardLoginTitle => 'Login & Import Schedule';

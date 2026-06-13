@@ -27,7 +27,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get resetWizardTitle => '重置引导状态';
 
   @override
-  String get resetWizardSubtitle => '将 firstLaunchWizardCompleted 设为 false';
+  String get resetWizardSubtitle => '重置后将进入Wizard页面';
 
   @override
   String get wizardLoginTitle => '登录与导入课表';
@@ -1966,13 +1966,4 @@ class AppLocalizationsZhHansCn extends AppLocalizationsZh {
 
   @override
   String get selfLanguage => '中文-简体-中国';
-
-  @override
-  String get wizard => '向导';
-
-  @override
-  String get resetWizardTitle => '重置引导状态';
-
-  @override
-  String get resetWizardSubtitle => '将 firstLaunchWizardCompleted 设为 false';
 }

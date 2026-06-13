@@ -1,19 +1,4 @@
 {
     "bugaoshan": "不高山上",
-    "selfLanguage": "中文-简体-中国",
-    "wizard": "向导",
-    "@wizard": {
-        "description": "引导（向导）章节的标题，通常用于测试页面或设置中的引导相关标题。",
-        "type": "text"
-    },
-    "resetWizardTitle": "重置引导状态",
-    "@resetWizardTitle": {
-        "description": "重置引导状态的操作标题，用户点击后会重新显示首次引导流程。",
-        "type": "text"
-    },
-    "resetWizardSubtitle": "将 firstLaunchWizardCompleted 设为 false",
-    "@resetWizardSubtitle": {
-        "description": "说明性文字：将 firstLaunchWizardCompleted 设为 false，使应用在下次启动时重新显示引导。",
-        "type": "text"
-    }
+    "selfLanguage": "中文-简体-中国"
 }
