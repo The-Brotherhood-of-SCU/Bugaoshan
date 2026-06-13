@@ -264,7 +264,7 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
           children: [
             Text(
               l10n.classScheduleInquiryFilter,
-              style: theme.textTheme.titleSmall?.copyWith(
+              style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -408,13 +408,14 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
     return DropdownButtonFormField<String>(
       key: ValueKey('dropdown_$value'),
       initialValue: initialValue,
+      style: Theme.of(context).textTheme.bodyMedium,
       decoration: const InputDecoration(
         contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         border: OutlineInputBorder(),
-        isDense: true,
+        isDense: false,
       ),
       isExpanded: true,
-      hint: Text(hint, style: Theme.of(context).textTheme.bodySmall),
+      hint: Text(hint, style: Theme.of(context).textTheme.bodyMedium),
       items: items,
       onChanged: (v) {
         if (v != null) onChanged(v);
