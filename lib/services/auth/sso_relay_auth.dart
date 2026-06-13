@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
+import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/subsystem_auth.dart';
+import 'package:bugaoshan/utils/auth_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 /// SSO 中继认证基类（第2层）
@@ -17,6 +19,9 @@ abstract class SsoRelayAuth extends ChangeNotifier implements SubsystemAuth {
   final ScuAuth _scuAuth;
   final String _ssoUrl;
   final List<SubsystemAuth> _dependencies;
+  final AuthLogger _log;
+
+  String get _tag => moduleId.toUpperCase();
 
   CookieClient? _cachedClient;
   CookieClient? _lastScuClient;
@@ -33,7 +38,9 @@ abstract class SsoRelayAuth extends ChangeNotifier implements SubsystemAuth {
     this._scuAuth,
     this._ssoUrl, {
     List<SubsystemAuth> dependencies = const [],
-  }) : _dependencies = List.unmodifiable(dependencies) {
+    AuthLogger? logger,
+  }) : _dependencies = List.unmodifiable(dependencies),
+       _log = logger ?? getIt<AuthLogger>() {
     _scuAuth.addListener(_onScuAuthChanged);
   }
 
@@ -49,6 +56,7 @@ abstract class SsoRelayAuth extends ChangeNotifier implements SubsystemAuth {
 
   @override
   Future<void> ensureAuthenticated() async {
+    _log.d(_tag, 'ensureAuthenticated');
     await getClient();
   }
 
@@ -59,19 +67,28 @@ abstract class SsoRelayAuth extends ChangeNotifier implements SubsystemAuth {
     final scuClient = await _scuAuth.getClient();
 
     if (!identical(scuClient, _lastScuClient)) {
+      _log.d(_tag, 'scu client changed, clearing cache');
       _lastScuClient = scuClient;
       _cachedClient = null;
       _loginFuture = null;
     }
 
-    if (_cachedClient != null) return _cachedClient!;
-    if (_loginFuture != null) return _loginFuture!;
+    if (_cachedClient != null) {
+      _log.d(_tag, 'getClient: cache hit');
+      return _cachedClient!;
+    }
+    if (_loginFuture != null) {
+      _log.d(_tag, 'getClient: awaiting existing login');
+      return _loginFuture!;
+    }
 
+    _log.i(_tag, 'getClient: starting SSO relay');
     _loginFuture = _login(scuClient);
     try {
       final client = await _loginFuture!;
       if (!_isReady) {
         _isReady = true;
+        _log.i(_tag, 'ready');
         notifyListeners();
       }
       return client;
@@ -93,11 +110,13 @@ abstract class SsoRelayAuth extends ChangeNotifier implements SubsystemAuth {
       },
     );
     _cachedClient = scuClient;
+    _log.i(_tag, 'SSO relay: ok');
     return scuClient;
   }
 
   @override
   void invalidate() {
+    _log.d(_tag, 'invalidate');
     _cachedClient = null;
     _loginFuture = null;
     _lastScuClient = null;

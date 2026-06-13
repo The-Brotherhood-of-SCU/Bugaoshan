@@ -29,6 +29,7 @@ import 'package:bugaoshan/services/download_manager.dart';
 import 'package:bugaoshan/services/exit_service.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
+import 'package:bugaoshan/utils/auth_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'injector.config.dart';
@@ -44,6 +45,7 @@ void configureDependencies() {
   getIt.init();
   getIt.registerSingleton<ExitService>(ExitService());
   getIt.registerSingleton<DownloadManager>(DownloadManager());
+  getIt.registerLazySingleton<AuthLogger>(() => AuthLogger());
   _configureAsyncDependencies();
 }
 

@@ -361,6 +361,20 @@ class AppLocalizationsZh extends AppLocalizations {
   String get forceUpdate => '更新到最新版本（含预览版）';
 
   @override
+  String get authLog => '认证日志';
+
+  @override
+  String get viewAuthLog => '查看认证日志';
+
+  @override
+  String get authLogEmpty => '暂无认证日志。';
+
+  @override
+  String authLogLastEntry(String time, String level, String tag) {
+    return '$level · $tag · $time';
+  }
+
+  @override
   String get scheduleSetting => '课表设置';
 
   @override

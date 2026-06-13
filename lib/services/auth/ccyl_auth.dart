@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/utils/secure_storage.dart';
 import 'package:bugaoshan/services/auth/ccyl_oauth_service.dart';
@@ -6,6 +7,7 @@ import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/ccyl/ccyl_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/subsystem_auth.dart';
+import 'package:bugaoshan/utils/auth_logger.dart';
 
 const _keyCcylToken = 'ccyl_token';
 const _keyCcylUserId = 'ccyl_user_id';
@@ -16,12 +18,16 @@ const _keyCcylUserId = 'ccyl_user_id';
 /// CCYL 拥有独立于 SCU 的 OAuth token 体系，不共享 session cookie。
 /// reLogin 时通过 [CcylOAuthService] 从 SCU 获取 OAuth code。
 class CcylAuth extends ChangeNotifier implements SubsystemAuth {
+  static const String _tag = 'CcylAuth';
+
   final ScuAuth _scuAuth;
+  final AuthLogger _log;
   String? _token;
   CcylUser? _currentUser;
   Future<bool>? _reLoginFuture;
 
-  CcylAuth(this._scuAuth);
+  CcylAuth(this._scuAuth, {AuthLogger? logger})
+    : _log = logger ?? getIt<AuthLogger>();
 
   @override
   String get moduleId => 'ccyl';
@@ -45,6 +51,9 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
         realname: '',
         orgName: '',
       );
+      _log.i(_tag, 'init: token restored userId=$userId');
+    } else {
+      _log.d(_tag, 'init: no saved token');
     }
   }
 
@@ -69,16 +78,19 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
 
   /// 使用 OAuth code 登录。
   Future<void> loginWithCode(String code) async {
+    _log.i(_tag, 'loginWithCode: start');
     final result = await CcylService.login(code);
     _token = result.token;
     _currentUser = result.user;
     await _saveToSecure();
+    _log.i(_tag, 'loginWithCode: ok userId=${result.user.id}');
     notifyListeners();
   }
 
   /// 通过 SCU 自动恢复 CCYL 登录（OAuth 静默绑定）。
   Future<bool> reLogin() async {
     if (_reLoginFuture != null) return _reLoginFuture!;
+    _log.i(_tag, 'reLogin: starting');
     _reLoginFuture = _doReLogin();
     try {
       return await _reLoginFuture!;
@@ -91,21 +103,26 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
     try {
       final oauth = CcylOAuthService(_scuAuth);
       final oauthCode = await oauth.getOAuthCode();
-      if (oauthCode == null) return false;
+      if (oauthCode == null) {
+        _log.w(_tag, 'reLogin: oauth code missing');
+        return false;
+      }
       final result = await CcylService.login(oauthCode);
       _token = result.token;
       _currentUser = result.user;
       await _saveToSecure();
+      _log.i(_tag, 'reLogin: ok userId=${result.user.id}');
       notifyListeners();
       return true;
     } catch (e) {
-      debugPrint('CcylAuth.reLogin error: $e');
+      _log.e(_tag, 'reLogin: error $e');
       return false;
     }
   }
 
   @override
   void invalidate() {
+    _log.d(_tag, 'invalidate');
     _reLoginFuture = null;
   }
 
@@ -118,6 +135,7 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
   }
 
   Future<void> logout() async {
+    _log.i(_tag, 'logout');
     _token = null;
     _currentUser = null;
     _reLoginFuture = null;

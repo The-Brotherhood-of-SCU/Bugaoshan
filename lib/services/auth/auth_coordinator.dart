@@ -1,5 +1,6 @@
-import 'package:flutter/foundation.dart';
+import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/services/auth/subsystem_auth.dart';
+import 'package:bugaoshan/utils/auth_logger.dart';
 
 /// Coordinates subsystem authentication after SCU unified auth is ready.
 ///
@@ -7,16 +8,24 @@ import 'package:bugaoshan/services/auth/subsystem_auth.dart';
 /// declared dependencies. If a dependency fails, only its downstream modules
 /// are skipped.
 class AuthCoordinator {
+  static const String _tag = 'AuthCoordinator';
+
   final List<SubsystemAuth> _modules;
+  final AuthLogger _log;
   Future<void>? _warmUpFuture;
 
-  AuthCoordinator(Iterable<SubsystemAuth> modules)
-    : _modules = List.unmodifiable(modules);
+  AuthCoordinator(Iterable<SubsystemAuth> modules, {AuthLogger? logger})
+    : _modules = List.unmodifiable(modules),
+      _log = logger ?? getIt<AuthLogger>();
 
   Future<void> warmUpAll() {
     if (_warmUpFuture != null) return _warmUpFuture!;
+    _log.i(_tag, 'warmUpAll: starting for ${_modules.length} modules');
     _warmUpFuture = _warmUpAll();
-    _warmUpFuture!.whenComplete(() => _warmUpFuture = null);
+    _warmUpFuture!.whenComplete(() {
+      _log.i(_tag, 'warmUpAll: completed');
+      _warmUpFuture = null;
+    });
     return _warmUpFuture!;
   }
 
@@ -27,9 +36,11 @@ class AuthCoordinator {
       final existing = futures[auth];
       if (existing != null) return existing;
 
+      final moduleId = auth.moduleId;
+      _log.d(_tag, 'ensure: start module=$moduleId');
       final future = () async {
         if (path.contains(auth)) {
-          debugPrint('AuthCoordinator: dependency cycle at ${auth.moduleId}');
+          _log.w(_tag, 'ensure: dependency cycle at $moduleId');
           return false;
         }
 
@@ -38,17 +49,16 @@ class AuthCoordinator {
           auth.dependencies.map((dep) => ensure(dep, nextPath)),
         );
         if (dependencyResults.any((ok) => !ok)) {
-          debugPrint(
-            'AuthCoordinator: skip ${auth.moduleId}, dependency failed',
-          );
+          _log.w(_tag, 'ensure: skip $moduleId, dependency failed');
           return false;
         }
 
         try {
           await auth.ensureAuthenticated();
+          _log.i(_tag, 'ensure: ok module=$moduleId');
           return true;
         } catch (e) {
-          debugPrint('AuthCoordinator: ${auth.moduleId} auth failed: $e');
+          _log.e(_tag, 'ensure: $moduleId auth failed: $e');
           return false;
         }
       }();
@@ -62,6 +72,7 @@ class AuthCoordinator {
 
   void invalidateAll() {
     _warmUpFuture = null;
+    _log.d(_tag, 'invalidateAll');
     for (final module in _modules) {
       module.invalidate();
     }

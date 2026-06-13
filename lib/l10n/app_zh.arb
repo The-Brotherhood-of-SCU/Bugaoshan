@@ -133,6 +133,17 @@
     "environmentInfo":"环境信息",
     "testPage":"测试页面",
     "forceUpdate": "更新到最新版本（含预览版）",
+    "authLog":"认证日志",
+    "viewAuthLog":"查看认证日志",
+    "authLogEmpty":"暂无认证日志。",
+    "@authLogLastEntry": {
+        "placeholders": {
+            "time": {"type": "String"},
+            "level": {"type": "String"},
+            "tag": {"type": "String"}
+        }
+    },
+    "authLogLastEntry": "{level} · {tag} · {time}",
     "scheduleSetting":"课表设置",
     "scheduleManagement":"课表管理",
     "globalSetting":"全局设置",

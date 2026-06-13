@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
+import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/subsystem_auth.dart';
+import 'package:bugaoshan/utils/auth_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 /// 教务系统认证（第2层）
@@ -11,12 +13,16 @@ import 'package:bugaoshan/utils/constants.dart';
 ///
 /// 监听 [ScuAuth] 状态变化并转发通知，Provider 可通过 addListener 感知。
 class ZhjwAuth extends ChangeNotifier implements SubsystemAuth {
+  static const String _tag = 'ZhjwAuth';
+
   final ScuAuth _scuAuth;
+  final AuthLogger _log;
   CookieClient? _cachedClient;
   CookieClient? _lastScuClient;
   Future<CookieClient>? _loginFuture;
 
-  ZhjwAuth(this._scuAuth) {
+  ZhjwAuth(this._scuAuth, {AuthLogger? logger})
+    : _log = logger ?? getIt<AuthLogger>() {
     _scuAuth.addListener(notifyListeners);
   }
 
@@ -28,6 +34,7 @@ class ZhjwAuth extends ChangeNotifier implements SubsystemAuth {
 
   @override
   Future<void> ensureAuthenticated() async {
+    _log.d(_tag, 'ensureAuthenticated');
     await getClient();
   }
 
@@ -38,14 +45,22 @@ class ZhjwAuth extends ChangeNotifier implements SubsystemAuth {
     final scuClient = await _scuAuth.getClient();
 
     if (!identical(scuClient, _lastScuClient)) {
+      _log.d(_tag, 'scu client changed, clearing cache');
       _lastScuClient = scuClient;
       _cachedClient = null;
       _loginFuture = null;
     }
 
-    if (_cachedClient != null) return _cachedClient!;
-    if (_loginFuture != null) return _loginFuture!;
+    if (_cachedClient != null) {
+      _log.d(_tag, 'getClient: cache hit');
+      return _cachedClient!;
+    }
+    if (_loginFuture != null) {
+      _log.d(_tag, 'getClient: awaiting existing login');
+      return _loginFuture!;
+    }
 
+    _log.i(_tag, 'getClient: starting SSO login');
     _loginFuture = _login(scuClient);
     try {
       return await _loginFuture!;
@@ -70,11 +85,15 @@ class ZhjwAuth extends ChangeNotifier implements SubsystemAuth {
       },
     );
     _cachedClient = client;
+    _log.i(_tag, 'SSO login: ok');
     return client;
   }
 
   @override
   void invalidate() {
+    if (_cachedClient != null || _loginFuture != null) {
+      _log.d(_tag, 'invalidate');
+    }
     _cachedClient = null;
     _loginFuture = null;
   }
