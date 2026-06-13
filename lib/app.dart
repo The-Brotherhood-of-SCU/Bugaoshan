@@ -82,6 +82,12 @@ const _snackBarTheme = SnackBarThemeData(
   // ),
 );
 
+final _listTileTheme = ListTileThemeData(
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(AppShapes.large),
+  ),
+);
+
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -168,6 +174,7 @@ class _MyAppState extends State<MyApp> {
       outlinedButtonTheme: _outlinedButtonTheme,
       textButtonTheme: _textButtonTheme,
       snackBarTheme: _snackBarTheme,
+      listTileTheme: _listTileTheme,
     );
 
     TextTheme textTheme = baseTheme.textTheme;
