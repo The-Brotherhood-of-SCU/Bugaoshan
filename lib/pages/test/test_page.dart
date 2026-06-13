@@ -92,7 +92,7 @@ class _TestPageState extends State<TestPage> {
           if (result.releaseNotes != null && result.releaseNotes!.isNotEmpty)
             TextButton(
               onPressed: () {
-                Navigator.pop(context);
+                //Navigator.pop(context);
                 popupOrNavigate(
                   outerContext,
                   ReleaseNotesPage(

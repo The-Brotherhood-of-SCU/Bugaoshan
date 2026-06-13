@@ -66,7 +66,7 @@ class _AboutPageState extends State<AboutPage> {
                     result.releaseNotes!.isNotEmpty)
                   TextButton(
                     onPressed: () {
-                      Navigator.of(dialogContext).pop();
+                      //Navigator.of(dialogContext).pop();
                       Navigator.push(
                         context,
                         MaterialPageRoute(
