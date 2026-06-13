@@ -62,26 +62,24 @@ class _StartupErrorApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Center(
-              child: Column(
-                children: [
-                  Text(
-                    'Bugaoshan 启动失败',
-                    textAlign: TextAlign.center,
-                    textScaler: TextScaler.linear(1.5),
-                  ),
-                  Text(errorMessage ?? ''),
-                  ElevatedButton(
-                    onPressed: () async {
-                      await getIt<SharedPreferences>().clear();
-                    },
-                    child: const Text('Clear Shared Preferences'),
-                  ),
-                ],
-              ),
+        body: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: Column(
+              children: [
+                Text(
+                  'Bugaoshan 启动失败',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.linear(1.5),
+                ),
+                Text(errorMessage ?? ''),
+                ElevatedButton(
+                  onPressed: () async {
+                    await getIt<SharedPreferences>().clear();
+                  },
+                  child: const Text('Clear Shared Preferences'),
+                ),
+              ],
             ),
           ),
         ),
