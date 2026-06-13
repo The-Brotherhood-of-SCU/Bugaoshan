@@ -226,7 +226,7 @@ class ScheduleManagementPage extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.send_outlined),
+                        icon: const Icon(Icons.share),
                         onPressed: () => showExportScheduleSheet(
                           context,
                           schedule: schedule,
