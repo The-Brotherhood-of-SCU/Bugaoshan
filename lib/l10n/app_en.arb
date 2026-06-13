@@ -137,6 +137,17 @@
     "environmentInfo":"Environment Info",
     "testPage":"Test Page",
     "forceUpdate":"Update to Latest (Include Preview)",
+    "authLog":"Auth Log",
+    "viewAuthLog":"View Auth Log",
+    "authLogEmpty":"No auth log yet.",
+    "@authLogLastEntry": {
+        "placeholders": {
+            "time": {"type": "String"},
+            "level": {"type": "String"},
+            "tag": {"type": "String"}
+        }
+    },
+    "authLogLastEntry": "{level} · {tag} · {time}",
     "scheduleSetting":"Schedule Setting",
     "scheduleManagement":"Schedule Management",
     "globalSetting":"Global Setting",

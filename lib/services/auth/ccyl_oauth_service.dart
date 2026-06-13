@@ -1,16 +1,23 @@
 import 'package:bugaoshan/services/auth/scu_auth.dart';
-import 'package:flutter/widgets.dart';
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/utils/auth_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 class CcylOAuthService {
+  static const String _tag = 'CcylOAuth';
   static const _idBase = 'https://id.scu.edu.cn';
   final ScuAuth _scuAuth;
+  final AuthLogger _log;
 
-  CcylOAuthService(this._scuAuth);
+  CcylOAuthService(this._scuAuth, {AuthLogger? logger})
+    : _log = logger ?? getIt<AuthLogger>();
 
   Future<String?> getOAuthCode() async {
     final accessToken = _scuAuth.accessToken;
-    if (accessToken == null) return null;
+    if (accessToken == null) {
+      _log.w(_tag, 'getOAuthCode: no access token');
+      return null;
+    }
 
     final client = await _scuAuth.getClient();
 
@@ -21,6 +28,7 @@ class CcylOAuthService {
       '&application_key=scdxplugin_cas_apereo17',
     );
 
+    _log.d(_tag, 'getOAuthCode: fetching sp_logged');
     try {
       final response = await client.followRedirects(
         spLoggedUrl,
@@ -34,6 +42,7 @@ class CcylOAuthService {
       if (finalUrl.contains('code=')) {
         final uri = Uri.parse(finalUrl);
         final code = uri.queryParameters['code'];
+        _log.i(_tag, 'getOAuthCode: ok (from final url, len=${code?.length})');
         return code;
       }
 
@@ -42,11 +51,13 @@ class CcylOAuthService {
       final bodyUri = _extractRedirectUri(body);
       if (bodyUri != null && bodyUri.contains('code=')) {
         final code = Uri.parse(bodyUri).queryParameters['code'];
+        _log.i(_tag, 'getOAuthCode: ok (from body, len=${code?.length})');
         return code;
       }
+      _log.w(_tag, 'getOAuthCode: no code in response');
       return null;
     } catch (e) {
-      debugPrint('CCYL OAuth] Error: $e');
+      _log.e(_tag, 'getOAuthCode: error $e');
       return null;
     } finally {
       client.close();

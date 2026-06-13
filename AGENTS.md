@@ -181,6 +181,22 @@ The CCYL service is special: its token expires via a *business* error code (`Ccy
 - **`ExitService`** — unified exit (windowManager.destroy on desktop, exit(0) on mobile).
 - **`WindowStateService`** — desktop window position/size persistence.
 
+### Auth Logging
+
+All auth-layer modules (`ScuAuth`, `CookieClient`, `AuthCoordinator`, `ZhjwAuth` / `WfwAuth` / `PayAppAuth` / `FitnessAuth` via `SsoRelayAuth`, `CcylAuth`, `CcylOAuthService`, `ScuAuthProvider`) log key lifecycle events to a single in-memory ring buffer via `AuthLogger` (`lib/utils/auth_logger.dart`):
+
+- Ring buffer caps at 1000 entries (oldest evicted).
+- Each entry has timestamp + `AuthLogLevel` (`debug` / `info` / `warn` / `error`) + `tag` (e.g. `ScuAuth`, `CookieClient`, `ZhjwAuth`) + redacted message.
+- `AuthLogRedactor.apply()` strips `"access_token":"…"`, `"password":"…"`, `Bearer <token>` and truncates `?code=` values before storage, so logs are safe to share via the Test page "Save" button.
+- `tag` convention is the class name (uppercase) so the Viewer's tag dropdown naturally groups events by module.
+- `debug` lines are only echoed to console in `kDebugMode`; production builds stay silent.
+- `AuthLogger` is a `ChangeNotifier` — Test page's `AuthLogCard` and `AuthLogViewerPage` use `ListenableBuilder` for live updates.
+- Optional file sink (`enableFileSink`) writes to `getApplicationDocumentsDirectory()/auth.log`; default off to avoid disk I/O for normal users. The Test page "Save" button is the recommended path for capturing a snapshot.
+
+Test page (`lib/pages/test/`) gains:
+- `AuthLogCard` — entry showing last log line + count, plus a "Save" button that exports to `bugaoshan-auth-{timestamp}.log` in the temp dir and opens the system share sheet.
+- `AuthLogViewerPage` — full-screen viewer with level filter chips + tag dropdown + clear + copy + save actions.
+
 ### Notice Pages
 
 Three notice sources, each in its own subdirectory under `lib/pages/campus/notice/` (see `docs/decisions/notice-webview-architecture.md`):

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:open_filex/open_filex.dart';
-import 'package:share_plus/share_plus.dart' show ShareParams, XFile, SharePlus;
 
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/services/download_manager.dart';
+import 'package:bugaoshan/utils/share_utils.dart';
 import 'file_utils.dart';
 
 /// Data for a single attachment item in the sheet.
@@ -161,8 +161,7 @@ class _SheetAttachmentTile extends StatelessWidget {
   }
 
   void _open(String path) => OpenFilex.open(path);
-  void _share(String path) =>
-      SharePlus.instance.share(ShareParams(files: [XFile(path)]));
+  void _share(String path) => shareSingleFile(path);
 
   Future<void> _startDownload(DownloadManager manager) async {
     if (onWebViewDownload != null) {

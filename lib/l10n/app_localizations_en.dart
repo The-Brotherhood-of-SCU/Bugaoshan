@@ -374,6 +374,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get forceUpdate => 'Update to Latest (Include Preview)';
 
   @override
+  String get authLog => 'Auth Log';
+
+  @override
+  String get viewAuthLog => 'View Auth Log';
+
+  @override
+  String get authLogEmpty => 'No auth log yet.';
+
+  @override
+  String authLogLastEntry(String time, String level, String tag) {
+    return '$level · $tag · $time';
+  }
+
+  @override
   String get scheduleSetting => 'Schedule Setting';
 
   @override

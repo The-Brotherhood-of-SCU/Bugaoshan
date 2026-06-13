@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/pages/test/environment_info_button.dart';
+import 'package:bugaoshan/pages/test/auth_log/auth_log_tile.dart';
+import 'package:bugaoshan/pages/test/environment_info_tile.dart';
 import 'package:bugaoshan/pages/test/update_card.dart';
 import 'package:bugaoshan/pages/test/update_result_notifier.dart';
-import 'package:bugaoshan/pages/test/wizard_reset_button.dart';
+import 'package:bugaoshan/pages/test/wizard_reset_tile.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
@@ -83,76 +84,65 @@ class _TestPageState extends State<TestPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text(localizations.testPage)),
-      body: SingleChildScrollView(
+      body: ListView(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _SectionTitle(title: localizations.environmentInfo),
-            const SizedBox(height: 12),
-            const EnvironmentInfoButton(),
-            const SizedBox(height: 32),
-            _SectionTitle(title: localizations.wizard),
-            const SizedBox(height: 12),
-            const WizardResetButton(),
-            const SizedBox(height: 32),
-            if (_supportsUpdate) ...[
-              _SectionTitle(title: localizations.updateToLatest),
-              const SizedBox(height: 12),
-              ListenableBuilder(
-                listenable: _appConfig.usePreviewUpdateSource,
-                builder: (context, _) => SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(localizations.usePreviewUpdateSource),
-                  subtitle: Text(
-                    localizations.usePreviewUpdateSourceHint,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  value: _appConfig.usePreviewUpdateSource.value,
-                  onChanged: (v) => _appConfig.usePreviewUpdateSource.value = v,
+        children: [
+          const EnvironmentInfoTile(),
+          const Divider(),
+          const WizardResetTile(),
+          const Divider(),
+          const AuthLogTile(),
+          const Divider(),
+          if (_supportsUpdate) ...[
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(
+                localizations.updateToLatest,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 12),
-              UpdateCard(
-                icon: Icons.system_update_alt,
-                title: localizations.updateToStable,
-                result: _stableResult,
-                onUpdate: () => _showUpdateDialog(_stableResult.value),
-              ),
-              const SizedBox(height: 16),
-              UpdateCard(
-                icon: Icons.science,
-                title: localizations.updateToPreview,
-                result: _previewResult,
-                onUpdate: () => _showUpdateDialog(_previewResult.value),
-              ),
-              const SizedBox(height: 16),
-              Center(
-                child: ElevatedButton.icon(
-                  onPressed: _checkForUpdates,
-                  icon: const Icon(Icons.system_update),
-                  label: Text(localizations.checkForUpdates),
+            ),
+            ListenableBuilder(
+              listenable: _appConfig.usePreviewUpdateSource,
+              builder: (context, _) => SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(localizations.usePreviewUpdateSource),
+                subtitle: Text(
+                  localizations.usePreviewUpdateSourceHint,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
+                value: _appConfig.usePreviewUpdateSource.value,
+                onChanged: (v) => _appConfig.usePreviewUpdateSource.value = v,
               ),
-            ],
+            ),
+            const SizedBox(height: 12),
+            UpdateCard(
+              icon: Icons.system_update_alt,
+              title: localizations.updateToStable,
+              result: _stableResult,
+              onUpdate: () => _showUpdateDialog(_stableResult.value),
+            ),
+            const SizedBox(height: 16),
+            UpdateCard(
+              icon: Icons.science,
+              title: localizations.updateToPreview,
+              result: _previewResult,
+              onUpdate: () => _showUpdateDialog(_previewResult.value),
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: ElevatedButton.icon(
+                onPressed: _checkForUpdates,
+                icon: const Icon(Icons.system_update),
+                label: Text(localizations.checkForUpdates),
+              ),
+            ),
           ],
-        ),
+        ],
       ),
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  final String title;
-  const _SectionTitle({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: Theme.of(
-        context,
-      ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
     );
   }
 }

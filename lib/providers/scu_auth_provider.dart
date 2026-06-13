@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/utils/auth_logger.dart';
 import 'package:bugaoshan/utils/secure_storage.dart';
 import 'package:bugaoshan/services/auth/auth_coordinator.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
@@ -19,11 +20,19 @@ const _keyUserNumber = 'scu_user_number';
 /// 认证控制器：管理登录/登出/自动登录/凭据。
 /// 子系统登录由 [AuthCoordinator] 按依赖后台预热。
 class ScuAuthProvider extends ChangeNotifier {
+  static const String _tag = 'ScuAuthProvider';
+
   final ScuAuth _scuAuth;
   final CcylAuth _ccylAuth;
   final AuthCoordinator _authCoordinator;
+  final AuthLogger _log;
 
-  ScuAuthProvider(this._scuAuth, this._ccylAuth, this._authCoordinator) {
+  ScuAuthProvider(
+    this._scuAuth,
+    this._ccylAuth,
+    this._authCoordinator, {
+    AuthLogger? logger,
+  }) : _log = logger ?? getIt<AuthLogger>() {
     _scuAuth.addListener(_onAuthChanged);
   }
 
@@ -65,18 +74,21 @@ class ScuAuthProvider extends ChangeNotifier {
     required String captchaCode,
     required String captchaText,
   }) async {
+    _log.i(_tag, 'login: start user=$username');
     await _scuAuth.login(
       username: username,
       password: password,
       captchaCode: captchaCode,
       captchaText: captchaText,
     );
+    _log.i(_tag, 'login: ok, warming up subsystems');
     // 登录成功后后台预热子模块；页面不等待慢模块。
     unawaited(_authCoordinator.warmUpAll());
     notifyListeners();
   }
 
   Future<void> logout() async {
+    _log.i(_tag, 'logout');
     await _scuAuth.logout();
     await _ccylAuth.logout();
     _authCoordinator.invalidateAll();
@@ -110,18 +122,26 @@ class ScuAuthProvider extends ChangeNotifier {
 
   Future<void> setAutoLogin(bool enabled) async {
     final storage = SecureStorageProvider.instance;
+    _log.i(_tag, 'setAutoLogin: $enabled');
     await storage.write(key: _keyAutoLogin, value: enabled ? 'true' : 'false');
   }
 
   Future<bool> autoLogin() async {
-    if (!await isAutoLoginEnabled()) return false;
+    if (!await isAutoLoginEnabled()) {
+      _log.d(_tag, 'autoLogin: disabled');
+      return false;
+    }
     if (isLoggedIn) return true;
 
     final credentials = await getSavedCredentials();
-    if (credentials == null) return false;
+    if (credentials == null) {
+      _log.d(_tag, 'autoLogin: no saved credentials');
+      return false;
+    }
     final username = credentials['username']!;
     final password = credentials['password']!;
 
+    _log.i(_tag, 'autoLogin: starting user=$username');
     _isAutoLoggingIn = true;
     notifyListeners();
 
@@ -140,7 +160,7 @@ class ScuAuthProvider extends ChangeNotifier {
             final imageBytes = base64.decode(raw);
             captchaText = await OcrService.performOcr(imageBytes);
           } catch (e) {
-            debugPrint('Auto login OCR error: $e');
+            _log.e(_tag, 'autoLogin: OCR error $e');
             return false;
           }
 
@@ -151,22 +171,24 @@ class ScuAuthProvider extends ChangeNotifier {
             captchaCode: captcha.code,
             captchaText: captchaText,
           );
+          _log.i(_tag, 'autoLogin: ok');
           return true;
         } on ScuLoginException catch (e) {
           if (e.message == 'invalid_captcha') {
-            debugPrint(
-              'Auto login: invalid_captcha, retry ${attempt + 1}/$maxRetries',
+            _log.w(
+              _tag,
+              'autoLogin: invalid_captcha, retry ${attempt + 1}/$maxRetries',
             );
             continue;
           }
-          debugPrint('Auto login failed (non-captcha): ${e.message}');
+          _log.w(_tag, 'autoLogin: failed (non-captcha): ${e.message}');
           return false;
         } catch (e) {
-          debugPrint('Auto login network error: $e');
+          _log.e(_tag, 'autoLogin: network error $e');
           return false;
         }
       }
-      debugPrint('Auto login: captcha retries exhausted');
+      _log.w(_tag, 'autoLogin: captcha retries exhausted');
       return false;
     } finally {
       _isAutoLoggingIn = false;

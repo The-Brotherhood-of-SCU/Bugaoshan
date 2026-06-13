@@ -1,14 +1,19 @@
 import 'package:http/http.dart' as http;
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/utils/auth_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 /// Cookie 感知的 http.Client，按域名隔离存储，发送时只带当前请求域的 cookie。
 class CookieClient extends http.BaseClient {
+  static const String _tag = 'CookieClient';
   http.Client _inner = http.Client();
 
   // 按域名存 cookie：host -> {name: value}
   final _jar = <String, Map<String, String>>{};
 
   bool reusable = false;
+
+  AuthLogger get _log => getIt<AuthLogger>();
 
   /// 返回所有域 cookie 拼接的字符串（仅用于调试日志）
   String get cookieHeader {
@@ -40,6 +45,7 @@ class CookieClient extends http.BaseClient {
     final host = uri.host;
     _jar.putIfAbsent(host, () => {});
 
+    final stored = <String>[];
     for (final part in raw.split(RegExp(r',\s*(?=[A-Za-z][^,=\s]*\s*=)'))) {
       final kv = part.split(';').first.trim();
       final eq = kv.indexOf('=');
@@ -47,7 +53,14 @@ class CookieClient extends http.BaseClient {
         final name = kv.substring(0, eq).trim();
         final value = kv.substring(eq + 1).trim();
         _jar[host]![name] = value;
+        stored.add(name);
       }
+    }
+    if (stored.isNotEmpty) {
+      _log.d(
+        _tag,
+        'set-cookie host=$host count=${stored.length} [${stored.join(',')}]',
+      );
     }
   }
 
@@ -62,6 +75,7 @@ class CookieClient extends http.BaseClient {
     Uri current = url;
     http.Response? lastResponse;
 
+    _log.d(_tag, 'followRedirects: start url=$url maxRedirects=$maxRedirects');
     for (int i = 0; i <= maxRedirects; i++) {
       final cookies = _cookiesFor(current);
       final reqHeaders = <String, String>{
@@ -82,13 +96,30 @@ class CookieClient extends http.BaseClient {
 
       if (response.statusCode >= 300 && response.statusCode < 400) {
         final location = response.headers['location'];
+        String nextHost = '?';
+        if (location != null) {
+          try {
+            nextHost = Uri.parse(location).host;
+          } catch (_) {
+            nextHost = location;
+          }
+        }
+        _log.d(
+          _tag,
+          'redirect hop=$i ${response.statusCode} ${current.host} -> $nextHost',
+        );
         if (location == null) break;
         current = current.resolve(location);
         lastResponse = response;
       } else {
+        _log.d(
+          _tag,
+          'followRedirects: end hop=$i status=${response.statusCode} url=$current',
+        );
         return response;
       }
     }
+    _log.w(_tag, 'followRedirects: max redirects exceeded');
     return lastResponse!;
   }
 
@@ -102,6 +133,10 @@ class CookieClient extends http.BaseClient {
     }
     final response = await sendWithClientExceptionRetry(request);
     _storeCookies(request.url, response);
+    _log.d(
+      _tag,
+      '${request.method} ${request.url.host}${request.url.path} -> ${response.statusCode}',
+    );
     return response;
   }
 
@@ -111,7 +146,8 @@ class CookieClient extends http.BaseClient {
   ) async {
     try {
       return await _inner.send(request).timeout(kHttpTimeout);
-    } on http.ClientException catch (_) {
+    } on http.ClientException catch (e) {
+      _log.w(_tag, 'send: ClientException, retrying: $e');
       _inner.close();
       _inner = http.Client();
       final retryRequest = http.Request(request.method, request.url)
@@ -122,7 +158,9 @@ class CookieClient extends http.BaseClient {
       if (request is http.Request) {
         retryRequest.body = request.body;
       }
-      return await _inner.send(retryRequest).timeout(kHttpTimeout);
+      final result = await _inner.send(retryRequest).timeout(kHttpTimeout);
+      _log.d(_tag, 'send: retry ok ${request.method} ${request.url}');
+      return result;
     }
   }
 
