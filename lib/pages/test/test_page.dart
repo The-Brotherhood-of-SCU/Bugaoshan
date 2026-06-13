@@ -87,7 +87,6 @@ class _TestPageState extends State<TestPage> {
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
-          const Divider(),
           const EnvironmentInfoTile(),
           const Divider(),
           const WizardResetTile(),
