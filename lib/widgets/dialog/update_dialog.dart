@@ -1,3 +1,5 @@
+import 'package:bugaoshan/pages/about/release_notes_page.dart';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -55,11 +57,14 @@ class _UpdateDialogContent extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final screenWidth = MediaQuery.of(context).size.width;
 
+    final hasReleaseNotes = releaseNotes != null && releaseNotes!.isNotEmpty;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Dialog(
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: screenWidth * 0.7 > 400 ? 400 : screenWidth * 0.7,
-          maxHeight: MediaQuery.of(context).size.height * 0.6,
+          maxHeight: screenHeight * (hasReleaseNotes ? 0.6 : 0.4),
         ),
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -81,7 +86,23 @@ class _UpdateDialogContent extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               // Body text
-              Text('${l10n.version}: $version', style: textTheme.bodyLarge),
+              ListTile(
+                title: Text(
+                  '${l10n.version}: $version',
+                  style: textTheme.bodyLarge,
+                ),
+                onTap: releaseNotes != null
+                    ? () {
+                        popupOrNavigate(
+                          context,
+                          ReleaseNotesPage(
+                            version: version,
+                            releaseNotes: releaseNotes!,
+                          ),
+                        );
+                      }
+                    : null,
+              ),
               if (isPreview) ...[
                 const SizedBox(height: 8),
                 Text(
@@ -95,11 +116,11 @@ class _UpdateDialogContent extends StatelessWidget {
               const Divider(height: 1),
               const SizedBox(height: 12),
               if (releaseNotes != null && releaseNotes!.isNotEmpty) ...[
-                _buildReleaseNotes(context),
+                Expanded(child: _buildReleaseNotes(context)),
               ],
               const SizedBox(height: 12),
               const Divider(height: 1),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               // Actions
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -134,21 +155,16 @@ class _UpdateDialogContent extends StatelessWidget {
     if (index != -1) {
       trimmedNotes = releaseNotes!.substring(index);
     }
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.3,
-      ),
-      child: SingleChildScrollView(
-        child: Markdown(
-          data: trimmedNotes,
-          selectable: true,
-          padding: const EdgeInsets.all(0),
-          shrinkWrap: true,
-          styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-            blockquoteDecoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(AppShapes.small),
-            ),
+    return SingleChildScrollView(
+      child: Markdown(
+        data: trimmedNotes,
+        selectable: true,
+        padding: const EdgeInsets.all(0),
+        shrinkWrap: true,
+        styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+          blockquoteDecoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(AppShapes.small),
           ),
         ),
       ),
