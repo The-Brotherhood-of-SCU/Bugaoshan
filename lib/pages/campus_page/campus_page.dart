@@ -10,6 +10,7 @@ import 'section_header.dart';
 import 'list_card.dart';
 import 'grid_card.dart';
 import 'grid_view_switch.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 
 class CampusPage extends StatefulWidget {
   const CampusPage({super.key});
@@ -77,7 +78,7 @@ class _CampusPageState extends State<CampusPage>
                   key: ValueKey(isGridView),
                   slivers: [
                     SliverPadding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(AppShapes.medium),
                       sliver: isGridView
                           ? _buildGridView(l10n)
                           : _buildListView(l10n),
@@ -118,7 +119,7 @@ class _CampusPageState extends State<CampusPage>
                         color: Theme.of(
                           context,
                         ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                        size: 28,
+                        size: AppShapes.extraLarge,
                       ),
                     ),
                   ),

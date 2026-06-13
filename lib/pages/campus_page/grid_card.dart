@@ -25,12 +25,15 @@ class CampusGridCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppShapes.large),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          padding: const EdgeInsets.symmetric(
+            vertical: AppShapes.large,
+            horizontal: AppShapes.medium,
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(AppShapes.medium),
                 decoration: BoxDecoration(
                   color:
                       iconContainerColor ??
