@@ -139,9 +139,10 @@ class AuthLogger extends ChangeNotifier {
     }
 
     // 仅 debug 模式同时打到控制台，避免生产包日志噪声。
+    // 使用 debugPrint 而非 print：避免 stdout 与其他异步日志乱序交错，
+    // 并获得 Flutter 自带的同帧节流防刷屏。
     if (kDebugMode) {
-      // ignore: avoid_print
-      print(entry.format());
+      debugPrint(entry.format());
     }
 
     if (_fileSinkEnabled) {
