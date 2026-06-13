@@ -29,7 +29,7 @@ Future<void> shareSingleFile(
   return SharePlus.instance.share(
     ShareParams(
       files: [file],
-      text: text ?? "file",
+      text: text,
       sharePositionOrigin: sharePositionOrigin,
     ),
   );
