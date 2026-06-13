@@ -3,6 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
 import 'package:bugaoshan/widgets/course/course_card.dart';
 
@@ -291,7 +292,7 @@ class _CourseGridState extends State<CourseGrid> {
                           children: [
                             Text(
                               name,
-                              style: TextStyle(
+                              style: theme.textTheme.bodySmall?.copyWith(
                                 fontSize: 13,
                                 fontWeight: isToday
                                     ? FontWeight.bold
@@ -307,7 +308,7 @@ class _CourseGridState extends State<CourseGrid> {
                                 children: [
                                   Text(
                                     l10n.dateMonthDay(date.month, date.day),
-                                    style: TextStyle(
+                                    style: theme.textTheme.labelSmall?.copyWith(
                                       fontSize: 10,
                                       fontWeight: isToday
                                           ? FontWeight.bold
@@ -363,18 +364,20 @@ class _CourseGridState extends State<CourseGrid> {
   }
 
   Widget _buildLabelBadge(String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(3),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 9,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
+    return Builder(
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(AppShapes.small),
+        ),
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            fontSize: 9,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
       ),
     );
@@ -427,7 +430,7 @@ class _CourseGridState extends State<CourseGrid> {
                 children: [
                   Text(
                     '${i + 1}',
-                    style: const TextStyle(
+                    style: theme.textTheme.bodySmall?.copyWith(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
                     ),
@@ -437,7 +440,7 @@ class _CourseGridState extends State<CourseGrid> {
                       padding: const EdgeInsets.only(top: 2),
                       child: Text(
                         startStr,
-                        style: TextStyle(
+                        style: theme.textTheme.labelSmall?.copyWith(
                           fontSize: 11,
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -447,7 +450,7 @@ class _CourseGridState extends State<CourseGrid> {
                         appConfig.courseRowHeight.value >= 60)
                       Text(
                         endStr,
-                        style: TextStyle(
+                        style: theme.textTheme.labelSmall?.copyWith(
                           fontSize: 11,
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -596,7 +599,9 @@ class _CourseGridState extends State<CourseGrid> {
                                   color: theme.colorScheme.primary.withAlpha(
                                     100,
                                   ), // e.g. pinkish/primary with opacity
-                                  borderRadius: BorderRadius.circular(6),
+                                  borderRadius: BorderRadius.circular(
+                                    AppShapes.small,
+                                  ),
                                   border: Border.all(
                                     color: theme.colorScheme.primary.withAlpha(
                                       150,

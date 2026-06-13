@@ -105,7 +105,7 @@ class _NoticeAttachmentFabState extends State<NoticeAttachmentFab> {
                 ),
                 Text(
                   '${widget.items.length}',
-                  style: TextStyle(
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,

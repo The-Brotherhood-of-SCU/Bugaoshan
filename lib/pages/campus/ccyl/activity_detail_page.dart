@@ -222,8 +222,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                 )
               : Text(
                   _signedUp ? l10n.ccylCancelSignUp : l10n.ccylSignUp,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -244,7 +243,9 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
           children: [
             Text(
               _getErrorMessage(l10n, _error!),
-              style: const TextStyle(color: Colors.red),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.error,
+              ),
             ),
             const SizedBox(height: 16),
             ElevatedButton(onPressed: _loadData, child: Text(l10n.loadFailed)),
@@ -337,17 +338,16 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                         : activity.status == 'A05'
                         ? Colors.blue.shade100
                         : Colors.orange.shade100,
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(AppShapes.xs),
                   ),
                   child: Text(
                     activity.statusName ?? activity.status,
-                    style: TextStyle(
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: activity.status == 'A03'
                           ? Colors.green.shade700
                           : activity.status == 'A05'
                           ? Colors.blue.shade700
                           : Colors.orange.shade700,
-                      fontSize: 12,
                     ),
                   ),
                 ),

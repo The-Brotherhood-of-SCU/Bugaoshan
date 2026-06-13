@@ -200,7 +200,7 @@ class _InfoItem extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(top: 2),
-              child: Text(text, style: const TextStyle(fontSize: 16)),
+              child: Text(text, style: Theme.of(context).textTheme.bodyLarge),
             ),
           ),
         ],

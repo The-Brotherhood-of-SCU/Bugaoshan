@@ -221,7 +221,7 @@ class _ActivityCard extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(AppShapes.xs),
                       ),
                       child: Text(
                         activity.levelName!,
@@ -278,7 +278,7 @@ class _ActivityCard extends StatelessWidget {
                           : (activity.doing
                                 ? Colors.green.shade100
                                 : Colors.orange.shade100),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(AppShapes.xs),
                     ),
                     child: Text(
                       activity.subscribed

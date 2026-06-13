@@ -130,8 +130,7 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
                 '快速设置',
-                style: TextStyle(
-                  fontSize: 16,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.primary,
                 ),
@@ -281,8 +280,7 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
                 l10n.sectionCount,
-                style: TextStyle(
-                  fontSize: 16,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.primary,
                 ),
@@ -378,7 +376,7 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
                       padding: const EdgeInsets.only(top: 16, bottom: 8),
                       child: Text(
                         groupTitle,
-                        style: TextStyle(
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).colorScheme.primary,
                         ),
@@ -473,7 +471,9 @@ class _TimeSlotEditor extends StatelessWidget {
             width: 48,
             child: Text(
               '${index + 1}',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
           ),
           Expanded(

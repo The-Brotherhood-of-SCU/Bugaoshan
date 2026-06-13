@@ -133,8 +133,7 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
                 )
               : Text(
                   _subscribed ? l10n.ccylCancelSubscribe : l10n.ccylSubscribe,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -155,7 +154,9 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
           children: [
             Text(
               _getErrorMessage(l10n, _error!),
-              style: const TextStyle(color: Colors.red),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.error,
+              ),
             ),
             const SizedBox(height: 16),
             ElevatedButton(onPressed: _loadData, child: Text(l10n.loadFailed)),
@@ -211,13 +212,12 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
                     ),
                     decoration: BoxDecoration(
                       color: Colors.green.shade100,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(AppShapes.xs),
                     ),
                     child: Text(
                       l10n.ccylSubscribed,
-                      style: TextStyle(
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: Colors.green.shade700,
-                        fontSize: 12,
                       ),
                     ),
                   ),
@@ -242,7 +242,7 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
                     ),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(AppShapes.xs),
                     ),
                     child: Text(
                       lib.levelName!,
@@ -450,7 +450,7 @@ class _ActivityCard extends StatelessWidget {
                     height: 24,
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppShapes.medium),
                     ),
                     child: Center(
                       child: Text(
@@ -479,7 +479,7 @@ class _ActivityCard extends StatelessWidget {
                       color: activity.status == 'A03'
                           ? Colors.green.shade100
                           : Colors.orange.shade100,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(AppShapes.xs),
                     ),
                     child: Text(
                       activity.statusName ?? activity.status,

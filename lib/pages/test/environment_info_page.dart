@@ -87,7 +87,9 @@ class _SectionCard extends StatelessWidget {
             const Divider(),
             SelectableText(
               content,
-              style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontFamily: 'monospace'),
             ),
           ],
         ),

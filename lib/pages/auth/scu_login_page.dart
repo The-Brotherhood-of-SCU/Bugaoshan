@@ -267,7 +267,9 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       if (_errorMsg != null)
         Text(
           _errorMsg!,
-          style: TextStyle(color: Theme.of(context).colorScheme.error),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.error,
+          ),
           textAlign: TextAlign.center,
         ),
       FilledButton(
@@ -380,7 +382,7 @@ class _CaptchaRow extends StatelessWidget {
             height: 56,
             decoration: BoxDecoration(
               border: Border.all(color: Theme.of(context).dividerColor),
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(AppShapes.xs),
             ),
             child: loading
                 ? const Center(
@@ -392,7 +394,7 @@ class _CaptchaRow extends StatelessWidget {
                   )
                 : captcha != null
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(3),
+                    borderRadius: BorderRadius.circular(AppShapes.small),
                     child: Image.memory(
                       _decodeBase64Image(captcha!.captchaBase64),
                       fit: BoxFit.contain,

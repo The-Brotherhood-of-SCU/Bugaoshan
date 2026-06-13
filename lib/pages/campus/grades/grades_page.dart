@@ -117,14 +117,15 @@ class _GradesPageState extends State<GradesPage> {
                       dividerHeight: 0,
                       indicatorSize: TabBarIndicatorSize.label,
                       indicatorWeight: 3,
-                      labelStyle: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                      ),
-                      unselectedLabelStyle: const TextStyle(
-                        fontWeight: FontWeight.normal,
-                        fontSize: 15,
-                      ),
+                      labelStyle: Theme.of(context).textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w600, fontSize: 15),
+                      unselectedLabelStyle: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(
+                            fontWeight: FontWeight.normal,
+                            fontSize: 15,
+                          ),
                       tabs: [
                         Tab(text: l10n.schemeScores),
                         Tab(text: l10n.passingScores),

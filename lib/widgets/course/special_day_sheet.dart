@@ -62,11 +62,11 @@ Future<void> _showSheet(
                     ),
                     decoration: BoxDecoration(
                       color: color.withAlpha(30),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(AppShapes.xs),
                     ),
                     child: Text(
                       typeLabel,
-                      style: TextStyle(
+                      style: Theme.of(ctx).textTheme.labelSmall?.copyWith(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: color,
@@ -89,7 +89,7 @@ Future<void> _showSheet(
                       padding: const EdgeInsets.only(bottom: 2),
                       child: Text(
                         l10n.holidayTotalDays(info.holidayTotalDays!),
-                        style: TextStyle(
+                        style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
                           fontSize: 13,
                           color: Theme.of(ctx).colorScheme.onSurfaceVariant,
                         ),
@@ -98,7 +98,7 @@ Future<void> _showSheet(
                   // Date
                   Text(
                     l10n.dateMonthDay(date.month, date.day),
-                    style: TextStyle(
+                    style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
                       fontSize: 13,
                       color: Theme.of(ctx).colorScheme.onSurfaceVariant,
                     ),

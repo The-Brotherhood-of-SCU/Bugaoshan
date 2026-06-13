@@ -131,7 +131,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
       return Center(
         child: Text(
           l10n.examPlanNoData,
-          style: TextStyle(
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
@@ -232,7 +232,9 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
                           ),
                           decoration: BoxDecoration(
                             color: primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(
+                              AppShapes.small,
+                            ),
                           ),
                           child: Text(
                             exam.week,
@@ -336,8 +338,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
-                fontSize: 13,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurface.withValues(alpha: 0.8),
                 height: 1.3,
               ),

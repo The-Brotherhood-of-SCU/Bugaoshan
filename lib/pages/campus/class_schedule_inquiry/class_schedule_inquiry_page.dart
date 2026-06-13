@@ -414,7 +414,7 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
         isDense: true,
       ),
       isExpanded: true,
-      hint: Text(hint, style: const TextStyle(fontSize: 13)),
+      hint: Text(hint, style: Theme.of(context).textTheme.bodySmall),
       items: items,
       onChanged: (v) {
         if (v != null) onChanged(v);
@@ -491,7 +491,7 @@ class _ClassCard extends StatelessWidget {
             classInfo.className.length >= 4
                 ? classInfo.className.substring(classInfo.className.length - 4)
                 : classInfo.className,
-            style: TextStyle(
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: Theme.of(context).colorScheme.onPrimaryContainer,

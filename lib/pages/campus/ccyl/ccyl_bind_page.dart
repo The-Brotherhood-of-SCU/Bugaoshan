@@ -80,7 +80,9 @@ class _CcylBindPageState extends State<CcylBindPage> {
                 padding: const EdgeInsets.only(bottom: 16),
                 child: Text(
                   _getErrorMessage(l10n, _error!),
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),

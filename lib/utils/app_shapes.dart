@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 class AppShapes {
   AppShapes._();
 
+  /// 4dp - 小图标背景、密集状态标记
+  static const double xs = 4;
+
   /// 8dp - 小标签、chip、状态标记
   static const double small = 8;
 

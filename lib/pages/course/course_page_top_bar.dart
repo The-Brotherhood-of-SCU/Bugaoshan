@@ -156,7 +156,7 @@ class _WeekBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
       decoration: BoxDecoration(
         color: isCurrent ? scheme.primaryContainer : scheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(AppShapes.full),
       ),
       child: AnimatedSize(
         duration: appConfigService.cardSizeAnimationDuration.value,

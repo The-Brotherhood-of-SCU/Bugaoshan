@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 
 import 'popup_context.dart';
 
@@ -31,10 +32,10 @@ Future popupContent(
         child: Dialog(
           backgroundColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
+            borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(20.0),
+            borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
             child: Container(
               color: DialogTheme.of(context0).backgroundColor,
               child: Stack(

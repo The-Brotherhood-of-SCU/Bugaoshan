@@ -7,6 +7,7 @@ import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/error_widgets.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 
 class PlanCompletionPage extends StatefulWidget {
   const PlanCompletionPage({super.key});
@@ -260,7 +261,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
             ),
             const SizedBox(height: 4),
             ClipRRect(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(AppShapes.xs),
               child: LinearProgressIndicator(
                 value: progress,
                 minHeight: 4,
@@ -375,7 +376,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
                   color: isPassed
                       ? Theme.of(context).colorScheme.primaryContainer
                       : Theme.of(context).colorScheme.errorContainer,
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(AppShapes.xs),
                 ),
                 child: Text(
                   gradeDisplay,

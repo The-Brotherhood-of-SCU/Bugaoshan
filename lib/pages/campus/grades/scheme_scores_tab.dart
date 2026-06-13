@@ -315,7 +315,7 @@ class ScoreCardWidget extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: attrColor,
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(AppShapes.xs),
                         ),
                         child: Text(
                           item.courseAttributeName,

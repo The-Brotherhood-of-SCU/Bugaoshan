@@ -58,9 +58,10 @@ class UpdateCard extends StatelessWidget {
                         const SizedBox(height: 8),
                         Text(
                           'Error: ${r.error}',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.error,
+                              ),
                         ),
                       ],
                       if (r.noUpdate) ...[

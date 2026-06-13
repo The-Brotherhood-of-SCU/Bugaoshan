@@ -3,6 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 
 class CourseCard extends StatelessWidget {
   final Course course;
@@ -89,7 +90,7 @@ class CourseCard extends StatelessWidget {
               final titleMaxLines = 6;
 
               return ClipRRect(
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(AppShapes.small),
                 child: Container(
                   decoration: BoxDecoration(
                     color: color,
@@ -116,12 +117,13 @@ class CourseCard extends StatelessWidget {
                                   ? course.name
                                   : '${l10n.notThisWeek} ${course.name}',
                               maxLines: titleMaxLines,
-                              style: TextStyle(
-                                fontSize: fontSize,
-                                color: textColor,
-                                height: 1.1,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    fontSize: fontSize,
+                                    color: textColor,
+                                    height: 1.1,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                             ),
                             if (visibleDetails.isNotEmpty)
                               const SizedBox(height: 2),
@@ -153,16 +155,18 @@ class CourseCard extends StatelessWidget {
     Color color, {
     int maxLines = 1,
   }) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 2),
-      child: Text(
-        text,
-        maxLines: maxLines,
-        softWrap: true,
-        style: TextStyle(
-          fontSize: fontSize,
-          color: color.withAlpha(230),
-          height: 1.1,
+    return Builder(
+      builder: (context) => Padding(
+        padding: const EdgeInsets.only(top: 2),
+        child: Text(
+          text,
+          maxLines: maxLines,
+          softWrap: true,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            fontSize: fontSize,
+            color: color.withAlpha(230),
+            height: 1.1,
+          ),
         ),
       ),
     );

@@ -221,7 +221,9 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
               label: l10n.semesterStartDate,
               trailing: Text(
                 '${_startDate.year}-${_startDate.month.toString().padLeft(2, '0')}-${_startDate.day.toString().padLeft(2, '0')}',
-                style: TextStyle(color: theme.colorScheme.primary),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.primary,
+                ),
               ),
               onTap: () => _pickDate(context),
             ),
@@ -231,7 +233,9 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
               hint: l10n.setCurrentWeekHint,
               trailing: Text(
                 l10n.currentWeek(currentWeek),
-                style: TextStyle(color: theme.colorScheme.primary),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.primary,
+                ),
               ),
               onTap: () => _pickCurrentWeek(context, currentWeek, l10n),
             ),
@@ -265,7 +269,9 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
               label: totalWeeksTitle,
               trailing: Text(
                 '$_totalWeeks',
-                style: TextStyle(color: theme.colorScheme.primary),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.primary,
+                ),
               ),
               onTap: () async {
                 final selected = await _showNumberPicker(
@@ -325,7 +331,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
                     ),
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -352,7 +358,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
                     return Center(
                       child: Text(
                         '${index + minValue}',
-                        style: TextStyle(
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),

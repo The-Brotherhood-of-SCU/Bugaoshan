@@ -529,13 +529,12 @@ class _StatusChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: color.withAlpha(25),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(AppShapes.xs),
       ),
       child: Text(
         label,
-        style: TextStyle(
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
           color: color.withValues(alpha: 255 * 0.6),
-          fontSize: 12,
         ),
       ),
     );

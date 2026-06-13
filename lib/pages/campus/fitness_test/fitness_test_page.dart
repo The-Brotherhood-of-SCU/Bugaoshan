@@ -302,7 +302,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
       return Center(
         child: Text(
           l10n.noData,
-          style: TextStyle(
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
@@ -343,7 +343,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                       ),
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(AppShapes.xs),
                       ),
                       child: Text(
                         l10n.fitnessTestSticky,
@@ -570,7 +570,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
           padding: const EdgeInsets.all(32),
           child: Text(
             l10n.fitnessTestNoScore,
-            style: TextStyle(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
@@ -639,7 +639,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                     ),
                     child: Text(
                       totalGrade,
-                      style: TextStyle(
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: gradeColor,
                         fontWeight: FontWeight.w600,
                       ),

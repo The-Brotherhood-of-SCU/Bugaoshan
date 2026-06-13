@@ -234,7 +234,7 @@ class BindRoomDialogState extends State<BindRoomDialog> {
                   ),
                   child: Text(
                     _error!,
-                    style: TextStyle(
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Theme.of(context).colorScheme.onErrorContainer,
                     ),
                   ),

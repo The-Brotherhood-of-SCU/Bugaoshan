@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 课表日期栏添加节假日节气标识
 - 添加班级课表查询功能，可查询各个年级和班级的课表
 - 添加考表查询功能，可查询考试信息
-- 支持启用Google Sans字体，与字体缩放、字体粗细调整
+- 支持启用Google Sans字体，支持新系统的字体缩放、字体粗细调整
 
 ### Fixed
 - 修复课程编辑页在big screen模式下关闭后产生阴影的问题

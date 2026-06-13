@@ -521,7 +521,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
                   borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(16),
+                    top: Radius.circular(AppShapes.large),
                   ),
                 ),
                 child: Column(
@@ -532,7 +532,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
                       height: 4,
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        borderRadius: BorderRadius.circular(2),
+                        borderRadius: BorderRadius.circular(AppShapes.small),
                       ),
                     ),
                     Expanded(
@@ -792,7 +792,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(AppShapes.xs),
       ),
       child: Text(
         '$label:$value',

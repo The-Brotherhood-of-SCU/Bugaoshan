@@ -1,9 +1,10 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/set_theme_color_provider.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:system_theme/system_theme.dart';
 
 class SetThemeColorPage extends StatefulWidget {
@@ -269,7 +270,9 @@ class BasicCard extends StatelessWidget {
         alignment: Alignment.topLeft,
         decoration: ShapeDecoration(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadiusDirectional.circular(20),
+            borderRadius: BorderRadiusDirectional.circular(
+              AppShapes.largeIncreased,
+            ),
           ),
           color: Theme.of(context).colorScheme.secondaryContainer,
           shadows: [
@@ -314,12 +317,16 @@ Widget commonCard({
 }
 
 Widget titleText(String text) {
-  return Padding(
-    padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-    child: Text(
-      text,
-      textScaler: const TextScaler.linear(1.3),
-      style: const TextStyle(fontWeight: FontWeight.w800),
+  return Builder(
+    builder: (context) => Padding(
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+      child: Text(
+        text,
+        textScaler: const TextScaler.linear(1.3),
+        style: Theme.of(
+          context,
+        ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+      ),
     ),
   );
 }

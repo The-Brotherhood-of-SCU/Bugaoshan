@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/app_shapes.dart';
 
 class StatusChip extends StatelessWidget {
   const StatusChip({
@@ -19,7 +20,7 @@ class StatusChip extends StatelessWidget {
       decoration: BoxDecoration(
         color:
             backgroundColor ?? Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(AppShapes.xs),
       ),
       child: Text(
         label,

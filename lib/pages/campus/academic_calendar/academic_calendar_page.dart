@@ -225,11 +225,12 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage> {
                         const SizedBox(height: 8),
                         Text(
                           l10n.loadFailed,
-                          style: TextStyle(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
                         ),
                       ],
                     ),

@@ -81,7 +81,9 @@ class _TestPageState extends State<TestPage> {
               const SizedBox(height: 8),
               Text(
                 localizations.preReleaseWarning,
-                style: const TextStyle(color: Colors.orange),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.orange),
               ),
             ],
           ],

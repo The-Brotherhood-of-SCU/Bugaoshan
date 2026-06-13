@@ -380,7 +380,7 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
                   padding: const EdgeInsets.all(16),
                   child: Text(
                     l10n.noData,
-                    style: TextStyle(
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),

@@ -101,8 +101,7 @@ class _SetDurationPageState extends State<SetDurationPage> {
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: Text(
                 appLang.currentAnimationDuration(_tempAnimationTime),
-                style: TextStyle(
-                  fontSize: 18,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
@@ -157,9 +156,8 @@ class _SetDurationPageState extends State<SetDurationPage> {
               padding: const EdgeInsets.only(top: 16.0),
               child: Text(
                 appLang.animationDurationHint,
-                style: TextStyle(
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  fontSize: 14,
                 ),
               ),
             ),
