@@ -607,6 +607,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cancel => '取消';
 
   @override
+  String get downloadInBackground => '后台下载';
+
+  @override
   String get back => '上一步';
 
   @override

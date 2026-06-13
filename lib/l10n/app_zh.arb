@@ -231,6 +231,7 @@
     "showNonCurrentWeekCourses":"显示非本周课程",
     "save":"保存",
     "cancel":"取消",
+    "downloadInBackground": "后台下载",
     "back": "上一步",
     "next": "下一步",
     "delete":"删除",

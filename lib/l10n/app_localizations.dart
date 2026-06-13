@@ -1261,6 +1261,12 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancel;
 
+  /// No description provided for @downloadInBackground.
+  ///
+  /// In en, this message translates to:
+  /// **'Download in Background'**
+  String get downloadInBackground;
+
   /// No description provided for @back.
   ///
   /// In en, this message translates to:

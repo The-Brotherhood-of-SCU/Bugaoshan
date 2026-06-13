@@ -235,6 +235,7 @@
     "showNonCurrentWeekCourses":"Show Non-Current Week Courses",
     "save":"Save",
     "cancel":"Cancel",
+    "downloadInBackground": "Download in Background",
     "back": "Back",
     "next": "Next",
     "delete":"Delete",

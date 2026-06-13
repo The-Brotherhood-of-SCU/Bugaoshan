@@ -626,6 +626,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancel => 'Cancel';
 
   @override
+  String get downloadInBackground => 'Download in Background';
+
+  @override
   String get back => 'Back';
 
   @override

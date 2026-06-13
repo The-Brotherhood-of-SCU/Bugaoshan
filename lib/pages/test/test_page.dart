@@ -4,16 +4,15 @@ import 'package:flutter/material.dart';
 
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/pages/about/release_notes_page.dart';
 import 'package:bugaoshan/pages/test/environment_info_button.dart';
 import 'package:bugaoshan/pages/test/update_card.dart';
-import 'package:bugaoshan/pages/test/update_progress_state.dart';
 import 'package:bugaoshan/pages/test/update_result_notifier.dart';
 import 'package:bugaoshan/pages/test/wizard_reset_button.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
-import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/services/update_service.dart';
+import 'package:bugaoshan/widgets/dialog/download_progress_dialog.dart';
+import 'package:bugaoshan/widgets/dialog/update_dialog.dart';
 
 class TestPage extends StatefulWidget {
   const TestPage({super.key});
@@ -59,148 +58,23 @@ class _TestPageState extends State<TestPage> {
   }
 
   void _showUpdateDialog(UpdateCheckResult result) {
-    final localizations = AppLocalizations.of(context)!;
-    final isPreview = result.isPrerelease;
-    final outerContext = context;
-    showDialog(
+    showUpdateDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(isPreview ? Icons.science : Icons.system_update_alt),
-            const SizedBox(width: 8),
-            Text(localizations.newVersionAvailable),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('${localizations.version}: ${result.version}'),
-            if (isPreview) ...[
-              const SizedBox(height: 8),
-              Text(
-                localizations.preReleaseWarning,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: Colors.orange),
-              ),
-            ],
-          ],
-        ),
-        actions: [
-          if (result.releaseNotes != null && result.releaseNotes!.isNotEmpty)
-            TextButton(
-              onPressed: () {
-                //Navigator.pop(context);
-                popupOrNavigate(
-                  outerContext,
-                  ReleaseNotesPage(
-                    version: result.version!,
-                    releaseNotes: result.releaseNotes!,
-                  ),
-                );
-              },
-              child: Text(localizations.releaseNotes),
-            ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(localizations.neverMind),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _startUpdate(result.version!, result.downloadUrl!);
-            },
-            child: Text(
-              isPreview
-                  ? localizations.startUpdatePreview
-                  : localizations.startUpdate,
-            ),
-          ),
-        ],
-      ),
+      version: result.version!,
+      releaseNotes: result.releaseNotes,
+      isPreview: result.isPrerelease,
+      onStartUpdate: () => _startUpdate(result.version!, result.downloadUrl!),
     );
   }
-
-  String _proxyDownloadUrl(String url) => 'https://gh-proxy.org/$url';
 
   void _startUpdate(String latestVersion, String downloadUrl) async {
     final updateService = getIt<UpdateService>();
-    final localizations = AppLocalizations.of(context)!;
-    downloadUrl = _proxyDownloadUrl(downloadUrl);
-    final progressState = UpdateProgressState();
-    final cancelToken = CancelToken();
-
-    showDialog(
+    await showDownloadProgressDialog(
       context: context,
-      useRootNavigator: true,
-      barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        content: ListenableBuilder(
-          listenable: progressState,
-          builder: (context, _) => Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircularProgressIndicator(),
-              const SizedBox(height: 16),
-              Text('${progressState.status} ${progressState.percent}%'),
-              if (progressState.total > 0) ...[
-                const SizedBox(height: 8),
-                LinearProgressIndicator(
-                  value: progressState.received / progressState.total,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${_formatBytes(progressState.received)} / ${_formatBytes(progressState.total)}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              cancelToken.cancel();
-              Navigator.of(dialogContext).pop();
-            },
-            child: Text(localizations.cancel),
-          ),
-        ],
-      ),
+      version: latestVersion,
+      downloadUrl: downloadUrl,
+      updateService: updateService,
     );
-
-    try {
-      await updateService.downloadAndInstall(
-        latestVersion,
-        downloadUrl,
-        cancelToken: cancelToken,
-        onStatus: (status) => progressState.setStatus(status),
-        onProgress: (received, total) =>
-            progressState.setProgress(received, total),
-      );
-    } on UpdateCancelledException {
-      return; // already popped
-    } catch (e) {
-      if (mounted) {
-        Navigator.of(context, rootNavigator: true).maybePop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${localizations.updateFailed}: $e')),
-        );
-      }
-      return;
-    }
-
-    if (mounted) {
-      Navigator.of(context, rootNavigator: true).maybePop();
-    }
-  }
-
-  String _formatBytes(int bytes) {
-    if (bytes < 1024) return '$bytes B';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
   @override
