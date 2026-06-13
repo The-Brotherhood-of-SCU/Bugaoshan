@@ -576,7 +576,7 @@
     "dockLabelClassroom": "Classroom",
     "dockLabelNetworkDevice": "Network",
     "dockLabelBalanceQuery": "Electricity",
-    "dockLabelClassScheduleInquiry": "Class Schedule Inquiry",
+    "dockLabelClassScheduleInquiry": "Class Schedule",
     "dockLabelAcademicCalendar": "Calendar",
     "fitnessTest": "Fitness Test",
     "fitnessTestDesc": "Query fitness test scores and view notices",

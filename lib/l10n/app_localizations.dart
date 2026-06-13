@@ -3118,7 +3118,7 @@ abstract class AppLocalizations {
   /// No description provided for @dockLabelClassScheduleInquiry.
   ///
   /// In en, this message translates to:
-  /// **'Class Schedule Inquiry'**
+  /// **'Class Schedule'**
   String get dockLabelClassScheduleInquiry;
 
   /// No description provided for @dockLabelAcademicCalendar.

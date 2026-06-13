@@ -1618,7 +1618,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dockLabelBalanceQuery => 'Electricity';
 
   @override
-  String get dockLabelClassScheduleInquiry => 'Class Schedule Inquiry';
+  String get dockLabelClassScheduleInquiry => 'Class Schedule';
 
   @override
   String get dockLabelAcademicCalendar => 'Calendar';
