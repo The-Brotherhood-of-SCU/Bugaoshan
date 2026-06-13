@@ -30,7 +30,7 @@ class CampusGridCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(AppShapes.medium),
                 decoration: BoxDecoration(
                   color:
                       iconContainerColor ??

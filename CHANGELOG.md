@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 添加班级课表查询功能，可查询各个年级和班级的课表
 - 添加考表查询功能，可查询考试信息
 - 支持启用Google Sans字体，支持系统的字体缩放、字体粗细调整
+- 校园页添加网格布局切换功能
 
 ### Fixed
 - 修复课程编辑页在big screen模式下关闭后产生阴影的问题
