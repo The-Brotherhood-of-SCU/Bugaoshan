@@ -290,64 +290,62 @@ class _CourseGridState extends State<CourseGrid> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              name,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                fontSize: 13,
-                                fontWeight: isToday
-                                    ? FontWeight.bold
-                                    : FontWeight.w600,
-                                color: isToday
-                                    ? theme.colorScheme.primary
-                                    : theme.colorScheme.onSurface,
-                              ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  name,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    fontSize: 13,
+                                    fontWeight: isToday
+                                        ? FontWeight.bold
+                                        : FontWeight.w600,
+                                    color: isToday
+                                        ? theme.colorScheme.primary
+                                        : theme.colorScheme.onSurface,
+                                  ),
+                                ),
+                                if (isHoliday) ...[
+                                  const SizedBox(width: 2),
+                                  _buildLabelBadge(
+                                    l10n.holidayLabel,
+                                    Colors.red,
+                                  ),
+                                ],
+                                if (isFestival) ...[
+                                  const SizedBox(width: 2),
+                                  _buildLabelBadge(
+                                    l10n.festivalLabel,
+                                    Colors.orange,
+                                  ),
+                                ],
+                                if (isSolarTerm) ...[
+                                  const SizedBox(width: 2),
+                                  _buildLabelBadge(
+                                    l10n.solarTermLabel,
+                                    Colors.green,
+                                  ),
+                                ],
+                              ],
                             ),
                             if (!widget.showAllWeeks)
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    l10n.dateMonthDay(date.month, date.day),
-                                    style: theme.textTheme.labelSmall?.copyWith(
-                                      fontSize: 10,
-                                      fontWeight: isToday
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
-                                      color: isHoliday
-                                          ? Colors.red
-                                          : isFestival
-                                          ? Colors.orange
-                                          : isSolarTerm
-                                          ? Colors.green
-                                          : isToday
-                                          ? theme.colorScheme.primary.withAlpha(
-                                              200,
-                                            )
-                                          : theme.colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                  if (isHoliday) ...[
-                                    const SizedBox(width: 2),
-                                    _buildLabelBadge(
-                                      l10n.holidayLabel,
-                                      Colors.red,
-                                    ),
-                                  ],
-                                  if (isFestival) ...[
-                                    const SizedBox(width: 2),
-                                    _buildLabelBadge(
-                                      l10n.festivalLabel,
-                                      Colors.orange,
-                                    ),
-                                  ],
-                                  if (isSolarTerm) ...[
-                                    const SizedBox(width: 2),
-                                    _buildLabelBadge(
-                                      l10n.solarTermLabel,
-                                      Colors.green,
-                                    ),
-                                  ],
-                                ],
+                              Text(
+                                l10n.dateMonthDay(date.month, date.day),
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  fontSize: 10,
+                                  fontWeight: isToday
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  color: isHoliday
+                                      ? Colors.red
+                                      : isFestival
+                                      ? Colors.orange
+                                      : isSolarTerm
+                                      ? Colors.green
+                                      : isToday
+                                      ? theme.colorScheme.primary.withAlpha(200)
+                                      : theme.colorScheme.onSurfaceVariant,
+                                ),
                               ),
                           ],
                         ),
