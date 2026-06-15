@@ -44,7 +44,7 @@ class CourseCard extends StatelessWidget {
             ? Colors.black87
             : Colors.white;
         final fontSize = appConfig.courseCardFontSize.value;
-        final smallFontSize = fontSize - 1;
+        final smallFontSize = fontSize - 2.5;
         final details =
             <({String text, int preferredMaxLines, int renderMaxLines})>[
               if (config.showLocation && course.location.isNotEmpty)
@@ -160,7 +160,8 @@ class CourseCard extends StatelessWidget {
         padding: const EdgeInsets.only(top: 2),
         child: Text(
           text,
-          maxLines: maxLines,
+          maxLines: null,
+          overflow: TextOverflow.visible,
           softWrap: true,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             fontSize: fontSize,
