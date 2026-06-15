@@ -7,7 +7,6 @@ import 'package:bugaoshan/providers/train_program_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
-import 'package:bugaoshan/widgets/common/error_widgets.dart';
 import 'package:bugaoshan/widgets/common/campus_network_required_widget.dart';
 import 'package:bugaoshan/widgets/common/info_row.dart';
 
@@ -205,8 +204,10 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
       TrainProgramLoadState.loading => const Center(
         child: CircularProgressIndicator(),
       ),
-      TrainProgramLoadState.error => RetryableErrorWidget(
-        message: getCampusNetworkErrorMessage(l10n, _provider.programsError),
+      TrainProgramLoadState.error => CampusNetworkRequiredWidget(
+        message: _provider.programsError == 'sessionExpired'
+            ? l10n.sessionExpired
+            : getCampusNetworkErrorMessage(l10n, _provider.programsError),
         onRetry: () => _provider.searchPrograms(),
         iconSize: 56,
       ),
@@ -303,11 +304,10 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
           return switch (_provider.detailState) {
             TrainProgramLoadState.idle || TrainProgramLoadState.loading =>
               const Center(child: CircularProgressIndicator()),
-            TrainProgramLoadState.error => RetryableErrorWidget(
-              message: getCampusNetworkErrorMessage(
-                l10n,
-                _provider.detailError,
-              ),
+            TrainProgramLoadState.error => CampusNetworkRequiredWidget(
+              message: _provider.detailError == 'sessionExpired'
+                  ? l10n.sessionExpired
+                  : getCampusNetworkErrorMessage(l10n, _provider.detailError),
               onRetry: () => _provider.fetchProgramDetail(widget.fajhh),
               iconSize: 56,
             ),
@@ -560,11 +560,10 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
     return switch (_provider.courseDetailState) {
       TrainProgramLoadState.idle || TrainProgramLoadState.loading =>
         const Center(child: CircularProgressIndicator()),
-      TrainProgramLoadState.error => RetryableErrorWidget(
-        message: getCampusNetworkErrorMessage(
-          l10n,
-          _provider.courseDetailError,
-        ),
+      TrainProgramLoadState.error => CampusNetworkRequiredWidget(
+        message: _provider.courseDetailError == 'sessionExpired'
+            ? l10n.sessionExpired
+            : getCampusNetworkErrorMessage(l10n, _provider.courseDetailError),
         onRetry: () => Navigator.pop(context),
       ),
       TrainProgramLoadState.loaded => _buildCourseDetailLoaded(

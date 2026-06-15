@@ -93,18 +93,18 @@ class TrainProgramProvider extends ChangeNotifier {
     } on UnauthenticatedException {
       _collegesState = TrainProgramLoadState.error;
       _gradesState = TrainProgramLoadState.error;
-      _collegesError = 'unauthenticated';
-      _gradesError = 'unauthenticated';
-    } on ServiceException catch (e) {
+      _collegesError = 'sessionExpired';
+      _gradesError = 'sessionExpired';
+    } on ServiceException catch (_) {
       _collegesState = TrainProgramLoadState.error;
       _gradesState = TrainProgramLoadState.error;
-      _collegesError = campusNetworkErrorKey(e.message);
-      _gradesError = campusNetworkErrorKey(e.message);
-    } catch (e) {
+      _collegesError = campusNetworkErrorKey('loadFailed');
+      _gradesError = campusNetworkErrorKey('loadFailed');
+    } catch (_) {
       _collegesState = TrainProgramLoadState.error;
       _gradesState = TrainProgramLoadState.error;
-      _collegesError = campusNetworkErrorKey(e.toString());
-      _gradesError = campusNetworkErrorKey(e.toString());
+      _collegesError = campusNetworkErrorKey('loadFailed');
+      _gradesError = campusNetworkErrorKey('loadFailed');
     }
     _safeNotify();
   }
@@ -123,13 +123,13 @@ class TrainProgramProvider extends ChangeNotifier {
       _programsState = TrainProgramLoadState.loaded;
     } on UnauthenticatedException {
       _programsState = TrainProgramLoadState.error;
-      _programsError = 'unauthenticated';
-    } on ServiceException catch (e) {
+      _programsError = 'sessionExpired';
+    } on ServiceException catch (_) {
       _programsState = TrainProgramLoadState.error;
-      _programsError = campusNetworkErrorKey(e.message);
-    } catch (e) {
+      _programsError = campusNetworkErrorKey('loadFailed');
+    } catch (_) {
       _programsState = TrainProgramLoadState.error;
-      _programsError = campusNetworkErrorKey(e.toString());
+      _programsError = campusNetworkErrorKey('loadFailed');
     }
     _safeNotify();
   }
@@ -145,13 +145,13 @@ class TrainProgramProvider extends ChangeNotifier {
       _detailState = TrainProgramLoadState.loaded;
     } on UnauthenticatedException {
       _detailState = TrainProgramLoadState.error;
-      _detailError = 'unauthenticated';
-    } on ServiceException catch (e) {
+      _detailError = 'sessionExpired';
+    } on ServiceException catch (_) {
       _detailState = TrainProgramLoadState.error;
-      _detailError = campusNetworkErrorKey(e.message);
-    } catch (e) {
+      _detailError = campusNetworkErrorKey('loadFailed');
+    } catch (_) {
       _detailState = TrainProgramLoadState.error;
-      _detailError = campusNetworkErrorKey(e.toString());
+      _detailError = campusNetworkErrorKey('loadFailed');
     }
     _safeNotify();
   }
@@ -173,13 +173,13 @@ class TrainProgramProvider extends ChangeNotifier {
       _courseDetailState = TrainProgramLoadState.loaded;
     } on UnauthenticatedException {
       _courseDetailState = TrainProgramLoadState.error;
-      _courseDetailError = 'unauthenticated';
-    } on ServiceException catch (e) {
+      _courseDetailError = 'sessionExpired';
+    } on ServiceException catch (_) {
       _courseDetailState = TrainProgramLoadState.error;
-      _courseDetailError = campusNetworkErrorKey(e.message);
-    } catch (e) {
+      _courseDetailError = campusNetworkErrorKey('loadFailed');
+    } catch (_) {
       _courseDetailState = TrainProgramLoadState.error;
-      _courseDetailError = campusNetworkErrorKey(e.toString());
+      _courseDetailError = campusNetworkErrorKey('loadFailed');
     }
     _safeNotify();
   }

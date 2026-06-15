@@ -68,13 +68,13 @@ class PlanCompletionProvider extends ChangeNotifier {
         _state = PlanCompletionLoadState.error;
       }
       _error = 'rateLimited';
-    } on ServiceException catch (e) {
+    } on ServiceException catch (_) {
       if (_nodes.isNotEmpty) {
         _state = PlanCompletionLoadState.loaded;
-        _error = e.message;
+        _error = campusNetworkErrorKey('loadFailed');
       } else {
         _state = PlanCompletionLoadState.error;
-        _error = e.message;
+        _error = campusNetworkErrorKey('loadFailed');
       }
     } on UnauthenticatedException {
       if (_nodes.isNotEmpty) {
@@ -82,14 +82,14 @@ class PlanCompletionProvider extends ChangeNotifier {
       } else {
         _state = PlanCompletionLoadState.error;
       }
-      _error = 'unauthenticated';
-    } catch (e) {
+      _error = 'sessionExpired';
+    } catch (_) {
       if (_nodes.isNotEmpty) {
         _state = PlanCompletionLoadState.loaded;
       } else {
         _state = PlanCompletionLoadState.error;
       }
-      _error = campusNetworkErrorKey(e.toString());
+      _error = campusNetworkErrorKey('loadFailed');
     }
     _safeNotify();
   }

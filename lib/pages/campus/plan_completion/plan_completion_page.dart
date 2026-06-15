@@ -6,7 +6,7 @@ import 'package:bugaoshan/providers/plan_completion_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
-import 'package:bugaoshan/widgets/common/error_widgets.dart';
+import 'package:bugaoshan/widgets/common/campus_network_required_widget.dart';
 import 'package:bugaoshan/utils/app_shapes.dart';
 
 class PlanCompletionPage extends StatefulWidget {
@@ -94,7 +94,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
     return switch (_provider.state) {
       PlanCompletionLoadState.idle || PlanCompletionLoadState.loading =>
         const Center(child: CircularProgressIndicator()),
-      PlanCompletionLoadState.error => RetryableErrorWidget(
+      PlanCompletionLoadState.error => CampusNetworkRequiredWidget(
         message: _getErrorMessage(l10n, _provider.error),
         onRetry: () => _provider.fetchPlanCompletion(),
         iconSize: 56,
@@ -109,8 +109,10 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
         return l10n.planCompletionRateLimited;
       case 'zhjwCampusNetworkRequiredAtNight':
         return l10n.zhjwCampusNetworkRequiredAtNight;
+      case 'sessionExpired':
+        return l10n.sessionExpired;
       default:
-        return errorKey ?? l10n.loadFailed;
+        return l10n.loadFailed;
     }
   }
 
