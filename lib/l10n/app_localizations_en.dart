@@ -1354,6 +1354,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noData => 'No Data';
 
   @override
+  String get noFreeClassrooms => 'No free classrooms right now';
+
+  @override
   String get networkDeviceQuery => 'Network Device Query';
 
   @override

@@ -474,6 +474,7 @@
     "ccylSeriesName": "Series Name",
     "ccylOrganizer": "Organizer",
     "noData": "No Data",
+    "noFreeClassrooms": "No free classrooms right now",
     "networkDeviceQuery": "Network Device Query",
     "networkDeviceQueryDesc": "Query campus network account and online devices",
     "networkDeviceUserInfo": "User Information",

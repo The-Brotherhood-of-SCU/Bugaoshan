@@ -470,6 +470,7 @@
     "ccylSeriesName": "系列名称",
     "ccylOrganizer": "主办单位",
     "noData": "暂无数据",
+    "noFreeClassrooms": "当前没有空闲教室",
     "networkDeviceQuery": "校园网设备查询",
     "networkDeviceQueryDesc": "查询校园网账户和在线设备",
     "networkDeviceUserInfo": "用户信息",

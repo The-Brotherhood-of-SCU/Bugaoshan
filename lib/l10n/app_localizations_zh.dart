@@ -1316,6 +1316,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noData => '暂无数据';
 
   @override
+  String get noFreeClassrooms => '当前没有空闲教室';
+
+  @override
   String get networkDeviceQuery => '校园网设备查询';
 
   @override

@@ -46,10 +46,15 @@ class _ClassroomPageState extends State<ClassroomPage> {
     super.initState();
     _zhjwApi = getIt<ZhjwApiService>();
     getIt<ScuAuthProvider>().addListener(_onAuthChanged);
+    _startClockTimer();
+    _loadIndex();
+  }
+
+  void _startClockTimer() {
+    _clockTimer?.cancel();
     _clockTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       if (mounted) setState(() {});
     });
-    _loadIndex();
   }
 
   @override
@@ -497,7 +502,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
               : rooms.isEmpty
               ? Center(
                   child: Text(
-                    _showCurrentFreeOnly ? '当前没有空闲教室' : l10n.noData,
+                    _showCurrentFreeOnly ? l10n.noFreeClassrooms : l10n.noData,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
