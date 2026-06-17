@@ -40,7 +40,7 @@ class WindowStateService with WindowListener {
       WindowOptions(
         size: size,
         center: clampedPosition == null,
-        minimumSize: const Size(400, 400),
+        minimumSize: const Size(300, 300),
       ),
     );
 

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:bugaoshan/pages/dev/ui/ui_tile.dart';
 import 'package:flutter/material.dart';
 
 import 'package:bugaoshan/injection/injector.dart';
@@ -92,6 +93,8 @@ class _DevPageState extends State<DevPage> {
           const WizardResetTile(),
           const Divider(),
           const AuthLogTile(),
+          const Divider(),
+          const UiTile(),
           const Divider(),
           if (_supportsUpdate) ...[
             const SizedBox(height: 16),

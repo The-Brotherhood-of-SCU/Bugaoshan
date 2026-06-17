@@ -26,7 +26,7 @@ Future<void> showUpdateDialog({
     builder: (dialogContext) {
       return PopupContext(
         isInPopup: true,
-        child: _UpdateDialogContent(
+        child: UpdateDialogContent(
           version: version,
           releaseNotes: releaseNotes,
           isPreview: isPreview,
@@ -37,13 +37,14 @@ Future<void> showUpdateDialog({
   );
 }
 
-class _UpdateDialogContent extends StatelessWidget {
+class UpdateDialogContent extends StatelessWidget {
   final String version;
   final String? releaseNotes;
   final bool isPreview;
   final VoidCallback onStartUpdate;
 
-  const _UpdateDialogContent({
+  const UpdateDialogContent({
+    super.key,
     required this.version,
     this.releaseNotes,
     this.isPreview = false,

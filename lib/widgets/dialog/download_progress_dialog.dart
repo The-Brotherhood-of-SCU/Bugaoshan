@@ -34,6 +34,136 @@ String _formatBytes(int bytes) {
 
 String proxyDownloadUrl(String url) => 'https://gh-proxy.org/$url';
 
+/// 纯 UI 视图,只渲染下载进度;便于在 widget test 中独立挂载验证。
+///
+/// 业务逻辑(状态更新、下载请求、错误处理)保留在 [showDownloadProgressDialog] 中。
+class DownloadProgressDialogView extends StatelessWidget {
+  const DownloadProgressDialogView({
+    super.key,
+    required this.progressState,
+    required this.onDownloadInBackground,
+    required this.onCancel,
+    required this.l10n,
+  });
+
+  final UpdateProgressState progressState;
+  final VoidCallback onDownloadInBackground;
+  final VoidCallback onCancel;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    return Dialog(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: _maxContentWidth(screenWidth)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 进度相关(status / percent / 进度条 / 文件大小)随 progressState 重建
+              ListenableBuilder(
+                listenable: progressState,
+                builder: _buildProgressSection,
+              ),
+              const SizedBox(height: 12),
+              const Divider(height: 1),
+              const SizedBox(height: 12),
+              _buildActionButtons(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Dialog 内容区的最大宽度:窄屏占 70%,宽屏上限 400。
+  double _maxContentWidth(double screenWidth) =>
+      screenWidth * 0.7 > 400 ? 400 : screenWidth * 0.7;
+
+  /// 状态文字 + 百分比。窄屏英文长 status 时通过 Wrap 自然换行,不被截断。
+  /// alignment: end 让所有子项都靠右(短 status 也靠右),整体视觉一致。
+  Widget _buildHeader(BuildContext context) {
+    return Wrap(
+      alignment: WrapAlignment.end,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 8,
+      runSpacing: 4,
+      children: [
+        Text(
+          progressState.status,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        Text(
+          '${progressState.percent}%',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 进度条:total == 0 时为 indeterminate(由 LinearProgressIndicator 自动动画)。
+  Widget _buildProgressBar() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppShapes.small),
+      child: LinearProgressIndicator(
+        value: progressState.total > 0
+            ? progressState.received / progressState.total
+            : null,
+        minHeight: 8,
+      ),
+    );
+  }
+
+  /// 已接收到 total 时才显示 "已下载 / 总大小"。
+  Widget _buildFileSizeLabel(BuildContext context) {
+    return Text(
+      '${_formatBytes(progressState.received)} / ${progressState.total == 0 ? l10n.loading : _formatBytes(progressState.total)}',
+      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+    );
+  }
+
+  /// 进度区组合:头部 + 进度条 + 文件大小。
+  Widget _buildProgressSection(BuildContext context, Widget? _) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(height: 8),
+        _buildHeader(context),
+        const SizedBox(height: 16),
+        _buildProgressBar(),
+        const SizedBox(height: 8),
+        _buildFileSizeLabel(context),
+      ],
+    );
+  }
+
+  /// 底部按钮区:窄屏下 Wrap 允许换行,保持右对齐。
+  Widget _buildActionButtons() {
+    return Align(
+      alignment: Alignment.bottomRight,
+      child: Wrap(
+        alignment: WrapAlignment.end,
+        spacing: 8,
+        runSpacing: 4,
+        children: [
+          TextButton(
+            onPressed: onDownloadInBackground,
+            child: Text(l10n.downloadInBackground),
+          ),
+          TextButton(onPressed: onCancel, child: Text(l10n.cancel)),
+        ],
+      ),
+    );
+  }
+}
+
 /// 显示下载进度弹窗并执行下载
 ///
 /// 返回 true 表示下载成功，false 表示取消或失败
@@ -53,98 +183,18 @@ Future<bool> showDownloadProgressDialog({
     context: context,
     useRootNavigator: true,
     barrierDismissible: false,
-    builder: (dialogContext) {
-      final screenWidth = MediaQuery.of(dialogContext).size.width;
-      return Dialog(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: screenWidth * 0.7 > 400 ? 400 : screenWidth * 0.7,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListenableBuilder(
-                  listenable: progressState,
-                  builder: (context, _) => Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // 状态文字 + 百分比
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              progressState.status,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                          ),
-                          Text(
-                            '${progressState.percent}%',
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      // 进度条
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(AppShapes.small),
-                        child: LinearProgressIndicator(
-                          value: progressState.total > 0
-                              ? progressState.received / progressState.total
-                              : null,
-                          minHeight: 8,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      // 文件大小
-                      if (progressState.total > 0)
-                        Text(
-                          '${_formatBytes(progressState.received)} / ${_formatBytes(progressState.total)}',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
-                              ),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                const Divider(height: 1),
-                // 操作按钮
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        visible = false;
-                        Navigator.of(dialogContext).pop();
-                      },
-                      child: Text(l10n.downloadInBackground),
-                    ),
-                    const SizedBox(width: 8),
-                    TextButton(
-                      onPressed: () {
-                        cancelToken.cancel();
-                        Navigator.of(dialogContext).pop();
-                      },
-                      child: Text(l10n.cancel),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    },
+    builder: (dialogContext) => DownloadProgressDialogView(
+      progressState: progressState,
+      l10n: l10n,
+      onDownloadInBackground: () {
+        visible = false;
+        Navigator.of(dialogContext).pop();
+      },
+      onCancel: () {
+        cancelToken.cancel();
+        Navigator.of(dialogContext).pop();
+      },
+    ),
   );
 
   try {
