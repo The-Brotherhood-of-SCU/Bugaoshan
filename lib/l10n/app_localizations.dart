@@ -2635,6 +2635,12 @@ abstract class AppLocalizations {
   /// **'No Data'**
   String get noData;
 
+  /// No description provided for @noFreeClassrooms.
+  ///
+  /// In en, this message translates to:
+  /// **'No free classrooms right now'**
+  String get noFreeClassrooms;
+
   /// No description provided for @networkDeviceQuery.
   ///
   /// In en, this message translates to:
