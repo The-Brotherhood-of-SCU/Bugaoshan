@@ -146,60 +146,7 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
                   _morningSections = 4;
                   _afternoonSections = 5;
                   _eveningSections = 3;
-                  // Use the hardcoded default logic for 4-5-3
-                  _timeSlots = [
-                    // Morning
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 8, minute: 15),
-                      endTime: TimeOfDay(hour: 9, minute: 0),
-                    ),
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 9, minute: 10),
-                      endTime: TimeOfDay(hour: 9, minute: 55),
-                    ),
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 10, minute: 15),
-                      endTime: TimeOfDay(hour: 11, minute: 0),
-                    ),
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 11, minute: 10),
-                      endTime: TimeOfDay(hour: 11, minute: 55),
-                    ),
-                    // Afternoon
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 13, minute: 50),
-                      endTime: TimeOfDay(hour: 14, minute: 35),
-                    ),
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 14, minute: 45),
-                      endTime: TimeOfDay(hour: 15, minute: 30),
-                    ),
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 15, minute: 40),
-                      endTime: TimeOfDay(hour: 16, minute: 25),
-                    ),
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 16, minute: 45),
-                      endTime: TimeOfDay(hour: 17, minute: 30),
-                    ),
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 17, minute: 40),
-                      endTime: TimeOfDay(hour: 18, minute: 25),
-                    ),
-                    // Evening
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 19, minute: 20),
-                      endTime: TimeOfDay(hour: 20, minute: 5),
-                    ),
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 20, minute: 15),
-                      endTime: TimeOfDay(hour: 21, minute: 0),
-                    ),
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 21, minute: 10),
-                      endTime: TimeOfDay(hour: 21, minute: 55),
-                    ),
-                  ];
+                  _timeSlots = List.of(ScheduleConfig.jiangAnTimeSlots);
                 });
                 _autoSave();
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -217,56 +164,7 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
                   _morningSections = 4;
                   _afternoonSections = 5;
                   _eveningSections = 3;
-                  _timeSlots = [
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 8, minute: 0),
-                      endTime: TimeOfDay(hour: 8, minute: 45),
-                    ),
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 8, minute: 55),
-                      endTime: TimeOfDay(hour: 9, minute: 40),
-                    ),
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 10, minute: 0),
-                      endTime: TimeOfDay(hour: 10, minute: 45),
-                    ),
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 10, minute: 55),
-                      endTime: TimeOfDay(hour: 11, minute: 40),
-                    ),
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 14, minute: 0),
-                      endTime: TimeOfDay(hour: 14, minute: 45),
-                    ),
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 14, minute: 55),
-                      endTime: TimeOfDay(hour: 15, minute: 40),
-                    ),
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 15, minute: 50),
-                      endTime: TimeOfDay(hour: 16, minute: 35),
-                    ),
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 16, minute: 55),
-                      endTime: TimeOfDay(hour: 17, minute: 40),
-                    ),
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 17, minute: 50),
-                      endTime: TimeOfDay(hour: 18, minute: 35),
-                    ),
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 19, minute: 30),
-                      endTime: TimeOfDay(hour: 20, minute: 15),
-                    ),
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 20, minute: 25),
-                      endTime: TimeOfDay(hour: 21, minute: 10),
-                    ),
-                    const TimeSlot(
-                      startTime: TimeOfDay(hour: 21, minute: 20),
-                      endTime: TimeOfDay(hour: 22, minute: 5),
-                    ),
-                  ];
+                  _timeSlots = List.of(ScheduleConfig.wangJiangHuaXiTimeSlots);
                 });
                 _autoSave();
                 ScaffoldMessenger.of(context).showSnackBar(

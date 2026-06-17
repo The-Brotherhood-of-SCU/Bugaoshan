@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/campus/classroom/classroom_detail_page.dart';
 import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
@@ -208,7 +209,13 @@ class _ClassroomPageState extends State<ClassroomPage> {
   }
 
   int? _currentPeriod() {
-    final timeSlots = getIt<CourseProvider>().scheduleConfig.value.timeSlots;
+    // 优先使用当前查询校区的时间表，各校区上课时间不同
+    final campusName = _selectedCampus?.campusName;
+    final campusSlots = campusName != null
+        ? ScheduleConfig.timeSlotsForCampusName(campusName)
+        : null;
+    final timeSlots =
+        campusSlots ?? getIt<CourseProvider>().scheduleConfig.value.timeSlots;
     if (timeSlots.isEmpty) return null;
 
     final now = DateTime.now();

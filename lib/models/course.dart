@@ -155,6 +155,126 @@ class ScheduleConfig {
     'showNonCurrentWeekCourses': showNonCurrentWeekCourses,
   };
 
+  /// 四川大学江安校区时间表预设（4-5-3）
+  static List<TimeSlot> get jiangAnTimeSlots => const [
+    // Morning
+    TimeSlot(
+      startTime: TimeOfDay(hour: 8, minute: 15),
+      endTime: TimeOfDay(hour: 9, minute: 0),
+    ),
+    TimeSlot(
+      startTime: TimeOfDay(hour: 9, minute: 10),
+      endTime: TimeOfDay(hour: 9, minute: 55),
+    ),
+    TimeSlot(
+      startTime: TimeOfDay(hour: 10, minute: 15),
+      endTime: TimeOfDay(hour: 11, minute: 0),
+    ),
+    TimeSlot(
+      startTime: TimeOfDay(hour: 11, minute: 10),
+      endTime: TimeOfDay(hour: 11, minute: 55),
+    ),
+    // Afternoon
+    TimeSlot(
+      startTime: TimeOfDay(hour: 13, minute: 50),
+      endTime: TimeOfDay(hour: 14, minute: 35),
+    ),
+    TimeSlot(
+      startTime: TimeOfDay(hour: 14, minute: 45),
+      endTime: TimeOfDay(hour: 15, minute: 30),
+    ),
+    TimeSlot(
+      startTime: TimeOfDay(hour: 15, minute: 40),
+      endTime: TimeOfDay(hour: 16, minute: 25),
+    ),
+    TimeSlot(
+      startTime: TimeOfDay(hour: 16, minute: 45),
+      endTime: TimeOfDay(hour: 17, minute: 30),
+    ),
+    TimeSlot(
+      startTime: TimeOfDay(hour: 17, minute: 40),
+      endTime: TimeOfDay(hour: 18, minute: 25),
+    ),
+    // Evening
+    TimeSlot(
+      startTime: TimeOfDay(hour: 19, minute: 20),
+      endTime: TimeOfDay(hour: 20, minute: 5),
+    ),
+    TimeSlot(
+      startTime: TimeOfDay(hour: 20, minute: 15),
+      endTime: TimeOfDay(hour: 21, minute: 0),
+    ),
+    TimeSlot(
+      startTime: TimeOfDay(hour: 21, minute: 10),
+      endTime: TimeOfDay(hour: 21, minute: 55),
+    ),
+  ];
+
+  /// 四川大学望江/华西校区时间表预设（4-5-3）
+  static List<TimeSlot> get wangJiangHuaXiTimeSlots => const [
+    TimeSlot(
+      startTime: TimeOfDay(hour: 8, minute: 0),
+      endTime: TimeOfDay(hour: 8, minute: 45),
+    ),
+    TimeSlot(
+      startTime: TimeOfDay(hour: 8, minute: 55),
+      endTime: TimeOfDay(hour: 9, minute: 40),
+    ),
+    TimeSlot(
+      startTime: TimeOfDay(hour: 10, minute: 0),
+      endTime: TimeOfDay(hour: 10, minute: 45),
+    ),
+    TimeSlot(
+      startTime: TimeOfDay(hour: 10, minute: 55),
+      endTime: TimeOfDay(hour: 11, minute: 40),
+    ),
+    TimeSlot(
+      startTime: TimeOfDay(hour: 14, minute: 0),
+      endTime: TimeOfDay(hour: 14, minute: 45),
+    ),
+    TimeSlot(
+      startTime: TimeOfDay(hour: 14, minute: 55),
+      endTime: TimeOfDay(hour: 15, minute: 40),
+    ),
+    TimeSlot(
+      startTime: TimeOfDay(hour: 15, minute: 50),
+      endTime: TimeOfDay(hour: 16, minute: 35),
+    ),
+    TimeSlot(
+      startTime: TimeOfDay(hour: 16, minute: 55),
+      endTime: TimeOfDay(hour: 17, minute: 40),
+    ),
+    TimeSlot(
+      startTime: TimeOfDay(hour: 17, minute: 50),
+      endTime: TimeOfDay(hour: 18, minute: 35),
+    ),
+    TimeSlot(
+      startTime: TimeOfDay(hour: 19, minute: 30),
+      endTime: TimeOfDay(hour: 20, minute: 15),
+    ),
+    TimeSlot(
+      startTime: TimeOfDay(hour: 20, minute: 25),
+      endTime: TimeOfDay(hour: 21, minute: 10),
+    ),
+    TimeSlot(
+      startTime: TimeOfDay(hour: 21, minute: 20),
+      endTime: TimeOfDay(hour: 22, minute: 5),
+    ),
+  ];
+
+  /// 根据校区名称返回对应的时间表预设。
+  ///
+  /// 匹配逻辑：校区名包含"江安" → 江安时间表；
+  /// 包含"望江"或"华西" → 望江/华西时间表；
+  /// 否则返回 null，调用方应使用全局配置作为兜底。
+  static List<TimeSlot>? timeSlotsForCampusName(String campusName) {
+    if (campusName.contains('江安')) return jiangAnTimeSlots;
+    if (campusName.contains('望江') || campusName.contains('华西')) {
+      return wangJiangHuaXiTimeSlots;
+    }
+    return null;
+  }
+
   static List<TimeSlot> _defaultTimeSlots(
     int morning,
     int afternoon,
@@ -164,61 +284,9 @@ class ScheduleConfig {
   ) {
     final slots = <TimeSlot>[];
 
-    // Check if it matches the standard 4-5-3 config to provide specific times
+    // Standard 4-5-3 → use the 江安 preset (most common SCU schedule)
     if (morning == 4 && afternoon == 5 && evening == 3) {
-      return [
-        // Morning
-        TimeSlot(
-          startTime: const TimeOfDay(hour: 8, minute: 15),
-          endTime: const TimeOfDay(hour: 9, minute: 0),
-        ),
-        TimeSlot(
-          startTime: const TimeOfDay(hour: 9, minute: 10),
-          endTime: const TimeOfDay(hour: 9, minute: 55),
-        ),
-        TimeSlot(
-          startTime: const TimeOfDay(hour: 10, minute: 15),
-          endTime: const TimeOfDay(hour: 11, minute: 0),
-        ),
-        TimeSlot(
-          startTime: const TimeOfDay(hour: 11, minute: 10),
-          endTime: const TimeOfDay(hour: 11, minute: 55),
-        ),
-        // Afternoon
-        TimeSlot(
-          startTime: const TimeOfDay(hour: 13, minute: 50),
-          endTime: const TimeOfDay(hour: 14, minute: 35),
-        ),
-        TimeSlot(
-          startTime: const TimeOfDay(hour: 14, minute: 45),
-          endTime: const TimeOfDay(hour: 15, minute: 30),
-        ),
-        TimeSlot(
-          startTime: const TimeOfDay(hour: 15, minute: 40),
-          endTime: const TimeOfDay(hour: 16, minute: 25),
-        ),
-        TimeSlot(
-          startTime: const TimeOfDay(hour: 16, minute: 45),
-          endTime: const TimeOfDay(hour: 17, minute: 30),
-        ),
-        TimeSlot(
-          startTime: const TimeOfDay(hour: 17, minute: 40),
-          endTime: const TimeOfDay(hour: 18, minute: 25),
-        ),
-        // Evening
-        TimeSlot(
-          startTime: const TimeOfDay(hour: 19, minute: 20),
-          endTime: const TimeOfDay(hour: 20, minute: 5),
-        ),
-        TimeSlot(
-          startTime: const TimeOfDay(hour: 20, minute: 15),
-          endTime: const TimeOfDay(hour: 21, minute: 0),
-        ),
-        TimeSlot(
-          startTime: const TimeOfDay(hour: 21, minute: 10),
-          endTime: const TimeOfDay(hour: 21, minute: 55),
-        ),
-      ];
+      return List.of(jiangAnTimeSlots);
     }
 
     // Default generic logic if config is different
