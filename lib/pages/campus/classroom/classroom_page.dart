@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/classroom/classroom_detail_page.dart';
 import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
+import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
@@ -23,6 +26,7 @@ class ClassroomPage extends StatefulWidget {
 
 class _ClassroomPageState extends State<ClassroomPage> {
   late final ZhjwApiService _zhjwApi;
+  Timer? _clockTimer;
 
   List<ClassroomCampus> _campuses = [];
   List<ClassroomBuilding> _allBuildings = [];
@@ -35,18 +39,23 @@ class _ClassroomPageState extends State<ClassroomPage> {
   bool _isInitialLoad = true;
   String? _error;
   DateTime _selectedDate = DateTime.now();
+  bool _showCurrentFreeOnly = false;
 
   @override
   void initState() {
     super.initState();
     _zhjwApi = getIt<ZhjwApiService>();
     getIt<ScuAuthProvider>().addListener(_onAuthChanged);
+    _clockTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) setState(() {});
+    });
     _loadIndex();
   }
 
   @override
   void dispose() {
     getIt<ScuAuthProvider>().removeListener(_onAuthChanged);
+    _clockTimer?.cancel();
     super.dispose();
   }
 
@@ -191,6 +200,58 @@ class _ClassroomPageState extends State<ClassroomPage> {
     if (_selectedBuilding != null) {
       _queryBuilding(_selectedBuilding!);
     }
+  }
+
+  int? _currentPeriod() {
+    final timeSlots = getIt<CourseProvider>().scheduleConfig.value.timeSlots;
+    if (timeSlots.isEmpty) return null;
+
+    final now = DateTime.now();
+    final currentMinutes = now.hour * 60 + now.minute;
+
+    const preClassLeadMinutes = 15;
+
+    for (var index = 0; index < timeSlots.length; index++) {
+      final slot = timeSlots[index];
+      final startMinutes = slot.startTime.hour * 60 + slot.startTime.minute;
+      final endMinutes = slot.endTime.hour * 60 + slot.endTime.minute;
+      if (currentMinutes >= startMinutes && currentMinutes < endMinutes) {
+        return index + 1;
+      }
+
+      if (index == 0 &&
+          currentMinutes >= startMinutes - preClassLeadMinutes &&
+          currentMinutes < startMinutes) {
+        return 1;
+      }
+
+      if (index + 1 < timeSlots.length) {
+        final nextSlot = timeSlots[index + 1];
+        final nextStartMinutes =
+            nextSlot.startTime.hour * 60 + nextSlot.startTime.minute;
+        if (currentMinutes >= endMinutes && currentMinutes < nextStartMinutes) {
+          return index + 2;
+        }
+      }
+    }
+    return null;
+  }
+
+  List<ClassroomInfo> _visibleRooms() {
+    final result = _queryResult;
+    if (result == null) return [];
+
+    final currentPeriod = _currentPeriod();
+    if (!_showCurrentFreeOnly || !_isToday || currentPeriod == null) {
+      return result.classrooms;
+    }
+
+    return result.classrooms.where((room) {
+      final status = result.periodStatusMap(
+        room.classroomNumber,
+      )[currentPeriod];
+      return status == null || status == ClassroomPeriodStatus.free;
+    }).toList();
   }
 
   void _goBack() {
@@ -357,7 +418,9 @@ class _ClassroomPageState extends State<ClassroomPage> {
 
     if (_queryResult == null) return const SizedBox.shrink();
 
-    final rooms = _queryResult!.classrooms;
+    final currentPeriod = _currentPeriod();
+    final canFilterCurrentFree = _isToday && currentPeriod != null;
+    final rooms = _visibleRooms();
 
     return Column(
       children: [
@@ -394,7 +457,9 @@ class _ClassroomPageState extends State<ClassroomPage> {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
               ActionChip(
                 avatar: const Icon(Icons.calendar_today, size: 18),
@@ -402,9 +467,21 @@ class _ClassroomPageState extends State<ClassroomPage> {
                 onPressed: _pickDate,
               ),
               if (!_isToday) ...[
-                const SizedBox(width: 8),
                 ActionChip(label: Text(l10n.today), onPressed: _goToToday),
               ],
+              FilterChip(
+                avatar: const Icon(Icons.filter_alt_outlined, size: 18),
+                label: Text('${l10n.current}${l10n.free}'),
+                selected: _showCurrentFreeOnly && canFilterCurrentFree,
+                onSelected: canFilterCurrentFree
+                    ? (selected) {
+                        setState(() {
+                          _showCurrentFreeOnly = selected;
+                        });
+                      }
+                    : null,
+                showCheckmark: false,
+              ),
             ],
           ),
         ),
@@ -412,7 +489,9 @@ class _ClassroomPageState extends State<ClassroomPage> {
           child: rooms.isEmpty
               ? Center(
                   child: Text(
-                    l10n.noData,
+                    _showCurrentFreeOnly && canFilterCurrentFree
+                        ? '当前没有空闲教室'
+                        : l10n.noData,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
