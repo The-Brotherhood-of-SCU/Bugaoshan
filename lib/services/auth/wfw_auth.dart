@@ -53,19 +53,20 @@ class WfwAuth extends ChangeNotifier implements SubsystemAuth {
     // 不这么做的话，冷启动时页面带 X-Requested-With 的 API 请求会被
     // wfw 服务端直接返回 "用户信息已失效" 而不走 SSO 重定向。
     try {
-      await client.get(
+      await client.followRedirects(
         Uri.parse('https://wfw.scu.edu.cn/'),
         headers: {'User-Agent': kDefaultUserAgent},
       );
       _log.d(_tag, 'warm-up request ok');
+      if (!_ready) {
+        _ready = true;
+        _log.i(_tag, 'ready');
+        notifyListeners();
+      }
     } catch (e) {
       _log.w(_tag, 'warm-up request failed (non-fatal): $e');
-      // 预热失败不阻塞，实际 API 调用可能仍能触发重定向
-    }
-    if (!_ready) {
-      _ready = true;
-      _log.i(_tag, 'ready');
-      notifyListeners();
+      // 预热失败不标记 ready，页面保持 spinner 等待重试。
+      // getClient() 的 lazy-ready 会在实际 API 调用时兜底。
     }
   }
 

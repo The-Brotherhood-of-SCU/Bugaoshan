@@ -87,6 +87,9 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
           headers: _headers,
         );
         final userJson = _parseJson(userResp.body, 'get-info');
+        if (userJson['e'] == 10013) {
+          return;
+        }
         if (userJson['e'] != 0) {
           throw Exception(userJson['m'] ?? '获取用户信息失败');
         }
