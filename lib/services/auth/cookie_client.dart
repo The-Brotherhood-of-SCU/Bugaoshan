@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/utils/auth_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
@@ -119,8 +120,14 @@ class CookieClient extends http.BaseClient {
         return response;
       }
     }
-    _log.w(_tag, 'followRedirects: max redirects exceeded');
-    return lastResponse!;
+    _log.e(
+      _tag,
+      'followRedirects: max redirects exceeded, last url=$current status=${lastResponse?.statusCode}',
+    );
+    throw ServiceException(
+      'SSO 重定向链超过上限',
+      statusCode: lastResponse?.statusCode,
+    );
   }
 
   @override

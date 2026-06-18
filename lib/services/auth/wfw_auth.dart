@@ -45,6 +45,7 @@ class WfwAuth extends ChangeNotifier implements SubsystemAuth {
 
   @override
   Future<void> ensureAuthenticated() async {
+    if (_ready) return;
     _log.d(_tag, 'ensureAuthenticated: warming wfw session');
     final client = await _scuAuth.getClient();
     // 预热 wfw session：不带 AJAX header 访问 wfw 首页，触发 SSO
