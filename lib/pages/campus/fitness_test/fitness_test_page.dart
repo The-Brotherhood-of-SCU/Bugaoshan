@@ -22,6 +22,10 @@ class FitnessTestPage extends StatefulWidget {
   State<FitnessTestPage> createState() => _FitnessTestPageState();
 }
 
+class _FitnessSessionExpiredException implements Exception {
+  const _FitnessSessionExpiredException();
+}
+
 class _FitnessTestPageState extends State<FitnessTestPage>
     with SingleTickerProviderStateMixin {
   static const _baseUrl =
@@ -80,17 +84,36 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     }
   }
 
+  /// 检查健身 API 响应是否表示 session 过期。
+  bool _isSessionExpired(Map<String, dynamic> json) {
+    if (json['status'] != 1) {
+      final info = json['info']?.toString() ?? '';
+      return info.contains('登录信息失效') || info.contains('请重新登录');
+    }
+    return false;
+  }
+
   /// 通过 FitnessAuth 发送带自动重试的请求。
   /// [fn] 接收已认证的 CookieClient 并返回响应数据。
+  ///
+  /// 自动处理两种认证失败：
+  /// - [UnauthenticatedException]：SCU token 过期（由 auth 层抛出）
+  /// - [_FitnessSessionExpiredException]：体测服务端 session 过期（业务响应）
   Future<T> _fitnessRequest<T>(
     Future<T> Function(CookieClient client) fn,
   ) async {
+    Future<T> execute() async {
+      final client = await getIt<FitnessAuth>().getClient();
+      return await fn(client);
+    }
+
     try {
-      final client = await getIt<FitnessAuth>().getClient();
-      return await fn(client);
+      return await execute();
     } on UnauthenticatedException {
-      final client = await getIt<FitnessAuth>().getClient();
-      return await fn(client);
+      return await execute();
+    } on _FitnessSessionExpiredException {
+      getIt<FitnessAuth>().invalidate();
+      return await execute();
     }
   }
 
@@ -120,6 +143,9 @@ class _FitnessTestPageState extends State<FitnessTestPage>
         );
         final noticeJson = _parseJson(noticeResp.body, 'getSchoolNoticeList');
         if (noticeJson['status'] != 1) {
+          if (_isSessionExpired(noticeJson)) {
+            throw const _FitnessSessionExpiredException();
+          }
           throw Exception(noticeJson['info'] ?? '获取通知失败');
         }
         _notices = (noticeJson['data'] as List)
@@ -134,6 +160,13 @@ class _FitnessTestPageState extends State<FitnessTestPage>
         return true;
       });
     } on UnauthenticatedException catch (_) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = LoadErrorType.notLoggedIn;
+        });
+      }
+    } on _FitnessSessionExpiredException catch (_) {
       if (mounted) {
         setState(() {
           _loading = false;
@@ -165,6 +198,13 @@ class _FitnessTestPageState extends State<FitnessTestPage>
       );
       final json = _parseJson(resp.body, 'getStudentScore');
       if (json['status'] != 1) {
+        if (_isSessionExpired(json)) {
+          setState(() {
+            _scoreLoading = false;
+            _scoreError = json['info'] ?? '查询失败';
+          });
+          throw const _FitnessSessionExpiredException();
+        }
         setState(() {
           _scoreLoading = false;
           _scoreError = json['info'] ?? '查询失败';
@@ -176,6 +216,8 @@ class _FitnessTestPageState extends State<FitnessTestPage>
         _scoreData = data is Map<String, dynamic> ? data : null;
         _scoreLoading = false;
       });
+    } on _FitnessSessionExpiredException {
+      rethrow;
     } catch (e) {
       debugPrint('Fitness test score error: $e');
       setState(() {
