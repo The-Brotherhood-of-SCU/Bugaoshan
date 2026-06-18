@@ -156,17 +156,14 @@ class UpdateDialogContent extends StatelessWidget {
     if (index != -1) {
       trimmedNotes = releaseNotes!.substring(index);
     }
-    return SingleChildScrollView(
-      child: Markdown(
-        data: trimmedNotes,
-        selectable: true,
-        padding: const EdgeInsets.all(0),
-        shrinkWrap: true,
-        styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-          blockquoteDecoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(AppShapes.small),
-          ),
+    return Markdown(
+      data: trimmedNotes,
+      selectable: false,
+      padding: const EdgeInsets.all(0),
+      styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+        blockquoteDecoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(AppShapes.small),
         ),
       ),
     );
