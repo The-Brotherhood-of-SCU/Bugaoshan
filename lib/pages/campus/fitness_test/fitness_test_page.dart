@@ -84,7 +84,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     }
   }
 
-  /// 检查健身 API 响应是否表示 session 过期。
+  /// 检查体测 API 响应是否表示 session 过期。
   bool _isSessionExpired(Map<String, dynamic> json) {
     if (json['status'] != 1) {
       final info = json['info']?.toString() ?? '';
