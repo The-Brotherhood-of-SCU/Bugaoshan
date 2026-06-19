@@ -85,11 +85,9 @@ class DownloadProgressDialogView extends StatelessWidget {
   /// 状态文字 + 百分比。窄屏英文长 status 时通过 Wrap 自然换行,不被截断。
   /// alignment: end 让所有子项都靠右(短 status 也靠右),整体视觉一致。
   Widget _buildHeader(BuildContext context) {
-    return Wrap(
-      alignment: WrapAlignment.end,
-      crossAxisAlignment: WrapCrossAlignment.center,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       spacing: 8,
-      runSpacing: 4,
       children: [
         Text(
           progressState.status,
