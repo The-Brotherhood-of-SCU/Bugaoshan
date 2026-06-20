@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - 底层统一加载错误组件，提供更一致的效果
 - 优化窄屏课表地点显示
+- 更新添加哈希校验，增强安全性
 
 ## [2.0.1] - 2026-06-15
 
