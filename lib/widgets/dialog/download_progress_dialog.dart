@@ -169,6 +169,7 @@ Future<bool> showDownloadProgressDialog({
   required BuildContext context,
   required String version,
   required String downloadUrl,
+  String? checksumSha256,
   required UpdateService updateService,
 }) async {
   final l10n = AppLocalizations.of(context)!;
@@ -199,6 +200,7 @@ Future<bool> showDownloadProgressDialog({
     await updateService.downloadAndInstall(
       version,
       downloadUrl,
+      checksumSha256: checksumSha256,
       cancelToken: cancelToken,
       onStatus: (status) => progressState.setStatus(status),
       onProgress: (received, total) =>

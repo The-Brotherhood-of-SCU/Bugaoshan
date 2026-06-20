@@ -18,6 +18,16 @@ class CancelToken {
 
 class UpdateCancelledException implements Exception {}
 
+class HashMismatchException implements Exception {
+  final String actual;
+  final String expected;
+  HashMismatchException(this.actual, this.expected);
+
+  @override
+  String toString() =>
+      'Checksum verification failed (expected $expected, got $actual)';
+}
+
 enum UpdateCheckStatus { initial, checking, noUpdate, hasUpdate, error }
 
 class UpdateCheckResult {
@@ -66,6 +76,17 @@ class UpdateService {
     return false;
   }
 
+  /// Parse the `digest` field from a GitHub release asset.
+  /// GitHub returns `"sha256:<hex>"` — extract the hex part.
+  /// Returns `null` if the field is missing or unexpected format.
+  String? _parseDigest(Map<String, dynamic> asset) {
+    final digest = asset['digest'] as String?;
+    if (digest == null) return null;
+    const prefix = 'sha256:';
+    if (digest.startsWith(prefix)) return digest.substring(prefix.length);
+    return null;
+  }
+
   Future<String?> getLatestVersion() async {
     try {
       final response = await http.get(Uri.parse(_pubspecUrl));
@@ -102,6 +123,7 @@ class UpdateService {
           return ReleaseInfo(
             tagName: tagName,
             downloadUrl: asset['browser_download_url'] as String,
+            checksumSha256: _parseDigest(asset as Map<String, dynamic>),
             isPrerelease: isPrerelease,
             body: data['body'] as String?,
           );
@@ -124,16 +146,19 @@ class UpdateService {
         final isPrerelease = releases[0]['prerelease'] == true;
         final assets = releases[0]['assets'] as List<dynamic>;
         String? downloadUrl;
+        String? checksumSha256;
         for (final asset in assets) {
           final name = asset['name'] as String;
           if (_assetMatchesPlatform(name)) {
             downloadUrl = asset['browser_download_url'] as String;
+            checksumSha256 = _parseDigest(asset as Map<String, dynamic>);
             break;
           }
         }
         return ReleaseInfo(
           tagName: tagName,
           downloadUrl: downloadUrl,
+          checksumSha256: checksumSha256,
           isPrerelease: isPrerelease,
           body: releases[0]['body'] as String?,
         );
@@ -163,16 +188,19 @@ class UpdateService {
       final isPrerelease = release['prerelease'] == true;
       final assets = release['assets'] as List<dynamic>;
       String? downloadUrl;
+      String? checksumSha256;
       for (final asset in assets) {
         final name = asset['name'] as String;
         if (_assetMatchesPlatform(name)) {
           downloadUrl = asset['browser_download_url'] as String;
+          checksumSha256 = _parseDigest(asset as Map<String, dynamic>);
           break;
         }
       }
       final info = ReleaseInfo(
         tagName: release['tag_name'] as String,
         downloadUrl: downloadUrl,
+        checksumSha256: checksumSha256,
         isPrerelease: isPrerelease,
         body: release['body'] as String?,
       );
@@ -294,6 +322,7 @@ class UpdateService {
   Future<void> downloadAndInstall(
     String version,
     String downloadUrl, {
+    String? checksumSha256,
     CancelToken? cancelToken,
     void Function(String status)? onStatus,
     void Function(int received, int total)? onProgress,
@@ -329,6 +358,15 @@ class UpdateService {
 
     if (cancelToken?.isCancelled ?? false) {
       throw UpdateCancelledException();
+    }
+
+    if (checksumSha256 != null) {
+      onStatus?.call('Verifying checksum...');
+      final digest = crypto.sha256.convert(chunks);
+      final actualHash = digest.toString();
+      if (actualHash != checksumSha256) {
+        throw HashMismatchException(actualHash, checksumSha256);
+      }
     }
 
     if (Platform.isAndroid) {

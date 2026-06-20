@@ -50,8 +50,11 @@ class _AboutPageState extends State<AboutPage> {
             context: context,
             version: result.version!,
             releaseNotes: result.releaseNotes,
-            onStartUpdate: () =>
-                _startUpdate(result.version!, result.downloadUrl!),
+            onStartUpdate: () => _startUpdate(
+              result.version!,
+              result.downloadUrl!,
+              checksumSha256: result.release?.checksumSha256,
+            ),
           );
         }
 
@@ -79,11 +82,16 @@ class _AboutPageState extends State<AboutPage> {
     }
   }
 
-  void _startUpdate(String latestVersion, String downloadUrl) async {
+  void _startUpdate(
+    String latestVersion,
+    String downloadUrl, {
+    String? checksumSha256,
+  }) async {
     await showDownloadProgressDialog(
       context: context,
       version: latestVersion,
       downloadUrl: downloadUrl,
+      checksumSha256: checksumSha256,
       updateService: updateService,
     );
   }
