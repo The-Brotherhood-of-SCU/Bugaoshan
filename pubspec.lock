@@ -399,10 +399,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_litert
-      sha256: aebe7ae6dd40c5158bf9594b93a711df97dfd39085c45d4b7b4455055255a607
+      sha256: e114b391ee8c600fe6d7489d0a0d6610166ec7982e5bf5eae6b968c0c1c18462
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "3.1.4"
+    version: "2.8.3"
   flutter_localizations:
     dependency: "direct main"
     description: flutter

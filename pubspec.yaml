@@ -25,7 +25,7 @@ dependencies:
   path: ^1.9.0
   dart_sm: ^0.1.4
   flutter_secure_storage: ^10.0.0
-  flutter_litert: ^3.1.0 #note: GPU backend is manually removed in android\app\build.gradle.kts
+  flutter_litert: ^2.8.3 #note: GPU backend is manually removed in android\app\build.gradle.kts
   image: ^4.8.0
   archive: ^4.0.9
   os_type: ^0.2.2
