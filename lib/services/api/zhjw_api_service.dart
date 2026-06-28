@@ -516,7 +516,7 @@ class ZhjwApiService {
   List<ExamInfo> _parseExamCards(String html) {
     final cards = <ExamInfo>[];
     final blocks = RegExp(
-      r'<div class="widget-box widget-color-blue">(.*?)'
+      r'<div class="widget-box widget-color-\w+">(.*?)'
       r'</div>\s*</div>\s*</div>\s*</div>',
       dotAll: true,
     ).allMatches(html);
