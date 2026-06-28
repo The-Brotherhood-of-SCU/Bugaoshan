@@ -40,7 +40,10 @@ dependencies:
   share_plus: ^13.1.0
   gal: ^2.3.0
   open_filex: ^4.7.0
-  flutter_inappwebview: ^6.2.0-beta.3
+  flutter_inappwebview:
+    git:
+      url: https://github.com/The-Brotherhood-of-SCU/flutter_inappwebview.git
+      path: flutter_inappwebview
   tyme: ^1.4.4
 
 dev_dependencies:
