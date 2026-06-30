@@ -1,5 +1,7 @@
 <div align="center">
 
+![Bugaoshan](https://socialify.git.ci/The-Brotherhood-of-SCU/Bugaoshan/image?custom_description=%E4%B8%8D%E9%AB%98%E5%B1%B1%E4%B8%8AAPP%EF%BC%9A%E5%9B%9B%E5%B7%9D%E5%A4%A7%E5%AD%A6%E8%AF%BE%E8%A1%A8%E3%80%81%E6%88%90%E7%BB%A9%E3%80%81%E7%AC%AC%E4%BA%8C%E8%AF%BE%E5%A0%82%E3%80%81%E5%BE%AE%E6%9C%8D%E5%8A%A1%E4%B8%80%E7%AB%99%E5%BC%8F%E8%81%9A%E5%90%88%E5%B7%A5%E5%85%B7%E9%9B%86&custom_language=Flutter&description=1&font=Bitter&forks=1&issues=1&language=1&logo=https%3A%2F%2Fraw.githubusercontent.com%2FThe-Brotherhood-of-SCU%2FBugaoshan%2Frefs%2Fheads%2Fmain%2Fassets%2Ficon.png&name=1&owner=1&pattern=Signal&pulls=1&stargazers=1&theme=Auto)
+
 # 🏔️ 不高山上 · Bugaoshan
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.44-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
