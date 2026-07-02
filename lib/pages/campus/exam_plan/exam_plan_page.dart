@@ -6,6 +6,8 @@ import 'package:bugaoshan/pages/campus/exam_plan/models/exam_info.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/services/ics_service.dart';
+import 'package:bugaoshan/utils/calendar_export_utils.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
@@ -93,6 +95,14 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
       appBar: AppBar(
         title: Text(l10n.examPlan),
         actions: [
+          if (getIt<ScuAuthProvider>().isLoggedIn &&
+              !_loading &&
+              _exams.isNotEmpty)
+            IconButton(
+              tooltip: l10n.exportExamPlan,
+              onPressed: () => _showCalendarActions(l10n),
+              icon: const Icon(Icons.calendar_month_outlined),
+            ),
           if (getIt<ScuAuthProvider>().isLoggedIn && !_loading)
             IconButton(onPressed: _loadData, icon: const Icon(Icons.refresh)),
         ],
@@ -342,6 +352,43 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _showCalendarActions(AppLocalizations l10n) async {
+    final action = await CalendarExportUtils.showActionSheet(
+      context,
+      l10n,
+      title: l10n.exportExamPlan,
+      includeCopy: true,
+    );
+    if (!mounted || action == null) return;
+
+    await CalendarExportUtils.handleExportAction(
+      context: context,
+      l10n: l10n,
+      action: action,
+      copyToClipboard: () => CalendarExportUtils.copyJsonToClipboard({
+        'exams': _exams.map((exam) => exam.toJson()).toList(),
+      }, logTag: 'ExamPlanPage'),
+      copySuccessMessage: l10n.exportExamPlanAsCopySuccess,
+      copyFailedMessage: l10n.exportScheduleAsCopyFailed,
+      buildCalendarPayload: () => IcsService.genExamExportPayload(
+        exams: _exams,
+        fileName: '${_examPlanFileName()}.ics',
+      ),
+      logTag: 'ExamPlanPage',
+    );
+  }
+
+  String _examPlanFileName() {
+    final dates =
+        _exams
+            .map((exam) => exam.date)
+            .where((date) => RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(date))
+            .toList()
+          ..sort();
+    final suffix = dates.isEmpty ? 'unknown' : '${dates.first}_${dates.last}';
+    return 'exam_plan_$suffix'.replaceAll(RegExp(r'[^\w\u4e00-\u9fff-]'), '_');
   }
 
   Widget _infoChip(

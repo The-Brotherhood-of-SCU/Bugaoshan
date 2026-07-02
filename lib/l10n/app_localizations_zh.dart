@@ -710,6 +710,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportSchedule => '导出课表';
 
   @override
+  String get exportExamPlan => '导出考表';
+
+  @override
   String get exportScheduleAsCopy => '复制到剪切板';
 
   @override
@@ -717,6 +720,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get exportScheduleAsCopySuccess => '课表已复制到剪切板';
+
+  @override
+  String get exportExamPlanAsCopySuccess => '考表已复制到剪切板';
 
   @override
   String get exportScheduleAsCopyFailed => '复制失败，您可以稍后再试';
@@ -744,6 +750,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get exportScheduleAddToCalendarFailed => '导入失败';
+
+  @override
+  String get exportScheduleSelectCalendar => '选择目标日历';
+
+  @override
+  String get exportScheduleCalendarDefault => '默认日历';
 
   @override
   String get copySuffix => ' (副本)';
