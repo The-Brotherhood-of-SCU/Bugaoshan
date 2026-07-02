@@ -14,6 +14,12 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>不高山上</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>用于将导出的课表和考表写入系统日历。</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>用于读取可写日历列表并将导出的课表和考表写入您选择的系统日历。</string>
+	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+	<string>用于将导出的课表和考表写入系统日历。</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

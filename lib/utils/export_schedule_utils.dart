@@ -1,13 +1,10 @@
-import 'dart:io';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/export_schedule_provider.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
-import 'package:flutter/services.dart';
+import 'package:bugaoshan/utils/calendar_export_utils.dart';
 
 Future<void> showExportScheduleSheet(
   BuildContext context, {
@@ -27,141 +24,30 @@ Future<void> showExportScheduleSheet(
       ? ExportScheduleProvider.forSchedule(schedule, courses)
       : ExportScheduleProvider.create();
 
-  final ExportAction? action = await showModalBottomSheet(
-    context: context,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(
-        top: Radius.circular(AppShapes.extraLarge),
-      ),
-    ),
-    builder: (sheetContext) => SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: Text(
-                l10n.exportSchedule,
-                style: Theme.of(
-                  sheetContext,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ),
-            const Divider(),
-            ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-              leading: const Icon(Icons.copy),
-              title: Text(l10n.exportScheduleAsCopy),
-              onTap: () => Navigator.of(sheetContext).pop(ExportAction.copy),
-            ),
-            ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-              leading: const Icon(Icons.calendar_month),
-              title: Text(l10n.exportScheduleAsIcs),
-              onTap: () => Navigator.of(sheetContext).pop(ExportAction.ics),
-            ),
-            if (Platform.isAndroid)
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-                leading: const Icon(Icons.event_available),
-                title: Text(l10n.exportScheduleAddToCalendar),
-                onTap: () =>
-                    Navigator.of(sheetContext).pop(ExportAction.addToCalendar),
-              ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    ),
+  final action = await CalendarExportUtils.showActionSheet(
+    context,
+    l10n,
+    title: l10n.exportSchedule,
+    includeCopy: true,
   );
 
   if (!context.mounted) return;
 
-  final scaffoldMessenger = ScaffoldMessenger.of(context);
-  switch (action) {
-    case null:
-      debugPrint("[showExportScheduleSheet] canceled");
-      break;
-    case ExportAction.copy:
-      debugPrint("[showExportScheduleSheet] copy");
-      final result = await exportProvider.copyToClipBoard();
-      if (!context.mounted) return;
-      if (result == ExportResult.success) {
-        scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text(l10n.exportScheduleAsCopySuccess)),
-        );
-      } else {
-        scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text(l10n.exportScheduleAsCopyFailed)),
-        );
-      }
-      break;
-    case ExportAction.ics:
-      debugPrint("[showExportScheduleSheet] ics");
-      final semesterName = exportProvider.genIcs(l10n.icsTeacherLabel);
-
-      String? destinationPath;
-      try {
-        destinationPath = await FilePicker.saveFile(
-          dialogTitle: l10n.exportScheduleAsIcsTo,
-          fileName: '$semesterName.ics',
-          bytes: exportProvider.getIcsBytes(),
-        );
-      } on PlatformException catch (e) {
-        debugPrint("[showExportScheduleSheet] failed to save file: $e");
-        if (!context.mounted) return;
-        scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text(l10n.exportScheduleAsIcsFailed)),
-        );
-        return;
-      } catch (e) {
-        debugPrint("[showExportScheduleSheet] $e");
-        if (!context.mounted) return;
-        scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text(l10n.exportScheduleAsIcsFailed)),
-        );
-        return;
-      }
-
-      if (!context.mounted) return;
-      if (destinationPath == null) {
-        scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text(l10n.exportScheduleAsIcsCanceled)),
-        );
-        return;
-      }
-      scaffoldMessenger.showSnackBar(
-        SnackBar(content: Text(l10n.exportScheduleAsIcsSuccess)),
-      );
-      return;
-    case ExportAction.addToCalendar:
-      debugPrint("[showExportScheduleSheet] addToCalendar");
-      try {
-        final icsPath = await exportProvider.saveIcsToCache(
-          l10n.icsTeacherLabel,
-        );
-        const channel = MethodChannel('bugaoshan/update');
-        final result = await channel.invokeMethod<String>(
-          'importIcsToCalendar',
-          {'path': icsPath},
-        );
-        if (!context.mounted) return;
-        if (result == 'opened') {
-          scaffoldMessenger.showSnackBar(
-            SnackBar(content: Text(l10n.exportScheduleAddToCalendarSuccess)),
-          );
-        }
-        // If result == 'picker', the system picker is already shown; no snackbar needed.
-      } catch (e) {
-        debugPrint("[showExportScheduleSheet] addToCalendar failed: $e");
-        if (!context.mounted) return;
-        scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text(l10n.exportScheduleAddToCalendarFailed)),
-        );
-      }
-      return;
+  if (action == null) {
+    debugPrint("[showExportScheduleSheet] canceled");
+    return;
   }
+
+  await CalendarExportUtils.handleExportAction(
+    context: context,
+    l10n: l10n,
+    action: action,
+    copyToClipboard: () async =>
+        await exportProvider.copyToClipBoard() == ExportResult.success,
+    copySuccessMessage: l10n.exportScheduleAsCopySuccess,
+    copyFailedMessage: l10n.exportScheduleAsCopyFailed,
+    buildCalendarPayload: () =>
+        exportProvider.buildCalendarPayload(l10n.icsTeacherLabel),
+    logTag: 'showExportScheduleSheet',
+  );
 }

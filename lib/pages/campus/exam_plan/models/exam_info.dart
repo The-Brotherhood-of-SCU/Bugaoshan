@@ -22,6 +22,20 @@ class ExamInfo {
     required this.tip,
   });
 
+  Map<String, Object> toJson() {
+    return {
+      'courseName': courseName,
+      'week': week,
+      'date': date,
+      'weekday': weekday,
+      'timeRange': timeRange,
+      'location': location,
+      'seatNumber': seatNumber,
+      'ticketNumber': ticketNumber,
+      'tip': tip,
+    };
+  }
+
   /// 考试是否已结束（按日期 + 结束时间判断）
   bool get isPast {
     final now = DateTime.now();
