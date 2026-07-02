@@ -151,8 +151,12 @@ class UpdateDialogContent extends StatelessWidget {
     );
   }
 
-  static int _min(int a, int b, int c) {
-    return min(a, min(b, c));
+  static int _min(List<int> values) {
+    //ignore negative values
+    values.removeWhere((element) => element < 0);
+    //find min
+    if (values.isEmpty) return -1;
+    return values.reduce((a, b) => a < b ? a : b);
   }
 
   Widget _buildReleaseNotes(BuildContext context) {
@@ -160,7 +164,7 @@ class UpdateDialogContent extends StatelessWidget {
     final addIndex = releaseNotes!.indexOf('\n### Add');
     final fixIndex = releaseNotes!.indexOf('\n### Fix');
     final changeIndex = releaseNotes!.indexOf('\n### Change');
-    final index = _min(addIndex, fixIndex, changeIndex);
+    final index = _min([addIndex, fixIndex, changeIndex]);
     var trimmedNotes = releaseNotes!;
     if (index != -1) {
       trimmedNotes = releaseNotes!.substring(index);

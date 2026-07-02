@@ -1,5 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:crypto/crypto.dart' as crypto;
 
 import 'package:bugaoshan/models/release_info.dart';
@@ -289,12 +292,25 @@ class UpdateService {
     }
   }
 
+  Future<UpdateCheckResult> checkForUpdate() {
+    final includePreview =
+        getIt<AppConfigProvider>().usePreviewUpdateSource.value;
+    final versionProvider = getIt<AppInfoProvider>();
+    final currentVersion = versionProvider.currentVersion;
+    final gitTag = includePreview ? versionProvider.gitTag : null;
+    return _checkForUpdate(
+      includePreview: includePreview,
+      currentVersion: currentVersion,
+      gitTag: gitTag,
+    );
+  }
+
   /// Unified update check used by production callers (home / about pages).
   ///
   /// When [includePreview] is true, the latest prerelease is checked; otherwise
   /// the latest stable release. Pass [gitTag] only when [includePreview] is true
   /// (used to suppress the "current build is itself the latest preview" case).
-  Future<UpdateCheckResult> checkForUpdate({
+  Future<UpdateCheckResult> _checkForUpdate({
     required bool includePreview,
     required String currentVersion,
     String? gitTag,
