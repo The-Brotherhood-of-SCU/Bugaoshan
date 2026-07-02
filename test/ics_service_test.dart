@@ -21,6 +21,7 @@ void main() {
         config: config,
         courses: [
           Course(
+            id: '107447030-31',
             name: '(107447030-31) 高等数学A',
             teacher: '张三',
             location: '江安一教A101',
@@ -38,6 +39,7 @@ void main() {
       expect(events, hasLength(1));
       final payload = events.single.toPlatformJson();
       expect(payload['title'], '(107447030-31) 高等数学A');
+      expect(payload['uid'], '107447030-31_1@bugaoshan');
       expect(payload['location'], '四川大学江安校区 · 江安一教A101');
       expect(payload['structuredLocation'], {
         'title': '四川大学江安校区 · 江安一教A101',
@@ -63,6 +65,7 @@ void main() {
         config: config,
         courses: [
           Course(
+            id: 'course-english',
             name: '课序号 02 大学英语',
             teacher: '李四',
             location: '华西十教201',
@@ -78,6 +81,7 @@ void main() {
       );
 
       expect(ics, contains('SUMMARY:课序号 02 大学英语'));
+      expect(ics, contains('UID:course-english_1@bugaoshan'));
       expect(ics, contains('LOCATION:四川大学华西校区 · 华西十教201'));
       expect(ics, contains('GEO:30.6425541;104.0673888'));
     });
@@ -98,6 +102,7 @@ void main() {
         config: config,
         courses: [
           Course(
+            id: 'course-english',
             name: '大学英语',
             teacher: '李四',
             location: '望江一教101',
@@ -114,6 +119,7 @@ void main() {
 
       expect(payload.fileName, '2025_2026_2.ics');
       expect(payload.icsContent, contains('SUMMARY:大学英语'));
+      expect(payload.icsContent, contains('UID:course-english_1@bugaoshan'));
       expect(payload.events, hasLength(1));
       expect(payload.events.single['location'], '四川大学望江校区 · 望江一教101');
     });

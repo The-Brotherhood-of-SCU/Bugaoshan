@@ -12,9 +12,6 @@ void main() {
     });
 
     test('generates stable exam UID from normalized name', () {
-      final start = DateTime(2026, 6, 27, 9);
-      final end = DateTime(2026, 6, 27, 11);
-
       final uid = CalendarEventIdentity.examUid(
         name: '(107447030-31) 高等数学A（已结束）',
       );
@@ -25,9 +22,8 @@ void main() {
         name: '(107447030-31) 高等数学A',
       );
       final anotherKindUid = CalendarEventIdentity.courseUid(
-        name: '(107447030-31) 高等数学A',
-        start: start,
-        end: end,
+        courseId: '107447030-31',
+        week: 18,
       );
 
       expect(uid, sameUid);
@@ -35,6 +31,13 @@ void main() {
       expect(uid, startsWith('exam-'));
       expect(uid, endsWith('@bugaoshan'));
       expect(anotherKindUid, isNot(uid));
+    });
+
+    test('keeps legacy course UID semantics', () {
+      expect(
+        CalendarEventIdentity.courseUid(courseId: 'course-123', week: 7),
+        'course-123_7@bugaoshan',
+      );
     });
 
     test('maps campus location to display title and coordinates', () {

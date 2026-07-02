@@ -110,12 +110,10 @@ class CalendarEventIdentity {
 
   static const _domain = 'bugaoshan';
 
-  static String courseUid({
-    required String name,
-    required DateTime start,
-    required DateTime end,
-  }) {
-    return _uid(kind: 'course', name: name, start: start, end: end);
+  static String courseUid({required String courseId, required int week}) {
+    // Keep the legacy course UID shape so existing imported course events can
+    // still be matched by calendar apps and the iOS local UID map.
+    return '${courseId}_$week@$_domain';
   }
 
   static String examUid({required String name}) {
@@ -131,32 +129,6 @@ class CalendarEventIdentity {
         .replaceAll(RegExp(r'\s*[（(]\s*已结束\s*[）)]\s*'), '')
         .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
-  }
-
-  static String _uid({
-    required String kind,
-    required String name,
-    required DateTime start,
-    required DateTime end,
-  }) {
-    final key = [
-      kind,
-      normalizeName(name),
-      _dateKey(start),
-      _dateKey(end),
-    ].join('|');
-    final digest = sha1.convert(utf8.encode(key)).toString().substring(0, 24);
-    return '$kind-$digest@$_domain';
-  }
-
-  static String _dateKey(DateTime dateTime) {
-    return [
-      dateTime.year.toString().padLeft(4, '0'),
-      dateTime.month.toString().padLeft(2, '0'),
-      dateTime.day.toString().padLeft(2, '0'),
-      dateTime.hour.toString().padLeft(2, '0'),
-      dateTime.minute.toString().padLeft(2, '0'),
-    ].join();
   }
 }
 

@@ -338,9 +338,19 @@ import UIKit
     guard let start = starts.min(), let end = ends.max() else {
       return nil
     }
+    let calendar = Calendar.current
+    guard
+      let endOfDay = calendar.date(
+        byAdding: .day,
+        value: 1,
+        to: calendar.startOfDay(for: end)
+      )
+    else {
+      return nil
+    }
     return (
-      start: start.addingTimeInterval(-60),
-      end: end.addingTimeInterval(60)
+      start: calendar.startOfDay(for: start),
+      end: endOfDay
     )
   }
 
@@ -352,8 +362,7 @@ import UIKit
     if
       let uid = payload["uid"] as? String,
       !uid.isEmpty,
-      let calendar = event.calendar,
-      let mappedEvent = eventForUid(uid, targetCalendar: calendar)
+      let mappedEvent = eventForUid(uid, targetCalendar: event.calendar)
     {
       return mappedEvent
     }

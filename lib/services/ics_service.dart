@@ -77,9 +77,8 @@ class IcsService {
             location: location.title,
             description: '$teacherLabel: ${course.teacher}',
             uid: CalendarEventIdentity.courseUid(
-              name: course.name,
-              start: start,
-              end: end,
+              courseId: course.id,
+              week: week,
             ),
             structuredLocation: location.structuredLocation,
           ),
