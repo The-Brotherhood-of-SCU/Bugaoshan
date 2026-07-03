@@ -167,6 +167,23 @@ class AppLocalizationsZh extends AppLocalizations {
   String get period => '节次';
 
   @override
+  String periodN(int n) {
+    return '第 $n 节';
+  }
+
+  @override
+  String get periodStart => '起始';
+
+  @override
+  String get periodEnd => '结束';
+
+  @override
+  String get periodUnlimited => '不限';
+
+  @override
+  String get clear => '清除';
+
+  @override
   String get loading => '加载中...';
 
   @override

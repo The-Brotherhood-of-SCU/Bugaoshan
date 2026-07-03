@@ -71,6 +71,17 @@
     "classroomCannotBorrow": "Not Borrowable",
     "classroomRemark": "Remark",
     "period": "Period",
+    "periodN": "Period {n}",
+    "@periodN": {
+        "description": "Period number format",
+        "placeholders": {
+            "n": {"type": "int"}
+        }
+    },
+    "periodStart": "Start",
+    "periodEnd": "End",
+    "periodUnlimited": "Any",
+    "clear": "Clear",
     "loading": "Loading...",
     "loadFailed": "Load Failed",
     "retry": "Retry",

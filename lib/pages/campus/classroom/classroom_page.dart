@@ -39,7 +39,8 @@ class _ClassroomPageState extends State<ClassroomPage> {
   bool _isInitialLoad = true;
   LoadErrorType? _error;
   DateTime _selectedDate = DateTime.now();
-  bool _showCurrentFreeOnly = false;
+  int? _filterPeriodStart; // 筛选起始节次 1-12, null=不过滤
+  int? _filterPeriodEnd; // 筛选结束节次 1-12, null=不过滤
 
   @override
   void initState() {
@@ -170,7 +171,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
   }
 
   String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    return '${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
   bool get _isToday {
@@ -252,20 +253,21 @@ class _ClassroomPageState extends State<ClassroomPage> {
     final result = _queryResult;
     if (result == null) return [];
 
-    final currentPeriod = _currentPeriod();
-    if (!_showCurrentFreeOnly || !_isToday) {
+    final start = _filterPeriodStart;
+    final end = _filterPeriodEnd;
+    if (start == null || end == null || !_isToday) {
       return result.classrooms;
     }
 
-    if (currentPeriod == null) {
-      return [];
-    }
-
     return result.classrooms.where((room) {
-      final status = result.periodStatusMap(
-        room.classroomNumber,
-      )[currentPeriod];
-      return status == null || status == ClassroomPeriodStatus.free;
+      final statusMap = result.periodStatusMap(room.classroomNumber);
+      for (int p = start; p <= end; p++) {
+        final status = statusMap[p];
+        if (status != null && status != ClassroomPeriodStatus.free) {
+          return false;
+        }
+      }
+      return true;
     }).toList();
   }
 
@@ -434,8 +436,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
     if (_queryResult == null) return const SizedBox.shrink();
 
     final currentPeriod = _currentPeriod();
-    final canFilterCurrentFree = _isToday;
-    final shouldHideInfo = _showCurrentFreeOnly && currentPeriod == null;
+    final hasFilter = _filterPeriodStart != null;
     final rooms = _visibleRooms();
 
     return Column(
@@ -462,21 +463,22 @@ class _ClassroomPageState extends State<ClassroomPage> {
                   ],
                 ),
               ),
-              if (!shouldHideInfo)
-                Text(
-                  '${rooms.length} ${l10n.seats == "座" ? "间教室" : "rooms"}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+              Text(
+                '${rooms.length} ${l10n.seats == "座" ? "间教室" : "rooms"}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
+              ),
             ],
           ),
         ),
+        // ── 日期与节次筛选 ─────────────────────────────────
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Wrap(
             spacing: 8,
             runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               ActionChip(
                 avatar: const Icon(Icons.calendar_today, size: 18),
@@ -486,29 +488,83 @@ class _ClassroomPageState extends State<ClassroomPage> {
               if (!_isToday) ...[
                 ActionChip(label: Text(l10n.today), onPressed: _goToToday),
               ],
-              FilterChip(
-                avatar: const Icon(Icons.filter_alt_outlined, size: 18),
-                label: Text('${l10n.current}${l10n.free}'),
-                selected: _showCurrentFreeOnly && canFilterCurrentFree,
-                onSelected: canFilterCurrentFree
-                    ? (selected) {
-                        setState(() {
-                          _showCurrentFreeOnly = selected;
-                        });
-                      }
-                    : null,
-                showCheckmark: false,
-              ),
+              if (_isToday)
+                FilterChip(
+                  avatar: const Icon(Icons.access_time, size: 18),
+                  label: Text('${l10n.current}${l10n.free}'),
+                  selected:
+                      _filterPeriodStart == currentPeriod &&
+                      _filterPeriodEnd == currentPeriod,
+                  showCheckmark: false,
+                  onSelected: currentPeriod != null
+                      ? (selected) {
+                          setState(() {
+                            if (selected) {
+                              _filterPeriodStart = currentPeriod;
+                              _filterPeriodEnd = currentPeriod;
+                            } else {
+                              _clearPeriodFilter();
+                            }
+                          });
+                        }
+                      : null,
+                ),
             ],
           ),
         ),
+        if (_isToday) ...[
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                _buildPeriodDropdown(
+                  l10n: l10n,
+                  label: l10n.periodStart,
+                  value: _filterPeriodStart,
+                  onChanged: (v) {
+                    setState(() {
+                      _filterPeriodStart = v;
+                      if (v != null &&
+                          (_filterPeriodEnd == null || v > _filterPeriodEnd!)) {
+                        _filterPeriodEnd = v;
+                      }
+                    });
+                  },
+                ),
+                const Text('→'),
+                _buildPeriodDropdown(
+                  l10n: l10n,
+                  label: l10n.periodEnd,
+                  value: _filterPeriodEnd,
+                  onChanged: (v) {
+                    setState(() {
+                      _filterPeriodEnd = v;
+                      if (v != null &&
+                          (_filterPeriodStart == null ||
+                              v < _filterPeriodStart!)) {
+                        _filterPeriodStart = v;
+                      }
+                    });
+                  },
+                ),
+                if (hasFilter)
+                  ActionChip(
+                    label: Text(l10n.clear),
+                    onPressed: _clearPeriodFilter,
+                  ),
+              ],
+            ),
+          ),
+        ],
         Expanded(
-          child: shouldHideInfo
-              ? const SizedBox.shrink()
-              : rooms.isEmpty
+          child: rooms.isEmpty
               ? Center(
                   child: Text(
-                    _showCurrentFreeOnly ? l10n.noFreeClassrooms : l10n.noData,
+                    hasFilter ? l10n.noFreeClassrooms : l10n.noData,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
@@ -674,5 +730,57 @@ class _ClassroomPageState extends State<ClassroomPage> {
       case ClassroomPeriodStatus.borrowed:
         return Colors.amber;
     }
+  }
+
+  void _clearPeriodFilter() {
+    setState(() {
+      _filterPeriodStart = null;
+      _filterPeriodEnd = null;
+    });
+  }
+
+  Widget _buildPeriodDropdown({
+    required AppLocalizations l10n,
+    required String label,
+    required int? value,
+    required ValueChanged<int?> onChanged,
+  }) {
+    return PopupMenuButton<int?>(
+      onSelected: onChanged,
+      padding: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: SizedBox(
+        height: 32,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: ShapeDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHigh,
+            shape: StadiumBorder(),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                value != null ? l10n.periodN(value) : label,
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+              const SizedBox(width: 2),
+              Icon(
+                Icons.arrow_drop_down,
+                size: 18,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ],
+          ),
+        ),
+      ),
+      itemBuilder: (context) => [
+        PopupMenuItem<int?>(value: null, child: Text(l10n.periodUnlimited)),
+        ...List.generate(12, (i) {
+          final p = i + 1;
+          return PopupMenuItem<int?>(value: p, child: Text(l10n.periodN(p)));
+        }),
+      ],
+    );
   }
 }

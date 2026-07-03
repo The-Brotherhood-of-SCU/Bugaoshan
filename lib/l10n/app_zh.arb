@@ -71,6 +71,17 @@
     "classroomCannotBorrow": "不可借用",
     "classroomRemark": "备注",
     "period": "节次",
+    "periodN": "第 {n} 节",
+    "@periodN": {
+        "description": "节次编号格式",
+        "placeholders": {
+            "n": {"type": "int"}
+        }
+    },
+    "periodStart": "起始",
+    "periodEnd": "结束",
+    "periodUnlimited": "不限",
+    "clear": "清除",
     "loading": "加载中...",
     "loadFailed": "加载失败",
     "retry": "重试",
