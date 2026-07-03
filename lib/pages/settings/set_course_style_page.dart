@@ -50,7 +50,12 @@ class SetCourseStylePage extends StatelessWidget {
                       padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(AppShapes.medium),
-                        child: const CoursePage(demoMode: true),
+                        child: CoursePage(
+                          key: ValueKey(
+                            appConfig.backgroundImagePath.value ?? '__none__',
+                          ),
+                          demoMode: true,
+                        ),
                       ),
                     ),
                   ),
