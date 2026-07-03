@@ -409,6 +409,36 @@ abstract class AppLocalizations {
   /// **'Period'**
   String get period;
 
+  /// Period number format
+  ///
+  /// In en, this message translates to:
+  /// **'Period {n}'**
+  String periodN(int n);
+
+  /// No description provided for @periodStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get periodStart;
+
+  /// No description provided for @periodEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get periodEnd;
+
+  /// No description provided for @periodUnlimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Any'**
+  String get periodUnlimited;
+
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
   /// No description provided for @loading.
   ///
   /// In en, this message translates to:

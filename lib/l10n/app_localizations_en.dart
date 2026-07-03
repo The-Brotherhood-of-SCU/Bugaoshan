@@ -174,6 +174,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get period => 'Period';
 
   @override
+  String periodN(int n) {
+    return 'Period $n';
+  }
+
+  @override
+  String get periodStart => 'Start';
+
+  @override
+  String get periodEnd => 'End';
+
+  @override
+  String get periodUnlimited => 'Any';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
   String get loading => 'Loading...';
 
   @override
