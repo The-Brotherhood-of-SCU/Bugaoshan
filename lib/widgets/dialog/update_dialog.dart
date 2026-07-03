@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:bugaoshan/pages/about/release_notes_page.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
