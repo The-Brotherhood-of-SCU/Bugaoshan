@@ -1,52 +1,16 @@
-import 'dart:convert';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:pub_semver/pub_semver.dart';
 
-Future<String> getLatestVersionFromGitHub(http.Client client) async {
-  const repo = 'The-Brotherhood-of-SCU/Bugaoshan';
-  final response = await client.get(
-    Uri.parse('https://api.github.com/repos/$repo/releases/latest'),
-    headers: {'Accept': 'application/vnd.github+json'},
-  );
-  if (response.statusCode == 200) {
-    if (response.body.isEmpty) {
-      throw Exception('GitHub API returned empty response');
-    }
-    final tagName = RegExp(
-      r'"tag_name":\s*"([^"]+)"',
-    ).firstMatch(response.body)?.group(1);
-    if (tagName != null) {
-      return tagName.replaceFirst('v', '');
-    }
-    throw Exception('Could not parse release tag from response');
-  }
-  throw Exception('GitHub API error: ${response.statusCode}');
-}
+import 'package:bugaoshan/services/update_checker.dart';
 
+/// 构建 GitHub release 下载 URL（仅用于 URL 格式校验，非 app 核心逻辑）。
+///
+/// 实际 app 中下载地址来自 GitHub API 的 `browser_download_url` 字段，
+/// 此函数仅在此处验证 URL pattern 的正确性。
 String buildBinaryUrlForPlatform(String version, String platform) {
-  return 'https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/download/v$version/bugaoshan_v${version}_${platform}_x64.zip';
-}
-
-Future<String?> getLatestPrereleaseFromGitHub(http.Client client) async {
-  const repo = 'The-Brotherhood-of-SCU/Bugaoshan';
-  final response = await client.get(
-    Uri.parse('https://api.github.com/repos/$repo/releases'),
-    headers: {'Accept': 'application/vnd.github+json'},
-  );
-  if (response.statusCode == 200) {
-    if (response.body.isEmpty) return null;
-    final List<dynamic> releases = jsonDecode(response.body);
-    for (final release in releases) {
-      if (release['prerelease'] == true && release['tag_name'] != null) {
-        return (release['tag_name'] as String).replaceFirst('v', '');
-      }
-    }
-    return null;
-  }
-  throw Exception('GitHub API error: ${response.statusCode}');
+  return 'https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/download/'
+      'v$version/bugaoshan_v${version}_${platform}_x64.zip';
 }
 
 Matcher _httpError(int code) => throwsA(
@@ -58,86 +22,93 @@ Matcher _parseError(String keyword) => throwsA(
 );
 
 void main() {
-  group('getLatestVersionFromGitHub', () {
+  group('fetchLatestVersionFromGithub', () {
     MockClient mockClient(String body, [int status = 200]) =>
         MockClient((request) async => http.Response(body, status));
 
     test('parses version from valid GitHub API response', () async {
-      final version = await getLatestVersionFromGitHub(
-        mockClient('{"tag_name": "v1.2.3", "name": "Release 1.2.3"}'),
+      final version = await fetchLatestVersionFromGithub(
+        client: mockClient('{"tag_name": "v1.2.3", "name": "Release 1.2.3"}'),
       );
       expect(version, '1.2.3');
     });
 
     test('parses version without v prefix', () async {
-      final version = await getLatestVersionFromGitHub(
-        mockClient('{"tag_name": "v0.5.6", "name": "Release 0.5.6"}'),
+      final version = await fetchLatestVersionFromGithub(
+        client: mockClient('{"tag_name": "v0.5.6", "name": "Release 0.5.6"}'),
       );
       expect(version, '0.5.6');
     });
 
     test('throws on empty response body', () async {
       expect(
-        getLatestVersionFromGitHub(mockClient('', 200)),
+        fetchLatestVersionFromGithub(client: mockClient('', 200)),
         _parseError('empty response'),
       );
     });
 
     test('throws on invalid JSON without tag_name', () async {
       expect(
-        getLatestVersionFromGitHub(mockClient('{"name": "Release"}', 200)),
+        fetchLatestVersionFromGithub(
+          client: mockClient('{"name": "Release"}', 200),
+        ),
         _parseError('Could not parse'),
       );
     });
 
     test('throws on HTTP error status', () async {
       expect(
-        getLatestVersionFromGitHub(mockClient('Not Found', 404)),
+        fetchLatestVersionFromGithub(client: mockClient('Not Found', 404)),
         _httpError(404),
       );
     });
 
     test('throws on rate limit exceeded', () async {
       expect(
-        getLatestVersionFromGitHub(mockClient('Rate limit exceeded', 403)),
+        fetchLatestVersionFromGithub(
+          client: mockClient('Rate limit exceeded', 403),
+        ),
         _httpError(403),
       );
     });
   });
 
-  group('getLatestPrereleaseFromGitHub', () {
+  group('fetchLatestPrereleaseFromGithub', () {
     MockClient mockClient(String body, [int status = 200]) =>
         MockClient((request) async => http.Response(body, status));
 
     test('parses prerelease version from releases list', () async {
-      final version = await getLatestPrereleaseFromGitHub(
-        mockClient(
-          '[{"tag_name": "v0.5.7", "prerelease": false}, {"tag_name": "v0.6.0-beta.1", "prerelease": true}]',
+      final version = await fetchLatestPrereleaseFromGithub(
+        client: mockClient(
+          '[{"tag_name": "v0.5.7", "prerelease": false}, '
+          '{"tag_name": "v0.6.0-beta.1", "prerelease": true}]',
         ),
       );
       expect(version, '0.6.0-beta.1');
     });
 
     test('returns null when no prerelease found', () async {
-      final version = await getLatestPrereleaseFromGitHub(
-        mockClient(
-          '[{"tag_name": "v0.5.6", "prerelease": false}, {"tag_name": "v0.5.7", "prerelease": false}]',
+      final version = await fetchLatestPrereleaseFromGithub(
+        client: mockClient(
+          '[{"tag_name": "v0.5.6", "prerelease": false}, '
+          '{"tag_name": "v0.5.7", "prerelease": false}]',
         ),
       );
       expect(version, isNull);
     });
 
     test('returns first prerelease when multiple exist', () async {
-      final version = await getLatestPrereleaseFromGitHub(
-        mockClient(
-          '[{"tag_name": "v0.6.0-beta.2", "prerelease": true}, {"tag_name": "v0.6.0-beta.1", "prerelease": true}]',
+      final version = await fetchLatestPrereleaseFromGithub(
+        client: mockClient(
+          '[{"tag_name": "v0.6.0-beta.2", "prerelease": true}, '
+          '{"tag_name": "v0.6.0-beta.1", "prerelease": true}]',
         ),
       );
       expect(version, '0.6.0-beta.2');
     });
   });
 
-  group('buildBinaryUrl', () {
+  group('buildBinaryUrlForPlatform', () {
     test('generates correct URL format', () {
       final urlWindows = buildBinaryUrlForPlatform('1.2.3', 'windows');
       expect(urlWindows, contains('windows'));
@@ -150,23 +121,33 @@ void main() {
     });
   });
 
-  group('version comparison', () {
+  group('checkHasUpdate', () {
     test('detects when update is available', () {
-      final current = Version.parse('0.5.6');
-      final latest = Version.parse('0.5.7');
-      expect(latest > current, isTrue);
+      expect(checkHasUpdate('0.5.6', '0.5.7'), isTrue);
     });
 
     test('detects when already on latest version', () {
-      final current = Version.parse('0.5.6');
-      final latest = Version.parse('0.5.6');
-      expect(latest > current, isFalse);
+      expect(checkHasUpdate('0.5.6', '0.5.6'), isFalse);
     });
 
     test('detects major version update', () {
-      final current = Version.parse('0.5.6');
-      final latest = Version.parse('1.0.0');
-      expect(latest > current, isTrue);
+      expect(checkHasUpdate('0.5.6', '1.0.0'), isTrue);
+    });
+
+    test('handles v prefix', () {
+      expect(checkHasUpdate('v0.5.6', 'v0.5.7'), isTrue);
+      expect(checkHasUpdate('v0.5.7', 'v0.5.6'), isFalse);
+    });
+
+    test('handles build metadata suffix', () {
+      expect(checkHasUpdate('0.5.6', '0.5.7+1'), isTrue);
+      expect(checkHasUpdate('0.5.6+100', '0.5.7'), isTrue);
+    });
+
+    test('returns false for invalid version strings', () {
+      expect(checkHasUpdate('invalid', '0.5.7'), isFalse);
+      expect(checkHasUpdate('0.5.6', 'invalid'), isFalse);
+      expect(checkHasUpdate('0.5', '0.5.7'), isFalse);
     });
   });
 }

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
+import 'package:bugaoshan/services/update_checker.dart';
 import 'package:crypto/crypto.dart' as crypto;
 
 import 'package:bugaoshan/models/release_info.dart';
@@ -219,16 +220,11 @@ class UpdateService {
     return (latestStable, latestPreview);
   }
 
+  /// 比较两个语义版本号，判断 [latestVersion] 是否比 [currentVersion] 新。
+  ///
+  /// 委托给 [checkHasUpdate] 以保证与 update_checker 单元测试共享同一套逻辑。
   bool hasUpdate(String currentVersion, String latestVersion) {
-    final current = _parseVersion(currentVersion);
-    final latest = _parseVersion(latestVersion);
-    if (current == null || latest == null) return false;
-
-    for (int i = 0; i < 3; i++) {
-      if (latest[i] > current[i]) return true;
-      if (latest[i] < current[i]) return false;
-    }
-    return false;
+    return checkHasUpdate(currentVersion, latestVersion);
   }
 
   static const _keyLastInstalledVersion = 'last_installed_version';
@@ -319,20 +315,6 @@ class UpdateService {
       return checkPreviewUpdate(currentVersion, gitTag ?? '');
     }
     return checkStableUpdate(currentVersion);
-  }
-
-  List<int>? _parseVersion(String version) {
-    final cleanVersion = version
-        .split('+')
-        .first
-        .replaceFirst(RegExp(r'^v', caseSensitive: false), '');
-    final parts = cleanVersion.split('.');
-    if (parts.length < 3) return null;
-    try {
-      return [int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2])];
-    } catch (e) {
-      return null;
-    }
   }
 
   Future<void> downloadAndInstall(
