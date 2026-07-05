@@ -24,6 +24,10 @@ const String _keyAcceptedEulaVersion = 'acceptedEulaVersion';
 const String _keyThemeColorMode = 'themeColorMode';
 const String _keyWidgetShowTomorrow = 'widget_show_tomorrow';
 const String _keyUsePreviewUpdateSource = 'usePreviewUpdateSource';
+const String _keyShowTeacherName = 'showTeacherName';
+const String _keyShowLocation = 'showLocation';
+const String _keyShowWeekend = 'showWeekend';
+const String _keyShowNonCurrentWeekCourses = 'showNonCurrentWeekCourses';
 const String _keyUseGoogleFonts = 'useGoogleFonts';
 const String _keyCampusGridView = 'campusGridView';
 const Curve appCurve = Curves.easeOutQuart;
@@ -68,6 +72,12 @@ class AppConfigProvider {
   final ValueNotifier<bool> widgetShowTomorrow = ValueNotifier<bool>(false);
   final ValueNotifier<bool> usePreviewUpdateSource = ValueNotifier<bool>(false);
   final ValueNotifier<bool> useGoogleFonts = ValueNotifier<bool>(true);
+  final ValueNotifier<bool> showTeacherName = ValueNotifier<bool>(true);
+  final ValueNotifier<bool> showLocation = ValueNotifier<bool>(true);
+  final ValueNotifier<bool> showWeekend = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> showNonCurrentWeekCourses = ValueNotifier<bool>(
+    true,
+  );
   final ValueNotifier<bool> campusGridView = ValueNotifier<bool>(false);
 
   Future<void> _loadPreferences() async {
@@ -114,6 +124,12 @@ class AppConfigProvider {
         _sharedPreferences.getBool(_keyUsePreviewUpdateSource) ?? false;
     useGoogleFonts.value =
         _sharedPreferences.getBool(_keyUseGoogleFonts) ?? true;
+    showTeacherName.value =
+        _sharedPreferences.getBool(_keyShowTeacherName) ?? true;
+    showLocation.value = _sharedPreferences.getBool(_keyShowLocation) ?? true;
+    showWeekend.value = _sharedPreferences.getBool(_keyShowWeekend) ?? false;
+    showNonCurrentWeekCourses.value =
+        _sharedPreferences.getBool(_keyShowNonCurrentWeekCourses) ?? true;
     campusGridView.value =
         _sharedPreferences.getBool(_keyCampusGridView) ?? false;
   }
@@ -209,6 +225,21 @@ class AppConfigProvider {
     });
     useGoogleFonts.addListener(() {
       _sharedPreferences.setBool(_keyUseGoogleFonts, useGoogleFonts.value);
+    });
+    showTeacherName.addListener(() {
+      _sharedPreferences.setBool(_keyShowTeacherName, showTeacherName.value);
+    });
+    showLocation.addListener(() {
+      _sharedPreferences.setBool(_keyShowLocation, showLocation.value);
+    });
+    showWeekend.addListener(() {
+      _sharedPreferences.setBool(_keyShowWeekend, showWeekend.value);
+    });
+    showNonCurrentWeekCourses.addListener(() {
+      _sharedPreferences.setBool(
+        _keyShowNonCurrentWeekCourses,
+        showNonCurrentWeekCourses.value,
+      );
     });
     campusGridView.addListener(() {
       _sharedPreferences.setBool(_keyCampusGridView, campusGridView.value);

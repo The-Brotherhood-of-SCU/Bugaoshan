@@ -71,15 +71,17 @@ class _CourseGridState extends State<CourseGrid> {
   @override
   Widget build(BuildContext context) {
     final sections = widget.config.sectionsPerDay;
-    final dayCount = widget.config.showWeekend ? 7 : 5;
-    final hasBackground = appConfig.backgroundImagePath.value != null;
 
     return ListenableBuilder(
       listenable: Listenable.merge([
         appConfig.showCourseGrid,
         appConfig.courseRowHeight,
+        appConfig.showWeekend,
+        appConfig.showNonCurrentWeekCourses,
       ]),
       builder: (context, _) {
+        final dayCount = appConfig.showWeekend.value ? 7 : 5;
+        final hasBackground = appConfig.backgroundImagePath.value != null;
         final rowHeight = appConfig.courseRowHeight.value;
         final showCourseGrid = appConfig.showCourseGrid.value;
 
@@ -107,7 +109,7 @@ class _CourseGridState extends State<CourseGrid> {
                     Expanded(
                       child: Row(
                         children: List.generate(dayCount, (dayIndex) {
-                          final day = widget.config.showWeekend
+                          final day = appConfig.showWeekend.value
                               ? (dayIndex == 0 ? 7 : dayIndex)
                               : dayIndex + 1;
                           List<Course> dayCourses;
@@ -124,7 +126,7 @@ class _CourseGridState extends State<CourseGrid> {
                                   .toList(),
                               widget.displayWeek,
                               showNonCurrentWeekCourses:
-                                  widget.config.showNonCurrentWeekCourses,
+                                  appConfig.showNonCurrentWeekCourses.value,
                             );
                           }
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
@@ -569,7 +570,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
     }
 
     final hasWeekend = courses.any((c) => c.dayOfWeek == 6 || c.dayOfWeek == 7);
-    config.showWeekend = hasWeekend;
+    getIt<AppConfigProvider>().showWeekend.value = hasWeekend;
 
     return (config: config, courses: courses);
   }

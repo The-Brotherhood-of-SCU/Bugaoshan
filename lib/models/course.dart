@@ -46,10 +46,6 @@ class ScheduleConfig {
   int breakDuration;
   bool autoSyncTime;
   List<TimeSlot> timeSlots;
-  bool showTeacherName;
-  bool showLocation;
-  bool showWeekend;
-  bool showNonCurrentWeekCourses;
 
   int get sectionsPerDay =>
       morningSections + afternoonSections + eveningSections;
@@ -66,10 +62,6 @@ class ScheduleConfig {
     this.breakDuration = 10,
     this.autoSyncTime = true,
     List<TimeSlot>? timeSlots,
-    this.showTeacherName = true,
-    this.showLocation = true,
-    this.showWeekend = false,
-    this.showNonCurrentWeekCourses = true,
   }) : timeSlots = timeSlots ?? _defaultTimeSlots(4, 5, 3, 45, 10);
 
   factory ScheduleConfig.fromJson(Map<String, dynamic> json) {
@@ -128,11 +120,6 @@ class ScheduleConfig {
             courseDuration,
             breakDuration,
           ),
-      showTeacherName: json['showTeacherName'] as bool? ?? true,
-      showLocation: json['showLocation'] as bool? ?? true,
-      showWeekend: json['showWeekend'] as bool? ?? false,
-      showNonCurrentWeekCourses:
-          json['showNonCurrentWeekCourses'] as bool? ?? true,
     );
   }
 
@@ -149,10 +136,6 @@ class ScheduleConfig {
     'breakDuration': breakDuration,
     'autoSyncTime': autoSyncTime,
     'timeSlots': timeSlots.map((e) => e.toJson()).toList(),
-    'showTeacherName': showTeacherName,
-    'showLocation': showLocation,
-    'showWeekend': showWeekend,
-    'showNonCurrentWeekCourses': showNonCurrentWeekCourses,
   };
 
   /// 四川大学江安校区时间表预设（4-5-3）
@@ -376,10 +359,6 @@ class ScheduleConfig {
     int? breakDuration,
     bool? autoSyncTime,
     List<TimeSlot>? timeSlots,
-    bool? showTeacherName,
-    bool? showLocation,
-    bool? showWeekend,
-    bool? showNonCurrentWeekCourses,
   }) {
     return ScheduleConfig(
       id: id ?? this.id,
@@ -393,11 +372,6 @@ class ScheduleConfig {
       breakDuration: breakDuration ?? this.breakDuration,
       autoSyncTime: autoSyncTime ?? this.autoSyncTime,
       timeSlots: timeSlots ?? List.of(this.timeSlots),
-      showTeacherName: showTeacherName ?? this.showTeacherName,
-      showLocation: showLocation ?? this.showLocation,
-      showWeekend: showWeekend ?? this.showWeekend,
-      showNonCurrentWeekCourses:
-          showNonCurrentWeekCourses ?? this.showNonCurrentWeekCourses,
     );
   }
 }

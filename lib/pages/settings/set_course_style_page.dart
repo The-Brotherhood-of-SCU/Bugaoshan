@@ -6,7 +6,6 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/course/course_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/common/styled_widget.dart';
 import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:bugaoshan/providers/set_theme_color_provider.dart';
@@ -21,7 +20,6 @@ class SetCourseStylePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     final appConfig = getIt<AppConfigProvider>();
-    final courseProvider = getIt<CourseProvider>();
 
     return ListenableBuilder(
       listenable: Listenable.merge([
@@ -31,7 +29,10 @@ class SetCourseStylePage extends StatelessWidget {
         appConfig.courseCardFontSize,
         appConfig.showCourseGrid,
         appConfig.courseRowHeight,
-        courseProvider.scheduleConfig,
+        appConfig.showTeacherName,
+        appConfig.showLocation,
+        appConfig.showWeekend,
+        appConfig.showNonCurrentWeekCourses,
       ]),
       builder: (context, _) {
         return Scaffold(
@@ -73,7 +74,6 @@ class SetCourseStylePage extends StatelessWidget {
                           context,
                           localizations,
                           appConfig,
-                          courseProvider,
                         ),
                       ),
                     ),
@@ -91,7 +91,6 @@ class SetCourseStylePage extends StatelessWidget {
     BuildContext context,
     AppLocalizations localizations,
     AppConfigProvider appConfig,
-    CourseProvider courseProvider,
   ) {
     return [
       const Divider(),
@@ -194,46 +193,26 @@ class SetCourseStylePage extends StatelessWidget {
       ),
       SwitchListTile(
         title: Text(localizations.showTeacher),
-        value: courseProvider.scheduleConfig.value.showTeacherName,
-        onChanged: (v) {
-          final config = courseProvider.scheduleConfig.value.copyWith(
-            showTeacherName: v,
-          );
-          courseProvider.updateScheduleConfig(config);
-        },
+        value: appConfig.showTeacherName.value,
+        onChanged: (v) => appConfig.showTeacherName.value = v,
         contentPadding: EdgeInsets.zero,
       ),
       SwitchListTile(
         title: Text(localizations.showLocation),
-        value: courseProvider.scheduleConfig.value.showLocation,
-        onChanged: (v) {
-          final config = courseProvider.scheduleConfig.value.copyWith(
-            showLocation: v,
-          );
-          courseProvider.updateScheduleConfig(config);
-        },
+        value: appConfig.showLocation.value,
+        onChanged: (v) => appConfig.showLocation.value = v,
         contentPadding: EdgeInsets.zero,
       ),
       SwitchListTile(
         title: Text(localizations.showWeekend),
-        value: courseProvider.scheduleConfig.value.showWeekend,
-        onChanged: (v) {
-          final config = courseProvider.scheduleConfig.value.copyWith(
-            showWeekend: v,
-          );
-          courseProvider.updateScheduleConfig(config);
-        },
+        value: appConfig.showWeekend.value,
+        onChanged: (v) => appConfig.showWeekend.value = v,
         contentPadding: EdgeInsets.zero,
       ),
       SwitchListTile(
         title: Text(localizations.showNonCurrentWeekCourses),
-        value: courseProvider.scheduleConfig.value.showNonCurrentWeekCourses,
-        onChanged: (v) {
-          final config = courseProvider.scheduleConfig.value.copyWith(
-            showNonCurrentWeekCourses: v,
-          );
-          courseProvider.updateScheduleConfig(config);
-        },
+        value: appConfig.showNonCurrentWeekCourses.value,
+        onChanged: (v) => appConfig.showNonCurrentWeekCourses.value = v,
         contentPadding: EdgeInsets.zero,
       ),
       const Divider(),
@@ -298,13 +277,10 @@ class SetCourseStylePage extends StatelessWidget {
             appConfig.showCourseGrid.value = true;
             appConfig.courseRowHeight.value = 72.0;
             appConfig.backgroundImageOpacity.value = 0.3;
-            final config = courseProvider.scheduleConfig.value.copyWith(
-              showTeacherName: true,
-              showLocation: true,
-              showWeekend: false,
-              showNonCurrentWeekCourses: true,
-            );
-            courseProvider.updateScheduleConfig(config);
+            appConfig.showTeacherName.value = true;
+            appConfig.showLocation.value = true;
+            appConfig.showWeekend.value = false;
+            appConfig.showNonCurrentWeekCourses.value = true;
           },
           icon: const Icon(Icons.refresh),
           label: Text(localizations.resetToDefault),

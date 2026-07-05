@@ -32,6 +32,8 @@ class CourseCard extends StatelessWidget {
       listenable: Listenable.merge([
         appConfig.colorOpacity,
         appConfig.courseCardFontSize,
+        appConfig.showLocation,
+        appConfig.showTeacherName,
       ]),
       builder: (context, _) {
         final isActive = showAllWeeks || course.isActiveInWeek(displayWeek);
@@ -47,13 +49,13 @@ class CourseCard extends StatelessWidget {
         final smallFontSize = (fontSize * 0.85).clamp(8.0, 16.0);
         final details =
             <({String text, int preferredMaxLines, int renderMaxLines})>[
-              if (config.showLocation && course.location.isNotEmpty)
+              if (appConfig.showLocation.value && course.location.isNotEmpty)
                 (
                   text: course.location,
                   preferredMaxLines: 1,
                   renderMaxLines: 4,
                 ),
-              if (config.showTeacherName && course.teacher.isNotEmpty)
+              if (appConfig.showTeacherName.value && course.teacher.isNotEmpty)
                 (text: course.teacher, preferredMaxLines: 1, renderMaxLines: 2),
               (
                 text: l10n.weekRange(course.startWeek, course.endWeek),
