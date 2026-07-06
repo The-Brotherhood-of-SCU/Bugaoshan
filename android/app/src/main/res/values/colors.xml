@@ -16,4 +16,5 @@
     <color name="widget_gray_left">@color/widget_tomorrow_accent</color>
     <color name="widget_gray_name">@color/widget_tomorrow_text_primary</color>
     <color name="widget_gray_meta">@color/widget_tomorrow_text_secondary</color>
+	<color name="ic_launcher_background">#FFFFFF</color>
 </resources>

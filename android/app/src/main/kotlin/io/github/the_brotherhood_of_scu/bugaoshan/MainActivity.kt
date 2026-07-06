@@ -4,6 +4,7 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
@@ -68,6 +69,123 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+
+        // Dynamic App Icon switching (custom implementation to handle namespace vs applicationId)
+        val DYNAMIC_ICON_CHANNEL = "bugaoshan/dynamic_icon"
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, DYNAMIC_ICON_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                try {
+                    when (call.method) {
+                        "getAvailableIcons" -> {
+                            result.success(getAvailableDynamicIcons())
+                        }
+                        "getCurrentIconName" -> {
+                            result.success(getCurrentDynamicIcon())
+                        }
+                        "setAlternateIconName" -> {
+                            val iconName = call.argument<String>("iconName")
+                            setAlternateDynamicIcon(iconName)
+                            result.success(null)
+                        }
+                        else -> result.notImplemented()
+                    }
+                } catch (e: Exception) {
+                    result.error("ERROR", e.message, null)
+                }
+            }
+    }
+
+    /**
+     * Get the base class name for dynamic icon aliases.
+     * Uses MainActivity's own class name to get the correct namespace,
+     * avoiding the applicationId suffix issue (e.g., .debug in debug builds).
+     */
+    private val iconBaseClass: String by lazy {
+        MainActivity::class.java.name // "io.github.the_brotherhood_of_scu.bugaoshan.MainActivity"
+    }
+
+    /** Query available alternate icon names from activity-alias components. */
+    private fun getAvailableDynamicIcons(): List<String> {
+        val pm = packageManager
+        val intent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_LAUNCHER)
+            setPackage(packageName)
+        }
+        val resolveInfos = pm.queryIntentActivities(intent, PackageManager.MATCH_DISABLED_COMPONENTS)
+        val prefix = "$iconBaseClass."
+        val icons = mutableListOf<String>()
+
+        resolveInfos.forEach { resolveInfo ->
+            val componentName = resolveInfo.activityInfo.name
+            if (componentName == iconBaseClass) return@forEach // Skip the real MainActivity
+            if (componentName.startsWith(prefix)) {
+                val suffix = componentName.substring(prefix.length)
+                if (suffix != "default") {
+                    icons.add(suffix)
+                }
+            }
+        }
+        return icons
+    }
+
+    /** Return the currently active alternate icon name, or null for default. */
+    private fun getCurrentDynamicIcon(): String? {
+        val pm = packageManager
+        val mainCN = ComponentName(packageName, iconBaseClass)
+        val mainState = pm.getComponentEnabledSetting(mainCN)
+        if (mainState == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+            || mainState == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT) {
+            return null
+        }
+        // Check each alias
+        for (iconName in getAvailableDynamicIcons()) {
+            val aliasCN = ComponentName(packageName, "$iconBaseClass.$iconName")
+            if (pm.getComponentEnabledSetting(aliasCN)
+                == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
+                return iconName
+            }
+        }
+        return null
+    }
+
+    /** Apply an icon swap: disable everything, then enable the target. */
+    private fun setAlternateDynamicIcon(iconName: String?) {
+        val pm = packageManager
+        val mainCN = ComponentName(packageName, iconBaseClass)
+
+        // Disable the main activity
+        pm.setComponentEnabledSetting(
+            mainCN,
+            PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+            PackageManager.DONT_KILL_APP
+        )
+
+        // Disable all existing aliases
+        for (available in getAvailableDynamicIcons()) {
+            val aliasCN = ComponentName(packageName, "$iconBaseClass.$available")
+            pm.setComponentEnabledSetting(
+                aliasCN,
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                PackageManager.DONT_KILL_APP
+            )
+        }
+
+        if (iconName.isNullOrEmpty()) {
+            // Restore default: re-enable MainActivity
+            pm.setComponentEnabledSetting(
+                mainCN,
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                PackageManager.DONT_KILL_APP
+            )
+        } else {
+            // Enable the target alias
+            val targetCN = ComponentName(packageName, "$iconBaseClass.$iconName")
+            pm.setComponentEnabledSetting(
+                targetCN,
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                PackageManager.DONT_KILL_APP
+            )
+        }
     }
 
     private fun updateAllWidgets() {
