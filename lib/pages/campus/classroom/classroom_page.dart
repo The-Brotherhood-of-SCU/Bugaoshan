@@ -39,7 +39,8 @@ class _ClassroomPageState extends State<ClassroomPage> {
   bool _isInitialLoad = true;
   LoadErrorType? _error;
   DateTime _selectedDate = DateTime.now();
-  bool _showCurrentFreeOnly = false;
+  int? _filterPeriodStart; // 筛选起始节次 1-12, null=不过滤
+  int? _filterPeriodEnd; // 筛选结束节次 1-12, null=不过滤
 
   @override
   void initState() {
@@ -170,7 +171,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
   }
 
   String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    return '${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
   bool get _isToday {
@@ -252,20 +253,21 @@ class _ClassroomPageState extends State<ClassroomPage> {
     final result = _queryResult;
     if (result == null) return [];
 
-    final currentPeriod = _currentPeriod();
-    if (!_showCurrentFreeOnly || !_isToday) {
+    final start = _filterPeriodStart;
+    final end = _filterPeriodEnd;
+    if (start == null || end == null || !_isToday) {
       return result.classrooms;
     }
 
-    if (currentPeriod == null) {
-      return [];
-    }
-
     return result.classrooms.where((room) {
-      final status = result.periodStatusMap(
-        room.classroomNumber,
-      )[currentPeriod];
-      return status == null || status == ClassroomPeriodStatus.free;
+      final statusMap = result.periodStatusMap(room.classroomNumber);
+      for (int p = start; p <= end; p++) {
+        final status = statusMap[p];
+        if (status != null && status != ClassroomPeriodStatus.free) {
+          return false;
+        }
+      }
+      return true;
     }).toList();
   }
 
@@ -434,8 +436,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
     if (_queryResult == null) return const SizedBox.shrink();
 
     final currentPeriod = _currentPeriod();
-    final canFilterCurrentFree = _isToday;
-    final shouldHideInfo = _showCurrentFreeOnly && currentPeriod == null;
+    final hasFilter = _filterPeriodStart != null;
     final rooms = _visibleRooms();
 
     return Column(
@@ -462,53 +463,83 @@ class _ClassroomPageState extends State<ClassroomPage> {
                   ],
                 ),
               ),
-              if (!shouldHideInfo)
-                Text(
-                  '${rooms.length} ${l10n.seats == "座" ? "间教室" : "rooms"}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+              Text(
+                '${rooms.length} ${l10n.seats == "座" ? "间教室" : "rooms"}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
+              ),
             ],
           ),
         ),
+        // ── 紧凑筛选栏 ─────────────────────────────────
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              ActionChip(
-                avatar: const Icon(Icons.calendar_today, size: 18),
-                label: Text(_formatDate(_selectedDate)),
-                onPressed: _pickDate,
-              ),
-              if (!_isToday) ...[
-                ActionChip(label: Text(l10n.today), onPressed: _goToToday),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                ActionChip(
+                  avatar: const Icon(Icons.calendar_today, size: 16),
+                  label: Text(_formatDate(_selectedDate)),
+                  onPressed: _pickDate,
+                  visualDensity: VisualDensity.compact,
+                ),
+                const SizedBox(width: 6),
+                if (!_isToday)
+                  ActionChip(
+                    label: Text(l10n.today),
+                    onPressed: _goToToday,
+                    visualDensity: VisualDensity.compact,
+                  ),
+                if (!_isToday) const SizedBox(width: 6),
+                if (_isToday)
+                  FilterChip(
+                    avatar: const Icon(Icons.access_time, size: 16),
+                    label: Text(l10n.free),
+                    selected:
+                        _filterPeriodStart == currentPeriod &&
+                        _filterPeriodEnd == currentPeriod,
+                    showCheckmark: false,
+                    visualDensity: VisualDensity.compact,
+                    onSelected: currentPeriod != null
+                        ? (selected) {
+                            setState(() {
+                              if (selected) {
+                                _filterPeriodStart = currentPeriod;
+                                _filterPeriodEnd = currentPeriod;
+                              } else {
+                                _clearPeriodFilter();
+                              }
+                            });
+                          }
+                        : null,
+                  ),
+                if (_isToday) const SizedBox(width: 6),
+                if (_isToday)
+                  ActionChip(
+                    avatar: const Icon(Icons.format_list_numbered, size: 16),
+                    label: Text(_periodRangeLabel(l10n)),
+                    onPressed: () => _showPeriodRangeDialog(l10n),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                if (hasFilter) ...[
+                  const SizedBox(width: 6),
+                  ActionChip(
+                    label: Text(l10n.clear),
+                    onPressed: _clearPeriodFilter,
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ],
               ],
-              FilterChip(
-                avatar: const Icon(Icons.filter_alt_outlined, size: 18),
-                label: Text('${l10n.current}${l10n.free}'),
-                selected: _showCurrentFreeOnly && canFilterCurrentFree,
-                onSelected: canFilterCurrentFree
-                    ? (selected) {
-                        setState(() {
-                          _showCurrentFreeOnly = selected;
-                        });
-                      }
-                    : null,
-                showCheckmark: false,
-              ),
-            ],
+            ),
           ),
         ),
         Expanded(
-          child: shouldHideInfo
-              ? const SizedBox.shrink()
-              : rooms.isEmpty
+          child: rooms.isEmpty
               ? Center(
                   child: Text(
-                    _showCurrentFreeOnly ? l10n.noFreeClassrooms : l10n.noData,
+                    hasFilter ? l10n.noFreeClassrooms : l10n.noData,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
@@ -673,6 +704,104 @@ class _ClassroomPageState extends State<ClassroomPage> {
         return Colors.purple;
       case ClassroomPeriodStatus.borrowed:
         return Colors.amber;
+    }
+  }
+
+  void _clearPeriodFilter() {
+    setState(() {
+      _filterPeriodStart = null;
+      _filterPeriodEnd = null;
+    });
+  }
+
+  String _periodRangeLabel(AppLocalizations l10n) {
+    if (_filterPeriodStart == null || _filterPeriodEnd == null) {
+      return l10n.periodUnlimited;
+    }
+    if (_filterPeriodStart == _filterPeriodEnd) {
+      return l10n.periodN(_filterPeriodStart!);
+    }
+    return '${l10n.periodN(_filterPeriodStart!)}-${l10n.periodN(_filterPeriodEnd!)}';
+  }
+
+  Future<void> _showPeriodRangeDialog(AppLocalizations l10n) async {
+    int start = _filterPeriodStart ?? 1;
+    int end = _filterPeriodEnd ?? 12;
+    final result = await showDialog<Map<String, int>>(
+      context: context,
+      builder: (context) {
+        final dialogL10n = AppLocalizations.of(context)!;
+        return StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            title: Text(dialogL10n.period),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Text('${dialogL10n.periodStart}: '),
+                    DropdownButton<int>(
+                      value: start,
+                      items: List.generate(
+                        12,
+                        (i) => DropdownMenuItem(
+                          value: i + 1,
+                          child: Text(dialogL10n.periodN(i + 1)),
+                        ),
+                      ),
+                      onChanged: (v) {
+                        setDialogState(() {
+                          start = v!;
+                          if (start > end) end = start;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Text('${dialogL10n.periodEnd}: '),
+                    DropdownButton<int>(
+                      value: end,
+                      items: List.generate(
+                        12,
+                        (i) => DropdownMenuItem(
+                          value: i + 1,
+                          child: Text(dialogL10n.periodN(i + 1)),
+                        ),
+                      ),
+                      onChanged: (v) {
+                        setDialogState(() {
+                          end = v!;
+                          if (end < start) start = end;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(dialogL10n.cancel),
+              ),
+              FilledButton(
+                onPressed: () =>
+                    Navigator.pop(context, {'start': start, 'end': end}),
+                child: Text(dialogL10n.confirm),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (result != null) {
+      setState(() {
+        _filterPeriodStart = result['start']!;
+        _filterPeriodEnd = result['end']!;
+      });
     }
   }
 }

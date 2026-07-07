@@ -131,7 +131,8 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
               ),
               ListenableBuilder(
                 listenable: courseDataListenable,
-                builder: (context, _) => courseProvider.hasSchedule
+                builder: (context, _) =>
+                    widget.demoMode || courseProvider.hasSchedule
                     ? _buildCourseGrid(context, null)
                     : _buildNoScheduleView(context, null),
               ),
@@ -183,7 +184,9 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
 
   Widget _buildCourseGrid(BuildContext context, Widget? _) {
     final config = courseProvider.scheduleConfig.value;
-    final allCourses = courseProvider.courses.value;
+    final allCourses = widget.demoMode
+        ? _kDemoCourses
+        : courseProvider.courses.value;
     final totalWeeks = config.totalWeeks;
     return _SwipePageView(
       controller: _pageController,
@@ -239,3 +242,75 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
     _syncToCurrentWeek();
   }
 }
+
+/// 课程表样式预览中使用的示例课程。
+/// 覆盖周一至周五，分布在上午和下午时段，便于在 [SetCourseStylePage] 中预览样式变化。
+final List<Course> _kDemoCourses = [
+  Course(
+    name: '高等数学',
+    teacher: '张教授',
+    location: '综C407',
+    startWeek: 1,
+    endWeek: 20,
+    dayOfWeek: 1,
+    startSection: 1,
+    endSection: 2,
+    colorValue: 0xFF1976D2,
+  ),
+  Course(
+    name: '大学英语（三）',
+    teacher: '李老师',
+    location: '综B207',
+    startWeek: 1,
+    endWeek: 20,
+    dayOfWeek: 2,
+    startSection: 3,
+    endSection: 4,
+    colorValue: 0xFF388E3C,
+  ),
+  Course(
+    name: '程序设计基础',
+    teacher: '王老师',
+    location: '二基楼B501',
+    startWeek: 1,
+    endWeek: 20,
+    dayOfWeek: 3,
+    startSection: 6,
+    endSection: 8,
+    colorValue: 0xFFE64A19,
+  ),
+  Course(
+    name: '线性代数',
+    teacher: '赵教授',
+    location: '综C103',
+    startWeek: 1,
+    endWeek: 20,
+    dayOfWeek: 4,
+    startSection: 1,
+    endSection: 2,
+    colorValue: 0xFF7B1FA2,
+  ),
+  Course(
+    name: '大学物理（下）',
+    teacher: '陈老师',
+    location: '综B307',
+    startWeek: 1,
+    endWeek: 20,
+    dayOfWeek: 5,
+    startSection: 3,
+    endSection: 4,
+    colorValue: 0xFF00838F,
+  ),
+  // 第15周才开始的课程，用于展示「显示非本周课程」开关效果
+  Course(
+    name: '体育',
+    teacher: '刘老师',
+    location: '江安体育馆',
+    startWeek: 15,
+    endWeek: 20,
+    dayOfWeek: 1,
+    startSection: 5,
+    endSection: 6,
+    colorValue: 0xFFF9A825,
+  ),
+];

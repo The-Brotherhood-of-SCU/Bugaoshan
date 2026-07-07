@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
@@ -221,12 +222,22 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
       return;
     }
 
+    // 记录教务处标记为"（当前）"的学期名（剥离后缀后），导入完成后切到它
+    String? currentSemesterCleanName;
+
     setState(() => _loading = true);
 
     // 1. 获取学期列表
     List<({String value, String label})> semesters;
     try {
       semesters = await getIt<ZhjwApiService>().fetchSemesters();
+
+      for (final s in semesters) {
+        if (s.label.contains('（当前）') || s.label.contains('(当前)')) {
+          currentSemesterCleanName = _cleanSemesterLabel(s.label);
+          break;
+        }
+      }
     } on ScuException catch (e) {
       if (mounted) showInfoDialog(title: l10n.importFailed, content: e.message);
       if (mounted) setState(() => _loading = false);
@@ -244,7 +255,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
 
     if (!mounted) return;
 
-    // 2. 让用户选择学期（单个或全部）
+    // 2. 让用户选择学期（单个或全部）—— 下拉框保持显示原始 label（含"（当前）"），方便用户识别
     String selectedValue = semesters.first.value;
     // null = 取消, true = 全部导入, false = 导入选中学期
     final choice = await showDialog<Object>(
@@ -295,7 +306,9 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
     _BatchAction? batchAction;
     if (importAll) {
       final hasConflict = toImport.any(
-        (s) => widget.courseProvider.isScheduleNameTaken(s.label),
+        (s) => widget.courseProvider.isScheduleNameTaken(
+          _cleanSemesterLabel(s.label),
+        ),
       );
       if (hasConflict && mounted) {
         batchAction = await showDialog<_BatchAction>(
@@ -336,7 +349,8 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         );
         if (!mounted) return;
 
-        String scheduleName = semester.label;
+        // 剥离"（当前）"后缀，教务处用此标记当前学期，但不应出现在课表名中
+        String scheduleName = _cleanSemesterLabel(semester.label);
 
         // 单个导入时让用户自定义名称
         if (!importAll) {
@@ -420,6 +434,17 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         }
       }
 
+      // 导入完成后，将教务处标记为"（当前）"的课表设为当前
+      if (currentSemesterCleanName != null && mounted) {
+        final allSchedules = widget.courseProvider.allSchedules.value;
+        final match = allSchedules.where(
+          (s) => s.semesterName.trim() == currentSemesterCleanName,
+        );
+        if (match.isNotEmpty) {
+          await widget.courseProvider.switchSchedule(match.first.id);
+        }
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -484,6 +509,11 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  /// 剥离教务处学期标签中的"（当前）"标记。
+  String _cleanSemesterLabel(String label) {
+    return label.replaceAll('（当前）', '').replaceAll('(当前)', '').trim();
   }
 
   ({ScheduleConfig config, List<Course> courses}) _parseJwxtData(dynamic data) {
@@ -569,7 +599,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
     }
 
     final hasWeekend = courses.any((c) => c.dayOfWeek == 6 || c.dayOfWeek == 7);
-    config.showWeekend = hasWeekend;
+    getIt<AppConfigProvider>().showWeekend.value = hasWeekend;
 
     return (config: config, courses: courses);
   }

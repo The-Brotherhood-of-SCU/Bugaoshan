@@ -167,6 +167,23 @@ class AppLocalizationsZh extends AppLocalizations {
   String get period => '节次';
 
   @override
+  String periodN(int n) {
+    return '第 $n 节';
+  }
+
+  @override
+  String get periodStart => '起始';
+
+  @override
+  String get periodEnd => '结束';
+
+  @override
+  String get periodUnlimited => '不限';
+
+  @override
+  String get clear => '清除';
+
+  @override
   String get loading => '加载中...';
 
   @override
@@ -710,6 +727,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportSchedule => '导出课表';
 
   @override
+  String get exportExamPlan => '导出考表';
+
+  @override
   String get exportScheduleAsCopy => '复制到剪切板';
 
   @override
@@ -717,6 +737,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get exportScheduleAsCopySuccess => '课表已复制到剪切板';
+
+  @override
+  String get exportExamPlanAsCopySuccess => '考表已复制到剪切板';
 
   @override
   String get exportScheduleAsCopyFailed => '复制失败，您可以稍后再试';
@@ -744,6 +767,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get exportScheduleAddToCalendarFailed => '导入失败';
+
+  @override
+  String get exportScheduleSelectCalendar => '选择目标日历';
+
+  @override
+  String get exportScheduleCalendarDefault => '默认日历';
 
   @override
   String get copySuffix => ' (副本)';

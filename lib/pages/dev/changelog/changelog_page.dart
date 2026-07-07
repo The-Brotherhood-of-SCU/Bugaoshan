@@ -100,7 +100,7 @@ class _ChangelogPageState extends State<ChangelogPage> {
           : ListView.separated(
               padding: const EdgeInsets.symmetric(vertical: 8),
               itemCount: _entries.length,
-              separatorBuilder: (_, __) => const Divider(height: 1, indent: 72),
+              separatorBuilder: (_, _) => const Divider(height: 1, indent: 72),
               itemBuilder: (context, index) {
                 final entry = _entries[index];
                 final isUnreleased = entry.version == 'Unreleased';

@@ -174,6 +174,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get period => 'Period';
 
   @override
+  String periodN(int n) {
+    return 'Period $n';
+  }
+
+  @override
+  String get periodStart => 'Start';
+
+  @override
+  String get periodEnd => 'End';
+
+  @override
+  String get periodUnlimited => 'Any';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
   String get loading => 'Loading...';
 
   @override
@@ -733,6 +750,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportSchedule => 'Export Schedule';
 
   @override
+  String get exportExamPlan => 'Export Exam Schedule';
+
+  @override
   String get exportScheduleAsCopy => 'Copy to Clipboard';
 
   @override
@@ -740,6 +760,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportScheduleAsCopySuccess => 'Schedule data copied to clipboard';
+
+  @override
+  String get exportExamPlanAsCopySuccess =>
+      'Exam schedule data copied to clipboard';
 
   @override
   String get exportScheduleAsCopyFailed =>
@@ -768,6 +792,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportScheduleAddToCalendarFailed => 'Import failed';
+
+  @override
+  String get exportScheduleSelectCalendar => 'Choose Calendar';
+
+  @override
+  String get exportScheduleCalendarDefault => 'Default calendar';
 
   @override
   String get copySuffix => ' (Copy)';

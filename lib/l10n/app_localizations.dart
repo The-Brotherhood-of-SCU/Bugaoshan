@@ -409,6 +409,36 @@ abstract class AppLocalizations {
   /// **'Period'**
   String get period;
 
+  /// Period number format
+  ///
+  /// In en, this message translates to:
+  /// **'Period {n}'**
+  String periodN(int n);
+
+  /// No description provided for @periodStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get periodStart;
+
+  /// No description provided for @periodEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get periodEnd;
+
+  /// No description provided for @periodUnlimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Any'**
+  String get periodUnlimited;
+
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
   /// No description provided for @loading.
   ///
   /// In en, this message translates to:
@@ -1453,6 +1483,12 @@ abstract class AppLocalizations {
   /// **'Export Schedule'**
   String get exportSchedule;
 
+  /// No description provided for @exportExamPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Exam Schedule'**
+  String get exportExamPlan;
+
   /// No description provided for @exportScheduleAsCopy.
   ///
   /// In en, this message translates to:
@@ -1470,6 +1506,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Schedule data copied to clipboard'**
   String get exportScheduleAsCopySuccess;
+
+  /// No description provided for @exportExamPlanAsCopySuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Exam schedule data copied to clipboard'**
+  String get exportExamPlanAsCopySuccess;
 
   /// No description provided for @exportScheduleAsCopyFailed.
   ///
@@ -1524,6 +1566,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Import failed'**
   String get exportScheduleAddToCalendarFailed;
+
+  /// No description provided for @exportScheduleSelectCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Calendar'**
+  String get exportScheduleSelectCalendar;
+
+  /// No description provided for @exportScheduleCalendarDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Default calendar'**
+  String get exportScheduleCalendarDefault;
 
   /// No description provided for @copySuffix.
   ///

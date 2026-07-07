@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
 
@@ -35,8 +37,11 @@ class GridHeaderRow extends StatelessWidget {
       l10n.friday,
       l10n.saturday,
     ];
+    final appConfig = getIt<AppConfigProvider>();
     final theme = Theme.of(context);
-    final visibleDays = config.showWeekend ? dayNames : dayNames.sublist(1, 6);
+    final visibleDays = appConfig.showWeekend.value
+        ? dayNames
+        : dayNames.sublist(1, 6);
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -66,7 +71,7 @@ class GridHeaderRow extends StatelessWidget {
               children: List.generate(visibleDays.length, (index) {
                 final name = visibleDays[index];
                 // 周日为 index 0，计算当前列对应的星期几
-                final dayOfWeek = config.showWeekend
+                final dayOfWeek = appConfig.showWeekend.value
                     ? (index == 0 ? 7 : index)
                     : index + 1;
                 // 周日在周一之前，dayOfWeek=7 时应为 -1 而非 6

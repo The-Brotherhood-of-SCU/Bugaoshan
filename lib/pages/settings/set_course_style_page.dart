@@ -29,8 +29,10 @@ class SetCourseStylePage extends StatelessWidget {
         appConfig.courseCardFontSize,
         appConfig.showCourseGrid,
         appConfig.courseRowHeight,
-        appConfig.backgroundImagePath,
-        appConfig.backgroundImageOpacity,
+        appConfig.showTeacherName,
+        appConfig.showLocation,
+        appConfig.showWeekend,
+        appConfig.showNonCurrentWeekCourses,
       ]),
       builder: (context, _) {
         return Scaffold(
@@ -50,7 +52,12 @@ class SetCourseStylePage extends StatelessWidget {
                       padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(AppShapes.medium),
-                        child: const CoursePage(demoMode: true),
+                        child: CoursePage(
+                          key: ValueKey(
+                            appConfig.backgroundImagePath.value ?? '__none__',
+                          ),
+                          demoMode: true,
+                        ),
                       ),
                     ),
                   ),
@@ -174,6 +181,41 @@ class SetCourseStylePage extends StatelessWidget {
         ],
       ),
       const Divider(),
+      // Display settings
+      Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          localizations.displaySetting,
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+      ),
+      SwitchListTile(
+        title: Text(localizations.showTeacher),
+        value: appConfig.showTeacherName.value,
+        onChanged: (v) => appConfig.showTeacherName.value = v,
+        contentPadding: EdgeInsets.zero,
+      ),
+      SwitchListTile(
+        title: Text(localizations.showLocation),
+        value: appConfig.showLocation.value,
+        onChanged: (v) => appConfig.showLocation.value = v,
+        contentPadding: EdgeInsets.zero,
+      ),
+      SwitchListTile(
+        title: Text(localizations.showWeekend),
+        value: appConfig.showWeekend.value,
+        onChanged: (v) => appConfig.showWeekend.value = v,
+        contentPadding: EdgeInsets.zero,
+      ),
+      SwitchListTile(
+        title: Text(localizations.showNonCurrentWeekCourses),
+        value: appConfig.showNonCurrentWeekCourses.value,
+        onChanged: (v) => appConfig.showNonCurrentWeekCourses.value = v,
+        contentPadding: EdgeInsets.zero,
+      ),
+      const Divider(),
       // Background image settings
       Align(
         alignment: Alignment.centerLeft,
@@ -235,6 +277,10 @@ class SetCourseStylePage extends StatelessWidget {
             appConfig.showCourseGrid.value = true;
             appConfig.courseRowHeight.value = 72.0;
             appConfig.backgroundImageOpacity.value = 0.3;
+            appConfig.showTeacherName.value = true;
+            appConfig.showLocation.value = true;
+            appConfig.showWeekend.value = false;
+            appConfig.showNonCurrentWeekCourses.value = true;
           },
           icon: const Icon(Icons.refresh),
           label: Text(localizations.resetToDefault),

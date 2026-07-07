@@ -36,12 +36,7 @@ class _AboutPageState extends State<AboutPage> {
     appConfig.hasUpdateNotification.value = false;
     setState(() => _isCheckingUpdate = true);
     try {
-      final includePreview = appConfig.usePreviewUpdateSource.value;
-      final result = await updateService.checkForUpdate(
-        includePreview: includePreview,
-        currentVersion: versionProvider.currentVersion,
-        gitTag: includePreview ? versionProvider.gitTag : null,
-      );
+      final result = await updateService.checkForUpdate();
       if (!mounted) return;
 
       if (result.hasUpdate && result.release != null) {

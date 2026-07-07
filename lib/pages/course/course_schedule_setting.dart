@@ -4,12 +4,14 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/course/time_slot_setting_page.dart';
+import 'package:bugaoshan/pages/settings/set_course_style_page.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/info_card.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/utils/app_shapes.dart';
 
 class CourseScheduleSetting extends StatefulWidget {
@@ -32,10 +34,6 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
   late int _breakDuration;
   late bool _autoSyncTime;
   late List<TimeSlot> _timeSlots;
-  late bool _showTeacher;
-  late bool _showLocation;
-  late bool _showWeekend;
-  late bool _showNonCurrentWeekCourses;
   bool _fetchingCurrentWeek = false;
 
   void _loadConfig() {
@@ -49,10 +47,6 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
     _breakDuration = config.breakDuration;
     _autoSyncTime = config.autoSyncTime;
     _timeSlots = List.from(config.timeSlots);
-    _showTeacher = config.showTeacherName;
-    _showLocation = config.showLocation;
-    _showWeekend = config.showWeekend;
-    _showNonCurrentWeekCourses = config.showNonCurrentWeekCourses;
   }
 
   @override
@@ -139,41 +133,15 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
           ),
           const SizedBox(height: 14),
 
-          // Display settings
-          _SectionTitle(title: l10n.displaySetting),
+          // Course style entry
+          _SectionTitle(title: l10n.courseStyleSetting),
           InfoCard(
             children: [
-              _SwitchRow(
-                label: l10n.showTeacher,
-                value: _showTeacher,
-                onChanged: (v) {
-                  setState(() => _showTeacher = v);
-                  _save();
-                },
-              ),
-              _SwitchRow(
-                label: l10n.showLocation,
-                value: _showLocation,
-                onChanged: (v) {
-                  setState(() => _showLocation = v);
-                  _save();
-                },
-              ),
-              _SwitchRow(
-                label: l10n.showWeekend,
-                value: _showWeekend,
-                onChanged: (v) {
-                  setState(() => _showWeekend = v);
-                  _save();
-                },
-              ),
-              _SwitchRow(
-                label: l10n.showNonCurrentWeekCourses,
-                value: _showNonCurrentWeekCourses,
-                onChanged: (v) {
-                  setState(() => _showNonCurrentWeekCourses = v);
-                  _save();
-                },
+              IconTile(
+                icon: Icons.style,
+                label: l10n.courseStyleSetting,
+                onTap: () =>
+                    popupOrNavigate(context, const SetCourseStylePage()),
               ),
             ],
           ),
@@ -442,10 +410,6 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
       breakDuration: _breakDuration,
       autoSyncTime: _autoSyncTime,
       timeSlots: _timeSlots,
-      showTeacherName: _showTeacher,
-      showLocation: _showLocation,
-      showWeekend: _showWeekend,
-      showNonCurrentWeekCourses: _showNonCurrentWeekCourses,
     );
     await courseProvider.updateScheduleConfig(config);
   }
@@ -464,33 +428,6 @@ class _SectionTitle extends StatelessWidget {
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
           color: Theme.of(context).colorScheme.primary,
         ),
-      ),
-    );
-  }
-}
-
-class _SwitchRow extends StatelessWidget {
-  final String label;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  const _SwitchRow({
-    required this.label,
-    required this.value,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(label, style: Theme.of(context).textTheme.bodyLarge),
-          ),
-          Switch(value: value, onChanged: onChanged),
-        ],
       ),
     );
   }

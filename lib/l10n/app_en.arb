@@ -71,6 +71,17 @@
     "classroomCannotBorrow": "Not Borrowable",
     "classroomRemark": "Remark",
     "period": "Period",
+    "periodN": "Period {n}",
+    "@periodN": {
+        "description": "Period number format",
+        "placeholders": {
+            "n": {"type": "int"}
+        }
+    },
+    "periodStart": "Start",
+    "periodEnd": "End",
+    "periodUnlimited": "Any",
+    "clear": "Clear",
     "loading": "Loading...",
     "loadFailed": "Load Failed",
     "retry": "Retry",
@@ -270,9 +281,11 @@
     "defaultScheduleName": "Default Schedule",
     "deleteScheduleConfirm": "Are you sure you want to delete schedule \"{name}\"?",
     "exportSchedule": "Export Schedule",
+    "exportExamPlan": "Export Exam Schedule",
     "exportScheduleAsCopy":"Copy to Clipboard",
     "exportScheduleAsIcs":"Export to Calendar File",
     "exportScheduleAsCopySuccess":"Schedule data copied to clipboard",
+    "exportExamPlanAsCopySuccess":"Exam schedule data copied to clipboard",
     "exportScheduleAsCopyFailed":"Copy failed, maybe you can try later",
     "exportScheduleAsIcsTo":"Save Calendar File to...",
     "exportScheduleAsIcsSuccess":"File saved successfully",
@@ -282,6 +295,8 @@
     "exportScheduleAddToCalendar":"Import to Calendar",
     "exportScheduleAddToCalendarSuccess":"Imported to calendar",
     "exportScheduleAddToCalendarFailed":"Import failed",
+    "exportScheduleSelectCalendar":"Choose Calendar",
+    "exportScheduleCalendarDefault":"Default calendar",
     "copySuffix": " (Copy)",
     "notThisWeek": "[Not]",
     "actualCurrentWeek": "Week {week}",

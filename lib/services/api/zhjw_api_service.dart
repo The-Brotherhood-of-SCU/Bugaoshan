@@ -516,7 +516,7 @@ class ZhjwApiService {
   List<ExamInfo> _parseExamCards(String html) {
     final cards = <ExamInfo>[];
     final blocks = RegExp(
-      r'<div class="widget-box widget-color-\w+">(.*?)'
+      r'<div class="widget-box widget-color-\w+(?: collapsed)?">(.*?)'
       r'</div>\s*</div>\s*</div>\s*</div>',
       dotAll: true,
     ).allMatches(html);
@@ -530,12 +530,12 @@ class ZhjwApiService {
       }
 
       final courseName =
-          firstMatch(
+          (firstMatch(
             RegExp(
               r'<h5 class="widget-title smaller">\s*(.*?)\s*</h5>',
               dotAll: true,
             ),
-          ) ??
+          )?.replaceAll(RegExp(r'\s*（已结束）'), '').trim()) ??
           '未知';
       final weekNum = firstMatch(RegExp(r'(\d+)周')) ?? '';
       final date = firstMatch(RegExp(r'(\d{4}-\d{2}-\d{2})\s*&nbsp;')) ?? '未知';

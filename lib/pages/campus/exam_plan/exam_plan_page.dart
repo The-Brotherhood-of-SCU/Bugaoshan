@@ -6,6 +6,8 @@ import 'package:bugaoshan/pages/campus/exam_plan/models/exam_info.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/services/ics_service.dart';
+import 'package:bugaoshan/utils/calendar_export_utils.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
@@ -93,6 +95,14 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
       appBar: AppBar(
         title: Text(l10n.examPlan),
         actions: [
+          if (getIt<ScuAuthProvider>().isLoggedIn &&
+              !_loading &&
+              _exams.isNotEmpty)
+            IconButton(
+              tooltip: l10n.exportExamPlan,
+              onPressed: () => _showCalendarActions(l10n),
+              icon: const Icon(Icons.calendar_month_outlined),
+            ),
           if (getIt<ScuAuthProvider>().isLoggedIn && !_loading)
             IconButton(onPressed: _loadData, icon: const Icon(Icons.refresh)),
         ],
@@ -146,7 +156,8 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
 
   Widget _buildExamCard(ExamInfo exam) {
     final colorScheme = Theme.of(context).colorScheme;
-    final primary = colorScheme.primary;
+    final past = exam.isPast;
+    final primary = past ? colorScheme.outline : colorScheme.primary;
 
     String dateLabel = exam.date;
     String dateSub = exam.weekday;
@@ -158,6 +169,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
     return Card(
       margin: const EdgeInsets.only(bottom: 14),
       clipBehavior: Clip.antiAlias,
+      color: past ? colorScheme.surfaceContainerLow : null,
       child: IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -179,14 +191,24 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    dateSub,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: primary.withValues(alpha: 0.7),
-                      fontWeight: FontWeight.w500,
+                  if (past)
+                    Text(
+                      '已结束',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: colorScheme.outline.withValues(alpha: 0.7),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    )
+                  else
+                    Text(
+                      dateSub,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: primary.withValues(alpha: 0.7),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -208,6 +230,11 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
                                 ?.copyWith(
                                   fontWeight: FontWeight.w600,
                                   height: 1.3,
+                                  color: past
+                                      ? colorScheme.onSurface.withValues(
+                                          alpha: 0.5,
+                                        )
+                                      : null,
                                 ),
                           ),
                         ),
@@ -240,6 +267,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
                       Icons.access_time_rounded,
                       exam.timeRange,
                       colorScheme,
+                      past: past,
                     ),
                     const SizedBox(height: 8),
                     // 地点
@@ -247,6 +275,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
                       Icons.location_on_outlined,
                       exam.location,
                       colorScheme,
+                      past: past,
                     ),
                     const SizedBox(height: 8),
                     // 座位号 + 准考证号 同行
@@ -257,6 +286,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
                             Icons.event_seat_outlined,
                             exam.seatNumber,
                             colorScheme,
+                            past: past,
                           ),
                         ),
                         if (exam.ticketNumber.isNotEmpty)
@@ -265,6 +295,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
                               Icons.confirmation_number_outlined,
                               exam.ticketNumber,
                               colorScheme,
+                              past: past,
                             ),
                           ),
                       ],
@@ -279,9 +310,11 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
                           vertical: 7,
                         ),
                         decoration: BoxDecoration(
-                          color: colorScheme.surfaceContainerHighest.withValues(
-                            alpha: 0.5,
-                          ),
+                          color:
+                              (past
+                                      ? colorScheme.outlineVariant
+                                      : colorScheme.surfaceContainerHighest)
+                                  .withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(AppShapes.small),
                         ),
                         child: Row(
@@ -289,7 +322,9 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
                             Icon(
                               Icons.info_outline_rounded,
                               size: 14,
-                              color: colorScheme.onSurfaceVariant,
+                              color: past
+                                  ? colorScheme.onSurface.withValues(alpha: 0.4)
+                                  : colorScheme.onSurfaceVariant,
                             ),
                             const SizedBox(width: 6),
                             Expanded(
@@ -297,7 +332,11 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
                                 exam.tip,
                                 style: Theme.of(context).textTheme.labelSmall
                                     ?.copyWith(
-                                      color: colorScheme.onSurfaceVariant,
+                                      color: past
+                                          ? colorScheme.onSurface.withValues(
+                                              alpha: 0.4,
+                                            )
+                                          : colorScheme.onSurfaceVariant,
                                     ),
                               ),
                             ),
@@ -315,20 +354,67 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
     );
   }
 
-  Widget _infoChip(IconData icon, String text, ColorScheme colorScheme) {
+  Future<void> _showCalendarActions(AppLocalizations l10n) async {
+    final action = await CalendarExportUtils.showActionSheet(
+      context,
+      l10n,
+      title: l10n.exportExamPlan,
+      includeCopy: true,
+    );
+    if (!mounted || action == null) return;
+
+    await CalendarExportUtils.handleExportAction(
+      context: context,
+      l10n: l10n,
+      action: action,
+      copyToClipboard: () => CalendarExportUtils.copyJsonToClipboard({
+        'exams': _exams.map((exam) => exam.toJson()).toList(),
+      }, logTag: 'ExamPlanPage'),
+      copySuccessMessage: l10n.exportExamPlanAsCopySuccess,
+      copyFailedMessage: l10n.exportScheduleAsCopyFailed,
+      buildCalendarPayload: () => IcsService.genExamExportPayload(
+        exams: _exams,
+        fileName: '${_examPlanFileName()}.ics',
+      ),
+      logTag: 'ExamPlanPage',
+    );
+  }
+
+  String _examPlanFileName() {
+    final dates =
+        _exams
+            .map((exam) => exam.date)
+            .where((date) => RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(date))
+            .toList()
+          ..sort();
+    final suffix = dates.isEmpty ? 'unknown' : '${dates.first}_${dates.last}';
+    return 'exam_plan_$suffix'.replaceAll(RegExp(r'[^\w\u4e00-\u9fff-]'), '_');
+  }
+
+  Widget _infoChip(
+    IconData icon,
+    String text,
+    ColorScheme colorScheme, {
+    bool past = false,
+  }) {
+    final iconColor = past
+        ? colorScheme.onSurface.withValues(alpha: 0.35)
+        : colorScheme.onSurfaceVariant;
+    final textColor = past
+        ? colorScheme.onSurface.withValues(alpha: 0.45)
+        : colorScheme.onSurface.withValues(alpha: 0.8);
     return Padding(
       padding: EdgeInsets.zero,
       child: Row(
         children: [
-          Icon(icon, size: 15, color: colorScheme.onSurfaceVariant),
+          Icon(icon, size: 15, color: iconColor),
           const SizedBox(width: 6),
           Expanded(
             child: Text(
               text,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurface.withValues(alpha: 0.8),
-                height: 1.3,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: textColor, height: 1.3),
             ),
           ),
         ],
