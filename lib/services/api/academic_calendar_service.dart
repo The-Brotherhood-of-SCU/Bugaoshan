@@ -72,7 +72,7 @@ class AcademicCalendarService {
 
     final sanitizedSemesterName = semester.name.replaceAll(RegExp(r'[^\w\u4e00-\u9fff.-]'), '_');
     return CalendarExportPayload(
-      fileName: 'SCU_Calendar_${sanitizedSemesterName}.ics',
+      fileName: 'SCU_Calendar_$sanitizedSemesterName.ics',
       icsContent: _genCalendarIcs(events),
       events: events.map((e) => e.toPlatformJson()).toList(),
     );

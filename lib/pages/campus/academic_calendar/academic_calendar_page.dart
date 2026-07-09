@@ -284,7 +284,7 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       child: DropdownButtonFormField<_CalendarEntry>(
-        value: _selected,
+        initialValue: _selected,
         decoration: InputDecoration(
           labelText: l10n.selectAcademicYear,
           border: const OutlineInputBorder(),
@@ -402,7 +402,7 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       child: DropdownButtonFormField<AcademicCalendarSemester>(
-        value: _selectedSemester,
+        initialValue: _selectedSemester,
         decoration: InputDecoration(
           labelText: l10n.selectAcademicYear,
           border: const OutlineInputBorder(),
@@ -481,9 +481,8 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
             ),
             const SizedBox(height: 12),
             Text(
-              l10n.calendarSemesterStart(DateFormat('yyyy-MM-dd').format(semester.startDate)) +
-                  ' (${l10n.calendarWeeksTotal(semester.totalWeeks)})',
-              style: theme.textTheme.bodyMedium?.copyWith(color: onCardColor.withOpacity(0.85)),
+              '${l10n.calendarSemesterStart(DateFormat('yyyy-MM-dd').format(semester.startDate))} (${l10n.calendarWeeksTotal(semester.totalWeeks)})',
+              style: theme.textTheme.bodyMedium?.copyWith(color: onCardColor.withValues(alpha: 0.85)),
             ),
             if (nextEvent != null) ...[
               const SizedBox(height: 8),
@@ -588,7 +587,7 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
             Expanded(
               child: Container(
                 width: 2,
-                color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
               ),
             ),
         ],
