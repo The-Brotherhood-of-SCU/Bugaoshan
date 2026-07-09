@@ -3954,6 +3954,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unreleased'**
   String get unreleased;
+
+  /// No description provided for @dockLabelZysc.
+  ///
+  /// In en, this message translates to:
+  /// **'Volunteer'**
+  String get dockLabelZysc;
+
+  /// No description provided for @zyscTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Volunteer Sichuan'**
+  String get zyscTitle;
+
+  /// No description provided for @zyscDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse and sign up for volunteer activities'**
+  String get zyscDesc;
 }
 
 class _AppLocalizationsDelegate

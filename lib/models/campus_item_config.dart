@@ -1,3 +1,4 @@
+import 'package:bugaoshan/pages/campus/zysc/zysc_page.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/utils/constants.dart';
@@ -205,6 +206,16 @@ final campusItemDownloads = CampusItemConfig(
   page: () => const NoticeDownloadedPage(),
 );
 
+final campusItemZysc = CampusItemConfig(
+  id: dockIdZysc,
+  icon: Icons.event_outlined,
+  selectedIcon: Icons.event,
+  dockLabel: (l10n) => l10n.dockLabelZysc,
+  dockFullLabel: (l10n) => l10n.zyscTitle,
+  desc: (l10n) => l10n.zyscDesc,
+  page: () => const ZyscPage(),
+);
+
 final campusSections = [
   CampusSection(
     title: (l10n) => l10n.academicSection,
@@ -225,6 +236,7 @@ final campusSections = [
       campusItemNetworkDevice,
       campusItemBalanceQuery,
       campusItemAcademicCalendar,
+      campusItemZysc,
     ],
   ),
   CampusSection(

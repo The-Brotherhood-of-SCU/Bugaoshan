@@ -772,5 +772,8 @@
     "viewChangelog": "版本更新日志",
     "viewChangelogSubtitle": "查看历史版本更新记录",
     "changelog": "更新日志",
-    "unreleased": "未发布"
+    "unreleased": "未发布",
+    "dockLabelZysc": "志愿",
+    "zyscTitle": "志愿四川",
+    "zyscDesc": "查看志愿服务活动并参与报名"
 }

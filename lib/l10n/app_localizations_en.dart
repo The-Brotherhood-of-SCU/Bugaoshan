@@ -2063,4 +2063,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unreleased => 'Unreleased';
+
+  @override
+  String get dockLabelZysc => 'Volunteer';
+
+  @override
+  String get zyscTitle => 'Volunteer Sichuan';
+
+  @override
+  String get zyscDesc => 'Browse and sign up for volunteer activities';
 }

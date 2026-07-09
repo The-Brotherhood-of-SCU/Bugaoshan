@@ -1,3 +1,4 @@
+import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/downloads/shared_notice_downloads.dart';
 import 'package:bugaoshan/pages/campus/notice/webview_notice_page.dart';
 import 'package:flutter/material.dart';
@@ -7,14 +8,18 @@ class CampusNoticePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const WebViewNoticePage(
+    final l10n = AppLocalizations.of(context);
+    final title = l10n!.jwcTabLabel;
+    return WebViewNoticePage(
       url: 'https://jwc.scu.edu.cn/tzgg.htm',
       beautifyAsset: 'assets/js/jwc_notice_beautify.js',
-      title: '教务处',
-      initialTab: 0,
-      attachmentDir: kNoticeAttachmentDir,
+      title: title,
       heroTag: 'jwc_attach_fab',
       debugLabel: 'JwcNotice',
+      downloadOptions: DownloadOptions(
+        attachmentDir: kNoticeAttachmentDir,
+        initialTab: 0,
+      ),
     );
   }
 }

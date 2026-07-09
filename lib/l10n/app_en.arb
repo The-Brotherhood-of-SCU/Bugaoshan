@@ -777,5 +777,8 @@
     "viewChangelog": "Version Changelog",
     "viewChangelogSubtitle": "View historical version update logs",
     "changelog": "Changelog",
-    "unreleased": "Unreleased"
+    "unreleased": "Unreleased",
+    "dockLabelZysc": "Volunteer",
+    "zyscTitle": "Volunteer Sichuan",
+    "zyscDesc": "Browse and sign up for volunteer activities"
 }

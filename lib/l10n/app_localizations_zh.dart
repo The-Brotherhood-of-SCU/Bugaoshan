@@ -2005,6 +2005,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get unreleased => '未发布';
+
+  @override
+  String get dockLabelZysc => '志愿';
+
+  @override
+  String get zyscTitle => '志愿四川';
+
+  @override
+  String get zyscDesc => '查看志愿服务活动并参与报名';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).
