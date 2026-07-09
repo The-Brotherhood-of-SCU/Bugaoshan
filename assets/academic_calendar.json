@@ -1,0 +1,30 @@
+{
+  "semesters": [
+    {
+      "name": "2025-2026学年春季学期",
+      "startDate": "2026-03-02",
+      "totalWeeks": 20,
+      "events": [
+        { "date": "2026-03-02", "label": "正式上课 / 教学第一周开始", "tag": "start" },
+        { "date": "2026-04-04", "endDate": "2026-04-06", "label": "清明节假期", "tag": "holiday" },
+        { "date": "2026-05-01", "endDate": "2026-05-05", "label": "劳动节假期", "tag": "holiday" },
+        { "date": "2026-06-18", "endDate": "2026-06-20", "label": "端午节假期", "tag": "holiday" },
+        { "date": "2026-07-06", "endDate": "2026-07-17", "label": "期末考试周", "tag": "exam" },
+        { "date": "2026-07-18", "label": "暑假开始", "tag": "holiday" }
+      ]
+    },
+    {
+      "name": "2026-2027学年秋季学期",
+      "startDate": "2026-09-07",
+      "totalWeeks": 20,
+      "events": [
+        { "date": "2026-09-07", "label": "正式上课 / 教学第一周开始", "tag": "start" },
+        { "date": "2026-09-22", "label": "中秋节假期", "tag": "holiday" },
+        { "date": "2026-10-01", "endDate": "2026-10-07", "label": "国庆节假期", "tag": "holiday" },
+        { "date": "2027-01-01", "label": "元旦假期", "tag": "holiday" },
+        { "date": "2027-01-11", "endDate": "2027-01-22", "label": "期末考试周", "tag": "exam" },
+        { "date": "2027-01-23", "label": "寒假开始", "tag": "holiday" }
+      ]
+    }
+  ]
+}
