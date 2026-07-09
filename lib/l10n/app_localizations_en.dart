@@ -50,6 +50,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wizardImportButton => 'Import Schedule';
 
   @override
+  String get wizardHasSchedule => 'Schedule Exists';
+
+  @override
   String get wizardImportHint => 'Auto-fetch schedule after login';
 
   @override

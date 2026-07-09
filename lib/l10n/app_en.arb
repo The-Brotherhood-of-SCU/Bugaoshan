@@ -20,6 +20,7 @@
     "wizardLoginDone": "Logged in",
     "wizardLoginButton": "Go to Login",
     "wizardImportButton": "Import Schedule",
+    "wizardHasSchedule": "Schedule Exists",
     "wizardImportHint": "Auto-fetch schedule after login",
     "wizardFeatureTitle": "Explore More Features",
     "wizardFeatureCourse": "Course Schedule",

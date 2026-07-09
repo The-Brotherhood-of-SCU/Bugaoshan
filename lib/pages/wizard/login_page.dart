@@ -25,6 +25,12 @@ class _LoginPageState extends State<LoginPage> {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
+    final checkedIcon = Icon(
+      Icons.check_circle,
+      size: 18,
+      color: colorScheme.primary,
+    );
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -64,11 +70,7 @@ class _LoginPageState extends State<LoginPage> {
                   return Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.check_circle,
-                        size: 18,
-                        color: colorScheme.primary,
-                      ),
+                      checkedIcon,
                       const SizedBox(width: 4),
                       Text(
                         l10n.wizardLoginDone,
@@ -110,7 +112,22 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 );
               },
-              child: Text(l10n.wizardImportButton),
+              child: ListenableBuilder(
+                listenable: _courseProvider.allSchedules,
+                builder: (context, _) {
+                  final hasSchedule = _courseProvider.hasSchedule;
+                  if (hasSchedule) {
+                    return Row(
+                      children: [
+                        checkedIcon,
+                        const SizedBox(width: 4),
+                        Text(l10n.wizardHasSchedule),
+                      ],
+                    );
+                  }
+                  return Text(l10n.wizardImportButton);
+                },
+              ),
             ),
           ),
           const Spacer(flex: 2),

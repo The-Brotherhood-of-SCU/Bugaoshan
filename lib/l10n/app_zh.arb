@@ -20,6 +20,7 @@
     "wizardLoginDone": "已登录",
     "wizardLoginButton": "去登录",
     "wizardImportButton": "导入课表",
+    "wizardHasSchedule": "已有课表",
     "wizardImportHint": "登录后可自动获取课表",
     "wizardFeatureTitle": "探索更多功能",
     "wizardFeatureCourse": "课表管理",

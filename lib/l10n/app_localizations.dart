@@ -181,6 +181,12 @@ abstract class AppLocalizations {
   /// **'Import Schedule'**
   String get wizardImportButton;
 
+  /// No description provided for @wizardHasSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule Exists'**
+  String get wizardHasSchedule;
+
   /// No description provided for @wizardImportHint.
   ///
   /// In en, this message translates to:

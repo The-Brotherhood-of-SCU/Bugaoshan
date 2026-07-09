@@ -48,6 +48,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wizardImportButton => '导入课表';
 
   @override
+  String get wizardHasSchedule => '已有课表';
+
+  @override
   String get wizardImportHint => '登录后可自动获取课表';
 
   @override
