@@ -4,7 +4,7 @@ class AcademicCalendarEvent {
   final DateTime date;
   final DateTime? endDate;
   final String label;
-  final String tag; // 'holiday', 'exam', 'start', 'event'
+  final String tag; // e.g. 'holiday', 'exam', 'start', 'course', 'event'
 
   AcademicCalendarEvent({
     required this.date,
