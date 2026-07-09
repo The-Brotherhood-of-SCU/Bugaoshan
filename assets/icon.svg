@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg 
+  
+  
+  xmlns="http://www.w3.org/2000/svg" 
+  
+  
+  xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 2048 2048">
+  <!-- White background so the icon is visible on any theme -->
+  <rect width="2048" height="2048" fill="#ffffff"/>
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#_未命名的渐变_94);
+      }
+
+      .cls-2 {
+        stroke: #231815;
+      }
+
+      .cls-2, .cls-3, .cls-4, .cls-5, .cls-6 {
+        stroke-linecap: round;
+        stroke-miterlimit: 10;
+      }
+
+      .cls-2, .cls-3, .cls-5 {
+        stroke-width: 7px;
+      }
+
+      .cls-2, .cls-4, .cls-6 {
+        fill: none;
+      }
+
+      .cls-7 {
+        fill: #fff;
+      }
+
+      .cls-8 {
+        fill: #991f20;
+      }
+
+      .cls-9 {
+        fill: url(#_未命名的渐变_94-2);
+      }
+
+      .cls-3 {
+        fill: #666;
+        stroke: #4d4d4d;
+      }
+
+      .cls-4 {
+        stroke: #fff;
+        stroke-width: 75px;
+      }
+
+      .cls-5 {
+        fill: #ed1c24;
+        stroke: #b92518;
+      }
+
+      .cls-10 {
+        fill: #2e1010;
+      }
+
+      .cls-11 {
+        fill: #3c1616;
+      }
+
+      .cls-12 {
+        fill: #590d0f;
+      }
+
+      .cls-13 {
+        fill: #767272;
+        fill-opacity: 0.61;
+      }
+
+      .cls-6 {
+        stroke: #000;
+        stroke-width: 21px;
+      }
+    </style>
+    <linearGradient id="_未命名的渐变_94" data-name="未命名的渐变 94" x1="2074.833" y1="1577.305" x2="1344.909" y2="1577.305" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#590d0f"/>
+      <stop offset="1" stop-color="#991f20"/>
+    </linearGradient>
+    <linearGradient id="_未命名的渐变_94-2" data-name="未命名的渐变 94" x1="1953.856" y1="1693.627" x2="1505.524" y2="1693.627" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#590d0f"/>
+      <stop offset="1" stop-color="#991f20"/>
+    </linearGradient>
+  </defs>
+  <g id="water">
+    <line id="line" class="cls-2" x1="578.576" y1="1693.627" x2="1500.61" y2="1693.627"/>
+    <line class="cls-3" x1="440.949" y1="1761.424" x2="1024" y2="1761.424"/>
+    <line class="cls-2" x1="1102.305" y1="1761.424" x2="1137.898" y2="1761.424"/>
+    <line class="cls-5" x1="1229.424" y1="1761.424" x2="1644.678" y2="1761.424"/>
+    <line class="cls-6" x1="289.333" y1="1693.627" x2="537.051" y2="1693.627"/>
+    <path class="cls-1" d="M1473.566,1548.072c-12.274,0-22.834,12.098-23.411,27.822-.615,16.787,9.813,30.644,22.767,30.644h446.392c12.274,0,22.834-12.098,23.411-27.822.615-16.788-9.813-30.644-22.767-30.644h-446.392Z"/>
+    <path class="cls-9" d="M1584.547,1679.627c-7.539,0-14.025,5.794-14.379,13.324-.378,8.04,6.028,14.676,13.984,14.676h274.181c7.539,0,14.025-5.794,14.379-13.324.378-8.04-6.028-14.676-13.984-14.676h-274.181Z"/>
+  </g>
+  <g id="_图层_2" data-name="图层 2">
+    <polygon class="cls-8" points="1388.746 1474.983 1915.864 1474.983 1185.688 345.322 698.457 1107.27 938.221 1474.983 938.216 1551.304 784 1551.295 784 1624.135 1388.746 1624.135 1388.746 1551.333 1388.746 1474.983"/>
+    <polygon id="medium-tri" class="cls-13" points="868.78 624.136 322.644 1474.983 322.644 1551.254 938.216 1551.304 938.221 1474.983 938.221 732.32 868.78 624.136"/>
+    <polygon id="small-tri" points="537.051 859.729 142.136 1474.983 938.221 1474.983 537.051 859.729"/>
+    <polygon class="cls-10" points="463.322 1474.983 938.221 1474.983 698.457 1107.27 463.322 1474.983"/>
+    <polygon class="cls-11" points="132.814 1551.254 132.814 1624.135 784 1624.135 784 1551.295 132.814 1551.254"/>
+    <polygon class="cls-12" points="1388.746 1474.983 1388.746 659.474 1915.864 1474.983 1388.746 1474.983"/>
+  </g>
+  <g id="scu">
+    <line class="cls-4" x1="1027.938" y1="985.542" x2="1023.001" y2="1366.726"/>
+    <path class="cls-7" d="M1249.686,1423.716l-.547-.93c-25.327-43.073-38.682-92.133-38.682-142.1v-474.543h-138.567v-284.864l-90.454,141.457v227.384h137.914v478.272c0,30.521,24.742,77.274,55.263,77.274h62.79c11.144,0,18.074-12.103,12.283-21.95Z"/>
+  </g>
+</svg>

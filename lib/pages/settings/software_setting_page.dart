@@ -8,6 +8,7 @@ import 'package:bugaoshan/pages/settings/add_widget/add_widget_page.dart';
 import 'package:bugaoshan/pages/settings/set_dock_page.dart';
 import 'package:bugaoshan/pages/settings/set_duration_page.dart';
 import 'package:bugaoshan/pages/settings/set_language_page.dart';
+import 'package:bugaoshan/pages/settings/set_app_icon_page.dart';
 import 'package:bugaoshan/pages/settings/set_course_style_page.dart';
 import 'package:bugaoshan/pages/settings/set_font_page.dart';
 import 'package:bugaoshan/pages/settings/set_theme_color_page.dart';
@@ -38,6 +39,11 @@ class SoftwareSettingPage extends StatelessWidget {
                 icon: Icons.language,
                 label: localizations.modifyLanguage,
                 onTap: () => popupOrNavigate(context, SetLanguagePage()),
+              ),
+              IconTile(
+                icon: Icons.photo_size_select_actual_outlined,
+                label: '应用图标',
+                onTap: () => popupOrNavigate(context, const SetAppIconPage()),
               ),
               IconTile(
                 icon: Icons.timer,
