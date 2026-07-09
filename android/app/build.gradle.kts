@@ -33,7 +33,7 @@ android {
         applicationId = "io.github.the_brotherhood_of_scu.bugaoshan"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 26 //android8: adaptive icon
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
