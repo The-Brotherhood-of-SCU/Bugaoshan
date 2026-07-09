@@ -780,5 +780,54 @@
     "unreleased": "Unreleased",
     "dockLabelZysc": "Volunteer",
     "zyscTitle": "Volunteer Sichuan",
-    "zyscDesc": "Browse and sign up for volunteer activities"
+    "zyscDesc": "Browse and sign up for volunteer activities",
+    "interactiveCalendar": "Interactive Calendar",
+    "originalCalendar": "Official Charts",
+    "calendarLoadingData": "Loading calendar data...",
+    "calendarImportSuccess": "Successfully imported {count} events to system calendar",
+    "@calendarImportSuccess": {
+        "placeholders": {
+            "count": {"type": "int"}
+        }
+    },
+    "calendarImportFailed": "Failed to import to system calendar",
+    "calendarImportCalendarTitle": "SCU Academic Calendar",
+    "calendarDaysRemaining": "{days} days left",
+    "@calendarDaysRemaining": {
+        "placeholders": {
+            "days": {"type": "int"}
+        }
+    },
+    "calendarStartedNDaysAgo": "{days} days ago",
+    "@calendarStartedNDaysAgo": {
+        "placeholders": {
+            "days": {"type": "int"}
+        }
+    },
+    "calendarToday": "Today",
+    "calendarCurrentWeek": "Week {week}",
+    "@calendarCurrentWeek": {
+        "placeholders": {
+            "week": {"type": "int"}
+        }
+    },
+    "calendarSemesterStart": "Semester Starts: {date}",
+    "@calendarSemesterStart": {
+        "placeholders": {
+            "date": {"type": "String"}
+        }
+    },
+    "calendarWeeksTotal": "{weeks} weeks total",
+    "@calendarWeeksTotal": {
+        "placeholders": {
+            "weeks": {"type": "int"}
+        }
+    },
+    "calendarImportButton": "Import to Calendar",
+    "calendarHolidayTag": "Holiday",
+    "calendarExamTag": "Exam",
+    "calendarStartTag": "Start",
+    "calendarEventTag": "Event",
+    "calendarNoEventData": "No interactive calendar data",
+    "calendarNextEvent": "Next Event"
 }

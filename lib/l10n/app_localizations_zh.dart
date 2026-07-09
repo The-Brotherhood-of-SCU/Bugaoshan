@@ -2014,6 +2014,75 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get zyscDesc => '查看志愿服务活动并参与报名';
+
+  @override
+  String get interactiveCalendar => '互动校历';
+
+  @override
+  String get originalCalendar => '官方图表';
+
+  @override
+  String get calendarLoadingData => '正在获取校历数据...';
+
+  @override
+  String calendarImportSuccess(int count) {
+    return '已成功导入 $count 个事件到系统日历';
+  }
+
+  @override
+  String get calendarImportFailed => '导入系统日历失败';
+
+  @override
+  String get calendarImportCalendarTitle => '四川大学校历';
+
+  @override
+  String calendarDaysRemaining(int days) {
+    return '剩 $days 天';
+  }
+
+  @override
+  String calendarStartedNDaysAgo(int days) {
+    return '已过 $days 天';
+  }
+
+  @override
+  String get calendarToday => '今天';
+
+  @override
+  String calendarCurrentWeek(int week) {
+    return '当前第 $week 周';
+  }
+
+  @override
+  String calendarSemesterStart(String date) {
+    return '学期开始: $date';
+  }
+
+  @override
+  String calendarWeeksTotal(int weeks) {
+    return '共 $weeks 周';
+  }
+
+  @override
+  String get calendarImportButton => '导入系统日历';
+
+  @override
+  String get calendarHolidayTag => '放假';
+
+  @override
+  String get calendarExamTag => '考试';
+
+  @override
+  String get calendarStartTag => '开学';
+
+  @override
+  String get calendarEventTag => '事件';
+
+  @override
+  String get calendarNoEventData => '暂无互动校历数据';
+
+  @override
+  String get calendarNextEvent => '下个重要事件';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

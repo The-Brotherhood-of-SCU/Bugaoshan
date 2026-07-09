@@ -2072,4 +2072,73 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get zyscDesc => 'Browse and sign up for volunteer activities';
+
+  @override
+  String get interactiveCalendar => 'Interactive Calendar';
+
+  @override
+  String get originalCalendar => 'Official Charts';
+
+  @override
+  String get calendarLoadingData => 'Loading calendar data...';
+
+  @override
+  String calendarImportSuccess(int count) {
+    return 'Successfully imported $count events to system calendar';
+  }
+
+  @override
+  String get calendarImportFailed => 'Failed to import to system calendar';
+
+  @override
+  String get calendarImportCalendarTitle => 'SCU Academic Calendar';
+
+  @override
+  String calendarDaysRemaining(int days) {
+    return '$days days left';
+  }
+
+  @override
+  String calendarStartedNDaysAgo(int days) {
+    return '$days days ago';
+  }
+
+  @override
+  String get calendarToday => 'Today';
+
+  @override
+  String calendarCurrentWeek(int week) {
+    return 'Week $week';
+  }
+
+  @override
+  String calendarSemesterStart(String date) {
+    return 'Semester Starts: $date';
+  }
+
+  @override
+  String calendarWeeksTotal(int weeks) {
+    return '$weeks weeks total';
+  }
+
+  @override
+  String get calendarImportButton => 'Import to Calendar';
+
+  @override
+  String get calendarHolidayTag => 'Holiday';
+
+  @override
+  String get calendarExamTag => 'Exam';
+
+  @override
+  String get calendarStartTag => 'Start';
+
+  @override
+  String get calendarEventTag => 'Event';
+
+  @override
+  String get calendarNoEventData => 'No interactive calendar data';
+
+  @override
+  String get calendarNextEvent => 'Next Event';
 }
