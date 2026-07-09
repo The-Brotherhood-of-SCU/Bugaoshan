@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 正式加入iOS支持
 - 考试安排支持导出到系统日历（iOS 可选目标日历，Android 通过系统导入）
 
+### Changed
+- 修改软件默认图标并增加图标修改选项
 
 ## [2.1.1] - 2026-06-28
 
