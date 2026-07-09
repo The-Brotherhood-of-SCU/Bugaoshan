@@ -441,7 +441,13 @@ class CourseGlanceWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val data = WidgetDataLoader.load(context)
-        val launchIntent = Intent(context, MainActivity::class.java).apply {
+        // Use getLaunchIntentForPackage so Android resolves to the currently
+        // enabled activity / activity-alias (fixes widget click after icon switch)
+        val launchIntent = (context.packageManager.getLaunchIntentForPackage(context.packageName)
+            ?: Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_LAUNCHER)
+                setPackage(context.packageName)
+            }).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
 
