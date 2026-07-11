@@ -26,7 +26,7 @@ void showAttachmentsSheet(
   // Prime the manager: enqueue tasks for items that already exist on disk,
   // and revoke stale tasks whose files have been deleted.
   for (final item in items) {
-    checkDownloadedFile(dirName, item.name).then((path) {
+    checkDownloadedFile(dirName, item.name, url: item.url).then((path) {
       if (path != null) {
         final task = manager.enqueue(
           item.url,
@@ -42,9 +42,9 @@ void showAttachmentsSheet(
           );
         }
       } else {
-        final existing = manager.taskFor(dirName, item.name);
+        final existing = manager.taskFor(item.url, dirName);
         if (existing != null && existing.status == DownloadStatus.done) {
-          manager.remove(dirName, item.name);
+          manager.remove(item.url, dirName);
         }
       }
     });
@@ -186,7 +186,7 @@ class _SheetAttachmentTile extends StatelessWidget {
     return ListenableBuilder(
       listenable: manager,
       builder: (context, _) {
-        final task = manager.taskFor(dirName, item.name);
+        final task = manager.taskFor(item.url, dirName);
 
         // Show done state if task completed or file already known.
         if (task != null &&
@@ -257,7 +257,7 @@ class _SheetAttachmentTile extends StatelessWidget {
       leading: Icon(_fileIcon(), color: Theme.of(context).colorScheme.primary),
       title: Text(item.name, maxLines: 2, overflow: TextOverflow.ellipsis),
       trailing: FutureBuilder<String?>(
-        future: checkDownloadedFile(dirName, item.name),
+        future: checkDownloadedFile(dirName, item.name, url: item.url),
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
             return const SizedBox(

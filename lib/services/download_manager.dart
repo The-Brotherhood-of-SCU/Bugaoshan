@@ -43,8 +43,10 @@ class DownloadManager extends ChangeNotifier {
 
   Map<String, DownloadTask> get tasks => Map.unmodifiable(_tasks);
 
-  DownloadTask? taskFor(String dirName, String fileName) {
-    return _tasks['$dirName/$fileName'];
+  String _taskId(String url, String dirName) => '$dirName\u0000$url';
+
+  DownloadTask? taskFor(String url, String dirName) {
+    return _tasks[_taskId(url, dirName)];
   }
 
   DownloadTask enqueue(
@@ -53,7 +55,7 @@ class DownloadManager extends ChangeNotifier {
     String fileName, {
     Map<String, String>? headers,
   }) {
-    final id = '$dirName/$fileName';
+    final id = _taskId(url, dirName);
     final existing = _tasks[id];
     if (existing != null) return existing;
 
@@ -118,15 +120,20 @@ class DownloadManager extends ChangeNotifier {
     }
   }
 
-  void cancel(String dirName, String fileName) {
-    final task = taskFor(dirName, fileName);
+  void cancel(String url, String dirName) {
+    final task = taskFor(url, dirName);
     if (task != null && task.cancelToken != null) {
       task.cancelToken!.cancel();
     }
   }
 
-  void remove(String dirName, String fileName) {
-    _tasks.remove('$dirName/$fileName');
+  void remove(String url, String dirName) {
+    _tasks.remove(_taskId(url, dirName));
+    notifyListeners();
+  }
+
+  void removeByDownloadedPath(String path) {
+    _tasks.removeWhere((_, task) => task.downloadedPath == path);
     notifyListeners();
   }
 
