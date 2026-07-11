@@ -24,13 +24,16 @@ class _SetAppIconPageState extends State<SetAppIconPage> {
   Future<void> _loadData() async {
     try {
       final icons = await DynamicIconService.getAvailableIcons();
+      if (!mounted) return;
       final current = await DynamicIconService.getCurrentIconName();
+      if (!mounted) return;
       setState(() {
         _availableIcons = icons;
         _currentIcon = current;
         _isLoading = false;
       });
     } catch (_) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
     }
   }
