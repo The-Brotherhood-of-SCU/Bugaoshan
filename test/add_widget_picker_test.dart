@@ -54,7 +54,11 @@ void main() {
       MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: const Scaffold(body: AddWidgetContent(showDescription: false)),
+        home: const Scaffold(
+          body: SingleChildScrollView(
+            child: AddWidgetContent(showDescription: false),
+          ),
+        ),
       ),
     );
 
