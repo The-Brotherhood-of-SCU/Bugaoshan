@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:crypto/crypto.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/utils/secure_storage.dart';
 import 'package:bugaoshan/services/auth/auth_state.dart';
@@ -19,6 +20,7 @@ import 'package:bugaoshan/utils/sm2_crypto.dart';
 const kZhjwBase = 'http://zhjw.scu.edu.cn';
 
 const _keyAccessToken = 'scu_access_token';
+const _keyPrincipalBinding = 'scu_principal_binding_v1';
 const _keyLoginTimestamp = 'scu_login_timestamp';
 const _sessionDurationSeconds = 3600;
 
@@ -50,6 +52,7 @@ class ScuAuth extends ChangeNotifier {
   final CookieClient Function() _cookieClientFactory;
 
   String? _accessToken;
+  String? _principal;
   int? _loginTimestamp;
   CookieClient? _cachedClient;
   Future<CookieClient>? _bindSessionFuture;
@@ -82,6 +85,7 @@ class ScuAuth extends ChangeNotifier {
   }
 
   String? get accessToken => _accessToken;
+  String? get principal => _principal;
 
   @protected
   set state(AuthState value) {
@@ -100,6 +104,7 @@ class ScuAuth extends ChangeNotifier {
     _accessToken = await SecureStorageProvider.instance.read(
       key: _keyAccessToken,
     );
+    _principal = await _restorePrincipal(_accessToken);
     _loginTimestamp = _prefs.getInt(_keyLoginTimestamp);
 
     if (_accessToken != null && !isExpired) {
@@ -246,12 +251,18 @@ class ScuAuth extends ChangeNotifier {
 
     // 登录成功
     _accessToken = token;
+    _principal = username;
     _cachedClient = null;
     _bindSessionFuture = null;
     _loginTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    await SecureStorageProvider.instance.write(
-      key: _keyAccessToken,
-      value: _accessToken!,
+    final secure = SecureStorageProvider.instance;
+    await secure.write(key: _keyAccessToken, value: _accessToken!);
+    await secure.write(
+      key: _keyPrincipalBinding,
+      value: jsonEncode({
+        'principal': _principal,
+        'tokenFingerprint': _tokenFingerprint(_accessToken!),
+      }),
     );
     await _prefs.setInt(_keyLoginTimestamp, _loginTimestamp!);
     _log.i('ScuAuth', 'login: ok, token len=${token.length}');
@@ -463,13 +474,42 @@ class ScuAuth extends ChangeNotifier {
   Future<void> logout() async {
     _log.i('ScuAuth', 'logout: clearing session');
     _accessToken = null;
+    _principal = null;
     _cachedClient = null;
     _bindSessionFuture = null;
     _refreshCompleter = null;
     _loginTimestamp = null;
     await SecureStorageProvider.instance.delete(key: _keyAccessToken);
+    await SecureStorageProvider.instance.delete(key: _keyPrincipalBinding);
     await _prefs.remove(_keyLoginTimestamp);
     state = AuthState.unknown;
+  }
+
+  Future<String?> _restorePrincipal(String? token) async {
+    if (token == null) return null;
+    final secure = SecureStorageProvider.instance;
+    final raw = await secure.read(key: _keyPrincipalBinding);
+    if (raw == null) return null;
+
+    try {
+      final binding = jsonDecode(raw) as Map<String, dynamic>;
+      final principal = binding['principal']?.toString();
+      final fingerprint = binding['tokenFingerprint']?.toString();
+      if (principal == null ||
+          principal.isEmpty ||
+          fingerprint != _tokenFingerprint(token)) {
+        await secure.delete(key: _keyPrincipalBinding);
+        return null;
+      }
+      return principal;
+    } catch (_) {
+      await secure.delete(key: _keyPrincipalBinding);
+      return null;
+    }
+  }
+
+  String _tokenFingerprint(String token) {
+    return sha256.convert(utf8.encode(token)).toString();
   }
 
   // ─── 凭据管理（自动登录用）──────────────────────────────────
