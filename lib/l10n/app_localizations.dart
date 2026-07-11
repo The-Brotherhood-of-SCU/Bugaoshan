@@ -3973,6 +3973,120 @@ abstract class AppLocalizations {
   /// **'Browse and sign up for volunteer activities'**
   String get zyscDesc;
 
+  /// No description provided for @interactiveCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Interactive Calendar'**
+  String get interactiveCalendar;
+
+  /// No description provided for @originalCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Official Charts'**
+  String get originalCalendar;
+
+  /// No description provided for @calendarLoadingData.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading calendar data...'**
+  String get calendarLoadingData;
+
+  /// No description provided for @calendarImportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Successfully imported {count} events to system calendar'**
+  String calendarImportSuccess(int count);
+
+  /// No description provided for @calendarImportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to import to system calendar'**
+  String get calendarImportFailed;
+
+  /// No description provided for @calendarImportCalendarTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'SCU Academic Calendar'**
+  String get calendarImportCalendarTitle;
+
+  /// No description provided for @calendarDaysRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days left'**
+  String calendarDaysRemaining(int days);
+
+  /// No description provided for @calendarStartedNDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days ago'**
+  String calendarStartedNDaysAgo(int days);
+
+  /// No description provided for @calendarToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get calendarToday;
+
+  /// No description provided for @calendarCurrentWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Week {week}'**
+  String calendarCurrentWeek(int week);
+
+  /// No description provided for @calendarSemesterStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Semester Starts: {date}'**
+  String calendarSemesterStart(String date);
+
+  /// No description provided for @calendarWeeksTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'{weeks} weeks total'**
+  String calendarWeeksTotal(int weeks);
+
+  /// No description provided for @calendarImportButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Import to Calendar'**
+  String get calendarImportButton;
+
+  /// No description provided for @calendarHolidayTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Holiday'**
+  String get calendarHolidayTag;
+
+  /// No description provided for @calendarExamTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Exam'**
+  String get calendarExamTag;
+
+  /// No description provided for @calendarStartTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get calendarStartTag;
+
+  /// No description provided for @calendarEventTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Event'**
+  String get calendarEventTag;
+
+  /// No description provided for @calendarNoEventData.
+  ///
+  /// In en, this message translates to:
+  /// **'No interactive calendar data'**
+  String get calendarNoEventData;
+
+  /// No description provided for @calendarNextEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Next Event'**
+  String get calendarNextEvent;
+
   /// No description provided for @appIcon.
   ///
   /// In en, this message translates to:

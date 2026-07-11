@@ -29,6 +29,7 @@ import 'package:bugaoshan/services/download_manager.dart';
 import 'package:bugaoshan/services/exit_service.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
+import 'package:bugaoshan/services/api/academic_calendar_service.dart';
 import 'package:bugaoshan/utils/auth_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -202,6 +203,10 @@ void _configureAsyncDependencies() {
     await getIt.isReady<AppConfigProvider>();
     final appConfig = getIt<AppConfigProvider>();
     return BackgroundCacheService(appConfig);
+  });
+  getIt.registerSingletonAsync<AcademicCalendarService>(() async {
+    await getIt.isReady<SharedPreferences>();
+    return AcademicCalendarService(getIt<SharedPreferences>());
   });
   getIt.registerSingletonAsync<WidgetUpdateService>(() async {
     await getIt.isReady<CourseProvider>();
