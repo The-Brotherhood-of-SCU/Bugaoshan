@@ -8,6 +8,7 @@ import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/utils/class_week_parser.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
@@ -553,45 +554,25 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
               '${tpMap['teachingBuildingName'] ?? ''}${tpMap['classroomName'] ?? ''}';
           final String classWeek = tpMap['classWeek'] as String? ?? '';
 
-          // Parse weeks from classWeek bitstring (e.g. "111111111111111100000000")
-          int startWeek = -1;
-          int endWeek = -1;
-          List<int> activeWeeks = [];
-          for (int i = 0; i < classWeek.length; i++) {
-            if (classWeek[i] == '1') {
-              int w = i + 1;
-              if (startWeek == -1) startWeek = w;
-              endWeek = w;
-              activeWeeks.add(w);
+          final weekSegments = parseClassWeekSegments(classWeek);
+          if (weekSegments.isNotEmpty) {
+            final colorValue = colors[colorIdx % colors.length].toARGB32();
+            for (final segment in weekSegments) {
+              courses.add(
+                Course(
+                  name: courseName,
+                  teacher: teacher,
+                  location: location,
+                  startWeek: segment.startWeek,
+                  endWeek: segment.endWeek,
+                  dayOfWeek: dayOfWeek,
+                  startSection: startSection,
+                  endSection: endSection,
+                  colorValue: colorValue,
+                  weekType: segment.weekType,
+                ),
+              );
             }
-          }
-
-          if (startWeek != -1) {
-            WeekType weekType = WeekType.every;
-            if (activeWeeks.length > 1) {
-              bool allOdd = activeWeeks.every((w) => w % 2 != 0);
-              bool allEven = activeWeeks.every((w) => w % 2 == 0);
-              if (allOdd) {
-                weekType = WeekType.odd;
-              } else if (allEven) {
-                weekType = WeekType.even;
-              }
-            }
-
-            courses.add(
-              Course(
-                name: courseName,
-                teacher: teacher,
-                location: location,
-                startWeek: startWeek,
-                endWeek: endWeek,
-                dayOfWeek: dayOfWeek,
-                startSection: startSection,
-                endSection: endSection,
-                colorValue: colors[colorIdx % colors.length].toARGB32(),
-                weekType: weekType,
-              ),
-            );
             colorIdx++;
           }
         }
