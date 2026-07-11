@@ -21,11 +21,8 @@ def main():
     print("Copied windows artifact")
 
     linux_src = "linux-release/linux-release.tar.gz"
-    if os.path.exists(linux_src):
-        shutil.copy(linux_src, f"bugaoshan_{version}_linux_x64.tar.gz")
-        print("Copied linux artifact")
-    else:
-        print(f"Skipped linux artifact (not found: {linux_src})")
+    shutil.copy(linux_src, f"bugaoshan_{version}_linux_x64.tar.gz")
+    print("Copied linux artifact")
 
 if __name__ == "__main__":
     main()
