@@ -369,6 +369,8 @@ class CcylService {
                 .toList();
           }
         }
+      } on CcylAuthExpiredException {
+        rethrow;
       } on CcylException {
         // 忽略单个字典请求失败
       }
@@ -393,7 +395,9 @@ class CcylService {
       if (resp.statusCode != 200) {
         throw CcylException('[$api] HTTP 错误: ${resp.statusCode}');
       }
-      return parseJson(resp.body, api, (msg) => CcylException(msg));
+      final json = parseJson(resp.body, api, (msg) => CcylException(msg));
+      _throwOnAuthExpiry(json);
+      return json;
     } on CcylException {
       rethrow;
     } catch (e) {
@@ -411,14 +415,27 @@ class CcylService {
       if (resp.statusCode != 200) {
         throw CcylException('[$api] HTTP 错误: ${resp.statusCode}');
       }
-      return parseJson(resp.body, api, (msg) => CcylException(msg));
+      final json = parseJson(resp.body, api, (msg) => CcylException(msg));
+      _throwOnAuthExpiry(json);
+      return json;
     } on CcylException {
       rethrow;
     } catch (e) {
       throw CcylException('[$api] 网络请求失败: $e');
     }
   }
+
+  static void _throwOnAuthExpiry(Map<String, dynamic> json) {
+    if (isCcylAuthExpiredCode(json['code'])) {
+      throw CcylAuthExpiredException(
+        json['msg']?.toString() ?? '第二课堂 token 已失效',
+      );
+    }
+  }
 }
+
+/// CCYL 当前协议用 HTTP 200 + 业务码 401 表示 token 缺失或失效。
+bool isCcylAuthExpiredCode(Object? code) => code?.toString() == '401';
 
 // ═══════════════════════════════════════════════════════════════════════
 //  异常
@@ -429,4 +446,8 @@ class CcylException implements Exception {
   const CcylException(this.message);
   @override
   String toString() => message;
+}
+
+class CcylAuthExpiredException extends CcylException {
+  const CcylAuthExpiredException(super.message);
 }

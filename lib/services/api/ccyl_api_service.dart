@@ -14,22 +14,7 @@ class CcylApiService {
   /// CCYL token 过期时服务端返回业务错误码而非 [UnauthenticatedException]。
   /// 这里捕获 [CcylException] 后清除旧 token、重新鉴权、再试一次。
   Future<T> _retryOnCcylAuthError<T>(Future<T> Function() fn) async {
-    // 首次保证 token 存在
-    await _ensureToken();
-    try {
-      return await fn();
-    } on CcylException {
-      _auth.invalidate();
-      final ok = await _auth.reLogin();
-      if (!ok) throw const UnauthenticatedException('第二课堂 token 过期，重新登录失败');
-      return await fn();
-    }
-  }
-
-  /// 获取 token，未登录时自动尝试 reLogin，失败抛 [UnauthenticatedException]。
-  Future<String> _ensureToken() async {
-    await _auth.ensureAuthenticated();
-    return _auth.token!;
+    return retryOnCcylAuthError(_auth, fn);
   }
 
   Future<List<CyclActivity>> searchActivities({
@@ -212,5 +197,25 @@ class CcylApiService {
       final token = _auth.token!;
       return CcylService.getDicts(token: token, groupCodes: groupCodes);
     });
+  }
+}
+
+/// 仅在服务端明确返回 CCYL token 失效时重新认证并重试一次。
+///
+/// 普通业务异常和网络异常直接向上抛出，避免重复提交报名、取消等非幂等请求。
+Future<T> retryOnCcylAuthError<T>(
+  CcylAuth auth,
+  Future<T> Function() fn,
+) async {
+  await auth.ensureAuthenticated();
+  try {
+    return await fn();
+  } on CcylAuthExpiredException {
+    auth.invalidate();
+    final ok = await auth.reLogin();
+    if (!ok) {
+      throw const UnauthenticatedException('第二课堂 token 过期，重新登录失败');
+    }
+    return await fn();
   }
 }
