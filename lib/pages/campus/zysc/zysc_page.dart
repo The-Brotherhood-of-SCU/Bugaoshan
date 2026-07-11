@@ -1,5 +1,5 @@
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/pages/campus/notice/webview_notice_page.dart';
+import 'package:bugaoshan/widgets/webview/webview_notice_page.dart';
 import 'package:flutter/cupertino.dart';
 
 class ZyscPage extends StatelessWidget {

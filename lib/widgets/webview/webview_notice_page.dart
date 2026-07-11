@@ -1,32 +1,17 @@
-import 'dart:convert';
-
-import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/pages/campus/downloads/shared_notice_downloads.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/widgets/common/image_viewer.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:bugaoshan/pages/campus/downloads/shared_notice_downloads.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/services/download_manager.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class DownloadOptions {
-  const DownloadOptions({
-    this.downloadHeaders,
-    this.useWebViewDownload = false,
-    required this.attachmentDir,
-    required this.initialTab,
-  });
+import 'download_options.dart';
+import 'webview_notice_handlers.dart';
 
-  final Map<String, String>? downloadHeaders;
-  final bool useWebViewDownload;
-  final String attachmentDir;
-  // 下载管理器中的初始标签页
-  final int initialTab;
-}
+export 'download_options.dart';
 
 /// Shared WebView-based notice page used by party/XGB and tuanwei/Youth SCU.
 class WebViewNoticePage extends StatefulWidget {
@@ -51,25 +36,47 @@ class WebViewNoticePage extends StatefulWidget {
   State<WebViewNoticePage> createState() => _WebViewNoticePageState();
 }
 
-class _WebViewNoticePageState extends State<WebViewNoticePage> {
+class _WebViewNoticePageState extends State<WebViewNoticePage>
+    with WebViewNoticeHandlers {
   InAppWebViewController? _controller;
   String _beautifyScript = '';
   String _domReadyScript = '';
-  bool _loading = false;
+  bool _realLoading = false;
+  //disable loading if beautify script is empty
+  bool get _loading => _beautifyScript.isNotEmpty && _realLoading;
+  set _loading(bool value) {
+    if (_beautifyScript.isNotEmpty) _realLoading = value;
+  }
+
   bool _canGoBack = false;
   bool _canGoForward = false;
   List<AttachItem> _pageAttachments = [];
   String _errorHtmlTemplate = '';
 
   @override
+  InAppWebViewController? get controller => _controller;
+
+  @override
+  String get debugLabel => widget.debugLabel;
+
+  @override
+  DownloadOptions? get downloadOptions => widget.downloadOptions;
+
+  @override
+  List<AttachItem> get pageAttachments => _pageAttachments;
+
+  @override
+  set pageAttachments(List<AttachItem> value) => _pageAttachments = value;
+
+  @override
   void initState() {
     super.initState();
+    rootBundle.loadString('assets/webview_error.html').then((s) {
+      _errorHtmlTemplate = s;
+    });
     if (widget.beautifyAsset == null) return;
     rootBundle.loadString(widget.beautifyAsset!).then((s) {
       if (mounted) setState(() => _beautifyScript = s);
-    });
-    rootBundle.loadString('assets/webview_error.html').then((s) {
-      _errorHtmlTemplate = s;
     });
     rootBundle.loadString('assets/js/dom_ready.js').then((s) {
       _domReadyScript = s;
@@ -80,7 +87,7 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
     _controller = controller;
     controller.addJavaScriptHandler(
       handlerName: 'AttachmentsChannel',
-      callback: _onAttachmentsMessage,
+      callback: onAttachmentsMessage,
     );
     controller.addJavaScriptHandler(
       handlerName: 'DOMReady',
@@ -89,40 +96,17 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
     if (widget.downloadOptions != null) {
       controller.addJavaScriptHandler(
         handlerName: 'DownloadAttachment',
-        callback: _onDownloadAttachment,
+        callback: onDownloadAttachment,
       );
     }
-
     controller.addJavaScriptHandler(
       handlerName: 'OpenImage',
-      callback: _onOpenImage,
+      callback: onOpenImage,
     );
     controller.addJavaScriptHandler(
       handlerName: 'OpenExternalLink',
-      callback: _onOpenExternalLink,
+      callback: onOpenExternalLink,
     );
-  }
-
-  void _onAttachmentsMessage(List<dynamic> args) {
-    if (args.isEmpty) return;
-    try {
-      final data = jsonDecode(args[0] as String) as List;
-      final attachments = data
-          .map(
-            (e) => AttachItem(
-              url: e['url'] as String,
-              name: utf8.decode(base64Decode(e['name'] as String)),
-            ),
-          )
-          .toList();
-      if (mounted) setState(() => _pageAttachments = attachments);
-    } catch (e) {
-      debugPrint('${widget.debugLabel} parse attachments error: $e');
-    }
-  }
-
-  void _onWebViewDownload(String url) {
-    _controller?.loadUrl(urlRequest: URLRequest(url: WebUri(url)));
   }
 
   Future<void> _onLoadStart(InAppWebViewController controller, Uri? url) async {
@@ -156,8 +140,12 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
         debugPrint('${widget.debugLabel} beautify script error: $e');
       }
       if (_domReadyScript.isNotEmpty) {
-        await controller.evaluateJavascript(source: _domReadyScript);
-        // DOMReady handler will invoke _finishLoading after JS finishes.
+        try {
+          await controller.evaluateJavascript(source: _domReadyScript);
+        } catch (e) {
+          debugPrint('${widget.debugLabel} dom ready script error: $e');
+          await _finishLoading();
+        }
         return;
       }
     }
@@ -166,123 +154,6 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
 
   Future<void> _onDomReady() async {
     await _finishLoading();
-  }
-
-  void _onOpenImage(List<dynamic> args) {
-    if (args.isEmpty) return;
-    final url = args[0] as String;
-    if (url.isEmpty) return;
-    showFullScreenImageViewer(context, imageUrl: url);
-  }
-
-  void _onOpenExternalLink(List<dynamic> args) {
-    if (args.isEmpty) return;
-    final url = args[0] as String;
-    if (url.isEmpty) return;
-    final uri = Uri.tryParse(url);
-    if (uri == null) return;
-    final l10n = AppLocalizations.of(context)!;
-    showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.campusNoticesExternalLink),
-        content: Text(l10n.campusNoticesConfirmOpenLink(url)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.campusNoticesOpenInBrowser),
-          ),
-        ],
-      ),
-    ).then((confirmed) {
-      if (confirmed == true) {
-        launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-    });
-  }
-
-  Future<void> _onDownloadAttachment(List<dynamic> args) async {
-    if (widget.downloadOptions == null) return;
-    if (args.length < 2) return;
-    final url = args[0] as String;
-    final name = args[1] as String;
-    final downloadOptions = widget.downloadOptions!;
-    try {
-      final cookies = await CookieManager.instance().getCookies(
-        url: WebUri(url),
-      );
-      final headers = <String, String>{
-        ...downloadOptions.downloadHeaders!,
-        if (cookies.isNotEmpty)
-          'Cookie': cookies.map((c) => '${c.name}=${c.value}').join('; '),
-      };
-      await getIt<DownloadManager>().download(
-        url,
-        downloadOptions.attachmentDir,
-        name,
-        headers: headers,
-      );
-      if (mounted) {
-        showAttachmentsSheet(
-          context,
-          items: _pageAttachments,
-          dirName: downloadOptions.attachmentDir,
-          downloadHeaders: headers,
-          onWebViewDownload: downloadOptions.useWebViewDownload
-              ? _onWebViewDownload
-              : null,
-        );
-      }
-    } catch (e) {
-      debugPrint('${widget.debugLabel} download attachment error: $e');
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }
-
-  Future<DownloadStartResponse?> _onDownloadStarting(
-    InAppWebViewController controller,
-    DownloadStartRequest request,
-  ) async {
-    if (widget.downloadOptions == null) return null;
-    final downloadOptions = widget.downloadOptions!;
-    final url = request.url.toString();
-    try {
-      final cookies = await CookieManager.instance().getCookies(
-        url: WebUri(url),
-      );
-      final headers = <String, String>{
-        ...downloadOptions.downloadHeaders!,
-        if (cookies.isNotEmpty)
-          'Cookie': cookies.map((c) => '${c.name}=${c.value}').join('; '),
-      };
-      await getIt<DownloadManager>().download(
-        url,
-        downloadOptions.attachmentDir,
-        request.suggestedFilename ?? 'download',
-        headers: headers,
-      );
-      // Navigate back after download — the WebView left the notice page.
-      // if (await controller.canGoBack()) {
-      //   await controller.goBack();
-      // }
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('下载完成')));
-      }
-    } catch (e) {
-      debugPrint('${widget.debugLabel} download error: $e');
-    }
-    return DownloadStartResponse(handled: true);
   }
 
   Future<void> _openInBrowser() async {
@@ -311,6 +182,12 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
       setState(() => _loading = true);
       await ctrl.goForward();
     }
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
   }
 
   @override
@@ -390,9 +267,9 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
                   javaScriptEnabled: true,
                   useWideViewPort: false,
                 ),
-                onDownloadStarting: _onDownloadStarting,
-                onLoadStart: widget.beautifyAsset == null ? null : _onLoadStart,
-                onLoadStop: widget.beautifyAsset == null ? null : _onLoadStop,
+                onDownloadStarting: onDownloadStarting,
+                onLoadStart: _onLoadStart,
+                onLoadStop: _onLoadStop,
                 onReceivedError: (controller, request, error) {
                   debugPrint('${widget.debugLabel} WebView error: $error');
                   if ((request.isForMainFrame ?? false) &&
@@ -423,9 +300,9 @@ class _WebViewNoticePageState extends State<WebViewNoticePage> {
                 NoticeAttachmentFab(
                   items: _pageAttachments,
                   dirName: widget.downloadOptions!.attachmentDir,
-                  downloadHeaders: widget.downloadOptions!.downloadHeaders!,
+                  downloadHeaders: widget.downloadOptions!.downloadHeaders,
                   onWebViewDownload: widget.downloadOptions!.useWebViewDownload
-                      ? _onWebViewDownload
+                      ? onWebViewDownload
                       : null,
                   boundarySize: Size(
                     constraints.maxWidth,
