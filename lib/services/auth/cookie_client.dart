@@ -7,7 +7,15 @@ import 'package:bugaoshan/utils/constants.dart';
 /// Cookie 感知的 http.Client，按域名隔离存储，发送时只带当前请求域的 cookie。
 class CookieClient extends http.BaseClient {
   static const String _tag = 'CookieClient';
-  http.Client _inner = http.Client();
+  static const Set<String> _sensitiveRedirectHeaders = {
+    'authorization',
+    'proxy-authorization',
+    'cookie',
+  };
+
+  http.Client _inner;
+
+  CookieClient({http.Client? inner}) : _inner = inner ?? http.Client();
 
   // 按域名存 cookie：host -> {name: value}
   final _jar = <String, Map<String, String>>{};
@@ -71,6 +79,7 @@ class CookieClient extends http.BaseClient {
   Future<http.Response> followRedirects(
     Uri url, {
     Map<String, String>? headers,
+    Set<Uri> sensitiveHeaderAllowedOrigins = const {},
     int maxRedirects = 10,
   }) async {
     Uri current = url;
@@ -80,7 +89,12 @@ class CookieClient extends http.BaseClient {
     for (int i = 0; i <= maxRedirects; i++) {
       final cookies = _cookiesFor(current);
       final reqHeaders = <String, String>{
-        ...?headers,
+        ..._redirectHeadersForHop(
+          initialUrl: url,
+          currentUrl: current,
+          headers: headers,
+          allowedOrigins: sensitiveHeaderAllowedOrigins,
+        ),
         if (cookies.isNotEmpty)
           'Cookie': cookies.entries
               .map((e) => '${e.key}=${e.value}')
@@ -128,6 +142,32 @@ class CookieClient extends http.BaseClient {
       'SSO 重定向链超过上限',
       statusCode: lastResponse?.statusCode,
     );
+  }
+
+  Map<String, String> _redirectHeadersForHop({
+    required Uri initialUrl,
+    required Uri currentUrl,
+    required Map<String, String>? headers,
+    required Set<Uri> allowedOrigins,
+  }) {
+    if (headers == null || headers.isEmpty) return const {};
+
+    final mayForwardSensitive =
+        _isSameOrigin(initialUrl, currentUrl) ||
+        allowedOrigins.any((origin) => _isSameOrigin(origin, currentUrl));
+    if (mayForwardSensitive) return headers;
+
+    return Map.fromEntries(
+      headers.entries.where(
+        (entry) => !_sensitiveRedirectHeaders.contains(entry.key.toLowerCase()),
+      ),
+    );
+  }
+
+  bool _isSameOrigin(Uri left, Uri right) {
+    return left.scheme.toLowerCase() == right.scheme.toLowerCase() &&
+        left.host.toLowerCase() == right.host.toLowerCase() &&
+        left.port == right.port;
   }
 
   @override
