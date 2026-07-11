@@ -15,6 +15,7 @@ class CourseGrid extends StatefulWidget {
   final int displayWeek;
   final int totalWeeks;
   final bool showAllWeeks;
+  final bool? showWeekendOverride;
   final void Function(Course course)? onCourseTap;
   final void Function(Course course)? onCourseLongPress;
   final void Function(int dayOfWeek, int section)? onEmptyTap;
@@ -27,6 +28,7 @@ class CourseGrid extends StatefulWidget {
     required this.displayWeek,
     this.totalWeeks = 20,
     this.showAllWeeks = false,
+    this.showWeekendOverride,
     this.onCourseTap,
     this.onCourseLongPress,
     this.onEmptyTap,
@@ -80,7 +82,9 @@ class _CourseGridState extends State<CourseGrid> {
         appConfig.showNonCurrentWeekCourses,
       ]),
       builder: (context, _) {
-        final dayCount = appConfig.showWeekend.value ? 7 : 5;
+        final showWeekend =
+            widget.showWeekendOverride ?? appConfig.showWeekend.value;
+        final dayCount = showWeekend ? 7 : 5;
         final hasBackground = appConfig.backgroundImagePath.value != null;
         final rowHeight = appConfig.courseRowHeight.value;
         final showCourseGrid = appConfig.showCourseGrid.value;
@@ -93,6 +97,7 @@ class _CourseGridState extends State<CourseGrid> {
               showAllWeeks: widget.showAllWeeks,
               hasBackground: hasBackground,
               sectionWidth: _sectionWidth,
+              showWeekend: showWeekend,
               onSpecialDayTap: widget.onSpecialDayTap,
             ),
             Expanded(
@@ -109,7 +114,7 @@ class _CourseGridState extends State<CourseGrid> {
                     Expanded(
                       child: Row(
                         children: List.generate(dayCount, (dayIndex) {
-                          final day = appConfig.showWeekend.value
+                          final day = showWeekend
                               ? (dayIndex == 0 ? 7 : dayIndex)
                               : dayIndex + 1;
                           List<Course> dayCourses;
