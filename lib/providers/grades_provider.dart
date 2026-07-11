@@ -27,6 +27,12 @@ class GradesProvider extends ChangeNotifier {
     return normalized == null || normalized.isEmpty ? null : normalized;
   }
 
+  /// 仅接受与当前 token 绑定的 SCU principal 作为成绩缓存身份。
+  static String? confirmedUserIdentity({
+    required bool isLoggedIn,
+    required String? principal,
+  }) => isLoggedIn ? _normalizeIdentity(principal) : null;
+
   String _userCacheKey(String baseKey, String userIdentity) =>
       '${baseKey}_$userIdentity';
 

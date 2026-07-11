@@ -6,6 +6,27 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('grade cache identity requires a token-bound SCU principal', () {
+    expect(
+      GradesProvider.confirmedUserIdentity(isLoggedIn: true, principal: null),
+      isNull,
+    );
+    expect(
+      GradesProvider.confirmedUserIdentity(
+        isLoggedIn: false,
+        principal: 'account-A',
+      ),
+      isNull,
+    );
+    expect(
+      GradesProvider.confirmedUserIdentity(
+        isLoggedIn: true,
+        principal: ' account-A ',
+      ),
+      'account-A',
+    );
+  });
+
   test('grade caches are isolated when switching SCU accounts', () async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
