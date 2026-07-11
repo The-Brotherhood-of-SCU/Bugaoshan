@@ -367,9 +367,10 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
 
   void _openFile(File file) => OpenFilex.open(file.path);
 
-  void _shareFile(File file) => shareSingleFile(file.path);
+  void _shareFile(File file) => shareSingleFile(file.path, context: context);
 
-  void _shareSelected() => shareMultipleFiles(_selected.toList());
+  void _shareSelected() =>
+      shareMultipleFiles(_selected.toList(), context: context);
 
   void _showFilterMenu() {
     final l10n = AppLocalizations.of(context)!;

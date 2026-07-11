@@ -161,7 +161,8 @@ class _SheetAttachmentTile extends StatelessWidget {
   }
 
   void _open(String path) => OpenFilex.open(path);
-  void _share(String path) => shareSingleFile(path);
+  void _share(BuildContext context, String path) =>
+      shareSingleFile(path, context: context);
 
   Future<void> _startDownload(DownloadManager manager) async {
     if (onWebViewDownload != null) {
@@ -280,7 +281,7 @@ class _SheetAttachmentTile extends StatelessWidget {
                 downloadedPath: snapshot.data,
               );
             }
-            return _doneTrailing(snapshot.data!);
+            return _doneTrailing(context, snapshot.data!);
           }
           return IconButton(
             icon: const Icon(Icons.download),
@@ -296,18 +297,18 @@ class _SheetAttachmentTile extends StatelessWidget {
     return ListTile(
       leading: Icon(_fileIcon(), color: Theme.of(context).colorScheme.primary),
       title: Text(item.name, maxLines: 2, overflow: TextOverflow.ellipsis),
-      trailing: _doneTrailing(path),
+      trailing: _doneTrailing(context, path),
     );
   }
 
-  Widget _doneTrailing(String path) {
+  Widget _doneTrailing(BuildContext context, String path) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
           icon: const Icon(Icons.share),
           tooltip: '分享',
-          onPressed: () => _share(path),
+          onPressed: () => _share(context, path),
         ),
         IconButton(
           icon: const Icon(Icons.check_circle, color: Colors.green),
