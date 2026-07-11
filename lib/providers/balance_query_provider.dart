@@ -70,9 +70,13 @@ class BalanceQueryProvider extends ChangeNotifier {
   Future<void> removeBinding(int index) async {
     if (index < 0 || index >= _bindings.length) return;
     _bindings.removeAt(index);
-    if (_currentIndex >= _bindings.length) {
+    if (index < _currentIndex) {
+      _currentIndex--;
+    } else if (_currentIndex >= _bindings.length) {
       _currentIndex = _bindings.isEmpty ? 0 : _bindings.length - 1;
     }
+    _electricInfo = null;
+    _acInfo = null;
     await _saveBindingInfo();
     notifyListeners();
   }
