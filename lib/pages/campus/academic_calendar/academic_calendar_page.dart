@@ -1,18 +1,29 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/academic_calendar.dart';
 import 'package:bugaoshan/services/api/academic_calendar_service.dart';
 import 'package:bugaoshan/utils/calendar_export_utils.dart';
 
-import 'official_calendar_view.dart';
 import 'interactive_calendar_view.dart';
+import 'official_calendar_view.dart';
+
+typedef AcademicCalendarHttpGet = Future<http.Response> Function(Uri uri);
+typedef AcademicCalendarDataLoader = Future<AcademicCalendarData> Function();
 
 class AcademicCalendarPage extends StatefulWidget {
-  const AcademicCalendarPage({super.key});
+  const AcademicCalendarPage({
+    super.key,
+    this.httpGet,
+    this.interactiveDataLoader,
+  });
+
+  final AcademicCalendarHttpGet? httpGet;
+  final AcademicCalendarDataLoader? interactiveDataLoader;
 
   @override
   State<AcademicCalendarPage> createState() => _AcademicCalendarPageState();
@@ -61,15 +72,18 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
 
   // Fetch official calendar list (images)
   Future<void> _loadList() async {
+    if (!mounted) return;
     setState(() {
       _loading = true;
       _error = null;
     });
 
     try {
-      final resp = await http
-          .get(Uri.parse('$_base/cdxl.htm'))
-          .timeout(const Duration(seconds: 8));
+      final request =
+          widget.httpGet?.call(Uri.parse('$_base/cdxl.htm')) ??
+          http.get(Uri.parse('$_base/cdxl.htm'));
+      final resp = await request.timeout(const Duration(seconds: 8));
+      if (!mounted) return;
       if (resp.statusCode != 200) {
         throw Exception('HTTP ${resp.statusCode}');
       }
@@ -92,6 +106,7 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
         throw Exception('No calendar entries found');
       }
 
+      if (!mounted) return;
       setState(() {
         _entries = entries;
         _selected = entries.first;
@@ -109,6 +124,7 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
   }
 
   Future<void> _loadDetail(CalendarEntry entry) async {
+    if (!mounted) return;
     setState(() {
       _loading = true;
       _error = null;
@@ -116,9 +132,10 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
     });
 
     try {
-      final resp = await http
-          .get(Uri.parse('$_base/${entry.path}'))
-          .timeout(const Duration(seconds: 8));
+      final uri = Uri.parse('$_base/${entry.path}');
+      final request = widget.httpGet?.call(uri) ?? http.get(uri);
+      final resp = await request.timeout(const Duration(seconds: 8));
+      if (!mounted) return;
       if (resp.statusCode != 200) {
         throw Exception('HTTP ${resp.statusCode}');
       }
@@ -155,14 +172,18 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
 
   // Fetch interactive calendar data
   Future<void> _loadInteractiveData() async {
+    if (!mounted) return;
     setState(() {
       _interactiveLoading = true;
       _interactiveError = null;
     });
 
     try {
-      final service = getIt<AcademicCalendarService>();
-      final data = await service.fetchCalendarData();
+      final loader = widget.interactiveDataLoader;
+      final data = loader != null
+          ? await loader()
+          : await getIt<AcademicCalendarService>().fetchCalendarData();
+      if (!mounted) return;
 
       AcademicCalendarSemester? initialSemester;
       final now = DateTime.now();
