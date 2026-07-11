@@ -1,9 +1,41 @@
 import 'dart:convert';
 
+import 'package:json_annotation/json_annotation.dart';
+
+part 'academic_calendar.g.dart';
+
+class _DateConverter extends JsonConverter<DateTime, String> {
+  const _DateConverter();
+
+  @override
+  DateTime fromJson(String json) => DateTime.parse(json);
+
+  @override
+  String toJson(DateTime object) =>
+      '${object.year}-${object.month.toString().padLeft(2, '0')}-${object.day.toString().padLeft(2, '0')}';
+}
+
+class _NullableDateConverter extends JsonConverter<DateTime?, String?> {
+  const _NullableDateConverter();
+
+  @override
+  DateTime? fromJson(String? json) => json != null ? DateTime.parse(json) : null;
+
+  @override
+  String? toJson(DateTime? object) => object != null
+      ? '${object.year}-${object.month.toString().padLeft(2, '0')}-${object.day.toString().padLeft(2, '0')}'
+      : null;
+}
+
+@JsonSerializable()
 class AcademicCalendarEvent {
+  @_DateConverter()
   final DateTime date;
+  @_NullableDateConverter()
   final DateTime? endDate;
+  @JsonKey(defaultValue: '')
   final String label;
+  @JsonKey(defaultValue: 'event')
   final String tag; // e.g. 'holiday', 'exam', 'start', 'course', 'event'
 
   AcademicCalendarEvent({
@@ -13,24 +45,10 @@ class AcademicCalendarEvent {
     required this.tag,
   });
 
-  factory AcademicCalendarEvent.fromJson(Map<String, dynamic> json) {
-    final dateStr = json['date'] as String;
-    final endDateStr = json['endDate'] as String?;
-    return AcademicCalendarEvent(
-      date: DateTime.parse(dateStr),
-      endDate: endDateStr != null ? DateTime.parse(endDateStr) : null,
-      label: json['label'] as String? ?? '',
-      tag: json['tag'] as String? ?? 'event',
-    );
-  }
+  factory AcademicCalendarEvent.fromJson(Map<String, dynamic> json) =>
+      _$AcademicCalendarEventFromJson(json);
 
-  Map<String, dynamic> toJson() => {
-    'date': '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
-    if (endDate != null)
-      'endDate': '${endDate!.year}-${endDate!.month.toString().padLeft(2, '0')}-${endDate!.day.toString().padLeft(2, '0')}',
-    'label': label,
-    'tag': tag,
-  };
+  Map<String, dynamic> toJson() => _$AcademicCalendarEventToJson(this);
 
   /// Check if a given date falls inside this event
   bool isActive(DateTime target) {
@@ -60,10 +78,14 @@ class AcademicCalendarEvent {
   }
 }
 
+@JsonSerializable()
 class AcademicCalendarSemester {
   final String name;
+  @_DateConverter()
   final DateTime startDate;
+  @JsonKey(defaultValue: 20)
   final int totalWeeks;
+  @JsonKey(defaultValue: [])
   final List<AcademicCalendarEvent> events;
 
   AcademicCalendarSemester({
@@ -73,25 +95,10 @@ class AcademicCalendarSemester {
     required this.events,
   });
 
-  factory AcademicCalendarSemester.fromJson(Map<String, dynamic> json) {
-    final startDateStr = json['startDate'] as String;
-    final eventsList = json['events'] as List<dynamic>? ?? [];
-    return AcademicCalendarSemester(
-      name: json['name'] as String? ?? '',
-      startDate: DateTime.parse(startDateStr),
-      totalWeeks: json['totalWeeks'] as int? ?? 20,
-      events: eventsList
-          .map((e) => AcademicCalendarEvent.fromJson(e as Map<String, dynamic>))
-          .toList(),
-    );
-  }
+  factory AcademicCalendarSemester.fromJson(Map<String, dynamic> json) =>
+      _$AcademicCalendarSemesterFromJson(json);
 
-  Map<String, dynamic> toJson() => {
-    'name': name,
-    'startDate': '${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}',
-    'totalWeeks': totalWeeks,
-    'events': events.map((e) => e.toJson()).toList(),
-  };
+  Map<String, dynamic> toJson() => _$AcademicCalendarSemesterToJson(this);
 
   /// Calculate the teaching week of a target date.
   /// Returns null if date is before semester starts or after semester totalWeeks.
@@ -115,21 +122,18 @@ class AcademicCalendarSemester {
   }
 }
 
+@JsonSerializable()
 class AcademicCalendarData {
+  @JsonKey(defaultValue: [])
   final List<AcademicCalendarSemester> semesters;
 
   AcademicCalendarData({required this.semesters});
 
-  factory AcademicCalendarData.fromJson(Map<String, dynamic> json) {
-    final semestersList = json['semesters'] as List<dynamic>? ?? [];
-    return AcademicCalendarData(
-      semesters: semestersList
-          .map((e) => AcademicCalendarSemester.fromJson(e as Map<String, dynamic>))
-          .toList(),
-    );
-  }
+  factory AcademicCalendarData.fromJson(Map<String, dynamic> json) =>
+      _$AcademicCalendarDataFromJson(json);
 
   factory AcademicCalendarData.fromJsonString(String content) {
-    return AcademicCalendarData.fromJson(jsonDecode(content) as Map<String, dynamic>);
+    return AcademicCalendarData.fromJson(
+        jsonDecode(content) as Map<String, dynamic>);
   }
 }
