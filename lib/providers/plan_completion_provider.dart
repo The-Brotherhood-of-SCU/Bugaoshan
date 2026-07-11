@@ -14,6 +14,7 @@ enum PlanCompletionLoadState { idle, loading, loaded, error }
 class PlanCompletionProvider extends ChangeNotifier {
   final SharedPreferences _prefs;
   final ZhjwApiService _zhjwApi;
+  int _requestGeneration = 0;
 
   PlanCompletionProvider(this._prefs, this._zhjwApi) {
     final cached = _prefs.getString(_keyPlanCompletion);
@@ -51,17 +52,22 @@ class PlanCompletionProvider extends ChangeNotifier {
 
     // Use cache if already loaded and not forcing refresh
     if (!forceRefresh && _state == PlanCompletionLoadState.loaded) return;
+    final generation = ++_requestGeneration;
 
     _state = PlanCompletionLoadState.loading;
     _error = null;
     _safeNotify();
 
     try {
-      _nodes = await _zhjwApi.fetchPlanCompletion();
+      final nodes = await _zhjwApi.fetchPlanCompletion();
+      if (generation != _requestGeneration) return;
+      _nodes = nodes;
       _state = PlanCompletionLoadState.loaded;
       _error = null;
       await _saveToCache();
+      if (generation != _requestGeneration) return;
     } on RateLimitedException catch (_) {
+      if (generation != _requestGeneration) return;
       if (_nodes.isNotEmpty) {
         _state = PlanCompletionLoadState.loaded;
       } else {
@@ -69,6 +75,7 @@ class PlanCompletionProvider extends ChangeNotifier {
       }
       _error = LoadErrorType.rateLimited;
     } on ServiceException catch (_) {
+      if (generation != _requestGeneration) return;
       if (_nodes.isNotEmpty) {
         _state = PlanCompletionLoadState.loaded;
         _error = campusNetworkErrorType(LoadErrorType.loadFailed);
@@ -77,6 +84,7 @@ class PlanCompletionProvider extends ChangeNotifier {
         _error = campusNetworkErrorType(LoadErrorType.loadFailed);
       }
     } on UnauthenticatedException {
+      if (generation != _requestGeneration) return;
       if (_nodes.isNotEmpty) {
         _state = PlanCompletionLoadState.loaded;
       } else {
@@ -84,6 +92,7 @@ class PlanCompletionProvider extends ChangeNotifier {
       }
       _error = LoadErrorType.sessionExpired;
     } catch (_) {
+      if (generation != _requestGeneration) return;
       if (_nodes.isNotEmpty) {
         _state = PlanCompletionLoadState.loaded;
       } else {
@@ -111,9 +120,11 @@ class PlanCompletionProvider extends ChangeNotifier {
   };
 
   Future<void> clearCache() async {
+    _requestGeneration++;
     _nodes = [];
     _state = PlanCompletionLoadState.idle;
     _error = null;
+    _safeNotify();
     await _prefs.remove(_keyPlanCompletion);
   }
 }
