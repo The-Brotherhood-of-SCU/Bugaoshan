@@ -14,9 +14,36 @@ enum GradesLoadState { idle, loading, loaded, error }
 class GradesProvider extends ChangeNotifier {
   final SharedPreferences _prefs;
   final ZhjwApiService _zhjwApi;
+  String? _userIdentity;
+  int _identityGeneration = 0;
 
-  GradesProvider(this._prefs, this._zhjwApi) {
-    final cachedScheme = _prefs.getString(_keySchemeScores);
+  GradesProvider(this._prefs, this._zhjwApi, {String? initialUserId})
+    : _userIdentity = _normalizeIdentity(initialUserId) {
+    _restoreCache();
+  }
+
+  static String? _normalizeIdentity(String? value) {
+    final normalized = value?.trim();
+    return normalized == null || normalized.isEmpty ? null : normalized;
+  }
+
+  String _userCacheKey(String baseKey, String userIdentity) =>
+      '${baseKey}_$userIdentity';
+
+  void _restoreCache() {
+    _schemeScores = null;
+    _schemeState = GradesLoadState.idle;
+    _schemeError = null;
+    _passingScores = null;
+    _passingState = GradesLoadState.idle;
+    _passingError = null;
+
+    final userIdentity = _userIdentity;
+    if (userIdentity == null) return;
+
+    final cachedScheme = _prefs.getString(
+      _userCacheKey(_keySchemeScores, userIdentity),
+    );
     if (cachedScheme != null) {
       try {
         _schemeScores = SchemeScoreSummary.fromJson(
@@ -25,7 +52,9 @@ class GradesProvider extends ChangeNotifier {
         _schemeState = GradesLoadState.loaded;
       } catch (_) {}
     }
-    final cachedPassing = _prefs.getString(_keyPassingScores);
+    final cachedPassing = _prefs.getString(
+      _userCacheKey(_keyPassingScores, userIdentity),
+    );
     if (cachedPassing != null) {
       try {
         _passingScores = PassingScoreResult.fromJson(
@@ -34,6 +63,16 @@ class GradesProvider extends ChangeNotifier {
         _passingState = GradesLoadState.loaded;
       } catch (_) {}
     }
+  }
+
+  /// 切换已确认的 SCU 身份；身份未知时不恢复任何持久化成绩。
+  void setUserIdentity(String? userId) {
+    final normalized = _normalizeIdentity(userId);
+    if (normalized == _userIdentity) return;
+    _identityGeneration++;
+    _userIdentity = normalized;
+    _restoreCache();
+    notifyListeners();
   }
 
   // --- 方案成绩 ---
@@ -47,15 +86,25 @@ class GradesProvider extends ChangeNotifier {
 
   Future<void> refreshSchemeScores() async {
     if (_schemeState == GradesLoadState.loading) return;
+    final generation = _identityGeneration;
+    final userIdentity = _userIdentity;
     _schemeState = GradesLoadState.loading;
     _schemeError = null;
     notifyListeners();
     try {
       final data = await _zhjwApi.fetchSchemeScores();
+      if (generation != _identityGeneration) return;
       _schemeScores = SchemeScoreSummary.fromJson(data);
       _schemeState = GradesLoadState.loaded;
-      await _prefs.setString(_keySchemeScores, jsonEncode(data));
+      if (userIdentity != null) {
+        await _prefs.setString(
+          _userCacheKey(_keySchemeScores, userIdentity),
+          jsonEncode(data),
+        );
+        if (generation != _identityGeneration) return;
+      }
     } on UnauthenticatedException {
+      if (generation != _identityGeneration) return;
       if (_schemeScores != null) {
         _schemeState = GradesLoadState.loaded;
         _schemeError = LoadErrorType.sessionExpired;
@@ -64,6 +113,7 @@ class GradesProvider extends ChangeNotifier {
         _schemeError = LoadErrorType.sessionExpired;
       }
     } catch (e) {
+      if (generation != _identityGeneration) return;
       debugPrint('Scheme scores load error: $e');
       if (_schemeScores != null) {
         _schemeState = GradesLoadState.loaded;
@@ -91,15 +141,25 @@ class GradesProvider extends ChangeNotifier {
 
   Future<void> refreshPassingScores() async {
     if (_passingState == GradesLoadState.loading) return;
+    final generation = _identityGeneration;
+    final userIdentity = _userIdentity;
     _passingState = GradesLoadState.loading;
     _passingError = null;
     notifyListeners();
     try {
       final data = await _zhjwApi.fetchPassingScores();
+      if (generation != _identityGeneration) return;
       _passingScores = PassingScoreResult.fromJson(data);
       _passingState = GradesLoadState.loaded;
-      await _prefs.setString(_keyPassingScores, jsonEncode(data));
+      if (userIdentity != null) {
+        await _prefs.setString(
+          _userCacheKey(_keyPassingScores, userIdentity),
+          jsonEncode(data),
+        );
+        if (generation != _identityGeneration) return;
+      }
     } on UnauthenticatedException {
+      if (generation != _identityGeneration) return;
       if (_passingScores != null) {
         _passingState = GradesLoadState.loaded;
         _passingError = LoadErrorType.sessionExpired;
@@ -108,6 +168,7 @@ class GradesProvider extends ChangeNotifier {
         _passingError = LoadErrorType.sessionExpired;
       }
     } catch (e) {
+      if (generation != _identityGeneration) return;
       debugPrint('Passing scores load error: $e');
       if (_passingScores != null) {
         _passingState = GradesLoadState.loaded;

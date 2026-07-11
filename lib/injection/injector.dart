@@ -170,9 +170,21 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<GradesProvider>(() async {
     await getIt.isReady<SharedPreferences>();
     await getIt.isReady<ZhjwApiService>();
+    await getIt.isReady<ScuAuthProvider>();
     final prefs = getIt<SharedPreferences>();
     final zhjwApi = getIt<ZhjwApiService>();
-    return GradesProvider(prefs, zhjwApi);
+    final authProvider = getIt<ScuAuthProvider>();
+    final gradesProvider = GradesProvider(
+      prefs,
+      zhjwApi,
+      initialUserId: authProvider.isLoggedIn ? authProvider.userNumber : null,
+    );
+    authProvider.addListener(() {
+      gradesProvider.setUserIdentity(
+        authProvider.isLoggedIn ? authProvider.userNumber : null,
+      );
+    });
+    return gradesProvider;
   });
   getIt.registerSingletonAsync<TrainProgramProvider>(() async {
     await getIt.isReady<ZhjwApiService>();
