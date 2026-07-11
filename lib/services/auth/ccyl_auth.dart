@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -35,6 +36,8 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
   CcylUser? _currentUser;
   String? _boundScuPrincipal;
   Future<bool>? _reLoginFuture;
+  int _authGeneration = 0;
+  Future<void> _storageTail = Future.value();
 
   CcylAuth(
     this._scuAuth, {
@@ -115,8 +118,7 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
   Future<void> ensureAuthenticated() async {
     if (_isBoundToCurrentPrincipal) return;
     if (_token != null || _currentUser != null || _boundScuPrincipal != null) {
-      _clearMemorySession();
-      await _clearPersistedSession();
+      await invalidateSession();
     }
     final ok = await reLogin();
     if (!ok) throw const UnauthenticatedException('第二课堂未登录');
@@ -132,18 +134,20 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
   /// 使用 OAuth code 登录。
   Future<void> loginWithCode(String code) async {
     _log.i(_tag, 'loginWithCode: start');
+    final generation = ++_authGeneration;
+    _reLoginFuture = null;
     final principal = _scuAuth.principal;
     if (principal == null) {
       throw const UnauthenticatedException('无法确认当前校园账号，请重新登录');
     }
     final result = await _login(code);
-    if (_scuAuth.principal != principal) {
+    if (!_isCurrentAttempt(generation, principal)) {
       throw const UnauthenticatedException('校园账号已切换，请重新授权');
     }
-    _token = result.token;
-    _currentUser = result.user;
-    _boundScuPrincipal = principal;
-    await _saveToSecure();
+    final committed = await _commitLogin(result, principal, generation);
+    if (!committed) {
+      throw const UnauthenticatedException('第二课堂授权已取消');
+    }
     _log.i(_tag, 'loginWithCode: ok');
     notifyListeners();
   }
@@ -152,37 +156,40 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
   Future<bool> reLogin() async {
     if (_reLoginFuture != null) return _reLoginFuture!;
     _log.i(_tag, 'reLogin: starting');
-    _reLoginFuture = _doReLogin();
+    final generation = _authGeneration;
+    final future = _doReLogin(generation);
+    _reLoginFuture = future;
     try {
-      return await _reLoginFuture!;
+      return await future;
     } finally {
-      _reLoginFuture = null;
+      if (identical(_reLoginFuture, future)) {
+        _reLoginFuture = null;
+      }
     }
   }
 
-  Future<bool> _doReLogin() async {
+  Future<bool> _doReLogin(int generation) async {
     try {
       final principal = _scuAuth.principal;
-      if (principal == null) {
+      if (principal == null || !_isCurrentAttempt(generation, principal)) {
         _log.w(_tag, 'reLogin: current principal unavailable');
         return false;
       }
       final oauthCode = _oauthCodeProvider != null
           ? await _oauthCodeProvider!()
           : await CcylOAuthService(_scuAuth).getOAuthCode();
+      if (!_isCurrentAttempt(generation, principal)) return false;
       if (oauthCode == null) {
         _log.w(_tag, 'reLogin: oauth code missing');
         return false;
       }
       final result = await _login(oauthCode);
-      if (_scuAuth.principal != principal) {
-        _log.w(_tag, 'reLogin: principal changed, discarding response');
+      if (!_isCurrentAttempt(generation, principal)) {
+        _log.w(_tag, 'reLogin: attempt superseded, discarding response');
         return false;
       }
-      _token = result.token;
-      _currentUser = result.user;
-      _boundScuPrincipal = principal;
-      await _saveToSecure();
+      final committed = await _commitLogin(result, principal, generation);
+      if (!committed) return false;
       _log.i(_tag, 'reLogin: ok');
       notifyListeners();
       return true;
@@ -195,35 +202,61 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
   @override
   void invalidate() {
     _log.d(_tag, 'invalidate');
-    _reLoginFuture = null;
+    _cancelCurrentAuthentication();
+    unawaited(_clearPersistedSession());
   }
 
-  Future<void> _saveToSecure() async {
-    final token = _token;
-    final user = _currentUser;
-    final principal = _boundScuPrincipal;
-    if (token == null || user == null || principal == null) {
-      throw StateError('Cannot persist an incomplete CCYL session');
-    }
-    final secure = SecureStorageProvider.instance;
-    await secure.write(
-      key: _keyCcylSession,
-      value: jsonEncode({
-        'token': token,
-        'userId': user.id,
-        'scuPrincipal': principal,
-      }),
-    );
-    await secure.delete(key: _keyCcylToken);
-    await secure.delete(key: _keyCcylUserId);
+  Future<void> invalidateSession() async {
+    _log.d(_tag, 'invalidateSession');
+    _cancelCurrentAuthentication();
+    await _clearPersistedSession();
+  }
+
+  Future<bool> _commitLogin(
+    CcylLoginResult result,
+    String principal,
+    int generation,
+  ) async {
+    if (!_isCurrentAttempt(generation, principal)) return false;
+
+    final persisted = await _serializeStorage(() async {
+      if (!_isCurrentAttempt(generation, principal)) return false;
+      final secure = SecureStorageProvider.instance;
+      await secure.write(
+        key: _keyCcylSession,
+        value: jsonEncode({
+          'token': result.token,
+          'userId': result.user.id,
+          'scuPrincipal': principal,
+        }),
+      );
+      await secure.delete(key: _keyCcylToken);
+      await secure.delete(key: _keyCcylUserId);
+      return _isCurrentAttempt(generation, principal);
+    });
+    if (!persisted || !_isCurrentAttempt(generation, principal)) return false;
+
+    _token = result.token;
+    _currentUser = result.user;
+    _boundScuPrincipal = principal;
+    return true;
   }
 
   Future<void> logout() async {
     _log.i(_tag, 'logout');
-    _clearMemorySession();
-    _reLoginFuture = null;
+    _cancelCurrentAuthentication();
     await _clearPersistedSession();
     notifyListeners();
+  }
+
+  void _cancelCurrentAuthentication() {
+    _authGeneration++;
+    _reLoginFuture = null;
+    _clearMemorySession();
+  }
+
+  bool _isCurrentAttempt(int generation, String principal) {
+    return generation == _authGeneration && _scuAuth.principal == principal;
   }
 
   void _clearMemorySession() {
@@ -233,9 +266,17 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
   }
 
   Future<void> _clearPersistedSession() async {
-    final secure = SecureStorageProvider.instance;
-    await secure.delete(key: _keyCcylSession);
-    await secure.delete(key: _keyCcylToken);
-    await secure.delete(key: _keyCcylUserId);
+    await _serializeStorage(() async {
+      final secure = SecureStorageProvider.instance;
+      await secure.delete(key: _keyCcylSession);
+      await secure.delete(key: _keyCcylToken);
+      await secure.delete(key: _keyCcylUserId);
+    });
+  }
+
+  Future<T> _serializeStorage<T>(Future<T> Function() action) {
+    final run = _storageTail.then((_) => action());
+    _storageTail = run.then<void>((_) {}, onError: (_, _) {});
+    return run;
   }
 }

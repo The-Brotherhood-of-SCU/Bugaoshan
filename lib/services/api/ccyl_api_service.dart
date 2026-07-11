@@ -211,7 +211,7 @@ Future<T> retryOnCcylAuthError<T>(
   try {
     return await fn();
   } on CcylAuthExpiredException {
-    auth.invalidate();
+    await auth.invalidateSession();
     final ok = await auth.reLogin();
     if (!ok) {
       throw const UnauthenticatedException('第二课堂 token 过期，重新登录失败');
