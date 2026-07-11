@@ -42,8 +42,6 @@ class GridHeaderRow extends StatelessWidget {
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final semesterStart = config.semesterStartDate;
-
     return Container(
       height: 40,
       decoration: BoxDecoration(
@@ -71,14 +69,7 @@ class GridHeaderRow extends StatelessWidget {
                 final dayOfWeek = showWeekend
                     ? (index == 0 ? 7 : index)
                     : index + 1;
-                // 周日在周一之前，dayOfWeek=7 时应为 -1 而非 6
-                final daysFromMonday = dayOfWeek == 7 ? -1 : dayOfWeek - 1;
-                final mondayOffset = (1 - semesterStart.weekday) % 7;
-                final date = semesterStart.add(
-                  Duration(
-                    days: (displayWeek - 1) * 7 + mondayOffset + daysFromMonday,
-                  ),
-                );
+                final date = config.dateForCourseDay(displayWeek, dayOfWeek);
                 final isToday = !showAllWeeks && date.isAtSameMomentAs(today);
                 final specialDay = !showAllWeeks
                     ? HolidayUtils.getSpecialDay(date)

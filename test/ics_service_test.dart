@@ -5,6 +5,41 @@ import 'package:bugaoshan/services/ics_service.dart';
 
 void main() {
   group('Course calendar export', () {
+    test('aligns a Sunday semester boundary with the following Monday', () {
+      final config = ScheduleConfig(
+        semesterStartDate: DateTime(2026, 2, 22), // Sunday
+        semesterName: '2025-2026-2',
+        timeSlots: const [
+          TimeSlot(
+            startTime: TimeOfDay(hour: 8, minute: 15),
+            endTime: TimeOfDay(hour: 9, minute: 0),
+          ),
+        ],
+      );
+
+      Course course(String name, int dayOfWeek) => Course(
+        id: name,
+        name: name,
+        teacher: '老师',
+        location: '教室',
+        startWeek: 1,
+        endWeek: 1,
+        dayOfWeek: dayOfWeek,
+        startSection: 1,
+        endSection: 1,
+        colorValue: 0xff2196f3,
+      );
+
+      final events = IcsService.genCourseCalendarEvents(
+        config: config,
+        courses: [course('周一课程', 1), course('周日课程', 7)],
+        teacherLabel: '教师',
+      );
+
+      expect(events[0].start, DateTime(2026, 2, 23, 8, 15));
+      expect(events[1].start, DateTime(2026, 2, 22, 8, 15));
+    });
+
     test('keeps course title unchanged while mapping location', () {
       final config = ScheduleConfig(
         semesterStartDate: DateTime(2026, 2, 23),
