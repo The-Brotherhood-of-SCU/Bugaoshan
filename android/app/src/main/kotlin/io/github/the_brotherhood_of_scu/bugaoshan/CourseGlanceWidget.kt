@@ -169,10 +169,10 @@ object WidgetDataLoader {
             val currentWeek = computeCurrentWeek(semesterStartDate, totalWeeks)
             val cal = Calendar.getInstance()
             val dayOfWeek = (cal.get(Calendar.DAY_OF_WEEK) + 5) % 7 + 1
-            var courses = queryCourses(db, currentScheduleId, dayOfWeek, currentWeek)
-            if (courses.length() == 0 && currentScheduleId != "default") {
-                courses = queryCourses(db, "default", dayOfWeek, currentWeek)
-            }
+            var courses =
+                loadCoursesForSelectedSchedule(currentScheduleId) { scheduleId ->
+                    queryCourses(db, scheduleId, dayOfWeek, currentWeek)
+                }
             val now = Calendar.getInstance()
             val currentHour = now.get(Calendar.HOUR_OF_DAY)
             val currentMinute = now.get(Calendar.MINUTE)
@@ -194,10 +194,10 @@ object WidgetDataLoader {
                         tomorrowCal = Calendar.getInstance().apply { add(Calendar.DATE, 1) }
                         val nextDayOfWeek = (tomorrowCal!!.get(Calendar.DAY_OF_WEEK) + 5) % 7 + 1
                         weekForTomorrow = computeWeekForDate(semesterStartDate, totalWeeks, tomorrowCal!!)
-                        var tomorrowCourses = queryCourses(db, currentScheduleId, nextDayOfWeek, weekForTomorrow)
-                        if (tomorrowCourses.length() == 0 && currentScheduleId != "default") {
-                            tomorrowCourses = queryCourses(db, "default", nextDayOfWeek, weekForTomorrow)
-                        }
+                        val tomorrowCourses =
+                            loadCoursesForSelectedSchedule(currentScheduleId) { scheduleId ->
+                                queryCourses(db, scheduleId, nextDayOfWeek, weekForTomorrow)
+                            }
                         if (tomorrowCourses.length() > 0) {
                             courses = attachTimesAndStatuses(tomorrowCourses, timeSlots, null, true)
                             showingTomorrow = true
