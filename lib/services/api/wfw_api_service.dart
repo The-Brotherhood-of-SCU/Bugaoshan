@@ -21,12 +21,24 @@ class WfwApiService {
   }
 
   void _checkSessionExpiry(String body, int statusCode) {
-    if (statusCode == 302 || body.trim().isEmpty) {
+    if (statusCode == 302 ||
+        statusCode == 401 ||
+        statusCode == 403 ||
+        body.trim().isEmpty) {
       throw const UnauthenticatedException();
     }
-    if (body.startsWith('<') && body.contains('login')) {
+    if (body.trimLeft().startsWith('<') && body.contains('login')) {
       throw const UnauthenticatedException();
     }
+  }
+
+  Map<String, dynamic> _decodeResponse(String body, int statusCode) {
+    _checkSessionExpiry(body, statusCode);
+    final json = jsonDecode(body) as Map<String, dynamic>;
+    if (json['e'] == 10013 || json['e']?.toString() == '10013') {
+      throw const UnauthenticatedException('微服务登录已失效');
+    }
+    return json;
   }
 
   /// 获取用户信息标签
@@ -40,8 +52,7 @@ class WfwApiService {
           'Referer': 'https://wfw.scu.edu.cn',
         },
       );
-      _checkSessionExpiry(resp.body, resp.statusCode);
-      return jsonDecode(resp.body) as Map<String, dynamic>;
+      return _decodeResponse(resp.body, resp.statusCode);
     });
 
     if (json['e'] == 0 && json['d']?['labels'] != null) {
@@ -58,8 +69,7 @@ class WfwApiService {
       final resp = await client.get(
         Uri.parse('https://wfw.scu.edu.cn/uc/wap/user/get-info'),
       );
-      _checkSessionExpiry(resp.body, resp.statusCode);
-      return jsonDecode(resp.body) as Map<String, dynamic>;
+      return _decodeResponse(resp.body, resp.statusCode);
     });
 
     if (json['e'] == 0 && json['d'] != null) {
