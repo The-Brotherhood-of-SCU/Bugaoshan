@@ -3972,6 +3972,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Browse and sign up for volunteer activities'**
   String get zyscDesc;
+
+  /// No description provided for @appIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'App Icon'**
+  String get appIcon;
+
+  /// No description provided for @defaultIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get defaultIcon;
+
+  /// No description provided for @oldIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'Old Icon'**
+  String get oldIcon;
+
+  /// No description provided for @switchAppIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch App Icon'**
+  String get switchAppIcon;
+
+  /// No description provided for @switchAppIconConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to \"{label}\"? The app will restart. Continue?'**
+  String switchAppIconConfirm(String label);
+
+  /// No description provided for @defaultIconRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Restored default icon'**
+  String get defaultIconRestored;
+
+  /// No description provided for @iconSwitched.
+  ///
+  /// In en, this message translates to:
+  /// **'Switched to icon: {name}'**
+  String iconSwitched(String name);
+
+  /// No description provided for @iconSwitchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch failed: {error}'**
+  String iconSwitchFailed(String error);
+
+  /// No description provided for @iconSwitchNotSupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Dynamic icon switching is not supported on this platform'**
+  String get iconSwitchNotSupported;
+
+  /// No description provided for @newIconSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bugaoshan New Icon'**
+  String get newIconSubtitle;
+
+  /// No description provided for @oldIconSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bugaoshan Classic Icon'**
+  String get oldIconSubtitle;
 }
 
 class _AppLocalizationsDelegate

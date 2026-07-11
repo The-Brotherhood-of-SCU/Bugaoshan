@@ -2072,4 +2072,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get zyscDesc => 'Browse and sign up for volunteer activities';
+
+  @override
+  String get appIcon => 'App Icon';
+
+  @override
+  String get defaultIcon => 'Default';
+
+  @override
+  String get oldIcon => 'Old Icon';
+
+  @override
+  String get switchAppIcon => 'Switch App Icon';
+
+  @override
+  String switchAppIconConfirm(String label) {
+    return 'Switch to \"$label\"? The app will restart. Continue?';
+  }
+
+  @override
+  String get defaultIconRestored => 'Restored default icon';
+
+  @override
+  String iconSwitched(String name) {
+    return 'Switched to icon: $name';
+  }
+
+  @override
+  String iconSwitchFailed(String error) {
+    return 'Switch failed: $error';
+  }
+
+  @override
+  String get iconSwitchNotSupported =>
+      'Dynamic icon switching is not supported on this platform';
+
+  @override
+  String get newIconSubtitle => 'Bugaoshan New Icon';
+
+  @override
+  String get oldIconSubtitle => 'Bugaoshan Classic Icon';
 }

@@ -42,7 +42,7 @@ class SoftwareSettingPage extends StatelessWidget {
               ),
               IconTile(
                 icon: Icons.photo_size_select_actual_outlined,
-                label: '应用图标',
+                label: localizations.appIcon,
                 onTap: () => popupOrNavigate(context, const SetAppIconPage()),
               ),
               IconTile(
