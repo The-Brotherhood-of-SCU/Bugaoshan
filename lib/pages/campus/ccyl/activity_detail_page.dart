@@ -107,7 +107,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.ccylActionFailed),
-          backgroundColor: Colors.red,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
       return;
@@ -137,7 +137,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.ccylActionFailed),
-          backgroundColor: Colors.red,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
       return;
@@ -208,11 +208,11 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
           onPressed: _actionLoading ? null : _toggleSignUp,
           style: ElevatedButton.styleFrom(
             backgroundColor: _signedUp
-                ? Colors.red.shade100
-                : Colors.green.shade100,
+                ? Theme.of(context).colorScheme.errorContainer
+                : Theme.of(context).colorScheme.primaryContainer,
             foregroundColor: _signedUp
-                ? Colors.red.shade700
-                : Colors.green.shade700,
+                ? Theme.of(context).colorScheme.onErrorContainer
+                : Theme.of(context).colorScheme.onPrimaryContainer,
             minimumSize: const Size.fromHeight(48),
           ),
           child: _actionLoading
@@ -321,20 +321,20 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                   ),
                   decoration: BoxDecoration(
                     color: activity.status == 'A03'
-                        ? Colors.green.shade100
+                        ? Theme.of(context).colorScheme.primaryContainer
                         : activity.status == 'A05'
-                        ? Colors.blue.shade100
-                        : Colors.orange.shade100,
+                        ? Theme.of(context).colorScheme.secondaryContainer
+                        : Theme.of(context).colorScheme.tertiaryContainer,
                     borderRadius: BorderRadius.circular(AppShapes.xs),
                   ),
                   child: Text(
                     activity.statusName ?? activity.status,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: activity.status == 'A03'
-                          ? Colors.green.shade700
+                          ? Theme.of(context).colorScheme.onPrimaryContainer
                           : activity.status == 'A05'
-                          ? Colors.blue.shade700
-                          : Colors.orange.shade700,
+                          ? Theme.of(context).colorScheme.onSecondaryContainer
+                          : Theme.of(context).colorScheme.onTertiaryContainer,
                     ),
                   ),
                 ),
@@ -486,8 +486,8 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w500,
                     color: activity.isSignIn == '1'
-                        ? Colors.green
-                        : Colors.grey,
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.outline,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -504,8 +504,8 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w500,
                     color: activity.isSignOut == '1'
-                        ? Colors.green
-                        : Colors.grey,
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.outline,
                   ),
                 ),
               ],

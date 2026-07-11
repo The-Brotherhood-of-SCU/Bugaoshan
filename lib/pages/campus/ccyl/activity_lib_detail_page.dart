@@ -91,7 +91,7 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.ccylActionFailed),
-          backgroundColor: Colors.red,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     }
@@ -119,11 +119,11 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
           onPressed: _actionLoading ? null : _toggleSubscription,
           style: ElevatedButton.styleFrom(
             backgroundColor: _subscribed
-                ? Colors.red.shade100
-                : Colors.green.shade100,
+                ? Theme.of(context).colorScheme.errorContainer
+                : Theme.of(context).colorScheme.primaryContainer,
             foregroundColor: _subscribed
-                ? Colors.red.shade700
-                : Colors.green.shade700,
+                ? Theme.of(context).colorScheme.onErrorContainer
+                : Theme.of(context).colorScheme.onPrimaryContainer,
             minimumSize: const Size.fromHeight(48),
           ),
           child: _actionLoading
@@ -198,13 +198,13 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.green.shade100,
+                      color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(AppShapes.xs),
                     ),
                     child: Text(
                       l10n.ccylSubscribed,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: Colors.green.shade700,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
                       ),
                     ),
                   ),
@@ -455,16 +455,16 @@ class _ActivityCard extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: activity.status == 'A03'
-                          ? Colors.green.shade100
-                          : Colors.orange.shade100,
+                          ? Theme.of(context).colorScheme.primaryContainer
+                          : Theme.of(context).colorScheme.tertiaryContainer,
                       borderRadius: BorderRadius.circular(AppShapes.xs),
                     ),
                     child: Text(
                       activity.statusName ?? activity.status,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: activity.status == 'A03'
-                            ? Colors.green
-                            : Colors.orange,
+                            ? Theme.of(context).colorScheme.onPrimaryContainer
+                            : Theme.of(context).colorScheme.onTertiaryContainer,
                       ),
                     ),
                   ),
