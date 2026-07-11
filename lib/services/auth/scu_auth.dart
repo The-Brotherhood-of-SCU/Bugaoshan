@@ -153,7 +153,7 @@ class ScuAuth extends ChangeNotifier {
     required String captchaCode,
     required String captchaText,
   }) async {
-    _log.i('ScuAuth', 'login: start user=$username');
+    _log.i('ScuAuth', 'login: start');
     // 1. 获取 SM2 公钥（服务端偶发 500，加重试）
     Map<String, dynamic>? sm2Data;
     String? lastSm2Body;
@@ -482,10 +482,7 @@ class ScuAuth extends ChangeNotifier {
       _log.d('ScuAuth', 'autoLogin: no saved credentials');
       return false;
     }
-    _log.i(
-      'ScuAuth',
-      'autoLogin: starting for user=${credentials['username']}',
-    );
+    _log.i('ScuAuth', 'autoLogin: starting');
 
     try {
       final captcha = await fetchCaptcha();

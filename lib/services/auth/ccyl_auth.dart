@@ -51,7 +51,7 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
         realname: '',
         orgName: '',
       );
-      _log.i(_tag, 'init: token restored userId=$userId');
+      _log.i(_tag, 'init: token restored');
     } else {
       _log.d(_tag, 'init: no saved token');
     }
@@ -83,7 +83,7 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
     _token = result.token;
     _currentUser = result.user;
     await _saveToSecure();
-    _log.i(_tag, 'loginWithCode: ok userId=${result.user.id}');
+    _log.i(_tag, 'loginWithCode: ok');
     notifyListeners();
   }
 
@@ -111,7 +111,7 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
       _token = result.token;
       _currentUser = result.user;
       await _saveToSecure();
-      _log.i(_tag, 'reLogin: ok userId=${result.user.id}');
+      _log.i(_tag, 'reLogin: ok');
       notifyListeners();
       return true;
     } catch (e) {
