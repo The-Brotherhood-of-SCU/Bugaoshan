@@ -47,6 +47,7 @@ class ScuAuth extends ChangeNotifier {
 
   final SharedPreferences _prefs;
   final AuthLogger _log;
+  final CookieClient Function() _cookieClientFactory;
 
   String? _accessToken;
   int? _loginTimestamp;
@@ -62,8 +63,12 @@ class ScuAuth extends ChangeNotifier {
   /// 用于在 UI 层显示提示（如 snackbar），由 SessionExpiredListener 注册。
   VoidCallback? onSessionExpired;
 
-  ScuAuth(this._prefs, {AuthLogger? logger})
-    : _log = logger ?? getIt<AuthLogger>();
+  ScuAuth(
+    this._prefs, {
+    AuthLogger? logger,
+    CookieClient Function()? cookieClientFactory,
+  }) : _log = logger ?? getIt<AuthLogger>(),
+       _cookieClientFactory = cookieClientFactory ?? (() => CookieClient());
 
   // ─── 状态 ───────────────────────────────────────────────────────
 
@@ -280,7 +285,7 @@ class ScuAuth extends ChangeNotifier {
   }
 
   Future<CookieClient> _doBindSession() async {
-    final client = CookieClient();
+    final client = _cookieClientFactory();
 
     // ── Step 1: 保存 token 到服务端 session（必须成功）
     final sessionResp = await client.post(
@@ -288,11 +293,22 @@ class ScuAuth extends ChangeNotifier {
       headers: {..._headers, 'Authorization': 'Bearer $_accessToken'},
       body: '{}',
     );
+    if (sessionResp.statusCode == 401 || sessionResp.statusCode == 403) {
+      _log.w(
+        'ScuAuth',
+        'bindSession: token rejected (${sessionResp.statusCode})',
+      );
+      throw const UnauthenticatedException('统一认证 token 已失效');
+    }
     final sessionResult = parseJson(
       sessionResp.body,
       'session/save',
       (msg) => ScuLoginException(msg),
     );
+    if (sessionResult['error']?.toString().toLowerCase() == 'invalid_token') {
+      _log.w('ScuAuth', 'bindSession: invalid_token response');
+      throw const UnauthenticatedException('统一认证 token 已失效');
+    }
     if (sessionResult['success'] != true) {
       _log.w('ScuAuth', 'bindSession: session/save rejected');
       throw ScuLoginException('session/save 失败: ${sessionResp.body}');
@@ -330,13 +346,26 @@ class ScuAuth extends ChangeNotifier {
         onSessionExpired?.call();
         throw const UnauthenticatedException();
       }
+
+      return await bindSession();
     }
 
     if (_accessToken == null) {
       throw const UnauthenticatedException('未登录');
     }
 
-    return await bindSession();
+    try {
+      return await bindSession();
+    } on UnauthenticatedException {
+      _log.w('ScuAuth', 'getClient: server rejected token, refreshing');
+      final refreshed = await _synchronizedRefresh();
+      if (!refreshed) {
+        _log.e('ScuAuth', 'getClient: refresh failed, session expired');
+        onSessionExpired?.call();
+        throw const UnauthenticatedException();
+      }
+      return await bindSession();
+    }
   }
 
   /// 获取 access token（给 WfwAuth 等需要 Bearer token 的场景）。
