@@ -66,6 +66,58 @@ void main() {
     expect(provider.labels?.single['owner'], 'new-number');
     expect(provider.loading, isFalse);
   });
+
+  test('logout cleanup runs after an in-progress user cache write', () async {
+    final auth = _FakeWfwAuth(ready: true);
+    final api = _ControllableWfwApiService();
+    final persistence = _ControllableUserInfoPersistence();
+    UserInfoProvider(auth, api, persistUserInfo: persistence.call);
+    await Future<void>.delayed(Duration.zero);
+
+    api.complete(0, name: 'old-name', number: 'old-number');
+    await Future<void>.delayed(Duration.zero);
+    expect(persistence.requests, hasLength(1));
+    expect(persistence.requests.single.realname, 'old-name');
+
+    auth.setReady(false);
+    await Future<void>.delayed(Duration.zero);
+
+    // 清理必须排在旧写入之后，不能和它并发后被旧值反向覆盖。
+    expect(persistence.requests, hasLength(1));
+    persistence.complete(0);
+    await Future<void>.delayed(Duration.zero);
+    expect(persistence.requests, hasLength(2));
+    expect(persistence.requests[1].realname, isNull);
+    expect(persistence.requests[1].number, isNull);
+
+    persistence.complete(1);
+    await Future<void>.delayed(Duration.zero);
+    expect(persistence.storedRealname, isNull);
+    expect(persistence.storedNumber, isNull);
+  });
+}
+
+typedef _PersistenceRequest = ({
+  String? realname,
+  String? number,
+  Completer<void> completer,
+});
+
+class _ControllableUserInfoPersistence {
+  final requests = <_PersistenceRequest>[];
+  String? storedRealname;
+  String? storedNumber;
+
+  Future<void> call(String? realname, String? number) {
+    final completer = Completer<void>();
+    requests.add((realname: realname, number: number, completer: completer));
+    return completer.future.then((_) {
+      storedRealname = realname;
+      storedNumber = number;
+    });
+  }
+
+  void complete(int index) => requests[index].completer.complete();
 }
 
 class _FakeWfwAuth extends ChangeNotifier implements WfwAuth {

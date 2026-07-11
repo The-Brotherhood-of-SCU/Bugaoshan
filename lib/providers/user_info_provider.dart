@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
@@ -14,6 +16,25 @@ typedef _UserInfoResult = ({
   Map<String, dynamic>? profile,
   List<Map<String, dynamic>> labels,
 });
+typedef UserInfoPersistence =
+    Future<void> Function(String? realname, String? number);
+
+Future<void> _persistUserInfoToPreferences(
+  String? realname,
+  String? number,
+) async {
+  final prefs = getIt<SharedPreferences>();
+  if (realname == null) {
+    await prefs.remove(_keyUserRealname);
+  } else {
+    await prefs.setString(_keyUserRealname, realname);
+  }
+  if (number == null) {
+    await prefs.remove(_keyUserNumber);
+  } else {
+    await prefs.setString(_keyUserNumber, number);
+  }
+}
 
 /// 用户信息 Provider（单例）
 ///
@@ -23,9 +44,15 @@ typedef _UserInfoResult = ({
 class UserInfoProvider extends ChangeNotifier {
   final WfwAuth _wfwAuth;
   final WfwApiService _wfwApi;
+  final UserInfoPersistence _persistUserInfo;
   int _requestGeneration = 0;
+  Future<void> _persistenceTail = Future<void>.value();
 
-  UserInfoProvider(this._wfwAuth, this._wfwApi) {
+  UserInfoProvider(
+    this._wfwAuth,
+    this._wfwApi, {
+    UserInfoPersistence? persistUserInfo,
+  }) : _persistUserInfo = persistUserInfo ?? _persistUserInfoToPreferences {
     _wfwAuth.addListener(_onAuthChanged);
     // ScuAuth.init() 在 DI 阶段完成，此时本 Provider 还没创建，
     // init() 的 notifyListeners 没人接收。构造后主动检查一次。
@@ -134,10 +161,21 @@ class UserInfoProvider extends ChangeNotifier {
       _userNumber = role?['number']?.toString();
       // 同步到 ScuAuthProvider（向后兼容）
       getIt<ScuAuthProvider>().setUserInfo(_userRealname, _userNumber);
-      final prefs = getIt<SharedPreferences>();
-      await prefs.setString(_keyUserRealname, _userRealname ?? '');
-      await prefs.setString(_keyUserNumber, _userNumber ?? '');
+      await _enqueuePersistence(_userRealname, _userNumber);
     }
+  }
+
+  Future<void> _enqueuePersistence(String? realname, String? number) {
+    final operation = _persistenceTail.then(
+      (_) => _persistUserInfo(realname, number),
+    );
+    _persistenceTail = operation.then<void>(
+      (_) {},
+      onError: (Object error, StackTrace stackTrace) {
+        debugPrint('User info persistence error: $error');
+      },
+    );
+    return operation;
   }
 
   Future<void> fetchLabels() async {
@@ -178,6 +216,7 @@ class UserInfoProvider extends ChangeNotifier {
     _loading = false;
     _userRealname = null;
     _userNumber = null;
+    unawaited(_enqueuePersistence(null, null));
     notifyListeners();
   }
 
