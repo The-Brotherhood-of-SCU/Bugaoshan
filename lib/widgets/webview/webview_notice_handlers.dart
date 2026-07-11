@@ -78,6 +78,26 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
     });
   }
 
+  Future<String?> getDownloadCookieHeader(String url) async {
+    final cookies = await CookieManager.instance().getCookies(url: WebUri(url));
+    if (cookies.isEmpty) return null;
+    return cookies.map((c) => '${c.name}=${c.value}').join('; ');
+  }
+
+  Future<void> downloadNoticeFile(
+    String url,
+    String dirName,
+    String fileName, {
+    required Map<String, String> headers,
+  }) {
+    return getIt<DownloadManager>().download(
+      url,
+      dirName,
+      fileName,
+      headers: headers,
+    );
+  }
+
   Future<void> onDownloadAttachment(List<dynamic> args) async {
     if (downloadOptions == null) return;
     if (args.length < 2) return;
@@ -85,15 +105,11 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
     final name = args[1] as String;
     final options = downloadOptions!;
     try {
-      final cookies = await CookieManager.instance().getCookies(
-        url: WebUri(url),
+      final headers = mergeDownloadHeaders(
+        options.downloadHeaders,
+        cookieHeader: await getDownloadCookieHeader(url),
       );
-      final headers = <String, String>{
-        ...options.downloadHeaders!,
-        if (cookies.isNotEmpty)
-          'Cookie': cookies.map((c) => '${c.name}=${c.value}').join('; '),
-      };
-      await getIt<DownloadManager>().download(
+      await downloadNoticeFile(
         url,
         options.attachmentDir,
         name,
@@ -115,23 +131,16 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
     }
   }
 
-  Future<DownloadStartResponse?> onDownloadStarting(
-    InAppWebViewController controller,
-    DownloadStartRequest request,
-  ) async {
-    if (downloadOptions == null) return null;
-    final options = downloadOptions!;
+  Future<bool> handleDownloadStartRequest(DownloadStartRequest request) async {
+    final options = downloadOptions;
+    if (options == null) return false;
     final url = request.url.toString();
     try {
-      final cookies = await CookieManager.instance().getCookies(
-        url: WebUri(url),
+      final headers = mergeDownloadHeaders(
+        options.downloadHeaders,
+        cookieHeader: await getDownloadCookieHeader(url),
       );
-      final headers = <String, String>{
-        ...options.downloadHeaders!,
-        if (cookies.isNotEmpty)
-          'Cookie': cookies.map((c) => '${c.name}=${c.value}').join('; '),
-      };
-      await getIt<DownloadManager>().download(
+      await downloadNoticeFile(
         url,
         options.attachmentDir,
         request.suggestedFilename ?? 'download',
@@ -142,9 +151,20 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
           context,
         ).showSnackBar(const SnackBar(content: Text('下载完成')));
       }
+      return true;
     } catch (e) {
       debugPrint('$debugLabel download error: $e');
+      return false;
     }
-    return DownloadStartResponse(handled: true);
+  }
+
+  Future<DownloadStartResponse?> onDownloadStarting(
+    InAppWebViewController controller,
+    DownloadStartRequest request,
+  ) async {
+    if (downloadOptions == null) return null;
+    return DownloadStartResponse(
+      handled: await handleDownloadStartRequest(request),
+    );
   }
 }
