@@ -11,9 +11,10 @@ class ZyscPage extends StatelessWidget {
     final title = l10n!.zyscTitle;
     return WebViewNoticePage(
       url: 'https://zysc.scyol.com/fzysc/#/pages/tabbar/index',
-      beautifyAsset: null,
+      beautifyAsset: 'assets/js/volunteer_sichuan.js',
       title: title,
       heroTag: 'zy_attach_fab',
+      enableLoadingMask: false,
       debugLabel: 'ZyscNotice',
     );
   }

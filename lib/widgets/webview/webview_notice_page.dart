@@ -1,4 +1,3 @@
-import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/downloads/shared_notice_downloads.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
@@ -23,6 +22,7 @@ class WebViewNoticePage extends StatefulWidget {
     required this.heroTag,
     required this.debugLabel,
     this.downloadOptions,
+    this.enableLoadingMask = true,
   });
 
   final String url;
@@ -31,6 +31,7 @@ class WebViewNoticePage extends StatefulWidget {
   final String heroTag;
   final String debugLabel;
   final DownloadOptions? downloadOptions;
+  final bool enableLoadingMask;
 
   @override
   State<WebViewNoticePage> createState() => _WebViewNoticePageState();
@@ -43,7 +44,8 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
   String _domReadyScript = '';
   bool _realLoading = false;
   //disable loading if beautify script is empty
-  bool get _loading => _beautifyScript.isNotEmpty && _realLoading;
+  bool get _loading =>
+      _beautifyScript.isNotEmpty && _realLoading && widget.enableLoadingMask;
   set _loading(bool value) {
     if (_beautifyScript.isNotEmpty) _realLoading = value;
   }
