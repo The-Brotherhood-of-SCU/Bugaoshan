@@ -14,16 +14,20 @@ import 'official_calendar_view.dart';
 
 typedef AcademicCalendarHttpGet = Future<http.Response> Function(Uri uri);
 typedef AcademicCalendarDataLoader = Future<AcademicCalendarData> Function();
+typedef AcademicCalendarImageBuilder =
+    Widget Function(BuildContext context, String url);
 
 class AcademicCalendarPage extends StatefulWidget {
   const AcademicCalendarPage({
     super.key,
     this.httpGet,
     this.interactiveDataLoader,
+    this.officialImageBuilder,
   });
 
   final AcademicCalendarHttpGet? httpGet;
   final AcademicCalendarDataLoader? interactiveDataLoader;
+  final AcademicCalendarImageBuilder? officialImageBuilder;
 
   @override
   State<AcademicCalendarPage> createState() => _AcademicCalendarPageState();
@@ -41,6 +45,7 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
   List<CalendarEntry> _entries = [];
   List<String> _imageUrls = [];
   CalendarEntry? _selected;
+  int _detailRequestGeneration = 0;
 
   // Interactive Calendar variables
   bool _interactiveLoading = true;
@@ -65,6 +70,7 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
 
   @override
   void dispose() {
+    _detailRequestGeneration++;
     _tabController.removeListener(_handleTabChange);
     _tabController.dispose();
     super.dispose();
@@ -125,6 +131,7 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
 
   Future<void> _loadDetail(CalendarEntry entry) async {
     if (!mounted) return;
+    final requestGeneration = ++_detailRequestGeneration;
     setState(() {
       _loading = true;
       _error = null;
@@ -135,7 +142,7 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
       final uri = Uri.parse('$_base/${entry.path}');
       final request = widget.httpGet?.call(uri) ?? http.get(uri);
       final resp = await request.timeout(const Duration(seconds: 8));
-      if (!mounted) return;
+      if (!_isCurrentDetailRequest(requestGeneration, entry)) return;
       if (resp.statusCode != 200) {
         throw Exception('HTTP ${resp.statusCode}');
       }
@@ -154,20 +161,24 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
         throw Exception('No images found');
       }
 
-      if (mounted) {
-        setState(() {
-          _imageUrls = urls;
-          _loading = false;
-        });
-      }
+      if (!_isCurrentDetailRequest(requestGeneration, entry)) return;
+      setState(() {
+        _imageUrls = urls;
+        _loading = false;
+      });
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-          _error = e.toString();
-        });
-      }
+      if (!_isCurrentDetailRequest(requestGeneration, entry)) return;
+      setState(() {
+        _loading = false;
+        _error = e.toString();
+      });
     }
+  }
+
+  bool _isCurrentDetailRequest(int generation, CalendarEntry entry) {
+    return mounted &&
+        generation == _detailRequestGeneration &&
+        identical(entry, _selected);
   }
 
   // Fetch interactive calendar data
@@ -283,6 +294,7 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
             loading: _loading,
             error: _error,
             imageUrls: _imageUrls,
+            imageBuilder: widget.officialImageBuilder,
             onEntryChanged: (entry) {
               setState(() => _selected = entry);
               _loadDetail(entry);
