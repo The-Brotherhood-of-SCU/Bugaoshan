@@ -794,5 +794,31 @@
     "calendarStartTag": "开学",
     "calendarEventTag": "事件",
     "calendarNoEventData": "暂无互动校历数据",
-    "calendarNextEvent": "下个重要事件"
+    "calendarNextEvent": "下个重要事件",
+    "appIcon": "应用图标",
+    "defaultIcon": "默认图标",
+    "oldIcon": "旧版图标",
+    "switchAppIcon": "切换应用图标",
+    "switchAppIconConfirm": "切换至「{label}」后应用将重启，是否继续？",
+    "@switchAppIconConfirm": {
+        "placeholders": {
+            "label": {"type": "String"}
+        }
+    },
+    "defaultIconRestored": "已恢复默认图标",
+    "iconSwitched": "已切换到图标: {name}",
+    "@iconSwitched": {
+        "placeholders": {
+            "name": {"type": "String"}
+        }
+    },
+    "iconSwitchFailed": "切换失败: {error}",
+    "@iconSwitchFailed": {
+        "placeholders": {
+            "error": {"type": "String"}
+        }
+    },
+    "iconSwitchNotSupported": "当前平台不支持动态切换应用图标",
+    "newIconSubtitle": "Bugaoshan 新图标",
+    "oldIconSubtitle": "Bugaoshan 经典图标"
 }

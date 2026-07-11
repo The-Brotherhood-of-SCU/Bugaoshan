@@ -1,3 +1,4 @@
+import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/services/dynamic_icon_service.dart';
 import 'package:flutter/material.dart';
 
@@ -35,19 +36,20 @@ class _SetAppIconPageState extends State<SetAppIconPage> {
   }
 
   Future<void> _confirmAndSwitch(String? iconName, String iconLabel) async {
+    final l = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('切换应用图标'),
-        content: Text('切换至「$iconLabel」后应用将重启，是否继续？'),
+        title: Text(l.switchAppIcon),
+        content: Text(l.switchAppIconConfirm(iconLabel)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('取消'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('确定'),
+            child: Text(l.confirm),
           ),
         ],
       ),
@@ -58,18 +60,24 @@ class _SetAppIconPageState extends State<SetAppIconPage> {
       await DynamicIconService.setAlternateIconName(iconName);
       final current = await DynamicIconService.getCurrentIconName();
       if (mounted) {
+        final l = AppLocalizations.of(context)!;
         setState(() => _currentIcon = current);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(iconName == null ? '已恢复默认图标' : '已切换到图标: $iconName'),
+            content: Text(
+              iconName == null
+                  ? l.defaultIconRestored
+                  : l.iconSwitched(iconName),
+            ),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('切换失败: $e')));
+        final l = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.iconSwitchFailed(e.toString()))),
+        );
       }
     } finally {
       if (mounted) setState(() => _isChanging = false);
@@ -78,37 +86,36 @@ class _SetAppIconPageState extends State<SetAppIconPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('应用图标')),
+      appBar: AppBar(title: Text(l.appIcon)),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               children: [
-                // 默认图标
                 _IconOption(
                   iconAsset: 'assets/icon.png',
-                  label: '默认图标',
-                  subtitle: 'Bugaoshan 新图标',
+                  label: l.defaultIcon,
+                  subtitle: l.newIconSubtitle,
                   isSelected: _currentIcon == null,
                   onTap: _currentIcon == null
                       ? null
-                      : () => _confirmAndSwitch(null, '默认图标'),
+                      : () => _confirmAndSwitch(null, l.defaultIcon),
                   isLoading: _isChanging,
                 ),
                 const SizedBox(height: 12),
-                // 旧版图标
                 if (_availableIcons.contains('old'))
                   _IconOption(
                     iconAsset: 'assets/icon_old.png',
-                    label: '旧版图标',
-                    subtitle: 'Bugaoshan 经典图标',
+                    label: l.oldIcon,
+                    subtitle: l.oldIconSubtitle,
                     isSelected: _currentIcon == 'old',
                     onTap: _currentIcon == 'old'
                         ? null
-                        : () => _confirmAndSwitch('old', '旧版图标'),
+                        : () => _confirmAndSwitch('old', l.oldIcon),
                     isLoading: _isChanging,
                   ),
                 if (_availableIcons.isEmpty && !_isLoading)
@@ -116,7 +123,7 @@ class _SetAppIconPageState extends State<SetAppIconPage> {
                     padding: const EdgeInsets.all(32),
                     child: Center(
                       child: Text(
-                        '当前平台不支持动态切换应用图标',
+                        l.iconSwitchNotSupported,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),

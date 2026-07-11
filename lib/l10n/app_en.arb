@@ -829,5 +829,31 @@
     "calendarStartTag": "Start",
     "calendarEventTag": "Event",
     "calendarNoEventData": "No interactive calendar data",
-    "calendarNextEvent": "Next Event"
+    "calendarNextEvent": "Next Event",
+    "appIcon": "App Icon",
+    "defaultIcon": "Default",
+    "oldIcon": "Old Icon",
+    "switchAppIcon": "Switch App Icon",
+    "switchAppIconConfirm": "Switch to \"{label}\"? The app will restart. Continue?",
+    "@switchAppIconConfirm": {
+        "placeholders": {
+            "label": {"type": "String"}
+        }
+    },
+    "defaultIconRestored": "Restored default icon",
+    "iconSwitched": "Switched to icon: {name}",
+    "@iconSwitched": {
+        "placeholders": {
+            "name": {"type": "String"}
+        }
+    },
+    "iconSwitchFailed": "Switch failed: {error}",
+    "@iconSwitchFailed": {
+        "placeholders": {
+            "error": {"type": "String"}
+        }
+    },
+    "iconSwitchNotSupported": "Dynamic icon switching is not supported on this platform",
+    "newIconSubtitle": "Bugaoshan New Icon",
+    "oldIconSubtitle": "Bugaoshan Classic Icon"
 }

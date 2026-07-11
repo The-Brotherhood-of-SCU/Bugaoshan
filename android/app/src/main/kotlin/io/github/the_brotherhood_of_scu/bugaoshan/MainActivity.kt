@@ -186,6 +186,9 @@ class MainActivity : FlutterActivity() {
                 PackageManager.DONT_KILL_APP
             )
         }
+
+        // Force widget refresh so it recreates PendingIntent with the newly enabled component
+        updateAllWidgets()
     }
 
     private fun updateAllWidgets() {

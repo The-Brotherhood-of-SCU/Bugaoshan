@@ -2083,6 +2083,45 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get calendarNextEvent => '下个重要事件';
+
+  @override
+  String get appIcon => '应用图标';
+
+  @override
+  String get defaultIcon => '默认图标';
+
+  @override
+  String get oldIcon => '旧版图标';
+
+  @override
+  String get switchAppIcon => '切换应用图标';
+
+  @override
+  String switchAppIconConfirm(String label) {
+    return '切换至「$label」后应用将重启，是否继续？';
+  }
+
+  @override
+  String get defaultIconRestored => '已恢复默认图标';
+
+  @override
+  String iconSwitched(String name) {
+    return '已切换到图标: $name';
+  }
+
+  @override
+  String iconSwitchFailed(String error) {
+    return '切换失败: $error';
+  }
+
+  @override
+  String get iconSwitchNotSupported => '当前平台不支持动态切换应用图标';
+
+  @override
+  String get newIconSubtitle => 'Bugaoshan 新图标';
+
+  @override
+  String get oldIconSubtitle => 'Bugaoshan 经典图标';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

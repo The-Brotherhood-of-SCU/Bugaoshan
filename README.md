@@ -39,6 +39,7 @@
 - **校历查询** — 查询校园的校历，了解放假安排
 - **班级课表查询** — 查询各个年级和班级的课表，方便查看班级课程安排
 - **通知公告、附件下载** — 查看教务处、党委学工部、青春川大通知公告以及下载附件
+- **志愿四川** — 志愿四川查询和报名
 - **更多便捷功能** — 持续迭代中，更多校园实用工具即将上线
 
 <div align="center">
@@ -68,17 +69,9 @@
 
 [![Contributors](https://contrib.rocks/image?repo=The-Brotherhood-of-SCU/Bugaoshan)](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/graphs/contributors)
 
-感谢 **小米MIMO** 提供的 AI 模型支持
-
-[![momo](./screenshot/mimo.webp)](https://mimo.mi.com/)
-
 ---
 
-## ⭐ Star History
-
-[![Star History Chart](https://api.star-history.com/chart?repos=The-Brotherhood-of-SCU/Bugaoshan&type=date&legend=top-left)](https://www.star-history.com/?type=date&repos=The-Brotherhood-of-SCU%2FBugaoshan)
-
-## 许可证
+## 📜️ 许可证
 
 本项目基于 [AGPL-3.0](LICENSE) 协议开源。使用本软件前请阅读 [EULA](assets/eula.md)。
 
