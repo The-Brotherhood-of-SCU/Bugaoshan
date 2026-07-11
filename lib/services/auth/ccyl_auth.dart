@@ -176,7 +176,7 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
         return false;
       }
       final oauthCode = _oauthCodeProvider != null
-          ? await _oauthCodeProvider!()
+          ? await _oauthCodeProvider()
           : await CcylOAuthService(_scuAuth).getOAuthCode();
       if (!_isCurrentAttempt(generation, principal)) return false;
       if (oauthCode == null) {
