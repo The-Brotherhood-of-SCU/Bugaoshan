@@ -699,13 +699,21 @@ packages:
     source: hosted
     version: "1.0.1"
   json_annotation:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: json_annotation
       sha256: "2a743920d81b7910627f68ee2c9ac1fc0bfee32b9fc3403587d7c6791ca12f80"
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "4.12.0"
+  json_serializable:
+    dependency: "direct dev"
+    description:
+      name: json_serializable
+      sha256: ffcd10cde35a93b2abbbcc26bd9971f4ca93763e8abe78d855e3c4177797e501
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "6.14.0"
   leak_tracker:
     dependency: transitive
     description:
@@ -1143,6 +1151,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "4.2.3"
+  source_helper:
+    dependency: transitive
+    description:
+      name: source_helper
+      sha256: "4227d54ceefd0bb8ca4c8fcb96e1719dc53f1ee1b6e2ca9d7a6069da160e4eae"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.3.12"
   source_span:
     dependency: transitive
     description:
