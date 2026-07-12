@@ -31,7 +31,8 @@ class _DevPageState extends State<DevPage> {
   final _previewResult = UpdateResultNotifier();
 
   bool get _supportsUpdate =>
-      Platform.isAndroid || Platform.isWindows || Platform.isLinux;
+      (Platform.isAndroid || Platform.isWindows || Platform.isLinux) &&
+      getIt<UpdateService>().supportsInAppUpdate;
 
   Future<void> _checkForUpdates() async {
     if (!_supportsUpdate) return;

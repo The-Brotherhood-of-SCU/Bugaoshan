@@ -1,0 +1,9 @@
+--- a/linux/CMakeLists.txt
++++ b/linux/CMakeLists.txt
+@@ -159,5 +159,4 @@ FetchContent_Declare(
+   nlohmann_json
+-  URL https://github.com/nlohmann/json/releases/download/v${NLOHMANN_JSON_VERSION}/json.tar.xz
++  SOURCE_DIR ${CMAKE_SOURCE_DIR}/../third_party/nlohmann_json
+-  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+ )
+ # Don't build tests/examples

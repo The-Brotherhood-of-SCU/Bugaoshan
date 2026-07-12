@@ -1,0 +1,5 @@
+--- a/lib/src/hook/assets.dart
++++ b/lib/src/hook/assets.dart
+@@ -126,1 +126,1 @@
+-  String get dirname => 'download-${contentSha256Hash.substring(0, 8)}';
++  String get dirname => 'download-static';

@@ -73,6 +73,9 @@ class UpdateService {
 
   UpdateService(this._prefs, this._currentVersion);
 
+  bool get supportsInAppUpdate =>
+      !Platform.isLinux || !Platform.environment.containsKey('FLATPAK_ID');
+
   UpdateAssetPlatform? get _assetPlatform {
     if (Platform.isAndroid) return UpdateAssetPlatform.android;
     if (Platform.isWindows) return UpdateAssetPlatform.windows;
@@ -274,6 +277,7 @@ class UpdateService {
   }
 
   Future<UpdateCheckResult> checkForUpdate() {
+    if (!supportsInAppUpdate) return Future.value(UpdateCheckResult.noUpdate());
     final includePreview =
         getIt<AppConfigProvider>().usePreviewUpdateSource.value;
     final versionProvider = getIt<AppInfoProvider>();
@@ -310,6 +314,9 @@ class UpdateService {
     void Function(String status)? onStatus,
     void Function(int received, int total)? onProgress,
   }) async {
+    if (!supportsInAppUpdate) {
+      throw UnsupportedError('Updates are managed by Flatpak');
+    }
     onStatus?.call('Downloading update...');
 
     final client = http.Client();
