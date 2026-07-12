@@ -14,6 +14,7 @@ import 'package:bugaoshan/services/auth/auth_coordinator.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
+import 'package:bugaoshan/widgets/common/auth_scoped_indexed_stack.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -25,24 +26,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   int _currentIndex = 0;
   final _courseProvider = getIt<CourseProvider>();
-  final Map<String, Widget> _pageCache = {};
-
-  /// Lazily builds and returns an [IndexedStack] of all visited pages.
-  /// Only the page at [selectedIndex] is visible; others are kept alive.
-  Widget _buildIndexedStack(List<String> visibleIds, int selectedIndex) {
-    for (final id in visibleIds) {
-      _pageCache.putIfAbsent(id, () => campusItemConfigById(id).page());
-    }
-    // Clean up pages no longer visible
-    _pageCache.keys
-        .where((id) => !visibleIds.contains(id))
-        .toList()
-        .forEach(_pageCache.remove);
-    return IndexedStack(
-      index: selectedIndex.clamp(0, visibleIds.length - 1),
-      children: visibleIds.map((id) => _pageCache[id]!).toList(),
-    );
-  }
 
   @override
   void initState() {
@@ -117,6 +100,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   Widget _buildMainScreen() {
     final appConfig = getIt<AppConfigProvider>();
+    final authProvider = getIt<ScuAuthProvider>();
     final l10n = AppLocalizations.of(context)!;
 
     return ValueListenableBuilder<List<String>>(
@@ -132,9 +116,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 final isWide = constraints.maxWidth >= 600;
                 final showRail = isWide && visibleIds.length >= 2;
                 final showBar = !isWide && visibleIds.length >= 2;
-                final pageContent = _buildIndexedStack(
-                  visibleIds,
-                  _currentIndex,
+                final pageContent = AuthScopedIndexedStack(
+                  authListenable: authProvider,
+                  isAuthenticated: () => authProvider.isLoggedIn,
+                  visibleIds: visibleIds,
+                  selectedIndex: _currentIndex,
+                  pageBuilder: (id) => campusItemConfigById(id).page(),
                 );
                 return Scaffold(
                   body: Row(

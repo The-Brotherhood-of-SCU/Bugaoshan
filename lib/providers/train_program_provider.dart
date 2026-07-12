@@ -32,6 +32,8 @@ class TrainProgramProvider extends ChangeNotifier {
 
   String? _selectedCollege;
   String? _selectedGrade;
+  int _detailGeneration = 0;
+  int _courseDetailGeneration = 0;
 
   List<College> get colleges => _colleges;
   List<Grade> get grades => _grades;
@@ -135,21 +137,26 @@ class TrainProgramProvider extends ChangeNotifier {
   }
 
   Future<void> fetchProgramDetail(String fajhh) async {
-    if (_detailState == TrainProgramLoadState.loading) return;
+    final generation = ++_detailGeneration;
     _detailState = TrainProgramLoadState.loading;
     _detailError = null;
     _safeNotify();
 
     try {
-      _currentDetail = await _zhjwApi.fetchProgramDetail(fajhh);
+      final detail = await _zhjwApi.fetchProgramDetail(fajhh);
+      if (generation != _detailGeneration) return;
+      _currentDetail = detail;
       _detailState = TrainProgramLoadState.loaded;
     } on UnauthenticatedException {
+      if (generation != _detailGeneration) return;
       _detailState = TrainProgramLoadState.error;
       _detailError = LoadErrorType.sessionExpired;
     } on ServiceException catch (_) {
+      if (generation != _detailGeneration) return;
       _detailState = TrainProgramLoadState.error;
       _detailError = campusNetworkErrorType(LoadErrorType.loadFailed);
     } catch (_) {
+      if (generation != _detailGeneration) return;
       _detailState = TrainProgramLoadState.error;
       _detailError = campusNetworkErrorType(LoadErrorType.loadFailed);
     }
@@ -157,27 +164,34 @@ class TrainProgramProvider extends ChangeNotifier {
   }
 
   void clearDetail() {
+    _detailGeneration++;
     _currentDetail = null;
     _detailState = TrainProgramLoadState.idle;
+    _detailError = null;
     _safeNotify();
   }
 
   Future<void> fetchCourseDetail(String urlPath) async {
-    if (_courseDetailState == TrainProgramLoadState.loading) return;
+    final generation = ++_courseDetailGeneration;
     _courseDetailState = TrainProgramLoadState.loading;
     _courseDetailError = null;
     _safeNotify();
 
     try {
-      _currentCourseDetail = await _zhjwApi.fetchCourseDetail(urlPath);
+      final detail = await _zhjwApi.fetchCourseDetail(urlPath);
+      if (generation != _courseDetailGeneration) return;
+      _currentCourseDetail = detail;
       _courseDetailState = TrainProgramLoadState.loaded;
     } on UnauthenticatedException {
+      if (generation != _courseDetailGeneration) return;
       _courseDetailState = TrainProgramLoadState.error;
       _courseDetailError = LoadErrorType.sessionExpired;
     } on ServiceException catch (_) {
+      if (generation != _courseDetailGeneration) return;
       _courseDetailState = TrainProgramLoadState.error;
       _courseDetailError = campusNetworkErrorType(LoadErrorType.loadFailed);
     } catch (_) {
+      if (generation != _courseDetailGeneration) return;
       _courseDetailState = TrainProgramLoadState.error;
       _courseDetailError = campusNetworkErrorType(LoadErrorType.loadFailed);
     }
@@ -185,8 +199,10 @@ class TrainProgramProvider extends ChangeNotifier {
   }
 
   void clearCourseDetail() {
+    _courseDetailGeneration++;
     _currentCourseDetail = null;
     _courseDetailState = TrainProgramLoadState.idle;
+    _courseDetailError = null;
     _safeNotify();
   }
 }

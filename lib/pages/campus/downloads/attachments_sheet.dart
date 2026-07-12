@@ -26,7 +26,7 @@ void showAttachmentsSheet(
   // Prime the manager: enqueue tasks for items that already exist on disk,
   // and revoke stale tasks whose files have been deleted.
   for (final item in items) {
-    checkDownloadedFile(dirName, item.name).then((path) {
+    checkDownloadedFile(dirName, item.name, url: item.url).then((path) {
       if (path != null) {
         final task = manager.enqueue(
           item.url,
@@ -42,9 +42,9 @@ void showAttachmentsSheet(
           );
         }
       } else {
-        final existing = manager.taskFor(dirName, item.name);
+        final existing = manager.taskFor(item.url, dirName);
         if (existing != null && existing.status == DownloadStatus.done) {
-          manager.remove(dirName, item.name);
+          manager.remove(item.url, dirName);
         }
       }
     });
@@ -161,7 +161,8 @@ class _SheetAttachmentTile extends StatelessWidget {
   }
 
   void _open(String path) => OpenFilex.open(path);
-  void _share(String path) => shareSingleFile(path);
+  void _share(BuildContext context, String path) =>
+      shareSingleFile(path, context: context);
 
   Future<void> _startDownload(DownloadManager manager) async {
     if (onWebViewDownload != null) {
@@ -185,7 +186,7 @@ class _SheetAttachmentTile extends StatelessWidget {
     return ListenableBuilder(
       listenable: manager,
       builder: (context, _) {
-        final task = manager.taskFor(dirName, item.name);
+        final task = manager.taskFor(item.url, dirName);
 
         // Show done state if task completed or file already known.
         if (task != null &&
@@ -256,7 +257,7 @@ class _SheetAttachmentTile extends StatelessWidget {
       leading: Icon(_fileIcon(), color: Theme.of(context).colorScheme.primary),
       title: Text(item.name, maxLines: 2, overflow: TextOverflow.ellipsis),
       trailing: FutureBuilder<String?>(
-        future: checkDownloadedFile(dirName, item.name),
+        future: checkDownloadedFile(dirName, item.name, url: item.url),
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
             return const SizedBox(
@@ -280,7 +281,7 @@ class _SheetAttachmentTile extends StatelessWidget {
                 downloadedPath: snapshot.data,
               );
             }
-            return _doneTrailing(snapshot.data!);
+            return _doneTrailing(context, snapshot.data!);
           }
           return IconButton(
             icon: const Icon(Icons.download),
@@ -296,18 +297,18 @@ class _SheetAttachmentTile extends StatelessWidget {
     return ListTile(
       leading: Icon(_fileIcon(), color: Theme.of(context).colorScheme.primary),
       title: Text(item.name, maxLines: 2, overflow: TextOverflow.ellipsis),
-      trailing: _doneTrailing(path),
+      trailing: _doneTrailing(context, path),
     );
   }
 
-  Widget _doneTrailing(String path) {
+  Widget _doneTrailing(BuildContext context, String path) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
           icon: const Icon(Icons.share),
           tooltip: '分享',
-          onPressed: () => _share(path),
+          onPressed: () => _share(context, path),
         ),
         IconButton(
           icon: const Icon(Icons.check_circle, color: Colors.green),

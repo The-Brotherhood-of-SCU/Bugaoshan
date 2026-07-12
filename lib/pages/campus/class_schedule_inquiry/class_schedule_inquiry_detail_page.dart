@@ -117,9 +117,8 @@ class _ClassScheduleInquiryDetailPageState
     const int totalPeriods = 12;
     final gridHeight = headerHeight + totalPeriods * rowHeight;
 
-    // showAllWeeks 模式不读取 semesterStartDate，设任意值即可
-    // 显示设置（showTeacherName/showLocation/showWeekend）已迁移到 AppConfigProvider
-    getIt<AppConfigProvider>().showWeekend.value = hasWeekend;
+    // showAllWeeks 模式不读取 semesterStartDate，设任意值即可。
+    // 班级详情只在当前网格局部决定是否显示周末，不能改写用户主课表偏好。
     final gridConfig = ScheduleConfig(
       semesterStartDate: DateTime(2025, 9, 1),
       morningSections: 0,
@@ -152,6 +151,7 @@ class _ClassScheduleInquiryDetailPageState
               config: gridConfig,
               displayWeek: 1,
               showAllWeeks: true,
+              showWeekendOverride: hasWeekend,
             ),
           ),
         ],

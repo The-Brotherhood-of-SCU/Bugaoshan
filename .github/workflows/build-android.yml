@@ -48,17 +48,30 @@ jobs:
           echo 'keyAlias=${{ secrets.KEY_ALIAS }}' >> android/key.properties
           echo 'storeFile=../keystore/upload-keystore.jks' >> android/key.properties
 
-      - name: Build APK
+      - name: Build universal APK for in-app updates
         run: |
-          flutter build apk --release --split-per-abi \
-            --obfuscate --split-debug-info=build/app/outputs/symbols \
+          flutter build apk --release \
+            --obfuscate --split-debug-info=build/app/outputs/symbols/universal \
             --dart-define=GIT_TAG=${{ steps.setup.outputs.GIT_TAG }} \
             --dart-define=GIT_COMMIT=${{ steps.setup.outputs.GIT_COMMIT }} \
             --dart-define=GIT_COMMIT_DATE=${{ steps.setup.outputs.GIT_COMMIT_DATE }} \
             --dart-define=BUILD_TIME=${{ steps.setup.outputs.BUILD_TIME }}
+          mkdir -p release-apks
+          cp build/app/outputs/flutter-apk/app-release.apk \
+            release-apks/app-universal-release.apk
 
-      - name: Upload APK
+      - name: Build ABI split APKs for manual downloads
+        run: |
+          flutter build apk --release --split-per-abi \
+            --obfuscate --split-debug-info=build/app/outputs/symbols/split \
+            --dart-define=GIT_TAG=${{ steps.setup.outputs.GIT_TAG }} \
+            --dart-define=GIT_COMMIT=${{ steps.setup.outputs.GIT_COMMIT }} \
+            --dart-define=GIT_COMMIT_DATE=${{ steps.setup.outputs.GIT_COMMIT_DATE }} \
+            --dart-define=BUILD_TIME=${{ steps.setup.outputs.BUILD_TIME }}
+          cp build/app/outputs/flutter-apk/app-*-release.apk release-apks/
+
+      - name: Upload universal and split APKs
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: build/app/outputs/flutter-apk/*.apk
+          path: release-apks/*.apk

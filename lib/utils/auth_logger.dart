@@ -70,6 +70,14 @@ class AuthLogRedactor {
     r'([?&](?:code|access_token)=)([^&\s"]+)',
     caseSensitive: false,
   );
+  static final RegExp _principalLabel = RegExp(
+    r'\b(user(?:name|id)?|student(?:id|number)?|number)\s*=\s*([^\s,;]+)',
+    caseSensitive: false,
+  );
+  static final RegExp _principalJson = RegExp(
+    r'("(?:username|userId|studentId|studentNumber|number)"\s*:\s*)"[^"]*"',
+    caseSensitive: false,
+  );
 
   /// 对输入文本做脱敏；返回新字符串。
   static String apply(String text) {
@@ -89,6 +97,14 @@ class AuthLogRedactor {
       if (value.length <= 4) return '$prefix<redacted>';
       return '$prefix${value.substring(0, 4)}…';
     });
+    result = result.replaceAllMapped(
+      _principalLabel,
+      (m) => '${m[1]}=<redacted>',
+    );
+    result = result.replaceAllMapped(
+      _principalJson,
+      (m) => '${m[1]}"<redacted>"',
+    );
     return result;
   }
 }

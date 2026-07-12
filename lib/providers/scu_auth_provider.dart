@@ -74,7 +74,7 @@ class ScuAuthProvider extends ChangeNotifier {
     required String captchaCode,
     required String captchaText,
   }) async {
-    _log.i(_tag, 'login: start user=$username');
+    _log.i(_tag, 'login: start');
     await _scuAuth.login(
       username: username,
       password: password,
@@ -141,7 +141,7 @@ class ScuAuthProvider extends ChangeNotifier {
     final username = credentials['username']!;
     final password = credentials['password']!;
 
-    _log.i(_tag, 'autoLogin: starting user=$username');
+    _log.i(_tag, 'autoLogin: starting');
     _isAutoLoggingIn = true;
     notifyListeners();
 

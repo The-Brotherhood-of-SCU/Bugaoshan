@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:crypto/crypto.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/utils/secure_storage.dart';
 import 'package:bugaoshan/services/auth/auth_state.dart';
@@ -19,6 +20,7 @@ import 'package:bugaoshan/utils/sm2_crypto.dart';
 const kZhjwBase = 'http://zhjw.scu.edu.cn';
 
 const _keyAccessToken = 'scu_access_token';
+const _keyPrincipalBinding = 'scu_principal_binding_v1';
 const _keyLoginTimestamp = 'scu_login_timestamp';
 const _sessionDurationSeconds = 3600;
 
@@ -47,8 +49,10 @@ class ScuAuth extends ChangeNotifier {
 
   final SharedPreferences _prefs;
   final AuthLogger _log;
+  final CookieClient Function() _cookieClientFactory;
 
   String? _accessToken;
+  String? _principal;
   int? _loginTimestamp;
   CookieClient? _cachedClient;
   Future<CookieClient>? _bindSessionFuture;
@@ -62,8 +66,12 @@ class ScuAuth extends ChangeNotifier {
   /// 用于在 UI 层显示提示（如 snackbar），由 SessionExpiredListener 注册。
   VoidCallback? onSessionExpired;
 
-  ScuAuth(this._prefs, {AuthLogger? logger})
-    : _log = logger ?? getIt<AuthLogger>();
+  ScuAuth(
+    this._prefs, {
+    AuthLogger? logger,
+    CookieClient Function()? cookieClientFactory,
+  }) : _log = logger ?? getIt<AuthLogger>(),
+       _cookieClientFactory = cookieClientFactory ?? (() => CookieClient());
 
   // ─── 状态 ───────────────────────────────────────────────────────
 
@@ -77,6 +85,7 @@ class ScuAuth extends ChangeNotifier {
   }
 
   String? get accessToken => _accessToken;
+  String? get principal => _principal;
 
   @protected
   set state(AuthState value) {
@@ -95,6 +104,7 @@ class ScuAuth extends ChangeNotifier {
     _accessToken = await SecureStorageProvider.instance.read(
       key: _keyAccessToken,
     );
+    _principal = await _restorePrincipal(_accessToken);
     _loginTimestamp = _prefs.getInt(_keyLoginTimestamp);
 
     if (_accessToken != null && !isExpired) {
@@ -153,7 +163,7 @@ class ScuAuth extends ChangeNotifier {
     required String captchaCode,
     required String captchaText,
   }) async {
-    _log.i('ScuAuth', 'login: start user=$username');
+    _log.i('ScuAuth', 'login: start');
     // 1. 获取 SM2 公钥（服务端偶发 500，加重试）
     Map<String, dynamic>? sm2Data;
     String? lastSm2Body;
@@ -241,12 +251,18 @@ class ScuAuth extends ChangeNotifier {
 
     // 登录成功
     _accessToken = token;
+    _principal = username;
     _cachedClient = null;
     _bindSessionFuture = null;
     _loginTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    await SecureStorageProvider.instance.write(
-      key: _keyAccessToken,
-      value: _accessToken!,
+    final secure = SecureStorageProvider.instance;
+    await secure.write(key: _keyAccessToken, value: _accessToken!);
+    await secure.write(
+      key: _keyPrincipalBinding,
+      value: jsonEncode({
+        'principal': _principal,
+        'tokenFingerprint': _tokenFingerprint(_accessToken!),
+      }),
     );
     await _prefs.setInt(_keyLoginTimestamp, _loginTimestamp!);
     _log.i('ScuAuth', 'login: ok, token len=${token.length}');
@@ -280,7 +296,7 @@ class ScuAuth extends ChangeNotifier {
   }
 
   Future<CookieClient> _doBindSession() async {
-    final client = CookieClient();
+    final client = _cookieClientFactory();
 
     // ── Step 1: 保存 token 到服务端 session（必须成功）
     final sessionResp = await client.post(
@@ -288,11 +304,22 @@ class ScuAuth extends ChangeNotifier {
       headers: {..._headers, 'Authorization': 'Bearer $_accessToken'},
       body: '{}',
     );
+    if (sessionResp.statusCode == 401 || sessionResp.statusCode == 403) {
+      _log.w(
+        'ScuAuth',
+        'bindSession: token rejected (${sessionResp.statusCode})',
+      );
+      throw const UnauthenticatedException('统一认证 token 已失效');
+    }
     final sessionResult = parseJson(
       sessionResp.body,
       'session/save',
       (msg) => ScuLoginException(msg),
     );
+    if (sessionResult['error']?.toString().toLowerCase() == 'invalid_token') {
+      _log.w('ScuAuth', 'bindSession: invalid_token response');
+      throw const UnauthenticatedException('统一认证 token 已失效');
+    }
     if (sessionResult['success'] != true) {
       _log.w('ScuAuth', 'bindSession: session/save rejected');
       throw ScuLoginException('session/save 失败: ${sessionResp.body}');
@@ -330,13 +357,26 @@ class ScuAuth extends ChangeNotifier {
         onSessionExpired?.call();
         throw const UnauthenticatedException();
       }
+
+      return await bindSession();
     }
 
     if (_accessToken == null) {
       throw const UnauthenticatedException('未登录');
     }
 
-    return await bindSession();
+    try {
+      return await bindSession();
+    } on UnauthenticatedException {
+      _log.w('ScuAuth', 'getClient: server rejected token, refreshing');
+      final refreshed = await _synchronizedRefresh();
+      if (!refreshed) {
+        _log.e('ScuAuth', 'getClient: refresh failed, session expired');
+        onSessionExpired?.call();
+        throw const UnauthenticatedException();
+      }
+      return await bindSession();
+    }
   }
 
   /// 获取 access token（给 WfwAuth 等需要 Bearer token 的场景）。
@@ -434,13 +474,42 @@ class ScuAuth extends ChangeNotifier {
   Future<void> logout() async {
     _log.i('ScuAuth', 'logout: clearing session');
     _accessToken = null;
+    _principal = null;
     _cachedClient = null;
     _bindSessionFuture = null;
     _refreshCompleter = null;
     _loginTimestamp = null;
     await SecureStorageProvider.instance.delete(key: _keyAccessToken);
+    await SecureStorageProvider.instance.delete(key: _keyPrincipalBinding);
     await _prefs.remove(_keyLoginTimestamp);
     state = AuthState.unknown;
+  }
+
+  Future<String?> _restorePrincipal(String? token) async {
+    if (token == null) return null;
+    final secure = SecureStorageProvider.instance;
+    final raw = await secure.read(key: _keyPrincipalBinding);
+    if (raw == null) return null;
+
+    try {
+      final binding = jsonDecode(raw) as Map<String, dynamic>;
+      final principal = binding['principal']?.toString();
+      final fingerprint = binding['tokenFingerprint']?.toString();
+      if (principal == null ||
+          principal.isEmpty ||
+          fingerprint != _tokenFingerprint(token)) {
+        await secure.delete(key: _keyPrincipalBinding);
+        return null;
+      }
+      return principal;
+    } catch (_) {
+      await secure.delete(key: _keyPrincipalBinding);
+      return null;
+    }
+  }
+
+  String _tokenFingerprint(String token) {
+    return sha256.convert(utf8.encode(token)).toString();
   }
 
   // ─── 凭据管理（自动登录用）──────────────────────────────────
@@ -482,10 +551,7 @@ class ScuAuth extends ChangeNotifier {
       _log.d('ScuAuth', 'autoLogin: no saved credentials');
       return false;
     }
-    _log.i(
-      'ScuAuth',
-      'autoLogin: starting for user=${credentials['username']}',
-    );
+    _log.i('ScuAuth', 'autoLogin: starting');
 
     try {
       final captcha = await fetchCaptcha();

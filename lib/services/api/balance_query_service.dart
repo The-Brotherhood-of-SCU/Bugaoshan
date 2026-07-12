@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/json_utils.dart';
 
@@ -20,11 +21,7 @@ class BalanceQueryService {
       headers: _headers,
       body: '{}',
     );
-    final json = parseJson(
-      resp.body,
-      'getCampus',
-      (msg) => BalanceQueryException(msg),
-    );
+    final json = _decodeResponse(resp, 'getCampus');
     if (json['respCode'] != '00') {
       throw BalanceQueryException(json['respDesc'] ?? '获取校区失败');
     }
@@ -44,11 +41,7 @@ class BalanceQueryService {
       headers: _headers,
       body: jsonEncode({'schoolCode': schoolCode}),
     );
-    final json = parseJson(
-      resp.body,
-      'getArchitecture',
-      (msg) => BalanceQueryException(msg),
-    );
+    final json = _decodeResponse(resp, 'getArchitecture');
     if (json['respCode'] != '00') {
       throw BalanceQueryException(json['respDesc'] ?? '获取楼栋失败');
     }
@@ -69,11 +62,7 @@ class BalanceQueryService {
       headers: _headers,
       body: jsonEncode({'schoolCode': schoolCode, 'regCode': regCode}),
     );
-    final json = parseJson(
-      resp.body,
-      'getUnit',
-      (msg) => BalanceQueryException(msg),
-    );
+    final json = _decodeResponse(resp, 'getUnit');
     if (json['respCode'] != '00') {
       throw BalanceQueryException(json['respDesc'] ?? '获取单元失败');
     }
@@ -107,11 +96,7 @@ class BalanceQueryService {
         'roomNo': roomNo,
       }),
     );
-    final json = parseJson(
-      resp.body,
-      'verificationRoom',
-      (msg) => BalanceQueryException(msg),
-    );
+    final json = _decodeResponse(resp, 'verificationRoom');
     if (json['respCode'] != '00') {
       throw BalanceQueryException(json['respDesc'] ?? '验证房间失败');
     }
@@ -129,11 +114,7 @@ class BalanceQueryService {
       headers: _headers,
       body: jsonEncode({'cusNo': cusNo, 'type': type, 'cusName': cusName}),
     );
-    final json = parseJson(
-      resp.body,
-      'queryRoomInfo',
-      (msg) => BalanceQueryException(msg),
-    );
+    final json = _decodeResponse(resp, 'queryRoomInfo');
     if (json['respCode'] != '00') {
       throw BalanceQueryException(json['respDesc'] ?? '查询失败');
     }
@@ -142,6 +123,59 @@ class BalanceQueryService {
       throw BalanceQueryException('查询数据为空');
     }
     return RoomInfo.fromJson(data);
+  }
+
+  Map<String, dynamic> _decodeResponse(http.Response response, String api) {
+    if (_isAuthenticationRedirect(response) ||
+        _isPayAppLoginTimeoutPage(response)) {
+      throw const UnauthenticatedException('缴费平台登录状态已失效');
+    }
+    return parseJson(
+      response.body,
+      api,
+      (message) => BalanceQueryException(message),
+    );
+  }
+
+  bool _isAuthenticationRedirect(http.Response response) {
+    if (response.statusCode < 300 || response.statusCode >= 400) return false;
+    final location = response.headers['location'];
+    if (location == null || location.isEmpty) return false;
+
+    try {
+      final requestUrl = response.request?.url ?? Uri.parse(_base);
+      return _isKnownAuthenticationTarget(requestUrl.resolve(location));
+    } on FormatException {
+      return false;
+    }
+  }
+
+  bool _isKnownAuthenticationTarget(Uri target) {
+    if (target.host.toLowerCase() != 'payapp.scu.edu.cn') return false;
+    return const {
+      '/eleFees/index.html',
+      '/eleFees/oauth/airWarrant',
+      '/eleFees/oauth/lightWarrant',
+    }.contains(target.path);
+  }
+
+  bool _isPayAppLoginTimeoutPage(http.Response response) {
+    final contentType = response.headers['content-type']?.toLowerCase() ?? '';
+    final decodedUtf8 = utf8.decode(response.bodyBytes, allowMalformed: true);
+    for (final body in {response.body, decodedUtf8}) {
+      final lowerBody = body.toLowerCase();
+      final looksLikeHtml =
+          contentType.contains('text/html') ||
+          lowerBody.contains('<html') ||
+          lowerBody.contains('<!doctype html');
+      final hasWarrantForm =
+          lowerBody.contains('/elefees/oauth/airwarrant') ||
+          lowerBody.contains('/elefees/oauth/lightwarrant');
+      if (looksLikeHtml && body.contains('登录超时') && hasWarrantForm) {
+        return true;
+      }
+    }
+    return false;
   }
 }
 

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
 
@@ -12,6 +10,7 @@ class GridHeaderRow extends StatelessWidget {
   final int displayWeek;
   final bool showAllWeeks;
   final bool hasBackground;
+  final bool showWeekend;
   final double sectionWidth;
   final void Function(DateTime date, SpecialDayInfo info)? onSpecialDayTap;
 
@@ -21,6 +20,7 @@ class GridHeaderRow extends StatelessWidget {
     required this.displayWeek,
     required this.showAllWeeks,
     required this.hasBackground,
+    required this.showWeekend,
     required this.sectionWidth,
     this.onSpecialDayTap,
   });
@@ -37,16 +37,11 @@ class GridHeaderRow extends StatelessWidget {
       l10n.friday,
       l10n.saturday,
     ];
-    final appConfig = getIt<AppConfigProvider>();
     final theme = Theme.of(context);
-    final visibleDays = appConfig.showWeekend.value
-        ? dayNames
-        : dayNames.sublist(1, 6);
+    final visibleDays = showWeekend ? dayNames : dayNames.sublist(1, 6);
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final semesterStart = config.semesterStartDate;
-
     return Container(
       height: 40,
       decoration: BoxDecoration(
@@ -71,17 +66,10 @@ class GridHeaderRow extends StatelessWidget {
               children: List.generate(visibleDays.length, (index) {
                 final name = visibleDays[index];
                 // 周日为 index 0，计算当前列对应的星期几
-                final dayOfWeek = appConfig.showWeekend.value
+                final dayOfWeek = showWeekend
                     ? (index == 0 ? 7 : index)
                     : index + 1;
-                // 周日在周一之前，dayOfWeek=7 时应为 -1 而非 6
-                final daysFromMonday = dayOfWeek == 7 ? -1 : dayOfWeek - 1;
-                final mondayOffset = (1 - semesterStart.weekday) % 7;
-                final date = semesterStart.add(
-                  Duration(
-                    days: (displayWeek - 1) * 7 + mondayOffset + daysFromMonday,
-                  ),
-                );
+                final date = config.dateForCourseDay(displayWeek, dayOfWeek);
                 final isToday = !showAllWeeks && date.isAtSameMomentAs(today);
                 final specialDay = !showAllWeeks
                     ? HolidayUtils.getSpecialDay(date)

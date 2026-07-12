@@ -170,9 +170,25 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<GradesProvider>(() async {
     await getIt.isReady<SharedPreferences>();
     await getIt.isReady<ZhjwApiService>();
+    await getIt.isReady<ScuAuthProvider>();
+    await getIt.isReady<ScuAuth>();
     final prefs = getIt<SharedPreferences>();
     final zhjwApi = getIt<ZhjwApiService>();
-    return GradesProvider(prefs, zhjwApi);
+    final authProvider = getIt<ScuAuthProvider>();
+    final scuAuth = getIt<ScuAuth>();
+    String? currentIdentity() => GradesProvider.confirmedUserIdentity(
+      isLoggedIn: authProvider.isLoggedIn,
+      principal: scuAuth.principal,
+    );
+    final gradesProvider = GradesProvider(
+      prefs,
+      zhjwApi,
+      initialUserId: currentIdentity(),
+    );
+    authProvider.addListener(() {
+      gradesProvider.setUserIdentity(currentIdentity());
+    });
+    return gradesProvider;
   });
   getIt.registerSingletonAsync<TrainProgramProvider>(() async {
     await getIt.isReady<ZhjwApiService>();

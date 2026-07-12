@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:flutter/rendering.dart' show RenderBox;
+import 'package:flutter/widgets.dart' show BuildContext, View;
 import 'package:share_plus/share_plus.dart' show ShareParams, SharePlus, XFile;
 
 /// share_plus 的 Windows 兼容垫片。
@@ -18,10 +20,28 @@ String normalizeSharePath(String path) =>
 
 XFile _toXFile(String path) => XFile(normalizeSharePath(path));
 
+/// 计算分享面板的弹出锚点。iPad 要求该区域非空且位于当前视图坐标内。
+Rect sharePositionOriginForContext(BuildContext context, {Rect? preferred}) {
+  if (preferred != null && !preferred.isEmpty) return preferred;
+
+  final renderObject = context.findRenderObject();
+  if (renderObject is RenderBox &&
+      renderObject.hasSize &&
+      !renderObject.size.isEmpty) {
+    final origin = renderObject.localToGlobal(Offset.zero) & renderObject.size;
+    if (!origin.isEmpty) return origin;
+  }
+
+  final view = View.of(context);
+  final logicalSize = view.physicalSize / view.devicePixelRatio;
+  return Rect.fromLTWH(logicalSize.width / 2, logicalSize.height / 2, 1, 1);
+}
+
 /// 分享单个文件。封装 `SharePlus.instance.share(...)`，自动处理 Windows
 /// 路径分隔符问题。
 Future<void> shareSingleFile(
   String path, {
+  required BuildContext context,
   String? text,
   Rect? sharePositionOrigin,
 }) {
@@ -30,7 +50,10 @@ Future<void> shareSingleFile(
     ShareParams(
       files: [file],
       text: text,
-      sharePositionOrigin: sharePositionOrigin,
+      sharePositionOrigin: sharePositionOriginForContext(
+        context,
+        preferred: sharePositionOrigin,
+      ),
     ),
   );
 }
@@ -39,6 +62,7 @@ Future<void> shareSingleFile(
 /// 路径分隔符问题。
 Future<void> shareMultipleFiles(
   List<String> paths, {
+  required BuildContext context,
   String? text,
   Rect? sharePositionOrigin,
 }) {
@@ -46,7 +70,10 @@ Future<void> shareMultipleFiles(
     ShareParams(
       files: [for (final p in paths) _toXFile(p)],
       text: text,
-      sharePositionOrigin: sharePositionOrigin,
+      sharePositionOrigin: sharePositionOriginForContext(
+        context,
+        preferred: sharePositionOrigin,
+      ),
     ),
   );
 }

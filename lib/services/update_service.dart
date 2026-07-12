@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
+import 'package:bugaoshan/services/update_asset_selector.dart';
 import 'package:bugaoshan/services/update_checker.dart';
 import 'package:crypto/crypto.dart' as crypto;
 
@@ -72,12 +73,20 @@ class UpdateService {
 
   UpdateService(this._prefs, this._currentVersion);
 
-  bool _assetMatchesPlatform(String assetName) {
-    final name = assetName.toLowerCase();
-    if (Platform.isAndroid) return name.endsWith('.apk');
-    if (Platform.isWindows) return name.contains('windows');
-    if (Platform.isLinux) return name.contains('linux');
-    return false;
+  UpdateAssetPlatform? get _assetPlatform {
+    if (Platform.isAndroid) return UpdateAssetPlatform.android;
+    if (Platform.isWindows) return UpdateAssetPlatform.windows;
+    if (Platform.isLinux) return UpdateAssetPlatform.linux;
+    return null;
+  }
+
+  Map<String, dynamic>? _selectAsset(List<dynamic> assets) {
+    final platform = _assetPlatform;
+    if (platform == null) return null;
+    return selectUpdateAsset(
+      assets.whereType<Map<String, dynamic>>(),
+      platform,
+    );
   }
 
   /// Parse the `digest` field from a GitHub release asset.
@@ -115,26 +124,20 @@ class UpdateService {
       Uri.parse('https://api.github.com/repos/$_repo/releases/latest'),
       headers: {'Accept': 'application/vnd.github+json'},
     );
-    if (response.statusCode == 200) {
-      if (response.body.isEmpty) return null;
-      final data = jsonDecode(response.body);
-      final tagName = data['tag_name'] as String;
-      final isPrerelease = data['prerelease'] == true;
-      final assets = data['assets'] as List<dynamic>;
-      for (final asset in assets) {
-        final name = asset['name'] as String;
-        if (_assetMatchesPlatform(name)) {
-          return ReleaseInfo(
-            tagName: tagName,
-            downloadUrl: asset['browser_download_url'] as String,
-            checksumSha256: _parseDigest(asset as Map<String, dynamic>),
-            isPrerelease: isPrerelease,
-            body: data['body'] as String?,
-          );
-        }
-      }
+    if (response.statusCode != 200) {
+      throw Exception('GitHub API error: ${response.statusCode}');
     }
-    throw Exception('GitHub API error: ${response.statusCode}');
+    if (response.body.isEmpty) return null;
+    final data = jsonDecode(response.body);
+    final asset = _selectAsset(data['assets'] as List<dynamic>);
+    if (asset == null) return null;
+    return ReleaseInfo(
+      tagName: data['tag_name'] as String,
+      downloadUrl: asset['browser_download_url'] as String,
+      checksumSha256: _parseDigest(asset),
+      isPrerelease: data['prerelease'] == true,
+      body: data['body'] as String?,
+    );
   }
 
   Future<ReleaseInfo> getLatestPrereleaseFromGitHub() async {
@@ -149,20 +152,11 @@ class UpdateService {
         final tagName = releases[0]['tag_name'] as String;
         final isPrerelease = releases[0]['prerelease'] == true;
         final assets = releases[0]['assets'] as List<dynamic>;
-        String? downloadUrl;
-        String? checksumSha256;
-        for (final asset in assets) {
-          final name = asset['name'] as String;
-          if (_assetMatchesPlatform(name)) {
-            downloadUrl = asset['browser_download_url'] as String;
-            checksumSha256 = _parseDigest(asset as Map<String, dynamic>);
-            break;
-          }
-        }
+        final asset = _selectAsset(assets);
         return ReleaseInfo(
           tagName: tagName,
-          downloadUrl: downloadUrl,
-          checksumSha256: checksumSha256,
+          downloadUrl: asset?['browser_download_url'] as String?,
+          checksumSha256: asset == null ? null : _parseDigest(asset),
           isPrerelease: isPrerelease,
           body: releases[0]['body'] as String?,
         );
@@ -191,20 +185,11 @@ class UpdateService {
       if (release['tag_name'] == null) continue;
       final isPrerelease = release['prerelease'] == true;
       final assets = release['assets'] as List<dynamic>;
-      String? downloadUrl;
-      String? checksumSha256;
-      for (final asset in assets) {
-        final name = asset['name'] as String;
-        if (_assetMatchesPlatform(name)) {
-          downloadUrl = asset['browser_download_url'] as String;
-          checksumSha256 = _parseDigest(asset as Map<String, dynamic>);
-          break;
-        }
-      }
+      final asset = _selectAsset(assets);
       final info = ReleaseInfo(
         tagName: release['tag_name'] as String,
-        downloadUrl: downloadUrl,
-        checksumSha256: checksumSha256,
+        downloadUrl: asset?['browser_download_url'] as String?,
+        checksumSha256: asset == null ? null : _parseDigest(asset),
         isPrerelease: isPrerelease,
         body: release['body'] as String?,
       );

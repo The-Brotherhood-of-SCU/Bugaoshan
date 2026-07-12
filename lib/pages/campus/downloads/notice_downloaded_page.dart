@@ -304,11 +304,11 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
       if (await file.exists()) await file.delete();
       // Remove stale task from DownloadManager so the attachment sheet
       // won't show a deleted file as "already downloaded".
-      final fileName = p.basename(path);
       for (final cfg in _dirConfigs) {
         if (path.contains('/${cfg.dirName}/') ||
             path.contains('\\${cfg.dirName}\\')) {
-          manager.remove(cfg.dirName, fileName);
+          manager.removeByDownloadedPath(path);
+          await removeDownloadPathMapping(cfg.dirName, path);
           break;
         }
       }
@@ -367,9 +367,10 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
 
   void _openFile(File file) => OpenFilex.open(file.path);
 
-  void _shareFile(File file) => shareSingleFile(file.path);
+  void _shareFile(File file) => shareSingleFile(file.path, context: context);
 
-  void _shareSelected() => shareMultipleFiles(_selected.toList());
+  void _shareSelected() =>
+      shareMultipleFiles(_selected.toList(), context: context);
 
   void _showFilterMenu() {
     final l10n = AppLocalizations.of(context)!;

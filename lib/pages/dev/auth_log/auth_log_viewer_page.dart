@@ -167,7 +167,8 @@ class _AuthLogViewerPageState extends State<AuthLogViewerPage> {
       final dir = await _authLogDir();
       final path = await _log.exportToFile(dir);
       try {
-        await shareSingleFile(path);
+        if (!mounted) return;
+        await shareSingleFile(path, context: context);
         messenger.showSnackBar(const SnackBar(content: Text('Saved')));
       } catch (e) {
         messenger.showSnackBar(SnackBar(content: Text('Save failed: $e')));

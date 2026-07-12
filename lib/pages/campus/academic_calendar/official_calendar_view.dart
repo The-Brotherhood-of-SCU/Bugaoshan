@@ -4,6 +4,9 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/image_viewer.dart';
 
+typedef OfficialCalendarImageBuilder =
+    Widget Function(BuildContext context, String url);
+
 class CalendarEntry {
   final String title;
   final String path;
@@ -17,6 +20,7 @@ class OfficialCalendarView extends StatelessWidget {
   final bool loading;
   final String? error;
   final List<String> imageUrls;
+  final OfficialCalendarImageBuilder? imageBuilder;
   final ValueChanged<CalendarEntry> onEntryChanged;
   final VoidCallback onRetry;
 
@@ -27,6 +31,7 @@ class OfficialCalendarView extends StatelessWidget {
     required this.loading,
     this.error,
     required this.imageUrls,
+    this.imageBuilder,
     required this.onEntryChanged,
     required this.onRetry,
   });
@@ -86,58 +91,62 @@ class OfficialCalendarView extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       itemCount: imageUrls.length,
       itemBuilder: (context, index) {
+        final imageUrl = imageUrls[index];
         return Padding(
           padding: EdgeInsets.only(
             bottom: index < imageUrls.length - 1 ? 12 : 0,
           ),
           child: GestureDetector(
-            onTap: () =>
-                showFullScreenImageViewer(context, imageUrl: imageUrls[index]),
+            onTap: () => showFullScreenImageViewer(context, imageUrl: imageUrl),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(AppShapes.medium),
-              child: Image.network(
-                imageUrls[index],
-                fit: BoxFit.fitWidth,
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) return child;
-                  return Container(
-                    height: 200,
-                    alignment: Alignment.center,
-                    child: CircularProgressIndicator(
-                      value: progress.expectedTotalBytes != null
-                          ? progress.cumulativeBytesLoaded /
-                                progress.expectedTotalBytes!
-                          : null,
-                    ),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: 200,
-                    alignment: Alignment.center,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.broken_image,
-                          size: 48,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+              child:
+                  imageBuilder?.call(context, imageUrl) ??
+                  Image.network(
+                    imageUrl,
+                    fit: BoxFit.fitWidth,
+                    loadingBuilder: (context, child, progress) {
+                      if (progress == null) return child;
+                      return Container(
+                        height: 200,
+                        alignment: Alignment.center,
+                        child: CircularProgressIndicator(
+                          value: progress.expectedTotalBytes != null
+                              ? progress.cumulativeBytesLoaded /
+                                    progress.expectedTotalBytes!
+                              : null,
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          l10n.loadFailed,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
-                              ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 200,
+                        alignment: Alignment.center,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.broken_image,
+                              size: 48,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              l10n.loadFailed,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                                  ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+                      );
+                    },
+                  ),
             ),
           ),
         );

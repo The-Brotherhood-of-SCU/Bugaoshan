@@ -139,7 +139,8 @@ class ImageViewerPage extends StatelessWidget {
         '${dir.path}/shared_image_${DateTime.now().millisecondsSinceEpoch}.jpg',
       );
       await file.writeAsBytes(response.bodyBytes);
-      await shareSingleFile(file.path);
+      if (!context.mounted) return;
+      await shareSingleFile(file.path, context: context);
     } catch (e) {
       debugPrint('Share image error: $e');
       if (context.mounted) {

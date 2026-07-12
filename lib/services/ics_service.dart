@@ -58,11 +58,7 @@ class IcsService {
       for (int week = course.startWeek; week <= course.endWeek; week++) {
         if (!_isWeekActive(course, week)) continue;
 
-        final courseDate = _getCourseDate(
-          config.semesterStartDate,
-          week,
-          course.dayOfWeek,
-        );
+        final courseDate = config.dateForCourseDay(week, course.dayOfWeek);
         final startTime = config.timeSlots[course.startSection - 1].startTime;
         final endTime = config.timeSlots[course.endSection - 1].endTime;
         final start = _combineDateTime(courseDate, startTime);
@@ -217,19 +213,6 @@ class IcsService {
     if (course.weekType == WeekType.odd && week.isEven) return false;
     if (course.weekType == WeekType.even && week.isOdd) return false;
     return true;
-  }
-
-  static DateTime _getCourseDate(
-    DateTime semesterStart,
-    int week,
-    int dayOfWeek,
-  ) {
-    // force monday alignment
-    final monday = semesterStart.toMonday();
-    final targetDate = monday.add(
-      Duration(days: (week - 1) * 7 + (dayOfWeek - 1)),
-    );
-    return DateTime(targetDate.year, targetDate.month, targetDate.day);
   }
 
   static DateTime _combineDateTime(DateTime date, TimeOfDay time) {

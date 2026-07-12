@@ -347,6 +347,26 @@ class ScheduleConfig {
     return week.clamp(1, totalWeeks);
   }
 
+  /// 返回指定教学周、星期对应的自然日。
+  ///
+  /// 课表允许将学期起点保存为周日；该周日属于第一教学周，随后一天
+  /// 才是第一周周一。因此不能直接用 [DateTimeExtension.toMonday]，否则
+  /// 周日起点会被归到前一周。
+  DateTime dateForCourseDay(int week, int dayOfWeek) {
+    final start = DateTime(
+      semesterStartDate.year,
+      semesterStartDate.month,
+      semesterStartDate.day,
+    );
+    final mondayOffset = (DateTime.monday - start.weekday) % 7;
+    final daysFromMonday = dayOfWeek == DateTime.sunday
+        ? -1
+        : dayOfWeek - DateTime.monday;
+    return start.add(
+      Duration(days: (week - 1) * 7 + mondayOffset + daysFromMonday),
+    );
+  }
+
   ScheduleConfig copyWith({
     String? id,
     String? semesterName,

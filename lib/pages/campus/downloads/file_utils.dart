@@ -1,5 +1,8 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -17,6 +20,158 @@ const kTuanweiAttachmentDir = 'tuanwei_attachments';
 
 /// Subdirectory name under `Bugaoshan/` for saved auth log exports.
 const kAuthLogDir = 'auth_logs';
+
+/// Persistent URL-to-file index for notice attachments.
+///
+/// One metadata file is stored per URL so concurrent downloads do not overwrite
+/// a shared JSON map. Legacy files are adopted only when no other URL already
+/// owns that path.
+class DownloadPathIndex {
+  DownloadPathIndex(this.downloadDir);
+
+  static const _indexDirName = '.download_index';
+  static final Map<String, Future<void>> _directoryQueues = {};
+
+  final Directory downloadDir;
+
+  Directory get _indexDir => Directory(p.join(downloadDir.path, _indexDirName));
+
+  String get _queueKey => p.normalize(downloadDir.absolute.path);
+
+  File _entryFor(String url) {
+    final key = sha256.convert(utf8.encode(url)).toString();
+    return File(p.join(_indexDir.path, '$key.json'));
+  }
+
+  Future<T> _synchronized<T>(Future<T> Function() action) async {
+    final previous = _directoryQueues[_queueKey] ?? Future<void>.value();
+    final gate = Completer<void>();
+    final current = gate.future;
+    _directoryQueues[_queueKey] = current;
+    try {
+      try {
+        await previous;
+      } catch (_) {
+        // A previous operation must not poison the per-directory queue.
+      }
+      return await action();
+    } finally {
+      gate.complete();
+      if (identical(_directoryQueues[_queueKey], current)) {
+        _directoryQueues.remove(_queueKey);
+      }
+    }
+  }
+
+  Future<void> record(String url, String path) {
+    return _synchronized(() => _recordUnlocked(url, path));
+  }
+
+  Future<void> _recordUnlocked(String url, String path) async {
+    final fileName = p.basename(path);
+    final expectedPath = p.normalize(p.join(downloadDir.path, fileName));
+    if (p.normalize(path) != expectedPath) {
+      throw ArgumentError.value(path, 'path', 'must be inside downloadDir');
+    }
+
+    await _indexDir.create(recursive: true);
+    final entry = _entryFor(url);
+    final temporary = File('${entry.path}.tmp');
+    await temporary.writeAsString(
+      jsonEncode({'version': 1, 'fileName': fileName}),
+      flush: true,
+    );
+    if (await entry.exists()) await entry.delete();
+    await temporary.rename(entry.path);
+  }
+
+  Future<String?> resolve(String url, {required String legacyFileName}) {
+    return _synchronized(() async {
+      final mapped = await _mappedPath(url);
+      if (mapped != null) return mapped;
+
+      final claimed = await _claimedFileNames();
+      for (final candidate in _legacyCandidates(legacyFileName)) {
+        final fileName = p.basename(candidate);
+        if (claimed.contains(fileName)) continue;
+        if (!await File(candidate).exists()) continue;
+        await _recordUnlocked(url, candidate);
+        return candidate;
+      }
+      return null;
+    });
+  }
+
+  Future<void> removePath(String path) {
+    return _synchronized(() async {
+      if (!await _indexDir.exists()) return;
+      final targetName = p.basename(path);
+      await for (final entry in _indexDir.list().where(
+        (entry) => entry is File && entry.path.endsWith('.json'),
+      )) {
+        final file = entry as File;
+        final fileName = await _readFileName(file);
+        if (fileName == targetName && await file.exists()) {
+          await file.delete();
+        }
+      }
+    });
+  }
+
+  Future<String?> _mappedPath(String url) async {
+    final entry = _entryFor(url);
+    if (!await entry.exists()) return null;
+    final fileName = await _readFileName(entry);
+    if (fileName == null) return null;
+    final path = p.join(downloadDir.path, fileName);
+    if (await File(path).exists()) return path;
+    if (await entry.exists()) await entry.delete();
+    return null;
+  }
+
+  Future<Set<String>> _claimedFileNames() async {
+    if (!await _indexDir.exists()) return {};
+    final claimed = <String>{};
+    await for (final entry in _indexDir.list().where(
+      (entry) => entry is File && entry.path.endsWith('.json'),
+    )) {
+      final file = entry as File;
+      final fileName = await _readFileName(file);
+      if (fileName == null) continue;
+      if (await File(p.join(downloadDir.path, fileName)).exists()) {
+        claimed.add(fileName);
+      } else if (await file.exists()) {
+        await file.delete();
+      }
+    }
+    return claimed;
+  }
+
+  Future<String?> _readFileName(File entry) async {
+    try {
+      final data = jsonDecode(await entry.readAsString());
+      if (data is! Map<String, dynamic>) throw const FormatException();
+      final rawName = data['fileName'];
+      if (rawName is! String || rawName != p.basename(rawName)) {
+        throw const FormatException();
+      }
+      return rawName;
+    } catch (_) {
+      if (await entry.exists()) await entry.delete();
+      return null;
+    }
+  }
+
+  Iterable<String> _legacyCandidates(String rawName) sync* {
+    final safeName = sanitizeDownloadFileName(rawName);
+    yield p.join(downloadDir.path, safeName);
+    final baseName = p.basenameWithoutExtension(safeName);
+    final extension = p.extension(safeName);
+    for (var i = 1; i <= 99; i++) {
+      yield p.join(downloadDir.path, '$baseName ($i)$extension');
+    }
+  }
+}
 
 // ── File utilities ─────────────────────────────────────────────────────────────────
 
@@ -140,14 +295,23 @@ Future<String> downloadFile(
   }
 
   await file.writeAsBytes(bytes);
+  await DownloadPathIndex(saveDir).record(url, filePath);
   return filePath;
 }
 
 /// Returns the path of an already-downloaded file, or null.
-Future<String?> checkDownloadedFile(String dirName, String fileName) async {
+Future<String?> checkDownloadedFile(
+  String dirName,
+  String fileName, {
+  String? url,
+}) async {
   final base = await getNoticeBaseDir();
   final saveDir = Directory('${base.path}/Bugaoshan/$dirName');
   if (!await saveDir.exists()) return null;
+
+  if (url != null) {
+    return DownloadPathIndex(saveDir).resolve(url, legacyFileName: fileName);
+  }
 
   final safeFileName = sanitizeDownloadFileName(fileName);
   final exactPath = '${saveDir.path}/$safeFileName';
@@ -160,4 +324,11 @@ Future<String?> checkDownloadedFile(String dirName, String fileName) async {
     if (await File(variantPath).exists()) return variantPath;
   }
   return null;
+}
+
+Future<void> removeDownloadPathMapping(String dirName, String path) async {
+  final base = await getNoticeBaseDir();
+  final saveDir = Directory('${base.path}/Bugaoshan/$dirName');
+  if (!await saveDir.exists()) return;
+  await DownloadPathIndex(saveDir).removePath(path);
 }

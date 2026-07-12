@@ -24,9 +24,15 @@ jobs:
       version: ${{ github.event.inputs.version }}
     secrets: inherit
 
+  build-linux:
+    uses: ./.github/workflows/build-linux.yml
+    with:
+      version: ${{ github.event.inputs.version }}
+    secrets: inherit
+
   release:
     name: Release
-    needs: [ build-android, build-windows ]
+    needs: [ build-android, build-windows, build-linux ]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name ==
       'workflow_dispatch'
@@ -50,6 +56,12 @@ jobs:
         with:
           name: windows-release
           path: windows-release
+
+      - name: Download Linux
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-release
+          path: linux-release
 
       - name: Set up Python 3
         uses: actions/setup-python@v3
