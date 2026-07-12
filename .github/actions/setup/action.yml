@@ -34,6 +34,10 @@ runs:
         channel: "stable"
         cache: true
 
+    - name: Mark Flutter SDK as safe for git
+      run: git config --global --add safe.directory "$FLUTTER_ROOT"
+      shell: bash
+
     - name: Get dependencies
       run: flutter pub get
       shell: bash
