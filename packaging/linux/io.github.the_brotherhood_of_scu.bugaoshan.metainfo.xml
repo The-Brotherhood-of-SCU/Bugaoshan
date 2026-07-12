@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.the_brotherhood_of_scu.bugaoshan</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>AGPL-3.0-only</project_license>
+  <name>Bugaoshan</name>
+  <name xml:lang="zh-CN">不高山上</name>
+  <summary>Campus assistant for Sichuan University students</summary>
+  <summary xml:lang="zh-CN">四川大学学生校园助手</summary>
+  <developer id="io.github.the_brotherhood_of_scu">
+    <name>The-Brotherhood-of-SCU</name>
+  </developer>
+  <description>
+    <p>
+      Bugaoshan provides course schedules, grades, exam plans, classroom
+      availability, campus balances, notices, and other services for Sichuan
+      University students.
+    </p>
+    <p xml:lang="zh-CN">
+      不高山上为四川大学学生提供课表、成绩、考表、空闲教室、校园余额、
+      通知公告等校园服务。
+    </p>
+    <p>
+      This is an unofficial third-party application and is not affiliated with
+      or endorsed by Sichuan University.
+    </p>
+    <p xml:lang="zh-CN">
+      本应用为非官方第三方应用，与四川大学不存在隶属、授权或认可关系。
+    </p>
+  </description>
+  <launchable type="desktop-id">io.github.the_brotherhood_of_scu.bugaoshan.desktop</launchable>
+  <url type="homepage">https://github.com/The-Brotherhood-of-SCU/Bugaoshan</url>
+  <url type="bugtracker">https://github.com/The-Brotherhood-of-SCU/Bugaoshan/issues</url>
+  <url type="vcs-browser">https://github.com/The-Brotherhood-of-SCU/Bugaoshan</url>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/The-Brotherhood-of-SCU/Bugaoshan/main/screenshot/screenshot-course.webp</image>
+      <caption>Course schedule</caption>
+      <caption xml:lang="zh-CN">课程表</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/The-Brotherhood-of-SCU/Bugaoshan/main/screenshot/screenshot-campus.webp</image>
+      <caption>Campus services</caption>
+      <caption xml:lang="zh-CN">校园服务</caption>
+    </screenshot>
+  </screenshots>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="2.1.1" date="2026-06-28" />
+  </releases>
+</component>

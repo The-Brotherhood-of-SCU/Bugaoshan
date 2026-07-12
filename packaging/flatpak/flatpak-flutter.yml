@@ -1,0 +1,162 @@
+id: io.github.the_brotherhood_of_scu.bugaoshan
+runtime: org.freedesktop.Platform
+runtime-version: '25.08'
+sdk: org.freedesktop.Sdk
+command: bugaoshan
+separate-locales: false
+
+finish-args:
+  - --share=network
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  - --filesystem=xdg-download
+  - --filesystem=xdg-pictures
+  - --talk-name=org.freedesktop.secrets
+
+cleanup:
+  - /bin/bundle*
+  - /bin/erb
+  - /bin/gem
+  - /bin/irb
+  - /bin/racc
+  - /bin/rake
+  - /bin/rbs
+  - /bin/rdoc
+  - /bin/ri
+  - /bin/ruby
+  - /bin/unifdef
+  - /include
+  - /lib/cmake
+  - /lib/pkgconfig
+  - /lib/ruby
+  - /share/doc
+  - /share/gir-1.0
+  - /share/gtk-doc
+  - /share/ri
+  - '*.a'
+  - '*.la'
+
+modules:
+  - name: ruby
+    buildsystem: autotools
+    config-opts:
+      - --disable-install-doc
+      - --disable-install-rdoc
+      - --without-gmp
+    sources:
+      - type: archive
+        url: https://cache.ruby-lang.org/pub/ruby/3.4/ruby-3.4.10.tar.xz
+        sha256: 6f32ad662baafc228d12030dbcd284f83b034dd4337b300dc84ac74d11a1eb68
+
+  - name: libwpe
+    buildsystem: meson
+    config-opts:
+      - -Dbuild-docs=false
+    sources:
+      - type: archive
+        url: https://github.com/WebPlatformForEmbedded/libwpe/releases/download/1.16.3/libwpe-1.16.3.tar.xz
+        sha256: c880fa8d607b2aa6eadde7d6d6302b1396ebc38368fe2332fa20e193c7ee1420
+
+  - name: wpebackend-fdo
+    buildsystem: meson
+    config-opts:
+      - -Dbuild_docs=false
+    sources:
+      - type: archive
+        url: https://github.com/Igalia/WPEBackend-fdo/releases/download/1.16.1/wpebackend-fdo-1.16.1.tar.xz
+        sha256: 544ae14012f8e7e426b8cb522eb0aaaac831ad7c35601d1cf31d37670e0ebb3b
+
+  - name: unifdef
+    buildsystem: simple
+    build-commands:
+      - cc -std=gnu17 -O2 Source/ThirdParty/unifdef/unifdef.c -o unifdef
+      - install -Dm755 unifdef /app/bin/unifdef
+    sources:
+      - type: archive
+        url: https://wpewebkit.org/releases/wpewebkit-2.52.4.tar.xz
+        sha256: 01ca34cd7af880c038d35aa94482fee785a77db37b614c584475d7d43b3a2dc0
+
+  - name: wpewebkit
+    buildsystem: cmake-ninja
+    build-options:
+      no-debuginfo: true
+      cflags: -O2
+      cxxflags: -O2
+    config-opts:
+      - -DPORT=WPE
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DENABLE_BUBBLEWRAP_SANDBOX=OFF
+      - -DENABLE_DOCUMENTATION=OFF
+      - -DENABLE_ENCRYPTED_MEDIA=OFF
+      - -DENABLE_GAMEPAD=OFF
+      - -DENABLE_GPU_PROCESS=OFF
+      - -DENABLE_INTROSPECTION=OFF
+      - -DENABLE_JOURNALD_LOG=OFF
+      - -DENABLE_MEDIA_RECORDER=OFF
+      - -DENABLE_MEDIA_STREAM=OFF
+      - -DENABLE_MINIBROWSER=OFF
+      - -DENABLE_PDFJS=OFF
+      - -DENABLE_SPEECH_SYNTHESIS=OFF
+      - -DENABLE_VIDEO=OFF
+      - -DENABLE_WEB_AUDIO=OFF
+      - -DENABLE_WEB_CODECS=OFF
+      - -DENABLE_WEBGL=OFF
+      - -DENABLE_WEBGPU=OFF
+      - -DENABLE_WEBDRIVER=OFF
+      - -DENABLE_WPE_LEGACY_API=ON
+      - -DENABLE_WPE_PLATFORM=ON
+      - -DENABLE_WPE_PLATFORM_DRM=OFF
+      - -DENABLE_WPE_PLATFORM_HEADLESS=ON
+      - -DENABLE_WPE_PLATFORM_WAYLAND=ON
+      - -DUSE_AVIF=OFF
+      - -DUSE_JPEGXL=OFF
+      - -DUSE_LIBBACKTRACE=OFF
+      - -DUSE_SKIA=OFF
+      - -DUSE_SYSTEM_SYSPROF_CAPTURE=OFF
+      - -DUSE_SYSTEM_UNIFDEF=OFF
+      - -DUSE_WOFF2=OFF
+    sources:
+      - type: archive
+        url: https://wpewebkit.org/releases/wpewebkit-2.52.4.tar.xz
+        sha256: 01ca34cd7af880c038d35aa94482fee785a77db37b614c584475d7d43b3a2dc0
+
+  - name: bugaoshan
+    buildsystem: simple
+    build-options:
+      arch:
+        x86_64:
+          env:
+            BUNDLE_PATH: build/linux/x64/release/bundle
+        aarch64:
+          env:
+            BUNDLE_PATH: build/linux/arm64/release/bundle
+      append-path: /run/build/bugaoshan/flutter/bin
+      env:
+        PUB_CACHE: /run/build/bugaoshan/.pub-cache
+    build-commands:
+      - flutter build linux --release --no-pub
+      - rm -f "$BUNDLE_PATH"/lib/libWPEWebKit-*.so.* "$BUNDLE_PATH"/lib/libWPEBackend-fdo-*.so.* "$BUNDLE_PATH"/lib/libwpe-*.so.*
+      - install -Dm755 "$BUNDLE_PATH/Bugaoshan" /app/lib/bugaoshan/Bugaoshan
+      - cp -a "$BUNDLE_PATH/lib" /app/lib/bugaoshan/lib
+      - cp -a "$BUNDLE_PATH/data" /app/lib/bugaoshan/data
+      - ln -s /app/lib/bugaoshan/Bugaoshan /app/bin/bugaoshan
+      - install -Dm644 io.github.the_brotherhood_of_scu.bugaoshan.desktop /app/share/applications/io.github.the_brotherhood_of_scu.bugaoshan.desktop
+      - install -Dm644 io.github.the_brotherhood_of_scu.bugaoshan.metainfo.xml /app/share/metainfo/io.github.the_brotherhood_of_scu.bugaoshan.metainfo.xml
+      - install -Dm644 bugaoshan-512.png /app/share/icons/hicolor/512x512/apps/io.github.the_brotherhood_of_scu.bugaoshan.png
+      - install -Dm644 LICENSE /app/share/licenses/bugaoshan/LICENSE
+    sources:
+      - type: git
+        url: https://github.com/The-Brotherhood-of-SCU/Bugaoshan.git
+        commit: 1c369a73280028f7b0de8af8a51dff44bda138a2
+      - type: git
+        url: https://github.com/flutter/flutter.git
+        tag: 3.44.4
+        dest: flutter
+      - type: file
+        path: ../linux/io.github.the_brotherhood_of_scu.bugaoshan.desktop
+      - type: file
+        path: ../linux/io.github.the_brotherhood_of_scu.bugaoshan.metainfo.xml
+      - type: file
+        path: ../linux/bugaoshan-512.png
