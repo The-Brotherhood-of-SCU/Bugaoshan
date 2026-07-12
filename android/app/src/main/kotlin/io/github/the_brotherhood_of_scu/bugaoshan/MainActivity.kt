@@ -153,32 +153,40 @@ class MainActivity : FlutterActivity() {
         val pm = packageManager
         val mainCN = ComponentName(packageName, iconBaseClass)
 
-        // Disable the main activity
-        pm.setComponentEnabledSetting(
-            mainCN,
-            PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-            PackageManager.DONT_KILL_APP
-        )
-
-        // Disable all existing aliases
-        for (available in getAvailableDynamicIcons()) {
-            val aliasCN = ComponentName(packageName, "$iconBaseClass.$available")
-            pm.setComponentEnabledSetting(
-                aliasCN,
-                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                PackageManager.DONT_KILL_APP
-            )
-        }
-
         if (iconName.isNullOrEmpty()) {
-            // Restore default: re-enable MainActivity
+            // Restore default icon: disable aliases, then ensure MainActivity is enabled.
+            // Do NOT disable MainActivity first — that creates a brief window where no
+            // launcher component is enabled, causing getLaunchIntentForPackage to return
+            // null on some devices (setComponentEnabledSetting propagation is async).
+            for (available in getAvailableDynamicIcons()) {
+                val aliasCN = ComponentName(packageName, "$iconBaseClass.$available")
+                pm.setComponentEnabledSetting(
+                    aliasCN,
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP
+                )
+            }
             pm.setComponentEnabledSetting(
                 mainCN,
                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                 PackageManager.DONT_KILL_APP
             )
         } else {
-            // Enable the target alias
+            // Switch to custom icon: disable MainActivity, disable all aliases,
+            // then enable the target alias.
+            pm.setComponentEnabledSetting(
+                mainCN,
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                PackageManager.DONT_KILL_APP
+            )
+            for (available in getAvailableDynamicIcons()) {
+                val aliasCN = ComponentName(packageName, "$iconBaseClass.$available")
+                pm.setComponentEnabledSetting(
+                    aliasCN,
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP
+                )
+            }
             val targetCN = ComponentName(packageName, "$iconBaseClass.$iconName")
             pm.setComponentEnabledSetting(
                 targetCN,
