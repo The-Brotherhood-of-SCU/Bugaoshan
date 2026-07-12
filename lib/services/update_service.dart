@@ -74,7 +74,9 @@ class UpdateService {
   UpdateService(this._prefs, this._currentVersion);
 
   bool get supportsInAppUpdate =>
-      !Platform.isLinux || !Platform.environment.containsKey('FLATPAK_ID');
+      (Platform.isLinux && !Platform.environment.containsKey('FLATPAK_ID')) ||
+      Platform.isAndroid ||
+      Platform.isWindows;
 
   UpdateAssetPlatform? get _assetPlatform {
     if (Platform.isAndroid) return UpdateAssetPlatform.android;

@@ -30,9 +30,7 @@ class _DevPageState extends State<DevPage> {
   final _stableResult = UpdateResultNotifier();
   final _previewResult = UpdateResultNotifier();
 
-  bool get _supportsUpdate =>
-      (Platform.isAndroid || Platform.isWindows || Platform.isLinux) &&
-      getIt<UpdateService>().supportsInAppUpdate;
+  bool get _supportsUpdate => getIt<UpdateService>().supportsInAppUpdate;
 
   Future<void> _checkForUpdates() async {
     if (!_supportsUpdate) return;
@@ -90,6 +88,60 @@ class _DevPageState extends State<DevPage> {
     );
   }
 
+  List<Widget> _buildUpdateSection(
+    BuildContext context,
+    AppLocalizations localizations,
+  ) {
+    return [
+      const SizedBox(height: 16),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        child: Text(
+          localizations.updateToLatest,
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            color: Theme.of(context).colorScheme.primary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      ListenableBuilder(
+        listenable: _appConfig.usePreviewUpdateSource,
+        builder: (BuildContext context, _) => SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(localizations.usePreviewUpdateSource),
+          subtitle: Text(
+            localizations.usePreviewUpdateSourceHint,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          value: _appConfig.usePreviewUpdateSource.value,
+          onChanged: (v) => _appConfig.usePreviewUpdateSource.value = v,
+        ),
+      ),
+      const SizedBox(height: 12),
+      UpdateCard(
+        icon: Icons.system_update_alt,
+        title: localizations.updateToStable,
+        result: _stableResult,
+        onUpdate: () => _showUpdateDialog(_stableResult.value),
+      ),
+      const SizedBox(height: 16),
+      UpdateCard(
+        icon: Icons.science,
+        title: localizations.updateToPreview,
+        result: _previewResult,
+        onUpdate: () => _showUpdateDialog(_previewResult.value),
+      ),
+      const SizedBox(height: 16),
+      Center(
+        child: ElevatedButton.icon(
+          onPressed: _checkForUpdates,
+          icon: const Icon(Icons.system_update),
+          label: Text(localizations.checkForUpdates),
+        ),
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
@@ -109,54 +161,7 @@ class _DevPageState extends State<DevPage> {
           const Divider(),
           const ChangelogTile(),
           const Divider(),
-          if (_supportsUpdate) ...[
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(
-                localizations.updateToLatest,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            ListenableBuilder(
-              listenable: _appConfig.usePreviewUpdateSource,
-              builder: (context, _) => SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(localizations.usePreviewUpdateSource),
-                subtitle: Text(
-                  localizations.usePreviewUpdateSourceHint,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                value: _appConfig.usePreviewUpdateSource.value,
-                onChanged: (v) => _appConfig.usePreviewUpdateSource.value = v,
-              ),
-            ),
-            const SizedBox(height: 12),
-            UpdateCard(
-              icon: Icons.system_update_alt,
-              title: localizations.updateToStable,
-              result: _stableResult,
-              onUpdate: () => _showUpdateDialog(_stableResult.value),
-            ),
-            const SizedBox(height: 16),
-            UpdateCard(
-              icon: Icons.science,
-              title: localizations.updateToPreview,
-              result: _previewResult,
-              onUpdate: () => _showUpdateDialog(_previewResult.value),
-            ),
-            const SizedBox(height: 16),
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: _checkForUpdates,
-                icon: const Icon(Icons.system_update),
-                label: Text(localizations.checkForUpdates),
-              ),
-            ),
-          ],
+          if (_supportsUpdate) ..._buildUpdateSection(context, localizations),
         ],
       ),
     );
