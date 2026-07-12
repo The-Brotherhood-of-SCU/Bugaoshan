@@ -59,7 +59,3 @@ AcademicCalendarData _$AcademicCalendarDataFromJson(
           .toList() ??
       [],
 );
-
-Map<String, dynamic> _$AcademicCalendarDataToJson(
-  AcademicCalendarData instance,
-) => <String, dynamic>{'semesters': instance.semesters};
