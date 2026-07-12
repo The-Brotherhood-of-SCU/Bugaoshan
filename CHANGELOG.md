@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - 修复了一些已知问题
+- 安卓端更新时，会选择与设备匹配的架构
 
 ## [2.1.1] - 2026-06-28
 

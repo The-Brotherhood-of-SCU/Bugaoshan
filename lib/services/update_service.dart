@@ -85,10 +85,10 @@ class UpdateService {
     return null;
   }
 
-  Map<String, dynamic>? _selectAsset(List<dynamic> assets) {
+  Future<Map<String, dynamic>?> _selectAsset(List<dynamic> assets) async {
     final platform = _assetPlatform;
     if (platform == null) return null;
-    return selectUpdateAsset(
+    return selectUpdateAssetAsync(
       assets.whereType<Map<String, dynamic>>(),
       platform,
     );
@@ -134,7 +134,7 @@ class UpdateService {
     }
     if (response.body.isEmpty) return null;
     final data = jsonDecode(response.body);
-    final asset = _selectAsset(data['assets'] as List<dynamic>);
+    final asset = await _selectAsset(data['assets'] as List<dynamic>);
     if (asset == null) return null;
     return ReleaseInfo(
       tagName: data['tag_name'] as String,
@@ -157,7 +157,7 @@ class UpdateService {
         final tagName = releases[0]['tag_name'] as String;
         final isPrerelease = releases[0]['prerelease'] == true;
         final assets = releases[0]['assets'] as List<dynamic>;
-        final asset = _selectAsset(assets);
+        final asset = await _selectAsset(assets);
         return ReleaseInfo(
           tagName: tagName,
           downloadUrl: asset?['browser_download_url'] as String?,
@@ -190,7 +190,7 @@ class UpdateService {
       if (release['tag_name'] == null) continue;
       final isPrerelease = release['prerelease'] == true;
       final assets = release['assets'] as List<dynamic>;
-      final asset = _selectAsset(assets);
+      final asset = await _selectAsset(assets);
       final info = ReleaseInfo(
         tagName: release['tag_name'] as String,
         downloadUrl: asset?['browser_download_url'] as String?,
