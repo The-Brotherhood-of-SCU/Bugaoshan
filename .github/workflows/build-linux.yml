@@ -13,7 +13,7 @@ jobs:
     name: Linux
     runs-on: ubuntu-latest
     container:
-      image: debian:trixie
+      image: debian:sid
     steps:
       - name: Install git for checkout
         run: apt-get update && apt-get install -y git
