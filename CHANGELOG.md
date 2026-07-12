@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修改软件默认图标并增加图标修改选项
 - 优化向导页面“导入课表”：如果已有课表，则显示已有课表
 
+### Fixed
+- 修复了一些已知问题
+
 ## [2.1.1] - 2026-06-28
 
 ### Fixed
