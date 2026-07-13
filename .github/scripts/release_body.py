@@ -9,10 +9,7 @@ def main():
     prev = os.environ.get("PREV", "").lstrip("v")
 
     body = f"""## ⬇️ 下载 (Downloads)
-- Android: [通用 APK]({repo}/releases/download/v{version}/bugaoshan_{version}_universal.apk)
-  - [arm64-v8a]({repo}/releases/download/v{version}/bugaoshan_{version}_arm64-v8a.apk)
-  - [armeabi-v7a]({repo}/releases/download/v{version}/bugaoshan_{version}_armeabi-v7a.apk)
-  - [x86_64]({repo}/releases/download/v{version}/bugaoshan_{version}_x86_64.apk)
+- Android: [arm64-Apk]({repo}/releases/download/v{version}/bugaoshan_{version}_arm64-v8a.apk)
 - Windows: [x64 Zip]({repo}/releases/download/v{version}/bugaoshan_{version}_windows_x64.zip)
 - Linux: [x64 Tar.gz]({repo}/releases/download/v{version}/bugaoshan_{version}_linux_x64.tar.gz)
 
