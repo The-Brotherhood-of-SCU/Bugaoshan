@@ -13,8 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-07-13
+
 ### Added
-- 正式加入iOS支持
+- 正式加入iOS支持（仅为技术支持，但上架、TestFlight仍然需要苹果审核）
 - 考试安排支持导出到系统日历（iOS 可选目标日历，Android 通过系统导入）
 - 增加【志愿四川】支持
 - 互动校历重新设计，支持时间线互动模式/官方校历双模式查看
