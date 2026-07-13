@@ -123,10 +123,13 @@ class CourseProvider {
 
   Future<void> updateScheduleConfig(ScheduleConfig config) async {
     await _db.saveScheduleConfig(config);
-    scheduleConfig.value = config;
     allSchedules.value = _db.getAllSchedules();
-    currentWeek.value = config.getCurrentWeek();
-    onCoursesChanged?.call();
+    if (config.id == _db.getCurrentScheduleId()) {
+      scheduleConfig.value = config;
+      currentWeek.value = config.getCurrentWeek();
+      // 非当前课表不影响当前课程展示，也无需刷新桌面组件。
+      onCoursesChanged?.call();
+    }
   }
 
   /// 替换指定课表的所有课程（先删后插）。用于「更新课表」场景。
