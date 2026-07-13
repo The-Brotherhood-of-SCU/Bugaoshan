@@ -44,10 +44,7 @@ class ClassroomDetailPage extends StatelessWidget {
   }
 
   Widget _buildInfoCard(BuildContext context, AppLocalizations l10n) {
-    final statusMap = <int, ClassroomPeriodStatus>{};
-    for (final slot in timeSlots) {
-      statusMap[slot.sessionstart] = slot.status;
-    }
+    final statusMap = classroomPeriodStatusMap(timeSlots);
 
     var freeCount = 0;
     var inClassCount = 0;
@@ -220,10 +217,7 @@ class ClassroomDetailPage extends StatelessWidget {
   }
 
   Widget _buildPeriodGrid(BuildContext context, AppLocalizations l10n) {
-    final statusMap = <int, ClassroomPeriodStatus>{};
-    for (final slot in timeSlots) {
-      statusMap[slot.sessionstart] = slot.status;
-    }
+    final statusMap = classroomPeriodStatusMap(timeSlots);
 
     return Column(
       children: List.generate(12, (i) {
