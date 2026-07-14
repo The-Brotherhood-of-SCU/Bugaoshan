@@ -496,7 +496,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
                 if (_isToday)
                   FilterChip(
                     avatar: const Icon(Icons.access_time, size: 16),
-                    label: Text(l10n.free),
+                    label: Text(l10n.currentlyFree),
                     selected:
                         _filterPeriodStart == currentPeriod &&
                         _filterPeriodEnd == currentPeriod,
