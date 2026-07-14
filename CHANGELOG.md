@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- 修复课程表左侧时间标签可能换行的问题
+
 ## [2.2.0] - 2026-07-13
 
 ### Added

@@ -57,6 +57,7 @@ class GridSectionColumn extends StatelessWidget {
                 children: [
                   Text(
                     '${i + 1}',
+                    maxLines: 1,
                     style: theme.textTheme.bodySmall?.copyWith(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
@@ -67,6 +68,7 @@ class GridSectionColumn extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 2),
                       child: Text(
                         startStr,
+                        maxLines: 1,
                         style: theme.textTheme.labelSmall?.copyWith(
                           fontSize: 11,
                           color: theme.colorScheme.onSurfaceVariant,
@@ -76,6 +78,7 @@ class GridSectionColumn extends StatelessWidget {
                     if (endStr.isNotEmpty && rowHeight >= 60)
                       Text(
                         endStr,
+                        maxLines: 1,
                         style: theme.textTheme.labelSmall?.copyWith(
                           fontSize: 11,
                           color: theme.colorScheme.onSurfaceVariant,
