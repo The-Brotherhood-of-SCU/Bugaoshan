@@ -355,6 +355,12 @@ abstract class AppLocalizations {
   /// **'Free'**
   String get free;
 
+  /// No description provided for @currentlyFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Currently Free'**
+  String get currentlyFree;
+
   /// No description provided for @inClass.
   ///
   /// In en, this message translates to:

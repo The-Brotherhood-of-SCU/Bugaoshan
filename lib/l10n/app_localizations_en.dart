@@ -143,6 +143,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get free => 'Free';
 
   @override
+  String get currentlyFree => 'Currently Free';
+
+  @override
   String get inClass => 'In Class';
 
   @override
