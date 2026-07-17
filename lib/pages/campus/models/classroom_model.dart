@@ -142,6 +142,19 @@ class ClassroomTimeSlot {
 
 enum ClassroomPeriodStatus { free, inClass, exam, experiment, borrowed }
 
+Map<int, ClassroomPeriodStatus> classroomPeriodStatusMap(
+  Iterable<ClassroomTimeSlot> timeSlots,
+) {
+  final map = <int, ClassroomPeriodStatus>{};
+  for (final slot in timeSlots) {
+    final duration = slot.continuingsession > 0 ? slot.continuingsession : 1;
+    for (var offset = 0; offset < duration; offset++) {
+      map[slot.sessionstart + offset] = slot.status;
+    }
+  }
+  return map;
+}
+
 class ClassroomQueryResult {
   final List<ClassroomInfo> classrooms;
   final List<ClassroomTimeSlot> classroomTime;
@@ -178,10 +191,6 @@ class ClassroomQueryResult {
       classroomTime.where((s) => s.classroomNumber == classroomNumber).toList();
 
   Map<int, ClassroomPeriodStatus> periodStatusMap(String classroomNumber) {
-    final map = <int, ClassroomPeriodStatus>{};
-    for (final slot in slotsFor(classroomNumber)) {
-      map[slot.sessionstart] = slot.status;
-    }
-    return map;
+    return classroomPeriodStatusMap(slotsFor(classroomNumber));
   }
 }
