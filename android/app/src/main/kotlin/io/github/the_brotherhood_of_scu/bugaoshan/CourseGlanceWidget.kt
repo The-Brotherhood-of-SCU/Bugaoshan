@@ -156,7 +156,7 @@ object WidgetDataLoader {
         }
         var db: SQLiteDatabase? = null
         try {
-            db = SQLiteDatabase.openDatabase(dbFile.path, null, SQLiteDatabase.OPEN_READONLY)
+            db = openDatabaseWithFallback(dbFile.path)
             val currentScheduleId = queryMetadata(db, "currentScheduleId") ?: "default"
             val configJson = queryScheduleConfig(db, currentScheduleId)
             if (configJson == null) {
@@ -250,6 +250,20 @@ object WidgetDataLoader {
             return null
         } finally {
             db?.close()
+        }
+    }
+
+    /**
+     * 优先只读打开数据库；若数据库残留热 journal（App 在写事务中崩溃）
+     * 导致只读打开失败，则回退到读写模式，让 SQLite 完成回滚恢复，
+     * 避免小组件因打开失败而持续显示空数据。
+     */
+    private fun openDatabaseWithFallback(path: String): SQLiteDatabase {
+        return try {
+            SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.OPEN_READONLY)
+        } catch (e: Exception) {
+            Log.w(TAG, "Read-only open failed, retrying read-write", e)
+            SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.OPEN_READWRITE)
         }
     }
 
