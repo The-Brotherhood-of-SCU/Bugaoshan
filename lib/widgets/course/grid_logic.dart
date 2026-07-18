@@ -84,10 +84,28 @@ List<TrackInfo> assignCourseTracks(List<Course> courses) {
 
   final trackEnds = <int>[];
   final assignments = List<int>.filled(courses.length, -1);
+  final totalTracks = List<int>.filled(courses.length, 1);
+  final componentIndices = <int>[];
+  var componentEnd = -1;
+
+  void finishComponent() {
+    for (final index in componentIndices) {
+      totalTracks[index] = trackEnds.length;
+    }
+    componentIndices.clear();
+    trackEnds.clear();
+    componentEnd = -1;
+  }
 
   for (final entry in indexed) {
     final originalIndex = entry.key;
     final course = entry.value;
+
+    // 与上一连通组没有时间交集时重新开始分轨，避免另一时段的
+    // 高并发课程无谓压窄当前课程。
+    if (componentIndices.isNotEmpty && course.startSection > componentEnd) {
+      finishComponent();
+    }
 
     int assignedTrack = -1;
     for (int t = 0; t < trackEnds.length; t++) {
@@ -102,20 +120,16 @@ List<TrackInfo> assignCourseTracks(List<Course> courses) {
     }
     trackEnds[assignedTrack] = course.endSection;
     assignments[originalIndex] = assignedTrack;
-  }
-
-  // 重新映射：对于每门课程，仅基于其时间段内实际重叠的课程计算 track/totalTracks
-  return List.generate(courses.length, (i) {
-    final course = courses[i];
-    final overlapping = <int>[];
-    for (int j = 0; j < courses.length; j++) {
-      if (coursesOverlapInSections(courses[j], course)) {
-        overlapping.add(j);
-      }
+    componentIndices.add(originalIndex);
+    if (course.endSection > componentEnd) {
+      componentEnd = course.endSection;
     }
-    overlapping.sort((a, b) => assignments[a].compareTo(assignments[b]));
-    final localTrack = overlapping.indexOf(i);
-    return TrackInfo(track: localTrack, totalTracks: overlapping.length);
+  }
+  finishComponent();
+
+  // 同一重叠连通组共享轨道坐标系，避免直接重叠的课程因分母不同而水平遮挡。
+  return List.generate(courses.length, (i) {
+    return TrackInfo(track: assignments[i], totalTracks: totalTracks[i]);
   });
 }
 

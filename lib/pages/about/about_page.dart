@@ -191,24 +191,25 @@ class _AboutPageState extends State<AboutPage> {
                 value: "Brotherhood of SCU",
                 onTap: () => openDeveloperTeam(),
               ),
-              ValueListenableBuilder<bool>(
-                valueListenable: appConfig.hasUpdateNotification,
-                builder: (context, hasUpdate, _) {
-                  return BadgedTile(
-                    icon: Icons.update_rounded,
-                    label: localizations.checkForUpdates,
-                    showBadge: hasUpdate,
-                    onTap: _checkForUpdates,
-                    trailing: _isCheckingUpdate
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : null,
-                  );
-                },
-              ),
+              if (updateService.supportsInAppUpdate)
+                ValueListenableBuilder<bool>(
+                  valueListenable: appConfig.hasUpdateNotification,
+                  builder: (context, hasUpdate, _) {
+                    return BadgedTile(
+                      icon: Icons.update_rounded,
+                      label: localizations.checkForUpdates,
+                      showBadge: hasUpdate,
+                      onTap: _checkForUpdates,
+                      trailing: _isCheckingUpdate
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : null,
+                    );
+                  },
+                ),
               IconTile(
                 icon: Icons.gavel,
                 label: localizations.eulaTitle,

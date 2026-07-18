@@ -52,6 +52,7 @@
     "allBuildings": "All Buildings",
     "seats": "seats",
     "free": "Free",
+    "currentlyFree": "Currently Free",
     "inClass": "In Class",
     "borrowed": "Borrowed",
     "classroomPeriodExam": "Exam",

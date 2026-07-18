@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Bugaoshan
+Name[zh_CN]=不高山上
+Comment=Campus assistant for Sichuan University students
+Comment[zh_CN]=四川大学学生校园助手
+Exec=bugaoshan
+Icon=io.github.the_brotherhood_of_scu.bugaoshan
+Terminal=false
+Categories=Education;
+Keywords=SCU;course;schedule;grades;campus;
+Keywords[zh_CN]=川大;课表;成绩;校园;
+StartupNotify=true
+StartupWMClass=io.github.the_brotherhood_of_scu.bugaoshan

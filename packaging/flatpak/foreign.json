@@ -1,0 +1,44 @@
+{
+  "flutter_inappwebview_linux": {
+    "manifest": {
+      "sources": [
+        {
+          "type": "patch",
+          "path": "nlohmann-json-url-hash.patch",
+          "dest": ".pub-cache/hosted/pub.dev/flutter_inappwebview_linux-0.1.0-beta.1"
+        }
+      ]
+    }
+  },
+  "sqlite3": {
+    "manifest": {
+      "sources": [
+        {
+          "type": "file",
+          "only-arches": [
+            "x86_64"
+          ],
+          "url": "https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-3.3.4/libsqlite3.x64.linux.so",
+          "sha256": "e184f6ba2b7a3440e272df64c6d038de5c7b1a997b7c2f9341164602f9bdf024",
+          "dest": "$APP/.dart_tool/hooks_runner/shared/sqlite3/build/download-static",
+          "dest-filename": "libsqlite3.so"
+        },
+        {
+          "type": "file",
+          "only-arches": [
+            "aarch64"
+          ],
+          "url": "https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-3.3.4/libsqlite3.arm64.linux.so",
+          "sha256": "6fc3ba520ddda02abfe655d1ed744a44aff5cd1193d43568a02a1150cd2f47ba",
+          "dest": "$APP/.dart_tool/hooks_runner/shared/sqlite3/build/download-static",
+          "dest-filename": "libsqlite3.so"
+        },
+        {
+          "type": "patch",
+          "path": "sqlite3-assets-dir.patch",
+          "dest": ".pub-cache/hosted/pub.dev/sqlite3-3.3.4"
+        }
+      ]
+    }
+  }
+}

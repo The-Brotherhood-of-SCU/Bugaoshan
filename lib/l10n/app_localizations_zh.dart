@@ -136,6 +136,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get free => '空闲';
 
   @override
+  String get currentlyFree => '当前空闲';
+
+  @override
   String get inClass => '上课中';
 
   @override

@@ -1,6 +1,9 @@
 package io.github.the_brotherhood_of_scu.bugaoshan
 
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import androidx.compose.runtime.Composable
@@ -11,12 +14,11 @@ import androidx.glance.LocalSize
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import androidx.glance.appwidget.SizeMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import android.content.Intent
-import androidx.glance.appwidget.GlanceAppWidgetReceiver
-import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
@@ -47,6 +49,7 @@ import java.util.LinkedHashMap
 import kotlin.math.roundToInt
 import java.text.SimpleDateFormat
 import java.util.Locale
+import io.github.the_brotherhood_of_scu.bugaoshan.R
     
 
 // Parse appWidgetId token from GlanceId string
@@ -442,14 +445,13 @@ class CourseGlanceWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val data = WidgetDataLoader.load(context)
         // Use getLaunchIntentForPackage so Android resolves to the currently
-        // enabled activity / activity-alias (fixes widget click after icon switch)
-        val launchIntent = (context.packageManager.getLaunchIntentForPackage(context.packageName)
-            ?: Intent(Intent.ACTION_MAIN).apply {
-                addCategory(Intent.CATEGORY_LAUNCHER)
-                setPackage(context.packageName)
-            }).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
+        // enabled activity / activity-alias (fixes widget click after icon switch).
+        // If it returns null (PackageManager async propagation delay), fall back
+        // to an explicit MainActivity intent — even if MainActivity is temporarily
+        // disabled, the explicit PendingIntent will still resolve correctly.
+        val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+            ?: Intent.makeMainActivity(ComponentName(context, MainActivity::class.java))
+        launchIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
 
         // prepare localized format strings from Android resources
         val headerDefault = context.getString(R.string.widget_header_title)

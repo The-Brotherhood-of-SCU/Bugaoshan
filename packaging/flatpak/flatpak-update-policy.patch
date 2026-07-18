@@ -1,0 +1,66 @@
+--- a/lib/pages/about/about_page.dart
++++ b/lib/pages/about/about_page.dart
+@@ -194,18 +194,19 @@
+-              ValueListenableBuilder<bool>(
+-                valueListenable: appConfig.hasUpdateNotification,
+-                builder: (context, hasUpdate, _) {
+-                  return BadgedTile(
+-                    icon: Icons.update_rounded,
+-                    label: localizations.checkForUpdates,
+-                    showBadge: hasUpdate,
+-                    onTap: _checkForUpdates,
+-                    trailing: _isCheckingUpdate
+-                        ? const SizedBox(
+-                            width: 20,
+-                            height: 20,
+-                            child: CircularProgressIndicator(strokeWidth: 2),
+-                          )
+-                        : null,
+-                  );
+-                },
+-              ),
++              if (updateService.supportsInAppUpdate)
++                ValueListenableBuilder<bool>(
++                  valueListenable: appConfig.hasUpdateNotification,
++                  builder: (context, hasUpdate, _) {
++                    return BadgedTile(
++                      icon: Icons.update_rounded,
++                      label: localizations.checkForUpdates,
++                      showBadge: hasUpdate,
++                      onTap: _checkForUpdates,
++                      trailing: _isCheckingUpdate
++                          ? const SizedBox(
++                              width: 20,
++                              height: 20,
++                              child: CircularProgressIndicator(strokeWidth: 2),
++                            )
++                          : null,
++                    );
++                  },
++                ),
+--- a/lib/pages/dev/dev_page.dart
++++ b/lib/pages/dev/dev_page.dart
+@@ -33,2 +33,3 @@
+-  bool get _supportsUpdate =>
+-      Platform.isAndroid || Platform.isWindows || Platform.isLinux;
++  bool get _supportsUpdate =>
++      (Platform.isAndroid || Platform.isWindows || Platform.isLinux) &&
++      getIt<UpdateService>().supportsInAppUpdate;
+--- a/lib/services/update_service.dart
++++ b/lib/services/update_service.dart
+@@ -74,1 +74,4 @@
+-  UpdateService(this._prefs, this._currentVersion);
++  UpdateService(this._prefs, this._currentVersion);
++
++  bool get supportsInAppUpdate =>
++      !Platform.isLinux || !Platform.environment.containsKey('FLATPAK_ID');
+@@ -276,1 +279,2 @@
+-  Future<UpdateCheckResult> checkForUpdate() {
++  Future<UpdateCheckResult> checkForUpdate() {
++    if (!supportsInAppUpdate) return Future.value(UpdateCheckResult.noUpdate());
+@@ -312,1 +316,4 @@
+-  }) async {
++  }) async {
++    if (!supportsInAppUpdate) {
++      throw UnsupportedError('Updates are managed by Flatpak');
++    }

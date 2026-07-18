@@ -7,6 +7,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
@@ -148,45 +150,32 @@ class MainActivity : FlutterActivity() {
         return null
     }
 
-    /** Apply an icon swap: disable everything, then enable the target. */
+    /** Apply an icon swap: enable target first, update widgets, then kill process. */
     private fun setAlternateDynamicIcon(iconName: String?) {
         val pm = packageManager
         val mainCN = ComponentName(packageName, iconBaseClass)
 
+        // Determine which component is currently the active launcher.
+        // We'll leave it untouched in the DONT_KILL_APP pass, then disable it
+        // WITHOUT DONT_KILL_APP at the end to trigger a real process kill.
+        val currentIsMain = pm.getComponentEnabledSetting(mainCN) in arrayOf(
+            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+            PackageManager.COMPONENT_ENABLED_STATE_DEFAULT
+        )
+        val currentAlias = if (currentIsMain) null else getCurrentDynamicIcon()
+        val previousActiveCN = if (currentAlias != null)
+            ComponentName(packageName, "$iconBaseClass.$currentAlias")
+        else
+            mainCN
+
+        // Step 1: Enable the target component (DONT_KILL_APP)
         if (iconName.isNullOrEmpty()) {
-            // Restore default icon: disable aliases, then ensure MainActivity is enabled.
-            // Do NOT disable MainActivity first — that creates a brief window where no
-            // launcher component is enabled, causing getLaunchIntentForPackage to return
-            // null on some devices (setComponentEnabledSetting propagation is async).
-            for (available in getAvailableDynamicIcons()) {
-                val aliasCN = ComponentName(packageName, "$iconBaseClass.$available")
-                pm.setComponentEnabledSetting(
-                    aliasCN,
-                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                    PackageManager.DONT_KILL_APP
-                )
-            }
             pm.setComponentEnabledSetting(
                 mainCN,
                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                 PackageManager.DONT_KILL_APP
             )
         } else {
-            // Switch to custom icon: disable MainActivity, disable all aliases,
-            // then enable the target alias.
-            pm.setComponentEnabledSetting(
-                mainCN,
-                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                PackageManager.DONT_KILL_APP
-            )
-            for (available in getAvailableDynamicIcons()) {
-                val aliasCN = ComponentName(packageName, "$iconBaseClass.$available")
-                pm.setComponentEnabledSetting(
-                    aliasCN,
-                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                    PackageManager.DONT_KILL_APP
-                )
-            }
             val targetCN = ComponentName(packageName, "$iconBaseClass.$iconName")
             pm.setComponentEnabledSetting(
                 targetCN,
@@ -195,8 +184,42 @@ class MainActivity : FlutterActivity() {
             )
         }
 
-        // Force widget refresh so it recreates PendingIntent with the newly enabled component
+        // Step 2: Disable all OTHER components with DONT_KILL_APP,
+        // but SKIP the previously-active one — we'll disable it in step 4
+        // without DONT_KILL_APP to force-kill the process.
+        // Disable MainActivity if switching to an alias and it's not the currently active one
+        if (!iconName.isNullOrEmpty() && !currentIsMain) {
+            pm.setComponentEnabledSetting(
+                mainCN,
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                PackageManager.DONT_KILL_APP
+            )
+        }
+        for (available in getAvailableDynamicIcons()) {
+            if (available == iconName) continue // skip target
+            if (available == currentAlias) continue // skip current active — will kill later
+            val aliasCN = ComponentName(packageName, "$iconBaseClass.$available")
+            pm.setComponentEnabledSetting(
+                aliasCN,
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                PackageManager.DONT_KILL_APP
+            )
+        }
+
+        // Step 3: Update widgets — the new component is already enabled,
+        // so getLaunchIntentForPackage will resolve to it correctly.
         updateAllWidgets()
+
+        // Step 4: Kill the process by disabling the previously-active component
+        // WITHOUT DONT_KILL_APP. This is a real state change (ENABLED→DISABLED),
+        // so the system will kill our process and launcher will refresh the icon.
+        Handler(Looper.getMainLooper()).postDelayed({
+            pm.setComponentEnabledSetting(
+                previousActiveCN,
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                0 // No flag → kills process, forcing icon refresh
+            )
+        }, 300)
     }
 
     private fun updateAllWidgets() {

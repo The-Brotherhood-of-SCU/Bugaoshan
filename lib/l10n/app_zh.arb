@@ -52,6 +52,7 @@
     "allBuildings": "全部教学楼",
     "seats": "座",
     "free": "空闲",
+    "currentlyFree": "当前空闲",
     "inClass": "上课中",
     "borrowed": "已借用",
     "classroomPeriodExam": "考试中",

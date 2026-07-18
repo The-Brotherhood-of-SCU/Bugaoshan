@@ -63,19 +63,27 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 ├── pubspec.yaml                # package metadata, deps, flutter_launcher_icons config
 ├── analysis_options.yaml       # extends package:flutter_lints/flutter.yaml
 ├── l10n.yaml                   # arb-dir: lib/l10n, template: app_en.arb
+├── devtools_options.yaml       # DevTools config
 ├── .editorconfig               # LF, UTF-8, 2-space indent
 ├── .flutter-plugins-dependencies
+├── .gitattributes
 ├── _build_generator.bat        # helper wrapper
 ├── _build_icon.bat             # helper wrapper
 ├── _build_l10n.bat             # helper wrapper
+├── update_and_push_tag.py      # release tag helper script
 ├── assets/
 │   ├── icon.png                # app icon (referenced by flutter_launcher_icons)
+│   ├── icon-foreground.png     # adaptive icon foreground
+│   ├── icon.svg                # icon source vector
+│   ├── icon_old.png            # legacy icon
+│   ├── academic_calendar.json  # academic calendar data
 │   ├── eula.md                 # EULA text bundled into the app
 │   ├── js/                     # beautify scripts injected by WebView notice pages
 │   │   ├── dom_ready.js
 │   │   ├── jwc_notice_beautify.js
 │   │   ├── party_notice_beautify.js
-│   │   └── tuanwei_notice_beautify.js
+│   │   ├── tuanwei_notice_beautify.js
+│   │   └── volunteer_sichuan.js
 │   ├── scripts/                # desktop updater helper scripts
 │   │   ├── update.bat          # Windows updater
 │   │   └── update.sh           # Linux updater
@@ -84,6 +92,15 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │   └── webview_error.html      # fallback page for failed WebView loads
 ├── android/  ios/  macos/  windows/  linux/  web/   # per-platform projects
 ├── local/                      # local-only helper assets (e.g. zikzak_inappwebview_windows)
+├── doc/                        # API documentation
+│   └── api/
+├── packaging/                  # Linux packaging (flatpak, debian)
+│   ├── flatpak/
+│   └── linux/
+├── tool/                       # Icon generation scripts
+│   ├── generate_adaptive_old_icon.py
+│   └── generate_icons.dart
+├── screenshot/                 # App screenshots
 ├── build/                      # build output (gitignored)
 ├── lib/
 │   ├── app.dart                # MaterialApp config, EULA/wizard gating
@@ -93,6 +110,15 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │   ├── l10n/                   # ARB files + generated AppLocalizations
 │   ├── models/                 # Plain data models (Course, SchemeScore, etc.)
 │   ├── pages/                  # Screens (one folder per feature)
+│   │   ├── about/
+│   │   ├── auth/               # Login & auth UI
+│   │   ├── campus/             # Campus feature pages (see Notice Pages section)
+│   │   ├── campus_page/
+│   │   ├── course/             # Course schedule pages
+│   │   ├── dev/                # Developer tools & auth log viewer
+│   │   ├── profile/
+│   │   ├── settings/
+│   │   └── wizard/             # First-launch wizard
 │   ├── providers/              # State management (GetIt-registered)
 │   ├── services/               # Business logic, network, auth, DB
 │   ├── utils/                  # Constants, crypto, helpers
@@ -103,6 +129,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │   └── decisions/              # Architecture Decision Records (ADRs)
 │       ├── auth-architecture.md
 │       ├── auth-module-refactor.md
+│       ├── course-display-settings-domain.md
 │       └── notice-webview-architecture.md
 └── .github/
     ├── actions/setup/          # composite action: install Flutter 3.44.2, gen-l10n, git metadata
@@ -176,7 +203,10 @@ The CCYL service is special: its token expires via a *business* error code (`Ccy
 - **`IcsService`** — exports course schedules as iCalendar (.ics).
 - **`OcrService`** — TFLite captcha recognition (`flutter_litert`) for SCU login.
 - **`UpdateService`** — GitHub release check / download / install for desktop (Windows + Linux). Coordinates with `assets/scripts/update.bat` / `update.sh`.
+- **`UpdateChecker`** (`lib/services/update_checker.dart`) — fetches latest version info from GitHub `/releases/latest` API.
+- **`UpdateAssetSelector`** (`lib/services/update_asset_selector.dart`) — selects correct APK/asset based on device platform and CPU architecture.
 - **`WidgetUpdateService`** — Android home-screen widget data sync via MethodChannel `bugaoshan/update`. Has its own debounce + in-flight coalescing logic (covered by `test/widget_update_service_test.dart`).
+- **`DynamicIconService`** (`lib/services/dynamic_icon_service.dart`) — runtime app icon switching via MethodChannel `bugaoshan/dynamic_icon` (Android native).
 - **`BackgroundCacheService`** — precaches the user's background image post-frame.
 - **`ExitService`** — unified exit (windowManager.destroy on desktop, exit(0) on mobile).
 - **`WindowStateService`** — desktop window position/size persistence.
@@ -195,6 +225,8 @@ All auth-layer modules (`ScuAuth`, `CookieClient`, `AuthCoordinator`, `ZhjwAuth`
 
 Dev page (`lib/pages/dev/auth_log/`) gains:
 - `AuthLogTile` — entry showing last log line + count, plus a "Save" button that exports to `bugaoshan-auth-{timestamp}.log` in the temp dir and opens the system share sheet.
+- `AuthLogEntryTile` — individual log entry display with level color coding.
+- `AuthLogFilterBar` — filter chips for log level and tag selection.
 - `AuthLogViewerPage` — full-screen viewer with level filter chips + tag dropdown + clear + copy + save actions.
 
 ### Notice Pages
@@ -211,6 +243,7 @@ Shared downloads module lives in `lib/pages/campus/downloads/`:
 - `NoticeAttachmentFab` / `attachment_fab.dart` — draggable FAB.
 - `attachments_sheet.dart` — `showAttachmentsSheet()` modal with download/share/open.
 - `file_utils.dart` — `kNoticeAttachmentDir`, `kPartyAttachmentDir`, `kTuanweiAttachmentDir`, `downloadFile()`, `checkDownloadedFile()`.
+- `shared_notice_downloads.dart` — shared notice download logic.
 - `notice_downloaded_page.dart` — tabbed management for both sources' downloaded files.
 
 ### Providers

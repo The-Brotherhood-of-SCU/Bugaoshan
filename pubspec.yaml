@@ -1,7 +1,7 @@
 name: bugaoshan
 description: Explore everything, all on the Bugaoshan.
 publish_to: none
-version: 2.1.1
+version: 2.2.0
 environment:
   sdk: ^3.10.4
 dependencies:
@@ -46,6 +46,7 @@ dependencies:
       path: flutter_inappwebview
   tyme: ^1.4.4
   json_annotation: ^4.12.0
+  device_info_plus: ^13.2.0
 
 dev_dependencies:
   flutter_test:
