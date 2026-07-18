@@ -708,6 +708,9 @@ class CourseGlanceWidget : GlanceAppWidget() {
         }
         val nameColor = if (isTomorrow) R.color.widget_tomorrow_text_primary else R.color.widget_text_primary
         val metaColor = if (isTomorrow) R.color.widget_tomorrow_text_secondary else R.color.widget_text_secondary
+        // 进行中的课程：名称加粗、时间用课程色强调
+        val inProgress = !isTomorrow && course.optString("status") == "inProgress"
+        val metaTextColor = if (inProgress) indicatorColor else ColorProvider(metaColor)
 
         Row(
             modifier = GlanceModifier
@@ -731,7 +734,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     text = name,
                     style = TextStyle(
                         color = ColorProvider(nameColor),
-                        fontWeight = FontWeight.Medium,
+                        fontWeight = if (inProgress) FontWeight.Bold else FontWeight.Medium,
                         fontSize = TITLE_FONT_SIZE_SP
                     ),
                     maxLines = 1
@@ -746,7 +749,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                         val timeRange = if (endTime.isNotEmpty()) "$startTime - $endTime" else startTime
                         Text(
                             text = timeRange,
-                            style = TextStyle(color = ColorProvider(metaColor), fontSize = META_FONT_SIZE_SP),
+                            style = TextStyle(color = metaTextColor, fontSize = META_FONT_SIZE_SP),
                             maxLines = 1,
                             modifier = GlanceModifier.defaultWeight()
                         )
@@ -772,7 +775,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     val fontSize = if (useShortTime) META_SMALL_FONT_SIZE_SP else META_FONT_SIZE_SP
                     Text(
                         text = "$timeText  $location",
-                        style = TextStyle(color = ColorProvider(metaColor), fontSize = fontSize),
+                        style = TextStyle(color = metaTextColor, fontSize = fontSize),
                         maxLines = 2,
                         modifier = GlanceModifier.fillMaxWidth()
                     )
