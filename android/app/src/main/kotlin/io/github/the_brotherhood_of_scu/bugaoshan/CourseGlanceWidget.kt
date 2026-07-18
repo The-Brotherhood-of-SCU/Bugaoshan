@@ -3,7 +3,6 @@ package io.github.the_brotherhood_of_scu.bugaoshan
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import androidx.compose.runtime.Composable
@@ -13,6 +12,7 @@ import androidx.glance.GlanceTheme
 import androidx.glance.LocalSize
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.actionStartActivity
@@ -46,21 +46,6 @@ import kotlin.math.roundToInt
 import java.text.SimpleDateFormat
 import java.util.Locale
 import io.github.the_brotherhood_of_scu.bugaoshan.R
-    
-
-// Parse appWidgetId token from GlanceId string
-private fun parseAppWidgetId(idString: String): Int? {
-    // Prefer explicit token match like "appWidgetId=123" or "appWidgetId: 123"
-    val tokenRegex = Regex("appWidgetId\\W*=?\\W*(\\d+)", RegexOption.IGNORE_CASE)
-    tokenRegex.find(idString)?.let { m -> return m.groupValues.getOrNull(1)?.toIntOrNull() }
-
-    // Common alternate form: AppWidgetId(123)
-    val altRegex = Regex("AppWidgetId\\W*\\(\\s*(\\d+)\\s*\\)", RegexOption.IGNORE_CASE)
-    altRegex.find(idString)?.let { m -> return m.groupValues.getOrNull(1)?.toIntOrNull() }
-
-    // Fallback: no reliable id token found -> return null to avoid accidental matches
-    return null
-}
 
 // Layout thresholds (units: dp for comparisons using integer dp values)
 private const val TOTAL_HORIZONTAL_PADDING_DP = 24 // 12dp each side
@@ -136,9 +121,6 @@ data class WidgetCourseData(
     val weekText: String,
     val headerTitle: String,
     val emptyText: String,
-    val sectionPrefix: String,
-    val sectionSuffix: String,
-    val themeColor: Int,
     val isTomorrow: Boolean = false,
     // 今天课程最近的下一个开始/结束时刻（毫秒），无则 null
     val nextTransitionMillis: Long? = null,
@@ -226,7 +208,6 @@ object WidgetDataLoader {
             }
             val weekNumber = if (showingTomorrow) weekForTomorrow else currentWeek
             val weekText = context.getString(R.string.widget_week_format, weekNumber)
-            val themeColor = 0xFF2196F3.toInt()
             // 展示明天课程时今天已无变化点，边界闹钟交由午夜闹钟接力
             val nextTransitionMillis = if (!showingTomorrow) {
                 computeNextTransitionMillis(courses, timeSlots, currentTimeMinutes)
@@ -239,9 +220,6 @@ object WidgetDataLoader {
                 weekText = weekText,
                 headerTitle = context.getString(R.string.widget_header_title),
                 emptyText = context.getString(R.string.widget_empty_today),
-                sectionPrefix = "第",
-                sectionSuffix = "节",
-                themeColor = themeColor,
                 isTomorrow = showingTomorrow,
                 nextTransitionMillis = nextTransitionMillis,
             )
@@ -513,9 +491,6 @@ class CourseGlanceWidget : GlanceAppWidget() {
 
         // prepare localized format strings from Android resources
         val headerDefault = context.getString(R.string.widget_header_title)
-        val sectionSingleFmt = context.getString(R.string.widget_section_single)
-        val sectionRangeFmt = context.getString(R.string.widget_section_range)
-        val emptyDefault = context.getString(R.string.widget_empty_today)
 
         provideContent {
             GlanceTheme {
@@ -524,7 +499,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 val heightDp = size.height.value.roundToInt()
 
                 val parsedId = try {
-                    parseAppWidgetId(id.toString())
+                    GlanceAppWidgetManager(context).getAppWidgetId(id)
                 } catch (e: Exception) { null }
 
                 val cached = WidgetLayoutCache.getIfSameSize(parsedId, widthDp, heightDp)
