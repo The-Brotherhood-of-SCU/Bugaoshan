@@ -125,11 +125,9 @@ class _FitnessTestPageState extends State<FitnessTestPage>
       return;
     }
 
-    // 等待 FitnessAuth 预热完成，避免冷启动竞态
-    if (!getIt<FitnessAuth>().isReady) {
-      return;
-    }
-
+    // 不在此等待 FitnessAuth.isReady：_fitnessRequest 内部通过
+    // FitnessAuth.getClient 自驱动 SSO 认证，预热失败会走 catch 分支
+    // 显示可重试的错误页，避免预热曾失败时永远停留在加载态。
     setState(() {
       _loading = true;
       _error = null;
@@ -306,11 +304,6 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     final auth = getIt<ScuAuthProvider>();
     if (!auth.isLoggedIn && auth.isAutoLoggingIn) {
       return const AutoLoginLoadingWidget();
-    }
-
-    // 已登录但 FitnessAuth 尚未预热完成（冷启动 race），显示加载状态
-    if (auth.isLoggedIn && !getIt<FitnessAuth>().isReady) {
-      return const Center(child: CircularProgressIndicator());
     }
 
     if (_loading) {
