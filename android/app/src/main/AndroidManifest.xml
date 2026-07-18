@@ -97,12 +97,15 @@
         <receiver
             android:name=".WidgetAlarmReceiver"
             android:exported="false" />
-        <!-- Re-register alarm after device reboot -->
+        <!-- Re-register alarm after device reboot / app update / time change -->
         <receiver
             android:name=".BootReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
             </intent-filter>
         </receiver>
     </application>
