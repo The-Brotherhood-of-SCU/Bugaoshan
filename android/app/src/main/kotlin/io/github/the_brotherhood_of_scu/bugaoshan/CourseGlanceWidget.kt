@@ -576,7 +576,13 @@ class CourseGlanceWidget : GlanceAppWidget() {
         val title = if (!data?.headerTitle.isNullOrEmpty()) data!!.headerTitle else headerDefault
         val date = data?.dateText ?: ""
         val week = data?.weekText ?: ""
-        val emptyText = data?.emptyText ?: ctx.getString(emptyRes)
+        // data 为 null 表示数据库缺失或读取失败（如课表未同步），
+        // 与「今日无课」的正常空态区分开，给出引导文案
+        val emptyText = when {
+            data == null -> ctx.getString(R.string.widget_sync_hint)
+            data.emptyText.isNotEmpty() -> data.emptyText
+            else -> ctx.getString(emptyRes)
+        }
         val isTomorrow = data?.isTomorrow ?: false
 
         val fullDate = if (week.isNotEmpty()) "$date  $week" else date

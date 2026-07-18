@@ -7,6 +7,7 @@
     <string name="tomorrow">Tomorrow</string>
     <string name="widget_week_format">Week %1$d</string>
     <string name="widget_empty_today">No classes today</string>
+    <string name="widget_sync_hint">Open the app to sync your schedule</string>
     <string name="widget_section_single">Section %1$d</string>
     <string name="widget_section_range">Sections %1$d-%2$d</string>
     <string name="widget_header_title">Bugaoshan</string>
