@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
+import 'package:bugaoshan/services/api/api_request.dart';
+import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/wfw_auth.dart';
 import 'package:bugaoshan/utils/constants.dart';
@@ -59,17 +60,35 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
     }
   }
 
+  /// 通过 WfwAuth 发送带自动重试的请求。
+  ///
+  /// 自动处理两种认证失败：
+  /// - [UnauthenticatedException]：SCU token 过期（由 auth 层抛出，
+  ///   getClient 内部触发续期）
+  /// - 微服务 session 过期（业务响应 e == 10013，见 [_throwIfSessionExpired]）：
+  ///   invalidate 后重新预热 wfw session 并重试一次
+  Future<T> _wfwRequest<T>(Future<T> Function(CookieClient client) fn) {
+    final wfwAuth = getIt<WfwAuth>();
+    return retryOnUnauthenticated(
+      wfwAuth.getClient,
+      fn,
+      invalidate: wfwAuth.invalidate,
+    );
+  }
+
+  /// 微服务 session 失效（e == 10013）时抛 [UnauthenticatedException]，
+  /// 交给 [_wfwRequest] 触发重新认证 + 重试。
+  void _throwIfSessionExpired(Map<String, dynamic> json) {
+    if (json['e'] == 10013 || json['e']?.toString() == '10013') {
+      throw const UnauthenticatedException('微服务登录已失效');
+    }
+  }
+
   Future<void> _loadData() async {
     final auth = getIt<ScuAuthProvider>();
     if (!auth.isLoggedIn) {
       if (auth.isAutoLoggingIn) return;
       setState(() => _error = LoadErrorType.notLoggedIn);
-      return;
-    }
-
-    // 等待 WfwAuth 预热完成再请求数据，避免因 session 未就绪导致
-    // "用户信息已失效" 错误（尤其从 dock 栏冷启动时）
-    if (!getIt<WfwAuth>().isReady) {
       return;
     }
 
@@ -79,17 +98,15 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
     });
 
     try {
-      final scuAuth = getIt<ScuAuth>();
-      final client = await scuAuth.getClient();
-      try {
+      // _wfwRequest 内部通过 WfwAuth.getClient 确保 wfw session 已预热，
+      // session 过期时自动重新认证并重试一次，无需在此等待 isReady。
+      await _wfwRequest((client) async {
         final userResp = await client.get(
           Uri.parse('$_base/uc/wap/user/get-info'),
           headers: _headers,
         );
         final userJson = _parseJson(userResp.body, 'get-info');
-        if (userJson['e'] == 10013) {
-          return;
-        }
+        _throwIfSessionExpired(userJson);
         if (userJson['e'] != 0) {
           throw Exception(userJson['m'] ?? '获取用户信息失败');
         }
@@ -100,18 +117,16 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
           headers: _headers,
         );
         final deviceJson = _parseJson(deviceResp.body, 'get-index');
+        _throwIfSessionExpired(deviceJson);
         if (deviceJson['e'] != 0) {
           throw Exception(deviceJson['m'] ?? '获取设备信息失败');
         }
         _devices = (deviceJson['d']['list'] as List)
             .map((e) => e as Map<String, dynamic>)
             .toList();
-
-        if (mounted) {
-          setState(() => _loading = false);
-        }
-      } finally {
-        client.close();
+      });
+      if (mounted) {
+        setState(() => _loading = false);
       }
     } on UnauthenticatedException catch (_) {
       if (mounted) {
@@ -157,9 +172,7 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
     if (confirm != true) return;
 
     try {
-      final scuAuth = getIt<ScuAuth>();
-      final client = await scuAuth.getClient();
-      try {
+      await _wfwRequest((client) async {
         final resp = await client.post(
           Uri.parse('$_base/netclient/wap/default/offline'),
           headers: {
@@ -169,15 +182,14 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
           body: 'device_id=${device['device_id']}&ip=${device['ip']}',
         );
         final json = _parseJson(resp.body, 'offline');
+        _throwIfSessionExpired(json);
         if (json['e'] != 0) {
           debugPrint(json.toString());
           throw Exception(json['m'] ?? '操作失败');
         }
-        _showSnackBar(l10n.networkDeviceOperationSuccess);
-        _loadData();
-      } finally {
-        client.close();
-      }
+      });
+      _showSnackBar(l10n.networkDeviceOperationSuccess);
+      _loadData();
     } on UnauthenticatedException catch (_) {
       _showSnackBar(l10n.networkOfflineFailed, isError: true);
     } catch (e) {
@@ -247,11 +259,6 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
     final auth = getIt<ScuAuthProvider>();
     if (!auth.isLoggedIn && auth.isAutoLoggingIn) {
       return const AutoLoginLoadingWidget();
-    }
-
-    // 已登录但 WfwAuth 尚未预热完成（冷启动 race），显示加载状态
-    if (auth.isLoggedIn && !getIt<WfwAuth>().isReady) {
-      return const Center(child: CircularProgressIndicator());
     }
 
     if (_loading) {
