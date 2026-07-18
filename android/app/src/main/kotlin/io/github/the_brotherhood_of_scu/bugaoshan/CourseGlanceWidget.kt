@@ -698,7 +698,14 @@ class CourseGlanceWidget : GlanceAppWidget() {
             else ctx.getString(sectionRangeRes, ss, es)
         } else ""
 
-        val leftColor = if (isTomorrow) R.color.widget_tomorrow_accent else R.color.widget_header_default
+        // 左侧指示条使用课程自定义颜色（Flutter ARGB）；明天课程或颜色
+        // 无效（缺失/全透明）时回退默认色
+        val rawColor = course.optInt("colorValue", 0)
+        val indicatorColor = when {
+            isTomorrow -> ColorProvider(R.color.widget_tomorrow_accent)
+            (rawColor ushr 24) != 0 -> ColorProvider(rawColor)
+            else -> ColorProvider(R.color.widget_header_default)
+        }
         val nameColor = if (isTomorrow) R.color.widget_tomorrow_text_primary else R.color.widget_text_primary
         val metaColor = if (isTomorrow) R.color.widget_tomorrow_text_secondary else R.color.widget_text_secondary
 
@@ -715,7 +722,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     .width(CARD_INDICATOR_WIDTH_DP)
                     .height(CARD_INDICATOR_HEIGHT_DP)
                     .cornerRadius(2.dp)
-                    .background(ColorProvider(leftColor))
+                    .background(indicatorColor)
             ) {}
             Spacer(modifier = GlanceModifier.width(10.dp))
 
