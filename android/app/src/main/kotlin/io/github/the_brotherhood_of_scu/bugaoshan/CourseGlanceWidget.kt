@@ -140,6 +140,8 @@ data class WidgetCourseData(
     val sectionSuffix: String,
     val themeColor: Int,
     val isTomorrow: Boolean = false,
+    // 今天课程最近的下一个开始/结束时刻（毫秒），无则 null
+    val nextTransitionMillis: Long? = null,
 )
 
 // SQLite data loader
@@ -225,6 +227,12 @@ object WidgetDataLoader {
             val weekNumber = if (showingTomorrow) weekForTomorrow else currentWeek
             val weekText = context.getString(R.string.widget_week_format, weekNumber)
             val themeColor = 0xFF2196F3.toInt()
+            // 展示明天课程时今天已无变化点，边界闹钟交由午夜闹钟接力
+            val nextTransitionMillis = if (!showingTomorrow) {
+                computeNextTransitionMillis(courses, timeSlots, currentTimeMinutes)
+            } else {
+                null
+            }
             return WidgetCourseData(
                 courses = courses,
                 dateText = dateText,
@@ -235,6 +243,7 @@ object WidgetDataLoader {
                 sectionSuffix = "节",
                 themeColor = themeColor,
                 isTomorrow = showingTomorrow,
+                nextTransitionMillis = nextTransitionMillis,
             )
         } catch (e: Exception) {
             Log.e(TAG, "WidgetDataLoader.load failed", e)
@@ -356,6 +365,42 @@ object WidgetDataLoader {
         return updated
     }
 
+    /**
+     * 计算今天课程最近的下一个状态变化时刻（某节课开始或结束），
+     * 返回当天对应的时间戳（毫秒）。今天没有更多变化点时返回 null。
+     *
+     * 传入的 courses 已经过滤掉已结束的课程，因此每门课的结束时刻
+     * 都是有效的变化点；未开始的课程其开始时刻也是变化点。
+     */
+    private fun computeNextTransitionMillis(
+        courses: JSONArray,
+        timeSlots: JSONArray?,
+        currentTimeMinutes: Int
+    ): Long? {
+        var next: Int? = null
+        fun consider(minutes: Int?) {
+            if (minutes != null && minutes > currentTimeMinutes &&
+                (next == null || minutes < next!!)
+            ) {
+                next = minutes
+            }
+        }
+        for (i in 0 until courses.length()) {
+            val c = courses.getJSONObject(i)
+            val ss = c.optInt("startSection", 0)
+            val es = c.optInt("endSection", 0)
+            consider(getSlotStartTime(timeSlots, ss)?.let { it.first * 60 + it.second })
+            consider(getSlotEndTime(timeSlots, es)?.let { it.first * 60 + it.second })
+        }
+        val minutes = next ?: return null
+        return Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, minutes / 60)
+            set(Calendar.MINUTE, minutes % 60)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+    }
+
     private fun isCourseActive(week: Int, startWeek: Int, endWeek: Int, weekType: Int): Boolean {
         if (week < startWeek || week > endWeek) return false
         if (weekType == 1 && week % 2 == 0) return false
@@ -440,6 +485,9 @@ class CourseGlanceWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val data = WidgetDataLoader.load(context)
+        // 渲染前用最新数据链式调度课程边界闹钟（无变化点时取消），
+        // 保证上下课时刻小组件立即刷新
+        WidgetAlarmManager.scheduleCourseBoundaryAlarm(context, data?.nextTransitionMillis)
         // Use getLaunchIntentForPackage so Android resolves to the currently
         // enabled activity / activity-alias (fixes widget click after icon switch).
         // If it returns null (PackageManager async propagation delay), fall back
