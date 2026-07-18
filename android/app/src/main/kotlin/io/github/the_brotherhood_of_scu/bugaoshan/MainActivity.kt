@@ -43,7 +43,7 @@ class MainActivity : FlutterActivity() {
                         }
                     }
                     "updateWidget" -> {
-                        updateAllWidgets()
+                        WidgetUpdater.updateAllWidgets(this)
                         result.success(null)
                     }
                     "importIcsToCalendar" -> {
@@ -208,7 +208,7 @@ class MainActivity : FlutterActivity() {
 
         // Step 3: Update widgets — the new component is already enabled,
         // so getLaunchIntentForPackage will resolve to it correctly.
-        updateAllWidgets()
+        WidgetUpdater.updateAllWidgets(this)
 
         // Step 4: Kill the process by disabling the previously-active component
         // WITHOUT DONT_KILL_APP. This is a real state change (ENABLED→DISABLED),
@@ -220,30 +220,6 @@ class MainActivity : FlutterActivity() {
                 0 // No flag → kills process, forcing icon refresh
             )
         }, 300)
-    }
-
-    private fun updateAllWidgets() {
-        try {
-            val mgr = AppWidgetManager.getInstance(this)
-            val providers = listOf(
-                CourseWidgetReceiverSmall::class.java,
-                CourseWidgetReceiverMedium::class.java,
-                CourseWidgetReceiverLarge::class.java,
-            )
-            for (cls in providers) {
-                val ids = mgr.getAppWidgetIds(ComponentName(this, cls))
-                if (ids.isNotEmpty()) {
-                    val intent = Intent(this, cls).apply {
-                        action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-                        putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
-                    }
-                    sendBroadcast(intent)
-                    Log.d("CourseWidget", "Sent update broadcast for ${cls.simpleName}: ${ids.size} widgets")
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("CourseWidget", "updateAllWidgets failed", e)
-        }
     }
 
     private fun pinWidget(size: String?): Boolean {

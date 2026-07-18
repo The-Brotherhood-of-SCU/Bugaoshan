@@ -13,12 +13,8 @@ import androidx.glance.GlanceTheme
 import androidx.glance.LocalSize
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.SizeMode
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
@@ -712,22 +708,8 @@ class CourseGlanceWidget : GlanceAppWidget() {
 }
 
 // Widget Receivers
-class CourseWidgetReceiverSmall : GlanceAppWidgetReceiver() {
+abstract class BaseCourseWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget = CourseGlanceWidget()
-
-    override fun onReceive(context: Context, intent: Intent) {
-        super.onReceive(context, intent)
-        if (intent.action == Intent.ACTION_LOCALE_CHANGED) {
-            WidgetLayoutCache.clear()
-            GlobalScope.launch(Dispatchers.Default) {
-                try {
-                    val manager = GlanceAppWidgetManager(context)
-                    val ids = manager.getGlanceIds(CourseGlanceWidget::class.java)
-                    ids.forEach { CourseGlanceWidget().update(context, it) }
-                } catch (_: Exception) { /* best-effort */ }
-            }
-        }
-    }
 
     override fun onDeleted(context: Context, appWidgetIds: IntArray) {
         super.onDeleted(context, appWidgetIds)
@@ -740,59 +722,16 @@ class CourseWidgetReceiverSmall : GlanceAppWidgetReceiver() {
     }
 }
 
-class CourseWidgetReceiverMedium : GlanceAppWidgetReceiver() {
-    override val glanceAppWidget = CourseGlanceWidget()
-
-    override fun onDeleted(context: Context, appWidgetIds: IntArray) {
-        super.onDeleted(context, appWidgetIds)
-        for (id in appWidgetIds) WidgetLayoutCache.remove(id)
-    }
-
-    override fun onDisabled(context: Context) {
-        super.onDisabled(context)
-        WidgetLayoutCache.clear()
-    }
-
+// LOCALE_CHANGED 只在 Small 上注册，避免三种尺寸各自重复全量更新
+class CourseWidgetReceiverSmall : BaseCourseWidgetReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         if (intent.action == Intent.ACTION_LOCALE_CHANGED) {
-            WidgetLayoutCache.clear()
-            GlobalScope.launch(Dispatchers.Default) {
-                try {
-                    val manager = GlanceAppWidgetManager(context)
-                    val ids = manager.getGlanceIds(CourseGlanceWidget::class.java)
-                    ids.forEach { CourseGlanceWidget().update(context, it) }
-                } catch (_: Exception) { }
-            }
+            WidgetUpdater.onLocaleChanged(context)
         }
     }
 }
 
+class CourseWidgetReceiverMedium : BaseCourseWidgetReceiver()
 
-class CourseWidgetReceiverLarge : GlanceAppWidgetReceiver() {
-    override val glanceAppWidget = CourseGlanceWidget()
-
-    override fun onDeleted(context: Context, appWidgetIds: IntArray) {
-        super.onDeleted(context, appWidgetIds)
-        for (id in appWidgetIds) WidgetLayoutCache.remove(id)
-    }
-
-    override fun onDisabled(context: Context) {
-        super.onDisabled(context)
-        WidgetLayoutCache.clear()
-    }
-
-    override fun onReceive(context: Context, intent: Intent) {
-        super.onReceive(context, intent)
-        if (intent.action == Intent.ACTION_LOCALE_CHANGED) {
-            WidgetLayoutCache.clear()
-            GlobalScope.launch(Dispatchers.Default) {
-                try {
-                    val manager = GlanceAppWidgetManager(context)
-                    val ids = manager.getGlanceIds(CourseGlanceWidget::class.java)
-                    ids.forEach { CourseGlanceWidget().update(context, it) }
-                } catch (_: Exception) { }
-            }
-        }
-    }
-}
+class CourseWidgetReceiverLarge : BaseCourseWidgetReceiver()

@@ -79,7 +79,6 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="android.intent.action.LOCALE_CHANGED" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
@@ -90,7 +89,6 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="android.intent.action.LOCALE_CHANGED" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
