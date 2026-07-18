@@ -123,7 +123,9 @@ class DownloadPathIndex {
     if (!await entry.exists()) return null;
     final fileName = await _readFileName(entry);
     if (fileName == null) return null;
-    final path = p.join(downloadDir.path, fileName);
+    // 与 downloadFile / checkDownloadedFile 一致，用 '/' 拼接返回路径，
+    // 保证同一路径在不同 API 间字符串一致（Windows 上 dart:io 接受混合分隔符）。
+    final path = '${downloadDir.path}/$fileName';
     if (await File(path).exists()) return path;
     if (await entry.exists()) await entry.delete();
     return null;
@@ -164,11 +166,11 @@ class DownloadPathIndex {
 
   Iterable<String> _legacyCandidates(String rawName) sync* {
     final safeName = sanitizeDownloadFileName(rawName);
-    yield p.join(downloadDir.path, safeName);
+    yield '${downloadDir.path}/$safeName';
     final baseName = p.basenameWithoutExtension(safeName);
     final extension = p.extension(safeName);
     for (var i = 1; i <= 99; i++) {
-      yield p.join(downloadDir.path, '$baseName ($i)$extension');
+      yield '${downloadDir.path}/$baseName ($i)$extension';
     }
   }
 }
