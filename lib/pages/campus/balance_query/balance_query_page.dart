@@ -5,6 +5,7 @@ import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/balance_query_service.dart';
 import 'package:bugaoshan/services/auth/payapp_auth.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
@@ -72,17 +73,23 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
       return;
     }
 
-    // 等待 PayAppAuth 预热完成，避免冷启动竞态
-    if (!getIt<PayAppAuth>().isReady) {
-      return;
-    }
-
+    // 不在此等待 PayAppAuth.isReady：PayAppApiService 的 _request 模板
+    // 通过 PayAppAuth.getClient 自驱动 SSO 认证，预热失败会走 catch 分支
+    // 显示可重试的错误页，避免预热曾失败时永远停留在加载态。
     try {
       await _provider.getCampusList();
       if (mounted) {
         setState(() => _isInitializing = false);
       }
     } on BalanceQueryAuthException {
+      if (mounted) {
+        setState(() {
+          _isInitializing = false;
+          _initError = LoadErrorType.sessionExpired;
+        });
+      }
+    } on UnauthenticatedException {
+      // SCU 统一认证失效且续期失败
       if (mounted) {
         setState(() {
           _isInitializing = false;
@@ -208,11 +215,6 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
 
   Widget _buildBody(AppLocalizations l10n) {
     final auth = getIt<ScuAuthProvider>();
-
-    // 已登录但 PayAppAuth 尚未预热完成（冷启动 race），显示加载状态
-    if (auth.isLoggedIn && !getIt<PayAppAuth>().isReady) {
-      return const Center(child: CircularProgressIndicator());
-    }
 
     if (_isInitializing) {
       if (auth.isAutoLoggingIn) {
