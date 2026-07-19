@@ -12,29 +12,19 @@ class AcademicCalendarService {
 
   static const String _remoteUrl =
       'https://raw.githubusercontent.com/The-Brotherhood-of-SCU/Bugaoshan/main/assets/academic_calendar.json';
+  static const String _mirrorUrl =
+      'https://gh-proxy.com/https://raw.githubusercontent.com/The-Brotherhood-of-SCU/Bugaoshan/refs/heads/main/assets/academic_calendar.json';
   static const String _cacheKey = 'cached_academic_calendar_json';
 
   AcademicCalendarService(this._prefs, {http.Client? client})
     : _client = client;
 
   Future<AcademicCalendarData> fetchCalendarData() async {
-    try {
-      final client = _client ?? http.Client();
-      final response = await client
-          .get(Uri.parse(_remoteUrl))
-          .timeout(const Duration(seconds: 5));
-      if (response.statusCode == 200 && response.body.isNotEmpty) {
-        final data = jsonDecode(response.body);
-        if (data is Map<String, dynamic> && data.containsKey('semesters')) {
-          final calendar = AcademicCalendarData.fromJson(data);
-          await _prefs.setString(_cacheKey, response.body);
-          return calendar;
-        }
-      }
-    } catch (e) {
-      debugPrint(
-        'AcademicCalendarService: failed to fetch remote calendar: $e',
-      );
+    final client = _client ?? http.Client();
+    // 优先走镜像加速，失败时回退原始链接
+    for (final url in [_mirrorUrl, _remoteUrl]) {
+      final calendar = await _tryFetch(client, url);
+      if (calendar != null) return calendar;
     }
 
     final cached = _prefs.getString(_cacheKey);
@@ -57,6 +47,31 @@ class AcademicCalendarService {
       debugPrint('AcademicCalendarService: failed to load bundled asset: $e');
       return AcademicCalendarData(semesters: []);
     }
+  }
+
+  /// 从 [url] 拉取远程校历；成功时写入缓存并返回，失败返回 null。
+  Future<AcademicCalendarData?> _tryFetch(
+    http.Client client,
+    String url,
+  ) async {
+    try {
+      final response = await client
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200 && response.body.isNotEmpty) {
+        final data = jsonDecode(response.body);
+        if (data is Map<String, dynamic> && data.containsKey('semesters')) {
+          final calendar = AcademicCalendarData.fromJson(data);
+          await _prefs.setString(_cacheKey, response.body);
+          return calendar;
+        }
+      }
+    } catch (e) {
+      debugPrint(
+        'AcademicCalendarService: failed to fetch remote calendar from $url: $e',
+      );
+    }
+    return null;
   }
 
   CalendarExportPayload genExportPayload(AcademicCalendarSemester semester) {
