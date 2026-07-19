@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - 优化课表翻页手感，动画时间遵循设置
+- 自动更新：下载弹窗增加文件名
 
 ## [2.2.0] - 2026-07-13
 

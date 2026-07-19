@@ -66,6 +66,7 @@ class _DevPageState extends State<DevPage> {
       onStartUpdate: () => _startUpdate(
         result.version!,
         result.downloadUrl!,
+        filename: result.filename!,
         checksumSha256: result.release?.checksumSha256,
       ),
     );
@@ -74,6 +75,7 @@ class _DevPageState extends State<DevPage> {
   void _startUpdate(
     String latestVersion,
     String downloadUrl, {
+    required String filename,
     String? checksumSha256,
   }) async {
     final updateService = getIt<UpdateService>();
@@ -81,6 +83,7 @@ class _DevPageState extends State<DevPage> {
       context: context,
       version: latestVersion,
       downloadUrl: downloadUrl,
+      filename: filename,
       checksumSha256: checksumSha256,
       updateService: updateService,
     );

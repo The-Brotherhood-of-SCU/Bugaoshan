@@ -44,12 +44,14 @@ class DownloadProgressDialogView extends StatelessWidget {
     required this.onDownloadInBackground,
     required this.onCancel,
     required this.l10n,
+    required this.filename,
   });
 
   final UpdateProgressState progressState;
   final VoidCallback onDownloadInBackground;
   final VoidCallback onCancel;
   final AppLocalizations l10n;
+  final String filename;
 
   @override
   Widget build(BuildContext context) {
@@ -127,15 +129,25 @@ class DownloadProgressDialogView extends StatelessWidget {
     );
   }
 
-  /// 进度区组合:头部 + 进度条 + 文件大小。
+  /// 进度区组合:文件名 + 头部 + 进度条 + 文件大小。
   Widget _buildProgressSection(BuildContext context, Widget? _) {
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 8),
         _buildHeader(context),
         const SizedBox(height: 16),
         _buildProgressBar(),
+        const SizedBox(height: 8),
+        Text(
+          filename,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
         const SizedBox(height: 8),
         _buildFileSizeLabel(context),
       ],
@@ -169,6 +181,7 @@ Future<bool> showDownloadProgressDialog({
   required BuildContext context,
   required String version,
   required String downloadUrl,
+  required String filename,
   String? checksumSha256,
   required UpdateService updateService,
 }) async {
@@ -185,6 +198,7 @@ Future<bool> showDownloadProgressDialog({
     builder: (dialogContext) => DownloadProgressDialogView(
       progressState: progressState,
       l10n: l10n,
+      filename: filename,
       onDownloadInBackground: () {
         visible = false;
         Navigator.of(dialogContext).pop();
