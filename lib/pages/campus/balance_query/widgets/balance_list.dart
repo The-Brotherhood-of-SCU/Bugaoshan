@@ -52,7 +52,7 @@ class BalanceListState extends State<BalanceList> {
           BalanceCard(
             key: ValueKey('electric_$balanceKey'),
             provider: widget.provider,
-            balanceType: 2,
+            balanceType: kBalanceTypeElectric,
             icon: Icons.electric_bolt,
             iconColor: Colors.amber,
             title: l10n.electricityFee,
@@ -64,7 +64,7 @@ class BalanceListState extends State<BalanceList> {
           BalanceCard(
             key: ValueKey('ac_$balanceKey'),
             provider: widget.provider,
-            balanceType: 1,
+            balanceType: kBalanceTypeAc,
             icon: Icons.ac_unit,
             iconColor: Colors.lightBlue,
             title: l10n.acFee,

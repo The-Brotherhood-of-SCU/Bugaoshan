@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/campus/balance_query/balance_trend_page.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/services/api/balance_query_service.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
@@ -179,9 +180,30 @@ class BalanceCardState extends State<BalanceCard> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 else
-                  IconButton(
-                    icon: const Icon(Icons.refresh),
-                    onPressed: _forceRefresh,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_localInfo != null)
+                        IconButton(
+                          icon: const Icon(Icons.insights_outlined),
+                          tooltip: l10n.balanceTrend,
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => BalanceTrendPage(
+                                provider: widget.provider,
+                                balanceType: widget.balanceType,
+                                title: widget.title,
+                                themeColor: widget.iconColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      IconButton(
+                        icon: const Icon(Icons.refresh),
+                        onPressed: _forceRefresh,
+                      ),
+                    ],
                   ),
               ],
             ),

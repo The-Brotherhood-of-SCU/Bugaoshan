@@ -30,6 +30,7 @@ const String _keyShowWeekend = 'showWeekend';
 const String _keyShowNonCurrentWeekCourses = 'showNonCurrentWeekCourses';
 const String _keyUseGoogleFonts = 'useGoogleFonts';
 const String _keyCampusGridView = 'campusGridView';
+const String _keyAutoSampleBalanceOnLogin = 'autoSampleBalanceOnLogin';
 const Curve appCurve = Curves.easeOutQuart;
 
 enum ThemeColorMode { system, backgroundImage, custom }
@@ -79,6 +80,9 @@ class AppConfigProvider {
     true,
   );
   final ValueNotifier<bool> campusGridView = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> autoSampleBalanceOnLogin = ValueNotifier<bool>(
+    false,
+  );
 
   Future<void> _loadPreferences() async {
     final localeString = _sharedPreferences.getString(_keyLocale);
@@ -132,6 +136,8 @@ class AppConfigProvider {
         _sharedPreferences.getBool(_keyShowNonCurrentWeekCourses) ?? true;
     campusGridView.value =
         _sharedPreferences.getBool(_keyCampusGridView) ?? false;
+    autoSampleBalanceOnLogin.value =
+        _sharedPreferences.getBool(_keyAutoSampleBalanceOnLogin) ?? false;
   }
 
   void _addSaveCallback() {
@@ -243,6 +249,12 @@ class AppConfigProvider {
     });
     campusGridView.addListener(() {
       _sharedPreferences.setBool(_keyCampusGridView, campusGridView.value);
+    });
+    autoSampleBalanceOnLogin.addListener(() {
+      _sharedPreferences.setBool(
+        _keyAutoSampleBalanceOnLogin,
+        autoSampleBalanceOnLogin.value,
+      );
     });
   }
 

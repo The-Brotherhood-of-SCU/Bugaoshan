@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:bugaoshan/models/balance_record.dart';
 import 'package:bugaoshan/models/course.dart';
 
 const String _keyCurrentScheduleId = 'currentScheduleId';
@@ -17,6 +18,19 @@ class DatabaseService {
   List<Course> _coursesCache = [];
 
   bool get hasSchedule => _schedulesCache.isNotEmpty;
+
+  DatabaseService();
+
+  /// 测试用:跳过 [init] 中的路径解析与磁盘 IO,直接注入已初始化的 [Database]。
+  /// 自动创建 `balance_records` 表;其余表(courses/schedules/metadata)按需自建。
+  @visibleForTesting
+  DatabaseService.forTesting(Database db) : _db = db;
+
+  /// 测试用:确保 balance_records 表存在(供 [forTesting] 后调用)。
+  @visibleForTesting
+  Future<void> ensureBalanceRecordsTableForTesting() async {
+    await _createBalanceRecordsTable(_db);
+  }
 
   Future<void> init() async {
     final dir = await getApplicationSupportDirectory();
@@ -55,8 +69,12 @@ class DatabaseService {
             FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE
           )
         ''');
+        await _createBalanceRecordsTable(db);
       },
     );
+
+    // 老用户(db 已存在)通过此处确保新表创建
+    await _ensureBalanceRecordsTable();
 
     // Load current schedule ID from metadata
     final metaRows = await _db.query(
@@ -318,4 +336,72 @@ class DatabaseService {
       Map<String, dynamic>.from(json.decode(str) as Map);
 
   String _encodeJson(Map<String, dynamic> map) => json.encode(map);
+
+  // ==================== Balance Records ====================
+
+  Future<void> _createBalanceRecordsTable(DatabaseExecutor db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS balance_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        room_key TEXT NOT NULL,
+        balance_type INTEGER NOT NULL,
+        timestamp INTEGER NOT NULL,
+        balance REAL NOT NULL,
+        price REAL NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE INDEX IF NOT EXISTS idx_balance_records_lookup
+      ON balance_records(room_key, balance_type, timestamp)
+    ''');
+  }
+
+  Future<void> _ensureBalanceRecordsTable() async {
+    await _createBalanceRecordsTable(_db);
+  }
+
+  Future<int> insertBalanceRecord(BalanceRecord record) async {
+    return await _db.insert('balance_records', record.toRow());
+  }
+
+  Future<List<BalanceRecord>> getBalanceRecords({
+    required String roomKey,
+    required int balanceType,
+    DateTime? since,
+    DateTime? until,
+  }) async {
+    final where = StringBuffer('room_key = ? AND balance_type = ?');
+    final whereArgs = <dynamic>[roomKey, balanceType];
+    if (since != null) {
+      where.write(' AND timestamp >= ?');
+      whereArgs.add(since.millisecondsSinceEpoch);
+    }
+    if (until != null) {
+      where.write(' AND timestamp <= ?');
+      whereArgs.add(until.millisecondsSinceEpoch);
+    }
+    final rows = await _db.query(
+      'balance_records',
+      where: where.toString(),
+      whereArgs: whereArgs,
+      orderBy: 'timestamp ASC',
+    );
+    return rows.map(BalanceRecord.fromRow).toList();
+  }
+
+  Future<int> deleteBalanceRecordsBefore(DateTime threshold) async {
+    return await _db.delete(
+      'balance_records',
+      where: 'timestamp < ?',
+      whereArgs: [threshold.millisecondsSinceEpoch],
+    );
+  }
+
+  Future<int> deleteBalanceRecordsByRoom(String roomKey) async {
+    return await _db.delete(
+      'balance_records',
+      where: 'room_key = ?',
+      whereArgs: [roomKey],
+    );
+  }
 }
