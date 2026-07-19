@@ -1,4 +1,4 @@
-package io.github.the_brotherhood_of_scu.bugaoshan
+package io.github.the_brotherhood_of_scu.bugaoshan.widget
 
 import android.content.BroadcastReceiver
 import android.content.Context

@@ -65,7 +65,7 @@
         </provider>
         <!-- Home Screen Widgets (Glance) -->
         <receiver
-            android:name=".CourseWidgetReceiverSmall"
+            android:name="io.github.the_brotherhood_of_scu.bugaoshan.widget.CourseWidgetReceiverSmall"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -76,7 +76,7 @@
                 android:resource="@xml/widget_small_info" />
         </receiver>
         <receiver
-            android:name=".CourseWidgetReceiverMedium"
+            android:name="io.github.the_brotherhood_of_scu.bugaoshan.widget.CourseWidgetReceiverMedium"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -86,7 +86,7 @@
                 android:resource="@xml/widget_medium_info" />
         </receiver>
         <receiver
-            android:name=".CourseWidgetReceiverLarge"
+            android:name="io.github.the_brotherhood_of_scu.bugaoshan.widget.CourseWidgetReceiverLarge"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -97,11 +97,11 @@
         </receiver>
         <!-- Midnight alarm receiver for day-change widget updates -->
         <receiver
-            android:name=".WidgetAlarmReceiver"
+            android:name="io.github.the_brotherhood_of_scu.bugaoshan.widget.WidgetAlarmReceiver"
             android:exported="false" />
         <!-- Re-register alarm after device reboot / app update / time change -->
         <receiver
-            android:name=".BootReceiver"
+            android:name="io.github.the_brotherhood_of_scu.bugaoshan.widget.BootReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -112,7 +112,7 @@
         </receiver>
         <!-- 下载通知"取消"按钮的 PendingIntent 接收器 -->
         <receiver
-            android:name=".DownloadCancelReceiver"
+            android:name="io.github.the_brotherhood_of_scu.bugaoshan.update.DownloadCancelReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="bugaoshan.action.CANCEL_DOWNLOAD" />

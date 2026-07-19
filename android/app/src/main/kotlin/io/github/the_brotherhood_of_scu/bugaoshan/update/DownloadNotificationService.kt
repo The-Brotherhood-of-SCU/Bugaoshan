@@ -1,4 +1,4 @@
-package io.github.the_brotherhood_of_scu.bugaoshan
+package io.github.the_brotherhood_of_scu.bugaoshan.update
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import io.flutter.plugin.common.EventChannel
+import io.github.the_brotherhood_of_scu.bugaoshan.R
 
 /**
  * 负责下载更新时的系统通知栏进度条。
@@ -17,8 +18,9 @@ import io.flutter.plugin.common.EventChannel
  * - "取消"按钮通过 [CANCEL_ACTION] PendingIntent 触发 [DownloadCancelReceiver],
  *   后者通过 [notifyCancelPressed] 把事件转发给 EventChannel sink,从而回调到 Dart 端。
  *
- * 实例由 [MainActivity] 在 [configureFlutterEngine] 中创建并静态持有,
- * [DownloadCancelReceiver] 通过 companion object 访问。
+ * 实例由 [io.github.the_brotherhood_of_scu.bugaoshan.MainActivity] 在
+ * [configureFlutterEngine][io.github.the_brotherhood_of_scu.bugaoshan.MainActivity.configureFlutterEngine]
+ * 中创建并静态持有,[DownloadCancelReceiver] 通过其单例访问。
  */
 class DownloadNotificationService(private val context: Context) {
 
