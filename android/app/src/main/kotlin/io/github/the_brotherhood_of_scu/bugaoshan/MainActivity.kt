@@ -121,6 +121,7 @@ class MainActivity : FlutterActivity() {
                                 progress = call.argument<Int>("progress") ?: 0,
                                 max = call.argument<Int>("max") ?: 100,
                                 indeterminate = call.argument<Boolean>("indeterminate") ?: false,
+                                title = call.argument<String>("title") ?: DownloadNotificationService.DEFAULT_TITLE,
                             )
                             result.success(null)
                         } else {
@@ -135,6 +136,7 @@ class MainActivity : FlutterActivity() {
                                 progress = call.argument<Int>("progress") ?: 0,
                                 max = call.argument<Int>("max") ?: 100,
                                 indeterminate = call.argument<Boolean>("indeterminate") ?: false,
+                                title = call.argument<String>("title") ?: DownloadNotificationService.DEFAULT_TITLE,
                             )
                             result.success(null)
                         } else {
@@ -144,7 +146,10 @@ class MainActivity : FlutterActivity() {
                     "showDownloadCompleted" -> {
                         val content = call.argument<String>("content")
                         if (content != null) {
-                            downloadNotification?.showCompleted(content)
+                            downloadNotification?.showCompleted(
+                                content = content,
+                                title = call.argument<String>("title") ?: DownloadNotificationService.DEFAULT_TITLE,
+                            )
                             result.success(null)
                         } else {
                             result.error("INVALID_ARGUMENT", "content is null", null)
@@ -153,7 +158,10 @@ class MainActivity : FlutterActivity() {
                     "showDownloadError" -> {
                         val content = call.argument<String>("content")
                         if (content != null) {
-                            downloadNotification?.showError(content)
+                            downloadNotification?.showError(
+                                content = content,
+                                title = call.argument<String>("title") ?: DownloadNotificationService.DEFAULT_TITLE,
+                            )
                             result.success(null)
                         } else {
                             result.error("INVALID_ARGUMENT", "content is null", null)

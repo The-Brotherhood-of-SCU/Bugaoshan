@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/release_info.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/services/download_notification_service.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/widgets/dialog/download_progress_dialog.dart';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 /// 包裹 [UpdateService],将更新检查与下载安装的状态管理收进内部。
 ///
@@ -116,10 +118,12 @@ class UpdateProvider {
 
   /// 下载安装。重入时直接返回 in-flight Future。
   ///
+  /// [filename] 用于在通知栏标题展示下载文件名。
   /// 抛出 [UpdateCancelledException] / 其他异常,由调用方(dialog 函数)处理。
   Future<void> downloadAndInstall({
     required String version,
     required String downloadUrl,
+    required String filename,
     String? checksumSha256,
   }) {
     final existing = _downloadInFlight;
@@ -127,6 +131,7 @@ class UpdateProvider {
     final future = _doDownloadAndInstall(
       version: version,
       downloadUrl: downloadUrl,
+      filename: filename,
       checksumSha256: checksumSha256,
     );
     _downloadInFlight = future;
@@ -136,6 +141,7 @@ class UpdateProvider {
   Future<void> _doDownloadAndInstall({
     required String version,
     required String downloadUrl,
+    required String filename,
     String? checksumSha256,
   }) async {
     isDownloading.value = true;
@@ -148,13 +154,20 @@ class UpdateProvider {
       cancelToken.cancel();
     });
 
+    // 通过 navigatorKey 拿到根 context,用于取 ARB 本地化文案。
+    // Provider 是 DI 单例,不持有 BuildContext,这里在调用时取最新值。
+    // 必须在任何 await 之前取,避免触发 use_build_context_synchronously。
+    final l10n = AppLocalizations.of(logicRootContext);
+
     // 请求通知权限(失败不阻断下载,仅不显示通知)
     await _notification.requestPermission();
 
     // 显示初始通知(indeterminate,因为 total 未知)
+    // 通知标题展示文件名,让用户在通知栏一眼看到下载的是哪个文件
     await _notification.showDownloadNotification(
-      content: 'Downloading...',
+      content: l10n?.notificationDownloading(0) ?? 'Downloading... 0%',
       indeterminate: true,
+      title: filename,
     );
 
     try {
@@ -169,29 +182,40 @@ class UpdateProvider {
           _notification.updateProgress(
             content: s,
             indeterminate: progressState.total == 0,
+            title: filename,
           );
         },
         onProgress: (r, t) {
           progressState.setProgress(r, t);
           if (t > 0) {
             _notification.updateProgress(
-              content: 'Downloading... ${progressState.percent}%',
+              content:
+                  l10n?.notificationDownloading(progressState.percent) ??
+                  'Downloading... ${progressState.percent}%',
               progress: progressState.percent,
               max: 100,
               indeterminate: false,
+              title: filename,
             );
           }
         },
       );
       // 下载完成 → 切到"正在安装"
-      await _notification.showCompleted(content: 'Installing...');
+      await _notification.showCompleted(
+        content: l10n?.notificationInstalling ?? 'Installing...',
+        title: filename,
+      );
     } on UpdateCancelledException {
       // 用户取消(通知栏按钮或 App 内取消按钮)→ 关闭通知,异常继续向上抛
       await _notification.cancel();
       rethrow;
     } catch (e) {
       // 其他错误 → 显示错误通知,异常继续向上抛由 dialog 处理
-      await _notification.showError(content: 'Update failed: $e');
+      await _notification.showError(
+        content:
+            l10n?.notificationUpdateFailed(e.toString()) ?? 'Update failed: $e',
+        title: filename,
+      );
       rethrow;
     } finally {
       await cancelSub.cancel();

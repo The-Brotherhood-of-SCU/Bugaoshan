@@ -769,6 +769,24 @@ abstract class AppLocalizations {
   /// **'Update failed'**
   String get updateFailed;
 
+  /// No description provided for @notificationDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading... {percent}%'**
+  String notificationDownloading(int percent);
+
+  /// No description provided for @notificationInstalling.
+  ///
+  /// In en, this message translates to:
+  /// **'Installing...'**
+  String get notificationInstalling;
+
+  /// No description provided for @notificationUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Update failed: {error}'**
+  String notificationUpdateFailed(String error);
+
   /// No description provided for @preReleaseWarning.
   ///
   /// In en, this message translates to:

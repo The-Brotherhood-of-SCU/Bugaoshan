@@ -28,6 +28,7 @@ class DownloadNotificationService(private val context: Context) {
         const val CHANNEL_ID = "bugaoshan_download"
         const val NOTIFICATION_ID = 1001
         const val CANCEL_ACTION = "bugaoshan.action.CANCEL_DOWNLOAD"
+        const val DEFAULT_TITLE = "Bugaoshan"
     }
 
     private var eventSink: EventChannel.EventSink? = null
@@ -42,10 +43,10 @@ class DownloadNotificationService(private val context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Bugaoshan 下载",
+                context.getString(R.string.download_notification_channel_name),
                 NotificationManager.IMPORTANCE_LOW,
             ).apply {
-                description = "应用更新下载进度"
+                description = context.getString(R.string.download_notification_channel_desc)
                 setShowBadge(false)
             }
             notificationManager.createNotificationChannel(channel)
@@ -56,22 +57,24 @@ class DownloadNotificationService(private val context: Context) {
      * 显示或更新下载进度通知。
      * - [indeterminate] 为 true 时显示不确定进度的滚动条(总大小未知)。
      * - [progress] / [max] 在 indeterminate=false 时使用,通常 max=100。
+     * - [title] 作为通知标题(常用于展示下载文件名),默认 "Bugaoshan"。
      */
     fun showProgress(
         content: String,
         progress: Int,
         max: Int,
         indeterminate: Boolean,
+        title: String = DEFAULT_TITLE,
     ) {
-        val builder = buildBuilder(content, progress, max, indeterminate)
+        val builder = buildBuilder(content, progress, max, indeterminate, title)
         notificationManager.notify(NOTIFICATION_ID, builder.build())
     }
 
     /**
      * 下载完成:显示"正在安装"且无进度条,允许滑动清除。
      */
-    fun showCompleted(content: String) {
-        val builder = buildBuilder(content, 0, 0, false)
+    fun showCompleted(content: String, title: String = DEFAULT_TITLE) {
+        val builder = buildBuilder(content, 0, 0, false, title)
             .setProgress(0, 0, false)
             .setOngoing(false)
         notificationManager.notify(NOTIFICATION_ID, builder.build())
@@ -80,8 +83,8 @@ class DownloadNotificationService(private val context: Context) {
     /**
      * 下载失败:显示错误内容,允许滑动清除。
      */
-    fun showError(content: String) {
-        val builder = buildBuilder(content, 0, 0, false)
+    fun showError(content: String, title: String = DEFAULT_TITLE) {
+        val builder = buildBuilder(content, 0, 0, false, title)
             .setProgress(0, 0, false)
             .setOngoing(false)
         notificationManager.notify(NOTIFICATION_ID, builder.build())
@@ -99,6 +102,7 @@ class DownloadNotificationService(private val context: Context) {
         progress: Int,
         max: Int,
         indeterminate: Boolean,
+        title: String = DEFAULT_TITLE,
     ): NotificationCompat.Builder {
         val cancelIntent = PendingIntent.getBroadcast(
             context,
@@ -108,12 +112,16 @@ class DownloadNotificationService(private val context: Context) {
         )
         return NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle("Bugaoshan")
+            .setContentTitle(title)
             .setContentText(content)
             .setProgress(max, progress, indeterminate)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
-            .addAction(R.drawable.ic_notification, "取消", cancelIntent)
+            .addAction(
+                R.drawable.ic_notification,
+                context.getString(R.string.download_notification_cancel),
+                cancelIntent,
+            )
     }
 
     fun setEventSink(sink: EventChannel.EventSink?) {

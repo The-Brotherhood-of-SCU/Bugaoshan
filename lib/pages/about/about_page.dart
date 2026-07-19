@@ -230,7 +230,7 @@ class _AboutPageState extends State<AboutPage> {
                                     strokeWidth: 2,
                                   ),
                                 )
-                              : const SizedBox.shrink(),
+                              : null,
                         );
                       },
                     );

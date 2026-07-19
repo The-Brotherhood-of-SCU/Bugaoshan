@@ -356,6 +356,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get updateFailed => '更新失败';
 
   @override
+  String notificationDownloading(int percent) {
+    return '正在下载... $percent%';
+  }
+
+  @override
+  String get notificationInstalling => '正在安装...';
+
+  @override
+  String notificationUpdateFailed(String error) {
+    return '更新失败:$error';
+  }
+
+  @override
   String get preReleaseWarning => '这是预发布版本，使用时请注意。';
 
   @override

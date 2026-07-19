@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/update_provider.dart';
@@ -186,7 +189,11 @@ class DownloadProgressDialogView extends StatelessWidget {
 
 /// 显示下载进度弹窗并执行下载
 ///
-/// 返回 true 表示下载成功，false 表示取消或失败
+/// 返回 true 表示下载成功，false 表示取消或失败。
+///
+/// 在 Android 上跳过应用内进度对话框——下载由系统通知栏进度条反映
+/// (见 [UpdateProvider._doDownloadAndInstall] 中的通知协调);
+/// 取消按钮也走通知栏,无需应用内 UI。其他平台仍使用对话框。
 Future<bool> showDownloadProgressDialog({
   required BuildContext context,
   required String version,
@@ -197,6 +204,30 @@ Future<bool> showDownloadProgressDialog({
 }) async {
   final l10n = AppLocalizations.of(context)!;
   downloadUrl = proxyDownloadUrl(downloadUrl);
+
+  // Android:仅执行下载,通知栏负责所有 UI 反馈
+  if (kIsWeb || Platform.isAndroid) {
+    try {
+      await updateProvider.downloadAndInstall(
+        version: version,
+        downloadUrl: downloadUrl,
+        filename: filename,
+        checksumSha256: checksumSha256,
+      );
+      return true;
+    } on UpdateCancelledException {
+      return false;
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('${l10n.updateFailed}: $e')));
+      }
+      return false;
+    }
+  }
+
+  // 桌面端/iOS:显示应用内进度对话框
   final progressState = updateProvider.progressState;
   var visible = true;
 
@@ -223,6 +254,7 @@ Future<bool> showDownloadProgressDialog({
     await updateProvider.downloadAndInstall(
       version: version,
       downloadUrl: downloadUrl,
+      filename: filename,
       checksumSha256: checksumSha256,
     );
   } on UpdateCancelledException {

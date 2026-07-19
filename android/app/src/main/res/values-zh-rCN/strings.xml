@@ -7,4 +7,8 @@
     <string name="widget_section_single">第%1$d节</string>
     <string name="widget_section_range">第%1$d-%2$d节</string>
     <string name="widget_header_title">不高山上</string>
+    <!-- 下载通知 -->
+    <string name="download_notification_channel_name">Bugaoshan 下载</string>
+    <string name="download_notification_channel_desc">应用更新下载进度</string>
+    <string name="download_notification_cancel">取消</string>
 </resources>

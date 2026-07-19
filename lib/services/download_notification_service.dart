@@ -44,11 +44,13 @@ class DownloadNotificationService {
   ///
   /// [indeterminate] 为 true 时显示不确定进度的滚动条(总大小未知)。
   /// [progress] / [max] 在 indeterminate=false 时使用,通常 max=100。
+  /// [title] 作为通知标题展示(通常传下载文件名),null 时由原生端用 "Bugaoshan"。
   Future<void> showDownloadNotification({
     required String content,
     int progress = 0,
     int max = 100,
     bool indeterminate = false,
+    String? title,
   }) async {
     if (!isSupported) return;
     try {
@@ -57,6 +59,7 @@ class DownloadNotificationService {
         'progress': progress,
         'max': max,
         'indeterminate': indeterminate,
+        if (title != null) 'title': title,
       });
     } on PlatformException {
       // 通知权限被拒或系统问题,忽略 — App 内对话框照常工作
@@ -69,6 +72,7 @@ class DownloadNotificationService {
     int progress = 0,
     int max = 100,
     bool indeterminate = false,
+    String? title,
   }) async {
     if (!isSupported) return;
     try {
@@ -77,6 +81,7 @@ class DownloadNotificationService {
         'progress': progress,
         'max': max,
         'indeterminate': indeterminate,
+        if (title != null) 'title': title,
       });
     } on PlatformException {
       // 忽略
@@ -84,11 +89,12 @@ class DownloadNotificationService {
   }
 
   /// 下载完成:显示"正在安装"且无进度条,允许滑动清除。
-  Future<void> showCompleted({required String content}) async {
+  Future<void> showCompleted({required String content, String? title}) async {
     if (!isSupported) return;
     try {
       await _methodChannel.invokeMethod<void>('showDownloadCompleted', {
         'content': content,
+        if (title != null) 'title': title,
       });
     } on PlatformException {
       // 忽略
@@ -96,11 +102,12 @@ class DownloadNotificationService {
   }
 
   /// 下载失败:显示错误内容,允许滑动清除。
-  Future<void> showError({required String content}) async {
+  Future<void> showError({required String content, String? title}) async {
     if (!isSupported) return;
     try {
       await _methodChannel.invokeMethod<void>('showDownloadError', {
         'content': content,
+        if (title != null) 'title': title,
       });
     } on PlatformException {
       // 忽略
