@@ -63,8 +63,6 @@ class UpdateCheckResult {
 }
 
 class UpdateService {
-  static const _pubspecUrl =
-      'https://raw.githubusercontent.com/The-Brotherhood-of-SCU/Bugaoshan/main/pubspec.yaml';
   static const _repo = 'The-Brotherhood-of-SCU/Bugaoshan';
   static const _channel = MethodChannel('bugaoshan/update');
 
@@ -102,25 +100,6 @@ class UpdateService {
     if (digest == null) return null;
     const prefix = 'sha256:';
     if (digest.startsWith(prefix)) return digest.substring(prefix.length);
-    return null;
-  }
-
-  Future<String?> getLatestVersion() async {
-    try {
-      final response = await http.get(Uri.parse(_pubspecUrl));
-      if (response.statusCode == 200) {
-        final content = response.body;
-        final versionMatch = RegExp(
-          r'^version:\s*(\S+)',
-          multiLine: true,
-        ).firstMatch(content);
-        if (versionMatch != null) {
-          return versionMatch.group(1);
-        }
-      }
-    } catch (e) {
-      return null;
-    }
     return null;
   }
 
