@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    通知栏小图标:必须为白色透明 silhouette (API 21+ 强制要求)。
+    基于 assets/icon.svg 中的山形简化而来,适配小尺寸 (24dp) 显示。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="#FFFFFF">
+    <!-- 主山峰 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M2,20 L8,8 L13,15 L15,11 L22,20 Z" />
+    <!-- 小山峰 (右侧) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M16,20 L19,14 L22,20 Z"
+        android:fillAlpha="0.7" />
+</vector>

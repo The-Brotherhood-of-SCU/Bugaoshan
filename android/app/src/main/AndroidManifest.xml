@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
+    <!-- Android 13+ (API 33+) 运行时权限:下载进度通知需要 -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:label="@string/app_name"
         android:name="${applicationName}"
@@ -106,6 +108,14 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
                 <action android:name="android.intent.action.TIME_SET" />
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
+        <!-- 下载通知"取消"按钮的 PendingIntent 接收器 -->
+        <receiver
+            android:name=".DownloadCancelReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="bugaoshan.action.CANCEL_DOWNLOAD" />
             </intent-filter>
         </receiver>
     </application>

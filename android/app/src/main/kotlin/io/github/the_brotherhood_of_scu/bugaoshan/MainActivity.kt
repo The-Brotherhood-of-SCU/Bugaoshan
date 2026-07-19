@@ -1,5 +1,6 @@
-﻿package io.github.the_brotherhood_of_scu.bugaoshan
+package io.github.the_brotherhood_of_scu.bugaoshan
 
+import android.Manifest
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
@@ -12,14 +13,29 @@ import android.os.Looper
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "bugaoshan/update"
+    private val DOWNLOAD_CANCEL_EVENT_CHANNEL = "bugaoshan/download_cancel"
+
+    companion object {
+        private const val REQUEST_CODE_POST_NOTIFICATIONS = 1001
+
+        /** 由 [configureFlutterEngine] 创建,[DownloadCancelReceiver] 通过本字段访问。 */
+        @Volatile
+        var notificationService: DownloadNotificationService? = null
+            private set
+    }
+
+    private var pendingPermissionResult: MethodChannel.Result? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -29,6 +45,9 @@ class MainActivity : FlutterActivity() {
 
         // Register midnight alarm for day-change widget updates
         WidgetAlarmManager.registerMidnightAlarm(this)
+
+        // Initialize download notification service (used by DownloadCancelReceiver too)
+        notificationService = DownloadNotificationService(applicationContext)
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
             .setMethodCallHandler { call, result ->
@@ -68,9 +87,70 @@ class MainActivity : FlutterActivity() {
                         val isIgnoring = isIgnoringBatteryOptimizations()
                         result.success(isIgnoring)
                     }
+                    "requestNotificationPermission" -> {
+                        requestNotificationPermission(result)
+                    }
+                    "showDownloadNotification" -> {
+                        val content = call.argument<String>("content")
+                        val progress = call.argument<Int>("progress") ?: 0
+                        val max = call.argument<Int>("max") ?: 100
+                        val indeterminate = call.argument<Boolean>("indeterminate") ?: false
+                        if (content != null) {
+                            notificationService?.showProgress(content, progress, max, indeterminate)
+                            result.success(null)
+                        } else {
+                            result.error("INVALID_ARGUMENT", "content is null", null)
+                        }
+                    }
+                    "updateDownloadProgress" -> {
+                        val content = call.argument<String>("content")
+                        val progress = call.argument<Int>("progress") ?: 0
+                        val max = call.argument<Int>("max") ?: 100
+                        val indeterminate = call.argument<Boolean>("indeterminate") ?: false
+                        if (content != null) {
+                            notificationService?.showProgress(content, progress, max, indeterminate)
+                            result.success(null)
+                        } else {
+                            result.error("INVALID_ARGUMENT", "content is null", null)
+                        }
+                    }
+                    "showDownloadCompleted" -> {
+                        val content = call.argument<String>("content")
+                        if (content != null) {
+                            notificationService?.showCompleted(content)
+                            result.success(null)
+                        } else {
+                            result.error("INVALID_ARGUMENT", "content is null", null)
+                        }
+                    }
+                    "showDownloadError" -> {
+                        val content = call.argument<String>("content")
+                        if (content != null) {
+                            notificationService?.showError(content)
+                            result.success(null)
+                        } else {
+                            result.error("INVALID_ARGUMENT", "content is null", null)
+                        }
+                    }
+                    "cancelDownloadNotification" -> {
+                        notificationService?.cancel()
+                        result.success(null)
+                    }
                     else -> result.notImplemented()
                 }
             }
+
+        // EventChannel for download cancel button events (Kotlin → Dart)
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, DOWNLOAD_CANCEL_EVENT_CHANNEL)
+            .setStreamHandler(object : EventChannel.StreamHandler {
+                override fun onListen(arguments: Any?, sink: EventChannel.EventSink?) {
+                    notificationService?.setEventSink(sink)
+                }
+
+                override fun onCancel(arguments: Any?) {
+                    notificationService?.setEventSink(null)
+                }
+            })
 
         // Dynamic App Icon switching (custom implementation to handle namespace vs applicationId)
         val DYNAMIC_ICON_CHANNEL = "bugaoshan/dynamic_icon"
@@ -95,6 +175,62 @@ class MainActivity : FlutterActivity() {
                     result.error("ERROR", e.message, null)
                 }
             }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (notificationService != null) {
+            notificationService?.cancel()
+            notificationService = null
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE_POST_NOTIFICATIONS) {
+            val granted = grantResults.isNotEmpty() &&
+                grantResults[0] == PackageManager.PERMISSION_GRANTED
+            pendingPermissionResult?.success(granted)
+            pendingPermissionResult = null
+        }
+    }
+
+    /**
+     * 请求 POST_NOTIFICATIONS 运行时权限(Android 13+)。
+     *
+     * - API < 33:无运行时权限要求,直接返回 true。
+     * - API >= 33 且已授予:返回 true。
+     * - API >= 33 且未授予:启动系统权限对话框,结果在 [onRequestPermissionsResult] 中回传。
+     *
+     * 注意:本方法不会因权限被拒绝而阻塞下载流程,调用方应忽略返回值继续执行下载逻辑。
+     */
+    private fun requestNotificationPermission(result: MethodChannel.Result) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            result.success(true)
+            return
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            result.success(true)
+            return
+        }
+        pendingPermissionResult = result
+        try {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                REQUEST_CODE_POST_NOTIFICATIONS,
+            )
+        } catch (e: Exception) {
+            Log.e("NotificationPerm", "Failed to request POST_NOTIFICATIONS", e)
+            pendingPermissionResult = null
+            result.success(false)
+        }
     }
 
     /**

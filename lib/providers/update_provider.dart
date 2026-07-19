@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/models/release_info.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
+import 'package:bugaoshan/services/download_notification_service.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/widgets/dialog/download_progress_dialog.dart';
 
@@ -15,10 +16,11 @@ import 'package:bugaoshan/widgets/dialog/download_progress_dialog.dart';
 /// 直接返回之前缓存的 Future,await 得到第一次的结果。任务完成(finally)后置空,
 /// 允许下次调用。
 class UpdateProvider {
-  UpdateProvider(this._service, this._appInfo);
+  UpdateProvider(this._service, this._appInfo, this._notification);
 
   final UpdateService _service;
   final AppInfoProvider _appInfo;
+  final DownloadNotificationService _notification;
 
   /// 主线更新检查(about_page / home_page)。true 表示正在请求 GitHub API。
   final ValueNotifier<bool> isChecking = ValueNotifier(false);
@@ -140,16 +142,59 @@ class UpdateProvider {
     progressState.reset();
     final cancelToken = CancelToken();
     _activeCancelToken = cancelToken;
+
+    // 监听通知栏"取消"按钮事件,转发到同一 CancelToken
+    final cancelSub = _notification.onCancelButtonPressed.listen((_) {
+      cancelToken.cancel();
+    });
+
+    // 请求通知权限(失败不阻断下载,仅不显示通知)
+    await _notification.requestPermission();
+
+    // 显示初始通知(indeterminate,因为 total 未知)
+    await _notification.showDownloadNotification(
+      content: 'Downloading...',
+      indeterminate: true,
+    );
+
     try {
       await _service.downloadAndInstall(
         version,
         downloadUrl,
         checksumSha256: checksumSha256,
         cancelToken: cancelToken,
-        onStatus: (s) => progressState.setStatus(s),
-        onProgress: (r, t) => progressState.setProgress(r, t),
+        onStatus: (s) {
+          progressState.setStatus(s);
+          // 状态变化(Verifying / Installing / Extracting):切到 indeterminate
+          _notification.updateProgress(
+            content: s,
+            indeterminate: progressState.total == 0,
+          );
+        },
+        onProgress: (r, t) {
+          progressState.setProgress(r, t);
+          if (t > 0) {
+            _notification.updateProgress(
+              content: 'Downloading... ${progressState.percent}%',
+              progress: progressState.percent,
+              max: 100,
+              indeterminate: false,
+            );
+          }
+        },
       );
+      // 下载完成 → 切到"正在安装"
+      await _notification.showCompleted(content: 'Installing...');
+    } on UpdateCancelledException {
+      // 用户取消(通知栏按钮或 App 内取消按钮)→ 关闭通知,异常继续向上抛
+      await _notification.cancel();
+      rethrow;
+    } catch (e) {
+      // 其他错误 → 显示错误通知,异常继续向上抛由 dialog 处理
+      await _notification.showError(content: 'Update failed: $e');
+      rethrow;
     } finally {
+      await cancelSub.cancel();
       isDownloading.value = false;
       _activeCancelToken = null;
       _downloadInFlight = null;
@@ -168,5 +213,6 @@ class UpdateProvider {
     previewResult.dispose();
     isDownloading.dispose();
     progressState.dispose();
+    _notification.dispose();
   }
 }

@@ -23,6 +23,7 @@ import 'package:bugaoshan/services/auth/fitness_auth.dart';
 import 'package:bugaoshan/services/auth/payapp_auth.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/wfw_auth.dart';
+import 'package:bugaoshan/services/download_notification_service.dart';
 import 'package:bugaoshan/services/auth/zhjw_auth.dart';
 import 'package:bugaoshan/services/background_cache_service.dart';
 import 'package:bugaoshan/services/database_service.dart';
@@ -228,7 +229,11 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<UpdateProvider>(() async {
     await getIt.isReady<UpdateService>();
     await getIt.isReady<AppInfoProvider>();
-    return UpdateProvider(getIt<UpdateService>(), getIt<AppInfoProvider>());
+    return UpdateProvider(
+      getIt<UpdateService>(),
+      getIt<AppInfoProvider>(),
+      DownloadNotificationService(),
+    );
   });
   getIt.registerSingletonAsync<BackgroundCacheService>(() async {
     await getIt.isReady<AppConfigProvider>();
