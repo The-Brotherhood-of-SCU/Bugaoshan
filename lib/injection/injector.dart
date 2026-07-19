@@ -11,6 +11,7 @@ import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/services/api/ccyl_api_service.dart';
 import 'package:bugaoshan/services/api/payapp_api_service.dart';
 import 'package:bugaoshan/services/api/wfw_api_service.dart';
@@ -223,6 +224,11 @@ void _configureAsyncDependencies() {
       getIt<SharedPreferences>(),
       getIt<AppInfoProvider>().currentVersion,
     );
+  });
+  getIt.registerSingletonAsync<UpdateProvider>(() async {
+    await getIt.isReady<UpdateService>();
+    await getIt.isReady<AppInfoProvider>();
+    return UpdateProvider(getIt<UpdateService>(), getIt<AppInfoProvider>());
   });
   getIt.registerSingletonAsync<BackgroundCacheService>(() async {
     await getIt.isReady<AppConfigProvider>();

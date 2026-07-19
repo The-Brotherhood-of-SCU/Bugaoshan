@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/utils/app_shapes.dart';
 
@@ -22,6 +23,15 @@ class UpdateProgressState extends ChangeNotifier {
   void setProgress(int received, int total) {
     _received = received;
     _total = total;
+    notifyListeners();
+  }
+
+  /// 重置为初始值。在每次开始新下载前由 [UpdateProvider] 调用,
+  /// 避免上一次进度残留(等价于原来每次 new UpdateProgressState() 的效果)。
+  void reset() {
+    _status = 'Downloading...';
+    _received = 0;
+    _total = 0;
     notifyListeners();
   }
 }
@@ -183,12 +193,11 @@ Future<bool> showDownloadProgressDialog({
   required String downloadUrl,
   required String filename,
   String? checksumSha256,
-  required UpdateService updateService,
+  required UpdateProvider updateProvider,
 }) async {
   final l10n = AppLocalizations.of(context)!;
   downloadUrl = proxyDownloadUrl(downloadUrl);
-  final progressState = UpdateProgressState();
-  final cancelToken = CancelToken();
+  final progressState = updateProvider.progressState;
   var visible = true;
 
   showDialog(
@@ -204,21 +213,17 @@ Future<bool> showDownloadProgressDialog({
         Navigator.of(dialogContext).pop();
       },
       onCancel: () {
-        cancelToken.cancel();
+        updateProvider.cancelDownload();
         Navigator.of(dialogContext).pop();
       },
     ),
   );
 
   try {
-    await updateService.downloadAndInstall(
-      version,
-      downloadUrl,
+    await updateProvider.downloadAndInstall(
+      version: version,
+      downloadUrl: downloadUrl,
       checksumSha256: checksumSha256,
-      cancelToken: cancelToken,
-      onStatus: (status) => progressState.setStatus(status),
-      onProgress: (received, total) =>
-          progressState.setProgress(received, total),
     );
   } on UpdateCancelledException {
     return false;
