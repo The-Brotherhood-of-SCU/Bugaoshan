@@ -42,6 +42,7 @@ class BalanceTrendCalculator {
       final dt = b.timestamp.difference(a.timestamp).inMinutes / 1440.0;
       if (dt <= 0) continue;
       final db = a.balance - b.balance;
+      // 余额上升说明发生了充值，跳过该段不计入消耗统计
       if (db < 0) {
         skippedRechargeSegments++;
         continue;
