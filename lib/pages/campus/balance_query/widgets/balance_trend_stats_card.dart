@@ -49,7 +49,7 @@ class BalanceTrendStatsCard extends StatelessWidget {
       );
     }
 
-    const dash = 'N/A';
+    const placeholder = 'N/A';
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -68,7 +68,7 @@ class BalanceTrendStatsCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    isLoading ? dash : formatMoney(trend.dailyAvgCost),
+                    isLoading ? placeholder : formatMoney(trend.dailyAvgCost),
                     style: theme.textTheme.displaySmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: themeColor,
@@ -77,7 +77,7 @@ class BalanceTrendStatsCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     isLoading
-                        ? dash
+                        ? placeholder
                         : '${formatNumber(trend.dailyAvgKwh, decimals: 3)} ${l10n.unitKwh}/${l10n.balanceTrendUnitPerDay}',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
@@ -90,31 +90,33 @@ class BalanceTrendStatsCard extends StatelessWidget {
             _infoRow(
               context,
               l10n.balanceTrendTotalCost,
-              isLoading ? dash : formatMoney(trend.totalCost),
+              isLoading ? placeholder : formatMoney(trend.totalCost),
             ),
             _infoRow(
               context,
               l10n.balanceTrendTotalKwh,
               isLoading
-                  ? dash
+                  ? placeholder
                   : '${formatNumber(trend.totalKwh, decimals: 3)} ${l10n.unitKwh}',
             ),
             _infoRow(
               context,
               l10n.balanceTrendTotalDays,
-              isLoading ? dash : formatNumber(trend.totalDays, decimals: 1),
+              isLoading
+                  ? placeholder
+                  : formatNumber(trend.totalDays, decimals: 1),
             ),
             _infoRow(
               context,
               l10n.balanceTrendCurrentPrice,
               isLoading
-                  ? dash
+                  ? placeholder
                   : '${formatNumber(trend.currentPrice, decimals: 4)} ${l10n.balanceTrendUnitYuanPerKwh}',
             ),
             _infoRow(
               context,
               l10n.balanceTrendRecordCount,
-              isLoading ? dash : '${trend.recordCount}',
+              isLoading ? placeholder : '${trend.recordCount}',
             ),
             if (!isLoading && trend.skippedRechargeSegments > 0)
               _infoRow(

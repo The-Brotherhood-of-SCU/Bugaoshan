@@ -6,10 +6,10 @@ import 'package:intl/intl.dart';
 ///
 /// 全部为纯函数,无实例状态,便于在多个子 widget 中复用。
 
-/// `¥1.50` 或带后缀 `¥1.50 元/天`。
-String formatMoney(double v, {String? suffix}) {
+/// `¥1.50`。
+String formatMoney(double v) {
   final s = formatNumber(v, decimals: 2);
-  return suffix == null ? '¥$s' : '¥$s$suffix';
+  return '¥$s';
 }
 
 /// 按指定小数位四舍五入转字符串。
