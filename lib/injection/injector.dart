@@ -204,8 +204,17 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<BalanceQueryProvider>(() async {
     await getIt.isReady<SharedPreferences>();
     await getIt.isReady<PayAppApiService>();
+    await getIt.isReady<DatabaseService>();
+    await getIt.isReady<PayAppAuth>();
+    await getIt.isReady<AppConfigProvider>();
     final prefs = getIt<SharedPreferences>();
-    return BalanceQueryProvider(prefs, getIt<PayAppApiService>());
+    return BalanceQueryProvider(
+      prefs,
+      getIt<PayAppApiService>(),
+      getIt<DatabaseService>(),
+      getIt<PayAppAuth>(),
+      getIt<AppConfigProvider>(),
+    );
   });
   getIt.registerSingletonAsync<UpdateService>(() async {
     await getIt.isReady<SharedPreferences>();

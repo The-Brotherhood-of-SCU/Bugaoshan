@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/balance_query_service.dart';
@@ -123,6 +124,11 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
       appBar: AppBar(
         title: Text(l10n.balanceQuery),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: l10n.balanceQuerySettings,
+            onPressed: _showSettingsSheet,
+          ),
           if (_provider.bindings.isNotEmpty)
             PopupMenuButton<int>(
               icon: const Icon(Icons.swap_horiz),
@@ -210,6 +216,40 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
         ],
       ),
       body: _buildBody(l10n),
+    );
+  }
+
+  void _showSettingsSheet() {
+    final appConfig = getIt<AppConfigProvider>();
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+              child: Text(
+                l10n.balanceQuerySettings,
+                style: Theme.of(sheetContext).textTheme.titleMedium,
+              ),
+            ),
+            ListenableBuilder(
+              listenable: appConfig.autoSampleBalanceOnLogin,
+              builder: (_, _) => SwitchListTile(
+                title: Text(l10n.autoSampleBalanceOnLogin),
+                subtitle: Text(l10n.autoSampleBalanceOnLoginDesc),
+                value: appConfig.autoSampleBalanceOnLogin.value,
+                onChanged: (v) => appConfig.autoSampleBalanceOnLogin.value = v,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

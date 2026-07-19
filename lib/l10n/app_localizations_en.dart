@@ -1522,6 +1522,92 @@ class AppLocalizationsEn extends AppLocalizations {
       'You haven\'t bound any room yet, please bind first';
 
   @override
+  String get balanceTrend => 'Usage Trend';
+
+  @override
+  String get balanceTrendTitleElectric => 'Lighting Electricity Trend';
+
+  @override
+  String get balanceTrendTitleAc => 'AC Electricity Trend';
+
+  @override
+  String get balanceTrendDailyAvgCost => 'Daily Avg Cost';
+
+  @override
+  String get balanceTrendDailyAvgKwh => 'Daily Avg Consumption';
+
+  @override
+  String get balanceTrendTotalCost => 'Total Cost';
+
+  @override
+  String get balanceTrendTotalKwh => 'Total Consumption';
+
+  @override
+  String get balanceTrendTotalDays => 'Statistical Days';
+
+  @override
+  String get balanceTrendCurrentPrice => 'Current Price';
+
+  @override
+  String get balanceTrendRecordCount => 'Raw Record Count';
+
+  @override
+  String get balanceTrendRecordRange => 'Record Time Range';
+
+  @override
+  String get balanceTrendSkippedRecharge => 'Skipped Recharge Segments';
+
+  @override
+  String get balanceTrendNoData =>
+      'No history data yet. Refresh the page to start recording.';
+
+  @override
+  String get balanceTrendTimeRange7 => 'Last 7d';
+
+  @override
+  String get balanceTrendTimeRange30 => 'Last 30d';
+
+  @override
+  String get balanceTrendTimeRange90 => 'Last 90d';
+
+  @override
+  String get balanceTrendTimeRangeCustom => 'Custom';
+
+  @override
+  String get balanceTrendChangeRange => 'Change Range';
+
+  @override
+  String get balanceTrendCustomStart => 'Start date';
+
+  @override
+  String get balanceTrendCustomEnd => 'End date';
+
+  @override
+  String get balanceTrendRawRecords => 'Raw Records';
+
+  @override
+  String get balanceTrendYAxisBalance => 'Balance (kWh)';
+
+  @override
+  String get balanceTrendTooltipPrice => 'Price';
+
+  @override
+  String get balanceTrendUnitPerDay => 'CNY/day';
+
+  @override
+  String get balanceTrendUnitYuanPerKwh => 'CNY/kWh';
+
+  @override
+  String get balanceQuerySettings => 'Balance Query Settings';
+
+  @override
+  String get autoSampleBalanceOnLogin => 'Auto-sample balance on login';
+
+  @override
+  String get autoSampleBalanceOnLoginDesc =>
+      'After login, if no record exists for today, automatically query the current room\'s electricity and AC balance once to increase sampling rate';
+
+  @override
   String get scuLoginDisclaimerPwd =>
       'When \'Remember Password\' is enabled, your password is encrypted and stored locally using system-level encryption';
 

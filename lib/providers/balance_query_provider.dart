@@ -1,18 +1,115 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:bugaoshan/models/balance_record.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/api/payapp_api_service.dart';
 import 'package:bugaoshan/services/api/balance_query_service.dart';
+import 'package:bugaoshan/services/auth/payapp_auth.dart';
+import 'package:bugaoshan/services/database_service.dart';
 
 const _keyBindingInfo = 'balance_query_binding';
 const _keyCurrentRoomIndex = 'balance_query_current_room';
 
+/// 电费查询类型常量,与 SCU 缴费平台 API 一致:
+///   - 1 = 照明电费
+///   - 2 = 空调电费
+const int kBalanceTypeElectric = 1;
+const int kBalanceTypeAc = 2;
+
+const _balanceHistoryRetention = Duration(days: 365);
+
 class BalanceQueryProvider extends ChangeNotifier {
   final SharedPreferences _prefs;
   final PayAppApiService _payappApi;
+  final DatabaseService _db;
+  final PayAppAuth _payAppAuth;
+  final AppConfigProvider _appConfig;
 
-  BalanceQueryProvider(this._prefs, this._payappApi) {
+  bool _lastPayAppReady = false;
+  bool _autoSampling = false;
+
+  BalanceQueryProvider(
+    this._prefs,
+    this._payappApi,
+    this._db,
+    this._payAppAuth,
+    this._appConfig,
+  ) {
     _loadBindingInfo();
+    _payAppAuth.addListener(_onPayAppAuthChanged);
+    _lastPayAppReady = _payAppAuth.isReady;
+  }
+
+  /// PayAppAuth 状态变化:isReady 由 false→true 时(登录成功或 SSO 重连),
+  /// 若用户开启了"登录后自动采样"开关,且当前房间今日尚无记录,则静默采样一次。
+  void _onPayAppAuthChanged() {
+    final ready = _payAppAuth.isReady;
+    if (ready && !_lastPayAppReady) {
+      _maybeAutoSample();
+    }
+    _lastPayAppReady = ready;
+  }
+
+  Future<void> _maybeAutoSample() async {
+    if (_autoSampling) return;
+    if (!_appConfig.autoSampleBalanceOnLogin.value) return;
+    final binding = currentBinding;
+    if (binding == null) return;
+
+    _autoSampling = true;
+    try {
+      final roomKey = _roomKeyFor(binding);
+      final startOfTodayLocal = DateTime(
+        DateTime.now().year,
+        DateTime.now().month,
+        DateTime.now().day,
+      );
+      final startOfTodayUtc = startOfTodayLocal.toUtc();
+
+      // 检查今天是否已有电费或空调记录;任一缺失就补采
+      final electricRecords = await _db.getBalanceRecords(
+        roomKey: roomKey,
+        balanceType: kBalanceTypeElectric,
+        since: startOfTodayUtc,
+      );
+      final acRecords = await _db.getBalanceRecords(
+        roomKey: roomKey,
+        balanceType: kBalanceTypeAc,
+        since: startOfTodayUtc,
+      );
+
+      if (electricRecords.isEmpty) {
+        try {
+          _electricInfo = await _payappApi.queryRoomInfo(
+            cusNo: binding.cusNo,
+            type: kBalanceTypeElectric,
+            cusName: binding.cusName,
+          );
+          await _recordHistory(_electricInfo!, binding, kBalanceTypeElectric);
+        } catch (e) {
+          debugPrint('Auto-sample electric failed: $e');
+        }
+      }
+      if (acRecords.isEmpty) {
+        try {
+          _acInfo = await _payappApi.queryRoomInfo(
+            cusNo: binding.cusNo,
+            type: kBalanceTypeAc,
+            cusName: binding.cusName,
+          );
+          await _recordHistory(_acInfo!, binding, kBalanceTypeAc);
+        } catch (e) {
+          debugPrint('Auto-sample AC failed: $e');
+        }
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Auto-sample balance failed: $e');
+    } finally {
+      _autoSampling = false;
+    }
   }
 
   List<RoomBinding> _bindings = [];
@@ -69,6 +166,7 @@ class BalanceQueryProvider extends ChangeNotifier {
 
   Future<void> removeBinding(int index) async {
     if (index < 0 || index >= _bindings.length) return;
+    final removed = _bindings[index];
     _bindings.removeAt(index);
     if (index < _currentIndex) {
       _currentIndex--;
@@ -78,6 +176,12 @@ class BalanceQueryProvider extends ChangeNotifier {
     _electricInfo = null;
     _acInfo = null;
     await _saveBindingInfo();
+    // 同步删除该房间的历史记录,避免残留
+    try {
+      await _db.deleteBalanceRecordsByRoom(_roomKeyFor(removed));
+    } catch (e) {
+      debugPrint('Failed to clean balance history for removed room: $e');
+    }
     notifyListeners();
   }
 
@@ -148,9 +252,10 @@ class BalanceQueryProvider extends ChangeNotifier {
 
     _electricInfo = await _payappApi.queryRoomInfo(
       cusNo: binding.cusNo,
-      type: 1,
+      type: kBalanceTypeElectric,
       cusName: binding.cusName,
     );
+    await _recordHistory(_electricInfo!, binding, kBalanceTypeElectric);
     notifyListeners();
     return _electricInfo!;
   }
@@ -161,16 +266,72 @@ class BalanceQueryProvider extends ChangeNotifier {
 
     _acInfo = await _payappApi.queryRoomInfo(
       cusNo: binding.cusNo,
-      type: 2,
+      type: kBalanceTypeAc,
       cusName: binding.cusName,
     );
+    await _recordHistory(_acInfo!, binding, kBalanceTypeAc);
     notifyListeners();
     return _acInfo!;
+  }
+
+  /// 拉取指定房间+类型的历史记录(默认 1 年)。
+  /// 若 [since] 为 null 则取 [_balanceHistoryRetention] 之前到现在。
+  /// [until] 为 null 表示不设上界(到现在)。
+  Future<List<BalanceRecord>> getBalanceHistory({
+    required int balanceType,
+    DateTime? since,
+    DateTime? until,
+  }) async {
+    final binding = currentBinding;
+    if (binding == null) return const [];
+    final from =
+        since ?? DateTime.now().toUtc().subtract(_balanceHistoryRetention);
+    return _db.getBalanceRecords(
+      roomKey: _roomKeyFor(binding),
+      balanceType: balanceType,
+      since: from,
+      until: until,
+    );
+  }
+
+  String _roomKeyFor(RoomBinding binding) {
+    return '${binding.schoolCode}_${binding.regCode}_${binding.unitCode}_${binding.roomNo}';
+  }
+
+  /// 仅在用户主动查询成功后记录一条历史快照。
+  /// 失败仅 debugPrint,不影响主流程。
+  Future<void> _recordHistory(
+    RoomInfo info,
+    RoomBinding binding,
+    int balanceType,
+  ) async {
+    try {
+      final record = BalanceRecord(
+        roomKey: _roomKeyFor(binding),
+        balanceType: balanceType,
+        timestamp: DateTime.now().toUtc(),
+        balance: double.tryParse(info.balance) ?? 0,
+        price: double.tryParse(info.price) ?? 0,
+      );
+      await _db.insertBalanceRecord(record);
+      // 惰性清理过期数据(不阻塞主流程)
+      await _db.deleteBalanceRecordsBefore(
+        DateTime.now().toUtc().subtract(_balanceHistoryRetention),
+      );
+    } catch (e) {
+      debugPrint('Failed to record balance history: $e');
+    }
   }
 
   void clearError() {
     _error = null;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _payAppAuth.removeListener(_onPayAppAuthChanged);
+    super.dispose();
   }
 }
 
