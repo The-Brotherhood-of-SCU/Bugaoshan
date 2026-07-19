@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - 修复课程表左侧时间标签可能换行的问题
+- 修复了一些小问题
+
+### Added
+- 添加互动校历镜像获取，减少网络影响
 
 ## [2.2.0] - 2026-07-13
 
