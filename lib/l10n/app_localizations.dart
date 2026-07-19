@@ -3112,13 +3112,13 @@ abstract class AppLocalizations {
   /// No description provided for @autoSampleBalanceOnLogin.
   ///
   /// In en, this message translates to:
-  /// **'Auto-sample balance on login'**
+  /// **'Auto-collect balance details on login'**
   String get autoSampleBalanceOnLogin;
 
   /// No description provided for @autoSampleBalanceOnLoginDesc.
   ///
   /// In en, this message translates to:
-  /// **'After login, if no record exists for today, automatically query the current room\'s electricity and AC balance once to increase sampling rate'**
+  /// **'After login, if no record exists for today, automatically query the current room\'s electricity and AC balance once to improve the statistics'**
   String get autoSampleBalanceOnLoginDesc;
 
   /// No description provided for @scuLoginDisclaimerPwd.

@@ -34,6 +34,6 @@ class AppCurves {
   /// 标准缓动
   static const Curve standard = Curves.easeInOutCubic;
 
-  /// 强调缓动
-  static const Curve emphasized = Curves.easeInOutCubic;
+  /// 快速缓动
+  static const Curve quick = Curves.easeOutQuart;
 }

@@ -1601,11 +1601,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get balanceQuerySettings => 'Balance Query Settings';
 
   @override
-  String get autoSampleBalanceOnLogin => 'Auto-sample balance on login';
+  String get autoSampleBalanceOnLogin =>
+      'Auto-collect balance details on login';
 
   @override
   String get autoSampleBalanceOnLoginDesc =>
-      'After login, if no record exists for today, automatically query the current room\'s electricity and AC balance once to increase sampling rate';
+      'After login, if no record exists for today, automatically query the current room\'s electricity and AC balance once to improve the statistics';
 
   @override
   String get scuLoginDisclaimerPwd =>

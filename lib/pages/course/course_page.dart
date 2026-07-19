@@ -75,8 +75,8 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
         _pageController.page?.round() != targetPage) {
       _pageController.animateToPage(
         targetPage,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
+        duration: appConfig.cardSizeAnimationDuration.value,
+        curve: AppCurves.quick,
       );
     } else if (_visibleWeek != courseProvider.currentWeek.value) {
       setState(() {

@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 添加互动校历镜像获取，减少网络影响
 - 【电费查询】页面增加用电趋势统计
 
+### Changed
+- 优化课表翻页手感，动画时间遵循设置
+
 ## [2.2.0] - 2026-07-13
 
 ### Added

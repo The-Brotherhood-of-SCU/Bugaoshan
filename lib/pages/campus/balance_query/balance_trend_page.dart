@@ -178,7 +178,7 @@ class _BalanceTrendPageState extends State<BalanceTrendPage> {
                   // 第二层:自定义日期范围卡片(仅 custom 模式显示)
                   AnimatedSize(
                     duration: appConfigService.cardSizeAnimationDuration.value,
-                    curve: AppCurves.standard,
+                    curve: AppCurves.quick,
                     child: _range == BalanceTrendTimeRange.custom
                         ? BalanceTrendCustomRangeCard(
                             key: const ValueKey('customRange'),

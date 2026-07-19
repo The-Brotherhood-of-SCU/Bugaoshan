@@ -1556,11 +1556,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get balanceQuerySettings => '电费查询设置';
 
   @override
-  String get autoSampleBalanceOnLogin => '登录后自动采样电费';
+  String get autoSampleBalanceOnLogin => '登录后自动统计电费详情';
 
   @override
   String get autoSampleBalanceOnLoginDesc =>
-      '登录成功后若当日尚无记录，自动查询一次当前房间的电费与空调余额以增加采样率';
+      '登录成功后若当日尚无记录，自动查询一次当前房间的电费与空调余额以完善统计信息';
 
   @override
   String get scuLoginDisclaimerPwd => '当使用记住密码功能时，密码通过系统级加密仅存储在本机';
