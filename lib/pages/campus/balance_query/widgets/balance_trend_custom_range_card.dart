@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/utils/beijing_time.dart';
 
 /// 第二层:自定义日期范围卡片。
 ///
@@ -42,9 +43,9 @@ class BalanceTrendCustomRangeCard extends StatelessWidget {
     DateTime? selectableFirst,
     DateTime? selectableLast,
   }) async {
-    final now = DateTime.now();
-    final first = selectableFirst ?? DateTime(now.year - 2, 1, 1);
-    final last = selectableLast ?? now;
+    final b = DateTime.now().toUtc().add(kBeijingUtcOffset);
+    final first = selectableFirst ?? DateTime(b.year - 2, 1, 1);
+    final last = selectableLast ?? DateTime(b.year, b.month, b.day);
     final picked = await showDatePicker(
       context: context,
       initialDate: current.isAfter(last)
@@ -62,9 +63,9 @@ class BalanceTrendCustomRangeCard extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final df = DateFormat('yyyy-MM-dd');
-    final now = DateTime.now();
-    final first = firstDate ?? DateTime(now.year - 2, 1, 1);
-    final last = lastDate ?? now;
+    final b = DateTime.now().toUtc().add(kBeijingUtcOffset);
+    final first = firstDate ?? DateTime(b.year - 2, 1, 1);
+    final last = lastDate ?? DateTime(b.year, b.month, b.day);
 
     // 起始按钮可选范围:[first, end]
     // 结束按钮可选范围:[start, last]

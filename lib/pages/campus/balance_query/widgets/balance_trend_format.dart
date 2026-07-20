@@ -1,6 +1,6 @@
 import 'dart:math' show pow, log, ln10;
 
-import 'package:intl/intl.dart';
+import 'package:bugaoshan/utils/beijing_time.dart';
 
 /// 电费趋势页通用的数值/日期格式化与图表轴间隔工具。
 ///
@@ -17,15 +17,11 @@ String formatNumber(double v, {int decimals = 2}) {
   return v.toStringAsFixed(decimals);
 }
 
-/// UTC 时间戳 → 本地 `yyyy-MM-dd`。
-String formatDate(DateTime t) {
-  return DateFormat('yyyy-MM-dd').format(t.toLocal());
-}
+/// UTC 时间戳 → 北京时区 `yyyy-MM-dd`。
+String formatDate(DateTime t) => formatBeijing(t, 'yyyy-MM-dd');
 
-/// UTC 时间戳 → 本地 `yyyy-MM-dd HH:mm`。
-String formatDateTime(DateTime t) {
-  return DateFormat('yyyy-MM-dd HH:mm').format(t.toLocal());
-}
+/// UTC 时间戳 → 北京时区 `yyyy-MM-dd HH:mm`。
+String formatDateTime(DateTime t) => formatBeijing(t, 'yyyy-MM-dd HH:mm');
 
 /// 计算"好看"的 Y 轴刻度间隔(1/2/5 × 10^n)。
 double niceInterval(double min, double max) {

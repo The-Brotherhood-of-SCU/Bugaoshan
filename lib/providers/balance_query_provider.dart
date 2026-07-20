@@ -8,6 +8,7 @@ import 'package:bugaoshan/services/api/payapp_api_service.dart';
 import 'package:bugaoshan/services/api/balance_query_service.dart';
 import 'package:bugaoshan/services/auth/payapp_auth.dart';
 import 'package:bugaoshan/services/database_service.dart';
+import 'package:bugaoshan/utils/beijing_time.dart';
 
 const _keyBindingInfo = 'balance_query_binding';
 const _keyCurrentRoomIndex = 'balance_query_current_room';
@@ -61,12 +62,8 @@ class BalanceQueryProvider extends ChangeNotifier {
     _autoSampling = true;
     try {
       final roomKey = _roomKeyFor(binding);
-      final startOfTodayLocal = DateTime(
-        DateTime.now().year,
-        DateTime.now().month,
-        DateTime.now().day,
-      );
-      final startOfTodayUtc = startOfTodayLocal.toUtc();
+      // 以北京日界为基准判定"今日已采样否",不依赖设备本地时区。
+      final startOfTodayUtc = beijingStartOfTodayUtc();
 
       // 检查今天是否已有电费或空调记录;任一缺失就补采
       final electricRecords = await _db.getBalanceRecords(

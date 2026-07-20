@@ -103,16 +103,20 @@ void main() {
     });
 
     test('same-day multiple records → take last as daily point', () {
-      // 同一天 1月1日 有3条记录,只应保留最后一条作为日代表点
-      // 1月1日 余额100 → 余额95 → 余额90,1月2日 余额85
-      // 日代表点:1月1日20:00 余额90,1月2日10:00 余额85
+      // 同一北京日 1月1日 有3条记录,只应保留最后一条作为日代表点。
+      // 时间戳以 UTC 表示,确保均落在北京 01-01:
+      //   UTC 01-01 00:00 = 北京 01-01 08:00
+      //   UTC 01-01 06:00 = 北京 01-01 14:00
+      //   UTC 01-01 12:00 = 北京 01-01 20:00
+      //   UTC 01-02 02:00 = 北京 01-02 10:00
+      // 日代表点:北京 01-01 20:00 余额90,北京 01-02 10:00 余额85
       // Δb=5,Δt=14h=7/12天,p_avg=0.5
       // totalCost=2.5元,dailyAvgCost=2.5/(7/12)=30/7≈4.286元/天
       final r = BalanceTrendCalculator.calculate([
-        _rec(DateTime.utc(2026, 1, 1, 8), 100, 0.5),
-        _rec(DateTime.utc(2026, 1, 1, 14), 95, 0.5),
-        _rec(DateTime.utc(2026, 1, 1, 20), 90, 0.5),
-        _rec(DateTime.utc(2026, 1, 2, 10), 85, 0.5),
+        _rec(DateTime.utc(2026, 1, 1, 0), 100, 0.5),
+        _rec(DateTime.utc(2026, 1, 1, 6), 95, 0.5),
+        _rec(DateTime.utc(2026, 1, 1, 12), 90, 0.5),
+        _rec(DateTime.utc(2026, 1, 2, 2), 85, 0.5),
       ]);
       expect(r.dailyPoints.length, 2);
       expect(r.dailyPoints[0].balance, 90);
@@ -166,6 +170,32 @@ void main() {
       expect(r.totalKwh, 20);
       expect(r.totalCost, 10);
       expect(r.totalDays, 4);
+    });
+
+    test('records spanning Beijing midnight aggregate by Beijing day', () {
+      // 北京 2026-07-20 02:00 = UTC 2026-07-19 18:00
+      // 北京 2026-07-20 23:30 = UTC 2026-07-20 15:30
+      // 同一北京日,应聚合为 1 个日代表点(取最后一条)
+      final r = BalanceTrendCalculator.calculate([
+        _rec(DateTime.utc(2026, 7, 19, 18), 100, 0.5),
+        _rec(DateTime.utc(2026, 7, 20, 15, 30), 94, 0.5),
+      ]);
+      expect(r.dailyPoints.length, 1);
+      expect(r.dailyPoints[0].balance, 94);
+      expect(r.recordCount, 2);
+      expect(r.totalKwh, 0); // 单点无段
+    });
+
+    test('Beijing day boundary splits two-day records', () {
+      // 北京 2026-07-20 23:30 = UTC 2026-07-20 15:30
+      // 北京 2026-07-21 02:00 = UTC 2026-07-20 18:00
+      // 不同北京日,应聚合为 2 个日代表点
+      final r = BalanceTrendCalculator.calculate([
+        _rec(DateTime.utc(2026, 7, 20, 15, 30), 100, 0.5),
+        _rec(DateTime.utc(2026, 7, 20, 18), 94, 0.5),
+      ]);
+      expect(r.dailyPoints.length, 2);
+      expect(r.totalKwh, 6);
     });
   });
 }

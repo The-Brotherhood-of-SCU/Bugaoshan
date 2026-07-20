@@ -1,4 +1,5 @@
 import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/utils/beijing_time.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/models/balance_record.dart';
@@ -57,12 +58,14 @@ class _BalanceTrendPageState extends State<BalanceTrendPage> {
     _loadHistory();
   }
 
-  /// 确保自定义起止日期已初始化(默认倒数 7 天 ~ 今天)。
+  /// 确保自定义起止日期已初始化(默认倒数 7 天 ~ 北京今日)。
+  /// 端点仅日期分量有意义,按北京日历日解释,不依赖设备时区。
   void _ensureCustomDatesInitialized() {
     if (_customStart == null || _customEnd == null) {
-      final now = DateTime.now();
-      _customStart = now.subtract(const Duration(days: 7));
-      _customEnd = now;
+      final b = DateTime.now().toUtc().add(kBeijingUtcOffset);
+      final today = DateTime(b.year, b.month, b.day);
+      _customStart = today.subtract(const Duration(days: 7));
+      _customEnd = today;
     }
   }
 

@@ -1,9 +1,9 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_trend_format.dart';
 import 'package:bugaoshan/services/balance/balance_trend_calculator.dart';
+import 'package:bugaoshan/utils/beijing_time.dart';
 
 /// 余额趋势折线图卡片。
 ///
@@ -226,14 +226,11 @@ class BalanceTrendChartCard extends StatelessWidget {
     if ((pos - pos.round()).abs() > 0.02) {
       return const SizedBox.shrink();
     }
-    final dt = DateTime.fromMillisecondsSinceEpoch(
-      value.toInt(),
-      isUtc: true,
-    ).toLocal();
+    final dt = DateTime.fromMillisecondsSinceEpoch(value.toInt(), isUtc: true);
     return SideTitleWidget(
       meta: meta,
       child: Text(
-        DateFormat('MM/dd').format(dt),
+        formatBeijing(dt, 'MM/dd'),
         style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 10),
       ),
     );

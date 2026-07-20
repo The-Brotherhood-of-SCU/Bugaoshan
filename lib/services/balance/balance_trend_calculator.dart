@@ -1,9 +1,10 @@
 import 'package:bugaoshan/models/balance_record.dart';
+import 'package:bugaoshan/utils/beijing_time.dart';
 
 /// 电费/空调余额趋势计算纯函数工具。
 ///
-/// 给定按时间升序排列的原始 [BalanceRecord] 列表,先按"日历日(UTC)"聚合
-/// 取每日最后一条作为日代表点,再对相邻日代表点按段加权平均:
+/// 给定按时间升序排列的原始 [BalanceRecord] 列表,先按"日历日(北京时区
+/// UTC+8)"聚合取每日最后一条作为日代表点,再对相邻日代表点按段加权平均:
 ///   - 段消耗 Δb = b_a - b_b (余额减少为正)
 ///   - 段均价 p_avg = (p_a + p_b) / 2 (电价波动时插值)
 ///   - 充值段 (Δb < 0) 跳过,不计入总消耗
@@ -14,14 +15,12 @@ class BalanceTrendCalculator {
       return const TrendResult.empty();
     }
 
-    // 1. 按日聚合:同一日历日(UTC)取最后一条
+    // 1. 按日聚合:同一日历日(北京时区 UTC+8)取最后一条。
+    //    SCU 用户都在中国,采样发生在北京时间,若按 UTC 日聚合会让
+    //    00:00–08:00 北京时间的记录归到前一个 UTC 日,同日记录被拆。
     final dailyMap = <DateTime, BalanceRecord>{};
     for (final r in records) {
-      final day = DateTime.utc(
-        r.timestamp.year,
-        r.timestamp.month,
-        r.timestamp.day,
-      );
+      final day = beijingDayBucket(r.timestamp);
       final existing = dailyMap[day];
       if (existing == null || r.timestamp.isAfter(existing.timestamp)) {
         dailyMap[day] = r;
