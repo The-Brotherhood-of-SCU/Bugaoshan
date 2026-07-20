@@ -1,4 +1,5 @@
 // run with: dart run tool/generate_icons.dart
+// ignore_for_file: avoid_print
 
 import 'dart:io';
 import 'package:image/image.dart' as img;
