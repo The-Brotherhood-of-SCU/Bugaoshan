@@ -88,7 +88,6 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │   │   ├── update.bat          # Windows updater
 │   │   └── update.sh           # Linux updater
 │   ├── scu.webp                # SCU background image asset
-│   ├── universal-login-ocr.tflite  # captcha OCR model for SCU login
 │   └── webview_error.html      # fallback page for failed WebView loads
 ├── android/  ios/  macos/  windows/  linux/  web/   # per-platform projects
 ├── local/                      # local-only helper assets (e.g. zikzak_inappwebview_windows)
@@ -201,7 +200,7 @@ The CCYL service is special: its token expires via a *business* error code (`Ccy
 - **`DatabaseService`** (`lib/services/database_service.dart`) — SQLite (sqflite / sqflite_common_ffi on desktop). Manages multiple schedule configs and their course data via `switchSchedule()`.
 - **`DownloadManager`** (`lib/services/download_manager.dart`) — `ChangeNotifier` tracking per-task state (pending → downloading → done/error). Drives the UI in `showAttachmentsSheet`.
 - **`IcsService`** — exports course schedules as iCalendar (.ics).
-- **`OcrService`** — TFLite captcha recognition (`flutter_litert`) for SCU login.
+- **`OcrService`** — pure-Dart captcha recognition (`scu_ocr_lite`) for SCU login.
 - **`UpdateService`** — GitHub release check / download / install for desktop (Windows + Linux). Coordinates with `assets/scripts/update.bat` / `update.sh`.
 - **`UpdateChecker`** (`lib/services/update_checker.dart`) — fetches latest version info from GitHub `/releases/latest` API.
 - **`UpdateAssetSelector`** (`lib/services/update_asset_selector.dart`) — selects correct APK/asset based on device platform and CPU architecture.
@@ -334,7 +333,7 @@ The auto-changelog flow:
 - 成绩刷新失败但 `sessionExpired` 时保留 SharedPreferences 缓存,并登出用户.
 - CI 顺序: `build_runner` (代码生成) → `flutter gen-l10n` (代码生成) → `flutter build` —— 代码生成必须先于本地化生成.
 
-- 自动登录失败最多重试 5 次,使用 TFLite OCR 识别验证码.
+- 自动登录失败最多重试 5 次,使用 scu_ocr_lite 纯 Dart OCR 识别验证码.
 - 桌面端(`isDesktopPlatform = Windows || Linux || macOS`) 在 `main.dart` 中初始化 `sqflite_common_ffi`、恢复窗口状态、清理旧的安装包.
 - Pre-commit hook (`.githooks/pre-commit`) 对暂存 `.dart` 文件执行 `dart format`. 克隆后需手动链接/复制到 `.git/hooks/`(详见 `CONTRIBUTING.md`).
 - 国内开发者建议设置 Pub 镜像 (`PUB_HOSTED_URL` + `FLUTTER_STORAGE_BASE_URL`),否则 `pubspec.lock` 会切到国际源并产生无关 diff.
