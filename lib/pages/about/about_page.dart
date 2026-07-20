@@ -16,6 +16,7 @@ import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/dialog/download_progress_dialog.dart';
 import 'package:bugaoshan/widgets/dialog/update_dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
+import 'package:bugaoshan/services/dynamic_icon_service.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
@@ -28,6 +29,33 @@ class _AboutPageState extends State<AboutPage> {
   final versionProvider = getIt<AppInfoProvider>();
   final updateProvider = getIt<UpdateProvider>();
   final appConfig = getIt<AppConfigProvider>();
+  bool _isCheckingUpdate = false;
+  String _iconAsset = 'assets/icon.png';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentIcon();
+  }
+
+  Future<void> _loadCurrentIcon() async {
+    final iconName = await DynamicIconService.getCurrentIconName();
+    if (!mounted) return;
+    setState(() {
+      _iconAsset = _iconAssetForName(iconName);
+    });
+  }
+
+  /// Maps a dynamic icon name to its asset path.
+  /// Returns the default icon asset if [iconName] is null or unknown.
+  static String _iconAssetForName(String? iconName) {
+    switch (iconName) {
+      case 'old':
+        return 'assets/icon_old.png';
+      default:
+        return 'assets/icon.png';
+    }
+  }
 
   Future<void> _checkForUpdates() async {
     final localizations = AppLocalizations.of(context)!;
@@ -114,7 +142,7 @@ class _AboutPageState extends State<AboutPage> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
-              child: Image.asset('assets/icon.png', fit: BoxFit.cover),
+              child: Image.asset(_iconAsset, fit: BoxFit.cover),
             ),
           ),
           const SizedBox(height: 16),
