@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 优化课表翻页手感，动画时间遵循设置
 - 自动更新：下载弹窗增加文件名
 - 只在安卓平台上显示切换图标选项
+- 将验证码识别从LiteRT切换为内置实现减小包体积、提高跨平台兼容性
 
 ## [2.2.0] - 2026-07-13
 

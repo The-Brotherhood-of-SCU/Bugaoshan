@@ -61,17 +61,6 @@ android {
             }
         }
     }
-
-    packaging {
-        jniLibs {
-            useLegacyPackaging = true
-            excludes += setOf(
-                "**/libtensorflowlite_gpu_jni.so",
-                "**/libtensorflowlite_gpu_gl_jni.so",
-                "**/libtensorflowlite_gpu_delegate.so"
-            )
-        }
-    }
 }
 
 dependencies {
