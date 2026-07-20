@@ -29,7 +29,6 @@ class _AboutPageState extends State<AboutPage> {
   final versionProvider = getIt<AppInfoProvider>();
   final updateProvider = getIt<UpdateProvider>();
   final appConfig = getIt<AppConfigProvider>();
-  bool _isCheckingUpdate = false;
   String _iconAsset = 'assets/icon.png';
 
   @override
