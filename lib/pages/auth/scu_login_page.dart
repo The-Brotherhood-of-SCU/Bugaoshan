@@ -211,8 +211,41 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
         controller: _usernameCtrl,
         decoration: InputDecoration(
           labelText: l10n.studentId,
-          prefixIcon: const Icon(Icons.person_outline),
-          border: const OutlineInputBorder(),
+          prefixIcon: Icon(
+            Icons.person_outline,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          filled: true,
+          fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppShapes.large),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppShapes.large),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppShapes.large),
+            borderSide: BorderSide(
+              color: Theme.of(context).colorScheme.primary,
+              width: 1.5,
+            ),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppShapes.large),
+            borderSide: BorderSide(
+              color: Theme.of(context).colorScheme.error,
+              width: 1,
+            ),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppShapes.large),
+            borderSide: BorderSide(
+              color: Theme.of(context).colorScheme.error,
+              width: 1.5,
+            ),
+          ),
         ),
         keyboardType: TextInputType.number,
         validator: (v) =>
@@ -222,11 +255,45 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
         controller: _passwordCtrl,
         decoration: InputDecoration(
           labelText: l10n.password,
-          prefixIcon: const Icon(Icons.lock_outline),
-          border: const OutlineInputBorder(),
+          prefixIcon: Icon(
+            Icons.lock_outline,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          filled: true,
+          fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppShapes.large),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppShapes.large),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppShapes.large),
+            borderSide: BorderSide(
+              color: Theme.of(context).colorScheme.primary,
+              width: 1.5,
+            ),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppShapes.large),
+            borderSide: BorderSide(
+              color: Theme.of(context).colorScheme.error,
+              width: 1,
+            ),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppShapes.large),
+            borderSide: BorderSide(
+              color: Theme.of(context).colorScheme.error,
+              width: 1.5,
+            ),
+          ),
           suffixIcon: IconButton(
             icon: Icon(
-              _obscurePassword ? Icons.visibility_off : Icons.visibility,
+              _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             onPressed: () =>
                 setState(() => _obscurePassword = !_obscurePassword),
@@ -243,83 +310,169 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
         onRefresh: _loadCaptcha,
       ),
       Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Checkbox(
-            value: _rememberPassword,
-            onChanged: (v) => setState(() {
-              _rememberPassword = v ?? false;
-              if (!_rememberPassword) _autoLogin = false;
-            }),
+          Row(
+            children: [
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: Checkbox(
+                  value: _rememberPassword,
+                  activeColor: Theme.of(context).colorScheme.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppShapes.xs),
+                  ),
+                  onChanged: (v) => setState(() {
+                    _rememberPassword = v ?? false;
+                    if (!_rememberPassword) _autoLogin = false;
+                  }),
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () => setState(() {
+                  _rememberPassword = !_rememberPassword;
+                  if (!_rememberPassword) _autoLogin = false;
+                }),
+                child: Text(
+                  l10n.rememberPassword,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ),
+            ],
           ),
-          Text(l10n.rememberPassword),
+          if (_rememberPassword)
+            Row(
+              children: [
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: Checkbox(
+                    value: _autoLogin,
+                    activeColor: Theme.of(context).colorScheme.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppShapes.xs),
+                    ),
+                    onChanged: (v) => setState(() => _autoLogin = v ?? false),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => setState(() => _autoLogin = !_autoLogin),
+                  child: Text(
+                    l10n.autoLogin,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
-      if (_rememberPassword)
-        Row(
-          children: [
-            Checkbox(
-              value: _autoLogin,
-              onChanged: (v) => setState(() => _autoLogin = v ?? false),
-            ),
-            Text(l10n.autoLogin),
-          ],
-        ),
       if (_errorMsg != null)
         Text(
           _errorMsg!,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.error,
-          ),
+                color: Theme.of(context).colorScheme.error,
+              ),
           textAlign: TextAlign.center,
         ),
+      const SizedBox(height: 8),
       FilledButton(
         onPressed: _loading ? null : _submit,
+        style: FilledButton.styleFrom(
+          minimumSize: const Size.fromHeight(52),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppShapes.large),
+          ),
+          elevation: 0,
+        ),
         child: _loading
             ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  valueColor: AlwaysStoppedAnimation(Colors.white),
+                ),
               )
-            : Text(l10n.loginButton),
+            : Text(
+                l10n.loginButton,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
       ),
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _DisclaimerRow('· ${l10n.scuLoginDisclaimerPwd}'),
-          _DisclaimerRow('· ${l10n.scuLoginDisclaimerOcr}'),
-          _DisclaimerRow('· ${l10n.scuLoginDisclaimerPrivacy}'),
-        ],
+      const SizedBox(height: 8),
+      Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainer.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(AppShapes.medium),
+        ),
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _DisclaimerRow(l10n.scuLoginDisclaimerPwd),
+            _DisclaimerRow(l10n.scuLoginDisclaimerOcr),
+            _DisclaimerRow(l10n.scuLoginDisclaimerPrivacy),
+          ],
+        ),
       ),
     ];
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.scuUnifiedAuth)),
-      body: CustomScrollView(
-        slivers: [
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Column(
-                children: [
-                  const Spacer(flex: 1),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 24),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        spacing: 16,
-                        children: formContent,
-                      ),
-                    ),
-                  ),
-                  const Spacer(flex: 2),
-                ],
-              ),
-            ),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+      ),
+      extendBodyBehindAppBar: true,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.18),
+              Theme.of(context).colorScheme.surface,
+            ],
           ),
-        ],
+        ),
+        child: SafeArea(
+          child: CustomScrollView(
+            slivers: [
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Column(
+                    children: [
+                      const Spacer(flex: 1),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            spacing: 16,
+                            children: formContent,
+                          ),
+                        ),
+                      ),
+                      const Spacer(flex: 2),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -332,12 +485,27 @@ class _DisclaimerRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 1),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '• ',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              text,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    height: 1.3,
+                  ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -368,8 +536,41 @@ class _CaptchaRow extends StatelessWidget {
             controller: controller,
             decoration: InputDecoration(
               labelText: l10n.captcha,
-              prefixIcon: const Icon(Icons.security),
-              border: const OutlineInputBorder(),
+              prefixIcon: Icon(
+                Icons.security_outlined,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              filled: true,
+              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppShapes.large),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppShapes.large),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppShapes.large),
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.primary,
+                  width: 1.5,
+                ),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppShapes.large),
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.error,
+                  width: 1,
+                ),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppShapes.large),
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.error,
+                  width: 1.5,
+                ),
+              ),
             ),
             validator: (v) =>
                 (v == null || v.trim().isEmpty) ? l10n.captchaRequired : null,
@@ -381,8 +582,12 @@ class _CaptchaRow extends StatelessWidget {
             width: 110,
             height: 56,
             decoration: BoxDecoration(
-              border: Border.all(color: Theme.of(context).dividerColor),
-              borderRadius: BorderRadius.circular(AppShapes.xs),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(AppShapes.large),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
+                width: 1,
+              ),
             ),
             child: loading
                 ? const Center(
@@ -393,14 +598,17 @@ class _CaptchaRow extends StatelessWidget {
                     ),
                   )
                 : captcha != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(AppShapes.small),
-                    child: Image.memory(
-                      _decodeBase64Image(captcha!.captchaBase64),
-                      fit: BoxFit.contain,
-                    ),
-                  )
-                : const Icon(Icons.refresh),
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(AppShapes.large - 1),
+                        child: Image.memory(
+                          _decodeBase64Image(captcha!.captchaBase64),
+                          fit: BoxFit.contain,
+                        ),
+                      )
+                    : Icon(
+                        Icons.refresh_outlined,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
           ),
         ),
       ],
