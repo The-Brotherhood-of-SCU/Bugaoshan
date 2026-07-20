@@ -81,7 +81,7 @@ class AppConfigProvider {
   );
   final ValueNotifier<bool> campusGridView = ValueNotifier<bool>(false);
   final ValueNotifier<bool> autoSampleBalanceOnLogin = ValueNotifier<bool>(
-    false,
+    true,
   );
 
   Future<void> _loadPreferences() async {

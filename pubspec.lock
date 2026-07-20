@@ -1071,7 +1071,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: f19c62bb691ee09209e0190e3f6e31783d2e9cfb
+      resolved-ref: "24c30fdecba5e2dfe50c9597b96743f692b3934e"
       url: "https://github.com/The-Brotherhood-of-SCU/scu_ocr_lite_dart.git"
     source: git
     version: "1.0.0"
