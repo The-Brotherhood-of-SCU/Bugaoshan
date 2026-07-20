@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/pages/dev/update_result_notifier.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
 
 class UpdateCard extends StatelessWidget {
   final IconData icon;
   final String title;
-  final UpdateResultNotifier result;
+  final ValueNotifier<UpdateCheckResult> result;
   final VoidCallback onUpdate;
 
   const UpdateCard({
@@ -22,10 +21,9 @@ class UpdateCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
 
-    return ListenableBuilder(
-      listenable: result,
-      builder: (context, _) {
-        final r = result.value;
+    return ValueListenableBuilder<UpdateCheckResult>(
+      valueListenable: result,
+      builder: (context, r, _) {
         return Card(
           elevation: 2,
           child: Padding(

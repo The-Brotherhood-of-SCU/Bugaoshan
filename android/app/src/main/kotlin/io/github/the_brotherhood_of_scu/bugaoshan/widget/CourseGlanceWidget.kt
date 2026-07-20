@@ -1,4 +1,4 @@
-package io.github.the_brotherhood_of_scu.bugaoshan
+package io.github.the_brotherhood_of_scu.bugaoshan.widget
 
 import android.content.ComponentName
 import android.content.Context
@@ -37,6 +37,8 @@ import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.the_brotherhood_of_scu.bugaoshan.MainActivity
+import io.github.the_brotherhood_of_scu.bugaoshan.R
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -45,7 +47,6 @@ import java.util.LinkedHashMap
 import kotlin.math.roundToInt
 import java.text.SimpleDateFormat
 import java.util.Locale
-import io.github.the_brotherhood_of_scu.bugaoshan.R
 
 // Layout thresholds (units: dp for comparisons using integer dp values)
 private const val TOTAL_HORIZONTAL_PADDING_DP = 24 // 12dp each side
@@ -122,7 +123,7 @@ data class WidgetCourseData(
     val headerTitle: String,
     val emptyText: String,
     val isTomorrow: Boolean = false,
-    // 今天课程最近的下一个开始/结束时刻（毫秒），无则 null
+    // 今天课程最近的下一个开始/结束时刻(毫秒),无则 null
     val nextTransitionMillis: Long? = null,
 )
 
@@ -208,7 +209,7 @@ object WidgetDataLoader {
             }
             val weekNumber = if (showingTomorrow) weekForTomorrow else currentWeek
             val weekText = context.getString(R.string.widget_week_format, weekNumber)
-            // 展示明天课程时今天已无变化点，边界闹钟交由午夜闹钟接力
+            // 展示明天课程时今天已无变化点,边界闹钟交由午夜闹钟接力
             val nextTransitionMillis = if (!showingTomorrow) {
                 computeNextTransitionMillis(courses, timeSlots, currentTimeMinutes)
             } else {
@@ -232,8 +233,8 @@ object WidgetDataLoader {
     }
 
     /**
-     * 优先只读打开数据库；若数据库残留热 journal（App 在写事务中崩溃）
-     * 导致只读打开失败，则回退到读写模式，让 SQLite 完成回滚恢复，
+     * 优先只读打开数据库;若数据库残留热 journal(App 在写事务中崩溃)
+     * 导致只读打开失败,则回退到读写模式,让 SQLite 完成回滚恢复,
      * 避免小组件因打开失败而持续显示空数据。
      */
     private fun openDatabaseWithFallback(path: String): SQLiteDatabase {
@@ -268,14 +269,14 @@ object WidgetDataLoader {
     private fun queryScheduleConfig(db: SQLiteDatabase, scheduleId: String): String? {
         db.rawQuery(
             "SELECT config_json FROM schedules WHERE id = ?",
-            arrayOf(scheduleId)
+            arrayOf(scheduleId),
         ).use { cursor ->
             if (cursor.moveToFirst()) return cursor.getString(0)
         }
         if (scheduleId != "default") {
             db.rawQuery(
                 "SELECT config_json FROM schedules WHERE id = 'default'",
-                null
+                null,
             ).use { cursor ->
                 if (cursor.moveToFirst()) return cursor.getString(0)
             }
@@ -290,7 +291,7 @@ object WidgetDataLoader {
         db: SQLiteDatabase,
         scheduleId: String,
         dayOfWeek: Int,
-        currentWeek: Int
+        currentWeek: Int,
     ): JSONArray {
         val result = JSONArray()
         db.rawQuery(
@@ -298,7 +299,7 @@ object WidgetDataLoader {
                       start_section, end_section, color_value, week_type
                FROM courses
                WHERE schedule_id = ? AND day_of_week = ?""",
-            arrayOf(scheduleId, dayOfWeek.toString())
+            arrayOf(scheduleId, dayOfWeek.toString()),
         ).use { cursor ->
             while (cursor.moveToNext()) {
                 val name = cursor.getString(0) ?: ""
@@ -326,7 +327,7 @@ object WidgetDataLoader {
         courses: JSONArray,
         timeSlots: JSONArray?,
         currentTimeMinutes: Int?,
-        forceUpcoming: Boolean = false
+        forceUpcoming: Boolean = false,
     ): JSONArray {
         val updated = JSONArray()
         for (i in 0 until courses.length()) {
@@ -358,16 +359,16 @@ object WidgetDataLoader {
     }
 
     /**
-     * 计算今天课程最近的下一个状态变化时刻（某节课开始或结束），
-     * 返回当天对应的时间戳（毫秒）。今天没有更多变化点时返回 null。
+     * 计算今天课程最近的下一个状态变化时刻(某节课开始或结束),
+     * 返回当天对应的时间戳(毫秒)。今天没有更多变化点时返回 null。
      *
-     * 传入的 courses 已经过滤掉已结束的课程，因此每门课的结束时刻
-     * 都是有效的变化点；未开始的课程其开始时刻也是变化点。
+     * 传入的 courses 已经过滤掉已结束的课程,因此每门课的结束时刻
+     * 都是有效的变化点;未开始的课程其开始时刻也是变化点。
      */
     private fun computeNextTransitionMillis(
         courses: JSONArray,
         timeSlots: JSONArray?,
-        currentTimeMinutes: Int
+        currentTimeMinutes: Int,
     ): Long? {
         var next: Int? = null
         fun consider(minutes: Int?) {
@@ -477,7 +478,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val data = WidgetDataLoader.load(context)
-        // 渲染前用最新数据链式调度课程边界闹钟（无变化点时取消），
+        // 渲染前用最新数据链式调度课程边界闹钟(无变化点时取消),
         // 保证上下课时刻小组件立即刷新
         WidgetAlarmManager.scheduleCourseBoundaryAlarm(context, data?.nextTransitionMillis)
         // Use getLaunchIntentForPackage so Android resolves to the currently
@@ -508,13 +509,13 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     cached
                 } else {
                     val availableWidth = widthDp - TOTAL_HORIZONTAL_PADDING_DP
-                        val oneLineTitle = availableWidth >= TITLE_ONE_LINE_WIDTH_DP
+                    val oneLineTitle = availableWidth >= TITLE_ONE_LINE_WIDTH_DP
 
-                        // Fixed title bar height estimation (avoids dynamic calculation)
-                        val titleBarHeight = TITLE_BAR_HEIGHT_DP
-                        val verticalPadding = VERTICAL_PADDING_DP
-                        val availableForCards = heightDp - titleBarHeight - verticalPadding
-                        val cardMode = if (availableForCards > CARD_MODE_HEIGHT_THRESHOLD_DP) 2 else 1
+                    // Fixed title bar height estimation (avoids dynamic calculation)
+                    val titleBarHeight = TITLE_BAR_HEIGHT_DP
+                    val verticalPadding = VERTICAL_PADDING_DP
+                    val availableForCards = heightDp - titleBarHeight - verticalPadding
+                    val cardMode = if (availableForCards > CARD_MODE_HEIGHT_THRESHOLD_DP) 2 else 1
 
                     val computed = CachedLayout(widthDp, heightDp, oneLineTitle, cardMode)
                     WidgetLayoutCache.put(parsedId, computed)
@@ -530,7 +531,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     headerDefault,
                     R.string.widget_section_single,
                     R.string.widget_section_range,
-                    R.string.widget_empty_today
+                    R.string.widget_empty_today,
                 )
             }
         }
@@ -545,14 +546,14 @@ class CourseGlanceWidget : GlanceAppWidget() {
         headerDefault: String,
         sectionSingleRes: Int,
         sectionRangeRes: Int,
-        emptyRes: Int
+        emptyRes: Int,
     ) {
         val courses = data?.courses ?: JSONArray()
         val title = if (!data?.headerTitle.isNullOrEmpty()) data!!.headerTitle else headerDefault
         val date = data?.dateText ?: ""
         val week = data?.weekText ?: ""
-        // data 为 null 表示数据库缺失或读取失败（如课表未同步），
-        // 与「今日无课」的正常空态区分开，给出引导文案
+        // data 为 null 表示数据库缺失或读取失败(如课表未同步),
+        // 与「今日无课」的正常空态区分开,给出引导文案
         val emptyText = when {
             data == null -> ctx.getString(R.string.widget_sync_hint)
             data.emptyText.isNotEmpty() -> data.emptyText
@@ -573,25 +574,25 @@ class CourseGlanceWidget : GlanceAppWidget() {
             if (layout.oneLineTitle) {
                 Row(
                     modifier = GlanceModifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         text = title,
                         style = TextStyle(
                             color = ColorProvider(R.color.widget_header_default),
                             fontWeight = FontWeight.Bold,
-                            fontSize = HEADER_FONT_SIZE_SP
+                            fontSize = HEADER_FONT_SIZE_SP,
                         ),
                         maxLines = 1,
-                        modifier = GlanceModifier.defaultWeight()
+                        modifier = GlanceModifier.defaultWeight(),
                     )
                     Text(
                         text = fullDate,
                         style = TextStyle(
                             color = ColorProvider(R.color.widget_text_secondary),
-                            fontSize = META_SMALL_FONT_SIZE_SP
+                            fontSize = META_SMALL_FONT_SIZE_SP,
                         ),
-                        maxLines = 1
+                        maxLines = 1,
                     )
                 }
             } else {
@@ -600,17 +601,17 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     style = TextStyle(
                         color = ColorProvider(R.color.widget_header_default),
                         fontWeight = FontWeight.Bold,
-                        fontSize = HEADER_FONT_SIZE_SP
+                        fontSize = HEADER_FONT_SIZE_SP,
                     ),
-                    maxLines = 1
+                    maxLines = 1,
                 )
                 Text(
                     text = fullDate,
                     style = TextStyle(
                         color = ColorProvider(R.color.widget_text_secondary),
-                        fontSize = META_SMALL_FONT_SIZE_SP
+                        fontSize = META_SMALL_FONT_SIZE_SP,
                     ),
-                    maxLines = 1
+                    maxLines = 1,
                 )
             }
 
@@ -619,14 +620,14 @@ class CourseGlanceWidget : GlanceAppWidget() {
             if (courses.length() == 0) {
                 Box(
                     modifier = GlanceModifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = emptyText,
                         style = TextStyle(
                             color = ColorProvider(R.color.widget_text_secondary),
-                            fontSize = EMPTY_FONT_SIZE_SP
-                        )
+                            fontSize = EMPTY_FONT_SIZE_SP,
+                        ),
                     )
                 }
             } else {
@@ -642,7 +643,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                                 layout.width,
                                 layout.oneLineTitle,
                                 sectionSingleRes,
-                                sectionRangeRes
+                                sectionRangeRes,
                             )
                         }
                     }
@@ -660,7 +661,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
         parentWidthDp: Int,
         oneLineTitle: Boolean,
         sectionSingleRes: Int,
-        sectionRangeRes: Int
+        sectionRangeRes: Int,
     ) {
         val name = course.optString("name", "")
         val startTime = course.optString("startTime", "")
@@ -673,8 +674,8 @@ class CourseGlanceWidget : GlanceAppWidget() {
             else ctx.getString(sectionRangeRes, ss, es)
         } else ""
 
-        // 左侧指示条使用课程自定义颜色（Flutter ARGB）；明天课程或颜色
-        // 无效（缺失/全透明）时回退默认色
+        // 左侧指示条使用课程自定义颜色(Flutter ARGB);明天课程或颜色
+        // 无效(缺失/全透明)时回退默认色
         val rawColor = course.optInt("colorValue", 0)
         val indicatorColor = when {
             isTomorrow -> ColorProvider(R.color.widget_tomorrow_accent)
@@ -683,7 +684,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
         }
         val nameColor = if (isTomorrow) R.color.widget_tomorrow_text_primary else R.color.widget_text_primary
         val metaColor = if (isTomorrow) R.color.widget_tomorrow_text_secondary else R.color.widget_text_secondary
-        // 进行中的课程：名称加粗、时间用课程色强调
+        // 进行中的课程:名称加粗、时间用课程色强调
         val inProgress = !isTomorrow && course.optString("status") == "inProgress"
         val metaTextColor = if (inProgress) indicatorColor else ColorProvider(metaColor)
 
@@ -693,14 +694,14 @@ class CourseGlanceWidget : GlanceAppWidget() {
                 .cornerRadius(CARD_CORNER_RADIUS_DP)
                 .background(ColorProvider(R.color.widget_card_background))
                 .padding(CARD_PADDING_DP),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
                 modifier = GlanceModifier
                     .width(CARD_INDICATOR_WIDTH_DP)
                     .height(CARD_INDICATOR_HEIGHT_DP)
                     .cornerRadius(2.dp)
-                    .background(indicatorColor)
+                    .background(indicatorColor),
             ) {}
             Spacer(modifier = GlanceModifier.width(10.dp))
 
@@ -710,23 +711,23 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     style = TextStyle(
                         color = ColorProvider(nameColor),
                         fontWeight = if (inProgress) FontWeight.Bold else FontWeight.Medium,
-                        fontSize = TITLE_FONT_SIZE_SP
+                        fontSize = TITLE_FONT_SIZE_SP,
                     ),
-                    maxLines = 1
+                    maxLines = 1,
                 )
 
                 if (cardMode == 2) {
                     // Two-line mode
                     Row(
                         modifier = GlanceModifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         val timeRange = if (endTime.isNotEmpty()) "$startTime - $endTime" else startTime
                         Text(
                             text = timeRange,
                             style = TextStyle(color = metaTextColor, fontSize = META_FONT_SIZE_SP),
                             maxLines = 1,
-                            modifier = GlanceModifier.defaultWeight()
+                            modifier = GlanceModifier.defaultWeight(),
                         )
                         // Section appears only when title is one-line and card mode is two-line
                         if (oneLineTitle && section.isNotEmpty()) {
@@ -734,14 +735,14 @@ class CourseGlanceWidget : GlanceAppWidget() {
                             Text(
                                 text = section,
                                 style = TextStyle(color = ColorProvider(metaColor), fontSize = META_SMALL_FONT_SIZE_SP),
-                                maxLines = 1
+                                maxLines = 1,
                             )
                         }
                     }
                     Text(
                         text = location,
                         style = TextStyle(color = ColorProvider(metaColor), fontSize = META_FONT_SIZE_SP),
-                        maxLines = 2
+                        maxLines = 2,
                     )
                 } else {
                     // Single-line mode: decide based on parent width
@@ -752,7 +753,7 @@ class CourseGlanceWidget : GlanceAppWidget() {
                         text = "$timeText  $location",
                         style = TextStyle(color = metaTextColor, fontSize = fontSize),
                         maxLines = 2,
-                        modifier = GlanceModifier.fillMaxWidth()
+                        modifier = GlanceModifier.fillMaxWidth(),
                     )
                 }
             }
@@ -775,7 +776,7 @@ abstract class BaseCourseWidgetReceiver : GlanceAppWidgetReceiver() {
     }
 }
 
-// LOCALE_CHANGED 只在 Small 上注册，避免三种尺寸各自重复全量更新
+// LOCALE_CHANGED 只在 Small 上注册,避免三种尺寸各自重复全量更新
 class CourseWidgetReceiverSmall : BaseCourseWidgetReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)

@@ -368,6 +368,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updateFailed => 'Update failed';
 
   @override
+  String notificationDownloading(int percent) {
+    return 'Downloading... $percent%';
+  }
+
+  @override
+  String get notificationInstalling => 'Installing...';
+
+  @override
+  String notificationUpdateFailed(String error) {
+    return 'Update failed: $error';
+  }
+
+  @override
   String get preReleaseWarning =>
       'This is a pre-release version. Use with caution.';
 

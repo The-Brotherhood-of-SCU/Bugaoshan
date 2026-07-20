@@ -11,6 +11,7 @@ import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/services/api/ccyl_api_service.dart';
 import 'package:bugaoshan/services/api/payapp_api_service.dart';
 import 'package:bugaoshan/services/api/wfw_api_service.dart';
@@ -22,6 +23,7 @@ import 'package:bugaoshan/services/auth/fitness_auth.dart';
 import 'package:bugaoshan/services/auth/payapp_auth.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/wfw_auth.dart';
+import 'package:bugaoshan/services/download_notification_service.dart';
 import 'package:bugaoshan/services/auth/zhjw_auth.dart';
 import 'package:bugaoshan/services/background_cache_service.dart';
 import 'package:bugaoshan/services/database_service.dart';
@@ -222,6 +224,15 @@ void _configureAsyncDependencies() {
     return UpdateService(
       getIt<SharedPreferences>(),
       getIt<AppInfoProvider>().currentVersion,
+    );
+  });
+  getIt.registerSingletonAsync<UpdateProvider>(() async {
+    await getIt.isReady<UpdateService>();
+    await getIt.isReady<AppInfoProvider>();
+    return UpdateProvider(
+      getIt<UpdateService>(),
+      getIt<AppInfoProvider>(),
+      DownloadNotificationService(),
     );
   });
   getIt.registerSingletonAsync<BackgroundCacheService>(() async {

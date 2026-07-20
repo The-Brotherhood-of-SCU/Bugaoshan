@@ -140,6 +140,23 @@
     "usePreviewUpdateSourceHint": "Affects only the automatic checks on the home and about pages. The test page always checks both channels.",
     "downloading": "Downloading",
     "updateFailed": "Update failed",
+    "notificationDownloading": "Downloading... {percent}%",
+    "notificationInstalling": "Installing...",
+    "notificationUpdateFailed": "Update failed: {error}",
+    "@notificationDownloading": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "@notificationUpdateFailed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
     "preReleaseWarning": "This is a pre-release version. Use with caution.",
     "releaseNotes": "Release Notes",
     "neverMind": "Never Mind",

@@ -1,4 +1,4 @@
-package io.github.the_brotherhood_of_scu.bugaoshan
+package io.github.the_brotherhood_of_scu.bugaoshan.widget
 
 import android.content.Context
 import android.util.Log
@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 
 class WidgetUpdateWorker(
     context: Context,
-    params: WorkerParameters
+    params: WorkerParameters,
 ) : CoroutineWorker(context, params) {
 
     companion object {
@@ -20,13 +20,13 @@ class WidgetUpdateWorker(
 
         fun enqueuePeriodic(context: Context) {
             val request = PeriodicWorkRequestBuilder<WidgetUpdateWorker>(
-                15, TimeUnit.MINUTES
+                15, TimeUnit.MINUTES,
             ).build()
 
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 WORK_NAME,
                 ExistingPeriodicWorkPolicy.KEEP,
-                request
+                request,
             )
             Log.d(TAG, "Periodic widget update enqueued")
         }

@@ -10,8 +10,8 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/services/auth/auth_coordinator.dart';
-import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/common/auth_scoped_indexed_stack.dart';
@@ -53,12 +53,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     try {
       await Future.wait([
         getIt.isReady<AppInfoProvider>(),
-        getIt.isReady<UpdateService>(),
+        getIt.isReady<UpdateProvider>(),
         getIt.isReady<AppConfigProvider>(),
       ]);
-      final updateService = getIt<UpdateService>();
+      final updateProvider = getIt<UpdateProvider>();
       final appConfig = getIt<AppConfigProvider>();
-      final result = await updateService.checkForUpdate();
+      final result = await updateProvider.checkForUpdate();
       if (result.hasUpdate) {
         appConfig.hasUpdateNotification.value = true;
       }

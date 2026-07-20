@@ -4,4 +4,8 @@
     <string name="widget_name_small">课表 (小)</string>
     <string name="widget_name_medium">课表 (中)</string>
     <string name="widget_name_large">课表 (大)</string>
+    <!-- 下载通知 -->
+    <string name="download_notification_channel_name">Bugaoshan 下载</string>
+    <string name="download_notification_channel_desc">应用更新下载进度</string>
+    <string name="download_notification_cancel">取消</string>
 </resources>
