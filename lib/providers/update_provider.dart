@@ -200,11 +200,12 @@ class UpdateProvider {
           }
         },
       );
-      // 下载完成 → 切到"正在安装"
-      await _notification.showCompleted(
-        content: l10n?.notificationInstalling ?? 'Installing...',
-        title: filename,
-      );
+      // 下载完成 → 取消下载通知
+      // Android: 系统 PackageInstaller 对话框已弹出作为唯一 UI 反馈,
+      // Flutter 端无法感知用户在系统对话框点"取消安装",若保留"正在安装"
+      // 通知会一直残留。直接取消更符合用户预期。
+      // 其他平台: showCompleted 本身就是 no-op (isSupported false)。
+      await _notification.cancel();
     } on UpdateCancelledException {
       // 用户取消(通知栏按钮或 App 内取消按钮)→ 关闭通知,异常继续向上抛
       await _notification.cancel();

@@ -59,7 +59,7 @@ class DownloadNotificationService {
         'progress': progress,
         'max': max,
         'indeterminate': indeterminate,
-        if (title != null) 'title': title,
+        'title': ?title,
       });
     } on PlatformException {
       // 通知权限被拒或系统问题,忽略 — App 内对话框照常工作
@@ -81,7 +81,7 @@ class DownloadNotificationService {
         'progress': progress,
         'max': max,
         'indeterminate': indeterminate,
-        if (title != null) 'title': title,
+        'title': ?title,
       });
     } on PlatformException {
       // 忽略
@@ -94,7 +94,7 @@ class DownloadNotificationService {
     try {
       await _methodChannel.invokeMethod<void>('showDownloadCompleted', {
         'content': content,
-        if (title != null) 'title': title,
+        'title': ?title,
       });
     } on PlatformException {
       // 忽略
@@ -107,7 +107,7 @@ class DownloadNotificationService {
     try {
       await _methodChannel.invokeMethod<void>('showDownloadError', {
         'content': content,
-        if (title != null) 'title': title,
+        'title': ?title,
       });
     } on PlatformException {
       // 忽略
