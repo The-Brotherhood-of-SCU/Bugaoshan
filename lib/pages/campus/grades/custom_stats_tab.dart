@@ -6,7 +6,7 @@ import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/stat_item.dart';
 import 'package:bugaoshan/utils/app_shapes.dart';
-import 'scheme_scores_tab.dart' show ScoreCardWidget;
+import 'scheme_scores_tab.dart' show SchemeScoreSelector, ScoreCardWidget;
 
 class CustomStatsTab extends StatefulWidget {
   const CustomStatsTab({super.key, this.searchQuery = ''});
@@ -131,7 +131,9 @@ class _CustomStatsTabState extends State<CustomStatsTab> {
     return CustomScrollView(
       slivers: [
         // 1. Quick-select chip bar
-        SliverToBoxAdapter(child: _buildChipBar(context, visibleKeys)),
+        SliverToBoxAdapter(
+          child: _buildChipBar(context, provider, visibleKeys),
+        ),
         // 2. Summary card (only when something is selected)
         if (selectedItems.isNotEmpty)
           SliverToBoxAdapter(
@@ -184,7 +186,11 @@ class _CustomStatsTabState extends State<CustomStatsTab> {
 
   // --- Chip bar ---
 
-  Widget _buildChipBar(BuildContext context, Set<String> visibleKeys) {
+  Widget _buildChipBar(
+    BuildContext context,
+    GradesProvider provider,
+    Set<String> visibleKeys,
+  ) {
     final l10n = AppLocalizations.of(context)!;
 
     return Card(
@@ -194,6 +200,14 @@ class _CustomStatsTabState extends State<CustomStatsTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (provider.schemes.length > 1) ...[
+              SchemeScoreSelector(
+                schemes: provider.schemes,
+                selectedScheme: provider.schemeScores!,
+                onChanged: (scheme) => _changeScheme(provider, scheme),
+              ),
+              const SizedBox(height: 12),
+            ],
             _buildAttrChips(context),
             const SizedBox(height: 8),
             Row(
@@ -220,6 +234,11 @@ class _CustomStatsTabState extends State<CustomStatsTab> {
         ),
       ),
     );
+  }
+
+  void _changeScheme(GradesProvider provider, SchemeScoreSummary scheme) {
+    _selectedKeys.clear();
+    provider.selectScheme(scheme);
   }
 
   Widget _buildAttrChips(BuildContext context) {
