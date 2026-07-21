@@ -71,6 +71,8 @@ flutter:
     - assets/js/
     - assets/scripts/
     - CHANGELOG.md
+  config:
+    enable-swift-package-manager: false
 flutter_launcher_icons:
   android: true
   ios: true
