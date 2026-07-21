@@ -893,6 +893,7 @@
         }
     },
     "iconSwitchNotSupported": "当前平台不支持动态切换应用图标",
+    "featureNotSupported": "当前平台不支持此功能",
     "newIconSubtitle": "Bugaoshan 新图标",
     "oldIconSubtitle": "Bugaoshan 经典图标"
 }

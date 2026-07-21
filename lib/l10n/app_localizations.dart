@@ -4333,6 +4333,12 @@ abstract class AppLocalizations {
   /// **'Dynamic icon switching is not supported on this platform'**
   String get iconSwitchNotSupported;
 
+  /// No description provided for @featureNotSupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This feature is not supported on this platform'**
+  String get featureNotSupported;
+
   /// No description provided for @newIconSubtitle.
   ///
   /// In en, this message translates to:

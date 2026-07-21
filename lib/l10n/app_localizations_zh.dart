@@ -2219,6 +2219,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get iconSwitchNotSupported => '当前平台不支持动态切换应用图标';
 
   @override
+  String get featureNotSupported => '当前平台不支持此功能';
+
+  @override
   String get newIconSubtitle => 'Bugaoshan 新图标';
 
   @override

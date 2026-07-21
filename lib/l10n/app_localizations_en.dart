@@ -2280,6 +2280,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Dynamic icon switching is not supported on this platform';
 
   @override
+  String get featureNotSupported =>
+      'This feature is not supported on this platform';
+
+  @override
   String get newIconSubtitle => 'Bugaoshan New Icon';
 
   @override
