@@ -55,12 +55,60 @@ void main() {
     expect(restartedAsB.schemeScores?.cjlx, 'A-scheme');
     expect(restartedAsB.passingScores?.groups.single.label, 'A-passing');
   });
+
+  test(
+    'all schemes are kept and the main scheme is selected by default',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final api = _FakeZhjwApiService()
+        ..schemeData = _multipleSchemeData()
+        ..passingData = _scoreData('passing');
+      final provider = GradesProvider(prefs, api, initialUserId: 'account-A');
+
+      await provider.refreshSchemeScores();
+
+      expect(provider.schemes.map((scheme) => scheme.cjlx), [
+        '电气电子创新设计（微专业）教学计划',
+        '计算机科学与技术教学计划',
+      ]);
+      expect(provider.schemeScores?.cjlx, '计算机科学与技术教学计划');
+      expect(provider.schemeScores?.items.single.courseName, '主专业课程');
+    },
+  );
 }
 
 Map<String, dynamic> _scoreData(String label) => {
   'lnList': [
     {'cjlx': label, 'cjList': <Map<String, dynamic>>[]},
   ],
+};
+
+Map<String, dynamic> _multipleSchemeData() => {
+  'lnList': [
+    {
+      'cjlx': '电气电子创新设计（微专业）教学计划',
+      'zxf': 20,
+      'cjList': [_courseData('微专业课程')],
+    },
+    {
+      'cjlx': '计算机科学与技术教学计划',
+      'zxf': 160,
+      'cjList': [_courseData('主专业课程')],
+    },
+  ],
+};
+
+Map<String, dynamic> _courseData(String name) => {
+  'courseName': name,
+  'courseAttributeName': '必修',
+  'credit': '2',
+  'cj': '90',
+  'courseScore': 90,
+  'gradePointScore': 4,
+  'gradeName': 'A',
+  'academicYearCode': '2025-2026',
+  'termName': '秋',
 };
 
 class _FakeZhjwApiService implements ZhjwApiService {
