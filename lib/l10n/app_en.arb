@@ -351,10 +351,13 @@
 
     "scuUnifiedAuth": "Unified Identity Authentication",
     "studentId": "Student ID",
+    "studentIdHint": "Please enter your student ID",
     "studentIdRequired": "Please enter your student ID",
     "password": "Password",
+    "passwordHint": "Please enter your password",
     "passwordRequired": "Please enter your password",
     "captcha": "Captcha",
+    "captchaHint": "Captcha",
     "captchaRequired": "Please enter the captcha",
     "rememberPassword": "Remember Password",
     "autoLogin": "Auto Login",

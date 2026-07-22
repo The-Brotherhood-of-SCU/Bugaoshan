@@ -8,7 +8,6 @@ import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart' show CaptchaResult;
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/ocr_service.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
 
 class ScuLoginPage extends StatefulWidget {
   const ScuLoginPage({super.key});
@@ -18,6 +17,11 @@ class ScuLoginPage extends StatefulWidget {
 }
 
 class _ScuLoginPageState extends State<ScuLoginPage> {
+  static const double _headerHeight = 260;
+  static const double _cornerRadius = 24;
+  // 卡片平坦区覆盖背景图直边的像素量
+  static const double _flatOverlap = 50;
+
   final _formKey = GlobalKey<FormState>();
   final _usernameCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
@@ -26,6 +30,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
   CaptchaResult? _captcha;
   bool _loading = false;
   bool _captchaLoading = false;
+  bool _headerReady = false;
   String? _errorMsg;
   bool _obscurePassword = true;
   bool _rememberPassword = true;
@@ -39,6 +44,25 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
     });
     _loadSaved();
     _loadCaptcha();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_headerReady) {
+      _preloadHeaderImage();
+    }
+  }
+
+  Future<void> _preloadHeaderImage() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    await precacheImage(
+      AssetImage(
+        isDark ? 'assets/scu_header_dark.png' : 'assets/scu_header_light.png',
+      ),
+      context,
+    );
+    if (mounted) setState(() => _headerReady = true);
   }
 
   @override
@@ -175,147 +199,477 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
     }
   }
 
+  Color get _brandColor => Theme.of(context).brightness == Brightness.light
+      ? const Color(0xFFE65646)
+      : const Color(0xFF8965BD);
+
+  Color get _cardBgColor => Theme.of(context).brightness == Brightness.light
+      ? const Color(0xFFFFFAF7)
+      : const Color(0xFF24272C);
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-
-    final formContent = [
-      const SizedBox(height: 8),
-      Container(
-        width: 88,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppShapes.medium),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppShapes.medium),
-          child: Image.asset('assets/scu.webp', fit: BoxFit.cover),
-        ),
-      ),
-      const SizedBox(height: 2),
-      Text(
-        l10n.scuUnifiedAuth,
-        style: Theme.of(context).textTheme.titleMedium
-            ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)
-            .copyWith(fontSize: 24),
-        textAlign: TextAlign.center,
-      ),
-      const SizedBox(height: 2),
-      TextFormField(
-        controller: _usernameCtrl,
-        decoration: InputDecoration(
-          labelText: l10n.studentId,
-          prefixIcon: const Icon(Icons.person_outline),
-          border: const OutlineInputBorder(),
-        ),
-        keyboardType: TextInputType.number,
-        validator: (v) =>
-            (v == null || v.trim().isEmpty) ? l10n.studentIdRequired : null,
-      ),
-      TextFormField(
-        controller: _passwordCtrl,
-        decoration: InputDecoration(
-          labelText: l10n.password,
-          prefixIcon: const Icon(Icons.lock_outline),
-          border: const OutlineInputBorder(),
-          suffixIcon: IconButton(
-            icon: Icon(
-              _obscurePassword ? Icons.visibility_off : Icons.visibility,
-            ),
-            onPressed: () =>
-                setState(() => _obscurePassword = !_obscurePassword),
-          ),
-        ),
-        obscureText: _obscurePassword,
-        validator: (v) =>
-            (v == null || v.isEmpty) ? l10n.passwordRequired : null,
-      ),
-      _CaptchaRow(
-        captcha: _captcha,
-        loading: _captchaLoading,
-        controller: _captchaCtrl,
-        onRefresh: _loadCaptcha,
-      ),
-      Row(
-        children: [
-          Checkbox(
-            value: _rememberPassword,
-            onChanged: (v) => setState(() {
-              _rememberPassword = v ?? false;
-              if (!_rememberPassword) _autoLogin = false;
-            }),
-          ),
-          Text(l10n.rememberPassword),
-        ],
-      ),
-      if (_rememberPassword)
-        Row(
-          children: [
-            Checkbox(
-              value: _autoLogin,
-              onChanged: (v) => setState(() => _autoLogin = v ?? false),
-            ),
-            Text(l10n.autoLogin),
-          ],
-        ),
-      if (_errorMsg != null)
-        Text(
-          _errorMsg!,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.error,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      FilledButton(
-        onPressed: _loading ? null : _submit,
-        child: _loading
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : Text(l10n.loginButton),
-      ),
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _DisclaimerRow('· ${l10n.scuLoginDisclaimerPwd}'),
-          _DisclaimerRow('· ${l10n.scuLoginDisclaimerOcr}'),
-          _DisclaimerRow('· ${l10n.scuLoginDisclaimerPrivacy}'),
-        ],
-      ),
-    ];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.scuUnifiedAuth)),
-      body: CustomScrollView(
-        slivers: [
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Column(
-                children: [
-                  const Spacer(flex: 1),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 24),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        spacing: 16,
-                        children: formContent,
+      body: _headerReady
+          ? SafeArea(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: Center(
+                      child: Container(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
+                          maxWidth: 440,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Stack(
+                              children: [
+                                _buildHeaderImage(isDark),
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                    top:
+                                        _headerHeight -
+                                        2 * _cornerRadius -
+                                        _flatOverlap,
+                                    left: 20,
+                                    right: 20,
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      _buildFormCard(l10n, isDark),
+                                      const SizedBox(height: 32),
+                                      _buildDisclaimer(l10n, isDark),
+                                      const SizedBox(height: 40),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
+                  );
+                },
+              ),
+            )
+          : const SizedBox.shrink(),
+    );
+  }
+
+  Widget _buildHeaderImage(bool isDark) {
+    return Container(
+      height: _headerHeight,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.08),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Image.asset(
+        isDark ? 'assets/scu_header_dark.png' : 'assets/scu_header_light.png',
+        fit: BoxFit.fitWidth,
+        alignment: Alignment.topCenter,
+      ),
+    );
+  }
+
+  Widget _buildFormCard(AppLocalizations l10n, bool isDark) {
+    return Container(
+      decoration: BoxDecoration(
+        color: _cardBgColor,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.08),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildInputField(
+              controller: _usernameCtrl,
+              label: l10n.studentId,
+              hint: l10n.studentIdHint,
+              prefixIcon: Icons.person_outline,
+              keyboardType: TextInputType.number,
+              isDark: isDark,
+              validator: (v) => (v == null || v.trim().isEmpty)
+                  ? l10n.studentIdRequired
+                  : null,
+            ),
+            const SizedBox(height: 16),
+            _buildInputField(
+              controller: _passwordCtrl,
+              label: l10n.password,
+              hint: l10n.passwordHint,
+              prefixIcon: Icons.lock_outline,
+              obscureText: _obscurePassword,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  color: isDark ? Colors.white54 : Colors.grey.shade600,
+                  size: 20,
+                ),
+                onPressed: () =>
+                    setState(() => _obscurePassword = !_obscurePassword),
+              ),
+              isDark: isDark,
+              validator: (v) =>
+                  (v == null || v.isEmpty) ? l10n.passwordRequired : null,
+            ),
+            const SizedBox(height: 16),
+            _buildCaptchaRow(l10n, isDark),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                _buildCheckbox(
+                  value: _rememberPassword,
+                  label: l10n.rememberPassword,
+                  isDark: isDark,
+                  onChanged: (v) => setState(() {
+                    _rememberPassword = v ?? false;
+                    if (!_rememberPassword) _autoLogin = false;
+                  }),
+                ),
+                const SizedBox(width: 24),
+                _buildCheckbox(
+                  value: _autoLogin,
+                  label: l10n.autoLogin,
+                  isDark: isDark,
+                  onChanged: (v) => setState(() => _autoLogin = v ?? false),
+                ),
+              ],
+            ),
+            if (_errorMsg != null) ...[
+              const SizedBox(height: 16),
+              _buildErrorMessage(_errorMsg!, isDark),
+            ],
+            const SizedBox(height: 20),
+            _buildLoginButton(l10n),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData prefixIcon,
+    required bool isDark,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    Widget? suffixIcon,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: isDark ? Colors.white70 : Colors.grey.shade700,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          obscureText: obscureText,
+          validator: validator,
+          style: TextStyle(
+            fontSize: 15,
+            color: isDark ? Colors.white : Colors.black87,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(
+              color: isDark ? Colors.white24 : Colors.grey.shade400,
+              fontSize: 14,
+            ),
+            prefixIcon: Container(
+              margin: const EdgeInsets.only(left: 4),
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _brandColor.withValues(alpha: 0.15),
+              ),
+              child: Icon(prefixIcon, color: _brandColor, size: 18),
+            ),
+            suffixIcon: suffixIcon,
+            filled: true,
+            fillColor: isDark ? const Color(0xFF2D2F36) : Colors.grey.shade50,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: isDark ? Colors.white12 : Colors.grey.shade300,
+                width: 1,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: isDark ? Colors.white12 : Colors.grey.shade300,
+                width: 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: _brandColor, width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.error,
+                width: 1,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 14,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCaptchaRow(AppLocalizations l10n, bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.captcha,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: isDark ? Colors.white70 : Colors.grey.shade700,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: _captchaCtrl,
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? l10n.captchaRequired
+                    : null,
+                style: TextStyle(
+                  fontSize: 15,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
+                decoration: InputDecoration(
+                  hintText: l10n.captchaHint,
+                  hintStyle: TextStyle(
+                    color: isDark ? Colors.white24 : Colors.grey.shade400,
+                    fontSize: 14,
                   ),
-                  const Spacer(flex: 2),
-                ],
+                  prefixIcon: Container(
+                    margin: const EdgeInsets.only(left: 4),
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _brandColor.withValues(alpha: 0.15),
+                    ),
+                    child: Icon(
+                      Icons.shield_outlined,
+                      color: _brandColor,
+                      size: 18,
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: isDark
+                      ? const Color(0xFF2C2C2C)
+                      : Colors.grey.shade50,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: isDark ? Colors.white12 : Colors.grey.shade300,
+                      width: 1,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: isDark ? Colors.white12 : Colors.grey.shade300,
+                      width: 1,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: _brandColor, width: 1.5),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.error,
+                      width: 1,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 14,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            GestureDetector(
+              onTap: _loadCaptcha,
+              child: Container(
+                width: 120,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDark ? Colors.white12 : Colors.grey.shade300,
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: _captchaLoading
+                    ? Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: _brandColor,
+                          ),
+                        ),
+                      )
+                    : _captcha != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.memory(
+                          _decodeBase64Image(_captcha!.captchaBase64),
+                          fit: BoxFit.contain,
+                        ),
+                      )
+                    : Icon(
+                        Icons.refresh_outlined,
+                        color: isDark ? Colors.white54 : Colors.grey.shade600,
+                        size: 22,
+                      ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: _loadCaptcha,
+              child: Container(
+                width: 44,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: _brandColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.refresh_outlined,
+                  color: _brandColor,
+                  size: 20,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCheckbox({
+    required bool value,
+    required String label,
+    required bool isDark,
+    required ValueChanged<bool?> onChanged,
+  }) {
+    return GestureDetector(
+      onTap: () => onChanged(!value),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 20,
+            height: 20,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: value ? _brandColor : Colors.transparent,
+              border: Border.all(
+                color: value
+                    ? _brandColor
+                    : (isDark ? Colors.white38 : Colors.grey.shade400),
+                width: 1.5,
+              ),
+            ),
+            child: value
+                ? const Icon(Icons.check, size: 14, color: Colors.white)
+                : null,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              color: isDark ? Colors.white70 : Colors.grey.shade700,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorMessage(String message, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: _brandColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _brandColor.withValues(alpha: 0.2), width: 1),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.warning_amber_rounded, size: 18, color: _brandColor),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                fontSize: 13,
+                color: _brandColor,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -323,85 +677,86 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       ),
     );
   }
-}
 
-class _DisclaimerRow extends StatelessWidget {
-  final String text;
-  const _DisclaimerRow(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 1),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-      ),
+  Widget _buildLoginButton(AppLocalizations l10n) {
+    return FilledButton(
+      onPressed: _loading ? null : _submit,
+      style:
+          FilledButton.styleFrom(
+            backgroundColor: _brandColor,
+            foregroundColor: Colors.white,
+            minimumSize: const Size(double.infinity, 50),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25),
+            ),
+            elevation: 2,
+            shadowColor: _brandColor.withValues(alpha: 0.3),
+            textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 2,
+            ),
+          ).copyWith(
+            overlayColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.pressed)) {
+                return Colors.white.withValues(alpha: 0.2);
+              }
+              if (states.contains(WidgetState.hovered)) {
+                return Colors.white.withValues(alpha: 0.1);
+              }
+              return null;
+            }),
+          ),
+      child: _loading
+          ? SizedBox(
+              height: 22,
+              width: 22,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: Colors.white,
+              ),
+            )
+          : Text(l10n.loginButton),
     );
   }
-}
 
-class _CaptchaRow extends StatelessWidget {
-  final CaptchaResult? captcha;
-  final bool loading;
-  final TextEditingController controller;
-  final VoidCallback onRefresh;
-
-  const _CaptchaRow({
-    required this.captcha,
-    required this.loading,
-    required this.controller,
-    required this.onRefresh,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 12,
+  Widget _buildDisclaimer(AppLocalizations l10n, bool isDark) {
+    final style = TextStyle(
+      fontSize: 12,
+      color: isDark ? Colors.white38 : Colors.grey.shade500,
+      height: 1.4,
+    );
+    final bulletStyle = TextStyle(
+      fontSize: 12,
+      color: isDark ? Colors.white24 : Colors.grey.shade400,
+      height: 1.4,
+    );
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Expanded(
-          child: TextFormField(
-            controller: controller,
-            decoration: InputDecoration(
-              labelText: l10n.captcha,
-              prefixIcon: const Icon(Icons.security),
-              border: const OutlineInputBorder(),
-            ),
-            validator: (v) =>
-                (v == null || v.trim().isEmpty) ? l10n.captchaRequired : null,
-          ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('· ', style: bulletStyle),
+            Flexible(child: Text(l10n.scuLoginDisclaimerPwd, style: style)),
+          ],
         ),
-        GestureDetector(
-          onTap: onRefresh,
-          child: Container(
-            width: 110,
-            height: 56,
-            decoration: BoxDecoration(
-              border: Border.all(color: Theme.of(context).dividerColor),
-              borderRadius: BorderRadius.circular(AppShapes.xs),
-            ),
-            child: loading
-                ? const Center(
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  )
-                : captcha != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(AppShapes.small),
-                    child: Image.memory(
-                      _decodeBase64Image(captcha!.captchaBase64),
-                      fit: BoxFit.contain,
-                    ),
-                  )
-                : const Icon(Icons.refresh),
-          ),
+        const SizedBox(height: 2),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('· ', style: bulletStyle),
+            Flexible(child: Text(l10n.scuLoginDisclaimerOcr, style: style)),
+          ],
+        ),
+        const SizedBox(height: 2),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('· ', style: bulletStyle),
+            Flexible(child: Text(l10n.scuLoginDisclaimerPrivacy, style: style)),
+          ],
         ),
       ],
     );

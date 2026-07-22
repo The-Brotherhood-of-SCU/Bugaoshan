@@ -134,18 +134,21 @@ class UpdateService {
     if (response.statusCode == 200) {
       if (response.body.isEmpty) return const ReleaseInfo();
       final List<dynamic> releases = jsonDecode(response.body);
-      if (releases.isNotEmpty && releases[0]['tag_name'] != null) {
-        final tagName = releases[0]['tag_name'] as String;
-        final isPrerelease = releases[0]['prerelease'] == true;
-        final assets = releases[0]['assets'] as List<dynamic>;
+      // /releases 按创建时间倒序返回，需找到第一个真正的 prerelease，
+      // 而不是直接取 releases[0]（它可能是后发布的正式版）。
+      for (final release in releases) {
+        if (release['prerelease'] != true || release['tag_name'] == null) {
+          continue;
+        }
+        final assets = release['assets'] as List<dynamic>;
         final asset = await _selectAsset(assets);
         return ReleaseInfo(
-          tagName: tagName,
+          tagName: release['tag_name'] as String,
           downloadUrl: asset?['browser_download_url'] as String?,
           filename: asset?['name'] as String?,
           checksumSha256: asset == null ? null : _parseDigest(asset),
-          isPrerelease: isPrerelease,
-          body: releases[0]['body'] as String?,
+          isPrerelease: true,
+          body: release['body'] as String?,
         );
       }
       return const ReleaseInfo();
