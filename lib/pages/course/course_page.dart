@@ -1,13 +1,17 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:bugaoshan/widgets/common/third_center.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/course/course_edit_page.dart';
 import 'package:bugaoshan/pages/course/import_schedule_page.dart';
 import 'package:bugaoshan/pages/course/schedule_management_page.dart';
+import 'package:bugaoshan/services/api/academic_calendar_service.dart';
+import 'package:bugaoshan/models/academic_calendar.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/course/course_detail_sheet.dart';
@@ -23,6 +27,7 @@ part 'course_page_swipe_page_view.dart';
 part 'course_page_top_bar.dart';
 part 'course_page_actions.dart';
 part 'course_page_no_schedule_view.dart';
+part 'course_page_vacation_view.dart';
 
 class CoursePage extends StatefulWidget {
   const CoursePage({super.key, this.demoMode = false});
@@ -38,14 +43,22 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   final appConfig = getIt<AppConfigProvider>();
   late PageController _pageController;
   late int _visibleWeek;
+  bool _isViewingVacation = false;
+  bool _promptedNextSemester = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _visibleWeek = courseProvider.currentWeek.value;
+    final config = courseProvider.scheduleConfig.value;
+    final actualWeek = config.getCurrentWeek();
+    final totalWeeks = config.totalWeeks;
+    _isViewingVacation = actualWeek > totalWeeks;
+    _visibleWeek = _isViewingVacation
+        ? totalWeeks
+        : courseProvider.currentWeek.value;
     _pageController = PageController(
-      initialPage: courseProvider.currentWeek.value - 1,
+      initialPage: _isViewingVacation ? totalWeeks : _visibleWeek - 1,
     );
     courseProvider.currentWeek.addListener(_onCurrentWeekChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -86,8 +99,27 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   }
 
   void _syncToCurrentWeek() {
-    final currentWeek = courseProvider.scheduleConfig.value.getCurrentWeek();
-    courseProvider.updateCurrentWeek(currentWeek);
+    final config = courseProvider.scheduleConfig.value;
+    final actualWeek = config.getCurrentWeek();
+    final totalWeeks = config.totalWeeks;
+    if (actualWeek > totalWeeks) {
+      _navigateToVacation();
+    } else {
+      courseProvider.updateCurrentWeek(actualWeek);
+    }
+    _checkAndPromptNextSemester();
+  }
+
+  void _navigateToVacation() {
+    if (!_isViewingVacation && _pageController.hasClients) {
+      _isViewingVacation = true;
+      _pageController.animateToPage(
+        courseProvider.scheduleConfig.value.totalWeeks,
+        duration: appConfig.cardSizeAnimationDuration.value,
+        curve: AppCurves.quick,
+      );
+      setState(() {});
+    }
   }
 
   @override
@@ -112,8 +144,10 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
               week: courseProvider.currentWeek.value,
               totalWeeks: courseProvider.scheduleConfig.value.totalWeeks,
               visibleWeek: _visibleWeek,
-              onPreviousWeek: () =>
-                  _changeWeek(courseProvider.currentWeek.value - 1),
+              isViewingVacation: _isViewingVacation,
+              onPreviousWeek: () => _isViewingVacation
+                  ? _changeWeek(courseProvider.scheduleConfig.value.totalWeeks)
+                  : _changeWeek(courseProvider.currentWeek.value - 1),
               onNextWeek: () =>
                   _changeWeek(courseProvider.currentWeek.value + 1),
               onGoToCurrentWeek: _goToCurrentWeek,
@@ -201,9 +235,16 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
 
     return _SwipePageView(
       controller: _pageController,
-      itemCount: totalWeeks,
+      itemCount: totalWeeks + 1,
       onPageChanged: _onPageChanged,
       itemBuilder: (context, index) {
+        if (index >= totalWeeks) {
+          return _VacationView(
+            scheduleConfig: config,
+            allSchedules: courseProvider.allSchedules.value,
+            onViewNextSemester: _onViewNextSemester,
+          );
+        }
         return CourseGrid(
           courses: allCourses,
           config: config,
@@ -236,6 +277,16 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   }
 
   void _onPageChanged(int index) {
+    final totalWeeks = courseProvider.scheduleConfig.value.totalWeeks;
+    if (index >= totalWeeks) {
+      if (!_isViewingVacation) {
+        setState(() => _isViewingVacation = true);
+      }
+      return;
+    }
+    if (_isViewingVacation) {
+      setState(() => _isViewingVacation = false);
+    }
     final displayWeek = index + 1;
     if (_visibleWeek != displayWeek) {
       setState(() {
@@ -246,11 +297,92 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   }
 
   void _changeWeek(int newWeek) {
+    final totalWeeks = courseProvider.scheduleConfig.value.totalWeeks;
+    if (newWeek > totalWeeks) {
+      _navigateToVacation();
+      return;
+    }
+    if (newWeek < 1) newWeek = 1;
+    if (_isViewingVacation) {
+      setState(() => _isViewingVacation = false);
+    }
     courseProvider.updateCurrentWeek(newWeek);
   }
 
   void _goToCurrentWeek() {
     _syncToCurrentWeek();
+  }
+
+  Future<void> _checkAndPromptNextSemester() async {
+    if (_promptedNextSemester) return;
+    _promptedNextSemester = true;
+
+    try {
+      final assetContent = await rootBundle.loadString(
+        'assets/academic_calendar.json',
+      );
+      final decoded = jsonDecode(assetContent) as Map<String, dynamic>;
+      final expanded = AcademicCalendarService.expandCalendarJson(decoded);
+      final data = AcademicCalendarData.fromJson(expanded);
+      final nextSemester = data.findNextSemester(
+        courseProvider.scheduleConfig.value.semesterEndDate,
+      );
+      if (nextSemester == null) return;
+
+      final registrationDate =
+          nextSemester.registrationEvent?.date ?? nextSemester.startDate;
+      final today = DateTime.now();
+      if (today.isBefore(registrationDate)) return;
+
+      // Check if already viewing next semester
+      final currentSchedule = courseProvider.scheduleConfig.value;
+      if (currentSchedule.semesterStartDate.year == registrationDate.year &&
+          currentSchedule.semesterStartDate.month == registrationDate.month) {
+        return;
+      }
+
+      final matchId = nextSemester.findMatchingScheduleId(
+        courseProvider.allSchedules.value,
+      );
+      if (matchId == null) return;
+
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.promptSwitchSemesterTitle),
+          content: Text(l10n.promptSwitchSemester),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(l10n.switchSchedule),
+            ),
+          ],
+        ),
+      );
+      if (confirmed == true) {
+        courseProvider.switchSchedule(matchId);
+      }
+    } catch (_) {}
+  }
+
+  void _onViewNextSemester(AcademicCalendarSemester semester) {
+    final l10n = AppLocalizations.of(context)!;
+    final matchId = semester.findMatchingScheduleId(
+      courseProvider.allSchedules.value,
+    );
+    if (matchId != null) {
+      courseProvider.switchSchedule(matchId);
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.noNextSemesterSchedule)));
+    }
   }
 }
 

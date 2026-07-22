@@ -45,7 +45,7 @@ class CourseProvider {
       if (allSchedules.value.isEmpty) {
         currentWeek.value = 1;
       } else {
-        currentWeek.value = config.getCurrentWeek();
+        currentWeek.value = config.getCurrentWeek().clamp(1, config.totalWeeks);
       }
     } catch (e) {
       debugPrint('CourseProvider: failed to load data: $e');
@@ -126,7 +126,7 @@ class CourseProvider {
     allSchedules.value = _db.getAllSchedules();
     if (config.id == _db.getCurrentScheduleId()) {
       scheduleConfig.value = config;
-      currentWeek.value = config.getCurrentWeek();
+      currentWeek.value = config.getCurrentWeek().clamp(1, config.totalWeeks);
       // 非当前课表不影响当前课程展示，也无需刷新桌面组件。
       onCoursesChanged?.call();
     }

@@ -4,8 +4,9 @@ class _TopBar extends StatelessWidget {
   final int week;
   final int totalWeeks;
   final int visibleWeek;
+  final bool isViewingVacation;
   final VoidCallback onPreviousWeek;
-  final VoidCallback onNextWeek;
+  final VoidCallback? onNextWeek;
   final VoidCallback onGoToCurrentWeek;
   final VoidCallback onImport;
   final VoidCallback onExport;
@@ -15,6 +16,7 @@ class _TopBar extends StatelessWidget {
     required this.week,
     required this.totalWeeks,
     required this.visibleWeek,
+    this.isViewingVacation = false,
     required this.onPreviousWeek,
     required this.onNextWeek,
     required this.onGoToCurrentWeek,
@@ -55,19 +57,23 @@ class _TopBar extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     GestureDetector(
-                      onTap: week > 1 ? onPreviousWeek : null,
+                      onTap: isViewingVacation
+                          ? onPreviousWeek
+                          : (week > 1 ? onPreviousWeek : null),
                       child: Icon(
                         Icons.chevron_left,
                         size: 16,
-                        color: week > 1
+                        color: isViewingVacation || week > 1
                             ? Theme.of(context).colorScheme.onSurface
                             : Theme.of(context).disabledColor,
                       ),
                     ),
                     SizedBox(
-                      width: 60,
+                      width: isViewingVacation ? 80 : 60,
                       child: Text(
-                        l10n.currentWeek(week),
+                        isViewingVacation
+                            ? l10n.onVacation
+                            : l10n.currentWeek(week),
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.w500,
@@ -76,20 +82,27 @@ class _TopBar extends StatelessWidget {
                       ),
                     ),
                     GestureDetector(
-                      onTap: week < totalWeeks ? onNextWeek : null,
+                      onTap: isViewingVacation
+                          ? null
+                          : (week <= totalWeeks ? onNextWeek : null),
                       child: Icon(
                         Icons.chevron_right,
                         size: 16,
-                        color: week < totalWeeks
-                            ? Theme.of(context).colorScheme.onSurface
-                            : Theme.of(context).disabledColor,
+                        color: isViewingVacation
+                            ? Theme.of(context).disabledColor
+                            : (week <= totalWeeks
+                                  ? Theme.of(context).colorScheme.onSurface
+                                  : Theme.of(context).disabledColor),
                       ),
                     ),
                     const SizedBox(width: 3),
-                    _WeekBadge(
-                      isCurrentCalendarWeek: isCurrentCalendarWeek,
-                      actualCurrentWeek: config.getCurrentWeek(),
-                    ),
+                    if (isViewingVacation)
+                      _VacationBadge()
+                    else
+                      _WeekBadge(
+                        isCurrentCalendarWeek: isCurrentCalendarWeek,
+                        actualCurrentWeek: config.getCurrentWeek(),
+                      ),
                   ],
                 ),
               ],
@@ -165,5 +178,31 @@ class _WeekBadge extends StatelessWidget {
       ),
     );
     return body;
+  }
+}
+
+class _VacationBadge extends StatelessWidget {
+  const _VacationBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+      decoration: BoxDecoration(
+        color: scheme.tertiaryContainer,
+        borderRadius: BorderRadius.circular(AppShapes.full),
+      ),
+      child: Text(
+        l10n.vacationBadge,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: scheme.onTertiaryContainer,
+          fontWeight: FontWeight.w600,
+          fontSize: 9,
+        ),
+      ),
+    );
   }
 }
