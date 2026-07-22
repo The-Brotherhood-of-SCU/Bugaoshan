@@ -1777,6 +1777,12 @@ abstract class AppLocalizations {
   /// **'Student ID'**
   String get studentId;
 
+  /// No description provided for @studentIdHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your student ID'**
+  String get studentIdHint;
+
   /// No description provided for @studentIdRequired.
   ///
   /// In en, this message translates to:
@@ -1789,6 +1795,12 @@ abstract class AppLocalizations {
   /// **'Password'**
   String get password;
 
+  /// No description provided for @passwordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your password'**
+  String get passwordHint;
+
   /// No description provided for @passwordRequired.
   ///
   /// In en, this message translates to:
@@ -1800,6 +1812,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Captcha'**
   String get captcha;
+
+  /// No description provided for @captchaHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Captcha'**
+  String get captchaHint;
 
   /// No description provided for @captchaRequired.
   ///
