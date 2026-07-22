@@ -20,6 +20,7 @@ class _UiPageState extends State<UiPage> {
       builder: (dialogContext) => DownloadProgressDialogView(
         progressState: UpdateProgressState(),
         l10n: l10n,
+        filename: 'bugaoshan-11.45.14.apk',
         onDownloadInBackground: () => Navigator.of(dialogContext).pop(),
         onCancel: () => Navigator.of(dialogContext).pop(),
       ),

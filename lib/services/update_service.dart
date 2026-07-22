@@ -58,6 +58,7 @@ class UpdateCheckResult {
   bool get noUpdate => status == UpdateCheckStatus.noUpdate;
   String? get version => release?.tagName;
   String? get downloadUrl => release?.downloadUrl;
+  String? get filename => release?.filename;
   bool get isPrerelease => release?.isPrerelease ?? false;
   String? get releaseNotes => release?.body;
 }
@@ -118,6 +119,7 @@ class UpdateService {
     return ReleaseInfo(
       tagName: data['tag_name'] as String,
       downloadUrl: asset['browser_download_url'] as String,
+      filename: asset['name'] as String?,
       checksumSha256: _parseDigest(asset),
       isPrerelease: data['prerelease'] == true,
       body: data['body'] as String?,
@@ -143,6 +145,7 @@ class UpdateService {
         return ReleaseInfo(
           tagName: release['tag_name'] as String,
           downloadUrl: asset?['browser_download_url'] as String?,
+          filename: asset?['name'] as String?,
           checksumSha256: asset == null ? null : _parseDigest(asset),
           isPrerelease: true,
           body: release['body'] as String?,
@@ -176,6 +179,7 @@ class UpdateService {
       final info = ReleaseInfo(
         tagName: release['tag_name'] as String,
         downloadUrl: asset?['browser_download_url'] as String?,
+        filename: asset?['name'] as String?,
         checksumSha256: asset == null ? null : _parseDigest(asset),
         isPrerelease: isPrerelease,
         body: release['body'] as String?,

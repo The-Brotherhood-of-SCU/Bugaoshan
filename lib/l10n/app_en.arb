@@ -140,6 +140,23 @@
     "usePreviewUpdateSourceHint": "Affects only the automatic checks on the home and about pages. The test page always checks both channels.",
     "downloading": "Downloading",
     "updateFailed": "Update failed",
+    "notificationDownloading": "Downloading... {percent}%",
+    "notificationInstalling": "Installing...",
+    "notificationUpdateFailed": "Update failed: {error}",
+    "@notificationDownloading": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "@notificationUpdateFailed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
     "preReleaseWarning": "This is a pre-release version. Use with caution.",
     "releaseNotes": "Release Notes",
     "neverMind": "Never Mind",
@@ -543,6 +560,34 @@
     "pricePerUnit": "Price per unit",
     "balanceQueryLoginRequired": "Please complete SCU Unified Identity login in the Profile page first",
     "balanceQueryNoBinding": "You haven't bound any room yet, please bind first",
+    "balanceTrend": "Usage Trend",
+    "balanceTrendTitleElectric": "Lighting Electricity Trend",
+    "balanceTrendTitleAc": "AC Electricity Trend",
+    "balanceTrendDailyAvgCost": "Daily Avg Cost",
+    "balanceTrendDailyAvgKwh": "Daily Avg Consumption",
+    "balanceTrendTotalCost": "Total Cost",
+    "balanceTrendTotalKwh": "Total Consumption",
+    "balanceTrendTotalDays": "Statistical Days",
+    "balanceTrendCurrentPrice": "Current Price",
+    "balanceTrendRecordCount": "Raw Record Count",
+    "balanceTrendRecordRange": "Record Time Range",
+    "balanceTrendSkippedRecharge": "Skipped Recharge Segments",
+    "balanceTrendNoData": "No history data yet. Refresh the page to start recording.",
+    "balanceTrendTimeRange7": "Last 7d",
+    "balanceTrendTimeRange30": "Last 30d",
+    "balanceTrendTimeRange90": "Last 90d",
+    "balanceTrendTimeRangeCustom": "Custom",
+    "balanceTrendChangeRange": "Change Range",
+    "balanceTrendCustomStart": "Start date",
+    "balanceTrendCustomEnd": "End date",
+    "balanceTrendRawRecords": "Raw Records",
+    "balanceTrendYAxisBalance": "Balance (kWh)",
+    "balanceTrendTooltipPrice": "Price",
+    "balanceTrendUnitPerDay": "CNY/day",
+    "balanceTrendUnitYuanPerKwh": "CNY/kWh",
+    "balanceQuerySettings": "Balance Query Settings",
+    "autoSampleBalanceOnLogin": "Auto-collect balance details on login",
+    "autoSampleBalanceOnLoginDesc": "After login, if no record exists for today, automatically query the current room's electricity and AC balance once to improve the statistics",
     "scuLoginDisclaimerPwd": "When 'Remember Password' is enabled, your password is encrypted and stored locally using system-level encryption",
     "scuLoginDisclaimerOcr": "Captcha is recognized by a local OCR model",
     "scuLoginDisclaimerPrivacy": "We do not collect any personal information",
@@ -855,6 +900,7 @@
         }
     },
     "iconSwitchNotSupported": "Dynamic icon switching is not supported on this platform",
+    "featureNotSupported": "This feature is not supported on this platform",
     "newIconSubtitle": "Bugaoshan New Icon",
     "oldIconSubtitle": "Bugaoshan Classic Icon"
 }

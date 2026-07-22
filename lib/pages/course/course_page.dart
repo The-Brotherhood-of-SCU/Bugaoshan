@@ -75,8 +75,8 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
         _pageController.page?.round() != targetPage) {
       _pageController.animateToPage(
         targetPage,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
+        duration: appConfig.cardSizeAnimationDuration.value,
+        curve: AppCurves.quick,
       );
     } else if (_visibleWeek != courseProvider.currentWeek.value) {
       setState(() {
@@ -188,6 +188,17 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
         ? _kDemoCourses
         : courseProvider.courses.value;
     final totalWeeks = config.totalWeeks;
+
+    if (widget.demoMode) {
+      // 预览模式：固定显示第 1 周，不滑动、不跟随当前课表周数
+      return CourseGrid(
+        courses: allCourses,
+        config: config,
+        displayWeek: 1,
+        totalWeeks: totalWeeks,
+      );
+    }
+
     return _SwipePageView(
       controller: _pageController,
       itemCount: totalWeeks,

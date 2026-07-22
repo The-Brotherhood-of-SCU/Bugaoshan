@@ -7,10 +7,9 @@ import 'package:bugaoshan/pages/dev/auth_log/auth_log_tile.dart';
 import 'package:bugaoshan/pages/dev/changelog/changelog_tile.dart';
 import 'package:bugaoshan/pages/dev/environment_info_tile.dart';
 import 'package:bugaoshan/pages/dev/update_card.dart';
-import 'package:bugaoshan/pages/dev/update_result_notifier.dart';
 import 'package:bugaoshan/pages/dev/wizard_reset_tile.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/providers/app_info_provider.dart';
+import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/widgets/dialog/download_progress_dialog.dart';
 import 'package:bugaoshan/widgets/dialog/update_dialog.dart';
@@ -23,50 +22,32 @@ class DevPage extends StatefulWidget {
 }
 
 class _DevPageState extends State<DevPage> {
-  final _versionInfoProvider = getIt<AppInfoProvider>();
   final _appConfig = getIt<AppConfigProvider>();
-  final _stableResult = UpdateResultNotifier();
-  final _previewResult = UpdateResultNotifier();
+  final _updateProvider = getIt<UpdateProvider>();
 
-  bool get _supportsUpdate => getIt<UpdateService>().supportsInAppUpdate;
+  bool get _supportsUpdate => _updateProvider.supportsInAppUpdate;
 
   Future<void> _checkForUpdates() async {
     if (!_supportsUpdate) return;
-    final updateService = getIt<UpdateService>();
-
-    _stableResult.value = UpdateCheckResult.checking();
-    _previewResult.value = UpdateCheckResult.checking();
-
     try {
-      final currentVersion = _versionInfoProvider.currentVersion;
-      final gitTag = _versionInfoProvider.gitTag;
-      final (stable, preview) = await updateService.getAllLatestReleases();
-      _stableResult.value =
-          stable != null &&
-              stable.tagName != null &&
-              updateService.hasUpdate(currentVersion, stable.tagName!)
-          ? UpdateCheckResult.hasUpdate(stable)
-          : UpdateCheckResult.noUpdate();
-      _previewResult.value = preview != null && preview.tagName != gitTag
-          ? UpdateCheckResult.hasUpdate(preview)
-          : UpdateCheckResult.noUpdate();
-    } catch (e) {
-      final error = UpdateCheckResult.error(e.toString());
-      _stableResult.value = error;
-      _previewResult.value = error;
+      await _updateProvider.getAllLatestReleases();
+    } catch (_) {
+      // provider 已将 error 状态填充到 stableResult/previewResult,此处仅吞异常
     }
   }
 
-  void _showUpdateDialog(UpdateCheckResult result) {
+  void _showUpdateDialog(ValueNotifier<UpdateCheckResult> result) {
+    final value = result.value;
     showUpdateDialog(
       context: context,
-      version: result.version!,
-      releaseNotes: result.releaseNotes,
-      isPreview: result.isPrerelease,
+      version: value.version!,
+      releaseNotes: value.releaseNotes,
+      isPreview: value.isPrerelease,
       onStartUpdate: () => _startUpdate(
-        result.version!,
-        result.downloadUrl!,
-        checksumSha256: result.release?.checksumSha256,
+        value.version!,
+        value.downloadUrl!,
+        filename: value.filename!,
+        checksumSha256: value.release?.checksumSha256,
       ),
     );
   }
@@ -74,15 +55,16 @@ class _DevPageState extends State<DevPage> {
   void _startUpdate(
     String latestVersion,
     String downloadUrl, {
+    required String filename,
     String? checksumSha256,
   }) async {
-    final updateService = getIt<UpdateService>();
     await showDownloadProgressDialog(
       context: context,
       version: latestVersion,
       downloadUrl: downloadUrl,
+      filename: filename,
       checksumSha256: checksumSha256,
-      updateService: updateService,
+      updateProvider: _updateProvider,
     );
   }
 
@@ -119,15 +101,15 @@ class _DevPageState extends State<DevPage> {
       UpdateCard(
         icon: Icons.system_update_alt,
         title: localizations.updateToStable,
-        result: _stableResult,
-        onUpdate: () => _showUpdateDialog(_stableResult.value),
+        result: _updateProvider.stableResult,
+        onUpdate: () => _showUpdateDialog(_updateProvider.stableResult),
       ),
       const SizedBox(height: 16),
       UpdateCard(
         icon: Icons.science,
         title: localizations.updateToPreview,
-        result: _previewResult,
-        onUpdate: () => _showUpdateDialog(_previewResult.value),
+        result: _updateProvider.previewResult,
+        onUpdate: () => _showUpdateDialog(_updateProvider.previewResult),
       ),
       const SizedBox(height: 16),
       Center(

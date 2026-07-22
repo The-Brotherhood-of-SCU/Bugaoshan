@@ -3,6 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
+import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:bugaoshan/utils/open_link.dart'
@@ -15,6 +16,7 @@ import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/dialog/download_progress_dialog.dart';
 import 'package:bugaoshan/widgets/dialog/update_dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
+import 'package:bugaoshan/services/dynamic_icon_service.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
@@ -25,18 +27,41 @@ class AboutPage extends StatefulWidget {
 
 class _AboutPageState extends State<AboutPage> {
   final versionProvider = getIt<AppInfoProvider>();
-  final updateService = getIt<UpdateService>();
+  final updateProvider = getIt<UpdateProvider>();
   final appConfig = getIt<AppConfigProvider>();
-  bool _isCheckingUpdate = false;
+  String _iconAsset = 'assets/icon.png';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentIcon();
+  }
+
+  Future<void> _loadCurrentIcon() async {
+    final iconName = await DynamicIconService.getCurrentIconName();
+    if (!mounted) return;
+    setState(() {
+      _iconAsset = _iconAssetForName(iconName);
+    });
+  }
+
+  /// Maps a dynamic icon name to its asset path.
+  /// Returns the default icon asset if [iconName] is null or unknown.
+  static String _iconAssetForName(String? iconName) {
+    switch (iconName) {
+      case 'old':
+        return 'assets/icon_old.png';
+      default:
+        return 'assets/icon.png';
+    }
+  }
 
   Future<void> _checkForUpdates() async {
-    if (_isCheckingUpdate) return;
     final localizations = AppLocalizations.of(context)!;
 
     appConfig.hasUpdateNotification.value = false;
-    setState(() => _isCheckingUpdate = true);
     try {
-      final result = await updateService.checkForUpdate();
+      final result = await updateProvider.checkForUpdate();
       if (!mounted) return;
 
       if (result.hasUpdate && result.release != null) {
@@ -48,6 +73,7 @@ class _AboutPageState extends State<AboutPage> {
             onStartUpdate: () => _startUpdate(
               result.version!,
               result.downloadUrl!,
+              filename: result.filename!,
               checksumSha256: result.release?.checksumSha256,
             ),
           );
@@ -72,22 +98,22 @@ class _AboutPageState extends State<AboutPage> {
           content: localizations.loadFailed,
         );
       }
-    } finally {
-      if (mounted) setState(() => _isCheckingUpdate = false);
     }
   }
 
   void _startUpdate(
     String latestVersion,
     String downloadUrl, {
+    required String filename,
     String? checksumSha256,
   }) async {
     await showDownloadProgressDialog(
       context: context,
       version: latestVersion,
       downloadUrl: downloadUrl,
+      filename: filename,
       checksumSha256: checksumSha256,
-      updateService: updateService,
+      updateProvider: updateProvider,
     );
   }
 
@@ -115,7 +141,7 @@ class _AboutPageState extends State<AboutPage> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
-              child: Image.asset('assets/icon.png', fit: BoxFit.cover),
+              child: Image.asset(_iconAsset, fit: BoxFit.cover),
             ),
           ),
           const SizedBox(height: 16),
@@ -191,22 +217,49 @@ class _AboutPageState extends State<AboutPage> {
                 value: "Brotherhood of SCU",
                 onTap: () => openDeveloperTeam(),
               ),
-              if (updateService.supportsInAppUpdate)
+              if (updateProvider.supportsInAppUpdate)
                 ValueListenableBuilder<bool>(
                   valueListenable: appConfig.hasUpdateNotification,
                   builder: (context, hasUpdate, _) {
-                    return BadgedTile(
-                      icon: Icons.update_rounded,
-                      label: localizations.checkForUpdates,
-                      showBadge: hasUpdate,
-                      onTap: _checkForUpdates,
-                      trailing: _isCheckingUpdate
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : null,
+                    return ListenableBuilder(
+                      listenable: Listenable.merge([
+                        updateProvider.isChecking,
+                        updateProvider.isDownloading,
+                        updateProvider.progressState,
+                      ]),
+                      builder: (context, _) {
+                        final isDownloading =
+                            updateProvider.isDownloading.value;
+                        final isChecking = updateProvider.isChecking.value;
+                        final percent = updateProvider.progressState.percent;
+                        return BadgedTile(
+                          icon: Icons.update_rounded,
+                          label: localizations.checkForUpdates,
+                          showBadge: hasUpdate,
+                          // 下载中禁用点击,避免重入触发新的检查/下载流程
+                          onTap: isDownloading ? null : _checkForUpdates,
+                          trailing: isDownloading
+                              ? Text(
+                                  '$percent%',
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                )
+                              : isChecking
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : null,
+                        );
+                      },
                     );
                   },
                 ),

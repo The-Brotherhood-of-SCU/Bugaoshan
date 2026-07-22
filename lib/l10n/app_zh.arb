@@ -60,13 +60,17 @@
     "classroomTeachingWeek": "第 {week} 周",
     "@classroomTeachingWeek": {
         "placeholders": {
-            "week": {"type": "int"}
+            "week": {
+                "type": "int"
+            }
         }
     },
     "classroomQueryDate": "查询日期: {date}",
     "@classroomQueryDate": {
         "placeholders": {
-            "date": {"type": "String"}
+            "date": {
+                "type": "String"
+            }
         }
     },
     "classroomCanBorrow": "可借用",
@@ -77,7 +81,9 @@
     "@periodN": {
         "description": "节次编号格式",
         "placeholders": {
-            "n": {"type": "int"}
+            "n": {
+                "type": "int"
+            }
         }
     },
     "periodStart": "起始",
@@ -121,7 +127,7 @@
     "gitTag": "Git 标签",
     "appDescription": "探索一切，尽在不高山上",
     "contactUs": "联系我们",
-    "developedBy":"由 {team} 倾情打造",
+    "developedBy": "由 {team} 倾情打造",
     "externalResources": "外部资源",
     "projectRepository": "项目仓库",
     "checkForUpdates": "检查更新",
@@ -137,142 +143,158 @@
     "usePreviewUpdateSourceHint": "仅影响首页和关于页面的自动检查；测试页面始终同时检查两个渠道。",
     "downloading": "正在下载",
     "updateFailed": "更新失败",
+    "notificationDownloading": "正在下载... {percent}%",
+    "notificationInstalling": "正在安装...",
+    "notificationUpdateFailed": "更新失败:{error}",
     "preReleaseWarning": "这是预发布版本，使用时请注意。",
     "releaseNotes": "更新日志",
     "neverMind": "算了吧",
     "clearAllData": "清除所有数据",
-    "confirmMessage":"真的要这样做吗？",
-    "environmentInfo":"环境信息",
-    "devPage":"开发者页面",
+    "confirmMessage": "真的要这样做吗？",
+    "environmentInfo": "环境信息",
+    "devPage": "开发者页面",
     "forceUpdate": "更新到最新版本（含预览版）",
-    "authLog":"认证日志",
-    "viewAuthLog":"查看认证日志",
-    "authLogEmpty":"暂无认证日志。",
+    "authLog": "认证日志",
+    "viewAuthLog": "查看认证日志",
+    "authLogEmpty": "暂无认证日志。",
     "@authLogLastEntry": {
         "placeholders": {
-            "time": {"type": "String"},
-            "level": {"type": "String"},
-            "tag": {"type": "String"}
+            "time": {
+                "type": "String"
+            },
+            "level": {
+                "type": "String"
+            },
+            "tag": {
+                "type": "String"
+            }
         }
     },
     "authLogLastEntry": "{level} · {tag} · {time}",
-    "scheduleSetting":"课表设置",
-    "scheduleManagement":"课表管理",
-    "globalSetting":"全局设置",
-    "noSchedule":"暂无课表",
-    "noScheduleHint":"导入或新建一个课表开始使用",
-    "addSchedule":"新建课表",
-
-    "addCourse":"添加课程",
-    "editCourse":"编辑课程",
-    "deleteCourse":"删除课程",
-    "deleteCourseConfirm":"确定要删除这门课程吗？",
-    "courseName":"课程名称",
-    "teacher":"教师",
-    "location":"教室",
-    "courseColor":"课程颜色",
-    "week":"周",
-    "startWeek":"开始周",
-    "endWeek":"结束周",
-    "dayOfWeek":"星期",
-    "startSection":"开始节次",
-    "endSection":"结束节次",
-    "monday":"周一",
-    "tuesday":"周二",
-    "wednesday":"周三",
-    "thursday":"周四",
-    "friday":"周五",
-    "saturday":"周六",
-    "sunday":"周日",
-    "currentWeek":"第 {week} 周",
-    "thisWeek":"本周",
-    "weekRange":"{start}-{end} 周",
+    "scheduleSetting": "课表设置",
+    "scheduleManagement": "课表管理",
+    "globalSetting": "全局设置",
+    "noSchedule": "暂无课表",
+    "noScheduleHint": "导入或新建一个课表开始使用",
+    "addSchedule": "新建课表",
+    "addCourse": "添加课程",
+    "editCourse": "编辑课程",
+    "deleteCourse": "删除课程",
+    "deleteCourseConfirm": "确定要删除这门课程吗？",
+    "courseName": "课程名称",
+    "teacher": "教师",
+    "location": "教室",
+    "courseColor": "课程颜色",
+    "week": "周",
+    "startWeek": "开始周",
+    "endWeek": "结束周",
+    "dayOfWeek": "星期",
+    "startSection": "开始节次",
+    "endSection": "结束节次",
+    "monday": "周一",
+    "tuesday": "周二",
+    "wednesday": "周三",
+    "thursday": "周四",
+    "friday": "周五",
+    "saturday": "周六",
+    "sunday": "周日",
+    "currentWeek": "第 {week} 周",
+    "thisWeek": "本周",
+    "weekRange": "{start}-{end} 周",
     "@weekRange": {
         "placeholders": {
-            "start": {"type": "int"},
-            "end": {"type": "int"}
+            "start": {
+                "type": "int"
+            },
+            "end": {
+                "type": "int"
+            }
         }
     },
-    "weekType":"周次类型",
-    "everyWeek":"每周",
-    "oddWeek":"单周",
-    "evenWeek":"双周",
-    "section":"节",
+    "weekType": "周次类型",
+    "everyWeek": "每周",
+    "oddWeek": "单周",
+    "evenWeek": "双周",
+    "section": "节",
     "sectionRange": "第{start}-{end}节",
     "@sectionRange": {
         "description": "Section range display, e.g. '第1-2节'",
         "placeholders": {
-            "start": {"type": "int"},
-            "end": {"type": "int"}
+            "start": {
+                "type": "int"
+            },
+            "end": {
+                "type": "int"
+            }
         }
     },
-    "sectionCount":"每天节数",
-    "timeSlot":"时间段",
-    "startTime":"开始时间",
-    "endTime":"结束时间",
-    "semesterConfig":"学期配置",
-    "semesterName":"学期名称",
-    "semesterStartDate":"学期开始日期",
-    "setCurrentWeek":"设置当前周数",
-    "setCurrentWeekHint":"将根据当前周数自动推算学期开始日期",
-    "autoFetchCurrentWeek":"自动获取当前周数",
-    "autoFetchCurrentWeekHint":"从教务系统获取当前教学周",
-    "fetchingCurrentWeek":"正在获取...",
-    "loginRequired":"请先在「我的」页面完成统一身份认证登录",
-    "goToLogin":"前往登录",
-    "semesterEndDate":"学期结束日期",
-    "displaySetting":"显示设置",
-    "courseCardSection":"课程卡片",
-    "courseGridSection":"课表网格",
-    "courseStyleSetting":"课程表样式",
-    "otherSection":"其他",
-    "settingsGeneral":"通用",
-    "settingsStyle":"样式",
-    "setFont":"字体",
-    "useGoogleFonts":"使用 Google 字体",
-    "fontHint":"如需调整字号和字重，请在系统设置中修改",
-    "settingsDanger":"危险操作",
-    "colorOpacity":"颜色不透明度",
-    "fontSize":"字体大小",
-    "showCourseGrid":"显示课表网格",
-    "courseRowHeight":"课表网格高度",
-    "backgroundImage":"背景图片",
-    "setBackgroundImage":"设置背景图片",
-    "extractColorFromBackgroundImage":"从背景图取色",
-    "themeColorAutoExtractedHint":"主题色已从背景图片提取，如需修改请前往软件设置->主题颜色",
-    "noBackgroundImageSet":"请先设置背景图片",
-    "removeBackgroundImage":"移除背景图片",
-    "backgroundImageOpacity":"背景图片不透明度",
-    "backgroundImageSetHint":"背景图片已设置，您可以前往「主题颜色」修改主题色",
-    "showTeacher":"显示教师",
-    "showLocation":"显示教室",
-    "showWeekend":"显示周末",
-    "showNonCurrentWeekCourses":"显示非本周课程",
-    "save":"保存",
-    "cancel":"取消",
+    "sectionCount": "每天节数",
+    "timeSlot": "时间段",
+    "startTime": "开始时间",
+    "endTime": "结束时间",
+    "semesterConfig": "学期配置",
+    "semesterName": "学期名称",
+    "semesterStartDate": "学期开始日期",
+    "setCurrentWeek": "设置当前周数",
+    "setCurrentWeekHint": "将根据当前周数自动推算学期开始日期",
+    "autoFetchCurrentWeek": "自动获取当前周数",
+    "autoFetchCurrentWeekHint": "从教务系统获取当前教学周",
+    "fetchingCurrentWeek": "正在获取...",
+    "loginRequired": "请先在「我的」页面完成统一身份认证登录",
+    "goToLogin": "前往登录",
+    "semesterEndDate": "学期结束日期",
+    "displaySetting": "显示设置",
+    "courseCardSection": "课程卡片",
+    "courseGridSection": "课表网格",
+    "courseStyleSetting": "课程表样式",
+    "otherSection": "其他",
+    "settingsGeneral": "通用",
+    "settingsStyle": "样式",
+    "setFont": "字体",
+    "useGoogleFonts": "使用 Google 字体",
+    "fontHint": "如需调整字号和字重，请在系统设置中修改",
+    "settingsDanger": "危险操作",
+    "colorOpacity": "颜色不透明度",
+    "fontSize": "字体大小",
+    "showCourseGrid": "显示课表网格",
+    "courseRowHeight": "课表网格高度",
+    "backgroundImage": "背景图片",
+    "setBackgroundImage": "设置背景图片",
+    "extractColorFromBackgroundImage": "从背景图取色",
+    "themeColorAutoExtractedHint": "主题色已从背景图片提取，如需修改请前往软件设置->主题颜色",
+    "noBackgroundImageSet": "请先设置背景图片",
+    "removeBackgroundImage": "移除背景图片",
+    "backgroundImageOpacity": "背景图片不透明度",
+    "backgroundImageSetHint": "背景图片已设置，您可以前往「主题颜色」修改主题色",
+    "showTeacher": "显示教师",
+    "showLocation": "显示教室",
+    "showWeekend": "显示周末",
+    "showNonCurrentWeekCourses": "显示非本周课程",
+    "save": "保存",
+    "cancel": "取消",
     "downloadInBackground": "后台下载",
     "back": "上一步",
     "next": "下一步",
-    "delete":"删除",
-    "customColor":"自定义颜色",
-    "noCourseThisWeek":"本周没有课程",
-    "timeConflict":"时间冲突",
-    "timeConflictMessage":"所选时间段与已有课程冲突。",
-    "fieldRequired":"此字段不能为空",
-    "invalidWeekRange":"结束周必须大于或等于开始周",
-    "duplicateScheduleName":"课表名称已存在",
+    "delete": "删除",
+    "customColor": "自定义颜色",
+    "noCourseThisWeek": "本周没有课程",
+    "timeConflict": "时间冲突",
+    "timeConflictMessage": "所选时间段与已有课程冲突。",
+    "fieldRequired": "此字段不能为空",
+    "invalidWeekRange": "结束周必须大于或等于开始周",
+    "duplicateScheduleName": "课表名称已存在",
     "importNameConflictAction": "课表 \"{name}\" 已存在，请选择操作：",
     "importNameConflictAddSuffix": "添加后缀导入",
     "importNameConflictUpdate": "更新当前课表",
     "importAllConflictAction": "部分课表名称与已有课表冲突，请选择操作方式：",
     "importAllConflictAddSuffix": "全部添加后缀",
     "importAllConflictUpdate": "全部更新",
-    "importSchedule":"导入课表",
-    "importFromShare":"从分享导入",
-    "importFromJwxt":"从教务系统抓包导入",
-    "importDataHint":"请在此处粘贴 JSON 数据...",
-    "importSuccess":"课表导入成功",
-    "importFailed":"导入失败，请检查数据格式或重新登录",
+    "importSchedule": "导入课表",
+    "importFromShare": "从分享导入",
+    "importFromJwxt": "从教务系统抓包导入",
+    "importDataHint": "请在此处粘贴 JSON 数据...",
+    "importSuccess": "课表导入成功",
+    "importFailed": "导入失败，请检查数据格式或重新登录",
     "importedScheduleDefaultName": "导入的课表",
     "importNameConflictHint": "名称 \"{name}\" 已存在，请重命名：",
     "importNameSuffix": "(导入)",
@@ -280,28 +302,28 @@
     "deleteScheduleConfirm": "确定要删除课表 \"{name}\" 吗？",
     "exportSchedule": "导出课表",
     "exportExamPlan": "导出考表",
-    "exportScheduleAsCopy":"复制到剪切板",
-    "exportScheduleAsIcs":"导出为日历文件",
-    "exportScheduleAsCopySuccess":"课表已复制到剪切板",
-    "exportExamPlanAsCopySuccess":"考表已复制到剪切板",
-    "exportScheduleAsCopyFailed":"复制失败，您可以稍后再试",
-    "exportScheduleAsIcsTo":"保存日历文件到...",
-    "exportScheduleAsIcsSuccess":"保存成功",
-    "exportScheduleAsIcsFailed":"保存失败",
-    "exportScheduleAsIcsCanceled":"取消保存",
-    "icsTeacherLabel":"教师",
-    "exportScheduleAddToCalendar":"一键导入到日历",
-    "exportScheduleAddToCalendarSuccess":"已导入到日历",
-    "exportScheduleAddToCalendarFailed":"导入失败",
-    "exportScheduleSelectCalendar":"选择目标日历",
-    "exportScheduleCalendarDefault":"默认日历",
+    "exportScheduleAsCopy": "复制到剪切板",
+    "exportScheduleAsIcs": "导出为日历文件",
+    "exportScheduleAsCopySuccess": "课表已复制到剪切板",
+    "exportExamPlanAsCopySuccess": "考表已复制到剪切板",
+    "exportScheduleAsCopyFailed": "复制失败，您可以稍后再试",
+    "exportScheduleAsIcsTo": "保存日历文件到...",
+    "exportScheduleAsIcsSuccess": "保存成功",
+    "exportScheduleAsIcsFailed": "保存失败",
+    "exportScheduleAsIcsCanceled": "取消保存",
+    "icsTeacherLabel": "教师",
+    "exportScheduleAddToCalendar": "一键导入到日历",
+    "exportScheduleAddToCalendarSuccess": "已导入到日历",
+    "exportScheduleAddToCalendarFailed": "导入失败",
+    "exportScheduleSelectCalendar": "选择目标日历",
+    "exportScheduleCalendarDefault": "默认日历",
     "copySuffix": " (副本)",
     "notThisWeek": "[非本周]",
     "actualCurrentWeek": "本周第 {week} 周",
     "totalWeeksSubtitle": "共 {count} 周",
-    "invalidSectionRange":"结束节次必须大于开始节次",
-    "crossPeriodError":"跨时间段错误",
-    "crossPeriodErrorMessage":"一门课程不能跨越上午、下午或晚上。",
+    "invalidSectionRange": "结束节次必须大于开始节次",
+    "crossPeriodError": "跨时间段错误",
+    "crossPeriodErrorMessage": "一门课程不能跨越上午、下午或晚上。",
     "totalWeeks": "总周数: {value}",
     "morning": "上午",
     "afternoon": "下午",
@@ -323,11 +345,14 @@
     "importingProgress": "正在导入 {current}/{total}...",
     "@importingProgress": {
         "placeholders": {
-            "current": {"type": "int"},
-            "total": {"type": "int"}
+            "current": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
         }
     },
-
     "scuUnifiedAuth": "统一身份认证",
     "studentId": "学号",
     "studentIdRequired": "请输入学号",
@@ -506,7 +531,9 @@
     "loginFailedWillLock": "登录失败，再输错 {count} 次将锁定账户",
     "@loginFailedWillLock": {
         "placeholders": {
-            "count": {"type": "int"}
+            "count": {
+                "type": "int"
+            }
         }
     },
     "ccylBindFailed": "绑定失败，请稍后重试",
@@ -539,6 +566,34 @@
     "pricePerUnit": "单价",
     "balanceQueryLoginRequired": "请先在「我的」页面完成统一身份认证登录",
     "balanceQueryNoBinding": "您还没有绑定房间，请先绑定",
+    "balanceTrend": "用电趋势",
+    "balanceTrendTitleElectric": "照明电量趋势",
+    "balanceTrendTitleAc": "空调电量趋势",
+    "balanceTrendDailyAvgCost": "日均电费",
+    "balanceTrendDailyAvgKwh": "日均消耗",
+    "balanceTrendTotalCost": "累计消耗金额",
+    "balanceTrendTotalKwh": "累计消耗度数",
+    "balanceTrendTotalDays": "统计天数",
+    "balanceTrendCurrentPrice": "当前单价",
+    "balanceTrendRecordCount": "原始记录条数",
+    "balanceTrendRecordRange": "记录时间范围",
+    "balanceTrendSkippedRecharge": "已识别充值段",
+    "balanceTrendNoData": "暂无历史数据，刷新页面后即可开始记录",
+    "balanceTrendTimeRange7": "近7天",
+    "balanceTrendTimeRange30": "近30天",
+    "balanceTrendTimeRange90": "近90天",
+    "balanceTrendTimeRangeCustom": "自定义",
+    "balanceTrendChangeRange": "修改区间",
+    "balanceTrendCustomStart": "开始日期",
+    "balanceTrendCustomEnd": "结束日期",
+    "balanceTrendRawRecords": "原始记录",
+    "balanceTrendYAxisBalance": "余额 (度)",
+    "balanceTrendTooltipPrice": "单价",
+    "balanceTrendUnitPerDay": "元/天",
+    "balanceTrendUnitYuanPerKwh": "元/度",
+    "balanceQuerySettings": "电费查询设置",
+    "autoSampleBalanceOnLogin": "登录后自动统计电费详情",
+    "autoSampleBalanceOnLoginDesc": "登录成功后若当日尚无记录，自动查询一次当前房间的电费与空调余额以完善统计信息",
     "scuLoginDisclaimerPwd": "当使用记住密码功能时，密码通过系统级加密仅存储在本机",
     "scuLoginDisclaimerOcr": "验证码使用本地OCR模型识别",
     "scuLoginDisclaimerPrivacy": "我们不会收集任何信息",
@@ -557,20 +612,20 @@
     "campusNoticesSearch": "搜索",
     "campusNoticesSearchResults": "{count, plural, =0{无结果} other{共 {count} 条结果}}",
     "@campusNoticesSearchResults": {
-      "placeholders": {
-        "count": {
-          "type": "int",
-          "format": "compact"
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "format": "compact"
+            }
         }
-      }
     },
     "campusNoticesConfirmOpenLink": "该链接将在外部浏览器中打开，是否继续？\n\n{url}",
     "@campusNoticesConfirmOpenLink": {
-      "placeholders": {
-        "url": {
-          "type": "String"
+        "placeholders": {
+            "url": {
+                "type": "String"
+            }
         }
-      }
     },
     "selectAcademicYear": "选择学年",
     "userInfoLoading": "正在加载个人信息...",
@@ -638,7 +693,9 @@
     "eulaAgreedVersion": "已同意版本 v{version}",
     "@eulaAgreedVersion": {
         "placeholders": {
-            "version": {"type": "String"}
+            "version": {
+                "type": "String"
+            }
         }
     },
     "addWidgetSection": "桌面小组件",
@@ -688,14 +745,18 @@
     "deleteSelected": "删除 ({count})",
     "@deleteSelected": {
         "placeholders": {
-            "count": { "type": "int" }
+            "count": {
+                "type": "int"
+            }
         }
     },
     "selectAll": "全选",
     "confirmDeleteSelected": "确认删除选中的 {count} 个文件？",
     "@confirmDeleteSelected": {
         "placeholders": {
-            "count": { "type": "int" }
+            "count": {
+                "type": "int"
+            }
         }
     },
     "sortByTime": "按时间",
@@ -716,8 +777,12 @@
     "dateMonthDay": "{month}月{day}日",
     "@dateMonthDay": {
         "placeholders": {
-            "month": {"type": "int"},
-            "day": {"type": "int"}
+            "month": {
+                "type": "int"
+            },
+            "day": {
+                "type": "int"
+            }
         }
     },
     "holidayLabel": "假",
@@ -761,7 +826,9 @@
     "@holidayTotalDays": {
         "description": "Shows total holiday days, e.g. '共3天假'",
         "placeholders": {
-            "days": {"type": "int"}
+            "days": {
+                "type": "int"
+            }
         }
     },
     "dockLabelExamPlan": "考表",
@@ -803,23 +870,30 @@
     "switchAppIconConfirm": "切换至「{label}」后应用将重启，是否继续？",
     "@switchAppIconConfirm": {
         "placeholders": {
-            "label": {"type": "String"}
+            "label": {
+                "type": "String"
+            }
         }
     },
     "defaultIconRestored": "已恢复默认图标",
     "iconSwitched": "已切换到图标: {name}",
     "@iconSwitched": {
         "placeholders": {
-            "name": {"type": "String"}
+            "name": {
+                "type": "String"
+            }
         }
     },
     "iconSwitchFailed": "切换失败: {error}",
     "@iconSwitchFailed": {
         "placeholders": {
-            "error": {"type": "String"}
+            "error": {
+                "type": "String"
+            }
         }
     },
     "iconSwitchNotSupported": "当前平台不支持动态切换应用图标",
+    "featureNotSupported": "当前平台不支持此功能",
     "newIconSubtitle": "Bugaoshan 新图标",
     "oldIconSubtitle": "Bugaoshan 经典图标"
 }

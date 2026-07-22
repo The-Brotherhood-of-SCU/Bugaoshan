@@ -11,4 +11,8 @@
     <string name="widget_section_single">Section %1$d</string>
     <string name="widget_section_range">Sections %1$d-%2$d</string>
     <string name="widget_header_title">Bugaoshan</string>
+    <!-- 下载通知 -->
+    <string name="download_notification_channel_name">Bugaoshan downloads</string>
+    <string name="download_notification_channel_desc">App update download progress</string>
+    <string name="download_notification_cancel">Cancel</string>
 </resources>

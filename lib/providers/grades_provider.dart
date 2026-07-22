@@ -37,7 +37,8 @@ class GradesProvider extends ChangeNotifier {
       '${baseKey}_$userIdentity';
 
   void _restoreCache() {
-    _schemeScores = null;
+    _schemes = null;
+    _selectedSchemeName = null;
     _schemeState = GradesLoadState.idle;
     _schemeError = null;
     _passingScores = null;
@@ -52,7 +53,7 @@ class GradesProvider extends ChangeNotifier {
     );
     if (cachedScheme != null) {
       try {
-        _schemeScores = SchemeScoreSummary.fromJson(
+        _schemes = SchemeScoreSummary.listFromJson(
           jsonDecode(cachedScheme) as Map<String, dynamic>,
         );
         _schemeState = GradesLoadState.loaded;
@@ -82,11 +83,27 @@ class GradesProvider extends ChangeNotifier {
   }
 
   // --- 方案成绩 ---
-  SchemeScoreSummary? _schemeScores;
+  List<SchemeScoreSummary>? _schemes;
+  String? _selectedSchemeName;
   GradesLoadState _schemeState = GradesLoadState.idle;
   LoadErrorType? _schemeError;
 
-  SchemeScoreSummary? get schemeScores => _schemeScores;
+  List<SchemeScoreSummary> get schemes => _schemes ?? const [];
+  SchemeScoreSummary? get schemeScores {
+    if (_schemes == null) return null;
+    for (final scheme in schemes) {
+      if (scheme.cjlx == _selectedSchemeName) return scheme;
+    }
+    return SchemeScoreSummary.defaultScheme(schemes) ??
+        SchemeScoreSummary.fromJson(const {});
+  }
+
+  void selectScheme(SchemeScoreSummary scheme) {
+    if (!schemes.contains(scheme) || scheme.cjlx == _selectedSchemeName) return;
+    _selectedSchemeName = scheme.cjlx;
+    notifyListeners();
+  }
+
   GradesLoadState get schemeState => _schemeState;
   LoadErrorType? get schemeError => _schemeError;
 
@@ -100,7 +117,7 @@ class GradesProvider extends ChangeNotifier {
     try {
       final data = await _zhjwApi.fetchSchemeScores();
       if (generation != _identityGeneration) return;
-      _schemeScores = SchemeScoreSummary.fromJson(data);
+      _schemes = SchemeScoreSummary.listFromJson(data);
       _schemeState = GradesLoadState.loaded;
       if (userIdentity != null) {
         await _prefs.setString(
@@ -111,7 +128,7 @@ class GradesProvider extends ChangeNotifier {
       }
     } on UnauthenticatedException {
       if (generation != _identityGeneration) return;
-      if (_schemeScores != null) {
+      if (_schemes != null) {
         _schemeState = GradesLoadState.loaded;
         _schemeError = LoadErrorType.sessionExpired;
       } else {
@@ -121,7 +138,7 @@ class GradesProvider extends ChangeNotifier {
     } catch (e) {
       if (generation != _identityGeneration) return;
       debugPrint('Scheme scores load error: $e');
-      if (_schemeScores != null) {
+      if (_schemes != null) {
         _schemeState = GradesLoadState.loaded;
         _schemeError = campusNetworkErrorType(LoadErrorType.loadFailed);
       } else {

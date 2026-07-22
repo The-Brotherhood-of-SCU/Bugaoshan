@@ -72,8 +72,8 @@ class _SwipePageViewState extends State<_SwipePageView> {
     }
     widget.controller.animateToPage(
       targetPage,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
+      duration: appConfigService.cardSizeAnimationDuration.value,
+      curve: AppCurves.quick,
     );
   }
 

@@ -1,4 +1,4 @@
-package io.github.the_brotherhood_of_scu.bugaoshan
+package io.github.the_brotherhood_of_scu.bugaoshan.widget
 
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -50,12 +50,12 @@ object WidgetAlarmManager {
     }
 
     /**
-     * 在最近的下一个课程开始/结束时刻安排一次性闹钟，使小组件在上下课时
-     * 立即刷新，而不是被动等待周期轮询（最长可能延迟 30 分钟）。
+     * 在最近的下一个课程开始/结束时刻安排一次性闹钟,使小组件在上下课时
+     * 立即刷新,而不是被动等待周期轮询(最长可能延迟 30 分钟)。
      *
-     * [triggerAtMillis] 为 null 时取消边界闹钟（今天已无状态变化点）。
-     * 每次小组件重新渲染后都会用最新数据调用本方法，形成链式调度；
-     * 闹钟触发后由 Receiver 刷新小组件，渲染时再计算并挂上下一个边界。
+     * [triggerAtMillis] 为 null 时取消边界闹钟(今天已无状态变化点)。
+     * 每次小组件重新渲染后都会用最新数据调用本方法,形成链式调度;
+     * 闹钟触发后由 Receiver 刷新小组件,渲染时再计算并挂上下一个边界。
      */
     fun scheduleCourseBoundaryAlarm(context: Context, triggerAtMillis: Long?) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager

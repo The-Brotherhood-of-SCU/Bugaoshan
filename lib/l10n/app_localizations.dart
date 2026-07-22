@@ -769,6 +769,24 @@ abstract class AppLocalizations {
   /// **'Update failed'**
   String get updateFailed;
 
+  /// No description provided for @notificationDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading... {percent}%'**
+  String notificationDownloading(int percent);
+
+  /// No description provided for @notificationInstalling.
+  ///
+  /// In en, this message translates to:
+  /// **'Installing...'**
+  String get notificationInstalling;
+
+  /// No description provided for @notificationUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Update failed: {error}'**
+  String notificationUpdateFailed(String error);
+
   /// No description provided for @preReleaseWarning.
   ///
   /// In en, this message translates to:
@@ -2953,6 +2971,174 @@ abstract class AppLocalizations {
   /// **'You haven\'t bound any room yet, please bind first'**
   String get balanceQueryNoBinding;
 
+  /// No description provided for @balanceTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage Trend'**
+  String get balanceTrend;
+
+  /// No description provided for @balanceTrendTitleElectric.
+  ///
+  /// In en, this message translates to:
+  /// **'Lighting Electricity Trend'**
+  String get balanceTrendTitleElectric;
+
+  /// No description provided for @balanceTrendTitleAc.
+  ///
+  /// In en, this message translates to:
+  /// **'AC Electricity Trend'**
+  String get balanceTrendTitleAc;
+
+  /// No description provided for @balanceTrendDailyAvgCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Avg Cost'**
+  String get balanceTrendDailyAvgCost;
+
+  /// No description provided for @balanceTrendDailyAvgKwh.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Avg Consumption'**
+  String get balanceTrendDailyAvgKwh;
+
+  /// No description provided for @balanceTrendTotalCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Cost'**
+  String get balanceTrendTotalCost;
+
+  /// No description provided for @balanceTrendTotalKwh.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Consumption'**
+  String get balanceTrendTotalKwh;
+
+  /// No description provided for @balanceTrendTotalDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistical Days'**
+  String get balanceTrendTotalDays;
+
+  /// No description provided for @balanceTrendCurrentPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Price'**
+  String get balanceTrendCurrentPrice;
+
+  /// No description provided for @balanceTrendRecordCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Raw Record Count'**
+  String get balanceTrendRecordCount;
+
+  /// No description provided for @balanceTrendRecordRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Record Time Range'**
+  String get balanceTrendRecordRange;
+
+  /// No description provided for @balanceTrendSkippedRecharge.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped Recharge Segments'**
+  String get balanceTrendSkippedRecharge;
+
+  /// No description provided for @balanceTrendNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'No history data yet. Refresh the page to start recording.'**
+  String get balanceTrendNoData;
+
+  /// No description provided for @balanceTrendTimeRange7.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7d'**
+  String get balanceTrendTimeRange7;
+
+  /// No description provided for @balanceTrendTimeRange30.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 30d'**
+  String get balanceTrendTimeRange30;
+
+  /// No description provided for @balanceTrendTimeRange90.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 90d'**
+  String get balanceTrendTimeRange90;
+
+  /// No description provided for @balanceTrendTimeRangeCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get balanceTrendTimeRangeCustom;
+
+  /// No description provided for @balanceTrendChangeRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Range'**
+  String get balanceTrendChangeRange;
+
+  /// No description provided for @balanceTrendCustomStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start date'**
+  String get balanceTrendCustomStart;
+
+  /// No description provided for @balanceTrendCustomEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'End date'**
+  String get balanceTrendCustomEnd;
+
+  /// No description provided for @balanceTrendRawRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'Raw Records'**
+  String get balanceTrendRawRecords;
+
+  /// No description provided for @balanceTrendYAxisBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance (kWh)'**
+  String get balanceTrendYAxisBalance;
+
+  /// No description provided for @balanceTrendTooltipPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get balanceTrendTooltipPrice;
+
+  /// No description provided for @balanceTrendUnitPerDay.
+  ///
+  /// In en, this message translates to:
+  /// **'CNY/day'**
+  String get balanceTrendUnitPerDay;
+
+  /// No description provided for @balanceTrendUnitYuanPerKwh.
+  ///
+  /// In en, this message translates to:
+  /// **'CNY/kWh'**
+  String get balanceTrendUnitYuanPerKwh;
+
+  /// No description provided for @balanceQuerySettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance Query Settings'**
+  String get balanceQuerySettings;
+
+  /// No description provided for @autoSampleBalanceOnLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-collect balance details on login'**
+  String get autoSampleBalanceOnLogin;
+
+  /// No description provided for @autoSampleBalanceOnLoginDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'After login, if no record exists for today, automatically query the current room\'s electricity and AC balance once to improve the statistics'**
+  String get autoSampleBalanceOnLoginDesc;
+
   /// No description provided for @scuLoginDisclaimerPwd.
   ///
   /// In en, this message translates to:
@@ -4146,6 +4332,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dynamic icon switching is not supported on this platform'**
   String get iconSwitchNotSupported;
+
+  /// No description provided for @featureNotSupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This feature is not supported on this platform'**
+  String get featureNotSupported;
 
   /// No description provided for @newIconSubtitle.
   ///

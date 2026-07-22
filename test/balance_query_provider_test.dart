@@ -1,13 +1,23 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/services/api/balance_query_service.dart';
 import 'package:bugaoshan/services/api/payapp_api_service.dart';
+import 'package:bugaoshan/services/auth/payapp_auth.dart';
+import 'package:bugaoshan/services/auth/scu_auth.dart';
+import 'package:bugaoshan/services/auth/wfw_auth.dart';
+import 'package:bugaoshan/services/database_service.dart';
+import 'package:bugaoshan/utils/auth_logger.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  sqfliteFfiInit();
+  databaseFactory = databaseFactoryFfi;
 
   test(
     'removing an earlier binding preserves selection and clears balances',
@@ -20,7 +30,24 @@ void main() {
         'balance_query_current_room': 1,
       });
       final prefs = await SharedPreferences.getInstance();
-      final provider = BalanceQueryProvider(prefs, _FakePayAppApiService());
+      final db = await openDatabase(inMemoryDatabasePath, version: 1);
+      final dbService = DatabaseService.forTesting(db);
+      await dbService.ensureBalanceRecordsTableForTesting();
+      final getIt = GetIt.instance;
+      getIt.registerSingleton<AuthLogger>(AuthLogger());
+      final scuAuth = ScuAuth(prefs);
+      final wfwAuth = WfwAuth(scuAuth);
+      final payAppAuth = PayAppAuth(scuAuth, wfwAuth);
+      final appConfig = AppConfigProvider(prefs);
+      await appConfig.init();
+      addTearDown(getIt.reset);
+      final provider = BalanceQueryProvider(
+        prefs,
+        _FakePayAppApiService(),
+        dbService,
+        payAppAuth,
+        appConfig,
+      );
 
       await provider.queryElectricInfo();
       await provider.queryAcInfo();

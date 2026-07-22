@@ -19,9 +19,57 @@ class AcademicCalendarService {
   AcademicCalendarService(this._prefs, {http.Client? client})
     : _client = client;
 
+  /// Parse a calendar JSON string (supports both compact and expanded formats).
+  AcademicCalendarData _parseCalendarJson(String raw) {
+    final decoded = jsonDecode(raw) as Map<String, dynamic>;
+    return AcademicCalendarData.fromJson(_expand(decoded));
+  }
+
+  /// Expand compact format (with eventTypes registry) to the model's expected
+  /// expanded format. If already expanded, returns as-is.
+  static Map<String, dynamic> _expand(Map<String, dynamic> compact) {
+    final eventTypes = compact['eventTypes'];
+    if (eventTypes == null) return compact;
+
+    final types = eventTypes as Map<String, dynamic>;
+    final semesters = (compact['semesters'] as List<dynamic>).map((s) {
+      s = s as Map<String, dynamic>;
+      final eventsMap = (s['e'] as Map<String, dynamic>?) ?? {};
+      final expandedEvents = <Map<String, dynamic>>[];
+
+      for (final entry in eventsMap.entries) {
+        final typeInfo = types[entry.key] as Map<String, dynamic>?;
+        if (typeInfo == null) continue;
+
+        final event = <String, dynamic>{
+          'label': typeInfo['l'],
+          'tag': typeInfo['t'],
+        };
+
+        final value = entry.value;
+        if (value is String) {
+          event['date'] = value;
+        } else if (value is List && value.length >= 2) {
+          event['date'] = value[0];
+          event['endDate'] = value[1];
+        }
+
+        expandedEvents.add(event);
+      }
+
+      return {
+        'name': s['n'],
+        'startDate': s['s'],
+        'totalWeeks': s['w'],
+        'events': expandedEvents,
+      };
+    }).toList();
+
+    return {'semesters': semesters};
+  }
+
   Future<AcademicCalendarData> fetchCalendarData() async {
     final client = _client ?? http.Client();
-    // 优先走镜像加速，失败时回退原始链接
     for (final url in [_mirrorUrl, _remoteUrl]) {
       final calendar = await _tryFetch(client, url);
       if (calendar != null) return calendar;
@@ -30,7 +78,7 @@ class AcademicCalendarService {
     final cached = _prefs.getString(_cacheKey);
     if (cached != null && cached.isNotEmpty) {
       try {
-        return AcademicCalendarData.fromJsonString(cached);
+        return _parseCalendarJson(cached);
       } catch (e) {
         debugPrint(
           'AcademicCalendarService: failed to parse cached calendar: $e',
@@ -42,7 +90,7 @@ class AcademicCalendarService {
       final assetContent = await rootBundle.loadString(
         'assets/academic_calendar.json',
       );
-      return AcademicCalendarData.fromJsonString(assetContent);
+      return _parseCalendarJson(assetContent);
     } catch (e) {
       debugPrint('AcademicCalendarService: failed to load bundled asset: $e');
       return AcademicCalendarData(semesters: []);
@@ -61,7 +109,7 @@ class AcademicCalendarService {
       if (response.statusCode == 200 && response.body.isNotEmpty) {
         final data = jsonDecode(response.body);
         if (data is Map<String, dynamic> && data.containsKey('semesters')) {
-          final calendar = AcademicCalendarData.fromJson(data);
+          final calendar = _parseCalendarJson(response.body);
           await _prefs.setString(_cacheKey, response.body);
           return calendar;
         }

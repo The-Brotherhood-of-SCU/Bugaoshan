@@ -40,11 +40,12 @@ class SoftwareSettingPage extends StatelessWidget {
                 label: localizations.modifyLanguage,
                 onTap: () => popupOrNavigate(context, SetLanguagePage()),
               ),
-              IconTile(
-                icon: Icons.photo_size_select_actual_outlined,
-                label: localizations.appIcon,
-                onTap: () => popupOrNavigate(context, const SetAppIconPage()),
-              ),
+              if (Platform.isAndroid)
+                IconTile(
+                  icon: Icons.photo_size_select_actual_outlined,
+                  label: localizations.appIcon,
+                  onTap: () => popupOrNavigate(context, const SetAppIconPage()),
+                ),
               IconTile(
                 icon: Icons.timer,
                 label: localizations.animationDuration,

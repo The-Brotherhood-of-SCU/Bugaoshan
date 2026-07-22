@@ -19,6 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - 添加互动校历镜像获取，减少网络影响
+- 【电费查询】页面增加用电趋势统计
+
+### Changed
+- 优化课表翻页手感，动画时间遵循设置
+- 自动更新：下载弹窗增加文件名
+- 只在安卓平台上显示切换图标选项
+- 将验证码识别从LiteRT切换为内置实现减小包体积、提高跨平台兼容性
 
 ## [2.2.0] - 2026-07-13
 

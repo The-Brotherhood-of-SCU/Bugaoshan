@@ -1,4 +1,4 @@
-package io.github.the_brotherhood_of_scu.bugaoshan
+package io.github.the_brotherhood_of_scu.bugaoshan.widget
 
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
@@ -8,7 +8,7 @@ import android.util.Log
 
 /**
  * 小组件更新的公共入口。通过发送 ACTION_APPWIDGET_UPDATE 广播触发
- * Glance 重新组合（组合时从 SQLite 重新加载最新数据）。
+ * Glance 重新组合(组合时从 SQLite 重新加载最新数据)。
  */
 object WidgetUpdater {
     private const val TAG = "WidgetUpdater"
@@ -41,7 +41,7 @@ object WidgetUpdater {
 
     /**
      * 语言环境变化后清布局缓存并刷新全部小组件。
-     * 只在一个 Receiver 上注册 LOCALE_CHANGED，避免三种尺寸各自重复全量更新。
+     * 只在一个 Receiver 上注册 LOCALE_CHANGED,避免三种尺寸各自重复全量更新。
      */
     fun onLocaleChanged(context: Context) {
         WidgetLayoutCache.clear()

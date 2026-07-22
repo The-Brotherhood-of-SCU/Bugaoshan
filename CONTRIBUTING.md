@@ -99,7 +99,7 @@ lib/
 | 本地存储 | [SQLite](https://pub.dev/packages/sqflite)、[SharedPreferences](https://pub.dev/packages/shared_preferences) |
 | 国际化   | Flutter `flutter_localizations`                                                                              |
 | 国密算法 | [dart_sm](https://pub.dev/packages/dart_sm)（SM2/SM3/SM4）                                                   |
-| OCR      | [flutter_litert](https://pub.dev/packages/flutter_litert)（TFLite 模型）                                     |
+| OCR      | [scu_ocr_lite](https://github.com/The-Brotherhood-of-SCU/scu_ocr_lite_dart)（纯 Dart 实现）                  |
 
 ---
 

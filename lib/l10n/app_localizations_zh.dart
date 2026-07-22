@@ -356,6 +356,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get updateFailed => '更新失败';
 
   @override
+  String notificationDownloading(int percent) {
+    return '正在下载... $percent%';
+  }
+
+  @override
+  String get notificationInstalling => '正在安装...';
+
+  @override
+  String notificationUpdateFailed(String error) {
+    return '更新失败:$error';
+  }
+
+  @override
   String get preReleaseWarning => '这是预发布版本，使用时请注意。';
 
   @override
@@ -1478,6 +1491,91 @@ class AppLocalizationsZh extends AppLocalizations {
   String get balanceQueryNoBinding => '您还没有绑定房间，请先绑定';
 
   @override
+  String get balanceTrend => '用电趋势';
+
+  @override
+  String get balanceTrendTitleElectric => '照明电量趋势';
+
+  @override
+  String get balanceTrendTitleAc => '空调电量趋势';
+
+  @override
+  String get balanceTrendDailyAvgCost => '日均电费';
+
+  @override
+  String get balanceTrendDailyAvgKwh => '日均消耗';
+
+  @override
+  String get balanceTrendTotalCost => '累计消耗金额';
+
+  @override
+  String get balanceTrendTotalKwh => '累计消耗度数';
+
+  @override
+  String get balanceTrendTotalDays => '统计天数';
+
+  @override
+  String get balanceTrendCurrentPrice => '当前单价';
+
+  @override
+  String get balanceTrendRecordCount => '原始记录条数';
+
+  @override
+  String get balanceTrendRecordRange => '记录时间范围';
+
+  @override
+  String get balanceTrendSkippedRecharge => '已识别充值段';
+
+  @override
+  String get balanceTrendNoData => '暂无历史数据，刷新页面后即可开始记录';
+
+  @override
+  String get balanceTrendTimeRange7 => '近7天';
+
+  @override
+  String get balanceTrendTimeRange30 => '近30天';
+
+  @override
+  String get balanceTrendTimeRange90 => '近90天';
+
+  @override
+  String get balanceTrendTimeRangeCustom => '自定义';
+
+  @override
+  String get balanceTrendChangeRange => '修改区间';
+
+  @override
+  String get balanceTrendCustomStart => '开始日期';
+
+  @override
+  String get balanceTrendCustomEnd => '结束日期';
+
+  @override
+  String get balanceTrendRawRecords => '原始记录';
+
+  @override
+  String get balanceTrendYAxisBalance => '余额 (度)';
+
+  @override
+  String get balanceTrendTooltipPrice => '单价';
+
+  @override
+  String get balanceTrendUnitPerDay => '元/天';
+
+  @override
+  String get balanceTrendUnitYuanPerKwh => '元/度';
+
+  @override
+  String get balanceQuerySettings => '电费查询设置';
+
+  @override
+  String get autoSampleBalanceOnLogin => '登录后自动统计电费详情';
+
+  @override
+  String get autoSampleBalanceOnLoginDesc =>
+      '登录成功后若当日尚无记录，自动查询一次当前房间的电费与空调余额以完善统计信息';
+
+  @override
   String get scuLoginDisclaimerPwd => '当使用记住密码功能时，密码通过系统级加密仅存储在本机';
 
   @override
@@ -2119,6 +2217,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get iconSwitchNotSupported => '当前平台不支持动态切换应用图标';
+
+  @override
+  String get featureNotSupported => '当前平台不支持此功能';
 
   @override
   String get newIconSubtitle => 'Bugaoshan 新图标';
