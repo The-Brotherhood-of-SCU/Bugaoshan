@@ -206,7 +206,13 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
       }
 
       if (initialSemester == null && data.semesters.isNotEmpty) {
-        initialSemester = data.semesters.first;
+        for (final semester in data.semesters) {
+          if (semester.startDate.isAfter(now)) {
+            initialSemester = semester;
+            break;
+          }
+        }
+        initialSemester ??= data.semesters.last;
       }
 
       if (mounted) {
