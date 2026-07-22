@@ -22,12 +22,12 @@ class AcademicCalendarService {
   /// Parse a calendar JSON string (supports both compact and expanded formats).
   AcademicCalendarData _parseCalendarJson(String raw) {
     final decoded = jsonDecode(raw) as Map<String, dynamic>;
-    return AcademicCalendarData.fromJson(_expand(decoded));
+    return AcademicCalendarData.fromJson(expandCalendarJson(decoded));
   }
 
   /// Expand compact format (with eventTypes registry) to the model's expected
   /// expanded format. If already expanded, returns as-is.
-  static Map<String, dynamic> _expand(Map<String, dynamic> compact) {
+  static Map<String, dynamic> expandCalendarJson(Map<String, dynamic> compact) {
     final eventTypes = compact['eventTypes'];
     if (eventTypes == null) return compact;
 
@@ -130,7 +130,7 @@ class AcademicCalendarService {
         'assets/academic_calendar.json',
       );
       final decoded = jsonDecode(assetContent) as Map<String, dynamic>;
-      final expanded = _expand(decoded);
+      final expanded = expandCalendarJson(decoded);
       final data = AcademicCalendarData.fromJson(expanded);
 
       final yearMatch = RegExp(r'(\d{4})-(\d{4})').firstMatch(scheduleName);

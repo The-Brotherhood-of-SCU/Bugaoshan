@@ -50,6 +50,16 @@ class ScheduleConfig {
   int get sectionsPerDay =>
       morningSections + afternoonSections + eveningSections;
 
+  /// The last day of this semester (end of the last teaching week).
+  DateTime get semesterEndDate {
+    final start = DateTime(
+      semesterStartDate.year,
+      semesterStartDate.month,
+      semesterStartDate.day,
+    );
+    return start.add(Duration(days: totalWeeks * 7 - 1));
+  }
+
   ScheduleConfig({
     this.id = 'default',
     this.semesterName = '',
@@ -344,7 +354,7 @@ class ScheduleConfig {
     if (today.isBefore(start)) return 1;
     final days = today.difference(start).inDays;
     final week = (days / 7).floor() + 1;
-    return week.clamp(1, totalWeeks);
+    return week;
   }
 
   /// 返回指定教学周、星期对应的自然日。
