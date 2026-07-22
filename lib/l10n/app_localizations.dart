@@ -3745,6 +3745,30 @@ abstract class AppLocalizations {
   /// **'Battery optimization disabled successfully'**
   String get batteryOptimizationSuccess;
 
+  /// No description provided for @autoCalcWeeksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto Calculate Weeks'**
+  String get autoCalcWeeksTitle;
+
+  /// No description provided for @autoCalcWeeksContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculate total weeks based on the official academic calendar?'**
+  String get autoCalcWeeksContent;
+
+  /// No description provided for @autoCalcWeeksSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule weeks updated from academic calendar'**
+  String get autoCalcWeeksSuccess;
+
+  /// No description provided for @autoCalcWeeksNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching semester found in academic calendar, using default 20 weeks'**
+  String get autoCalcWeeksNotFound;
+
   /// No description provided for @autoSetCurrentWeekTitle.
   ///
   /// In en, this message translates to:

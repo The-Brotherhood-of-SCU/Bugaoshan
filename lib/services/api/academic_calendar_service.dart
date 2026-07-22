@@ -122,6 +122,42 @@ class AcademicCalendarService {
     return null;
   }
 
+  /// 根据课表名称从校历中匹配学期并返回总周数，未匹配则返回 null。
+  /// 匹配逻辑：提取学年（如 "2025-2026"）和季节（春/秋），与校历学期名对比。
+  static Future<int?> findTotalWeeksFromCalendar(String scheduleName) async {
+    try {
+      final assetContent = await rootBundle.loadString(
+        'assets/academic_calendar.json',
+      );
+      final decoded = jsonDecode(assetContent) as Map<String, dynamic>;
+      final expanded = _expand(decoded);
+      final data = AcademicCalendarData.fromJson(expanded);
+
+      final yearMatch = RegExp(r'(\d{4})-(\d{4})').firstMatch(scheduleName);
+      if (yearMatch == null) return null;
+
+      final academicYear = '${yearMatch.group(1)}-${yearMatch.group(2)}';
+      final isSpring = scheduleName.contains('春');
+      final isFall = scheduleName.contains('秋');
+
+      for (final semester in data.semesters) {
+        if (semester.name.contains(academicYear)) {
+          if (isSpring && semester.name.contains('春')) {
+            return semester.totalWeeks;
+          }
+          if (isFall && semester.name.contains('秋')) return semester.totalWeeks;
+          if (!isSpring && !isFall) return semester.totalWeeks;
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint(
+        'AcademicCalendarService: failed to find matching semester: $e',
+      );
+      return null;
+    }
+  }
+
   CalendarExportPayload genExportPayload(AcademicCalendarSemester semester) {
     final events = <CalendarEventPayload>[];
     for (final event in semester.events) {
