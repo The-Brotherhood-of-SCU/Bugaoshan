@@ -239,8 +239,8 @@ class CalendarExportUtils {
 
     try {
       String? result;
-      if (Platform.isIOS) {
-        // iOS/iPadOS do not expose a public API for importing a local .ics
+      if (Platform.isIOS || Platform.isMacOS) {
+        // iOS/iPadOS/macOS do not expose a public API for importing a local .ics
         // file into Calendar. The native side uses EventKit to write events.
         final calendarIdentifier =
             await CalendarImportUtils.pickIosCalendarIdentifier(context, l10n);
