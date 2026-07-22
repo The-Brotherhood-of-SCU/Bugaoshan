@@ -918,16 +918,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get studentId => 'Student ID';
 
   @override
+  String get studentIdHint => 'Please enter your student ID';
+
+  @override
   String get studentIdRequired => 'Please enter your student ID';
 
   @override
   String get password => 'Password';
 
   @override
+  String get passwordHint => 'Please enter your password';
+
+  @override
   String get passwordRequired => 'Please enter your password';
 
   @override
   String get captcha => 'Captcha';
+
+  @override
+  String get captchaHint => 'Captcha';
 
   @override
   String get captchaRequired => 'Please enter the captcha';

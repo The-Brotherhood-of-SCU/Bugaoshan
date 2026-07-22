@@ -889,16 +889,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get studentId => '学号';
 
   @override
+  String get studentIdHint => '请输入学号';
+
+  @override
   String get studentIdRequired => '请输入学号';
 
   @override
   String get password => '密码';
 
   @override
+  String get passwordHint => '请输入密码';
+
+  @override
   String get passwordRequired => '请输入密码';
 
   @override
   String get captcha => '验证码';
+
+  @override
+  String get captchaHint => '验证码';
 
   @override
   String get captchaRequired => '请输入验证码';

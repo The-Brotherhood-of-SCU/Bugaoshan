@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:scu_ocr_lite/scu_ocr_lite.dart' as ocr_lite;
 
