@@ -314,6 +314,7 @@
     "exportScheduleAddToCalendar":"Import to Calendar",
     "exportScheduleAddToCalendarSuccess":"Imported to calendar",
     "exportScheduleAddToCalendarFailed":"Import failed",
+    "exportScheduleAddToCalendarEmpty":"No courses to import",
     "exportScheduleSelectCalendar":"Choose Calendar",
     "exportScheduleCalendarDefault":"Default calendar",
     "copySuffix": " (Copy)",
