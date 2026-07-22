@@ -1,4 +1,8 @@
 PODS:
+  - app_group_directory (1.0.0):
+    - Flutter
+  - device_info_plus (0.0.1):
+    - Flutter
   - file_picker (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -10,8 +14,6 @@ PODS:
   - flutter_inappwebview_ios/Core (0.0.1):
     - Flutter
     - swift-collections (~> 1.1.1)
-  - flutter_litert (2.8.3):
-    - Flutter
   - flutter_secure_storage_darwin (10.0.0):
     - Flutter
     - FlutterMacOS
@@ -55,10 +57,11 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
+  - app_group_directory (from `.symlinks/plugins/app_group_directory/ios`)
+  - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - file_picker (from `.symlinks/plugins/file_picker/darwin`)
   - Flutter (from `Flutter`)
   - flutter_inappwebview_ios (from `.symlinks/plugins/flutter_inappwebview_ios/ios`)
-  - flutter_litert (from `.symlinks/plugins/flutter_litert/ios`)
   - flutter_secure_storage_darwin (from `.symlinks/plugins/flutter_secure_storage_darwin/darwin`)
   - gal (from `.symlinks/plugins/gal/darwin`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
@@ -76,14 +79,16 @@ SPEC REPOS:
     - swift-collections
 
 EXTERNAL SOURCES:
+  app_group_directory:
+    :path: ".symlinks/plugins/app_group_directory/ios"
+  device_info_plus:
+    :path: ".symlinks/plugins/device_info_plus/ios"
   file_picker:
     :path: ".symlinks/plugins/file_picker/darwin"
   Flutter:
     :path: Flutter
   flutter_inappwebview_ios:
     :path: ".symlinks/plugins/flutter_inappwebview_ios/ios"
-  flutter_litert:
-    :path: ".symlinks/plugins/flutter_litert/ios"
   flutter_secure_storage_darwin:
     :path: ".symlinks/plugins/flutter_secure_storage_darwin/darwin"
   gal:
@@ -106,10 +111,11 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
 
 SPEC CHECKSUMS:
+  app_group_directory: a2613caae8f771366673bd6ec80412b76bbb4fb4
+  device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
   file_picker: 70164d9778c42c47218d6cd79ce435de0856b11a
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  flutter_inappwebview_ios: be16062772774a6e8f778354c7de56572ccc3df8
-  flutter_litert: 3e3fa9289b948f2abcd935eaff4455d670f8f057
+  flutter_inappwebview_ios: 9cde7869829d54b4110df350f3eedd192c5a4aea
   flutter_secure_storage_darwin: acdb3f316ed05a3e68f856e0353b133eec373a23
   gal: baecd024ebfd13c441269ca7404792a7152fde89
   image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326

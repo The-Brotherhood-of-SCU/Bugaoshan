@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -30,8 +29,13 @@ class AddWidgetPage extends StatelessWidget {
 
 class AddWidgetContent extends StatefulWidget {
   final bool showDescription;
+  final TargetPlatform? debugPlatformOverride;
 
-  const AddWidgetContent({super.key, this.showDescription = true});
+  const AddWidgetContent({
+    super.key,
+    this.showDescription = true,
+    this.debugPlatformOverride,
+  });
 
   @override
   State<AddWidgetContent> createState() => _AddWidgetContentState();
@@ -40,6 +44,9 @@ class AddWidgetContent extends StatefulWidget {
 class _AddWidgetContentState extends State<AddWidgetContent>
     with WidgetsBindingObserver {
   BatteryOptimizationStatus _status = BatteryOptimizationStatus.checking;
+
+  TargetPlatform get _platform =>
+      widget.debugPlatformOverride ?? defaultTargetPlatform;
 
   @override
   void initState() {
@@ -62,7 +69,7 @@ class _AddWidgetContentState extends State<AddWidgetContent>
   }
 
   Future<void> _checkBatteryOptimization() async {
-    if (!Platform.isAndroid) {
+    if (_platform != TargetPlatform.android) {
       setState(() => _status = BatteryOptimizationStatus.disabled);
       return;
     }
@@ -94,7 +101,7 @@ class _AddWidgetContentState extends State<AddWidgetContent>
         appConfig.widgetShowTomorrow.value = v;
         final service = getIt<WidgetUpdateService>();
         try {
-          await service.updateWidgetData(force: true);
+          await service.syncWidgetShowTomorrow(v);
         } catch (e, st) {
           debugPrint('WidgetUpdate toggle failed: $e');
           debugPrint('$st');
@@ -123,6 +130,9 @@ class _AddWidgetContentState extends State<AddWidgetContent>
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     final appConfig = getIt<AppConfigProvider>();
+    final isAndroid = _platform == TargetPlatform.android;
+    final isApple =
+        _platform == TargetPlatform.iOS || _platform == TargetPlatform.macOS;
 
     return ListenableBuilder(
       listenable: appConfig.widgetShowTomorrow,
@@ -139,17 +149,46 @@ class _AddWidgetContentState extends State<AddWidgetContent>
               ),
               const SizedBox(height: 24),
             ],
-            BatteryOptimizationCard(
-              status: _status,
-              onRequestIgnore: _requestIgnoreBatteryOptimizations,
-            ),
-            const SizedBox(height: 16),
-            // Consolidated single card with size choices
-            _WidgetPickerCard(onPin: _pinWidget),
-            const SizedBox(height: 16),
+            if (isAndroid) ...[
+              BatteryOptimizationCard(
+                status: _status,
+                onRequestIgnore: _requestIgnoreBatteryOptimizations,
+              ),
+              const SizedBox(height: 16),
+            ],
+            if (isApple) ...[
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.widgets_outlined,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          _platform == TargetPlatform.iOS
+                              ? '在 iOS 主屏幕长按，选择「不高山上」的课表组件添加'
+                              : '在 macOS 通知中心点击「编辑小组件」，添加「不高山上」的课表组件',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+            // Consolidated single card with size choices (Android only)
+            if (isAndroid) _WidgetPickerCard(onPin: _pinWidget),
+            if (isAndroid) const SizedBox(height: 16),
             _buildShowTomorrowSwitch(context, localizations),
-            const SizedBox(height: 16),
-            HintCard(hint: localizations.pinWidgetHint),
+            if (isAndroid) ...[
+              const SizedBox(height: 16),
+              HintCard(hint: localizations.pinWidgetHint),
+            ],
           ],
         );
       },
