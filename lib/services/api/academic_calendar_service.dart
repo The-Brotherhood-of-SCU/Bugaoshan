@@ -122,16 +122,20 @@ class AcademicCalendarService {
     return null;
   }
 
+  /// Load and parse the bundled academic calendar JSON asset.
+  static Future<AcademicCalendarData> loadBundledCalendar() async {
+    final assetContent = await rootBundle.loadString(
+      'assets/academic_calendar.json',
+    );
+    final decoded = jsonDecode(assetContent) as Map<String, dynamic>;
+    return AcademicCalendarData.fromJson(expandCalendarJson(decoded));
+  }
+
   /// 根据课表名称从校历中匹配学期并返回总周数，未匹配则返回 null。
   /// 匹配逻辑：提取学年（如 "2025-2026"）和季节（春/秋），与校历学期名对比。
   static Future<int?> findTotalWeeksFromCalendar(String scheduleName) async {
     try {
-      final assetContent = await rootBundle.loadString(
-        'assets/academic_calendar.json',
-      );
-      final decoded = jsonDecode(assetContent) as Map<String, dynamic>;
-      final expanded = expandCalendarJson(decoded);
-      final data = AcademicCalendarData.fromJson(expanded);
+      final data = await loadBundledCalendar();
 
       final yearMatch = RegExp(r'(\d{4})-(\d{4})').firstMatch(scheduleName);
       if (yearMatch == null) return null;

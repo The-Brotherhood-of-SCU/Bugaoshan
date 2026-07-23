@@ -33,6 +33,8 @@ class _TopBar extends StatelessWidget {
 
     final now = DateTime.now();
     final dateStr = '${now.year}/${now.month}/${now.day}';
+    final canGoLeft = isViewingVacation || week > 1;
+    final canGoRight = !isViewingVacation && week <= totalWeeks;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
@@ -57,13 +59,11 @@ class _TopBar extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     GestureDetector(
-                      onTap: isViewingVacation
-                          ? onPreviousWeek
-                          : (week > 1 ? onPreviousWeek : null),
+                      onTap: canGoLeft ? onPreviousWeek : null,
                       child: Icon(
                         Icons.chevron_left,
                         size: 16,
-                        color: isViewingVacation || week > 1
+                        color: canGoLeft
                             ? Theme.of(context).colorScheme.onSurface
                             : Theme.of(context).disabledColor,
                       ),
@@ -82,17 +82,13 @@ class _TopBar extends StatelessWidget {
                       ),
                     ),
                     GestureDetector(
-                      onTap: isViewingVacation
-                          ? null
-                          : (week <= totalWeeks ? onNextWeek : null),
+                      onTap: canGoRight ? onNextWeek : null,
                       child: Icon(
                         Icons.chevron_right,
                         size: 16,
-                        color: isViewingVacation
-                            ? Theme.of(context).disabledColor
-                            : (week <= totalWeeks
-                                  ? Theme.of(context).colorScheme.onSurface
-                                  : Theme.of(context).disabledColor),
+                        color: canGoRight
+                            ? Theme.of(context).colorScheme.onSurface
+                            : Theme.of(context).disabledColor,
                       ),
                     ),
                     const SizedBox(width: 3),

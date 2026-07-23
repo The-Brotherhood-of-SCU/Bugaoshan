@@ -1,9 +1,7 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:bugaoshan/widgets/common/third_center.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
@@ -318,12 +316,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
     _promptedNextSemester = true;
 
     try {
-      final assetContent = await rootBundle.loadString(
-        'assets/academic_calendar.json',
-      );
-      final decoded = jsonDecode(assetContent) as Map<String, dynamic>;
-      final expanded = AcademicCalendarService.expandCalendarJson(decoded);
-      final data = AcademicCalendarData.fromJson(expanded);
+      final data = await AcademicCalendarService.loadBundledCalendar();
       final nextSemester = data.findNextSemester(
         courseProvider.scheduleConfig.value.semesterEndDate,
       );
