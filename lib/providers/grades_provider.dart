@@ -57,7 +57,9 @@ class GradesProvider extends ChangeNotifier {
           jsonDecode(cachedScheme) as Map<String, dynamic>,
         );
         _schemeState = GradesLoadState.loaded;
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('GradesProvider scheme cache decode error: $e');
+      }
     }
     final cachedPassing = _prefs.getString(
       _userCacheKey(_keyPassingScores, userIdentity),
@@ -68,7 +70,9 @@ class GradesProvider extends ChangeNotifier {
           jsonDecode(cachedPassing) as Map<String, dynamic>,
         );
         _passingState = GradesLoadState.loaded;
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('GradesProvider passing cache decode error: $e');
+      }
     }
   }
 
