@@ -7,7 +7,6 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
-import 'package:bugaoshan/services/api/academic_calendar_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/utils/class_week_parser.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
@@ -343,7 +342,6 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
       _totalToImport = toImport.length;
       _currentProgress = 0;
     });
-    final importedSchedules = <({String id, String name})>[];
     try {
       for (final semester in toImport) {
         setState(() => _currentProgress++);
@@ -405,10 +403,6 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
               resolution.existingScheduleId!,
               parsed.courses,
             );
-            importedSchedules.add((
-              id: resolution.existingScheduleId!,
-              name: scheduleName,
-            ));
             continue;
           } else {
             config.semesterName = resolution.finalName!;
@@ -423,7 +417,6 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
               existingId,
               parsed.courses,
             );
-            importedSchedules.add((id: existingId, name: scheduleName));
             continue;
           }
           // existingId == null 表示该学期无冲突，正常添加即可
@@ -437,7 +430,6 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         // batchAction == null 表示预检查时无冲突，保持原名正常导入
 
         await widget.courseProvider.addSchedule(config);
-        importedSchedules.add((id: config.id, name: config.semesterName));
         for (final course in parsed.courses) {
           await widget.courseProvider.addCourse(course);
         }
@@ -458,53 +450,6 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(l10n.importSuccess)));
-
-        // 询问是否根据校历自动计算周数（批量导入只问一次）
-        if (!mounted) return;
-        final calcWeeks = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text(l10n.autoCalcWeeksTitle),
-            content: Text(l10n.autoCalcWeeksContent),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: Text(l10n.cancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: Text(l10n.confirm),
-              ),
-            ],
-          ),
-        );
-        if (calcWeeks == true && mounted) {
-          for (final imported in importedSchedules) {
-            try {
-              final weeks =
-                  await AcademicCalendarService.findTotalWeeksFromCalendar(
-                    imported.name,
-                  );
-              if (weeks != null) {
-                final allSchedules = widget.courseProvider.allSchedules.value;
-                final schedule = allSchedules
-                    .where((s) => s.id == imported.id)
-                    .firstOrNull;
-                if (schedule != null) {
-                  final updated = schedule.copyWith(totalWeeks: weeks);
-                  await widget.courseProvider.updateScheduleConfig(updated);
-                }
-              }
-            } catch (_) {
-              // 单个匹配失败不阻断，继续下一个
-            }
-          }
-          if (mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(l10n.autoCalcWeeksSuccess)));
-          }
-        }
 
         // 导入成功后，询问是否自动设置当前教学周
         if (!mounted) return;

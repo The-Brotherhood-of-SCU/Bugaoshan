@@ -361,7 +361,9 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
       if (confirmed == true) {
         courseProvider.switchSchedule(matchId);
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('CoursePage: failed to check next semester: $e');
+    }
   }
 
   void _onViewNextSemester(AcademicCalendarSemester semester) {

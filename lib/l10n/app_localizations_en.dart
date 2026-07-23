@@ -1954,21 +1954,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Battery optimization disabled successfully';
 
   @override
-  String get autoCalcWeeksTitle => 'Auto Calculate Weeks';
-
-  @override
-  String get autoCalcWeeksContent =>
-      'Calculate total weeks based on the official academic calendar?';
-
-  @override
-  String get autoCalcWeeksSuccess =>
-      'Schedule weeks updated from academic calendar';
-
-  @override
-  String get autoCalcWeeksNotFound =>
-      'No matching semester found in academic calendar, using default 20 weeks';
-
-  @override
   String get autoSetCurrentWeekTitle => 'Auto-set Current Teaching Week';
 
   @override
@@ -2322,11 +2307,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nextSemester => 'Next Semester';
-
-  @override
-  String semesterStarts(String date) {
-    return 'Starts $date';
-  }
 
   @override
   String registrationDates(String start, String end) {
