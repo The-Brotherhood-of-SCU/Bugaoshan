@@ -68,20 +68,6 @@ class _VacationViewState extends State<_VacationView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 96,
-                height: 96,
-                decoration: BoxDecoration(
-                  color: colorScheme.tertiaryContainer,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.beach_access_rounded,
-                  size: 48,
-                  color: colorScheme.onTertiaryContainer,
-                ),
-              ),
-              const SizedBox(height: 20),
               Text(
                 l10n.onVacation,
                 style: textTheme.titleLarge?.copyWith(
