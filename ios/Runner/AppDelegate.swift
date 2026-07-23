@@ -2,56 +2,99 @@ import Flutter
 import CoreLocation
 import EventKit
 import UIKit
+import WidgetKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
-  private let channelName = "bugaoshan/update"
-  private let calendarEventIdentifierMapKey = "bugaoshan.calendarEventIdentifiers"
-  private let eventStore = EKEventStore()
+    private let channelName = "bugaoshan/update"
+    private let calendarEventIdentifierMapKey = "bugaoshan.calendarEventIdentifiers"
+    private let eventStore = EKEventStore()
+    private let appGroupId = "group.io.github.thebrotherhoodofscu.bugaoshan"
 
-  override func application(
-    _ application: UIApplication,
-    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
-  ) -> Bool {
-    GeneratedPluginRegistrant.register(with: self)
-    if let controller = window?.rootViewController as? FlutterViewController {
-      registerBugaoshanMethodChannel(messenger: controller.binaryMessenger)
-    }
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
-  }
-
-  private func registerBugaoshanMethodChannel(messenger: FlutterBinaryMessenger) {
-    let channel = FlutterMethodChannel(
-      name: channelName,
-      binaryMessenger: messenger
-    )
-    channel.setMethodCallHandler { [weak self] call, result in
-      switch call.method {
-      case "listWritableCalendars":
-        self?.listWritableCalendars(result: result)
-      case "importIcsToCalendar":
-        guard
-          let arguments = call.arguments as? [String: Any],
-          let events = arguments["events"] as? [[String: Any]],
-          !events.isEmpty
-        else {
-          result(FlutterError(
-            code: "INVALID_ARGUMENT",
-            message: "Events are empty",
-            details: nil
-          ))
-          return
+    override func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+    ) -> Bool {
+        GeneratedPluginRegistrant.register(with: self)
+        if let controller = window?.rootViewController as? FlutterViewController {
+            registerBugaoshanMethodChannel(messenger: controller.binaryMessenger)
         }
-        self?.importEventsToCalendar(
-          events: events,
-          calendarIdentifier: arguments["calendarIdentifier"] as? String,
-          result: result
-        )
-      default:
-        result(FlutterMethodNotImplemented)
-      }
+        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
-  }
+
+    private func registerBugaoshanMethodChannel(messenger: FlutterBinaryMessenger) {
+        let channel = FlutterMethodChannel(
+            name: channelName,
+            binaryMessenger: messenger
+        )
+        channel.setMethodCallHandler { [weak self] call, result in
+            switch call.method {
+            case "listWritableCalendars":
+                self?.listWritableCalendars(result: result)
+            case "importIcsToCalendar":
+                guard
+                    let arguments = call.arguments as? [String: Any],
+                    let events = arguments["events"] as? [[String: Any]],
+                    !events.isEmpty
+                else {
+                    result(FlutterError(
+                        code: "INVALID_ARGUMENT",
+                        message: "Events are empty",
+                        details: nil
+                    ))
+                    return
+                }
+                self?.importEventsToCalendar(
+                    events: events,
+                    calendarIdentifier: arguments["calendarIdentifier"] as? String,
+                    result: result
+                )
+            case "updateWidget":
+                self?.updateWidget(result: result)
+            case "syncWidgetShowTomorrow":
+                guard
+                    let arguments = call.arguments as? [String: Any],
+                    let value = arguments["value"] as? Bool
+                else {
+                    result(FlutterError(
+                        code: "INVALID_ARGUMENT",
+                        message: "Value is required",
+                        details: nil
+                    ))
+                    return
+                }
+                self?.syncWidgetShowTomorrow(value: value, result: result)
+            default:
+                result(FlutterMethodNotImplemented)
+            }
+        }
+    }
+
+    private func updateWidget(result: @escaping FlutterResult) {
+        if #available(iOS 14.0, *) {
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+        result(nil)
+    }
+
+    private func syncWidgetShowTomorrow(value: Bool, result: @escaping FlutterResult) {
+        guard let sharedDefaults = UserDefaults(suiteName: appGroupId) else {
+            result(FlutterError(
+                code: "APP_GROUP_UNAVAILABLE",
+                message: "App Group not available",
+                details: nil
+            ))
+            return
+        }
+        sharedDefaults.set(value, forKey: "widget_show_tomorrow")
+        sharedDefaults.synchronize()
+        
+        if #available(iOS 14.0, *) {
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+        
+        result(nil)
+    }
 
   private func listWritableCalendars(result: @escaping FlutterResult) {
     // Listing the user's calendars is a read operation. On iOS 17+ that means

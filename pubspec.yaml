@@ -11,6 +11,7 @@ dependencies:
   get_it: ^9.2.0
   injectable: any
   shared_preferences: any
+  app_group_directory: ^2.0.0
   flutter_localizations:
     sdk: flutter
   intl: any

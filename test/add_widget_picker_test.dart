@@ -9,9 +9,15 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 
 class FakeWidgetUpdateService implements WidgetUpdateService {
   String? lastSizeArg;
+  bool? lastShowTomorrowArg;
 
   @override
   Future<void> updateWidgetData({bool force = false}) async {}
+
+  @override
+  Future<void> syncWidgetShowTomorrow(bool value) async {
+    lastShowTomorrowArg = value;
+  }
 
   @override
   void dispose() {}
@@ -56,7 +62,10 @@ void main() {
         supportedLocales: AppLocalizations.supportedLocales,
         home: const Scaffold(
           body: SingleChildScrollView(
-            child: AddWidgetContent(showDescription: false),
+            child: AddWidgetContent(
+              showDescription: false,
+              debugPlatformOverride: TargetPlatform.android,
+            ),
           ),
         ),
       ),

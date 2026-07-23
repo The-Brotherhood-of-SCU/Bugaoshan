@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -246,13 +248,27 @@ void _configureAsyncDependencies() {
   });
   getIt.registerSingletonAsync<WidgetUpdateService>(() async {
     await getIt.isReady<CourseProvider>();
+    await getIt.isReady<AppConfigProvider>();
     final courseProvider = getIt<CourseProvider>();
+    final appConfig = getIt<AppConfigProvider>();
     final service = WidgetUpdateService();
     courseProvider.onCoursesChanged = () {
       service.updateWidgetData().catchError((e) {
         // Ignore widget update errors to prevent unhandled async errors
       });
     };
+
+    // Sync initial widget_show_tomorrow setting to App Group
+    if (!kIsWeb && (Platform.isIOS || Platform.isMacOS)) {
+      try {
+        await service.syncWidgetShowTomorrow(
+          appConfig.widgetShowTomorrow.value,
+        );
+      } catch (e) {
+        debugPrint('Failed to sync initial widget setting: $e');
+      }
+    }
+
     return service;
   });
 
