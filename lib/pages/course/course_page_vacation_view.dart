@@ -28,12 +28,7 @@ class _VacationViewState extends State<_VacationView> {
 
   Future<void> _loadNextSemester() async {
     try {
-      final assetContent = await rootBundle.loadString(
-        'assets/academic_calendar.json',
-      );
-      final decoded = jsonDecode(assetContent) as Map<String, dynamic>;
-      final expanded = AcademicCalendarService.expandCalendarJson(decoded);
-      final data = AcademicCalendarData.fromJson(expanded);
+      final data = await AcademicCalendarService.loadBundledCalendar();
       if (mounted) {
         final next = data.findNextSemester(
           widget.scheduleConfig.semesterEndDate,
@@ -100,14 +95,13 @@ class _VacationViewState extends State<_VacationView> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              else if (isOnVacation)
-                _buildOnVacationContent(l10n, textTheme, colorScheme, today)
               else
-                _buildBeforeVacationContent(
+                _buildVacationContent(
                   l10n,
                   textTheme,
                   colorScheme,
                   today,
+                  isOnVacation,
                   vacationStart,
                 ),
             ],
@@ -117,40 +111,15 @@ class _VacationViewState extends State<_VacationView> {
     );
   }
 
-  Widget _buildBeforeVacationContent(
+  Widget _buildVacationContent(
     AppLocalizations l10n,
     TextTheme textTheme,
     ColorScheme colorScheme,
     DateTime today,
+    bool isOnVacation,
     DateTime vacationStart,
   ) {
-    final daysUntil = vacationStart.difference(today).inDays;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          l10n.daysUntilVacation(daysUntil),
-          style: textTheme.bodyLarge?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        if (_nextSemester != null) ...[
-          const SizedBox(height: 20),
-          _buildNextSemesterInfo(l10n, textTheme, colorScheme),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildOnVacationContent(
-    AppLocalizations l10n,
-    TextTheme textTheme,
-    ColorScheme colorScheme,
-    DateTime today,
-  ) {
-    if (_nextSemester == null) {
+    if (isOnVacation && _nextSemester == null) {
       return Text(
         l10n.enjoyVacation,
         style: textTheme.bodyLarge?.copyWith(
@@ -160,20 +129,26 @@ class _VacationViewState extends State<_VacationView> {
       );
     }
 
-    final daysUntil = _nextSemester!.startDate.difference(today).inDays;
+    final daysUntil = isOnVacation
+        ? _nextSemester!.startDate.difference(today).inDays
+        : vacationStart.difference(today).inDays;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          l10n.daysUntilNextSemester(daysUntil),
+          isOnVacation
+              ? l10n.daysUntilNextSemester(daysUntil)
+              : l10n.daysUntilVacation(daysUntil),
           style: textTheme.bodyLarge?.copyWith(
             color: colorScheme.onSurfaceVariant,
           ),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 20),
-        _buildNextSemesterInfo(l10n, textTheme, colorScheme),
+        if (_nextSemester != null) ...[
+          const SizedBox(height: 20),
+          _buildNextSemesterInfo(l10n, textTheme, colorScheme),
+        ],
       ],
     );
   }
