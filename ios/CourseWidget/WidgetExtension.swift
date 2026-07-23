@@ -31,7 +31,7 @@ struct ScheduleConfig {
     let timeSlots: [TimeSlot]
 }
 
-let appGroupId = "group.io.github.the-brotherhood-of-scu.bugaoshan"
+let appGroupId = "group.io.github.thebrotherhoodofscu.bugaoshan"
 
 func getDatabasePath() -> String? {
     guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupId) else {

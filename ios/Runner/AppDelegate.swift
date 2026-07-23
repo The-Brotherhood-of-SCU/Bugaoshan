@@ -9,7 +9,7 @@ import WidgetKit
     private let channelName = "bugaoshan/update"
     private let calendarEventIdentifierMapKey = "bugaoshan.calendarEventIdentifiers"
     private let eventStore = EKEventStore()
-    private let appGroupId = "group.io.github.the-brotherhood-of-scu.bugaoshan"
+    private let appGroupId = "group.io.github.thebrotherhoodofscu.bugaoshan"
 
     override func application(
         _ application: UIApplication,

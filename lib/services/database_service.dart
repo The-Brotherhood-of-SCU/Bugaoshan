@@ -40,7 +40,7 @@ class DatabaseService {
     Directory dir;
     // iOS/macOS 使用 App Group 共享目录，让 Widget Extension 也能访问数据库
     if (!kIsWeb && (Platform.isIOS || Platform.isMacOS)) {
-      const appGroupId = 'group.io.github.the-brotherhood-of-scu.bugaoshan';
+      const appGroupId = 'group.io.github.thebrotherhoodofscu.bugaoshan';
       try {
         final appGroupDir = await AppGroupDirectory.getAppGroupDirectory(appGroupId);
         if (appGroupDir != null) {
