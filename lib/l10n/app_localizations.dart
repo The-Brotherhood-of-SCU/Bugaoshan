@@ -1597,6 +1597,12 @@ abstract class AppLocalizations {
   /// **'Import failed'**
   String get exportScheduleAddToCalendarFailed;
 
+  /// No description provided for @exportScheduleAddToCalendarEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No courses to import'**
+  String get exportScheduleAddToCalendarEmpty;
+
   /// No description provided for @exportScheduleSelectCalendar.
   ///
   /// In en, this message translates to:

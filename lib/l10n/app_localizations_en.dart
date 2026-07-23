@@ -813,6 +813,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportScheduleAddToCalendarFailed => 'Import failed';
 
   @override
+  String get exportScheduleAddToCalendarEmpty => 'No courses to import';
+
+  @override
   String get exportScheduleSelectCalendar => 'Choose Calendar';
 
   @override

@@ -36,7 +36,7 @@ class CalendarImportUtils {
     BuildContext context,
     AppLocalizations l10n,
   ) async {
-    if (!Platform.isIOS) return null;
+    if (!Platform.isIOS && !Platform.isMacOS) return null;
 
     final rawCalendars =
         await channel.invokeListMethod<Object?>('listWritableCalendars') ??

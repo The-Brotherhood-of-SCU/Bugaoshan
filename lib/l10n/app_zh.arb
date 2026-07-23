@@ -315,6 +315,7 @@
     "exportScheduleAddToCalendar": "一键导入到日历",
     "exportScheduleAddToCalendarSuccess": "已导入到日历",
     "exportScheduleAddToCalendarFailed": "导入失败",
+    "exportScheduleAddToCalendarEmpty": "课表为空，无法导入到日历",
     "exportScheduleSelectCalendar": "选择目标日历",
     "exportScheduleCalendarDefault": "默认日历",
     "copySuffix": " (副本)",

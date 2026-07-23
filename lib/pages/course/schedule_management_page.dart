@@ -206,22 +206,25 @@ class ScheduleManagementPage extends StatelessWidget {
                 final schedule = allSchedules[index];
                 final isCurrent = schedule.id == currentId;
                 return ListTile(
-                  leading: Icon(
-                    isCurrent ? Icons.check_circle : Icons.circle_outlined,
-                    color: isCurrent
-                        ? Theme.of(context).colorScheme.primary
-                        : Colors.grey,
-                  ),
-                  title: Text(
-                    schedule.semesterName.isEmpty
-                        ? l10n.defaultScheduleName
-                        : schedule.semesterName,
-                  ),
-                  subtitle: Text(l10n.totalWeeksSubtitle(schedule.totalWeeks)),
-                  onTap: () {
-                    courseProvider.switchSchedule(schedule.id);
-                    Navigator.pop(context);
-                  },
+                leading: Icon(
+                  isCurrent ? Icons.check_circle : Icons.circle_outlined,
+                  color: isCurrent
+                      ? Theme.of(context).colorScheme.primary
+                      : Colors.grey,
+                ),
+                title: Text(
+                  schedule.semesterName.isEmpty
+                      ? l10n.defaultScheduleName
+                      : schedule.semesterName,
+                ),
+                subtitle: Text(l10n.totalWeeksSubtitle(schedule.totalWeeks)),
+                onTap: () async {
+                  final navigator = Navigator.of(context);
+                  await courseProvider.switchSchedule(schedule.id);
+                  if (navigator.canPop()) {
+                    navigator.pop();
+                  }
+                },
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

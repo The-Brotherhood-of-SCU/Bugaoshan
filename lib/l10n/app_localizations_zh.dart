@@ -788,6 +788,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportScheduleAddToCalendarFailed => '导入失败';
 
   @override
+  String get exportScheduleAddToCalendarEmpty => '课表为空，无法导入到日历';
+
+  @override
   String get exportScheduleSelectCalendar => '选择目标日历';
 
   @override
