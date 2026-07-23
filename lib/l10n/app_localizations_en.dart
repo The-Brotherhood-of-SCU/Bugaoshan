@@ -2300,4 +2300,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get oldIconSubtitle => 'Bugaoshan Classic Icon';
+
+  @override
+  String get close => 'Close';
 }

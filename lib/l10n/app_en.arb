@@ -906,5 +906,6 @@
     "iconSwitchNotSupported": "Dynamic icon switching is not supported on this platform",
     "featureNotSupported": "This feature is not supported on this platform",
     "newIconSubtitle": "Bugaoshan New Icon",
-    "oldIconSubtitle": "Bugaoshan Classic Icon"
+    "oldIconSubtitle": "Bugaoshan Classic Icon",
+    "close": "Close"
 }

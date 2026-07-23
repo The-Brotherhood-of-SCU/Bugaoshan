@@ -4374,6 +4374,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Bugaoshan Classic Icon'**
   String get oldIconSubtitle;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
 }
 
 class _AppLocalizationsDelegate

@@ -2238,6 +2238,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get oldIconSubtitle => 'Bugaoshan 经典图标';
+
+  @override
+  String get close => '关闭';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).
