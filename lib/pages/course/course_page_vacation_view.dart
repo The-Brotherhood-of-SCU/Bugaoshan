@@ -41,7 +41,8 @@ class _VacationViewState extends State<_VacationView> {
           _loading = false;
         });
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('VacationView: failed to load next semester data: $e');
       if (mounted) setState(() => _loading = false);
     }
   }
