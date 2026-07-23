@@ -106,6 +106,27 @@ foreach(bundled_library ${PLUGIN_BUNDLED_LIBRARIES})
     COMPONENT Runtime)
 endforeach(bundled_library)
 
+# The WebView plugin bundles real WPE library files, but the runtime linker
+# resolves them by SONAME. Create the expected names inside the bundle.
+install(CODE "
+  set(LIB_DIR \"${INSTALL_BUNDLE_LIB_DIR}\")
+
+  macro(create_wpe_symlinks LIB_PATTERN SONAME_BASE)
+    file(GLOB LIB_FILES \"\${LIB_DIR}/\${LIB_PATTERN}\")
+    if(LIB_FILES)
+      list(GET LIB_FILES 0 REAL_LIB)
+      get_filename_component(REAL_LIB_NAME \"\${REAL_LIB}\" NAME)
+      execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink
+        \"\${REAL_LIB_NAME}\" \"\${LIB_DIR}/\${SONAME_BASE}.so.1\")
+      execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink
+        \"\${SONAME_BASE}.so.1\" \"\${LIB_DIR}/\${SONAME_BASE}.so\")
+    endif()
+  endmacro()
+
+  create_wpe_symlinks(\"libWPEWebKit-2.0.so.*.*.*\" \"libWPEWebKit-2.0\")
+  create_wpe_symlinks(\"libwpe-1.0.so.*.*.*\" \"libwpe-1.0\")
+  " COMPONENT Runtime)
+
 # Copy the native assets provided by the build.dart from all packages.
 set(NATIVE_ASSETS_DIR "${PROJECT_BUILD_DIR}native_assets/linux/")
 install(DIRECTORY "${NATIVE_ASSETS_DIR}"
