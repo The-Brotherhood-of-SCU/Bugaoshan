@@ -33,7 +33,9 @@ class BackgroundCacheService {
   void _cleanup() {
     try {
       _bgImageStream?.removeListener(_bgImageListener!);
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('BackgroundCacheService._cleanup error: $e');
+    }
     _bgImageStream = null;
     _bgImageListener = null;
   }

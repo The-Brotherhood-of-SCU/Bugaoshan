@@ -8,6 +8,7 @@ import 'package:bugaoshan/services/update_checker.dart';
 import 'package:crypto/crypto.dart' as crypto;
 
 import 'package:bugaoshan/models/release_info.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -222,12 +223,16 @@ class UpdateService {
                     name.startsWith('bugaoshan_update'))) {
               try {
                 await ent.delete();
-              } catch (_) {}
+              } catch (e) {
+                debugPrint('UpdateService.cleanupOldPackages delete error: $e');
+              }
             }
           }
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('UpdateService.cleanupOldPackages error: $e');
+    }
     await _prefs.setString(_keyLastInstalledVersion, _currentVersion);
   }
 

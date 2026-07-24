@@ -68,6 +68,18 @@ flutter pub run build_runner build --delete-conflicting-outputs
 flutter run
 ```
 
+### iOS Profile 真机安装
+
+需要以 Profile 模式在已连接的 iPhone 上验证时，使用仓库脚本：
+
+```bash
+tool/install_ios_profile.sh <device>
+```
+
+`<device>` 可以是 `xcrun devicectl list devices` 显示的设备标识、UDID 或设备名。若已经完成 Profile 构建，可用 `--no-build` 复用现有产物。
+
+脚本会先结束旧 App 及 Widget Extension 进程，再覆盖安装并启动新包。请不要直接对正在运行的 App 反复执行 `devicectl device install app`：iOS 可能保留指向旧安装路径的 Runner 进程，表现为安装成功但启动后白屏。若启动在 15 秒内没有完成，脚本会停止等待并提示解锁或重启设备。
+
 ---
 
 ## 📁 项目结构

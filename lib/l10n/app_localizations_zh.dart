@@ -788,6 +788,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportScheduleAddToCalendarFailed => '导入失败';
 
   @override
+  String get exportScheduleAddToCalendarEmpty => '课表为空，无法导入到日历';
+
+  @override
   String get exportScheduleSelectCalendar => '选择目标日历';
 
   @override
@@ -2235,6 +2238,51 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get oldIconSubtitle => 'Bugaoshan 经典图标';
+
+  @override
+  String get close => '关闭';
+
+  @override
+  String get onVacation => '假期中';
+
+  @override
+  String get vacationBadge => '放假中';
+
+  @override
+  String daysUntilVacation(int days) {
+    return '距离放假还有 $days 天';
+  }
+
+  @override
+  String daysUntilNextSemester(int days) {
+    return '距离下学期上课还有 $days 天';
+  }
+
+  @override
+  String get nextSemester => '下学期';
+
+  @override
+  String registrationDates(String start, String end) {
+    return '$start - $end 报到';
+  }
+
+  @override
+  String get enjoyVacation => '享受假期～';
+
+  @override
+  String get viewNextSemesterSchedule => '查看下学期课表';
+
+  @override
+  String get noNextSemesterSchedule => '暂未导入下学期课表';
+
+  @override
+  String get promptSwitchSemester => '下学期即将开始，是否切换到下学期课表？';
+
+  @override
+  String get promptSwitchSemesterTitle => '切换课表';
+
+  @override
+  String get switchSchedule => '切换';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

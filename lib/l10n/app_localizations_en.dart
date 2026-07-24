@@ -813,6 +813,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportScheduleAddToCalendarFailed => 'Import failed';
 
   @override
+  String get exportScheduleAddToCalendarEmpty => 'No courses to import';
+
+  @override
   String get exportScheduleSelectCalendar => 'Choose Calendar';
 
   @override
@@ -2297,4 +2300,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get oldIconSubtitle => 'Bugaoshan Classic Icon';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get onVacation => 'On Vacation';
+
+  @override
+  String get vacationBadge => 'Vacation';
+
+  @override
+  String daysUntilVacation(int days) {
+    return '$days days until vacation';
+  }
+
+  @override
+  String daysUntilNextSemester(int days) {
+    return '$days days until next semester classes';
+  }
+
+  @override
+  String get nextSemester => 'Next Semester';
+
+  @override
+  String registrationDates(String start, String end) {
+    return 'Registration: $start - $end';
+  }
+
+  @override
+  String get enjoyVacation => 'Enjoy your vacation~';
+
+  @override
+  String get viewNextSemesterSchedule => 'View Next Semester Schedule';
+
+  @override
+  String get noNextSemesterSchedule => 'Next semester schedule not imported';
+
+  @override
+  String get promptSwitchSemester =>
+      'The next semester is about to begin. Switch to next semester schedule?';
+
+  @override
+  String get promptSwitchSemesterTitle => 'Switch Schedule';
+
+  @override
+  String get switchSchedule => 'Switch';
 }

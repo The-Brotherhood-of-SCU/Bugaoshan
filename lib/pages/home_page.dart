@@ -62,7 +62,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       if (result.hasUpdate) {
         appConfig.hasUpdateNotification.value = true;
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('HomePage._checkForUpdateInBackground error: $e');
+    }
   }
 
   @override

@@ -25,7 +25,9 @@ class PlanCompletionProvider extends ChangeNotifier {
             .map((e) => PlanCompletionNode.fromJson(e as Map<String, dynamic>))
             .toList();
         _state = PlanCompletionLoadState.loaded;
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('PlanCompletionProvider cache decode error: $e');
+      }
     }
   }
 

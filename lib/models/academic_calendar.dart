@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:json_annotation/json_annotation.dart';
 
+import 'course.dart';
+
 part 'academic_calendar.g.dart';
 
 class _DateConverter extends JsonConverter<DateTime, String> {
@@ -19,7 +21,8 @@ class _NullableDateConverter extends JsonConverter<DateTime?, String?> {
   const _NullableDateConverter();
 
   @override
-  DateTime? fromJson(String? json) => json != null ? DateTime.parse(json) : null;
+  DateTime? fromJson(String? json) =>
+      json != null ? DateTime.parse(json) : null;
 
   @override
   String? toJson(DateTime? object) => object != null
@@ -58,7 +61,8 @@ class AcademicCalendarEvent {
       return targetDay.isAtSameMomentAs(startDay);
     }
     final endDay = DateTime(endDate!.year, endDate!.month, endDate!.day);
-    return (targetDay.isAtSameMomentAs(startDay) || targetDay.isAfter(startDay)) &&
+    return (targetDay.isAtSameMomentAs(startDay) ||
+            targetDay.isAfter(startDay)) &&
         (targetDay.isAtSameMomentAs(endDay) || targetDay.isBefore(endDay));
   }
 
@@ -120,6 +124,80 @@ class AcademicCalendarSemester {
     return (today.isAtSameMomentAs(start) || today.isAfter(start)) &&
         (today.isAtSameMomentAs(end) || today.isBefore(end));
   }
+
+  /// The date when this semester ends (last day of the last teaching week).
+  DateTime get endDate => DateTime(
+    startDate.year,
+    startDate.month,
+    startDate.day,
+  ).add(Duration(days: totalWeeks * 7 - 1));
+
+  /// The registration event (报到), if any.
+  AcademicCalendarEvent? get registrationEvent {
+    for (final event in events) {
+      if (event.label.contains('报到')) return event;
+    }
+    return null;
+  }
+
+  /// Find a matching [ScheduleConfig] from [schedules].
+  ///
+  /// Priority:
+  /// 1. Exact semester name match.
+  /// 2. Academic year + season marker (春/秋/夏/冬) both present → match on both.
+  /// 3. Semester start date (year + month) match.
+  /// 4. Fallback: academic year only.
+  String? findMatchingScheduleId(List<ScheduleConfig> schedules) {
+    // Priority 1: exact match
+    for (final s in schedules) {
+      if (s.semesterName == name) return s.id;
+    }
+
+    final yearPattern = RegExp(r'(\d{4})-(\d{4})');
+    final yearMatch = yearPattern.firstMatch(name);
+    if (yearMatch == null) {
+      // No year pattern in calendar semester name, try start date only
+      for (final s in schedules) {
+        if (s.semesterStartDate.year == startDate.year &&
+            s.semesterStartDate.month == startDate.month) {
+          return s.id;
+        }
+      }
+      return null;
+    }
+
+    final yearKey = '${yearMatch.group(1)}-${yearMatch.group(2)}';
+
+    // Extract season marker (春/秋/夏/冬) from calendar semester name
+    String? season;
+    final seasonMatch = RegExp(r'[春秋夏冬]').firstMatch(name);
+    if (seasonMatch != null) season = seasonMatch.group(0);
+
+    // Priority 2: year + season match
+    if (season != null) {
+      for (final s in schedules) {
+        if (s.semesterName.contains(yearKey) &&
+            s.semesterName.contains(season)) {
+          return s.id;
+        }
+      }
+    }
+
+    // Priority 3: start date year + month match
+    for (final s in schedules) {
+      if (s.semesterStartDate.year == startDate.year &&
+          s.semesterStartDate.month == startDate.month) {
+        return s.id;
+      }
+    }
+
+    // Priority 4: fallback — academic year only
+    for (final s in schedules) {
+      if (s.semesterName.contains(yearKey)) return s.id;
+    }
+
+    return null;
+  }
 }
 
 @JsonSerializable()
@@ -134,6 +212,16 @@ class AcademicCalendarData {
 
   factory AcademicCalendarData.fromJsonString(String content) {
     return AcademicCalendarData.fromJson(
-        jsonDecode(content) as Map<String, dynamic>);
+      jsonDecode(content) as Map<String, dynamic>,
+    );
+  }
+
+  /// Find the first semester that starts after [date].
+  /// Semesters are assumed to be sorted by startDate.
+  AcademicCalendarSemester? findNextSemester(DateTime date) {
+    for (final semester in semesters) {
+      if (semester.startDate.isAfter(date)) return semester;
+    }
+    return null;
   }
 }

@@ -17,7 +17,7 @@ class WebViewUnsupportedPage extends StatelessWidget {
         title: Text(title),
         leading: IconButton(
           icon: const Icon(Icons.close),
-          tooltip: '关闭',
+          tooltip: l10n?.close,
           onPressed: () {
             if (logicRootContext.mounted) {
               Navigator.of(logicRootContext).pop();

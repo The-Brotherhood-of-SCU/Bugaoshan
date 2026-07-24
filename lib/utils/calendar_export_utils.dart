@@ -133,37 +133,43 @@ class CalendarExportUtils {
     required FutureOr<CalendarExportPayload> Function() buildCalendarPayload,
     required String logTag,
   }) async {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    // 先构建 payload 检查是否有课程
+    final payload = await Future.value(buildCalendarPayload());
+    if (!context.mounted) return;
+
+    final hasEvents = payload.events.isNotEmpty;
+
     switch (action) {
       case CalendarExportAction.copy:
+        // 复制到剪贴板可以正常处理空课表
         final success = await copyToClipboard();
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
+        scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text(success ? copySuccessMessage : copyFailedMessage),
           ),
         );
         return;
       case CalendarExportAction.ics:
-        final payload = await Future.value(buildCalendarPayload());
-        if (!context.mounted) return;
-        final icsContent = payload.icsContent;
-        if (!icsContent.contains('BEGIN:VEVENT')) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.exportScheduleAsIcsFailed)),
-          );
-          return;
-        }
+        // 导出 ICS 可以正常处理空课表
         await saveIcsContent(
           context: context,
           l10n: l10n,
           fileName: payload.fileName,
-          content: icsContent,
+          content: payload.icsContent,
           logTag: logTag,
         );
         return;
       case CalendarExportAction.addToCalendar:
-        final payload = await Future.value(buildCalendarPayload());
-        if (!context.mounted) return;
+        // 添加到日历需要有课程
+        if (!hasEvents) {
+          scaffoldMessenger.showSnackBar(
+            SnackBar(content: Text(l10n.exportScheduleAddToCalendarEmpty)),
+          );
+          return;
+        }
         await importToCalendar(
           context: context,
           l10n: l10n,
@@ -239,8 +245,8 @@ class CalendarExportUtils {
 
     try {
       String? result;
-      if (Platform.isIOS) {
-        // iOS/iPadOS do not expose a public API for importing a local .ics
+      if (Platform.isIOS || Platform.isMacOS) {
+        // iOS/iPadOS/macOS do not expose a public API for importing a local .ics
         // file into Calendar. The native side uses EventKit to write events.
         final calendarIdentifier =
             await CalendarImportUtils.pickIosCalendarIdentifier(context, l10n);
