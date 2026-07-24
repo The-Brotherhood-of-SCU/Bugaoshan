@@ -900,5 +900,41 @@
     "featureNotSupported": "当前平台不支持此功能",
     "newIconSubtitle": "Bugaoshan 新图标",
     "oldIconSubtitle": "Bugaoshan 经典图标",
-    "close": "关闭"
+    "close": "关闭",
+    "onVacation": "假期中",
+    "vacationBadge": "放假中",
+    "daysUntilVacation": "距离放假还有 {days} 天",
+    "@daysUntilVacation": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "daysUntilNextSemester": "距离下学期上课还有 {days} 天",
+    "@daysUntilNextSemester": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "nextSemester": "下学期",
+    "registrationDates": "{start} - {end} 报到",
+    "@registrationDates": {
+      "placeholders": {
+        "start": {
+          "type": "String"
+        },
+        "end": {
+          "type": "String"
+        }
+      }
+    },
+    "enjoyVacation": "享受假期～",
+    "viewNextSemesterSchedule": "查看下学期课表",
+    "noNextSemesterSchedule": "暂未导入下学期课表",
+    "promptSwitchSemester": "下学期即将开始，是否切换到下学期课表？",
+    "promptSwitchSemesterTitle": "切换课表",
+    "switchSchedule": "切换"
 }

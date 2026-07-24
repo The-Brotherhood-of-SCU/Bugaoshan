@@ -907,5 +907,41 @@
     "featureNotSupported": "This feature is not supported on this platform",
     "newIconSubtitle": "Bugaoshan New Icon",
     "oldIconSubtitle": "Bugaoshan Classic Icon",
-    "close": "Close"
+    "close": "Close",
+    "onVacation": "On Vacation",
+    "vacationBadge": "Vacation",
+    "daysUntilVacation": "{days} days until vacation",
+    "@daysUntilVacation": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "daysUntilNextSemester": "{days} days until next semester classes",
+    "@daysUntilNextSemester": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "nextSemester": "Next Semester",
+    "registrationDates": "Registration: {start} - {end}",
+    "@registrationDates": {
+      "placeholders": {
+        "start": {
+          "type": "String"
+        },
+        "end": {
+          "type": "String"
+        }
+      }
+    },
+    "enjoyVacation": "Enjoy your vacation~",
+    "viewNextSemesterSchedule": "View Next Semester Schedule",
+    "noNextSemesterSchedule": "Next semester schedule not imported",
+    "promptSwitchSemester": "The next semester is about to begin. Switch to next semester schedule?",
+    "promptSwitchSemesterTitle": "Switch Schedule",
+    "switchSchedule": "Switch"
 }

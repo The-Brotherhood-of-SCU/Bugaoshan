@@ -22,12 +22,12 @@ class AcademicCalendarService {
   /// Parse a calendar JSON string (supports both compact and expanded formats).
   AcademicCalendarData _parseCalendarJson(String raw) {
     final decoded = jsonDecode(raw) as Map<String, dynamic>;
-    return AcademicCalendarData.fromJson(_expand(decoded));
+    return AcademicCalendarData.fromJson(expandCalendarJson(decoded));
   }
 
   /// Expand compact format (with eventTypes registry) to the model's expected
   /// expanded format. If already expanded, returns as-is.
-  static Map<String, dynamic> _expand(Map<String, dynamic> compact) {
+  static Map<String, dynamic> expandCalendarJson(Map<String, dynamic> compact) {
     final eventTypes = compact['eventTypes'];
     if (eventTypes == null) return compact;
 
@@ -120,6 +120,46 @@ class AcademicCalendarService {
       );
     }
     return null;
+  }
+
+  /// Load and parse the bundled academic calendar JSON asset.
+  static Future<AcademicCalendarData> loadBundledCalendar() async {
+    final assetContent = await rootBundle.loadString(
+      'assets/academic_calendar.json',
+    );
+    final decoded = jsonDecode(assetContent) as Map<String, dynamic>;
+    return AcademicCalendarData.fromJson(expandCalendarJson(decoded));
+  }
+
+  /// 根据课表名称从校历中匹配学期并返回总周数，未匹配则返回 null。
+  /// 匹配逻辑：提取学年（如 "2025-2026"）和季节（春/秋），与校历学期名对比。
+  static Future<int?> findTotalWeeksFromCalendar(String scheduleName) async {
+    try {
+      final data = await loadBundledCalendar();
+
+      final yearMatch = RegExp(r'(\d{4})-(\d{4})').firstMatch(scheduleName);
+      if (yearMatch == null) return null;
+
+      final academicYear = '${yearMatch.group(1)}-${yearMatch.group(2)}';
+      final isSpring = scheduleName.contains('春');
+      final isFall = scheduleName.contains('秋');
+
+      for (final semester in data.semesters) {
+        if (semester.name.contains(academicYear)) {
+          if (isSpring && semester.name.contains('春')) {
+            return semester.totalWeeks;
+          }
+          if (isFall && semester.name.contains('秋')) return semester.totalWeeks;
+          if (!isSpring && !isFall) return semester.totalWeeks;
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint(
+        'AcademicCalendarService: failed to find matching semester: $e',
+      );
+      return null;
+    }
   }
 
   CalendarExportPayload genExportPayload(AcademicCalendarSemester semester) {
