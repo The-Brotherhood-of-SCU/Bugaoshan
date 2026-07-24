@@ -1909,18 +1909,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get batteryOptimizationSuccess => '省电优化已关闭';
 
   @override
-  String get autoCalcWeeksTitle => '根据校历自动计算周数';
-
-  @override
-  String get autoCalcWeeksContent => '是否根据官方校历自动计算课表总周数？';
-
-  @override
-  String get autoCalcWeeksSuccess => '已根据校历更新课表总周数';
-
-  @override
-  String get autoCalcWeeksNotFound => '未找到匹配的校历学期，将使用默认 20 周';
-
-  @override
   String get autoSetCurrentWeekTitle => '自动设置当前教学周';
 
   @override
@@ -2253,6 +2241,48 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get close => '关闭';
+
+  @override
+  String get onVacation => '假期中';
+
+  @override
+  String get vacationBadge => '放假中';
+
+  @override
+  String daysUntilVacation(int days) {
+    return '距离放假还有 $days 天';
+  }
+
+  @override
+  String daysUntilNextSemester(int days) {
+    return '距离下学期上课还有 $days 天';
+  }
+
+  @override
+  String get nextSemester => '下学期';
+
+  @override
+  String registrationDates(String start, String end) {
+    return '$start - $end 报到';
+  }
+
+  @override
+  String get enjoyVacation => '享受假期～';
+
+  @override
+  String get viewNextSemesterSchedule => '查看下学期课表';
+
+  @override
+  String get noNextSemesterSchedule => '暂未导入下学期课表';
+
+  @override
+  String get promptSwitchSemester => '下学期即将开始，是否切换到下学期课表？';
+
+  @override
+  String get promptSwitchSemesterTitle => '切换课表';
+
+  @override
+  String get switchSchedule => '切换';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

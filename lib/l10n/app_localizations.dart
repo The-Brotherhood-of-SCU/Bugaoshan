@@ -3769,30 +3769,6 @@ abstract class AppLocalizations {
   /// **'Battery optimization disabled successfully'**
   String get batteryOptimizationSuccess;
 
-  /// No description provided for @autoCalcWeeksTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Auto Calculate Weeks'**
-  String get autoCalcWeeksTitle;
-
-  /// No description provided for @autoCalcWeeksContent.
-  ///
-  /// In en, this message translates to:
-  /// **'Calculate total weeks based on the official academic calendar?'**
-  String get autoCalcWeeksContent;
-
-  /// No description provided for @autoCalcWeeksSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Schedule weeks updated from academic calendar'**
-  String get autoCalcWeeksSuccess;
-
-  /// No description provided for @autoCalcWeeksNotFound.
-  ///
-  /// In en, this message translates to:
-  /// **'No matching semester found in academic calendar, using default 20 weeks'**
-  String get autoCalcWeeksNotFound;
-
   /// No description provided for @autoSetCurrentWeekTitle.
   ///
   /// In en, this message translates to:
@@ -4404,6 +4380,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close'**
   String get close;
+
+  /// No description provided for @onVacation.
+  ///
+  /// In en, this message translates to:
+  /// **'On Vacation'**
+  String get onVacation;
+
+  /// No description provided for @vacationBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Vacation'**
+  String get vacationBadge;
+
+  /// No description provided for @daysUntilVacation.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days until vacation'**
+  String daysUntilVacation(int days);
+
+  /// No description provided for @daysUntilNextSemester.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days until next semester classes'**
+  String daysUntilNextSemester(int days);
+
+  /// No description provided for @nextSemester.
+  ///
+  /// In en, this message translates to:
+  /// **'Next Semester'**
+  String get nextSemester;
+
+  /// No description provided for @registrationDates.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration: {start} - {end}'**
+  String registrationDates(String start, String end);
+
+  /// No description provided for @enjoyVacation.
+  ///
+  /// In en, this message translates to:
+  /// **'Enjoy your vacation~'**
+  String get enjoyVacation;
+
+  /// No description provided for @viewNextSemesterSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'View Next Semester Schedule'**
+  String get viewNextSemesterSchedule;
+
+  /// No description provided for @noNextSemesterSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Next semester schedule not imported'**
+  String get noNextSemesterSchedule;
+
+  /// No description provided for @promptSwitchSemester.
+  ///
+  /// In en, this message translates to:
+  /// **'The next semester is about to begin. Switch to next semester schedule?'**
+  String get promptSwitchSemester;
+
+  /// No description provided for @promptSwitchSemesterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch Schedule'**
+  String get promptSwitchSemesterTitle;
+
+  /// No description provided for @switchSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch'**
+  String get switchSchedule;
 }
 
 class _AppLocalizationsDelegate
