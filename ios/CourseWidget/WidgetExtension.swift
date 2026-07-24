@@ -10,6 +10,7 @@ struct Course {
     let endSection: Int
     let colorValue: Int
     let status: CourseStatus
+    var timeText: String? = nil
 }
 
 enum CourseStatus {
@@ -31,7 +32,7 @@ struct ScheduleConfig {
     let timeSlots: [TimeSlot]
 }
 
-let appGroupId = "group.io.github.the-brotherhood-of-scu.bugaoshan"
+let appGroupId = "group.io.github.thebrotherhoodofscu.bugaoshan"
 
 func getDatabasePath() -> String? {
     guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupId) else {
@@ -210,9 +211,13 @@ func computeCurrentWeek(semesterStartDate: Date, totalWeeks: Int) -> Int {
         return 1
     }
 
-    let components = calendar.dateComponents([.day], from: startOfSemester, to: today)
-    let days = components.day ?? 0
-    let week = days / 7 + 1
+    let components1 = calendar.dateComponents([.day], from: startOfSemester, to: today)
+    let days = components1.day ?? 0
+//    let week = days / 7 + 1
+    // 直接请求相差的周数，消除夏令时可能导致的误差
+    let components2 = calendar.dateComponents([.weekOfYear], from: startOfSemester, to: today)
+    let week = (components2.weekOfYear ?? 0) + 1
+
     let clampedWeek = max(1, min(week, totalWeeks))
     print("BugaoShan Widget: computeCurrentWeek - days since start: \(days), week: \(week), clampedWeek: \(clampedWeek)")
     return clampedWeek
@@ -373,6 +378,11 @@ func attachTimesAndStatuses(_ courses: [Course], timeSlots: [TimeSlot], currentT
             status = .upcoming
         }
 
+        // 计算课程实际时间字符串 (例如 "08:00-09:40")
+        let startStr = formatTime(timeSlots, section: course.startSection, isEnd: false)
+        let endStr = formatTime(timeSlots, section: course.endSection, isEnd: true)
+        let timeText = "\(startStr)-\(endStr)"
+
         updatedCourses.append(Course(
             name: course.name,
             teacher: course.teacher,
@@ -380,7 +390,8 @@ func attachTimesAndStatuses(_ courses: [Course], timeSlots: [TimeSlot], currentT
             startSection: course.startSection,
             endSection: course.endSection,
             colorValue: course.colorValue,
-            status: status
+            status: status,
+            timeText: timeText
         ))
     }
 
@@ -466,10 +477,11 @@ func loadWidgetData() -> (courses: [Course], dateText: String, weekText: String,
     defer { sqlite3_close(db) }
     print("BugaoShan Widget: Database opened successfully")
 
-    let currentScheduleId = queryMetadata(db!, key: "currentScheduleId") ?? "default"
+    guard let safeDB = db else { return nil }
+    let currentScheduleId = queryMetadata(safeDB, key: "currentScheduleId") ?? "default"
     print("BugaoShan Widget: Current schedule ID from metadata: \(currentScheduleId)")
 
-    guard let (config, actualScheduleId) = queryScheduleConfig(db!, scheduleId: currentScheduleId) else {
+    guard let (config, actualScheduleId) = queryScheduleConfig(safeDB, scheduleId: currentScheduleId) else {
         print("BugaoShan Widget: Failed to load schedule config for ID: \(currentScheduleId)")
         return nil
     }
@@ -481,7 +493,7 @@ func loadWidgetData() -> (courses: [Course], dateText: String, weekText: String,
     let currentWeek = computeCurrentWeek(semesterStartDate: config.semesterStartDate, totalWeeks: config.totalWeeks)
     print("BugaoShan Widget: Today - dayOfWeek: \(dayOfWeek), currentWeek: \(currentWeek)")
 
-    var courses = queryCourses(db!, scheduleId: actualScheduleId, dayOfWeek: dayOfWeek, currentWeek: currentWeek)
+    var courses = queryCourses(safeDB, scheduleId: actualScheduleId, dayOfWeek: dayOfWeek, currentWeek: currentWeek)
     print("BugaoShan Widget: Loaded \(courses.count) courses for today")
 
     let nowComponents = calendar.dateComponents([.hour, .minute], from: now)
@@ -499,11 +511,16 @@ func loadWidgetData() -> (courses: [Course], dateText: String, weekText: String,
         if let tomorrow = calendar.date(byAdding: .day, value: 1, to: now) {
             let tomorrowDayOfWeek = (calendar.component(.weekday, from: tomorrow) + 5) % 7 + 1
             let tomorrowWeek = computeWeekForDate(semesterStartDate: config.semesterStartDate, totalWeeks: config.totalWeeks, date: tomorrow)
-            let tomorrowCourses = queryCourses(db!, scheduleId: actualScheduleId, dayOfWeek: tomorrowDayOfWeek, currentWeek: tomorrowWeek)
+            let tomorrowCourses = queryCourses(safeDB, scheduleId: actualScheduleId, dayOfWeek: tomorrowDayOfWeek, currentWeek: tomorrowWeek)
+
+            // 显示明天的课
+            isTomorrow = true
             if !tomorrowCourses.isEmpty {
-                // 获取明天的课时，依然全部标记为 upcoming
+                // 明天有课时: 获取明天的课时，依然全部标记为 upcoming
                 courses = attachTimesAndStatuses(tomorrowCourses, timeSlots: config.timeSlots, currentTimeMinutes: nil, forceUpcoming: true)
-                isTomorrow = true
+            } else {
+                // 明天没课时: 清空今天已完成的课，展示"明天没课"
+                courses = []
             }
         }
     }
@@ -578,8 +595,9 @@ struct CourseProvider: TimelineProvider {
             )
 
             var nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: now)
-            if let nextTransition = data.nextTransition {
-                nextUpdate = nextTransition
+            if let nextTransition = data.nextTransition, nextTransition > now {
+                // 确保至少有 1 分钟的间隔，防止瞬间重复刷新
+                nextUpdate = max(nextTransition, now.addingTimeInterval(60))
             } else if data.courses.isEmpty {
                 // If no courses, update at midnight
 //                nextUpdate = Calendar.current.date(bySettingHour: 0, minute: 0, second: 0, of: Calendar.current.date(byAdding: .day, value: 1, to: now)!)
@@ -603,13 +621,19 @@ struct CourseProvider: TimelineProvider {
     }
 }
 
-struct CourseWidgetEntryView: View {
-    @Environment(\.widgetFamily) var widgetFamily
+// 桌面小组件
+struct DesktopWidgetView: View {
     var entry: CourseProvider.Entry
+    var widgetFamily: WidgetFamily
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // ✨ 1. 动态头部
+        // iOS 17 以后系统自带了 widget margin (约16px)。
+        // 如果再加一层外边距会导致内容被过度挤压。建议移除或大幅减小这里的手动 padding。
+        let widgetPadding: CGFloat = widgetFamily == .systemSmall ? 0 : 2
+
+        // 适当增大最外层间距，让内容呼吸感更强
+        VStack(alignment: .leading, spacing: widgetFamily == .systemSmall ? 8 : 12) {
+            // 1. 动态头部
             HStack {
                 if widgetFamily == .systemLarge {
                     Text("不高山上")
@@ -618,54 +642,124 @@ struct CourseWidgetEntryView: View {
                         .foregroundColor(.primary)
                     Spacer()
                     Text("\(entry.dateText) \(entry.weekText)")
-                        .font(.caption)
+                        .font(.subheadline) // 稍微调大
                         .foregroundColor(.secondary)
                 } else {
-                    // 小号和中号组件隐藏主标题，放大日期显示在左上角
                     Text("\(entry.dateText) \(entry.weekText)")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
+                        .font(.footnote)
                         .foregroundColor(.secondary)
                     Spacer()
                 }
             }
             .padding(.bottom, 2)
 
-            // ✨ 2. 根据尺寸决定是否保留“已上完的课”
+            // 根据尺寸决定是否保留“已上完的课”
             let displayableCourses = widgetFamily == .systemLarge
                 ? entry.courses
                 : entry.courses.filter { $0.status != .completed }
 
             if displayableCourses.isEmpty {
-                Spacer()
-                // 细节体验：区分是真没课，还是课上完了
+                Spacer(minLength: 0)
+                // 区分是真没课，还是课上完了
                 Text(entry.courses.isEmpty ? (entry.isTomorrow ? "明天没课" : "今天没课") : "今天的课都上完啦")
                     .font(.callout)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
-                Spacer()
+                Spacer(minLength: 0)
             } else {
-                // ✨ 3. 动态调整最大显示数量（大号组件可显示7节）
-                let maxCourses = widgetFamily == .systemSmall ? 2 : (widgetFamily == .systemMedium ? 3 : 7)
+                // 中组件限制为2节，大组件限制为6节
+                let maxCourses = (widgetFamily == .systemSmall || widgetFamily == .systemMedium) ? 2 : 6
                 let displayCourses = Array(displayableCourses.prefix(maxCourses))
 
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: widgetFamily == .systemSmall ? 8 : 10) {
                     ForEach(displayCourses.indices, id: \.self) { index in
                         CourseCard(course: displayCourses[index], isTomorrow: entry.isTomorrow, compact: widgetFamily == .systemSmall)
                     }
                 }
-
-                Spacer(minLength: 0)
-
+                // 底部剩余课程提示
                 if displayableCourses.count > maxCourses {
                     Text("还有 \(displayableCourses.count - maxCourses) 节课")
-                        .font(.caption2)
+                        .font(.caption) // 从 .caption2 调大为 .caption
                         .foregroundColor(.secondary)
-                        .padding(.top, 2)
+                        .frame(maxWidth: .infinity, alignment: .center)
                 }
             }
+
+            Spacer(minLength: 0)
         }
-        .padding(14)
+        .padding(widgetPadding)
+    }
+}
+
+// 锁屏小组件
+struct LockScreenRectangularView: View {
+    var entry: CourseProvider.Entry
+
+    var body: some View {
+        // 过滤掉已经上完的课，获取接下来要上的第一节课
+        let pendingCourses = entry.courses.filter { $0.status != .completed }
+        let nextCourse = pendingCourses.first
+
+        VStack(alignment: .leading, spacing: 4) {
+            if let course = nextCourse {
+                // 有课的状态
+                HStack(alignment: .center) {
+                    // 可以加一个图标增加辨识度
+                    Image(systemName: "book.closed.fill")
+                        .font(.caption2)
+                    Text(course.name)
+                        .font(.headline)
+                        .fontWeight(.bold)
+                }
+                // ✨ .widgetAccentable() 能够让这段文字跟随用户在锁屏设置的自定义颜色
+                .widgetAccentable()
+
+                Text("\(formatCourseTime(course)) · \(course.location)")
+                    .font(.caption)
+                    .lineLimit(1)
+                    // 锁屏下使用 .secondary 会自动渲染为半透明，形成层级感
+                    .foregroundColor(.secondary)
+            } else {
+                // 没课的状态
+                HStack {
+                    Image(systemName: "sparkles")
+                    Text(entry.isTomorrow ? "明天没课" : "今天课上完啦")
+                        .font(.headline)
+                }
+                .widgetAccentable()
+
+                Text("好好休息吧")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        // 锁屏组件需要撑满靠左对齐
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // 提取格式化时间的工具方法（原先在你写的 CourseCard 里，现在提出来共用）
+    private func formatCourseTime(_ course: Course) -> String {
+        if course.startSection == course.endSection {
+            return "第\(course.startSection)节"
+        } else {
+            return "第\(course.startSection)-\(course.endSection)节"
+        }
+    }
+}
+
+struct CourseWidgetEntryView: View {
+    @Environment(\.widgetFamily) var widgetFamily
+    var entry: CourseProvider.Entry
+
+    var body: some View {
+        switch widgetFamily {
+            case .accessoryRectangular:
+                // 锁屏小组件视图
+                LockScreenRectangularView(entry: entry)
+            default:
+                // 桌面小组件视图
+                DesktopWidgetView(entry: entry, widgetFamily: widgetFamily)
+        }
     }
 }
 
@@ -675,37 +769,48 @@ struct CourseCard: View {
     let compact: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: compact ? 2 : 4) {
+            // 小组件下课程名使用更大的 .footnote，时间地点使用 .caption2
             Text(course.name)
-                .font(.subheadline)
+                .font(compact ? .footnote : .subheadline)
                 .fontWeight(course.status == .inProgress ? .bold : .medium)
                 .foregroundColor(isTomorrow ? .orange : .primary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+                .lineLimit(2)
 
-            if !compact {
-                Text("\(formatCourseTime()) · \(course.location)")
-                    .font(.caption)
+            // 显示具体小时分钟，如果解析失败则回退到"第x-y节"
+            let timeDisplay = course.timeText ?? formatCourseTime()
+
+            if compact {
+                // Small 尺寸：分三行，地点与时间独立
+                if !course.location.isEmpty {
+                    Text(course.location)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+                }
+                Text(timeDisplay)
+                    .font(.caption2)
                     .foregroundColor(course.status == .inProgress ? courseColor : .secondary)
                     .lineLimit(1)
             } else {
-                Text("\(formatCourseTime())")
+                // Medium / Large 尺寸：合并为一行
+                Text("\(timeDisplay) · \(course.location)")
                     .font(.caption)
                     .foregroundColor(course.status == .inProgress ? courseColor : .secondary)
-                    .lineLimit(1)
+                    .lineLimit(2)
             }
         }
-        .padding(.leading, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        // 宽度 3 + 间距 6 = 9 (Compact)；宽度 4 + 间距 8 = 12 (Normal)
+        // 这样既能精确控制间距，又能保证色条与文本区绝对等高，不会无限拉伸出 bug！
+        .padding(.leading, compact ? 9 : 12)
         .overlay(
-            Rectangle()
+            RoundedRectangle(cornerRadius: 2)
                 .fill(courseColor)
-                .frame(width: 4)
-                .cornerRadius(2),
+                .frame(width: compact ? 3 : 4),
             alignment: .leading
         )
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.vertical, 4)
-        // ✨ 新增：如果是已经上完的课，透明度降低为 0.4
+        // 由于 HStack 自动包裹高度，竖线会自动与 VStack 等高。无需额外设定高度。
         .opacity(course.status == .completed ? 0.4 : 1.0)
     }
 
@@ -714,10 +819,11 @@ struct CourseCard: View {
         if argb == 0 || (argb >> 24) == 0 {
             return isTomorrow ? .orange : .blue
         }
-        let red = Double((argb >> 16) & 0xFF) / 255
-        let green = Double((argb >> 8) & 0xFF) / 255
-        let blue = Double(argb & 0xFF) / 255
-        return Color(red: red, green: green, blue: blue)
+        let a = Double((argb >> 24) & 0xFF) / 255.0
+        let r = Double((argb >> 16) & 0xFF) / 255.0
+        let g = Double((argb >> 8) & 0xFF) / 255.0
+        let b = Double(argb & 0xFF) / 255.0
+        return Color(red: r, green: g, blue: b, opacity: a)
     }
 
     func formatCourseTime() -> String {
@@ -740,7 +846,7 @@ struct CourseWidget: Widget {
         }
         .configurationDisplayName("课表组件")
         .description("显示不高山上的课表信息")
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryRectangular])
     }
 }
 
