@@ -140,23 +140,62 @@ class AcademicCalendarSemester {
     return null;
   }
 
-  /// Find a matching [ScheduleConfig] from [schedules] by academic year
-  /// in the name, then by year+month of startDate. Returns the schedule id.
+  /// Find a matching [ScheduleConfig] from [schedules].
+  ///
+  /// Priority:
+  /// 1. Exact semester name match.
+  /// 2. Academic year + season marker (春/秋/夏/冬) both present → match on both.
+  /// 3. Semester start date (year + month) match.
+  /// 4. Fallback: academic year only.
   String? findMatchingScheduleId(List<ScheduleConfig> schedules) {
+    // Priority 1: exact match
+    for (final s in schedules) {
+      if (s.semesterName == name) return s.id;
+    }
+
     final yearPattern = RegExp(r'(\d{4})-(\d{4})');
     final yearMatch = yearPattern.firstMatch(name);
-    if (yearMatch != null) {
-      final yearKey = '${yearMatch.group(1)}-${yearMatch.group(2)}';
+    if (yearMatch == null) {
+      // No year pattern in calendar semester name, try start date only
       for (final s in schedules) {
-        if (s.semesterName.contains(yearKey)) return s.id;
+        if (s.semesterStartDate.year == startDate.year &&
+            s.semesterStartDate.month == startDate.month) {
+          return s.id;
+        }
+      }
+      return null;
+    }
+
+    final yearKey = '${yearMatch.group(1)}-${yearMatch.group(2)}';
+
+    // Extract season marker (春/秋/夏/冬) from calendar semester name
+    String? season;
+    final seasonMatch = RegExp(r'[春秋夏冬]').firstMatch(name);
+    if (seasonMatch != null) season = seasonMatch.group(0);
+
+    // Priority 2: year + season match
+    if (season != null) {
+      for (final s in schedules) {
+        if (s.semesterName.contains(yearKey) &&
+            s.semesterName.contains(season)) {
+          return s.id;
+        }
       }
     }
+
+    // Priority 3: start date year + month match
     for (final s in schedules) {
       if (s.semesterStartDate.year == startDate.year &&
           s.semesterStartDate.month == startDate.month) {
         return s.id;
       }
     }
+
+    // Priority 4: fallback — academic year only
+    for (final s in schedules) {
+      if (s.semesterName.contains(yearKey)) return s.id;
+    }
+
     return null;
   }
 }
