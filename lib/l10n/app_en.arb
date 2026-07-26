@@ -595,6 +595,7 @@
     "scuLoginDisclaimerPwd": "When 'Remember Password' is enabled, your password is encrypted and stored locally using system-level encryption",
     "scuLoginDisclaimerOcr": "Captcha is recognized by a local OCR model",
     "scuLoginDisclaimerPrivacy": "We do not collect any personal information",
+    "scuLoginPasswordHint": "Password is the unified identity authentication password, not the academic affairs password",
     "openSourceLicenseDesc": "This app is open-sourced under AGPL-3.0",
     "openSourceLicenses": "Open-Source Licenses",
     "academicCalendar": "Academic Calendar",

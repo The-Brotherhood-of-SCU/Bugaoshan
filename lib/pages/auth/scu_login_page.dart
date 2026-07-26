@@ -763,7 +763,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('· ', style: bulletStyle),
-            Flexible(child: Text('密码为统一身份认证密码，非教务处密码', style: style)),
+            Flexible(child: Text(l10n.scuLoginPasswordHint, style: style)),
           ],
         ),
       ],

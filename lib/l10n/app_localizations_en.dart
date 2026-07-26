@@ -1646,6 +1646,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'We do not collect any personal information';
 
   @override
+  String get scuLoginPasswordHint =>
+      'Password is the unified identity authentication password, not the academic affairs password';
+
+  @override
   String get openSourceLicenseDesc => 'This app is open-sourced under AGPL-3.0';
 
   @override
