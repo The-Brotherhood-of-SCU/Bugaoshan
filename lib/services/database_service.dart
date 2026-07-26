@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_app_group_directory/flutter_app_group_directory.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:app_group_directory/app_group_directory.dart';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:bugaoshan/models/balance_record.dart';
 import 'package:bugaoshan/models/course.dart';
@@ -36,18 +37,24 @@ class DatabaseService {
 
   Future<void> init() async {
     debugPrint('BugaoShan Database: Initializing database...');
-    
+
     Directory dir;
     // iOS/macOS 使用 App Group 共享目录，让 Widget Extension 也能访问数据库
     if (!kIsWeb && (Platform.isIOS || Platform.isMacOS)) {
       const appGroupId = 'group.io.github.thebrotherhoodofscu.bugaoshan';
       try {
-        final appGroupDir = await AppGroupDirectory.getAppGroupDirectory(appGroupId);
+        final appGroupDir = await FlutterAppGroupDirectory.getAppGroupDirectory(
+          appGroupId,
+        );
         if (appGroupDir != null) {
           dir = appGroupDir;
-          debugPrint('BugaoShan Database: Using App Group directory: ${appGroupDir.path}');
+          debugPrint(
+            'BugaoShan Database: Using App Group directory: ${appGroupDir.path}',
+          );
         } else {
-          debugPrint('BugaoShan Database: App Group directory is null, using application support directory');
+          debugPrint(
+            'BugaoShan Database: App Group directory is null, using application support directory',
+          );
           dir = await getApplicationSupportDirectory();
         }
       } catch (e) {
@@ -59,7 +66,7 @@ class DatabaseService {
     }
     final dbPath = p.join(dir.path, 'bugaoshan.db');
     debugPrint('BugaoShan Database: Database path: $dbPath');
-    
+
     // 如果在 iOS/macOS 上，检查是否需要从旧位置迁移数据库
     if (!kIsWeb && (Platform.isIOS || Platform.isMacOS)) {
       try {
@@ -67,15 +74,23 @@ class DatabaseService {
         final oldDbPath = p.join(oldDir.path, 'bugaoshan.db');
         final oldFile = File(oldDbPath);
         final newFile = File(dbPath);
-        
+
         if (await oldFile.exists() && !await newFile.exists()) {
-          debugPrint('BugaoShan Database: Migrating database from old location to App Group directory...');
+          debugPrint(
+            'BugaoShan Database: Migrating database from old location to App Group directory...',
+          );
           await oldFile.copy(dbPath);
-          debugPrint('BugaoShan Database: Database migrated successfully to new location');
+          debugPrint(
+            'BugaoShan Database: Database migrated successfully to new location',
+          );
         } else if (!await oldFile.exists() && !await newFile.exists()) {
-          debugPrint('BugaoShan Database: No existing database found at either location, will create new one');
+          debugPrint(
+            'BugaoShan Database: No existing database found at either location, will create new one',
+          );
         } else if (await newFile.exists()) {
-          debugPrint('BugaoShan Database: Database already exists at App Group directory');
+          debugPrint(
+            'BugaoShan Database: Database already exists at App Group directory',
+          );
         }
       } catch (e) {
         debugPrint('BugaoShan Database: Error during database migration: $e');
