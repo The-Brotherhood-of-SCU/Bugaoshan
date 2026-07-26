@@ -1,9 +1,9 @@
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
-import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 /// 全局 session 过期监听器。
 ///
@@ -30,8 +30,13 @@ class _SessionExpiredListenerState extends State<SessionExpiredListener> {
     if (_handling) return;
     _handling = true;
 
-    final context = logicRootContext;
-    if (!context.mounted) return;
+    // 导航树不可用（currentContext 为 null 或已卸载）时复位标志，
+    // 避免空断言异常使 _handling 永久卡死、过期提示再也不弹出。
+    final context = navigatorKey.currentContext;
+    if (context == null || !context.mounted) {
+      _handling = false;
+      return;
+    }
     final l10n = AppLocalizations.of(context)!;
 
     ScaffoldMessenger.of(context)

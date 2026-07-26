@@ -73,7 +73,7 @@ class ZhjwAuth extends ChangeNotifier implements SubsystemAuth {
     final auth = _scuAuth.accessToken;
     if (auth == null) throw const UnauthenticatedException();
 
-    await client.followRedirects(
+    final response = await client.followRedirects(
       Uri.parse(
         'https://id.scu.edu.cn/enduser/sp/sso/scdxplugin_jwt23'
         '?enterpriseId=scdx&target_url=index',
@@ -84,6 +84,13 @@ class ZhjwAuth extends ChangeNotifier implements SubsystemAuth {
         'Authorization': 'Bearer $auth',
       },
     );
+    // 教务 SSO 最终为错误状态说明 session 未建立，不能缓存为已就绪
+    if (response.statusCode == 401 || response.statusCode == 403) {
+      throw const UnauthenticatedException();
+    }
+    if (response.statusCode < 200 || response.statusCode >= 400) {
+      throw ServiceException('教务 SSO 登录失败', statusCode: response.statusCode);
+    }
     _cachedClient = client;
     _log.i(_tag, 'SSO login: ok');
     return client;

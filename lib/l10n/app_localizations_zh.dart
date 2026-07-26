@@ -925,13 +925,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get loginButton => '登录';
 
   @override
-  String get captchaLoadFailed => '验证码加载失败';
-
-  @override
   String get captchaNotLoaded => '请先加载验证码';
-
-  @override
-  String get networkError => '网络错误';
 
   @override
   String get gradesStats => '成绩统计';
@@ -1411,6 +1405,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get networkDeviceOperationSuccess => '操作成功';
 
   @override
+  String get captchaLoadFailed => '验证码加载失败';
+
+  @override
+  String get networkError => '网络错误';
+
+  @override
   String get loginFailed => '登录失败';
 
   @override
@@ -1420,6 +1420,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String loginFailedWillLock(int count) {
     return '登录失败，再输错 $count 次将锁定账户';
   }
+
+  @override
+  String get loginSuccess => '登录成功';
 
   @override
   String get ccylBindFailed => '绑定失败，请稍后重试';

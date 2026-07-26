@@ -96,28 +96,31 @@ class UserInfoProvider extends ChangeNotifier {
     }
   }
 
-  bool _isCurrent(int generation) =>
-      generation == _requestGeneration && _wfwAuth.isReady;
+  bool _isCurrent(int generation) => generation == _requestGeneration;
 
   /// 同时获取用户信息和标签
   Future<void> _fetchAll(int generation) async {
-    if (!_isCurrent(generation)) return;
+    if (generation != _requestGeneration) return;
     _loading = true;
     _error = false;
     notifyListeners();
 
-    final result = await _doFetch(generation);
-    if (!_isCurrent(generation)) return;
-
-    if (result == null) {
-      _error = true;
-    } else {
-      await _applyResult(result);
-      if (!_isCurrent(generation)) return;
+    try {
+      final result = await _doFetch(generation);
+      // 只有被更新的 generation 取代时才无声退出；
+      // 同 generation 下即便 wfw 掉线 isReady 变 false，也必须复位 loading。
+      if (generation != _requestGeneration) return;
+      if (result == null) {
+        _error = true;
+      } else {
+        await _applyResult(result);
+      }
+    } finally {
+      if (generation == _requestGeneration) {
+        _loading = false;
+        notifyListeners();
+      }
     }
-
-    _loading = false;
-    notifyListeners();
   }
 
   Future<_UserInfoResult?> _doFetch(int generation) async {
@@ -206,7 +209,14 @@ class UserInfoProvider extends ChangeNotifier {
 
   void retry() {
     _error = false;
-    if (_wfwAuth.isReady) _scheduleFetch(Duration.zero);
+    if (_wfwAuth.isReady) {
+      _scheduleFetch(Duration.zero);
+    } else {
+      // wfw 会话已失效：先刷新 UI 清除过期 error 帧，再主动预热恢复 ready，
+      // 成功后 _onAuthChanged 会重新取数。
+      notifyListeners();
+      unawaited(_wfwAuth.ensureAuthenticated().catchError((Object _) {}));
+    }
   }
 
   void clear() {

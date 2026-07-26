@@ -688,7 +688,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
                 ),
               ),
             ),
-          ] else ...[
+          ] else if (jhkc != null) ...[
             Text(
               l10n.trainProgramCourseArrangement,
               style: Theme.of(
@@ -704,7 +704,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
                     _buildCourseInfoRow(
                       context,
                       l10n.trainProgramPlanName,
-                      jhkc!.famc,
+                      jhkc.famc,
                     ),
                     _buildCourseInfoRow(
                       context,

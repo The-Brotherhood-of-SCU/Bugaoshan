@@ -21,12 +21,15 @@ class AuthCoordinator {
   Future<void> warmUpAll() {
     if (_warmUpFuture != null) return _warmUpFuture!;
     _log.i(_tag, 'warmUpAll: starting for ${_modules.length} modules');
-    _warmUpFuture = _warmUpAll();
-    _warmUpFuture!.whenComplete(() {
+    final future = _warmUpAll();
+    _warmUpFuture = future;
+    future.whenComplete(() {
       _log.i(_tag, 'warmUpAll: completed');
-      _warmUpFuture = null;
+      // 仅清理仍指向本次的缓存：避免 invalidateAll 后新一轮 warmUpAll 的
+      // future 被旧 whenComplete 回调误清。
+      if (identical(_warmUpFuture, future)) _warmUpFuture = null;
     });
-    return _warmUpFuture!;
+    return future;
   }
 
   Future<void> _warmUpAll() async {

@@ -65,21 +65,27 @@ class _StartupErrorApp extends StatelessWidget {
         body: Padding(
           padding: const EdgeInsets.all(24),
           child: Center(
-            child: Column(
-              children: [
-                Text(
-                  'Bugaoshan 启动失败',
-                  textAlign: TextAlign.center,
-                  textScaler: TextScaler.linear(1.5),
-                ),
-                Text(errorMessage ?? ''),
-                ElevatedButton(
-                  onPressed: () async {
-                    await getIt<SharedPreferences>().clear();
-                  },
-                  child: const Text('Clear Shared Preferences'),
-                ),
-              ],
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Bugaoshan 启动失败',
+                    textAlign: TextAlign.center,
+                    textScaler: TextScaler.linear(1.5),
+                  ),
+                  const SizedBox(height: 16),
+                  if (kDebugMode)
+                    Text(errorMessage ?? '', textAlign: TextAlign.start),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () async {
+                      await getIt<SharedPreferences>().clear();
+                    },
+                    child: const Text('Clear Shared Preferences'),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

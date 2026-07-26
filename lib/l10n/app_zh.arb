@@ -368,9 +368,7 @@
     "autoLogin": "自动登录",
     "autoLoggingIn": "正在登录中...",
     "loginButton": "登录",
-    "captchaLoadFailed": "验证码加载失败: {error}",
     "captchaNotLoaded": "请先加载验证码",
-    "networkError": "网络错误: {error}",
     "gradesStats": "成绩统计",
     "gradesStatsDesc": "查看和分析你的学业成绩",
     "gradesStatsComingSoon": "功能即将上线",
@@ -540,6 +538,7 @@
             }
         }
     },
+    "loginSuccess": "登录成功",
     "ccylBindFailed": "绑定失败，请稍后重试",
     "ccylActivityLoadFailed": "活动加载失败",
     "networkOfflineFailed": "下线失败",

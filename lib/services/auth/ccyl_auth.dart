@@ -152,6 +152,23 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
     notifyListeners();
   }
 
+  /// 并发安全的「失效并重登录」：多个并发过期恢复共享同一次重登录。
+  Future<bool> recoverExpiredSession() async {
+    final existing = _reLoginFuture;
+    if (existing != null) return existing;
+    _log.i(_tag, 'recoverExpiredSession: starting');
+    _cancelCurrentAuthentication();
+    unawaited(_clearPersistedSession());
+    final generation = _authGeneration;
+    final future = _doReLogin(generation);
+    _reLoginFuture = future;
+    try {
+      return await future;
+    } finally {
+      if (identical(_reLoginFuture, future)) _reLoginFuture = null;
+    }
+  }
+
   /// 通过 SCU 自动恢复 CCYL 登录（OAuth 静默绑定）。
   Future<bool> reLogin() async {
     if (_reLoginFuture != null) return _reLoginFuture!;

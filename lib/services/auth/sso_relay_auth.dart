@@ -101,7 +101,7 @@ abstract class SsoRelayAuth extends ChangeNotifier implements SubsystemAuth {
     final auth = _scuAuth.accessToken;
     if (auth == null) throw const UnauthenticatedException();
 
-    await scuClient.followRedirects(
+    final response = await scuClient.followRedirects(
       Uri.parse(_ssoUrl),
       headers: {
         'Accept': 'text/html,application/xhtml+xml,*/*',
@@ -109,6 +109,17 @@ abstract class SsoRelayAuth extends ChangeNotifier implements SubsystemAuth {
         'Authorization': 'Bearer $auth',
       },
     );
+    // 中继最终为错误状态说明子站 session 未建立，不能缓存为已就绪
+    if (response.statusCode == 401 || response.statusCode == 403) {
+      throw const UnauthenticatedException();
+    }
+    if (response.statusCode < 200 || response.statusCode >= 400) {
+      throw ServiceException(
+        '$moduleId SSO 中继失败',
+        statusCode: response.statusCode,
+      );
+    }
+
     _cachedClient = scuClient;
     _log.i(_tag, 'SSO relay: ok');
     return scuClient;
