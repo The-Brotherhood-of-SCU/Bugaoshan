@@ -115,15 +115,29 @@ class ScuAuthProvider extends ChangeNotifier {
   }
 
   Future<bool> isAutoLoginEnabled() async {
-    final storage = SecureStorageProvider.instance;
-    final value = await storage.read(key: _keyAutoLogin);
-    return value == 'true';
+    try {
+      final storage = SecureStorageProvider.instance;
+      final value = await storage.read(key: _keyAutoLogin);
+      return value == 'true';
+    } catch (e) {
+      // 安全存储读取失败（如 Android keystore 损坏）回退为未开启
+      _log.w(_tag, 'isAutoLoginEnabled: read failed, fallback false: $e');
+      return false;
+    }
   }
 
   Future<void> setAutoLogin(bool enabled) async {
-    final storage = SecureStorageProvider.instance;
     _log.i(_tag, 'setAutoLogin: $enabled');
-    await storage.write(key: _keyAutoLogin, value: enabled ? 'true' : 'false');
+    try {
+      final storage = SecureStorageProvider.instance;
+      await storage.write(
+        key: _keyAutoLogin,
+        value: enabled ? 'true' : 'false',
+      );
+    } catch (e) {
+      // 写入失败仅记录日志，避免登录成功后被误判为网络错误而无法跳转
+      _log.w(_tag, 'setAutoLogin: write failed, ignored: $e');
+    }
   }
 
   Future<bool> autoLogin() async {

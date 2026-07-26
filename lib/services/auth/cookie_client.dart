@@ -124,7 +124,11 @@ class CookieClient extends http.BaseClient {
           'redirect hop=$i ${response.statusCode} ${current.host} -> $nextHost',
         );
         if (location == null) break;
-        current = current.resolve(location);
+        try {
+          current = current.resolve(location);
+        } on FormatException {
+          throw ServiceException('SSO 重定向地址无法解析: $location');
+        }
         lastResponse = response;
       } else {
         _log.d(
@@ -213,7 +217,16 @@ class CookieClient extends http.BaseClient {
 
   @override
   void close() {
-    if (reusable) return;
+    _close(force: false);
+  }
+
+  /// 强制关闭（即使 reusable），用于替换/登出时释放底层连接。
+  void closeForce() {
+    _close(force: true);
+  }
+
+  void _close({required bool force}) {
+    if (reusable && !force) return;
     _inner.close();
     super.close();
   }

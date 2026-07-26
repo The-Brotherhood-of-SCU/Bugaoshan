@@ -532,6 +532,7 @@
             "count": {"type": "int"}
         }
     },
+    "loginSuccess": "Logged in successfully",
     "ccylBindFailed": "Binding failed, please try again later",
     "ccylActivityLoadFailed": "Failed to load activity",
     "networkOfflineFailed": "Failed to offline device",

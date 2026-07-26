@@ -48,7 +48,11 @@ class CcylService {
       throw CcylException('Token 字段缺失');
     }
 
-    final user = CcylUser.fromJson(json['user'] as Map<String, dynamic>);
+    final userJson = json['user'];
+    if (userJson is! Map<String, dynamic>) {
+      throw const CcylException('用户信息缺失');
+    }
+    final user = CcylUser.fromJson(userJson);
     return (token: token, user: user);
   }
 

@@ -57,13 +57,19 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
 
   Future<void> _preloadHeaderImage() async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    await precacheImage(
-      AssetImage(
-        isDark ? 'assets/scu_header_dark.png' : 'assets/scu_header_light.png',
-      ),
-      context,
-    );
-    if (mounted) setState(() => _headerReady = true);
+    try {
+      await precacheImage(
+        AssetImage(
+          isDark ? 'assets/scu_header_dark.png' : 'assets/scu_header_light.png',
+        ),
+        context,
+      );
+    } catch (e) {
+      // 预缓存失败（解码异常/低内存等）不应阻塞登录，仍渲染表单
+      debugPrint('Header image precache error: $e');
+    } finally {
+      if (mounted) setState(() => _headerReady = true);
+    }
   }
 
   @override
@@ -71,7 +77,6 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
     _usernameCtrl.dispose();
     _passwordCtrl.dispose();
     _captchaCtrl.dispose();
-    OcrService.dispose();
     super.dispose();
   }
 

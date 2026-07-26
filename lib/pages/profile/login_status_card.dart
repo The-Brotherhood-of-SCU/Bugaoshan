@@ -79,9 +79,10 @@ class _LoginStatusCardState extends State<LoginStatusCard> {
     if (!mounted) return;
     if (result == true) {
       _loadUsername();
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('登录成功')));
+      ).showSnackBar(SnackBar(content: Text(l10n.loginSuccess)));
     }
   }
 

@@ -34,8 +34,25 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
   }
 
   void _onProviderUpdate() {
-    if (_provider.error == LoadErrorType.rateLimited && mounted) {
-      final l10n = AppLocalizations.of(context)!;
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+
+    // 有缓存时刷新失败，provider 保留旧数据并置 state=loaded、error≠null；
+    // 若不提示，用户无法得知看到的是过期缓存（与成绩页保持一致）。
+    if (_provider.state == PlanCompletionLoadState.loaded &&
+        _provider.error != null) {
+      final message = switch (_provider.error!) {
+        LoadErrorType.rateLimited => l10n.planCompletionRateLimited,
+        LoadErrorType.sessionExpired => l10n.sessionExpired,
+        _ => l10n.gradesRefreshFailed,
+      };
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), duration: const Duration(seconds: 3)),
+      );
+      return;
+    }
+
+    if (_provider.error == LoadErrorType.rateLimited) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.planCompletionRateLimited),

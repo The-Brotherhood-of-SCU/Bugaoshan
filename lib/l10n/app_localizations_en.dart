@@ -1464,6 +1464,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get loginSuccess => 'Logged in successfully';
+
+  @override
   String get ccylBindFailed => 'Binding failed, please try again later';
 
   @override

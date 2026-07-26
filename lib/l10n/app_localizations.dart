@@ -2833,6 +2833,12 @@ abstract class AppLocalizations {
   /// **'Login failed, {count} more attempt(s) will lock your account'**
   String loginFailedWillLock(int count);
 
+  /// No description provided for @loginSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged in successfully'**
+  String get loginSuccess;
+
   /// No description provided for @ccylBindFailed.
   ///
   /// In en, this message translates to:

@@ -538,6 +538,7 @@
             }
         }
     },
+    "loginSuccess": "登录成功",
     "ccylBindFailed": "绑定失败，请稍后重试",
     "ccylActivityLoadFailed": "活动加载失败",
     "networkOfflineFailed": "下线失败",

@@ -29,7 +29,7 @@ class CcylApiService {
     String? quality,
   }) async {
     return _retryOnCcylAuthError(() {
-      final token = _auth.token!;
+      final token = _auth.requireToken();
       return CcylService.searchActivities(
         token: token,
         pageNum: pageNum,
@@ -50,7 +50,7 @@ class CcylApiService {
     int pageSize = 10,
   }) async {
     return _retryOnCcylAuthError(() {
-      final token = _auth.token!;
+      final token = _auth.requireToken();
       return CcylService.getMyActivities(
         token: token,
         pageNum: pageNum,
@@ -65,7 +65,7 @@ class CcylApiService {
     String? name,
   }) async {
     return _retryOnCcylAuthError(() {
-      final token = _auth.token!;
+      final token = _auth.requireToken();
       return CcylService.getOrderedActivities(
         token: token,
         pageNum: pageNum,
@@ -77,7 +77,7 @@ class CcylApiService {
 
   Future<List<CyclOrg>> getAllOrgs() async {
     return _retryOnCcylAuthError(() {
-      final token = _auth.token!;
+      final token = _auth.requireToken();
       return CcylService.getAllOrgs(token: token);
     });
   }
@@ -91,7 +91,7 @@ class CcylApiService {
   >
   getActivityLibDetail(String id) async {
     return _retryOnCcylAuthError(() {
-      final token = _auth.token!;
+      final token = _auth.requireToken();
       return CcylService.getActivityLibDetail(
         token: token,
         activityLibraryId: id,
@@ -101,21 +101,21 @@ class CcylApiService {
 
   Future<void> subscribeActivity(String id) async {
     return _retryOnCcylAuthError(() {
-      final token = _auth.token!;
+      final token = _auth.requireToken();
       return CcylService.subscribeActivity(token: token, activityLibraryId: id);
     });
   }
 
   Future<void> cancelSubscribe(String id) async {
     return _retryOnCcylAuthError(() {
-      final token = _auth.token!;
+      final token = _auth.requireToken();
       return CcylService.cancelSubscribe(token: token, activityLibraryId: id);
     });
   }
 
   Future<List<CyclScoreType>> getActivityScoreTypes(String id) async {
     return _retryOnCcylAuthError(() {
-      final token = _auth.token!;
+      final token = _auth.requireToken();
       return CcylService.getActivityScoreTypes(
         token: token,
         activityLibraryId: id,
@@ -125,7 +125,7 @@ class CcylApiService {
 
   Future<void> signUpActivity(String activityId, String scoreType) async {
     return _retryOnCcylAuthError(() {
-      final token = _auth.token!;
+      final token = _auth.requireToken();
       return CcylService.signUpActivity(
         token: token,
         activityId: activityId,
@@ -136,7 +136,7 @@ class CcylApiService {
 
   Future<void> cancelSignUp(String activityId) async {
     return _retryOnCcylAuthError(() {
-      final token = _auth.token!;
+      final token = _auth.requireToken();
       final userId = _auth.requireUserId();
       return CcylService.cancelSignUp(
         token: token,
@@ -156,7 +156,7 @@ class CcylApiService {
   >
   getActivityDetail(String activityId) async {
     return _retryOnCcylAuthError(() {
-      final token = _auth.token!;
+      final token = _auth.requireToken();
       return CcylService.getActivityDetail(
         token: token,
         activityId: activityId,
@@ -169,7 +169,7 @@ class CcylApiService {
     int pageSize = 10,
   }) async {
     return _retryOnCcylAuthError(() {
-      final token = _auth.token!;
+      final token = _auth.requireToken();
       return CcylService.getCreditList(
         token: token,
         pageNum: pageNum,
@@ -183,7 +183,7 @@ class CcylApiService {
     String email,
   ) async {
     return _retryOnCcylAuthError(() {
-      final token = _auth.token!;
+      final token = _auth.requireToken();
       return CcylService.exportCreditsToEmail(
         token: token,
         creditIds: creditIds,
@@ -194,7 +194,7 @@ class CcylApiService {
 
   Future<Map<String, List<CyclDict>>> getDicts(List<String> groupCodes) async {
     return _retryOnCcylAuthError(() {
-      final token = _auth.token!;
+      final token = _auth.requireToken();
       return CcylService.getDicts(token: token, groupCodes: groupCodes);
     });
   }
@@ -211,8 +211,7 @@ Future<T> retryOnCcylAuthError<T>(
   try {
     return await fn();
   } on CcylAuthExpiredException {
-    await auth.invalidateSession();
-    final ok = await auth.reLogin();
+    final ok = await auth.recoverExpiredSession();
     if (!ok) {
       throw const UnauthenticatedException('第二课堂 token 过期，重新登录失败');
     }

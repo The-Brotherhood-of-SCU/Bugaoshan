@@ -1422,6 +1422,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get loginSuccess => '登录成功';
+
+  @override
   String get ccylBindFailed => '绑定失败，请稍后重试';
 
   @override
