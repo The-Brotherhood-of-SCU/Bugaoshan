@@ -28,6 +28,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
   final _captchaCtrl = TextEditingController();
 
   CaptchaResult? _captcha;
+  Uint8List? _captchaImageBytes;
   bool _loading = false;
   bool _captchaLoading = false;
   bool _headerReady = false;
@@ -95,22 +96,32 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
     setState(() => _captchaLoading = true);
     try {
       final captcha = await getIt<ScuAuthProvider>().fetchCaptcha();
-      String? recognizedText;
+
+      // 提前解码，避免在 build 中解码失败导致整页崩溃
+      Uint8List? imageBytes;
       try {
-        final comma = captcha.captchaBase64.indexOf(',');
-        final raw = comma >= 0
-            ? captcha.captchaBase64.substring(comma + 1)
-            : captcha.captchaBase64;
-        final imageBytes = base64.decode(raw);
-        recognizedText = await OcrService.performOcr(imageBytes);
+        imageBytes = _decodeBase64Image(captcha.captchaBase64);
       } catch (e) {
-        debugPrint('OCR error: $e');
+        debugPrint('Captcha decode error: $e');
+      }
+
+      String? recognizedText;
+      if (imageBytes != null) {
+        try {
+          recognizedText = await OcrService.performOcr(imageBytes);
+        } catch (e) {
+          debugPrint('OCR error: $e');
+        }
       }
 
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
 
       setState(() {
         _captcha = captcha;
+        _captchaImageBytes = imageBytes;
+        // 重载成功后清除上一次「验证码加载失败」的提示
+        if (_errorMsg == l10n.captchaLoadFailed) _errorMsg = null;
         if (recognizedText != null && recognizedText.isNotEmpty) {
           _captchaCtrl.text = recognizedText;
         } else {
@@ -186,9 +197,10 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       case 'invalid_captcha':
         return l10n.invalidCaptcha;
       case String msg when msg.startsWith('login_failed_will_lock'):
+        // 预期格式: login_failed_will_lock_<已尝试>_<上限>，格式不符时回退通用文案
         final parts = msg.split('_');
-        final attempted = int.tryParse(parts[4]);
-        final total = int.tryParse(parts[5]);
+        final attempted = parts.length > 5 ? int.tryParse(parts[4]) : null;
+        final total = parts.length > 5 ? int.tryParse(parts[5]) : null;
         if (attempted != null && total != null && total > attempted) {
           return l10n.loginFailedWillLock(total - attempted);
         }
@@ -571,12 +583,20 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
                           ),
                         ),
                       )
-                    : _captcha != null
+                    : _captchaImageBytes != null
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: Image.memory(
-                          _decodeBase64Image(_captcha!.captchaBase64),
+                          _captchaImageBytes!,
                           fit: BoxFit.contain,
+                          gaplessPlayback: true,
+                          errorBuilder: (_, _, _) => Icon(
+                            Icons.broken_image_outlined,
+                            color: isDark
+                                ? Colors.white54
+                                : Colors.grey.shade600,
+                            size: 22,
+                          ),
                         ),
                       )
                     : Icon(

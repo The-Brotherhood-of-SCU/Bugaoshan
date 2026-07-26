@@ -31,7 +31,11 @@ class _SessionExpiredListenerState extends State<SessionExpiredListener> {
     _handling = true;
 
     final context = logicRootContext;
-    if (!context.mounted) return;
+    if (!context.mounted) {
+      // 导航树暂不可用时复位标志，避免后续过期提示永远无法弹出
+      _handling = false;
+      return;
+    }
     final l10n = AppLocalizations.of(context)!;
 
     ScaffoldMessenger.of(context)

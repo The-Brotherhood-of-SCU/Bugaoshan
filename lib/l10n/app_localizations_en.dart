@@ -954,13 +954,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginButton => 'Login';
 
   @override
-  String get captchaLoadFailed => 'Failed to load captcha';
-
-  @override
   String get captchaNotLoaded => 'Please load the captcha first';
-
-  @override
-  String get networkError => 'Network error';
 
   @override
   String get gradesStats => 'Grade Statistics';
@@ -1451,6 +1445,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get networkDeviceOperationSuccess => 'Operation successful';
+
+  @override
+  String get captchaLoadFailed => 'Failed to load captcha';
+
+  @override
+  String get networkError => 'Network error';
 
   @override
   String get loginFailed => 'Login failed';

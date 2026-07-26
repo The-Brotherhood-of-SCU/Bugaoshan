@@ -1855,23 +1855,11 @@ abstract class AppLocalizations {
   /// **'Login'**
   String get loginButton;
 
-  /// No description provided for @captchaLoadFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to load captcha'**
-  String get captchaLoadFailed;
-
   /// No description provided for @captchaNotLoaded.
   ///
   /// In en, this message translates to:
   /// **'Please load the captcha first'**
   String get captchaNotLoaded;
-
-  /// No description provided for @networkError.
-  ///
-  /// In en, this message translates to:
-  /// **'Network error'**
-  String get networkError;
 
   /// No description provided for @gradesStats.
   ///
@@ -2814,6 +2802,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Operation successful'**
   String get networkDeviceOperationSuccess;
+
+  /// No description provided for @captchaLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load captcha'**
+  String get captchaLoadFailed;
+
+  /// No description provided for @networkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Network error'**
+  String get networkError;
 
   /// No description provided for @loginFailed.
   ///

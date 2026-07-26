@@ -164,7 +164,8 @@ class ScuAuthProvider extends ChangeNotifier {
             return false;
           }
 
-          _isAutoLoggingIn = false;
+          // 保持 _isAutoLoggingIn 为 true 直到 finally 统一复位：
+          // 依赖该标志的页面在标志翻转前不应发起数据请求（含验证码重试轮次）
           await login(
             username: username,
             password: password,
