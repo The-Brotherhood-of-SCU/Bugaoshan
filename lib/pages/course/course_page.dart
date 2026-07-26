@@ -59,6 +59,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
       initialPage: _isViewingVacation ? totalWeeks : _visibleWeek - 1,
     );
     courseProvider.currentWeek.addListener(_onCurrentWeekChanged);
+    courseProvider.scheduleConfig.addListener(_onScheduleConfigChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _syncToCurrentWeek();
@@ -69,6 +70,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     courseProvider.currentWeek.removeListener(_onCurrentWeekChanged);
+    courseProvider.scheduleConfig.removeListener(_onScheduleConfigChanged);
     _pageController.dispose();
     super.dispose();
   }
@@ -81,6 +83,11 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   }
 
   void _onCurrentWeekChanged() {
+    final config = courseProvider.scheduleConfig.value;
+    if (config.getCurrentWeek() > config.totalWeeks) {
+      // 处于假期，由 _syncToCurrentWeek 管理页面位置，不响应 currentWeek 变化
+      return;
+    }
     final targetPage = courseProvider.currentWeek.value - 1;
     if (_pageController.hasClients &&
         _pageController.page?.round() != targetPage) {
@@ -96,6 +103,10 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
     }
   }
 
+  void _onScheduleConfigChanged() {
+    _syncToCurrentWeek();
+  }
+
   void _syncToCurrentWeek() {
     final config = courseProvider.scheduleConfig.value;
     final actualWeek = config.getCurrentWeek();
@@ -103,16 +114,30 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
     if (actualWeek > totalWeeks) {
       _navigateToVacation();
     } else {
+      if (_isViewingVacation) {
+        setState(() => _isViewingVacation = false);
+      }
       courseProvider.updateCurrentWeek(actualWeek);
     }
     _checkAndPromptNextSemester();
   }
 
   void _navigateToVacation() {
+    final totalWeeks = courseProvider.scheduleConfig.value.totalWeeks;
     if (!_isViewingVacation && _pageController.hasClients) {
       _isViewingVacation = true;
       _pageController.animateToPage(
-        courseProvider.scheduleConfig.value.totalWeeks,
+        totalWeeks,
+        duration: appConfig.cardSizeAnimationDuration.value,
+        curve: AppCurves.quick,
+      );
+      setState(() {});
+    } else if (_isViewingVacation &&
+        _pageController.hasClients &&
+        _pageController.page?.round() != totalWeeks) {
+      // 切换课表后仍在假期，但总周数不同，需要更新 PageController 位置
+      _pageController.animateToPage(
+        totalWeeks,
         duration: appConfig.cardSizeAnimationDuration.value,
         curve: AppCurves.quick,
       );
