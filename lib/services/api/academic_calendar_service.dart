@@ -122,13 +122,24 @@ class AcademicCalendarService {
     return null;
   }
 
+  /// 解析后的内置校历缓存。rootBundle 只缓存资源的原始字符串，
+  /// jsonDecode + expandCalendarJson + 模型构造每次调用都会重跑；
+  /// 而 bundle 资源在进程生命周期内不会变，解析一次即可。
+  static AcademicCalendarData? _bundledCalendarCache;
+
   /// Load and parse the bundled academic calendar JSON asset.
   static Future<AcademicCalendarData> loadBundledCalendar() async {
+    final cached = _bundledCalendarCache;
+    if (cached != null) return cached;
+
     final assetContent = await rootBundle.loadString(
       'assets/academic_calendar.json',
     );
     final decoded = jsonDecode(assetContent) as Map<String, dynamic>;
-    return AcademicCalendarData.fromJson(expandCalendarJson(decoded));
+    // 只在解析成功后写缓存；抛异常时缓存保持为空，下次调用会重试。
+    final data = AcademicCalendarData.fromJson(expandCalendarJson(decoded));
+    _bundledCalendarCache = data;
+    return data;
   }
 
   /// 根据课表名称从校历中匹配学期并返回总周数，未匹配则返回 null。
@@ -151,6 +162,37 @@ class AcademicCalendarService {
           }
           if (isFall && semester.name.contains('秋')) return semester.totalWeeks;
           if (!isSpring && !isFall) return semester.totalWeeks;
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint(
+        'AcademicCalendarService: failed to find matching semester: $e',
+      );
+      return null;
+    }
+  }
+
+  /// 根据课表名称从校历中匹配完整的学期信息。
+  /// 匹配逻辑与 [findTotalWeeksFromCalendar] 一致，但返回整个 [AcademicCalendarSemester]。
+  static Future<AcademicCalendarSemester?> findMatchingSemester(
+    String scheduleName,
+  ) async {
+    try {
+      final data = await loadBundledCalendar();
+
+      final yearMatch = RegExp(r'(\d{4})-(\d{4})').firstMatch(scheduleName);
+      if (yearMatch == null) return null;
+
+      final academicYear = '${yearMatch.group(1)}-${yearMatch.group(2)}';
+      final isSpring = scheduleName.contains('春');
+      final isFall = scheduleName.contains('秋');
+
+      for (final semester in data.semesters) {
+        if (semester.name.contains(academicYear)) {
+          if (isSpring && semester.name.contains('春')) return semester;
+          if (isFall && semester.name.contains('秋')) return semester;
+          if (!isSpring && !isFall) return semester;
         }
       }
       return null;

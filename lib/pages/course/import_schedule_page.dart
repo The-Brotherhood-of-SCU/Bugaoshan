@@ -455,20 +455,22 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
       }
 
       if (mounted) {
-        // 静默根据校历自动计算周数
+        // 静默根据校历自动设置学期开始日期和周数
         for (final imported in importedSchedules) {
           try {
-            final weeks =
-                await AcademicCalendarService.findTotalWeeksFromCalendar(
-                  imported.name,
-                );
-            if (weeks != null) {
+            final semester = await AcademicCalendarService.findMatchingSemester(
+              imported.name,
+            );
+            if (semester != null) {
               final allSchedules = widget.courseProvider.allSchedules.value;
               final schedule = allSchedules
                   .where((s) => s.id == imported.id)
                   .firstOrNull;
               if (schedule != null) {
-                final updated = schedule.copyWith(totalWeeks: weeks);
+                final updated = schedule.copyWith(
+                  semesterStartDate: semester.startDate,
+                  totalWeeks: semester.totalWeeks,
+                );
                 await widget.courseProvider.updateScheduleConfig(updated);
               }
             }
@@ -481,50 +483,6 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(l10n.importSuccess)));
-
-        // 导入成功后，询问是否自动设置当前教学周
-        if (!mounted) return;
-        final setWeek = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text(l10n.autoSetCurrentWeekTitle),
-            content: Text(l10n.autoSetCurrentWeekContent),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: Text(l10n.cancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: Text(l10n.confirm),
-              ),
-            ],
-          ),
-        );
-        if (setWeek == true && mounted) {
-          try {
-            final week = await getIt<ZhjwApiService>().fetchCurrentWeek();
-            if (!mounted) return;
-            final now = DateTime.now();
-            final today = DateTime(now.year, now.month, now.day);
-            final currentSunday = today.toSunday();
-            final newStartDate = currentSunday.subtract(
-              Duration(days: (week - 1) * 7),
-            );
-            final currentConfig = widget.courseProvider.scheduleConfig.value;
-            final updatedConfig = currentConfig.copyWith(
-              semesterStartDate: newStartDate,
-            );
-            await widget.courseProvider.updateScheduleConfig(updatedConfig);
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.autoSetCurrentWeekSuccess)),
-              );
-            }
-          } catch (_) {
-            // 获取失败不阻断流程，静默忽略
-          }
-        }
 
         if (logicRootContext.mounted &&
             Navigator.of(logicRootContext).canPop()) {
