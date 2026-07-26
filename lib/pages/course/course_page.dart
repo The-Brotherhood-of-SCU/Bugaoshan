@@ -44,6 +44,33 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   bool _isViewingVacation = false;
   bool _promptedNextSemester = false;
 
+  /// 判断当前课表是否应该显示放假页。
+  /// 规则：当前学期已结束，且下学期还未开始（今天在两个学期之间）时显示。
+  bool _computeShowVacationPage() {
+    final config = courseProvider.scheduleConfig.value;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // 学期未结束 → 不显示
+    if (!today.isAfter(config.semesterEndDate)) return false;
+
+    // 找下学期（当前学期结束后最早开始的课表）
+    ScheduleConfig? next;
+    for (final s in courseProvider.allSchedules.value) {
+      if (s.id != config.id &&
+          s.semesterStartDate.isAfter(config.semesterEndDate)) {
+        if (next == null ||
+            s.semesterStartDate.isBefore(next.semesterStartDate)) {
+          next = s;
+        }
+      }
+    }
+    if (next == null) return false;
+
+    // 今天在下学期开始前
+    return today.isBefore(next.semesterStartDate);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -51,7 +78,8 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
     final config = courseProvider.scheduleConfig.value;
     final actualWeek = config.getCurrentWeek();
     final totalWeeks = config.totalWeeks;
-    _isViewingVacation = actualWeek > totalWeeks;
+    final showVacation = _computeShowVacationPage();
+    _isViewingVacation = showVacation && actualWeek > totalWeeks;
     _visibleWeek = _isViewingVacation
         ? totalWeeks
         : courseProvider.currentWeek.value;
@@ -83,9 +111,8 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   }
 
   void _onCurrentWeekChanged() {
-    final config = courseProvider.scheduleConfig.value;
-    if (config.getCurrentWeek() > config.totalWeeks) {
-      // 处于假期，由 _syncToCurrentWeek 管理页面位置，不响应 currentWeek 变化
+    if (_isViewingVacation) {
+      // 放假页面时不需要响应 currentWeek 变化，避免覆盖放假导航
       return;
     }
     final targetPage = courseProvider.currentWeek.value - 1;
@@ -104,6 +131,18 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   }
 
   void _onScheduleConfigChanged() {
+    // 切换课表或导入时绝不进入放假页面。
+    // 注意：不手动调 updateCurrentWeek，由 _loadData 随后设置，避免二次触发
+    // _onCurrentWeekChanged 覆盖页面位置。
+    final config = courseProvider.scheduleConfig.value;
+    final totalWeeks = config.totalWeeks;
+
+    _isViewingVacation = false;
+    _visibleWeek = totalWeeks;
+    if (_pageController.hasClients) {
+      _pageController.jumpToPage(totalWeeks - 1);
+    }
+    setState(() {});
     _syncToCurrentWeek();
   }
 
@@ -123,6 +162,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   }
 
   void _navigateToVacation() {
+    if (!_computeShowVacationPage()) return;
     final totalWeeks = courseProvider.scheduleConfig.value.totalWeeks;
     if (!_isViewingVacation && _pageController.hasClients) {
       _isViewingVacation = true;
@@ -256,12 +296,14 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
       );
     }
 
+    final showVacationPage = _computeShowVacationPage();
+
     return _SwipePageView(
       controller: _pageController,
-      itemCount: totalWeeks + 1,
+      itemCount: showVacationPage ? totalWeeks + 1 : totalWeeks,
       onPageChanged: _onPageChanged,
       itemBuilder: (context, index) {
-        if (index >= totalWeeks) {
+        if (showVacationPage && index >= totalWeeks) {
           return _VacationView(
             scheduleConfig: config,
             allSchedules: courseProvider.allSchedules.value,
