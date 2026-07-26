@@ -1597,6 +1597,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get scuLoginDisclaimerPrivacy => '我们不会收集任何信息';
 
   @override
+  String get scuLoginPasswordHint => '密码为统一身份认证密码，非教务处密码';
+
+  @override
   String get openSourceLicenseDesc => 'This app is open-sourced under AGPL-3.0';
 
   @override

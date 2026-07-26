@@ -3181,6 +3181,12 @@ abstract class AppLocalizations {
   /// **'We do not collect any personal information'**
   String get scuLoginDisclaimerPrivacy;
 
+  /// No description provided for @scuLoginPasswordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Password is the unified identity authentication password, not the academic affairs password'**
+  String get scuLoginPasswordHint;
+
   /// No description provided for @openSourceLicenseDesc.
   ///
   /// In en, this message translates to:
