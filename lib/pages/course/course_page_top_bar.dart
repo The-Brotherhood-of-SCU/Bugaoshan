@@ -5,6 +5,10 @@ class _TopBar extends StatelessWidget {
   final int totalWeeks;
   final int visibleWeek;
   final bool isViewingVacation;
+
+  /// 放假页是否存在（与 _CoursePageState._showVacationPage 同源）。
+  /// 徽章和右箭头都以它为准，避免「显示假期中却无放假页可翻」的脱节。
+  final bool hasVacationPage;
   final VoidCallback onPreviousWeek;
   final VoidCallback? onNextWeek;
   final VoidCallback onGoToCurrentWeek;
@@ -17,6 +21,7 @@ class _TopBar extends StatelessWidget {
     required this.totalWeeks,
     required this.visibleWeek,
     this.isViewingVacation = false,
+    this.hasVacationPage = false,
     required this.onPreviousWeek,
     required this.onNextWeek,
     required this.onGoToCurrentWeek,
@@ -29,13 +34,18 @@ class _TopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final config = getIt<CourseProvider>().scheduleConfig.value;
-    final isCurrentCalendarWeek = visibleWeek == config.getCurrentWeek();
-    final isInVacation = config.getCurrentWeek() > config.totalWeeks;
+    final actualWeek = config.getCurrentWeek();
+    final isCurrentCalendarWeek = visibleWeek == actualWeek;
+    // 与放假页共用同一判定：没有放假页时不显示「假期中」徽章，
+    // 避免徽章提示假期但右箭头无处可去。
+    final isInVacation = hasVacationPage && actualWeek > config.totalWeeks;
 
     final now = DateTime.now();
     final dateStr = '${now.year}/${now.month}/${now.day}';
     final canGoLeft = isViewingVacation || week > 1;
-    final canGoRight = !isViewingVacation && week <= totalWeeks;
+    // 最后一周时只有存在放假页才能继续往右翻。
+    final canGoRight =
+        !isViewingVacation && (week < totalWeeks || hasVacationPage);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
@@ -102,7 +112,12 @@ class _TopBar extends StatelessWidget {
                     else
                       _WeekBadge(
                         isCurrentCalendarWeek: isCurrentCalendarWeek,
-                        actualCurrentWeek: config.getCurrentWeek(),
+                        // 无放假页时学期过末 actualWeek 会超过 totalWeeks，
+                        // clamp 避免徽章显示越界周数。
+                        actualCurrentWeek: actualWeek.clamp(
+                          1,
+                          config.totalWeeks,
+                        ),
                       ),
                   ],
                 ),

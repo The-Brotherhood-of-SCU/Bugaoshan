@@ -101,7 +101,20 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   void _updateVacationAvailability() {
     final next = _computeShowVacationPage();
     if (next == _showVacationPage) return;
-    setState(() => _showVacationPage = next);
+    setState(() {
+      _showVacationPage = next;
+      // 放假页在被查看时消失（如跨夜后下学期开始）：itemCount 缩水，
+      // 控制器会停在越界索引上，退回末周兜底。
+      if (!next && _isViewingVacation) {
+        _isViewingVacation = false;
+      }
+    });
+    if (!next && _pageController.hasClients) {
+      final maxPage = courseProvider.scheduleConfig.value.totalWeeks - 1;
+      if ((_pageController.page ?? 0).round() > maxPage) {
+        _pageController.jumpToPage(maxPage);
+      }
+    }
   }
 
   @override
@@ -138,6 +151,16 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
     courseProvider.allSchedules.removeListener(_updateVacationAvailability);
     _pageController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    // 跨天或长时间后台后回前台：刷新依赖「今天」的派生状态
+    // （顶栏日期、放假页可用性、假期徽章）。
+    // 刻意不调 _syncToCurrentWeek —— 回前台不自动跳周。
+    _updateVacationAvailability();
+    setState(() {});
   }
 
   void _onCurrentWeekChanged() {
@@ -234,6 +257,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
               totalWeeks: courseProvider.scheduleConfig.value.totalWeeks,
               visibleWeek: _visibleWeek,
               isViewingVacation: _isViewingVacation,
+              hasVacationPage: _showVacationPage,
               onPreviousWeek: () => _isViewingVacation
                   ? _changeWeek(courseProvider.scheduleConfig.value.totalWeeks)
                   : _changeWeek(courseProvider.currentWeek.value - 1),
@@ -396,6 +420,19 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
       setState(() => _isViewingVacation = false);
     }
     courseProvider.updateCurrentWeek(newWeek);
+    // currentWeek 本来就等于 newWeek 时 ValueNotifier 不会通知（int 相等），
+    // _onCurrentWeekChanged 不触发，页面停在原地 —— 典型场景：放假期间
+    // currentWeek 已被 clamp 成 totalWeeks，从放假页点左箭头回末周。
+    // 这里显式驱动 PageController 兜底。
+    final targetPage = newWeek - 1;
+    if (_pageController.hasClients &&
+        _pageController.page?.round() != targetPage) {
+      _pageController.animateToPage(
+        targetPage,
+        duration: appConfig.cardSizeAnimationDuration.value,
+        curve: AppCurves.quick,
+      );
+    }
   }
 
   void _goToCurrentWeek() {
