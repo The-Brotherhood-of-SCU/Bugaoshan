@@ -68,6 +68,8 @@ DateTime _weeksAhead(int weeks) {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   // ============ 初始化 ============
   // weeksAgo:N → actualWeek = N+1, _pageIndex = N（在 totalWeeks 范围内时）
 

@@ -44,6 +44,14 @@ class CoursePageController extends ChangeNotifier {
   /// 已结算页码，唯一权威。
   int _pageIndex = 0;
 
+  /// `jumpToPage` 会同步触发 `onPageChanged`。若 PageView 尚未重建到新
+  /// `pageCount`（`showVacationPage` 刚翻面），目标页会被旧 PageView clamp，
+  /// 回灌的 `onPageChanged` 会把 `_pageIndex` 拉回。此期间抑制反馈通道。
+  bool _suppressOnPageSettled = false;
+
+  /// `dispose` 后 `addPostFrameCallback` 仍可能触发，需短路。
+  bool _disposed = false;
+
   // ---- Getters ----
 
   /// PageController（执行器）。detach 期间可能被换实例，build 每次重读，禁止缓存到
@@ -128,6 +136,7 @@ class CoursePageController extends ChangeNotifier {
   /// PageView.onPageChanged 反馈通道。== _pageIndex 时静默吸收
   /// （自己发起的动画回灌）。越界 index 会 clamp 到 [0, pageCount-1]。
   void onPageSettled(int index) {
+    if (_suppressOnPageSettled) return;
     final clamped = index.clamp(0, pageCount - 1);
     if (clamped == _pageIndex) return;
     _pageIndex = clamped;
@@ -165,7 +174,12 @@ class CoursePageController extends ChangeNotifier {
             curve: AppCurves.quick,
           );
         } else {
+          // jumpToPage 同步触发 onPageChanged，期间抑制反馈通道防止 clamp 回灌。
+          // animateToPage 是异步的（动画结束后才回灌），不抑制 —— 否则用户
+          // 滑动/动画落位后的反馈会被吞掉。
+          _suppressOnPageSettled = true;
           _pageController.jumpToPage(clamped);
+          _suppressOnPageSettled = false;
         }
       }
     } else {
@@ -180,10 +194,27 @@ class CoursePageController extends ChangeNotifier {
 
   /// 切换课表/导入时：刷新放假页 → 落到新当前周 → 无条件 notify
   /// （totalWeeks/actualWeek 变了顶栏也要重画）。
+  ///
+  /// `showVacationPage` 翻面会改变 `pageCount`，但 PageView 要到下一帧才重建到
+  /// 新 itemCount。`_moveTo` 里的 `jumpToPage` 可能在旧 PageView 上被 clamp
+  /// （抑制了顶栏回灌，但 PageController 物理位置仍停在 clamp 后的页）。
+  /// 下一帧再同步一次，确保网格也跳到目标页。
   void _onScheduleConfigChanged() {
     showVacationPage.value = _computeShowVacationPage();
     _moveTo(_indexForToday(), animate: false);
+    WidgetsBinding.instance.addPostFrameCallback(_resyncPageController);
     notifyListeners();
+  }
+
+  void _resyncPageController(Duration _) {
+    if (_disposed) return;
+    if (!_pageController.hasClients) return;
+    final physicalPage = _pageController.page?.round();
+    if (physicalPage != _pageIndex) {
+      _suppressOnPageSettled = true;
+      _pageController.jumpToPage(_pageIndex);
+      _suppressOnPageSettled = false;
+    }
   }
 
   /// allSchedules 单独变化（新增/删除非当前课表）：仅刷新放假页可用性，
@@ -218,6 +249,7 @@ class CoursePageController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
     _scheduleConfig.removeListener(_onScheduleConfigChanged);
     _allSchedules.removeListener(_onAllSchedulesChanged);
     showVacationPage.dispose();
