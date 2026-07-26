@@ -6,6 +6,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/course/course_edit_page.dart';
+import 'package:bugaoshan/pages/course/course_page_controller.dart';
 import 'package:bugaoshan/pages/course/import_schedule_page.dart';
 import 'package:bugaoshan/pages/course/schedule_management_page.dart';
 import 'package:bugaoshan/services/api/academic_calendar_service.dart';
@@ -40,209 +41,72 @@ class CoursePage extends StatefulWidget {
 class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   final courseProvider = getIt<CourseProvider>();
   final appConfig = getIt<AppConfigProvider>();
-  late PageController _pageController;
-  late int _visibleWeek;
-  bool _isViewingVacation = false;
+
+  /// 页面级控制器（demo 模式为 null）。
+  /// 不进 GetIt —— demo/真实两个 CoursePage 实例共存时单例语义错误。
+  CoursePageController? _controller;
+
   bool _promptedNextSemester = false;
 
-  /// [_computeShowVacationPage] 的缓存值。该判定只取决于课表配置和全部课表列表
-  /// （外加「今天」），没必要每帧重算 —— 它会分配 DateTime 并遍历 allSchedules，
-  /// 而 PageView 的 itemCount 依赖它。
-  bool _showVacationPage = false;
-
-  /// 顶部栏只关心当前周和课表配置；课程列表变化不影响它。
-  late final Listenable _topBarListenable = Listenable.merge([
-    courseProvider.currentWeek,
-    courseProvider.scheduleConfig,
-  ]);
-
-  /// 课表网格不读 currentWeek —— 翻页由 [_pageController] 驱动，
-  /// 把 currentWeek 混进来会导致每次滑动都重建整个 PageView。
-  late final Listenable _gridListenable = Listenable.merge([
-    courseProvider.courses,
-    courseProvider.scheduleConfig,
-    courseProvider.allSchedules,
-  ]);
+  /// 课表网格的 listenable。demo 模式下只需 scheduleConfig；非 demo 模式下
+  /// 还需 courses、allSchedules 和 controller.showVacationPage（pageCount 变化时
+  /// PageView 需重建）。grid 不监听 controller 本身 —— 翻页由 PageController
+  /// 直接驱动，不需要整 PageView 重建。
+  late final Listenable _gridListenable;
 
   late final Listenable _bgImageListenable = Listenable.merge([
     appConfig.backgroundImagePath,
     appConfig.backgroundImageOpacity,
   ]);
 
-  /// 判断当前课表是否应该显示放假页。
-  /// 规则：当前学期已结束，且下学期还未开始（今天在两个学期之间）时显示。
-  bool _computeShowVacationPage() {
-    final config = courseProvider.scheduleConfig.value;
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-
-    // 学期未结束 → 不显示
-    if (!today.isAfter(config.semesterEndDate)) return false;
-
-    // 找下学期（当前学期结束后最早开始的课表）
-    ScheduleConfig? next;
-    for (final s in courseProvider.allSchedules.value) {
-      if (s.id != config.id &&
-          s.semesterStartDate.isAfter(config.semesterEndDate)) {
-        if (next == null ||
-            s.semesterStartDate.isBefore(next.semesterStartDate)) {
-          next = s;
-        }
-      }
-    }
-    if (next == null) return false;
-
-    // 今天在下学期开始前
-    return today.isBefore(next.semesterStartDate);
-  }
-
-  /// 重算放假页可用性；仅在结果变化时 setState。
-  /// 只允许在非 build 阶段调用（监听器回调、手势、postFrame）。
-  void _updateVacationAvailability() {
-    final next = _computeShowVacationPage();
-    if (next == _showVacationPage) return;
-    setState(() {
-      _showVacationPage = next;
-      // 放假页在被查看时消失（如跨夜后下学期开始）：itemCount 缩水，
-      // 控制器会停在越界索引上，退回末周兜底。
-      if (!next && _isViewingVacation) {
-        _isViewingVacation = false;
-      }
-    });
-    if (!next && _pageController.hasClients) {
-      final maxPage = courseProvider.scheduleConfig.value.totalWeeks - 1;
-      if ((_pageController.page ?? 0).round() > maxPage) {
-        _pageController.jumpToPage(maxPage);
-      }
-    }
-  }
-
   @override
   void initState() {
     super.initState();
+
+    if (widget.demoMode) {
+      // 预览模式：固定第 1 周，不建控制器、不挂监听、不注册 observer、不弹提示
+      // —— 修 demoMode 干扰真实课表页的 bug（以前 postFrame 写全局 currentWeek
+      // 把 IndexedStack 里的真实页顶回当前周，甚至弹「切换学期」对话框）。
+      _gridListenable = courseProvider.scheduleConfig;
+      return;
+    }
+
     WidgetsBinding.instance.addObserver(this);
-    final config = courseProvider.scheduleConfig.value;
-    final actualWeek = config.getCurrentWeek();
-    final totalWeeks = config.totalWeeks;
-    _showVacationPage = _computeShowVacationPage();
-    _isViewingVacation = _showVacationPage && actualWeek > totalWeeks;
-    _visibleWeek = _isViewingVacation
-        ? totalWeeks
-        : courseProvider.currentWeek.value;
-    _pageController = PageController(
-      initialPage: _isViewingVacation ? totalWeeks : _visibleWeek - 1,
+    _controller = CoursePageController(
+      scheduleConfig: courseProvider.scheduleConfig,
+      allSchedules: courseProvider.allSchedules,
+      animationDuration: appConfig.cardSizeAnimationDuration,
     );
-    courseProvider.currentWeek.addListener(_onCurrentWeekChanged);
-    courseProvider.scheduleConfig.addListener(_onScheduleConfigChanged);
-    // allSchedules 可以脱离 scheduleConfig 单独变化（新增/删除课表），
-    // 而放假页判定依赖它，所以单独监听。
-    courseProvider.allSchedules.addListener(_updateVacationAvailability);
+    _gridListenable = Listenable.merge([
+      courseProvider.courses,
+      courseProvider.scheduleConfig,
+      courseProvider.allSchedules,
+      _controller!.showVacationPage,
+    ]);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _syncToCurrentWeek();
+      _checkAndPromptNextSemester();
     });
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    courseProvider.currentWeek.removeListener(_onCurrentWeekChanged);
-    courseProvider.scheduleConfig.removeListener(_onScheduleConfigChanged);
-    courseProvider.allSchedules.removeListener(_updateVacationAvailability);
-    _pageController.dispose();
+    if (!widget.demoMode) {
+      WidgetsBinding.instance.removeObserver(this);
+      _controller?.dispose();
+    }
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state != AppLifecycleState.resumed) return;
-    // 跨天或长时间后台后回前台：刷新依赖「今天」的派生状态
-    // （顶栏日期、放假页可用性、假期徽章）。
-    // 刻意不调 _syncToCurrentWeek —— 回前台不自动跳周。
-    _updateVacationAvailability();
+    // 跨天或长时间后台后回前台：刷新放假页可用性 + 顶栏徽章。
+    // 刻意不跳周 —— 回前台不自动跳当前周。
+    // 裸 setState 必须保留：CourseGrid 的今天列高亮/节假日角标读 DateTime.now()，
+    // 删了会破坏跨夜刷新。
+    _controller?.refreshToday();
     setState(() {});
-  }
-
-  void _onCurrentWeekChanged() {
-    if (_isViewingVacation) {
-      // 放假页面时不需要响应 currentWeek 变化，避免覆盖放假导航
-      return;
-    }
-    final targetPage = courseProvider.currentWeek.value - 1;
-    if (_pageController.hasClients &&
-        _pageController.page?.round() != targetPage) {
-      _pageController.animateToPage(
-        targetPage,
-        duration: appConfig.cardSizeAnimationDuration.value,
-        curve: AppCurves.quick,
-      );
-    } else if (_visibleWeek != courseProvider.currentWeek.value) {
-      setState(() {
-        _visibleWeek = courseProvider.currentWeek.value;
-      });
-    }
-  }
-
-  void _onScheduleConfigChanged() {
-    // 切换课表或导入时绝不进入放假页面。
-    // 注意：不手动调 updateCurrentWeek，由 _loadData 随后设置，避免二次触发
-    // _onCurrentWeekChanged 覆盖页面位置。
-    final config = courseProvider.scheduleConfig.value;
-    final totalWeeks = config.totalWeeks;
-    _showVacationPage = _computeShowVacationPage();
-
-    // 直接落到 _syncToCurrentWeek 稍后要去的那一周。以前先 jumpToPage 到末周，
-    // 紧接着同一个 microtask 里 _onCurrentWeekChanged 又 animateToPage 回当前周 ——
-    // 跳的那帧画不出来，但动画起点已是末周，于是会横扫中间十几周并逐页 build。
-    final targetWeek = config.getCurrentWeek().clamp(1, totalWeeks);
-
-    _isViewingVacation = false;
-    _visibleWeek = targetWeek;
-    if (_pageController.hasClients) {
-      _pageController.jumpToPage(targetWeek - 1);
-    }
-    setState(() {});
-    _syncToCurrentWeek();
-  }
-
-  void _syncToCurrentWeek() {
-    _updateVacationAvailability();
-    final config = courseProvider.scheduleConfig.value;
-    final actualWeek = config.getCurrentWeek();
-    final totalWeeks = config.totalWeeks;
-    if (actualWeek > totalWeeks) {
-      _navigateToVacation();
-    } else {
-      if (_isViewingVacation) {
-        setState(() => _isViewingVacation = false);
-      }
-      courseProvider.updateCurrentWeek(actualWeek);
-    }
-    _checkAndPromptNextSemester();
-  }
-
-  void _navigateToVacation() {
-    if (!_showVacationPage) return;
-    final totalWeeks = courseProvider.scheduleConfig.value.totalWeeks;
-    if (!_isViewingVacation && _pageController.hasClients) {
-      _isViewingVacation = true;
-      _pageController.animateToPage(
-        totalWeeks,
-        duration: appConfig.cardSizeAnimationDuration.value,
-        curve: AppCurves.quick,
-      );
-      setState(() {});
-    } else if (_isViewingVacation &&
-        _pageController.hasClients &&
-        _pageController.page?.round() != totalWeeks) {
-      // 切换课表后仍在假期，但总周数不同，需要更新 PageController 位置
-      _pageController.animateToPage(
-        totalWeeks,
-        duration: appConfig.cardSizeAnimationDuration.value,
-        curve: AppCurves.quick,
-      );
-      setState(() {});
-    }
   }
 
   @override
@@ -251,19 +115,18 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
       children: [
         if (!widget.demoMode)
           ListenableBuilder(
-            listenable: _topBarListenable,
+            listenable: _controller!,
             builder: (context, _) => _TopBar(
-              week: courseProvider.currentWeek.value,
-              totalWeeks: courseProvider.scheduleConfig.value.totalWeeks,
-              visibleWeek: _visibleWeek,
-              isViewingVacation: _isViewingVacation,
-              hasVacationPage: _showVacationPage,
-              onPreviousWeek: () => _isViewingVacation
-                  ? _changeWeek(courseProvider.scheduleConfig.value.totalWeeks)
-                  : _changeWeek(courseProvider.currentWeek.value - 1),
-              onNextWeek: () =>
-                  _changeWeek(courseProvider.currentWeek.value + 1),
-              onGoToCurrentWeek: _goToCurrentWeek,
+              visibleWeek: _controller!.visibleWeek,
+              totalWeeks: _controller!.totalWeeks,
+              actualWeek: _controller!.actualWeek,
+              isViewingVacation: _controller!.isViewingVacation,
+              isTodayOnVacation: _controller!.isTodayOnVacation,
+              canGoPrevious: _controller!.canGoPrevious,
+              canGoNext: _controller!.canGoNext,
+              onPreviousWeek: _controller!.goToPreviousPage,
+              onNextWeek: _controller!.goToNextPage,
+              onGoToCurrentWeek: _controller!.goToToday,
               onImport: _onImport,
               onExport: _onExport,
               onAddCourse: _onAddCourse,
@@ -334,7 +197,6 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
     final allCourses = widget.demoMode
         ? _kDemoCourses
         : courseProvider.courses.value;
-    final totalWeeks = config.totalWeeks;
 
     if (widget.demoMode) {
       // 预览模式：固定显示第 1 周，不滑动、不跟随当前课表周数
@@ -342,16 +204,20 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
         courses: allCourses,
         config: config,
         displayWeek: 1,
-        totalWeeks: totalWeeks,
+        totalWeeks: config.totalWeeks,
       );
     }
 
+    final controller = _controller!;
+    final totalWeeks = controller.totalWeeks;
+    // build 内每次重读 controller.pageController —— detach 期间可能被换实例，
+    // 缓存到局部之外会导致 _SwipePageView 持有失效的旧控制器。
     return _SwipePageView(
-      controller: _pageController,
-      itemCount: _showVacationPage ? totalWeeks + 1 : totalWeeks,
-      onPageChanged: _onPageChanged,
+      controller: controller.pageController,
+      itemCount: controller.pageCount,
+      onPageChanged: controller.onPageSettled,
       itemBuilder: (context, index) {
-        if (_showVacationPage && index >= totalWeeks) {
+        if (controller.showVacationPage.value && index >= totalWeeks) {
           return _VacationView(
             scheduleConfig: config,
             allSchedules: courseProvider.allSchedules.value,
@@ -387,56 +253,6 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   ) {
     if (!isLoading) return const SizedBox.shrink();
     return const Center(child: CircularProgressIndicator());
-  }
-
-  void _onPageChanged(int index) {
-    final totalWeeks = courseProvider.scheduleConfig.value.totalWeeks;
-    if (index >= totalWeeks) {
-      if (!_isViewingVacation) {
-        setState(() => _isViewingVacation = true);
-      }
-      return;
-    }
-    if (_isViewingVacation) {
-      setState(() => _isViewingVacation = false);
-    }
-    final displayWeek = index + 1;
-    if (_visibleWeek != displayWeek) {
-      setState(() {
-        _visibleWeek = displayWeek;
-      });
-    }
-    courseProvider.updateCurrentWeek(displayWeek);
-  }
-
-  void _changeWeek(int newWeek) {
-    final totalWeeks = courseProvider.scheduleConfig.value.totalWeeks;
-    if (newWeek > totalWeeks) {
-      _navigateToVacation();
-      return;
-    }
-    if (newWeek < 1) newWeek = 1;
-    if (_isViewingVacation) {
-      setState(() => _isViewingVacation = false);
-    }
-    courseProvider.updateCurrentWeek(newWeek);
-    // currentWeek 本来就等于 newWeek 时 ValueNotifier 不会通知（int 相等），
-    // _onCurrentWeekChanged 不触发，页面停在原地 —— 典型场景：放假期间
-    // currentWeek 已被 clamp 成 totalWeeks，从放假页点左箭头回末周。
-    // 这里显式驱动 PageController 兜底。
-    final targetPage = newWeek - 1;
-    if (_pageController.hasClients &&
-        _pageController.page?.round() != targetPage) {
-      _pageController.animateToPage(
-        targetPage,
-        duration: appConfig.cardSizeAnimationDuration.value,
-        curve: AppCurves.quick,
-      );
-    }
-  }
-
-  void _goToCurrentWeek() {
-    _syncToCurrentWeek();
   }
 
   Future<void> _checkAndPromptNextSemester() async {

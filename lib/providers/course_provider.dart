@@ -18,7 +18,6 @@ class CourseProvider {
       ValueNotifier<ScheduleConfig>(_defaultConfig());
   final ValueNotifier<List<ScheduleConfig>> allSchedules =
       ValueNotifier<List<ScheduleConfig>>([]);
-  final ValueNotifier<int> currentWeek = ValueNotifier<int>(1);
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
 
   /// 当前数据库中是否存在课表。UI 据此在「暂无课表」空状态和 grid 之间切换。
@@ -41,12 +40,6 @@ class CourseProvider {
       allSchedules.value = _db.getAllSchedules();
       final config = _db.getScheduleConfig();
       scheduleConfig.value = config;
-      // 无课表时 currentWeek 兜底为 1，避免占位 config 算出意外的周数
-      if (allSchedules.value.isEmpty) {
-        currentWeek.value = 1;
-      } else {
-        currentWeek.value = config.getCurrentWeek().clamp(1, config.totalWeeks);
-      }
     } catch (e) {
       debugPrint('CourseProvider: failed to load data: $e');
     } finally {
@@ -126,7 +119,6 @@ class CourseProvider {
     allSchedules.value = _db.getAllSchedules();
     if (config.id == _db.getCurrentScheduleId()) {
       scheduleConfig.value = config;
-      currentWeek.value = config.getCurrentWeek().clamp(1, config.totalWeeks);
       // 非当前课表不影响当前课程展示，也无需刷新桌面组件。
       onCoursesChanged?.call();
     }
@@ -150,11 +142,6 @@ class CourseProvider {
       (s) => s.semesterName.trim() == name.trim(),
     );
     return match.isNotEmpty ? match.first.id : null;
-  }
-
-  void updateCurrentWeek(int week) {
-    final totalWeeks = scheduleConfig.value.totalWeeks;
-    currentWeek.value = week.clamp(1, totalWeeks);
   }
 
   Future<void> clearAllData() async {

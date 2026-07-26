@@ -16,7 +16,6 @@ void main() {
       final provider = CourseProvider(database);
       var coursesChangedCount = 0;
       provider.onCoursesChanged = () => coursesChangedCount++;
-      final initialWeek = provider.currentWeek.value;
       final updatedOther = other.copyWith(
         semesterName: '已重命名的其他课表',
         semesterStartDate: _weeksAgo(5),
@@ -25,7 +24,6 @@ void main() {
       await provider.updateScheduleConfig(updatedOther);
 
       expect(provider.scheduleConfig.value, same(current));
-      expect(provider.currentWeek.value, initialWeek);
       expect(
         provider.allSchedules.value.singleWhere((item) => item.id == other.id),
         same(updatedOther),
@@ -54,7 +52,6 @@ void main() {
       await provider.updateScheduleConfig(updatedCurrent);
 
       expect(provider.scheduleConfig.value, same(updatedCurrent));
-      expect(provider.currentWeek.value, updatedCurrent.getCurrentWeek());
       expect(
         provider.allSchedules.value.singleWhere(
           (item) => item.id == current.id,

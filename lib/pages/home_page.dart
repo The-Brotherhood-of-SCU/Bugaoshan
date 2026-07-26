@@ -8,7 +8,6 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
-import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/services/auth/auth_coordinator.dart';
@@ -25,7 +24,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   int _currentIndex = 0;
-  final _courseProvider = getIt<CourseProvider>();
 
   @override
   void initState() {
@@ -135,7 +133,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                           selectedIndex: _currentIndex,
                           onDestinationSelected: (index) {
                             setState(() => _currentIndex = index);
-                            _onTabSelected(visibleIds[index]);
                           },
                           labelType: NavigationRailLabelType.all,
                           destinations: visibleIds
@@ -159,7 +156,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                           selectedIndex: _currentIndex,
                           onDestinationSelected: (index) {
                             setState(() => _currentIndex = index);
-                            _onTabSelected(visibleIds[index]);
                           },
                           destinations: visibleIds
                               .map(
@@ -227,13 +223,5 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       label: config.dockLabel(l10n),
       tooltip: '',
     );
-  }
-
-  void _onTabSelected(String id) {
-    if (id == dockIdCourse) {
-      _courseProvider.updateCurrentWeek(
-        _courseProvider.scheduleConfig.value.getCurrentWeek(),
-      );
-    }
   }
 }
