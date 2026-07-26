@@ -30,6 +30,7 @@ class _TopBar extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final config = getIt<CourseProvider>().scheduleConfig.value;
     final isCurrentCalendarWeek = visibleWeek == config.getCurrentWeek();
+    final isInVacation = config.getCurrentWeek() > config.totalWeeks;
 
     final now = DateTime.now();
     final dateStr = '${now.year}/${now.month}/${now.day}';
@@ -69,11 +70,9 @@ class _TopBar extends StatelessWidget {
                       ),
                     ),
                     SizedBox(
-                      width: isViewingVacation ? 80 : 60,
+                      width: isInVacation || isViewingVacation ? 80 : 60,
                       child: Text(
-                        isViewingVacation
-                            ? l10n.onVacation
-                            : l10n.currentWeek(week),
+                        isInVacation ? l10n.onVacation : l10n.currentWeek(week),
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.w500,
@@ -92,7 +91,7 @@ class _TopBar extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 3),
-                    if (isViewingVacation)
+                    if (isInVacation)
                       _VacationBadge()
                     else
                       _WeekBadge(
