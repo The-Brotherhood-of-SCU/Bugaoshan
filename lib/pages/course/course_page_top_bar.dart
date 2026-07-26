@@ -69,10 +69,15 @@ class _TopBar extends StatelessWidget {
                             : Theme.of(context).disabledColor,
                       ),
                     ),
-                    SizedBox(
-                      width: isInVacation || isViewingVacation ? 80 : 60,
+                    const SizedBox(width: 5),
+                    AnimatedSize(
+                      duration:
+                          appConfigService.cardSizeAnimationDuration.value,
+                      curve: appCurve,
                       child: Text(
-                        isInVacation ? l10n.onVacation : l10n.currentWeek(week),
+                        isViewingVacation
+                            ? l10n.onVacation
+                            : l10n.currentWeek(week),
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.w500,
@@ -80,6 +85,7 @@ class _TopBar extends StatelessWidget {
                         ),
                       ),
                     ),
+                    const SizedBox(width: 5),
                     GestureDetector(
                       onTap: canGoRight ? onNextWeek : null,
                       child: Icon(
