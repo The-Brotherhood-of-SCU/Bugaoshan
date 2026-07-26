@@ -758,6 +758,14 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
             Flexible(child: Text(l10n.scuLoginDisclaimerPrivacy, style: style)),
           ],
         ),
+        const SizedBox(height: 2),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('· ', style: bulletStyle),
+            Flexible(child: Text('密码为统一身份认证密码，非教务处密码', style: style)),
+          ],
+        ),
       ],
     );
   }

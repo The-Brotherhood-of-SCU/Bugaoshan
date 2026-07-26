@@ -153,7 +153,11 @@ class _LoginStatusCardState extends State<LoginStatusCard> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                '${localizations.scuLogin}${_username != null ? ' (${_privacyHidden ? _maskUsername(_username!) : _username})' : ''}',
+                                _username != null
+                                    ? (_privacyHidden
+                                          ? _maskUsername(_username!)
+                                          : _username!)
+                                    : localizations.scuLogin,
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant,
                                 ),
