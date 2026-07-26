@@ -45,6 +45,18 @@ class _CourseGridState extends State<CourseGrid> {
   int? _selectedEmptySection;
   final appConfig = getIt<AppConfigProvider>();
 
+  /// build 里读到的所有 AppConfig 字段。提成字段避免每帧新建 merge 导致
+  /// ListenableBuilder 反复解绑重绑订阅。
+  late final Listenable _configListenable = Listenable.merge([
+    appConfig.showCourseGrid,
+    appConfig.courseRowHeight,
+    appConfig.showWeekend,
+    appConfig.showNonCurrentWeekCourses,
+    // build 里读了 backgroundImagePath（hasBackground），必须一并订阅，
+    // 否则设置/清除背景图后网格样式不会刷新。
+    appConfig.backgroundImagePath,
+  ]);
+
   static const double _sectionWidth = 35;
 
   void _handleEmptyTap(int day, int section) {
@@ -75,12 +87,7 @@ class _CourseGridState extends State<CourseGrid> {
     final sections = widget.config.sectionsPerDay;
 
     return ListenableBuilder(
-      listenable: Listenable.merge([
-        appConfig.showCourseGrid,
-        appConfig.courseRowHeight,
-        appConfig.showWeekend,
-        appConfig.showNonCurrentWeekCourses,
-      ]),
+      listenable: _configListenable,
       builder: (context, _) {
         final showWeekend =
             widget.showWeekendOverride ?? appConfig.showWeekend.value;
