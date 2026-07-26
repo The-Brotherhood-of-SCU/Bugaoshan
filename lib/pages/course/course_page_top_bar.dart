@@ -32,8 +32,8 @@ class _TopBar extends StatelessWidget {
     final isCurrentCalendarWeek = visibleWeek == config.getCurrentWeek();
     final isInVacation = config.getCurrentWeek() > config.totalWeeks;
 
-    final now = DateTime.now();
-    final dateStr = '${now.year}/${now.month}/${now.day}';
+    final weekDate = config.dateForCourseDay(visibleWeek, DateTime.monday);
+    final dateStr = '${weekDate.year}/${weekDate.month}/${weekDate.day}';
     final canGoLeft = isViewingVacation || week > 1;
     final canGoRight = !isViewingVacation && week <= totalWeeks;
 

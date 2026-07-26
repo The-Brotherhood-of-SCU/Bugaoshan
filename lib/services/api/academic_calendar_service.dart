@@ -162,6 +162,37 @@ class AcademicCalendarService {
     }
   }
 
+  /// 根据课表名称从校历中匹配完整的学期信息。
+  /// 匹配逻辑与 [findTotalWeeksFromCalendar] 一致，但返回整个 [AcademicCalendarSemester]。
+  static Future<AcademicCalendarSemester?> findMatchingSemester(
+    String scheduleName,
+  ) async {
+    try {
+      final data = await loadBundledCalendar();
+
+      final yearMatch = RegExp(r'(\d{4})-(\d{4})').firstMatch(scheduleName);
+      if (yearMatch == null) return null;
+
+      final academicYear = '${yearMatch.group(1)}-${yearMatch.group(2)}';
+      final isSpring = scheduleName.contains('春');
+      final isFall = scheduleName.contains('秋');
+
+      for (final semester in data.semesters) {
+        if (semester.name.contains(academicYear)) {
+          if (isSpring && semester.name.contains('春')) return semester;
+          if (isFall && semester.name.contains('秋')) return semester;
+          if (!isSpring && !isFall) return semester;
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint(
+        'AcademicCalendarService: failed to find matching semester: $e',
+      );
+      return null;
+    }
+  }
+
   CalendarExportPayload genExportPayload(AcademicCalendarSemester semester) {
     final events = <CalendarEventPayload>[];
     for (final event in semester.events) {
