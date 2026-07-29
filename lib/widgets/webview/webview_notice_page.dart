@@ -2,7 +2,6 @@ import 'package:bugaoshan/pages/campus/downloads/shared_notice_downloads.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
-import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -198,7 +197,7 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
 
   @override
   Widget build(BuildContext context) {
-    if (defaultTargetPlatform == TargetPlatform.linux || OS.isHarmony) {
+    if (OS.isHarmony) {
       return WebViewUnsupportedPage(title: widget.title);
     }
     return _buildWebViewPage(context);
