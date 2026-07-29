@@ -67,6 +67,23 @@ jobs:
             --dart-define=GIT_COMMIT_DATE=${{ steps.setup.outputs.GIT_COMMIT_DATE }} \
             --dart-define=BUILD_TIME=${{ steps.setup.outputs.BUILD_TIME }}
 
+      - name: Verify system WPE linkage
+        run: |
+          plugin=build/linux/x64/release/bundle/lib/libflutter_inappwebview_linux_plugin.so
+          test -f "$plugin"
+
+          shopt -s nullglob
+          bundled_wpe=(
+            build/linux/x64/release/bundle/lib/libWPEWebKit-*.so.*
+            build/linux/x64/release/bundle/lib/libWPEBackend-fdo-*.so.*
+            build/linux/x64/release/bundle/lib/libwpe-*.so.*
+          )
+          test "${#bundled_wpe[@]}" -eq 0
+
+          linkage="$(ldd "$plugin")"
+          test "$linkage" = "${linkage/not found/}"
+          test "$linkage" != "${linkage/libWPEWebKit-2.0.so.1/}"
+
       - name: Archive Linux Release
         run: tar -czvf linux-release.tar.gz -C build/linux/x64/release/bundle .
 
