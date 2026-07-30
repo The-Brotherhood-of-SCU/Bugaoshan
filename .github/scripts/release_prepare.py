@@ -43,6 +43,14 @@ def prepare_release_files(version, root=Path(".")):
     shutil.copy2(linux_src, root / f"bugaoshan_{version}_linux_x64.tar.gz")
     print("Copied linux artifact")
 
+    macos_src = root / "macos-dmg" / "Bugaoshan.dmg"
+    shutil.copy2(macos_src, root / f"bugaoshan_{version}_macos_arm64.dmg")
+    print("Copied macOS artifact")
+
+    ios_src = root / "ios-ipa" / "Bugaoshan.ipa"
+    shutil.copy2(ios_src, root / f"bugaoshan_{version}_ios.ipa")
+    print("Copied iOS artifact")
+
 
 def main():
     version = os.environ.get("VERSION", "")

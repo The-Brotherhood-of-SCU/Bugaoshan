@@ -1,0 +1,141 @@
+name: Build macOS
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Tag name"
+        required: false
+        type: string
+    secrets:
+      MACOS_DEVELOPER_ID_CERTIFICATES_FILE_BASE64:
+        required: true
+      MACOS_DEVELOPER_ID_CERTIFICATES_PASSWORD:
+        required: true
+      MACOS_NOTARY_API_PRIVATE_KEY:
+        required: true
+
+jobs:
+  build-macos:
+    name: macOS DMG
+    runs-on: macos-15
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup build environment
+        id: setup
+        uses: ./.github/actions/setup
+        with:
+          version: ${{ inputs.version }}
+
+      - name: Resolve Apple version
+        id: apple_version
+        env:
+          RAW_VERSION: ${{ inputs.version || github.ref_name }}
+        run: |
+          version="${RAW_VERSION#v}"
+          build_name="${version%%-*}"
+          if [[ ! "$build_name" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid Apple version: $RAW_VERSION" >&2
+            exit 64
+          fi
+          echo "build_name=$build_name" >> "$GITHUB_OUTPUT"
+          echo "build_number=${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
+
+      - name: Validate macOS signing configuration
+        env:
+          MACOS_NOTARY_API_KEY_ID: ${{ vars.MACOS_NOTARY_API_KEY_ID }}
+          MACOS_NOTARY_ISSUER_ID: ${{ vars.MACOS_NOTARY_ISSUER_ID }}
+        run: |
+          for name in MACOS_NOTARY_API_KEY_ID MACOS_NOTARY_ISSUER_ID; do
+            test -n "${!name}" || {
+              echo "Missing repository variable $name" >&2
+              exit 78
+            }
+          done
+
+      - name: Import Developer ID certificate
+        uses: apple-actions/import-codesign-certs@v7
+        with:
+          p12-file-base64: ${{ secrets.MACOS_DEVELOPER_ID_CERTIFICATES_FILE_BASE64 }}
+          p12-password: ${{ secrets.MACOS_DEVELOPER_ID_CERTIFICATES_PASSWORD }}
+
+      - name: Download Developer ID provisioning profile
+        uses: apple-actions/download-provisioning-profiles@v4
+        with:
+          bundle-id: io.github.thebrotherhoodofscu.bugaoshan
+          profile-type: MAC_APP_DIRECT
+          issuer-id: ${{ vars.MACOS_NOTARY_ISSUER_ID }}
+          api-key-id: ${{ vars.MACOS_NOTARY_API_KEY_ID }}
+          api-private-key: ${{ secrets.MACOS_NOTARY_API_PRIVATE_KEY }}
+
+      - name: Generate macOS build configuration
+        run: |
+          flutter build macos --release --config-only \
+            --build-name=${{ steps.apple_version.outputs.build_name }} \
+            --build-number=${{ steps.apple_version.outputs.build_number }} \
+            --dart-define=GIT_TAG=${{ steps.setup.outputs.GIT_TAG }} \
+            --dart-define=GIT_COMMIT=${{ steps.setup.outputs.GIT_COMMIT }} \
+            --dart-define=GIT_COMMIT_DATE=${{ steps.setup.outputs.GIT_COMMIT_DATE }} \
+            --dart-define=BUILD_TIME=${{ steps.setup.outputs.BUILD_TIME }}
+
+      - name: Archive signed macOS app
+        run: |
+          xcodebuild archive \
+            -workspace macos/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -destination 'generic/platform=macOS' \
+            -archivePath build/macos/Bugaoshan.xcarchive \
+            ARCHS=arm64 \
+            ONLY_ACTIVE_ARCH=NO \
+            ENABLE_HARDENED_RUNTIME=YES \
+            OTHER_CODE_SIGN_FLAGS='--timestamp --options=runtime'
+
+      - name: Create signed DMG
+        env:
+          DMG_PATH: build/macos/Bugaoshan.dmg
+          APP_PATH: build/macos/Bugaoshan.xcarchive/Products/Applications/Bugaoshan.app
+        run: |
+          test -d "$APP_PATH" || {
+            echo "Missing archived app at $APP_PATH" >&2
+            exit 66
+          }
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+          mkdir -p build/macos/dmg-root
+          ditto "$APP_PATH" build/macos/dmg-root/Bugaoshan.app
+          ln -s /Applications build/macos/dmg-root/Applications
+          hdiutil create \
+            -volname Bugaoshan \
+            -srcfolder build/macos/dmg-root \
+            -ov -format UDZO "$DMG_PATH"
+          codesign --force --timestamp \
+            --sign 'Developer ID Application' "$DMG_PATH"
+
+      - name: Notarize and staple DMG
+        env:
+          DMG_PATH: build/macos/Bugaoshan.dmg
+          MACOS_NOTARY_API_KEY_ID: ${{ vars.MACOS_NOTARY_API_KEY_ID }}
+          MACOS_NOTARY_ISSUER_ID: ${{ vars.MACOS_NOTARY_ISSUER_ID }}
+          MACOS_NOTARY_API_PRIVATE_KEY: ${{ secrets.MACOS_NOTARY_API_PRIVATE_KEY }}
+        run: |
+          api_key_path="$RUNNER_TEMP/AuthKey_${MACOS_NOTARY_API_KEY_ID}.p8"
+          printf '%s' "$MACOS_NOTARY_API_PRIVATE_KEY" > "$api_key_path"
+          chmod 600 "$api_key_path"
+          xcrun notarytool submit "$DMG_PATH" \
+            --key "$api_key_path" \
+            --key-id "$MACOS_NOTARY_API_KEY_ID" \
+            --issuer "$MACOS_NOTARY_ISSUER_ID" \
+            --wait
+          xcrun stapler staple "$DMG_PATH"
+          xcrun stapler validate "$DMG_PATH"
+
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: build/macos/Bugaoshan.dmg
+          if-no-files-found: error

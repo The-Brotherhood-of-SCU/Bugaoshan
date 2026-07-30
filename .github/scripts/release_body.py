@@ -12,8 +12,10 @@ def main():
 - Android: [arm64-Apk]({repo}/releases/download/v{version}/bugaoshan_{version}_arm64-v8a.apk)
 - Windows: [x64 Zip]({repo}/releases/download/v{version}/bugaoshan_{version}_windows_x64.zip)
 - Linux: [x64 Tar.gz]({repo}/releases/download/v{version}/bugaoshan_{version}_linux_x64.tar.gz)
+- macOS: [Apple Silicon DMG]({repo}/releases/download/v{version}/bugaoshan_{version}_macos_arm64.dmg)
+- iOS: [Signed IPA]({repo}/releases/download/v{version}/bugaoshan_{version}_ios.ipa)（用于归档/TestFlight，不能直接侧载）
 
-> 💡 **Note**: 当前项目优先保障 Android 端的稳定与体验。 Windows,Linux 版本可能存在部分兼容性或体验问题。
+> 💡 **Note**: 当前项目优先保障 Android 和 Apple 平台的稳定与体验。Windows、Linux 版本可能存在部分兼容性或体验问题。
 
 {changelog}
 

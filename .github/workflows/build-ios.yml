@@ -1,0 +1,157 @@
+name: Build iOS
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Tag name"
+        required: false
+        type: string
+      upload_testflight:
+        description: "Upload the signed IPA to TestFlight"
+        required: false
+        default: false
+        type: boolean
+    secrets:
+      APPSTORE_CERTIFICATES_FILE_BASE64:
+        required: true
+      APPSTORE_CERTIFICATES_PASSWORD:
+        required: true
+      APPSTORE_API_PRIVATE_KEY:
+        required: true
+
+jobs:
+  build-ios:
+    name: iOS IPA
+    runs-on: macos-15
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup build environment
+        id: setup
+        uses: ./.github/actions/setup
+        with:
+          version: ${{ inputs.version }}
+
+      - name: Resolve Apple version
+        id: apple_version
+        env:
+          RAW_VERSION: ${{ inputs.version || github.ref_name }}
+        run: |
+          version="${RAW_VERSION#v}"
+          build_name="${version%%-*}"
+          if [[ ! "$build_name" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid Apple version: $RAW_VERSION" >&2
+            exit 64
+          fi
+          echo "build_name=$build_name" >> "$GITHUB_OUTPUT"
+          echo "build_number=${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
+
+      - name: Validate App Store Connect configuration
+        env:
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+          APPSTORE_API_KEY_ID: ${{ vars.APPSTORE_API_KEY_ID }}
+          APPSTORE_ISSUER_ID: ${{ vars.APPSTORE_ISSUER_ID }}
+          IOS_APP_PROVISIONING_PROFILE_NAME: ${{ vars.IOS_APP_PROVISIONING_PROFILE_NAME }}
+          IOS_WIDGET_PROVISIONING_PROFILE_NAME: ${{ vars.IOS_WIDGET_PROVISIONING_PROFILE_NAME }}
+        run: |
+          for name in APPLE_TEAM_ID APPSTORE_API_KEY_ID APPSTORE_ISSUER_ID \
+            IOS_APP_PROVISIONING_PROFILE_NAME \
+            IOS_WIDGET_PROVISIONING_PROFILE_NAME; do
+            test -n "${!name}" || {
+              echo "Missing repository variable $name" >&2
+              exit 78
+            }
+          done
+
+      - name: Import Apple Distribution certificate
+        uses: apple-actions/import-codesign-certs@v7
+        with:
+          p12-file-base64: ${{ secrets.APPSTORE_CERTIFICATES_FILE_BASE64 }}
+          p12-password: ${{ secrets.APPSTORE_CERTIFICATES_PASSWORD }}
+
+      - name: Download app provisioning profile
+        id: app_profiles
+        uses: apple-actions/download-provisioning-profiles@v4
+        with:
+          bundle-id: io.github.thebrotherhoodofscu.bugaoshan
+          profile-type: IOS_APP_STORE
+          issuer-id: ${{ vars.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ vars.APPSTORE_API_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+
+      - name: Download widget provisioning profile
+        id: widget_profiles
+        uses: apple-actions/download-provisioning-profiles@v4
+        with:
+          bundle-id: io.github.thebrotherhoodofscu.bugaoshan.CourseWidget
+          profile-type: IOS_APP_STORE
+          issuer-id: ${{ vars.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ vars.APPSTORE_API_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+
+      - name: Build unsigned iOS archive
+        run: |
+          flutter build ipa --release --no-codesign \
+            --build-name=${{ steps.apple_version.outputs.build_name }} \
+            --build-number=${{ steps.apple_version.outputs.build_number }} \
+            --dart-define=GIT_TAG=${{ steps.setup.outputs.GIT_TAG }} \
+            --dart-define=GIT_COMMIT=${{ steps.setup.outputs.GIT_COMMIT }} \
+            --dart-define=GIT_COMMIT_DATE=${{ steps.setup.outputs.GIT_COMMIT_DATE }} \
+            --dart-define=BUILD_TIME=${{ steps.setup.outputs.BUILD_TIME }}
+
+      - name: Create manual signing export options
+        env:
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+          APP_PROFILES_JSON: ${{ steps.app_profiles.outputs.profiles }}
+          WIDGET_PROFILES_JSON: ${{ steps.widget_profiles.outputs.profiles }}
+          IOS_APP_PROVISIONING_PROFILE_NAME: ${{ vars.IOS_APP_PROVISIONING_PROFILE_NAME }}
+          IOS_WIDGET_PROVISIONING_PROFILE_NAME: ${{ vars.IOS_WIDGET_PROVISIONING_PROFILE_NAME }}
+        run: |
+          python3 .github/scripts/create_ios_export_options.py \
+            --team-id "$APPLE_TEAM_ID" \
+            --app-profiles-json "$APP_PROFILES_JSON" \
+            --widget-profiles-json "$WIDGET_PROFILES_JSON" \
+            --app-profile-name "$IOS_APP_PROVISIONING_PROFILE_NAME" \
+            --widget-profile-name "$IOS_WIDGET_PROVISIONING_PROFILE_NAME" \
+            --output "$RUNNER_TEMP/ExportOptions.plist"
+
+      - name: Export signed IPA
+        run: |
+          mkdir -p ios-release
+          xcodebuild -exportArchive \
+            -archivePath build/ios/archive/Runner.xcarchive \
+            -exportPath ios-release \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist"
+
+      - name: Normalize IPA artifact name
+        run: |
+          ipa_path="$(find ios-release -maxdepth 1 -name '*.ipa' -print -quit)"
+          test -n "$ipa_path" || {
+            echo "xcodebuild did not export an IPA" >&2
+            exit 66
+          }
+          if [[ "$ipa_path" != "ios-release/Bugaoshan.ipa" ]]; then
+            mv "$ipa_path" ios-release/Bugaoshan.ipa
+          fi
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          path: ios-release/Bugaoshan.ipa
+          if-no-files-found: error
+
+      - name: Upload to TestFlight
+        if: inputs.upload_testflight
+        uses: apple-actions/upload-testflight-build@v4
+        with:
+          app-path: ios-release/Bugaoshan.ipa
+          issuer-id: ${{ vars.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ vars.APPSTORE_API_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
+          release-notes: Bugaoshan ${{ steps.apple_version.outputs.build_name }} 自动构建，详细变更见 GitHub Release。
+          wait-for-processing: "true"
