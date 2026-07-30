@@ -17,4 +17,6 @@ flatpak run org.flatpak.Builder \
 ```
 
 The WPE WebKit modules are built before the Flutter application so the notice
-pages retain their native Linux WebView implementation.
+pages retain their native Linux WebView implementation. The WebView plugin
+links to these libraries under `/app`; WPE is not duplicated in the Flutter
+application bundle.
