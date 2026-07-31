@@ -1,4 +1,4 @@
-package io.github.the_brotherhood_of_scu.bugaoshan.widget
+package io.github.the_brotherhood_of_scu.bugaoshan
 
 import android.content.ComponentName
 import android.content.Context
@@ -37,8 +37,10 @@ import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.the_brotherhood_of_scu.bugaoshan.MainActivity
 import io.github.the_brotherhood_of_scu.bugaoshan.R
+import io.github.the_brotherhood_of_scu.bugaoshan.widget.WidgetAlarmManager
+import io.github.the_brotherhood_of_scu.bugaoshan.widget.WidgetUpdater
+import io.github.the_brotherhood_of_scu.bugaoshan.widget.loadCoursesForSelectedSchedule
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
