@@ -8,7 +8,7 @@ This file provides guidance to AI coding agents (e.g. Claude Code, Kimi Code) wh
 
 The name comes from a landmark on SCU's Jiang'an campus — "Bugaoshan" is a play on words meaning "not a tall mountain" and "The Brotherhood of SCU" sounds similar.
 
-> **⚠️ Flutter 版本要求**: 本项目需要 **Flutter >= 3.44**（Dart SDK >= 3.10.4）才能正常编译。CI uses Flutter **3.44.2** stable. 详情见 `CONTRIBUTING.md` 与 `.github/actions/setup/action.yml`.
+> **⚠️ Flutter 版本要求**: 本项目需要 **Flutter >= 3.44**（Dart SDK >= 3.10.4）才能正常编译。CI uses Flutter **3.44.6** stable. 详情见 `CONTRIBUTING.md` 与 `.github/actions/setup/action.yml`.
 
 ## Build & Run
 
@@ -93,9 +93,10 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 ├── local/                      # local-only helper assets (e.g. zikzak_inappwebview_windows)
 ├── doc/                        # API documentation
 │   └── api/
-├── packaging/                  # Linux packaging (flatpak, debian)
-│   ├── flatpak/
-│   └── linux/
+├── packaging/                  # Linux packaging and shared desktop metadata
+│   ├── aur/                    # future PKGBUILD requirements (not implemented)
+│   ├── flatpak/                # source + generated Flatpak manifests
+│   └── linux/                  # shared desktop/AppStream/icon assets
 ├── tool/                       # Icon generation scripts
 │   ├── generate_adaptive_old_icon.py
 │   └── generate_icons.dart
@@ -125,19 +126,25 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 ├── test/                       # Unit + widget tests
 ├── test_driver/                # integration driver
 ├── docs/
+│   ├── README.md                # engineering documentation index
+│   ├── architecture/           # current implementation architecture
+│   │   ├── authentication.md
+│   │   ├── linux-distribution.md
+│   │   └── notice-webview.md
 │   └── decisions/              # Architecture Decision Records (ADRs)
-│       ├── auth-architecture.md
-│       ├── auth-module-refactor.md
-│       ├── course-display-settings-domain.md
-│       └── notice-webview-architecture.md
+│       ├── README.md
+│       ├── 0001-use-webview-and-js-injection-for-notices.md
+│       ├── 0002-separate-subsystem-authentication.md
+│       ├── 0003-make-course-display-settings-global.md
+│       └── 0004-use-distribution-wpe-on-linux.md
 └── .github/
-    ├── actions/setup/          # composite action: install Flutter 3.44.2, gen-l10n, git metadata
+    ├── actions/setup/          # composite action: install Flutter 3.44.6, gen-l10n, git metadata
     ├── scripts/                # Python release automation
     │   ├── git_meta.py             # export GIT_TAG / GIT_COMMIT / GIT_COMMIT_DATE / BUILD_TIME
     │   ├── release_tags.py         # resolve version + prev tag
     │   ├── release_changelog.py    # extract version section from CHANGELOG.md
     │   ├── release_body.py         # build the GitHub release markdown body
-    │   └── release_prepare.py      # rename APK/zip artifacts for upload
+    │   └── release_prepare.py      # rename APK/zip/tar artifacts for upload
     ├── workflows/
     │   ├── release.yml         # triggered by tags v*.*.* or manual dispatch
     │   ├── build-android.yml   # workflow_call → APK (split per ABI, obfuscated)
@@ -166,20 +173,20 @@ Two patterns coexist by design:
 
 ### Service Layer — Three-Layer Architecture
 
-Authoritative reference: `docs/decisions/auth-architecture.md`.
+Authoritative reference: `docs/architecture/authentication.md`.
 
 **Layer 3 — Unified Auth (single source of truth):**
-- **`ScuAuth`** (`lib/services/auth/scu_auth.dart`) — SCU 统一身份认证. Owns login, captcha fetch, `bindSession()` (SSO redirect chain via `CookieClient`), token persistence (`FlutterSecureStorage`), 1-hour TTL, auto-renewal, and the `_synchronizedRefresh` `Completer` mutex (N concurrent → 1 refresh). Exposes `state` (`AuthState` enum) and `onSessionExpired` callback. On refresh failure → `UnauthenticatedException`.
+- **`ScuAuth`** (`lib/services/auth/scu_auth.dart`) — SCU 统一身份认证. Owns login, captcha fetch, `bindSession()` (`session/save` via `CookieClient`), token/principal persistence (`FlutterSecureStorage`), 1-hour TTL, auto-renewal, and the `_synchronizedRefresh` `Completer` mutex (N concurrent → 1 refresh). Exposes `state` (`AuthState` enum) and `onSessionExpired` callback. On refresh failure → `UnauthenticatedException`. Subsystem SSO redirects do not live here.
 
 **Layer 2 — Subsystem Auth (one per backend):**
 - **`SubsystemAuth`** (`subsystem_auth.dart`) — abstract contract: `moduleId`, `dependencies`, `ensureAuthenticated()`, `invalidate()`.
 - **`SsoRelayAuth`** (`sso_relay_auth.dart`) — base class for SSOs that just need SCU's `CookieClient` + a redirect; used by `PayAppAuth` and `FitnessAuth`.
-- **`AuthCoordinator`** (`auth_coordinator.dart`) — after ScuAuth login, performs a parallel warm-up of all subsystem auths in dependency order (zhjw/wfw/fitness/ccyl layer-0 in parallel, then payapp after wfw).
-- **`ZhjwAuth`** — ZHJW SSO; delegates `getClient()` to `ScuAuth.getClient()`.
-- **`WfwAuth`** — micro-services; shares ScuAuth's `CookieClient`. Self-manages an internal `_ready` flag (not a simple proxy) so providers only see the user as "authenticated" after the session is actually bound.
+- **`AuthCoordinator`** (`auth_coordinator.dart`) — after ScuAuth login, schedules every subsystem immediately; each task recursively awaits only its declared dependencies (zhjw/wfw/fitness/ccyl can run in parallel, while payapp waits for wfw). Failures skip only downstream modules, and dependency cycles are rejected.
+- **`ZhjwAuth`** — obtains ScuAuth's `CookieClient`, then performs and caches the ZHJW JWT SSO.
+- **`WfwAuth`** — shares ScuAuth's `CookieClient`, visits the WFW home page to establish its domain session, and self-manages `_ready` so Providers do not fetch before that warm-up completes.
 - **`PayAppAuth`** — payapp OAuth warrant jump, depends on `WfwAuth`.
 - **`FitnessAuth`** — fitness test SSO jump.
-- **`CcylAuth`** — second-classroom OAuth token mgmt via `CcylOAuthService` (SCU → CCYL bridge).
+- **`CcylAuth`** — second-classroom OAuth token management via `CcylOAuthService` (SCU → CCYL bridge); binds the persisted token to the current SCU principal and rejects stale async login results.
 - **`CookieClient`** (`cookie_client.dart`) — domain-isolated cookie jar + manual `followRedirects()` collecting `Set-Cookie` per hop + `http.ClientException` retry with fresh `http.Client`.
 
 **Layer 1 — API Services (stateless HTTP tools):**
@@ -190,10 +197,10 @@ Authoritative reference: `docs/decisions/auth-architecture.md`.
 - **`CcylService`** (`lib/services/ccyl/ccyl_service.dart`) — CCYL static stateless data API.
 - **`BalanceQueryService`** (`lib/services/api/balance_query_service.dart`) — dorm balance data service (HTTP query methods + model classes; called inside `PayAppApiService._request()` so retry is handled by the parent, not by this service itself).
 
-Each API service follows the **`_request()` template** (internally calls `retryOnUnauthenticated` from `lib/services/api/api_request.dart`):
+ZHJW, WFW, and PayApp API services follow the **`_request()` template** (internally calls `retryOnUnauthenticated` from `lib/services/api/api_request.dart`):
 1. `getClient()` → 2. business HTTP → 3. on `UnauthenticatedException` → 4. `invalidate?.call()` + retry once → 5. still failing → propagate to the Provider (which converts to UI state).
 
-The CCYL service is special: its token expires via a *business* error code (`CcylException`), so `CcylApiService._retryOnCcylAuthError()` handles that path explicitly (invalidate → re-login → retry).
+The CCYL service is special: its token expires via an explicit business error code classified as `CcylAuthExpiredException`. `CcylApiService._retryOnCcylAuthError()` handles only that path (`recoverExpiredSession()` single-flight → retry once); ordinary `CcylException` failures are not replayed, which protects non-idempotent operations.
 
 ### Other Services
 
@@ -217,7 +224,7 @@ All auth-layer modules (`ScuAuth`, `CookieClient`, `AuthCoordinator`, `ZhjwAuth`
 - Ring buffer caps at 1000 entries (oldest evicted).
 - Each entry has timestamp + `AuthLogLevel` (`debug` / `info` / `warn` / `error`) + `tag` (e.g. `ScuAuth`, `CookieClient`, `ZhjwAuth`) + redacted message.
 - `AuthLogRedactor.apply()` strips `"access_token":"…"`, `"password":"…"`, `Bearer <token>` and truncates `?code=` values before storage, so logs are safe to share via the Dev page "Save" button.
-- `tag` convention is the class name (uppercase) so the Viewer's tag dropdown naturally groups events by module.
+- `tag` is a stable class/module identifier (for example `ScuAuth`, `CookieClient`, or `PAYAPP`) so the Viewer's dropdown groups events by source.
 - `debug` lines are only echoed to console in `kDebugMode`; production builds stay silent.
 - `AuthLogger` is a `ChangeNotifier` — Dev page's `AuthLogTile` and `AuthLogViewerPage` use `ListenableBuilder` for live updates.
 - Optional file sink (`enableFileSink`) writes to `getApplicationDocumentsDirectory()/auth.log`; default off to avoid disk I/O for normal users. The Dev page "Save" button is the recommended path for capturing a snapshot.
@@ -230,7 +237,7 @@ Dev page (`lib/pages/dev/auth_log/`) gains:
 
 ### Notice Pages
 
-Three notice sources, each in its own subdirectory under `lib/pages/campus/notice/` (see `docs/decisions/notice-webview-architecture.md`):
+Three notice sources, each in its own subdirectory under `lib/pages/campus/notice/` (see `docs/architecture/notice-webview.md`):
 
 - **`jwc/`** — `jwc.scu.edu.cn` 教务处, beautified by `assets/js/jwc_notice_beautify.js`.
 - **`xgb/`** — `xgb.scu.edu.cn` 党委学工部, beautified by `party_notice_beautify.js`.
@@ -243,13 +250,13 @@ Shared downloads module lives in `lib/pages/campus/downloads/`:
 - `attachments_sheet.dart` — `showAttachmentsSheet()` modal with download/share/open.
 - `file_utils.dart` — `kNoticeAttachmentDir`, `kPartyAttachmentDir`, `kTuanweiAttachmentDir`, `downloadFile()`, `checkDownloadedFile()`.
 - `shared_notice_downloads.dart` — shared notice download logic.
-- `notice_downloaded_page.dart` — tabbed management for both sources' downloaded files.
+- `notice_downloaded_page.dart` — tabbed management for all three sources' downloaded files.
 
 ### Providers
 
 | Provider | Role |
 |---|---|
-| `ScuAuthProvider` | 认证控制器；直接持有 `ScuAuth` + `CcylAuth`. Manages SCU login / logout / auto-login (OCR captcha, up to 5 retries) / credential persistence. |
+| `ScuAuthProvider` | 认证控制器；直接持有 `ScuAuth`、`CcylAuth` 和 `AuthCoordinator`. Manages SCU login / logout / auto-login（服务端返回 `invalid_captcha` 时最多 5 次）/ credential persistence，并在登录后后台预热子系统。 |
 | `UserInfoProvider` | 监听 `WfwAuth`，登录后自动 fetch 用户信息（realname/number）和标签（图书借阅 / 校园卡 / 网费），登出 clear. |
 | `GradesProvider` | Holds `ZhjwApiService`; fetches scheme & passing scores (session-expired retry handled by the API service layer). Caches grades to SharedPreferences. |
 | `CourseProvider` | 课表 CRUD via `DatabaseService`. |
@@ -265,7 +272,7 @@ Shared downloads module lives in `lib/pages/campus/downloads/`:
 
 ### Key Patterns
 
-- **Session expiry** — `ScuAuth.getClient()` checks 1-hour TTL, calls `_synchronizedRefresh()` on expiry. Refresh failure → `onSessionExpired` callback → `SessionExpiredListener` shows a global SnackBar with "前往登录" action (5 s debounce). API Services wrap calls in `retryOnUnauthenticated(getClient, fn)` to retry once on `UnauthenticatedException`. Business providers catch `UnauthenticatedException` / `ServiceException` for UI state.
+- **Session expiry** — `ScuAuth.getClient()` checks 1-hour TTL, calls `_synchronizedRefresh()` on expiry. Refresh failure → `onSessionExpired` callback → `SessionExpiredListener` shows a global SnackBar with "前往登录" action (5 s debounce). ZHJW/WFW/PayApp API Services wrap calls in `retryOnUnauthenticated(getClient, fn)` to retry once on `UnauthenticatedException`; CCYL only retries `CcylAuthExpiredException`. Business providers catch final exceptions for UI state.
 - **Multiple schedules** — Courses are stored in a single SQLite `courses` table, filtered by `schedule_id`. `DatabaseService.switchSchedule()` updates the current ID and refreshes the in-memory cache.
 - **Responsive dialogs** — `popupOrNavigate(context, page)` in `lib/widgets/route/router_utils.dart`: dialog at width/2 on tablets/landscape, dialog at 2/3 w+h on big portrait, full-page push on phones. Falls back to `Navigator.push` if already inside a popup (`PopupContext.of(context)`).
 - **`logicRootContext`** — global getter `navigatorKey.currentContext!` in `router_utils.dart`. Use when you need a `BuildContext` outliving the current widget — e.g. after `Navigator.pop(context)` the local `context` is disposed, so capture `final rootCtx = logicRootContext; Navigator.pop(context); popupOrNavigate(rootCtx, ...)`.
@@ -308,10 +315,10 @@ Always run `dart format` (the repo's pre-commit hook enforces this on staged `.d
 
 GitHub Actions:
 
-- **`release.yml`** — triggered by tags `v*.*.*` (or `workflow_dispatch`). Calls `build-android` and `build-windows` (currently **does not** invoke `build-linux`), then runs the Python release scripts and publishes to GitHub Releases via `softprops/action-gh-release@v2`. Prerelease tags (containing `-`) are flagged as pre-releases.
+- **`release.yml`** — triggered by tags `v*.*.*` (or `workflow_dispatch`). Calls Android, Windows, and Linux builds, then runs the Python release scripts and publishes all three platforms via `softprops/action-gh-release@v2`. Prerelease tags (containing `-`) are flagged as pre-releases.
 - **`build-android.yml`** — Ubuntu, JDK 21, decodes keystore from `secrets.KEYSTORE_BASE64`, writes `android/key.properties`, builds **split-per-ABI** release APK with `--obfuscate --split-debug-info=build/app/outputs/symbols`.
 - **`build-windows.yml`** — Windows runner, archives `build\windows\x64\runner\Release\*` into `windows-release.zip` via `Compress-Archive`.
-- **`build-linux.yml`** — Ubuntu + `debian:trixie` container, builds `libwpewebkit` deps, `tar -czvf` of the bundle.
+- **`build-linux.yml`** — Ubuntu runner + `debian:sid` container; installs system WPE development packages, verifies the Flutter bundle contains the WebView plugin but no WPE copies, then creates the x64 tar.gz.
 
 ### Release helpers (`.claude/commands/`)
 
@@ -327,13 +334,13 @@ The auto-changelog flow:
 
 ## Notable Implementation Details
 
-- `CookieClient` (`lib/services/auth/cookie_client.dart`) — 按域名隔离 cookie，发送时只带当前请求域的 cookie. `followRedirects()` 手动跟随重定向并收集每跳的 Set-Cookie. 被 `ScuAuth.bindSession()` 用于执行 SSO 跳转链.
+- `CookieClient` (`lib/services/auth/cookie_client.dart`) — 按域名隔离 cookie，发送时只带当前请求域的 cookie. `followRedirects()` 手动跟随重定向并收集每跳的 Set-Cookie；子系统 Auth 用它执行各自的 SSO 跳转链，`ScuAuth.bindSession()` 只负责 `session/save`.
 - `_request()` 模板方法 — 业务方只调 `await apiService.fetchXxx()`,不碰 token/cookie/重试细节.
 - `SessionExpiredListener` (`lib/widgets/common/session_expired_listener.dart`) — 监听 `ScuAuth.onSessionExpired`,全局弹 SnackBar 带「前往登录」action (5 秒防抖).
 - 成绩刷新失败但 `sessionExpired` 时保留 SharedPreferences 缓存,并登出用户.
 - CI 顺序: `build_runner` (代码生成) → `flutter gen-l10n` (代码生成) → `flutter build` —— 代码生成必须先于本地化生成.
 
-- 自动登录失败最多重试 5 次,使用 scu_ocr_lite 纯 Dart OCR 识别验证码.
+- 自动登录使用 scu_ocr_lite 纯 Dart OCR 识别验证码；仅服务端返回 `invalid_captcha` 时最多重试 5 次.
 - 桌面端(`isDesktopPlatform = Windows || Linux || macOS`) 在 `main.dart` 中初始化 `sqflite_common_ffi`、恢复窗口状态、清理旧的安装包.
 - Pre-commit hook (`.githooks/pre-commit`) 对暂存 `.dart` 文件执行 `dart format`. 克隆后需手动链接/复制到 `.git/hooks/`(详见 `CONTRIBUTING.md`).
 - 国内开发者建议设置 Pub 镜像 (`PUB_HOSTED_URL` + `FLUTTER_STORAGE_BASE_URL`),否则 `pubspec.lock` 会切到国际源并产生无关 diff.
@@ -361,4 +368,4 @@ The auto-changelog flow:
 
 ## Platform Support
 
-`flutter_launcher_icons` 为所有 6 个平台生成图标;`flutter_secure_storage` 在所有平台都可用;`sqflite_common_ffi` 处理桌面端 SQLite. UI 通过 `LayoutBuilder`/`MediaQuery` 适配手机/平板/桌面. 主 release pipeline(参见 `release.yml`)目前只打包 **Android (split-per-ABI APK)** 和 **Windows (zip)**;Linux 也有专门的 `build-linux.yml` 但未被 release.yml 调用 —— 新增发布平台时务必同时更新 `release.yml` 与 `release_prepare.py`.
+`flutter_launcher_icons` 为所有 6 个平台生成图标;`flutter_secure_storage` 在所有平台都可用;`sqflite_common_ffi` 处理桌面端 SQLite. UI 通过 `LayoutBuilder`/`MediaQuery` 适配手机/平板/桌面. 主 release pipeline(参见 `release.yml`)打包 **Android (split-per-ABI APK)**、**Windows (zip)** 和 **Linux x64 (tar.gz)**. Linux 分发与 WPE 边界见 `docs/architecture/linux-distribution.md`;新增发布平台时务必同时更新 `release.yml`、`release_prepare.py` 和发布正文.
