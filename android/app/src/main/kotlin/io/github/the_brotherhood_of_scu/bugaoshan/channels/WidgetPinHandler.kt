@@ -5,9 +5,9 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.os.Build
 import android.util.Log
-import io.github.the_brotherhood_of_scu.bugaoshan.widget.CourseWidgetReceiverLarge
-import io.github.the_brotherhood_of_scu.bugaoshan.widget.CourseWidgetReceiverMedium
-import io.github.the_brotherhood_of_scu.bugaoshan.widget.CourseWidgetReceiverSmall
+import io.github.the_brotherhood_of_scu.bugaoshan.CourseWidgetReceiverLarge
+import io.github.the_brotherhood_of_scu.bugaoshan.CourseWidgetReceiverMedium
+import io.github.the_brotherhood_of_scu.bugaoshan.CourseWidgetReceiverSmall
 
 /**
  * 处理小组件 Pin 到主屏幕的请求(由 `bugaoshan/update` MethodChannel 的 `pinWidget` 调用)。
