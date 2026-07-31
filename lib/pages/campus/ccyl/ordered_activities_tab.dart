@@ -142,6 +142,7 @@ class _OrderedActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: InkWell(
@@ -209,7 +210,7 @@ class _OrderedActivityCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    '${activity.classHour} 学时',
+                    '${activity.classHour} ${l10n.ccylHours}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   if (activity.starName?.isNotEmpty == true) ...[

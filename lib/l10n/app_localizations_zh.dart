@@ -2289,6 +2289,154 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get switchSchedule => '切换';
+
+  @override
+  String get quickSetting => '快速设置';
+
+  @override
+  String get presetJiangAn => '四川大学江安校区';
+
+  @override
+  String get presetWangJiangHuaXi => '四川大学望江/华西校区';
+
+  @override
+  String get presetScuHint => '自动设置 4-5-3 节数及对应时间点';
+
+  @override
+  String appliedPreset(String campus) {
+    return '已应用$campus时间表预设';
+  }
+
+  @override
+  String get presetLabel => '预设';
+
+  @override
+  String roomCount(int count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString 间教室';
+  }
+
+  @override
+  String totalHours(String hours) {
+    return '总学时: $hours';
+  }
+
+  @override
+  String get sortBy => '排序方式';
+
+  @override
+  String get reset => '重置';
+
+  @override
+  String get fileType => '文件类型';
+
+  @override
+  String get all => '全部';
+
+  @override
+  String get manage => '管理';
+
+  @override
+  String get filter => '筛选';
+
+  @override
+  String get courseAttrRequired => '必修';
+
+  @override
+  String get courseAttrElective => '选修';
+
+  @override
+  String get courseAttrOptional => '任选';
+
+  @override
+  String get nameLabel => '姓名';
+
+  @override
+  String get sexLabel => '性别';
+
+  @override
+  String get studentIdLabel => '学号';
+
+  @override
+  String get identityLabel => '身份';
+
+  @override
+  String get emailLabel => '邮箱';
+
+  @override
+  String get phoneLabel => '手机';
+
+  @override
+  String get collegeLabel => '学院';
+
+  @override
+  String get refresh => '刷新';
+
+  @override
+  String gradeSuffix(String grade) {
+    return '$grade级';
+  }
+
+  @override
+  String campusSuffix(String campusName) {
+    return '$campusName校区';
+  }
+
+  @override
+  String get examEnded => '已结束';
+
+  @override
+  String pricePerUnitValue(String price) {
+    return '$price 元/度';
+  }
+
+  @override
+  String get verifyFailedCheckInfo => '验证失败，请检查信息是否正确';
+
+  @override
+  String get getAuthCodeFailed => '获取授权码失败';
+
+  @override
+  String get addWidgetIosHint => '在 iOS 主屏幕长按，选择「不高山上」的课表组件添加';
+
+  @override
+  String get addWidgetMacHint => '在 macOS 通知中心点击「编辑小组件」，添加「不高山上」的课表组件';
+
+  @override
+  String get autoAdjustedToSunday => '已自动调整为该周周日';
+
+  @override
+  String get goForward => '前进';
+
+  @override
+  String get goBack => '后退';
+
+  @override
+  String get openInBrowser => '在浏览器中打开';
+
+  @override
+  String get downloadComplete => '下载完成';
+
+  @override
+  String importedScheduleName(int month, int day) {
+    final intl.NumberFormat monthNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String monthString = monthNumberFormat.format(month);
+    final intl.NumberFormat dayNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String dayString = dayNumberFormat.format(day);
+
+    return 'JWXT 导入 $monthString-$dayString';
+  }
+
+  @override
+  String get error => '错误';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

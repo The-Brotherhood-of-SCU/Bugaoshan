@@ -86,7 +86,10 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
       if (widget.mode == ImportMode.jwxt) {
         // Prompt for schedule name first
         final nameController = TextEditingController(
-          text: 'JWXT Import ${DateTime.now().month}-${DateTime.now().day}',
+          text: l10n.importedScheduleName(
+            DateTime.now().month,
+            DateTime.now().day,
+          ),
         );
         if (!mounted) return;
         final newName = await showDialog<String>(
@@ -507,6 +510,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
   }
 
   ({ScheduleConfig config, List<Course> courses}) _parseJwxtData(dynamic data) {
+    final l10n = AppLocalizations.of(context)!;
     final Map<String, dynamic> jwxtData = data as Map<String, dynamic>;
     final List<dynamic> xkxx = jwxtData['xkxx'] as List<dynamic>;
 
@@ -514,7 +518,10 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
     final config = ScheduleConfig(
       semesterStartDate: DateTime.now()
           .toMonday(), // User might need to adjust this later
-      semesterName: 'JWXT Import ${DateTime.now().month}-${DateTime.now().day}',
+      semesterName: l10n.importedScheduleName(
+        DateTime.now().month,
+        DateTime.now().day,
+      ),
     );
 
     final List<Course> courses = [];

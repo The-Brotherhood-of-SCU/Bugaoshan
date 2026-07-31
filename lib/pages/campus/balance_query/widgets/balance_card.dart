@@ -305,7 +305,10 @@ class BalanceCardState extends State<BalanceCard> {
                           l10n.roomNumber,
                           _privacyHidden ? '***' : _localInfo!.roomNo,
                         ),
-                        _infoRow(l10n.pricePerUnit, '${_localInfo!.price} 元/度'),
+                        _infoRow(
+                          l10n.pricePerUnit,
+                          l10n.pricePerUnitValue(_localInfo!.price.toString()),
+                        ),
                       ],
                     ),
             ),

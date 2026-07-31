@@ -155,6 +155,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
   }
 
   Widget _buildExamCard(ExamInfo exam) {
+    final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final past = exam.isPast;
     final primary = past ? colorScheme.outline : colorScheme.primary;
@@ -163,7 +164,10 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
     String dateSub = exam.weekday;
     final dm = RegExp(r'(\d{4})-(\d{2})-(\d{2})').firstMatch(exam.date);
     if (dm != null) {
-      dateLabel = '${int.parse(dm.group(2)!)}月${int.parse(dm.group(3)!)}日';
+      dateLabel = l10n.dateMonthDay(
+        int.parse(dm.group(2)!),
+        int.parse(dm.group(3)!),
+      );
     }
 
     return Card(
@@ -193,7 +197,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
                   const SizedBox(height: 2),
                   if (past)
                     Text(
-                      '已结束',
+                      l10n.examEnded,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: colorScheme.outline.withValues(alpha: 0.7),

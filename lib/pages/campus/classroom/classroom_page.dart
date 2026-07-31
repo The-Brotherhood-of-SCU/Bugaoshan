@@ -359,7 +359,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
                   leading: const Icon(Icons.location_city_outlined),
-                  title: Text('${campus.campusName}校区'),
+                  title: Text(l10n.campusSuffix(campus.campusName)),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     setState(() {
@@ -464,7 +464,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
                 ),
               ),
               Text(
-                '${rooms.length} ${l10n.seats == "座" ? "间教室" : "rooms"}',
+                l10n.roomCount(rooms.length),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),

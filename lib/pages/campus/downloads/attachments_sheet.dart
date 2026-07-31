@@ -253,6 +253,7 @@ class _SheetAttachmentTile extends StatelessWidget {
   }
 
   Widget _buildDefaultTile(BuildContext context, DownloadManager manager) {
+    final l10n = AppLocalizations.of(context)!;
     return ListTile(
       leading: Icon(_fileIcon(), color: Theme.of(context).colorScheme.primary),
       title: Text(item.name, maxLines: 2, overflow: TextOverflow.ellipsis),
@@ -285,7 +286,7 @@ class _SheetAttachmentTile extends StatelessWidget {
           }
           return IconButton(
             icon: const Icon(Icons.download),
-            tooltip: '下载',
+            tooltip: l10n.download,
             onPressed: () => _startDownload(manager),
           );
         },
@@ -302,17 +303,18 @@ class _SheetAttachmentTile extends StatelessWidget {
   }
 
   Widget _doneTrailing(BuildContext context, String path) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
           icon: const Icon(Icons.share),
-          tooltip: '分享',
+          tooltip: l10n.share,
           onPressed: () => _share(context, path),
         ),
         IconButton(
           icon: const Icon(Icons.check_circle, color: Colors.green),
-          tooltip: '打开',
+          tooltip: l10n.open,
           onPressed: () => _open(path),
         ),
       ],

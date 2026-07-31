@@ -936,5 +936,239 @@
     "noNextSemesterSchedule": "暂未导入下学期课表",
     "promptSwitchSemester": "下学期即将开始，是否切换到下学期课表？",
     "promptSwitchSemesterTitle": "切换课表",
-    "switchSchedule": "切换"
+    "switchSchedule": "切换",
+    "quickSetting": "快速设置",
+    "@quickSetting": {
+        "description": "快速预设时间设置的章节标题",
+        "type": "text"
+    },
+    "presetJiangAn": "四川大学江安校区",
+    "@presetJiangAn": {
+        "description": "四川大学江安校区时间表预设名称",
+        "type": "text"
+    },
+    "presetWangJiangHuaXi": "四川大学望江/华西校区",
+    "@presetWangJiangHuaXi": {
+        "description": "四川大学望江/华西校区时间表预设名称",
+        "type": "text"
+    },
+    "presetScuHint": "自动设置 4-5-3 节数及对应时间点",
+    "@presetScuHint": {
+        "description": "SCU 预设时间配置的提示",
+        "type": "text"
+    },
+    "appliedPreset": "已应用{campus}时间表预设",
+    "@appliedPreset": {
+        "description": "应用时间表预设时的 SnackBar 消息",
+        "placeholders": {
+            "campus": {
+                "type": "String"
+            }
+        }
+    },
+    "presetLabel": "预设",
+    "@presetLabel": {
+        "description": "预设时间配置的标签",
+        "type": "text"
+    },
+    "roomCount": "{count} 间教室",
+    "@roomCount": {
+        "description": "教室数量，如「12 间教室」",
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "format": "compact"
+            }
+        }
+    },
+    "totalHours": "总学时: {hours}",
+    "@totalHours": {
+        "description": "CCYL 学时列表的总学时标签",
+        "placeholders": {
+            "hours": {
+                "type": "String"
+            }
+        }
+    },
+    "sortBy": "排序方式",
+    "@sortBy": {
+        "description": "排序模式选择器标签",
+        "type": "text"
+    },
+    "reset": "重置",
+    "@reset": {
+        "description": "重置按钮标签",
+        "type": "text"
+    },
+    "fileType": "文件类型",
+    "@fileType": {
+        "description": "文件类型筛选标签",
+        "type": "text"
+    },
+    "all": "全部",
+    "@all": {
+        "description": "筛选中的「全部」选项",
+        "type": "text"
+    },
+    "manage": "管理",
+    "@manage": {
+        "description": "管理/选择模式切换的工具提示",
+        "type": "text"
+    },
+    "filter": "筛选",
+    "@filter": {
+        "description": "筛选按钮的工具提示",
+        "type": "text"
+    },
+    "courseAttrRequired": "必修",
+    "@courseAttrRequired": {
+        "description": "课程属性：必修课",
+        "type": "text"
+    },
+    "courseAttrElective": "选修",
+    "@courseAttrElective": {
+        "description": "课程属性：选修课",
+        "type": "text"
+    },
+    "courseAttrOptional": "任选",
+    "@courseAttrOptional": {
+        "description": "课程属性：任选课",
+        "type": "text"
+    },
+    "nameLabel": "姓名",
+    "@nameLabel": {
+        "description": "人名的通用标签",
+        "type": "text"
+    },
+    "sexLabel": "性别",
+    "@sexLabel": {
+        "description": "性别的通用标签",
+        "type": "text"
+    },
+    "studentIdLabel": "学号",
+    "@studentIdLabel": {
+        "description": "学号的通用标签",
+        "type": "text"
+    },
+    "identityLabel": "身份",
+    "@identityLabel": {
+        "description": "身份/角色的通用标签",
+        "type": "text"
+    },
+    "emailLabel": "邮箱",
+    "@emailLabel": {
+        "description": "邮箱的通用标签",
+        "type": "text"
+    },
+    "phoneLabel": "手机",
+    "@phoneLabel": {
+        "description": "手机号的通用标签",
+        "type": "text"
+    },
+    "collegeLabel": "学院",
+    "@collegeLabel": {
+        "description": "学院的通用标签",
+        "type": "text"
+    },
+    "refresh": "刷新",
+    "@refresh": {
+        "description": "刷新按钮的工具提示",
+        "type": "text"
+    },
+    "gradeSuffix": "{grade}级",
+    "@gradeSuffix": {
+        "description": "年级后缀格式，如「2024级」",
+        "placeholders": {
+            "grade": {
+                "type": "String"
+            }
+        }
+    },
+    "campusSuffix": "{campusName}校区",
+    "@campusSuffix": {
+        "description": "校区名称后缀，如「江安校区」",
+        "placeholders": {
+            "campusName": {
+                "type": "String"
+            }
+        }
+    },
+    "examEnded": "已结束",
+    "@examEnded": {
+        "description": "表示考试已结束的标签",
+        "type": "text"
+    },
+    "pricePerUnitValue": "{price} 元/度",
+    "@pricePerUnitValue": {
+        "description": "带单位的电价，如「0.50 元/度」",
+        "placeholders": {
+            "price": {
+                "type": "String"
+            }
+        }
+    },
+    "verifyFailedCheckInfo": "验证失败，请检查信息是否正确",
+    "@verifyFailedCheckInfo": {
+        "description": "房间绑定验证失败时的错误提示",
+        "type": "text"
+    },
+    "getAuthCodeFailed": "获取授权码失败",
+    "@getAuthCodeFailed": {
+        "description": "CCYL OAuth 授权码获取失败时的错误提示",
+        "type": "text"
+    },
+    "addWidgetIosHint": "在 iOS 主屏幕长按，选择「不高山上」的课表组件添加",
+    "@addWidgetIosHint": {
+        "description": "iOS 主屏幕添加小组件的提示",
+        "type": "text"
+    },
+    "addWidgetMacHint": "在 macOS 通知中心点击「编辑小组件」，添加「不高山上」的课表组件",
+    "@addWidgetMacHint": {
+        "description": "macOS 通知中心添加小组件的提示",
+        "type": "text"
+    },
+    "autoAdjustedToSunday": "已自动调整为该周周日",
+    "@autoAdjustedToSunday": {
+        "description": "周起始日期自动调整为周日时的 SnackBar 提示",
+        "type": "text"
+    },
+    "goForward": "前进",
+    "@goForward": {
+        "description": "WebView 前进导航按钮的工具提示",
+        "type": "text"
+    },
+    "goBack": "后退",
+    "@goBack": {
+        "description": "WebView 后退导航按钮的工具提示",
+        "type": "text"
+    },
+    "openInBrowser": "在浏览器中打开",
+    "@openInBrowser": {
+        "description": "在外部浏览器中打开当前页面的工具提示",
+        "type": "text"
+    },
+    "downloadComplete": "下载完成",
+    "@downloadComplete": {
+        "description": "文件下载完成时的 SnackBar 提示",
+        "type": "text"
+    },
+    "importedScheduleName": "JWXT 导入 {month}-{day}",
+    "@importedScheduleName": {
+        "description": "从教务系统导入课表时的默认名称",
+        "placeholders": {
+            "month": {
+                "type": "int",
+                "format": "compact"
+            },
+            "day": {
+                "type": "int",
+                "format": "compact"
+            }
+        }
+    },
+    "error": "错误",
+    "@error": {
+        "description": "通用错误标题",
+        "type": "text"
+    }
 }
