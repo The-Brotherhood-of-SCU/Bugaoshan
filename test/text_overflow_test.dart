@@ -5,6 +5,7 @@ import 'package:bugaoshan/widgets/common/status_chip.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
 import 'package:bugaoshan/widgets/common/styled_widget.dart';
 import 'package:bugaoshan/widgets/course/grid_header.dart';
+import 'package:bugaoshan/widgets/course/grid_section_column.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -111,6 +112,30 @@ void main() {
               hasBackground: false,
               showWeekend: true,
               sectionWidth: 24,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('GridSectionColumn 固定 35px 时间列 + 大文字缩放不溢出', (tester) async {
+      _useLargeTextScale(tester);
+      await tester.pumpWidget(
+        _wrap(
+          SizedBox(
+            height: 200,
+            child: SingleChildScrollView(
+              // 模拟 course_grid.dart 中的真实布局：时间列在垂直滚动区内。
+              child: GridSectionColumn(
+                config: ScheduleConfig(
+                  semesterStartDate: DateTime(2026, 9, 1),
+                  semesterName: '2026-2027-1',
+                ),
+                rowHeight: 60,
+                width: 35, // 与 course_grid.dart 的 _sectionWidth 一致
+              ),
             ),
           ),
         ),
