@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修复预览版更新检查可能匹配到错误版本的问题
 - 修复导出空课表时失败的问题
 - 修复了一些小问题
+- 修复低版本安卓、苹果系统上保存图片到相册相关权限的问题
 
 ## [2.2.0] - 2026-07-13
 
