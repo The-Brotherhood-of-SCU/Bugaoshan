@@ -42,8 +42,9 @@ class GridHeaderRow extends StatelessWidget {
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
+    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
     return Container(
-      height: 40,
+      height: 40 * textScale,
       decoration: BoxDecoration(
         color: hasBackground ? null : theme.colorScheme.surfaceContainerHighest,
         border: Border(
@@ -110,61 +111,69 @@ class GridHeaderRow extends StatelessWidget {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  name,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    fontSize: 13,
-                                    fontWeight: isToday
-                                        ? FontWeight.bold
-                                        : FontWeight.w600,
-                                    color: isToday
-                                        ? theme.colorScheme.primary
-                                        : theme.colorScheme.onSurface,
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    name,
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      fontSize: 13,
+                                      fontWeight: isToday
+                                          ? FontWeight.bold
+                                          : FontWeight.w600,
+                                      color: isToday
+                                          ? theme.colorScheme.primary
+                                          : theme.colorScheme.onSurface,
+                                    ),
                                   ),
-                                ),
-                                if (isHoliday) ...[
-                                  const SizedBox(width: 2),
-                                  _buildLabelBadge(
-                                    l10n.holidayLabel,
-                                    Colors.red,
-                                  ),
+                                  if (isHoliday) ...[
+                                    const SizedBox(width: 2),
+                                    _buildLabelBadge(
+                                      l10n.holidayLabel,
+                                      Colors.red,
+                                    ),
+                                  ],
+                                  if (isFestival) ...[
+                                    const SizedBox(width: 2),
+                                    _buildLabelBadge(
+                                      l10n.festivalLabel,
+                                      Colors.orange,
+                                    ),
+                                  ],
+                                  if (isSolarTerm) ...[
+                                    const SizedBox(width: 2),
+                                    _buildLabelBadge(
+                                      l10n.solarTermLabel,
+                                      Colors.green,
+                                    ),
+                                  ],
                                 ],
-                                if (isFestival) ...[
-                                  const SizedBox(width: 2),
-                                  _buildLabelBadge(
-                                    l10n.festivalLabel,
-                                    Colors.orange,
-                                  ),
-                                ],
-                                if (isSolarTerm) ...[
-                                  const SizedBox(width: 2),
-                                  _buildLabelBadge(
-                                    l10n.solarTermLabel,
-                                    Colors.green,
-                                  ),
-                                ],
-                              ],
+                              ),
                             ),
                             if (!showAllWeeks)
-                              Text(
-                                l10n.dateMonthDay(date.month, date.day),
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  fontSize: 10,
-                                  fontWeight: isToday
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                  color: isHoliday
-                                      ? Colors.red
-                                      : isFestival
-                                      ? Colors.orange
-                                      : isSolarTerm
-                                      ? Colors.green
-                                      : isToday
-                                      ? theme.colorScheme.primary.withAlpha(200)
-                                      : theme.colorScheme.onSurfaceVariant,
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  l10n.dateMonthDay(date.month, date.day),
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    fontSize: 10,
+                                    fontWeight: isToday
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    color: isHoliday
+                                        ? Colors.red
+                                        : isFestival
+                                        ? Colors.orange
+                                        : isSolarTerm
+                                        ? Colors.green
+                                        : isToday
+                                        ? theme.colorScheme.primary.withAlpha(
+                                            200,
+                                          )
+                                        : theme.colorScheme.onSurfaceVariant,
+                                  ),
                                 ),
                               ),
                           ],

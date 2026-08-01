@@ -119,6 +119,7 @@ class CourseCard extends StatelessWidget {
                                   ? course.name
                                   : '${l10n.notThisWeek} ${course.name}',
                               maxLines: titleMaxLines,
+                              overflow: TextOverflow.ellipsis,
                               style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(
                                     fontSize: fontSize,
@@ -163,6 +164,7 @@ class CourseCard extends StatelessWidget {
         child: Text(
           text,
           maxLines: maxLines,
+          overflow: TextOverflow.ellipsis,
           softWrap: true,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             fontSize: fontSize,

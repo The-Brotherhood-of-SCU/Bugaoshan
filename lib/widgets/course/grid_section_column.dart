@@ -55,33 +55,39 @@ class GridSectionColumn extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    '${i + 1}',
-                    maxLines: 1,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
+                  FittedBox(
+                    child: Text(
+                      '${i + 1}',
+                      maxLines: 1,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   if (startStr.isNotEmpty) ...[
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: Text(
-                        startStr,
-                        maxLines: 1,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          fontSize: 11,
-                          color: theme.colorScheme.onSurfaceVariant,
+                    FittedBox(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          startStr,
+                          maxLines: 1,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            fontSize: 11,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
                     ),
                     if (endStr.isNotEmpty && rowHeight >= 60)
-                      Text(
-                        endStr,
-                        maxLines: 1,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          fontSize: 11,
-                          color: theme.colorScheme.onSurfaceVariant,
+                      FittedBox(
+                        child: Text(
+                          endStr,
+                          maxLines: 1,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            fontSize: 11,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
                   ],
