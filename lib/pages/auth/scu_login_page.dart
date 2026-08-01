@@ -1,13 +1,20 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:bugaoshan/widgets/route/router_utils.dart';
-import 'package:flutter/material.dart';
-import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/auth/scu_login_button.dart';
+import 'package:bugaoshan/pages/auth/scu_login_captcha_row.dart';
+import 'package:bugaoshan/pages/auth/scu_login_checkbox.dart';
+import 'package:bugaoshan/pages/auth/scu_login_disclaimer.dart';
+import 'package:bugaoshan/pages/auth/scu_login_header_image.dart';
+import 'package:bugaoshan/pages/auth/scu_login_input_field.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart' show CaptchaResult;
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/ocr_service.dart';
+import 'package:bugaoshan/widgets/common/third_center.dart';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
+import 'package:flutter/material.dart';
 
 class ScuLoginPage extends StatefulWidget {
   const ScuLoginPage({super.key});
@@ -17,11 +24,6 @@ class ScuLoginPage extends StatefulWidget {
 }
 
 class _ScuLoginPageState extends State<ScuLoginPage> {
-  static const double _headerHeight = 260;
-  static const double _cornerRadius = 24;
-  // 卡片平坦区覆盖背景图直边的像素量
-  static const double _flatOverlap = 50;
-
   final _formKey = GlobalKey<FormState>();
   final _usernameCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
@@ -31,7 +33,6 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
   Uint8List? _captchaImageBytes;
   bool _loading = false;
   bool _captchaLoading = false;
-  bool _headerReady = false;
   String? _errorMsg;
   bool _obscurePassword = true;
   bool _rememberPassword = true;
@@ -45,31 +46,6 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
     });
     _loadSaved();
     _loadCaptcha();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_headerReady) {
-      _preloadHeaderImage();
-    }
-  }
-
-  Future<void> _preloadHeaderImage() async {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    try {
-      await precacheImage(
-        AssetImage(
-          isDark ? 'assets/scu_header_dark.png' : 'assets/scu_header_light.png',
-        ),
-        context,
-      );
-    } catch (e) {
-      // 预缓存失败（解码异常/低内存等）不应阻塞登录，仍渲染表单
-      debugPrint('Header image precache error: $e');
-    } finally {
-      if (mounted) setState(() => _headerReady = true);
-    }
   }
 
   @override
@@ -221,7 +197,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       : const Color(0xFF8965BD);
 
   Color get _cardBgColor => Theme.of(context).brightness == Brightness.light
-      ? const Color(0xFFFFFAF7)
+      ? const Color.fromARGB(255, 255, 245, 239)
       : const Color(0xFF24272C);
 
   @override
@@ -229,111 +205,57 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    final body = SafeArea(
+      minimum: const EdgeInsets.all(16),
+      child: ThirdCenter(
+        child: SingleChildScrollView(
+          child: Container(
+            constraints: BoxConstraints(maxWidth: 440),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ScuLoginHeaderImage(isDark: isDark),
+                _buildForm(l10n, isDark),
+                const SizedBox(height: 40),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
     return Scaffold(
       appBar: AppBar(title: Text(l10n.scuUnifiedAuth)),
-      body: _headerReady
-          ? SafeArea(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return SingleChildScrollView(
-                    child: Center(
-                      child: Container(
-                        constraints: BoxConstraints(
-                          minHeight: constraints.maxHeight,
-                          maxWidth: 440,
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Stack(
-                              children: [
-                                _buildHeaderImage(isDark),
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                    top:
-                                        _headerHeight -
-                                        2 * _cornerRadius -
-                                        _flatOverlap,
-                                    left: 20,
-                                    right: 20,
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      _buildFormCard(l10n, isDark),
-                                      const SizedBox(height: 32),
-                                      _buildDisclaimer(l10n, isDark),
-                                      const SizedBox(height: 40),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            )
-          : const SizedBox.shrink(),
+      body: body,
     );
   }
 
-  Widget _buildHeaderImage(bool isDark) {
+  Widget _buildForm(AppLocalizations l10n, bool isDark) {
     return Container(
-      height: _headerHeight,
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.08),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Image.asset(
-        isDark ? 'assets/scu_header_dark.png' : 'assets/scu_header_light.png',
-        fit: BoxFit.fitWidth,
-        alignment: Alignment.topCenter,
-      ),
-    );
-  }
-
-  Widget _buildFormCard(AppLocalizations l10n, bool isDark) {
-    return Container(
-      decoration: BoxDecoration(
+        // 顶部直边与头部图片衔接，仅保留底部圆角
         color: _cardBgColor,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.08),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
       ),
-      padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildInputField(
+            ScuLoginInputField(
               controller: _usernameCtrl,
               label: l10n.studentId,
               hint: l10n.studentIdHint,
               prefixIcon: Icons.person_outline,
               keyboardType: TextInputType.number,
               isDark: isDark,
+              brandColor: _brandColor,
               validator: (v) => (v == null || v.trim().isEmpty)
                   ? l10n.studentIdRequired
                   : null,
             ),
             const SizedBox(height: 16),
-            _buildInputField(
+            ScuLoginInputField(
               controller: _passwordCtrl,
               label: l10n.password,
               hint: l10n.passwordHint,
@@ -351,29 +273,40 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
                     setState(() => _obscurePassword = !_obscurePassword),
               ),
               isDark: isDark,
+              brandColor: _brandColor,
               validator: (v) =>
                   (v == null || v.isEmpty) ? l10n.passwordRequired : null,
             ),
             const SizedBox(height: 16),
-            _buildCaptchaRow(l10n, isDark),
+            ScuLoginCaptchaRow(
+              controller: _captchaCtrl,
+              l10n: l10n,
+              isDark: isDark,
+              brandColor: _brandColor,
+              captchaImageBytes: _captchaImageBytes,
+              captchaLoading: _captchaLoading,
+              onRefresh: _loadCaptcha,
+            ),
             const SizedBox(height: 20),
             Wrap(
               spacing: 24,
               runSpacing: 8,
               children: [
-                _buildCheckbox(
+                ScuLoginCheckbox(
                   value: _rememberPassword,
                   label: l10n.rememberPassword,
                   isDark: isDark,
+                  brandColor: _brandColor,
                   onChanged: (v) => setState(() {
                     _rememberPassword = v ?? false;
                     if (!_rememberPassword) _autoLogin = false;
                   }),
                 ),
-                _buildCheckbox(
+                ScuLoginCheckbox(
                   value: _autoLogin,
                   label: l10n.autoLogin,
                   isDark: isDark,
+                  brandColor: _brandColor,
                   onChanged: (v) => setState(() => _autoLogin = v ?? false),
                 ),
               ],
@@ -383,298 +316,16 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
               _buildErrorMessage(_errorMsg!, isDark),
             ],
             const SizedBox(height: 20),
-            _buildLoginButton(l10n),
+            ScuLoginButton(
+              loading: _loading,
+              onPressed: _submit,
+              brandColor: _brandColor,
+              label: l10n.loginButton,
+            ),
+            const SizedBox(height: 16),
+            ScuLoginDisclaimer(l10n: l10n, isDark: isDark),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildInputField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required IconData prefixIcon,
-    required bool isDark,
-    TextInputType? keyboardType,
-    bool obscureText = false,
-    Widget? suffixIcon,
-    String? Function(String?)? validator,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: isDark ? Colors.white70 : Colors.grey.shade700,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          obscureText: obscureText,
-          validator: validator,
-          style: TextStyle(
-            fontSize: 15,
-            color: isDark ? Colors.white : Colors.black87,
-          ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: isDark ? Colors.white24 : Colors.grey.shade400,
-              fontSize: 14,
-            ),
-            prefixIcon: Container(
-              margin: const EdgeInsets.only(left: 4),
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _brandColor.withValues(alpha: 0.15),
-              ),
-              child: Icon(prefixIcon, color: _brandColor, size: 18),
-            ),
-            suffixIcon: suffixIcon,
-            filled: true,
-            fillColor: isDark ? const Color(0xFF2D2F36) : Colors.grey.shade50,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: isDark ? Colors.white12 : Colors.grey.shade300,
-                width: 1,
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: isDark ? Colors.white12 : Colors.grey.shade300,
-                width: 1,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: _brandColor, width: 1.5),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.error,
-                width: 1,
-              ),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 14,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCaptchaRow(AppLocalizations l10n, bool isDark) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          l10n.captcha,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: isDark ? Colors.white70 : Colors.grey.shade700,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: TextFormField(
-                controller: _captchaCtrl,
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? l10n.captchaRequired
-                    : null,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
-                decoration: InputDecoration(
-                  hintText: l10n.captchaHint,
-                  hintStyle: TextStyle(
-                    color: isDark ? Colors.white24 : Colors.grey.shade400,
-                    fontSize: 14,
-                  ),
-                  prefixIcon: Container(
-                    margin: const EdgeInsets.only(left: 4),
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _brandColor.withValues(alpha: 0.15),
-                    ),
-                    child: Icon(
-                      Icons.shield_outlined,
-                      color: _brandColor,
-                      size: 18,
-                    ),
-                  ),
-                  filled: true,
-                  fillColor: isDark
-                      ? const Color(0xFF2C2C2C)
-                      : Colors.grey.shade50,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: isDark ? Colors.white12 : Colors.grey.shade300,
-                      width: 1,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: isDark ? Colors.white12 : Colors.grey.shade300,
-                      width: 1,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: _brandColor, width: 1.5),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).colorScheme.error,
-                      width: 1,
-                    ),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 14,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            GestureDetector(
-              onTap: _loadCaptcha,
-              child: Container(
-                width: 120,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isDark ? Colors.white12 : Colors.grey.shade300,
-                    width: 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.06),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: _captchaLoading
-                    ? Center(
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: _brandColor,
-                          ),
-                        ),
-                      )
-                    : _captchaImageBytes != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.memory(
-                          _captchaImageBytes!,
-                          fit: BoxFit.contain,
-                          gaplessPlayback: true,
-                          errorBuilder: (_, _, _) => Icon(
-                            Icons.broken_image_outlined,
-                            color: isDark
-                                ? Colors.white54
-                                : Colors.grey.shade600,
-                            size: 22,
-                          ),
-                        ),
-                      )
-                    : Icon(
-                        Icons.refresh_outlined,
-                        color: isDark ? Colors.white54 : Colors.grey.shade600,
-                        size: 22,
-                      ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            GestureDetector(
-              onTap: _loadCaptcha,
-              child: Container(
-                width: 44,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: _brandColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.refresh_outlined,
-                  color: _brandColor,
-                  size: 20,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCheckbox({
-    required bool value,
-    required String label,
-    required bool isDark,
-    required ValueChanged<bool?> onChanged,
-  }) {
-    return GestureDetector(
-      onTap: () => onChanged(!value),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 20,
-            height: 20,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: value ? _brandColor : Colors.transparent,
-              border: Border.all(
-                color: value
-                    ? _brandColor
-                    : (isDark ? Colors.white38 : Colors.grey.shade400),
-                width: 1.5,
-              ),
-            ),
-            child: value
-                ? const Icon(Icons.check, size: 14, color: Colors.white)
-                : null,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 14,
-              color: isDark ? Colors.white70 : Colors.grey.shade700,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -703,98 +354,6 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildLoginButton(AppLocalizations l10n) {
-    return FilledButton(
-      onPressed: _loading ? null : _submit,
-      style:
-          FilledButton.styleFrom(
-            backgroundColor: _brandColor,
-            foregroundColor: Colors.white,
-            minimumSize: const Size(double.infinity, 50),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(25),
-            ),
-            elevation: 2,
-            shadowColor: _brandColor.withValues(alpha: 0.3),
-            textStyle: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 2,
-            ),
-          ).copyWith(
-            overlayColor: WidgetStateProperty.resolveWith((states) {
-              if (states.contains(WidgetState.pressed)) {
-                return Colors.white.withValues(alpha: 0.2);
-              }
-              if (states.contains(WidgetState.hovered)) {
-                return Colors.white.withValues(alpha: 0.1);
-              }
-              return null;
-            }),
-          ),
-      child: _loading
-          ? SizedBox(
-              height: 22,
-              width: 22,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                color: Colors.white,
-              ),
-            )
-          : Text(l10n.loginButton),
-    );
-  }
-
-  Widget _buildDisclaimer(AppLocalizations l10n, bool isDark) {
-    final style = TextStyle(
-      fontSize: 12,
-      color: isDark ? Colors.white38 : Colors.grey.shade500,
-      height: 1.4,
-    );
-    final bulletStyle = TextStyle(
-      fontSize: 12,
-      color: isDark ? Colors.white24 : Colors.grey.shade400,
-      height: 1.4,
-    );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('· ', style: bulletStyle),
-            Flexible(child: Text(l10n.scuLoginDisclaimerPwd, style: style)),
-          ],
-        ),
-        const SizedBox(height: 2),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('· ', style: bulletStyle),
-            Flexible(child: Text(l10n.scuLoginDisclaimerOcr, style: style)),
-          ],
-        ),
-        const SizedBox(height: 2),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('· ', style: bulletStyle),
-            Flexible(child: Text(l10n.scuLoginDisclaimerPrivacy, style: style)),
-          ],
-        ),
-        const SizedBox(height: 2),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('· ', style: bulletStyle),
-            Flexible(child: Text(l10n.scuLoginPasswordHint, style: style)),
-          ],
-        ),
-      ],
     );
   }
 
