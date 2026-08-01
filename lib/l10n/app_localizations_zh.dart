@@ -2289,6 +2289,26 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get switchSchedule => '切换';
+
+  @override
+  String get teamIntroTitle => '团队介绍';
+
+  @override
+  String get teamIntroDesc =>
+      'The-Brotherhood-of-SCU 是一个非官方的四川大学开源组织，由一群热爱技术、关注校园生活的川大学生共同维护。我们的目标是通过开源协作，为川大同学打造实用的校园工具。';
+
+  @override
+  String get teamJoinUsTitle => '欢迎加入我们';
+
+  @override
+  String get teamContributeDesc =>
+      '我们欢迎任何形式的贡献，包括提交 Issue、反馈建议、发起 Pull Request 或改进文档。';
+
+  @override
+  String get teamContributeClosing => '项目的成长离不开每一位贡献者，期待你的参与。';
+
+  @override
+  String get teamOrgGitHub => '组织 GitHub 主页';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

@@ -4464,6 +4464,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Switch'**
   String get switchSchedule;
+
+  /// No description provided for @teamIntroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'About the Team'**
+  String get teamIntroTitle;
+
+  /// No description provided for @teamIntroDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The-Brotherhood-of-SCU is an unofficial open-source organization of Sichuan University, maintained by a group of SCU students who are passionate about technology and campus life. Our goal is to build practical campus tools for SCU students through open-source collaboration.'**
+  String get teamIntroDesc;
+
+  /// No description provided for @teamJoinUsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join Us'**
+  String get teamJoinUsTitle;
+
+  /// No description provided for @teamContributeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'We welcome all forms of contributions, including submitting Issues, providing feedback, initiating Pull Requests, or improving documentation.'**
+  String get teamContributeDesc;
+
+  /// No description provided for @teamContributeClosing.
+  ///
+  /// In en, this message translates to:
+  /// **'The growth of the project depends on every contributor. We look forward to your participation.'**
+  String get teamContributeClosing;
+
+  /// No description provided for @teamOrgGitHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Organization GitHub Homepage'**
+  String get teamOrgGitHub;
 }
 
 class _AppLocalizationsDelegate

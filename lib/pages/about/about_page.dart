@@ -6,8 +6,8 @@ import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/utils/app_shapes.dart';
-import 'package:bugaoshan/utils/open_link.dart'
-    show openDeveloperTeam, openProjectRepository;
+import 'package:bugaoshan/utils/open_link.dart' show openProjectRepository;
+import 'package:bugaoshan/pages/about/team_page.dart';
 import 'package:bugaoshan/pages/settings/eula_status_page.dart';
 import 'package:bugaoshan/pages/dev/dev_page.dart';
 import 'package:bugaoshan/widgets/common/info_card.dart';
@@ -211,11 +211,11 @@ class _AboutPageState extends State<AboutPage> {
                 value: "Github",
                 onTap: () => openProjectRepository(),
               ),
-              LinkTile(
+              IconTile(
                 icon: Icons.group_outlined,
                 label: localizations.developmentTeam,
                 value: "Brotherhood of SCU",
-                onTap: () => openDeveloperTeam(),
+                onTap: () => popupOrNavigate(context, const TeamPage()),
               ),
               if (updateProvider.supportsInAppUpdate)
                 ValueListenableBuilder<bool>(

@@ -936,5 +936,11 @@
     "noNextSemesterSchedule": "暂未导入下学期课表",
     "promptSwitchSemester": "下学期即将开始，是否切换到下学期课表？",
     "promptSwitchSemesterTitle": "切换课表",
-    "switchSchedule": "切换"
+    "switchSchedule": "切换",
+    "teamIntroTitle": "团队介绍",
+    "teamIntroDesc": "The-Brotherhood-of-SCU 是一个非官方的四川大学开源组织，由一群热爱技术、关注校园生活的川大学生共同维护。我们的目标是通过开源协作，为川大同学打造实用的校园工具。",
+    "teamJoinUsTitle": "欢迎加入我们",
+    "teamContributeDesc": "我们欢迎任何形式的贡献，包括提交 Issue、反馈建议、发起 Pull Request 或改进文档。",
+    "teamContributeClosing": "项目的成长离不开每一位贡献者，期待你的参与。",
+    "teamOrgGitHub": "组织 GitHub 主页"
 }

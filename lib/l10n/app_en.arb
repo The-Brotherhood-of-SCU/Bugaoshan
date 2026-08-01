@@ -943,5 +943,11 @@
     "noNextSemesterSchedule": "Next semester schedule not imported",
     "promptSwitchSemester": "The next semester is about to begin. Switch to next semester schedule?",
     "promptSwitchSemesterTitle": "Switch Schedule",
-    "switchSchedule": "Switch"
+    "switchSchedule": "Switch",
+    "teamIntroTitle": "About the Team",
+    "teamIntroDesc": "The-Brotherhood-of-SCU is an unofficial open-source organization of Sichuan University, maintained by a group of SCU students who are passionate about technology and campus life. Our goal is to build practical campus tools for SCU students through open-source collaboration.",
+    "teamJoinUsTitle": "Join Us",
+    "teamContributeDesc": "We welcome all forms of contributions, including submitting Issues, providing feedback, initiating Pull Requests, or improving documentation.",
+    "teamContributeClosing": "The growth of the project depends on every contributor. We look forward to your participation.",
+    "teamOrgGitHub": "Organization GitHub Homepage"
 }
