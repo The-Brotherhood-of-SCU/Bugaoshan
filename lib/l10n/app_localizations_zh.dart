@@ -1603,7 +1603,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get scuLoginPasswordHint => '密码为统一身份认证密码，非教务处密码';
 
   @override
-  String get openSourceLicenseDesc => 'This app is open-sourced under AGPL-3.0';
+  String get openSourceLicenseDesc => '本应用基于 AGPL-3.0 开源许可协议发布';
 
   @override
   String get openSourceLicenses => '开源许可';
