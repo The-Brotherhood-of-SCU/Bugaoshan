@@ -192,12 +192,7 @@ class _StepCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: textTheme.bodyLarge,
-                  ),
+                  Text(title, style: textTheme.bodyLarge),
                   if (subtitle != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 2),
@@ -212,7 +207,7 @@ class _StepCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Flexible(child: trailing),
+            trailing,
           ],
         ),
       ),

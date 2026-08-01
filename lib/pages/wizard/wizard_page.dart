@@ -134,31 +134,25 @@ class _WizardPageState extends State<WizardPage> {
           Row(
             children: [
               if (!isFirstPage)
-                Flexible(
-                  child: TextButton(
-                    onPressed: _onCompleted,
-                    child: Text(l10n.onboardingSkip),
-                  ),
+                TextButton(
+                  onPressed: _onCompleted,
+                  child: Text(l10n.onboardingSkip),
                 ),
               const Spacer(),
-              Flexible(
-                child: AnimatedOpacity(
-                  opacity: !isFirstPage ? 1 : 0,
-                  curve: appCurve,
-                  duration: _appConfig.cardSizeAnimationDuration.value,
-                  child: TextButton(onPressed: _goBack, child: Text(l10n.back)),
-                ),
+              AnimatedOpacity(
+                opacity: !isFirstPage ? 1 : 0,
+                curve: appCurve,
+                duration: _appConfig.cardSizeAnimationDuration.value,
+                child: TextButton(onPressed: _goBack, child: Text(l10n.back)),
               ),
               const SizedBox(width: 8),
-              Flexible(
-                child: AnimatedSize(
-                  duration: _appConfig.cardSizeAnimationDuration.value,
-                  curve: appCurve,
-                  child: FilledButton(
-                    onPressed: isLastPage ? _onCompleted : _goNext,
-                    child: Text(
-                      isLastPage ? l10n.onboardingStart : l10n.onboardingNext,
-                    ),
+              AnimatedSize(
+                duration: _appConfig.cardSizeAnimationDuration.value,
+                curve: appCurve,
+                child: FilledButton(
+                  onPressed: isLastPage ? _onCompleted : _goNext,
+                  child: Text(
+                    isLastPage ? l10n.onboardingStart : l10n.onboardingNext,
                   ),
                 ),
               ),
