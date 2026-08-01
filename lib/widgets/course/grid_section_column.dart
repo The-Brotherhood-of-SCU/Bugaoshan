@@ -56,6 +56,7 @@ class GridSectionColumn extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   FittedBox(
+                    fit: BoxFit.scaleDown,
                     child: Text(
                       '${i + 1}',
                       maxLines: 1,
@@ -67,6 +68,7 @@ class GridSectionColumn extends StatelessWidget {
                   ),
                   if (startStr.isNotEmpty) ...[
                     FittedBox(
+                      fit: BoxFit.scaleDown,
                       child: Padding(
                         padding: const EdgeInsets.only(top: 2),
                         child: Text(
@@ -81,6 +83,7 @@ class GridSectionColumn extends StatelessWidget {
                     ),
                     if (endStr.isNotEmpty && rowHeight >= 60)
                       FittedBox(
+                        fit: BoxFit.scaleDown,
                         child: Text(
                           endStr,
                           maxLines: 1,
