@@ -359,21 +359,25 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
             const SizedBox(height: 20),
             Row(
               children: [
-                _buildCheckbox(
-                  value: _rememberPassword,
-                  label: l10n.rememberPassword,
-                  isDark: isDark,
-                  onChanged: (v) => setState(() {
-                    _rememberPassword = v ?? false;
-                    if (!_rememberPassword) _autoLogin = false;
-                  }),
+                Flexible(
+                  child: _buildCheckbox(
+                    value: _rememberPassword,
+                    label: l10n.rememberPassword,
+                    isDark: isDark,
+                    onChanged: (v) => setState(() {
+                      _rememberPassword = v ?? false;
+                      if (!_rememberPassword) _autoLogin = false;
+                    }),
+                  ),
                 ),
                 const SizedBox(width: 24),
-                _buildCheckbox(
-                  value: _autoLogin,
-                  label: l10n.autoLogin,
-                  isDark: isDark,
-                  onChanged: (v) => setState(() => _autoLogin = v ?? false),
+                Flexible(
+                  child: _buildCheckbox(
+                    value: _autoLogin,
+                    label: l10n.autoLogin,
+                    isDark: isDark,
+                    onChanged: (v) => setState(() => _autoLogin = v ?? false),
+                  ),
                 ),
               ],
             ),
