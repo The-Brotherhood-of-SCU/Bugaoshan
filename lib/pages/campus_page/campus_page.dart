@@ -204,6 +204,7 @@ class _CampusPageState extends State<CampusPage>
                 maxCrossAxisExtent: 160,
                 mainAxisSpacing: 12,
                 crossAxisSpacing: 12,
+                childAspectRatio: 0.85,
               ),
               delegate: SliverChildBuilderDelegate((context, index) {
                 final item = section.items[index];
