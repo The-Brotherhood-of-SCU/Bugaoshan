@@ -132,7 +132,6 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
   }
 
   Future<bool> handleDownloadStartRequest(DownloadStartRequest request) async {
-    final l10n = AppLocalizations.of(context)!;
     final options = downloadOptions;
     if (options == null) return false;
     final url = request.url.toString();
@@ -148,6 +147,7 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
         headers: headers,
       );
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(l10n.downloadComplete)));
