@@ -222,7 +222,11 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
         appBar: AppBar(
           leadingWidth: 152,
           centerTitle: true,
-          title: Text(widget.title),
+          title: Text(
+            widget.title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
           leading: Padding(
             padding: const EdgeInsets.only(left: 4),
             child: Row(
