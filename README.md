@@ -60,7 +60,7 @@
 
 ## 🛠️ 开发
 
-如需参与开发或自行编译，请参阅 [CONTRIBUTING.md](CONTRIBUTING.md) 了解环境配置、构建命令等详细指引。
+如需参与开发或自行编译，请参阅 [CONTRIBUTING.md](CONTRIBUTING.md) 了解环境配置、构建命令等详细指引；当前架构与设计决策见 [工程文档](docs/README.md)。
 
 ---
 

@@ -5,6 +5,10 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import io.github.the_brotherhood_of_scu.bugaoshan.CourseWidgetReceiverLarge
+import io.github.the_brotherhood_of_scu.bugaoshan.CourseWidgetReceiverMedium
+import io.github.the_brotherhood_of_scu.bugaoshan.CourseWidgetReceiverSmall
+import io.github.the_brotherhood_of_scu.bugaoshan.WidgetLayoutCache
 
 /**
  * 小组件更新的公共入口。通过发送 ACTION_APPWIDGET_UPDATE 广播触发
