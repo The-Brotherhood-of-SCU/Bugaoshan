@@ -469,48 +469,25 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
               l10n.ccylHours,
               '${activity.classHour}',
             ),
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.login,
-                  size: 18,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '${l10n.ccylSignIn}: ',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                Text(
-                  activity.isSignIn == '1'
+                _buildSignRow(
+                  icon: Icons.login,
+                  label: l10n.ccylSignIn,
+                  value: activity.isSignIn == '1'
                       ? l10n.ccylEnabled
                       : l10n.ccylDisabled,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: activity.isSignIn == '1'
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.outline,
-                  ),
+                  isEnabled: activity.isSignIn == '1',
                 ),
-                const SizedBox(width: 16),
-                Text(
-                  '${l10n.ccylSignOut}: ',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                Text(
-                  activity.isSignOut == '1'
+                const SizedBox(height: 4),
+                _buildSignRow(
+                  icon: Icons.logout,
+                  label: l10n.ccylSignOut,
+                  value: activity.isSignOut == '1'
                       ? l10n.ccylEnabled
                       : l10n.ccylDisabled,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: activity.isSignOut == '1'
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.outline,
-                  ),
+                  isEnabled: activity.isSignOut == '1',
                 ),
               ],
             ),
@@ -552,6 +529,40 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSignRow({
+    required IconData icon,
+    required String label,
+    required String value,
+    required bool isEnabled,
+  }) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
+        const SizedBox(width: 8),
+        Text(
+          '$label: ',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w500,
+              color: isEnabled
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.outline,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
