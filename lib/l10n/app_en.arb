@@ -1002,7 +1002,7 @@
     "teamIntroDesc": "The-Brotherhood-of-SCU is an unofficial open-source organization of Sichuan University, maintained by a group of SCU students who are passionate about technology and campus life. Our goal is to build practical campus tools for SCU students through open-source collaboration.",
     "teamJoinUsTitle": "Join Us",
     "teamContributeDesc": "We welcome all forms of contributions, including submitting Issues, providing feedback, initiating Pull Requests, or improving documentation.",
-    "teamContributeClosing": "The growth of the project depends on every contributor. We look forward to your participation."
+    "teamContributeClosing": "The growth of the project depends on every contributor. We look forward to your participation.",
     "quickSetting": "Quick Setting",
     "@quickSetting": {
         "description": "Section title for quick preset time slot settings",

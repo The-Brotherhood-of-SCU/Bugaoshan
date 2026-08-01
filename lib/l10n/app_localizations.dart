@@ -4494,6 +4494,7 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The growth of the project depends on every contributor. We look forward to your participation.'**
   String get teamContributeClosing;
+
   /// Section title for quick preset time slot settings
   ///
   /// In en, this message translates to:
