@@ -2353,4 +2353,163 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get switchSchedule => 'Switch';
+
+  @override
+  String get quickSetting => 'Quick Setting';
+
+  @override
+  String get presetJiangAn => 'Jiang\'an Campus (SCU)';
+
+  @override
+  String get presetWangJiangHuaXi => 'Wangjiang/Huaxi Campus (SCU)';
+
+  @override
+  String get presetScuHint =>
+      'Auto-set 4-5-3 sections with corresponding times';
+
+  @override
+  String appliedPreset(String campus) {
+    return 'Applied $campus time slot preset';
+  }
+
+  @override
+  String get presetLabel => 'Preset';
+
+  @override
+  String roomCount(int count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString rooms',
+      one: '1 room',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String totalHours(String hours) {
+    return 'Total Hours: $hours';
+  }
+
+  @override
+  String get sortBy => 'Sort by';
+
+  @override
+  String get reset => 'Reset';
+
+  @override
+  String get fileType => 'File type';
+
+  @override
+  String get all => 'All';
+
+  @override
+  String get manage => 'Manage';
+
+  @override
+  String get filter => 'Filter';
+
+  @override
+  String get courseAttrRequired => 'Required';
+
+  @override
+  String get courseAttrElective => 'Elective';
+
+  @override
+  String get courseAttrOptional => 'Optional';
+
+  @override
+  String get nameLabel => 'Name';
+
+  @override
+  String get sexLabel => 'Sex';
+
+  @override
+  String get studentIdLabel => 'Student ID';
+
+  @override
+  String get identityLabel => 'Identity';
+
+  @override
+  String get emailLabel => 'Email';
+
+  @override
+  String get phoneLabel => 'Phone';
+
+  @override
+  String get collegeLabel => 'College';
+
+  @override
+  String get refresh => 'Refresh';
+
+  @override
+  String gradeSuffix(String grade) {
+    return 'Grade $grade';
+  }
+
+  @override
+  String campusSuffix(String campusName) {
+    return '$campusName Campus';
+  }
+
+  @override
+  String get examEnded => 'Ended';
+
+  @override
+  String pricePerUnitValue(String price) {
+    return '$price CNY/kWh';
+  }
+
+  @override
+  String get verifyFailedCheckInfo =>
+      'Verification failed, please check your information';
+
+  @override
+  String get getAuthCodeFailed => 'Failed to get authorization code';
+
+  @override
+  String get addWidgetIosHint =>
+      'Long press on the iOS home screen, select the Bugaoshan course widget to add';
+
+  @override
+  String get addWidgetMacHint =>
+      'Click \'Edit Widgets\' in macOS Notification Center, add the Bugaoshan course widget';
+
+  @override
+  String get autoAdjustedToSunday =>
+      'Automatically adjusted to Sunday of that week';
+
+  @override
+  String get goForward => 'Forward';
+
+  @override
+  String get goBack => 'Back';
+
+  @override
+  String get openInBrowser => 'Open in browser';
+
+  @override
+  String get downloadComplete => 'Download complete';
+
+  @override
+  String importedScheduleName(int month, int day) {
+    final intl.NumberFormat monthNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String monthString = monthNumberFormat.format(month);
+    final intl.NumberFormat dayNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String dayString = dayNumberFormat.format(day);
+
+    return 'JWXT Import $monthString-$dayString';
+  }
+
+  @override
+  String get error => 'Error';
 }

@@ -386,7 +386,7 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
               Row(
                 children: [
                   Text(
-                    '排序方式',
+                    l10n.sortBy,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       color: Theme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.w600,
@@ -401,7 +401,7 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
                       });
                       Navigator.pop(context);
                     },
-                    child: const Text('重置'),
+                    child: Text(l10n.reset),
                   ),
                 ],
               ),
@@ -422,7 +422,7 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
               ),
               const SizedBox(height: 16),
               Text(
-                '文件类型',
+                l10n.fileType,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                   fontWeight: FontWeight.w600,
@@ -433,7 +433,7 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
                 spacing: 8,
                 children: [
                   ChoiceChip(
-                    label: const Text('全部'),
+                    label: Text(l10n.all),
                     selected: _filterExt.isEmpty,
                     onSelected: (_) {
                       setState(() => _filterExt = '');
@@ -483,7 +483,7 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
         ),
         IconButton(
           icon: const Icon(Icons.checklist),
-          tooltip: '管理',
+          tooltip: l10n.manage,
           onPressed: () {
             setState(() {
               if (_selecting) {
@@ -498,7 +498,7 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
         ),
         IconButton(
           icon: const Icon(Icons.filter_list),
-          tooltip: '筛选',
+          tooltip: l10n.filter,
           onPressed: _showFilterMenu,
         ),
       ],
@@ -587,7 +587,7 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
               child: Row(
                 children: [
                   Text(
-                    '已选择 ${_selected.length} 个文件',
+                    l10n.selectedCount(_selected.length),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),

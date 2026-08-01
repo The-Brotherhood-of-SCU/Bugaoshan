@@ -305,7 +305,10 @@ class BalanceCardState extends State<BalanceCard> {
                           l10n.roomNumber,
                           _privacyHidden ? '***' : _localInfo!.roomNo,
                         ),
-                        _infoRow(l10n.pricePerUnit, '${_localInfo!.price} 元/度'),
+                        _infoRow(
+                          l10n.pricePerUnit,
+                          l10n.pricePerUnitValue(_localInfo!.price.toString()),
+                        ),
                       ],
                     ),
             ),
@@ -321,17 +324,26 @@ class BalanceCardState extends State<BalanceCard> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
-          Text(
-            value,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+            ),
           ),
         ],
       ),

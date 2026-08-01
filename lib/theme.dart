@@ -15,13 +15,14 @@ const pageTransitionsTheme = PageTransitionsTheme(
   },
 );
 
-const appBarTheme = AppBarTheme(
-  toolbarHeight: 48,
+AppBarTheme appBarTheme({double textScale = 1.0}) => AppBarTheme(
+  toolbarHeight: 48 * textScale,
   centerTitle: false,
   scrolledUnderElevation: 0,
 );
 
-const navigationBarTheme = NavigationBarThemeData(height: 64);
+NavigationBarThemeData navigationBarTheme({double textScale = 1.0}) =>
+    NavigationBarThemeData(height: 64 * textScale);
 
 /// MD3 Expressive 组件形状覆盖
 const cardTheme = CardThemeData(
@@ -76,6 +77,7 @@ ThemeData buildTheme({
   required Brightness brightness,
   required Color seedColor,
   bool useGoogleFonts = false,
+  double textScale = 1.0,
 }) {
   final baseTheme = ThemeData(
     colorScheme: ColorScheme.fromSeed(
@@ -83,8 +85,8 @@ ThemeData buildTheme({
       brightness: brightness,
     ),
     pageTransitionsTheme: pageTransitionsTheme,
-    appBarTheme: appBarTheme,
-    navigationBarTheme: navigationBarTheme,
+    appBarTheme: appBarTheme(textScale: textScale),
+    navigationBarTheme: navigationBarTheme(textScale: textScale),
     // MD3 Expressive 组件形状覆盖
     cardTheme: cardTheme,
     dialogTheme: dialogTheme,

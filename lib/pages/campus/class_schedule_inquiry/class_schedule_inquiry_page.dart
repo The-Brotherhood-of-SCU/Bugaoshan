@@ -290,7 +290,10 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
                         .map(
                           (g) => DropdownMenuItem(
                             value: g,
-                            child: Text('$g级', overflow: TextOverflow.ellipsis),
+                            child: Text(
+                              l10n.gradeSuffix(g.toString()),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         )
                         .toList(),
@@ -341,7 +344,7 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
                   child: _buildDropdown(
                     value: _selectedSubject,
                     items: [
-                      const DropdownMenuItem(value: '', child: Text('全部')),
+                      DropdownMenuItem(value: '', child: Text(l10n.all)),
                       ..._subjects.map(
                         (s) => DropdownMenuItem(
                           value: s.code,
@@ -361,7 +364,7 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
                   child: _buildDropdown(
                     value: _selectedClass,
                     items: [
-                      const DropdownMenuItem(value: '', child: Text('全部')),
+                      DropdownMenuItem(value: '', child: Text(l10n.all)),
                       ..._classOptions.map(
                         (c) => DropdownMenuItem(
                           value: c.code,

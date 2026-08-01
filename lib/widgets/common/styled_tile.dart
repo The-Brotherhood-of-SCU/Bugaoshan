@@ -99,10 +99,17 @@ class IconTile extends StatelessWidget {
             ),
           ),
           if (value != null)
-            Text(
-              value!,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+            Flexible(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  value!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ),
             ),
           if (trailing != null) ...[

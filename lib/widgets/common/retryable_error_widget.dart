@@ -88,6 +88,8 @@ class RetryableErrorWidget extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               displayMessage,
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,

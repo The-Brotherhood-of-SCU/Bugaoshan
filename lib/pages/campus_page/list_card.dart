@@ -55,6 +55,8 @@ class CampusListCard extends StatelessWidget {
                   children: [
                     Text(
                       title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -63,6 +65,8 @@ class CampusListCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         desc!,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),

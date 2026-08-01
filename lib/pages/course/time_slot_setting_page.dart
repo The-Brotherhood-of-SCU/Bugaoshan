@@ -129,7 +129,7 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
-                '快速设置',
+                l10n.quickSetting,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.primary,
@@ -138,8 +138,8 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('四川大学江安校区'),
-              subtitle: const Text('自动设置 4-5-3 节数及对应时间点'),
+              title: Text(l10n.presetJiangAn),
+              subtitle: Text(l10n.presetScuHint),
               trailing: const Icon(Icons.auto_fix_high),
               onTap: () {
                 setState(() {
@@ -150,14 +150,16 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
                 });
                 _autoSave();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('已应用四川大学江安校区时间表预设')),
+                  SnackBar(
+                    content: Text(l10n.appliedPreset(l10n.presetJiangAn)),
+                  ),
                 );
               },
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('四川大学望江/华西校区'),
-              subtitle: const Text('自动设置 4-5-3 节数及对应时间点'),
+              title: Text(l10n.presetWangJiangHuaXi),
+              subtitle: Text(l10n.presetScuHint),
               trailing: const Icon(Icons.auto_fix_high),
               onTap: () {
                 setState(() {
@@ -168,7 +170,11 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
                 });
                 _autoSave();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('已应用四川大学望江/华西校区时间表预设')),
+                  SnackBar(
+                    content: Text(
+                      l10n.appliedPreset(l10n.presetWangJiangHuaXi),
+                    ),
+                  ),
                 );
               },
             ),

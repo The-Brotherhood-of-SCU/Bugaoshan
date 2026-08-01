@@ -84,7 +84,7 @@ class _SetDockPageState extends State<SetDockPage> {
           ),
           const SizedBox(height: 12),
           Container(
-            height: 64,
+            height: 64 * MediaQuery.textScalerOf(context).scale(1.0),
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
@@ -98,9 +98,13 @@ class _SetDockPageState extends State<SetDockPage> {
                       children: [
                         Icon(item.icon, size: 24),
                         const SizedBox(height: 4),
-                        Text(
-                          item.dockLabel(l10n),
-                          style: theme.textTheme.labelSmall,
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            item.dockLabel(l10n),
+                            maxLines: 1,
+                            style: theme.textTheme.labelSmall,
+                          ),
                         ),
                       ],
                     ),
@@ -163,7 +167,11 @@ class _SetDockPageState extends State<SetDockPage> {
           margin: const EdgeInsets.symmetric(vertical: 4),
           child: ListTile(
             leading: Icon(item.icon, color: theme.colorScheme.primary),
-            title: Text(item.dockFullLabel(l10n)),
+            title: Text(
+              item.dockFullLabel(l10n),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
             subtitle: null,
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
@@ -201,7 +209,11 @@ class _SetDockPageState extends State<SetDockPage> {
                   item.icon,
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
-                title: Text(item.dockFullLabel(l10n)),
+                title: Text(
+                  item.dockFullLabel(l10n),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 trailing: Switch(
                   value: false,
                   onChanged: (_) => _toggleVisibility(item.id),

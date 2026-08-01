@@ -91,10 +91,12 @@ class _UserInfoCardState extends State<UserInfoCard> {
           ),
         ),
         const SizedBox(width: 14),
-        Text(
-          localizations.userInfoLoading,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+        Flexible(
+          child: Text(
+            localizations.userInfoLoading,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
       ],

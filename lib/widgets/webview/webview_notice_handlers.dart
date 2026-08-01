@@ -147,9 +147,10 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
         headers: headers,
       );
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('下载完成')));
+        ).showSnackBar(SnackBar(content: Text(l10n.downloadComplete)));
       }
       return true;
     } catch (e) {

@@ -148,6 +148,7 @@ class BindRoomDialogState extends State<BindRoomDialog> {
       _error = null;
     });
 
+    final l10n = AppLocalizations.of(context)!;
     final unitCode = _hasUnits ? _selectedUnit!.code : '';
     final unitName = _hasUnits ? _selectedUnit!.name : '';
 
@@ -178,7 +179,7 @@ class BindRoomDialogState extends State<BindRoomDialog> {
       } else if (mounted) {
         setState(() {
           _isLoading = false;
-          _error = '验证失败，请检查信息是否正确';
+          _error = l10n.verifyFailedCheckInfo;
         });
       }
     } catch (e) {
@@ -509,7 +510,15 @@ class BindRoomDialogState extends State<BindRoomDialog> {
               borderRadius: BorderRadius.circular(AppShapes.small),
             ),
             child: Row(
-              children: [Text('${auth.userRealname} (${auth.userNumber})')],
+              children: [
+                Expanded(
+                  child: Text(
+                    '${auth.userRealname} (${auth.userNumber})',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
           ),
         const SizedBox(height: 16),

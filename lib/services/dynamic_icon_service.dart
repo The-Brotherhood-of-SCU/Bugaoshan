@@ -1,6 +1,5 @@
-import 'dart:io' show Platform;
-
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:flutter/services.dart';
 
 /// Service for switching app icons at runtime.
@@ -17,7 +16,11 @@ class DynamicIconService {
 
   /// The native channel is only implemented on Android; other platforms
   /// fall back to safe defaults instead of throwing [MissingPluginException].
-  static bool get _isSupported => !kIsWeb && Platform.isAndroid;
+  ///
+  /// Uses [defaultTargetPlatform] instead of `Platform.isAndroid` so tests can
+  /// override the platform via [debugDefaultTargetPlatformOverride].
+  static bool get _isSupported =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   /// Returns the list of available alternate icon names.
   static Future<List<String>> getAvailableIcons() async {

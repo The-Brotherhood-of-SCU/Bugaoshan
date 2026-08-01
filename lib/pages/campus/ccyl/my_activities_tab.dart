@@ -155,9 +155,13 @@ class _MyActivityCard extends StatelessWidget {
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: 4),
-                  Text(
-                    activity.orgName,
-                    style: Theme.of(context).textTheme.bodySmall,
+                  Flexible(
+                    child: Text(
+                      activity.orgName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ),
                 ],
               ),
@@ -208,11 +212,14 @@ class _MyActivityCard extends StatelessWidget {
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: 4),
-                  Text(
-                    '${activity.classHour} ${l10n.ccylHours}',
-                    style: Theme.of(context).textTheme.bodySmall,
+                  Expanded(
+                    child: Text(
+                      '${activity.classHour} ${l10n.ccylHours}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ),
-                  const Spacer(),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,

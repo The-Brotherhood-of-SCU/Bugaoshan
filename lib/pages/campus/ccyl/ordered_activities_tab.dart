@@ -142,6 +142,7 @@ class _OrderedActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: InkWell(
@@ -176,9 +177,13 @@ class _OrderedActivityCard extends StatelessWidget {
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: 4),
-                  Text(
-                    activity.orgName,
-                    style: Theme.of(context).textTheme.bodySmall,
+                  Flexible(
+                    child: Text(
+                      activity.orgName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   if (activity.levelName != null) ...[
@@ -209,7 +214,7 @@ class _OrderedActivityCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    '${activity.classHour} 学时',
+                    '${activity.classHour} ${l10n.ccylHours}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   if (activity.starName?.isNotEmpty == true) ...[
@@ -220,9 +225,13 @@ class _OrderedActivityCard extends StatelessWidget {
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: 4),
-                    Text(
-                      activity.starName!,
-                      style: Theme.of(context).textTheme.bodySmall,
+                    Flexible(
+                      child: Text(
+                        activity.starName!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
                     ),
                   ],
                 ],
