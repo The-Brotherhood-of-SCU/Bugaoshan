@@ -219,7 +219,13 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 const SizedBox(width: 4),
-                Text(lib.orgName),
+                Flexible(
+                  child: Text(
+                    lib.orgName,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
                 const SizedBox(width: 16),
                 if (lib.levelName != null)
                   Container(

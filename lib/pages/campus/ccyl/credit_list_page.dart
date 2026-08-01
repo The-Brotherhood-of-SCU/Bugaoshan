@@ -479,8 +479,15 @@ class _CreditCard extends StatelessWidget {
                   const SizedBox(width: 16),
                   const Icon(Icons.category_outlined, size: 16),
                   const SizedBox(width: 4),
-                  Text(credit.scoreTypeName, style: mutedStyle),
-                  const Spacer(),
+                  Expanded(
+                    child: Text(
+                      credit.scoreTypeName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: mutedStyle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   _StatusChip(
                     label: credit.creditStatusName,
                     color: credit.creditStatus == 'C0'

@@ -177,9 +177,13 @@ class _OrderedActivityCard extends StatelessWidget {
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: 4),
-                  Text(
-                    activity.orgName,
-                    style: Theme.of(context).textTheme.bodySmall,
+                  Flexible(
+                    child: Text(
+                      activity.orgName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   if (activity.levelName != null) ...[
@@ -221,9 +225,13 @@ class _OrderedActivityCard extends StatelessWidget {
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: 4),
-                    Text(
-                      activity.starName!,
-                      style: Theme.of(context).textTheme.bodySmall,
+                    Flexible(
+                      child: Text(
+                        activity.starName!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
                     ),
                   ],
                 ],
