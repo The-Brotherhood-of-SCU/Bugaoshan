@@ -104,9 +104,13 @@ class DownloadProgressDialogView extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       spacing: 8,
       children: [
-        Text(
-          progressState.status,
-          style: Theme.of(context).textTheme.titleMedium,
+        Flexible(
+          child: Text(
+            progressState.status,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
         ),
         Text(
           '${progressState.percent}%',

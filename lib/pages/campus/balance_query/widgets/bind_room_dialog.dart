@@ -510,7 +510,15 @@ class BindRoomDialogState extends State<BindRoomDialog> {
               borderRadius: BorderRadius.circular(AppShapes.small),
             ),
             child: Row(
-              children: [Text('${auth.userRealname} (${auth.userNumber})')],
+              children: [
+                Expanded(
+                  child: Text(
+                    '${auth.userRealname} (${auth.userNumber})',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
           ),
         const SizedBox(height: 16),
