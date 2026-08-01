@@ -347,19 +347,25 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
             Row(
               children: [
                 if (node.courseCode.isNotEmpty) ...[
-                  Text(
-                    node.courseCode,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  Flexible(
+                    child: Text(
+                      node.courseCode,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
                 ],
                 if (node.courseCredits.isNotEmpty)
-                  Text(
-                    '${node.courseCredits}${AppLocalizations.of(context)!.planCompletionCreditsUnit}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  Flexible(
+                    child: Text(
+                      '${node.courseCredits}${AppLocalizations.of(context)!.planCompletionCreditsUnit}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
               ],

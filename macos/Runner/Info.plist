@@ -34,5 +34,7 @@
 	<string>用于读取可写日历列表并将导出的课表和考表写入您选择的系统日历。</string>
 	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
 	<string>用于将导出的课表和考表写入系统日历。</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>用于将您选择保存的图片添加到系统相册。</string>
 </dict>
 </plist>

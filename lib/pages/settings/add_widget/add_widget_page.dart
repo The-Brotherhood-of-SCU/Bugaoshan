@@ -170,8 +170,8 @@ class _AddWidgetContentState extends State<AddWidgetContent>
                       Expanded(
                         child: Text(
                           _platform == TargetPlatform.iOS
-                              ? '在 iOS 主屏幕长按，选择「不高山上」的课表组件添加'
-                              : '在 macOS 通知中心点击「编辑小组件」，添加「不高山上」的课表组件',
+                              ? localizations.addWidgetIosHint
+                              : localizations.addWidgetMacHint,
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ),

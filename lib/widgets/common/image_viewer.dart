@@ -109,6 +109,9 @@ class ImageViewerPage extends StatelessWidget {
     AppLocalizations l10n,
   ) async {
     try {
+      final granted = await Gal.requestAccess();
+      if (!granted) throw StateError('Gallery access denied');
+
       final response = await http.get(Uri.parse(imageUrl), headers: headers);
       if (response.statusCode != 200) throw Exception('Download failed');
       await Gal.putImageBytes(response.bodyBytes);

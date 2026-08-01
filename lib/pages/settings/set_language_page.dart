@@ -108,9 +108,11 @@ class RadioButton extends StatelessWidget {
     Widget child = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(text, textScaler: const TextScaler.linear(1.1)),
+        Flexible(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(text, textScaler: const TextScaler.linear(1.1)),
+          ),
         ),
         AnimatedOpacity(
           opacity: selfSelected ? 1 : 0,
@@ -142,10 +144,12 @@ class FollowSystemRadioButton extends RadioButton {
     Widget child = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          key: ValueKey(text),
-          text,
-          textScaler: const TextScaler.linear(1.1),
+        Flexible(
+          child: Text(
+            key: ValueKey(text),
+            text,
+            textScaler: const TextScaler.linear(1.1),
+          ),
         ),
         AnimatedOpacity(
           opacity: selfSelected ? 1 : 0,

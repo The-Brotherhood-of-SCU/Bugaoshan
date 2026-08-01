@@ -375,6 +375,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
   }
 
   Future<void> _pickDate(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final picked = await showDatePicker(
       context: context,
       initialDate: _startDate,
@@ -388,7 +389,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
         if (context.mounted) {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(const SnackBar(content: Text('已自动调整为该周周日')));
+          ).showSnackBar(SnackBar(content: Text(l10n.autoAdjustedToSunday)));
         }
       }
       setState(() {

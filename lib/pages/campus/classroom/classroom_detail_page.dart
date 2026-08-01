@@ -90,7 +90,7 @@ class ClassroomDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '${building.teachingBuildingName} · ${campus.campusName}校区',
+              '${building.teachingBuildingName} · ${l10n.campusSuffix(campus.campusName)}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -129,7 +129,7 @@ class ClassroomDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              '${l10n.seats == "座" ? "座位数" : "Seats"}: ${room.placeNum}',
+              '${l10n.seats}: ${room.placeNum}',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             if (room.remark.isNotEmpty) ...[
@@ -234,7 +234,7 @@ class ClassroomDetailPage extends StatelessWidget {
     int period,
     ClassroomPeriodStatus status,
   ) {
-    final periodLabel = l10n.seats == "座" ? '第$period节' : 'P$period';
+    final periodLabel = l10n.periodN(period);
 
     Color bgColor;
     IconData icon;

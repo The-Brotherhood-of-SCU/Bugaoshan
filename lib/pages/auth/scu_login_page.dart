@@ -357,7 +357,9 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
             const SizedBox(height: 16),
             _buildCaptchaRow(l10n, isDark),
             const SizedBox(height: 20),
-            Row(
+            Wrap(
+              spacing: 24,
+              runSpacing: 8,
               children: [
                 _buildCheckbox(
                   value: _rememberPassword,
@@ -368,7 +370,6 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
                     if (!_rememberPassword) _autoLogin = false;
                   }),
                 ),
-                const SizedBox(width: 24),
                 _buildCheckbox(
                   value: _autoLogin,
                   label: l10n.autoLogin,
@@ -665,6 +666,8 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
           const SizedBox(width: 8),
           Text(
             label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 14,
               color: isDark ? Colors.white70 : Colors.grey.shade700,

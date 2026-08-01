@@ -123,8 +123,10 @@ class UpdateDialogContent extends StatelessWidget {
               const Divider(height: 1),
               const SizedBox(height: 16),
               // Actions
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+              Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 12,
+                runSpacing: 8,
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),

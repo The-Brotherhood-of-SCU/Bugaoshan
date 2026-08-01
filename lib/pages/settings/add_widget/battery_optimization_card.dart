@@ -66,10 +66,12 @@ class _LoadingCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Text(
-              localizations.loading,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+            Flexible(
+              child: Text(
+                localizations.loading,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ],

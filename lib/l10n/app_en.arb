@@ -1003,4 +1003,219 @@
     "teamJoinUsTitle": "Join Us",
     "teamContributeDesc": "We welcome all forms of contributions, including submitting Issues, providing feedback, initiating Pull Requests, or improving documentation.",
     "teamContributeClosing": "The growth of the project depends on every contributor. We look forward to your participation."
+    "quickSetting": "Quick Setting",
+    "@quickSetting": {
+        "description": "Section title for quick preset time slot settings",
+        "type": "text"
+    },
+    "presetJiangAn": "Jiang'an Campus (SCU)",
+    "@presetJiangAn": {
+        "description": "Preset name for SCU Jiang'an campus time slots",
+        "type": "text"
+    },
+    "presetWangJiangHuaXi": "Wangjiang/Huaxi Campus (SCU)",
+    "@presetWangJiangHuaXi": {
+        "description": "Preset name for SCU Wangjiang/Huaxi campus time slots",
+        "type": "text"
+    },
+    "presetScuHint": "Auto-set 4-5-3 sections with corresponding times",
+    "@presetScuHint": {
+        "description": "Hint for SCU preset time slot configuration",
+        "type": "text"
+    },
+    "appliedPreset": "Applied {campus} time slot preset",
+    "@appliedPreset": {
+        "description": "Snackbar message when a time slot preset is applied",
+        "placeholders": {
+            "campus": {"type": "String"}
+        }
+    },
+    "presetLabel": "Preset",
+    "@presetLabel": {
+        "description": "Label for preset time slot configuration",
+        "type": "text"
+    },
+    "roomCount": "{count,plural, =1{1 room} other{{count} rooms}}",
+    "@roomCount": {
+        "description": "Number of classrooms found, e.g. '12 rooms'",
+        "placeholders": {
+            "count": {"type": "int", "format": "compact"}
+        }
+    },
+    "totalHours": "Total Hours: {hours}",
+    "@totalHours": {
+        "description": "Total hours label for CCYL credit list, e.g. 'Total Hours: 120'",
+        "placeholders": {
+            "hours": {"type": "String"}
+        }
+    },
+    "sortBy": "Sort by",
+    "@sortBy": {
+        "description": "Label for sort mode selector",
+        "type": "text"
+    },
+    "reset": "Reset",
+    "@reset": {
+        "description": "Reset button label",
+        "type": "text"
+    },
+    "fileType": "File type",
+    "@fileType": {
+        "description": "Label for file type filter",
+        "type": "text"
+    },
+    "all": "All",
+    "@all": {
+        "description": "Label for 'All' option in filters",
+        "type": "text"
+    },
+    "manage": "Manage",
+    "@manage": {
+        "description": "Tooltip for manage/selection mode toggle",
+        "type": "text"
+    },
+    "filter": "Filter",
+    "@filter": {
+        "description": "Tooltip for filter button",
+        "type": "text"
+    },
+    "courseAttrRequired": "Required",
+    "@courseAttrRequired": {
+        "description": "Course attribute: required course",
+        "type": "text"
+    },
+    "courseAttrElective": "Elective",
+    "@courseAttrElective": {
+        "description": "Course attribute: elective course",
+        "type": "text"
+    },
+    "courseAttrOptional": "Optional",
+    "@courseAttrOptional": {
+        "description": "Course attribute: optional course",
+        "type": "text"
+    },
+    "nameLabel": "Name",
+    "@nameLabel": {
+        "description": "Generic label for person name",
+        "type": "text"
+    },
+    "sexLabel": "Sex",
+    "@sexLabel": {
+        "description": "Generic label for sex/gender",
+        "type": "text"
+    },
+    "studentIdLabel": "Student ID",
+    "@studentIdLabel": {
+        "description": "Generic label for student ID number",
+        "type": "text"
+    },
+    "identityLabel": "Identity",
+    "@identityLabel": {
+        "description": "Generic label for identity/role",
+        "type": "text"
+    },
+    "emailLabel": "Email",
+    "@emailLabel": {
+        "description": "Generic label for email address",
+        "type": "text"
+    },
+    "phoneLabel": "Phone",
+    "@phoneLabel": {
+        "description": "Generic label for phone number",
+        "type": "text"
+    },
+    "collegeLabel": "College",
+    "@collegeLabel": {
+        "description": "Generic label for college/department",
+        "type": "text"
+    },
+    "refresh": "Refresh",
+    "@refresh": {
+        "description": "Refresh button tooltip",
+        "type": "text"
+    },
+    "gradeSuffix": "Grade {grade}",
+    "@gradeSuffix": {
+        "description": "Grade suffix format, e.g. 'Grade 2024'",
+        "placeholders": {
+            "grade": {"type": "String"}
+        }
+    },
+    "campusSuffix": "{campusName} Campus",
+    "@campusSuffix": {
+        "description": "Campus name suffix, e.g. 'Jiang'an Campus'",
+        "placeholders": {
+            "campusName": {"type": "String"}
+        }
+    },
+    "examEnded": "Ended",
+    "@examEnded": {
+        "description": "Label indicating an exam has already ended",
+        "type": "text"
+    },
+    "pricePerUnitValue": "{price} CNY/kWh",
+    "@pricePerUnitValue": {
+        "description": "Price per unit with unit, e.g. '0.50 CNY/kWh'",
+        "placeholders": {
+            "price": {"type": "String"}
+        }
+    },
+    "verifyFailedCheckInfo": "Verification failed, please check your information",
+    "@verifyFailedCheckInfo": {
+        "description": "Error message when room binding verification fails",
+        "type": "text"
+    },
+    "getAuthCodeFailed": "Failed to get authorization code",
+    "@getAuthCodeFailed": {
+        "description": "Error message when CCYL OAuth authorization code retrieval fails",
+        "type": "text"
+    },
+    "addWidgetIosHint": "Long press on the iOS home screen, select the Bugaoshan course widget to add",
+    "@addWidgetIosHint": {
+        "description": "Hint for adding widget on iOS home screen",
+        "type": "text"
+    },
+    "addWidgetMacHint": "Click 'Edit Widgets' in macOS Notification Center, add the Bugaoshan course widget",
+    "@addWidgetMacHint": {
+        "description": "Hint for adding widget on macOS Notification Center",
+        "type": "text"
+    },
+    "autoAdjustedToSunday": "Automatically adjusted to Sunday of that week",
+    "@autoAdjustedToSunday": {
+        "description": "SnackBar message when week start date is auto-adjusted to Sunday",
+        "type": "text"
+    },
+    "goForward": "Forward",
+    "@goForward": {
+        "description": "Tooltip for webview forward navigation button",
+        "type": "text"
+    },
+    "goBack": "Back",
+    "@goBack": {
+        "description": "Tooltip for webview back navigation button",
+        "type": "text"
+    },
+    "openInBrowser": "Open in browser",
+    "@openInBrowser": {
+        "description": "Tooltip to open current page in external browser",
+        "type": "text"
+    },
+    "downloadComplete": "Download complete",
+    "@downloadComplete": {
+        "description": "SnackBar message when a file download is complete",
+        "type": "text"
+    },
+    "importedScheduleName": "JWXT Import {month}-{day}",
+    "@importedScheduleName": {
+        "description": "Default name for imported schedule from JWXT",
+        "placeholders": {
+            "month": {"type": "int", "format": "compact"},
+            "day": {"type": "int", "format": "compact"}
+        }
+    },
+    "error": "Error",
+    "@error": {
+        "description": "Generic error title",
+        "type": "text"
+    }
 }

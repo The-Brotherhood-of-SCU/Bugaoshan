@@ -27,12 +27,13 @@ class _CcylBindPageState extends State<CcylBindPage> {
       _error = null;
     });
 
+    final l10n = AppLocalizations.of(context)!;
     try {
       final code = await _oauthService.getOAuthCode();
       if (code == null) {
         if (mounted) {
           setState(() {
-            _error = '获取授权码失败';
+            _error = l10n.getAuthCodeFailed;
           });
         }
         return;

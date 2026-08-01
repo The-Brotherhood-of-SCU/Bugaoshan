@@ -348,6 +348,7 @@ class _StatsHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Card(
       margin: const EdgeInsets.all(16),
@@ -365,7 +366,7 @@ class _StatsHeader extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  '总学时: $totalHours',
+                  l10n.totalHours(totalHours.toStringAsFixed(1)),
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -390,7 +391,7 @@ class _StatsHeader extends StatelessWidget {
                       Text(entry.key, style: theme.textTheme.bodyMedium),
                       const Spacer(),
                       Text(
-                        '${entry.value} 学时',
+                        '${entry.value} ${l10n.ccylHours}',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w500,
                         ),
@@ -423,6 +424,7 @@ class _CreditCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final mutedStyle = theme.textTheme.bodySmall?.copyWith(
       color: theme.colorScheme.onSurfaceVariant,
     );
@@ -470,12 +472,22 @@ class _CreditCard extends StatelessWidget {
                 children: [
                   const Icon(Icons.access_time, size: 16),
                   const SizedBox(width: 4),
-                  Text('${credit.classHour} 学时', style: mutedStyle),
+                  Text(
+                    '${credit.classHour} ${l10n.ccylHours}',
+                    style: mutedStyle,
+                  ),
                   const SizedBox(width: 16),
                   const Icon(Icons.category_outlined, size: 16),
                   const SizedBox(width: 4),
-                  Text(credit.scoreTypeName, style: mutedStyle),
-                  const Spacer(),
+                  Expanded(
+                    child: Text(
+                      credit.scoreTypeName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: mutedStyle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   _StatusChip(
                     label: credit.creditStatusName,
                     color: credit.creditStatus == 'C0'

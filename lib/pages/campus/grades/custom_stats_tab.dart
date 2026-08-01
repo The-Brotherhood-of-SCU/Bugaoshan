@@ -242,21 +242,26 @@ class _CustomStatsTabState extends State<CustomStatsTab> {
   }
 
   Widget _buildAttrChips(BuildContext context) {
-    final attrs = ['必修', '选修', '任选'];
+    final l10n = AppLocalizations.of(context)!;
+    final attrLabels = {
+      '必修': l10n.courseAttrRequired,
+      '选修': l10n.courseAttrElective,
+      '任选': l10n.courseAttrOptional,
+    };
     return Wrap(
       spacing: 8,
       children: [
         ChoiceChip(
-          label: Text(AppLocalizations.of(context)!.trainProgramAll),
+          label: Text(l10n.trainProgramAll),
           selected: _attrFilter == null,
           onSelected: (_) => setState(() => _attrFilter = null),
         ),
-        for (final attr in attrs)
+        for (final entry in attrLabels.entries)
           ChoiceChip(
-            label: Text(attr),
-            selected: _attrFilter == attr,
+            label: Text(entry.value),
+            selected: _attrFilter == entry.key,
             onSelected: (selected) {
-              setState(() => _attrFilter = selected ? attr : null);
+              setState(() => _attrFilter = selected ? entry.key : null);
             },
           ),
       ],

@@ -46,72 +46,81 @@ class _TopBar extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          GestureDetector(
-            onTap: onGoToCurrentWeek,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  dateStr,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 1),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    GestureDetector(
-                      onTap: canGoPrevious ? onPreviousWeek : null,
-                      child: Icon(
-                        Icons.chevron_left,
-                        size: 16,
-                        color: canGoPrevious
-                            ? Theme.of(context).colorScheme.onSurface
-                            : Theme.of(context).disabledColor,
-                      ),
+          Flexible(
+            child: GestureDetector(
+              onTap: onGoToCurrentWeek,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    dateStr,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(width: 5),
-                    AnimatedSize(
-                      duration:
-                          appConfigService.cardSizeAnimationDuration.value,
-                      curve: appCurve,
-                      child: Text(
-                        isViewingVacation
-                            ? l10n.onVacation
-                            : l10n.currentWeek(visibleWeek),
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(height: 1),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      GestureDetector(
+                        onTap: canGoPrevious ? onPreviousWeek : null,
+                        child: Icon(
+                          Icons.chevron_left,
+                          size: 16,
+                          color: canGoPrevious
+                              ? Theme.of(context).colorScheme.onSurface
+                              : Theme.of(context).disabledColor,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 5),
-                    GestureDetector(
-                      onTap: canGoNext ? onNextWeek : null,
-                      child: Icon(
-                        Icons.chevron_right,
-                        size: 16,
-                        color: canGoNext
-                            ? Theme.of(context).colorScheme.onSurface
-                            : Theme.of(context).disabledColor,
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: AnimatedSize(
+                          duration:
+                              appConfigService.cardSizeAnimationDuration.value,
+                          curve: appCurve,
+                          child: Text(
+                            isViewingVacation
+                                ? l10n.onVacation
+                                : l10n.currentWeek(visibleWeek),
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 3),
-                    if (isTodayOnVacation)
-                      const _VacationBadge()
-                    else
-                      _WeekBadge(
-                        isCurrentCalendarWeek: isCurrentCalendarWeek,
-                        // 无放假页时学期过末 actualWeek 会超过 totalWeeks，
-                        // clamp 避免徽章显示越界周数。
-                        actualCurrentWeek: actualWeek.clamp(1, totalWeeks),
+                      const SizedBox(width: 5),
+                      GestureDetector(
+                        onTap: canGoNext ? onNextWeek : null,
+                        child: Icon(
+                          Icons.chevron_right,
+                          size: 16,
+                          color: canGoNext
+                              ? Theme.of(context).colorScheme.onSurface
+                              : Theme.of(context).disabledColor,
+                        ),
                       ),
-                  ],
-                ),
-              ],
+                      const SizedBox(width: 3),
+                      if (isTodayOnVacation)
+                        const _VacationBadge()
+                      else
+                        _WeekBadge(
+                          isCurrentCalendarWeek: isCurrentCalendarWeek,
+                          // 无放假页时学期过末 actualWeek 会超过 totalWeeks，
+                          // clamp 避免徽章显示越界周数。
+                          actualCurrentWeek: actualWeek.clamp(1, totalWeeks),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
           Row(

@@ -4494,6 +4494,245 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The growth of the project depends on every contributor. We look forward to your participation.'**
   String get teamContributeClosing;
+  /// Section title for quick preset time slot settings
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Setting'**
+  String get quickSetting;
+
+  /// Preset name for SCU Jiang'an campus time slots
+  ///
+  /// In en, this message translates to:
+  /// **'Jiang\'an Campus (SCU)'**
+  String get presetJiangAn;
+
+  /// Preset name for SCU Wangjiang/Huaxi campus time slots
+  ///
+  /// In en, this message translates to:
+  /// **'Wangjiang/Huaxi Campus (SCU)'**
+  String get presetWangJiangHuaXi;
+
+  /// Hint for SCU preset time slot configuration
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-set 4-5-3 sections with corresponding times'**
+  String get presetScuHint;
+
+  /// Snackbar message when a time slot preset is applied
+  ///
+  /// In en, this message translates to:
+  /// **'Applied {campus} time slot preset'**
+  String appliedPreset(String campus);
+
+  /// Label for preset time slot configuration
+  ///
+  /// In en, this message translates to:
+  /// **'Preset'**
+  String get presetLabel;
+
+  /// Number of classrooms found, e.g. '12 rooms'
+  ///
+  /// In en, this message translates to:
+  /// **'{count,plural, =1{1 room} other{{count} rooms}}'**
+  String roomCount(int count);
+
+  /// Total hours label for CCYL credit list, e.g. 'Total Hours: 120'
+  ///
+  /// In en, this message translates to:
+  /// **'Total Hours: {hours}'**
+  String totalHours(String hours);
+
+  /// Label for sort mode selector
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by'**
+  String get sortBy;
+
+  /// Reset button label
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get reset;
+
+  /// Label for file type filter
+  ///
+  /// In en, this message translates to:
+  /// **'File type'**
+  String get fileType;
+
+  /// Label for 'All' option in filters
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
+
+  /// Tooltip for manage/selection mode toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get manage;
+
+  /// Tooltip for filter button
+  ///
+  /// In en, this message translates to:
+  /// **'Filter'**
+  String get filter;
+
+  /// Course attribute: required course
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get courseAttrRequired;
+
+  /// Course attribute: elective course
+  ///
+  /// In en, this message translates to:
+  /// **'Elective'**
+  String get courseAttrElective;
+
+  /// Course attribute: optional course
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get courseAttrOptional;
+
+  /// Generic label for person name
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get nameLabel;
+
+  /// Generic label for sex/gender
+  ///
+  /// In en, this message translates to:
+  /// **'Sex'**
+  String get sexLabel;
+
+  /// Generic label for student ID number
+  ///
+  /// In en, this message translates to:
+  /// **'Student ID'**
+  String get studentIdLabel;
+
+  /// Generic label for identity/role
+  ///
+  /// In en, this message translates to:
+  /// **'Identity'**
+  String get identityLabel;
+
+  /// Generic label for email address
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get emailLabel;
+
+  /// Generic label for phone number
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get phoneLabel;
+
+  /// Generic label for college/department
+  ///
+  /// In en, this message translates to:
+  /// **'College'**
+  String get collegeLabel;
+
+  /// Refresh button tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get refresh;
+
+  /// Grade suffix format, e.g. 'Grade 2024'
+  ///
+  /// In en, this message translates to:
+  /// **'Grade {grade}'**
+  String gradeSuffix(String grade);
+
+  /// Campus name suffix, e.g. 'Jiang'an Campus'
+  ///
+  /// In en, this message translates to:
+  /// **'{campusName} Campus'**
+  String campusSuffix(String campusName);
+
+  /// Label indicating an exam has already ended
+  ///
+  /// In en, this message translates to:
+  /// **'Ended'**
+  String get examEnded;
+
+  /// Price per unit with unit, e.g. '0.50 CNY/kWh'
+  ///
+  /// In en, this message translates to:
+  /// **'{price} CNY/kWh'**
+  String pricePerUnitValue(String price);
+
+  /// Error message when room binding verification fails
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed, please check your information'**
+  String get verifyFailedCheckInfo;
+
+  /// Error message when CCYL OAuth authorization code retrieval fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to get authorization code'**
+  String get getAuthCodeFailed;
+
+  /// Hint for adding widget on iOS home screen
+  ///
+  /// In en, this message translates to:
+  /// **'Long press on the iOS home screen, select the Bugaoshan course widget to add'**
+  String get addWidgetIosHint;
+
+  /// Hint for adding widget on macOS Notification Center
+  ///
+  /// In en, this message translates to:
+  /// **'Click \'Edit Widgets\' in macOS Notification Center, add the Bugaoshan course widget'**
+  String get addWidgetMacHint;
+
+  /// SnackBar message when week start date is auto-adjusted to Sunday
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically adjusted to Sunday of that week'**
+  String get autoAdjustedToSunday;
+
+  /// Tooltip for webview forward navigation button
+  ///
+  /// In en, this message translates to:
+  /// **'Forward'**
+  String get goForward;
+
+  /// Tooltip for webview back navigation button
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get goBack;
+
+  /// Tooltip to open current page in external browser
+  ///
+  /// In en, this message translates to:
+  /// **'Open in browser'**
+  String get openInBrowser;
+
+  /// SnackBar message when a file download is complete
+  ///
+  /// In en, this message translates to:
+  /// **'Download complete'**
+  String get downloadComplete;
+
+  /// Default name for imported schedule from JWXT
+  ///
+  /// In en, this message translates to:
+  /// **'JWXT Import {month}-{day}'**
+  String importedScheduleName(int month, int day);
+
+  /// Generic error title
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get error;
 }
 
 class _AppLocalizationsDelegate
