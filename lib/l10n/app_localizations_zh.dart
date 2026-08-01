@@ -2306,9 +2306,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get teamContributeClosing => '项目的成长离不开每一位贡献者，期待你的参与。';
-
-  @override
-  String get teamOrgGitHub => '组织 GitHub 主页';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

@@ -2371,7 +2371,4 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get teamContributeClosing =>
       'The growth of the project depends on every contributor. We look forward to your participation.';
-
-  @override
-  String get teamOrgGitHub => 'Organization GitHub Homepage';
 }

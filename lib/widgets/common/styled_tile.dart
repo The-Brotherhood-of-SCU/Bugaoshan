@@ -224,6 +224,67 @@ class LinkTile extends StatelessWidget {
   }
 }
 
+/// [IconTile] variant with label and value stacked vertically.
+class StackedTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback? onTap;
+  final Color? iconColor;
+  final String? value;
+  final IconData? trailing;
+
+  const StackedTile({
+    super.key,
+    required this.icon,
+    required this.label,
+    this.onTap,
+    this.iconColor,
+    this.value,
+    this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return BaseTile(
+      onTap: onTap,
+      child: Row(
+        children: [
+          TileIcon(icon: icon, color: iconColor),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(label, style: theme.textTheme.bodyLarge),
+                if (value != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    value!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          Icon(
+            trailing ?? Icons.chevron_right_rounded,
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+            size: 20,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// [IconTile] with a loading indicator as trailing.
 class LoadingTile extends StatelessWidget {
   final IconData icon;

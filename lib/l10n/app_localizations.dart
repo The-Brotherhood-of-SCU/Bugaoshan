@@ -4494,12 +4494,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The growth of the project depends on every contributor. We look forward to your participation.'**
   String get teamContributeClosing;
-
-  /// No description provided for @teamOrgGitHub.
-  ///
-  /// In en, this message translates to:
-  /// **'Organization GitHub Homepage'**
-  String get teamOrgGitHub;
 }
 
 class _AppLocalizationsDelegate

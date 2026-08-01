@@ -30,11 +30,12 @@ class TeamPage extends StatelessWidget {
           const SizedBox(height: 24),
           InfoCard(
             children: [
-              LinkTile(
+              StackedTile(
                 icon: Icons.group_outlined,
-                label: l10n.teamOrgGitHub,
-                value: "github.com/The-Brotherhood-of-SCU",
+                label: "Github",
+                value: 'The Brotherhood of SCU',
                 onTap: () => openLink(orgLink),
+                trailing: Icons.open_in_new,
               ),
             ],
           ),
@@ -70,7 +71,7 @@ class TeamPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'The-Brotherhood-of-SCU',
+            'The Brotherhood of SCU',
             style: theme.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
             ),
