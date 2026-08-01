@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 【电费查询】页面增加用电趋势统计
 - iOS 端桌面小组件，支持在桌面显示课表
 - 新增 macOS 平台支持（课表可导出到系统日历）
+- 增加开发团队的介绍页面
 
 ### Changed
 - 重新设计登录页面 UI

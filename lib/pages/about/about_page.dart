@@ -6,8 +6,9 @@ import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/utils/app_shapes.dart';
-import 'package:bugaoshan/utils/open_link.dart'
-    show openDeveloperTeam, openProjectRepository;
+import 'package:bugaoshan/utils/open_link.dart' show openProjectRepository;
+import 'package:bugaoshan/pages/about/team_page.dart';
+import 'package:bugaoshan/pages/about/update_tile.dart';
 import 'package:bugaoshan/pages/settings/eula_status_page.dart';
 import 'package:bugaoshan/pages/dev/dev_page.dart';
 import 'package:bugaoshan/widgets/common/info_card.dart';
@@ -211,58 +212,14 @@ class _AboutPageState extends State<AboutPage> {
                 value: "Github",
                 onTap: () => openProjectRepository(),
               ),
-              LinkTile(
+              StackedTile(
                 icon: Icons.group_outlined,
                 label: localizations.developmentTeam,
-                value: "Brotherhood of SCU",
-                onTap: () => openDeveloperTeam(),
+                value: "The Brotherhood of SCU",
+                onTap: () => popupOrNavigate(context, const TeamPage()),
               ),
               if (updateProvider.supportsInAppUpdate)
-                ValueListenableBuilder<bool>(
-                  valueListenable: appConfig.hasUpdateNotification,
-                  builder: (context, hasUpdate, _) {
-                    return ListenableBuilder(
-                      listenable: Listenable.merge([
-                        updateProvider.isChecking,
-                        updateProvider.isDownloading,
-                        updateProvider.progressState,
-                      ]),
-                      builder: (context, _) {
-                        final isDownloading =
-                            updateProvider.isDownloading.value;
-                        final isChecking = updateProvider.isChecking.value;
-                        final percent = updateProvider.progressState.percent;
-                        return BadgedTile(
-                          icon: Icons.update_rounded,
-                          label: localizations.checkForUpdates,
-                          showBadge: hasUpdate,
-                          // 下载中禁用点击,避免重入触发新的检查/下载流程
-                          onTap: isDownloading ? null : _checkForUpdates,
-                          trailing: isDownloading
-                              ? Text(
-                                  '$percent%',
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.primary,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                )
-                              : isChecking
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : null,
-                        );
-                      },
-                    );
-                  },
-                ),
+                UpdateTile(onTap: _checkForUpdates),
               IconTile(
                 icon: Icons.gavel,
                 label: localizations.eulaTitle,

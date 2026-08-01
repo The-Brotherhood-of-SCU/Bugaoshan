@@ -2355,6 +2355,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get switchSchedule => 'Switch';
 
   @override
+  String get teamIntroTitle => 'About the Team';
+
+  @override
+  String get teamIntroDesc =>
+      'The-Brotherhood-of-SCU is an unofficial open-source organization of Sichuan University, maintained by a group of SCU students who are passionate about technology and campus life. Our goal is to build practical campus tools for SCU students through open-source collaboration.';
+
+  @override
+  String get teamJoinUsTitle => 'Join Us';
+
+  @override
+  String get teamContributeDesc =>
+      'We welcome all forms of contributions, including submitting Issues, providing feedback, initiating Pull Requests, or improving documentation.';
+
+  @override
+  String get teamContributeClosing =>
+      'The growth of the project depends on every contributor. We look forward to your participation.';
+
+  @override
   String get quickSetting => 'Quick Setting';
 
   @override
