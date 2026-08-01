@@ -176,7 +176,12 @@ Future showLoadingDialogWithErrorString({
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 isError
-                    ? Text(onErrorMessage ?? l10n.error)
+                    ? Flexible(
+                        child: Text(
+                          onErrorMessage ?? l10n.error,
+                          textAlign: TextAlign.center,
+                        ),
+                      )
                     : const CircularProgressIndicator(),
               ],
             ),
