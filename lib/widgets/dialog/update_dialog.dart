@@ -132,7 +132,6 @@ class UpdateDialogContent extends StatelessWidget {
                     onPressed: () => Navigator.of(context).pop(),
                     child: Text(l10n.neverMind),
                   ),
-                  const SizedBox(width: 12),
                   TextButton(
                     onPressed: () {
                       Navigator.of(context).pop();
