@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/theme_shape.dart';
 
 /// 课表页的页面级控制器（不进 GetIt —— 项目约定允许页面级非 DI 类；
 /// 且 demo/真实两个 CoursePage 实例共存，单例语义错误）。

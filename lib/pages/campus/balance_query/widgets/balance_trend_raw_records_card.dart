@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/balance_record.dart';
 import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_trend_format.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 /// 原始记录可折叠卡片:展示最近 50 条原始采样记录
 /// (倒序,即最新的在前)。
@@ -18,7 +19,7 @@ class BalanceTrendRawRecordsCard extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final reversed = records.reversed.take(50).toList();
-    return Card(
+    return StyledCard(
       child: ExpansionTile(
         initiallyExpanded: false,
         title: Text(

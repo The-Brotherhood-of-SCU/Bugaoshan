@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 class HintCard extends StatelessWidget {
   final String hint;
@@ -9,8 +10,8 @@ class HintCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Card(
-      color: colorScheme.surfaceContainerHighest,
+    return StyledCard(
+      backgroundColor: colorScheme.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(

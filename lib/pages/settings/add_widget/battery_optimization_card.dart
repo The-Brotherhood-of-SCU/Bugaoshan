@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 enum BatteryOptimizationStatus { checking, enabled, disabled }
 
@@ -51,8 +52,8 @@ class _LoadingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Card(
-      color: colorScheme.surfaceContainerHighest,
+    return StyledCard(
+      backgroundColor: colorScheme.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
@@ -94,8 +95,8 @@ class _OptimizationEnabledCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: colorScheme.primaryContainer,
+    return StyledCard(
+      backgroundColor: colorScheme.primaryContainer,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
@@ -151,8 +152,8 @@ class _OptimizationDisabledCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: colorScheme.surfaceContainerHighest,
+    return StyledCard(
+      backgroundColor: colorScheme.surfaceContainerHighest,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(

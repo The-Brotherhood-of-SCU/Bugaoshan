@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/theme_shape.dart';
 
 class StatusChip extends StatelessWidget {
   const StatusChip({

@@ -4,8 +4,9 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/constants.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/theme_shape.dart';
 
 class SetDockPage extends StatefulWidget {
   const SetDockPage({super.key});
@@ -162,7 +163,7 @@ class _SetDockPageState extends State<SetDockPage> {
         final item = campusItemConfigById(id);
         final isProfile = item.id == dockIdProfile;
 
-        return Card(
+        return StyledCard(
           key: ValueKey(item.id),
           margin: const EdgeInsets.symmetric(vertical: 4),
           child: ListTile(
@@ -201,7 +202,7 @@ class _SetDockPageState extends State<SetDockPage> {
       ...allCampusItems
           .where((item) => !_isVisible(item.id))
           .map(
-            (item) => Card(
+            (item) => StyledCard(
               key: ValueKey(item.id),
               margin: const EdgeInsets.symmetric(vertical: 4),
               child: ListTile(

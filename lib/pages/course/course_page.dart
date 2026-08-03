@@ -20,7 +20,7 @@ import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/utils/export_schedule_utils.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
 import 'package:bugaoshan/widgets/course/special_day_sheet.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/theme_shape.dart';
 
 part 'course_page_swipe_page_view.dart';
 part 'course_page_top_bar.dart';

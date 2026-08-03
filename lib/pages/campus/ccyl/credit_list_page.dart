@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 class CreditListPage extends StatefulWidget {
   const CreditListPage({super.key});
@@ -306,9 +307,9 @@ class _SelectionBar extends StatelessWidget {
       );
     }
 
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.all(16),
-      color: theme.colorScheme.primaryContainer,
+      backgroundColor: theme.colorScheme.primaryContainer,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(
@@ -350,7 +351,7 @@ class _StatsHeader extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.all(16),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -429,83 +430,80 @@ class _CreditCard extends StatelessWidget {
       color: theme.colorScheme.onSurfaceVariant,
     );
 
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: selected ? theme.colorScheme.primaryContainer : null,
-      child: InkWell(
-        onTap: selecting ? onToggle : null,
-        borderRadius: BorderRadius.circular(AppShapes.medium),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (selecting) ...[
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2, right: 12),
-                      child: Icon(
-                        selected
-                            ? Icons.check_box
-                            : Icons.check_box_outline_blank,
-                        size: 22,
-                        color: selected
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                  Expanded(
-                    child: Text(
-                      credit.activityName,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+      backgroundColor: selected ? theme.colorScheme.primaryContainer : null,
+      onTap: selecting ? onToggle : null,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (selecting) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2, right: 12),
+                    child: Icon(
+                      selected
+                          ? Icons.check_box
+                          : Icons.check_box_outline_blank,
+                      size: 22,
+                      color: selected
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(Icons.access_time, size: 16),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${credit.classHour} ${l10n.ccylHours}',
+                Expanded(
+                  child: Text(
+                    credit.activityName,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.access_time, size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  '${credit.classHour} ${l10n.ccylHours}',
+                  style: mutedStyle,
+                ),
+                const SizedBox(width: 16),
+                const Icon(Icons.category_outlined, size: 16),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    credit.scoreTypeName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: mutedStyle,
                   ),
-                  const SizedBox(width: 16),
-                  const Icon(Icons.category_outlined, size: 16),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      credit.scoreTypeName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: mutedStyle,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  _StatusChip(
-                    label: credit.creditStatusName,
-                    color: credit.creditStatus == 'C0'
-                        ? Colors.green
-                        : Colors.orange,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  const Icon(Icons.calendar_today, size: 16),
-                  const SizedBox(width: 4),
-                  Text(credit.createTime, style: mutedStyle),
-                ],
-              ),
-            ],
-          ),
+                ),
+                const SizedBox(width: 8),
+                _StatusChip(
+                  label: credit.creditStatusName,
+                  color: credit.creditStatus == 'C0'
+                      ? Colors.green
+                      : Colors.orange,
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                const Icon(Icons.calendar_today, size: 16),
+                const SizedBox(width: 4),
+                Text(credit.createTime, style: mutedStyle),
+              ],
+            ),
+          ],
         ),
       ),
     );

@@ -7,7 +7,7 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/week_parser.dart';
 import 'package:bugaoshan/widgets/course/course_grid.dart';
 import 'package:bugaoshan/widgets/course/course_detail_sheet.dart';

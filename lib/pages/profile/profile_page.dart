@@ -15,15 +15,14 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final body = Column(
       mainAxisSize: MainAxisSize.min,
+      spacing: 12,
       children: [
         const LoginStatusCard(),
-        const SizedBox(height: 12),
         AnimatedSize(
           duration: _appConfig.cardSizeAnimationDuration.value,
           curve: appCurve,
           child: const UserInfoCard(),
         ),
-        const SizedBox(height: 12),
         const ProfileMenuCard(),
       ],
     );

@@ -4,6 +4,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_trend_format.dart';
 import 'package:bugaoshan/services/balance/balance_trend_calculator.dart';
 import 'package:bugaoshan/utils/beijing_time.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 /// 余额趋势折线图卡片。
 ///
@@ -29,7 +30,7 @@ class BalanceTrendChartCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     if (isLoading) {
-      return Card(
+      return StyledCard(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(8, 20, 16, 8),
           child: Column(
@@ -60,7 +61,7 @@ class BalanceTrendChartCard extends StatelessWidget {
     }
 
     if (trend.dailyPoints.isEmpty) {
-      return Card(
+      return StyledCard(
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -103,7 +104,7 @@ class BalanceTrendChartCard extends StatelessWidget {
     minY -= padding;
     maxY += padding;
 
-    return Card(
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(8, 20, 16, 8),
         child: Column(

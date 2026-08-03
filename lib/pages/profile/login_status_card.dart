@@ -4,7 +4,8 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/theme_shape.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 enum LoginStatus {
@@ -122,12 +123,7 @@ class _LoginStatusCardState extends State<LoginStatusCard> {
     final primaryColor = theme.colorScheme.primary;
     final status = LoginStatus.from(_authProvider);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
-        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
-      ),
+    return StyledCard(
       child: Column(
         children: [
           Padding(

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:intl/intl.dart';
 
 import 'package:bugaoshan/models/academic_calendar.dart';
@@ -102,9 +103,9 @@ class InteractiveCalendarView extends StatelessWidget {
       }
     }
 
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-      color: cardColor,
+      backgroundColor: cardColor,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

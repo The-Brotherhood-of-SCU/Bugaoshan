@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/user_info_provider.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 class UserInfoCard extends StatefulWidget {
   const UserInfoCard({super.key});
@@ -59,24 +59,11 @@ class _UserInfoCardState extends State<UserInfoCard> {
       onTap = _provider.retry;
     }
 
-    final card = Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
-        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
-      ),
+    return StyledCard(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      onTap: onTap,
       child: child,
     );
-
-    if (onTap != null) {
-      return InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
-        child: card,
-      );
-    }
-    return card;
   }
 
   Widget _buildLoadingContent(ThemeData theme, AppLocalizations localizations) {
