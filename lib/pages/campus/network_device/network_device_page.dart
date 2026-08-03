@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -329,28 +330,14 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
     final role = user?['role'] as Map<String, dynamic>?;
     final departs = user?['departs'] as Map<String, dynamic>?;
 
-    return Card(
+    return CardWithTitle(
+      title: l10n.networkDeviceUserInfo,
+      icon: Icon(Icons.person_outline),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.person_outline,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  l10n.networkDeviceUserInfo,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            const Divider(height: 24),
             _buildPrivacyRow(l10n.nameLabel, user?['realname'] ?? '-'),
             _infoRow(l10n.sexLabel, user?['sex'] ?? '-'),
             _buildPrivacyRow(
@@ -379,28 +366,14 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
   }
 
   Widget _buildDeviceListCard(AppLocalizations l10n) {
-    return Card(
+    return CardWithTitle(
+      title: l10n.networkDeviceOnlineDevices,
+      icon: Icon(Icons.devices_outlined),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.devices_outlined,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  l10n.networkDeviceOnlineDevices,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            const Divider(height: 24),
             if (_devices.isEmpty)
               Center(
                 child: Padding(

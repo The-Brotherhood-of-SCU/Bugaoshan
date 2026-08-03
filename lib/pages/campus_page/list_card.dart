@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/theme_shape.dart';
 
 /// Shared list-style card: icon container + title + desc + trailing widget.
 class CampusListCard extends StatelessWidget {

@@ -10,7 +10,7 @@ import 'section_header.dart';
 import 'list_card.dart';
 import 'grid_card.dart';
 import 'grid_view_switch.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/theme_shape.dart';
 
 class CampusPage extends StatefulWidget {
   const CampusPage({super.key});

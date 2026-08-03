@@ -1,6 +1,6 @@
 import 'package:bugaoshan/widgets/common/third_center.dart';
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/theme_shape.dart';
 
 /// Shared grid-style card: icon container + title (vertical layout).
 class CampusGridCard extends StatelessWidget {
