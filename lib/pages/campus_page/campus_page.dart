@@ -201,7 +201,7 @@ class _CampusPageState extends State<CampusPage>
             padding: const EdgeInsets.only(top: 8, bottom: 16),
             sliver: SliverGrid(
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 160,
+                maxCrossAxisExtent: 140,
                 mainAxisSpacing: 12,
                 crossAxisSpacing: 12,
                 childAspectRatio: 0.85,
