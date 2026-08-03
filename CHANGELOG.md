@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 只在安卓平台上显示切换图标选项
 - 将验证码识别从LiteRT切换为内置实现减小包体积、提高跨平台兼容性
 - 适配成绩页面支持存在多个培养方案的情况
+- 优化卡片的UI设计
 
 ### Removed
 - 移除功能：当软件状态恢复时，例如从后台打开，最小化之后打开：课表跳转到当前周
