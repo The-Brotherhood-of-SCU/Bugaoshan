@@ -166,101 +166,76 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
 
     final isLoggedIn = authProvider.isLoggedIn;
     final totalWeeksTitle = l10n.totalWeeks(20).split(':')[0];
-    final divider = Divider(
-      height: 1,
+    return InfoCard(
       indent: 0,
-      color: theme.dividerColor.withValues(alpha: 0.08),
-    );
-
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
-        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Material(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _SemesterRow(
-              label: l10n.semesterStartDate,
-              trailing: Text(
-                '${_startDate.year}-${_startDate.month.toString().padLeft(2, '0')}-${_startDate.day.toString().padLeft(2, '0')}',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-              onTap: () => _pickDate(context),
+      children: [
+        _SemesterRow(
+          label: l10n.semesterStartDate,
+          trailing: Text(
+            '${_startDate.year}-${_startDate.month.toString().padLeft(2, '0')}-${_startDate.day.toString().padLeft(2, '0')}',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.primary,
             ),
-            divider,
-            _SemesterRow(
-              label: l10n.setCurrentWeek,
-              hint: l10n.setCurrentWeekHint,
-              trailing: Text(
-                l10n.currentWeek(currentWeek),
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-              onTap: () => _pickCurrentWeek(context, currentWeek, l10n),
-            ),
-            divider,
-            _SemesterRow(
-              label: l10n.autoFetchCurrentWeek,
-              hint: isLoggedIn
-                  ? l10n.autoFetchCurrentWeekHint
-                  : l10n.loginRequired,
-              trailing: _fetchingCurrentWeek
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Icon(
-                      Icons.download,
-                      color: isLoggedIn
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.outline,
-                    ),
-              labelStyle: isLoggedIn
-                  ? null
-                  : TextStyle(color: theme.colorScheme.outline),
-              onTap: isLoggedIn && !_fetchingCurrentWeek
-                  ? _fetchCurrentWeek
-                  : null,
-            ),
-            divider,
-            _SemesterRow(
-              label: totalWeeksTitle,
-              trailing: Text(
-                '$_totalWeeks',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-              onTap: () async {
-                final selected = await _showNumberPicker(
-                  context,
-                  initialValue: _totalWeeks,
-                  minValue: 1,
-                  maxValue: 52,
-                  title: totalWeeksTitle,
-                );
-                if (!mounted) return;
-                if (selected != null && selected != _totalWeeks) {
-                  setState(() {
-                    _totalWeeks = selected;
-                  });
-                  _save();
-                }
-              },
-            ),
-          ],
+          ),
+          onTap: () => _pickDate(context),
         ),
-      ),
+        _SemesterRow(
+          label: l10n.setCurrentWeek,
+          hint: l10n.setCurrentWeekHint,
+          trailing: Text(
+            l10n.currentWeek(currentWeek),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.primary,
+            ),
+          ),
+          onTap: () => _pickCurrentWeek(context, currentWeek, l10n),
+        ),
+        _SemesterRow(
+          label: l10n.autoFetchCurrentWeek,
+          hint: isLoggedIn ? l10n.autoFetchCurrentWeekHint : l10n.loginRequired,
+          trailing: _fetchingCurrentWeek
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Icon(
+                  Icons.download,
+                  color: isLoggedIn
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.outline,
+                ),
+          labelStyle: isLoggedIn
+              ? null
+              : TextStyle(color: theme.colorScheme.outline),
+          onTap: isLoggedIn && !_fetchingCurrentWeek ? _fetchCurrentWeek : null,
+        ),
+        _SemesterRow(
+          label: totalWeeksTitle,
+          trailing: Text(
+            '$_totalWeeks',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.primary,
+            ),
+          ),
+          onTap: () async {
+            final selected = await _showNumberPicker(
+              context,
+              initialValue: _totalWeeks,
+              minValue: 1,
+              maxValue: 52,
+              title: totalWeeksTitle,
+            );
+            if (!mounted) return;
+            if (selected != null && selected != _totalWeeks) {
+              setState(() {
+                _totalWeeks = selected;
+              });
+              _save();
+            }
+          },
+        ),
+      ],
     );
   }
 
@@ -456,33 +431,30 @@ class _SemesterRow extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: SizedBox(
-          height: 64,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(label, style: labelStyle ?? theme.textTheme.bodyLarge),
-                    if (hint != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        hint!,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.outline,
-                        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(label, style: labelStyle ?? theme.textTheme.bodyLarge),
+                  if (hint != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      hint!,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.outline,
                       ),
-                    ],
+                    ),
                   ],
-                ),
+                ],
               ),
-              trailing,
-            ],
-          ),
+            ),
+            trailing,
+          ],
         ),
       ),
     );
