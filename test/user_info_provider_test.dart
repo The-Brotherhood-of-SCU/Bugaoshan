@@ -5,6 +5,7 @@ import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/providers/user_info_provider.dart';
 import 'package:bugaoshan/services/api/wfw_api_service.dart';
 import 'package:bugaoshan/services/auth/auth_state.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/wfw_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -95,6 +96,60 @@ void main() {
     expect(persistence.storedRealname, isNull);
     expect(persistence.storedNumber, isNull);
   });
+
+  test(
+    'a repeated ready notification without a transition does not refetch',
+    () async {
+      final auth = _FakeWfwAuth(ready: true);
+      final api = _ControllableWfwApiService();
+      final provider = UserInfoProvider(auth, api);
+      await Future<void>.delayed(Duration.zero);
+      expect(api.profileRequests, hasLength(1));
+
+      // 自动重试路径里 invalidate（无声）→ 预热 → ready 会再次 notify；
+      // 同状态重复通知不得触发重新取数，否则一旦预热是误报（session 实际
+      // 未建立），「取数失败 → 预热 ready → 再取数」会无限循环。
+      auth.setReady(true);
+      await Future<void>.delayed(const Duration(milliseconds: 350));
+      expect(api.profileRequests, hasLength(1));
+
+      // 真正的 unknown→ready 边沿仍然触发取数。
+      auth.setReady(false);
+      auth.setReady(true);
+      await Future<void>.delayed(const Duration(milliseconds: 350));
+      expect(api.profileRequests, hasLength(2));
+
+      provider.dispose();
+    },
+  );
+
+  test(
+    'manual retry after a silently-rebuilt session still refetches',
+    () async {
+      final auth = _FakeWfwAuth(ready: true);
+      final api = _ControllableWfwApiService();
+      final provider = UserInfoProvider(auth, api);
+      await Future<void>.delayed(Duration.zero);
+      expect(api.profileRequests, hasLength(1));
+
+      // 首次取数因会话失效失败
+      api.fail(0, const UnauthenticatedException());
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+      expect(provider.error, isTrue);
+
+      // invalidate 无声：provider 记录的边沿状态仍停留在 ready，
+      // 此时 wfw 实际未就绪。手动重试走 ensureAuthenticated 预热，
+      // 成功后 ready 重通知不构成边沿，retry() 必须显式兜底调度取数。
+      auth.setReadySilently(false);
+      provider.retry();
+      await Future<void>.delayed(const Duration(milliseconds: 350));
+      expect(auth.ensureAuthenticatedCalls, 1);
+      expect(api.profileRequests, hasLength(2));
+
+      provider.dispose();
+    },
+  );
 }
 
 typedef _PersistenceRequest = ({
@@ -124,6 +179,7 @@ class _FakeWfwAuth extends ChangeNotifier implements WfwAuth {
   _FakeWfwAuth({required bool ready}) : _ready = ready;
 
   bool _ready;
+  int ensureAuthenticatedCalls = 0;
 
   @override
   bool get isReady => _ready;
@@ -134,6 +190,17 @@ class _FakeWfwAuth extends ChangeNotifier implements WfwAuth {
   void setReady(bool value) {
     _ready = value;
     notifyListeners();
+  }
+
+  /// 静默切换状态（不 notify）：模拟 invalidate() 的无声失效。
+  void setReadySilently(bool value) {
+    _ready = value;
+  }
+
+  @override
+  Future<void> ensureAuthenticated() async {
+    ensureAuthenticatedCalls++;
+    setReady(true);
   }
 
   @override
@@ -166,6 +233,11 @@ class _ControllableWfwApiService implements WfwApiService {
     labelRequests[index].complete([
       {'owner': number},
     ]);
+  }
+
+  void fail(int index, Object error) {
+    profileRequests[index].completeError(error);
+    labelRequests[index].completeError(error);
   }
 
   @override

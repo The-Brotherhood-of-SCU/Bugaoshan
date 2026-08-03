@@ -6,6 +6,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/services/api/wfw_api_service.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/wfw_auth.dart';
 import 'package:bugaoshan/utils/auth_logger.dart';
 
@@ -31,13 +32,23 @@ void main() {
     final firstClient = CookieClient(
       inner: MockClient((request) async {
         firstWarmUps++;
-        return http.Response('first ready', 200, request: request);
+        return http.Response(
+          'first ready',
+          200,
+          headers: {'set-cookie': 'JSESSIONID=first; Path=/'},
+          request: request,
+        );
       }),
     );
     final secondClient = CookieClient(
       inner: MockClient((request) async {
         secondWarmUps++;
-        return http.Response('second ready', 200, request: request);
+        return http.Response(
+          'second ready',
+          200,
+          headers: {'set-cookie': 'JSESSIONID=second; Path=/'},
+          request: request,
+        );
       }),
     );
     final scuAuth = _SwitchableScuAuth(
@@ -66,7 +77,12 @@ void main() {
       inner: MockClient((request) async {
         if (request.url.path == '/') {
           warmUps++;
-          return http.Response('ready', 200, request: request);
+          return http.Response(
+            'ready',
+            200,
+            headers: {'set-cookie': 'JSESSIONID=warm; Path=/'},
+            request: request,
+          );
         }
         if (request.url.path == '/uc/wap/user/get-info') {
           profileRequests++;
@@ -95,6 +111,30 @@ void main() {
     expect(profile?['realname'], 'Test User');
     expect(profileRequests, 2);
     expect(warmUps, 2);
+
+    wfwAuth.dispose();
+  });
+
+  test('warm-up that binds no wfw cookie is not treated as ready', () async {
+    var warmUps = 0;
+    final client = CookieClient(
+      inner: MockClient((request) async {
+        warmUps++;
+        // 匿名首页：200 但不走 SSO 重定向、不下发任何 cookie
+        return http.Response('anonymous homepage', 200, request: request);
+      }),
+    );
+    final scuAuth = _SwitchableScuAuth(prefs, logger: logger, client: client);
+    final wfwAuth = WfwAuth(scuAuth, logger: logger);
+
+    // 仅凭 200 不得标记 ready：否则业务请求必然失效，「invalidate →
+    // 预热误报 ready → 监听方重新取数 → 再失效」会无限循环。
+    await expectLater(
+      wfwAuth.getClient(),
+      throwsA(isA<UnauthenticatedException>()),
+    );
+    expect(wfwAuth.isReady, isFalse);
+    expect(warmUps, 1); // 有界：失败即停，不自旋
 
     wfwAuth.dispose();
   });
