@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/models/version_info.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 class EnvironmentInfoPage extends StatefulWidget {
   const EnvironmentInfoPage({super.key});
@@ -92,7 +93,7 @@ class _EnvironmentInfoPageState extends State<EnvironmentInfoPage> {
                 future: _deviceInfoFuture,
                 builder: (context, deviceSnapshot) {
                   if (deviceSnapshot.connectionState != ConnectionState.done) {
-                    return const Card(
+                    return const StyledCard(
                       margin: EdgeInsets.only(bottom: 12),
                       child: Padding(
                         padding: EdgeInsets.all(16),
@@ -126,7 +127,7 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
         padding: const EdgeInsets.all(16),

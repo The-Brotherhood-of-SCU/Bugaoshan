@@ -98,12 +98,14 @@ class CardWithTitle extends StatelessWidget {
   final String title;
   final Widget? icon;
   final Widget? child;
+  final EdgeInsetsGeometry? margin;
   final void Function()? onTap;
   const CardWithTitle({
     super.key,
     required this.title,
     this.icon,
     this.child,
+    this.margin,
     this.onTap,
   });
 
@@ -111,6 +113,7 @@ class CardWithTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return StyledCard(
       onTap: onTap,
+      margin: margin,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
         child: Column(

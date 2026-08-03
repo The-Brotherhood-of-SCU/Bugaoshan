@@ -14,6 +14,7 @@ import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 enum _ViewMode { campus, building, room }
 
@@ -355,7 +356,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
             itemCount: _campuses.length,
             itemBuilder: (context, index) {
               final campus = _campuses[index];
-              return Card(
+              return StyledCard(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
                   leading: const Icon(Icons.location_city_outlined),
@@ -408,7 +409,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
             itemCount: buildings.length,
             itemBuilder: (context, index) {
               final building = buildings[index];
-              return Card(
+              return StyledCard(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
                   leading: const Icon(Icons.apartment_outlined),
@@ -561,80 +562,74 @@ class _ClassroomPageState extends State<ClassroomPage> {
   Widget _buildRoomCard(ClassroomInfo room, AppLocalizations l10n) {
     final statusMap = _queryResult!.periodStatusMap(room.classroomNumber);
 
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.only(bottom: 6),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ClassroomDetailPage(
-                campus: _selectedCampus!,
-                building: _selectedBuilding!,
-                room: room,
-                timeSlots: _queryResult!.slotsFor(room.classroomNumber),
-                queryDate: _queryResult!.date,
-                teachingWeek: _queryResult!.jxzc,
-              ),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ClassroomDetailPage(
+              campus: _selectedCampus!,
+              building: _selectedBuilding!,
+              room: room,
+              timeSlots: _queryResult!.slotsFor(room.classroomNumber),
+              queryDate: _queryResult!.date,
+              teachingWeek: _queryResult!.jxzc,
             ),
-          );
-        },
-        borderRadius: BorderRadius.circular(AppShapes.medium),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          room.classroomName,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${room.placeNum} ${l10n.seats}',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
-                              ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
-                ],
-              ),
-              const SizedBox(height: 8),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: List.generate(12, (i) {
-                    final period = i + 1;
-                    final status =
-                        statusMap[period] ?? ClassroomPeriodStatus.free;
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 1.5),
-                      child: Tooltip(
-                        message: _periodTooltip(period, status, l10n),
-                        child: Icon(
-                          _getPeriodIcon(status),
-                          color: _getPeriodColor(status),
-                          size: 18,
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        room.classroomName,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${room.placeNum} ${l10n.seats}',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
-                    );
-                  }),
+                    ],
+                  ),
                 ),
+                const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+              ],
+            ),
+            const SizedBox(height: 8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: List.generate(12, (i) {
+                  final period = i + 1;
+                  final status =
+                      statusMap[period] ?? ClassroomPeriodStatus.free;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 1.5),
+                    child: Tooltip(
+                      message: _periodTooltip(period, status, l10n),
+                      child: Icon(
+                        _getPeriodIcon(status),
+                        color: _getPeriodColor(status),
+                        size: 18,
+                      ),
+                    ),
+                  );
+                }),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

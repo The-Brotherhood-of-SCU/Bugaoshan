@@ -6,6 +6,7 @@ import 'package:bugaoshan/models/scheme_score.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/stat_item.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 class SchemeScoresTab extends StatefulWidget {
   const SchemeScoresTab({super.key, this.searchQuery = ''});
@@ -181,7 +182,7 @@ class _SummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -333,7 +334,7 @@ class ScoreCardWidget extends StatelessWidget {
       _ => Theme.of(context).colorScheme.onTertiaryContainer,
     };
 
-    Widget card = Card(
+    Widget card = StyledCard(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

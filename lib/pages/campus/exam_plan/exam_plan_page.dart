@@ -10,6 +10,7 @@ import 'package:bugaoshan/services/ics_service.dart';
 import 'package:bugaoshan/utils/calendar_export_utils.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 
 class ExamPlanPage extends StatefulWidget {
@@ -170,10 +171,9 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
       );
     }
 
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.only(bottom: 14),
-      clipBehavior: Clip.antiAlias,
-      color: past ? colorScheme.surfaceContainerLow : null,
+      backgroundColor: past ? colorScheme.surfaceContainerLow : null,
       child: IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,

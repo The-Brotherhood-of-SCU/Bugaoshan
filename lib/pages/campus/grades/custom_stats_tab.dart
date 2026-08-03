@@ -5,6 +5,7 @@ import 'package:bugaoshan/models/scheme_score.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/stat_item.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'scheme_scores_tab.dart' show SchemeScoreSelector, ScoreCardWidget;
 
@@ -193,7 +194,7 @@ class _CustomStatsTabState extends State<CustomStatsTab> {
   ) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -307,7 +308,7 @@ class _CustomStatsTabState extends State<CustomStatsTab> {
 
   Widget _buildEmptySelectionHint(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -486,7 +487,7 @@ class _CustomSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       child: Padding(
         padding: const EdgeInsets.all(16),

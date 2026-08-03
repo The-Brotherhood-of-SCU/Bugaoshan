@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 class ClassroomDetailPage extends StatelessWidget {
   final ClassroomCampus campus;
@@ -78,7 +79,7 @@ class ClassroomDetailPage extends StatelessWidget {
       }
     }
 
-    return Card(
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -268,7 +269,7 @@ class ClassroomDetailPage extends StatelessWidget {
         break;
     }
 
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.only(bottom: 6),
       child: Padding(
         padding: const EdgeInsets.all(12),

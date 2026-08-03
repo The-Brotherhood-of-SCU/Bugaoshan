@@ -4,6 +4,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/models/widget_size.dart';
 import 'package:bugaoshan/theme_shape.dart';
 
@@ -157,7 +158,7 @@ class _AddWidgetContentState extends State<AddWidgetContent>
               const SizedBox(height: 16),
             ],
             if (isApple) ...[
-              Card(
+              StyledCard(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Row(
@@ -212,8 +213,7 @@ class _WidgetPickerCardState extends State<_WidgetPickerCard> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Card(
-      clipBehavior: Clip.antiAlias,
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

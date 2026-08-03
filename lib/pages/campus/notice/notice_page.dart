@@ -3,6 +3,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/notice/jwc/campus_notice_page.dart';
 import 'package:bugaoshan/pages/campus/notice/xgb/party_notice_page.dart';
 import 'package:bugaoshan/pages/campus/notice/tuanwei/tuanwei_notice_page.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 class NoticePage extends StatelessWidget {
@@ -62,7 +63,7 @@ class _NoticeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Card(
+    return StyledCard(
       child: ListTile(
         leading: Icon(icon, color: theme.colorScheme.primary),
         title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),

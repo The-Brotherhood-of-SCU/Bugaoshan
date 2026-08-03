@@ -7,6 +7,7 @@ import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/theme_shape.dart';
 
 class PlanCompletionPage extends StatefulWidget {
@@ -164,7 +165,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
     int completedCount,
     int totalCount,
   ) {
-    return Card(
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -227,9 +228,8 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
     final required = double.tryParse(node.requiredCredits) ?? 0;
     final progress = required > 0 ? (earned / required).clamp(0.0, 1.0) : 0.0;
 
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.only(bottom: 8),
-      clipBehavior: Clip.antiAlias,
       child: ExpansionTile(
         leading: Icon(
           node.completed ? Icons.check_circle : Icons.radio_button_unchecked,

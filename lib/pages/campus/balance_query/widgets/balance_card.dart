@@ -5,6 +5,7 @@ import 'package:bugaoshan/pages/campus/balance_query/balance_trend_page.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/services/api/balance_query_service.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 
 class BalanceCard extends StatefulWidget {
@@ -111,7 +112,7 @@ class BalanceCardState extends State<BalanceCard> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Card(
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(

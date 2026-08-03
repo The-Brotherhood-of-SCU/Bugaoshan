@@ -9,6 +9,7 @@ import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/info_row.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 class TrainProgramPage extends StatefulWidget {
   const TrainProgramPage({super.key});
@@ -62,7 +63,7 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
   Widget _buildFilters(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.all(16),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -224,7 +225,7 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
                 itemCount: _provider.programs.length,
                 itemBuilder: (context, index) {
                   final program = _provider.programs[index];
-                  return Card(
+                  return StyledCard(
                     margin: const EdgeInsets.only(bottom: 8),
                     child: ListTile(
                       leading: Container(
@@ -324,7 +325,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Card(
+          StyledCard(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -391,7 +392,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            Card(
+            StyledCard(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
@@ -453,7 +454,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
       }
     }
 
-    return Card(
+    return StyledCard(
       child: ListView.separated(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
@@ -615,7 +616,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
           ],
           const SizedBox(height: 16),
           if (!detail.isOpenCourse)
-            Card(
+            StyledCard(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -663,8 +664,8 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
             ),
           const SizedBox(height: 16),
           if (detail.isOpenCourse) ...[
-            Card(
-              color: Theme.of(context).colorScheme.tertiaryContainer,
+            StyledCard(
+              backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
@@ -696,7 +697,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            Card(
+            StyledCard(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(

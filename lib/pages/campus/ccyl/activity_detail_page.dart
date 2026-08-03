@@ -6,6 +6,7 @@ import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/widgets/common/image_viewer.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 class ActivityDetailPage extends StatefulWidget {
   final String activityId;
@@ -298,7 +299,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
 
   Widget _buildHeader(AppLocalizations l10n) {
     final activity = _activity!;
-    return Card(
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -376,7 +377,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
   Widget _buildTimeSection(AppLocalizations l10n) {
     final activity = _activity!;
     final theme = Theme.of(context);
-    return Card(
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -411,7 +412,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
 
   Widget _buildLocationSection(AppLocalizations l10n) {
     final activity = _activity!;
-    return Card(
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -445,7 +446,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
 
   Widget _buildInfoSection(AppLocalizations l10n) {
     final activity = _activity!;
-    return Card(
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -499,7 +500,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
 
   Widget _buildLibSection(AppLocalizations l10n) {
     final lib = _activityLib!;
-    return Card(
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

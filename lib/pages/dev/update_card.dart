@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 class UpdateCard extends StatelessWidget {
   final IconData icon;
@@ -24,8 +25,7 @@ class UpdateCard extends StatelessWidget {
     return ValueListenableBuilder<UpdateCheckResult>(
       valueListenable: result,
       builder: (context, r, _) {
-        return Card(
-          elevation: 2,
+        return StyledCard(
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
