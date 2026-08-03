@@ -17,7 +17,9 @@ class CampusNoticePage extends StatelessWidget {
       heroTag: 'jwc_attach_fab',
       debugLabel: 'JwcNotice',
       downloadOptions: DownloadOptions(
+        useWebViewDownload: true,
         attachmentDir: kNoticeAttachmentDir,
+        downloadHeaders: {'Referer': 'https://jwc.scu.edu.cn'},
         initialTab: 0,
       ),
     );

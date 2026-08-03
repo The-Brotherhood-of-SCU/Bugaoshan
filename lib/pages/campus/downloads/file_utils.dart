@@ -232,8 +232,56 @@ String sanitizeDownloadFileName(String rawName) {
   return fileName.isEmpty ? 'download' : fileName;
 }
 
+/// Exception thrown when the server returns a CAPTCHA page instead of a file.
+class CaptchaRequiredException implements Exception {
+  const CaptchaRequiredException({
+    required this.originalUrl,
+    required this.captchaImagePath,
+  });
+
+  final String originalUrl;
+  final String captchaImagePath;
+
+  /// Resolve the CAPTCHA image path to an absolute URL.
+  String get captchaAbsoluteUrl {
+    if (captchaImagePath.startsWith('http://') ||
+        captchaImagePath.startsWith('https://')) {
+      return captchaImagePath;
+    }
+    final base = Uri.parse(originalUrl).origin;
+    return '$base$captchaImagePath';
+  }
+}
+
+/// Detects if [bodyBytes] is a CAPTCHA HTML page.
+/// Returns [CaptchaRequiredException] if CAPTCHA is detected, null otherwise.
+CaptchaRequiredException? detectCaptcha(List<int> bodyBytes, String url) {
+  // Only small responses can be CAPTCHA pages; real files are larger.
+  if (bodyBytes.length > 256 * 1024) return null;
+
+  final head = utf8.decode(
+    bodyBytes.take(4096).toList(),
+    allowMalformed: true,
+  );
+
+  // Must look like HTML containing a CAPTCHA input.
+  if (!head.contains('codeValue')) return null;
+
+  // Extract the image src path — either relative or a known JSP path.
+  String imgPath;
+  final srcMatch = RegExp(r'''id="codeimg"[^>]*src="([^"]+)"''').firstMatch(head);
+  if (srcMatch != null) {
+    imgPath = srcMatch.group(1)!;
+  } else {
+    imgPath = '/system/resource/js/filedownload/createimage.jsp';
+  }
+
+  return CaptchaRequiredException(originalUrl: url, captchaImagePath: imgPath);
+}
+
 /// Downloads a file from [url] into `Bugaoshan/{dirName}/`.
 /// Returns the final local path.
+/// Throws [CaptchaRequiredException] if the server returns a CAPTCHA page.
 Future<String> downloadFile(
   String url,
   String dirName,
@@ -256,6 +304,10 @@ Future<String> downloadFile(
   if (cancelToken?.isCancelled ?? false) throw DownloadCancelledException();
 
   final bytes = response.bodyBytes;
+
+  // Detect CAPTCHA page — server may return 200 with a verification form.
+  final captcha = detectCaptcha(bytes, url);
+  if (captcha != null) throw captcha;
 
   // Prefer filename from Content-Disposition header.
   var actualFileName = sanitizeDownloadFileName(fileName);
