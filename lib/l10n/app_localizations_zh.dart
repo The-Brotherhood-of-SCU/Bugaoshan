@@ -243,6 +243,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get animationDurationHint => '提示：调整滑块查看动画效果，点击确认后才会保存设置';
 
   @override
+  String get enablePageTransitionAnimation => '页面切换动画';
+
+  @override
+  String get enablePageTransitionAnimationHint => '切换页面时启用滑动与淡入淡出动画';
+
+  @override
   String get themeColor => '主题颜色';
 
   @override

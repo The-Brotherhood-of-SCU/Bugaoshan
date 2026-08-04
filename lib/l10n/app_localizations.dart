@@ -547,6 +547,18 @@ abstract class AppLocalizations {
   /// **'Hint: Adjust the slider to preview the animation, click Confirm to save the settings'**
   String get animationDurationHint;
 
+  /// No description provided for @enablePageTransitionAnimation.
+  ///
+  /// In en, this message translates to:
+  /// **'Page Transition Animation'**
+  String get enablePageTransitionAnimation;
+
+  /// No description provided for @enablePageTransitionAnimationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable slide and fade animation when switching pages'**
+  String get enablePageTransitionAnimationHint;
+
   /// No description provided for @themeColor.
   ///
   /// In en, this message translates to:

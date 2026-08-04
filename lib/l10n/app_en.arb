@@ -106,6 +106,8 @@
     "currentAnimationDuration": "Current Animation Duration: {value} ms",
     "animationDurationUpdated": "Animation Duration updated to {value} ms",
     "animationDurationHint": "Hint: Adjust the slider to preview the animation, click Confirm to save the settings",
+    "enablePageTransitionAnimation": "Page Transition Animation",
+    "enablePageTransitionAnimationHint": "Enable slide and fade animation when switching pages",
     "themeColor": "Theme Color",
     "changeThemeColor": "Change Theme Color",
     "confirmButton": "Confirm",

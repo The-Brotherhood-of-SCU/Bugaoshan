@@ -116,15 +116,20 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 final isWide = constraints.maxWidth >= 600;
                 final showRail = isWide && visibleIds.length >= 2;
                 final showBar = !isWide && visibleIds.length >= 2;
-                final pageContent = ValueListenableBuilder<Duration>(
-                  valueListenable: appConfig.cardSizeAnimationDuration,
-                  builder: (context, animDuration, _) {
+                final pageContent = ListenableBuilder(
+                  listenable: Listenable.merge([
+                    appConfig.cardSizeAnimationDuration,
+                    appConfig.enablePageTransitionAnimation,
+                  ]),
+                  builder: (context, _) {
                     return AuthScopedIndexedStack(
                       authListenable: authProvider,
                       isAuthenticated: () => authProvider.isLoggedIn,
                       visibleIds: visibleIds,
                       selectedIndex: _currentIndex,
-                      duration: animDuration,
+                      duration: appConfig.cardSizeAnimationDuration.value,
+                      enableAnimation:
+                          appConfig.enablePageTransitionAnimation.value,
                       axis: showRail ? Axis.vertical : Axis.horizontal,
                       pageBuilder: (id) => campusItemConfigById(id).page(),
                     );
