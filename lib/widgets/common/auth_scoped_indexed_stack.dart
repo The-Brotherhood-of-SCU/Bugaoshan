@@ -82,11 +82,19 @@ class _AuthScopedIndexedStackState extends State<AuthScopedIndexedStack>
     final Offset endOut;
 
     if (widget.axis == Axis.vertical) {
-      beginIn = _isMovingRight ? const Offset(0.0, 1.0) : const Offset(0.0, -1.0);
-      endOut = _isMovingRight ? const Offset(0.0, -1.0) : const Offset(0.0, 1.0);
+      beginIn = _isMovingRight
+          ? const Offset(0.0, 1.0)
+          : const Offset(0.0, -1.0);
+      endOut = _isMovingRight
+          ? const Offset(0.0, -1.0)
+          : const Offset(0.0, 1.0);
     } else {
-      beginIn = _isMovingRight ? const Offset(1.0, 0.0) : const Offset(-1.0, 0.0);
-      endOut = _isMovingRight ? const Offset(-1.0, 0.0) : const Offset(1.0, 0.0);
+      beginIn = _isMovingRight
+          ? const Offset(1.0, 0.0)
+          : const Offset(-1.0, 0.0);
+      endOut = _isMovingRight
+          ? const Offset(-1.0, 0.0)
+          : const Offset(1.0, 0.0);
     }
 
     _slideAnimIn = Tween<Offset>(
@@ -116,7 +124,9 @@ class _AuthScopedIndexedStackState extends State<AuthScopedIndexedStack>
     final bool indexChanged = oldWidget.selectedIndex != widget.selectedIndex;
 
     if (indexChanged || axisChanged) {
-      if (indexChanged && widget.enableAnimation && widget.duration > Duration.zero) {
+      if (indexChanged &&
+          widget.enableAnimation &&
+          widget.duration > Duration.zero) {
         _previousIndex = oldWidget.selectedIndex;
         _isMovingRight = widget.selectedIndex > oldWidget.selectedIndex;
         _updateAnimations();
@@ -177,9 +187,7 @@ class _AuthScopedIndexedStackState extends State<AuthScopedIndexedStack>
     final selectedIndex = widget.selectedIndex.clamp(0, visibleIds.length - 1);
     final selectedId = visibleIds[selectedIndex];
 
-    final prevIndex = _previousIndex != null
-        ? _previousIndex!.clamp(0, visibleIds.length - 1)
-        : null;
+    final prevIndex = _previousIndex?.clamp(0, visibleIds.length - 1);
     final prevId = (prevIndex != null && prevIndex != selectedIndex)
         ? visibleIds[prevIndex]
         : null;
@@ -200,10 +208,7 @@ class _AuthScopedIndexedStackState extends State<AuthScopedIndexedStack>
             offstage: !isSelected && !isPrevious,
             child: SlideTransition(
               position: slideAnim,
-              child: FadeTransition(
-                opacity: fadeAnim,
-                child: child,
-              ),
+              child: FadeTransition(opacity: fadeAnim, child: child),
             ),
           );
         }).toList(),

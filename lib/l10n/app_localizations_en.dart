@@ -682,9 +682,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get next => 'Next';
 
   @override
-  String get delete => 'Delete';
-
-  @override
   String get customColor => 'Custom Color';
 
   @override
@@ -744,7 +741,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importSuccess => 'Schedule imported successfully';
 
   @override
-  String get importFailed => 'Import failed';
+  String get importFailedTip =>
+      'Import failed, please check data format or log back in.';
 
   @override
   String get importedScheduleDefaultName => 'Imported Schedule';
@@ -1476,6 +1474,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get networkOfflineFailed => 'Failed to offline device';
 
   @override
+  String get importFailed => 'Import failed';
+
+  @override
   String get balanceQuery => 'Electricity Query';
 
   @override
@@ -2014,6 +2015,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get open => 'Open';
+
+  @override
+  String get delete => 'Delete';
 
   @override
   String get noDownloadedAttachments => 'No downloaded attachments';

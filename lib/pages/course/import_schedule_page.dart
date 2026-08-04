@@ -211,7 +211,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
     } catch (e) {
       debugPrint('Import from share error: $e');
       if (mounted) {
-        showInfoDialog(title: l10n.importFailed, content: l10n.importFailed);
+        showInfoDialog(title: l10n.importFailed, content: l10n.importFailedTip);
       }
     }
   }

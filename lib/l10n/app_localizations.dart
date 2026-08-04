@@ -1357,12 +1357,6 @@ abstract class AppLocalizations {
   /// **'Next'**
   String get next;
 
-  /// No description provided for @delete.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete'**
-  String get delete;
-
   /// No description provided for @customColor.
   ///
   /// In en, this message translates to:
@@ -1471,11 +1465,11 @@ abstract class AppLocalizations {
   /// **'Schedule imported successfully'**
   String get importSuccess;
 
-  /// No description provided for @importFailed.
+  /// No description provided for @importFailedTip.
   ///
   /// In en, this message translates to:
-  /// **'Import failed'**
-  String get importFailed;
+  /// **'Import failed, please check data format or log back in.'**
+  String get importFailedTip;
 
   /// No description provided for @importedScheduleDefaultName.
   ///
@@ -2857,6 +2851,12 @@ abstract class AppLocalizations {
   /// **'Failed to offline device'**
   String get networkOfflineFailed;
 
+  /// No description provided for @importFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed'**
+  String get importFailed;
+
   /// No description provided for @balanceQuery.
   ///
   /// In en, this message translates to:
@@ -3858,6 +3858,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open'**
   String get open;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
 
   /// No description provided for @noDownloadedAttachments.
   ///

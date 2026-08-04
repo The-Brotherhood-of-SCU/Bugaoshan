@@ -3,5 +3,10 @@
   "editor.formatOnSave": true,
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
-  "cSpell.words": ["bugaoshan"]
+  "cSpell.words": [
+    "bugaoshan"
+  ],
+  "arb-editor.suppressedWarnings": [
+    "missing_metadata_for_key"
+  ]
 }

@@ -662,9 +662,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get next => '下一步';
 
   @override
-  String get delete => '删除';
-
-  @override
   String get customColor => '自定义颜色';
 
   @override
@@ -721,7 +718,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get importSuccess => '课表导入成功';
 
   @override
-  String get importFailed => '导入失败';
+  String get importFailedTip => '导入失败，请检查数据格式或重新登录';
 
   @override
   String get importedScheduleDefaultName => '导入的课表';
@@ -1434,6 +1431,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get networkOfflineFailed => '下线失败';
 
   @override
+  String get importFailed => '导入失败';
+
+  @override
   String get balanceQuery => '电费查询';
 
   @override
@@ -1954,6 +1954,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get open => '打开';
+
+  @override
+  String get delete => '删除';
 
   @override
   String get noDownloadedAttachments => '暂无已下载附件';

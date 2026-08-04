@@ -166,7 +166,6 @@
     "preReleaseWarning": "This is a pre-release version. Use with caution.",
     "releaseNotes": "Release Notes",
     "neverMind": "Never Mind",
-    "neverMind": "Never Mind",
     "clearAllData": "Clear All Data",
     "confirmMessage": "Are you sure?",
     "environmentInfo": "Environment Info",
@@ -293,7 +292,6 @@
     "downloadInBackground": "Download in Background",
     "back": "Back",
     "next": "Next",
-    "delete": "Delete",
     "customColor": "Custom Color",
     "noCourseThisWeek": "No courses this week",
     "timeConflict": "Time Conflict",
@@ -312,7 +310,7 @@
     "importFromJwxt": "Import from Education System",
     "importDataHint": "Paste JSON data here...",
     "importSuccess": "Schedule imported successfully",
-    "importFailed": "Import failed, please check data format or log back in.",
+    "importFailedTip": "Import failed, please check data format or log back in.",
     "importedScheduleDefaultName": "Imported Schedule",
     "importNameConflictHint": "Name \"{name}\" already exists, please rename:",
     "importNameSuffix": "(Import)",
@@ -571,8 +569,6 @@
     "bindNewRoom": "Bind New Room",
     "switchRoom": "Switch Room",
     "deleteRoom": "Delete Room",
-    "selectCampus": "Select Campus",
-    "selectBuilding": "Select Building",
     "selectUnit": "Select Unit",
     "inputInfo": "Input Info",
     "stepCampus": "Cmp",
@@ -1027,7 +1023,9 @@
     "@appliedPreset": {
         "description": "Snackbar message when a time slot preset is applied",
         "placeholders": {
-            "campus": {"type": "String"}
+            "campus": {
+                "type": "String"
+            }
         }
     },
     "presetLabel": "Preset",
@@ -1039,14 +1037,19 @@
     "@roomCount": {
         "description": "Number of classrooms found, e.g. '12 rooms'",
         "placeholders": {
-            "count": {"type": "int", "format": "compact"}
+            "count": {
+                "type": "int",
+                "format": "compact"
+            }
         }
     },
     "totalHours": "Total Hours: {hours}",
     "@totalHours": {
         "description": "Total hours label for CCYL credit list, e.g. 'Total Hours: 120'",
         "placeholders": {
-            "hours": {"type": "String"}
+            "hours": {
+                "type": "String"
+            }
         }
     },
     "sortBy": "Sort by",
@@ -1138,14 +1141,18 @@
     "@gradeSuffix": {
         "description": "Grade suffix format, e.g. 'Grade 2024'",
         "placeholders": {
-            "grade": {"type": "String"}
+            "grade": {
+                "type": "String"
+            }
         }
     },
     "campusSuffix": "{campusName} Campus",
     "@campusSuffix": {
         "description": "Campus name suffix, e.g. 'Jiang'an Campus'",
         "placeholders": {
-            "campusName": {"type": "String"}
+            "campusName": {
+                "type": "String"
+            }
         }
     },
     "examEnded": "Ended",
@@ -1157,7 +1164,9 @@
     "@pricePerUnitValue": {
         "description": "Price per unit with unit, e.g. '0.50 CNY/kWh'",
         "placeholders": {
-            "price": {"type": "String"}
+            "price": {
+                "type": "String"
+            }
         }
     },
     "verifyFailedCheckInfo": "Verification failed, please check your information",
@@ -1209,8 +1218,14 @@
     "@importedScheduleName": {
         "description": "Default name for imported schedule from JWXT",
         "placeholders": {
-            "month": {"type": "int", "format": "compact"},
-            "day": {"type": "int", "format": "compact"}
+            "month": {
+                "type": "int",
+                "format": "compact"
+            },
+            "day": {
+                "type": "int",
+                "format": "compact"
+            }
         }
     },
     "error": "Error",
