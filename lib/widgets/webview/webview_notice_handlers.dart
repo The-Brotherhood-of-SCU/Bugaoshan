@@ -96,8 +96,8 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
   // ── CAPTCHA-aware download ────────────────────────────────────────────────────
 
   /// Downloads [url] and updates [task] in DownloadManager.
-  /// If the server returns a CAPTCHA page, shows a dialog and retries with the
-  /// user-supplied verification code.
+  /// On CAPTCHA, opens a WebView dialog so the user can complete verification
+  /// directly on the server page.
   Future<void> _downloadWithCaptchaHandling(
     String url,
     String fileName,
@@ -114,59 +114,16 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
         status: DownloadStatus.done,
         downloadedPath: path,
       );
-      if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.downloadComplete)));
-      }
-    } on CaptchaRequiredException catch (e) {
+    } on CaptchaRequiredException catch (_) {
       if (!mounted) return;
-      final code = await _showCaptchaDialog(e);
-      if (code == null || code.isEmpty) {
-        if (mounted) {
-          manager.updateTask(
-            task,
-            status: DownloadStatus.error,
-            errorMessage: '验证码已取消',
-          );
-        }
-        return;
-      }
-      if (!mounted) return;
-      // Retry with the verification code appended.
-      final codeUrl = '${e.originalUrl}&codeValue=$code';
-      try {
-        manager.updateTask(task, status: DownloadStatus.downloading);
-        final path = await _doDownload(codeUrl, fileName, options);
+      // Let the user complete the CAPTCHA in a WebView — it handles the rest.
+      final ok = await _showCaptchaWebViewDialog(url, options, task);
+      if (!ok && mounted) {
         manager.updateTask(
           task,
-          status: DownloadStatus.done,
-          downloadedPath: path,
+          status: DownloadStatus.error,
+          errorMessage: '验证码已取消',
         );
-        if (mounted) {
-          final l10n = AppLocalizations.of(context)!;
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(l10n.downloadComplete)));
-        }
-      } on CaptchaRequiredException catch (_) {
-        // Wrong code — server returned CAPTCHA again.
-        if (mounted) {
-          manager.updateTask(
-            task,
-            status: DownloadStatus.error,
-            errorMessage: '验证码错误，请重试',
-          );
-        }
-      } catch (retryErr) {
-        if (mounted) {
-          manager.updateTask(
-            task,
-            status: DownloadStatus.error,
-            errorMessage: retryErr.toString(),
-          );
-        }
       }
     } catch (e) {
       if (mounted) {
@@ -193,17 +150,38 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
     return downloadFile(url, options.attachmentDir, fileName, headers: headers);
   }
 
-  /// Shows a dialog that displays the CAPTCHA image and collects the code.
-  Future<String?> _showCaptchaDialog(CaptchaRequiredException e) {
-    return showDialog<String>(
+  /// Opens a dialog with a WebView that loads the CAPTCHA page.
+  /// Returns true if the user completed the CAPTCHA and the file was downloaded.
+  Future<bool> _showCaptchaWebViewDialog(
+    String url,
+    DownloadOptions options,
+    DownloadTask task,
+  ) async {
+    final result = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => _CaptchaDialog(
-        captchaException: e,
-        getCookies: () => getDownloadCookieHeader(e.originalUrl),
-        downloadHeaders: downloadOptions?.downloadHeaders,
+      builder: (ctx) => _CaptchaWebViewDialog(
+        url: url,
+        onDownloadComplete: (String filePath) {
+          getIt<DownloadManager>().updateTask(
+            task,
+            status: DownloadStatus.done,
+            downloadedPath: filePath,
+          );
+          if (mounted) {
+            final l10n = AppLocalizations.of(context)!;
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(l10n.downloadComplete)));
+          }
+          Navigator.pop(ctx, true);
+        },
+        getCookies: () => getDownloadCookieHeader(url),
+        downloadHeaders: options.downloadHeaders,
+        attachmentDir: options.attachmentDir,
       ),
     );
+    return result ?? false;
   }
 
   Future<String?> getDownloadCookieHeader(String url) async {
@@ -299,110 +277,95 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
   }
 }
 
-// ── CAPTCHA Dialog ────────────────────────────────────────────────────────────
+// ── CAPTCHA WebView Dialog ────────────────────────────────────────────────────
 
-class _CaptchaDialog extends StatefulWidget {
-  const _CaptchaDialog({
-    required this.captchaException,
+/// Dialog that loads the CAPTCHA page directly in a WebView.
+///
+/// The user completes the verification form on the original server page. When
+/// the server returns the actual file after verification, [onDownloadStarting]
+/// intercepts it, downloads the file, and calls [onDownloadComplete].
+class _CaptchaWebViewDialog extends StatefulWidget {
+  const _CaptchaWebViewDialog({
+    required this.url,
+    required this.onDownloadComplete,
     required this.getCookies,
+    required this.attachmentDir,
     this.downloadHeaders,
   });
 
-  final CaptchaRequiredException captchaException;
+  final String url;
+  final void Function(String filePath) onDownloadComplete;
   final Future<String?> Function() getCookies;
+  final String attachmentDir;
   final Map<String, String>? downloadHeaders;
 
   @override
-  State<_CaptchaDialog> createState() => _CaptchaDialogState();
+  State<_CaptchaWebViewDialog> createState() => _CaptchaWebViewDialogState();
 }
 
-class _CaptchaDialogState extends State<_CaptchaDialog> {
-  final _controller = TextEditingController();
-  int _refreshTick = 0;
+class _CaptchaWebViewDialogState extends State<_CaptchaWebViewDialog> {
+  bool _loading = true;
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Future<Map<String, String>> _buildHeaders() async {
+  Future<DownloadStartResponse?> _onDownloadStarting(
+    InAppWebViewController controller,
+    DownloadStartRequest request,
+  ) async {
     final cookieHeader = await widget.getCookies();
-    return <String, String>{
-      ...?widget.downloadHeaders,
-      if (cookieHeader != null && cookieHeader.isNotEmpty)
-        'Cookie': cookieHeader,
-    };
+    final headers = mergeDownloadHeaders(
+      widget.downloadHeaders,
+      cookieHeader: cookieHeader,
+    );
+    try {
+      final path = await downloadFile(
+        request.url.toString(),
+        widget.attachmentDir,
+        request.suggestedFilename ?? 'download',
+        headers: headers,
+      );
+      widget.onDownloadComplete(path);
+    } catch (_) {
+      // Download failed — let the WebView keep showing whatever the server returned.
+    }
+    return DownloadStartResponse(handled: true);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Append a cache-busting random parameter so each refresh loads a fresh image.
-    final now = DateTime.now().millisecondsSinceEpoch;
-    final captchaUrl =
-        '${widget.captchaException.captchaAbsoluteUrl}&randnum=$now$_refreshTick';
-
-    return AlertDialog(
-      title: const Text('请输入验证码'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          GestureDetector(
-            onTap: () => setState(() => _refreshTick++),
-            child: FutureBuilder<Map<String, String>>(
-              future: _buildHeaders(),
-              builder: (ctx, snap) {
-                final headers = snap.data ?? {};
-                return Image.network(
-                  captchaUrl,
-                  headers: headers,
-                  height: 42,
-                  fit: BoxFit.fitHeight,
-                  errorBuilder: (_, err, stack) => const SizedBox(
-                    height: 42,
-                    child: Center(child: Icon(Icons.error_outline)),
-                  ),
-                );
-              },
+    return Dialog(
+      child: SizedBox(
+        width: 420,
+        height: 260,
+        child: Column(
+          children: [
+            AppBar(
+              title: Text('请输入验证码'),
+              leading: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.pop(context, false),
+              ),
+              toolbarHeight: 44,
             ),
-          ),
-          const SizedBox(height: 4),
-          GestureDetector(
-            onTap: () => setState(() => _refreshTick++),
-            child: Text(
-              '看不清？点我换一张',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
+            Expanded(
+              child: Stack(
+                children: [
+                  InAppWebView(
+                    initialUrlRequest: URLRequest(url: WebUri(widget.url)),
+                    initialSettings: InAppWebViewSettings(
+                      javaScriptEnabled: true,
+                    ),
+                    onDownloadStarting: _onDownloadStarting,
+                    onLoadStop: (ctrl, uri) {
+                      if (mounted) setState(() => _loading = false);
+                    },
+                  ),
+                  if (_loading)
+                    const Center(child: CircularProgressIndicator()),
+                ],
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _controller,
-            maxLength: 4,
-            autofocus: true,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              hintText: '验证码',
-              border: OutlineInputBorder(),
-              isDense: true,
-            ),
-            onSubmitted: (value) {
-              if (value.isNotEmpty) Navigator.pop(context, value);
-            },
-          ),
-        ],
+          ],
+        ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('取消'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.pop(context, _controller.text),
-          child: const Text('确定'),
-        ),
-      ],
     );
   }
 }
