@@ -125,6 +125,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       visibleIds: visibleIds,
                       selectedIndex: _currentIndex,
                       duration: animDuration,
+                      axis: showRail ? Axis.vertical : Axis.horizontal,
                       pageBuilder: (id) => campusItemConfigById(id).page(),
                     );
                   },

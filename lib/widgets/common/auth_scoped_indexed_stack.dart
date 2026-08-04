@@ -15,6 +15,7 @@ class AuthScopedIndexedStack extends StatefulWidget {
     required this.pageBuilder,
     this.duration = const Duration(milliseconds: 300),
     this.enableAnimation = true,
+    this.axis = Axis.horizontal,
   });
 
   final Listenable authListenable;
@@ -24,6 +25,7 @@ class AuthScopedIndexedStack extends StatefulWidget {
   final Widget Function(String id) pageBuilder;
   final Duration duration;
   final bool enableAnimation;
+  final Axis axis;
 
   @override
   State<AuthScopedIndexedStack> createState() => _AuthScopedIndexedStackState();
@@ -76,8 +78,16 @@ class _AuthScopedIndexedStackState extends State<AuthScopedIndexedStack>
   }
 
   void _updateAnimations() {
-    final beginIn = _isMovingRight ? const Offset(1.0, 0.0) : const Offset(-1.0, 0.0);
-    final endOut = _isMovingRight ? const Offset(-1.0, 0.0) : const Offset(1.0, 0.0);
+    final Offset beginIn;
+    final Offset endOut;
+
+    if (widget.axis == Axis.vertical) {
+      beginIn = _isMovingRight ? const Offset(0.0, 1.0) : const Offset(0.0, -1.0);
+      endOut = _isMovingRight ? const Offset(0.0, -1.0) : const Offset(0.0, 1.0);
+    } else {
+      beginIn = _isMovingRight ? const Offset(1.0, 0.0) : const Offset(-1.0, 0.0);
+      endOut = _isMovingRight ? const Offset(-1.0, 0.0) : const Offset(1.0, 0.0);
+    }
 
     _slideAnimIn = Tween<Offset>(
       begin: beginIn,
@@ -102,15 +112,21 @@ class _AuthScopedIndexedStackState extends State<AuthScopedIndexedStack>
     }
     _resetForAuthenticationBoundary();
 
-    if (oldWidget.selectedIndex != widget.selectedIndex) {
-      if (widget.enableAnimation && widget.duration > Duration.zero) {
+    final bool axisChanged = oldWidget.axis != widget.axis;
+    final bool indexChanged = oldWidget.selectedIndex != widget.selectedIndex;
+
+    if (indexChanged || axisChanged) {
+      if (indexChanged && widget.enableAnimation && widget.duration > Duration.zero) {
         _previousIndex = oldWidget.selectedIndex;
         _isMovingRight = widget.selectedIndex > oldWidget.selectedIndex;
         _updateAnimations();
         _animController.forward(from: 0.0);
       } else {
-        _previousIndex = null;
-        _animController.value = 1.0;
+        if (indexChanged) {
+          _previousIndex = null;
+          _animController.value = 1.0;
+        }
+        _updateAnimations();
       }
     }
   }
@@ -161,11 +177,6 @@ class _AuthScopedIndexedStackState extends State<AuthScopedIndexedStack>
     final selectedIndex = widget.selectedIndex.clamp(0, visibleIds.length - 1);
     final selectedId = visibleIds[selectedIndex];
 
-    final isAnimating = widget.enableAnimation &&
-        _previousIndex != null &&
-        _previousIndex != selectedIndex &&
-        _animController.isAnimating;
-
     final prevIndex = _previousIndex != null
         ? _previousIndex!.clamp(0, visibleIds.length - 1)
         : null;
@@ -173,27 +184,30 @@ class _AuthScopedIndexedStackState extends State<AuthScopedIndexedStack>
         ? visibleIds[prevIndex]
         : null;
 
-    return Stack(
-      fit: StackFit.expand,
-      children: visibleIds.map((id) {
-        final child = _pageCache[id]!;
-        final isSelected = (id == selectedId);
-        final isPrevious = (id == prevId);
+    return ClipRect(
+      child: Stack(
+        fit: StackFit.expand,
+        clipBehavior: Clip.hardEdge,
+        children: visibleIds.map((id) {
+          final child = _pageCache[id]!;
+          final isSelected = (id == selectedId);
+          final isPrevious = (id == prevId);
 
-        final slideAnim = isPrevious ? _slideAnimOut : _slideAnimIn;
-        final fadeAnim = isPrevious ? _fadeAnimOut : _fadeAnimIn;
+          final slideAnim = isPrevious ? _slideAnimOut : _slideAnimIn;
+          final fadeAnim = isPrevious ? _fadeAnimOut : _fadeAnimIn;
 
-        return Offstage(
-          offstage: !isSelected && !isPrevious,
-          child: SlideTransition(
-            position: slideAnim,
-            child: FadeTransition(
-              opacity: fadeAnim,
-              child: child,
+          return Offstage(
+            offstage: !isSelected && !isPrevious,
+            child: SlideTransition(
+              position: slideAnim,
+              child: FadeTransition(
+                opacity: fadeAnim,
+                child: child,
+              ),
             ),
-          ),
-        );
-      }).toList(),
+          );
+        }).toList(),
+      ),
     );
   }
 }
