@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/theme_shape.dart';
+import 'package:bugaoshan/utils/secure_storage.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
@@ -44,7 +44,7 @@ class LoginStatusCard extends StatefulWidget {
 
 class _LoginStatusCardState extends State<LoginStatusCard> {
   static const _keyUsername = 'scu_saved_username';
-  static const _storage = FlutterSecureStorage();
+  static final _storage = SecureStorageProvider.instance;
 
   final _authProvider = getIt<ScuAuthProvider>();
   String? _username;
