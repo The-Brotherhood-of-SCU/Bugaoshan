@@ -18,7 +18,9 @@ class PartyNoticePage extends StatelessWidget {
       heroTag: 'party_attach_fab',
       debugLabel: 'PartyNotice',
       downloadOptions: DownloadOptions(
+        useWebViewDownload: true,
         attachmentDir: kPartyAttachmentDir,
+        downloadHeaders: {'Referer': 'https://xgb.scu.edu.cn'},
         initialTab: 1,
       ),
     );
