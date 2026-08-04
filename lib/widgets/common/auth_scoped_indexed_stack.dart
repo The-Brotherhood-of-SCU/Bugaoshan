@@ -180,30 +180,18 @@ class _AuthScopedIndexedStackState extends State<AuthScopedIndexedStack>
         final isSelected = (id == selectedId);
         final isPrevious = (id == prevId);
 
-        if (isAnimating) {
-          if (isSelected) {
-            return SlideTransition(
-              position: _slideAnimIn,
-              child: FadeTransition(
-                opacity: _fadeAnimIn,
-                child: child,
-              ),
-            );
-          }
-          if (isPrevious) {
-            return SlideTransition(
-              position: _slideAnimOut,
-              child: FadeTransition(
-                opacity: _fadeAnimOut,
-                child: child,
-              ),
-            );
-          }
-        }
+        final slideAnim = isPrevious ? _slideAnimOut : _slideAnimIn;
+        final fadeAnim = isPrevious ? _fadeAnimOut : _fadeAnimIn;
 
         return Offstage(
-          offstage: !isSelected,
-          child: child,
+          offstage: !isSelected && !isPrevious,
+          child: SlideTransition(
+            position: slideAnim,
+            child: FadeTransition(
+              opacity: fadeAnim,
+              child: child,
+            ),
+          ),
         );
       }).toList(),
     );
