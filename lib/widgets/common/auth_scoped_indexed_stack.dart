@@ -35,9 +35,13 @@ class _AuthScopedIndexedStackState extends State<AuthScopedIndexedStack>
   late bool _wasAuthenticated;
   int _authGeneration = 0;
 
+  int? _previousIndex;
   late AnimationController _animController;
-  late Animation<double> _fadeAnim;
-  late Animation<Offset> _slideAnim;
+  late CurvedAnimation _animationCurve;
+  late Animation<double> _fadeAnimIn;
+  late Animation<double> _fadeAnimOut;
+  late Animation<Offset> _slideAnimIn;
+  late Animation<Offset> _slideAnimOut;
   bool _isMovingRight = true;
 
   @override
@@ -51,24 +55,39 @@ class _AuthScopedIndexedStackState extends State<AuthScopedIndexedStack>
       duration: widget.duration,
       value: 1.0,
     );
-    _fadeAnim = CurvedAnimation(
+    _animController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        if (mounted && _previousIndex != null) {
+          setState(() {
+            _previousIndex = null;
+          });
+        }
+      }
+    });
+
+    _animationCurve = CurvedAnimation(
       parent: _animController,
-      curve: Curves.easeInOut,
+      curve: Curves.fastOutSlowIn,
     );
-    _updateSlideAnim();
+
+    _fadeAnimIn = Tween<double>(begin: 0.0, end: 1.0).animate(_animationCurve);
+    _fadeAnimOut = Tween<double>(begin: 1.0, end: 0.0).animate(_animationCurve);
+    _updateAnimations();
   }
 
-  void _updateSlideAnim() {
-    final beginOffset = _isMovingRight ? const Offset(1.0, 0.0) : const Offset(-1.0, 0.0);
-    _slideAnim = Tween<Offset>(
-      begin: beginOffset,
+  void _updateAnimations() {
+    final beginIn = _isMovingRight ? const Offset(1.0, 0.0) : const Offset(-1.0, 0.0);
+    final endOut = _isMovingRight ? const Offset(-1.0, 0.0) : const Offset(1.0, 0.0);
+
+    _slideAnimIn = Tween<Offset>(
+      begin: beginIn,
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _animController,
-        curve: Curves.fastOutSlowIn,
-      ),
-    );
+    ).animate(_animationCurve);
+
+    _slideAnimOut = Tween<Offset>(
+      begin: Offset.zero,
+      end: endOut,
+    ).animate(_animationCurve);
   }
 
   @override
@@ -83,10 +102,16 @@ class _AuthScopedIndexedStackState extends State<AuthScopedIndexedStack>
     }
     _resetForAuthenticationBoundary();
 
-    if (oldWidget.selectedIndex != widget.selectedIndex && widget.enableAnimation) {
-      _isMovingRight = widget.selectedIndex > oldWidget.selectedIndex;
-      _updateSlideAnim();
-      _animController.forward(from: 0.0);
+    if (oldWidget.selectedIndex != widget.selectedIndex) {
+      if (widget.enableAnimation && widget.duration > Duration.zero) {
+        _previousIndex = oldWidget.selectedIndex;
+        _isMovingRight = widget.selectedIndex > oldWidget.selectedIndex;
+        _updateAnimations();
+        _animController.forward(from: 0.0);
+      } else {
+        _previousIndex = null;
+        _animController.value = 1.0;
+      }
     }
   }
 
@@ -101,6 +126,7 @@ class _AuthScopedIndexedStackState extends State<AuthScopedIndexedStack>
 
     _wasAuthenticated = authenticated;
     _authGeneration++;
+    _previousIndex = null;
     _pageCache.clear();
     return true;
   }
@@ -108,6 +134,7 @@ class _AuthScopedIndexedStackState extends State<AuthScopedIndexedStack>
   @override
   void dispose() {
     widget.authListenable.removeListener(_handleAuthChanged);
+    _animationCurve.dispose();
     _animController.dispose();
     super.dispose();
   }
@@ -134,20 +161,50 @@ class _AuthScopedIndexedStackState extends State<AuthScopedIndexedStack>
     final selectedIndex = widget.selectedIndex.clamp(0, visibleIds.length - 1);
     final selectedId = visibleIds[selectedIndex];
 
-    return IndexedStack(
-      index: selectedIndex,
+    final isAnimating = widget.enableAnimation &&
+        _previousIndex != null &&
+        _previousIndex != selectedIndex &&
+        _animController.isAnimating;
+
+    final prevIndex = _previousIndex != null
+        ? _previousIndex!.clamp(0, visibleIds.length - 1)
+        : null;
+    final prevId = (prevIndex != null && prevIndex != selectedIndex)
+        ? visibleIds[prevIndex]
+        : null;
+
+    return Stack(
+      fit: StackFit.expand,
       children: visibleIds.map((id) {
         final child = _pageCache[id]!;
-        if (id == selectedId && widget.enableAnimation) {
-          return SlideTransition(
-            position: _slideAnim,
-            child: FadeTransition(
-              opacity: _fadeAnim,
-              child: child,
-            ),
-          );
+        final isSelected = (id == selectedId);
+        final isPrevious = (id == prevId);
+
+        if (isAnimating) {
+          if (isSelected) {
+            return SlideTransition(
+              position: _slideAnimIn,
+              child: FadeTransition(
+                opacity: _fadeAnimIn,
+                child: child,
+              ),
+            );
+          }
+          if (isPrevious) {
+            return SlideTransition(
+              position: _slideAnimOut,
+              child: FadeTransition(
+                opacity: _fadeAnimOut,
+                child: child,
+              ),
+            );
+          }
         }
-        return child;
+
+        return Offstage(
+          offstage: !isSelected,
+          child: child,
+        );
       }).toList(),
     );
   }
