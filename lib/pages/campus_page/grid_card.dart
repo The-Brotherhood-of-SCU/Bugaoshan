@@ -24,38 +24,35 @@ class CampusGridCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return StyledCard(
       onTap: onTap,
-      child: ThirdCenter(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(AppShapes.medium),
-              decoration: BoxDecoration(
-                color:
-                    iconContainerColor ??
-                    Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(AppShapes.medium),
-              ),
-              child: Icon(
-                icon,
-                color:
-                    iconColor ??
-                    Theme.of(context).colorScheme.onPrimaryContainer,
-                size: 28,
-              ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppShapes.medium),
+            decoration: BoxDecoration(
+              color:
+                  iconContainerColor ??
+                  Theme.of(context).colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(AppShapes.medium),
             ),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              style: Theme.of(
-                context,
-              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            child: Icon(
+              icon,
+              color:
+                  iconColor ?? Theme.of(context).colorScheme.onPrimaryContainer,
+              size: 28,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            title,
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }
