@@ -232,8 +232,21 @@ String sanitizeDownloadFileName(String rawName) {
   return fileName.isEmpty ? 'download' : fileName;
 }
 
+/// Exception thrown when the server returns a CAPTCHA page instead of a file.
+class CaptchaRequiredException implements Exception {
+  const CaptchaRequiredException();
+}
+
+/// Detects if the HTTP response is a CAPTCHA HTML page.
+bool isCaptchaResponse(String? contentType, List<int> bodyBytes) {
+  if (contentType == null || !contentType.contains('text/html')) return false;
+  final head = utf8.decode(bodyBytes.take(4096).toList(), allowMalformed: true);
+  return head.contains('codeValue');
+}
+
 /// Downloads a file from [url] into `Bugaoshan/{dirName}/`.
 /// Returns the final local path.
+/// Throws [CaptchaRequiredException] if the server returns a CAPTCHA page.
 Future<String> downloadFile(
   String url,
   String dirName,
@@ -256,6 +269,11 @@ Future<String> downloadFile(
   if (cancelToken?.isCancelled ?? false) throw DownloadCancelledException();
 
   final bytes = response.bodyBytes;
+
+  // Detect CAPTCHA page — server may return 200 with a verification form.
+  if (isCaptchaResponse(response.headers['content-type'], bytes)) {
+    throw const CaptchaRequiredException();
+  }
 
   // Prefer filename from Content-Disposition header.
   var actualFileName = sanitizeDownloadFileName(fileName);
