@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'utils/app_shapes.dart';
+import 'theme_shape.dart';
 
 const pageTransitionsTheme = PageTransitionsTheme(
   builders: {

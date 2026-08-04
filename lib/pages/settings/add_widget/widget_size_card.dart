@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
+import 'package:bugaoshan/theme_shape.dart';
 
 class WidgetSizeCard extends StatelessWidget {
   final IconData icon;
@@ -23,8 +24,7 @@ class WidgetSizeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(

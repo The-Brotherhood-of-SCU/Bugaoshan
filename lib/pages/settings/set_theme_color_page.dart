@@ -1,10 +1,10 @@
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/set_theme_color_provider.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
 import 'package:system_theme/system_theme.dart';
 
 class SetThemeColorPage extends StatefulWidget {
@@ -147,14 +147,16 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
               ],
             ),
             body: SingleChildScrollView(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
               child: Column(
                 children: [
-                  commonCard(
-                    context: context,
-                    child: Text(l10n.customizedColorHint),
+                  CardWithTitle(
                     title: l10n.tips,
                     icon: const Icon(Icons.warning_amber),
+                    child: Text(l10n.customizedColorHint),
                   ),
                   const SizedBox(height: 8),
                   Padding(
@@ -240,93 +242,4 @@ class _MultiColorPickerState extends State<MultiColorPicker>
       ),
     );
   }
-}
-
-class BasicCard extends StatelessWidget {
-  final void Function(BuildContext context)? onTap;
-  final Widget? child;
-
-  const BasicCard({super.key, required this.child, this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    Widget? realChild;
-    if (onTap == null) {
-      realChild = child;
-    } else {
-      realChild = InkWell(
-        highlightColor: Colors.transparent,
-        splashColor: Colors.transparent,
-        focusColor: Colors.transparent,
-        onTap: () {
-          onTap!(context);
-        },
-        child: SizedBox(width: double.infinity, child: child),
-      );
-    }
-    return Padding(
-      padding: const EdgeInsets.all(10),
-      child: Container(
-        alignment: Alignment.topLeft,
-        decoration: ShapeDecoration(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadiusDirectional.circular(
-              AppShapes.largeIncreased,
-            ),
-          ),
-          color: Theme.of(context).colorScheme.secondaryContainer,
-          shadows: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              spreadRadius: 0.1,
-              blurRadius: 10,
-            ),
-          ],
-        ),
-        width: double.infinity,
-        child: realChild,
-      ),
-    );
-  }
-}
-
-Widget commonCard({
-  required BuildContext context,
-  required String title,
-  required Widget? child,
-  Widget? icon,
-  void Function(BuildContext context)? onTap,
-}) {
-  return BasicCard(
-    onTap: onTap,
-    child: Padding(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [titleText(title), icon ?? Container()],
-          ),
-          child ?? Container(),
-        ],
-      ),
-    ),
-  );
-}
-
-Widget titleText(String text) {
-  return Builder(
-    builder: (context) => Padding(
-      padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-      child: Text(
-        text,
-        textScaler: const TextScaler.linear(1.3),
-        style: Theme.of(
-          context,
-        ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
-      ),
-    ),
-  );
 }

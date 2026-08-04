@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/theme_shape.dart';
 
 class SetDurationPage extends StatefulWidget {
   const SetDurationPage({super.key});

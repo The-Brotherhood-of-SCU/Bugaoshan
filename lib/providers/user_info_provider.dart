@@ -47,6 +47,7 @@ class UserInfoProvider extends ChangeNotifier {
   final UserInfoPersistence _persistUserInfo;
   int _requestGeneration = 0;
   Future<void> _persistenceTail = Future<void>.value();
+  AuthState _lastAuthState = AuthState.unknown;
 
   UserInfoProvider(
     this._wfwAuth,
@@ -56,6 +57,7 @@ class UserInfoProvider extends ChangeNotifier {
     _wfwAuth.addListener(_onAuthChanged);
     // ScuAuth.init() 在 DI 阶段完成，此时本 Provider 还没创建，
     // init() 的 notifyListeners 没人接收。构造后主动检查一次。
+    _lastAuthState = _wfwAuth.state;
     if (_wfwAuth.isReady) {
       _scheduleFetch(Duration.zero);
     }
@@ -76,13 +78,22 @@ class UserInfoProvider extends ChangeNotifier {
   String? get userNumber => _userNumber;
 
   void _onAuthChanged() {
-    if (_wfwAuth.state == AuthState.ready) {
+    final current = _wfwAuth.state;
+    // 只在 unknown→ready 边沿触发取数。会话失效后的自动重试路径
+    // （invalidate → 预热 → ready）会再次 notify ready，若按电平触发，
+    // 每次重试预热都会重新调度取数；一旦 wfw session 始终无法建立，
+    // 「ready → 取数失败 → invalidate → 预热误报 ready → 再取数」
+    // 就会无限循环。
+    final becameReady =
+        current == AuthState.ready && _lastAuthState != AuthState.ready;
+    _lastAuthState = current;
+    if (becameReady) {
       // SSO session 刚通过 session/save 建立，CookieClient 的 jar 里仅有
       // id.scu.edu.cn 域 cookie。立即访问 wfw.scu.edu.cn 会触发重定向链，
       // 重定向期间的并发请求可能被服务端限流或产生 session 竞态导致失败。
       // 给一个短延迟让重定向链完成，同时 _fetchAll 内部有一次自动重试兜底。
       _scheduleFetch(const Duration(milliseconds: 300));
-    } else if (_wfwAuth.state == AuthState.unknown) {
+    } else if (current == AuthState.unknown) {
       clear();
     }
   }
@@ -212,10 +223,22 @@ class UserInfoProvider extends ChangeNotifier {
     if (_wfwAuth.isReady) {
       _scheduleFetch(Duration.zero);
     } else {
-      // wfw 会话已失效：先刷新 UI 清除过期 error 帧，再主动预热恢复 ready，
-      // 成功后 _onAuthChanged 会重新取数。
+      // wfw 会话已失效：先刷新 UI 清除过期 error 帧，再主动预热恢复 ready。
       notifyListeners();
-      unawaited(_wfwAuth.ensureAuthenticated().catchError((Object _) {}));
+      unawaited(
+        _wfwAuth
+            .ensureAuthenticated()
+            .then((_) {
+              // 会话可能是「无声失效后重建」（invalidate 不发通知，
+              // _lastAuthState 仍停留在 ready）：此时 ready 重通知不构成
+              // 状态边沿，_onAuthChanged 不会再调度，这里显式兜底。
+              // 正常边沿路径下通知已调度过一次，generation 会去重。
+              if (_wfwAuth.isReady) {
+                _scheduleFetch(const Duration(milliseconds: 300));
+              }
+            })
+            .catchError((Object _) {}),
+      );
     }
   }
 

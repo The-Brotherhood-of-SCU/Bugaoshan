@@ -10,7 +10,7 @@ import 'section_header.dart';
 import 'list_card.dart';
 import 'grid_card.dart';
 import 'grid_view_switch.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/theme_shape.dart';
 
 class CampusPage extends StatefulWidget {
   const CampusPage({super.key});
@@ -201,7 +201,7 @@ class _CampusPageState extends State<CampusPage>
             padding: const EdgeInsets.only(top: 8, bottom: 16),
             sliver: SliverGrid(
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 160,
+                maxCrossAxisExtent: 140,
                 mainAxisSpacing: 12,
                 crossAxisSpacing: 12,
                 childAspectRatio: 0.85,

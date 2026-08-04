@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activity_detail_page.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 class ActivityLibDetailPage extends StatefulWidget {
   final String activityLibraryId;
@@ -175,7 +176,7 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
 
   Widget _buildHeader(AppLocalizations l10n) {
     final lib = _activityLib!;
-    return Card(
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -259,7 +260,7 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
 
   Widget _buildInfoSection(AppLocalizations l10n) {
     final lib = _activityLib!;
-    return Card(
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -326,7 +327,7 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
 
   Widget _buildContactSection(AppLocalizations l10n) {
     final lib = _activityLib!;
-    return Card(
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -376,7 +377,7 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
         ),
         const SizedBox(height: 12),
         if (_activities.isEmpty)
-          Card(
+          StyledCard(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Center(
@@ -409,142 +410,138 @@ class _ActivityCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.only(bottom: 8),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) =>
-                  ActivityDetailPage(activityId: activity.activityId ?? ''),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(AppShapes.medium),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(AppShapes.medium),
-                    ),
-                    child: Center(
-                      child: Text(
-                        '$index',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                ActivityDetailPage(activityId: activity.activityId ?? ''),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(AppShapes.medium),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
+                  child: Center(
                     child: Text(
-                      activity.activityName,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: activity.status == 'A03'
-                          ? Theme.of(context).colorScheme.primaryContainer
-                          : Theme.of(context).colorScheme.tertiaryContainer,
-                      borderRadius: BorderRadius.circular(AppShapes.xs),
-                    ),
-                    child: Text(
-                      activity.statusName ?? activity.status,
+                      '$index',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: activity.status == 'A03'
-                            ? Theme.of(context).colorScheme.onPrimaryContainer
-                            : Theme.of(context).colorScheme.onTertiaryContainer,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              if (activity.startTime != null)
-                Row(
-                  children: [
-                    Icon(
-                      Icons.schedule,
-                      size: 14,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${activity.startTime} - ${activity.endTime ?? ''}',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
                 ),
-              if (activity.activityAddress != null &&
-                  activity.activityAddress!.isNotEmpty) ...[
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.location_on,
-                      size: 14,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    activity.activityName,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        activity.activityAddress!,
-                        style: Theme.of(context).textTheme.bodySmall,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: activity.status == 'A03'
+                        ? Theme.of(context).colorScheme.primaryContainer
+                        : Theme.of(context).colorScheme.tertiaryContainer,
+                    borderRadius: BorderRadius.circular(AppShapes.xs),
+                  ),
+                  child: Text(
+                    activity.statusName ?? activity.status,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: activity.status == 'A03'
+                          ? Theme.of(context).colorScheme.onPrimaryContainer
+                          : Theme.of(context).colorScheme.onTertiaryContainer,
                     ),
-                  ],
+                  ),
                 ),
               ],
-              const SizedBox(height: 8),
+            ),
+            const SizedBox(height: 8),
+            if (activity.startTime != null)
               Row(
                 children: [
                   Icon(
-                    Icons.people,
+                    Icons.schedule,
                     size: 14,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    '${l10n.ccylQuota}: ${activity.quota}',
+                    '${activity.startTime} - ${activity.endTime ?? ''}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  if (activity.mobile != null &&
-                      activity.mobile!.isNotEmpty) ...[
-                    const Spacer(),
-                    Icon(
-                      Icons.phone,
-                      size: 14,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      activity.mobile!,
+                ],
+              ),
+            if (activity.activityAddress != null &&
+                activity.activityAddress!.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(
+                    Icons.location_on,
+                    size: 14,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      activity.activityAddress!,
                       style: Theme.of(context).textTheme.bodySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ],
+                  ),
                 ],
               ),
             ],
-          ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  Icons.people,
+                  size: 14,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '${l10n.ccylQuota}: ${activity.quota}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                if (activity.mobile != null && activity.mobile!.isNotEmpty) ...[
+                  const Spacer(),
+                  Icon(
+                    Icons.phone,
+                    size: 14,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    activity.mobile!,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ],
+            ),
+          ],
         ),
       ),
     );

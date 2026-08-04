@@ -9,6 +9,7 @@ import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 class ClassScheduleInquiryPage extends StatefulWidget {
   const ClassScheduleInquiryPage({super.key});
@@ -248,20 +249,15 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
-    return Card(
+    return CardWithTitle(
+      title: l10n.classScheduleInquiryFilter,
+      icon: const Icon(Icons.tune),
       margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              l10n.classScheduleInquiryFilter,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
@@ -478,7 +474,7 @@ class _ClassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         onTap: onTap,

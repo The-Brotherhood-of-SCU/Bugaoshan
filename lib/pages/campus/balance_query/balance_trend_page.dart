@@ -1,4 +1,4 @@
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/beijing_time.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:flutter/material.dart';

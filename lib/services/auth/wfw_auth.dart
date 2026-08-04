@@ -88,9 +88,10 @@ class WfwAuth extends ChangeNotifier implements SubsystemAuth {
     // 重定向链，在 CookieClient 中建立 wfw.scu.edu.cn 的 session cookie。
     // 不这么做的话，冷启动时页面带 X-Requested-With 的 API 请求会被
     // wfw 服务端直接返回 "用户信息已失效" 而不走 SSO 重定向。
+    const warmUpUrl = 'https://wfw.scu.edu.cn/';
     try {
       final response = await client.followRedirects(
-        Uri.parse('https://wfw.scu.edu.cn/'),
+        Uri.parse(warmUpUrl),
         headers: {'User-Agent': kDefaultUserAgent},
       );
       if (response.statusCode == 401 || response.statusCode == 403) {
@@ -98,6 +99,14 @@ class WfwAuth extends ChangeNotifier implements SubsystemAuth {
       }
       if (response.statusCode < 200 || response.statusCode >= 400) {
         throw ServiceException('微服务预热失败', statusCode: response.statusCode);
+      }
+      // 匿名访问首页也可能直接 200（不走 SSO 重定向、不下发 Set-Cookie）。
+      // 仅凭状态码会把「session 未建立」误判为 ready，随后业务请求必然失效：
+      // invalidate → 重新预热 → 再次误报 ready → 通知监听方重新取数，
+      // 形成死循环。必须确认 wfw 域 cookie 已实际写入 jar。
+      if (!client.hasCookiesFor(Uri.parse(warmUpUrl))) {
+        _log.w(_tag, 'warm-up: no wfw cookie bound, session not established');
+        throw const UnauthenticatedException('微服务 session 未建立');
       }
       _log.d(_tag, 'warm-up request ok');
       if (identical(client, _lastScuClient) && !_ready) {

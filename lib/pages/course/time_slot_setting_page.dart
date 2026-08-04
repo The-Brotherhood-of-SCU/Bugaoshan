@@ -3,7 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/theme_shape.dart';
 
 class TimeSlotSettingPage extends StatefulWidget {
   final int morningSections;

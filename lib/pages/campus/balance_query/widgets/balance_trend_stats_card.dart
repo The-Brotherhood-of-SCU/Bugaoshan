@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_trend_format.dart';
 import 'package:bugaoshan/services/balance/balance_trend_calculator.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 /// 趋势统计卡片:日均电费主指标 + 累计明细 + 充值段提示。
 ///
@@ -25,7 +26,7 @@ class BalanceTrendStatsCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     if (!isLoading && trend.recordCount == 0) {
-      return Card(
+      return StyledCard(
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -50,7 +51,7 @@ class BalanceTrendStatsCard extends StatelessWidget {
     }
 
     const placeholder = 'N/A';
-    return Card(
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(

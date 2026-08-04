@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activity_detail_page.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 class MyActivitiesTab extends StatefulWidget {
   const MyActivitiesTab({super.key});
@@ -122,122 +123,119 @@ class _MyActivityCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) =>
-                  ActivityDetailPage(activityId: activity.activityId ?? ''),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                ActivityDetailPage(activityId: activity.activityId ?? ''),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              activity.activityName,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
-          );
-        },
-        borderRadius: BorderRadius.circular(AppShapes.medium),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                activity.activityName,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 8),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  Icons.business,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    activity.orgName,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (activity.startTime != null && activity.endTime != null) ...[
               Row(
                 children: [
                   Icon(
-                    Icons.business,
+                    Icons.access_time,
                     size: 16,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      activity.orgName,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
+                  Text(
+                    '${activity.startTime} - ${activity.endTime}',
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              if (activity.startTime != null && activity.endTime != null) ...[
-                Row(
-                  children: [
-                    Icon(
-                      Icons.access_time,
-                      size: 16,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${activity.startTime} - ${activity.endTime}',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-              ],
-              if (activity.activityAddress != null) ...[
-                Row(
-                  children: [
-                    Icon(
-                      Icons.location_on,
-                      size: 16,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        activity.activityAddress!,
-                        style: Theme.of(context).textTheme.bodySmall,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-              ],
+            ],
+            if (activity.activityAddress != null) ...[
               Row(
                 children: [
                   Icon(
-                    Icons.schedule,
+                    Icons.location_on,
                     size: 16,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
-                      '${activity.classHour} ${l10n.ccylHours}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      activity.activityAddress!,
                       style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(activity.statusName),
-                      borderRadius: BorderRadius.circular(AppShapes.xs),
-                    ),
-                    child: Text(
-                      activity.statusName ?? activity.status,
-                      style: Theme.of(context).textTheme.labelSmall,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: 8),
             ],
-          ),
+            Row(
+              children: [
+                Icon(
+                  Icons.schedule,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    '${activity.classHour} ${l10n.ccylHours}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _getStatusColor(activity.statusName),
+                    borderRadius: BorderRadius.circular(AppShapes.xs),
+                  ),
+                  child: Text(
+                    activity.statusName ?? activity.status,
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

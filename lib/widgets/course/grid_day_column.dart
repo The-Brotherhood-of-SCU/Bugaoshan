@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/course/course_card.dart';
 import 'grid_logic.dart';
 

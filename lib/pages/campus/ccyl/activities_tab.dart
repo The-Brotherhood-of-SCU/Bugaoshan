@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activity_lib_detail_page.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 class ActivitiesTab extends StatefulWidget {
   const ActivitiesTab({super.key});
@@ -160,136 +161,133 @@ class _ActivityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ActivityLibDetailPage(
-                activityLibraryId: activity.activityLibraryId,
-              ),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ActivityLibDetailPage(
+              activityLibraryId: activity.activityLibraryId,
             ),
-          );
-        },
-        borderRadius: BorderRadius.circular(AppShapes.medium),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                activity.name,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(
-                    Icons.business,
-                    size: 16,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      activity.orgName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  if (activity.levelName != null) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(AppShapes.xs),
-                      ),
-                      child: Text(
-                        activity.levelName!,
-                        style: Theme.of(context).textTheme.labelSmall,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(
-                    Icons.schedule,
-                    size: 16,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${activity.classHour} ${l10n.ccylHours}',
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              activity.name,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  Icons.business,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    activity.orgName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  if (activity.star.isNotEmpty) ...[
-                    const SizedBox(width: 16),
-                    ...List.generate(
-                      int.tryParse(
-                            activity.star.substring(activity.star.length - 1),
-                          ) ??
-                          0,
-                      (index) => Padding(
-                        padding: const EdgeInsets.only(right: 2),
-                        child: Icon(
-                          Icons.star,
-                          size: 16,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        activity.starName ?? activity.star,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ),
-                  ],
+                ),
+                const SizedBox(width: 16),
+                if (activity.levelName != null) ...[
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: activity.subscribed
-                          ? Colors.blue.shade100
-                          : (activity.doing
-                                ? Colors.green.shade100
-                                : Colors.orange.shade100),
+                      color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(AppShapes.xs),
                     ),
                     child: Text(
-                      activity.subscribed
-                          ? l10n.ccylSubscribed
-                          : (activity.doing
-                                ? l10n.ccylInProgress
-                                : l10n.ccylAvailable),
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: activity.subscribed
-                            ? Colors.blue
-                            : (activity.doing ? Colors.green : Colors.orange),
-                      ),
+                      activity.levelName!,
+                      style: Theme.of(context).textTheme.labelSmall,
                     ),
                   ),
                 ],
-              ),
-            ],
-          ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  Icons.schedule,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '${activity.classHour} ${l10n.ccylHours}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                if (activity.star.isNotEmpty) ...[
+                  const SizedBox(width: 16),
+                  ...List.generate(
+                    int.tryParse(
+                          activity.star.substring(activity.star.length - 1),
+                        ) ??
+                        0,
+                    (index) => Padding(
+                      padding: const EdgeInsets.only(right: 2),
+                      child: Icon(
+                        Icons.star,
+                        size: 16,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      activity.starName ?? activity.star,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                ],
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: activity.subscribed
+                        ? Colors.blue.shade100
+                        : (activity.doing
+                              ? Colors.green.shade100
+                              : Colors.orange.shade100),
+                    borderRadius: BorderRadius.circular(AppShapes.xs),
+                  ),
+                  child: Text(
+                    activity.subscribed
+                        ? l10n.ccylSubscribed
+                        : (activity.doing
+                              ? l10n.ccylInProgress
+                              : l10n.ccylAvailable),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: activity.subscribed
+                          ? Colors.blue
+                          : (activity.doing ? Colors.green : Colors.orange),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

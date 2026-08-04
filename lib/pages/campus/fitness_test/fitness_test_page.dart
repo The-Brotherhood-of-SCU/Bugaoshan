@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/utils/app_shapes.dart';
+import 'package:bugaoshan/theme_shape.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -14,6 +14,7 @@ import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/info_row.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 class FitnessTestPage extends StatefulWidget {
   const FitnessTestPage({super.key});
@@ -354,81 +355,76 @@ class _FitnessTestPageState extends State<FitnessTestPage>
   Widget _buildNoticeCard(Map<String, dynamic> notice, AppLocalizations l10n) {
     final isSticky = notice['is_stick'] == 1;
 
-    return Card(
+    return StyledCard(
       margin: const EdgeInsets.only(bottom: 8),
-      child: InkWell(
-        onTap: () => _showNoticeDetail(notice, l10n),
-        borderRadius: BorderRadius.circular(AppShapes.medium),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  if (isSticky) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(AppShapes.xs),
-                      ),
-                      child: Text(
-                        l10n.fitnessTestSticky,
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onPrimaryContainer,
-                        ),
-                      ),
+      onTap: () => _showNoticeDetail(notice, l10n),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                if (isSticky) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
                     ),
-                    const SizedBox(width: 8),
-                  ],
-                  Expanded(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(AppShapes.xs),
+                    ),
                     child: Text(
-                      notice['title'] ?? '',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
+                      l10n.fitnessTestSticky,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
                       ),
                     ),
                   ),
+                  const SizedBox(width: 8),
                 ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(
-                    Icons.access_time,
-                    size: 14,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    notice['create_time'] ?? '',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                Expanded(
+                  child: Text(
+                    notice['title'] ?? '',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const Spacer(),
-                  Icon(
-                    Icons.visibility_outlined,
-                    size: 14,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  Icons.access_time,
+                  size: 14,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  notice['create_time'] ?? '',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${notice['read_num'] ?? 0} ${l10n.fitnessTestReadCount}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                ),
+                const Spacer(),
+                Icon(
+                  Icons.visibility_outlined,
+                  size: 14,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '${notice['read_num'] ?? 0} ${l10n.fitnessTestReadCount}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -539,7 +535,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
         padding: const EdgeInsets.all(16),
         children: [
           // Year selector
-          Card(
+          StyledCard(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
@@ -630,7 +626,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     final totalGrade = _scoreData!['total_grade'] ?? '';
     final gradeColor = _getGradeColor(totalGrade);
 
-    return Card(
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Row(
@@ -702,7 +698,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     final name = _scoreData!['student_name'] ?? '-';
     final studentNum = _scoreData!['student_num'] ?? '-';
 
-    return Card(
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -822,21 +818,12 @@ class _FitnessTestPageState extends State<FitnessTestPage>
       ),
     ];
 
-    return Card(
+    return StyledCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.fitnessTestScores,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            const Divider(height: 24),
-            ...items.map((item) => _buildScoreItemRow(item)),
-          ],
+          children: [...items.map((item) => _buildScoreItemRow(item))],
         ),
       ),
     );
