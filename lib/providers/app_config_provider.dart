@@ -31,6 +31,7 @@ const String _keyShowNonCurrentWeekCourses = 'showNonCurrentWeekCourses';
 const String _keyUseGoogleFonts = 'useGoogleFonts';
 const String _keyCampusGridView = 'campusGridView';
 const String _keyAutoSampleBalanceOnLogin = 'autoSampleBalanceOnLogin';
+const String _keyForceCaptchaForDownload = 'forceCaptchaForDownload';
 const Curve appCurve = Curves.easeOutQuart;
 
 enum ThemeColorMode { system, backgroundImage, custom }
@@ -82,6 +83,9 @@ class AppConfigProvider {
   final ValueNotifier<bool> campusGridView = ValueNotifier<bool>(false);
   final ValueNotifier<bool> autoSampleBalanceOnLogin = ValueNotifier<bool>(
     true,
+  );
+  final ValueNotifier<bool> forceCaptchaForDownload = ValueNotifier<bool>(
+    false,
   );
 
   Future<void> _loadPreferences() async {
@@ -138,6 +142,8 @@ class AppConfigProvider {
         _sharedPreferences.getBool(_keyCampusGridView) ?? false;
     autoSampleBalanceOnLogin.value =
         _sharedPreferences.getBool(_keyAutoSampleBalanceOnLogin) ?? false;
+    forceCaptchaForDownload.value =
+        _sharedPreferences.getBool(_keyForceCaptchaForDownload) ?? false;
   }
 
   void _addSaveCallback() {
@@ -254,6 +260,12 @@ class AppConfigProvider {
       _sharedPreferences.setBool(
         _keyAutoSampleBalanceOnLogin,
         autoSampleBalanceOnLogin.value,
+      );
+    });
+    forceCaptchaForDownload.addListener(() {
+      _sharedPreferences.setBool(
+        _keyForceCaptchaForDownload,
+        forceCaptchaForDownload.value,
       );
     });
   }
