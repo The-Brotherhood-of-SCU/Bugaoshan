@@ -156,9 +156,10 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
                   CardWithTitle(
                     title: l10n.tips,
                     icon: const Icon(Icons.warning_amber),
+                    backgroundColor: colorScheme?.secondaryContainer,
                     child: Text(l10n.customizedColorHint),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: SegmentedButton<ThemeColorMode>(
