@@ -206,7 +206,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final body = SafeArea(
-      minimum: const EdgeInsets.all(16),
+      minimum: const EdgeInsets.symmetric(horizontal: 16),
       child: ThirdCenter(
         child: SingleChildScrollView(
           child: Container(
@@ -214,6 +214,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                const SizedBox(height: 16),
                 ScuLoginHeaderImage(isDark: isDark),
                 _buildForm(l10n, isDark),
                 const SizedBox(height: 40),
