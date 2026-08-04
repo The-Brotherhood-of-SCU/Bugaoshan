@@ -237,9 +237,9 @@ class CaptchaRequiredException implements Exception {
   const CaptchaRequiredException();
 }
 
-/// Detects if [bodyBytes] is a CAPTCHA HTML page.
-bool isCaptchaResponse(List<int> bodyBytes) {
-  if (bodyBytes.length > 256 * 1024) return false;
+/// Detects if the HTTP response is a CAPTCHA HTML page.
+bool isCaptchaResponse(String? contentType, List<int> bodyBytes) {
+  if (contentType == null || !contentType.contains('text/html')) return false;
   final head = utf8.decode(bodyBytes.take(4096).toList(), allowMalformed: true);
   return head.contains('codeValue');
 }
@@ -271,7 +271,9 @@ Future<String> downloadFile(
   final bytes = response.bodyBytes;
 
   // Detect CAPTCHA page — server may return 200 with a verification form.
-  if (isCaptchaResponse(bytes)) throw const CaptchaRequiredException();
+  if (isCaptchaResponse(response.headers['content-type'], bytes)) {
+    throw const CaptchaRequiredException();
+  }
 
   // Prefer filename from Content-Disposition header.
   var actualFileName = sanitizeDownloadFileName(fileName);
