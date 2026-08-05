@@ -74,20 +74,6 @@ class _DevPageState extends State<DevPage> {
   ) {
     return [
       const SizedBox(height: 16),
-      ValueListenableBuilder<bool>(
-        valueListenable: _appConfig.forceCaptchaForDownload,
-        builder: (context, value, _) => SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('强制下载验证码'),
-          subtitle: Text(
-            '开启后点击附件下载将直接弹出验证码弹窗，用于测试验证码流程',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          value: value,
-          onChanged: (v) => _appConfig.forceCaptchaForDownload.value = v,
-        ),
-      ),
-      const Divider(),
       Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
         child: Text(
@@ -155,6 +141,19 @@ class _DevPageState extends State<DevPage> {
           const Divider(),
           const ChangelogTile(),
           const Divider(),
+          ValueListenableBuilder<bool>(
+            valueListenable: _appConfig.forceCaptchaForDownload,
+            builder: (context, value, _) => SwitchListTile(
+              secondary: const Icon(Icons.tab),
+              title: Text(localizations.forceCaptchaForDownload),
+              subtitle: Text(
+                localizations.forceCaptchaForDownloadHint,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              value: value,
+              onChanged: (v) => _appConfig.forceCaptchaForDownload.value = v,
+            ),
+          ),
           if (_supportsUpdate) ..._buildUpdateSection(context, localizations),
         ],
       ),

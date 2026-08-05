@@ -14,7 +14,6 @@ import 'download_options.dart';
 /// intercepts it, downloads the file, and calls [onDownloadComplete].
 class CaptchaWebViewDialog extends StatefulWidget {
   const CaptchaWebViewDialog({
-    super.key,
     required this.url,
     required this.onDownloadComplete,
     required this.getCookies,
@@ -60,7 +59,6 @@ class _CaptchaWebViewDialogState extends State<CaptchaWebViewDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     return Dialog(
       child: SizedBox(
         width: 420,
@@ -68,7 +66,7 @@ class _CaptchaWebViewDialogState extends State<CaptchaWebViewDialog> {
         child: Column(
           children: [
             AppBar(
-              title: Text(l10n.captchaRequired),
+              title: Text(AppLocalizations.of(context)!.captchaDialogTitle),
               leading: IconButton(
                 icon: const Icon(Icons.close),
                 onPressed: () => Navigator.pop(context, false),

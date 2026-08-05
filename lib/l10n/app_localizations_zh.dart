@@ -356,6 +356,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get usePreviewUpdateSourceHint => '仅影响首页和关于页面的自动检查；测试页面始终同时检查两个渠道。';
 
   @override
+  String get forceCaptchaForDownload => '强制下载验证码';
+
+  @override
+  String get forceCaptchaForDownloadHint => '开启后点击附件下载将直接弹出验证码弹窗，用于测试验证码流程。';
+
+  @override
+  String get captchaDialogTitle => '请输入验证码';
+
+  @override
+  String get captchaCancelled => '验证码已取消';
+
+  @override
   String get downloading => '正在下载';
 
   @override

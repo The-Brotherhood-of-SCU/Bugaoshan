@@ -119,7 +119,7 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
         manager.updateTask(
           task,
           status: DownloadStatus.error,
-          errorMessage: '验证码已取消',
+          errorMessage: AppLocalizations.of(context)!.captchaCancelled,
         );
       }
     } catch (e) {
