@@ -145,7 +145,7 @@ flowchart TD
 | 模块 | L2 依赖 | 会话形式 | 关键行为 |
 |---|---|---|---|
 | `ZhjwAuth` | 无 | 共享 `CookieClient` 中的教务 cookie | 携带 SCU Bearer token 执行 JWT SSO；校验最终 HTTP 状态 |
-| `WfwAuth` | 无 | 共享 `CookieClient` 中的 WFW cookie | 访问 WFW 首页完成 SSO 预热，成功后才把 `isReady` 设为 `true` |
+| `WfwAuth` | 无 | 共享 `CookieClient` 中的 WFW cookie | 跟随 WFW 登录重定向链完成 SSO 预热并校验最终业务响应，通过后才把 `isReady` 设为 `true` |
 | `FitnessAuth` | 无 | 共享 `CookieClient` 中的体测 cookie | 通过 `SsoRelayAuth` 完成 SSO 跳转 |
 | `PayAppAuth` | `WfwAuth` | 共享 `CookieClient` 中的 `airWarrant` 等 cookie | WFW 就绪后通过 `SsoRelayAuth` 完成缴费平台 SSO |
 | `CcylAuth` | 无 | 独立 OAuth token | token 与当前 SCU principal 绑定，不共享 cookie session |
@@ -158,11 +158,11 @@ flowchart TD
 
 恢复 SCU token 或完成 `session/save` 只说明 `id.scu.edu.cn` session 可用，不代表 `wfw.scu.edu.cn` 已建立 session。WFW API 常带 `X-Requested-With`，未预热时服务端可能直接返回“用户信息已失效”，不会自动进入 SSO 重定向。
 
-因此 [`WfwAuth`](../../lib/services/auth/wfw_auth.dart) 必须：
+WFW 首页也不能用来预热：它匿名访问直接返回 200 并下发匿名 `eai-sess` cookie，永远不触发 SSO 链。因此 [`WfwAuth`](../../lib/services/auth/wfw_auth.dart) 必须：
 
 1. 获取当前 `ScuAuth` 的 `CookieClient`。
-2. 不带 AJAX header 访问 WFW 首页并手动跟随重定向。
-3. 仅在最终响应成功后设置 `_ready = true`。
+2. 不带 AJAX header 访问需登录的 `uc/wap/user/get-info` 并手动跟随重定向：匿名时链路为 get-info → `uc/wap/login` → `a_scu/api/cas/login` → `id.scu.edu.cn` CAS → 回跳 wfw 绑定用户 session。
+3. 仅在最终响应为 `e == 0` 的 JSON 时才设置 `_ready = true`（链路落在 `id.scu.edu.cn/login` HTML 或返回 `e == 10013` 都视为未绑定，排除匿名 session 误报）。
 4. 通过 `notifyListeners()` 触发 `UserInfoProvider` 获取数据。
 
 ## 4. AuthCoordinator 调度
@@ -293,7 +293,7 @@ TTL 到期本身不会先把状态切换为 `expired`。系统会直接尝试刷
 `ScuAuth` 刷新、重新绑定或重新登录后可能返回新的 `CookieClient`。L2 的 cookie 型模块在下一次 `getClient()` 时用对象身份判断根 client 是否变化：
 
 - `ZhjwAuth`：清除教务 client 缓存和登录 Future，重新执行 JWT SSO。
-- `WfwAuth`：清除 `_ready` 和预热 Future，重新访问 WFW 首页。
+- `WfwAuth`：清除 `_ready` 和预热 Future，重新走 WFW 登录链预热。
 - `SsoRelayAuth`：清除子站 client 和登录 Future，重新执行中继。
 
 这条规则避免把旧根 session 上建立的子系统 cookie 错当成新会话的一部分。
@@ -310,7 +310,7 @@ TTL 到期本身不会先把状态切换为 `expired`。系统会直接尝试刷
 | 根 token 刷新 | `ScuAuth._refreshCompleter` |
 | 一轮子系统预热 | `AuthCoordinator._warmUpFuture` |
 | 教务 SSO | `ZhjwAuth._loginFuture` |
-| WFW 首页预热 | `WfwAuth._warmUpFuture` |
+| WFW 登录链预热 | `WfwAuth._warmUpFuture` |
 | PayApp / Fitness SSO | `SsoRelayAuth._loginFuture` |
 | CCYL 自动重登录与过期恢复 | `CcylAuth._reLoginFuture` |
 
