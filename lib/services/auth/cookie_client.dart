@@ -46,9 +46,6 @@ class CookieClient extends http.BaseClient {
     return result;
   }
 
-  /// 判断 jar 中是否存在可发送给 [uri] 的 cookie
-  bool hasCookiesFor(Uri uri) => _cookiesFor(uri).isNotEmpty;
-
   /// 解析并存储响应中的 Set-Cookie
   void _storeCookies(Uri uri, http.BaseResponse response) {
     final raw = response.headers['set-cookie'];

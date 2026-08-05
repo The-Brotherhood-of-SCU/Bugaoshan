@@ -183,7 +183,7 @@ Authoritative reference: `docs/architecture/authentication.md`.
 - **`SsoRelayAuth`** (`sso_relay_auth.dart`) — base class for SSOs that just need SCU's `CookieClient` + a redirect; used by `PayAppAuth` and `FitnessAuth`.
 - **`AuthCoordinator`** (`auth_coordinator.dart`) — after ScuAuth login, schedules every subsystem immediately; each task recursively awaits only its declared dependencies (zhjw/wfw/fitness/ccyl can run in parallel, while payapp waits for wfw). Failures skip only downstream modules, and dependency cycles are rejected.
 - **`ZhjwAuth`** — obtains ScuAuth's `CookieClient`, then performs and caches the ZHJW JWT SSO.
-- **`WfwAuth`** — shares ScuAuth's `CookieClient`, visits the WFW home page to establish its domain session, and self-manages `_ready` so Providers do not fetch before that warm-up completes.
+- **`WfwAuth`** — shares ScuAuth's `CookieClient`, follows the WFW login redirect chain (get-info → `uc/wap/login` → `a_scu/api/cas/login` → id CAS) to establish a user-bound domain session, and self-manages `_ready` (gated on an `e == 0` JSON response) so Providers do not fetch before that warm-up completes.
 - **`PayAppAuth`** — payapp OAuth warrant jump, depends on `WfwAuth`.
 - **`FitnessAuth`** — fitness test SSO jump.
 - **`CcylAuth`** — second-classroom OAuth token management via `CcylOAuthService` (SCU → CCYL bridge); binds the persisted token to the current SCU principal and rejects stale async login results.

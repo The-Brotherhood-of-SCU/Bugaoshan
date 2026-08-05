@@ -88,10 +88,10 @@ class UserInfoProvider extends ChangeNotifier {
         current == AuthState.ready && _lastAuthState != AuthState.ready;
     _lastAuthState = current;
     if (becameReady) {
-      // SSO session 刚通过 session/save 建立，CookieClient 的 jar 里仅有
-      // id.scu.edu.cn 域 cookie。立即访问 wfw.scu.edu.cn 会触发重定向链，
-      // 重定向期间的并发请求可能被服务端限流或产生 session 竞态导致失败。
-      // 给一个短延迟让重定向链完成，同时 _fetchAll 内部有一次自动重试兜底。
+      // ready 通知时 WfwAuth 的 SSO 登录链已完成、wfw session 已绑定
+      // 用户；但 warmUpAll 中 payapp 等模块可能还在共享同一 CookieClient
+      // 跑各自的 SSO 链，短延迟避让并发窗口，同时 _fetchAll 内部有一次
+      // 自动重试兜底。
       _scheduleFetch(const Duration(milliseconds: 300));
     } else if (current == AuthState.unknown) {
       clear();

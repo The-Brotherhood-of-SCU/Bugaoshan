@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/services/auth/auth_state.dart';
@@ -84,11 +86,19 @@ class WfwAuth extends ChangeNotifier implements SubsystemAuth {
 
   Future<void> _warmUp(CookieClient client) async {
     _log.d(_tag, 'ensureAuthenticated: warming wfw session');
-    // 预热 wfw session：不带 AJAX header 访问 wfw 首页，触发 SSO
-    // 重定向链，在 CookieClient 中建立 wfw.scu.edu.cn 的 session cookie。
-    // 不这么做的话，冷启动时页面带 X-Requested-With 的 API 请求会被
-    // wfw 服务端直接返回 "用户信息已失效" 而不走 SSO 重定向。
-    const warmUpUrl = 'https://wfw.scu.edu.cn/';
+    // 预热 wfw session：不带 AJAX header 访问需登录的 get-info。匿名时
+    // wfw 会 302 → /uc/wap/login → /a_scu/api/cas/login → id.scu.edu.cn
+    // CAS → 回跳 wfw，跟随该链在 CookieClient 中建立绑定用户的 session
+    // cookie；已绑定时 get-info 直接返回 e==0，一跳完成。
+    //
+    // 不能用首页预热：wfw 首页匿名访问也直接 200 并下发匿名 eai-sess
+    // cookie，永远不触发 SSO 链，session 并未绑定用户。仅凭状态码或
+    // 「jar 里有 wfw cookie」判就绪都会把匿名 session 误报为 ready，
+    // 随后业务请求必然失效：invalidate → 重新预热 → 再次误报 ready →
+    // 通知监听方重新取数，形成死循环。就绪判据必须是最终响应为
+    // e==0 的 JSON —— id session 失效时链路终点是 id.scu.edu.cn/login
+    // 的 HTML 登录页。
+    const warmUpUrl = 'https://wfw.scu.edu.cn/uc/wap/user/get-info';
     try {
       final response = await client.followRedirects(
         Uri.parse(warmUpUrl),
@@ -100,12 +110,8 @@ class WfwAuth extends ChangeNotifier implements SubsystemAuth {
       if (response.statusCode < 200 || response.statusCode >= 400) {
         throw ServiceException('微服务预热失败', statusCode: response.statusCode);
       }
-      // 匿名访问首页也可能直接 200（不走 SSO 重定向、不下发 Set-Cookie）。
-      // 仅凭状态码会把「session 未建立」误判为 ready，随后业务请求必然失效：
-      // invalidate → 重新预热 → 再次误报 ready → 通知监听方重新取数，
-      // 形成死循环。必须确认 wfw 域 cookie 已实际写入 jar。
-      if (!client.hasCookiesFor(Uri.parse(warmUpUrl))) {
-        _log.w(_tag, 'warm-up: no wfw cookie bound, session not established');
+      if (!_isBoundSessionBody(response.body)) {
+        _log.w(_tag, 'warm-up: session not bound (login page or e!=0)');
         throw const UnauthenticatedException('微服务 session 未建立');
       }
       _log.d(_tag, 'warm-up request ok');
@@ -117,6 +123,17 @@ class WfwAuth extends ChangeNotifier implements SubsystemAuth {
     } catch (e) {
       _log.w(_tag, 'warm-up request failed: $e');
       rethrow;
+    }
+  }
+
+  /// 仅当 get-info 最终响应为 e==0 的 JSON 时，才证明 wfw session
+  /// 已绑定用户（而非匿名 session 或落在 SSO 登录页）。
+  bool _isBoundSessionBody(String body) {
+    try {
+      final json = jsonDecode(body);
+      return json is Map<String, dynamic> && json['e'] == 0;
+    } catch (_) {
+      return false;
     }
   }
 

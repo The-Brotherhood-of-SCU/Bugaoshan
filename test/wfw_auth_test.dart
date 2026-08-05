@@ -33,9 +33,9 @@ void main() {
       inner: MockClient((request) async {
         firstWarmUps++;
         return http.Response(
-          'first ready',
+          '{"e":0,"d":{"base":{}}}',
           200,
-          headers: {'set-cookie': 'JSESSIONID=first; Path=/'},
+          headers: {'set-cookie': 'eai-sess=first; Path=/'},
           request: request,
         );
       }),
@@ -44,9 +44,9 @@ void main() {
       inner: MockClient((request) async {
         secondWarmUps++;
         return http.Response(
-          'second ready',
+          '{"e":0,"d":{"base":{}}}',
           200,
-          headers: {'set-cookie': 'JSESSIONID=second; Path=/'},
+          headers: {'set-cookie': 'eai-sess=second; Path=/'},
           request: request,
         );
       }),
@@ -70,36 +70,28 @@ void main() {
     wfwAuth.dispose();
   });
 
-  test('e=10013 invalidates, warms WFW, and retries once', () async {
-    var warmUps = 0;
-    var profileRequests = 0;
+  test('e=10013 invalidates, re-warms WFW, and retries once', () async {
+    // 预热与业务请求访问同一 get-info，按调用顺序区分：
+    // 预热(e=0) → 业务(e=10013) → 再预热(e=0) → 业务重试(e=0)
+    var getInfoRequests = 0;
     final client = CookieClient(
       inner: MockClient((request) async {
-        if (request.url.path == '/') {
-          warmUps++;
-          return http.Response(
-            'ready',
+        expect(request.url.path, '/uc/wap/user/get-info');
+        getInfoRequests++;
+        return switch (getInfoRequests) {
+          1 => http.Response('{"e":0,"d":{"base":{}}}', 200, request: request),
+          2 => http.Response(
+            '{"e":10013,"m":"session expired"}',
             200,
-            headers: {'set-cookie': 'JSESSIONID=warm; Path=/'},
             request: request,
-          );
-        }
-        if (request.url.path == '/uc/wap/user/get-info') {
-          profileRequests++;
-          if (profileRequests == 1) {
-            return http.Response(
-              '{"e":10013,"m":"session expired"}',
-              200,
-              request: request,
-            );
-          }
-          return http.Response(
+          ),
+          3 => http.Response('{"e":0,"d":{"base":{}}}', 200, request: request),
+          _ => http.Response(
             '{"e":0,"d":{"base":{"realname":"Test User"}}}',
             200,
             request: request,
-          );
-        }
-        return http.Response('not found', 404, request: request);
+          ),
+        };
       }),
     );
     final scuAuth = _SwitchableScuAuth(prefs, logger: logger, client: client);
@@ -109,32 +101,59 @@ void main() {
     final profile = await api.fetchUserProfile();
 
     expect(profile?['realname'], 'Test User');
-    expect(profileRequests, 2);
-    expect(warmUps, 2);
+    expect(getInfoRequests, 4); // 预热、业务、再预热、业务重试
 
     wfwAuth.dispose();
   });
 
-  test('warm-up that binds no wfw cookie is not treated as ready', () async {
+  test('warm-up landing on a login page is not treated as ready', () async {
     var warmUps = 0;
     final client = CookieClient(
       inner: MockClient((request) async {
         warmUps++;
-        // 匿名首页：200 但不走 SSO 重定向、不下发任何 cookie
-        return http.Response('anonymous homepage', 200, request: request);
+        // id session 失效时 SSO 链终点是登录 HTML（如 id.scu.edu.cn/login）。
+        // 不得视为就绪：否则业务请求必然失效，「invalidate → 预热误报
+        // ready → 监听方重新取数 → 再失效」会无限循环。
+        return http.Response('<html>login</html>', 200, request: request);
       }),
     );
     final scuAuth = _SwitchableScuAuth(prefs, logger: logger, client: client);
     final wfwAuth = WfwAuth(scuAuth, logger: logger);
 
-    // 仅凭 200 不得标记 ready：否则业务请求必然失效，「invalidate →
-    // 预热误报 ready → 监听方重新取数 → 再失效」会无限循环。
     await expectLater(
       wfwAuth.getClient(),
       throwsA(isA<UnauthenticatedException>()),
     );
     expect(wfwAuth.isReady, isFalse);
     expect(warmUps, 1); // 有界：失败即停，不自旋
+
+    wfwAuth.dispose();
+  });
+
+  test('warm-up returning e!=0 is not treated as ready', () async {
+    var warmUps = 0;
+    final client = CookieClient(
+      inner: MockClient((request) async {
+        warmUps++;
+        // 匿名 session（首页 200 下发的匿名 eai-sess）走完 SSO 链仍可能
+        // 拿到 e=10013：cookie 存在不代表 session 已绑定用户。
+        return http.Response(
+          '{"e":10013,"m":"session expired"}',
+          200,
+          headers: {'set-cookie': 'eai-sess=anonymous; Path=/'},
+          request: request,
+        );
+      }),
+    );
+    final scuAuth = _SwitchableScuAuth(prefs, logger: logger, client: client);
+    final wfwAuth = WfwAuth(scuAuth, logger: logger);
+
+    await expectLater(
+      wfwAuth.getClient(),
+      throwsA(isA<UnauthenticatedException>()),
+    );
+    expect(wfwAuth.isReady, isFalse);
+    expect(warmUps, 1);
 
     wfwAuth.dispose();
   });
