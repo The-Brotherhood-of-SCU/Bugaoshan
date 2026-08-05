@@ -32,6 +32,8 @@ const String _keyUseGoogleFonts = 'useGoogleFonts';
 const String _keyCampusGridView = 'campusGridView';
 const String _keyAutoSampleBalanceOnLogin = 'autoSampleBalanceOnLogin';
 const String _keyForceCaptchaForDownload = 'forceCaptchaForDownload';
+const String _keyEnablePageTransitionAnimation =
+    'enablePageTransitionAnimation';
 const Curve appCurve = Curves.easeOutQuart;
 
 enum ThemeColorMode { system, backgroundImage, custom }
@@ -86,6 +88,9 @@ class AppConfigProvider {
   );
   final ValueNotifier<bool> forceCaptchaForDownload = ValueNotifier<bool>(
     false,
+  );
+  final ValueNotifier<bool> enablePageTransitionAnimation = ValueNotifier<bool>(
+    true,
   );
 
   Future<void> _loadPreferences() async {
@@ -144,6 +149,8 @@ class AppConfigProvider {
         _sharedPreferences.getBool(_keyAutoSampleBalanceOnLogin) ?? false;
     forceCaptchaForDownload.value =
         _sharedPreferences.getBool(_keyForceCaptchaForDownload) ?? false;
+    enablePageTransitionAnimation.value =
+        _sharedPreferences.getBool(_keyEnablePageTransitionAnimation) ?? true;
   }
 
   void _addSaveCallback() {
@@ -266,6 +273,12 @@ class AppConfigProvider {
       _sharedPreferences.setBool(
         _keyForceCaptchaForDownload,
         forceCaptchaForDownload.value,
+      );
+    });
+    enablePageTransitionAnimation.addListener(() {
+      _sharedPreferences.setBool(
+        _keyEnablePageTransitionAnimation,
+        enablePageTransitionAnimation.value,
       );
     });
   }

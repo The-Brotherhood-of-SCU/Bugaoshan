@@ -247,7 +247,6 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
 
   Widget _buildFilterBar(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
 
     return CardWithTitle(
       title: l10n.classScheduleInquiryFilter,

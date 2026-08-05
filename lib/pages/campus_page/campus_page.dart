@@ -198,13 +198,13 @@ class _CampusPageState extends State<CampusPage>
             child: CampusSectionHeader(title: section.title(l10n)),
           ),
           SliverPadding(
-            padding: const EdgeInsets.only(top: 8, bottom: 16),
+            padding: const EdgeInsets.only(top: 8, bottom: 8),
             sliver: SliverGrid(
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                 maxCrossAxisExtent: 140,
                 mainAxisSpacing: 12,
                 crossAxisSpacing: 12,
-                childAspectRatio: 0.85,
+                childAspectRatio: 0.9,
               ),
               delegate: SliverChildBuilderDelegate((context, index) {
                 final item = section.items[index];

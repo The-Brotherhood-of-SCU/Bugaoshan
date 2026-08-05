@@ -31,7 +31,7 @@ class StyledCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   /// 圆角半径，默认 [AppShapes.largeIncreased]。
-  final double? borderRadius;
+  final double borderRadius;
 
   final Color? backgroundColor;
 
@@ -43,7 +43,7 @@ class StyledCard extends StatelessWidget {
     this.padding,
     this.margin,
     this.onTap,
-    this.borderRadius,
+    this.borderRadius = AppShapes.largeIncreased,
     this.backgroundColor,
     this.borderColor,
   });
@@ -51,9 +51,8 @@ class StyledCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final radius = borderRadius ?? AppShapes.largeIncreased;
     final color = backgroundColor ?? theme.colorScheme.surfaceContainerLow;
-    final border = borderColor ?? theme.dividerColor.withValues(alpha: 0.15);
+    final border = borderColor ?? theme.dividerColor.withValues(alpha: 0.1);
 
     Widget body = child;
     if (padding != null) {
@@ -63,19 +62,27 @@ class StyledCard extends StatelessWidget {
     return Container(
       margin: margin,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(radius),
+        borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(color: border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            spreadRadius: 0,
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       clipBehavior: Clip.antiAlias,
       child: Material(
         color: color,
-        borderRadius: BorderRadius.circular(radius),
+        borderRadius: BorderRadius.circular(borderRadius),
         clipBehavior: Clip.antiAlias,
         child: onTap == null
             ? body
             : InkWell(
                 onTap: onTap,
-                borderRadius: BorderRadius.circular(radius),
+                borderRadius: BorderRadius.circular(borderRadius),
                 child: body,
               ),
       ),
@@ -99,6 +106,7 @@ class CardWithTitle extends StatelessWidget {
   final Widget? icon;
   final Widget? child;
   final EdgeInsetsGeometry? margin;
+  final Color? backgroundColor;
   final void Function()? onTap;
   const CardWithTitle({
     super.key,
@@ -107,11 +115,13 @@ class CardWithTitle extends StatelessWidget {
     this.child,
     this.margin,
     this.onTap,
+    this.backgroundColor,
   });
 
   @override
   Widget build(BuildContext context) {
     return StyledCard(
+      backgroundColor: backgroundColor,
       onTap: onTap,
       margin: margin,
       child: Padding(
