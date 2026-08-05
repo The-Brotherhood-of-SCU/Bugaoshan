@@ -149,6 +149,8 @@
         "description": "Toggle in the developer page to force the CAPTCHA dialog when downloading attachments, for testing the CAPTCHA flow."
     },
     "forceCaptchaForDownloadHint": "When enabled, tapping an attachment download will show the CAPTCHA dialog for testing.",
+    "captchaDialogTitle": "Enter CAPTCHA",
+    "captchaCancelled": "CAPTCHA cancelled",
     "downloading": "Downloading",
     "updateFailed": "Update failed",
     "notificationDownloading": "Downloading... {percent}%",

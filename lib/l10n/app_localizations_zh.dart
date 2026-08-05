@@ -356,6 +356,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get forceCaptchaForDownloadHint => '开启后点击附件下载将直接弹出验证码弹窗，用于测试验证码流程。';
 
   @override
+  String get captchaDialogTitle => '请输入验证码';
+
+  @override
+  String get captchaCancelled => '验证码已取消';
+
+  @override
   String get downloading => '正在下载';
 
   @override

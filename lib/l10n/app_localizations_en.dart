@@ -369,6 +369,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'When enabled, tapping an attachment download will show the CAPTCHA dialog for testing.';
 
   @override
+  String get captchaDialogTitle => 'Enter CAPTCHA';
+
+  @override
+  String get captchaCancelled => 'CAPTCHA cancelled';
+
+  @override
   String get downloading => 'Downloading';
 
   @override

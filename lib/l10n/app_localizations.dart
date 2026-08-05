@@ -769,6 +769,18 @@ abstract class AppLocalizations {
   /// **'When enabled, tapping an attachment download will show the CAPTCHA dialog for testing.'**
   String get forceCaptchaForDownloadHint;
 
+  /// No description provided for @captchaDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter CAPTCHA'**
+  String get captchaDialogTitle;
+
+  /// No description provided for @captchaCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'CAPTCHA cancelled'**
+  String get captchaCancelled;
+
   /// No description provided for @downloading.
   ///
   /// In en, this message translates to:
