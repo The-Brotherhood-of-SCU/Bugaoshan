@@ -123,7 +123,7 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
         manager.updateTask(
           task,
           status: DownloadStatus.error,
-          errorMessage: '验证码已取消',
+          errorMessage: AppLocalizations.of(context)!.captchaCancelled,
         );
       }
     } catch (e) {
@@ -342,7 +342,7 @@ class _CaptchaWebViewDialogState extends State<_CaptchaWebViewDialog> {
         child: Column(
           children: [
             AppBar(
-              title: Text('请输入验证码'),
+              title: Text(AppLocalizations.of(context)!.captchaDialogTitle),
               leading: IconButton(
                 icon: const Icon(Icons.close),
                 onPressed: () => Navigator.pop(context, false),
