@@ -757,6 +757,18 @@ abstract class AppLocalizations {
   /// **'Affects only the automatic checks on the home and about pages. The test page always checks both channels.'**
   String get usePreviewUpdateSourceHint;
 
+  /// Toggle in the developer page to force the CAPTCHA dialog when downloading attachments, for testing the CAPTCHA flow.
+  ///
+  /// In en, this message translates to:
+  /// **'Force CAPTCHA for Download'**
+  String get forceCaptchaForDownload;
+
+  /// No description provided for @forceCaptchaForDownloadHint.
+  ///
+  /// In en, this message translates to:
+  /// **'When enabled, tapping an attachment download will show the CAPTCHA dialog for testing.'**
+  String get forceCaptchaForDownloadHint;
+
   /// No description provided for @downloading.
   ///
   /// In en, this message translates to:

@@ -362,6 +362,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Affects only the automatic checks on the home and about pages. The test page always checks both channels.';
 
   @override
+  String get forceCaptchaForDownload => 'Force CAPTCHA for Download';
+
+  @override
+  String get forceCaptchaForDownloadHint =>
+      'When enabled, tapping an attachment download will show the CAPTCHA dialog for testing.';
+
+  @override
   String get downloading => 'Downloading';
 
   @override
