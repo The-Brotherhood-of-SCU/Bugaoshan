@@ -289,14 +289,8 @@ class InteractiveCalendarView extends StatelessWidget {
         ? '$dateStr - $endDateStr'
         : dateStr;
 
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppShapes.medium),
-        side: isActive
-            ? BorderSide(color: theme.colorScheme.primary, width: 1.5)
-            : BorderSide.none,
-      ),
+    return StyledCard(
+      borderColor: isActive ? theme.colorScheme.primary : null,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(

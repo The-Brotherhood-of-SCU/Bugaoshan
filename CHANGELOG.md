@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 增加开发团队的介绍页面
 
 ### Changed
+- 统一校历页面的卡片样式，与其他页面风格保持一致
 - 重新设计登录页面 UI
 - 优化课表翻页手感，动画时间遵循设置
 - 桌面小组件：高亮正在进行的课程，课程指示条使用课程自定义颜色，并按上下课时间精准刷新

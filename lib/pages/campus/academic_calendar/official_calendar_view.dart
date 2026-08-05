@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/image_viewer.dart';
+import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
+import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 typedef OfficialCalendarImageBuilder =
     Widget Function(BuildContext context, String url);
@@ -98,8 +98,7 @@ class OfficialCalendarView extends StatelessWidget {
           ),
           child: GestureDetector(
             onTap: () => showFullScreenImageViewer(context, imageUrl: imageUrl),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppShapes.medium),
+            child: StyledCard(
               child:
                   imageBuilder?.call(context, imageUrl) ??
                   Image.network(
