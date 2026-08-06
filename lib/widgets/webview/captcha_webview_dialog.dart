@@ -33,6 +33,9 @@ class CaptchaWebViewDialog extends StatefulWidget {
 
 class _CaptchaWebViewDialogState extends State<CaptchaWebViewDialog> {
   bool _loading = true;
+  // 弹窗是否已被用户主动关闭。关闭后 WebView 的下载回调可能仍在途，
+  // 需要用 _closed + mounted 双重防护，避免对已关闭的弹窗执行 pop。
+  bool _closed = false;
 
   Future<DownloadStartResponse?> _onDownloadStarting(
     InAppWebViewController controller,
@@ -50,9 +53,17 @@ class _CaptchaWebViewDialogState extends State<CaptchaWebViewDialog> {
         request.suggestedFilename ?? 'download',
         headers: headers,
       );
-      widget.onDownloadComplete(path);
+      // 只有弹窗仍打开时才回调（回调内会 pop 弹窗）；用户已关闭或弹窗
+      // 已被 dispose 时直接忽略，避免误关 dialog 之下的页面。
+      if (!_closed && mounted) {
+        widget.onDownloadComplete(path);
+      }
     } catch (_) {
-      // Download failed — let the WebView keep showing whatever the server returned.
+      // 下载失败：若弹窗仍打开则关闭它并返回 false，由调用方把任务标记
+      // 为失败；WebView 始终接管下载（handled: true）不落到默认行为。
+      if (!_closed && mounted) {
+        Navigator.pop(context, false);
+      }
     }
     return DownloadStartResponse(handled: true);
   }
@@ -69,7 +80,10 @@ class _CaptchaWebViewDialogState extends State<CaptchaWebViewDialog> {
               title: Text(AppLocalizations.of(context)!.captchaDialogTitle),
               leading: IconButton(
                 icon: const Icon(Icons.close),
-                onPressed: () => Navigator.pop(context, false),
+                onPressed: () {
+                  _closed = true;
+                  Navigator.pop(context, false);
+                },
               ),
               toolbarHeight: 44,
             ),
