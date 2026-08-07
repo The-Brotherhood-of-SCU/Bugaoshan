@@ -1426,6 +1426,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get networkError => '网络错误';
 
   @override
+  String get calendarRefreshSuccess => '校历已更新';
+
+  @override
   String get loginFailed => '登录失败';
 
   @override

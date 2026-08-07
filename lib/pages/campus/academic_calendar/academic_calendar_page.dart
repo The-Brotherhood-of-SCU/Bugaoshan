@@ -241,6 +241,10 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
       _interactiveData = data;
       _selectedSemester = _pickInitialSemester(data);
     });
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.calendarRefreshSuccess)));
   }
 
   Future<void> _importSemesterToSystem() async {

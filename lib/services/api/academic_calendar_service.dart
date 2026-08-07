@@ -75,9 +75,14 @@ class AcademicCalendarService {
     if (local != null) return local;
 
     final client = _client ?? http.Client();
-    for (final url in [_mirrorUrl, _remoteUrl]) {
-      final calendar = await _tryFetch(client, url);
-      if (calendar != null) return calendar;
+    try {
+      for (final url in [_mirrorUrl, _remoteUrl]) {
+        final calendar = await _tryFetch(client, url);
+        if (calendar != null) return calendar;
+      }
+    } finally {
+      // 仅关闭本次自建的 client；注入的 _client 由注入方管理生命周期。
+      if (_client == null) client.close();
     }
     return AcademicCalendarData(semesters: []);
   }
@@ -85,9 +90,13 @@ class AcademicCalendarService {
   /// 下拉刷新：仅走网络拉取最新校历，成功写缓存并返回新数据，失败返回 null。
   Future<AcademicCalendarData?> refreshCalendarData() async {
     final client = _client ?? http.Client();
-    for (final url in [_mirrorUrl, _remoteUrl]) {
-      final calendar = await _tryFetch(client, url);
-      if (calendar != null) return calendar;
+    try {
+      for (final url in [_mirrorUrl, _remoteUrl]) {
+        final calendar = await _tryFetch(client, url);
+        if (calendar != null) return calendar;
+      }
+    } finally {
+      if (_client == null) client.close();
     }
     return null;
   }
@@ -130,6 +139,9 @@ class AcademicCalendarService {
         final data = jsonDecode(response.body);
         if (data is Map<String, dynamic> && data.containsKey('semesters')) {
           final calendar = _parseCalendarJson(response.body);
+          // 空校历（semesters 为空数组）不写缓存：本地优先策略下写入后
+          // 会一直展示「无校历数据」且不再回退到内置 asset，造成污染。
+          if (calendar.semesters.isEmpty) return null;
           await _prefs.setString(_cacheKey, response.body);
           return calendar;
         }

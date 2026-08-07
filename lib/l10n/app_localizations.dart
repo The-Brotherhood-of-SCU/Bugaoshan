@@ -2845,6 +2845,12 @@ abstract class AppLocalizations {
   /// **'Network error'**
   String get networkError;
 
+  /// No description provided for @calendarRefreshSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar updated'**
+  String get calendarRefreshSuccess;
+
   /// No description provided for @loginFailed.
   ///
   /// In en, this message translates to:

@@ -1471,6 +1471,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get networkError => 'Network error';
 
   @override
+  String get calendarRefreshSuccess => 'Calendar updated';
+
+  @override
   String get loginFailed => 'Login failed';
 
   @override

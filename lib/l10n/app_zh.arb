@@ -533,6 +533,7 @@
     "networkDeviceOperationSuccess": "操作成功",
     "captchaLoadFailed": "验证码加载失败",
     "networkError": "网络错误",
+    "calendarRefreshSuccess": "校历已更新",
     "loginFailed": "登录失败",
     "invalidCaptcha": "验证码错误，请重试",
     "loginFailedWillLock": "登录失败，再输错 {count} 次将锁定账户",

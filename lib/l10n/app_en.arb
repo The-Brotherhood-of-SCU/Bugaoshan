@@ -553,6 +553,7 @@
     "networkDeviceOperationSuccess": "Operation successful",
     "captchaLoadFailed": "Failed to load captcha",
     "networkError": "Network error",
+    "calendarRefreshSuccess": "Calendar updated",
     "loginFailed": "Login failed",
     "invalidCaptcha": "Invalid captcha, please try again",
     "loginFailedWillLock": "Login failed, {count} more attempt(s) will lock your account",
