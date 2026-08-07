@@ -17,7 +17,10 @@ class ButtonWithMaxWidth extends StatelessWidget {
     Widget realChild;
     realChild = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [Container(), child, icon],
+      children: [
+        Expanded(child: child),
+        icon,
+      ],
     );
     return SizedBox(
       width: double.infinity,
