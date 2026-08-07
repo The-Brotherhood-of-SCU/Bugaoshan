@@ -42,26 +42,33 @@ class _CaptchaWebViewDialogState extends State<CaptchaWebViewDialog> {
     InAppWebViewController controller,
     DownloadStartRequest request,
   ) async {
-    final cookieHeader = await widget.getCookies();
-    final headers = mergeDownloadHeaders(
-      widget.downloadHeaders,
-      cookieHeader: cookieHeader,
-    );
+    // getCookies 也在 try 内：CookieManager 抛异常时同样要关闭弹窗并返回
+    // 失败，不能静默卡住。
     try {
+      final cookieHeader = await widget.getCookies();
+      final headers = mergeDownloadHeaders(
+        widget.downloadHeaders,
+        cookieHeader: cookieHeader,
+      );
       final path = await downloadFile(
         request.url.toString(),
         widget.attachmentDir,
         request.suggestedFilename ?? 'download',
         headers: headers,
       );
-      // 只有弹窗仍打开时才回调（回调内会 pop 弹窗）；用户已关闭或弹窗
-      // 已被 dispose 时直接忽略，避免误关 dialog 之下的页面。
-      if (!_closed && mounted) {
+      // 无论弹窗是否已关闭，都回调更新任务状态为 done（文件确实已落盘，
+      // 状态必须一致，避免「任务显示失败但文件已写入」）；但只在弹窗仍
+      // 打开时才 pop，已关闭时不再触碰导航栈。
+      if (mounted) {
         widget.onDownloadComplete(path);
+        if (!_closed) {
+          Navigator.pop(context, true);
+        }
       }
     } catch (_) {
       // 下载失败：若弹窗仍打开则关闭它并返回 false，由调用方把任务标记
-      // 为失败；WebView 始终接管下载（handled: true）不落到默认行为。
+      // 为失败；已关闭时调用方已标记 captchaCancelled，无需处理。
+      // WebView 始终接管下载（handled: true）不落到默认行为。
       if (!_closed && mounted) {
         Navigator.pop(context, false);
       }
