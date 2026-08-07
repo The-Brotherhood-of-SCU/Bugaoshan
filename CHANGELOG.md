@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 将验证码识别从LiteRT切换为内置实现减小包体积、提高跨平台兼容性
 - 适配成绩页面支持存在多个培养方案的情况
 - 优化卡片的UI设计
+- 校历优先加载本地缓存，减少网络等待，并支持下拉刷新
 
 ### Removed
 - 移除功能：当软件状态恢复时，例如从后台打开，最小化之后打开：课表跳转到当前周
@@ -41,6 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修复导出空课表时失败的问题
 - 修复了一些小问题
 - 修复低版本安卓、苹果系统上保存图片到相册相关权限的问题
+- 修复校历刷新时资源泄漏、加载异常数据可能污染本地缓存的问题
+- 修复部分按钮、房间名等长文本显示溢出或重叠的问题
 
 ## [2.2.0] - 2026-07-13
 
