@@ -68,13 +68,42 @@ class AcademicCalendarService {
     return {'semesters': semesters};
   }
 
+  /// 优先本地数据（缓存 → 内置 asset）快速返回，避免首次打开等网络；
+  /// 仅当本地无数据（首次安装）时才兜底走网络。
   Future<AcademicCalendarData> fetchCalendarData() async {
-    final client = _client ?? http.Client();
-    for (final url in [_mirrorUrl, _remoteUrl]) {
-      final calendar = await _tryFetch(client, url);
-      if (calendar != null) return calendar;
-    }
+    final local = await _loadLocalCalendar();
+    if (local != null) return local;
 
+    final client = _client ?? http.Client();
+    try {
+      for (final url in [_mirrorUrl, _remoteUrl]) {
+        final calendar = await _tryFetch(client, url);
+        if (calendar != null) return calendar;
+      }
+    } finally {
+      // 仅关闭本次自建的 client；注入的 _client 由注入方管理生命周期。
+      if (_client == null) client.close();
+    }
+    return AcademicCalendarData(semesters: []);
+  }
+
+  /// 下拉刷新：仅走网络拉取最新校历，成功写缓存并返回新数据，失败返回 null。
+  Future<AcademicCalendarData?> refreshCalendarData() async {
+    final client = _client ?? http.Client();
+    try {
+      for (final url in [_mirrorUrl, _remoteUrl]) {
+        final calendar = await _tryFetch(client, url);
+        if (calendar != null) return calendar;
+      }
+    } finally {
+      if (_client == null) client.close();
+    }
+    return null;
+  }
+
+  /// 读取本地校历：优先 SharedPreferences 缓存，其次内置 asset。
+  /// 两者都不可用时返回 null。
+  Future<AcademicCalendarData?> _loadLocalCalendar() async {
     final cached = _prefs.getString(_cacheKey);
     if (cached != null && cached.isNotEmpty) {
       try {
@@ -93,7 +122,7 @@ class AcademicCalendarService {
       return _parseCalendarJson(assetContent);
     } catch (e) {
       debugPrint('AcademicCalendarService: failed to load bundled asset: $e');
-      return AcademicCalendarData(semesters: []);
+      return null;
     }
   }
 
@@ -110,6 +139,9 @@ class AcademicCalendarService {
         final data = jsonDecode(response.body);
         if (data is Map<String, dynamic> && data.containsKey('semesters')) {
           final calendar = _parseCalendarJson(response.body);
+          // 空校历（semesters 为空数组）不写缓存：本地优先策略下写入后
+          // 会一直展示「无校历数据」且不再回退到内置 asset，造成污染。
+          if (calendar.semesters.isEmpty) return null;
           await _prefs.setString(_cacheKey, response.body);
           return calendar;
         }

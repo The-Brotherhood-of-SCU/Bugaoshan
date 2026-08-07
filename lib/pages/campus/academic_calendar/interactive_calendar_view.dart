@@ -14,6 +14,7 @@ class InteractiveCalendarView extends StatelessWidget {
   final String? error;
   final ValueChanged<AcademicCalendarSemester> onSemesterChanged;
   final VoidCallback onRetry;
+  final Future<void> Function()? onRefresh;
 
   const InteractiveCalendarView({
     super.key,
@@ -23,6 +24,7 @@ class InteractiveCalendarView extends StatelessWidget {
     this.error,
     required this.onSemesterChanged,
     required this.onRetry,
+    this.onRefresh,
   });
 
   @override
@@ -194,30 +196,35 @@ class InteractiveCalendarView extends StatelessWidget {
     final sortedEvents = List<AcademicCalendarEvent>.from(semester.events)
       ..sort((a, b) => a.date.compareTo(b.date));
 
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-      itemCount: sortedEvents.length,
-      itemBuilder: (context, index) {
-        final event = sortedEvents[index];
-        final isLast = index == sortedEvents.length - 1;
+    return RefreshIndicator(
+      onRefresh: onRefresh ?? () async {},
+      child: ListView.builder(
+        // 内容不足一屏时也允许下拉触发刷新
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        itemCount: sortedEvents.length,
+        itemBuilder: (context, index) {
+          final event = sortedEvents[index];
+          final isLast = index == sortedEvents.length - 1;
 
-        return IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Left Column: Dot & Line
-              _buildTimelineIndicator(context, event, isLast, now),
-              // Right Column: Card Content
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 12, bottom: 16),
-                  child: _buildEventCard(context, l10n, event, now),
+          return IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Left Column: Dot & Line
+                _buildTimelineIndicator(context, event, isLast, now),
+                // Right Column: Card Content
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 12, bottom: 16),
+                    child: _buildEventCard(context, l10n, event, now),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 

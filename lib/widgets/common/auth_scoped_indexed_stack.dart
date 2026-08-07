@@ -153,6 +153,9 @@ class _AuthScopedIndexedStackState extends State<AuthScopedIndexedStack>
     _wasAuthenticated = authenticated;
     _authGeneration++;
     _previousIndex = null;
+    // 认证边界变化时若切页动画正播放到中间态，复位到完成态，
+    // 避免选中的新页面以半透明/偏移状态显示。
+    _animController.value = 1.0;
     _pageCache.clear();
     return true;
   }

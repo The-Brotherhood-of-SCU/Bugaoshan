@@ -144,19 +144,23 @@ class BalanceCardState extends State<BalanceCard> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              _privacyHidden
-                                  ? widget.binding.displayName
-                                        .split(' ')
-                                        .take(2)
-                                        .join(' ')
-                                  : widget.binding.displayName,
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurfaceVariant,
-                                  ),
+                            Flexible(
+                              child: Text(
+                                _privacyHidden
+                                    ? widget.binding.displayName
+                                          .split(' ')
+                                          .take(2)
+                                          .join(' ')
+                                    : widget.binding.displayName,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                    ),
+                              ),
                             ),
                             const SizedBox(width: 4),
                             Icon(

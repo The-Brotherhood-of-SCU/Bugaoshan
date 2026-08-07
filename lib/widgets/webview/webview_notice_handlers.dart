@@ -163,6 +163,8 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
       builder: (ctx) => CaptchaWebViewDialog(
         url: url,
         onDownloadComplete: (String filePath) {
+          // 只更新任务状态与提示；弹窗的 pop 由 CaptchaWebViewDialog 内部
+          // 控制（仅在弹窗仍打开时触发），避免弹窗已关闭时误关底层页面。
           getIt<DownloadManager>().updateTask(
             task,
             status: DownloadStatus.done,
@@ -174,7 +176,6 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
               context,
             ).showSnackBar(SnackBar(content: Text(l10n.downloadComplete)));
           }
-          Navigator.pop(ctx, true);
         },
         getCookies: () => getDownloadCookieHeader(url),
         downloadHeaders: options.downloadHeaders,

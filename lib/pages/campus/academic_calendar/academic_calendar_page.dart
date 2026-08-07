@@ -196,29 +196,10 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
           : await getIt<AcademicCalendarService>().fetchCalendarData();
       if (!mounted) return;
 
-      AcademicCalendarSemester? initialSemester;
-      final now = DateTime.now();
-      for (final semester in data.semesters) {
-        if (semester.isDateInSemester(now)) {
-          initialSemester = semester;
-          break;
-        }
-      }
-
-      if (initialSemester == null && data.semesters.isNotEmpty) {
-        for (final semester in data.semesters) {
-          if (semester.startDate.isAfter(now)) {
-            initialSemester = semester;
-            break;
-          }
-        }
-        initialSemester ??= data.semesters.last;
-      }
-
       if (mounted) {
         setState(() {
           _interactiveData = data;
-          _selectedSemester = initialSemester;
+          _selectedSemester = _pickInitialSemester(data);
           _interactiveLoading = false;
         });
       }
@@ -230,6 +211,40 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
         });
       }
     }
+  }
+
+  /// 从校历数据中挑选默认展示的学期：优先当前学期，其次最近的下学期。
+  AcademicCalendarSemester? _pickInitialSemester(AcademicCalendarData data) {
+    final now = DateTime.now();
+    for (final semester in data.semesters) {
+      if (semester.isDateInSemester(now)) return semester;
+    }
+    for (final semester in data.semesters) {
+      if (semester.startDate.isAfter(now)) return semester;
+    }
+    return data.semesters.isEmpty ? null : data.semesters.last;
+  }
+
+  /// 下拉刷新：网络拉取最新校历，成功则更新数据，失败保留现有数据并提示。
+  Future<void> _refreshInteractiveData() async {
+    final service = getIt<AcademicCalendarService>();
+    final data = await service.refreshCalendarData();
+    if (!mounted) return;
+    if (data == null) {
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.networkError)));
+      return;
+    }
+    setState(() {
+      _interactiveData = data;
+      _selectedSemester = _pickInitialSemester(data);
+    });
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.calendarRefreshSuccess)));
   }
 
   Future<void> _importSemesterToSystem() async {
@@ -293,6 +308,7 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
               setState(() => _selectedSemester = semester);
             },
             onRetry: _loadInteractiveData,
+            onRefresh: _refreshInteractiveData,
           ),
           OfficialCalendarView(
             entries: _entries,

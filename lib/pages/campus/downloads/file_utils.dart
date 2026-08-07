@@ -237,11 +237,16 @@ class CaptchaRequiredException implements Exception {
   const CaptchaRequiredException();
 }
 
+/// 验证码表单页中用于识别「需要人工验证」的 DOM 标识（类名/字段名）。
+/// 服务端若改版导致标志失效，请在此追加新的标识。
+const List<String> _captchaPageMarkers = ['codeValue'];
+
 /// Detects if the HTTP response is a CAPTCHA HTML page.
 bool isCaptchaResponse(String? contentType, List<int> bodyBytes) {
   if (contentType == null || !contentType.contains('text/html')) return false;
+  // 取响应前 4KB 扫描；验证码表单通常位于页面头部脚本区。
   final head = utf8.decode(bodyBytes.take(4096).toList(), allowMalformed: true);
-  return head.contains('codeValue');
+  return _captchaPageMarkers.any(head.contains);
 }
 
 /// Downloads a file from [url] into `Bugaoshan/{dirName}/`.

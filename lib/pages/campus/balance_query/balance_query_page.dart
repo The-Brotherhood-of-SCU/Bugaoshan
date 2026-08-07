@@ -180,7 +180,13 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
                         else
                           const SizedBox(width: 20),
                         const SizedBox(width: 8),
-                        Expanded(child: Text(binding.displayName)),
+                        Expanded(
+                          child: Text(
+                            binding.displayName,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                         IconButton(
                           icon: Icon(
                             Icons.delete_outline,
