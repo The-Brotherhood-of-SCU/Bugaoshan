@@ -14,6 +14,7 @@ import 'download_options.dart';
 /// intercepts it, downloads the file, and calls [onDownloadComplete].
 class CaptchaWebViewDialog extends StatefulWidget {
   const CaptchaWebViewDialog({
+    super.key,
     required this.url,
     required this.onDownloadComplete,
     required this.getCookies,
