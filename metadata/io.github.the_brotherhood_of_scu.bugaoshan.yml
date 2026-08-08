@@ -12,8 +12,8 @@ IssueTracker: https://github.com/The-Brotherhood-of-SCU/Bugaoshan/issues
 Changelog: https://github.com/The-Brotherhood-of-SCU/Bugaoshan/blob/main/CHANGELOG.md
 
 AutoUpdateMode: Version
-UpdateCheckMode: Tags ^v[0-9].*
-UpdateCheckData: pubspec.yaml|version:\s*[0-9.]+\+(\d+)||
+UpdateCheckMode: Tags ^v[0-9]+\.[0-9]+\.[0-9]+$
+UpdateCheckData: pubspec.yaml|version:\s.+\+(\d+)|.|version:\s(.+)\+
 VercodeOperation:
   - 10 * %c + 1
   - 10 * %c + 2
