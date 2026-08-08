@@ -15,17 +15,17 @@ AutoUpdateMode: Version
 UpdateCheckMode: Tags ^v[0-9]+\.[0-9]+\.[0-9]+$
 UpdateCheckData: pubspec.yaml|version:\s.+\+(\d+)|.|version:\s(.+)\+
 VercodeOperation:
-  - 10 * %c + 1
-  - 10 * %c + 2
-  - 10 * %c + 4
+  - '%c + 1001'
+  - '%c + 2001'
+  - '%c + 4001'
 
 RepoType: git
 Repo: https://github.com/The-Brotherhood-of-SCU/Bugaoshan.git
 
 Builds:
-  # ----- armeabi-v7a (versionCode = 10 * 20200 + 1 = 202001) -----
+  # ----- armeabi-v7a (versionCode = 20200 + 1001 = 21201) -----
   - versionName: '2.2.0'
-    versionCode: 202001
+    versionCode: 21201
     commit: v2.2.0
     srclibs:
       - flutter@3.44.8
@@ -38,16 +38,16 @@ Builds:
     prebuild:
       - $$flutter$$/bin/flutter pub get
     build:
-      - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm --build-number=202001
+      - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm --build-number=21201
     output: build/app/outputs/flutter-apk/app-release.apk
     gradleprops:
       - org.gradle.workers.max=2
       - org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m
       - android.r8.failOnMissingClasses=false
 
-  # ----- arm64-v8a (versionCode = 10 * 20200 + 2 = 202002) -----
+  # ----- arm64-v8a (versionCode = 20200 + 2001 = 22201) -----
   - versionName: '2.2.0'
-    versionCode: 202002
+    versionCode: 22201
     commit: v2.2.0
     srclibs:
       - flutter@3.44.8
@@ -60,16 +60,16 @@ Builds:
     prebuild:
       - $$flutter$$/bin/flutter pub get
     build:
-      - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm64 --build-number=202002
+      - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm64 --build-number=22201
     output: build/app/outputs/flutter-apk/app-release.apk
     gradleprops:
       - org.gradle.workers.max=2
       - org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m
       - android.r8.failOnMissingClasses=false
 
-  # ----- x86_64 (versionCode = 10 * 20200 + 4 = 202004) -----
+  # ----- x86_64 (versionCode = 20200 + 4001 = 24201) -----
   - versionName: '2.2.0'
-    versionCode: 202004
+    versionCode: 24201
     commit: v2.2.0
     srclibs:
       - flutter@3.44.8
@@ -82,7 +82,7 @@ Builds:
     prebuild:
       - $$flutter$$/bin/flutter pub get
     build:
-      - $$flutter$$/bin/flutter build apk --release --target-platform=android-x64 --build-number=202004
+      - $$flutter$$/bin/flutter build apk --release --target-platform=android-x64 --build-number=24201
     output: build/app/outputs/flutter-apk/app-release.apk
     gradleprops:
       - org.gradle.workers.max=2
