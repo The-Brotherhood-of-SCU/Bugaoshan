@@ -8,7 +8,7 @@ This file provides guidance to AI coding agents (e.g. Claude Code, Kimi Code) wh
 
 The name comes from a landmark on SCU's Jiang'an campus — "Bugaoshan" is a play on words meaning "not a tall mountain" and "The Brotherhood of SCU" sounds similar.
 
-> **⚠️ Flutter 版本要求**: 本项目需要 **Flutter >= 3.44**（Dart SDK >= 3.10.4）才能正常编译。CI uses Flutter **3.44.6** stable. 详情见 `CONTRIBUTING.md` 与 `.github/actions/setup/action.yml`.
+> **⚠️ Flutter 版本要求**: 本项目需要 **Flutter >= 3.44**（Dart SDK >= 3.10.4）才能正常编译。CI uses Flutter **3.44** stable. 详情见 `CONTRIBUTING.md` 与 `.github/actions/setup/action.yml`.
 
 ## Build & Run
 
@@ -138,7 +138,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │       ├── 0003-make-course-display-settings-global.md
 │       └── 0004-use-distribution-wpe-on-linux.md
 └── .github/
-    ├── actions/setup/          # composite action: install Flutter 3.44.6, gen-l10n, git metadata
+    ├── actions/setup/          # composite action: install Flutter 3.44, gen-l10n, git metadata
     ├── scripts/                # Python release automation
     │   ├── git_meta.py             # export GIT_TAG / GIT_COMMIT / GIT_COMMIT_DATE / BUILD_TIME
     │   ├── release_tags.py         # resolve version + prev tag
@@ -162,7 +162,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 Two patterns coexist by design:
 
 - **ChangeNotifier** — providers with coarse-grained state changes (auth state, load states, error states). UI consumes via `ListenableBuilder(listenable: providerInstance)`. Examples: `ScuAuthProvider`, `GradesProvider`, `TrainProgramProvider`, `WfwAuth`, `ScuAuth`.
-- **多个 ValueNotifier 字段** — providers with many independent config/setting fields where widgets should only rebuild when specific fields change. UI consumes via `ListenableBuilder(listenable: Listenable.merge([field1, field2]))` or `ValueListenableBuilder`. Examples: `AppConfigProvider` (~14 fields: locale, themeColor, themeColorMode, colorOpacity, useGoogleFonts, …), `CourseProvider` (5 fields).
+- **多个 ValueNotifier 字段** — providers with many independent config/setting fields where widgets should only rebuild when specific fields change. UI consumes via `ListenableBuilder(listenable: Listenable.merge([field1, field2]))` or `ValueListenableBuilder`. Examples: `AppConfigProvider` (~25 fields: locale, themeColor, themeColorMode, colorOpacity, useGoogleFonts, …), `CourseProvider` (4 fields).
 - **手动 `addListener`** — only for imperative side-effects (animations, SnackBars, triggering data loads), never for pure rebuild triggers.
 
 **Directory convention:** All DI-registered providers live in `lib/providers/`. Page-specific non-DI utility classes may live in page directories (e.g. `lib/services/ccyl/ccyl_service.dart`).
@@ -211,7 +211,9 @@ The CCYL service is special: its token expires via an explicit business error co
 - **`UpdateService`** — GitHub release check / download / install for desktop (Windows + Linux). Coordinates with `assets/scripts/update.bat` / `update.sh`.
 - **`UpdateChecker`** (`lib/services/update_checker.dart`) — fetches latest version info from GitHub `/releases/latest` API.
 - **`UpdateAssetSelector`** (`lib/services/update_asset_selector.dart`) — selects correct APK/asset based on device platform and CPU architecture.
-- **`WidgetUpdateService`** — Android home-screen widget data sync via MethodChannel `bugaoshan/update`. Has its own debounce + in-flight coalescing logic (covered by `test/widget_update_service_test.dart`).
+- **`WidgetUpdateService`** — Android + iOS/macOS home-screen widget data sync via MethodChannel `bugaoshan/update` (Android) and App Group (iOS/macOS, `syncWidgetShowTomorrow`). Has its own debounce + in-flight coalescing logic (covered by `test/widget_update_service_test.dart`).
+- **`DownloadNotificationService`** (`lib/services/download_notification_service.dart`) — Android 下载进度通知栏（进度条 + 取消按钮，MethodChannel `bugaoshan/update` + EventChannel `bugaoshan/download_cancel`，仅 Android，其他平台静默 no-op）；由 `UpdateProvider` 使用。
+- **`AcademicCalendarService`** (`lib/services/api/academic_calendar_service.dart`) — academic calendar data with mirror fetch + SharedPreferences cache.
 - **`DynamicIconService`** (`lib/services/dynamic_icon_service.dart`) — runtime app icon switching via MethodChannel `bugaoshan/dynamic_icon` (Android native).
 - **`BackgroundCacheService`** — precaches the user's background image post-frame.
 - **`ExitService`** — unified exit (windowManager.destroy on desktop, exit(0) on mobile).
@@ -239,11 +241,11 @@ Dev page (`lib/pages/dev/auth_log/`) gains:
 
 Three notice sources, each in its own subdirectory under `lib/pages/campus/notice/` (see `docs/architecture/notice-webview.md`):
 
-- **`jwc/`** — `jwc.scu.edu.cn` 教务处, beautified by `assets/js/jwc_notice_beautify.js`.
+- **`jwc/`** — `jwc.scu.edu.cn` 教务处, beautified by `assets/js/jwc_notice_beautify.js`. Sets `useWebViewDownload: true` for cookie-based downloads.
 - **`xgb/`** — `xgb.scu.edu.cn` 党委学工部, beautified by `party_notice_beautify.js`.
 - **`tuanwei/`** — `tuanwei.scu.edu.cn` 团委 (青春川大), beautified by `tuanwei_notice_beautify.js`. Sets `useWebViewDownload: true` for cookie-based downloads.
 
-All three wrap a shared `WebViewNoticePage` (`webview_notice_page.dart`) which loads the URL in an `InAppWebView`, injects the corresponding beautify JS on `onLoadStop`, double-`requestAnimationFrame` for `dom_ready.js`, extracts attachments via the `AttachmentsChannel` JS handler, and shows a draggable `NoticeAttachmentFab` when attachments are present.
+All three wrap a shared `WebViewNoticePage` (`lib/widgets/webview/webview_notice_page.dart`) which loads the URL in an `InAppWebView`, injects the corresponding beautify JS on `onLoadStop`, double-`requestAnimationFrame` for `dom_ready.js`, extracts attachments via the `AttachmentsChannel` JS handler, and shows a draggable `NoticeAttachmentFab` when attachments are present.
 
 Shared downloads module lives in `lib/pages/campus/downloads/`:
 - `NoticeAttachmentFab` / `attachment_fab.dart` — draggable FAB.
@@ -260,9 +262,10 @@ Shared downloads module lives in `lib/pages/campus/downloads/`:
 | `UserInfoProvider` | 监听 `WfwAuth`，登录后自动 fetch 用户信息（realname/number）和标签（图书借阅 / 校园卡 / 网费），登出 clear. |
 | `GradesProvider` | Holds `ZhjwApiService`; fetches scheme & passing scores (session-expired retry handled by the API service layer). Caches grades to SharedPreferences. |
 | `CourseProvider` | 课表 CRUD via `DatabaseService`. |
-| `AppConfigProvider` | ~18 `ValueNotifier` fields: locale, themeColor, themeColorMode, colorOpacity, useGoogleFonts, course card font, card animation duration, grid visibility, row height, background image, dock items, EULA version, wizard completed, … |
+| `AppConfigProvider` | ~25 `ValueNotifier` fields: locale, themeColor, themeColorMode, colorOpacity, useGoogleFonts, course card font/row height, grid visibility, background image, dock items, EULA version, wizard completed, widget show-tomorrow, preview update source, privacy toggles (showTeacherName/showLocation/showWeekend…), … |
 | `SetThemeColorProvider` | 从背景图提取主题色（pixel sampling + `compute()` isolate），支持系统强调色预览. |
 | `AppInfoProvider` | App version + CI build metadata (git tag / commit / build time). |
+| `UpdateProvider` | 更新检查/下载状态管理（包裹 `UpdateService`）：isChecking / isDownloading / lastCheckResult / stableResult / previewResult + `UpdateProgressState`；供 about/home 页与 Dev 页使用。 |
 | `BalanceQueryProvider` | 电费 / 空调余额状态管理，支持多房间绑定切换. |
 | `CcylProvider` | 第二课堂登录状态管理。委托 `CcylAuth` 持久化 OAuth token (`FlutterSecureStorage`)，通过 `service` getter 暴露 `CcylApiService`. |
 | `TrainProgramProvider` | 培养方案查询；管理学院/年级/方案列表 + 详情加载状态. |
