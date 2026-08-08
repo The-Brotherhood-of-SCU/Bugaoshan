@@ -38,7 +38,7 @@ Builds:
     prebuild:
       - $$flutter$$/bin/flutter pub get
     build:
-      - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm
+      - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm --build-number=203001
     output: build/app/outputs/flutter-apk/app-release.apk
 
   # ----- arm64-v8a (versionCode = 10 * 20300 + 2 = 203002) -----
@@ -56,7 +56,7 @@ Builds:
     prebuild:
       - $$flutter$$/bin/flutter pub get
     build:
-      - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm64
+      - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm64 --build-number=203002
     output: build/app/outputs/flutter-apk/app-release.apk
 
   # ----- x86_64 (versionCode = 10 * 20300 + 4 = 203004) -----
@@ -74,5 +74,5 @@ Builds:
     prebuild:
       - $$flutter$$/bin/flutter pub get
     build:
-      - $$flutter$$/bin/flutter build apk --release --target-platform=android-x64
+      - $$flutter$$/bin/flutter build apk --release --target-platform=android-x64 --build-number=203004
     output: build/app/outputs/flutter-apk/app-release.apk
