@@ -40,9 +40,6 @@ Builds:
     build:
       - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm
     output: build/app/outputs/flutter-apk/app-release.apk
-    scandelete:
-      - .dart_tool
-      - build
 
   # ----- arm64-v8a (versionCode = 10 * 20300 + 2 = 203002) -----
   - versionName: '2.3.0'
@@ -62,8 +59,7 @@ Builds:
       - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm64
     output: build/app/outputs/flutter-apk/app-release.apk
     scandelete:
-      - .dart_tool
-      - build
+      - bugaoshan-release.jks
 
   # ----- x86_64 (versionCode = 10 * 20300 + 4 = 203004) -----
   - versionName: '2.3.0'
@@ -83,5 +79,4 @@ Builds:
       - $$flutter$$/bin/flutter build apk --release --target-platform=android-x64
     output: build/app/outputs/flutter-apk/app-release.apk
     scandelete:
-      - .dart_tool
-      - build
+      - bugaoshan-release.jks
