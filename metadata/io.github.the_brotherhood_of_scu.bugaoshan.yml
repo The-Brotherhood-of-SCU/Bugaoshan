@@ -1,0 +1,90 @@
+# F-Droid Build Metadata for Bugaoshan
+# Application ID: io.github.the_brotherhood_of_scu.bugaoshan
+# See: https://f-droid.org/en/docs/Build_Metadata_Reference/
+
+Categories:
+  - Science & Education
+License: AGPL-3.0-only
+AuthorName: The-Brotherhood-of-SCU
+WebSite: https://github.com/The-Brotherhood-of-SCU/Bugaoshan
+SourceCode: https://github.com/The-Brotherhood-of-SCU/Bugaoshan
+IssueTracker: https://github.com/The-Brotherhood-of-SCU/Bugaoshan/issues
+Changelog: https://github.com/The-Brotherhood-of-SCU/Bugaoshan/blob/main/CHANGELOG.md
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags ^v[0-9]+\.[0-9]+\.[0-9]+$
+UpdateCheckData: pubspec.yaml|version:\s.+\+(\d+)|.|version:\s(.+)\+
+VercodeOperation:
+  - '%c + 1001'
+  - '%c + 2001'
+  - '%c + 4001'
+
+RepoType: git
+Repo: https://github.com/The-Brotherhood-of-SCU/Bugaoshan.git
+
+Builds:
+  # ----- armeabi-v7a (versionCode = 20200 + 1001 = 21201) -----
+  - versionName: '2.2.0'
+    versionCode: 21201
+    commit: v2.2.0
+    srclibs:
+      - flutter@3.44.8
+    rm:
+      - ios
+      - linux
+      - macos
+      - windows
+      - web
+    prebuild:
+      - $$flutter$$/bin/flutter pub get
+    build:
+      - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm --build-number=21201
+    output: build/app/outputs/flutter-apk/app-release.apk
+    gradleprops:
+      - org.gradle.workers.max=2
+      - org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m
+      - android.r8.failOnMissingClasses=false
+
+  # ----- arm64-v8a (versionCode = 20200 + 2001 = 22201) -----
+  - versionName: '2.2.0'
+    versionCode: 22201
+    commit: v2.2.0
+    srclibs:
+      - flutter@3.44.8
+    rm:
+      - ios
+      - linux
+      - macos
+      - windows
+      - web
+    prebuild:
+      - $$flutter$$/bin/flutter pub get
+    build:
+      - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm64 --build-number=22201
+    output: build/app/outputs/flutter-apk/app-release.apk
+    gradleprops:
+      - org.gradle.workers.max=2
+      - org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m
+      - android.r8.failOnMissingClasses=false
+
+  # ----- x86_64 (versionCode = 20200 + 4001 = 24201) -----
+  - versionName: '2.2.0'
+    versionCode: 24201
+    commit: v2.2.0
+    srclibs:
+      - flutter@3.44.8
+    rm:
+      - ios
+      - linux
+      - macos
+      - windows
+      - web
+    prebuild:
+      - $$flutter$$/bin/flutter pub get
+    build:
+      - $$flutter$$/bin/flutter build apk --release --target-platform=android-x64 --build-number=24201
+    output: build/app/outputs/flutter-apk/app-release.apk
+    gradleprops:
+      - org.gradle.workers.max=2
+      - org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m
+      - android.r8.failOnMissingClasses=false

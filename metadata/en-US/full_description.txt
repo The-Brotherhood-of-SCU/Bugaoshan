@@ -1,0 +1,19 @@
+Bugaoshan is a free and open-source campus assistant app designed for Sichuan University (SCU) students. It aggregates essential campus services into one convenient platform.
+
+<b>Key features:</b>
+
+• Course schedule management — Import your timetable from the academic affairs office, view daily schedules, and use the home screen widget for quick access
+• Grade tracking — View grades, analyze pass rates, and track academic progress
+• Exam schedule — Check upcoming exam dates and arrangements
+• Physical fitness test records — View your fitness test results
+• Classroom availability — Find empty classrooms across campus in real time
+• Balance inquiry — Check campus card balance, network fees, dormitory electricity, and air conditioning balances with historical trend analysis
+• Academic calendar — View the university calendar and holiday schedules
+• Second classroom activities — Browse and register for extracurricular activities
+• Training program inquiry — View training plans for different grades and colleges
+• Campus network device management — View and manage online devices on your account
+• Notice board — Access announcements from the academic affairs office, student affairs department, and more
+• Volunteer platform — Query and register for volunteer activities
+• Personalization — Customize themes, course table styles, fonts, app icons, and animation duration
+
+Bugaoshan is built with Flutter and is licensed under AGPL-3.0. No proprietary services (Firebase, GMS, etc.) are used. All data is fetched directly from official SCU services — no third-party tracking or analytics.
