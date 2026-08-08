@@ -23,10 +23,10 @@ RepoType: git
 Repo: https://github.com/The-Brotherhood-of-SCU/Bugaoshan.git
 
 Builds:
-  # ----- armeabi-v7a (versionCode = 10 * 20300 + 1 = 203001) -----
-  - versionName: '2.3.0'
-    versionCode: 203001
-    commit: v2.3.0
+  # ----- armeabi-v7a (versionCode = 10 * 20200 + 1 = 202001) -----
+  - versionName: '2.2.0'
+    versionCode: 202001
+    commit: v2.2.0
     srclibs:
       - flutter@3.44.8
     rm:
@@ -38,13 +38,17 @@ Builds:
     prebuild:
       - $$flutter$$/bin/flutter pub get
     build:
-      - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm --build-number=203001
+      - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm --build-number=202001
     output: build/app/outputs/flutter-apk/app-release.apk
+    gradleprops:
+      - org.gradle.workers.max=2
+      - org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m
+      - android.r8.failOnMissingClasses=false
 
-  # ----- arm64-v8a (versionCode = 10 * 20300 + 2 = 203002) -----
-  - versionName: '2.3.0'
-    versionCode: 203002
-    commit: v2.3.0
+  # ----- arm64-v8a (versionCode = 10 * 20200 + 2 = 202002) -----
+  - versionName: '2.2.0'
+    versionCode: 202002
+    commit: v2.2.0
     srclibs:
       - flutter@3.44.8
     rm:
@@ -56,13 +60,17 @@ Builds:
     prebuild:
       - $$flutter$$/bin/flutter pub get
     build:
-      - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm64 --build-number=203002
+      - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm64 --build-number=202002
     output: build/app/outputs/flutter-apk/app-release.apk
+    gradleprops:
+      - org.gradle.workers.max=2
+      - org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m
+      - android.r8.failOnMissingClasses=false
 
-  # ----- x86_64 (versionCode = 10 * 20300 + 4 = 203004) -----
-  - versionName: '2.3.0'
-    versionCode: 203004
-    commit: v2.3.0
+  # ----- x86_64 (versionCode = 10 * 20200 + 4 = 202004) -----
+  - versionName: '2.2.0'
+    versionCode: 202004
+    commit: v2.2.0
     srclibs:
       - flutter@3.44.8
     rm:
@@ -74,5 +82,9 @@ Builds:
     prebuild:
       - $$flutter$$/bin/flutter pub get
     build:
-      - $$flutter$$/bin/flutter build apk --release --target-platform=android-x64 --build-number=203004
+      - $$flutter$$/bin/flutter build apk --release --target-platform=android-x64 --build-number=202004
     output: build/app/outputs/flutter-apk/app-release.apk
+    gradleprops:
+      - org.gradle.workers.max=2
+      - org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m
+      - android.r8.failOnMissingClasses=false
