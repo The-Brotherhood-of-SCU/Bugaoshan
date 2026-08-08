@@ -58,8 +58,6 @@ Builds:
     build:
       - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm64
     output: build/app/outputs/flutter-apk/app-release.apk
-    scandelete:
-      - bugaoshan-release.jks
 
   # ----- x86_64 (versionCode = 10 * 20300 + 4 = 203004) -----
   - versionName: '2.3.0'
@@ -78,5 +76,3 @@ Builds:
     build:
       - $$flutter$$/bin/flutter build apk --release --target-platform=android-x64
     output: build/app/outputs/flutter-apk/app-release.apk
-    scandelete:
-      - bugaoshan-release.jks
