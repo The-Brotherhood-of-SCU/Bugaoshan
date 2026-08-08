@@ -20,7 +20,7 @@ VercodeOperation:
   - 10 * %c + 4
 
 RepoType: git
-Repo: https://github.com/wjj-8283/Bugaoshan.git
+Repo: https://github.com/The-Brotherhood-of-SCU/Bugaoshan.git
 
 Builds:
   # ----- armeabi-v7a (versionCode = 10 * 20300 + 1 = 203001) -----
