@@ -1,0 +1,87 @@
+# F-Droid Build Metadata for Bugaoshan
+# Application ID: io.github.the_brotherhood_of_scu.bugaoshan
+# See: https://f-droid.org/en/docs/Build_Metadata_Reference/
+
+Categories:
+  - Science & Education
+License: AGPL-3.0-only
+AuthorName: The-Brotherhood-of-SCU
+WebSite: https://github.com/The-Brotherhood-of-SCU/Bugaoshan
+SourceCode: https://github.com/The-Brotherhood-of-SCU/Bugaoshan
+IssueTracker: https://github.com/The-Brotherhood-of-SCU/Bugaoshan/issues
+Changelog: https://github.com/The-Brotherhood-of-SCU/Bugaoshan/blob/main/CHANGELOG.md
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags ^v[0-9].*
+UpdateCheckData: pubspec.yaml|version:\s*[0-9.]+\+(\d+)||
+VercodeOperation:
+  - 10 * %c + 1
+  - 10 * %c + 2
+  - 10 * %c + 4
+
+RepoType: git
+Repo: https://github.com/wjj-8283/Bugaoshan.git
+
+Builds:
+  # ----- armeabi-v7a (versionCode = 10 * 20300 + 1 = 203001) -----
+  - versionName: '2.3.0'
+    versionCode: 203001
+    commit: v2.3.0
+    srclibs:
+      - flutter@3.44.8
+    rm:
+      - ios
+      - linux
+      - macos
+      - windows
+      - web
+    prebuild:
+      - $$flutter$$/bin/flutter pub get
+    build:
+      - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm
+    output: build/app/outputs/flutter-apk/app-release.apk
+    scandelete:
+      - .dart_tool
+      - build
+
+  # ----- arm64-v8a (versionCode = 10 * 20300 + 2 = 203002) -----
+  - versionName: '2.3.0'
+    versionCode: 203002
+    commit: v2.3.0
+    srclibs:
+      - flutter@3.44.8
+    rm:
+      - ios
+      - linux
+      - macos
+      - windows
+      - web
+    prebuild:
+      - $$flutter$$/bin/flutter pub get
+    build:
+      - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm64
+    output: build/app/outputs/flutter-apk/app-release.apk
+    scandelete:
+      - .dart_tool
+      - build
+
+  # ----- x86_64 (versionCode = 10 * 20300 + 4 = 203004) -----
+  - versionName: '2.3.0'
+    versionCode: 203004
+    commit: v2.3.0
+    srclibs:
+      - flutter@3.44.8
+    rm:
+      - ios
+      - linux
+      - macos
+      - windows
+      - web
+    prebuild:
+      - $$flutter$$/bin/flutter pub get
+    build:
+      - $$flutter$$/bin/flutter build apk --release --target-platform=android-x64
+    output: build/app/outputs/flutter-apk/app-release.apk
+    scandelete:
+      - .dart_tool
+      - build

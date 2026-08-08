@@ -14,6 +14,12 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
+    // 关闭依赖信息块，F-Droid 会检查 APK 中不能有 AGP 自动注入的依赖元数据签名块，否则直接拒绝。
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
     namespace = "io.github.the_brotherhood_of_scu.bugaoshan"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
