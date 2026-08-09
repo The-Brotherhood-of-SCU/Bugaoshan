@@ -74,9 +74,13 @@ class UpdateService {
   UpdateService(this._prefs, this._currentVersion);
 
   bool get supportsInAppUpdate =>
-      (Platform.isLinux && !Platform.environment.containsKey('FLATPAK_ID')) ||
-      Platform.isAndroid ||
-      Platform.isWindows;
+      // F-Droid 渠道安装的包由 F-Droid 负责更新，应用内自更新对其隐藏。
+      // 用运行时安装来源判断而非构建时开关，以保持 F-Droid 可复制构建
+      // 与 CI 产物逐字节一致。
+      !getIt<AppInfoProvider>().isFdroidInstall &&
+      ((Platform.isLinux && !Platform.environment.containsKey('FLATPAK_ID')) ||
+          Platform.isAndroid ||
+          Platform.isWindows);
 
   UpdateAssetPlatform? get _assetPlatform {
     if (Platform.isAndroid) return UpdateAssetPlatform.android;

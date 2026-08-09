@@ -17,9 +17,6 @@ outputs:
   GIT_COMMIT_DATE:
     description: "Git commit date"
     value: ${{ steps.git_meta.outputs.GIT_COMMIT_DATE }}
-  BUILD_TIME:
-    description: "Build time"
-    value: ${{ steps.git_meta.outputs.BUILD_TIME }}
 
 runs:
   using: composite
