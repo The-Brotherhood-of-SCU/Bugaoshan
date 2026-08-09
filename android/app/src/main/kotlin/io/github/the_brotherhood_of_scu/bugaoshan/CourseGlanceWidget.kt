@@ -467,12 +467,28 @@ object WidgetDataLoader {
     /** 计算学期结束日(最后一周的周日),基于学期开始日与总周数。 */
     private fun computeSemesterEndDate(semesterStartDate: String, totalWeeks: Int): Calendar? {
         if (semesterStartDate.isEmpty() || totalWeeks <= 0) return null
-        val parts = semesterStartDate.split("-")
-        if (parts.size != 3) return null
+        val start = parseCalendarDate(semesterStartDate) ?: return null
         return Calendar.getInstance().apply {
-            set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt(), 0, 0, 0)
-            set(Calendar.MILLISECOND, 0)
+            timeInMillis = start.timeInMillis
             add(Calendar.DAY_OF_MONTH, totalWeeks * 7 - 1)
+        }
+    }
+
+    /**
+     * 安全解析 `yyyy-MM-dd` 日期字符串为当日零点日历。
+     * 格式非法(如含非数字)时返回 null,避免抛异常导致整个小组件加载失败。
+     */
+    private fun parseCalendarDate(dateStr: String): Calendar? {
+        val parts = dateStr.split("-")
+        if (parts.size != 3) return null
+        return try {
+            Calendar.getInstance().apply {
+                set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt(), 0, 0, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+        } catch (e: NumberFormatException) {
+            Log.w(TAG, "Invalid date string: $dateStr", e)
+            null
         }
     }
 
@@ -518,12 +534,7 @@ object WidgetDataLoader {
                     Log.w(TAG, "Invalid schedule config for id=$id", e)
                     continue
                 }
-                val parts = start.split("-")
-                if (parts.size != 3) continue
-                val startCal = Calendar.getInstance().apply {
-                    set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt(), 0, 0, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }
+                val startCal = parseCalendarDate(start) ?: continue
                 if (startCal.after(currentEnd) && (next == null || startCal.before(next))) {
                     next = startCal
                 }
