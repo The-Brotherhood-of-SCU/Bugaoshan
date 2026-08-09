@@ -61,6 +61,13 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
     try {
       final week = await getIt<ZhjwApiService>().fetchCurrentWeek();
       if (!mounted) return;
+      if (week == null) {
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.autoFetchCurrentWeekOnVacation)),
+        );
+        return;
+      }
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
       final currentSunday = today.toSunday();

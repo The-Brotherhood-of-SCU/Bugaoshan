@@ -50,8 +50,11 @@ class ZhjwApiService {
   //  课表
   // ═══════════════════════════════════════════════════════════════════
 
-  /// 从教务系统首页获取当前教学周数
-  Future<int> fetchCurrentWeek() {
+  /// 从教务系统首页获取当前教学周数。
+  ///
+  /// 假期首页没有“第 N 周”字段，而是显示“当前处于假期时间”，此时返回
+  /// `null`，由调用方给出明确的假期提示，而不是把正常假期当成系统异常。
+  Future<int?> fetchCurrentWeek() {
     return _request((client) async {
       final resp = await client.get(
         Uri.parse('$kZhjwBase/'),
@@ -64,10 +67,9 @@ class ZhjwApiService {
       final body = resp.body.trim();
       _checkSessionExpiry(body, resp.statusCode);
       final match = RegExp(r'第(\d+)周').firstMatch(body);
-      if (match == null) {
-        throw const ServiceException('无法获取当前周数，请检查教务系统状态');
-      }
-      return int.parse(match.group(1)!);
+      if (match != null) return int.parse(match.group(1)!);
+      if (body.contains('当前处于假期时间')) return null;
+      throw const ServiceException('无法获取当前周数，请检查教务系统状态');
     });
   }
 

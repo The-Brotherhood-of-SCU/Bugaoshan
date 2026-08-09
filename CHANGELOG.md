@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修复课程表左侧时间标签可能换行的问题
 - 修复电费查询、体测页面预热失败后无限加载的问题
 - 修复预览版更新检查可能匹配到错误版本的问题
+- 修复假期自动获取当前周数时报错的问题
 - 修复导出空课表时失败的问题
 - 修复了一些小问题
 - 修复低版本安卓、苹果系统上保存图片到相册相关权限的问题
@@ -290,5 +291,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 发布工作流重构
 - 训练计划列表底部增加间距
 - 非移动平台隐藏刷新按钮
-
 

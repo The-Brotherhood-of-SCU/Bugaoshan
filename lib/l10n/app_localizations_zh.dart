@@ -572,6 +572,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoFetchCurrentWeekHint => '从教务系统获取当前教学周';
 
   @override
+  String get autoFetchCurrentWeekOnVacation => '假期中暂无教学周，未修改课表';
+
+  @override
   String get fetchingCurrentWeek => '正在获取...';
 
   @override
