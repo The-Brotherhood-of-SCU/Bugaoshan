@@ -84,9 +84,33 @@ def get_latest_tag():
         prev_tag = None
     return prev_tag
 
-def get_version_increase(version:str):
-    a,b,c=split_version(version)
+def get_version_increase(version: str):
+    a, b, c = split_version(version)
     return f"{a}.{b}.{c+1}"
+
+
+def generate_metadata_changelogs():
+    """Generate F-Droid metadata changelog files before committing."""
+    print("生成 metadata changelog 文件...")
+    try:
+        result = subprocess.run(
+            ['python3', '.github/scripts/metadata_changelog.py'],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        print(result.stdout)
+        if result.stderr:
+            print(result.stderr)
+        print("metadata changelog 文件生成成功")
+    except subprocess.CalledProcessError as e:
+        print(f"生成 metadata changelog 文件失败: {e.stderr}")
+        raise
+
+
+def get_version_name(version: str) -> str:
+    """Extract version name without build number."""
+    return version.split("+")[0]
 
 def commit_changes(new_version:str):
     print("提交更改...")
@@ -218,6 +242,11 @@ with open('pubspec.yaml', 'r', encoding='utf-8') as f:
 data['version'] = full_version
 with open('pubspec.yaml', 'w', encoding='utf-8') as f:
     yaml.safe_dump(data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+
+if '-' not in new_version:
+    generate_metadata_changelogs()
+else:
+    print("预览版跳过 metadata changelog 生成")
 
 commit_changes(new_version)
 create_tag(tag_name, force=force_needed)
