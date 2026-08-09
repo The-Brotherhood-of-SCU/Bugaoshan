@@ -1,7 +1,6 @@
 """Extract git metadata for CI builds and output to GITHUB_OUTPUT."""
 
 import subprocess
-import datetime
 import os
 import shlex
 
@@ -21,13 +20,13 @@ def main():
     git_commit = run(["git", "rev-parse", "HEAD"])
     git_commit_date = run(["git", "log", "-1", "--format=%ci"])
 
-    build_time = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+0000")
-
+    # 注意：不要在这里加入构建时间戳等非确定性输出。
+    # Android release 需要与 F-Droid 构建服务器产出逐字节一致的 APK（可复制构建），
+    # 同一 commit 的任何两次构建必须得到完全相同的结果。
     outputs = {
         "GIT_TAG": tag,
         "GIT_COMMIT": git_commit,
         "GIT_COMMIT_DATE": git_commit_date,
-        "BUILD_TIME": build_time,
     }
 
     output_path = os.environ.get("GITHUB_OUTPUT", "")
