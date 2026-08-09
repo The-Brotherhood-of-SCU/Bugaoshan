@@ -590,6 +590,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Fetch current teaching week from academic system';
 
   @override
+  String get autoFetchCurrentWeekOnVacation =>
+      'No teaching week is available during vacation. Schedule unchanged.';
+
+  @override
   String get fetchingCurrentWeek => 'Fetching...';
 
   @override

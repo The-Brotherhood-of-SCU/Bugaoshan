@@ -1177,6 +1177,12 @@ abstract class AppLocalizations {
   /// **'Fetch current teaching week from academic system'**
   String get autoFetchCurrentWeekHint;
 
+  /// No description provided for @autoFetchCurrentWeekOnVacation.
+  ///
+  /// In en, this message translates to:
+  /// **'No teaching week is available during vacation. Schedule unchanged.'**
+  String get autoFetchCurrentWeekOnVacation;
+
   /// No description provided for @fetchingCurrentWeek.
   ///
   /// In en, this message translates to:

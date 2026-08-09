@@ -6,6 +6,8 @@
     <string name="widget_name_large">Schedule (Large)</string>
     <string name="tomorrow">Tomorrow</string>
     <string name="widget_week_format">Week %1$d</string>
+    <string name="widget_vacation">On vacation</string>
+    <string name="widget_vacation_hint">Enjoy your vacation</string>
     <string name="widget_empty_today">No classes today</string>
     <string name="widget_sync_hint">Open the app to sync your schedule</string>
     <string name="widget_section_single">Section %1$d</string>

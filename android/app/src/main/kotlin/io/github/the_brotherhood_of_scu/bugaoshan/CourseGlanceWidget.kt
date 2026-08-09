@@ -152,13 +152,20 @@ object WidgetDataLoader {
             val semesterStartDate = config.optString("semesterStartDate", "")
             val totalWeeks = config.optInt("totalWeeks", 20)
             val timeSlots = config.optJSONArray("timeSlots")
+            val semesterEndDate = computeSemesterEndDate(semesterStartDate, totalWeeks)
+            val onVacation = semesterEndDate != null && isOnVacation(
+                db, currentScheduleId, semesterEndDate,
+            )
             val currentWeek = computeCurrentWeek(semesterStartDate, totalWeeks)
             val cal = Calendar.getInstance()
             val dayOfWeek = (cal.get(Calendar.DAY_OF_WEEK) + 5) % 7 + 1
-            var courses =
+            var courses = if (onVacation) {
+                JSONArray()
+            } else {
                 loadCoursesForSelectedSchedule(currentScheduleId) { scheduleId ->
                     queryCourses(db, scheduleId, dayOfWeek, currentWeek)
                 }
+            }
             val now = Calendar.getInstance()
             val currentHour = now.get(Calendar.HOUR_OF_DAY)
             val currentMinute = now.get(Calendar.MINUTE)
@@ -167,7 +174,7 @@ object WidgetDataLoader {
             var showingTomorrow = false
             var tomorrowCal: Calendar? = null
             var weekForTomorrow = currentWeek
-            if (courses.length() == 0) {
+            if (courses.length() == 0 && !onVacation) {
                 try {
                     val prefs = context.getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
                     val rawKey = "widget_show_tomorrow"
@@ -210,9 +217,14 @@ object WidgetDataLoader {
                 dateText = "$month/$day $dayName $tomorrowLabel"
             }
             val weekNumber = if (showingTomorrow) weekForTomorrow else currentWeek
-            val weekText = context.getString(R.string.widget_week_format, weekNumber)
-            // 展示明天课程时今天已无变化点,边界闹钟交由午夜闹钟接力
-            val nextTransitionMillis = if (!showingTomorrow) {
+            val weekText = if (onVacation) {
+                context.getString(R.string.widget_vacation)
+            } else {
+                context.getString(R.string.widget_week_format, weekNumber)
+            }
+            // 展示明天课程时今天已无变化点,边界闹钟交由午夜闹钟接力;
+            // 放假中同样没有课程边界变化点。
+            val nextTransitionMillis = if (!showingTomorrow && !onVacation) {
                 computeNextTransitionMillis(courses, timeSlots, currentTimeMinutes)
             } else {
                 null
@@ -222,7 +234,11 @@ object WidgetDataLoader {
                 dateText = dateText,
                 weekText = weekText,
                 headerTitle = context.getString(R.string.widget_header_title),
-                emptyText = context.getString(R.string.widget_empty_today),
+                emptyText = if (onVacation) {
+                    context.getString(R.string.widget_vacation_hint)
+                } else {
+                    context.getString(R.string.widget_empty_today)
+                },
                 isTomorrow = showingTomorrow,
                 nextTransitionMillis = nextTransitionMillis,
             )
@@ -446,6 +462,85 @@ object WidgetDataLoader {
         val week = days / 7 + 1
         val maxWeek = if (totalWeeks >= 1) totalWeeks else week
         return week.coerceIn(1, maxWeek)
+    }
+
+    /** 计算学期结束日(最后一周的周日),基于学期开始日与总周数。 */
+    private fun computeSemesterEndDate(semesterStartDate: String, totalWeeks: Int): Calendar? {
+        if (semesterStartDate.isEmpty() || totalWeeks <= 0) return null
+        val start = parseCalendarDate(semesterStartDate) ?: return null
+        return Calendar.getInstance().apply {
+            timeInMillis = start.timeInMillis
+            add(Calendar.DAY_OF_MONTH, totalWeeks * 7 - 1)
+        }
+    }
+
+    /**
+     * 安全解析 `yyyy-MM-dd` 日期字符串为当日零点日历。
+     * 格式非法(如含非数字)时返回 null,避免抛异常导致整个小组件加载失败。
+     */
+    private fun parseCalendarDate(dateStr: String): Calendar? {
+        val parts = dateStr.split("-")
+        if (parts.size != 3) return null
+        return try {
+            Calendar.getInstance().apply {
+                set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt(), 0, 0, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+        } catch (e: NumberFormatException) {
+            Log.w(TAG, "Invalid date string: $dateStr", e)
+            null
+        }
+    }
+
+    /**
+     * 判断当前是否处于「学期之间」的假期:当前学期已结束且下学期尚未开始。
+     * 与 App 端 CoursePageController._computeShowVacationPage 保持一致。
+     */
+    private fun isOnVacation(
+        db: SQLiteDatabase,
+        currentScheduleId: String,
+        semesterEndDate: Calendar,
+    ): Boolean {
+        val today = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        // 学期未结束 → 不放假
+        if (!today.after(semesterEndDate)) return false
+        // 找下学期(当前学期结束后最早开始的课表)
+        val next = findNextSemesterStart(db, currentScheduleId, semesterEndDate)
+            ?: return false
+        // 今天在下学期开始前 → 放假中
+        return today.before(next)
+    }
+
+    /** 在全部课表中查找在当前学期结束后最早开始的课表,返回其学期开始日。 */
+    private fun findNextSemesterStart(
+        db: SQLiteDatabase,
+        currentScheduleId: String,
+        currentEnd: Calendar,
+    ): Calendar? {
+        var next: Calendar? = null
+        db.rawQuery("SELECT id, config_json FROM schedules", null).use { cursor ->
+            while (cursor.moveToNext()) {
+                val id = cursor.getString(0)
+                if (id == currentScheduleId) continue
+                val configJson = cursor.getString(1) ?: continue
+                val start = try {
+                    JSONObject(configJson).optString("semesterStartDate", "")
+                } catch (e: Exception) {
+                    Log.w(TAG, "Invalid schedule config for id=$id", e)
+                    continue
+                }
+                val startCal = parseCalendarDate(start) ?: continue
+                if (startCal.after(currentEnd) && (next == null || startCal.before(next))) {
+                    next = startCal
+                }
+            }
+        }
+        return next
     }
 
     private fun formatTime(timeSlots: JSONArray?, section: Int, isEnd: Boolean = false): String {
