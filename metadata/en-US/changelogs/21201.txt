@@ -1,11 +1,16 @@
-* Added interactive academic calendar mirror to reduce network impact
-* Added electricity usage trend statistics
-* Added iOS home screen course widget
-* Added macOS platform support (export to system calendar)
-* Added development team intro page
-* Unified UI card style with rounded corners and subtle shadows
-* Redesigned login page
-* Improved schedule swipe animation and timing
-* Replaced LiteRT OCR with built-in implementation for smaller APK size
-* Support multiple training programs on grades page
-* Fixed schedule time label wrapping, warmup failure infinite loading, preview update matching, empty schedule export, and image permission issues
+- Officially added iOS support (only technical support, but listing and TestFlight still need Apple review)
+- Exam schedules support exporting to the system calendar (optional target calendar for iOS, imported through the system for Android)
+- Add support for [Volunteer Sichuan]
+- The interactive academic calendar has been redesigned to support dual-mode viewing of timeline interactive mode/official academic calendar
+- Classroom query adds section range filtering function
+- Added expired status display for exam schedules
+
+- Modify the software default icon and add icon modification options
+- Optimize the wizard page "Import curriculum": if there is already a curriculum, the existing curriculum will be displayed
+- Class schedule display settings (showing teachers/classrooms/weekends/non-week courses) are migrated from the class schedule level to global settings
+- The filter bar on the classroom query page is optimized to a compact horizontal layout
+- Course schedule style preview adds sample courses and display settings real-time switch
+
+- When updating the Android version, the architecture that matches the device will be selected.
+- Multiple underlying fixes: fixing multi-account data crosstalk, fixing authentication stability, fixing class schedule date calculation issues
+- Fixed attachment download abnormalities, binding misalignment after deleting the electricity bill room, and empty class schedule status of desktop widgets
