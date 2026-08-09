@@ -38,7 +38,7 @@ Builds:
     prebuild:
       - $$flutter$$/bin/flutter pub get
     build:
-      - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm --build-number=21201
+      - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm --build-number=$(($(grep '^version:' pubspec.yaml | sed 's/.*+//') + 1001))
     output: build/app/outputs/flutter-apk/app-release.apk
     gradleprops:
       - org.gradle.workers.max=2
@@ -60,7 +60,7 @@ Builds:
     prebuild:
       - $$flutter$$/bin/flutter pub get
     build:
-      - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm64 --build-number=22201
+      - $$flutter$$/bin/flutter build apk --release --target-platform=android-arm64 --build-number=$(($(grep '^version:' pubspec.yaml | sed 's/.*+//') + 2001))
     output: build/app/outputs/flutter-apk/app-release.apk
     gradleprops:
       - org.gradle.workers.max=2
@@ -82,7 +82,7 @@ Builds:
     prebuild:
       - $$flutter$$/bin/flutter pub get
     build:
-      - $$flutter$$/bin/flutter build apk --release --target-platform=android-x64 --build-number=24201
+      - $$flutter$$/bin/flutter build apk --release --target-platform=android-x64 --build-number=$(($(grep '^version:' pubspec.yaml | sed 's/.*+//') + 4001))
     output: build/app/outputs/flutter-apk/app-release.apk
     gradleprops:
       - org.gradle.workers.max=2
