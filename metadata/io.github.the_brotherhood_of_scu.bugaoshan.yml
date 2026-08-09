@@ -1,6 +1,36 @@
 # F-Droid Build Metadata for Bugaoshan
 # Application ID: io.github.the_brotherhood_of_scu.bugaoshan
 # See: https://f-droid.org/en/docs/Build_Metadata_Reference/
+#
+# 本应用采用「可复制构建」（Reproducible Builds）发布：
+# F-Droid 构建服务器从源码构建未签名 APK，与 binary: 指向的 GitHub Release
+# APK（CI 用同一 tag、相同构建参数构建并签名）逐字节比对；一致则直接发布
+# 开发者签名的 APK。因此 F-Droid 与 GitHub 渠道的安装包签名一致，可互相覆盖安装。
+#
+# 为保证逐字节一致，本 recipe 与 CI（.github/workflows/build-android.yml）严格对齐：
+#   - 相同 Flutter 版本（srclibs flutter@3.44.8 == .github/actions/setup）
+#   - 相同构建参数：--release --obfuscate --split-debug-info + 相同的 dart-define
+#     （GIT_TAG / GIT_COMMIT / GIT_COMMIT_DATE；均无构建时间戳等非确定性输入）
+#   - prebuild 复刻 CI 的代码生成步骤（build_runner、gen-l10n）
+#   - pubspec.lock 已提交，pub get 使用 --enforce-lockfile 防止依赖漂移
+#
+# versionCode 规则（与 Flutter --split-per-abi 的自动偏移一致，
+# 见 flutter_tools FlutterPlugin.kt：versionCode = abiCode*1000 + base）：
+#   base      = major*10000 + minor*100 + patch（pubspec.yaml 中 version 的 +N 部分）
+#   universal = base
+#   v7a       = base + 1000
+#   v8a       = base + 2000
+#   x86_64    = base + 4000
+#
+# 收录从 v2.3.0 开始：v2.2.0 及更早的 CI 构建注入了 BUILD_TIME 时间戳，
+# 无法通过可复制构建验证，故不含对应 build entry（避免 F-Droid 签名与
+# 开发者签名混用导致用户无法升级）。
+#
+# 提交 fdroiddata 前的检查项：
+#   1. 对应 tag 已推送，且 GitHub Release 已发布（binary: URL 必须可下载）
+#   2. 本地 docker 中 `fdroid build --verify` 通过
+#   3. 建议补充 AllowedAPKSigningKeys（release keystore 证书的 SHA-256）：
+#        apksigner verify --print-certs bugaoshan_<version>_arm64-v8a.apk
 
 Categories:
   - Science & Education
@@ -15,75 +45,99 @@ AutoUpdateMode: Version
 UpdateCheckMode: Tags ^v[0-9]+\.[0-9]+\.[0-9]+$
 UpdateCheckData: pubspec.yaml|version:\s.+\+(\d+)|.|version:\s(.+)\+
 VercodeOperation:
-  - '%c + 1001'
-  - '%c + 2001'
-  - '%c + 4001'
+  - '%c + 1000'
+  - '%c + 2000'
+  - '%c + 4000'
 
 RepoType: git
 Repo: https://github.com/The-Brotherhood-of-SCU/Bugaoshan.git
 
 Builds:
-  # ----- armeabi-v7a (versionCode = 20200 + 1001 = 21201) -----
-  - versionName: '2.2.0'
-    versionCode: 21201
-    commit: v2.2.0
+  # ----- armeabi-v7a (versionCode = base + 1000) -----
+  - versionName: '2.3.0'
+    versionCode: 21300
+    commit: v2.3.0
     srclibs:
       - flutter@3.44.8
     rm:
+      - .github
       - ios
       - linux
       - macos
       - windows
       - web
     prebuild:
-      - $$flutter$$/bin/flutter pub get
+      - $$flutter$$/bin/flutter config --no-analytics
+      - $$flutter$$/bin/flutter pub get --enforce-lockfile
+      - $$flutter$$/bin/dart run build_runner build --delete-conflicting-outputs || true
+      - $$flutter$$/bin/flutter gen-l10n
     build:
-      - "$$flutter$$/bin/flutter build apk --release --target-platform=android-arm --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') + 1001 ))"
+      - export GIT_TAG=$(git describe --tags)
+      - export GIT_COMMIT=$(git rev-parse HEAD)
+      - export GIT_COMMIT_DATE=$(git log -1 --format=%ci)
+      - "$$flutter$$/bin/flutter build apk --release --target-platform=android-arm --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') + 1000 )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\""
     output: build/app/outputs/flutter-apk/app-release.apk
+    binary: https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/download/v%v/bugaoshan_%v_armeabi-v7a.apk
     gradleprops:
       - org.gradle.workers.max=2
       - org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m
       - android.r8.failOnMissingClasses=false
 
-  # ----- arm64-v8a (versionCode = 20200 + 2001 = 22201) -----
-  - versionName: '2.2.0'
-    versionCode: 22201
-    commit: v2.2.0
+  # ----- arm64-v8a (versionCode = base + 2000) -----
+  - versionName: '2.3.0'
+    versionCode: 22300
+    commit: v2.3.0
     srclibs:
       - flutter@3.44.8
     rm:
+      - .github
       - ios
       - linux
       - macos
       - windows
       - web
     prebuild:
-      - $$flutter$$/bin/flutter pub get
+      - $$flutter$$/bin/flutter config --no-analytics
+      - $$flutter$$/bin/flutter pub get --enforce-lockfile
+      - $$flutter$$/bin/dart run build_runner build --delete-conflicting-outputs || true
+      - $$flutter$$/bin/flutter gen-l10n
     build:
-      - "$$flutter$$/bin/flutter build apk --release --target-platform=android-arm64 --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') + 2001 ))"
+      - export GIT_TAG=$(git describe --tags)
+      - export GIT_COMMIT=$(git rev-parse HEAD)
+      - export GIT_COMMIT_DATE=$(git log -1 --format=%ci)
+      - "$$flutter$$/bin/flutter build apk --release --target-platform=android-arm64 --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') + 2000 )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\""
     output: build/app/outputs/flutter-apk/app-release.apk
+    binary: https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/download/v%v/bugaoshan_%v_arm64-v8a.apk
     gradleprops:
       - org.gradle.workers.max=2
       - org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m
       - android.r8.failOnMissingClasses=false
 
-  # ----- x86_64 (versionCode = 20200 + 4001 = 24201) -----
-  - versionName: '2.2.0'
-    versionCode: 24201
-    commit: v2.2.0
+  # ----- x86_64 (versionCode = base + 4000) -----
+  - versionName: '2.3.0'
+    versionCode: 24300
+    commit: v2.3.0
     srclibs:
       - flutter@3.44.8
     rm:
+      - .github
       - ios
       - linux
       - macos
       - windows
       - web
     prebuild:
-      - $$flutter$$/bin/flutter pub get
+      - $$flutter$$/bin/flutter config --no-analytics
+      - $$flutter$$/bin/flutter pub get --enforce-lockfile
+      - $$flutter$$/bin/dart run build_runner build --delete-conflicting-outputs || true
+      - $$flutter$$/bin/flutter gen-l10n
     build:
-      - "$$flutter$$/bin/flutter build apk --release --target-platform=android-x64 --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') + 4001 ))"
+      - export GIT_TAG=$(git describe --tags)
+      - export GIT_COMMIT=$(git rev-parse HEAD)
+      - export GIT_COMMIT_DATE=$(git log -1 --format=%ci)
+      - "$$flutter$$/bin/flutter build apk --release --target-platform=android-x64 --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') + 4000 )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\""
     output: build/app/outputs/flutter-apk/app-release.apk
+    binary: https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/download/v%v/bugaoshan_%v_x86_64.apk
     gradleprops:
       - org.gradle.workers.max=2
       - org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m

@@ -2,7 +2,8 @@
 
 Reads the current version from pubspec.yaml, derives the base versionCode
 using Flutter's formula (major*10000 + minor*100 + patch), computes
-ABI-specific versionCodes (+1001/+2001/+4001), and writes changelog
+ABI-specific versionCodes (+1000/+2000/+4000, matching the abiCode*1000+base
+rule Flutter's --split-per-abi applies), and writes changelog
 files to metadata/{lang}/changelogs/ for each ABI.
 """
 
@@ -11,10 +12,12 @@ import re
 import sys
 import yaml
 
+# 与 flutter_tools FlutterPlugin.kt 的 ABI_VERSION 表一致：
+# versionCode = abiCode * 1000 + base（v7a=1, v8a=2, x86_64=4）
 ABI_OFFSETS = {
-    "armeabi-v7a": 1001,
-    "arm64-v8a": 2001,
-    "x86_64": 4001,
+    "armeabi-v7a": 1000,
+    "arm64-v8a": 2000,
+    "x86_64": 4000,
 }
 
 METADATA_LANGS = ["en-US", "zh-CN"]
