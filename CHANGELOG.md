@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - iOS 端桌面小组件，支持在桌面显示课表
 - 新增 macOS 平台支持（课表可导出到系统日历）
 - 增加开发团队的介绍页面
+- 课表页新增放假页面，假期中显示放假信息，并支持切换到下学期查看
 
 ### Changed
 - 统一UI卡片样式：使用带有轻微阴影的圆角卡片
@@ -31,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 适配成绩页面支持存在多个培养方案的情况
 - 优化卡片的UI设计
 - 校历优先加载本地缓存，减少网络等待，并支持下拉刷新
+- 互动校历默认显示当前/下学期
+- 导入课表时自动根据校历计算学期周数
 
 ### Removed
 - 移除功能：当软件状态恢复时，例如从后台打开，最小化之后打开：课表跳转到当前周

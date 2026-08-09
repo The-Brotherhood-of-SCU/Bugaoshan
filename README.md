@@ -7,7 +7,7 @@
 [![Flutter](https://img.shields.io/badge/Flutter-3.44-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.10-0175C2?logo=dart&logoColor=white)](https://dart.dev)
 [![License](https://img.shields.io/badge/License-AGPL3.0-green.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Android%20%7C%20Windows-blue)](https://flutter.dev)
+[![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Android%20%7C%20Windows%20%7C%20macOS-blue)](https://flutter.dev)
 
 > 川大学生专属校园助手
 
@@ -55,6 +55,8 @@
 ## 📥 下载
 
 **前往 [Release 页面](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/latest) 下载最新版本**
+
+> 📱 **iOS 与鸿蒙版本正在邀测中**，欢迎加入官方QQ群（1102483776）参与测试
 
 ---
 
