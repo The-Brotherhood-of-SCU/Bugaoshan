@@ -265,6 +265,7 @@
     "setCurrentWeekHint": "Automatically calculates the semester start date based on the current week",
     "autoFetchCurrentWeek": "Auto Fetch Current Week",
     "autoFetchCurrentWeekHint": "Fetch current teaching week from academic system",
+    "autoFetchCurrentWeekOnVacation": "No teaching week is available during vacation. Schedule unchanged.",
     "fetchingCurrentWeek": "Fetching...",
     "loginRequired": "Please complete SCU Unified Identity login in the Profile page first",
     "goToLogin": "Go to Login",

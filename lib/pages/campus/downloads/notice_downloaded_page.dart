@@ -298,8 +298,39 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
       ),
     );
     if (confirmed != true) return;
+    await _deletePaths(_selected.toList());
+  }
+
+  /// Prompts the user and deletes a single downloaded file.
+  Future<void> _deleteFile(_FileInfo info) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.confirmDelete),
+        content: Text(l10n.confirmDeleteFile),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.delete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await _deletePaths([info.file.path]);
+  }
+
+  /// Shared deletion routine: removes files, cleans up stale [DownloadManager]
+  /// tasks and empty subdirectories, then refreshes the list.
+  Future<void> _deletePaths(List<String> paths) async {
+    final l10n = AppLocalizations.of(context)!;
     final manager = getIt<DownloadManager>();
-    for (final path in _selected) {
+    for (final path in paths) {
       final file = File(path);
       if (await file.exists()) await file.delete();
       // Remove stale task from DownloadManager so the attachment sheet
@@ -539,6 +570,8 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
                   _openFile(file);
                 } else if (value == 'share') {
                   _shareFile(file);
+                } else if (value == 'delete') {
+                  _deleteFile(info);
                 }
               },
               itemBuilder: (ctx) => [
@@ -555,6 +588,14 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
                   child: ListTile(
                     leading: const Icon(Icons.share),
                     title: Text(l10n.share),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: ListTile(
+                    leading: const Icon(Icons.delete_outline),
+                    title: Text(l10n.delete),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),

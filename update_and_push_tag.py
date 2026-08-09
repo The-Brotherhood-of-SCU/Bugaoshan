@@ -46,6 +46,22 @@ def verify_pattern(version:str)->bool:
         return False
     return True
 
+def split_version(version:str):
+    """把 'x.y.z'、'x.y.z+N' 或 'x.y.z-pre+N' 拆成 (x, y, z) 三个整数。"""
+    base = version.split("+")[0].split("-")[0]
+    a, b, c = (int(p) for p in base.split("."))
+    return a, b, c
+
+def get_build_number(version:str)->int:
+    """versionCode 基线 = a*10000 + b*100 + c。
+
+    CI 构建时 Flutter 的 --split-per-abi 会在此基础上自动加 ABI 偏移
+    (v7a +1000 / v8a +2000 / x86_64 +4000)，F-Droid 的 UpdateCheckData
+    依赖 pubspec.yaml 中的 '+N' 提取 vercode，因此发版时必须保留该后缀。
+    """
+    a, b, c = split_version(version)
+    return a * 10000 + b * 100 + c
+
 def get_latest_tag():
     # 定义通用的subprocess参数
     subprocess_kwargs = {
@@ -67,22 +83,6 @@ def get_latest_tag():
     except subprocess.CalledProcessError as e:
         prev_tag = None
     return prev_tag
-
-def split_version(version:str):
-    """把 'x.y.z'、'x.y.z+N' 或 'x.y.z-pre+N' 拆成 (x, y, z) 三个整数。"""
-    base = version.split("+")[0].split("-")[0]
-    a, b, c = (int(p) for p in base.split("."))
-    return a, b, c
-
-def get_build_number(version:str)->int:
-    """versionCode 基线 = a*10000 + b*100 + c。
-
-    CI 构建时 Flutter 的 --split-per-abi 会在此基础上自动加 ABI 偏移
-    (v7a +1000 / v8a +2000 / x86_64 +4000)，F-Droid 的 UpdateCheckData
-    依赖 pubspec.yaml 中的 '+N' 提取 vercode，因此发版时必须保留该后缀。
-    """
-    a, b, c = split_version(version)
-    return a * 10000 + b * 100 + c
 
 def get_version_increase(version: str):
     a, b, c = split_version(version)

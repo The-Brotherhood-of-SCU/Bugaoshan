@@ -2,6 +2,8 @@
 <resources>
     <string name="tomorrow">明天</string>
     <string name="widget_week_format">第%1$d周</string>
+    <string name="widget_vacation">放假中</string>
+    <string name="widget_vacation_hint">享受假期～</string>
     <string name="widget_empty_today">今天没有课程</string>
     <string name="widget_sync_hint">打开 App 同步课表</string>
     <string name="widget_section_single">第%1$d节</string>
