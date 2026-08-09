@@ -238,6 +238,79 @@ func computeWeekForDate(semesterStartDate: Date, totalWeeks: Int, date: Date) ->
     return max(1, min(week, totalWeeks))
 }
 
+/// 计算学期结束日(最后一周的周日),基于学期开始日与总周数。
+/// totalWeeks 非法时返回 nil,与 Android 端保持一致。
+func computeSemesterEndDate(semesterStartDate: Date, totalWeeks: Int) -> Date? {
+    guard totalWeeks > 0 else { return nil }
+    let calendar = Calendar.current
+    let startOfSemester = calendar.startOfDay(for: semesterStartDate)
+    return calendar.date(byAdding: .day, value: totalWeeks * 7 - 1, to: startOfSemester)
+}
+
+/// 在全部课表中查找在当前学期结束后最早开始的课表,返回其学期开始日。
+func findNextSemesterStart(_ db: OpaquePointer, currentScheduleId: String, currentEnd: Date) -> Date? {
+    var stmt: OpaquePointer?
+    let query = "SELECT id, config_json FROM schedules"
+    guard sqlite3_prepare_v2(db, query, -1, &stmt, nil) == SQLITE_OK else {
+        print("BugaoShan Widget: Failed to prepare query for all schedules")
+        return nil
+    }
+    defer { sqlite3_finalize(stmt) }
+
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "yyyy-MM-dd"
+    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+    dateFormatter.timeZone = TimeZone.current
+
+    var next: Date? = nil
+    while sqlite3_step(stmt) == SQLITE_ROW {
+        guard let idCString = sqlite3_column_text(stmt, 0),
+              let jsonCString = sqlite3_column_text(stmt, 1)
+        else { continue }
+
+        let id = String(cString: idCString)
+        if id == currentScheduleId { continue }
+
+        guard let jsonData = String(cString: jsonCString).data(using: .utf8),
+              let json = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any],
+              let startStr = json["semesterStartDate"] as? String,
+              let startDate = dateFormatter.date(from: startStr)
+        else { continue }
+
+        let startOfDay = Calendar.current.startOfDay(for: startDate)
+        if startOfDay > currentEnd {
+            if let currentNext = next {
+                if startOfDay < currentNext {
+                    next = startOfDay
+                }
+            } else {
+                next = startOfDay
+            }
+        }
+    }
+    return next
+}
+
+/// 判断当前是否处于「学期之间」的假期:当前学期已结束且下学期尚未开始。
+/// 与 App 端 CoursePageController._computeShowVacationPage 保持一致。
+func isOnVacation(_ db: OpaquePointer, currentScheduleId: String, semesterStartDate: Date, totalWeeks: Int) -> Bool {
+    let calendar = Calendar.current
+    let today = calendar.startOfDay(for: Date())
+    // 学期结束日非法(如 totalWeeks <= 0)→ 不放假
+    guard let semesterEnd = computeSemesterEndDate(semesterStartDate: semesterStartDate, totalWeeks: totalWeeks) else {
+        return false
+    }
+
+    // 学期未结束 → 不放假
+    if today <= semesterEnd { return false }
+    // 找下学期(当前学期结束后最早开始的课表)
+    guard let next = findNextSemesterStart(db, currentScheduleId: currentScheduleId, currentEnd: semesterEnd) else {
+        return false
+    }
+    // 今天在下学期开始前 → 放假中
+    return today < next
+}
+
 func isCourseActive(currentWeek: Int, startWeek: Int, endWeek: Int, weekType: Int) -> Bool {
     print("BugaoShan Widget: isCourseActive - currentWeek: \(currentWeek), startWeek: \(startWeek), endWeek: \(endWeek), weekType: \(weekType)")
 
@@ -440,7 +513,7 @@ func shouldShowTomorrow() -> Bool {
     return sharedDefaults.bool(forKey: "widget_show_tomorrow")
 }
 
-func loadWidgetData() -> (courses: [Course], dateText: String, weekText: String, isTomorrow: Bool, nextTransition: Date?)? {
+func loadWidgetData() -> (courses: [Course], dateText: String, weekText: String, isTomorrow: Bool, nextTransition: Date?, isOnVacation: Bool)? {
     print("BugaoShan Widget: loadWidgetData() called")
 
     guard let dbPath = getDatabasePath() else {
@@ -491,9 +564,10 @@ func loadWidgetData() -> (courses: [Course], dateText: String, weekText: String,
     let now = Date()
     let dayOfWeek = (calendar.component(.weekday, from: now) + 5) % 7 + 1 // Convert to Monday=1 to Sunday=7
     let currentWeek = computeCurrentWeek(semesterStartDate: config.semesterStartDate, totalWeeks: config.totalWeeks)
-    print("BugaoShan Widget: Today - dayOfWeek: \(dayOfWeek), currentWeek: \(currentWeek)")
+    let onVacation = isOnVacation(safeDB, currentScheduleId: currentScheduleId, semesterStartDate: config.semesterStartDate, totalWeeks: config.totalWeeks)
+    print("BugaoShan Widget: Today - dayOfWeek: \(dayOfWeek), currentWeek: \(currentWeek), onVacation: \(onVacation)")
 
-    var courses = queryCourses(safeDB, scheduleId: actualScheduleId, dayOfWeek: dayOfWeek, currentWeek: currentWeek)
+    var courses = onVacation ? [] : queryCourses(safeDB, scheduleId: actualScheduleId, dayOfWeek: dayOfWeek, currentWeek: currentWeek)
     print("BugaoShan Widget: Loaded \(courses.count) courses for today")
 
     let nowComponents = calendar.dateComponents([.hour, .minute], from: now)
@@ -506,7 +580,7 @@ func loadWidgetData() -> (courses: [Course], dateText: String, weekText: String,
     // ✨ 如果今天没有课，或者今天的课“全都上完了”，才尝试显示明天
     let hasUnfinishedCourses = courses.contains { $0.status != .completed }
 
-    if !hasUnfinishedCourses && shouldShowTomorrow() {
+    if !onVacation && !hasUnfinishedCourses && shouldShowTomorrow() {
         print("BugaoShan Widget: No active courses for today, checking tomorrow")
         if let tomorrow = calendar.date(byAdding: .day, value: 1, to: now) {
             let tomorrowDayOfWeek = (calendar.component(.weekday, from: tomorrow) + 5) % 7 + 1
@@ -538,11 +612,11 @@ func loadWidgetData() -> (courses: [Course], dateText: String, weekText: String,
     if isTomorrow {
         dateText += " 明天"
     }
-    let weekText = "第\(weekNum)周"
+    let weekText = onVacation ? "放假中" : "第\(weekNum)周"
 
-    let nextTransition = isTomorrow ? nil : computeNextTransitionMillis(courses, timeSlots: config.timeSlots, currentTimeMinutes: currentTimeMinutes)
+    let nextTransition = (isTomorrow || onVacation) ? nil : computeNextTransitionMillis(courses, timeSlots: config.timeSlots, currentTimeMinutes: currentTimeMinutes)
 
-    return (courses, dateText, weekText, isTomorrow, nextTransition)
+    return (courses, dateText, weekText, isTomorrow, nextTransition, onVacation)
 }
 
 struct CourseWidgetEntry: TimelineEntry {
@@ -551,6 +625,7 @@ struct CourseWidgetEntry: TimelineEntry {
     let dateText: String
     let weekText: String
     let isTomorrow: Bool
+    let isOnVacation: Bool
 }
 
 struct CourseProvider: TimelineProvider {
@@ -563,7 +638,8 @@ struct CourseProvider: TimelineProvider {
             ],
             dateText: "1/1 周一",
             weekText: "第1周",
-            isTomorrow: false
+            isTomorrow: false,
+            isOnVacation: false
         )
     }
 
@@ -574,7 +650,8 @@ struct CourseProvider: TimelineProvider {
                 courses: data.courses,
                 dateText: data.dateText,
                 weekText: data.weekText,
-                isTomorrow: data.isTomorrow
+                isTomorrow: data.isTomorrow,
+                isOnVacation: data.isOnVacation
             )
             completion(entry)
         } else {
@@ -591,7 +668,8 @@ struct CourseProvider: TimelineProvider {
                 courses: data.courses,
                 dateText: data.dateText,
                 weekText: data.weekText,
-                isTomorrow: data.isTomorrow
+                isTomorrow: data.isTomorrow,
+                isOnVacation: data.isOnVacation
             )
 
             var nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: now)
@@ -660,8 +738,16 @@ struct DesktopWidgetView: View {
 
             if displayableCourses.isEmpty {
                 Spacer(minLength: 0)
-                // 区分是真没课，还是课上完了
-                Text(entry.courses.isEmpty ? (entry.isTomorrow ? "明天没课" : "今天没课") : "今天的课都上完啦")
+                // 区分是真没课，还是课上完了；放假中显示放假提示
+                let emptyText: String
+                if entry.isOnVacation {
+                    emptyText = "享受假期～"
+                } else if entry.courses.isEmpty {
+                    emptyText = entry.isTomorrow ? "明天没课" : "今天没课"
+                } else {
+                    emptyText = "今天的课都上完啦"
+                }
+                Text(emptyText)
                     .font(.callout)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -720,15 +806,15 @@ struct LockScreenRectangularView: View {
                     // 锁屏下使用 .secondary 会自动渲染为半透明，形成层级感
                     .foregroundColor(.secondary)
             } else {
-                // 没课的状态
+                // 没课的状态；放假中显示放假提示
                 HStack {
                     Image(systemName: "sparkles")
-                    Text(entry.isTomorrow ? "明天没课" : "今天课上完啦")
+                    Text(entry.isOnVacation ? "放假中" : (entry.isTomorrow ? "明天没课" : "今天课上完啦"))
                         .font(.headline)
                 }
                 .widgetAccentable()
 
-                Text("好好休息吧")
+                Text(entry.isOnVacation ? "享受假期～" : "好好休息吧")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
