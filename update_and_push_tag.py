@@ -47,8 +47,8 @@ def verify_pattern(version:str)->bool:
     return True
 
 def split_version(version:str):
-    """把 'x.y.z' 或 'x.y.z+N' 拆成 (x, y, z) 三个整数，忽略 +N 构建号后缀。"""
-    base = version.split("+")[0]
+    """把 'x.y.z'、'x.y.z+N' 或 'x.y.z-pre+N' 拆成 (x, y, z) 三个整数。"""
+    base = version.split("+")[0].split("-")[0]
     a, b, c = (int(p) for p in base.split("."))
     return a, b, c
 
