@@ -4,6 +4,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/network_device_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/providers/user_info_provider.dart';
+import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/info_row.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
@@ -74,9 +75,52 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // 已有列表但刷新失败时，保留旧数据并给出可见的错误提示。
+          if (devices.state == NetworkDeviceLoadState.error &&
+              devices.error != null) ...[
+            _buildRefreshErrorBanner(l10n, devices.error!, devices.refresh),
+            const SizedBox(height: 16),
+          ],
           _buildUserInfoCard(l10n, userInfo.profile),
           const SizedBox(height: 16),
           _buildDeviceListCard(l10n, devices),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRefreshErrorBanner(
+    AppLocalizations l10n,
+    LoadErrorType error,
+    Future<void> Function() onRetry,
+  ) {
+    final scheme = Theme.of(context).colorScheme;
+    final message = error == LoadErrorType.sessionExpired
+        ? l10n.sessionExpired
+        : l10n.loadFailed;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 4, 4, 4),
+      decoration: BoxDecoration(
+        color: scheme.errorContainer,
+        borderRadius: BorderRadius.circular(AppShapes.small),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 18,
+            color: scheme.onErrorContainer,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: scheme.onErrorContainer,
+              ),
+            ),
+          ),
+          TextButton(onPressed: onRetry, child: Text(l10n.retry)),
         ],
       ),
     );

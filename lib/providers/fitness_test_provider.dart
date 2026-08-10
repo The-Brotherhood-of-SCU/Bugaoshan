@@ -178,6 +178,7 @@ class FitnessTestProvider extends ChangeNotifier {
 
   Object _noticeError(Object error) {
     if (error is UnauthenticatedException) return LoadErrorType.sessionExpired;
+    if (error is ServiceException) return error.message;
     return campusNetworkErrorType(LoadErrorType.networkError);
   }
 

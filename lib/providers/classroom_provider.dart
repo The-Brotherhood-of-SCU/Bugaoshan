@@ -11,6 +11,10 @@ enum ClassroomLoadState { idle, loading, loaded, error }
 class ClassroomProvider extends ChangeNotifier {
   ClassroomProvider(this._api);
 
+  /// 查询结果按 (校区, 楼栋, 日期) 缓存；超过上限时淘汰最旧的，
+  /// 避免长时间使用会话内 Map 无界增长。
+  static const _maxQueryResources = 30;
+
   final ZhjwApiService _api;
   final Map<_ClassroomQueryKey, _ClassroomQueryResource> _queryResources = {};
 
@@ -109,7 +113,19 @@ class ClassroomProvider extends ChangeNotifier {
         completer: completer,
       ),
     );
+    _evictOldestQueryResources();
     return completer.future;
+  }
+
+  /// 按插入序淘汰最旧的查询缓存，但保留当前查询，避免页面回退时丢数据。
+  void _evictOldestQueryResources() {
+    if (_queryResources.length <= _maxQueryResources) return;
+    final keys = _queryResources.keys.toList();
+    for (final key in keys) {
+      if (_queryResources.length <= _maxQueryResources) break;
+      if (key == _currentQuery) continue;
+      _queryResources.remove(key);
+    }
   }
 
   Future<void> _loadAvailability({

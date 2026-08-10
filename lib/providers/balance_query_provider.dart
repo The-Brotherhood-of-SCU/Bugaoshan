@@ -858,11 +858,16 @@ class BalanceQueryProvider extends ChangeNotifier {
         return;
       }
       final now = _now().toUtc();
+      final balance = double.tryParse(info.balance);
+      if (balance == null) {
+        // 余额解析失败时跳过记录，避免把 0 写进历史污染趋势图。
+        return;
+      }
       final record = BalanceRecord(
         roomKey: roomKey,
         balanceType: balanceType,
         timestamp: now,
-        balance: double.tryParse(info.balance) ?? 0,
+        balance: balance,
         price: double.tryParse(info.price) ?? 0,
       );
       if (!_isCurrentGeneration(generation) || _userIdentity != identity) {

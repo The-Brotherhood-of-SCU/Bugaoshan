@@ -23,6 +23,10 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
 
   static const pageSize = 30;
 
+  /// 班级课表详情按班级缓存；超过上限时淘汰最旧的，
+  /// 避免长时间使用会话内 Map 无界增长。
+  static const _maxDetailEntries = 50;
+
   final ZhjwApiService _api;
   List<SemesterOption> _semesters = const [];
   List<String> _grades = const [];
@@ -376,7 +380,20 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
         error: campusNetworkErrorType(LoadErrorType.loadFailed),
       );
     }
+    _evictOldestDetailEntries();
     notifyListeners();
+  }
+
+  /// 按插入序淘汰最旧的班级课表详情缓存。
+  void _evictOldestDetailEntries() {
+    if (_details.length <= _maxDetailEntries) return;
+    final keys = _details.keys.toList();
+    for (final key in keys) {
+      if (_details.length <= _maxDetailEntries) break;
+      _details.remove(key);
+      // 同步丢弃对应代际号，使该 key 的飞行请求结果不再回写。
+      _detailGenerations.remove(key);
+    }
   }
 
   void clear() {

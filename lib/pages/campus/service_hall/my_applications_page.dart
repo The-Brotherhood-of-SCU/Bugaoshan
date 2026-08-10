@@ -27,9 +27,23 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
   void initState() {
     super.initState();
     _provider = getIt<ServiceApplicationsProvider>();
+    getIt<ScuAuthProvider>().addListener(_onAuthChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _provider.ensureLoaded();
+      if (mounted) _onAuthChanged();
     });
+  }
+
+  @override
+  void dispose() {
+    getIt<ScuAuthProvider>().removeListener(_onAuthChanged);
+    super.dispose();
+  }
+
+  /// 登录时确保已加载；登出时 Provider 已被 injector 清理为 idle，
+  /// 重新登录后若不补拉会一直停留在加载动画。
+  void _onAuthChanged() {
+    final auth = getIt<ScuAuthProvider>();
+    if (auth.isLoggedIn) _provider.ensureLoaded();
   }
 
   @override

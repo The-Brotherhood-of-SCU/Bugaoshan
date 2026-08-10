@@ -39,6 +39,8 @@ class ExamPlanProvider extends ChangeNotifier {
     } on UnauthenticatedException {
       if (generation != _generation) return;
       _state = ExamPlanLoadState.error;
+      // 与其它 Provider 不同，这里用 notLoggedIn 以便页面在未登录时
+      // 直接展示登录引导（LoginRequiredWidget），而非仅提示会话过期。
       _error = LoadErrorType.notLoggedIn;
     } catch (error) {
       if (generation != _generation) return;

@@ -126,8 +126,6 @@ class BalanceQueryPage extends StatelessWidget {
     }
     if (index == -1) {
       _showBindDialog(context, provider);
-    } else if (index < 0) {
-      _showDeleteConfirmDialog(context, provider, -(index + 2));
     } else {
       _switchBinding(context, provider, index);
     }
