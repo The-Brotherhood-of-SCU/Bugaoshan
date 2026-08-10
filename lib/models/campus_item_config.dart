@@ -1,4 +1,4 @@
-import 'package:bugaoshan/pages/campus/leave/service_hall_page.dart';
+import 'package:bugaoshan/pages/campus/service_hall/service_hall_page.dart';
 import 'package:bugaoshan/pages/campus/zysc/zysc_page.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';

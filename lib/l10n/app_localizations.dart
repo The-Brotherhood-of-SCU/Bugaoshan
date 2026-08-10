@@ -4819,6 +4819,66 @@ abstract class AppLocalizations {
   /// **'View leave and check-in requests you have submitted'**
   String get serviceHallMyAppsDesc;
 
+  /// Name of the return-to-school report matter in the service hall.
+  ///
+  /// In en, this message translates to:
+  /// **'Return-to-School Report'**
+  String get serviceHallReturnTitle;
+
+  /// Description of the return-to-school report matter in the service hall.
+  ///
+  /// In en, this message translates to:
+  /// **'Report your return-to-school trip in advance'**
+  String get serviceHallReturnDesc;
+
+  /// Name of the summer leave report matter in the service hall.
+  ///
+  /// In en, this message translates to:
+  /// **'Summer Leave Report'**
+  String get serviceHallSummerLeaveTitle;
+
+  /// Description of the summer leave report matter in the service hall.
+  ///
+  /// In en, this message translates to:
+  /// **'Report leaving school for the summer vacation'**
+  String get serviceHallSummerLeaveDesc;
+
+  /// Name of the stay-on-campus registration matter in the service hall.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay-on-Campus Registration'**
+  String get serviceHallStayRegisterTitle;
+
+  /// Description of the stay-on-campus registration matter in the service hall.
+  ///
+  /// In en, this message translates to:
+  /// **'Register to stay on campus during the vacation'**
+  String get serviceHallStayRegisterDesc;
+
+  /// Validation message when a required service-hall form field is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please fill in {label}'**
+  String serviceFormRequired(String label);
+
+  /// Error shown when a service-hall form definition cannot be loaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load the form. Please retry later.'**
+  String get serviceFormSchemaFailed;
+
+  /// Hint text for dropdown fields in service-hall forms.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select'**
+  String get serviceFormSelectHint;
+
+  /// Suffix marking optional fields in service-hall forms.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get serviceFormOptional;
+
   /// Page title for leave application.
   ///
   /// In en, this message translates to:

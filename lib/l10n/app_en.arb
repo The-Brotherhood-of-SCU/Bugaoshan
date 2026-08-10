@@ -1273,6 +1273,62 @@
         "description": "Description of the my-applications matter in the service hall.",
         "type": "text"
     },
+    "serviceHallReturnTitle": "Return-to-School Report",
+    "@serviceHallReturnTitle": {
+        "description": "Name of the return-to-school report matter in the service hall.",
+        "type": "text"
+    },
+    "serviceHallReturnDesc": "Report your return-to-school trip in advance",
+    "@serviceHallReturnDesc": {
+        "description": "Description of the return-to-school report matter in the service hall.",
+        "type": "text"
+    },
+    "serviceHallSummerLeaveTitle": "Summer Leave Report",
+    "@serviceHallSummerLeaveTitle": {
+        "description": "Name of the summer leave report matter in the service hall.",
+        "type": "text"
+    },
+    "serviceHallSummerLeaveDesc": "Report leaving school for the summer vacation",
+    "@serviceHallSummerLeaveDesc": {
+        "description": "Description of the summer leave report matter in the service hall.",
+        "type": "text"
+    },
+    "serviceHallStayRegisterTitle": "Stay-on-Campus Registration",
+    "@serviceHallStayRegisterTitle": {
+        "description": "Name of the stay-on-campus registration matter in the service hall.",
+        "type": "text"
+    },
+    "serviceHallStayRegisterDesc": "Register to stay on campus during the vacation",
+    "@serviceHallStayRegisterDesc": {
+        "description": "Description of the stay-on-campus registration matter in the service hall.",
+        "type": "text"
+    },
+    "serviceFormRequired": "Please fill in {label}",
+    "@serviceFormRequired": {
+        "description": "Validation message when a required service-hall form field is empty.",
+        "type": "text",
+        "placeholders": {
+            "label": {
+                "type": "String",
+                "example": "Campus"
+            }
+        }
+    },
+    "serviceFormSchemaFailed": "Failed to load the form. Please retry later.",
+    "@serviceFormSchemaFailed": {
+        "description": "Error shown when a service-hall form definition cannot be loaded.",
+        "type": "text"
+    },
+    "serviceFormSelectHint": "Please select",
+    "@serviceFormSelectHint": {
+        "description": "Hint text for dropdown fields in service-hall forms.",
+        "type": "text"
+    },
+    "serviceFormOptional": "Optional",
+    "@serviceFormOptional": {
+        "description": "Suffix marking optional fields in service-hall forms.",
+        "type": "text"
+    },
     "leaveTitle": "Leave Application",
     "@leaveTitle": {
         "description": "Page title for leave application.",

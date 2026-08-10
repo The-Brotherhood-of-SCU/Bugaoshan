@@ -73,12 +73,14 @@ class ServiceRegionNode {
   static List<ServiceRegionNode> _parseChildren(dynamic raw) {
     if (raw is List) {
       return raw
+          // ignore: prefer_iterable_wheretype
           .where((e) => e is Map)
           .map((e) => ServiceRegionNode.fromJson(e as Map<String, dynamic>))
           .toList(growable: false);
     }
     if (raw is Map) {
       return raw.values
+          // ignore: prefer_iterable_wheretype
           .where((e) => e is Map)
           .map((e) => ServiceRegionNode.fromJson(e as Map<String, dynamic>))
           .toList(growable: false);
@@ -124,18 +126,9 @@ class ServiceRegionSelection {
     final a = area?.label ?? '';
     final d = details.trim();
     return {
-      'province': {
-        'label': p,
-        'value': province?.value ?? '',
-      },
-      'city': {
-        'label': c,
-        'value': city?.value ?? '',
-      },
-      'area': {
-        'label': a,
-        'value': area?.value ?? '',
-      },
+      'province': {'label': p, 'value': province?.value ?? ''},
+      'city': {'label': c, 'value': city?.value ?? ''},
+      'area': {'label': a, 'value': area?.value ?? ''},
       'details': d,
       'address': [
         if (p.isNotEmpty) p,

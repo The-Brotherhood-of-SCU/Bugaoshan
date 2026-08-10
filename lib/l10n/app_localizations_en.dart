@@ -2579,6 +2579,42 @@ class AppLocalizationsEn extends AppLocalizations {
       'View leave and check-in requests you have submitted';
 
   @override
+  String get serviceHallReturnTitle => 'Return-to-School Report';
+
+  @override
+  String get serviceHallReturnDesc =>
+      'Report your return-to-school trip in advance';
+
+  @override
+  String get serviceHallSummerLeaveTitle => 'Summer Leave Report';
+
+  @override
+  String get serviceHallSummerLeaveDesc =>
+      'Report leaving school for the summer vacation';
+
+  @override
+  String get serviceHallStayRegisterTitle => 'Stay-on-Campus Registration';
+
+  @override
+  String get serviceHallStayRegisterDesc =>
+      'Register to stay on campus during the vacation';
+
+  @override
+  String serviceFormRequired(String label) {
+    return 'Please fill in $label';
+  }
+
+  @override
+  String get serviceFormSchemaFailed =>
+      'Failed to load the form. Please retry later.';
+
+  @override
+  String get serviceFormSelectHint => 'Please select';
+
+  @override
+  String get serviceFormOptional => 'Optional';
+
+  @override
   String get leaveTitle => 'Leave Application';
 
   @override

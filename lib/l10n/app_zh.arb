@@ -1211,6 +1211,62 @@
         "description": "办事大厅中我的申请事项的描述。",
         "type": "text"
     },
+    "serviceHallReturnTitle": "返校报备",
+    "@serviceHallReturnTitle": {
+        "description": "办事大厅中返校报备事项的名称。",
+        "type": "text"
+    },
+    "serviceHallReturnDesc": "提前报备返校行程",
+    "@serviceHallReturnDesc": {
+        "description": "办事大厅中返校报备事项的描述。",
+        "type": "text"
+    },
+    "serviceHallSummerLeaveTitle": "暑假离校",
+    "@serviceHallSummerLeaveTitle": {
+        "description": "办事大厅中暑假离校事项的名称。",
+        "type": "text"
+    },
+    "serviceHallSummerLeaveDesc": "报备暑假离校行程",
+    "@serviceHallSummerLeaveDesc": {
+        "description": "办事大厅中暑假离校事项的描述。",
+        "type": "text"
+    },
+    "serviceHallStayRegisterTitle": "留校登记",
+    "@serviceHallStayRegisterTitle": {
+        "description": "办事大厅中留校登记事项的名称。",
+        "type": "text"
+    },
+    "serviceHallStayRegisterDesc": "登记假期留校",
+    "@serviceHallStayRegisterDesc": {
+        "description": "办事大厅中留校登记事项的描述。",
+        "type": "text"
+    },
+    "serviceFormRequired": "请填写{label}",
+    "@serviceFormRequired": {
+        "description": "办事大厅表单必填字段为空时的校验提示。",
+        "type": "text",
+        "placeholders": {
+            "label": {
+                "type": "String",
+                "example": "校区"
+            }
+        }
+    },
+    "serviceFormSchemaFailed": "表单加载失败，请稍后重试",
+    "@serviceFormSchemaFailed": {
+        "description": "办事大厅表单定义加载失败时的错误提示。",
+        "type": "text"
+    },
+    "serviceFormSelectHint": "请选择",
+    "@serviceFormSelectHint": {
+        "description": "办事大厅表单下拉字段的提示文案。",
+        "type": "text"
+    },
+    "serviceFormOptional": "选填",
+    "@serviceFormOptional": {
+        "description": "办事大厅表单选填字段的标记。",
+        "type": "text"
+    },
     "leaveTitle": "请假申请",
     "@leaveTitle": {
         "description": "请假申请页面标题。",

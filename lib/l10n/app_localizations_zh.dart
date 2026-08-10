@@ -2498,6 +2498,38 @@ class AppLocalizationsZh extends AppLocalizations {
   String get serviceHallMyAppsDesc => '查看我提交过的请假、报备等申请记录';
 
   @override
+  String get serviceHallReturnTitle => '返校报备';
+
+  @override
+  String get serviceHallReturnDesc => '提前报备返校行程';
+
+  @override
+  String get serviceHallSummerLeaveTitle => '暑假离校';
+
+  @override
+  String get serviceHallSummerLeaveDesc => '报备暑假离校行程';
+
+  @override
+  String get serviceHallStayRegisterTitle => '留校登记';
+
+  @override
+  String get serviceHallStayRegisterDesc => '登记假期留校';
+
+  @override
+  String serviceFormRequired(String label) {
+    return '请填写$label';
+  }
+
+  @override
+  String get serviceFormSchemaFailed => '表单加载失败，请稍后重试';
+
+  @override
+  String get serviceFormSelectHint => '请选择';
+
+  @override
+  String get serviceFormOptional => '选填';
+
+  @override
   String get leaveTitle => '请假申请';
 
   @override

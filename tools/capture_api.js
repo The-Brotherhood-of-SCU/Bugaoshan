@@ -86,36 +86,75 @@
     probes.push({ name: `select-department app=${id}`, url: `${BASE}/site/user/select-department?app_id=${id}` });
   }
 
+  async function probeOne(name, url) {
+    const t0 = performance.now();
+    try {
+      const resp = await fetch(url, {
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json, text/plain, */*',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      });
+      const text = await resp.text();
+      const { json, parseError } = parseMaybe(text);
+      const truncated = text.length > MAX_RESPONSE ? `${text.slice(0, MAX_RESPONSE)}\n...[truncated]` : text;
+      record({
+        name,
+        url,
+        method: 'GET',
+        status: resp.status,
+        contentType: resp.headers.get('content-type'),
+        ms: Math.round(performance.now() - t0),
+        response: truncated,
+        json,
+        parseError,
+      });
+      log(`${name} -> ${resp.status} ${text.length}B`);
+      return json;
+    } catch (e) {
+      record({ name, url, method: 'GET', error: String(e) });
+      warn(`${name} failed: ${e}`);
+      return null;
+    }
+  }
+
+  /** 从 start-info 响应中提取 bpmn_id 与 form 列表（[{form_id, version_id}]） */
+  function extractFormRefs(json) {
+    const d = json && json.d;
+    if (!d) return { bpmnId: '', forms: [] };
+    const bpmnId = d.bpmn_id != null ? String(d.bpmn_id) : '';
+    const rawForms = Array.isArray(d.form) ? d.form : Array.isArray(d.forms) ? d.forms : [];
+    const forms = [];
+    for (const f of rawForms) {
+      if (!f || typeof f !== 'object') continue;
+      const fid = f.form_id ?? f.id;
+      if (fid == null) continue;
+      forms.push({ formId: String(fid), versionId: f.version_id != null ? String(f.version_id) : '' });
+    }
+    return { bpmnId, forms };
+  }
+
   async function probe() {
     const before = state.requests.length;
+    // 阶段 1：静态 GET 探测
     for (const p of probes) {
-      const t0 = performance.now();
-      try {
-        const resp = await fetch(p.url, {
-          credentials: 'same-origin',
-          headers: {
-            Accept: 'application/json, text/plain, */*',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-        });
-        const text = await resp.text();
-        const { json, parseError } = parseMaybe(text);
-        const truncated = text.length > MAX_RESPONSE ? `${text.slice(0, MAX_RESPONSE)}\n...[truncated]` : text;
-        record({
-          name: p.name,
-          url: p.url,
-          method: 'GET',
-          status: resp.status,
-          contentType: resp.headers.get('content-type'),
-          ms: Math.round(performance.now() - t0),
-          response: truncated,
-          json,
-          parseError,
-        });
-        log(`${p.name} -> ${resp.status} ${text.length}B`);
-      } catch (e) {
-        record({ name: p.name, url: p.url, method: 'GET', error: String(e) });
-        warn(`${p.name} failed: ${e}`);
+      await probeOne(p.name, p.url);
+    }
+    // 阶段 2：基于 start-info 结果探测 get-formv（插件定义的二次来源，用于对比校准）
+    for (const id of APP_IDS) {
+      const startInfo = state.requests.find(r => r.name === `start-info app=${id}` && r.json);
+      if (!startInfo) continue;
+      const { bpmnId, forms } = extractFormRefs(startInfo.json);
+      if (!bpmnId || forms.length === 0) {
+        warn(`app=${id} start-info 无 bpmn_id/form，跳过 get-formv 探测`);
+        continue;
+      }
+      for (const f of forms) {
+        await probeOne(
+          `get-formv app=${id} form=${f.formId}`,
+          `${BASE}/site/form/get-formv?bpmn_id=${bpmnId}&id=${f.formId}`,
+        );
       }
     }
     log(`probe done, +${state.requests.length - before} records`);

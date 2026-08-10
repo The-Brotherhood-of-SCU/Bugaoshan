@@ -125,8 +125,10 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
     if (instStatus.isNotEmpty) {
       return _chip(instStatus, _colorForStatus(item['status']?.toString()));
     }
-    return _chip(_labelForStatus(item['status']?.toString(), l10n),
-        _colorForStatus(item['status']?.toString()));
+    return _chip(
+      _labelForStatus(item['status']?.toString(), l10n),
+      _colorForStatus(item['status']?.toString()),
+    );
   }
 
   Color _colorForStatus(String? status) {
@@ -154,10 +156,7 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(
-        label,
-        style: TextStyle(fontSize: 12, color: color),
-      ),
+      child: Text(label, style: TextStyle(fontSize: 12, color: color)),
     );
   }
 

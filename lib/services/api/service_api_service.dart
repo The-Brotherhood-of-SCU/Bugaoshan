@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/services/api/api_request.dart';
 import 'package:bugaoshan/services/api/service_form_models.dart';
+import 'package:bugaoshan/services/api/service_plugin_models.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/service_auth.dart';
@@ -14,20 +15,23 @@ import 'package:bugaoshan/utils/constants.dart';
 
 /// 网上办事大厅 API Service（第1层）
 ///
-/// service.scu.edu.cn 的请假申请业务 API。认证通过 [ServiceAuth]
+/// service.scu.edu.cn 的动态表单事项 API。认证通过 [ServiceAuth]
 /// （CAS 会话 cookie `vjuid`），请求由 [CookieClient] 自动携带。
 ///
-/// # 真实接口（已通过抓包确认）
+/// # 真实接口（app_id=350 已通过抓包确认，其余事项同一引擎）
 ///
-/// 请假事项（app_id=350 "离校请假"）：
-/// - 表单 schema：`GET /site/form/start-data?app_id=350`
-/// - 流程信息：  `GET /site/process/start-info?app_id=350`
-/// - 流程变量：  `GET /site/process/variables?app_id=350`
-/// - 发起人部门：`GET /site/user/select-department?app_id=350`
+/// 所有事项（350 离校请假 / 337 返校报备 / 356 暑假离校 / 357 留校登记）
+/// 共用同一套动态表单引擎：
+/// - 流程信息（含表单插件定义）：`GET /site/process/start-info?app_id=X`
+/// - 表单 schema（权限+预填）：`GET /site/form/start-data?app_id=X`
+/// - 表单插件（备用来源）：`GET /site/form/get-formv?bpmn_id=X&id=Y`
+/// - 数据源取数（如辅导员）：`POST /site/data-source/detail`
+/// - 省市区字典：`GET /api/dictionary/province`
+/// - 附件上传：`POST /site/attach/auth-upload`
 /// - **提交申请**：`POST /site/apps/launch`
 /// - 我的申请：  `GET /site/process/inst-list`
 ///
-/// 提交体结构（来自真实抓包，[ServiceLeaveSubmit]）：
+/// 提交体结构（来自真实抓包）：
 /// `data={"app_id":"350","node_id":"","form_data":{"1419":{...}},"userview":1}&step=0&agent_uid=&starter_depart_id=395876`
 class ServiceApiService {
   final ServiceAuth _auth;
@@ -36,10 +40,22 @@ class ServiceApiService {
 
   static const String _base = 'https://service.scu.edu.cn';
 
-  /// 请假事项 id（办事大厅"离校请假"，matter/start?id=350）
+  /// 离校请假事项 id（办事大厅"离校请假"，matter/start?id=350）
   static const String leaveAppId = '350';
 
-  /// 接口路径（已通过抓包确认）。
+  /// 返校报备事项 id。
+  static const String returnReportAppId = '337';
+
+  /// 暑假离校事项 id。
+  static const String summerLeaveAppId = '356';
+
+  /// 留校登记事项 id。
+  static const String stayRegisterAppId = '357';
+
+  /// 默认发起人部门 id（350 抓包值；select-department 接口确认前作为兜底）。
+  static const String kDefaultStarterDepartId = '395876';
+
+  /// 接口路径（350 已通过抓包确认；get-formv 来自前端代码分析）。
   static const Map<String, String> paths = {
     'formStartData': '/site/form/start-data',
     'processStartInfo': '/site/process/start-info',
@@ -48,6 +64,7 @@ class ServiceApiService {
     'dataSourceDetail': '/site/data-source/detail',
     'attachUpload': '/site/attach/auth-upload',
     'provinceDict': '/api/dictionary/province',
+    'formPlugins': '/site/form/get-formv',
     'launch': '/site/apps/launch',
     'instList': '/site/process/inst-list',
   };
@@ -55,7 +72,7 @@ class ServiceApiService {
   /// DataSource_85（辅导员数据源）的配置 id（来自抓包 curl：id=8）。
   static const String tutorDataSourceId = '8';
 
-  /// 接口已用真实抓包确认。提交/查询可直接调用。
+  /// 接口已用真实抓包确认（350）。提交/查询可直接调用。
   static const bool verified = true;
 
   Future<T> _request<T>(Future<T> Function(CookieClient client) fn) {
@@ -115,51 +132,181 @@ class ServiceApiService {
     return json;
   }
 
-  /// 获取请假事项的表单定义（字段 key、权限、已填数据）。
-  Future<ServiceFormDefinition> fetchLeaveFormSchema() async {
+  /// 获取事项的表单定义（字段 key、权限、已填数据）。
+  Future<ServiceFormDefinition> fetchFormSchema(
+    String appId, {
+    String starterDepartId = kDefaultStarterDepartId,
+  }) async {
     final json = await _request((client) async {
       final uri = Uri.parse('$_base${paths['formStartData']}').replace(
         queryParameters: {
-          'app_id': leaveAppId,
+          'app_id': appId,
           'node_id': '',
           'userview': '1',
           'agent_uid': '',
-          'starter_depart_id': '395876',
+          'starter_depart_id': starterDepartId,
         },
       );
       final resp = await client.get(uri, headers: _jsonHeaders);
       return _decodeResponse(resp.body, resp.statusCode);
     });
     if (json['e'] == 0 && json['d'] != null) {
-      return ServiceFormDefinition.fromJson(
-        json['d'] as Map<String, dynamic>,
-      );
+      return ServiceFormDefinition.fromJson(json['d'] as Map<String, dynamic>);
     }
     throw ServiceException(json['m'] ?? '获取表单定义失败');
   }
 
-  /// 获取辅导员（DataSource_85 数据源）。
+  /// 获取请假事项的表单定义（[fetchFormSchema] 的 350 委托，保持原行为）。
+  Future<ServiceFormDefinition> fetchLeaveFormSchema() =>
+      fetchFormSchema(leaveAppId);
+
+  /// 获取事项的流程信息（`start-info`）。
   ///
-  /// 网页端发起页通过 `POST /site/data-source/detail` 拉取辅导员列表，
-  /// 选中的辅导员填入 `Input_84`（姓名）与 `DataSource_85`（`{"list": name}`）。
-  /// 参数来自真实抓包 curl（id=8, form_version_id=2357）。
-  ///
-  /// 返回辅导员姓名；失败返回 null（由调用方决定是否阻塞提交）。
-  Future<String?> fetchTutor() async {
+  /// 返回原始 `d` 字段：含 `bpmn_id`、`type`、`nodes` 与 `form`（数组，
+  /// 每个 form 带 `form_id` / `version_id` / `plugins` JSON 字符串，
+  /// 插件描述字段标签、类型、选项、排序、数据源配置）。
+  /// 由 [ServiceFormSchema.build] 解析。
+  Future<Map<String, dynamic>> fetchStartInfo(String appId) async {
     final json = await _request((client) async {
-      final body = Uri(
+      final uri = Uri.parse(
+        '$_base${paths['processStartInfo']}',
+      ).replace(queryParameters: {'app_id': appId});
+      final resp = await client.get(uri, headers: _jsonHeaders);
+      return _decodeResponse(resp.body, resp.statusCode);
+    });
+    if (json['e'] == 0 && json['d'] is Map<String, dynamic>) {
+      return json['d'] as Map<String, dynamic>;
+    }
+    throw ServiceException(json['m'] ?? '获取流程信息失败');
+  }
+
+  /// 获取表单插件定义（`get-formv`——插件定义的**主来源**；
+  /// start-info 的 form 列表只有 form_id/version_id，不含插件）。
+  ///
+  /// 前端发起页通过 `GET /site/form/get-formv?id=Y&bpmn_id=X&sess_id=0&report_id=0`
+  /// 拉取（被动抓包确认），返回 `d.plugins`（JSON 字符串，
+  /// 解码后为 `{nowNum, plugins: {<key>: <plugin>}, rtplugins}`）。
+  /// 返回原始 `d` 字段。
+  Future<Map<String, dynamic>> fetchFormPlugins({
+    required String bpmnId,
+    required String formId,
+    String starterDepartId = kDefaultStarterDepartId,
+  }) async {
+    final json = await _request((client) async {
+      final uri = Uri.parse('$_base${paths['formPlugins']}').replace(
         queryParameters: {
-          'id': tutorDataSourceId,
-          'inst_id': '0',
-          'app_id': leaveAppId,
-          'form_version_id': '2357',
-          'component': 'DataSource_85',
-          'params[formId]': '1419',
-          'params[pluginKey]': 'DataSource_85',
+          'id': formId,
+          'bpmn_id': bpmnId,
+          'sess_id': '0',
+          'report_id': '0',
           'agent_uid': '',
-          'starter_depart_id': '395876',
+          'starter_depart_id': starterDepartId,
         },
-      ).query;
+      );
+      final resp = await client.get(uri, headers: _jsonHeaders);
+      return _decodeResponse(resp.body, resp.statusCode);
+    });
+    if (json['e'] == 0 && json['d'] is Map<String, dynamic>) {
+      return json['d'] as Map<String, dynamic>;
+    }
+    throw ServiceException(json['m'] ?? '获取表单插件失败');
+  }
+
+  /// 获取当前用户的发起人部门 id（`select-department`）。
+  ///
+  /// 真实响应（被动抓包确认）：
+  /// `d.depart[]` 为候选列表，前端取 `select==1` 项的 **college** 字段
+  /// 作为后续所有请求的 starter_depart_id（如 395876）。
+  /// 解析不出时返回 null，由调用方回退 [kDefaultStarterDepartId]。
+  Future<String?> fetchStarterDepartId(String appId) async {
+    final json = await _request((client) async {
+      final uri = Uri.parse(
+        '$_base${paths['selectDepartment']}',
+      ).replace(queryParameters: {'app_id': appId});
+      final resp = await client.get(uri, headers: _jsonHeaders);
+      return _decodeResponse(resp.body, resp.statusCode);
+    });
+    if (json['e'] != 0 || json['d'] == null) return null;
+    return _extractDepartId(json['d']);
+  }
+
+  /// 从 select-department 响应中提取部门 id：
+  /// `d.depart` 列表中 select==1 项的 college；兜底首项 college / 各候选键。
+  String? _extractDepartId(dynamic d) {
+    String? pickCollege(dynamic item) {
+      if (item is! Map) return null;
+      for (final k in const [
+        'college',
+        'depart_id',
+        'department_id',
+        'value',
+        'id',
+      ]) {
+        final v = item[k];
+        if (v != null && v.toString().isNotEmpty && v.toString() != '0') {
+          return v.toString();
+        }
+      }
+      return null;
+    }
+
+    if (d is Map) {
+      final depart = d['depart'];
+      if (depart is List && depart.isNotEmpty) {
+        for (final item in depart) {
+          if (item is Map && _toIntSelect(item['select']) == 1) {
+            final id = pickCollege(item);
+            if (id != null) return id;
+          }
+        }
+        return pickCollege(depart.first);
+      }
+      final direct = pickCollege(d);
+      if (direct != null) return direct;
+      final list = d['list'] ?? d['data'];
+      if (list is List && list.isNotEmpty) return pickCollege(list.first);
+    } else if (d is List && d.isNotEmpty) {
+      return pickCollege(d.first);
+    }
+    return null;
+  }
+
+  int _toIntSelect(dynamic v) {
+    if (v is int) return v;
+    if (v is String) return int.tryParse(v) ?? -1;
+    return -1;
+  }
+
+  /// 获取 DataSource 字段的原始结果（如辅导员）。
+  ///
+  /// 网页端发起页通过 `POST /site/data-source/detail` 拉取（被动抓包确认：
+  /// urlencoded body，参数形态与本实现一致），响应 `d.list`——
+  /// 单值数据源（如辅导员 id=8）为字符串；多列数据源（如 337 的
+  /// id=11 年级和返校日期）为对象 `{grade: ..., back_date: ...}`，
+  /// 由 [ServiceDataSourceRef.mapConfig] 分发。
+  ///
+  /// 返回原始 `d` 字段（Map）；失败返回 null（由调用方决定是否阻塞提交）。
+  Future<Map<String, dynamic>?> fetchDataSourceValue({
+    required String appId,
+    required ServiceDataSourceRef ref,
+    String starterDepartId = kDefaultStarterDepartId,
+  }) async {
+    final json = await _request((client) async {
+      final params = <String, String>{
+        'id': ref.id,
+        'inst_id': '0',
+        'app_id': appId,
+        'form_version_id': ref.formVersionId,
+        'component': ref.component,
+        'params[formId]': ref.formId,
+        'params[pluginKey]': ref.component,
+        'agent_uid': '',
+        'starter_depart_id': starterDepartId,
+        // 插件 sourceConfig 里的附加参数（前端以 configure[key] 形式发送）
+        for (final entry in ref.configure.entries)
+          'configure[${entry.key}]': entry.value,
+      };
+      final body = Uri(queryParameters: params).query;
       final resp = await client.post(
         Uri.parse('$_base${paths['dataSourceDetail']}'),
         headers: _headers,
@@ -168,14 +315,38 @@ class ServiceApiService {
       return _decodeResponse(resp.body, resp.statusCode);
     });
     if (json['e'] != 0 || json['d'] == null) {
-      _log.w('SERVICE', 'fetchTutor 失败 e=${json['e']} m=${json['m']}');
+      _log.w(
+        'SERVICE',
+        'fetchDataSourceValue 失败 e=${json['e']} m=${json['m']}',
+      );
       return null;
     }
     final d = json['d'];
-    debugPrint('ServiceApi fetchTutor response: ${jsonEncode(d)}');
-    final tutor = _extractTutorName(d);
-    _log.i('SERVICE', 'fetchTutor -> ${tutor ?? '(null)'}');
-    return tutor;
+    _log.i(
+      'SERVICE',
+      'fetchDataSourceValue(${ref.component}) -> ${jsonEncode(d)}',
+    );
+    if (d is Map<String, dynamic>) return d;
+    if (d is Map) return Map<String, dynamic>.from(d);
+    return null;
+  }
+
+  /// 获取辅导员（350 的 DataSource_85 数据源）。
+  ///
+  /// [fetchDataSourceValue] 的 350 委托（参数来自真实抓包 curl：
+  /// id=8, form_version_id=2357, formId=1419），保持原行为。
+  /// 返回辅导员姓名；失败返回 null。
+  Future<String?> fetchTutor() async {
+    final d = await fetchDataSourceValue(
+      appId: leaveAppId,
+      ref: const ServiceDataSourceRef(
+        id: tutorDataSourceId,
+        formVersionId: '2357',
+        component: 'DataSource_85',
+        formId: '1419',
+      ),
+    );
+    return d?['list']?.toString();
   }
 
   /// 获取省市区字典（去往地址 Region_80）。
@@ -185,10 +356,7 @@ class ServiceApiService {
   Future<List<dynamic>> fetchProvinces() async {
     final json = await _request((client) async {
       final uri = Uri.parse('$_base${paths['provinceDict']}').replace(
-        queryParameters: {
-          'agent_uid': '',
-          'starter_depart_id': '395876',
-        },
+        queryParameters: {'agent_uid': '', 'starter_depart_id': '395876'},
       );
       final resp = await client.get(uri, headers: _jsonHeaders);
       return _decodeResponse(resp.body, resp.statusCode);
@@ -205,50 +373,18 @@ class ServiceApiService {
     return const [];
   }
 
-  /// 从 data-source/detail 的响应中提取辅导员姓名。
-  ///
-  /// 真实响应：`{"e":0,"m":"操作成功","d":{"list":"张美成"}}`
-  /// `d.list` 是辅导员姓名字符串（非数组）。兜底兼容 `d.list` 为数组 / `d.name` 等结构。
-  String? _extractTutorName(dynamic d) {
-    if (d is Map) {
-      final listVal = d['list'];
-      if (listVal is String && listVal.trim().isNotEmpty) {
-        return listVal.trim();
-      }
-      if (listVal is List) {
-        for (final item in listVal) {
-          if (item is Map) {
-            final name = item['name'] ?? item['realname'] ?? item['user_name'];
-            if (name != null && name.toString().isNotEmpty) return name.toString();
-          }
-        }
-        return null;
-      }
-      for (final k in ['name', 'realname', 'user_name']) {
-        final v = d[k];
-        if (v != null && v.toString().isNotEmpty) return v.toString();
-      }
-    } else if (d is List) {
-      for (final item in d) {
-        if (item is Map) {
-          final name = item['name'] ?? item['realname'] ?? item['user_name'];
-          if (name != null && name.toString().isNotEmpty) return name.toString();
-        }
-      }
-    }
-    return null;
-  }
-
-  /// 上传附件（File_71 上传证明）。
+  /// 上传附件（File 字段，如 350 的 File_71 上传证明）。
   ///
   /// 接口：`POST /site/attach/auth-upload?category=all&inst_id=0`
-  /// FormData 字段名 `upfile`。返回上传后的附件信息，用于组装 `File_71`：
+  /// FormData 字段名 `upfile`。返回上传后的附件信息，用于组装 File 字段：
   /// `[{"name": 文件名, "url": "…/auth-download?file_id=<id>", "id": <id>}]`
   ///
   /// [file] 本地图片文件。[fileName] 上传后的显示名（默认取文件 basename）。
+  /// [appId] 仅用于 Referer 头（模拟对应事项的发起页）。
   Future<ServiceAttachment> uploadAttachment(
     File file, {
     String? fileName,
+    String appId = leaveAppId,
   }) async {
     return _request((client) async {
       final uri = Uri.parse(
@@ -258,7 +394,7 @@ class ServiceApiService {
         ..headers.addAll({
           'Accept': 'application/json, text/plain, */*',
           'Origin': _base,
-          'Referer': '$_base/v2/matter/start?id=$leaveAppId',
+          'Referer': '$_base/v2/matter/start?id=$appId',
           'User-Agent': kDefaultUserAgent,
           'X-Requested-With': 'XMLHttpRequest',
         })
@@ -289,7 +425,8 @@ class ServiceApiService {
         _log.w('SERVICE', 'uploadAttachment 响应非 JSON: $body');
         throw ServiceException('上传失败');
       }
-      final uploadOk = json['url'] != null || json['state']?.toString() == 'SUCCESS';
+      final uploadOk =
+          json['url'] != null || json['state']?.toString() == 'SUCCESS';
       if (!uploadOk || json['id'] == null) {
         _log.w('SERVICE', 'uploadAttachment 失败: $json');
         throw ServiceException('上传失败');
@@ -297,7 +434,10 @@ class ServiceApiService {
       final id = json['id']?.toString() ?? '';
       final original = (json['original'] ?? '').toString();
       final uploadPath = paths['attachUpload'] ?? '/site/attach/auth-upload';
-      final downloadPath = uploadPath.replaceAll('auth-upload', 'auth-download');
+      final downloadPath = uploadPath.replaceAll(
+        'auth-upload',
+        'auth-download',
+      );
       final attachment = ServiceAttachment(
         name: original.isEmpty ? (fileName ?? 'attachment') : original,
         url: '$_base$downloadPath?file_id=$id',
@@ -308,16 +448,18 @@ class ServiceApiService {
     });
   }
 
-  /// 提交请假申请。
+  /// 提交事项申请（`POST /site/apps/launch`）。
   ///
+  /// [appId] 事项 id（350/337/356/357…）。
   /// [formData] 是 `form_data` 的完整字段 Map（key 为表单 id，如 "1419"）。
-  /// [starterDepartId] 发起人部门 id（当前用户为 395876）。
-  Future<void> submitLeave(
+  /// [starterDepartId] 发起人部门 id（默认 [kDefaultStarterDepartId]）。
+  Future<void> submitMatter(
+    String appId,
     Map<String, dynamic> formData, {
-    String starterDepartId = '395876',
+    String starterDepartId = kDefaultStarterDepartId,
   }) async {
     final data = {
-      'app_id': leaveAppId,
+      'app_id': appId,
       'node_id': '',
       'form_data': formData,
       'userview': 1,
@@ -342,6 +484,12 @@ class ServiceApiService {
       }
     });
   }
+
+  /// 提交请假申请（[submitMatter] 的 350 委托，保持原行为）。
+  Future<void> submitLeave(
+    Map<String, dynamic> formData, {
+    String starterDepartId = kDefaultStarterDepartId,
+  }) => submitMatter(leaveAppId, formData, starterDepartId: starterDepartId);
 
   /// 查询"我的申请"列表。
   ///
@@ -400,4 +548,3 @@ class ServiceAttachment {
   /// 组装成 File_71 提交数组元素。
   Map<String, dynamic> toFormData() => {'name': name, 'url': url, 'id': id};
 }
-
