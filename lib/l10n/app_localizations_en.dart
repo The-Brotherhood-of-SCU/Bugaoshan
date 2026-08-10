@@ -2557,4 +2557,127 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get error => 'Error';
+
+  @override
+  String get dockLabelLeave => 'Service Hall';
+
+  @override
+  String get serviceHallTitle => 'Service Hall';
+
+  @override
+  String get serviceHallLeaveTitle => 'Leave Request';
+
+  @override
+  String get serviceHallLeaveDesc =>
+      'Submit a leave request via the service hall, approved by your tutor';
+
+  @override
+  String get serviceHallMyAppsTitle => 'My Applications';
+
+  @override
+  String get serviceHallMyAppsDesc =>
+      'View leave and check-in requests you have submitted';
+
+  @override
+  String get leaveTitle => 'Leave Application';
+
+  @override
+  String get leaveDesc =>
+      'Handle leave requests, check-ins and more in the service hall';
+
+  @override
+  String get leaveApply => 'Apply';
+
+  @override
+  String get leaveMyApplications => 'My Requests';
+
+  @override
+  String get leaveSubmit => 'Submit';
+
+  @override
+  String get leaveReasonRequired => 'Please enter the leave reason';
+
+  @override
+  String get leaveEndAfterStart => 'End time must be after start time';
+
+  @override
+  String get leaveSubmitSuccess => 'Leave request submitted';
+
+  @override
+  String get leaveSubmitFailed => 'Failed to submit. Please try again.';
+
+  @override
+  String get leaveInfo => 'Student Info';
+
+  @override
+  String get leaveTutor => 'Tutor';
+
+  @override
+  String get leaveCampusRequired => 'Please select the campus you are leaving';
+
+  @override
+  String get leaveDetail => 'Other Reason';
+
+  @override
+  String get leaveDetailHint => 'Please specify the reason';
+
+  @override
+  String get leaveAttachment => 'Upload Proof';
+
+  @override
+  String get leaveAttachmentHint => 'Optional: upload 1-3 images as proof';
+
+  @override
+  String get leaveAttachmentAdd => 'Add Image';
+
+  @override
+  String get leaveDepartReturn => 'Leave & Return';
+
+  @override
+  String get leaveDepartTime => 'Depart Time';
+
+  @override
+  String get leaveReturnTime => 'Return Time';
+
+  @override
+  String get leaveRegionRequired => 'Please select your destination address';
+
+  @override
+  String get regionProvince => 'Province';
+
+  @override
+  String get regionCity => 'City';
+
+  @override
+  String get regionArea => 'District';
+
+  @override
+  String get regionSelectHint => 'Select';
+
+  @override
+  String get regionDetailHint => 'Detailed address (street, building no.)';
+
+  @override
+  String get regionPickProvince => 'Select Province';
+
+  @override
+  String get regionPickCity => 'Select City';
+
+  @override
+  String get regionPickArea => 'Select District';
+
+  @override
+  String get leaveNoApplications => 'No leave requests yet';
+
+  @override
+  String get leaveSubmitTime => 'Submitted';
+
+  @override
+  String get leaveStatusProcessing => 'Processing';
+
+  @override
+  String get leaveStatusDraft => 'Draft';
+
+  @override
+  String get leaveStatusDone => 'Done';
 }

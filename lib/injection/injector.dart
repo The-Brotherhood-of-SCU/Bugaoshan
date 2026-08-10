@@ -16,6 +16,7 @@ import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/services/api/ccyl_api_service.dart';
 import 'package:bugaoshan/services/api/payapp_api_service.dart';
+import 'package:bugaoshan/services/api/service_api_service.dart';
 import 'package:bugaoshan/services/api/wfw_api_service.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/auth_coordinator.dart';
@@ -24,6 +25,7 @@ import 'package:bugaoshan/services/auth/ccyl_auth.dart';
 import 'package:bugaoshan/services/auth/fitness_auth.dart';
 import 'package:bugaoshan/services/auth/payapp_auth.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
+import 'package:bugaoshan/services/auth/service_auth.dart';
 import 'package:bugaoshan/services/auth/wfw_auth.dart';
 import 'package:bugaoshan/services/download_notification_service.dart';
 import 'package:bugaoshan/services/auth/zhjw_auth.dart';
@@ -109,6 +111,10 @@ void _configureAsyncDependencies() {
     await getIt.isReady<ScuAuth>();
     return FitnessAuth(getIt<ScuAuth>());
   });
+  getIt.registerSingletonAsync<ServiceAuth>(() async {
+    await getIt.isReady<ScuAuth>();
+    return ServiceAuth(getIt<ScuAuth>());
+  });
   getIt.registerSingletonAsync<CcylAuth>(() async {
     await getIt.isReady<ScuAuth>();
     final auth = CcylAuth(getIt<ScuAuth>());
@@ -121,12 +127,14 @@ void _configureAsyncDependencies() {
     await getIt.isReady<PayAppAuth>();
     await getIt.isReady<FitnessAuth>();
     await getIt.isReady<CcylAuth>();
+    await getIt.isReady<ServiceAuth>();
     return AuthCoordinator([
       getIt<ZhjwAuth>(),
       getIt<WfwAuth>(),
       getIt<PayAppAuth>(),
       getIt<FitnessAuth>(),
       getIt<CcylAuth>(),
+      getIt<ServiceAuth>(),
     ]);
   });
 
@@ -146,6 +154,10 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<CcylApiService>(() async {
     await getIt.isReady<CcylAuth>();
     return CcylApiService(getIt<CcylAuth>());
+  });
+  getIt.registerSingletonAsync<ServiceApiService>(() async {
+    await getIt.isReady<ServiceAuth>();
+    return ServiceApiService(getIt<ServiceAuth>());
   });
 
   // ── Provider ────────────────────────────────────────────────────

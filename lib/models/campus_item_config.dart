@@ -1,3 +1,4 @@
+import 'package:bugaoshan/pages/campus/leave/service_hall_page.dart';
 import 'package:bugaoshan/pages/campus/zysc/zysc_page.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -216,6 +217,16 @@ final campusItemZysc = CampusItemConfig(
   page: () => const ZyscPage(),
 );
 
+final campusItemLeave = CampusItemConfig(
+  id: dockIdLeave,
+  icon: Icons.fact_check_outlined,
+  selectedIcon: Icons.fact_check,
+  dockLabel: (l10n) => l10n.dockLabelLeave,
+  dockFullLabel: (l10n) => l10n.serviceHallTitle,
+  desc: (l10n) => l10n.leaveDesc,
+  page: () => const ServiceHallPage(),
+);
+
 final campusSections = [
   CampusSection(
     title: (l10n) => l10n.academicSection,
@@ -237,6 +248,7 @@ final campusSections = [
       campusItemBalanceQuery,
       campusItemAcademicCalendar,
       campusItemZysc,
+      campusItemLeave,
     ],
   ),
   CampusSection(

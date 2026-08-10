@@ -4782,6 +4782,246 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error'**
   String get error;
+
+  /// Short dock label for the service hall entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Service Hall'**
+  String get dockLabelLeave;
+
+  /// Title for the service hall sub-page listing available matters.
+  ///
+  /// In en, this message translates to:
+  /// **'Service Hall'**
+  String get serviceHallTitle;
+
+  /// Name of the leave matter in the service hall.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Request'**
+  String get serviceHallLeaveTitle;
+
+  /// Description of the leave matter in the service hall.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit a leave request via the service hall, approved by your tutor'**
+  String get serviceHallLeaveDesc;
+
+  /// Name of the my-applications matter in the service hall.
+  ///
+  /// In en, this message translates to:
+  /// **'My Applications'**
+  String get serviceHallMyAppsTitle;
+
+  /// Description of the my-applications matter in the service hall.
+  ///
+  /// In en, this message translates to:
+  /// **'View leave and check-in requests you have submitted'**
+  String get serviceHallMyAppsDesc;
+
+  /// Page title for leave application.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Application'**
+  String get leaveTitle;
+
+  /// Description shown on the campus entry card for the service hall.
+  ///
+  /// In en, this message translates to:
+  /// **'Handle leave requests, check-ins and more in the service hall'**
+  String get leaveDesc;
+
+  /// Tab label for the leave application form.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get leaveApply;
+
+  /// Tab label for viewing my submitted leave requests.
+  ///
+  /// In en, this message translates to:
+  /// **'My Requests'**
+  String get leaveMyApplications;
+
+  /// Button to submit the leave application.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get leaveSubmit;
+
+  /// No description provided for @leaveReasonRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the leave reason'**
+  String get leaveReasonRequired;
+
+  /// No description provided for @leaveEndAfterStart.
+  ///
+  /// In en, this message translates to:
+  /// **'End time must be after start time'**
+  String get leaveEndAfterStart;
+
+  /// No description provided for @leaveSubmitSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave request submitted'**
+  String get leaveSubmitSuccess;
+
+  /// No description provided for @leaveSubmitFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to submit. Please try again.'**
+  String get leaveSubmitFailed;
+
+  /// No description provided for @leaveInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Student Info'**
+  String get leaveInfo;
+
+  /// No description provided for @leaveTutor.
+  ///
+  /// In en, this message translates to:
+  /// **'Tutor'**
+  String get leaveTutor;
+
+  /// No description provided for @leaveCampusRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select the campus you are leaving'**
+  String get leaveCampusRequired;
+
+  /// No description provided for @leaveDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Other Reason'**
+  String get leaveDetail;
+
+  /// No description provided for @leaveDetailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Please specify the reason'**
+  String get leaveDetailHint;
+
+  /// No description provided for @leaveAttachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload Proof'**
+  String get leaveAttachment;
+
+  /// No description provided for @leaveAttachmentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional: upload 1-3 images as proof'**
+  String get leaveAttachmentHint;
+
+  /// No description provided for @leaveAttachmentAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Image'**
+  String get leaveAttachmentAdd;
+
+  /// No description provided for @leaveDepartReturn.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave & Return'**
+  String get leaveDepartReturn;
+
+  /// No description provided for @leaveDepartTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Depart Time'**
+  String get leaveDepartTime;
+
+  /// No description provided for @leaveReturnTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Return Time'**
+  String get leaveReturnTime;
+
+  /// No description provided for @leaveRegionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select your destination address'**
+  String get leaveRegionRequired;
+
+  /// No description provided for @regionProvince.
+  ///
+  /// In en, this message translates to:
+  /// **'Province'**
+  String get regionProvince;
+
+  /// No description provided for @regionCity.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get regionCity;
+
+  /// No description provided for @regionArea.
+  ///
+  /// In en, this message translates to:
+  /// **'District'**
+  String get regionArea;
+
+  /// No description provided for @regionSelectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get regionSelectHint;
+
+  /// No description provided for @regionDetailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed address (street, building no.)'**
+  String get regionDetailHint;
+
+  /// No description provided for @regionPickProvince.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Province'**
+  String get regionPickProvince;
+
+  /// No description provided for @regionPickCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Select City'**
+  String get regionPickCity;
+
+  /// No description provided for @regionPickArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Select District'**
+  String get regionPickArea;
+
+  /// Empty state for the my-applications tab.
+  ///
+  /// In en, this message translates to:
+  /// **'No leave requests yet'**
+  String get leaveNoApplications;
+
+  /// No description provided for @leaveSubmitTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted'**
+  String get leaveSubmitTime;
+
+  /// No description provided for @leaveStatusProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing'**
+  String get leaveStatusProcessing;
+
+  /// No description provided for @leaveStatusDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get leaveStatusDraft;
+
+  /// No description provided for @leaveStatusDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get leaveStatusDone;
 }
 
 class _AppLocalizationsDelegate

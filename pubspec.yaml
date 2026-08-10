@@ -65,6 +65,13 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.1
   fake_async: ^1.3.0
 
+# sqlite3 构建 hook 默认从 github.com 下载预编译 SQLite 库（国内网络超时）。
+# 通过镜像 url_pattern 拉取官方同款二进制。$RELEASE_TAG / $FILENAME 由 hook 自动替换。
+hooks:
+  user_defines:
+    sqlite3:
+      url_pattern: "https://gh-proxy.com/https://github.com/simolus3/sqlite3.dart/releases/download/$RELEASE_TAG/$FILENAME"
+
 flutter:
   uses-material-design: true
   generate: true
