@@ -18,6 +18,7 @@ const String dockIdDownloadedAttachments = 'downloaded_attachments';
 const String dockIdClassScheduleInquiry = 'class_schedule_inquiry';
 const String dockIdExamPlan = 'exam_plan';
 const String dockIdZysc = 'zysc';
+const String dockIdLeave = 'leave';
 
 const Duration kHttpTimeout = Duration(seconds: 15);
 

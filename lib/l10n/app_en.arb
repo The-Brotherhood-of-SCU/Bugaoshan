@@ -1243,5 +1243,149 @@
     "@error": {
         "description": "Generic error title",
         "type": "text"
+    },
+    "dockLabelLeave": "Service Hall",
+    "@dockLabelLeave": {
+        "description": "Short dock label for the service hall entry.",
+        "type": "text"
+    },
+    "serviceHallTitle": "Service Hall",
+    "@serviceHallTitle": {
+        "description": "Title for the service hall sub-page listing available matters.",
+        "type": "text"
+    },
+    "serviceHallLeaveTitle": "Leave Request",
+    "@serviceHallLeaveTitle": {
+        "description": "Name of the leave matter in the service hall.",
+        "type": "text"
+    },
+    "serviceHallLeaveDesc": "Submit a leave request via the service hall, approved by your tutor",
+    "@serviceHallLeaveDesc": {
+        "description": "Description of the leave matter in the service hall.",
+        "type": "text"
+    },
+    "serviceHallMyAppsTitle": "My Applications",
+    "@serviceHallMyAppsTitle": {
+        "description": "Name of the my-applications matter in the service hall.",
+        "type": "text"
+    },
+    "serviceHallMyAppsDesc": "View leave and check-in requests you have submitted",
+    "@serviceHallMyAppsDesc": {
+        "description": "Description of the my-applications matter in the service hall.",
+        "type": "text"
+    },
+    "serviceHallReturnTitle": "Return-to-School Report",
+    "@serviceHallReturnTitle": {
+        "description": "Name of the return-to-school report matter in the service hall.",
+        "type": "text"
+    },
+    "serviceHallReturnDesc": "Report your return-to-school trip in advance",
+    "@serviceHallReturnDesc": {
+        "description": "Description of the return-to-school report matter in the service hall.",
+        "type": "text"
+    },
+    "serviceHallSummerLeaveTitle": "Summer Leave Report",
+    "@serviceHallSummerLeaveTitle": {
+        "description": "Name of the summer leave report matter in the service hall.",
+        "type": "text"
+    },
+    "serviceHallSummerLeaveDesc": "Report leaving school for the summer vacation",
+    "@serviceHallSummerLeaveDesc": {
+        "description": "Description of the summer leave report matter in the service hall.",
+        "type": "text"
+    },
+    "serviceHallStayRegisterTitle": "Stay-on-Campus Registration",
+    "@serviceHallStayRegisterTitle": {
+        "description": "Name of the stay-on-campus registration matter in the service hall.",
+        "type": "text"
+    },
+    "serviceHallStayRegisterDesc": "Register to stay on campus during the vacation",
+    "@serviceHallStayRegisterDesc": {
+        "description": "Description of the stay-on-campus registration matter in the service hall.",
+        "type": "text"
+    },
+    "serviceFormRequired": "Please fill in {label}",
+    "@serviceFormRequired": {
+        "description": "Validation message when a required service-hall form field is empty.",
+        "type": "text",
+        "placeholders": {
+            "label": {
+                "type": "String",
+                "example": "Campus"
+            }
+        }
+    },
+    "serviceFormSchemaFailed": "Failed to load the form. Please retry later.",
+    "@serviceFormSchemaFailed": {
+        "description": "Error shown when a service-hall form definition cannot be loaded.",
+        "type": "text"
+    },
+    "serviceFormSelectHint": "Please select",
+    "@serviceFormSelectHint": {
+        "description": "Hint text for dropdown fields in service-hall forms.",
+        "type": "text"
+    },
+    "serviceFormOptional": "Optional",
+    "@serviceFormOptional": {
+        "description": "Suffix marking optional fields in service-hall forms.",
+        "type": "text"
+    },
+    "leaveTitle": "Leave Application",
+    "@leaveTitle": {
+        "description": "Page title for leave application.",
+        "type": "text"
+    },
+    "leaveDesc": "Handle leave requests, check-ins and more in the service hall",
+    "@leaveDesc": {
+        "description": "Description shown on the campus entry card for the service hall.",
+        "type": "text"
+    },
+    "leaveApply": "Apply",
+    "@leaveApply": {
+        "description": "Tab label for the leave application form.",
+        "type": "text"
+    },
+    "leaveMyApplications": "My Requests",
+    "@leaveMyApplications": {
+        "description": "Tab label for viewing my submitted leave requests.",
+        "type": "text"
+    },
+    "leaveSubmit": "Submit",
+    "@leaveSubmit": {
+        "description": "Button to submit the leave application.",
+        "type": "text"
+    },
+    "leaveReasonRequired": "Please enter the leave reason",
+    "leaveEndAfterStart": "End time must be after start time",
+    "leaveSubmitSuccess": "Leave request submitted",
+    "leaveSubmitFailed": "Failed to submit. Please try again.",
+    "leaveInfo": "Student Info",
+    "leaveTutor": "Tutor",
+    "leaveCampusRequired": "Please select the campus you are leaving",
+    "leaveDetail": "Other Reason",
+    "leaveDetailHint": "Please specify the reason",
+    "leaveAttachment": "Upload Proof",
+    "leaveAttachmentHint": "Optional: upload 1-3 images as proof",
+    "leaveAttachmentAdd": "Add Image",
+    "leaveDepartReturn": "Leave & Return",
+    "leaveDepartTime": "Depart Time",
+    "leaveReturnTime": "Return Time",
+    "leaveRegionRequired": "Please select your destination address",
+    "regionProvince": "Province",
+    "regionCity": "City",
+    "regionArea": "District",
+    "regionSelectHint": "Select",
+    "regionDetailHint": "Detailed address (street, building no.)",
+    "regionPickProvince": "Select Province",
+    "regionPickCity": "Select City",
+    "regionPickArea": "Select District",
+    "leaveNoApplications": "No leave requests yet",
+    "leaveSubmitTime": "Submitted",
+    "leaveStatusProcessing": "Processing",
+    "leaveStatusDraft": "Draft",
+    "leaveStatusDone": "Done",
+    "@leaveNoApplications": {
+        "description": "Empty state for the my-applications tab.",
+        "type": "text"
     }
 }

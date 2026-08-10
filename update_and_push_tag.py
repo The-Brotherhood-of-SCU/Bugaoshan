@@ -46,6 +46,22 @@ def verify_pattern(version:str)->bool:
         return False
     return True
 
+def split_version(version:str):
+    """把 'x.y.z'、'x.y.z+N' 或 'x.y.z-pre+N' 拆成 (x, y, z) 三个整数。"""
+    base = version.split("+")[0].split("-")[0]
+    a, b, c = (int(p) for p in base.split("."))
+    return a, b, c
+
+def get_build_number(version:str)->int:
+    """versionCode 基线 = a*10000 + b*100 + c。
+
+    CI 构建时 Flutter 的 --split-per-abi 会在此基础上自动加 ABI 偏移
+    (v7a +1000 / v8a +2000 / x86_64 +4000)，F-Droid 的 UpdateCheckData
+    依赖 pubspec.yaml 中的 '+N' 提取 vercode，因此发版时必须保留该后缀。
+    """
+    a, b, c = split_version(version)
+    return a * 10000 + b * 100 + c
+
 def get_latest_tag():
     # 定义通用的subprocess参数
     subprocess_kwargs = {
@@ -68,9 +84,33 @@ def get_latest_tag():
         prev_tag = None
     return prev_tag
 
-def get_version_increase(version:str):
-    a,b,c=version.split(".")
-    return f"{a}.{b}.{int(c)+1}"
+def get_version_increase(version: str):
+    a, b, c = split_version(version)
+    return f"{a}.{b}.{c+1}"
+
+
+def generate_metadata_changelogs():
+    """Generate F-Droid metadata changelog files before committing."""
+    print("生成 metadata changelog 文件...")
+    try:
+        result = subprocess.run(
+            ['python3', '.github/scripts/metadata_changelog.py'],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        print(result.stdout)
+        if result.stderr:
+            print(result.stderr)
+        print("metadata changelog 文件生成成功")
+    except subprocess.CalledProcessError as e:
+        print(f"生成 metadata changelog 文件失败: {e.stderr}")
+        raise
+
+
+def get_version_name(version: str) -> str:
+    """Extract version name without build number."""
+    return version.split("+")[0]
 
 def commit_changes(new_version:str):
     print("提交更改...")
@@ -187,7 +227,9 @@ if local_exists or remote_exists:
         print("操作已取消。")
         exit(0)
 
-print(f"即将修改pubspec.yaml中的版本号为:{new_version}，并创建tag {tag_name}，然后推送。")
+build_number = get_build_number(new_version)
+full_version = f"{new_version}+{build_number}"
+print(f"即将修改pubspec.yaml中的版本号为:{full_version}（含versionCode基线+{build_number}），并创建tag {tag_name}，然后推送。")
 print("请确认是否继续？(y/n)")
 confirm = input()
 if confirm.lower() != 'y':
@@ -197,9 +239,14 @@ if confirm.lower() != 'y':
 # modify pubspec.yaml
 with open('pubspec.yaml', 'r', encoding='utf-8') as f:
     data = yaml.safe_load(f)
-data['version'] = new_version
+data['version'] = full_version
 with open('pubspec.yaml', 'w', encoding='utf-8') as f:
     yaml.safe_dump(data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+
+if '-' not in new_version:
+    generate_metadata_changelogs()
+else:
+    print("预览版跳过 metadata changelog 生成")
 
 commit_changes(new_version)
 create_tag(tag_name, force=force_needed)
