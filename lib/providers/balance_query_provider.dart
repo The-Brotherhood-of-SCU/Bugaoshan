@@ -14,7 +14,6 @@ import 'package:bugaoshan/utils/beijing_time.dart';
 
 const _keyBindingInfo = 'balance_query_binding';
 const _keyCurrentRoomIndex = 'balance_query_current_room';
-const _keyHistoryMigration = 'balance_query_history_migration_v2';
 
 /// 电费查询类型常量,与 SCU 缴费平台 API 一致:
 ///   - 1 = 照明电费
@@ -347,7 +346,6 @@ class BalanceQueryProvider extends ChangeNotifier {
 
   Future<void> _restoreBindingsFor(String identity, int generation) async {
     await _migrateLegacyBindings();
-    await _migrateLegacyHistory();
     if (!_isCurrentGeneration(generation) || _userIdentity != identity) return;
 
     final json = _prefs.getString(_bindingInfoKeyFor(identity));
@@ -423,56 +421,6 @@ class BalanceQueryProvider extends ChangeNotifier {
       await _prefs.remove(_keyCurrentRoomIndex);
     } catch (e) {
       debugPrint('Failed to migrate legacy balance bindings: $e');
-    }
-  }
-
-  /// 将旧版没有 principal 前缀的历史记录迁移到账号隔离的 key。
-  ///
-  /// 旧记录只保存房间位置，无法知道它属于哪个账号。只有当该位置在
-  /// 持久化绑定中明确只属于一个 principal 时才迁移；多个账号共用位置
-  /// 或已没有绑定的记录直接删除，避免把历史余额泄露给错误账号。
-  Future<void> _migrateLegacyHistory() async {
-    if (_prefs.getBool(_keyHistoryMigration) == true) return;
-
-    final owners = <String, Set<String>>{};
-    for (final key in _prefs.getKeys()) {
-      if (!key.startsWith('${_keyBindingInfo}_')) continue;
-      final identity = key.substring('${_keyBindingInfo}_'.length);
-      if (identity.isEmpty) continue;
-      final json = _prefs.getString(key);
-      if (json == null) continue;
-      try {
-        final List<dynamic> list = jsonDecode(json);
-        for (final item in list) {
-          final binding = RoomBinding.fromJson(item as Map<String, dynamic>);
-          owners
-              .putIfAbsent(_legacyRoomKeyFor(binding), () => <String>{})
-              .add(identity);
-        }
-      } catch (e) {
-        debugPrint('Failed to inspect bindings for history migration: $e');
-      }
-    }
-
-    final mappings = <String, String>{};
-    final toDelete = <String>{};
-    for (final entry in owners.entries) {
-      if (entry.value.length != 1) {
-        toDelete.add(entry.key);
-        continue;
-      }
-      final identity = entry.value.single;
-      mappings[entry.key] = 'balance-v2:$identity:${entry.key}';
-    }
-
-    try {
-      await _db.migrateBalanceRecords(
-        roomKeyMappings: mappings,
-        roomKeysToDelete: toDelete,
-      );
-      await _prefs.setBool(_keyHistoryMigration, true);
-    } catch (e) {
-      debugPrint('Failed to migrate balance history: $e');
     }
   }
 
@@ -882,9 +830,6 @@ class BalanceQueryProvider extends ChangeNotifier {
     return 'balance-v2:$identity:'
         '${binding.schoolCode}_${binding.regCode}_${binding.unitCode}_${binding.roomNo}';
   }
-
-  String _legacyRoomKeyFor(RoomBinding binding) =>
-      '${binding.schoolCode}_${binding.regCode}_${binding.unitCode}_${binding.roomNo}';
 
   String _unitKey(String schoolCode, String regCode) =>
       '${schoolCode}_$regCode';
