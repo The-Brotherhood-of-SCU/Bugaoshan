@@ -44,7 +44,7 @@ class ServiceRegionNode {
   /// 数据结构可能为：
   /// - 在线接口普通省：省 → children(dict 市) → children(list 区)（三级）
   /// - 在线接口直辖市：省 → children(list 区)（两级，无市）
-  /// - 本地 modood：省 → 市 → 区 → 街道（四级，街道并入详细地址）
+  /// - 本地 modood（已剥离街道级）：省 → 市 → 区（三级，街道由用户手填详细地址）
   /// - 香港/澳门：省无 children（Region_80 选到省即可）
   /// - 直筒子市（东莞/中山/济源）：市无 children
   ///
