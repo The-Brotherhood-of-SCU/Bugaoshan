@@ -272,7 +272,11 @@ void main() {
 
   testWidgets('余额列表在首帧后才发起首次加载', (tester) async {
     final fakeApi = _FakePayAppApiService();
-    final harness = await _createProvider(fakeApi: fakeApi);
+    // _createProvider 内部有真实的异步 I/O（SharedPreferences、sqflite），
+    // 必须用 runAsync 执行，否则在 testWidgets 的 FakeAsync 区里永远不会完成。
+    final harness = (await tester.runAsync(
+      () => _createProvider(fakeApi: fakeApi),
+    ))!;
     addTearDown(harness.dispose);
 
     await tester.pumpWidget(
@@ -286,10 +290,13 @@ void main() {
     expect(fakeApi.queryCalls, 2);
     expect(tester.takeException(), isNull);
 
-    await Future.wait([
-      harness.provider.ensureBalance(kBalanceTypeElectric),
-      harness.provider.ensureBalance(kBalanceTypeAc),
-    ]);
+    // 加载链路会写历史记录到真实数据库，同样需要在真实异步区等待完成。
+    await tester.runAsync(() async {
+      await Future.wait([
+        harness.provider.ensureBalance(kBalanceTypeElectric),
+        harness.provider.ensureBalance(kBalanceTypeAc),
+      ]);
+    });
     await tester.pump();
     expect(tester.takeException(), isNull);
   });
