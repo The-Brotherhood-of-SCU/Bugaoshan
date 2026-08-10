@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
@@ -10,7 +12,7 @@ class ClassroomProvider extends ChangeNotifier {
   ClassroomProvider(this._api);
 
   final ZhjwApiService _api;
-  final Map<_ClassroomQueryKey, ClassroomQueryResult> _queryCache = {};
+  final Map<_ClassroomQueryKey, _ClassroomQueryResource> _queryResources = {};
 
   List<ClassroomCampus> _campuses = const [];
   List<ClassroomBuilding> _buildings = const [];
@@ -18,19 +20,20 @@ class ClassroomProvider extends ChangeNotifier {
   LoadErrorType? _indexError;
 
   _ClassroomQueryKey? _currentQuery;
-  ClassroomLoadState _queryState = ClassroomLoadState.idle;
-  LoadErrorType? _queryError;
   int _indexGeneration = 0;
-  int _queryGeneration = 0;
+  int _queryEpoch = 0;
 
   List<ClassroomCampus> get campuses => _campuses;
   List<ClassroomBuilding> get buildings => _buildings;
   ClassroomLoadState get indexState => _indexState;
   LoadErrorType? get indexError => _indexError;
-  ClassroomLoadState get queryState => _queryState;
-  LoadErrorType? get queryError => _queryError;
+  ClassroomLoadState get queryState => _currentQuery == null
+      ? ClassroomLoadState.idle
+      : _queryResources[_currentQuery]?.state ?? ClassroomLoadState.idle;
+  LoadErrorType? get queryError =>
+      _currentQuery == null ? null : _queryResources[_currentQuery]?.error;
   ClassroomQueryResult? get queryResult =>
-      _currentQuery == null ? null : _queryCache[_currentQuery];
+      _currentQuery == null ? null : _queryResources[_currentQuery]?.result;
 
   List<ClassroomBuilding> buildingsForCampus(String campusNumber) => _buildings
       .where((building) => building.campusNumber == campusNumber)
@@ -69,70 +72,106 @@ class ClassroomProvider extends ChangeNotifier {
     required ClassroomBuilding building,
     required String searchDate,
     bool forceRefresh = false,
-  }) async {
+  }) {
     final key = _ClassroomQueryKey(
       campusNumber: building.campusNumber,
       buildingNumber: building.teachingBuildingNumber,
       searchDate: searchDate,
     );
     _currentQuery = key;
-    if (!forceRefresh && _queryCache.containsKey(key)) {
-      _queryState = ClassroomLoadState.loaded;
-      _queryError = null;
+    final resource = _queryResources.putIfAbsent(
+      key,
+      _ClassroomQueryResource.new,
+    );
+    if (!forceRefresh && resource.result != null) {
+      resource.state = ClassroomLoadState.loaded;
+      resource.error = null;
       notifyListeners();
-      return;
+      return Future.value();
     }
-    if (_currentQuery == key && _queryState == ClassroomLoadState.loading) {
-      return;
+    final inFlight = resource.inFlight;
+    if (inFlight != null) {
+      notifyListeners();
+      return inFlight;
     }
 
-    final generation = ++_queryGeneration;
-    _queryState = ClassroomLoadState.loading;
-    _queryError = null;
+    final completer = Completer<void>();
+    resource.inFlight = completer.future;
+    resource.state = ClassroomLoadState.loading;
+    resource.error = null;
     notifyListeners();
+    unawaited(
+      _loadAvailability(
+        key: key,
+        building: building,
+        resource: resource,
+        epoch: _queryEpoch,
+        completer: completer,
+      ),
+    );
+    return completer.future;
+  }
+
+  Future<void> _loadAvailability({
+    required _ClassroomQueryKey key,
+    required ClassroomBuilding building,
+    required _ClassroomQueryResource resource,
+    required int epoch,
+    required Completer<void> completer,
+  }) async {
     try {
       final result = await _api.fetchClassroomAvailability(
         campusNumber: building.campusNumber,
         buildingNumber: building.teachingBuildingNumber,
-        searchDate: searchDate,
+        searchDate: key.searchDate,
       );
-      if (generation != _queryGeneration || _currentQuery != key) return;
-      _queryCache[key] = result;
-      _queryState = ClassroomLoadState.loaded;
+      if (epoch != _queryEpoch) return;
+      resource.result = result;
+      resource.state = ClassroomLoadState.loaded;
+      resource.error = null;
     } on UnauthenticatedException {
-      if (generation != _queryGeneration || _currentQuery != key) return;
-      _queryState = ClassroomLoadState.error;
-      _queryError = LoadErrorType.sessionExpired;
+      if (epoch != _queryEpoch) return;
+      resource.state = ClassroomLoadState.error;
+      resource.error = LoadErrorType.sessionExpired;
     } catch (error) {
-      if (generation != _queryGeneration || _currentQuery != key) return;
+      if (epoch != _queryEpoch) return;
       debugPrint('Classroom query error: $error');
-      _queryState = ClassroomLoadState.error;
-      _queryError = campusNetworkErrorType(LoadErrorType.loadFailed);
+      resource.state = ClassroomLoadState.error;
+      resource.error = campusNetworkErrorType(LoadErrorType.loadFailed);
+    } finally {
+      if (identical(resource.inFlight, completer.future)) {
+        resource.inFlight = null;
+      }
+      if (!completer.isCompleted) completer.complete();
+      if (epoch == _queryEpoch && _currentQuery == key) {
+        notifyListeners();
+      }
     }
-    notifyListeners();
   }
 
   void clearCurrentQuery() {
-    _queryGeneration++;
     _currentQuery = null;
-    _queryState = ClassroomLoadState.idle;
-    _queryError = null;
     notifyListeners();
   }
 
   void clear() {
     _indexGeneration++;
-    _queryGeneration++;
+    _queryEpoch++;
     _campuses = const [];
     _buildings = const [];
-    _queryCache.clear();
+    _queryResources.clear();
     _indexState = ClassroomLoadState.idle;
     _indexError = null;
     _currentQuery = null;
-    _queryState = ClassroomLoadState.idle;
-    _queryError = null;
     notifyListeners();
   }
+}
+
+class _ClassroomQueryResource {
+  ClassroomLoadState state = ClassroomLoadState.idle;
+  ClassroomQueryResult? result;
+  LoadErrorType? error;
+  Future<void>? inFlight;
 }
 
 class _ClassroomQueryKey {

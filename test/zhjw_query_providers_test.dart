@@ -36,6 +36,90 @@ void main() {
     expect(provider.queryState, ClassroomLoadState.loaded);
   });
 
+  test(
+    'ClassroomProvider dispatches a new query when switching buildings',
+    () async {
+      final api = _ControllableClassroomApi();
+      final provider = ClassroomProvider(api);
+      final buildingA = _building('A');
+      final buildingB = _building('B');
+
+      final firstQuery = provider.queryAvailability(
+        building: buildingA,
+        searchDate: '2026-01-01',
+      );
+      final secondQuery = provider.queryAvailability(
+        building: buildingB,
+        searchDate: '2026-01-01',
+      );
+
+      expect(api.requests, hasLength(2));
+      expect(provider.queryState, ClassroomLoadState.loading);
+
+      api.requests[1].complete(_classroomResult('B'));
+      await secondQuery;
+      expect(provider.queryResult!.classrooms.single.classroomName, 'B');
+      expect(provider.queryState, ClassroomLoadState.loaded);
+
+      api.requests[0].complete(_classroomResult('A'));
+      await firstQuery;
+      expect(provider.queryResult!.classrooms.single.classroomName, 'B');
+      expect(provider.queryState, ClassroomLoadState.loaded);
+    },
+  );
+
+  test('ClassroomProvider coalesces same-key availability requests', () async {
+    final api = _ControllableClassroomApi();
+    final provider = ClassroomProvider(api);
+    final building = _building('A');
+
+    final firstQuery = provider.queryAvailability(
+      building: building,
+      searchDate: '2026-01-01',
+    );
+    final secondQuery = provider.queryAvailability(
+      building: building,
+      searchDate: '2026-01-01',
+    );
+
+    expect(api.requests, hasLength(1));
+    api.requests.single.complete(_classroomResult('A'));
+    await Future.wait([firstQuery, secondQuery]);
+
+    expect(provider.queryState, ClassroomLoadState.loaded);
+    expect(provider.queryResult!.classrooms.single.classroomName, 'A');
+  });
+
+  test('ClassroomProvider refreshes a cached query once', () async {
+    final api = _ControllableClassroomApi();
+    final provider = ClassroomProvider(api);
+    final building = _building('A');
+
+    final initialQuery = provider.queryAvailability(
+      building: building,
+      searchDate: '2026-01-01',
+    );
+    api.requests.single.complete(_classroomResult('old'));
+    await initialQuery;
+
+    final refresh = provider.queryAvailability(
+      building: building,
+      searchDate: '2026-01-01',
+      forceRefresh: true,
+    );
+    final duplicateRefresh = provider.queryAvailability(
+      building: building,
+      searchDate: '2026-01-01',
+      forceRefresh: true,
+    );
+
+    expect(api.requests, hasLength(2));
+    api.requests.last.complete(_classroomResult('new'));
+    await Future.wait([refresh, duplicateRefresh]);
+
+    expect(provider.queryResult!.classrooms.single.classroomName, 'new');
+  });
+
   test('ClassScheduleInquiryProvider ignores stale search result', () async {
     final api = _ControllableClassListApi();
     final provider = ClassScheduleInquiryProvider(api);
@@ -78,6 +162,31 @@ ClassInfo _classInfo(String name) => ClassInfo(
   className: name,
   departmentName: '学院',
   subjectName: '专业',
+);
+
+ClassroomBuilding _building(String number) => ClassroomBuilding(
+  campusNumber: 'campus',
+  teachingBuildingNumber: number,
+  teachingBuildingName: '$number 教',
+);
+
+ClassroomQueryResult _classroomResult(String name) => ClassroomQueryResult(
+  classrooms: [
+    ClassroomInfo(
+      classroomName: name,
+      classroomStatusCode: '',
+      classroomTypeCode: '',
+      campusNumber: 'campus',
+      classroomNumber: name,
+      teachingBuildingNumber: name,
+      placeNum: 0,
+      remark: '',
+      sfkjy: '',
+    ),
+  ],
+  classroomTime: const [],
+  date: '2026-01-01',
+  jxzc: 1,
 );
 
 class _FakeZhjwApiService implements ZhjwApiService {
@@ -127,6 +236,28 @@ class _ControllableClassListApi implements ZhjwApiService {
     String classNum = '',
   }) {
     final completer = Completer<({List<ClassInfo> classes, int totalCount})>();
+    requests.add(completer);
+    return completer.future;
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _ControllableClassroomApi implements ZhjwApiService {
+  final requests = <Completer<ClassroomQueryResult>>[];
+
+  @override
+  Future<ClassroomQueryResult> fetchClassroomAvailability({
+    required String campusNumber,
+    required String buildingNumber,
+    String classroomType = '',
+    String classroomName = '',
+    String seatFrom = '',
+    String seatTo = '',
+    String searchDate = '',
+  }) {
+    final completer = Completer<ClassroomQueryResult>();
     requests.add(completer);
     return completer.future;
   }

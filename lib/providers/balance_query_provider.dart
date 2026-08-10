@@ -143,12 +143,17 @@ class BalanceQueryProvider extends ChangeNotifier {
 
   final _balanceEntries = <_BalanceCacheKey, _ResourceEntry<RoomInfo>>{};
   final _trendEntries = <_TrendCacheKey, _TrendEntry>{};
-  final _campusEntry = _ResourceEntry<List<CampusItem>>();
+  _ResourceEntry<List<CampusItem>> _campusEntry =
+      _ResourceEntry<List<CampusItem>>();
   final _buildingEntries = <String, _ResourceEntry<List<BuildingItem>>>{};
   final _unitEntries = <String, _ResourceEntry<List<UnitItem>>>{};
 
   bool _lastPayAppReady = false;
   bool _autoSampling = false;
+  String? _userIdentity;
+  int _identityGeneration = 0;
+  Future<void>? _identityActivation;
+  Future<void>? _legacyMigration;
 
   BalanceQueryProvider(
     this._prefs,
@@ -158,10 +163,76 @@ class BalanceQueryProvider extends ChangeNotifier {
     this._appConfig, {
     DateTime Function()? now,
   }) : _now = now ?? DateTime.now {
-    _loadBindingInfo();
     _payAppAuth.addListener(_onPayAppAuthChanged);
     _lastPayAppReady = _payAppAuth.isReady;
   }
+
+  static String? _normalizeIdentity(String? value) {
+    final normalized = value?.trim();
+    return normalized == null || normalized.isEmpty ? null : normalized;
+  }
+
+  /// 仅接受与当前 token 绑定的 SCU principal 作为余额数据身份。
+  static String? confirmedUserIdentity({
+    required bool isLoggedIn,
+    required String? principal,
+  }) => isLoggedIn ? _normalizeIdentity(principal) : null;
+
+  /// 当前激活的 SCU principal。为 null 时不暴露、也不恢复任何余额数据。
+  String? get userIdentity => _userIdentity;
+
+  /// 切换已确认的 SCU 身份；身份未知时清空所有内存余额资源。
+  ///
+  /// 调用方可以不 await 本方法，但在页面展示绑定前应保证当前身份已激活。
+  Future<void> setUserIdentity(String? userIdentity) =>
+      activateForPrincipal(userIdentity);
+
+  /// [setUserIdentity] 的语义化别名，供认证协调层使用。
+  Future<void> activateForPrincipal(String? principal) {
+    final normalized = _normalizeIdentity(principal);
+    if (normalized == null) {
+      clear();
+      return Future.value();
+    }
+    if (normalized == _userIdentity && _identityActivation != null) {
+      return _identityActivation!;
+    }
+
+    final generation = ++_identityGeneration;
+    _userIdentity = normalized;
+    _resetInMemoryState();
+    notifyListeners();
+
+    final activation = _restoreBindingsFor(normalized, generation);
+    _identityActivation = activation;
+    return activation;
+  }
+
+  /// 使当前账号的所有内存数据和飞行请求失效。
+  ///
+  /// 已发出的网络或数据库操作仍会自然完成，但不会再写回 Provider 或历史记录。
+  void clear() {
+    _identityGeneration++;
+    _userIdentity = null;
+    _identityActivation = null;
+    _resetInMemoryState();
+    notifyListeners();
+  }
+
+  void _resetInMemoryState() {
+    _bindings = [];
+    _currentIndex = 0;
+    _isSwitching = false;
+    _autoSampling = false;
+    _balanceEntries.clear();
+    _trendEntries.clear();
+    _campusEntry = _ResourceEntry<List<CampusItem>>();
+    _buildingEntries.clear();
+    _unitEntries.clear();
+  }
+
+  bool _isCurrentGeneration(int generation) =>
+      generation == _identityGeneration;
 
   /// PayAppAuth 状态变化:isReady 由 false→true 时(登录成功或 SSO 重连),
   /// 若用户开启了"登录后自动采样"开关,且当前房间今日尚无记录,则静默采样一次。
@@ -178,6 +249,7 @@ class BalanceQueryProvider extends ChangeNotifier {
     if (!_appConfig.autoSampleBalanceOnLogin.value) return;
     final binding = currentBinding;
     if (binding == null) return;
+    final generation = _identityGeneration;
 
     _autoSampling = true;
     try {
@@ -189,11 +261,13 @@ class BalanceQueryProvider extends ChangeNotifier {
         balanceType: kBalanceTypeElectric,
         since: startOfTodayUtc,
       );
+      if (!_isCurrentGeneration(generation)) return;
       final acRecords = await _db.getBalanceRecords(
         roomKey: roomKey,
         balanceType: kBalanceTypeAc,
         since: startOfTodayUtc,
       );
+      if (!_isCurrentGeneration(generation)) return;
 
       if (electricRecords.isEmpty) {
         try {
@@ -212,7 +286,9 @@ class BalanceQueryProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('Auto-sample balance failed: $e');
     } finally {
-      _autoSampling = false;
+      if (_isCurrentGeneration(generation)) {
+        _autoSampling = false;
+      }
     }
   }
 
@@ -268,41 +344,121 @@ class BalanceQueryProvider extends ChangeNotifier {
       )
       .state;
 
-  void _loadBindingInfo() {
-    final json = _prefs.getString(_keyBindingInfo);
+  Future<void> _restoreBindingsFor(String identity, int generation) async {
+    await _migrateLegacyBindings();
+    if (!_isCurrentGeneration(generation) || _userIdentity != identity) return;
+
+    final json = _prefs.getString(_bindingInfoKeyFor(identity));
+    var bindings = <RoomBinding>[];
     if (json != null) {
       try {
         final List<dynamic> list = jsonDecode(json);
-        _bindings = list
+        bindings = list
             .map((e) => RoomBinding.fromJson(e as Map<String, dynamic>))
             .toList();
       } catch (e) {
-        debugPrint('Failed to load binding info: $e');
+        debugPrint('Failed to load balance binding info: $e');
       }
     }
-    _currentIndex = _prefs.getInt(_keyCurrentRoomIndex) ?? 0;
-    if (_currentIndex >= _bindings.length) {
-      _currentIndex = _bindings.isEmpty ? 0 : _bindings.length - 1;
+    if (!_isCurrentGeneration(generation) || _userIdentity != identity) return;
+
+    var currentIndex = _prefs.getInt(_currentRoomIndexKeyFor(identity)) ?? 0;
+    if (currentIndex < 0 || currentIndex >= bindings.length) {
+      currentIndex = bindings.isEmpty ? 0 : bindings.length - 1;
+    }
+    _bindings = bindings;
+    _currentIndex = currentIndex;
+    notifyListeners();
+  }
+
+  /// 将旧版全局绑定迁移为每个 SCU principal 独立的存储区。
+  ///
+  /// 老记录的 [RoomBinding.cusNo] 是唯一可用的归属信息；无法归属的记录不迁移，
+  /// 以避免在任意账号下展示它们。
+  Future<void> _migrateLegacyBindings() {
+    final pending = _legacyMigration;
+    if (pending != null) return pending;
+
+    final migration = _performLegacyBindingMigration();
+    _legacyMigration = migration;
+    return migration;
+  }
+
+  Future<void> _performLegacyBindingMigration() async {
+    final json = _prefs.getString(_keyBindingInfo);
+    if (json == null) return;
+
+    try {
+      final List<dynamic> list = jsonDecode(json);
+      final bindings = list
+          .map((e) => RoomBinding.fromJson(e as Map<String, dynamic>))
+          .toList();
+      final legacyIndex = _prefs.getInt(_keyCurrentRoomIndex) ?? 0;
+      final grouped = <String, List<RoomBinding>>{};
+      final selectedIndices = <String, int>{};
+
+      for (var index = 0; index < bindings.length; index++) {
+        final binding = bindings[index];
+        final identity = _normalizeIdentity(binding.cusNo);
+        if (identity == null) continue;
+        final group = grouped.putIfAbsent(identity, () => <RoomBinding>[]);
+        if (index == legacyIndex) selectedIndices[identity] = group.length;
+        group.add(binding);
+      }
+
+      for (final entry in grouped.entries) {
+        final identity = entry.key;
+        if (_prefs.containsKey(_bindingInfoKeyFor(identity))) continue;
+        await _prefs.setString(
+          _bindingInfoKeyFor(identity),
+          jsonEncode(entry.value.map((binding) => binding.toJson()).toList()),
+        );
+        final selectedIndex = selectedIndices[identity] ?? 0;
+        await _prefs.setInt(_currentRoomIndexKeyFor(identity), selectedIndex);
+      }
+
+      await _prefs.remove(_keyBindingInfo);
+      await _prefs.remove(_keyCurrentRoomIndex);
+    } catch (e) {
+      debugPrint('Failed to migrate legacy balance bindings: $e');
     }
   }
 
-  Future<void> _saveBindingInfo() async {
-    final json = jsonEncode(_bindings.map((e) => e.toJson()).toList());
-    await _prefs.setString(_keyBindingInfo, json);
-    await _prefs.setInt(_keyCurrentRoomIndex, _currentIndex);
+  Future<void> _saveBindingInfo({
+    required String identity,
+    required List<RoomBinding> bindings,
+    required int currentIndex,
+  }) async {
+    final json = jsonEncode(bindings.map((e) => e.toJson()).toList());
+    await _prefs.setString(_bindingInfoKeyFor(identity), json);
+    await _prefs.setInt(_currentRoomIndexKeyFor(identity), currentIndex);
   }
 
   Future<void> addBinding(RoomBinding binding) async {
+    final identity = _userIdentity;
+    if (identity == null) throw StateError('未确认当前登录账号');
+    final generation = _identityGeneration;
     _bindings.add(binding);
     _currentIndex = _bindings.length - 1;
-    await _saveBindingInfo();
+    final bindings = List<RoomBinding>.from(_bindings);
+    final currentIndex = _currentIndex;
     notifyListeners();
+    await _saveBindingInfo(
+      identity: identity,
+      bindings: bindings,
+      currentIndex: currentIndex,
+    );
+    if (!_isCurrentGeneration(generation) || _userIdentity != identity) return;
     ensureCurrentBalances();
   }
 
   Future<void> removeBinding(int index) async {
     if (index < 0 || index >= _bindings.length) return;
+    final identity = _userIdentity;
+    if (identity == null) return;
+    final generation = _identityGeneration;
     final removed = _bindings[index];
+    final roomKey = _roomKeyFor(removed);
     _bindings.removeAt(index);
     if (index < _currentIndex) {
       _currentIndex--;
@@ -310,21 +466,34 @@ class BalanceQueryProvider extends ChangeNotifier {
       _currentIndex = _bindings.isEmpty ? 0 : _bindings.length - 1;
     }
     _evictBalanceEntriesFor(removed);
-    await _saveBindingInfo();
+    final bindings = List<RoomBinding>.from(_bindings);
+    final currentIndex = _currentIndex;
+    notifyListeners();
+    await _saveBindingInfo(
+      identity: identity,
+      bindings: bindings,
+      currentIndex: currentIndex,
+    );
+    if (!_isCurrentGeneration(generation) || _userIdentity != identity) return;
     // 同步删除该房间的历史记录,避免残留。
     try {
-      await _db.deleteBalanceRecordsByRoom(_roomKeyFor(removed));
+      await _db.deleteBalanceRecordsByRoom(roomKey);
     } catch (e) {
       debugPrint('Failed to clean balance history for removed room: $e');
     }
-    notifyListeners();
+    if (!_isCurrentGeneration(generation) || _userIdentity != identity) return;
     ensureCurrentBalances();
   }
 
   Future<void> switchBinding(int index) async {
     if (index < 0 || index >= _bindings.length) return;
+    final identity = _userIdentity;
+    if (identity == null) return;
+    final generation = _identityGeneration;
     _currentIndex = index;
-    await _prefs.setInt(_keyCurrentRoomIndex, _currentIndex);
+    final currentIndex = _currentIndex;
+    await _prefs.setInt(_currentRoomIndexKeyFor(identity), currentIndex);
+    if (!_isCurrentGeneration(generation) || _userIdentity != identity) return;
     _isSwitching = true;
     notifyListeners();
 
@@ -340,14 +509,17 @@ class BalanceQueryProvider extends ChangeNotifier {
         roomNo: binding.roomNo,
       );
     } finally {
-      _isSwitching = false;
-      notifyListeners();
-      ensureCurrentBalances();
+      if (_isCurrentGeneration(generation) && _userIdentity == identity) {
+        _isSwitching = false;
+        notifyListeners();
+        ensureCurrentBalances();
+      }
     }
   }
 
   /// 返回当前房间+类型的内存缓存；不存在或满 30 分钟时重新请求。
   Future<RoomInfo> ensureBalance(int balanceType) async {
+    _requireActiveIdentity();
     final binding = currentBinding;
     if (binding == null) throw BalanceQueryException('未绑定房间');
     return _loadBalanceFor(binding, balanceType);
@@ -355,6 +527,7 @@ class BalanceQueryProvider extends ChangeNotifier {
 
   /// 清空当前值并强制向服务端请求最新余额。
   Future<RoomInfo> refreshBalance(int balanceType) async {
+    _requireActiveIdentity();
     final binding = currentBinding;
     if (binding == null) throw BalanceQueryException('未绑定房间');
     return _loadBalanceFor(binding, balanceType, force: true);
@@ -380,7 +553,16 @@ class BalanceQueryProvider extends ChangeNotifier {
     int balanceType, {
     bool force = false,
   }) {
-    final entry = _balanceEntryFor(binding, balanceType);
+    final identity = _userIdentity;
+    if (identity == null) {
+      throw StateError('未确认当前登录账号');
+    }
+    final generation = _identityGeneration;
+    final roomKey = _roomKeyFor(binding);
+    final entry = _balanceEntries.putIfAbsent(
+      _BalanceCacheKey(roomKey, balanceType),
+      _ResourceEntry<RoomInfo>.new,
+    );
     return _loadResource(
       entry,
       () => _payappApi.queryRoomInfo(
@@ -392,10 +574,17 @@ class BalanceQueryProvider extends ChangeNotifier {
       clearValueOnLoad: true,
       force: force,
       onLoaded: (info) async {
-        if (_bindings.any(
-          (item) => _roomKeyFor(item) == _roomKeyFor(binding),
-        )) {
-          await _recordHistory(info, binding, balanceType);
+        if (!_isCurrentGeneration(generation) || _userIdentity != identity) {
+          return;
+        }
+        if (_bindings.any((item) => _roomKeyFor(item) == roomKey)) {
+          await _recordHistory(
+            info,
+            balanceType: balanceType,
+            identity: identity,
+            generation: generation,
+            roomKey: roomKey,
+          );
         }
       },
     );
@@ -407,13 +596,17 @@ class BalanceQueryProvider extends ChangeNotifier {
   /// 兼容现有调用：原方法语义是每次都请求，故委托强制刷新。
   Future<RoomInfo> queryAcInfo() => refreshBalance(kBalanceTypeAc);
 
-  Future<List<CampusItem>> getCampusList() => _loadResource(
-    _campusEntry,
-    _payappApi.getCampus,
-    clearValueOnLoad: false,
-  );
+  Future<List<CampusItem>> getCampusList() {
+    _requireActiveIdentity();
+    return _loadResource(
+      _campusEntry,
+      _payappApi.getCampus,
+      clearValueOnLoad: false,
+    );
+  }
 
   Future<List<BuildingItem>> getArchitectureList(String schoolCode) {
+    _requireActiveIdentity();
     final entry = _buildingEntries.putIfAbsent(
       schoolCode,
       _ResourceEntry<List<BuildingItem>>.new,
@@ -426,6 +619,7 @@ class BalanceQueryProvider extends ChangeNotifier {
   }
 
   Future<List<UnitItem>> getUnitList(String schoolCode, String regCode) {
+    _requireActiveIdentity();
     final entry = _unitEntries.putIfAbsent(
       _unitKey(schoolCode, regCode),
       _ResourceEntry<List<UnitItem>>.new,
@@ -446,6 +640,7 @@ class BalanceQueryProvider extends ChangeNotifier {
     String unitCode,
     String roomNo,
   ) {
+    _requireActiveIdentity();
     return _payappApi.verificationRoom(
       cusNo: cusNo,
       type: type,
@@ -473,6 +668,7 @@ class BalanceQueryProvider extends ChangeNotifier {
     final inFlight = entry.inFlight;
     if (inFlight != null) return inFlight;
 
+    final generation = _identityGeneration;
     entry.isLoading = true;
     entry.error = null;
     if (clearValueOnLoad) {
@@ -484,17 +680,25 @@ class BalanceQueryProvider extends ChangeNotifier {
     Future<T> execute() async {
       try {
         final loaded = await loader();
-        if (onLoaded != null) await onLoaded(loaded);
-        entry.value = loaded;
-        entry.updatedAt = _now();
+        if (_isCurrentGeneration(generation)) {
+          if (onLoaded != null) await onLoaded(loaded);
+          if (_isCurrentGeneration(generation)) {
+            entry.value = loaded;
+            entry.updatedAt = _now();
+          }
+        }
         return loaded;
       } catch (e) {
-        entry.error = e;
+        if (_isCurrentGeneration(generation)) {
+          entry.error = e;
+        }
         rethrow;
       } finally {
-        entry.isLoading = false;
-        entry.inFlight = null;
-        notifyListeners();
+        if (_isCurrentGeneration(generation)) {
+          entry.isLoading = false;
+          entry.inFlight = null;
+          notifyListeners();
+        }
       }
     }
 
@@ -522,11 +726,14 @@ class BalanceQueryProvider extends ChangeNotifier {
     bool force = false,
   }) async {
     final binding = currentBinding;
-    if (binding == null) return;
+    final identity = _userIdentity;
+    if (binding == null || identity == null) return;
+    final roomKey = _roomKeyFor(binding);
     final entry = _trendEntryFor(binding, balanceType, since, until);
     if (!force && entry.records != null) return;
     final pending = entry.inFlight;
     if (pending != null) return pending;
+    final generation = _identityGeneration;
 
     entry.isLoading = true;
     entry.error = null;
@@ -540,20 +747,26 @@ class BalanceQueryProvider extends ChangeNotifier {
     Future<void> load() async {
       try {
         final records = await _db.getBalanceRecords(
-          roomKey: _roomKeyFor(binding),
+          roomKey: roomKey,
           balanceType: balanceType,
           since: from,
           until: until,
         );
-        entry.records = List.unmodifiable(records);
-        entry.trend = BalanceTrendCalculator.calculate(entry.records!);
+        if (_isCurrentGeneration(generation) && _userIdentity == identity) {
+          entry.records = List.unmodifiable(records);
+          entry.trend = BalanceTrendCalculator.calculate(entry.records!);
+        }
       } catch (e) {
-        entry.error = e;
+        if (_isCurrentGeneration(generation) && _userIdentity == identity) {
+          entry.error = e;
+        }
         rethrow;
       } finally {
-        entry.isLoading = false;
-        entry.inFlight = null;
-        notifyListeners();
+        if (_isCurrentGeneration(generation) && _userIdentity == identity) {
+          entry.isLoading = false;
+          entry.inFlight = null;
+          notifyListeners();
+        }
       }
     }
 
@@ -602,13 +815,6 @@ class BalanceQueryProvider extends ChangeNotifier {
     return _trendEntries.putIfAbsent(key, _TrendEntry.new);
   }
 
-  void _evictTrendEntriesFor(RoomBinding binding, int balanceType) {
-    final roomKey = _roomKeyFor(binding);
-    _trendEntries.removeWhere(
-      (key, _) => key.roomKey == roomKey && key.balanceType == balanceType,
-    );
-  }
-
   bool _isFresh<T>(_ResourceEntry<T> entry, Duration cacheDuration) {
     final updatedAt = entry.updatedAt;
     return entry.value != null &&
@@ -617,32 +823,64 @@ class BalanceQueryProvider extends ChangeNotifier {
   }
 
   String _roomKeyFor(RoomBinding binding) {
-    return '${binding.schoolCode}_${binding.regCode}_${binding.unitCode}_${binding.roomNo}';
+    final identity = _userIdentity;
+    if (identity == null) {
+      throw StateError('未确认当前登录账号');
+    }
+    return 'balance-v2:$identity:'
+        '${binding.schoolCode}_${binding.regCode}_${binding.unitCode}_${binding.roomNo}';
   }
 
   String _unitKey(String schoolCode, String regCode) =>
       '${schoolCode}_$regCode';
 
+  void _requireActiveIdentity() {
+    if (_userIdentity == null) {
+      throw StateError('未确认当前登录账号');
+    }
+  }
+
+  String _bindingInfoKeyFor(String identity) => '${_keyBindingInfo}_$identity';
+
+  String _currentRoomIndexKeyFor(String identity) =>
+      '${_keyCurrentRoomIndex}_$identity';
+
   /// 仅在成功请求后记录一条历史快照。失败不影响主流程。
   Future<void> _recordHistory(
-    RoomInfo info,
-    RoomBinding binding,
-    int balanceType,
-  ) async {
+    RoomInfo info, {
+    required int balanceType,
+    required String identity,
+    required int generation,
+    required String roomKey,
+  }) async {
     try {
+      if (!_isCurrentGeneration(generation) || _userIdentity != identity) {
+        return;
+      }
       final now = _now().toUtc();
       final record = BalanceRecord(
-        roomKey: _roomKeyFor(binding),
+        roomKey: roomKey,
         balanceType: balanceType,
         timestamp: now,
         balance: double.tryParse(info.balance) ?? 0,
         price: double.tryParse(info.price) ?? 0,
       );
+      if (!_isCurrentGeneration(generation) || _userIdentity != identity) {
+        return;
+      }
       await _db.insertBalanceRecord(record);
+      if (!_isCurrentGeneration(generation) || _userIdentity != identity) {
+        return;
+      }
       await _db.deleteBalanceRecordsBefore(
         now.subtract(_balanceHistoryRetention),
       );
-      _evictTrendEntriesFor(binding, balanceType);
+      if (!_isCurrentGeneration(generation) || _userIdentity != identity) {
+        return;
+      }
+      _trendEntries.removeWhere(
+        (key, _) => key.roomKey == roomKey && key.balanceType == balanceType,
+      );
     } catch (e) {
       debugPrint('Failed to record balance history: $e');
     }

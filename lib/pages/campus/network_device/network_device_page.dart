@@ -21,14 +21,6 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
   bool _privacyHidden = true;
 
   @override
-  void initState() {
-    super.initState();
-    // Provider 会在 WFW SSO 就绪后自动补拉；这里覆盖页面首次打开时
-    // 已有 WFW 会话的场景，不持有任何远端数据。
-    Future.microtask(() => getIt<NetworkDeviceProvider>().ensureDevices());
-  }
-
-  @override
   Widget build(BuildContext context) {
     final auth = getIt<ScuAuthProvider>();
     final userInfo = getIt<UserInfoProvider>();

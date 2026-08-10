@@ -47,29 +47,29 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.examPlan),
-        actions: [
-          if (getIt<ScuAuthProvider>().isLoggedIn &&
-              _provider.state != ExamPlanLoadState.loading &&
-              _provider.exams.isNotEmpty)
-            IconButton(
-              tooltip: l10n.exportExamPlan,
-              onPressed: () => _showCalendarActions(l10n),
-              icon: const Icon(Icons.calendar_month_outlined),
-            ),
-          if (getIt<ScuAuthProvider>().isLoggedIn &&
-              _provider.state != ExamPlanLoadState.loading)
-            IconButton(
-              onPressed: _provider.refresh,
-              icon: const Icon(Icons.refresh),
-            ),
-        ],
-      ),
-      body: ListenableBuilder(
-        listenable: Listenable.merge([_provider, getIt<ScuAuthProvider>()]),
-        builder: (context, _) => _buildBody(l10n),
+    return ListenableBuilder(
+      listenable: Listenable.merge([_provider, getIt<ScuAuthProvider>()]),
+      builder: (context, _) => Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.examPlan),
+          actions: [
+            if (getIt<ScuAuthProvider>().isLoggedIn &&
+                _provider.state != ExamPlanLoadState.loading &&
+                _provider.exams.isNotEmpty)
+              IconButton(
+                tooltip: l10n.exportExamPlan,
+                onPressed: () => _showCalendarActions(l10n),
+                icon: const Icon(Icons.calendar_month_outlined),
+              ),
+            if (getIt<ScuAuthProvider>().isLoggedIn &&
+                _provider.state != ExamPlanLoadState.loading)
+              IconButton(
+                onPressed: _provider.refresh,
+                icon: const Icon(Icons.refresh),
+              ),
+          ],
+        ),
+        body: _buildBody(l10n),
       ),
     );
   }

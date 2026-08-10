@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
@@ -239,7 +240,12 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<NetworkDeviceProvider>(() async {
     await getIt.isReady<WfwApiService>();
     await getIt.isReady<WfwAuth>();
-    return NetworkDeviceProvider(getIt<WfwApiService>(), getIt<WfwAuth>());
+    await getIt.isReady<ScuAuth>();
+    return NetworkDeviceProvider(
+      getIt<WfwApiService>(),
+      getIt<WfwAuth>(),
+      getIt<ScuAuth>(),
+    );
   });
   getIt.registerSingletonAsync<ClassroomProvider>(() async {
     await getIt.isReady<ZhjwApiService>();
@@ -263,14 +269,27 @@ void _configureAsyncDependencies() {
     await getIt.isReady<DatabaseService>();
     await getIt.isReady<PayAppAuth>();
     await getIt.isReady<AppConfigProvider>();
+    await getIt.isReady<ScuAuthProvider>();
+    await getIt.isReady<ScuAuth>();
     final prefs = getIt<SharedPreferences>();
-    return BalanceQueryProvider(
+    final authProvider = getIt<ScuAuthProvider>();
+    final scuAuth = getIt<ScuAuth>();
+    String? currentIdentity() => BalanceQueryProvider.confirmedUserIdentity(
+      isLoggedIn: authProvider.isLoggedIn,
+      principal: scuAuth.principal,
+    );
+    final balanceProvider = BalanceQueryProvider(
       prefs,
       getIt<PayAppApiService>(),
       getIt<DatabaseService>(),
       getIt<PayAppAuth>(),
       getIt<AppConfigProvider>(),
     );
+    await balanceProvider.setUserIdentity(currentIdentity());
+    authProvider.addListener(() {
+      unawaited(balanceProvider.setUserIdentity(currentIdentity()));
+    });
+    return balanceProvider;
   });
   getIt.registerSingletonAsync<UpdateService>(() async {
     await getIt.isReady<SharedPreferences>();
