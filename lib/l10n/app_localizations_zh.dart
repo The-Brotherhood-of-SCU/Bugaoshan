@@ -2481,6 +2481,158 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get error => '错误';
+
+  @override
+  String get dockLabelLeave => '办事大厅';
+
+  @override
+  String get serviceHallTitle => '办事大厅';
+
+  @override
+  String get serviceHallLeaveTitle => '离校请假';
+
+  @override
+  String get serviceHallLeaveDesc => '在办事大厅提交离校请假申请，辅导员/导师在线审批';
+
+  @override
+  String get serviceHallMyAppsTitle => '我的申请';
+
+  @override
+  String get serviceHallMyAppsDesc => '查看我提交过的请假、报备等申请记录';
+
+  @override
+  String get serviceHallReturnTitle => '返校报备';
+
+  @override
+  String get serviceHallReturnDesc => '提前报备返校行程';
+
+  @override
+  String get serviceHallSummerLeaveTitle => '暑假离校';
+
+  @override
+  String get serviceHallSummerLeaveDesc => '报备暑假离校行程';
+
+  @override
+  String get serviceHallStayRegisterTitle => '留校登记';
+
+  @override
+  String get serviceHallStayRegisterDesc => '登记假期留校';
+
+  @override
+  String serviceFormRequired(String label) {
+    return '请填写$label';
+  }
+
+  @override
+  String get serviceFormSchemaFailed => '表单加载失败，请稍后重试';
+
+  @override
+  String get serviceFormSelectHint => '请选择';
+
+  @override
+  String get serviceFormOptional => '选填';
+
+  @override
+  String get leaveTitle => '请假申请';
+
+  @override
+  String get leaveDesc => '办事大厅内可在线办理请假、报备等事项';
+
+  @override
+  String get leaveApply => '请假申请';
+
+  @override
+  String get leaveMyApplications => '我的申请';
+
+  @override
+  String get leaveSubmit => '提交申请';
+
+  @override
+  String get leaveReasonRequired => '请填写请假事由';
+
+  @override
+  String get leaveEndAfterStart => '结束时间需晚于开始时间';
+
+  @override
+  String get leaveSubmitSuccess => '请假申请已提交';
+
+  @override
+  String get leaveSubmitFailed => '提交失败，请稍后重试';
+
+  @override
+  String get leaveInfo => '学生信息';
+
+  @override
+  String get leaveTutor => '辅导员';
+
+  @override
+  String get leaveCampusRequired => '请选择离开校区';
+
+  @override
+  String get leaveDetail => '其他事由';
+
+  @override
+  String get leaveDetailHint => '请填写具体事由';
+
+  @override
+  String get leaveAttachment => '上传证明';
+
+  @override
+  String get leaveAttachmentHint => '可上传 1-3 张图片作为请假证明（非必填）';
+
+  @override
+  String get leaveAttachmentAdd => '添加图片';
+
+  @override
+  String get leaveDepartReturn => '离校/返校时间';
+
+  @override
+  String get leaveDepartTime => '离校时间';
+
+  @override
+  String get leaveReturnTime => '返校时间';
+
+  @override
+  String get leaveRegionRequired => '请选择去往地址';
+
+  @override
+  String get regionProvince => '省';
+
+  @override
+  String get regionCity => '市';
+
+  @override
+  String get regionArea => '区县';
+
+  @override
+  String get regionSelectHint => '请选择';
+
+  @override
+  String get regionDetailHint => '详细地址（街道、门牌号等）';
+
+  @override
+  String get regionPickProvince => '选择省份';
+
+  @override
+  String get regionPickCity => '选择城市';
+
+  @override
+  String get regionPickArea => '选择区县';
+
+  @override
+  String get leaveNoApplications => '暂无请假记录';
+
+  @override
+  String get leaveSubmitTime => '提交时间';
+
+  @override
+  String get leaveStatusProcessing => '审批中';
+
+  @override
+  String get leaveStatusDraft => '草稿';
+
+  @override
+  String get leaveStatusDone => '已完成';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

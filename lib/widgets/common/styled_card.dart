@@ -108,6 +108,9 @@ class CardWithTitle extends StatelessWidget {
   final EdgeInsetsGeometry? margin;
   final Color? backgroundColor;
   final void Function()? onTap;
+
+  /// 是否在标题后显示红色必填标记 `*`（办事大厅动态表单用）。
+  final bool requiredMark;
   const CardWithTitle({
     super.key,
     required this.title,
@@ -116,6 +119,7 @@ class CardWithTitle extends StatelessWidget {
     this.margin,
     this.onTap,
     this.backgroundColor,
+    this.requiredMark = false,
   });
 
   @override
@@ -132,7 +136,35 @@ class CardWithTitle extends StatelessWidget {
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [titleText(title), icon ?? Container()],
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Expanded 让长标题（如 337 返校校区的完整说明）换行而非溢出
+                Expanded(
+                  child: requiredMark
+                      ? Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+                          child: Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(text: title),
+                                TextSpan(
+                                  text: ' *',
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.error,
+                                  ),
+                                ),
+                              ],
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            textScaler: const TextScaler.linear(1.3),
+                          ),
+                        )
+                      : titleText(title),
+                ),
+                icon ?? Container(),
+              ],
             ),
             child ?? Container(),
           ],

@@ -200,7 +200,7 @@ class AcademicCalendarSemester {
   }
 }
 
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class AcademicCalendarData {
   @JsonKey(defaultValue: [])
   final List<AcademicCalendarSemester> semesters;
