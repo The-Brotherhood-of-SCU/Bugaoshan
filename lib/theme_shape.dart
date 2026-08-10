@@ -31,9 +31,6 @@ class AppShapes {
 class AppCurves {
   AppCurves._();
 
-  /// 标准缓动
-  static const Curve standard = Curves.easeInOutCubic;
-
   /// 快速缓动
   static const Curve quick = Curves.easeOutQuart;
 }

@@ -5,6 +5,7 @@ import 'package:bugaoshan/pages/auth/scu_login_page.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/secure_storage.dart';
+import 'package:bugaoshan/utils/storage_keys.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
@@ -43,7 +44,6 @@ class LoginStatusCard extends StatefulWidget {
 }
 
 class _LoginStatusCardState extends State<LoginStatusCard> {
-  static const _keyUsername = 'scu_saved_username';
   static final _storage = SecureStorageProvider.instance;
 
   final _authProvider = getIt<ScuAuthProvider>();
@@ -69,7 +69,7 @@ class _LoginStatusCardState extends State<LoginStatusCard> {
   }
 
   Future<void> _loadUsername() async {
-    final username = await _storage.read(key: _keyUsername);
+    final username = await _storage.read(key: kScuSavedUsername);
     if (mounted && username != _username) {
       setState(() => _username = username);
     }

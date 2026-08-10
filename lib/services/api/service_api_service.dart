@@ -72,9 +72,6 @@ class ServiceApiService {
   /// DataSource_85（辅导员数据源）的配置 id（来自抓包 curl：id=8）。
   static const String tutorDataSourceId = '8';
 
-  /// 接口已用真实抓包确认（350）。提交/查询可直接调用。
-  static const bool verified = true;
-
   Future<T> _request<T>(Future<T> Function(CookieClient client) fn) {
     return retryOnUnauthenticated(
       _auth.getClient,

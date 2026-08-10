@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 新增 macOS 平台支持（课表可导出到系统日历）
 - 增加开发团队的介绍页面
 - 课表页新增放假页面，假期中显示放假信息，并支持切换到下学期查看
+- 新增办事大厅页面，可在线提交离校、返校、请假等申请
 
 ### Changed
 - 统一UI卡片样式：使用带有轻微阴影的圆角卡片

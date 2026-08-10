@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' show PlatformException;
+import 'package:bugaoshan/utils/constants.dart';
 
 /// 安卓下载进度通知服务。
 ///
@@ -14,8 +15,8 @@ import 'package:flutter/services.dart';
 /// 权限处理:[requestPermission] 在 Android 13+ 请求 `POST_NOTIFICATIONS` 运行时权限;
 /// 权限被拒绝时不阻断下载,仅不显示通知。
 class DownloadNotificationService {
-  static const _methodChannel = MethodChannel('bugaoshan/update');
-  static const _cancelEventChannel = EventChannel('bugaoshan/download_cancel');
+  static const _methodChannel = kUpdateMethodChannel;
+  static const _cancelEventChannel = kDownloadCancelEventChannel;
 
   StreamSubscription<void>? _cancelSub;
   StreamController<void>? _cancelController;

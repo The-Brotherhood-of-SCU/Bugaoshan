@@ -15,6 +15,7 @@ import 'package:bugaoshan/pages/settings/set_theme_color_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/common/info_card.dart';
+import 'package:bugaoshan/widgets/common/section_title.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
@@ -32,7 +33,7 @@ class SoftwareSettingPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         children: [
-          _SectionTitle(title: localizations.settingsGeneral),
+          SectionTitle(title: localizations.settingsGeneral),
           InfoCard(
             children: [
               IconTile(
@@ -65,7 +66,7 @@ class SoftwareSettingPage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          _SectionTitle(title: localizations.settingsStyle),
+          SectionTitle(title: localizations.settingsStyle),
           InfoCard(
             children: [
               IconTile(
@@ -87,7 +88,7 @@ class SoftwareSettingPage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          _SectionTitle(title: localizations.settingsDanger),
+          SectionTitle(title: localizations.settingsDanger),
           InfoCard(
             children: [
               IconTile(
@@ -113,24 +114,6 @@ class SoftwareSettingPage extends StatelessWidget {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  final String title;
-  const _SectionTitle({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 0, 10, 8),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: Theme.of(context).colorScheme.primary,
-        ),
       ),
     );
   }

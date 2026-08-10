@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/utils/constants.dart';
 
 class CalendarDestination {
   final String id;
@@ -28,7 +29,7 @@ class CalendarDestination {
 }
 
 class CalendarImportUtils {
-  static const MethodChannel channel = MethodChannel('bugaoshan/update');
+  static const MethodChannel channel = kUpdateMethodChannel;
 
   const CalendarImportUtils._();
 

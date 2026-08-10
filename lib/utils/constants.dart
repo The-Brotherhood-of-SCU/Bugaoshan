@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart';
+
 const String orgLink = "https://github.com/The-Brotherhood-of-SCU";
 const String appLink = "https://github.com/The-Brotherhood-of-SCU/Bugaoshan";
 
@@ -28,3 +30,11 @@ const String kCcylSpCode =
 const String kDefaultUserAgent =
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
     '(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0';
+
+const MethodChannel kUpdateMethodChannel = MethodChannel('bugaoshan/update');
+const MethodChannel kDynamicIconMethodChannel = MethodChannel(
+  'bugaoshan/dynamic_icon',
+);
+const EventChannel kDownloadCancelEventChannel = EventChannel(
+  'bugaoshan/download_cancel',
+);

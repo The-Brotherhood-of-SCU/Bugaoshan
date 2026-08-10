@@ -19,21 +19,3 @@ class AutoLoginLoadingWidget extends StatelessWidget {
     );
   }
 }
-
-class EmptyStateWidget extends StatelessWidget {
-  const EmptyStateWidget({super.key, required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        message,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-      ),
-    );
-  }
-}

@@ -10,8 +10,10 @@ import 'package:flutter/material.dart';
 /// 日期字段常量（Calendar_25/26，用户确认：离校时间 / 返校时间）。
 const String kFieldLeaveDate = 'Calendar_25';
 const String kFieldReturnDate = 'Calendar_26';
+
 /// 事由说明多行文本（MultiInput_40）。
 const String kFieldDetail = 'MultiInput_40';
+
 /// 地区（Region_80，省-市-区县三级联动 + 详细地址）。
 const String kFieldRegion = 'Region_80';
 
@@ -99,10 +101,6 @@ class ServiceFormFields {
       label: '学院',
       icon: Icons.account_balance_outlined,
     ),
-    ServiceFieldMeta(
-      key: 'User_24',
-      label: '手机号',
-      icon: Icons.phone_outlined,
-    ),
+    ServiceFieldMeta(key: 'User_24', label: '手机号', icon: Icons.phone_outlined),
   ];
 }

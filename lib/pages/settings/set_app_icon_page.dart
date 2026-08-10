@@ -1,5 +1,6 @@
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/services/dynamic_icon_service.dart';
+import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:flutter/material.dart';
 
@@ -162,7 +163,7 @@ class _IconOption extends StatelessWidget {
     final size = 64.0;
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppShapes.large),
       child: Image.asset(
         iconAsset,
         width: size,
@@ -173,7 +174,7 @@ class _IconOption extends StatelessWidget {
           height: size,
           decoration: BoxDecoration(
             color: theme.colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppShapes.large),
           ),
           child: Icon(
             Icons.broken_image,

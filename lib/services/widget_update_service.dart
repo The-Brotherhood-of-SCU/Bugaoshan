@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'package:bugaoshan/utils/constants.dart';
 
 class WidgetUpdateService {
-  static const _channel = MethodChannel('bugaoshan/update');
+  static const _channel = kUpdateMethodChannel;
   static const String _kDisposedMessage = 'WidgetUpdateService disposed';
   Timer? _debounceTimer;
   Completer<void>? _pendingCompleter;
@@ -17,8 +17,10 @@ class WidgetUpdateService {
   WidgetUpdateService({
     Duration? debounceDuration,
     bool Function()? platformChecker,
-  }) : _platformChecker = platformChecker ??
-           (() => !kIsWeb &&
+  }) : _platformChecker =
+           platformChecker ??
+           (() =>
+               !kIsWeb &&
                (defaultTargetPlatform == TargetPlatform.android ||
                    defaultTargetPlatform == TargetPlatform.iOS ||
                    defaultTargetPlatform == TargetPlatform.macOS)) {
@@ -31,9 +33,13 @@ class WidgetUpdateService {
   ///   (subject to `_inFlight` guard). Otherwise calls are debounced by
   ///   `_debounceDuration` and coalesced.
   Future<void> updateWidgetData({bool force = false}) async {
-    debugPrint('BugaoShan WidgetUpdateService: updateWidgetData called, force: $force');
+    debugPrint(
+      'BugaoShan WidgetUpdateService: updateWidgetData called, force: $force',
+    );
     if (!_platformChecker()) {
-      debugPrint('BugaoShan WidgetUpdateService: platform check failed, skipping');
+      debugPrint(
+        'BugaoShan WidgetUpdateService: platform check failed, skipping',
+      );
       return Future.value();
     }
     if (_disposed) {
@@ -60,19 +66,27 @@ class WidgetUpdateService {
 
   /// Sync the widget show tomorrow setting to App Group and update widget.
   Future<void> syncWidgetShowTomorrow(bool value) async {
-    debugPrint('BugaoShan WidgetUpdateService: syncWidgetShowTomorrow called with value: $value');
+    debugPrint(
+      'BugaoShan WidgetUpdateService: syncWidgetShowTomorrow called with value: $value',
+    );
     if (!_platformChecker()) {
-      debugPrint('BugaoShan WidgetUpdateService: platform check failed for syncWidgetShowTomorrow');
+      debugPrint(
+        'BugaoShan WidgetUpdateService: platform check failed for syncWidgetShowTomorrow',
+      );
       return Future.value();
     }
     try {
       if (defaultTargetPlatform == TargetPlatform.iOS ||
           defaultTargetPlatform == TargetPlatform.macOS) {
-        debugPrint('BugaoShan WidgetUpdateService: calling native syncWidgetShowTomorrow');
+        debugPrint(
+          'BugaoShan WidgetUpdateService: calling native syncWidgetShowTomorrow',
+        );
         await _channel.invokeMethod<void>('syncWidgetShowTomorrow', {
           'value': value,
         });
-        debugPrint('BugaoShan WidgetUpdateService: native syncWidgetShowTomorrow completed');
+        debugPrint(
+          'BugaoShan WidgetUpdateService: native syncWidgetShowTomorrow completed',
+        );
       }
       // On Android, the setting is already in SharedPreferences which is accessible to widget
       if (defaultTargetPlatform == TargetPlatform.android) {
@@ -115,9 +129,13 @@ class WidgetUpdateService {
       var continueRun = true;
       while (continueRun) {
         try {
-          debugPrint('BugaoShan WidgetUpdateService: calling native updateWidget');
+          debugPrint(
+            'BugaoShan WidgetUpdateService: calling native updateWidget',
+          );
           await _channel.invokeMethod('updateWidget');
-          debugPrint('BugaoShan WidgetUpdateService: native updateWidget completed successfully');
+          debugPrint(
+            'BugaoShan WidgetUpdateService: native updateWidget completed successfully',
+          );
         } catch (e, stack) {
           debugPrint('BugaoShan WidgetUpdateService: updateWidget FAILED: $e');
           debugPrint('BugaoShan WidgetUpdateService: stack: $stack');
@@ -132,7 +150,9 @@ class WidgetUpdateService {
 
         // After a successful run, decide whether to run again
         if (_needsRunAgain) {
-          debugPrint('BugaoShan WidgetUpdateService: needsRunAgain is true, looping to run again');
+          debugPrint(
+            'BugaoShan WidgetUpdateService: needsRunAgain is true, looping to run again',
+          );
           _needsRunAgain = false;
           // loop to run again
           continueRun = true;
@@ -170,8 +190,11 @@ class WidgetUpdateService {
 
   Future<bool> pinWidget(String size) async {
     if (kIsWeb ||
-        (![TargetPlatform.android, TargetPlatform.iOS, TargetPlatform.macOS]
-            .contains(defaultTargetPlatform))) {
+        (![
+          TargetPlatform.android,
+          TargetPlatform.iOS,
+          TargetPlatform.macOS,
+        ].contains(defaultTargetPlatform))) {
       return false;
     }
     try {

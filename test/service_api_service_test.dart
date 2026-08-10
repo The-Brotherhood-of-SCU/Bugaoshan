@@ -25,7 +25,7 @@ class _FakeScuAuth extends ScuAuth {
 /// 假 ServiceAuth：getClient 依次返回预置的 CookieClient，
 /// invalidate 计数（验证 retryOnUnauthenticated 只重试一次）。
 class _FakeServiceAuth extends ServiceAuth {
-  _FakeServiceAuth(ScuAuth scuAuth, this._clients) : super(scuAuth);
+  _FakeServiceAuth(super.scuAuth, this._clients);
 
   final List<CookieClient> _clients;
   int getClientCalls = 0;

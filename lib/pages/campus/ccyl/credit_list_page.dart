@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
+import 'package:bugaoshan/widgets/common/status_chip.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 class CreditListPage extends StatefulWidget {
@@ -429,6 +429,9 @@ class _CreditCard extends StatelessWidget {
     final mutedStyle = theme.textTheme.bodySmall?.copyWith(
       color: theme.colorScheme.onSurfaceVariant,
     );
+    final statusColor = credit.creditStatus == 'C0'
+        ? Colors.green
+        : Colors.orange;
 
     return StyledCard(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -487,11 +490,10 @@ class _CreditCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                _StatusChip(
+                StatusChip(
                   label: credit.creditStatusName,
-                  color: credit.creditStatus == 'C0'
-                      ? Colors.green
-                      : Colors.orange,
+                  backgroundColor: statusColor.withAlpha(25),
+                  textColor: statusColor.withValues(alpha: 255 * 0.6),
                 ),
               ],
             ),
@@ -504,30 +506,6 @@ class _CreditCard extends StatelessWidget {
               ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _StatusChip extends StatelessWidget {
-  final String label;
-  final Color color;
-
-  const _StatusChip({required this.label, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withAlpha(25),
-        borderRadius: BorderRadius.circular(AppShapes.xs),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: color.withValues(alpha: 255 * 0.6),
         ),
       ),
     );

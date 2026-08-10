@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/beijing_time.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 
@@ -127,7 +128,7 @@ class BalanceTrendCustomRangeCard extends StatelessWidget {
     final theme = Theme.of(context);
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(AppShapes.small),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
         child: Column(

@@ -747,15 +747,6 @@ class ServiceFormSchema {
     };
   }
 
-  /// 数组型提交值类型（隐藏/占位时给 `[]`）。
-  static const Set<ServiceFieldType> arrayTypes = {
-    ServiceFieldType.selectV2,
-    ServiceFieldType.checkbox,
-    ServiceFieldType.file,
-    ServiceFieldType.conversion,
-    ServiceFieldType.repeatTable,
-  };
-
   /// 字段是否必填（auth 为 require；ShowHide 动态必填见 controller）。
   bool isRequired(String fieldKey) => auth[fieldKey] == 'require';
 

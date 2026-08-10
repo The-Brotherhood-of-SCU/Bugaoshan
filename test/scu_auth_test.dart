@@ -9,6 +9,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/storage_keys.dart';
 
 void main() {
   late SharedPreferences prefs;
@@ -18,11 +19,9 @@ void main() {
     await getIt.reset();
     logger = AuthLogger();
     getIt.registerSingleton<AuthLogger>(logger);
-    FlutterSecureStorage.setMockInitialValues({
-      'scu_access_token': 'stale-token',
-    });
+    FlutterSecureStorage.setMockInitialValues({kScuAccessToken: 'stale-token'});
     SharedPreferences.setMockInitialValues({
-      'scu_login_timestamp': DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      kScuLoginTimestamp: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     });
     prefs = await SharedPreferences.getInstance();
   });
