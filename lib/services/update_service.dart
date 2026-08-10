@@ -477,7 +477,4 @@ class UpdateService {
       exeDir,
     ], mode: ProcessStartMode.detached);
   }
-
-  static const releasesUrl =
-      'https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases';
 }

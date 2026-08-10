@@ -291,34 +291,3 @@ class StackedTile extends StatelessWidget {
     );
   }
 }
-
-/// [IconTile] with a loading indicator as trailing.
-class LoadingTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback? onTap;
-  final Color? iconColor;
-
-  const LoadingTile({
-    super.key,
-    required this.icon,
-    required this.label,
-    this.onTap,
-    this.iconColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return IconTile._internal(
-      icon: icon,
-      label: label,
-      onTap: onTap,
-      iconColor: iconColor,
-      trailing: const SizedBox(
-        width: 20,
-        height: 20,
-        child: CircularProgressIndicator(strokeWidth: 2),
-      ),
-    );
-  }
-}
