@@ -3,9 +3,8 @@ import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/exam_plan/models/exam_info.dart';
+import 'package:bugaoshan/providers/exam_plan_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/api/zhjw_api_service.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/ics_service.dart';
 import 'package:bugaoshan/utils/calendar_export_utils.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
@@ -21,15 +20,14 @@ class ExamPlanPage extends StatefulWidget {
 }
 
 class _ExamPlanPageState extends State<ExamPlanPage> {
-  List<ExamInfo> _exams = [];
-  bool _loading = false;
-  LoadErrorType? _error;
+  late final ExamPlanProvider _provider;
 
   @override
   void initState() {
     super.initState();
+    _provider = getIt<ExamPlanProvider>();
     getIt<ScuAuthProvider>().addListener(_onAuthChanged);
-    _loadData();
+    _onAuthChanged();
   }
 
   @override
@@ -40,52 +38,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
 
   void _onAuthChanged() {
     final auth = getIt<ScuAuthProvider>();
-    if (auth.isLoggedIn && mounted) {
-      _loadData();
-    } else if (mounted) {
-      setState(() {});
-    }
-  }
-
-  Future<void> _loadData() async {
-    final auth = getIt<ScuAuthProvider>();
-    if (!auth.isLoggedIn) {
-      if (auth.isAutoLoggingIn) return;
-      setState(() => _error = LoadErrorType.notLoggedIn);
-      return;
-    }
-
-    if (_loading) return;
-
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-
-    try {
-      final api = getIt<ZhjwApiService>();
-      final exams = await api.fetchExamPlan();
-      if (mounted) {
-        setState(() {
-          _exams = exams;
-          _loading = false;
-        });
-      }
-    } on UnauthenticatedException {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-          _error = LoadErrorType.notLoggedIn;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-          _error = campusNetworkErrorType(LoadErrorType.loadFailed);
-        });
-      }
-    }
+    if (auth.isLoggedIn) _provider.ensureLoaded();
   }
 
   @override
@@ -97,18 +50,25 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
         title: Text(l10n.examPlan),
         actions: [
           if (getIt<ScuAuthProvider>().isLoggedIn &&
-              !_loading &&
-              _exams.isNotEmpty)
+              _provider.state != ExamPlanLoadState.loading &&
+              _provider.exams.isNotEmpty)
             IconButton(
               tooltip: l10n.exportExamPlan,
               onPressed: () => _showCalendarActions(l10n),
               icon: const Icon(Icons.calendar_month_outlined),
             ),
-          if (getIt<ScuAuthProvider>().isLoggedIn && !_loading)
-            IconButton(onPressed: _loadData, icon: const Icon(Icons.refresh)),
+          if (getIt<ScuAuthProvider>().isLoggedIn &&
+              _provider.state != ExamPlanLoadState.loading)
+            IconButton(
+              onPressed: _provider.refresh,
+              icon: const Icon(Icons.refresh),
+            ),
         ],
       ),
-      body: _buildBody(l10n),
+      body: ListenableBuilder(
+        listenable: Listenable.merge([_provider, getIt<ScuAuthProvider>()]),
+        builder: (context, _) => _buildBody(l10n),
+      ),
     );
   }
 
@@ -119,22 +79,25 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
       return const AutoLoginLoadingWidget();
     }
 
-    if (_loading) {
+    if (_provider.state == ExamPlanLoadState.loading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_error == LoadErrorType.notLoggedIn) {
+    if (_provider.error == LoadErrorType.notLoggedIn) {
       if (getIt<ScuAuthProvider>().isAutoLoggingIn) {
         return const AutoLoginLoadingWidget();
       }
       return const LoginRequiredWidget();
     }
 
-    if (_error != null) {
-      return RetryableErrorWidget(errorType: _error!, onRetry: _loadData);
+    if (_provider.error != null) {
+      return RetryableErrorWidget(
+        errorType: _provider.error!,
+        onRetry: _provider.refresh,
+      );
     }
 
-    if (_exams.isEmpty) {
+    if (_provider.exams.isEmpty) {
       return Center(
         child: Text(
           l10n.examPlanNoData,
@@ -146,11 +109,11 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
     }
 
     return RefreshIndicator(
-      onRefresh: _loadData,
+      onRefresh: _provider.refresh,
       child: ListView.builder(
         padding: const EdgeInsets.all(AppShapes.large),
-        itemCount: _exams.length,
-        itemBuilder: (context, index) => _buildExamCard(_exams[index]),
+        itemCount: _provider.exams.length,
+        itemBuilder: (context, index) => _buildExamCard(_provider.exams[index]),
       ),
     );
   }
@@ -372,12 +335,12 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
       l10n: l10n,
       action: action,
       copyToClipboard: () => CalendarExportUtils.copyJsonToClipboard({
-        'exams': _exams.map((exam) => exam.toJson()).toList(),
+        'exams': _provider.exams.map((exam) => exam.toJson()).toList(),
       }, logTag: 'ExamPlanPage'),
       copySuccessMessage: l10n.exportExamPlanAsCopySuccess,
       copyFailedMessage: l10n.exportScheduleAsCopyFailed,
       buildCalendarPayload: () => IcsService.genExamExportPayload(
-        exams: _exams,
+        exams: _provider.exams,
         fileName: '${_examPlanFileName()}.ics',
       ),
       logTag: 'ExamPlanPage',
@@ -386,7 +349,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
 
   String _examPlanFileName() {
     final dates =
-        _exams
+        _provider.exams
             .map((exam) => exam.date)
             .where((date) => RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(date))
             .toList()

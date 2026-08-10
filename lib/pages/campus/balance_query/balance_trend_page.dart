@@ -2,7 +2,6 @@ import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/beijing_time.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/models/balance_record.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_trend_chart_card.dart';
 import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_trend_custom_range_card.dart';
@@ -10,7 +9,6 @@ import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_trend_range
 import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_trend_raw_records_card.dart';
 import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_trend_stats_card.dart';
 import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_trend_time_range.dart';
-import 'package:bugaoshan/services/balance/balance_trend_calculator.dart';
 
 /// 电费余额趋势页。
 ///
@@ -20,7 +18,7 @@ import 'package:bugaoshan/services/balance/balance_trend_calculator.dart';
 /// - 第二层 [BalanceTrendCustomRangeCard]:仅当 mode==custom 时显示,
 ///   包含独立的"开始日期"/"结束日期"两个按钮,用户每次只改一个端点
 ///
-/// 数据加载、状态管理由本文件负责;UI 细节拆分到 `widgets/` 下。
+/// 趋势数据与加载状态由 [BalanceQueryProvider] 管理；本页面只保留范围选择。
 class BalanceTrendPage extends StatefulWidget {
   final BalanceQueryProvider provider;
   final int balanceType;
@@ -47,11 +45,6 @@ class _BalanceTrendPageState extends State<BalanceTrendPage> {
   DateTime? _customStart;
   DateTime? _customEnd;
 
-  List<BalanceRecord> _records = const [];
-  TrendResult _trend = const TrendResult.empty();
-  bool _isLoading = true;
-  String? _error;
-
   @override
   void initState() {
     super.initState();
@@ -69,47 +62,42 @@ class _BalanceTrendPageState extends State<BalanceTrendPage> {
     }
   }
 
-  Future<void> _loadHistory() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+  ({DateTime? since, DateTime? until}) _queryRange() {
+    final now = DateTime.now().toUtc();
+    // 预设范围按 UTC 日界归一化，避免每次 build 产生不同 key 而错过
+    // Provider 的同范围缓存；自定义范围已由 localDatesToUtc 归一化。
+    final todayUtc = DateTime.utc(now.year, now.month, now.day);
+    return switch (_range) {
+      BalanceTrendTimeRange.days7 => (
+        since: todayUtc.subtract(const Duration(days: 7)),
+        until: null,
+      ),
+      BalanceTrendTimeRange.days30 => (
+        since: todayUtc.subtract(const Duration(days: 30)),
+        until: null,
+      ),
+      BalanceTrendTimeRange.days90 => (
+        since: todayUtc.subtract(const Duration(days: 90)),
+        until: null,
+      ),
+      BalanceTrendTimeRange.custom => localDatesToUtc(
+        start: _customStart!,
+        end: _customEnd!,
+      ),
+    };
+  }
+
+  Future<void> _loadHistory({bool force = false}) async {
+    final range = _queryRange();
     try {
-      DateTime? since;
-      DateTime? until;
-      switch (_range) {
-        case BalanceTrendTimeRange.days7:
-          since = DateTime.now().toUtc().subtract(const Duration(days: 7));
-          until = null;
-        case BalanceTrendTimeRange.days30:
-          since = DateTime.now().toUtc().subtract(const Duration(days: 30));
-          until = null;
-        case BalanceTrendTimeRange.days90:
-          since = DateTime.now().toUtc().subtract(const Duration(days: 90));
-          until = null;
-        case BalanceTrendTimeRange.custom:
-          _ensureCustomDatesInitialized();
-          final utc = localDatesToUtc(start: _customStart!, end: _customEnd!);
-          since = utc.since;
-          until = utc.until;
-      }
-      final records = await widget.provider.getBalanceHistory(
+      await widget.provider.ensureTrend(
         balanceType: widget.balanceType,
-        since: since,
-        until: until,
+        since: range.since,
+        until: range.until,
+        force: force,
       );
-      if (!mounted) return;
-      setState(() {
-        _records = records;
-        _trend = BalanceTrendCalculator.calculate(records);
-        _isLoading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
+    } catch (_) {
+      // 错误保留在 Provider 的趋势状态中。
     }
   }
 
@@ -151,66 +139,77 @@ class _BalanceTrendPageState extends State<BalanceTrendPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(widget.title)),
-      body: _error != null
-          ? Center(
+      body: ListenableBuilder(
+        listenable: widget.provider,
+        builder: (context, _) {
+          final range = _queryRange();
+          final state = widget.provider.trendStateFor(
+            balanceType: widget.balanceType,
+            since: range.since,
+            until: range.until,
+          );
+          if (state.error != null && !state.hasValue) {
+            return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(
-                  _error!,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.error,
+                  state.error.toString(),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.error,
                   ),
                   textAlign: TextAlign.center,
                 ),
               ),
-            )
-          : RefreshIndicator(
-              onRefresh: _loadHistory,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  // 第一层:4 个预设 tab
-                  BalanceTrendRangeSelector(
-                    range: _range,
-                    onChanged: _onRangeChanged,
-                  ),
+            );
+          }
+          return RefreshIndicator(
+            onRefresh: () => _loadHistory(force: true),
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                // 第一层:4 个预设 tab
+                BalanceTrendRangeSelector(
+                  range: _range,
+                  onChanged: _onRangeChanged,
+                ),
 
-                  // 第二层:自定义日期范围卡片(仅 custom 模式显示)
-                  AnimatedSize(
-                    duration: appConfigService.cardSizeAnimationDuration.value,
-                    curve: AppCurves.quick,
-                    child: _range == BalanceTrendTimeRange.custom
-                        ? BalanceTrendCustomRangeCard(
-                            key: const ValueKey('customRange'),
-                            start: _customStart!,
-                            end: _customEnd!,
-                            onStartChanged: _onCustomStartChanged,
-                            onEndChanged: _onCustomEndChanged,
-                          )
-                        : const SizedBox.shrink(key: ValueKey('emptyRange')),
-                  ),
+                // 第二层:自定义日期范围卡片(仅 custom 模式显示)
+                AnimatedSize(
+                  duration: appConfigService.cardSizeAnimationDuration.value,
+                  curve: AppCurves.quick,
+                  child: _range == BalanceTrendTimeRange.custom
+                      ? BalanceTrendCustomRangeCard(
+                          key: const ValueKey('customRange'),
+                          start: _customStart!,
+                          end: _customEnd!,
+                          onStartChanged: _onCustomStartChanged,
+                          onEndChanged: _onCustomEndChanged,
+                        )
+                      : const SizedBox.shrink(key: ValueKey('emptyRange')),
+                ),
 
-                  const SizedBox(height: 12),
-                  BalanceTrendStatsCard(
-                    trend: _trend,
-                    isLoading: _isLoading,
-                    themeColor: widget.themeColor,
-                  ),
-                  const SizedBox(height: 12),
-                  BalanceTrendChartCard(
-                    trend: _trend,
-                    isLoading: _isLoading,
-                    themeColor: widget.themeColor,
-                  ),
-                  const SizedBox(height: 12),
-                  BalanceTrendRawRecordsCard(records: _records),
-                  const SizedBox(height: 24),
-                ],
-              ),
+                const SizedBox(height: 12),
+                BalanceTrendStatsCard(
+                  trend: state.trend,
+                  isLoading: state.isLoading,
+                  themeColor: widget.themeColor,
+                ),
+                const SizedBox(height: 12),
+                BalanceTrendChartCard(
+                  trend: state.trend,
+                  isLoading: state.isLoading,
+                  themeColor: widget.themeColor,
+                ),
+                const SizedBox(height: 12),
+                BalanceTrendRawRecordsCard(records: state.records),
+                const SizedBox(height: 24),
+              ],
             ),
+          );
+        },
+      ),
     );
   }
 }

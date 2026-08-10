@@ -3,6 +3,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/class_schedule_inquiry/class_schedule_inquiry_detail_page.dart';
 import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/class_schedule_inquiry_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -41,7 +42,11 @@ void main() {
     SharedPreferences.setMockInitialValues({'showWeekend': false});
     final prefs = await SharedPreferences.getInstance();
     getIt.registerSingleton<AppConfigProvider>(AppConfigProvider(prefs));
-    getIt.registerSingleton<ZhjwApiService>(_FakeZhjwApiService());
+    final api = _FakeZhjwApiService();
+    getIt.registerSingleton<ZhjwApiService>(api);
+    getIt.registerSingleton<ClassScheduleInquiryProvider>(
+      ClassScheduleInquiryProvider(api),
+    );
   });
 
   tearDown(() async {

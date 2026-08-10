@@ -10,11 +10,18 @@ import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
+import 'package:bugaoshan/providers/class_schedule_inquiry_provider.dart';
+import 'package:bugaoshan/providers/classroom_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/providers/exam_plan_provider.dart';
+import 'package:bugaoshan/providers/fitness_test_provider.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
+import 'package:bugaoshan/providers/network_device_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/providers/service_applications_provider.dart';
 import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/services/api/ccyl_api_service.dart';
+import 'package:bugaoshan/services/api/fitness_api_service.dart';
 import 'package:bugaoshan/services/api/payapp_api_service.dart';
 import 'package:bugaoshan/services/api/service_api_service.dart';
 import 'package:bugaoshan/services/api/wfw_api_service.dart';
@@ -147,6 +154,10 @@ void _configureAsyncDependencies() {
     await getIt.isReady<WfwAuth>();
     return WfwApiService(getIt<WfwAuth>());
   });
+  getIt.registerSingletonAsync<FitnessApiService>(() async {
+    await getIt.isReady<FitnessAuth>();
+    return FitnessApiService(getIt<FitnessAuth>());
+  });
   getIt.registerSingletonAsync<PayAppApiService>(() async {
     await getIt.isReady<PayAppAuth>();
     return PayAppApiService(getIt<PayAppAuth>());
@@ -216,6 +227,35 @@ void _configureAsyncDependencies() {
     final prefs = getIt<SharedPreferences>();
     final zhjwApi = getIt<ZhjwApiService>();
     return PlanCompletionProvider(prefs, zhjwApi);
+  });
+  getIt.registerSingletonAsync<FitnessTestProvider>(() async {
+    await getIt.isReady<SharedPreferences>();
+    await getIt.isReady<FitnessApiService>();
+    return FitnessTestProvider(
+      getIt<SharedPreferences>(),
+      getIt<FitnessApiService>(),
+    );
+  });
+  getIt.registerSingletonAsync<NetworkDeviceProvider>(() async {
+    await getIt.isReady<WfwApiService>();
+    await getIt.isReady<WfwAuth>();
+    return NetworkDeviceProvider(getIt<WfwApiService>(), getIt<WfwAuth>());
+  });
+  getIt.registerSingletonAsync<ClassroomProvider>(() async {
+    await getIt.isReady<ZhjwApiService>();
+    return ClassroomProvider(getIt<ZhjwApiService>());
+  });
+  getIt.registerSingletonAsync<ClassScheduleInquiryProvider>(() async {
+    await getIt.isReady<ZhjwApiService>();
+    return ClassScheduleInquiryProvider(getIt<ZhjwApiService>());
+  });
+  getIt.registerSingletonAsync<ExamPlanProvider>(() async {
+    await getIt.isReady<ZhjwApiService>();
+    return ExamPlanProvider(getIt<ZhjwApiService>());
+  });
+  getIt.registerSingletonAsync<ServiceApplicationsProvider>(() async {
+    await getIt.isReady<ServiceApiService>();
+    return ServiceApplicationsProvider(getIt<ServiceApiService>());
   });
   getIt.registerSingletonAsync<BalanceQueryProvider>(() async {
     await getIt.isReady<SharedPreferences>();
@@ -297,6 +337,24 @@ void _configureAsyncDependencies() {
         }
         if (getIt.isRegistered<UserInfoProvider>()) {
           getIt<UserInfoProvider>().clear();
+        }
+        if (getIt.isRegistered<FitnessTestProvider>()) {
+          getIt<FitnessTestProvider>().clear();
+        }
+        if (getIt.isRegistered<NetworkDeviceProvider>()) {
+          getIt<NetworkDeviceProvider>().clear();
+        }
+        if (getIt.isRegistered<ClassroomProvider>()) {
+          getIt<ClassroomProvider>().clear();
+        }
+        if (getIt.isRegistered<ClassScheduleInquiryProvider>()) {
+          getIt<ClassScheduleInquiryProvider>().clear();
+        }
+        if (getIt.isRegistered<ExamPlanProvider>()) {
+          getIt<ExamPlanProvider>().clear();
+        }
+        if (getIt.isRegistered<ServiceApplicationsProvider>()) {
+          getIt<ServiceApplicationsProvider>().clear();
         }
       }
     });

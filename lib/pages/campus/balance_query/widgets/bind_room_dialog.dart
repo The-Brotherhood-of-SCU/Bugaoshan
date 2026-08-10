@@ -34,12 +34,7 @@ class BindRoomDialogState extends State<BindRoomDialog> {
   @override
   void initState() {
     super.initState();
-    widget.provider.addListener(_onProviderChanged);
     _loadCampuses();
-  }
-
-  void _onProviderChanged() {
-    if (mounted) setState(() {});
   }
 
   Future<void> _loadCampuses() async {
@@ -158,7 +153,6 @@ class BindRoomDialogState extends State<BindRoomDialog> {
 
   @override
   void dispose() {
-    widget.provider.removeListener(_onProviderChanged);
     _roomNoController.dispose();
     super.dispose();
   }
@@ -187,6 +181,13 @@ class BindRoomDialogState extends State<BindRoomDialog> {
 
   @override
   Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: widget.provider,
+      builder: (context, _) => _buildDialog(context),
+    );
+  }
+
+  Widget _buildDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isLoading = _isVerifying || _isSelectionLoading;
     final error = _verifyError ?? _selectionError?.toString();

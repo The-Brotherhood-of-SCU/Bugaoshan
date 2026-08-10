@@ -4,59 +4,44 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/user_info_provider.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 
-class UserInfoCard extends StatefulWidget {
+class UserInfoCard extends StatelessWidget {
   const UserInfoCard({super.key});
 
   @override
-  State<UserInfoCard> createState() => _UserInfoCardState();
-}
-
-class _UserInfoCardState extends State<UserInfoCard> {
-  final _provider = getIt<UserInfoProvider>();
-
-  @override
-  void initState() {
-    super.initState();
-    _provider.addListener(_onChanged);
-  }
-
-  @override
-  void dispose() {
-    _provider.removeListener(_onChanged);
-    super.dispose();
-  }
-
-  void _onChanged() {
-    if (mounted) setState(() {});
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final provider = getIt<UserInfoProvider>();
+    return ListenableBuilder(
+      listenable: provider,
+      builder: (context, _) => _buildContent(context, provider),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, UserInfoProvider provider) {
     final theme = Theme.of(context);
     final localizations = AppLocalizations.of(context)!;
     final primaryColor = theme.colorScheme.primary;
 
     // 未登录或尚未获取，不显示
-    if (!_provider.hasData && !_provider.loading && !_provider.error) {
+    if (!provider.hasData && !provider.loading && !provider.error) {
       return const SizedBox.shrink();
     }
 
     Widget child;
     VoidCallback? onTap;
 
-    if (_provider.loading) {
+    if (provider.loading) {
       child = _buildLoadingContent(theme, localizations);
       onTap = null;
-    } else if (_provider.error) {
+    } else if (provider.error) {
       child = _buildErrorContent(theme, localizations, primaryColor);
-      onTap = _provider.retry;
+      onTap = provider.retry;
     } else {
-      final labels = _provider.labels;
+      final labels = provider.labels;
       if (labels == null || labels.isEmpty) {
         return const SizedBox.shrink();
       }
       child = _buildLabelsContent(theme, primaryColor, localizations, labels);
-      onTap = _provider.retry;
+      onTap = provider.retry;
     }
 
     return StyledCard(

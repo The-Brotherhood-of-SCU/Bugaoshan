@@ -141,6 +141,44 @@ void main() {
     expect(harness.provider.buildingState('jiangAn').value, isNotEmpty);
     expect(harness.provider.unitState('jiangAn', 'west').value, isNotEmpty);
   });
+
+  test('趋势缓存会在记录新余额后失效并重新读取历史', () async {
+    var now = DateTime(2026, 8, 10, 12);
+    final harness = await _createProvider(now: () => now);
+    addTearDown(harness.dispose);
+    final since = now.toUtc().subtract(const Duration(days: 1));
+
+    await harness.provider.ensureTrend(
+      balanceType: kBalanceTypeElectric,
+      since: since,
+      until: null,
+    );
+    expect(
+      harness.provider
+          .trendStateFor(
+            balanceType: kBalanceTypeElectric,
+            since: since,
+            until: null,
+          )
+          .records,
+      isEmpty,
+    );
+
+    await harness.provider.refreshBalance(kBalanceTypeElectric);
+    await harness.provider.ensureTrend(
+      balanceType: kBalanceTypeElectric,
+      since: since,
+      until: null,
+    );
+
+    final trend = harness.provider.trendStateFor(
+      balanceType: kBalanceTypeElectric,
+      since: since,
+      until: null,
+    );
+    expect(trend.hasValue, isTrue);
+    expect(trend.records, hasLength(1));
+  });
 }
 
 Future<_ProviderHarness> _createProvider({

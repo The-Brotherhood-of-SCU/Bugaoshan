@@ -4,6 +4,7 @@ import 'package:bugaoshan/services/api/api_request.dart';
 import 'package:bugaoshan/services/auth/wfw_auth.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/utils/constants.dart';
 
 /// 微服务 API Service（第1层）
 ///
@@ -41,6 +42,23 @@ class WfwApiService {
     return json;
   }
 
+  static const _baseUrl = 'https://wfw.scu.edu.cn';
+
+  Map<String, String> get _networkHeaders => {
+    'Accept': 'application/json, text/plain, */*',
+    'Content-Type': 'application/json; charset=UTF-8',
+    'Origin': _baseUrl,
+    'Referer': _baseUrl,
+    'User-Agent': kDefaultUserAgent,
+    'X-Requested-With': 'XMLHttpRequest',
+  };
+
+  bool _isSuccess(Map<String, dynamic> json) =>
+      json['e'] == 0 || json['e']?.toString() == '0';
+
+  ServiceException _businessError(Map<String, dynamic> json, String fallback) =>
+      ServiceException(json['m']?.toString() ?? fallback);
+
   /// 获取用户信息标签
   Future<List<Map<String, dynamic>>> fetchProfileLabels() async {
     final json = await _request((client) async {
@@ -76,5 +94,54 @@ class WfwApiService {
       return json['d']['base'] as Map<String, dynamic>?;
     }
     return null;
+  }
+
+  /// 获取当前账号的校园网在线设备列表。
+  ///
+  /// 认证失效响应（包括微服务的 `e == 10013`）由 [_decodeResponse]
+  /// 转为 [UnauthenticatedException]，再由 [_request] 重新建立 WFW session
+  /// 并只重试一次。
+  Future<List<Map<String, dynamic>>> fetchNetworkDevices() async {
+    final json = await _request((client) async {
+      final resp = await client.post(
+        Uri.parse('$_baseUrl/netclient/wap/default/get-index'),
+        headers: _networkHeaders,
+      );
+      return _decodeResponse(resp.body, resp.statusCode);
+    });
+
+    if (!_isSuccess(json)) {
+      throw _businessError(json, '获取设备信息失败');
+    }
+    final list = json['d']?['list'];
+    if (list is! List) {
+      throw const ServiceException('获取设备信息失败');
+    }
+    return list
+        .whereType<Map>()
+        .map((item) => Map<String, dynamic>.from(item))
+        .toList(growable: false);
+  }
+
+  /// 强制指定校园网设备下线。
+  Future<void> forceNetworkDeviceOffline({
+    required String deviceId,
+    required String ip,
+  }) async {
+    final json = await _request((client) async {
+      final resp = await client.post(
+        Uri.parse('$_baseUrl/netclient/wap/default/offline'),
+        headers: {
+          ..._networkHeaders,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {'device_id': deviceId, 'ip': ip},
+      );
+      return _decodeResponse(resp.body, resp.statusCode);
+    });
+
+    if (!_isSuccess(json)) {
+      throw _businessError(json, '设备下线失败');
+    }
   }
 }

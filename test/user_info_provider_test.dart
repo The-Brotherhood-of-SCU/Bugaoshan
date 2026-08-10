@@ -150,6 +150,26 @@ void main() {
       provider.dispose();
     },
   );
+
+  test(
+    'exposes the complete profile without exposing a mutable cache',
+    () async {
+      final auth = _FakeWfwAuth(ready: true);
+      final api = _ControllableWfwApiService();
+      final provider = UserInfoProvider(auth, api);
+      await Future<void>.delayed(Duration.zero);
+
+      api.complete(0, name: 'test-user', number: '20250001');
+      await Future<void>.delayed(Duration.zero);
+
+      final profile = provider.profile;
+      expect(profile?['realname'], 'test-user');
+      expect((profile?['role'] as Map<String, dynamic>)['number'], '20250001');
+      expect(() => profile!['realname'] = 'mutated', throwsUnsupportedError);
+      expect(provider.profile?['realname'], 'test-user');
+      provider.dispose();
+    },
+  );
 }
 
 typedef _PersistenceRequest = ({

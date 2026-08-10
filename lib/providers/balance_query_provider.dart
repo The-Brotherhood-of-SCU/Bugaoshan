@@ -8,6 +8,7 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/api/balance_query_service.dart';
 import 'package:bugaoshan/services/api/payapp_api_service.dart';
 import 'package:bugaoshan/services/auth/payapp_auth.dart';
+import 'package:bugaoshan/services/balance/balance_trend_calculator.dart';
 import 'package:bugaoshan/services/database_service.dart';
 import 'package:bugaoshan/utils/beijing_time.dart';
 
@@ -75,6 +76,63 @@ class _BalanceCacheKey {
   int get hashCode => Object.hash(roomKey, balanceType);
 }
 
+/// Provider 暴露给余额趋势页的历史记录快照。
+///
+/// 日期范围是查询条件的一部分，因此每个房间、余额类型和范围各自拥有一份
+/// 内存状态；页面只保存范围选择等纯交互状态。
+@immutable
+class BalanceTrendState {
+  const BalanceTrendState({
+    this.records = const [],
+    this.trend = const TrendResult.empty(),
+    this.hasValue = false,
+    this.isLoading = false,
+    this.error,
+  });
+
+  final List<BalanceRecord> records;
+  final TrendResult trend;
+  final bool hasValue;
+  final bool isLoading;
+  final Object? error;
+}
+
+class _TrendCacheKey {
+  const _TrendCacheKey(this.roomKey, this.balanceType, this.since, this.until);
+
+  final String roomKey;
+  final int balanceType;
+  final DateTime? since;
+  final DateTime? until;
+
+  @override
+  bool operator ==(Object other) =>
+      other is _TrendCacheKey &&
+      other.roomKey == roomKey &&
+      other.balanceType == balanceType &&
+      other.since == since &&
+      other.until == until;
+
+  @override
+  int get hashCode => Object.hash(roomKey, balanceType, since, until);
+}
+
+class _TrendEntry {
+  List<BalanceRecord>? records;
+  TrendResult trend = const TrendResult.empty();
+  bool isLoading = false;
+  Object? error;
+  Future<void>? inFlight;
+
+  BalanceTrendState get state => BalanceTrendState(
+    records: records ?? const [],
+    trend: trend,
+    hasValue: records != null,
+    isLoading: isLoading,
+    error: error,
+  );
+}
+
 class BalanceQueryProvider extends ChangeNotifier {
   final SharedPreferences _prefs;
   final PayAppApiService _payappApi;
@@ -84,6 +142,7 @@ class BalanceQueryProvider extends ChangeNotifier {
   final DateTime Function() _now;
 
   final _balanceEntries = <_BalanceCacheKey, _ResourceEntry<RoomInfo>>{};
+  final _trendEntries = <_TrendCacheKey, _TrendEntry>{};
   final _campusEntry = _ResourceEntry<List<CampusItem>>();
   final _buildingEntries = <String, _ResourceEntry<List<BuildingItem>>>{};
   final _unitEntries = <String, _ResourceEntry<List<UnitItem>>>{};
@@ -444,23 +503,79 @@ class BalanceQueryProvider extends ChangeNotifier {
     return future;
   }
 
+  /// 读取当前房间和日期范围对应的趋势快照。
+  BalanceTrendState trendStateFor({
+    required int balanceType,
+    DateTime? since,
+    DateTime? until,
+  }) {
+    final binding = currentBinding;
+    if (binding == null) return const BalanceTrendState();
+    return _trendEntryFor(binding, balanceType, since, until).state;
+  }
+
+  /// 确保指定房间、余额类型和日期范围的趋势历史已加载。
+  Future<void> ensureTrend({
+    required int balanceType,
+    DateTime? since,
+    DateTime? until,
+    bool force = false,
+  }) async {
+    final binding = currentBinding;
+    if (binding == null) return;
+    final entry = _trendEntryFor(binding, balanceType, since, until);
+    if (!force && entry.records != null) return;
+    final pending = entry.inFlight;
+    if (pending != null) return pending;
+
+    entry.isLoading = true;
+    entry.error = null;
+    if (force) {
+      entry.records = null;
+      entry.trend = const TrendResult.empty();
+    }
+    notifyListeners();
+
+    final from = since ?? _now().toUtc().subtract(_balanceHistoryRetention);
+    Future<void> load() async {
+      try {
+        final records = await _db.getBalanceRecords(
+          roomKey: _roomKeyFor(binding),
+          balanceType: balanceType,
+          since: from,
+          until: until,
+        );
+        entry.records = List.unmodifiable(records);
+        entry.trend = BalanceTrendCalculator.calculate(entry.records!);
+      } catch (e) {
+        entry.error = e;
+        rethrow;
+      } finally {
+        entry.isLoading = false;
+        entry.inFlight = null;
+        notifyListeners();
+      }
+    }
+
+    final request = load();
+    entry.inFlight = request;
+    return request;
+  }
+
   /// 拉取指定房间+类型的历史记录(默认 1 年)。
-  /// 若 [since] 为 null 则取 [_balanceHistoryRetention] 之前到现在。
-  /// [until] 为 null 表示不设上界(到现在)。
+  ///
+  /// 保留给非 UI 调用方兼容；趋势页面通过 [trendStateFor] 读取状态。
   Future<List<BalanceRecord>> getBalanceHistory({
     required int balanceType,
     DateTime? since,
     DateTime? until,
   }) async {
-    final binding = currentBinding;
-    if (binding == null) return const [];
-    final from = since ?? _now().toUtc().subtract(_balanceHistoryRetention);
-    return _db.getBalanceRecords(
-      roomKey: _roomKeyFor(binding),
+    await ensureTrend(balanceType: balanceType, since: since, until: until);
+    return trendStateFor(
       balanceType: balanceType,
-      since: from,
+      since: since,
       until: until,
-    );
+    ).records;
   }
 
   _ResourceEntry<RoomInfo> _balanceEntryFor(
@@ -474,6 +589,24 @@ class BalanceQueryProvider extends ChangeNotifier {
   void _evictBalanceEntriesFor(RoomBinding binding) {
     final roomKey = _roomKeyFor(binding);
     _balanceEntries.removeWhere((key, _) => key.roomKey == roomKey);
+    _trendEntries.removeWhere((key, _) => key.roomKey == roomKey);
+  }
+
+  _TrendEntry _trendEntryFor(
+    RoomBinding binding,
+    int balanceType,
+    DateTime? since,
+    DateTime? until,
+  ) {
+    final key = _TrendCacheKey(_roomKeyFor(binding), balanceType, since, until);
+    return _trendEntries.putIfAbsent(key, _TrendEntry.new);
+  }
+
+  void _evictTrendEntriesFor(RoomBinding binding, int balanceType) {
+    final roomKey = _roomKeyFor(binding);
+    _trendEntries.removeWhere(
+      (key, _) => key.roomKey == roomKey && key.balanceType == balanceType,
+    );
   }
 
   bool _isFresh<T>(_ResourceEntry<T> entry, Duration cacheDuration) {
@@ -509,6 +642,7 @@ class BalanceQueryProvider extends ChangeNotifier {
       await _db.deleteBalanceRecordsBefore(
         now.subtract(_balanceHistoryRetention),
       );
+      _evictTrendEntriesFor(binding, balanceType);
     } catch (e) {
       debugPrint('Failed to record balance history: $e');
     }
