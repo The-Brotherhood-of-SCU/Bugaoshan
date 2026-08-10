@@ -4,6 +4,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
+import 'package:bugaoshan/widgets/common/icon_info_row.dart';
 import 'package:bugaoshan/widgets/common/image_viewer.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
@@ -427,16 +428,16 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
             const SizedBox(height: 12),
             if (activity.activityAddress != null &&
                 activity.activityAddress!.isNotEmpty)
-              _buildInfoRow(
-                Icons.location_on,
-                l10n.ccylActivityAddress,
-                activity.activityAddress!,
+              IconInfoRow(
+                icon: Icons.location_on,
+                label: l10n.ccylActivityAddress,
+                value: activity.activityAddress!,
               ),
             if (activity.mobile != null && activity.mobile!.isNotEmpty)
-              _buildInfoRow(
-                Icons.phone,
-                l10n.ccylContactPhone,
-                activity.mobile!,
+              IconInfoRow(
+                icon: Icons.phone,
+                label: l10n.ccylContactPhone,
+                value: activity.mobile!,
               ),
           ],
         ),
@@ -459,16 +460,20 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
-            _buildInfoRow(Icons.people, l10n.ccylQuota, '${activity.quota}'),
-            _buildInfoRow(
-              Icons.flag,
-              l10n.ccylActivityTarget,
-              activity.activityTargetName ?? activity.activityTarget,
+            IconInfoRow(
+              icon: Icons.people,
+              label: l10n.ccylQuota,
+              value: '${activity.quota}',
             ),
-            _buildInfoRow(
-              Icons.schedule,
-              l10n.ccylHours,
-              '${activity.classHour}',
+            IconInfoRow(
+              icon: Icons.flag,
+              label: l10n.ccylActivityTarget,
+              value: activity.activityTargetName ?? activity.activityTarget,
+            ),
+            IconInfoRow(
+              icon: Icons.schedule,
+              label: l10n.ccylHours,
+              value: '${activity.classHour}',
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -513,19 +518,27 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
-            _buildInfoRow(Icons.collections, l10n.ccylSeriesName, lib.name),
-            _buildInfoRow(Icons.business, l10n.ccylOrganizer, lib.orgName),
+            IconInfoRow(
+              icon: Icons.collections,
+              label: l10n.ccylSeriesName,
+              value: lib.name,
+            ),
+            IconInfoRow(
+              icon: Icons.business,
+              label: l10n.ccylOrganizer,
+              value: lib.orgName,
+            ),
             if (lib.levelName != null)
-              _buildInfoRow(
-                Icons.star,
-                l10n.ccylStarLevel,
-                lib.starName ?? lib.star,
+              IconInfoRow(
+                icon: Icons.star,
+                label: l10n.ccylStarLevel,
+                value: lib.starName ?? lib.star,
               ),
             if (lib.qualityName != null)
-              _buildInfoRow(
-                Icons.emoji_events,
-                l10n.ccylQuality,
-                lib.qualityName!,
+              IconInfoRow(
+                icon: Icons.emoji_events,
+                label: l10n.ccylQuality,
+                value: lib.qualityName!,
               ),
           ],
         ),
@@ -615,37 +628,6 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildInfoRow(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            icon,
-            size: 18,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            '$label: ',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activity_detail_page.dart';
+import 'package:bugaoshan/widgets/common/icon_info_row.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 
@@ -273,54 +274,30 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
-            _buildInfoRow(
-              Icons.star,
-              l10n.ccylStarLevel,
-              lib.starName ?? lib.star,
+            IconInfoRow(
+              icon: Icons.star,
+              label: l10n.ccylStarLevel,
+              value: lib.starName ?? lib.star,
             ),
             if (lib.qualityName != null)
-              _buildInfoRow(
-                Icons.emoji_events,
-                l10n.ccylQuality,
-                lib.qualityName!,
+              IconInfoRow(
+                icon: Icons.emoji_events,
+                label: l10n.ccylQuality,
+                value: lib.qualityName!,
               ),
             if (lib.scoreTypeNames != null)
-              _buildInfoRow(
-                Icons.school,
-                l10n.ccylScoreType,
-                lib.scoreTypeNames!,
+              IconInfoRow(
+                icon: Icons.school,
+                label: l10n.ccylScoreType,
+                value: lib.scoreTypeNames!,
               ),
-            _buildInfoRow(Icons.schedule, l10n.ccylHours, '${lib.classHour}'),
+            IconInfoRow(
+              icon: Icons.schedule,
+              label: l10n.ccylHours,
+              value: '${lib.classHour}',
+            ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 18,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            '$label: ',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-          Text(
-            value,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-          ),
-        ],
       ),
     );
   }
@@ -340,23 +317,27 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
-            _buildInfoRow(Icons.person, l10n.ccylLiablePerson, lib.liablePer),
-            _buildInfoRow(
-              Icons.phone,
-              l10n.ccylLiablePhone,
-              lib.liablePerPhone,
+            IconInfoRow(
+              icon: Icons.person,
+              label: l10n.ccylLiablePerson,
+              value: lib.liablePer,
+            ),
+            IconInfoRow(
+              icon: Icons.phone,
+              label: l10n.ccylLiablePhone,
+              value: lib.liablePerPhone,
             ),
             if (lib.liableTer.isNotEmpty) ...[
               const Divider(),
-              _buildInfoRow(
-                Icons.person_outline,
-                l10n.ccylLiableTeacher,
-                lib.liableTer,
+              IconInfoRow(
+                icon: Icons.person_outline,
+                label: l10n.ccylLiableTeacher,
+                value: lib.liableTer,
               ),
-              _buildInfoRow(
-                Icons.phone_outlined,
-                l10n.ccylLiablePhone,
-                lib.liableTerPhone,
+              IconInfoRow(
+                icon: Icons.phone_outlined,
+                label: l10n.ccylLiablePhone,
+                value: lib.liableTerPhone,
               ),
             ],
           ],
