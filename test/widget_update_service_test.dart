@@ -4,19 +4,20 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
+import 'package:bugaoshan/utils/constants.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   tearDown(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(MethodChannel('bugaoshan/update'), null);
+        .setMockMethodCallHandler(kUpdateMethodChannel, null);
   });
 
   test('debounce collapses repeated calls', () {
     fakeAsync((fa) {
       int calls = 0;
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(MethodChannel('bugaoshan/update'), (
+          .setMockMethodCallHandler(kUpdateMethodChannel, (
             MethodCall call,
           ) async {
             calls++;
@@ -42,7 +43,7 @@ void main() {
   test('force triggers immediate run', () async {
     int calls = 0;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(MethodChannel('bugaoshan/update'), (
+        .setMockMethodCallHandler(kUpdateMethodChannel, (
           MethodCall call,
         ) async {
           calls++;
@@ -62,7 +63,7 @@ void main() {
     final started = Completer<void>();
 
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(MethodChannel('bugaoshan/update'), (
+        .setMockMethodCallHandler(kUpdateMethodChannel, (
           MethodCall call,
         ) async {
           calls++;
@@ -98,7 +99,7 @@ void main() {
 
   test('errors complete waiting callers', () async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(MethodChannel('bugaoshan/update'), (
+        .setMockMethodCallHandler(kUpdateMethodChannel, (
           MethodCall call,
         ) async {
           throw PlatformException(code: 'ERR', message: 'failed');
@@ -118,7 +119,7 @@ void main() {
   test('dispose completes pending futures with StateError', () async {
     final block = Completer<void>();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(MethodChannel('bugaoshan/update'), (
+        .setMockMethodCallHandler(kUpdateMethodChannel, (
           MethodCall call,
         ) async {
           // never completes to simulate long-running native call

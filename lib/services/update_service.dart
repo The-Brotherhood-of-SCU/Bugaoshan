@@ -6,10 +6,11 @@ import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/services/update_asset_selector.dart';
 import 'package:bugaoshan/services/update_checker.dart';
 import 'package:crypto/crypto.dart' as crypto;
+import 'package:bugaoshan/utils/constants.dart';
 
 import 'package:bugaoshan/models/release_info.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive.dart';
@@ -65,8 +66,7 @@ class UpdateCheckResult {
 }
 
 class UpdateService {
-  static const _repo = 'The-Brotherhood-of-SCU/Bugaoshan';
-  static const _channel = MethodChannel('bugaoshan/update');
+  static const _channel = kUpdateMethodChannel;
 
   final SharedPreferences _prefs;
   final String _currentVersion;
@@ -111,7 +111,7 @@ class UpdateService {
 
   Future<ReleaseInfo?> getLatestReleaseFromGitHub() async {
     final response = await http.get(
-      Uri.parse('https://api.github.com/repos/$_repo/releases/latest'),
+      Uri.parse('https://api.github.com/repos/$kGithubRepo/releases/latest'),
       headers: {'Accept': 'application/vnd.github+json'},
     );
     if (response.statusCode != 200) {
@@ -133,7 +133,7 @@ class UpdateService {
 
   Future<ReleaseInfo> getLatestPrereleaseFromGitHub() async {
     final response = await http.get(
-      Uri.parse('https://api.github.com/repos/$_repo/releases'),
+      Uri.parse('https://api.github.com/repos/$kGithubRepo/releases'),
       headers: {'Accept': 'application/vnd.github+json'},
     );
     if (response.statusCode == 200) {
@@ -164,7 +164,7 @@ class UpdateService {
   Future<(ReleaseInfo? latestStable, ReleaseInfo? latestPreview)>
   getAllLatestReleases() async {
     final response = await http.get(
-      Uri.parse('https://api.github.com/repos/$_repo/releases'),
+      Uri.parse('https://api.github.com/repos/$kGithubRepo/releases'),
       headers: {'Accept': 'application/vnd.github+json'},
     );
     if (response.statusCode != 200) {

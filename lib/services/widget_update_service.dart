@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'package:bugaoshan/utils/constants.dart';
 
 class WidgetUpdateService {
-  static const _channel = MethodChannel('bugaoshan/update');
+  static const _channel = kUpdateMethodChannel;
   static const String _kDisposedMessage = 'WidgetUpdateService disposed';
   Timer? _debounceTimer;
   Completer<void>? _pendingCompleter;

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:flutter/services.dart';
+import 'package:bugaoshan/utils/constants.dart';
 
 /// Service for switching app icons at runtime.
 ///
@@ -12,7 +13,7 @@ import 'package:flutter/services.dart';
 /// applicationId mismatch (debug builds add a .debug suffix to applicationId
 /// but component class names resolve from the Gradle namespace).
 class DynamicIconService {
-  static const MethodChannel _channel = MethodChannel('bugaoshan/dynamic_icon');
+  static const MethodChannel _channel = kDynamicIconMethodChannel;
 
   /// The native channel is only implemented on Android; other platforms
   /// fall back to safe defaults instead of throwing [MissingPluginException].
