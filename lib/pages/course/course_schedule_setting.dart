@@ -10,6 +10,7 @@ import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/info_card.dart';
+import 'package:bugaoshan/widgets/common/section_title.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/theme_shape.dart';
@@ -103,12 +104,12 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         children: [
           // Semester config section
-          _SectionTitle(title: l10n.semesterConfig),
+          SectionTitle(title: l10n.semesterConfig),
           _buildSemesterConfigGroup(context, l10n),
           const SizedBox(height: 14),
 
           // Time slots
-          _SectionTitle(title: l10n.timeSlot),
+          SectionTitle(title: l10n.timeSlot),
           InfoCard(
             children: [
               IconTile(
@@ -141,7 +142,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
           const SizedBox(height: 14),
 
           // Course style entry
-          _SectionTitle(title: l10n.courseStyleSetting),
+          SectionTitle(title: l10n.courseStyleSetting),
           InfoCard(
             children: [
               IconTile(
@@ -395,24 +396,6 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
       timeSlots: _timeSlots,
     );
     await courseProvider.updateScheduleConfig(config);
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  final String title;
-  const _SectionTitle({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 0, 10, 8),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: Theme.of(context).colorScheme.primary,
-        ),
-      ),
-    );
   }
 }
 
