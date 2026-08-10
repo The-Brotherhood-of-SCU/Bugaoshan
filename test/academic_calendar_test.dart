@@ -25,13 +25,13 @@ void main() {
     test('Parses JSON correctly', () {
       final data = AcademicCalendarData.fromJsonString(jsonStr);
       expect(data.semesters.length, 1);
-      
+
       final semester = data.semesters.first;
       expect(semester.name, '2026-2027学年秋季学期');
       expect(semester.startDate, DateTime(2026, 9, 7));
       expect(semester.totalWeeks, 20);
       expect(semester.events.length, 3);
-      
+
       final event1 = semester.events[0];
       expect(event1.label, '开学注册/正式上课');
       expect(event1.tag, 'start');
@@ -88,12 +88,22 @@ void main() {
       // Week 2 Mon
       expect(semester.getCurrentWeek(DateTime(2026, 9, 14)), 2);
       // Week 20 Sun
-      expect(semester.getCurrentWeek(DateTime(2026, 9, 7).add(const Duration(days: 20 * 7 - 1))), 20);
-      
+      expect(
+        semester.getCurrentWeek(
+          DateTime(2026, 9, 7).add(const Duration(days: 20 * 7 - 1)),
+        ),
+        20,
+      );
+
       // Before semester
       expect(semester.getCurrentWeek(DateTime(2026, 9, 6)), isNull);
       // After semester
-      expect(semester.getCurrentWeek(DateTime(2026, 9, 7).add(const Duration(days: 20 * 7))), isNull);
+      expect(
+        semester.getCurrentWeek(
+          DateTime(2026, 9, 7).add(const Duration(days: 20 * 7)),
+        ),
+        isNull,
+      );
     });
   });
 
