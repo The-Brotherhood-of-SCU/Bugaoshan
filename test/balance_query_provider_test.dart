@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/models/balance_record.dart';
 import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_list.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
@@ -211,6 +212,79 @@ void main() {
     expect(harness.provider.bindings.single.roomNo, 'A');
   });
 
+  test('旧版余额历史只会迁移到唯一匹配的账号', () async {
+    final now = DateTime(2026, 8, 10, 12).toUtc();
+    final harness = await _createProvider(
+      bindings: [_binding('A', cusNo: 'student-a')],
+      initialUserId: 'student-a',
+      legacyRecords: [
+        BalanceRecord(
+          roomKey: 'school_building_unit_A',
+          balanceType: kBalanceTypeElectric,
+          timestamp: now,
+          balance: 12,
+          price: 1,
+        ),
+      ],
+    );
+    addTearDown(harness.dispose);
+
+    await harness.provider.ensureTrend(balanceType: kBalanceTypeElectric);
+    expect(
+      harness.provider.trendStateFor(balanceType: kBalanceTypeElectric).records,
+      hasLength(1),
+    );
+    expect(
+      (await harness.db.query(
+        'balance_records',
+        where: 'room_key = ?',
+        whereArgs: ['school_building_unit_A'],
+      )),
+      isEmpty,
+    );
+    expect(
+      (await harness.db.query(
+        'balance_records',
+        where: 'room_key = ?',
+        whereArgs: ['balance-v2:student-a:school_building_unit_A'],
+      )),
+      hasLength(1),
+    );
+  });
+
+  test('多个账号共用旧房间位置时丢弃历史而不跨账号迁移', () async {
+    final harness = await _createProvider(
+      bindings: [
+        _binding('A', cusNo: 'student-a'),
+        _binding('A', cusNo: 'student-b'),
+      ],
+      initialUserId: 'student-a',
+      legacyRecords: [
+        BalanceRecord(
+          roomKey: 'school_building_unit_A',
+          balanceType: kBalanceTypeElectric,
+          timestamp: DateTime(2026, 8, 10, 12).toUtc(),
+          balance: 12,
+          price: 1,
+        ),
+      ],
+    );
+    addTearDown(harness.dispose);
+
+    expect(
+      await harness.db.query(
+        'balance_records',
+        where: 'room_key LIKE ?',
+        whereArgs: ['%school_building_unit_A%'],
+      ),
+      isEmpty,
+    );
+    expect(
+      harness.provider.trendStateFor(balanceType: kBalanceTypeElectric).records,
+      isEmpty,
+    );
+  });
+
   test('切换账号会隔离余额、趋势和选项缓存', () async {
     final fakeApi = _FakePayAppApiService();
     final harness = await _createProvider(
@@ -300,6 +374,7 @@ Future<_ProviderHarness> _createProvider({
   List<RoomBinding>? bindings,
   int currentIndex = 0,
   String? initialUserId,
+  List<BalanceRecord>? legacyRecords,
   DateTime Function()? now,
 }) async {
   final getIt = GetIt.instance;
@@ -315,6 +390,9 @@ Future<_ProviderHarness> _createProvider({
   final db = await openDatabase(inMemoryDatabasePath, version: 1);
   final dbService = DatabaseService.forTesting(db);
   await dbService.ensureBalanceRecordsTableForTesting();
+  for (final record in legacyRecords ?? const <BalanceRecord>[]) {
+    await dbService.insertBalanceRecord(record);
+  }
   getIt.registerSingleton<AuthLogger>(AuthLogger());
   final scuAuth = ScuAuth(prefs);
   final wfwAuth = WfwAuth(scuAuth);

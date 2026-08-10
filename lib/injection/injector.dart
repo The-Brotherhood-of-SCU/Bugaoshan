@@ -287,7 +287,10 @@ void _configureAsyncDependencies() {
     );
     await balanceProvider.setUserIdentity(currentIdentity());
     authProvider.addListener(() {
-      unawaited(balanceProvider.setUserIdentity(currentIdentity()));
+      final identity = currentIdentity();
+      if (identity != null) {
+        unawaited(balanceProvider.setUserIdentity(identity));
+      }
     });
     return balanceProvider;
   });
@@ -349,6 +352,10 @@ void _configureAsyncDependencies() {
   getIt.isReady<ScuAuth>().then((_) {
     getIt<ScuAuth>().addListener(() {
       final scu = getIt<ScuAuth>();
+      if (getIt.isRegistered<BalanceQueryProvider>() &&
+          scu.state != AuthState.ready) {
+        getIt<BalanceQueryProvider>().clear();
+      }
       if (scu.state == AuthState.unknown) {
         // logout 发生，清理需要登录态的 Provider 缓存
         if (getIt.isRegistered<PlanCompletionProvider>()) {
