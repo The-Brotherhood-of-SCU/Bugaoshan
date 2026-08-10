@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/theme_shape.dart';
 
 /// 登录页输入框。
 ///
@@ -61,25 +62,25 @@ class ScuLoginInputField extends StatelessWidget {
             fillColor ??
             (isDark ? const Color(0xFF2D2F36) : Colors.grey.shade50),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppShapes.medium),
           borderSide: BorderSide(
             color: isDark ? Colors.white12 : Colors.grey.shade300,
             width: 1,
           ),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppShapes.medium),
           borderSide: BorderSide(
             color: isDark ? Colors.white12 : Colors.grey.shade300,
             width: 1,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppShapes.medium),
           borderSide: BorderSide(color: brandColor, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppShapes.medium),
           borderSide: BorderSide(
             color: Theme.of(context).colorScheme.error,
             width: 1,

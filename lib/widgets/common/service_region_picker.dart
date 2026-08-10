@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/theme_shape.dart';
 
 /// 地区节点（省/市/区县），对应办事大厅 dRegion 组件的节点结构。
 class ServiceRegionNode {
@@ -383,7 +384,7 @@ class _SelectorTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(AppShapes.small),
       child: InputDecorator(
         decoration: InputDecoration(
           labelText: label,

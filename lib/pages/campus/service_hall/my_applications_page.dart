@@ -2,6 +2,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/service_api_service.dart';
+import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:flutter/material.dart';
@@ -154,7 +155,7 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppShapes.small),
       ),
       child: Text(label, style: TextStyle(fontSize: 12, color: color)),
     );
