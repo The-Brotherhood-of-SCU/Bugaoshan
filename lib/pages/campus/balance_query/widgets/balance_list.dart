@@ -16,8 +16,13 @@ class _BalanceListState extends State<BalanceList> {
   @override
   void initState() {
     super.initState();
-    // Provider 自己决定是否命中 30 分钟缓存，列表不保存任何余额副本。
-    widget.provider.ensureCurrentBalances();
+    // initState 发生在父级的 build 期间。推迟到首帧结束后再让 Provider
+    // 更新 loading 状态，避免同步 notifyListeners 标记正在构建的父级。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      // Provider 自己决定是否命中 30 分钟缓存，列表不保存任何余额副本。
+      widget.provider.ensureCurrentBalances();
+    });
   }
 
   @override

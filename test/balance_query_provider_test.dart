@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_list.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/services/api/balance_query_service.dart';
@@ -179,6 +182,26 @@ void main() {
     expect(trend.hasValue, isTrue);
     expect(trend.records, hasLength(1));
   });
+
+  testWidgets('余额列表在首帧后才发起首次加载', (tester) async {
+    final fakeApi = _FakePayAppApiService();
+    final harness = await _createProvider(fakeApi: fakeApi);
+    addTearDown(harness.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(body: BalanceList(provider: harness.provider)),
+      ),
+    );
+
+    expect(fakeApi.queryCalls, 2);
+    expect(tester.takeException(), isNull);
+
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Future<_ProviderHarness> _createProvider({
@@ -206,6 +229,7 @@ Future<_ProviderHarness> _createProvider({
   final payAppAuth = PayAppAuth(scuAuth, wfwAuth);
   final appConfig = AppConfigProvider(prefs);
   await appConfig.init();
+  getIt.registerSingleton<AppConfigProvider>(appConfig);
   final provider = BalanceQueryProvider(
     prefs,
     fakeApi ?? _FakePayAppApiService(),
