@@ -8,9 +8,7 @@ import 'package:bugaoshan/services/api/wfw_api_service.dart';
 import 'package:bugaoshan/services/auth/auth_state.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/wfw_auth.dart';
-
-const _keyUserRealname = 'scu_user_realname';
-const _keyUserNumber = 'scu_user_number';
+import 'package:bugaoshan/utils/storage_keys.dart';
 
 typedef _UserInfoResult = ({
   Map<String, dynamic>? profile,
@@ -25,14 +23,14 @@ Future<void> _persistUserInfoToPreferences(
 ) async {
   final prefs = getIt<SharedPreferences>();
   if (realname == null) {
-    await prefs.remove(_keyUserRealname);
+    await prefs.remove(kScuUserRealname);
   } else {
-    await prefs.setString(_keyUserRealname, realname);
+    await prefs.setString(kScuUserRealname, realname);
   }
   if (number == null) {
-    await prefs.remove(_keyUserNumber);
+    await prefs.remove(kScuUserNumber);
   } else {
-    await prefs.setString(_keyUserNumber, number);
+    await prefs.setString(kScuUserNumber, number);
   }
 }
 

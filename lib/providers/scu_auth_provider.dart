@@ -10,10 +10,7 @@ import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/ccyl_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/ocr_service.dart';
-
-const _keyAutoLogin = 'scu_auto_login';
-const _keyUserRealname = 'scu_user_realname';
-const _keyUserNumber = 'scu_user_number';
+import 'package:bugaoshan/utils/storage_keys.dart';
 
 /// 持久化 SCU 登录状态的 Provider，注册为 singleton。
 ///
@@ -40,8 +37,8 @@ class ScuAuthProvider extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = getIt<SharedPreferences>();
-    _userRealname = prefs.getString(_keyUserRealname);
-    _userNumber = prefs.getString(_keyUserNumber);
+    _userRealname = prefs.getString(kScuUserRealname);
+    _userNumber = prefs.getString(kScuUserNumber);
   }
 
   String? _userRealname;
@@ -95,8 +92,8 @@ class ScuAuthProvider extends ChangeNotifier {
     _userRealname = null;
     _userNumber = null;
     final prefs = getIt<SharedPreferences>();
-    await prefs.remove(_keyUserRealname);
-    await prefs.remove(_keyUserNumber);
+    await prefs.remove(kScuUserRealname);
+    await prefs.remove(kScuUserNumber);
     notifyListeners();
   }
 
@@ -117,7 +114,7 @@ class ScuAuthProvider extends ChangeNotifier {
   Future<bool> isAutoLoginEnabled() async {
     try {
       final storage = SecureStorageProvider.instance;
-      final value = await storage.read(key: _keyAutoLogin);
+      final value = await storage.read(key: kScuAutoLogin);
       return value == 'true';
     } catch (e) {
       // 安全存储读取失败（如 Android keystore 损坏）回退为未开启
@@ -131,7 +128,7 @@ class ScuAuthProvider extends ChangeNotifier {
     try {
       final storage = SecureStorageProvider.instance;
       await storage.write(
-        key: _keyAutoLogin,
+        key: kScuAutoLogin,
         value: enabled ? 'true' : 'false',
       );
     } catch (e) {

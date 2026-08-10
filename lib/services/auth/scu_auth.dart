@@ -15,13 +15,10 @@ import 'package:bugaoshan/utils/auth_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/json_utils.dart';
 import 'package:bugaoshan/utils/sm2_crypto.dart';
+import 'package:bugaoshan/utils/storage_keys.dart';
 
 /// 教务系统 base URL（该服务器不支持 HTTPS）
 const kZhjwBase = 'http://zhjw.scu.edu.cn';
-
-const _keyAccessToken = 'scu_access_token';
-const _keyPrincipalBinding = 'scu_principal_binding_v1';
-const _keyLoginTimestamp = 'scu_login_timestamp';
 const _sessionDurationSeconds = 3600;
 
 /// SCU 统一身份认证（第3层）
@@ -106,10 +103,10 @@ class ScuAuth extends ChangeNotifier {
   /// 从安全存储恢复 token（应用启动时调用）。
   Future<void> init() async {
     _accessToken = await SecureStorageProvider.instance.read(
-      key: _keyAccessToken,
+      key: kScuAccessToken,
     );
     _principal = await _restorePrincipal(_accessToken);
-    _loginTimestamp = _prefs.getInt(_keyLoginTimestamp);
+    _loginTimestamp = _prefs.getInt(kScuLoginTimestamp);
 
     if (_accessToken != null && !isExpired) {
       _log.i('ScuAuth', 'init: token restored, ts=$_loginTimestamp');
@@ -271,15 +268,15 @@ class ScuAuth extends ChangeNotifier {
     _bindSessionFuture = null;
     _loginTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final secure = SecureStorageProvider.instance;
-    await secure.write(key: _keyAccessToken, value: _accessToken!);
+    await secure.write(key: kScuAccessToken, value: _accessToken!);
     await secure.write(
-      key: _keyPrincipalBinding,
+      key: kScuPrincipalBinding,
       value: jsonEncode({
         'principal': _principal,
         'tokenFingerprint': _tokenFingerprint(_accessToken!),
       }),
     );
-    await _prefs.setInt(_keyLoginTimestamp, _loginTimestamp!);
+    await _prefs.setInt(kScuLoginTimestamp, _loginTimestamp!);
     _log.i('ScuAuth', 'login: ok, token len=${token.length}');
     state = AuthState.ready;
   }
@@ -493,7 +490,7 @@ class ScuAuth extends ChangeNotifier {
       }
       client.close();
       _loginTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      await _prefs.setInt(_keyLoginTimestamp, _loginTimestamp!);
+      await _prefs.setInt(kScuLoginTimestamp, _loginTimestamp!);
       state = AuthState.ready;
       return true;
     } catch (e) {
@@ -540,16 +537,16 @@ class ScuAuth extends ChangeNotifier {
     _cachedClient = null;
     _bindSessionFuture = null;
     _loginTimestamp = null;
-    await SecureStorageProvider.instance.delete(key: _keyAccessToken);
-    await SecureStorageProvider.instance.delete(key: _keyPrincipalBinding);
-    await _prefs.remove(_keyLoginTimestamp);
+    await SecureStorageProvider.instance.delete(key: kScuAccessToken);
+    await SecureStorageProvider.instance.delete(key: kScuPrincipalBinding);
+    await _prefs.remove(kScuLoginTimestamp);
     state = AuthState.unknown;
   }
 
   Future<String?> _restorePrincipal(String? token) async {
     if (token == null) return null;
     final secure = SecureStorageProvider.instance;
-    final raw = await secure.read(key: _keyPrincipalBinding);
+    final raw = await secure.read(key: kScuPrincipalBinding);
     if (raw == null) return null;
 
     try {
@@ -559,12 +556,12 @@ class ScuAuth extends ChangeNotifier {
       if (principal == null ||
           principal.isEmpty ||
           fingerprint != _tokenFingerprint(token)) {
-        await secure.delete(key: _keyPrincipalBinding);
+        await secure.delete(key: kScuPrincipalBinding);
         return null;
       }
       return principal;
     } catch (_) {
-      await secure.delete(key: _keyPrincipalBinding);
+      await secure.delete(key: kScuPrincipalBinding);
       return null;
     }
   }
@@ -575,23 +572,19 @@ class ScuAuth extends ChangeNotifier {
 
   // ─── 凭据管理（自动登录用）──────────────────────────────────
 
-  static const _keyRememberPassword = 'scu_remember_password';
-  static const _keySavedUsername = 'scu_saved_username';
-  static const _keySavedPassword = 'scu_saved_password';
-
   Future<void> saveCredentials(String username, String password) async {
     final storage = SecureStorageProvider.instance;
-    await storage.write(key: _keyRememberPassword, value: 'true');
-    await storage.write(key: _keySavedUsername, value: username);
-    await storage.write(key: _keySavedPassword, value: password);
+    await storage.write(key: kScuRememberPassword, value: 'true');
+    await storage.write(key: kScuSavedUsername, value: username);
+    await storage.write(key: kScuSavedPassword, value: password);
   }
 
   Future<Map<String, String>?> getSavedCredentials() async {
     final storage = SecureStorageProvider.instance;
-    final remember = await storage.read(key: _keyRememberPassword);
+    final remember = await storage.read(key: kScuRememberPassword);
     if (remember != 'true') return null;
-    final username = await storage.read(key: _keySavedUsername);
-    final password = await storage.read(key: _keySavedPassword);
+    final username = await storage.read(key: kScuSavedUsername);
+    final password = await storage.read(key: kScuSavedPassword);
     if (username != null && password != null) {
       return {'username': username, 'password': password};
     }
@@ -600,9 +593,9 @@ class ScuAuth extends ChangeNotifier {
 
   Future<void> clearCredentials() async {
     final storage = SecureStorageProvider.instance;
-    await storage.delete(key: _keyRememberPassword);
-    await storage.delete(key: _keySavedUsername);
-    await storage.delete(key: _keySavedPassword);
+    await storage.delete(key: kScuRememberPassword);
+    await storage.delete(key: kScuSavedUsername);
+    await storage.delete(key: kScuSavedPassword);
   }
 
   /// 自动登录（从安全存储恢复凭据 + OCR 验证码）。
