@@ -41,7 +41,9 @@ class _ClassroomPageState extends State<ClassroomPage> {
     _provider = getIt<ClassroomProvider>();
     getIt<ScuAuthProvider>().addListener(_onAuthChanged);
     _startClockTimer();
-    _onAuthChanged();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _onAuthChanged();
+    });
   }
 
   void _startClockTimer() {

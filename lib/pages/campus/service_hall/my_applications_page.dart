@@ -27,7 +27,9 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
   void initState() {
     super.initState();
     _provider = getIt<ServiceApplicationsProvider>();
-    _provider.ensureLoaded();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _provider.ensureLoaded();
+    });
   }
 
   @override

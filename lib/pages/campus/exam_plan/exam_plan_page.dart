@@ -27,7 +27,9 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
     super.initState();
     _provider = getIt<ExamPlanProvider>();
     getIt<ScuAuthProvider>().addListener(_onAuthChanged);
-    _onAuthChanged();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _onAuthChanged();
+    });
   }
 
   @override

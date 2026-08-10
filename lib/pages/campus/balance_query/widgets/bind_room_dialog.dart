@@ -34,7 +34,9 @@ class BindRoomDialogState extends State<BindRoomDialog> {
   @override
   void initState() {
     super.initState();
-    _loadCampuses();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadCampuses();
+    });
   }
 
   Future<void> _loadCampuses() async {

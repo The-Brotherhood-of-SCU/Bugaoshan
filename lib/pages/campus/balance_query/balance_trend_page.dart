@@ -48,7 +48,9 @@ class _BalanceTrendPageState extends State<BalanceTrendPage> {
   @override
   void initState() {
     super.initState();
-    _loadHistory();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadHistory();
+    });
   }
 
   /// 确保自定义起止日期已初始化(默认倒数 7 天 ~ 北京今日)。

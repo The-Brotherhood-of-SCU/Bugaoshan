@@ -30,7 +30,9 @@ class _ClassScheduleInquiryDetailPageState
   void initState() {
     super.initState();
     _provider = getIt<ClassScheduleInquiryProvider>();
-    _provider.ensureSchedule(widget.classInfo);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _provider.ensureSchedule(widget.classInfo);
+    });
   }
 
   @override

@@ -26,7 +26,9 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
     super.initState();
     _provider = getIt<ClassScheduleInquiryProvider>();
     getIt<ScuAuthProvider>().addListener(_onAuthChanged);
-    _onAuthChanged();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _onAuthChanged();
+    });
   }
 
   @override

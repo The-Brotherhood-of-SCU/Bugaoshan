@@ -199,6 +199,10 @@ void main() {
     expect(fakeApi.queryCalls, 2);
     expect(tester.takeException(), isNull);
 
+    await Future.wait([
+      harness.provider.ensureBalance(kBalanceTypeElectric),
+      harness.provider.ensureBalance(kBalanceTypeAc),
+    ]);
     await tester.pump();
     expect(tester.takeException(), isNull);
   });
