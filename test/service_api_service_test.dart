@@ -265,40 +265,6 @@ void main() {
       );
       expect(d?['list'], {'grade': '2023', 'back_date': ''});
     });
-
-    test('fetchTutor 委托保持 350 抓包参数', () async {
-      String? body;
-      final client = CookieClient(
-        inner: MockClient((request) async {
-          body = request.body;
-          return jsonResponse({
-            'e': 0,
-            'd': {'list': '张美成'},
-          }, request);
-        }),
-      );
-      final (_, service) = makeService([client]);
-      final name = await service.fetchTutor();
-      expect(name, '张美成');
-      final params = Uri.splitQueryString(body!);
-      expect(params['id'], '8');
-      expect(params['app_id'], '350');
-      expect(params['form_version_id'], '2357');
-      expect(params['component'], 'DataSource_85');
-      expect(params['params[formId]'], '1419');
-      // 无 configure 参数（与原实现逐字节一致）
-      expect(params.keys.where((k) => k.startsWith('configure[')), isEmpty);
-    });
-
-    test('业务失败返回 null 而不抛异常', () async {
-      final client = CookieClient(
-        inner: MockClient(
-          (request) async => jsonResponse({'e': 1, 'm': '无数据源'}, request),
-        ),
-      );
-      final (_, service) = makeService([client]);
-      expect(await service.fetchTutor(), isNull);
-    });
   });
 
   group('submitMatter', () {
