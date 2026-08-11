@@ -19,16 +19,13 @@ class BindRoomDialog extends StatefulWidget {
 
 class BindRoomDialogState extends State<BindRoomDialog> {
   int _step = 0;
-  bool _isLoading = false;
-  String? _error;
+  bool _isVerifying = false;
+  String? _verifyError;
 
-  List<CampusItem> _campuses = [];
   CampusItem? _selectedCampus;
 
-  List<BuildingItem> _buildings = [];
   BuildingItem? _selectedBuilding;
 
-  List<UnitItem> _units = [];
   UnitItem? _selectedUnit;
   bool _hasUnits = true;
 
@@ -37,28 +34,16 @@ class BindRoomDialogState extends State<BindRoomDialog> {
   @override
   void initState() {
     super.initState();
-    _loadCampuses();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadCampuses();
+    });
   }
 
   Future<void> _loadCampuses() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
     try {
-      _campuses = await widget.provider.getCampusList();
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    } catch (e) {
-      debugPrint('Load campuses error: $e');
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _error = e.toString();
-        });
-      }
+      await widget.provider.getCampusList();
+    } catch (_) {
+      // 错误保留在 Provider 的 campusState 中。
     }
   }
 
@@ -66,30 +51,15 @@ class BindRoomDialogState extends State<BindRoomDialog> {
     if (_selectedCampus == null) return;
 
     setState(() {
-      _isLoading = true;
-      _error = null;
-      _buildings = [];
       _selectedBuilding = null;
-      _units = [];
       _selectedUnit = null;
       _hasUnits = true;
     });
 
     try {
-      _buildings = await widget.provider.getArchitectureList(
-        _selectedCampus!.code,
-      );
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    } catch (e) {
-      debugPrint('Load buildings error: $e');
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _error = e.toString();
-        });
-      }
+      await widget.provider.getArchitectureList(_selectedCampus!.code);
+    } catch (_) {
+      // 错误保留在 Provider 的 buildingState 中。
     }
   }
 
@@ -97,22 +67,18 @@ class BindRoomDialogState extends State<BindRoomDialog> {
     if (_selectedCampus == null || _selectedBuilding == null) return;
 
     setState(() {
-      _isLoading = true;
-      _error = null;
-      _units = [];
       _selectedUnit = null;
       _hasUnits = true;
     });
 
     try {
-      _units = await widget.provider.getUnitList(
+      final units = await widget.provider.getUnitList(
         _selectedCampus!.code,
         _selectedBuilding!.code,
       );
       if (mounted) {
         setState(() {
-          _isLoading = false;
-          if (_units.isEmpty) {
+          if (units.isEmpty) {
             _hasUnits = false;
             if (_step >= 2) {
               _step = 3;
@@ -120,14 +86,8 @@ class BindRoomDialogState extends State<BindRoomDialog> {
           }
         });
       }
-    } catch (e) {
-      debugPrint('Load units error: $e');
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _error = e.toString();
-        });
-      }
+    } catch (_) {
+      // 错误保留在 Provider 的 unitState 中。
     }
   }
 
@@ -144,8 +104,8 @@ class BindRoomDialogState extends State<BindRoomDialog> {
     final cusName = auth.userRealname ?? '';
 
     setState(() {
-      _isLoading = true;
-      _error = null;
+      _isVerifying = true;
+      _verifyError = null;
     });
 
     final l10n = AppLocalizations.of(context)!;
@@ -178,16 +138,16 @@ class BindRoomDialogState extends State<BindRoomDialog> {
         Navigator.pop(context, binding);
       } else if (mounted) {
         setState(() {
-          _isLoading = false;
-          _error = l10n.verifyFailedCheckInfo;
+          _isVerifying = false;
+          _verifyError = l10n.verifyFailedCheckInfo;
         });
       }
     } catch (e) {
       debugPrint('Verify error: $e');
       if (mounted) {
         setState(() {
-          _isLoading = false;
-          _error = e.toString();
+          _isVerifying = false;
+          _verifyError = e.toString();
         });
       }
     }
@@ -199,9 +159,40 @@ class BindRoomDialogState extends State<BindRoomDialog> {
     super.dispose();
   }
 
+  bool get _isSelectionLoading {
+    if (_step == 0) return widget.provider.campusState.isLoading;
+    final campus = _selectedCampus;
+    if (campus == null) return false;
+    if (_step == 1) return widget.provider.buildingState(campus.code).isLoading;
+    if (!_hasUnits) return false;
+    final building = _selectedBuilding;
+    if (building == null) return false;
+    return widget.provider.unitState(campus.code, building.code).isLoading;
+  }
+
+  Object? get _selectionError {
+    if (_step == 0) return widget.provider.campusState.error;
+    final campus = _selectedCampus;
+    if (campus == null) return null;
+    if (_step == 1) return widget.provider.buildingState(campus.code).error;
+    if (!_hasUnits) return null;
+    final building = _selectedBuilding;
+    if (building == null) return null;
+    return widget.provider.unitState(campus.code, building.code).error;
+  }
+
   @override
   Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: widget.provider,
+      builder: (context, _) => _buildDialog(context),
+    );
+  }
+
+  Widget _buildDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isLoading = _isVerifying || _isSelectionLoading;
+    final error = _verifyError ?? _selectionError?.toString();
 
     return Dialog(
       child: ConstrainedBox(
@@ -226,7 +217,7 @@ class BindRoomDialogState extends State<BindRoomDialog> {
                 ],
               ),
               const SizedBox(height: 16),
-              if (_error != null)
+              if (error != null)
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -234,7 +225,7 @@ class BindRoomDialogState extends State<BindRoomDialog> {
                     borderRadius: BorderRadius.circular(AppShapes.small),
                   ),
                   child: Text(
-                    _error!,
+                    error,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Theme.of(context).colorScheme.onErrorContainer,
                     ),
@@ -261,7 +252,7 @@ class BindRoomDialogState extends State<BindRoomDialog> {
                 children: [
                   if (_step > 0)
                     TextButton(
-                      onPressed: _isLoading
+                      onPressed: isLoading
                           ? null
                           : () => setState(() => _step--),
                       child: Text(l10n.back),
@@ -270,10 +261,10 @@ class BindRoomDialogState extends State<BindRoomDialog> {
                     const SizedBox(),
                   if (_step < (_hasUnits ? 3 : 2))
                     FilledButton(
-                      onPressed: _canProceed() && !_isLoading
+                      onPressed: _canProceed() && !isLoading
                           ? () => setState(() => _step++)
                           : null,
-                      child: _isLoading
+                      child: isLoading
                           ? const SizedBox(
                               width: 20,
                               height: 20,
@@ -286,7 +277,7 @@ class BindRoomDialogState extends State<BindRoomDialog> {
                     )
                   else
                     FilledButton(
-                      onPressed: _canSubmit() && !_isLoading
+                      onPressed: _canSubmit() && !isLoading
                           ? _verifyAndBind
                           : null,
                       child: Text(l10n.confirm),
@@ -396,7 +387,9 @@ class BindRoomDialogState extends State<BindRoomDialog> {
   }
 
   Widget _buildCampusSelector(AppLocalizations l10n) {
-    if (_isLoading && _campuses.isEmpty) {
+    final state = widget.provider.campusState;
+    final campuses = state.value ?? const <CampusItem>[];
+    if (state.isLoading && campuses.isEmpty) {
       return placeholder();
     }
 
@@ -417,7 +410,7 @@ class BindRoomDialogState extends State<BindRoomDialog> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 12),
-          ..._campuses.map(
+          ...campuses.map(
             (campus) => RadioListTile<CampusItem>(
               title: Text(campus.name),
               value: campus,
@@ -433,7 +426,12 @@ class BindRoomDialogState extends State<BindRoomDialog> {
   }
 
   Widget _buildBuildingSelector(AppLocalizations l10n) {
-    if (_isLoading && _buildings.isEmpty) {
+    final schoolCode = _selectedCampus?.code;
+    final state = schoolCode == null
+        ? const BalanceResourceState<List<BuildingItem>>()
+        : widget.provider.buildingState(schoolCode);
+    final buildings = state.value ?? const <BuildingItem>[];
+    if (state.isLoading && buildings.isEmpty) {
       return placeholder();
     }
 
@@ -454,7 +452,7 @@ class BindRoomDialogState extends State<BindRoomDialog> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 12),
-          ..._buildings.map(
+          ...buildings.map(
             (building) => RadioListTile<BuildingItem>(
               title: Text(building.name),
               value: building,
@@ -466,7 +464,13 @@ class BindRoomDialogState extends State<BindRoomDialog> {
   }
 
   Widget _buildUnitSelector(AppLocalizations l10n) {
-    if (_isLoading && _units.isEmpty) {
+    final schoolCode = _selectedCampus?.code;
+    final regCode = _selectedBuilding?.code;
+    final state = schoolCode == null || regCode == null
+        ? const BalanceResourceState<List<UnitItem>>()
+        : widget.provider.unitState(schoolCode, regCode);
+    final units = state.value ?? const <UnitItem>[];
+    if (state.isLoading && units.isEmpty) {
       return placeholder();
     }
 
@@ -483,7 +487,7 @@ class BindRoomDialogState extends State<BindRoomDialog> {
         children: [
           Text(l10n.selectUnit, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
-          ..._units.map(
+          ...units.map(
             (unit) =>
                 RadioListTile<UnitItem>(title: Text(unit.name), value: unit),
           ),

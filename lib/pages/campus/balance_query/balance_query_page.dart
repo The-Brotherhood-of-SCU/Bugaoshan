@@ -5,227 +5,153 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/balance_query_service.dart';
-import 'package:bugaoshan/services/auth/payapp_auth.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
-import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'widgets/balance_list.dart';
 import 'widgets/bind_room_dialog.dart';
 
-class BalanceQueryPage extends StatefulWidget {
+/// 电费查询入口。
+///
+/// 页面只负责渲染认证和 [BalanceQueryProvider] 的当前快照；余额、绑定选项
+/// 的缓存、加载和错误状态均由 Provider 管理。
+class BalanceQueryPage extends StatelessWidget {
   const BalanceQueryPage({super.key});
 
   @override
-  State<BalanceQueryPage> createState() => _BalanceQueryPageState();
-}
-
-class _BalanceQueryPageState extends State<BalanceQueryPage> {
-  late BalanceQueryProvider _provider;
-  bool _isInitializing = true;
-  LoadErrorType? _initError;
-
-  @override
-  void initState() {
-    super.initState();
-    _provider = getIt<BalanceQueryProvider>();
-    _provider.addListener(_onProviderChanged);
-    getIt<ScuAuthProvider>().addListener(_onAuthChanged);
-    getIt<PayAppAuth>().addListener(_onPayAppAuthChanged);
-    _initProvider();
-  }
-
-  void _onProviderChanged() {
-    if (mounted) setState(() {});
-  }
-
-  void _onAuthChanged() {
-    final auth = getIt<ScuAuthProvider>();
-    if (auth.isLoggedIn && mounted) {
-      _initProvider();
-    } else if (mounted) {
-      setState(() {});
-    }
-  }
-
-  void _onPayAppAuthChanged() {
-    if (getIt<PayAppAuth>().isReady && mounted) {
-      _initProvider();
-    }
-  }
-
-  Future<void> _initProvider() async {
-    if (mounted) {
-      setState(() {
-        _isInitializing = true;
-        _initError = null;
-      });
-    }
-
-    final auth = getIt<ScuAuthProvider>();
-    if (!auth.isLoggedIn) {
-      if (auth.isAutoLoggingIn) return;
-      if (mounted) {
-        setState(() {
-          _isInitializing = false;
-          _initError = LoadErrorType.notLoggedIn;
-        });
-      }
-      return;
-    }
-
-    // 不在此等待 PayAppAuth.isReady：PayAppApiService 的 _request 模板
-    // 通过 PayAppAuth.getClient 自驱动 SSO 认证，预热失败会走 catch 分支
-    // 显示可重试的错误页，避免预热曾失败时永远停留在加载态。
-    try {
-      await _provider.getCampusList();
-      if (mounted) {
-        setState(() => _isInitializing = false);
-      }
-    } on BalanceQueryAuthException {
-      if (mounted) {
-        setState(() {
-          _isInitializing = false;
-          _initError = LoadErrorType.sessionExpired;
-        });
-      }
-    } on UnauthenticatedException {
-      // SCU 统一认证失效且续期失败
-      if (mounted) {
-        setState(() {
-          _isInitializing = false;
-          _initError = LoadErrorType.sessionExpired;
-        });
-      }
-    } catch (e) {
-      debugPrint('Balance query init error: $e');
-      if (mounted) {
-        setState(() {
-          _isInitializing = false;
-          _initError = LoadErrorType.networkError;
-        });
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _provider.removeListener(_onProviderChanged);
-    getIt<ScuAuthProvider>().removeListener(_onAuthChanged);
-    getIt<PayAppAuth>().removeListener(_onPayAppAuthChanged);
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.balanceQuery),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            tooltip: l10n.balanceQuerySettings,
-            onPressed: _showSettingsSheet,
-          ),
-          if (_provider.bindings.isNotEmpty)
-            PopupMenuButton<int>(
-              icon: const Icon(Icons.swap_horiz),
-              tooltip: l10n.switchRoom,
-              onSelected: (index) {
-                final auth = getIt<ScuAuthProvider>();
-                if (!auth.isLoggedIn) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text(l10n.loginRequired)));
-                  return;
-                }
-                if (index == -1) {
-                  _showBindDialog();
-                } else if (index == -2) {
-                  _showDeleteAllDialog();
-                } else if (index < 0) {
-                  _showDeleteConfirmDialog(-(index + 2));
-                } else {
-                  _provider.switchBinding(index).catchError((e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            e is BalanceQueryException
-                                ? e.message
-                                : l10n.networkError,
-                          ),
-                        ),
-                      );
-                    }
-                  });
-                }
-              },
-              itemBuilder: (context) => [
-                ..._provider.bindings.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final binding = entry.value;
-                  return PopupMenuItem<int>(
-                    value: index,
-                    child: Row(
-                      children: [
-                        if (index == _provider.currentIndex)
-                          Icon(
-                            Icons.check,
-                            color: Theme.of(context).colorScheme.primary,
-                            size: 20,
-                          )
-                        else
-                          const SizedBox(width: 20),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            binding.displayName,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            Icons.delete_outline,
-                            size: 20,
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                            _showDeleteConfirmDialog(index);
-                          },
-                          tooltip: l10n.deleteRoom,
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-                PopupMenuItem<int>(
-                  value: -1,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.add,
-                        color: Theme.of(context).colorScheme.primary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(l10n.bindNewRoom),
-                    ],
-                  ),
+    final provider = getIt<BalanceQueryProvider>();
+    final auth = getIt<ScuAuthProvider>();
+    return ListenableBuilder(
+      listenable: Listenable.merge([provider, auth]),
+      builder: (context, _) {
+        final l10n = AppLocalizations.of(context)!;
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(l10n.balanceQuery),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.settings_outlined),
+                tooltip: l10n.balanceQuerySettings,
+                onPressed: () => _showSettingsSheet(context),
+              ),
+              if (provider.bindings.isNotEmpty)
+                PopupMenuButton<int>(
+                  icon: const Icon(Icons.swap_horiz),
+                  tooltip: l10n.switchRoom,
+                  onSelected: (index) =>
+                      _onRoomSelected(context, provider, auth, index),
+                  itemBuilder: (context) =>
+                      _roomMenuItems(context, provider, l10n),
                 ),
-              ],
-            ),
-        ],
-      ),
-      body: _buildBody(l10n),
+            ],
+          ),
+          body: _buildBody(context, provider, auth, l10n),
+        );
+      },
     );
   }
 
-  void _showSettingsSheet() {
+  List<PopupMenuEntry<int>> _roomMenuItems(
+    BuildContext context,
+    BalanceQueryProvider provider,
+    AppLocalizations l10n,
+  ) => [
+    ...provider.bindings.asMap().entries.map((entry) {
+      final index = entry.key;
+      final binding = entry.value;
+      return PopupMenuItem<int>(
+        value: index,
+        child: Row(
+          children: [
+            if (index == provider.currentIndex)
+              Icon(
+                Icons.check,
+                color: Theme.of(context).colorScheme.primary,
+                size: 20,
+              )
+            else
+              const SizedBox(width: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                binding.displayName,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.delete_outline,
+                size: 20,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+                _showDeleteConfirmDialog(context, provider, index);
+              },
+              tooltip: l10n.deleteRoom,
+            ),
+          ],
+        ),
+      );
+    }),
+    PopupMenuItem<int>(
+      value: -1,
+      child: Row(
+        children: [
+          Icon(
+            Icons.add,
+            color: Theme.of(context).colorScheme.primary,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Text(l10n.bindNewRoom),
+        ],
+      ),
+    ),
+  ];
+
+  void _onRoomSelected(
+    BuildContext context,
+    BalanceQueryProvider provider,
+    ScuAuthProvider auth,
+    int index,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    if (!auth.isLoggedIn) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.loginRequired)));
+      return;
+    }
+    if (index == -1) {
+      _showBindDialog(context, provider);
+    } else {
+      _switchBinding(context, provider, index);
+    }
+  }
+
+  Future<void> _switchBinding(
+    BuildContext context,
+    BalanceQueryProvider provider,
+    int index,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      await provider.switchBinding(index);
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e is BalanceQueryException ? e.message : l10n.networkError,
+          ),
+        ),
+      );
+    }
+  }
+
+  void _showSettingsSheet(BuildContext context) {
     final appConfig = getIt<AppConfigProvider>();
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
@@ -259,27 +185,16 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
     );
   }
 
-  Widget _buildBody(AppLocalizations l10n) {
-    final auth = getIt<ScuAuthProvider>();
+  Widget _buildBody(
+    BuildContext context,
+    BalanceQueryProvider provider,
+    ScuAuthProvider auth,
+    AppLocalizations l10n,
+  ) {
+    if (auth.isAutoLoggingIn) return const AutoLoginLoadingWidget();
+    if (!auth.isLoggedIn) return const LoginRequiredWidget();
 
-    if (_isInitializing) {
-      if (auth.isAutoLoggingIn) {
-        return const AutoLoginLoadingWidget();
-      }
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_initError != null) {
-      if (_initError == LoadErrorType.notLoggedIn) {
-        return const LoginRequiredWidget();
-      }
-      return RetryableErrorWidget(
-        errorType: LoadErrorType.loadFailed,
-        onRetry: _initProvider,
-      );
-    }
-
-    if (_provider.bindings.isEmpty) {
+    if (provider.bindings.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -299,16 +214,7 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
               ),
               const SizedBox(height: 24),
               FilledButton.icon(
-                onPressed: () {
-                  final auth = getIt<ScuAuthProvider>();
-                  if (!auth.isLoggedIn) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text(l10n.loginRequired)));
-                    return;
-                  }
-                  _showBindDialog();
-                },
+                onPressed: () => _showBindDialog(context, provider),
                 icon: const Icon(Icons.add),
                 label: Text(l10n.bindRoom),
               ),
@@ -318,21 +224,27 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
       );
     }
 
-    return BalanceList(provider: _provider);
+    return BalanceList(provider: provider);
   }
 
-  Future<void> _showBindDialog() async {
+  Future<void> _showBindDialog(
+    BuildContext context,
+    BalanceQueryProvider provider,
+  ) async {
     final result = await showDialog<RoomBinding>(
       context: context,
-      builder: (context) => BindRoomDialog(provider: _provider),
+      builder: (context) => BindRoomDialog(provider: provider),
     );
-    if (result != null) {
-      await _provider.addBinding(result);
-    }
+    if (result != null) await provider.addBinding(result);
   }
 
-  Future<void> _showDeleteConfirmDialog(int index) async {
-    final binding = _provider.bindings[index];
+  Future<void> _showDeleteConfirmDialog(
+    BuildContext context,
+    BalanceQueryProvider provider,
+    int index,
+  ) async {
+    if (index < 0 || index >= provider.bindings.length) return;
+    final binding = provider.bindings[index];
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
@@ -354,37 +266,6 @@ class _BalanceQueryPageState extends State<BalanceQueryPage> {
         ],
       ),
     );
-    if (confirmed == true) {
-      await _provider.removeBinding(index);
-    }
-  }
-
-  Future<void> _showDeleteAllDialog() async {
-    final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.deleteRoom),
-        content: Text('${l10n.deleteRoom}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: Text(l10n.confirm),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true) {
-      for (int i = _provider.bindings.length - 1; i >= 0; i--) {
-        await _provider.removeBinding(i);
-      }
-    }
+    if (confirmed == true) await provider.removeBinding(index);
   }
 }

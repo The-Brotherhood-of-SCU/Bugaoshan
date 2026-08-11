@@ -1,9 +1,10 @@
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/providers/service_applications_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/api/service_api_service.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
+import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:flutter/material.dart';
 
@@ -20,38 +21,29 @@ class MyApplicationsPage extends StatefulWidget {
 }
 
 class _MyApplicationsPageState extends State<MyApplicationsPage> {
-  List<Map<String, dynamic>> _items = const [];
-  bool _loading = false;
-  bool _loaded = false;
+  late final ServiceApplicationsProvider _provider;
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _provider = getIt<ServiceApplicationsProvider>();
+    getIt<ScuAuthProvider>().addListener(_onAuthChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _onAuthChanged();
+    });
   }
 
-  Future<void> _load() async {
-    if (!getIt<ScuAuthProvider>().isLoggedIn) return;
-    if (_loading) return;
-    setState(() => _loading = true);
-    try {
-      final list = await getIt<ServiceApiService>().fetchMyApplications();
-      if (!mounted) return;
-      setState(() {
-        _items = list;
-        _loaded = true;
-      });
-    } catch (e) {
-      debugPrint('My applications load failed: $e');
-      if (mounted) {
-        setState(() {
-          _items = const [];
-          _loaded = true;
-        });
-      }
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
+  @override
+  void dispose() {
+    getIt<ScuAuthProvider>().removeListener(_onAuthChanged);
+    super.dispose();
+  }
+
+  /// 登录时确保已加载；登出时 Provider 已被 injector 清理为 idle，
+  /// 重新登录后若不补拉会一直停留在加载动画。
+  void _onAuthChanged() {
+    final auth = getIt<ScuAuthProvider>();
+    if (auth.isLoggedIn) _provider.ensureLoaded();
   }
 
   @override
@@ -59,26 +51,36 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.leaveMyApplications)),
-      body: !getIt<ScuAuthProvider>().isLoggedIn
-          ? const LoginRequiredWidget()
-          : _buildBody(l10n),
+      body: ListenableBuilder(
+        listenable: Listenable.merge([getIt<ScuAuthProvider>(), _provider]),
+        builder: (context, _) => !getIt<ScuAuthProvider>().isLoggedIn
+            ? const LoginRequiredWidget()
+            : _buildBody(l10n),
+      ),
     );
   }
 
   Widget _buildBody(AppLocalizations l10n) {
-    if (_loading && !_loaded) {
+    if (_provider.state == ServiceApplicationsLoadState.idle ||
+        _provider.state == ServiceApplicationsLoadState.loading) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (!_loaded || _items.isEmpty) {
+    if (_provider.state == ServiceApplicationsLoadState.error) {
+      return RetryableErrorWidget(
+        errorType: _provider.error!,
+        onRetry: _provider.refresh,
+      );
+    }
+    if (_provider.items.isEmpty) {
       return _emptyState(l10n);
     }
     return RefreshIndicator(
-      onRefresh: _load,
+      onRefresh: _provider.refresh,
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
-        itemCount: _items.length,
+        itemCount: _provider.items.length,
         separatorBuilder: (_, _) => const SizedBox(height: 8),
-        itemBuilder: (context, i) => _itemCard(_items[i], l10n),
+        itemBuilder: (context, i) => _itemCard(_provider.items[i], l10n),
       ),
     );
   }

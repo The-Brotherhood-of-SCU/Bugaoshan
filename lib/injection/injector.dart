@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
@@ -10,11 +11,18 @@ import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
+import 'package:bugaoshan/providers/class_schedule_inquiry_provider.dart';
+import 'package:bugaoshan/providers/classroom_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/providers/exam_plan_provider.dart';
+import 'package:bugaoshan/providers/fitness_test_provider.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
+import 'package:bugaoshan/providers/network_device_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/providers/service_applications_provider.dart';
 import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/services/api/ccyl_api_service.dart';
+import 'package:bugaoshan/services/api/fitness_api_service.dart';
 import 'package:bugaoshan/services/api/payapp_api_service.dart';
 import 'package:bugaoshan/services/api/service_api_service.dart';
 import 'package:bugaoshan/services/api/wfw_api_service.dart';
@@ -147,6 +155,10 @@ void _configureAsyncDependencies() {
     await getIt.isReady<WfwAuth>();
     return WfwApiService(getIt<WfwAuth>());
   });
+  getIt.registerSingletonAsync<FitnessApiService>(() async {
+    await getIt.isReady<FitnessAuth>();
+    return FitnessApiService(getIt<FitnessAuth>());
+  });
   getIt.registerSingletonAsync<PayAppApiService>(() async {
     await getIt.isReady<PayAppAuth>();
     return PayAppApiService(getIt<PayAppAuth>());
@@ -217,20 +229,70 @@ void _configureAsyncDependencies() {
     final zhjwApi = getIt<ZhjwApiService>();
     return PlanCompletionProvider(prefs, zhjwApi);
   });
+  getIt.registerSingletonAsync<FitnessTestProvider>(() async {
+    await getIt.isReady<SharedPreferences>();
+    await getIt.isReady<FitnessApiService>();
+    return FitnessTestProvider(
+      getIt<SharedPreferences>(),
+      getIt<FitnessApiService>(),
+    );
+  });
+  getIt.registerSingletonAsync<NetworkDeviceProvider>(() async {
+    await getIt.isReady<WfwApiService>();
+    await getIt.isReady<WfwAuth>();
+    await getIt.isReady<ScuAuth>();
+    return NetworkDeviceProvider(
+      getIt<WfwApiService>(),
+      getIt<WfwAuth>(),
+      getIt<ScuAuth>(),
+    );
+  });
+  getIt.registerSingletonAsync<ClassroomProvider>(() async {
+    await getIt.isReady<ZhjwApiService>();
+    return ClassroomProvider(getIt<ZhjwApiService>());
+  });
+  getIt.registerSingletonAsync<ClassScheduleInquiryProvider>(() async {
+    await getIt.isReady<ZhjwApiService>();
+    return ClassScheduleInquiryProvider(getIt<ZhjwApiService>());
+  });
+  getIt.registerSingletonAsync<ExamPlanProvider>(() async {
+    await getIt.isReady<ZhjwApiService>();
+    return ExamPlanProvider(getIt<ZhjwApiService>());
+  });
+  getIt.registerSingletonAsync<ServiceApplicationsProvider>(() async {
+    await getIt.isReady<ServiceApiService>();
+    return ServiceApplicationsProvider(getIt<ServiceApiService>());
+  });
   getIt.registerSingletonAsync<BalanceQueryProvider>(() async {
     await getIt.isReady<SharedPreferences>();
     await getIt.isReady<PayAppApiService>();
     await getIt.isReady<DatabaseService>();
     await getIt.isReady<PayAppAuth>();
     await getIt.isReady<AppConfigProvider>();
+    await getIt.isReady<ScuAuthProvider>();
+    await getIt.isReady<ScuAuth>();
     final prefs = getIt<SharedPreferences>();
-    return BalanceQueryProvider(
+    final authProvider = getIt<ScuAuthProvider>();
+    final scuAuth = getIt<ScuAuth>();
+    String? currentIdentity() => BalanceQueryProvider.confirmedUserIdentity(
+      isLoggedIn: authProvider.isLoggedIn,
+      principal: scuAuth.principal,
+    );
+    final balanceProvider = BalanceQueryProvider(
       prefs,
       getIt<PayAppApiService>(),
       getIt<DatabaseService>(),
       getIt<PayAppAuth>(),
       getIt<AppConfigProvider>(),
     );
+    await balanceProvider.setUserIdentity(currentIdentity());
+    authProvider.addListener(() {
+      final identity = currentIdentity();
+      if (identity != null) {
+        unawaited(balanceProvider.setUserIdentity(identity));
+      }
+    });
+    return balanceProvider;
   });
   getIt.registerSingletonAsync<UpdateService>(() async {
     await getIt.isReady<SharedPreferences>();
@@ -290,6 +352,10 @@ void _configureAsyncDependencies() {
   getIt.isReady<ScuAuth>().then((_) {
     getIt<ScuAuth>().addListener(() {
       final scu = getIt<ScuAuth>();
+      if (getIt.isRegistered<BalanceQueryProvider>() &&
+          scu.state != AuthState.ready) {
+        getIt<BalanceQueryProvider>().clear();
+      }
       if (scu.state == AuthState.unknown) {
         // logout 发生，清理需要登录态的 Provider 缓存
         if (getIt.isRegistered<PlanCompletionProvider>()) {
@@ -297,6 +363,24 @@ void _configureAsyncDependencies() {
         }
         if (getIt.isRegistered<UserInfoProvider>()) {
           getIt<UserInfoProvider>().clear();
+        }
+        if (getIt.isRegistered<FitnessTestProvider>()) {
+          getIt<FitnessTestProvider>().clear();
+        }
+        if (getIt.isRegistered<NetworkDeviceProvider>()) {
+          getIt<NetworkDeviceProvider>().clear();
+        }
+        if (getIt.isRegistered<ClassroomProvider>()) {
+          getIt<ClassroomProvider>().clear();
+        }
+        if (getIt.isRegistered<ClassScheduleInquiryProvider>()) {
+          getIt<ClassScheduleInquiryProvider>().clear();
+        }
+        if (getIt.isRegistered<ExamPlanProvider>()) {
+          getIt<ExamPlanProvider>().clear();
+        }
+        if (getIt.isRegistered<ServiceApplicationsProvider>()) {
+          getIt<ServiceApplicationsProvider>().clear();
         }
       }
     });

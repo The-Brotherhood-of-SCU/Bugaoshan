@@ -62,6 +62,7 @@ class UserInfoProvider extends ChangeNotifier {
   }
 
   List<Map<String, dynamic>>? _labels;
+  Map<String, dynamic>? _profile;
   bool _loading = false;
   bool _error = false;
 
@@ -69,6 +70,12 @@ class UserInfoProvider extends ChangeNotifier {
   String? _userNumber;
 
   List<Map<String, dynamic>>? get labels => _labels;
+
+  /// 完整的微服务个人资料，供需要院系、联系方式等字段的功能复用。
+  ///
+  /// 返回不可变的深拷贝，调用方不能修改 Provider 内存缓存。
+  Map<String, dynamic>? get profile =>
+      _profile == null ? null : _freezeMap(_profile!);
   bool get loading => _loading;
   bool get error => _error;
   bool get hasData => _labels != null;
@@ -165,16 +172,15 @@ class UserInfoProvider extends ChangeNotifier {
     _labels = result.labels;
     _error = false;
 
-    // 更新用户基本信息
-    final profile = result.profile;
-    if (profile != null) {
-      _userRealname = profile['realname']?.toString();
-      final role = profile['role'] as Map<String, dynamic>?;
-      _userNumber = role?['number']?.toString();
-      // 同步到 ScuAuthProvider（向后兼容）
-      getIt<ScuAuthProvider>().setUserInfo(_userRealname, _userNumber);
-      await _enqueuePersistence(_userRealname, _userNumber);
-    }
+    // 更新用户基本信息。profile 为 null 时同样清空旧值，避免换账号或服务
+    // 端返回空资料后页面继续展示上一个账号的个人数据。
+    _profile = result.profile;
+    _userRealname = _profile?['realname']?.toString();
+    final role = _profile?['role'];
+    _userNumber = role is Map ? role['number']?.toString() : null;
+    // 同步到 ScuAuthProvider（向后兼容）
+    getIt<ScuAuthProvider>().setUserInfo(_userRealname, _userNumber);
+    await _enqueuePersistence(_userRealname, _userNumber);
   }
 
   Future<void> _enqueuePersistence(String? realname, String? number) {
@@ -243,6 +249,7 @@ class UserInfoProvider extends ChangeNotifier {
   void clear() {
     _requestGeneration++;
     _labels = null;
+    _profile = null;
     _error = false;
     _loading = false;
     _userRealname = null;
@@ -257,4 +264,24 @@ class UserInfoProvider extends ChangeNotifier {
     _wfwAuth.removeListener(_onAuthChanged);
     super.dispose();
   }
+}
+
+Map<String, dynamic> _freezeMap(Map<String, dynamic> source) =>
+    Map<String, dynamic>.unmodifiable(
+      source.map((key, value) => MapEntry(key, _freezeValue(value))),
+    );
+
+Object? _freezeValue(Object? value) {
+  if (value is Map<String, dynamic>) {
+    return _freezeMap(value);
+  }
+  if (value is Map) {
+    return Map<Object?, Object?>.unmodifiable(
+      value.map((key, nestedValue) => MapEntry(key, _freezeValue(nestedValue))),
+    );
+  }
+  if (value is List) {
+    return List<Object?>.unmodifiable(value.map(_freezeValue));
+  }
+  return value;
 }

@@ -4,8 +4,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/services/api/zhjw_api_service.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/providers/class_schedule_inquiry_provider.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/week_parser.dart';
@@ -25,47 +24,15 @@ class ClassScheduleInquiryDetailPage extends StatefulWidget {
 
 class _ClassScheduleInquiryDetailPageState
     extends State<ClassScheduleInquiryDetailPage> {
-  late final ZhjwApiService _zhjwApi;
-  List<ClassScheduleInquiryItem> _courses = [];
-  bool _isLoading = true;
-  LoadErrorType? _error;
+  late final ClassScheduleInquiryProvider _provider;
 
   @override
   void initState() {
     super.initState();
-    _zhjwApi = getIt<ZhjwApiService>();
-    _loadSchedule();
-  }
-
-  Future<void> _loadSchedule() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
+    _provider = getIt<ClassScheduleInquiryProvider>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _provider.ensureSchedule(widget.classInfo);
     });
-    try {
-      final courses = await _zhjwApi.fetchClassSchedule(
-        planCode: widget.classInfo.planCode,
-        classCode: widget.classInfo.classCode,
-      );
-      if (!mounted) return;
-      setState(() {
-        _courses = courses;
-        _isLoading = false;
-      });
-    } on UnauthenticatedException catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _error = LoadErrorType.sessionExpired;
-        _isLoading = false;
-      });
-    } catch (e) {
-      debugPrint('ClassScheduleInquiry detail load error: $e');
-      if (!mounted) return;
-      setState(() {
-        _error = campusNetworkErrorType(LoadErrorType.loadFailed);
-        _isLoading = false;
-      });
-    }
   }
 
   @override
@@ -87,20 +54,27 @@ class _ClassScheduleInquiryDetailPageState
           ],
         ),
       ),
-      body: _buildBody(context, l10n),
+      body: ListenableBuilder(
+        listenable: _provider,
+        builder: (context, _) => _buildBody(context, l10n),
+      ),
     );
   }
 
   Widget _buildBody(BuildContext context, AppLocalizations l10n) {
-    if (_isLoading) {
+    final detail = _provider.detailStateFor(widget.classInfo);
+    if (detail.state == ClassScheduleInquiryLoadState.loading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_error != null) {
-      return RetryableErrorWidget(errorType: _error!, onRetry: _loadSchedule);
+    if (detail.error != null) {
+      return RetryableErrorWidget(
+        errorType: detail.error!,
+        onRetry: () => _provider.refreshSchedule(widget.classInfo),
+      );
     }
 
-    if (_courses.isEmpty) {
+    if (detail.courses.isEmpty) {
       return Center(
         child: Text(
           l10n.classScheduleInquiryNoSchedule,
@@ -111,7 +85,7 @@ class _ClassScheduleInquiryDetailPageState
       );
     }
 
-    final hasWeekend = _courses.any((c) => c.dayOfWeek > 5);
+    final hasWeekend = detail.courses.any((c) => c.dayOfWeek > 5);
     final rowHeight = getIt<AppConfigProvider>().courseRowHeight.value;
     const headerHeight = 40.0;
     const int totalPeriods = 12;
@@ -147,7 +121,7 @@ class _ClassScheduleInquiryDetailPageState
                   builder: (context) => CourseDetailSheet(course: course),
                 );
               },
-              courses: _courses.map(_toCourse).toList(),
+              courses: detail.courses.map(_toCourse).toList(),
               config: gridConfig,
               displayWeek: 1,
               showAllWeeks: true,

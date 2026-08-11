@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/balance_query/balance_trend_page.dart';
-import 'package:bugaoshan/providers/balance_query_provider.dart';
-import 'package:bugaoshan/services/api/balance_query_service.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/balance_query_provider.dart';
+import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 
@@ -15,7 +14,6 @@ class BalanceCard extends StatefulWidget {
   final Color iconColor;
   final String title;
   final String unit;
-  final Future<RoomInfo> Function() onRefresh;
   final RoomBinding binding;
 
   const BalanceCard({
@@ -26,91 +24,31 @@ class BalanceCard extends StatefulWidget {
     required this.iconColor,
     required this.title,
     required this.unit,
-    required this.onRefresh,
     required this.binding,
   });
 
   @override
-  State<BalanceCard> createState() => BalanceCardState();
+  State<BalanceCard> createState() => _BalanceCardState();
 }
 
-class BalanceCardState extends State<BalanceCard> {
-  bool _isLoading = false;
-  String? _error;
-  RoomInfo? _localInfo; // 本地持有数据，不依赖父级传入
+class _BalanceCardState extends State<BalanceCard> {
   bool _privacyHidden = true;
 
-  @override
-  void initState() {
-    super.initState();
-    widget.provider.addListener(_onSwitchCompleted);
-    _loadBalance();
-  }
-
-  @override
-  void didUpdateWidget(BalanceCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    final oldKey =
-        '${oldWidget.binding.schoolCode}_${oldWidget.binding.regCode}_${oldWidget.binding.unitCode}_${oldWidget.binding.roomNo}';
-    final newKey =
-        '${widget.binding.schoolCode}_${widget.binding.regCode}_${widget.binding.unitCode}_${widget.binding.roomNo}';
-    if (oldKey != newKey) {
-      _localInfo = null;
-      _loadBalance();
-    }
-  }
-
-  void _onSwitchCompleted() {
-    if (_localInfo == null && !_isLoading && !widget.provider.isSwitching) {
-      _loadBalance();
-    }
-  }
-
-  @override
-  void dispose() {
-    widget.provider.removeListener(_onSwitchCompleted);
-    super.dispose();
-  }
-
-  Future<void> _loadBalance() async {
-    if (_localInfo != null) return;
-
-    if (widget.provider.isSwitching) return;
-
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    try {
-      final info = await widget.onRefresh();
-      if (mounted) {
-        setState(() {
-          _localInfo = info;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      debugPrint('Balance load error: $e');
-      if (mounted) {
-        setState(() {
-          _error = e.toString();
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
   Future<void> _forceRefresh() async {
-    setState(() {
-      _localInfo = null;
-    });
-    await _loadBalance();
+    try {
+      await widget.provider.refreshBalance(widget.balanceType);
+    } catch (_) {
+      // Provider 保存错误状态，卡片会随 ListenableBuilder 重建。
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final state = widget.provider.balanceStateFor(widget.balanceType);
+    final info = state.value;
+    final isWaitingForSwitch = widget.provider.isSwitching && !state.hasValue;
+    final isLoading = state.isLoading || isWaitingForSwitch;
 
     return StyledCard(
       child: Padding(
@@ -178,7 +116,7 @@ class BalanceCardState extends State<BalanceCard> {
                     ],
                   ),
                 ),
-                if (_isLoading)
+                if (isLoading)
                   const SizedBox(
                     width: 24,
                     height: 24,
@@ -188,7 +126,7 @@ class BalanceCardState extends State<BalanceCard> {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (_localInfo != null)
+                      if (info != null)
                         IconButton(
                           icon: const Icon(Icons.insights_outlined),
                           tooltip: l10n.balanceTrend,
@@ -216,7 +154,7 @@ class BalanceCardState extends State<BalanceCard> {
             AnimatedSize(
               duration: appConfigService.cardSizeAnimationDuration.value,
               curve: appCurve,
-              child: _error != null
+              child: state.error != null
                   ? Center(
                       child: Text(
                         l10n.loadFailed,
@@ -225,96 +163,14 @@ class BalanceCardState extends State<BalanceCard> {
                         ),
                       ),
                     )
-                  : _localInfo == null
-                  ? Column(
-                      children: [
-                        Center(
-                          child: Column(
-                            children: [
-                              Text(
-                                l10n.balance,
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSurfaceVariant,
-                                    ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                l10n.loading,
-                                style: Theme.of(context).textTheme.displayMedium
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.primary,
-                                    ),
-                              ),
-                              Text(
-                                widget.unit,
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSurfaceVariant,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        _infoRow(l10n.roomNumber, '—'),
-                        _infoRow(l10n.pricePerUnit, '—'),
-                      ],
-                    )
-                  : Column(
-                      children: [
-                        Center(
-                          child: Column(
-                            children: [
-                              Text(
-                                l10n.balance,
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSurfaceVariant,
-                                    ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                _localInfo!.balance,
-                                style: Theme.of(context).textTheme.displayMedium
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.primary,
-                                    ),
-                              ),
-                              Text(
-                                widget.unit,
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSurfaceVariant,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        _infoRow(
-                          l10n.roomNumber,
-                          _privacyHidden ? '***' : _localInfo!.roomNo,
-                        ),
-                        _infoRow(
-                          l10n.pricePerUnit,
-                          l10n.pricePerUnitValue(_localInfo!.price.toString()),
-                        ),
-                      ],
+                  : info == null
+                  ? _loadingBody(context, l10n)
+                  : _contentBody(
+                      context,
+                      l10n,
+                      info.balance,
+                      info.roomNo,
+                      info.price,
                     ),
             ),
           ],
@@ -323,7 +179,85 @@ class BalanceCardState extends State<BalanceCard> {
     );
   }
 
-  Widget _infoRow(String label, String value) {
+  Widget _loadingBody(BuildContext context, AppLocalizations l10n) {
+    return Column(
+      children: [
+        Center(
+          child: Column(
+            children: [
+              Text(
+                l10n.balance,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                l10n.loading,
+                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              Text(
+                widget.unit,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        _infoRow(context, l10n.roomNumber, '—'),
+        _infoRow(context, l10n.pricePerUnit, '—'),
+      ],
+    );
+  }
+
+  Widget _contentBody(
+    BuildContext context,
+    AppLocalizations l10n,
+    String balance,
+    String roomNo,
+    String price,
+  ) {
+    return Column(
+      children: [
+        Center(
+          child: Column(
+            children: [
+              Text(
+                l10n.balance,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                balance,
+                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              Text(
+                widget.unit,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        _infoRow(context, l10n.roomNumber, _privacyHidden ? '***' : roomNo),
+        _infoRow(context, l10n.pricePerUnit, l10n.pricePerUnitValue(price)),
+      ],
+    );
+  }
+
+  Widget _infoRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(

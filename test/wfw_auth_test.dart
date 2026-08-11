@@ -106,6 +106,39 @@ void main() {
     wfwAuth.dispose();
   });
 
+  test('network-device e=10013 invalidates and retries once', () async {
+    // 预热 → 设备查询失效 → 再预热 → 设备查询成功。
+    var requests = 0;
+    final client = CookieClient(
+      inner: MockClient((request) async {
+        requests++;
+        return switch (requests) {
+          1 => http.Response('{"e":0,"d":{"base":{}}}', 200, request: request),
+          2 => http.Response(
+            '{"e":10013,"m":"session expired"}',
+            200,
+            request: request,
+          ),
+          3 => http.Response('{"e":0,"d":{"base":{}}}', 200, request: request),
+          _ => http.Response(
+            '{"e":0,"d":{"list":[{"device_id":"device-1","ip":"10.0.0.1"}]}}',
+            200,
+            request: request,
+          ),
+        };
+      }),
+    );
+    final scuAuth = _SwitchableScuAuth(prefs, logger: logger, client: client);
+    final wfwAuth = WfwAuth(scuAuth, logger: logger);
+    final api = WfwApiService(wfwAuth);
+
+    final devices = await api.fetchNetworkDevices();
+
+    expect(devices.single['device_id'], 'device-1');
+    expect(requests, 4);
+    wfwAuth.dispose();
+  });
+
   test('warm-up landing on a login page is not treated as ready', () async {
     var warmUps = 0;
     final client = CookieClient(
