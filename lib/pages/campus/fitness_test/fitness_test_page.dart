@@ -1,15 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/theme_shape.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/providers/fitness_test_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/auth/fitness_auth.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
-import 'package:bugaoshan/services/auth/cookie_client.dart';
-import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
@@ -23,302 +17,75 @@ class FitnessTestPage extends StatefulWidget {
   State<FitnessTestPage> createState() => _FitnessTestPageState();
 }
 
-class _FitnessSessionExpiredException implements Exception {
-  const _FitnessSessionExpiredException();
-}
-
 class _FitnessTestPageState extends State<FitnessTestPage>
     with SingleTickerProviderStateMixin {
-  static const _baseUrl =
-      'https://pead.scu.edu.cn/bdlp_h5_fitness_test/public/index.php';
-  static const _yearCacheKey = 'fitness_test_selected_year';
-
   late final TabController _tabController;
-
-  bool _loading = false;
-  LoadErrorType? _error;
-
-  // Notices
-  List<Map<String, dynamic>> _notices = [];
-
-  // Scores
-  int _selectedYear = DateTime.now().year;
-  Map<String, dynamic>? _scoreData;
-  bool _scoreLoading = false;
-  Object? _scoreError;
+  late final FitnessTestProvider _provider;
   bool _privacyHidden = true;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    final prefs = getIt<SharedPreferences>();
-    final savedYear = prefs.getInt(_yearCacheKey);
-    if (savedYear != null) {
-      _selectedYear = savedYear;
-    }
-    getIt<ScuAuthProvider>().addListener(_onAuthChanged);
-    getIt<FitnessAuth>().addListener(_onFitnessAuthChanged);
-    _loadData();
+    _provider = getIt<FitnessTestProvider>();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    getIt<ScuAuthProvider>().removeListener(_onAuthChanged);
-    getIt<FitnessAuth>().removeListener(_onFitnessAuthChanged);
     super.dispose();
   }
-
-  void _onAuthChanged() {
-    final auth = getIt<ScuAuthProvider>();
-    if (auth.isLoggedIn && mounted) {
-      _loadData();
-    } else if (mounted) {
-      setState(() {});
-    }
-  }
-
-  void _onFitnessAuthChanged() {
-    if (getIt<FitnessAuth>().isReady && mounted) {
-      _loadData();
-    }
-  }
-
-  /// 检查体测 API 响应是否表示 session 过期。
-  bool _isSessionExpired(Map<String, dynamic> json) {
-    if (json['status'] != 1) {
-      final info = json['info']?.toString() ?? '';
-      return info.contains('登录信息失效') || info.contains('请重新登录');
-    }
-    return false;
-  }
-
-  /// 通过 FitnessAuth 发送带自动重试的请求。
-  /// [fn] 接收已认证的 CookieClient 并返回响应数据。
-  ///
-  /// 自动处理两种认证失败：
-  /// - [UnauthenticatedException]：SCU token 过期（由 auth 层抛出）
-  /// - [_FitnessSessionExpiredException]：体测服务端 session 过期（业务响应）
-  Future<T> _fitnessRequest<T>(
-    Future<T> Function(CookieClient client) fn,
-  ) async {
-    Future<T> execute() async {
-      final client = await getIt<FitnessAuth>().getClient();
-      return await fn(client);
-    }
-
-    try {
-      return await execute();
-    } on UnauthenticatedException {
-      return await execute();
-    } on _FitnessSessionExpiredException {
-      getIt<FitnessAuth>().invalidate();
-      return await execute();
-    }
-  }
-
-  Future<void> _loadData() async {
-    final auth = getIt<ScuAuthProvider>();
-    if (!auth.isLoggedIn) {
-      if (auth.isAutoLoggingIn) return;
-      setState(() => _error = LoadErrorType.notLoggedIn);
-      return;
-    }
-
-    // 不在此等待 FitnessAuth.isReady：_fitnessRequest 内部通过
-    // FitnessAuth.getClient 自驱动 SSO 认证，预热失败会走 catch 分支
-    // 显示可重试的错误页，避免预热曾失败时永远停留在加载态。
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-
-    try {
-      await _fitnessRequest((client) async {
-        final noticeResp = await client.post(
-          Uri.parse('$_baseUrl/index/News/getSchoolNoticeList'),
-          headers: _headers,
-        );
-        final noticeJson = _parseJson(noticeResp.body, 'getSchoolNoticeList');
-        if (noticeJson['status'] != 1) {
-          if (_isSessionExpired(noticeJson)) {
-            throw const _FitnessSessionExpiredException();
-          }
-          throw Exception(noticeJson['info'] ?? '获取通知失败');
-        }
-        _notices = (noticeJson['data'] as List)
-            .map((e) => e as Map<String, dynamic>)
-            .toList();
-
-        await _loadScore(client);
-
-        if (mounted) {
-          setState(() => _loading = false);
-        }
-        return true;
-      });
-    } on UnauthenticatedException catch (_) {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-          _error = LoadErrorType.notLoggedIn;
-        });
-      }
-    } on _FitnessSessionExpiredException catch (_) {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-          _error = LoadErrorType.notLoggedIn;
-        });
-      }
-    } catch (e) {
-      debugPrint('Fitness test load error: $e');
-      if (mounted) {
-        setState(() {
-          _loading = false;
-          _error = campusNetworkErrorType(LoadErrorType.networkError);
-        });
-      }
-    }
-  }
-
-  Future<void> _loadScore(CookieClient client) async {
-    setState(() {
-      _scoreLoading = true;
-      _scoreError = null;
-    });
-
-    try {
-      final resp = await client.post(
-        Uri.parse('$_baseUrl/index/Report/getStudentScore'),
-        headers: _headers,
-        body: 'year_num=$_selectedYear',
-      );
-      final json = _parseJson(resp.body, 'getStudentScore');
-      if (json['status'] != 1) {
-        if (_isSessionExpired(json)) {
-          setState(() {
-            _scoreLoading = false;
-            _scoreError = json['info'] ?? '查询失败';
-          });
-          throw const _FitnessSessionExpiredException();
-        }
-        setState(() {
-          _scoreLoading = false;
-          _scoreError = json['info'] ?? '查询失败';
-        });
-        return;
-      }
-      final data = json['data'];
-      setState(() {
-        _scoreData = data is Map<String, dynamic> ? data : null;
-        _scoreLoading = false;
-      });
-    } on _FitnessSessionExpiredException {
-      rethrow;
-    } catch (e) {
-      debugPrint('Fitness test score error: $e');
-      setState(() {
-        _scoreLoading = false;
-        _scoreError = campusNetworkErrorType(LoadErrorType.networkError);
-      });
-    }
-  }
-
-  Future<void> _retryScore() async {
-    final auth = getIt<ScuAuthProvider>();
-    if (!auth.isLoggedIn) return;
-    try {
-      await _fitnessRequest((client) async {
-        await _loadScore(client);
-        return true;
-      });
-    } catch (e) {
-      debugPrint('Retry score error: $e');
-    }
-  }
-
-  Future<void> _onYearChanged(int year) async {
-    _selectedYear = year;
-    getIt<SharedPreferences>().setInt(_yearCacheKey, year);
-    final auth = getIt<ScuAuthProvider>();
-    if (!auth.isLoggedIn) return;
-
-    try {
-      await _fitnessRequest((client) async {
-        await _loadScore(client);
-        return true;
-      });
-    } catch (e) {
-      debugPrint('Year change error: $e');
-    }
-  }
-
-  Map<String, dynamic> _parseJson(String body, String api) {
-    try {
-      return jsonDecode(body) as Map<String, dynamic>;
-    } catch (e) {
-      throw Exception('[$api] JSON 解析失败: $body');
-    }
-  }
-
-  Map<String, String> get _headers => {
-    'Accept': 'application/json, text/plain, */*',
-    'Accept-Encoding': 'gzip, deflate, br, zstd',
-    'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
-    'Content-Type': 'application/x-www-form-urlencoded',
-    'Origin': 'https://pead.scu.edu.cn',
-    'Pragma': 'no-cache',
-    'Referer':
-        'https://pead.scu.edu.cn/bdlp_h5_fitness_test/public/index.php/index/index',
-    'User-Agent': kDefaultUserAgent,
-    'X-Requested-With': 'XMLHttpRequest',
-    'sec-ch-ua':
-        '"Microsoft Edge";v="147", "Not.A/Brand";v="8", "Chromium";v="147"',
-    'sec-ch-ua-mobile': '?0',
-    'sec-ch-ua-platform': '"Windows"',
-  };
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.fitnessTest),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: l10n.fitnessTestScores),
-            Tab(text: l10n.fitnessTestNotices),
-          ],
+    return ListenableBuilder(
+      listenable: Listenable.merge([getIt<ScuAuthProvider>(), _provider]),
+      builder: (context, _) => Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.fitnessTest),
+          bottom: TabBar(
+            controller: _tabController,
+            tabs: [
+              Tab(text: l10n.fitnessTestScores),
+              Tab(text: l10n.fitnessTestNotices),
+            ],
+          ),
         ),
+        body: _buildBody(l10n),
       ),
-      body: _buildBody(l10n),
     );
   }
 
   Widget _buildBody(AppLocalizations l10n) {
     final auth = getIt<ScuAuthProvider>();
-    if (!auth.isLoggedIn && auth.isAutoLoggingIn) {
-      return const AutoLoginLoadingWidget();
+    if (!auth.isLoggedIn) {
+      return auth.isAutoLoggingIn
+          ? const AutoLoginLoadingWidget()
+          : const LoginRequiredWidget();
     }
 
-    if (_loading) {
+    // Provider 是数据的唯一来源。首次进入或登出后重新登录时，页面只表达
+    // 「确保已加载」意图；它不保存请求结果、加载态或认证会话。
+    if (_provider.noticesState == FitnessTestLoadState.idle ||
+        _provider.scoreState == FitnessTestLoadState.idle) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && getIt<ScuAuthProvider>().isLoggedIn) {
+          _provider.ensureLoaded();
+        }
+      });
+    }
+
+    if (_provider.noticesState == FitnessTestLoadState.loading &&
+        _provider.notices.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_error != null) {
-      if (_error == LoadErrorType.notLoggedIn) {
-        if (getIt<ScuAuthProvider>().isAutoLoggingIn) {
-          return const AutoLoginLoadingWidget();
-        }
-        return const LoginRequiredWidget();
-      }
-      return RetryableErrorWidget(errorType: _error!, onRetry: _loadData);
+    final noticesError = _provider.noticesError;
+    if (_provider.noticesState == FitnessTestLoadState.error &&
+        noticesError != null) {
+      return _buildError(noticesError, _provider.refresh);
     }
 
     return TabBarView(
@@ -330,7 +97,8 @@ class _FitnessTestPageState extends State<FitnessTestPage>
   // ==================== Notices Tab ====================
 
   Widget _buildNoticesTab(AppLocalizations l10n) {
-    if (_notices.isEmpty) {
+    final notices = _provider.notices;
+    if (notices.isEmpty) {
       return Center(
         child: Text(
           l10n.noData,
@@ -342,13 +110,22 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     }
 
     return RefreshIndicator(
-      onRefresh: _loadData,
+      onRefresh: _provider.refresh,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: _notices.length,
-        itemBuilder: (context, index) =>
-            _buildNoticeCard(_notices[index], l10n),
+        itemCount: notices.length,
+        itemBuilder: (context, index) => _buildNoticeCard(notices[index], l10n),
       ),
+    );
+  }
+
+  Widget _buildError(Object error, Future<void> Function() onRetry) {
+    if (error is LoadErrorType) {
+      return RetryableErrorWidget(errorType: error, onRetry: onRetry);
+    }
+    return RetryableErrorWidget.message(
+      message: error.toString(),
+      onRetry: onRetry,
     );
   }
 
@@ -530,7 +307,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     final years = List.generate(9, (i) => currentYear - i);
 
     return RefreshIndicator(
-      onRefresh: _loadData,
+      onRefresh: _provider.refresh,
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -546,7 +323,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                   ),
                   const Spacer(),
                   DropdownButton<int>(
-                    value: _selectedYear,
+                    value: _provider.selectedYear,
                     underline: const SizedBox(),
                     items: years
                         .map(
@@ -554,8 +331,8 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                         )
                         .toList(),
                     onChanged: (value) {
-                      if (value != null && value != _selectedYear) {
-                        _onYearChanged(value);
+                      if (value != null && value != _provider.selectedYear) {
+                        _provider.selectYear(value);
                       }
                     },
                   ),
@@ -572,7 +349,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
   }
 
   Widget _buildScoreContent(AppLocalizations l10n) {
-    if (_scoreLoading) {
+    if (_provider.scoreState == FitnessTestLoadState.loading) {
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(32),
@@ -581,22 +358,16 @@ class _FitnessTestPageState extends State<FitnessTestPage>
       );
     }
 
-    if (_scoreError != null) {
+    final scoreError = _provider.scoreError;
+    if (_provider.scoreState == FitnessTestLoadState.error &&
+        scoreError != null) {
       return Padding(
         padding: const EdgeInsets.all(32),
-        child: _scoreError is LoadErrorType
-            ? RetryableErrorWidget(
-                errorType: _scoreError as LoadErrorType,
-                onRetry: _retryScore,
-              )
-            : RetryableErrorWidget.message(
-                message: _scoreError as String,
-                onRetry: _retryScore,
-              ),
+        child: _buildError(scoreError, _provider.refreshScore),
       );
     }
 
-    if (_scoreData == null) {
+    if (_provider.scoreData == null) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -622,8 +393,9 @@ class _FitnessTestPageState extends State<FitnessTestPage>
   }
 
   Widget _buildTotalScoreCard(AppLocalizations l10n) {
-    final totalScore = _scoreData!['total_score'] ?? 0;
-    final totalGrade = _scoreData!['total_grade'] ?? '';
+    final score = _provider.scoreData!;
+    final totalScore = score['total_score'] ?? 0;
+    final totalGrade = score['total_grade']?.toString() ?? '';
     final gradeColor = _getGradeColor(totalGrade);
 
     return StyledCard(
@@ -695,8 +467,9 @@ class _FitnessTestPageState extends State<FitnessTestPage>
   }
 
   Widget _buildInfoCard(AppLocalizations l10n) {
-    final name = _scoreData!['student_name'] ?? '-';
-    final studentNum = _scoreData!['student_num'] ?? '-';
+    final score = _provider.scoreData!;
+    final name = score['student_name']?.toString() ?? '-';
+    final studentNum = score['student_num']?.toString() ?? '-';
 
     return StyledCard(
       child: Padding(
@@ -733,18 +506,18 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                 ),
               ),
             ),
-            _infoRow(l10n.fitnessTestSex, _scoreData!['sex'] ?? '-'),
+            _infoRow(l10n.fitnessTestSex, score['sex']?.toString() ?? '-'),
             _infoRow(
               l10n.fitnessTestStudentYear,
-              _scoreData!['studentYear'] ?? '-',
+              score['studentYear']?.toString() ?? '-',
             ),
             _infoRow(
               l10n.fitnessTestReportType,
-              _scoreData!['report_type'] ?? '-',
+              score['report_type']?.toString() ?? '-',
             ),
             _infoRow(
               l10n.fitnessTestReportStatus,
-              _scoreData!['report_status'] ?? '-',
+              score['report_status']?.toString() ?? '-',
             ),
           ],
         ),
@@ -757,64 +530,65 @@ class _FitnessTestPageState extends State<FitnessTestPage>
   }
 
   Widget _buildScoreItemsCard(AppLocalizations l10n) {
+    final score = _provider.scoreData!;
     final items = [
       _ScoreItem(
         icon: Icons.monitor_weight_outlined,
         label: l10n.fitnessTestBmi,
-        rawScore: _scoreData!['bmi_score'] ?? '-',
-        gradedScore: '${_scoreData!['bmi_score2'] ?? '-'}',
-        grade: _scoreData!['bmi_grade'] ?? '-',
-        colorClass: _scoreData!['bmi_class'] ?? 'green',
+        rawScore: '${score['bmi_score'] ?? '-'}',
+        gradedScore: '${score['bmi_score2'] ?? '-'}',
+        grade: '${score['bmi_grade'] ?? '-'}',
+        colorClass: '${score['bmi_class'] ?? 'green'}',
       ),
       _ScoreItem(
         icon: Icons.air,
         label: l10n.fitnessTestVitalCapacity,
-        rawScore: '${_scoreData!['vc_score'] ?? '-'}',
-        gradedScore: '${_scoreData!['vc_score2'] ?? '-'}',
-        grade: _scoreData!['vc_grade'] ?? '-',
-        colorClass: _scoreData!['vc_class'] ?? 'green',
+        rawScore: '${score['vc_score'] ?? '-'}',
+        gradedScore: '${score['vc_score2'] ?? '-'}',
+        grade: '${score['vc_grade'] ?? '-'}',
+        colorClass: '${score['vc_class'] ?? 'green'}',
       ),
       _ScoreItem(
         icon: Icons.directions_run,
         label: l10n.fitnessTestStandingLongJump,
-        rawScore: '${_scoreData!['jump_score'] ?? '-'} cm',
-        gradedScore: '${_scoreData!['jump_score2'] ?? '-'}',
-        grade: _scoreData!['jump_grade'] ?? '-',
-        colorClass: _scoreData!['jump_class'] ?? 'green',
+        rawScore: '${score['jump_score'] ?? '-'} cm',
+        gradedScore: '${score['jump_score2'] ?? '-'}',
+        grade: '${score['jump_grade'] ?? '-'}',
+        colorClass: '${score['jump_class'] ?? 'green'}',
       ),
       _ScoreItem(
         icon: Icons.accessibility_new,
         label: l10n.fitnessTestSitAndReach,
-        rawScore: '${_scoreData!['sit_and_reach_score'] ?? '-'} cm',
-        gradedScore: '${_scoreData!['sit_and_reach_score2'] ?? '-'}',
-        grade: _scoreData!['sit_and_reach_grade'] ?? '-',
-        colorClass: _scoreData!['sit_and_reach_class'] ?? 'green',
+        rawScore: '${score['sit_and_reach_score'] ?? '-'} cm',
+        gradedScore: '${score['sit_and_reach_score2'] ?? '-'}',
+        grade: '${score['sit_and_reach_grade'] ?? '-'}',
+        colorClass: '${score['sit_and_reach_class'] ?? 'green'}',
       ),
       _ScoreItem(
         icon: Icons.fitness_center,
-        label: _scoreData!['sex'] == '女'
+        label: score['sex'] == '女'
             ? l10n.fitnessTestSitUp
             : l10n.fitnessTestPullUp,
-        rawScore: '${_scoreData!['pull_and_sit_score'] ?? '-'}',
-        gradedScore: '${_scoreData!['pull_and_sit_score2'] ?? '-'}',
-        grade: _scoreData!['pull_and_sit_grade'] ?? '-',
-        colorClass: _scoreData!['pull_and_sit_class'] ?? 'green',
+        rawScore: '${score['pull_and_sit_score'] ?? '-'}',
+        gradedScore: '${score['pull_and_sit_score2'] ?? '-'}',
+        grade: '${score['pull_and_sit_grade'] ?? '-'}',
+        colorClass: '${score['pull_and_sit_class'] ?? 'green'}',
       ),
       _ScoreItem(
         icon: Icons.speed,
         label: l10n.fitnessTestFiftyMeters,
-        rawScore: '${_scoreData!['50m_score'] ?? '-'} s',
-        gradedScore: '${_scoreData!['50m_score2'] ?? '-'}',
-        grade: _scoreData!['50m_grade'] ?? '-',
-        colorClass: _scoreData!['50m_class'] ?? 'green',
+        rawScore: '${score['50m_score'] ?? '-'} s',
+        gradedScore: '${score['50m_score2'] ?? '-'}',
+        grade: '${score['50m_grade'] ?? '-'}',
+        colorClass: '${score['50m_class'] ?? 'green'}',
       ),
       _ScoreItem(
         icon: Icons.timer_outlined,
         label: l10n.fitnessTestRun,
-        rawScore: '${_scoreData!['run_score'] ?? '-'}',
-        gradedScore: '${_scoreData!['run_score2'] ?? '-'}',
-        grade: _scoreData!['run_grade'] ?? '-',
-        colorClass: _scoreData!['run_class'] ?? 'green',
+        rawScore: '${score['run_score'] ?? '-'}',
+        gradedScore: '${score['run_score2'] ?? '-'}',
+        grade: '${score['run_grade'] ?? '-'}',
+        colorClass: '${score['run_class'] ?? 'green'}',
       ),
     ];
 

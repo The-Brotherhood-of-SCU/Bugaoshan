@@ -64,7 +64,6 @@ class _LoginStatusCardState extends State<LoginStatusCard> {
   }
 
   void _onChanged() {
-    if (mounted) setState(() {});
     _loadUsername();
   }
 
@@ -118,6 +117,13 @@ class _LoginStatusCardState extends State<LoginStatusCard> {
 
   @override
   Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: _authProvider,
+      builder: (context, _) => _buildContent(context),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
     final theme = Theme.of(context);
     final localizations = AppLocalizations.of(context)!;
     final primaryColor = theme.colorScheme.primary;

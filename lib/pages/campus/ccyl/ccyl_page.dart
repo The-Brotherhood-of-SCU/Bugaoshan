@@ -74,14 +74,13 @@ class _CcylPageState extends State<CcylPage> {
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
                       onPressed: () async {
-                        final result = await Navigator.of(context).push<bool>(
+                        await Navigator.of(context).push<bool>(
                           MaterialPageRoute(
                             builder: (_) => const CcylBindPage(),
                           ),
                         );
-                        if (result == true && context.mounted) {
-                          getIt<CcylProvider>().service.searchActivities();
-                        }
+                        // ActivitiesTab 会在绑定成功后的新 IndexedStack 中自行加载
+                        // 并保存结果；这里预拉且丢弃返回值只会造成重复请求。
                       },
                       icon: const Icon(Icons.login),
                       label: Text(l10n.ccylDoBind),
