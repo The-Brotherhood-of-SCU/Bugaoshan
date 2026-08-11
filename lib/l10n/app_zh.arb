@@ -1197,7 +1197,7 @@
         "description": "办事大厅中请假事项的名称。",
         "type": "text"
     },
-    "serviceHallLeaveDesc": "在办事大厅提交离校请假申请，辅导员/导师在线审批",
+    "serviceHallLeaveDesc": "提交离校请假申请",
     "@serviceHallLeaveDesc": {
         "description": "办事大厅中请假事项的描述。",
         "type": "text"
@@ -1207,7 +1207,7 @@
         "description": "办事大厅中我的申请事项的名称。",
         "type": "text"
     },
-    "serviceHallMyAppsDesc": "查看我提交过的请假、报备等申请记录",
+    "serviceHallMyAppsDesc": "查看请假、报备等申请记录",
     "@serviceHallMyAppsDesc": {
         "description": "办事大厅中我的申请事项的描述。",
         "type": "text"

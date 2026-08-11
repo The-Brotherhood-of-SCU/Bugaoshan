@@ -328,24 +328,6 @@ class ServiceApiService {
     return null;
   }
 
-  /// 获取辅导员（350 的 DataSource_85 数据源）。
-  ///
-  /// [fetchDataSourceValue] 的 350 委托（参数来自真实抓包 curl：
-  /// id=8, form_version_id=2357, formId=1419），保持原行为。
-  /// 返回辅导员姓名；失败返回 null。
-  Future<String?> fetchTutor() async {
-    final d = await fetchDataSourceValue(
-      appId: leaveAppId,
-      ref: const ServiceDataSourceRef(
-        id: tutorDataSourceId,
-        formVersionId: '2357',
-        component: 'DataSource_85',
-        formId: '1419',
-      ),
-    );
-    return d?['list']?.toString();
-  }
-
   /// 获取省市区字典（去往地址 Region_80）。
   ///
   /// 接口：`GET /api/dictionary/province?agent_uid=&starter_depart_id=395876`
