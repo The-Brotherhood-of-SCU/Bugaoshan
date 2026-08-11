@@ -1259,7 +1259,7 @@
         "description": "Name of the leave matter in the service hall.",
         "type": "text"
     },
-    "serviceHallLeaveDesc": "Submit a leave request via the service hall, approved by your tutor",
+    "serviceHallLeaveDesc": "Submit a leave request",
     "@serviceHallLeaveDesc": {
         "description": "Description of the leave matter in the service hall.",
         "type": "text"
@@ -1269,7 +1269,7 @@
         "description": "Name of the my-applications matter in the service hall.",
         "type": "text"
     },
-    "serviceHallMyAppsDesc": "View leave and check-in requests you have submitted",
+    "serviceHallMyAppsDesc": "View leave and check-in requests",
     "@serviceHallMyAppsDesc": {
         "description": "Description of the my-applications matter in the service hall.",
         "type": "text"

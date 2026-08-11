@@ -4810,7 +4810,7 @@ abstract class AppLocalizations {
   /// Description of the leave matter in the service hall.
   ///
   /// In en, this message translates to:
-  /// **'Submit a leave request via the service hall, approved by your tutor'**
+  /// **'Submit a leave request'**
   String get serviceHallLeaveDesc;
 
   /// Name of the my-applications matter in the service hall.
@@ -4822,7 +4822,7 @@ abstract class AppLocalizations {
   /// Description of the my-applications matter in the service hall.
   ///
   /// In en, this message translates to:
-  /// **'View leave and check-in requests you have submitted'**
+  /// **'View leave and check-in requests'**
   String get serviceHallMyAppsDesc;
 
   /// Name of the return-to-school report matter in the service hall.

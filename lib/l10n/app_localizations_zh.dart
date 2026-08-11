@@ -2492,13 +2492,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get serviceHallLeaveTitle => '离校请假';
 
   @override
-  String get serviceHallLeaveDesc => '在办事大厅提交离校请假申请，辅导员/导师在线审批';
+  String get serviceHallLeaveDesc => '提交离校请假申请';
 
   @override
   String get serviceHallMyAppsTitle => '我的申请';
 
   @override
-  String get serviceHallMyAppsDesc => '查看我提交过的请假、报备等申请记录';
+  String get serviceHallMyAppsDesc => '查看请假、报备等申请记录';
 
   @override
   String get serviceHallReturnTitle => '返校报备';

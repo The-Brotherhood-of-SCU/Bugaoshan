@@ -2572,15 +2572,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get serviceHallLeaveTitle => 'Leave Request';
 
   @override
-  String get serviceHallLeaveDesc =>
-      'Submit a leave request via the service hall, approved by your tutor';
+  String get serviceHallLeaveDesc => 'Submit a leave request';
 
   @override
   String get serviceHallMyAppsTitle => 'My Applications';
 
   @override
-  String get serviceHallMyAppsDesc =>
-      'View leave and check-in requests you have submitted';
+  String get serviceHallMyAppsDesc => 'View leave and check-in requests';
 
   @override
   String get serviceHallReturnTitle => 'Return-to-School Report';
