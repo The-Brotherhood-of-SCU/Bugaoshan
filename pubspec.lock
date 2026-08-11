@@ -77,10 +77,10 @@ packages:
     dependency: transitive
     description:
       name: build_daemon
-      sha256: "57c62a6d85c39d2a8c984e3b73b29bf2775a865e690309405aeade647fb2184c"
+      sha256: "79e05eaf15a48d7230b053a4363b8eaac0cc234bbd0134c3229455481f55cbc6"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "4.1.4"
+    version: "4.1.5"
   build_runner:
     dependency: "direct dev"
     description:
@@ -351,8 +351,8 @@ packages:
     dependency: "direct main"
     description:
       path: flutter_inappwebview
-      ref: "666bc33f776285076327e4a94aafc103c693e17a"
-      resolved-ref: "666bc33f776285076327e4a94aafc103c693e17a"
+      ref: HEAD
+      resolved-ref: "6141edd335251e285960bceaaa5784f0382ed769"
       url: "https://github.com/The-Brotherhood-of-SCU/flutter_inappwebview.git"
     source: git
     version: "6.2.0-beta.3"
@@ -360,8 +360,8 @@ packages:
     dependency: transitive
     description:
       path: flutter_inappwebview_android
-      ref: "666bc33f776285076327e4a94aafc103c693e17a"
-      resolved-ref: "666bc33f776285076327e4a94aafc103c693e17a"
+      ref: "6141edd335251e285960bceaaa5784f0382ed769"
+      resolved-ref: "6141edd335251e285960bceaaa5784f0382ed769"
       url: "https://github.com/The-Brotherhood-of-SCU/flutter_inappwebview.git"
     source: git
     version: "1.2.0-beta.4"
@@ -381,14 +381,15 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.2.0-beta.3"
-  flutter_inappwebview_linux:
+  flutter_inappwebview_linux_placeholder:
     dependency: transitive
     description:
-      name: flutter_inappwebview_linux
-      sha256: "2e1a3b09bb911fb5a8bb155cb7f1eb1428a19b6e20363b9db48beef428b8cef5"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.1.0-beta.1"
+      path: flutter_inappwebview_linux_placeholder
+      ref: "6141edd335251e285960bceaaa5784f0382ed769"
+      resolved-ref: "6141edd335251e285960bceaaa5784f0382ed769"
+      url: "https://github.com/The-Brotherhood-of-SCU/flutter_inappwebview.git"
+    source: git
+    version: "0.1.0"
   flutter_inappwebview_macos:
     dependency: transitive
     description:
@@ -417,8 +418,8 @@ packages:
     dependency: transitive
     description:
       path: flutter_inappwebview_windows
-      ref: "666bc33f776285076327e4a94aafc103c693e17a"
-      resolved-ref: "666bc33f776285076327e4a94aafc103c693e17a"
+      ref: "6141edd335251e285960bceaaa5784f0382ed769"
+      resolved-ref: "6141edd335251e285960bceaaa5784f0382ed769"
       url: "https://github.com/The-Brotherhood-of-SCU/flutter_inappwebview.git"
     source: git
     version: "0.7.0-beta.4"
@@ -479,10 +480,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_secure_storage_linux
-      sha256: a5f35ddab43cf5c8215d2feb4ce1957851f28c5c37e6f04335066a0602087bf5
+      sha256: "76fa9c841b3b1619fc5b5bc36efc7d158fa2356f223b6caeb1d0c80a54168546"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "3.0.1"
+    version: "3.0.2"
   flutter_secure_storage_platform_interface:
     dependency: transitive
     description:

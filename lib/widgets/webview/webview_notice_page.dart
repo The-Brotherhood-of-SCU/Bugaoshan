@@ -198,7 +198,7 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
 
   @override
   Widget build(BuildContext context) {
-    if (OS.isHarmony) {
+    if (OS.isHarmony || OS.isLinux) {
       return WebViewUnsupportedPage(title: widget.title);
     }
     return _buildWebViewPage(context);
