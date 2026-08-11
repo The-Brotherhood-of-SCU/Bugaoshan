@@ -10,6 +10,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/service_api_service.dart';
+import 'package:bugaoshan/services/api/service_form_models.dart';
 import 'package:bugaoshan/services/api/service_plugin_models.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/service_auth.dart';
@@ -23,7 +24,8 @@ import 'package:bugaoshan/pages/campus/service_hall/service_form_controller.dart
 
 /// 办事大厅通用动态表单页。
 ///
-/// 字段结构由服务端驱动（与前端发起页加载顺序一致，被动抓包确认）：
+/// 字段结构由服务端驱动（与前端发起页加载顺序一致，被动抓包确认；
+/// 其中 1、2 互不依赖，本实现并行发起）：
 /// 1. `start-data` 提供字段权限（require/writable/readable/front_readonly/
 ///    hidden/forbidden）与预填值；
 /// 2. `start-info` 提供 bpmn_id 与 form 列表（form_id/version_id，不含插件）；
@@ -121,19 +123,32 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
     }
   }
 
-  /// schema 获取链（与前端一致）：start-data → start-info（bpmn_id + form
+  /// schema 获取链（与前端一致）：start-data ∥ start-info（bpmn_id + form
   /// 列表）→ get-formv（currform 的插件）→ 每事项 fallbackSchema。
+  ///
+  /// start-data 与 start-info 都只依赖 appId、互不输出了对方需要的值，
+  /// 并行发起省一次串行 RTT；仅 get-formv 必须等两者结果（currform + bpmn_id）。
   Future<ServiceFormSchema> _fetchSchema() async {
     final api = getIt<ServiceApiService>();
     final appId = widget.app.appId;
+    final startDataFuture = api.fetchFormSchema(appId);
+    final startInfoFuture = api.fetchStartInfo(appId);
+
     // start-data 是 auth/data 的唯一来源，必须成功。
-    final startData = await api.fetchFormSchema(appId);
+    final ServiceFormDefinition startData;
+    try {
+      startData = await startDataFuture;
+    } catch (e) {
+      // start-info 的结果已无人消费，吞掉避免悬空的 unhandled error
+      startInfoFuture.ignore();
+      rethrow;
+    }
 
     // 先取发起人部门 id（get-formv 与 data-source 请求都带它）
     unawaited(_loadStarterDepartId());
 
     try {
-      final startInfoD = await api.fetchStartInfo(appId);
+      final startInfoD = await startInfoFuture;
       final bpmnId = startInfoD['bpmn_id']?.toString() ?? '';
       // currform 指定当前生效表单（如 337 为 1396 而非 1397）
       final formId = startData.currform.isNotEmpty
