@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 校历优先加载本地缓存，减少网络等待，并支持下拉刷新
 - 互动校历默认显示当前/下学期
 - 导入课表时自动根据校历计算学期周数
+- 移除linux webview以换取更广泛的兼容性
 
 ### Removed
 - 移除功能：当软件状态恢复时，例如从后台打开，最小化之后打开：课表跳转到当前周
