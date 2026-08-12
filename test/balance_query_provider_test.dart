@@ -183,93 +183,6 @@ void main() {
     expect(trend.records, hasLength(1));
   });
 
-  test('旧版全局绑定会按 principal 迁移并仅恢复当前账号的数据', () async {
-    final bindings = [
-      _binding('A', cusNo: 'student-a'),
-      _binding('B', cusNo: 'student-b'),
-    ];
-    final harness = await _createProvider(
-      bindings: bindings,
-      currentIndex: 1,
-      initialUserId: 'student-b',
-    );
-    addTearDown(harness.dispose);
-
-    expect(harness.provider.bindings.single.roomNo, 'B');
-    expect(harness.provider.currentIndex, 0);
-    expect(harness.prefs.containsKey('balance_query_binding'), isFalse);
-    expect(
-      harness.prefs.getString('balance_query_binding_student-a'),
-      isNotNull,
-    );
-    expect(
-      harness.prefs.getString('balance_query_binding_student-b'),
-      isNotNull,
-    );
-
-    await harness.provider.setUserIdentity('student-a');
-    expect(harness.provider.bindings.single.roomNo, 'A');
-  });
-
-  test('切换账号会隔离余额、趋势和选项缓存', () async {
-    final fakeApi = _FakePayAppApiService();
-    final harness = await _createProvider(
-      fakeApi: fakeApi,
-      bindings: [
-        _binding('A', cusNo: 'student-a'),
-        _binding('B', cusNo: 'student-b'),
-      ],
-      initialUserId: 'student-a',
-    );
-    addTearDown(harness.dispose);
-
-    await harness.provider.ensureBalance(kBalanceTypeElectric);
-    await harness.provider.getCampusList();
-    await harness.provider.ensureTrend(balanceType: kBalanceTypeElectric);
-    expect(
-      harness.provider.trendStateFor(balanceType: kBalanceTypeElectric).records,
-      isNotEmpty,
-    );
-
-    await harness.provider.setUserIdentity('student-b');
-    expect(harness.provider.currentBinding?.roomNo, 'B');
-    expect(harness.provider.electricInfo, isNull);
-    expect(harness.provider.campusState.value, isNull);
-    expect(
-      harness.provider.trendStateFor(balanceType: kBalanceTypeElectric).records,
-      isEmpty,
-    );
-
-    await harness.provider.ensureBalance(kBalanceTypeElectric);
-    expect(fakeApi.queryCalls, 2);
-
-    await harness.provider.setUserIdentity('student-a');
-    expect(harness.provider.currentBinding?.roomNo, 'A');
-    expect(harness.provider.electricInfo, isNull);
-    await harness.provider.ensureTrend(balanceType: kBalanceTypeElectric);
-    expect(
-      harness.provider.trendStateFor(balanceType: kBalanceTypeElectric).records,
-      hasLength(1),
-    );
-  });
-
-  test('账号切换会阻止旧余额请求写入缓存或历史记录', () async {
-    final pending = Completer<RoomInfo>();
-    final fakeApi = _FakePayAppApiService()..pendingQuery = pending;
-    final harness = await _createProvider(fakeApi: fakeApi);
-    addTearDown(harness.dispose);
-
-    final request = harness.provider.ensureBalance(kBalanceTypeElectric);
-    await harness.provider.setUserIdentity('student-b');
-    pending.complete(_roomInfo(balance: '42'));
-    expect((await request).balance, '42');
-
-    expect(harness.provider.bindings, isEmpty);
-    expect(harness.provider.electricInfo, isNull);
-    final rows = await harness.db.query('balance_records');
-    expect(rows, isEmpty);
-  });
-
   testWidgets('余额列表在首帧后才发起首次加载', (tester) async {
     final fakeApi = _FakePayAppApiService();
     // _createProvider 内部有真实的异步 I/O（SharedPreferences、sqflite），
@@ -306,7 +219,6 @@ Future<_ProviderHarness> _createProvider({
   _FakePayAppApiService? fakeApi,
   List<RoomBinding>? bindings,
   int currentIndex = 0,
-  String? initialUserId,
   DateTime Function()? now,
 }) async {
   final getIt = GetIt.instance;
@@ -337,7 +249,6 @@ Future<_ProviderHarness> _createProvider({
     appConfig,
     now: now,
   );
-  await provider.setUserIdentity(initialUserId ?? storedBindings.first.cusNo);
   return _ProviderHarness(provider, prefs, db, getIt);
 }
 

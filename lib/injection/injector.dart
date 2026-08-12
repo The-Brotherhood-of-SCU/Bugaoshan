@@ -269,30 +269,13 @@ void _configureAsyncDependencies() {
     await getIt.isReady<DatabaseService>();
     await getIt.isReady<PayAppAuth>();
     await getIt.isReady<AppConfigProvider>();
-    await getIt.isReady<ScuAuthProvider>();
-    await getIt.isReady<ScuAuth>();
-    final prefs = getIt<SharedPreferences>();
-    final authProvider = getIt<ScuAuthProvider>();
-    final scuAuth = getIt<ScuAuth>();
-    String? currentIdentity() => BalanceQueryProvider.confirmedUserIdentity(
-      isLoggedIn: authProvider.isLoggedIn,
-      principal: scuAuth.principal,
-    );
-    final balanceProvider = BalanceQueryProvider(
-      prefs,
+    return BalanceQueryProvider(
+      getIt<SharedPreferences>(),
       getIt<PayAppApiService>(),
       getIt<DatabaseService>(),
       getIt<PayAppAuth>(),
       getIt<AppConfigProvider>(),
     );
-    await balanceProvider.setUserIdentity(currentIdentity());
-    authProvider.addListener(() {
-      final identity = currentIdentity();
-      if (identity != null) {
-        unawaited(balanceProvider.setUserIdentity(identity));
-      }
-    });
-    return balanceProvider;
   });
   getIt.registerSingletonAsync<UpdateService>(() async {
     await getIt.isReady<SharedPreferences>();
@@ -352,10 +335,6 @@ void _configureAsyncDependencies() {
   getIt.isReady<ScuAuth>().then((_) {
     getIt<ScuAuth>().addListener(() {
       final scu = getIt<ScuAuth>();
-      if (getIt.isRegistered<BalanceQueryProvider>() &&
-          scu.state != AuthState.ready) {
-        getIt<BalanceQueryProvider>().clear();
-      }
       if (scu.state == AuthState.unknown) {
         // logout 发生，清理需要登录态的 Provider 缓存
         if (getIt.isRegistered<PlanCompletionProvider>()) {
