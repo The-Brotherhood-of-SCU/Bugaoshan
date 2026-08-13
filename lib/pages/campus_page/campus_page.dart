@@ -10,6 +10,7 @@ import 'section_header.dart';
 import 'list_card.dart';
 import 'grid_card.dart';
 import 'grid_view_switch.dart';
+import 'item_accent.dart';
 import 'package:bugaoshan/theme_shape.dart';
 
 class CampusPage extends StatefulWidget {
@@ -143,6 +144,7 @@ class _CampusPageState extends State<CampusPage>
               icon: item.icon,
               title: item.dockFullLabel(l10n),
               desc: item.desc(l10n),
+              accentColor: campusItemAccent(item.id),
               trailing: Icon(
                 Icons.chevron_right,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -211,6 +213,7 @@ class _CampusPageState extends State<CampusPage>
                 return CampusGridCard(
                   icon: item.icon,
                   title: item.dockLabel(l10n),
+                  accentColor: campusItemAccent(item.id),
                   onTap: () {
                     final rootCtx = logicRootContext;
                     if (rootCtx.mounted) {
