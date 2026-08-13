@@ -11,16 +11,33 @@ class CampusGridCard extends StatelessWidget {
     required this.onTap,
     this.iconContainerColor,
     this.iconColor,
+    this.accentColor,
   });
 
   final IconData icon;
   final String title;
   final Color? iconContainerColor;
   final Color? iconColor;
+
+  /// 强调色。传入后自动派生柔和的图标容器底色与图标色；
+  /// 优先级低于显式指定的 [iconContainerColor] / [iconColor]。
+  final Color? accentColor;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final accent = accentColor;
+    final containerColor =
+        iconContainerColor ??
+        (accent != null
+            ? accent.withValues(
+                alpha: colorScheme.brightness == Brightness.dark ? 0.24 : 0.14,
+              )
+            : colorScheme.primaryContainer);
+    final foregroundColor =
+        iconColor ?? accent ?? colorScheme.onPrimaryContainer;
+
     return StyledCard(
       onTap: onTap,
       child: Column(
@@ -29,17 +46,10 @@ class CampusGridCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(AppShapes.medium),
             decoration: BoxDecoration(
-              color:
-                  iconContainerColor ??
-                  Theme.of(context).colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(AppShapes.medium),
+              color: containerColor,
+              borderRadius: BorderRadius.circular(AppShapes.large),
             ),
-            child: Icon(
-              icon,
-              color:
-                  iconColor ?? Theme.of(context).colorScheme.onPrimaryContainer,
-              size: 28,
-            ),
+            child: Icon(icon, color: foregroundColor, size: 28),
           ),
           const SizedBox(height: 10),
           Text(
