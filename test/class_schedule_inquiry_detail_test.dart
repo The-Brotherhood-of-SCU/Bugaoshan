@@ -5,7 +5,7 @@ import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart'
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/class_schedule_inquiry_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

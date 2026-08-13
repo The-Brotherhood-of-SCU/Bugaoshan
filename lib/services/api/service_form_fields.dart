@@ -5,7 +5,7 @@
 /// 等补齐后移除占位。
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 日期字段常量（Calendar_25/26，用户确认：离校时间 / 返校时间）。
 const String kFieldLeaveDate = 'Calendar_25';

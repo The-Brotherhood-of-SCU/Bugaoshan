@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// MD3 Expressive 形状令牌
 /// 对齐 Material 3 Expressive Corner Radius Scale

@@ -1,7 +1,7 @@
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/common/third_center.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:bugaoshan/pages/profile/login_status_card.dart';
 import 'package:bugaoshan/pages/profile/profile_menu_card.dart';
 import 'package:bugaoshan/pages/profile/user_info_card.dart';

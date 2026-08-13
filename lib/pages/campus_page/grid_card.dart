@@ -1,5 +1,5 @@
 import 'package:bugaoshan/widgets/common/styled_card.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:bugaoshan/theme_shape.dart';
 
 /// Shared grid-style card: icon container + title (vertical layout).

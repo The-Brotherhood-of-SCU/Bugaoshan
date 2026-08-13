@@ -1,6 +1,7 @@
 import 'package:bugaoshan/pages/about/release_notes_page.dart';
+import 'package:bugaoshan/utils/compatibility.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/theme_shape.dart';
@@ -172,12 +173,13 @@ class UpdateDialogContent extends StatelessWidget {
       data: trimmedNotes,
       selectable: false,
       padding: const EdgeInsets.all(0),
-      styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-        blockquoteDecoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(AppShapes.small),
-        ),
-      ),
+      styleSheet: MarkdownStyleSheet.fromTheme(getLegacyThemeData(context))
+          .copyWith(
+            blockquoteDecoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(AppShapes.small),
+            ),
+          ),
     );
   }
 }

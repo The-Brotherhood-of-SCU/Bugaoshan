@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:bugaoshan/models/course.dart';
 
 /// 课程网格节次列，显示左侧的节次编号和时间段。

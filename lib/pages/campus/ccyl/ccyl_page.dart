@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activities_tab.dart';
 import 'package:bugaoshan/pages/campus/ccyl/my_activities_tab.dart';

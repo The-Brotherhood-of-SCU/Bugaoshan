@@ -1,7 +1,7 @@
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/settings/add_widget/add_widget_page.dart';
 import 'package:bugaoshan/widgets/common/third_center.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class WidgetPage extends StatelessWidget {
   const WidgetPage({super.key});

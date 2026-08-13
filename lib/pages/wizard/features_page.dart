@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:bugaoshan/pages/wizard/wizard_card.dart';
 import 'package:bugaoshan/widgets/common/third_center.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 
 class FeaturesPage extends StatelessWidget {

@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/compatibility.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -28,12 +29,13 @@ class ChangelogVersionPage extends StatelessWidget {
         data: content,
         selectable: true,
         padding: const EdgeInsets.all(16),
-        styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-          blockquoteDecoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(AppShapes.small),
-          ),
-        ),
+        styleSheet: MarkdownStyleSheet.fromTheme(getLegacyThemeData(context))
+            .copyWith(
+              blockquoteDecoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(AppShapes.small),
+              ),
+            ),
       ),
     );
   }

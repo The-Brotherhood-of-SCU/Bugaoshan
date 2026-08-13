@@ -1,5 +1,5 @@
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 登录页底部免责声明（安全/隐私提示）。
 class ScuLoginDisclaimer extends StatelessWidget {

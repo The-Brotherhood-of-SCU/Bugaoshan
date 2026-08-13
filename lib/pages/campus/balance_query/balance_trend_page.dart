@@ -1,7 +1,7 @@
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/beijing_time.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_trend_chart_card.dart';
 import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_trend_custom_range_card.dart';

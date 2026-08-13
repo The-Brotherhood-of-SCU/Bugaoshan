@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 登录页圆形复选框。
 class ScuLoginCheckbox extends StatelessWidget {

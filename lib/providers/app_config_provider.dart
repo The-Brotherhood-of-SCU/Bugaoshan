@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart' show Colors, Curve, Curves;
+import 'package:material_ui/material_ui.dart' show Colors, Curve, Curves;
 import 'package:bugaoshan/utils/locale_utils.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';

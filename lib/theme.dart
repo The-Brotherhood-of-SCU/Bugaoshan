@@ -1,5 +1,6 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/compatibility.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'theme_shape.dart';
@@ -103,7 +104,9 @@ ThemeData buildTheme({
 
   TextTheme textTheme = baseTheme.textTheme;
   if (useGoogleFonts) {
-    textTheme = GoogleFonts.notoSansScTextTheme(textTheme);
+    textTheme = mapToModern(
+      GoogleFonts.notoSansScTextTheme(mapToLegacy(textTheme)),
+    );
   }
   return baseTheme.copyWith(textTheme: textTheme);
 }

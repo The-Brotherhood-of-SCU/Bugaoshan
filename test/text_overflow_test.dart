@@ -6,7 +6,7 @@ import 'package:bugaoshan/widgets/common/styled_tile.dart';
 import 'package:bugaoshan/widgets/common/styled_widget.dart';
 import 'package:bugaoshan/widgets/course/grid_header.dart';
 import 'package:bugaoshan/widgets/course/grid_section_column.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// 文字溢出回归测试：用「大文字缩放 + 窄宽度 + 长文本」渲染被修复的组件，

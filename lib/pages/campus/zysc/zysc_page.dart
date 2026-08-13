@@ -1,6 +1,6 @@
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/widgets/webview/webview_notice_page.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 
 class ZyscPage extends StatelessWidget {
   const ZyscPage({super.key});

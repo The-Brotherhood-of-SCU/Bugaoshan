@@ -1,6 +1,6 @@
 import 'package:bugaoshan/pages/dev/ui/ui_page.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class UiTile extends StatelessWidget {
   const UiTile({super.key});

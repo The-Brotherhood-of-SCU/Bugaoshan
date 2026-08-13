@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 class HintCard extends StatelessWidget {

@@ -6,7 +6,7 @@ import 'package:bugaoshan/pages/campus/service_hall/service_form_page.dart';
 import 'package:bugaoshan/pages/campus_page/list_card.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 办事大厅入口页。
 ///

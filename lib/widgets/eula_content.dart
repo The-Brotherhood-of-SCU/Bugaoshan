@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/compatibility.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -106,7 +107,7 @@ class _EulaContentState extends State<EulaContent>
                       ),
                       styleSheet:
                           MarkdownStyleSheet.fromTheme(
-                            Theme.of(context),
+                            getLegacyThemeData(context),
                           ).copyWith(
                             p: colorScheme.textTheme.bodyMedium,
                             blockquoteDecoration: BoxDecoration(

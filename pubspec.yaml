@@ -51,7 +51,9 @@ dependencies:
   tyme: ^1.4.4
   json_annotation: ^4.12.0
   device_info_plus: ^13.2.0
+  material_ui: ^1.0.0
 
+  cupertino_ui: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -67,6 +69,7 @@ dev_dependencies:
 
 # sqlite3 构建 hook 默认从 github.com 下载预编译 SQLite 库（国内网络超时）。
 # 通过镜像 url_pattern 拉取官方同款二进制。$RELEASE_TAG / $FILENAME 由 hook 自动替换。
+  image: any
 hooks:
   user_defines:
     sqlite3:

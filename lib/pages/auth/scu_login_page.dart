@@ -15,7 +15,7 @@ import 'package:bugaoshan/services/ocr_service.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/third_center.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ScuLoginPage extends StatefulWidget {
   const ScuLoginPage({super.key});

@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/auth/scu_login_input_field.dart';
 import 'package:bugaoshan/theme_shape.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 登录页验证码行：输入框 + 可点击刷新的验证码图片。
 ///

@@ -1,5 +1,5 @@
 import 'package:bugaoshan/utils/constants.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 校园页功能入口的强调色。
 ///

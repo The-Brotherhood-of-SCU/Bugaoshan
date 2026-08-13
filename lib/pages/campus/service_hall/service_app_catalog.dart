@@ -15,7 +15,7 @@
 /// 已验证流程绝不退化。
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/services/api/service_api_service.dart';

@@ -1,6 +1,6 @@
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Placeholder page shown when the current platform cannot host a WebView.
 class WebViewUnsupportedPage extends StatelessWidget {

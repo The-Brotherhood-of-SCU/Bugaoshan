@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 登录页主按钮，带加载态（加载中禁用并显示转圈）。
 class ScuLoginButton extends StatelessWidget {

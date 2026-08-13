@@ -1,7 +1,7 @@
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/downloads/shared_notice_downloads.dart';
 import 'package:bugaoshan/widgets/webview/webview_notice_page.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class TuanweiNoticePage extends StatelessWidget {
   const TuanweiNoticePage({super.key});
