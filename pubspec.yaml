@@ -25,7 +25,7 @@ dependencies:
   path_provider: ^2.1.5
   path: ^1.9.0
   dart_sm: ^0.1.4
-  flutter_secure_storage: ^10.0.0
+  flutter_secure_storage: ^11.0.0
   scu_ocr_lite:
     git:
       url: https://github.com/The-Brotherhood-of-SCU/scu_ocr_lite_dart.git
@@ -69,7 +69,7 @@ dev_dependencies:
 
 # sqlite3 构建 hook 默认从 github.com 下载预编译 SQLite 库（国内网络超时）。
 # 通过镜像 url_pattern 拉取官方同款二进制。$RELEASE_TAG / $FILENAME 由 hook 自动替换。
-  image: any
+  image: ^4.9.0
 hooks:
   user_defines:
     sqlite3:
