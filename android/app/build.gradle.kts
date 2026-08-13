@@ -21,7 +21,7 @@ android {
     }
 
     namespace = "io.github.the_brotherhood_of_scu.bugaoshan"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
