@@ -33,6 +33,18 @@ class WidgetPinHandler(private val activity: Activity) {
         private const val ACTION_WIDGET_PINNED =
             "io.github.the_brotherhood_of_scu.bugaoshan.WIDGET_PINNED"
         private const val EXTRA_SIZE = "size"
+
+        /**
+         * 成功回调 PendingIntent 的 requestCode 按尺寸区分。
+         * extras 不参与 PendingIntent 的 filterEquals 比较,若固定同一 requestCode
+         * 并搭配 FLAG_UPDATE_CURRENT,连续 pin 不同尺寸时会互相覆盖,回调带回的 size 不准。
+         */
+        private fun requestCodeFor(size: String?): Int = when (size) {
+            "small" -> 0
+            "medium" -> 1
+            "large" -> 2
+            else -> -1
+        }
     }
 
     /** 用户真正确认 Pin 后触发(参数为尺寸 small/medium/large)。 */
@@ -64,6 +76,22 @@ class WidgetPinHandler(private val activity: Activity) {
             appContext.registerReceiver(pinSuccessReceiver, filter)
         }
         receiverRegistered = true
+    }
+
+    /**
+     * 注销 Pin 成功回调 receiver 并清空回调(在 Activity onDestroy 时调用)。
+     * receiver 注册在 applicationContext 上,若不注销,Activity 重建后
+     * [onWidgetPinned] 闭包仍持有旧的 MethodChannel 引用,可能回调到已销毁的 FlutterEngine。
+     */
+    fun release() {
+        onWidgetPinned = null
+        if (!receiverRegistered) return
+        try {
+            activity.applicationContext.unregisterReceiver(pinSuccessReceiver)
+        } catch (e: Exception) {
+            Log.w(TAG, "unregisterReceiver failed", e)
+        }
+        receiverRegistered = false
     }
 
     private fun receiverClassFor(size: String?): Class<*>? = when (size) {
@@ -98,7 +126,7 @@ class WidgetPinHandler(private val activity: Activity) {
                 .putExtra(EXTRA_SIZE, size)
             val successCallback = PendingIntent.getBroadcast(
                 activity,
-                0,
+                requestCodeFor(size),
                 callbackIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )

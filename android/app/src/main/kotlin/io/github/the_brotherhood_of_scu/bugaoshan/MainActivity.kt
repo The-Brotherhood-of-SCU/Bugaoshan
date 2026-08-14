@@ -61,6 +61,7 @@ class MainActivity : FlutterActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        if (::widgetPin.isInitialized) widgetPin.release()
         downloadNotification?.cancel()
         downloadNotification = null
         DownloadNotificationServiceHolder.service = null
