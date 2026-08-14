@@ -325,6 +325,9 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                   DropdownButton<int>(
                     value: _provider.selectedYear,
                     underline: const SizedBox(),
+                    // 桌面端收起菜单后按钮仍持有焦点，默认 focusColor 会留下一块
+                    // 常驻灰底；这里将其去掉（悬停高亮保留，可正常随鼠标移出消失）。
+                    focusColor: Colors.transparent,
                     items: years
                         .map(
                           (y) => DropdownMenuItem(value: y, child: Text('$y')),
