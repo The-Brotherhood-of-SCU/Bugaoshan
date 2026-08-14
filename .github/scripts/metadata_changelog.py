@@ -5,8 +5,12 @@ using Flutter's formula (major*10000 + minor*100 + patch), computes
 ABI-specific versionCodes (+1000/+2000/+4000, matching the abiCode*1000+base
 rule Flutter's --split-per-abi applies), and writes changelog
 files to metadata/{lang}/changelogs/ for each ABI.
+
+Pass --skip-existing to keep already generated files untouched (e.g. in CI,
+where re-translation would overwrite locally generated wording).
 """
 
+import argparse
 import os
 import re
 import sys
@@ -173,9 +177,20 @@ def translate_zh_to_en(text: str) -> str:
     return text
 
 
-def write_changelogs(version_code: int, zh_text: str, en_text: str, root_dir: str = ".") -> list[str]:
-    """Write changelog files for all ABIs and languages."""
+def write_changelogs(
+    version_code: int,
+    zh_text: str,
+    en_text: str,
+    root_dir: str = ".",
+    skip_existing: bool = False,
+) -> tuple[list[str], list[str]]:
+    """Write changelog files for all ABIs and languages.
+
+    Returns (created, skipped) file paths; with skip_existing=True existing
+    files are left untouched and reported in skipped.
+    """
     created = []
+    skipped = []
     lang_texts = {"en-US": en_text, "zh-CN": zh_text}
     for lang, text in lang_texts.items():
         changelog_dir = os.path.join(root_dir, "metadata", lang, "changelogs")
@@ -183,10 +198,13 @@ def write_changelogs(version_code: int, zh_text: str, en_text: str, root_dir: st
         for _abi_name, offset in ABI_OFFSETS.items():
             vc = version_code + offset
             filepath = os.path.join(changelog_dir, f"{vc}.txt")
+            if skip_existing and os.path.exists(filepath):
+                skipped.append(filepath)
+                continue
             with open(filepath, "w", encoding="utf-8") as f:
                 f.write(text)
             created.append(filepath)
-    return created
+    return created, skipped
 
 
 def get_version_from_pubspec(pubspec_path: str = "pubspec.yaml") -> str:
@@ -198,6 +216,14 @@ def get_version_from_pubspec(pubspec_path: str = "pubspec.yaml") -> str:
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--skip-existing",
+        action="store_true",
+        help="skip changelog files that already exist instead of rewriting them",
+    )
+    args = parser.parse_args()
+
     version_name = get_version_from_pubspec()
     base_vc = derive_version_code(version_name)
 
@@ -206,17 +232,31 @@ def main():
         print(f"Warning: No changelog content found for {version_name}, skipping.")
         sys.exit(1)
 
+    if args.skip_existing:
+        all_paths = [
+            os.path.join("metadata", lang, "changelogs", f"{base_vc + offset}.txt")
+            for lang in METADATA_LANGS
+            for offset in ABI_OFFSETS.values()
+        ]
+        if all(os.path.exists(p) for p in all_paths):
+            print("All changelog files already exist, skipping generation.")
+            return
+
     print("Translating changelog to English...")
     changelog_en = translate_zh_to_en(changelog_zh)
 
-    created = write_changelogs(base_vc, changelog_zh, changelog_en)
+    created, skipped = write_changelogs(
+        base_vc, changelog_zh, changelog_en, skip_existing=args.skip_existing
+    )
     for f in created:
         print(f"  Created: {f}")
+    for f in skipped:
+        print(f"  Skipped (already exists): {f}")
 
     print(f"\nVersion: {version_name}, base versionCode: {base_vc}")
     for name, offset in ABI_OFFSETS.items():
         print(f"  {name}: {base_vc + offset}")
-    print(f"Total files created: {len(created)}")
+    print(f"Total files created: {len(created)}, skipped: {len(skipped)}")
 
 
 if __name__ == "__main__":
