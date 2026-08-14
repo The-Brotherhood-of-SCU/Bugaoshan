@@ -50,6 +50,7 @@ class AuthLogFilterBar extends StatelessWidget {
           const SizedBox(width: 8),
           DropdownButton<String?>(
             value: tag,
+            focusColor: Colors.transparent,
             hint: const Text('All tags'),
             onChanged: onTagChanged,
             items: <DropdownMenuItem<String?>>[

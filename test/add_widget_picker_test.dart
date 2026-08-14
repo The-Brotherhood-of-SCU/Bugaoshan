@@ -29,6 +29,15 @@ class FakeWidgetUpdateService implements WidgetUpdateService {
   }
 
   @override
+  Stream<String> get onWidgetPinned => const Stream.empty();
+
+  @override
+  Future<Set<int>> getPinnedWidgetIds() async => {};
+
+  @override
+  Future<bool> openAppSettings() async => false;
+
+  @override
   Future<bool> isIgnoringBatteryOptimizations() async => true;
 
   @override
