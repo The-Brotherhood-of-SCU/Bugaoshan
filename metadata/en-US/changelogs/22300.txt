@@ -1,0 +1,32 @@
+- Added interactive academic calendar mirror fetching to reduce network impact
+- Added electricity usage trend statistics to the [Electricity Query] page
+- Added an iOS home-screen widget for displaying the class schedule
+- Added macOS platform support (class schedule can be exported to the system calendar)
+- Added a development team introduction page
+- Added a holiday page to the schedule tab, showing holiday info during breaks and supporting switching to the next semester
+- Added a service hall page for submitting leave, return-to-school, and other requests online
+
+- Unified UI card style: rounded cards with a subtle shadow
+- Redesigned the login page UI
+- Improved schedule swiping feel; animation duration now follows settings
+- Home-screen widget: highlight the current class, use custom course colors for course indicator bars, and refresh precisely at class start/end times
+- Auto-update: added the file name to the download dialog
+- Only show the icon-switching option on Android
+- Switched captcha recognition from LiteRT to a built-in implementation to reduce app size and improve cross-platform compatibility
+- Adapted the grades page to support multiple training programs
+- Optimized card UI design
+- Academic calendar now prefers local cache to reduce network waiting and supports pull-to-refresh
+- Interactive academic calendar defaults to the current/next semester
+- Automatically calculate semester weeks from the academic calendar when importing schedules
+
+- Removed: when the app resumes (e.g., reopened from background or after minimization), the schedule no longer jumps to the current week
+
+- Fixed an issue where the time labels on the left of the schedule could wrap
+- Fixed infinite loading when prewarming failed on the electricity-query and fitness-test pages
+- Fixed preview update checks possibly matching the wrong version
+- Fixed an error when automatically getting the current week during holidays
+- Fixed export failing for an empty schedule
+- Fixed several minor issues
+- Fixed gallery-save permission issues on older Android and iOS systems
+- Fixed resource leaks when refreshing the academic calendar and abnormal data potentially polluting the local cache
+- Fixed long text such as buttons and room names overflowing or overlapping
