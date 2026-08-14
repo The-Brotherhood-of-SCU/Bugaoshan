@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 class WidgetUpdateService {
@@ -13,6 +14,8 @@ class WidgetUpdateService {
   bool _needsRunAgain = false;
   bool _disposed = false;
   final bool Function() _platformChecker;
+  final StreamController<String> _widgetPinnedController =
+      StreamController<String>.broadcast();
 
   WidgetUpdateService({
     Duration? debounceDuration,
@@ -25,6 +28,25 @@ class WidgetUpdateService {
                    defaultTargetPlatform == TargetPlatform.iOS ||
                    defaultTargetPlatform == TargetPlatform.macOS)) {
     _debounceDuration = debounceDuration ?? _debounceDuration;
+    // 接收原生侧推送的 widget pin 成功事件(用户真正确认添加后由系统回调)
+    _channel.setMethodCallHandler(_handleNativeCall);
+  }
+
+  /// 用户真正确认 Pin 小组件后触发(参数为尺寸 small/medium/large)。
+  ///
+  /// 注意 `pinWidget` 的返回值只表示"请求已提交",是否添加成功以此事件为准。
+  Stream<String> get onWidgetPinned => _widgetPinnedController.stream;
+
+  Future<dynamic> _handleNativeCall(MethodCall call) async {
+    if (call.method == 'onWidgetPinned') {
+      final size = call.arguments is Map
+          ? (call.arguments as Map)['size'] as String?
+          : null;
+      if (size != null && !_widgetPinnedController.isClosed) {
+        _widgetPinnedController.add(size);
+      }
+    }
+    return null;
   }
 
   /// Request a widget data update.
@@ -180,6 +202,7 @@ class WidgetUpdateService {
     _disposed = true;
     _debounceTimer?.cancel();
     _debounceTimer = null;
+    _widgetPinnedController.close();
     if (_pendingCompleter != null && !_pendingCompleter!.isCompleted) {
       _pendingCompleter!.completeError(
         StateError('WidgetUpdateService disposed'),
@@ -209,6 +232,34 @@ class WidgetUpdateService {
       }
     } catch (e) {
       debugPrint('WidgetUpdate: pinWidget FAILED: $e');
+      return false;
+    }
+  }
+
+  /// 查询当前已添加到桌面的全部小组件 id(用于 pin 前后 diff 验证真实结果)。
+  Future<Set<int>> getPinnedWidgetIds() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      return {};
+    }
+    try {
+      final result = await _channel.invokeMethod<List<dynamic>>('getWidgetIds');
+      return result?.whereType<int>().toSet() ?? {};
+    } catch (e) {
+      debugPrint('WidgetUpdate: getWidgetIds FAILED: $e');
+      return {};
+    }
+  }
+
+  /// 打开本应用的系统详情设置页(引导用户开启「创建桌面快捷方式」等权限)。
+  Future<bool> openAppSettings() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      return false;
+    }
+    try {
+      final result = await _channel.invokeMethod<bool>('openAppSettings');
+      return result ?? false;
+    } catch (e) {
+      debugPrint('WidgetUpdate: openAppSettings FAILED: $e');
       return false;
     }
   }

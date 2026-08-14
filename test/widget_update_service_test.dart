@@ -144,4 +144,25 @@ void main() {
       expect(e, isA<StateError>());
     }
   });
+
+  test('onWidgetPinned forwards native callback events', () async {
+    final service = WidgetUpdateService(platformChecker: () => true);
+    final events = <String>[];
+    final sub = service.onWidgetPinned.listen(events.add);
+
+    // 模拟原生侧通过 channel 推送 pin 成功事件
+    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .handlePlatformMessage(
+          kUpdateMethodChannel.name,
+          const StandardMethodCodec().encodeMethodCall(
+            const MethodCall('onWidgetPinned', {'size': 'small'}),
+          ),
+          (data) {},
+        );
+    await pumpEventQueue();
+
+    expect(events, ['small']);
+    await sub.cancel();
+    service.dispose();
+  });
 }

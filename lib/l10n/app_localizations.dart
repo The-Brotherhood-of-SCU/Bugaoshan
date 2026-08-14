@@ -3793,6 +3793,36 @@ abstract class AppLocalizations {
   /// **'Widget pinning is not supported on this device'**
   String get pinWidgetNotSupported;
 
+  /// No description provided for @pinWidgetRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin request sent — confirm in the system dialog to add the widget'**
+  String get pinWidgetRequested;
+
+  /// No description provided for @pinWidgetFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Widget Not Added'**
+  String get pinWidgetFailedTitle;
+
+  /// No description provided for @pinWidgetFailedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'No system confirmation dialog appeared. The request may have been blocked by a system permission (some systems require the \"Create desktop shortcuts\" permission). Please grant it in Settings and try again, or long-press an empty area of the home screen to add the widget manually.'**
+  String get pinWidgetFailedDesc;
+
+  /// No description provided for @pinWidgetOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get pinWidgetOpenSettings;
+
+  /// No description provided for @pinWidgetDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Got It'**
+  String get pinWidgetDismiss;
+
   /// No description provided for @pinWidgetHint.
   ///
   /// In en, this message translates to:

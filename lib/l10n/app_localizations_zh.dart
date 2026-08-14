@@ -1920,6 +1920,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pinWidgetNotSupported => '此设备不支持固定小组件';
 
   @override
+  String get pinWidgetRequested => '已发送添加请求，请在系统弹窗中确认添加';
+
+  @override
+  String get pinWidgetFailedTitle => '小组件未添加成功';
+
+  @override
+  String get pinWidgetFailedDesc =>
+      '没有出现系统确认弹窗，添加请求可能被系统权限拦截（部分系统需要授予「创建桌面快捷方式」权限）。请前往设置开启后重试，或长按桌面空白处手动添加小组件。';
+
+  @override
+  String get pinWidgetOpenSettings => '去设置';
+
+  @override
+  String get pinWidgetDismiss => '知道了';
+
+  @override
   String get pinWidgetHint =>
       '提示：部分系统（如 ColorOS、MIUI 等）可能会忽略自动添加请求。如果小组件未出现在桌面，请长按桌面空白处，选择「小组件」手动添加。某些系统需要授予「创建桌面快捷方式」权限。';
 

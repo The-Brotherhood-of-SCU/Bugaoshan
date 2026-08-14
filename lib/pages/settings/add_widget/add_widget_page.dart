@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
@@ -44,7 +46,22 @@ class AddWidgetContent extends StatefulWidget {
 
 class _AddWidgetContentState extends State<AddWidgetContent>
     with WidgetsBindingObserver {
+  /// 提交 pin 请求后,等待该时长再做"弹窗是否出现"的判定
+  static const _pinVerifyDelay = Duration(seconds: 5);
+
   BatteryOptimizationStatus _status = BatteryOptimizationStatus.checking;
+
+  /// pin 请求已提交但尚未确认结果
+  bool _pinPending = false;
+
+  /// pin 请求提交后应用是否 pause 过(系统确认弹窗出现时应用通常会被 pause)
+  bool _pausedSincePin = false;
+
+  /// pin 请求提交前桌面上已有的小组件 id 快照
+  Set<int> _widgetIdsBeforePin = {};
+
+  Timer? _pinVerifyTimer;
+  StreamSubscription<String>? _pinSuccessSub;
 
   TargetPlatform get _platform =>
       widget.debugPlatformOverride ?? defaultTargetPlatform;
@@ -53,19 +70,28 @@ class _AddWidgetContentState extends State<AddWidgetContent>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _pinSuccessSub = getIt<WidgetUpdateService>().onWidgetPinned.listen((_) {
+      _onPinConfirmed();
+    });
     _checkBatteryOptimization();
   }
 
   @override
   void dispose() {
+    _pinVerifyTimer?.cancel();
+    _pinSuccessSub?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused && _pinPending) {
+      _pausedSincePin = true;
+    }
     if (state == AppLifecycleState.resumed) {
       _checkBatteryOptimization();
+      _verifyPinAfterResume();
     }
   }
 
@@ -114,16 +140,103 @@ class _AddWidgetContentState extends State<AddWidgetContent>
   Future<void> _pinWidget(BuildContext context, WidgetSize size) async {
     final localizations = AppLocalizations.of(context)!;
     final service = getIt<WidgetUpdateService>();
-    final success = await service.pinWidget(size.toPinArgument());
+    // 快照当前桌面已有的小组件 id,用于后续 diff 验证真实添加结果
+    final beforeIds = await service.getPinnedWidgetIds();
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success
-              ? localizations.pinWidgetSuccess
-              : localizations.pinWidgetNotSupported,
-        ),
-      ),
+    // 注意: 返回值 true 仅表示"请求已提交",不代表用户确认添加
+    // (部分 ROM 未授予「创建桌面快捷方式」权限时会静默拦截,不弹任何窗口)
+    final submitted = await service.pinWidget(size.toPinArgument());
+    if (!context.mounted) return;
+    if (!submitted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(localizations.pinWidgetNotSupported)),
+      );
+      return;
+    }
+    _widgetIdsBeforePin = beforeIds;
+    _pinPending = true;
+    _pausedSincePin = false;
+    _pinVerifyTimer?.cancel();
+    _pinVerifyTimer = Timer(_pinVerifyDelay, _verifyPinResult);
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(localizations.pinWidgetRequested)));
+  }
+
+  /// 桌面上是否出现了 pin 请求之前不存在的新小组件
+  Future<bool> _hasNewWidgetOnHome() async {
+    final now = await getIt<WidgetUpdateService>().getPinnedWidgetIds();
+    return now.difference(_widgetIdsBeforePin).isNotEmpty;
+  }
+
+  /// 确认小组件真正添加成功(原生成功回调或 ids diff 验证通过)
+  void _onPinConfirmed() {
+    if (!_pinPending) return;
+    _pinVerifyTimer?.cancel();
+    _pinPending = false;
+    if (!mounted) return;
+    final localizations = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(localizations.pinWidgetSuccess)));
+    // 让新添加的小组件立刻加载课程数据
+    getIt<WidgetUpdateService>().updateWidgetData(force: true);
+  }
+
+  /// pin 请求提交一段时间后的判定:
+  /// - ids 增加 → 添加成功;
+  /// - ids 未增加且期间应用从未 pause(系统弹窗根本没出现) → 判定被权限拦截,弹引导;
+  /// - ids 未增加但 pause 过 → 弹窗已展示,交给 resume 兜底处理。
+  Future<void> _verifyPinResult() async {
+    if (!_pinPending) return;
+    if (await _hasNewWidgetOnHome()) {
+      _onPinConfirmed();
+      return;
+    }
+    if (!mounted || !_pinPending) return;
+    if (_pausedSincePin) return;
+    _pinPending = false;
+    _showPinBlockedDialog();
+  }
+
+  /// 从系统弹窗/设置页返回时的兜底验证:
+  /// ids 增加 → 成功;否则视为用户主动取消,静默清除(不打扰)。
+  Future<void> _verifyPinAfterResume() async {
+    if (!_pinPending) return;
+    if (await _hasNewWidgetOnHome()) {
+      _onPinConfirmed();
+      return;
+    }
+    if (!mounted || !_pinPending) return;
+    if (_pausedSincePin) {
+      _pinVerifyTimer?.cancel();
+      _pinPending = false;
+    }
+  }
+
+  void _showPinBlockedDialog() {
+    final localizations = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(localizations.pinWidgetFailedTitle),
+          content: Text(localizations.pinWidgetFailedDesc),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(localizations.pinWidgetDismiss),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                getIt<WidgetUpdateService>().openAppSettings();
+              },
+              child: Text(localizations.pinWidgetOpenSettings),
+            ),
+          ],
+        );
+      },
     );
   }
 
