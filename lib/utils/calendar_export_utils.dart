@@ -193,7 +193,7 @@ class CalendarExportUtils {
   }) async {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-    String? destinationPath;
+    Uri? destinationPath;
     try {
       destinationPath = await FilePicker.saveFile(
         dialogTitle: l10n.exportScheduleAsIcsTo,
