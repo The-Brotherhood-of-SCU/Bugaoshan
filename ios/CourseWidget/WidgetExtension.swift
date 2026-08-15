@@ -739,15 +739,7 @@ struct DesktopWidgetView: View {
             if displayableCourses.isEmpty {
                 Spacer(minLength: 0)
                 // 区分是真没课，还是课上完了；放假中显示放假提示
-                let emptyText: String
-                if entry.isOnVacation {
-                    emptyText = "享受假期～"
-                } else if entry.courses.isEmpty {
-                    emptyText = entry.isTomorrow ? "明天没课" : "今天没课"
-                } else {
-                    emptyText = "今天的课都上完啦"
-                }
-                Text(emptyText)
+                Text(emptyStateText)
                     .font(.callout)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -774,6 +766,16 @@ struct DesktopWidgetView: View {
             Spacer(minLength: 0)
         }
         .padding(widgetPadding)
+    }
+
+    private var emptyStateText: String {
+        if entry.isOnVacation {
+            return "享受假期～"
+        }
+        if entry.courses.isEmpty {
+            return entry.isTomorrow ? "明天没课" : "今天没课"
+        }
+        return "今天的课都上完啦"
     }
 }
 
