@@ -1,14 +1,17 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_async/fake_async.dart';
+import 'package:bugaoshan/models/widget_appearance.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   tearDown(() {
+    debugDefaultTargetPlatformOverride = null;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(kUpdateMethodChannel, null);
   });
@@ -163,6 +166,29 @@ void main() {
 
     expect(events, ['small']);
     await sub.cancel();
+    service.dispose();
+  });
+
+  test('syncWidgetAppearance forwards both iOS style settings', () async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    MethodCall? receivedCall;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(kUpdateMethodChannel, (call) async {
+          receivedCall = call;
+          return null;
+        });
+
+    final service = WidgetUpdateService(platformChecker: () => true);
+    await service.syncWidgetAppearance(
+      colorStyle: WidgetColorStyle.monochrome,
+      density: WidgetDensity.compact,
+    );
+
+    expect(receivedCall?.method, 'syncWidgetAppearance');
+    expect(receivedCall?.arguments, {
+      'colorStyle': WidgetColorStyle.monochrome.index,
+      'density': WidgetDensity.compact.index,
+    });
     service.dispose();
   });
 }

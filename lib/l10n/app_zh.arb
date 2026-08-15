@@ -35,6 +35,15 @@
     "@widgetShowTomorrowAfterEnd": {
         "description": "当天课程结束时，在桌面小组件中显示第二天的课程。"
     },
+    "widgetAppearanceTitle": "小组件外观",
+    "widgetAppearanceDescription": "统一调整本设备上的所有不高山课表小组件。",
+    "widgetColorStyle": "配色",
+    "widgetColorful": "课程色彩",
+    "widgetMonochrome": "单色",
+    "widgetDensity": "信息密度",
+    "widgetDensityStandard": "标准",
+    "widgetDensityCompact": "紧凑",
+    "widgetSystemAppearanceHint": "在 iOS 26 及更高版本中，主屏幕的透明与着色外观会自动使用系统玻璃或着色效果。",
     "onboardingSkip": "跳过",
     "onboardingNext": "下一步",
     "onboardingStart": "立即体验",

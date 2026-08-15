@@ -253,6 +253,60 @@ abstract class AppLocalizations {
   /// **'Show next day\'s courses after today\'s classes finish'**
   String get widgetShowTomorrowAfterEnd;
 
+  /// No description provided for @widgetAppearanceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Widget Appearance'**
+  String get widgetAppearanceTitle;
+
+  /// No description provided for @widgetAppearanceDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize every Bugaoshan course widget on this device.'**
+  String get widgetAppearanceDescription;
+
+  /// No description provided for @widgetColorStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get widgetColorStyle;
+
+  /// No description provided for @widgetColorful.
+  ///
+  /// In en, this message translates to:
+  /// **'Course colors'**
+  String get widgetColorful;
+
+  /// No description provided for @widgetMonochrome.
+  ///
+  /// In en, this message translates to:
+  /// **'Monochrome'**
+  String get widgetMonochrome;
+
+  /// No description provided for @widgetDensity.
+  ///
+  /// In en, this message translates to:
+  /// **'Information density'**
+  String get widgetDensity;
+
+  /// No description provided for @widgetDensityStandard.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard'**
+  String get widgetDensityStandard;
+
+  /// No description provided for @widgetDensityCompact.
+  ///
+  /// In en, this message translates to:
+  /// **'Compact'**
+  String get widgetDensityCompact;
+
+  /// No description provided for @widgetSystemAppearanceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'On iOS 26 and later, Clear and Tinted Home Screen appearances automatically use the system glass or tint treatment.'**
+  String get widgetSystemAppearanceHint;
+
   /// No description provided for @onboardingSkip.
   ///
   /// In en, this message translates to:
