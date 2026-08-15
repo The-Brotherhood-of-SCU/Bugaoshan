@@ -1,0 +1,138 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "widget.allClassesFinished" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "All classes are finished" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天的课都上完啦" } }
+      }
+    },
+    "widget.appName" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Bugaoshan" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "不高山上" } }
+      }
+    },
+    "widget.configurationDescription" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "View your Bugaoshan course schedule at a glance." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "显示不高山上的课表信息" } }
+      }
+    },
+    "widget.configurationName" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Course Schedule" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "课表组件" } }
+      }
+    },
+    "widget.enjoyVacation" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Enjoy your break" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "享受假期～" } }
+      }
+    },
+    "widget.moreClassesFormat" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "More classes: %d" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "还有 %d 节课" } }
+      }
+    },
+    "widget.noClassesToday" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No classes today" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天没课" } }
+      }
+    },
+    "widget.noClassesTomorrow" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No classes tomorrow" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "明天没课" } }
+      }
+    },
+    "widget.onVacation" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "On break" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "放假中" } }
+      }
+    },
+    "widget.previewCourseCalculus" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Calculus" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "高等数学" } }
+      }
+    },
+    "widget.previewCoursePhysics" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "University Physics" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "大学物理" } }
+      }
+    },
+    "widget.previewDate" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Mon, 1/1" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "1月1日 周一" } }
+      }
+    },
+    "widget.previewLocationA" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Teaching Building A101" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "教学楼A101" } }
+      }
+    },
+    "widget.previewLocationB" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Teaching Building B202" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "教学楼B202" } }
+      }
+    },
+    "widget.previewTeacherLi" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Prof. Li" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "李老师" } }
+      }
+    },
+    "widget.previewTeacherZhang" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Prof. Zhang" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "张老师" } }
+      }
+    },
+    "widget.restWell" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Take a well-earned break" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "好好休息吧" } }
+      }
+    },
+    "widget.sectionRangeFormat" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Periods %d–%d" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "第%d-%d节" } }
+      }
+    },
+    "widget.sectionSingleFormat" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Period %d" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "第%d节" } }
+      }
+    },
+    "widget.todayClassesFinished" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Today's classes are finished" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天课上完啦" } }
+      }
+    },
+    "widget.tomorrow" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Tomorrow" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "明天" } }
+      }
+    },
+    "widget.weekFormat" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Week %d" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "第%d周" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}
