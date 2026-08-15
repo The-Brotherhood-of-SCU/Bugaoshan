@@ -67,7 +67,7 @@ Builds:
   # ----- armeabi-v7a (versionCode = base + 1000) -----
   - versionName: '2.3.0'
     versionCode: 21300
-    commit: ba5312a06b8223faf8a2dc5d6e3dbd969f7bdb94
+    commit: v2.3.0
     srclibs:
       - flutter@3.44.8
     rm:
@@ -98,7 +98,7 @@ Builds:
   # ----- arm64-v8a (versionCode = base + 2000) -----
   - versionName: '2.3.0'
     versionCode: 22300
-    commit: ba5312a06b8223faf8a2dc5d6e3dbd969f7bdb94
+    commit: v2.3.0
     srclibs:
       - flutter@3.44.8
     rm:
@@ -129,7 +129,7 @@ Builds:
   # ----- x86_64 (versionCode = base + 4000) -----
   - versionName: '2.3.0'
     versionCode: 24300
-    commit: ba5312a06b8223faf8a2dc5d6e3dbd969f7bdb94
+    commit: v2.3.0
     srclibs:
       - flutter@3.44.8
     rm:
