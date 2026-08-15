@@ -25,8 +25,17 @@
 # 注意：v2.3.0 的 Release 资产实际由 commit ba5312a 构建上传
 # （main 分支，2026-08-15 00:08:16 +0800，BUILD_TIME 已移除之后），
 # 而非 v2.3.0 tag 指向的旧提交 fcadf208。因此 build entry 的 commit
-# 固定为该 SHA；GIT_TAG 用与 CI git_meta.py 相同的「最新 tag」逻辑
-# 解析（当前为 v2.3.0），保证 dart-define 与 CI 产物一致。
+# 固定为该 SHA。
+#
+# GIT_TAG 直接从 pubspec 版本推导（v2.3.0），不要用「最新 tag」逻辑——
+# 仓库里的 v2.3.0-test-fdroid-ci 等测试 tag 会排在 v2.3.0 前面，导致
+# dart-define 与 CI 产物不一致。
+#
+# prebuild 中对 jni 包的 CMakeLists.txt 注入 -Wl,--build-id=none：
+# libdartjni.so 会按构建路径生成非确定性的 build-id（见 F-Droid
+# Reproducible_Builds 文档），F-Droid 构建机路径与 CI 不同导致字节不一致。
+# CI（.github/workflows/build-android.yml）已同步禁用 build-id，
+# 重新发布 v2.3.0 资产后两边的 libdartjni.so 才会一致。
 #
 # 提交 fdroiddata 前的检查项：
 #   1. 对应 tag 已推送，且 GitHub Release 已发布（binary: URL 必须可下载）
@@ -71,10 +80,11 @@ Builds:
     prebuild:
       - $$flutter$$/bin/flutter config --no-analytics
       - $$flutter$$/bin/flutter pub get
+      - sed -i -E 's/(-Wl,)(--build-id=none,)?/\1--build-id=none,/' ${PUB_CACHE}/hosted/*/jni-*/src/CMakeLists.txt
       - $$flutter$$/bin/dart run build_runner build --delete-conflicting-outputs || true
       - $$flutter$$/bin/flutter gen-l10n
     build:
-      - export GIT_TAG=$(git tag --sort=-version:refname | head -1)
+      - "export GIT_TAG=v$(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//')"
       - export GIT_COMMIT=$(git rev-parse HEAD)
       - export GIT_COMMIT_DATE=$(git log -1 --format=%ci)
       - "$$flutter$$/bin/flutter build apk --release --split-per-abi --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\""
@@ -101,10 +111,11 @@ Builds:
     prebuild:
       - $$flutter$$/bin/flutter config --no-analytics
       - $$flutter$$/bin/flutter pub get
+      - sed -i -E 's/(-Wl,)(--build-id=none,)?/\1--build-id=none,/' ${PUB_CACHE}/hosted/*/jni-*/src/CMakeLists.txt
       - $$flutter$$/bin/dart run build_runner build --delete-conflicting-outputs || true
       - $$flutter$$/bin/flutter gen-l10n
     build:
-      - export GIT_TAG=$(git tag --sort=-version:refname | head -1)
+      - "export GIT_TAG=v$(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//')"
       - export GIT_COMMIT=$(git rev-parse HEAD)
       - export GIT_COMMIT_DATE=$(git log -1 --format=%ci)
       - "$$flutter$$/bin/flutter build apk --release --split-per-abi --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\""
@@ -131,10 +142,11 @@ Builds:
     prebuild:
       - $$flutter$$/bin/flutter config --no-analytics
       - $$flutter$$/bin/flutter pub get
+      - sed -i -E 's/(-Wl,)(--build-id=none,)?/\1--build-id=none,/' ${PUB_CACHE}/hosted/*/jni-*/src/CMakeLists.txt
       - $$flutter$$/bin/dart run build_runner build --delete-conflicting-outputs || true
       - $$flutter$$/bin/flutter gen-l10n
     build:
-      - export GIT_TAG=$(git tag --sort=-version:refname | head -1)
+      - "export GIT_TAG=v$(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//')"
       - export GIT_COMMIT=$(git rev-parse HEAD)
       - export GIT_COMMIT_DATE=$(git log -1 --format=%ci)
       - "$$flutter$$/bin/flutter build apk --release --split-per-abi --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\""

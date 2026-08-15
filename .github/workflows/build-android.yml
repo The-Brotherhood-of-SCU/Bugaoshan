@@ -48,6 +48,12 @@ jobs:
           echo 'keyAlias=${{ secrets.KEY_ALIAS }}' >> android/key.properties
           echo 'storeFile=../keystore/upload-keystore.jks' >> android/key.properties
 
+      - name: Disable dartjni build-id for reproducible builds
+        run: |
+          # libdartjni.so 会按构建路径生成非确定性的 build-id，
+          # 与 F-Droid 构建机不一致，导致可复制构建逐字节比对失败。
+          sed -i -E 's/(-Wl,)(--build-id=none,)?/\1--build-id=none,/' ${PUB_CACHE:-$HOME/.pub-cache}/hosted/*/jni-*/src/CMakeLists.txt
+
       - name: Build universal APK for in-app updates
         run: |
           flutter build apk --release \
