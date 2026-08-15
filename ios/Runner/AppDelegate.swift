@@ -5,7 +5,7 @@ import UIKit
 import WidgetKit
 
 @main
-@objc class AppDelegate: FlutterAppDelegate {
+@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
     private let channelName = "bugaoshan/update"
     private let calendarEventIdentifierMapKey = "bugaoshan.calendarEventIdentifiers"
     private let eventStore = EKEventStore()
@@ -15,11 +15,14 @@ import WidgetKit
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        GeneratedPluginRegistrant.register(with: self)
-        if let controller = window?.rootViewController as? FlutterViewController {
-            registerBugaoshanMethodChannel(messenger: controller.binaryMessenger)
-        }
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    }
+
+    func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+        GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+        registerBugaoshanMethodChannel(
+            messenger: engineBridge.applicationRegistrar.messenger()
+        )
     }
 
     private func registerBugaoshanMethodChannel(messenger: FlutterBinaryMessenger) {
