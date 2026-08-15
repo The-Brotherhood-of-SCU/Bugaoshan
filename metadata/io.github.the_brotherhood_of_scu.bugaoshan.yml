@@ -12,7 +12,7 @@
 #   - 相同构建参数：--release --obfuscate --split-debug-info + 相同的 dart-define
 #     （GIT_TAG / GIT_COMMIT / GIT_COMMIT_DATE；均无构建时间戳等非确定性输入）
 #   - prebuild 复刻 CI 的代码生成步骤（build_runner、gen-l10n）
-#   - pubspec.lock 已提交，pub get 使用 --enforce-lockfile 防止依赖漂移
+#   - pubspec.lock 已提交，pub get 保持依赖锁定一致
 #
 # versionCode 规则（与 Flutter --split-per-abi 的自动偏移一致，
 # 见 flutter_tools FlutterPlugin.kt：versionCode = abiCode*1000 + base）：
@@ -29,8 +29,8 @@
 # 提交 fdroiddata 前的检查项：
 #   1. 对应 tag 已推送，且 GitHub Release 已发布（binary: URL 必须可下载）
 #   2. 本地 docker 中 `fdroid build --verify` 通过
-#   3. 建议补充 AllowedAPKSigningKeys（release keystore 证书的 SHA-256）：
-#        apksigner verify --print-certs bugaoshan_<version>_arm64-v8a.apk
+#   3. AllowedAPKSigningKeys 已补充（release keystore 证书的 SHA-256，
+#      取自 apksigner verify --print-certs bugaoshan_2.3.0_arm64-v8a.apk）
 
 Categories:
   - Science & Education
@@ -68,7 +68,7 @@ Builds:
       - web
     prebuild:
       - $$flutter$$/bin/flutter config --no-analytics
-      - $$flutter$$/bin/flutter pub get --enforce-lockfile
+      - $$flutter$$/bin/flutter pub get
       - $$flutter$$/bin/dart run build_runner build --delete-conflicting-outputs || true
       - $$flutter$$/bin/flutter gen-l10n
     build:
@@ -98,7 +98,7 @@ Builds:
       - web
     prebuild:
       - $$flutter$$/bin/flutter config --no-analytics
-      - $$flutter$$/bin/flutter pub get --enforce-lockfile
+      - $$flutter$$/bin/flutter pub get
       - $$flutter$$/bin/dart run build_runner build --delete-conflicting-outputs || true
       - $$flutter$$/bin/flutter gen-l10n
     build:
@@ -128,7 +128,7 @@ Builds:
       - web
     prebuild:
       - $$flutter$$/bin/flutter config --no-analytics
-      - $$flutter$$/bin/flutter pub get --enforce-lockfile
+      - $$flutter$$/bin/flutter pub get
       - $$flutter$$/bin/dart run build_runner build --delete-conflicting-outputs || true
       - $$flutter$$/bin/flutter gen-l10n
     build:
@@ -142,3 +142,5 @@ Builds:
       - org.gradle.workers.max=2
       - org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m
       - android.r8.failOnMissingClasses=false
+
+AllowedAPKSigningKeys: 1b0a09e3e7e3b3b9fadff06a7795bf7448a22e5803f2a18f62267dc2273be391
