@@ -319,6 +319,53 @@ func isOnVacation(_ db: OpaquePointer, currentScheduleId: String, semesterStartD
     return today < next
 }
 
+/// 课表尚未同步时，使用随 App 发布的校历判断是否处于两个已知学期之间。
+/// 校历范围外不推断，避免把长期无数据误显示为假期。
+func isOnBundledAcademicCalendarVacation(date: Date = Date()) -> Bool {
+    guard let url = Bundle.main.url(
+        forResource: "academic_calendar",
+        withExtension: "json"
+    ),
+    let data = try? Data(contentsOf: url),
+    let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+    let semesters = json["semesters"] as? [[String: Any]]
+    else {
+        return false
+    }
+
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "yyyy-MM-dd"
+    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+    dateFormatter.timeZone = TimeZone.current
+
+    let calendar = Calendar.current
+    var periods: [(start: Date, end: Date)] = []
+    for semester in semesters {
+        guard let startString = semester["s"] as? String,
+              let totalWeeks = semester["w"] as? Int,
+              let start = dateFormatter.date(from: startString),
+              let end = computeSemesterEndDate(
+                semesterStartDate: start,
+                totalWeeks: totalWeeks
+              )
+        else { continue }
+        periods.append((calendar.startOfDay(for: start), end))
+    }
+    periods.sort { $0.start < $1.start }
+
+    let target = calendar.startOfDay(for: date)
+    if periods.contains(where: { target >= $0.start && target <= $0.end }) {
+        return false
+    }
+
+    guard periods.last(where: { $0.end < target }) != nil,
+          periods.first(where: { $0.start > target }) != nil
+    else {
+        return false
+    }
+    return true
+}
+
 func isCourseActive(currentWeek: Int, startWeek: Int, endWeek: Int, weekType: Int) -> Bool {
     print("BugaoShan Widget: isCourseActive - currentWeek: \(currentWeek), startWeek: \(startWeek), endWeek: \(endWeek), weekType: \(weekType)")
 
@@ -667,6 +714,25 @@ struct CourseProvider: TimelineProvider {
         )
     }
 
+    private func fallbackEntry(in context: Context) -> CourseWidgetEntry {
+        guard isOnBundledAcademicCalendarVacation() else {
+            return placeholder(in: context)
+        }
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale.current
+        dateFormatter.setLocalizedDateFormatFromTemplate("MdEEE")
+        let now = Date()
+        return CourseWidgetEntry(
+            date: now,
+            courses: [],
+            dateText: dateFormatter.string(from: now),
+            weekText: widgetLocalizedString("widget.onVacation"),
+            isTomorrow: false,
+            isOnVacation: true
+        )
+    }
+
     func getSnapshot(in context: Context, completion: @escaping (CourseWidgetEntry) -> ()) {
         if let data = loadWidgetData() {
             let entry = CourseWidgetEntry(
@@ -679,7 +745,7 @@ struct CourseProvider: TimelineProvider {
             )
             completion(entry)
         } else {
-            completion(placeholder(in: context))
+            completion(fallbackEntry(in: context))
         }
     }
 
@@ -716,7 +782,7 @@ struct CourseProvider: TimelineProvider {
             let timeline = Timeline(entries: [entry], policy: .after(nextUpdate!))
             completion(timeline)
         } else {
-            let entry = placeholder(in: context)
+            let entry = fallbackEntry(in: context)
             let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: now)
             completion(Timeline(entries: [entry], policy: .after(nextUpdate!)))
         }

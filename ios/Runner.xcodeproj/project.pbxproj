@@ -22,6 +22,7 @@
 		55144262B54CC103C750B13D /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7AD0D5738F6D48199C972A33 /* Pods_RunnerTests.framework */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		A6F4B5C83E9D4B6FA8217C10 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D8E9F01234567890ABCDEF /* SceneDelegate.swift */; };
+		B4C25D8A7E6F4A31B09C8D72 /* academic_calendar.json in Resources */ = {isa = PBXBuildFile; fileRef = D9E8F7A6B5C4123098ABCDEF /* academic_calendar.json */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
@@ -90,6 +91,7 @@
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C7D8E9F01234567890ABCDEF /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		D9E8F7A6B5C4123098ABCDEF /* academic_calendar.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = academic_calendar.json; path = ../assets/academic_calendar.json; sourceTree = SOURCE_ROOT; };
 		798F7789FBBE95BE1ACA94A5 /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
 		7AD0D5738F6D48199C972A33 /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
@@ -145,6 +147,7 @@
 				32A1DE7D3010E68E00E054EA /* Info.plist */,
 				561B1DB7945C4AADB04CE4FD /* InfoPlist.xcstrings */,
 				DEFF419ACAB947F4B5DF4E96 /* Localizable.xcstrings */,
+				D9E8F7A6B5C4123098ABCDEF /* academic_calendar.json */,
 			);
 			path = CourseWidget;
 			sourceTree = "<group>";
@@ -350,6 +353,7 @@
 				32A1DE7C3010E68E00E054EA /* Assets.xcassets in Resources */,
 				E72BF849EAB84D15A1E8F436 /* InfoPlist.xcstrings in Resources */,
 				048BF1A1065B47CDA3294652 /* Localizable.xcstrings in Resources */,
+				B4C25D8A7E6F4A31B09C8D72 /* academic_calendar.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
