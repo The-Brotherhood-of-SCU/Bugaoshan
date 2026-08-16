@@ -36,7 +36,7 @@ runs:
       shell: bash
 
     - name: Get dependencies
-      run: flutter pub get --enforce-lockfile
+      run: flutter pub get
       shell: bash
 
     - name: Set up Python 3

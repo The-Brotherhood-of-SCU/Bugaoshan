@@ -115,7 +115,9 @@ jobs:
           else
             git add metadata/*/changelogs/*.txt
             git commit -m "chore: update F-Droid metadata changelogs for ${{ steps.vars.outputs.tag }}"
-            git push origin HEAD:main
+            git fetch origin main
+            git rebase origin/main || { git rebase --abort || true; echo "rebase failed, continuing"; }
+            git push origin HEAD:main || echo "safety-net push failed (main moved on), continuing"
           fi
 
       - name: Extract changelog
