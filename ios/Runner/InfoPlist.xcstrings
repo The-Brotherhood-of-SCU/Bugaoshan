@@ -2,15 +2,117 @@
   "sourceLanguage" : "en",
   "strings" : {
     "CFBundleDisplayName" : {
+      "comment" : "The app name shown on the Home Screen and in system UI.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Bugaoshan" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "不高山上" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bugaoshan"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不高山上"
+          }
+        }
       }
     },
     "CFBundleName" : {
+      "comment" : "The short app name used by the system.",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Bugaoshan" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "不高山上" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bugaoshan"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不高山上"
+          }
+        }
+      }
+    },
+    "NSCalendarsFullAccessUsageDescription" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bugaoshan uses calendar access to list writable calendars and add exported course and exam schedules to the calendar you choose."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用于读取可写日历列表并将导出的课表和考表写入您选择的系统日历。"
+          }
+        }
+      }
+    },
+    "NSCalendarsUsageDescription" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bugaoshan uses calendar access to add exported course and exam schedules to Calendar."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用于将导出的课表和考表写入系统日历。"
+          }
+        }
+      }
+    },
+    "NSCalendarsWriteOnlyAccessUsageDescription" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bugaoshan uses write-only calendar access to add exported course and exam schedules to Calendar."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用于将导出的课表和考表写入系统日历。"
+          }
+        }
+      }
+    },
+    "NSPhotoLibraryAddUsageDescription" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bugaoshan adds images you choose to save to your photo library."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用于将您选择保存的图片添加到系统相册。"
+          }
+        }
+      }
+    },
+    "NSPhotoLibraryUsageDescription" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bugaoshan accesses your photo library so you can choose a course schedule background."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用于从照片图库选择图片并设置为课程表背景。"
+          }
+        }
       }
     }
   },
