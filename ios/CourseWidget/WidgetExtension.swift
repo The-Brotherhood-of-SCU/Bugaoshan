@@ -34,6 +34,14 @@ struct ScheduleConfig {
 
 let appGroupId = "group.io.github.thebrotherhoodofscu.bugaoshan"
 
+func widgetLocalizedString(_ key: String) -> String {
+    NSLocalizedString(key, bundle: .main, comment: "")
+}
+
+func widgetLocalizedFormat(_ key: String, _ arguments: CVarArg...) -> String {
+    String(format: widgetLocalizedString(key), arguments: arguments)
+}
+
 func getDatabasePath() -> String? {
     guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupId) else {
         return nil
@@ -610,9 +618,11 @@ func loadWidgetData() -> (courses: [Course], dateText: String, weekText: String,
 
     var dateText = "\(dateFormatter.string(from: displayDate)) \(dayFormatter.string(from: displayDate))"
     if isTomorrow {
-        dateText += " 明天"
+        dateText += " \(widgetLocalizedString("widget.tomorrow"))"
     }
-    let weekText = onVacation ? "放假中" : "第\(weekNum)周"
+    let weekText = onVacation
+        ? widgetLocalizedString("widget.onVacation")
+        : widgetLocalizedFormat("widget.weekFormat", weekNum)
 
     let nextTransition = (isTomorrow || onVacation) ? nil : computeNextTransitionMillis(courses, timeSlots: config.timeSlots, currentTimeMinutes: currentTimeMinutes)
 
@@ -640,11 +650,11 @@ struct CourseProvider: TimelineProvider {
         CourseWidgetEntry(
             date: Date(),
             courses: [
-                Course(name: "高等数学", teacher: "张老师", location: "教学楼A101", startSection: 1, endSection: 2, colorValue: 0xFF4CAF50, status: .inProgress),
-                Course(name: "大学物理", teacher: "李老师", location: "教学楼B202", startSection: 3, endSection: 4, colorValue: 0xFF2196F3, status: .upcoming)
+                Course(name: widgetLocalizedString("widget.previewCourseCalculus"), teacher: widgetLocalizedString("widget.previewTeacherZhang"), location: widgetLocalizedString("widget.previewLocationA"), startSection: 1, endSection: 2, colorValue: 0xFF4CAF50, status: .inProgress),
+                Course(name: widgetLocalizedString("widget.previewCoursePhysics"), teacher: widgetLocalizedString("widget.previewTeacherLi"), location: widgetLocalizedString("widget.previewLocationB"), startSection: 3, endSection: 4, colorValue: 0xFF2196F3, status: .upcoming)
             ],
-            dateText: "1/1 周一",
-            weekText: "第1周",
+            dateText: widgetLocalizedString("widget.previewDate"),
+            weekText: widgetLocalizedFormat("widget.weekFormat", 1),
             isTomorrow: false,
             isOnVacation: false
         )
@@ -743,7 +753,7 @@ struct DesktopWidgetView: View {
             // 1. 动态头部
             HStack {
                 if widgetFamily == .systemLarge {
-                    Text("不高山上")
+                    Text(widgetLocalizedString("widget.appName"))
                         .font(.headline)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
@@ -785,7 +795,7 @@ struct DesktopWidgetView: View {
                 }
                 // 底部剩余课程提示
                 if displayableCourses.count > maxCourses {
-                    Text("还有 \(displayableCourses.count - maxCourses) 节课")
+                    Text(widgetLocalizedFormat("widget.moreClassesFormat", displayableCourses.count - maxCourses))
                         .font(.caption) // 从 .caption2 调大为 .caption
                         .foregroundColor(.secondary)
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -799,15 +809,17 @@ struct DesktopWidgetView: View {
 
     private var emptyStateText: String {
         if entry.isOnVacation {
-            return "享受假期～"
+            return widgetLocalizedString("widget.enjoyVacation")
         }
         if entry.hasNoScheduleData {
             return NSLocalizedString("widget.noSchedule", comment: "Empty widget state when no schedule is available")
         }
         if entry.courses.isEmpty {
-            return entry.isTomorrow ? "明天没课" : "今天没课"
+            return entry.isTomorrow
+                ? widgetLocalizedString("widget.noClassesTomorrow")
+                : widgetLocalizedString("widget.noClassesToday")
         }
-        return "今天的课都上完啦"
+        return widgetLocalizedString("widget.allClassesFinished")
     }
 }
 
@@ -859,30 +871,36 @@ struct LockScreenRectangularView: View {
 
     private var lockScreenEmptyStateTitle: String {
         if entry.isOnVacation {
-            return "放假中"
+            return widgetLocalizedString("widget.onVacation")
         }
         if entry.hasNoScheduleData {
             return NSLocalizedString("widget.noSchedule", comment: "Empty widget state when no schedule is available")
         }
-        return entry.isTomorrow ? "明天没课" : "今天课上完啦"
+        return entry.isTomorrow
+            ? widgetLocalizedString("widget.noClassesTomorrow")
+            : widgetLocalizedString("widget.todayClassesFinished")
     }
 
     private var lockScreenEmptyStateSubtitle: String {
         if entry.isOnVacation {
-            return "享受假期～"
+            return widgetLocalizedString("widget.enjoyVacation")
         }
         if entry.hasNoScheduleData {
             return NSLocalizedString("widget.syncSchedule", comment: "Empty widget state prompt to sync a schedule")
         }
-        return "好好休息吧"
+        return widgetLocalizedString("widget.restWell")
     }
 
     // 提取格式化时间的工具方法（原先在你写的 CourseCard 里，现在提出来共用）
     private func formatCourseTime(_ course: Course) -> String {
         if course.startSection == course.endSection {
-            return "第\(course.startSection)节"
+            return widgetLocalizedFormat("widget.sectionSingleFormat", course.startSection)
         } else {
-            return "第\(course.startSection)-\(course.endSection)节"
+            return widgetLocalizedFormat(
+                "widget.sectionRangeFormat",
+                course.startSection,
+                course.endSection
+            )
         }
     }
 }
@@ -968,9 +986,13 @@ struct CourseCard: View {
 
     func formatCourseTime() -> String {
         if course.startSection == course.endSection {
-            return "第\(course.startSection)节"
+            return widgetLocalizedFormat("widget.sectionSingleFormat", course.startSection)
         } else {
-            return "第\(course.startSection)-\(course.endSection)节"
+            return widgetLocalizedFormat(
+                "widget.sectionRangeFormat",
+                course.startSection,
+                course.endSection
+            )
         }
     }
 }
@@ -984,8 +1006,8 @@ struct CourseWidget: Widget {
             CourseWidgetEntryView(entry: entry)
                 .containerBackground(Color(.systemBackground), for: .widget)
         }
-        .configurationDisplayName("课表组件")
-        .description("显示不高山上的课表信息")
+        .configurationDisplayName(widgetLocalizedString("widget.configurationName"))
+        .description(widgetLocalizedString("widget.configurationDescription"))
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryRectangular])
     }
 }
