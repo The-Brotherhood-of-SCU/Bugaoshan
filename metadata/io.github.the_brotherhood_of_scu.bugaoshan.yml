@@ -45,7 +45,7 @@
 # Flutter SDK 路径镜像：Flutter SDK 源码 URI 同样会编入 kernel，CI 通过
 # subosito/flutter-action 把 SDK 装在 /opt/hostedtoolcache/flutter/stable-3.44.8-x64。
 # 因此 prebuild 先把 srclib 的 flutter 移到该路径（保留 $$flutter$$ 符号链接），
-# build 结束后移回，保证多个 build entry 复用 srclib 时状态一致。
+# build 结束后移回；移动前先清理上次运行可能残留的状态，保证可重复执行。
 #
 # 提交 fdroiddata 前的检查项：
 #   1. 对应 tag 已推送，且 GitHub Release 已发布（binary: URL 必须可下载）
@@ -95,9 +95,13 @@ Builds:
     prebuild:
       - export repo=/home/runner/work/Bugaoshan
       - mkdir -p $repo
+      - if [ -L $$flutter$$ ]; then rm $$flutter$$; fi
+      - if [ ! -e $$flutter$$ ] && [ -e /opt/hostedtoolcache/flutter/stable-3.44.8-x64 ]; then mv /opt/hostedtoolcache/flutter/stable-3.44.8-x64 $$flutter$$; fi
+      - rm -rf /opt/hostedtoolcache/flutter/stable-3.44.8-x64
       - mv $$flutter$$ /opt/hostedtoolcache/flutter/stable-3.44.8-x64
       - ln -s /opt/hostedtoolcache/flutter/stable-3.44.8-x64 $$flutter$$
       - cd ..
+      - rm -rf $repo/Bugaoshan
       - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
       - pushd $repo/Bugaoshan
       - $$flutter$$/bin/flutter config --no-analytics
@@ -110,6 +114,7 @@ Builds:
     build:
       - export repo=/home/runner/work/Bugaoshan
       - cd ..
+      - rm -rf $repo/Bugaoshan
       - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
       - pushd $repo/Bugaoshan
       - "export GIT_TAG=v$(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//')"
@@ -148,9 +153,13 @@ Builds:
     prebuild:
       - export repo=/home/runner/work/Bugaoshan
       - mkdir -p $repo
+      - if [ -L $$flutter$$ ]; then rm $$flutter$$; fi
+      - if [ ! -e $$flutter$$ ] && [ -e /opt/hostedtoolcache/flutter/stable-3.44.8-x64 ]; then mv /opt/hostedtoolcache/flutter/stable-3.44.8-x64 $$flutter$$; fi
+      - rm -rf /opt/hostedtoolcache/flutter/stable-3.44.8-x64
       - mv $$flutter$$ /opt/hostedtoolcache/flutter/stable-3.44.8-x64
       - ln -s /opt/hostedtoolcache/flutter/stable-3.44.8-x64 $$flutter$$
       - cd ..
+      - rm -rf $repo/Bugaoshan
       - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
       - pushd $repo/Bugaoshan
       - $$flutter$$/bin/flutter config --no-analytics
@@ -163,6 +172,7 @@ Builds:
     build:
       - export repo=/home/runner/work/Bugaoshan
       - cd ..
+      - rm -rf $repo/Bugaoshan
       - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
       - pushd $repo/Bugaoshan
       - "export GIT_TAG=v$(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//')"
@@ -201,9 +211,13 @@ Builds:
     prebuild:
       - export repo=/home/runner/work/Bugaoshan
       - mkdir -p $repo
+      - if [ -L $$flutter$$ ]; then rm $$flutter$$; fi
+      - if [ ! -e $$flutter$$ ] && [ -e /opt/hostedtoolcache/flutter/stable-3.44.8-x64 ]; then mv /opt/hostedtoolcache/flutter/stable-3.44.8-x64 $$flutter$$; fi
+      - rm -rf /opt/hostedtoolcache/flutter/stable-3.44.8-x64
       - mv $$flutter$$ /opt/hostedtoolcache/flutter/stable-3.44.8-x64
       - ln -s /opt/hostedtoolcache/flutter/stable-3.44.8-x64 $$flutter$$
       - cd ..
+      - rm -rf $repo/Bugaoshan
       - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
       - pushd $repo/Bugaoshan
       - $$flutter$$/bin/flutter config --no-analytics
@@ -216,6 +230,7 @@ Builds:
     build:
       - export repo=/home/runner/work/Bugaoshan
       - cd ..
+      - rm -rf $repo/Bugaoshan
       - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
       - pushd $repo/Bugaoshan
       - "export GIT_TAG=v$(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//')"
