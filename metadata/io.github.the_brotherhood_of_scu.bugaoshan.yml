@@ -12,9 +12,6 @@
 #   - 相同构建参数：--release --split-per-abi --obfuscate --split-debug-info + 相同的 dart-define
 #     （GIT_TAG / GIT_COMMIT / GIT_COMMIT_DATE；均无构建时间戳等非确定性输入）
 #   - prebuild 复刻 CI 的代码生成步骤（build_runner、gen-l10n）
-#   - pubspec.lock 已提交，pub get --enforce-lockfile 与 CI 对齐：
-#     lockfile 无法满足时直接报错，避免静默重解析导致依赖漂移
-#     （例如 synchronized 3.4.1+2 发布前 CI 被降级到 3.4.1+1 的问题）
 #
 # versionCode 规则（与 Flutter --split-per-abi 的自动偏移一致，
 # 见 flutter_tools FlutterPlugin.kt：versionCode = abiCode*1000 + base）：
@@ -116,7 +113,7 @@ Builds:
       - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
       - pushd $repo/Bugaoshan
       - $$flutter$$/bin/flutter config --no-analytics
-      - $$flutter$$/bin/flutter pub get --enforce-lockfile
+      - $$flutter$$/bin/flutter pub get
       - sed -i -E 's/(-Wl,)(--build-id=none,)?/\1--build-id=none,/' ${PUB_CACHE:-$HOME/.pub-cache}/hosted/*/jni-*/src/CMakeLists.txt
       - $$flutter$$/bin/dart run build_runner build --delete-conflicting-outputs || true
       - $$flutter$$/bin/flutter gen-l10n
@@ -178,7 +175,7 @@ Builds:
       - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
       - pushd $repo/Bugaoshan
       - $$flutter$$/bin/flutter config --no-analytics
-      - $$flutter$$/bin/flutter pub get --enforce-lockfile
+      - $$flutter$$/bin/flutter pub get
       - sed -i -E 's/(-Wl,)(--build-id=none,)?/\1--build-id=none,/' ${PUB_CACHE:-$HOME/.pub-cache}/hosted/*/jni-*/src/CMakeLists.txt
       - $$flutter$$/bin/dart run build_runner build --delete-conflicting-outputs || true
       - $$flutter$$/bin/flutter gen-l10n
@@ -240,7 +237,7 @@ Builds:
       - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
       - pushd $repo/Bugaoshan
       - $$flutter$$/bin/flutter config --no-analytics
-      - $$flutter$$/bin/flutter pub get --enforce-lockfile
+      - $$flutter$$/bin/flutter pub get
       - sed -i -E 's/(-Wl,)(--build-id=none,)?/\1--build-id=none,/' ${PUB_CACHE:-$HOME/.pub-cache}/hosted/*/jni-*/src/CMakeLists.txt
       - $$flutter$$/bin/dart run build_runner build --delete-conflicting-outputs || true
       - $$flutter$$/bin/flutter gen-l10n
