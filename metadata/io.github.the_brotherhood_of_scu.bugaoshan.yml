@@ -12,6 +12,13 @@
 #   - 相同构建参数：--release --split-per-abi --obfuscate --split-debug-info + 相同的 dart-define
 #     （GIT_TAG / GIT_COMMIT / GIT_COMMIT_DATE；均无构建时间戳等非确定性输入）
 #   - prebuild 复刻 CI 的代码生成步骤（build_runner、gen-l10n）
+#   - 两侧（CI 与 F-Droid prebuild/build）均设置 PUB_HOSTED_URL=https://pub.flutter-io.cn：
+#     提交的 pubspec.lock 是 pub.flutter-io.cn 镜像源，设置 PUB_HOSTED_URL 后 pub get
+#     才会按 lockfile 锁定版本；否则 pub 会按 pub.dev 重新解析，依赖版本随发布时间漂移
+#     （2026-08 实测 sqflite_common_ffi 2.4.2→2.4.2+1、synchronized 3.4.1+1→3.4.1+2
+#     导致 kernel/libapp.so 不一致）。
+#   - taskset --cpu-list 0-15：固定构建 CPU 亲和性（同 Traintime PDA/XDYou 的
+#     F-Droid recipe），消除 gen_snapshot 并行度差异。
 #
 # versionCode 规则（与 Flutter --split-per-abi 的自动偏移一致，
 # 见 flutter_tools FlutterPlugin.kt：versionCode = abiCode*1000 + base）：
@@ -101,6 +108,7 @@ Builds:
       - export repo=/home/runner/work/Bugaoshan
       - mkdir -p $repo
       - export PUB_CACHE=/home/runner/.pub-cache
+      - export PUB_HOSTED_URL=https://pub.flutter-io.cn
       - if [ -e /home/runner/.pub-cache ] && [ ! -L /home/runner/.pub-cache ]; then rm -rf /home/runner/.pub-cache; fi
       - if [ ! -e /home/runner/.pub-cache ]; then mkdir -p /home/vagrant/.pub-cache; ln -s /home/vagrant/.pub-cache /home/runner/.pub-cache; fi
       - if [ -L $$flutter$$ ]; then rm $$flutter$$; fi
@@ -122,6 +130,7 @@ Builds:
     build:
       - export repo=/home/runner/work/Bugaoshan
       - export PUB_CACHE=/home/runner/.pub-cache
+      - export PUB_HOSTED_URL=https://pub.flutter-io.cn
       - cd ..
       - rm -rf $repo/Bugaoshan
       - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
@@ -129,7 +138,7 @@ Builds:
       - "export GIT_TAG=v$(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//')"
       - export GIT_COMMIT=$(git rev-parse HEAD)
       - export GIT_COMMIT_DATE=$(git log -1 --format=%ci)
-      - "$$flutter$$/bin/flutter build apk --release --split-per-abi --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\""
+      - "taskset --cpu-list 0-15 $$flutter$$/bin/flutter build apk --release --split-per-abi --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\""
       - popd
       - mv $repo/Bugaoshan io.github.the_brotherhood_of_scu.bugaoshan
       - rm -rf $$flutter$$
@@ -163,6 +172,7 @@ Builds:
       - export repo=/home/runner/work/Bugaoshan
       - mkdir -p $repo
       - export PUB_CACHE=/home/runner/.pub-cache
+      - export PUB_HOSTED_URL=https://pub.flutter-io.cn
       - if [ -e /home/runner/.pub-cache ] && [ ! -L /home/runner/.pub-cache ]; then rm -rf /home/runner/.pub-cache; fi
       - if [ ! -e /home/runner/.pub-cache ]; then mkdir -p /home/vagrant/.pub-cache; ln -s /home/vagrant/.pub-cache /home/runner/.pub-cache; fi
       - if [ -L $$flutter$$ ]; then rm $$flutter$$; fi
@@ -184,6 +194,7 @@ Builds:
     build:
       - export repo=/home/runner/work/Bugaoshan
       - export PUB_CACHE=/home/runner/.pub-cache
+      - export PUB_HOSTED_URL=https://pub.flutter-io.cn
       - cd ..
       - rm -rf $repo/Bugaoshan
       - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
@@ -191,7 +202,7 @@ Builds:
       - "export GIT_TAG=v$(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//')"
       - export GIT_COMMIT=$(git rev-parse HEAD)
       - export GIT_COMMIT_DATE=$(git log -1 --format=%ci)
-      - "$$flutter$$/bin/flutter build apk --release --split-per-abi --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\""
+      - "taskset --cpu-list 0-15 $$flutter$$/bin/flutter build apk --release --split-per-abi --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\""
       - popd
       - mv $repo/Bugaoshan io.github.the_brotherhood_of_scu.bugaoshan
       - rm -rf $$flutter$$
@@ -225,6 +236,7 @@ Builds:
       - export repo=/home/runner/work/Bugaoshan
       - mkdir -p $repo
       - export PUB_CACHE=/home/runner/.pub-cache
+      - export PUB_HOSTED_URL=https://pub.flutter-io.cn
       - if [ -e /home/runner/.pub-cache ] && [ ! -L /home/runner/.pub-cache ]; then rm -rf /home/runner/.pub-cache; fi
       - if [ ! -e /home/runner/.pub-cache ]; then mkdir -p /home/vagrant/.pub-cache; ln -s /home/vagrant/.pub-cache /home/runner/.pub-cache; fi
       - if [ -L $$flutter$$ ]; then rm $$flutter$$; fi
@@ -246,6 +258,7 @@ Builds:
     build:
       - export repo=/home/runner/work/Bugaoshan
       - export PUB_CACHE=/home/runner/.pub-cache
+      - export PUB_HOSTED_URL=https://pub.flutter-io.cn
       - cd ..
       - rm -rf $repo/Bugaoshan
       - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
@@ -253,7 +266,7 @@ Builds:
       - "export GIT_TAG=v$(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//')"
       - export GIT_COMMIT=$(git rev-parse HEAD)
       - export GIT_COMMIT_DATE=$(git log -1 --format=%ci)
-      - "$$flutter$$/bin/flutter build apk --release --split-per-abi --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\""
+      - "taskset --cpu-list 0-15 $$flutter$$/bin/flutter build apk --release --split-per-abi --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\""
       - popd
       - mv $repo/Bugaoshan io.github.the_brotherhood_of_scu.bugaoshan
       - rm -rf $$flutter$$
