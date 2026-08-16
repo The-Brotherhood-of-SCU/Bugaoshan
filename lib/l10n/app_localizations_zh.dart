@@ -1432,9 +1432,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get calendarRefreshSuccess => '校历已更新';
 
   @override
-  String get loginFailed => '登录失败';
-
-  @override
   String get invalidCaptcha => '验证码错误，请重试';
 
   @override

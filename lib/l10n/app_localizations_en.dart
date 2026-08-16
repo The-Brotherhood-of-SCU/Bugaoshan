@@ -1478,9 +1478,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calendarRefreshSuccess => 'Calendar updated';
 
   @override
-  String get loginFailed => 'Login failed';
-
-  @override
   String get invalidCaptcha => 'Invalid captcha, please try again';
 
   @override

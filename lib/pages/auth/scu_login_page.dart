@@ -186,10 +186,12 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
         if (attempted != null && total != null && total > attempted) {
           return l10n.loginFailedWillLock(total - attempted);
         }
-        return l10n.loginFailed;
+        // 格式不符：不吞掉原因，直接显示原始错误消息
+        return e.message;
       default:
         debugPrint('Unlocalized login error message: ${e.message}');
-        return l10n.loginFailed;
+        // 未识别的错误不套用国际化，直接透传后端返回的具体原因（如「密码错误」）
+        return e.message;
     }
   }
 

@@ -21,6 +21,32 @@ import 'package:bugaoshan/utils/storage_keys.dart';
 const kZhjwBase = 'http://zhjw.scu.edu.cn';
 const _sessionDurationSeconds = 3600;
 
+/// 从 rest_token 失败响应体中提取具体错误信息；无法解析或没有错误字段时返回 null。
+/// 兼容业务格式（success/message/msg）与 OAuth 格式（error/error_description）。
+///
+/// [visibleForTesting]：纯解析函数，供单元测试覆盖各类响应格式。
+@visibleForTesting
+String? extractTokenErrorMessage(String body) {
+  try {
+    final decoded = jsonDecode(body);
+    if (decoded is Map<String, dynamic>) {
+      for (final key in const [
+        'message',
+        'msg',
+        'error_description',
+        'description',
+        'error',
+      ]) {
+        final value = decoded[key];
+        if (value is String && value.isNotEmpty) return value;
+      }
+    }
+  } catch (_) {
+    // 非 JSON 响应（网关错误页等），回退到 HTTP 状态码
+  }
+  return null;
+}
+
 /// SCU 统一身份认证（第3层）
 ///
 /// 合并原 ScuAuthService + ScuAuthSession，职责：
@@ -238,6 +264,16 @@ class ScuAuth extends ChangeNotifier {
         .timeout(kHttpTimeout);
 
     if (tokenResp.statusCode < 200 || tokenResp.statusCode >= 300) {
+      // 密码错误等服务端以非 2xx（如 400）返回，且 body 里带有具体原因；
+      // 先尝试提取，避免只显示笼统的 HTTP 状态码。
+      final detail = extractTokenErrorMessage(tokenResp.body);
+      if (detail != null) {
+        _log.w(
+          'ScuAuth',
+          'login: rest_token HTTP ${tokenResp.statusCode}: $detail',
+        );
+        throw ScuLoginException(detail);
+      }
       _log.w('ScuAuth', 'login: rest_token HTTP ${tokenResp.statusCode}');
       throw ScuLoginException('登录请求失败(HTTP ${tokenResp.statusCode})');
     }

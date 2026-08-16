@@ -2857,12 +2857,6 @@ abstract class AppLocalizations {
   /// **'Calendar updated'**
   String get calendarRefreshSuccess;
 
-  /// No description provided for @loginFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Login failed'**
-  String get loginFailed;
-
   /// No description provided for @invalidCaptcha.
   ///
   /// In en, this message translates to:
