@@ -74,9 +74,7 @@ import WidgetKit
     }
 
     private func updateWidget(result: @escaping FlutterResult) {
-        if #available(iOS 14.0, *) {
-            WidgetCenter.shared.reloadAllTimelines()
-        }
+        WidgetCenter.shared.reloadAllTimelines()
         result(nil)
     }
 
@@ -92,9 +90,7 @@ import WidgetKit
         sharedDefaults.set(value, forKey: "widget_show_tomorrow")
         sharedDefaults.synchronize()
         
-        if #available(iOS 14.0, *) {
-            WidgetCenter.shared.reloadAllTimelines()
-        }
+        WidgetCenter.shared.reloadAllTimelines()
         
         result(nil)
     }
