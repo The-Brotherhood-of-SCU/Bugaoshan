@@ -87,6 +87,16 @@ class CoursePageController extends ChangeNotifier {
   bool get isTodayOnVacation =>
       showVacationPage.value && actualWeek > totalWeeks;
 
+  /// 学期是否尚未开始（今天早于学期开始日）。此时顶栏显示「未开学」，
+  /// 且点击日期不做「回到当前周」跳转（学期未开始没有当前周可跳）。
+  bool get isNotStarted {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final start = _scheduleConfig.value.semesterStartDate;
+    final startDay = DateTime(start.year, start.month, start.day);
+    return today.isBefore(startDay);
+  }
+
   // ---- Public API ----
 
   /// 跳到指定周（1-based）。> totalWeeks 且有放假页 → 放假页。
@@ -110,6 +120,8 @@ class CoursePageController extends ChangeNotifier {
   /// 注意：不在此处触发 _checkAndPromptNextSemester —— 那是 State 的职责，
   /// 仅在 initState postFrame 调一次。
   void goToToday() {
+    // 未开学：学期尚未开始，没有「当前周」可跳，直接返回。
+    if (isNotStarted) return;
     refreshVacationAvailability();
     _moveTo(_indexForToday(), animate: true);
   }

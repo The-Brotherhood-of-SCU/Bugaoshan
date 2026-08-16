@@ -168,6 +168,38 @@ void main() {
       h.controller.dispose();
     });
 
+    test('not started: isNotStarted true, goToToday does not jump', () {
+      final h = _Harness(
+        config: _scheduleAhead(
+          id: 'A',
+          name: 'future',
+          weeksAhead: 2,
+          totalWeeks: 20,
+        ),
+      );
+      expect(h.controller.isNotStarted, isTrue);
+      // 先翻到第 2 周
+      h.controller.goToNextPage();
+      expect(h.controller.pageIndex, 1);
+      // 未开学：点击日期不应跳回「当前周」（实际没有当前周），位置保持不变
+      h.controller.goToToday();
+      expect(h.controller.pageIndex, 1);
+      expect(h.controller.visibleWeek, 2);
+      h.controller.dispose();
+    });
+
+    test('started: isNotStarted false, goToToday jumps to current week', () {
+      final h = _Harness(
+        config: _schedule(id: 'A', name: 'mid', weeksAgo: 5, totalWeeks: 20),
+      );
+      expect(h.controller.isNotStarted, isFalse);
+      h.controller.goToPreviousPage(); // 5 → 4
+      expect(h.controller.pageIndex, 4);
+      h.controller.goToToday();
+      expect(h.controller.pageIndex, 5); // 回到当前周
+      h.controller.dispose();
+    });
+
     test('empty allSchedules + placeholder config: no throw, index 0', () {
       final placeholder = ScheduleConfig(
         id: 'default',

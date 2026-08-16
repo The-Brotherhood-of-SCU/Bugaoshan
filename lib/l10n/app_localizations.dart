@@ -1063,6 +1063,12 @@ abstract class AppLocalizations {
   /// **'Week {week}'**
   String currentWeek(Object week);
 
+  /// No description provided for @notStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Started'**
+  String get notStarted;
+
   /// No description provided for @thisWeek.
   ///
   /// In en, this message translates to:

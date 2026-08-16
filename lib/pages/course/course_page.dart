@@ -122,6 +122,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
               actualWeek: _controller!.actualWeek,
               isViewingVacation: _controller!.isViewingVacation,
               isTodayOnVacation: _controller!.isTodayOnVacation,
+              isNotStarted: _controller!.isNotStarted,
               canGoPrevious: _controller!.canGoPrevious,
               canGoNext: _controller!.canGoNext,
               onPreviousWeek: _controller!.goToPreviousPage,
