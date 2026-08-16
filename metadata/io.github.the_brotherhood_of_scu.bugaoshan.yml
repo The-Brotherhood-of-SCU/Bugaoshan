@@ -113,7 +113,7 @@ Builds:
       - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
       - pushd $repo/Bugaoshan
       - $$flutter$$/bin/flutter config --no-analytics
-      - $$flutter$$/bin/flutter pub get
+      - $$flutter$$/bin/flutter pub get --enforce-lockfile
       - sed -i -E 's/(-Wl,)(--build-id=none,)?/\1--build-id=none,/' ${PUB_CACHE:-$HOME/.pub-cache}/hosted/*/jni-*/src/CMakeLists.txt
       - $$flutter$$/bin/dart run build_runner build --delete-conflicting-outputs || true
       - $$flutter$$/bin/flutter gen-l10n
@@ -175,7 +175,7 @@ Builds:
       - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
       - pushd $repo/Bugaoshan
       - $$flutter$$/bin/flutter config --no-analytics
-      - $$flutter$$/bin/flutter pub get
+      - $$flutter$$/bin/flutter pub get --enforce-lockfile
       - sed -i -E 's/(-Wl,)(--build-id=none,)?/\1--build-id=none,/' ${PUB_CACHE:-$HOME/.pub-cache}/hosted/*/jni-*/src/CMakeLists.txt
       - $$flutter$$/bin/dart run build_runner build --delete-conflicting-outputs || true
       - $$flutter$$/bin/flutter gen-l10n
@@ -237,7 +237,7 @@ Builds:
       - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
       - pushd $repo/Bugaoshan
       - $$flutter$$/bin/flutter config --no-analytics
-      - $$flutter$$/bin/flutter pub get
+      - $$flutter$$/bin/flutter pub get --enforce-lockfile
       - sed -i -E 's/(-Wl,)(--build-id=none,)?/\1--build-id=none,/' ${PUB_CACHE:-$HOME/.pub-cache}/hosted/*/jni-*/src/CMakeLists.txt
       - $$flutter$$/bin/dart run build_runner build --delete-conflicting-outputs || true
       - $$flutter$$/bin/flutter gen-l10n
