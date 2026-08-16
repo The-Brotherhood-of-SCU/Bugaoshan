@@ -812,7 +812,7 @@ struct DesktopWidgetView: View {
             return widgetLocalizedString("widget.enjoyVacation")
         }
         if entry.hasNoScheduleData {
-            return NSLocalizedString("widget.noSchedule", comment: "Empty widget state when no schedule is available")
+            return NSLocalizedString("widget.syncSchedule", comment: "Empty widget state prompt to sync a schedule")
         }
         if entry.courses.isEmpty {
             return entry.isTomorrow
