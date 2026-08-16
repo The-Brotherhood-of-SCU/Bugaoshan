@@ -34,6 +34,14 @@ struct ScheduleConfig {
 
 let appGroupId = "group.io.github.thebrotherhoodofscu.bugaoshan"
 
+func widgetLocalizedString(_ key: String) -> String {
+    NSLocalizedString(key, bundle: .main, comment: "")
+}
+
+func widgetLocalizedFormat(_ key: String, _ arguments: CVarArg...) -> String {
+    String(format: widgetLocalizedString(key), arguments: arguments)
+}
+
 func getDatabasePath() -> String? {
     guard let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupId) else {
         return nil
@@ -309,6 +317,53 @@ func isOnVacation(_ db: OpaquePointer, currentScheduleId: String, semesterStartD
     }
     // 今天在下学期开始前 → 放假中
     return today < next
+}
+
+/// 课表尚未同步时，使用随 App 发布的校历判断是否处于两个已知学期之间。
+/// 校历范围外不推断，避免把长期无数据误显示为假期。
+func isOnBundledAcademicCalendarVacation(date: Date = Date()) -> Bool {
+    guard let url = Bundle.main.url(
+        forResource: "academic_calendar",
+        withExtension: "json"
+    ),
+    let data = try? Data(contentsOf: url),
+    let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+    let semesters = json["semesters"] as? [[String: Any]]
+    else {
+        return false
+    }
+
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "yyyy-MM-dd"
+    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+    dateFormatter.timeZone = TimeZone.current
+
+    let calendar = Calendar.current
+    var periods: [(start: Date, end: Date)] = []
+    for semester in semesters {
+        guard let startString = semester["s"] as? String,
+              let totalWeeks = semester["w"] as? Int,
+              let start = dateFormatter.date(from: startString),
+              let end = computeSemesterEndDate(
+                semesterStartDate: start,
+                totalWeeks: totalWeeks
+              )
+        else { continue }
+        periods.append((calendar.startOfDay(for: start), end))
+    }
+    periods.sort { $0.start < $1.start }
+
+    let target = calendar.startOfDay(for: date)
+    if periods.contains(where: { target >= $0.start && target <= $0.end }) {
+        return false
+    }
+
+    guard periods.last(where: { $0.end < target }) != nil,
+          periods.first(where: { $0.start > target }) != nil
+    else {
+        return false
+    }
+    return true
 }
 
 func isCourseActive(currentWeek: Int, startWeek: Int, endWeek: Int, weekType: Int) -> Bool {
@@ -600,19 +655,19 @@ func loadWidgetData() -> (courses: [Course], dateText: String, weekText: String,
     }
 
     let dateFormatter = DateFormatter()
-    dateFormatter.dateFormat = "M/d"
-    let dayFormatter = DateFormatter()
-    dayFormatter.dateFormat = "EEE"
-    dayFormatter.locale = Locale(identifier: "zh_CN")
+    dateFormatter.locale = Locale.current
+    dateFormatter.setLocalizedDateFormatFromTemplate("MdEEE")
 
     let displayDate = isTomorrow ? calendar.date(byAdding: .day, value: 1, to: now)! : now
     let weekNum = isTomorrow ? computeWeekForDate(semesterStartDate: config.semesterStartDate, totalWeeks: config.totalWeeks, date: displayDate) : currentWeek
 
-    var dateText = "\(dateFormatter.string(from: displayDate)) \(dayFormatter.string(from: displayDate))"
+    var dateText = dateFormatter.string(from: displayDate)
     if isTomorrow {
-        dateText += " 明天"
+        dateText += " \(widgetLocalizedString("widget.tomorrow"))"
     }
-    let weekText = onVacation ? "放假中" : "第\(weekNum)周"
+    let weekText = onVacation
+        ? widgetLocalizedString("widget.onVacation")
+        : widgetLocalizedFormat("widget.weekFormat", weekNum)
 
     let nextTransition = (isTomorrow || onVacation) ? nil : computeNextTransitionMillis(courses, timeSlots: config.timeSlots, currentTimeMinutes: currentTimeMinutes)
 
@@ -633,13 +688,48 @@ struct CourseProvider: TimelineProvider {
         CourseWidgetEntry(
             date: Date(),
             courses: [
-                Course(name: "高等数学", teacher: "张老师", location: "教学楼A101", startSection: 1, endSection: 2, colorValue: 0xFF4CAF50, status: .inProgress),
-                Course(name: "大学物理", teacher: "李老师", location: "教学楼B202", startSection: 3, endSection: 4, colorValue: 0xFF2196F3, status: .upcoming)
+                Course(
+                    name: widgetLocalizedString("widget.previewCourseCalculus"),
+                    teacher: widgetLocalizedString("widget.previewTeacherZhang"),
+                    location: widgetLocalizedString("widget.previewLocationA"),
+                    startSection: 1,
+                    endSection: 2,
+                    colorValue: 0xFF4CAF50,
+                    status: .inProgress
+                ),
+                Course(
+                    name: widgetLocalizedString("widget.previewCoursePhysics"),
+                    teacher: widgetLocalizedString("widget.previewTeacherLi"),
+                    location: widgetLocalizedString("widget.previewLocationB"),
+                    startSection: 3,
+                    endSection: 4,
+                    colorValue: 0xFF2196F3,
+                    status: .upcoming
+                )
             ],
-            dateText: "1/1 周一",
-            weekText: "第1周",
+            dateText: widgetLocalizedString("widget.previewDate"),
+            weekText: widgetLocalizedFormat("widget.weekFormat", 1),
             isTomorrow: false,
             isOnVacation: false
+        )
+    }
+
+    private func fallbackEntry(in context: Context) -> CourseWidgetEntry {
+        guard isOnBundledAcademicCalendarVacation() else {
+            return placeholder(in: context)
+        }
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale.current
+        dateFormatter.setLocalizedDateFormatFromTemplate("MdEEE")
+        let now = Date()
+        return CourseWidgetEntry(
+            date: now,
+            courses: [],
+            dateText: dateFormatter.string(from: now),
+            weekText: widgetLocalizedString("widget.onVacation"),
+            isTomorrow: false,
+            isOnVacation: true
         )
     }
 
@@ -655,7 +745,7 @@ struct CourseProvider: TimelineProvider {
             )
             completion(entry)
         } else {
-            completion(placeholder(in: context))
+            completion(fallbackEntry(in: context))
         }
     }
 
@@ -692,7 +782,7 @@ struct CourseProvider: TimelineProvider {
             let timeline = Timeline(entries: [entry], policy: .after(nextUpdate!))
             completion(timeline)
         } else {
-            let entry = placeholder(in: context)
+            let entry = fallbackEntry(in: context)
             let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: now)
             completion(Timeline(entries: [entry], policy: .after(nextUpdate!)))
         }
@@ -714,7 +804,7 @@ struct DesktopWidgetView: View {
             // 1. 动态头部
             HStack {
                 if widgetFamily == .systemLarge {
-                    Text("不高山上")
+                    Text(widgetLocalizedString("widget.appName"))
                         .font(.headline)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
@@ -756,7 +846,10 @@ struct DesktopWidgetView: View {
                 }
                 // 底部剩余课程提示
                 if displayableCourses.count > maxCourses {
-                    Text("还有 \(displayableCourses.count - maxCourses) 节课")
+                    Text(widgetLocalizedFormat(
+                        "widget.moreClassesFormat",
+                        displayableCourses.count - maxCourses
+                    ))
                         .font(.caption) // 从 .caption2 调大为 .caption
                         .foregroundColor(.secondary)
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -770,12 +863,14 @@ struct DesktopWidgetView: View {
 
     private var emptyStateText: String {
         if entry.isOnVacation {
-            return "享受假期～"
+            return widgetLocalizedString("widget.enjoyVacation")
         }
         if entry.courses.isEmpty {
-            return entry.isTomorrow ? "明天没课" : "今天没课"
+            return entry.isTomorrow
+                ? widgetLocalizedString("widget.noClassesTomorrow")
+                : widgetLocalizedString("widget.noClassesToday")
         }
-        return "今天的课都上完啦"
+        return widgetLocalizedString("widget.allClassesFinished")
     }
 }
 
@@ -811,12 +906,14 @@ struct LockScreenRectangularView: View {
                 // 没课的状态；放假中显示放假提示
                 HStack {
                     Image(systemName: "sparkles")
-                    Text(entry.isOnVacation ? "放假中" : (entry.isTomorrow ? "明天没课" : "今天课上完啦"))
+                    Text(lockScreenEmptyStateTitle)
                         .font(.headline)
                 }
                 .widgetAccentable()
 
-                Text(entry.isOnVacation ? "享受假期～" : "好好休息吧")
+                Text(entry.isOnVacation
+                    ? widgetLocalizedString("widget.enjoyVacation")
+                    : widgetLocalizedString("widget.restWell"))
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -828,10 +925,27 @@ struct LockScreenRectangularView: View {
     // 提取格式化时间的工具方法（原先在你写的 CourseCard 里，现在提出来共用）
     private func formatCourseTime(_ course: Course) -> String {
         if course.startSection == course.endSection {
-            return "第\(course.startSection)节"
+            return widgetLocalizedFormat(
+                "widget.sectionSingleFormat",
+                course.startSection
+            )
         } else {
-            return "第\(course.startSection)-\(course.endSection)节"
+            return widgetLocalizedFormat(
+                "widget.sectionRangeFormat",
+                course.startSection,
+                course.endSection
+            )
         }
+    }
+
+    private var lockScreenEmptyStateTitle: String {
+        if entry.isOnVacation {
+            return widgetLocalizedString("widget.onVacation")
+        }
+        if entry.isTomorrow {
+            return widgetLocalizedString("widget.noClassesTomorrow")
+        }
+        return widgetLocalizedString("widget.todayClassesFinished")
     }
 }
 
@@ -916,9 +1030,16 @@ struct CourseCard: View {
 
     func formatCourseTime() -> String {
         if course.startSection == course.endSection {
-            return "第\(course.startSection)节"
+            return widgetLocalizedFormat(
+                "widget.sectionSingleFormat",
+                course.startSection
+            )
         } else {
-            return "第\(course.startSection)-\(course.endSection)节"
+            return widgetLocalizedFormat(
+                "widget.sectionRangeFormat",
+                course.startSection,
+                course.endSection
+            )
         }
     }
 }
@@ -932,8 +1053,8 @@ struct CourseWidget: Widget {
             CourseWidgetEntryView(entry: entry)
                 .containerBackground(Color(.systemBackground), for: .widget)
         }
-        .configurationDisplayName("课表组件")
-        .description("显示不高山上的课表信息")
+        .configurationDisplayName(LocalizedStringKey("widget.configurationName"))
+        .description(LocalizedStringKey("widget.configurationDescription"))
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryRectangular])
     }
 }
