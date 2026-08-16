@@ -1,0 +1,18 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Bugaoshan" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "不高山上" } }
+      }
+    },
+    "CFBundleName" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Bugaoshan" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "不高山上" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}
