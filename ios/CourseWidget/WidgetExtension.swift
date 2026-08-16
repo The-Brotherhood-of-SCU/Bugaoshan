@@ -657,15 +657,13 @@ struct CourseProvider: TimelineProvider {
     /// 返回空课程列表，避免把示例课程误当成真实课表展示给用户。
     private func emptyEntry() -> CourseWidgetEntry {
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "M/d"
-        let dayFormatter = DateFormatter()
-        dayFormatter.dateFormat = "EEE"
-        dayFormatter.locale = Locale(identifier: "zh_CN")
+        dateFormatter.locale = Locale.current
+        dateFormatter.setLocalizedDateFormatFromTemplate("MdEEE")
         let now = Date()
         return CourseWidgetEntry(
             date: now,
             courses: [],
-            dateText: "\(dateFormatter.string(from: now)) \(dayFormatter.string(from: now))",
+            dateText: dateFormatter.string(from: now),
             weekText: "",
             isTomorrow: false,
             isOnVacation: false
@@ -804,7 +802,7 @@ struct DesktopWidgetView: View {
             return "享受假期～"
         }
         if entry.hasNoScheduleData {
-            return "暂无课表"
+            return NSLocalizedString("widget.noSchedule", comment: "Empty widget state when no schedule is available")
         }
         if entry.courses.isEmpty {
             return entry.isTomorrow ? "明天没课" : "今天没课"
@@ -864,7 +862,7 @@ struct LockScreenRectangularView: View {
             return "放假中"
         }
         if entry.hasNoScheduleData {
-            return "暂无课表"
+            return NSLocalizedString("widget.noSchedule", comment: "Empty widget state when no schedule is available")
         }
         return entry.isTomorrow ? "明天没课" : "今天课上完啦"
     }
@@ -874,7 +872,7 @@ struct LockScreenRectangularView: View {
             return "享受假期～"
         }
         if entry.hasNoScheduleData {
-            return "同步课表后显示"
+            return NSLocalizedString("widget.syncSchedule", comment: "Empty widget state prompt to sync a schedule")
         }
         return "好好休息吧"
     }

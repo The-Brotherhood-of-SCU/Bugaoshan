@@ -1,0 +1,18 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "widget.noSchedule" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No schedule" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "暂无课表" } }
+      }
+    },
+    "widget.syncSchedule" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sync your schedule to see it here" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "同步课表后显示" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}
