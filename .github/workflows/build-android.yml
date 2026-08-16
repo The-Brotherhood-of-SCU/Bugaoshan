@@ -7,6 +7,7 @@ on:
         description: "tag name"
         required: false
         type: string
+  workflow_dispatch:
 
 jobs:
   build-android:
@@ -14,6 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # 调试用：固定从 v2.3.0 tag 构建，验证可复制构建产物；
+          # 调试完成后请恢复为默认（跟随触发 ref）。
+          ref: v2.3.0
 
       - name: Cache pub dependencies
         uses: actions/cache@v4
