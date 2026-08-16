@@ -27,7 +27,7 @@
     },
     "widget.enjoyVacation" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Enjoy your break" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Enjoy your vacation" } },
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "享受假期～" } }
       }
     },
@@ -57,7 +57,7 @@
     },
     "widget.onVacation" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "On break" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "On vacation" } },
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "放假中" } }
       }
     },

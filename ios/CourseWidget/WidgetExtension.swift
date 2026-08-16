@@ -608,15 +608,13 @@ func loadWidgetData() -> (courses: [Course], dateText: String, weekText: String,
     }
 
     let dateFormatter = DateFormatter()
-    dateFormatter.dateFormat = "M/d"
-    let dayFormatter = DateFormatter()
-    dayFormatter.dateFormat = "EEE"
-    dayFormatter.locale = Locale(identifier: "zh_CN")
+    dateFormatter.locale = Locale.current
+    dateFormatter.setLocalizedDateFormatFromTemplate("MdEEE")
 
     let displayDate = isTomorrow ? calendar.date(byAdding: .day, value: 1, to: now)! : now
     let weekNum = isTomorrow ? computeWeekForDate(semesterStartDate: config.semesterStartDate, totalWeeks: config.totalWeeks, date: displayDate) : currentWeek
 
-    var dateText = "\(dateFormatter.string(from: displayDate)) \(dayFormatter.string(from: displayDate))"
+    var dateText = dateFormatter.string(from: displayDate)
     if isTomorrow {
         dateText += " \(widgetLocalizedString("widget.tomorrow"))"
     }
@@ -812,7 +810,7 @@ struct DesktopWidgetView: View {
             return widgetLocalizedString("widget.enjoyVacation")
         }
         if entry.hasNoScheduleData {
-            return NSLocalizedString("widget.syncSchedule", comment: "Empty widget state prompt to sync a schedule")
+            return widgetLocalizedString("widget.syncSchedule")
         }
         if entry.courses.isEmpty {
             return entry.isTomorrow
@@ -874,7 +872,7 @@ struct LockScreenRectangularView: View {
             return widgetLocalizedString("widget.onVacation")
         }
         if entry.hasNoScheduleData {
-            return NSLocalizedString("widget.noSchedule", comment: "Empty widget state when no schedule is available")
+            return widgetLocalizedString("widget.noSchedule")
         }
         return entry.isTomorrow
             ? widgetLocalizedString("widget.noClassesTomorrow")
@@ -886,7 +884,7 @@ struct LockScreenRectangularView: View {
             return widgetLocalizedString("widget.enjoyVacation")
         }
         if entry.hasNoScheduleData {
-            return NSLocalizedString("widget.syncSchedule", comment: "Empty widget state prompt to sync a schedule")
+            return widgetLocalizedString("widget.syncSchedule")
         }
         return widgetLocalizedString("widget.restWell")
     }
