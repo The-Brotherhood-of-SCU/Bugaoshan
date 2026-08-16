@@ -103,7 +103,7 @@ jobs:
 
       - name: Generate metadata changelogs
         if: ${{ !contains(github.ref_name, '-') }}
-        run: python .github/scripts/metadata_changelog.py
+        run: python .github/scripts/metadata_changelog.py --skip-existing
 
       - name: Commit & push metadata changelogs (safety net)
         if: ${{ !contains(github.ref_name, '-') }}
