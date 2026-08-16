@@ -628,6 +628,13 @@ struct CourseWidgetEntry: TimelineEntry {
     let isOnVacation: Bool
 }
 
+extension CourseWidgetEntry {
+    /// 无课表数据（emptyEntry 返回的 weekText 为空）时，与"今天没课"区分开。
+    var hasNoScheduleData: Bool {
+        courses.isEmpty && weekText.isEmpty
+    }
+}
+
 struct CourseProvider: TimelineProvider {
     func placeholder(in context: Context) -> CourseWidgetEntry {
         CourseWidgetEntry(
@@ -638,6 +645,28 @@ struct CourseProvider: TimelineProvider {
             ],
             dateText: "1/1 周一",
             weekText: "第1周",
+            isTomorrow: false,
+            isOnVacation: false
+        )
+    }
+
+    /// 无课表数据时的空状态。
+    ///
+    /// 与 [placeholder] 的区别：placeholder 用于 WidgetKit 添加小组件时的预览
+    /// （展示示例课程让用户预览外观）；这里用于实际运行但数据库中没有课表数据时，
+    /// 返回空课程列表，避免把示例课程误当成真实课表展示给用户。
+    private func emptyEntry() -> CourseWidgetEntry {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "M/d"
+        let dayFormatter = DateFormatter()
+        dayFormatter.dateFormat = "EEE"
+        dayFormatter.locale = Locale(identifier: "zh_CN")
+        let now = Date()
+        return CourseWidgetEntry(
+            date: now,
+            courses: [],
+            dateText: "\(dateFormatter.string(from: now)) \(dayFormatter.string(from: now))",
+            weekText: "",
             isTomorrow: false,
             isOnVacation: false
         )
@@ -655,7 +684,8 @@ struct CourseProvider: TimelineProvider {
             )
             completion(entry)
         } else {
-            completion(placeholder(in: context))
+            // 添加小组件预览（isPreview）时展示示例课程；实际运行无课表数据时展示空状态
+            completion(context.isPreview ? placeholder(in: context) : emptyEntry())
         }
     }
 
@@ -692,7 +722,8 @@ struct CourseProvider: TimelineProvider {
             let timeline = Timeline(entries: [entry], policy: .after(nextUpdate!))
             completion(timeline)
         } else {
-            let entry = placeholder(in: context)
+            // 添加小组件预览（isPreview）时展示示例课程；实际运行无课表数据时展示空状态
+            let entry = context.isPreview ? placeholder(in: context) : emptyEntry()
             let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: now)
             completion(Timeline(entries: [entry], policy: .after(nextUpdate!)))
         }
@@ -742,6 +773,8 @@ struct DesktopWidgetView: View {
                 let emptyText: String
                 if entry.isOnVacation {
                     emptyText = "享受假期～"
+                } else if entry.hasNoScheduleData {
+                    emptyText = "暂无课表"
                 } else if entry.courses.isEmpty {
                     emptyText = entry.isTomorrow ? "明天没课" : "今天没课"
                 } else {
@@ -809,18 +842,38 @@ struct LockScreenRectangularView: View {
                 // 没课的状态；放假中显示放假提示
                 HStack {
                     Image(systemName: "sparkles")
-                    Text(entry.isOnVacation ? "放假中" : (entry.isTomorrow ? "明天没课" : "今天课上完啦"))
+                    Text(lockScreenEmptyStateTitle)
                         .font(.headline)
                 }
                 .widgetAccentable()
 
-                Text(entry.isOnVacation ? "享受假期～" : "好好休息吧")
+                Text(lockScreenEmptyStateSubtitle)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
         }
         // 锁屏组件需要撑满靠左对齐
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var lockScreenEmptyStateTitle: String {
+        if entry.isOnVacation {
+            return "放假中"
+        }
+        if entry.hasNoScheduleData {
+            return "暂无课表"
+        }
+        return entry.isTomorrow ? "明天没课" : "今天课上完啦"
+    }
+
+    private var lockScreenEmptyStateSubtitle: String {
+        if entry.isOnVacation {
+            return "享受假期～"
+        }
+        if entry.hasNoScheduleData {
+            return "同步课表后显示"
+        }
+        return "好好休息吧"
     }
 
     // 提取格式化时间的工具方法（原先在你写的 CourseCard 里，现在提出来共用）
