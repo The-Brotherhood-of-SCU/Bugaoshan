@@ -7,6 +7,7 @@ import 'package:bugaoshan/pages/course/schedule_management_page.dart';
 import 'package:bugaoshan/pages/settings/software_setting_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/services/sentry/error_feedback_coordinator.dart';
 import 'package:bugaoshan/widgets/common/info_card.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
@@ -59,6 +60,13 @@ class ProfileMenuCard extends StatelessWidget {
               onTap: () => popupOrNavigate(context, AboutPage()),
             );
           },
+        ),
+        IconTile(
+          icon: Icons.feedback_outlined,
+          label: localizations.feedback,
+          onTap: () => getIt<ErrorFeedbackCoordinator>().openFeedbackPage(
+            context: context,
+          ),
         ),
       ],
     );
