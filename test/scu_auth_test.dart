@@ -95,6 +95,56 @@ void main() {
     expect(auth.autoLoginCalls, 1);
     expect(sessionSaveCalls, 3);
   });
+
+  group('extractTokenErrorMessage', () {
+    test('extracts message from business format', () {
+      expect(
+        extractTokenErrorMessage('{"success":false,"message":"密码错误"}'),
+        '密码错误',
+      );
+    });
+
+    test('extracts msg field', () {
+      expect(extractTokenErrorMessage('{"msg":"账号或密码错误"}'), '账号或密码错误');
+    });
+
+    test('prefers message over OAuth error code', () {
+      expect(
+        extractTokenErrorMessage('{"message":"密码错误","error":"invalid_grant"}'),
+        '密码错误',
+      );
+    });
+
+    test('extracts OAuth error_description', () {
+      expect(
+        extractTokenErrorMessage(
+          '{"error":"invalid_grant","error_description":"用户名或密码错误"}',
+        ),
+        '用户名或密码错误',
+      );
+    });
+
+    test('falls back to OAuth error code', () {
+      expect(
+        extractTokenErrorMessage('{"error":"invalid_grant"}'),
+        'invalid_grant',
+      );
+    });
+
+    test('returns null for non-JSON body', () {
+      expect(extractTokenErrorMessage('<html>gateway error</html>'), isNull);
+    });
+
+    test('returns null for empty or missing error fields', () {
+      expect(extractTokenErrorMessage('{}'), isNull);
+      expect(extractTokenErrorMessage('{"success":false}'), isNull);
+      expect(extractTokenErrorMessage('{"message":""}'), isNull);
+    });
+
+    test('returns null for non-map JSON', () {
+      expect(extractTokenErrorMessage('[1,2,3]'), isNull);
+    });
+  });
 }
 
 class _TestScuAuth extends ScuAuth {
