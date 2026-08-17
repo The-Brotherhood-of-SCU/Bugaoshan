@@ -79,22 +79,6 @@ jobs:
             --dart-define=GIT_COMMIT_DATE=${{ steps.setup.outputs.GIT_COMMIT_DATE }}
           cp build/app/outputs/flutter-apk/app-*-release.apk release-apks/
 
-      - name: Collect kernel artifacts for reproducible-build debugging
-        run: |
-          # 与 F-Droid 构建的 app.dill（sha256 见日志）对比，定位 libapp.so 差异
-          # 是来自 kernel（app.dill）还是 gen_snapshot 环节。
-          find .dart_tool/flutter_build -name 'app.dill' -exec sha256sum {} \;
-          mkdir -p kernel-artifacts
-          for d in .dart_tool/flutter_build/*; do
-            [ -f "$d/app.dill" ] && cp "$d/app.dill" kernel-artifacts/"$(basename "$d")".dill
-          done
-
-      - name: Upload kernel artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-kernel
-          path: kernel-artifacts/
-
       - name: Upload universal and split APKs
         uses: actions/upload-artifact@v4
         with:
