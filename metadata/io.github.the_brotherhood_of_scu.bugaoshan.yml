@@ -146,8 +146,6 @@ Builds:
     output: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
     binary: https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/download/v%v/bugaoshan_%v_armeabi-v7a.apk
     gradleprops:
-      - org.gradle.workers.max=2
-      - org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m
       - android.r8.failOnMissingClasses=false
 
   # ----- arm64-v8a (versionCode = base + 2000) -----
@@ -210,8 +208,6 @@ Builds:
     output: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
     binary: https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/download/v%v/bugaoshan_%v_arm64-v8a.apk
     gradleprops:
-      - org.gradle.workers.max=2
-      - org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m
       - android.r8.failOnMissingClasses=false
 
   # ----- x86_64 (versionCode = base + 4000) -----
@@ -274,8 +270,6 @@ Builds:
     output: build/app/outputs/flutter-apk/app-x86_64-release.apk
     binary: https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/download/v%v/bugaoshan_%v_x86_64.apk
     gradleprops:
-      - org.gradle.workers.max=2
-      - org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m
       - android.r8.failOnMissingClasses=false
 
 AllowedAPKSigningKeys: 1b0a09e3e7e3b3b9fadff06a7795bf7448a22e5803f2a18f62267dc2273be391
