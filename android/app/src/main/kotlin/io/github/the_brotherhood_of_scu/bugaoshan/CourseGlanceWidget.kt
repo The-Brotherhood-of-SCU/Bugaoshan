@@ -74,8 +74,8 @@ private val META_FONT_SIZE_SP = 13.sp
 private val META_SMALL_FONT_SIZE_SP = 11.sp
 private val EMPTY_FONT_SIZE_SP = 13.sp
 
-// 小组件最多渲染的课程数：避免 RemoteViews 元素过多导致系统「无法添加微件」。
-// 小组件空间有限，超出的课程本也显示不下。
+// 小组件最多渲染的课程数：widget 空间有限，超出的课程本也显示不下；
+// 限制数量可避免 RemoteViews 元素过多（Glance 在元素过多时可能渲染失败）。
 private const val MAX_VISIBLE_COURSES = 6
 
 // Cached layout parameters per widget instance
@@ -740,10 +740,12 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     )
                 }
             } else {
-                // 用普通 Column 而非 LazyColumn：Glance 1.1.x 的 LazyColumn 在
-                // SizeMode.Exact 下渲染 RemoteViews 存在兼容问题，会导致
-                // 系统提示「无法添加微件」。课程数量有限（一天最多十余节），
-                // 直接渲染即可。
+                // 用普通 Column 渲染课程（防御性改进）：
+                // 此前「有课时无法添加微件」的根因是下方 CourseCard 的
+                // ColorProvider 误用（logcat 中 Resources$NotFoundException，
+                // 已修复）。widget 课程数量有限，用 LazyColumn 意义不大；
+                // 改普通 Column 并限制数量，避免 RemoteViews 元素过多等
+                // 潜在兼容问题。
                 val visibleCount = minOf(courses.length(), MAX_VISIBLE_COURSES)
                 Column(modifier = GlanceModifier.fillMaxSize()) {
                     for (index in 0 until visibleCount) {
