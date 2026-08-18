@@ -35,6 +35,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.the_brotherhood_of_scu.bugaoshan.R
@@ -785,7 +786,10 @@ class CourseGlanceWidget : GlanceAppWidget() {
         val rawColor = course.optInt("colorValue", 0)
         val indicatorColor = when {
             isTomorrow -> ColorProvider(R.color.widget_tomorrow_accent)
-            (rawColor ushr 24) != 0 -> ColorProvider(rawColor)
+            // rawColor 是课程自定义 ARGB 颜色值（如 0xff9c27b0），需转为 Compose Color。
+            // 直接传 Int 会被 Glance 当作 color resource ID，渲染时 Resources 找不到
+            // → RemoteViews$ActionException → 系统提示「无法添加微件」。
+            (rawColor ushr 24) != 0 -> ColorProvider(Color(rawColor))
             else -> ColorProvider(R.color.widget_header_default)
         }
         val nameColor = if (isTomorrow) R.color.widget_tomorrow_text_primary else R.color.widget_text_primary
