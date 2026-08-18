@@ -75,15 +75,16 @@ android {
     }
 }
 
-// ABI split 版本号方案（与 metadata/io.github.the_brotherhood_of_scu.bugaoshan.yml 一致）：
-// versionCode = base + abiCode，base 来自 pubspec.yaml 的 +N / flutter build --build-number
-val abiCodes = mapOf("armeabi-v7a" to 1000, "arm64-v8a" to 2000, "x86_64" to 4000)
+// F-Droid ABI split 版本号方案：versionCode = base*10 + abiCode
+// （base 来自 pubspec.yaml 的 +N / flutter build --build-number）
+// 见 https://f-droid.org/en/docs/Submitting_to_F-Droid_Quick_Start_Guide/#setup-abi-split
+val abiCodes = mapOf("armeabi-v7a" to 1, "arm64-v8a" to 2, "x86_64" to 4)
 android.applicationVariants.configureEach {
     val variant = this
     variant.outputs.forEach { output ->
         val abiVersionCode = abiCodes[output.filters.find { it.filterType == "ABI" }?.identifier]
         if (abiVersionCode != null) {
-            (output as ApkVariantOutputImpl).versionCodeOverride = variant.versionCode + abiVersionCode
+            (output as ApkVariantOutputImpl).versionCodeOverride = variant.versionCode * 10 + abiVersionCode
         }
     }
 }

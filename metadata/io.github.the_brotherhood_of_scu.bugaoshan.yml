@@ -9,20 +9,21 @@
 #
 # 为保证逐字节一致，本 recipe 与 CI（.github/workflows/build-android.yml）严格对齐：
 #   - 相同 Flutter 版本（srclibs flutter@3.44.8 == .github/actions/setup）
-#   - 相同构建参数：--release --split-per-abi --obfuscate --split-debug-info + 相同的 dart-define
+#   - 相同构建参数：--release --split-per-abi --obfuscate --split-debug-info
+#     + 相同的 --build-number（base）与 dart-define
 #     （GIT_TAG / GIT_COMMIT / GIT_COMMIT_DATE；均无构建时间戳等非确定性输入）
 #   - prebuild 复刻 CI 的代码生成步骤（build_runner、gen-l10n）
 #   - pubspec.lock 已提交，pub get --enforce-lockfile 与 CI 对齐：
 #     lockfile 无法满足时直接报错，避免静默重解析导致依赖漂移
 #     （例如 synchronized 3.4.1+2 发布前 CI 被降级到 3.4.1+1 的问题）
 #
-# versionCode 规则（与 Flutter --split-per-abi 的自动偏移一致，
-# 见 flutter_tools FlutterPlugin.kt：versionCode = abiCode*1000 + base）：
+# versionCode 规则（与 android/app/build.gradle.kts 中的 ABI override 一致，
+# 见 F-Droid Quick Start Guide "Setup ABI split"：versionCode = base*10 + abiCode）：
 #   base      = major*10000 + minor*100 + patch（pubspec.yaml 中 version 的 +N 部分）
 #   universal = base
-#   v7a       = base + 1000
-#   v8a       = base + 2000
-#   x86_64    = base + 4000
+#   v7a       = base*10 + 1
+#   v8a       = base*10 + 2
+#   x86_64    = base*10 + 4
 #
 # 注意：v2.3.0 的 Release 资产实际由 commit ba5312a 构建上传
 # （main 分支，2026-08-15 00:08:16 +0800，BUILD_TIME 已移除之后），
@@ -74,17 +75,17 @@ AutoUpdateMode: Version
 UpdateCheckMode: Tags ^v[0-9]+\.[0-9]+\.[0-9]+$
 UpdateCheckData: pubspec.yaml|version:\s.+\+(\d+)|.|version:\s(.+)\+
 VercodeOperation:
-  - '%c + 1000'
-  - '%c + 2000'
-  - '%c + 4000'
+  - '10 * %c + 1'
+  - '10 * %c + 2'
+  - '10 * %c + 4'
 
 RepoType: git
 Repo: https://github.com/The-Brotherhood-of-SCU/Bugaoshan.git
 
 Builds:
-  # ----- armeabi-v7a (versionCode = base + 1000) -----
+  # ----- armeabi-v7a (versionCode = base*10 + 1) -----
   - versionName: '2.3.0'
-    versionCode: 21300
+    versionCode: 203001
     commit: v2.3.0
     srclibs:
       - flutter@3.44.8
@@ -144,9 +145,9 @@ Builds:
       - org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m
       - android.r8.failOnMissingClasses=false
 
-  # ----- arm64-v8a (versionCode = base + 2000) -----
+  # ----- arm64-v8a (versionCode = base*10 + 2) -----
   - versionName: '2.3.0'
-    versionCode: 22300
+    versionCode: 203002
     commit: v2.3.0
     srclibs:
       - flutter@3.44.8
@@ -206,9 +207,9 @@ Builds:
       - org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m
       - android.r8.failOnMissingClasses=false
 
-  # ----- x86_64 (versionCode = base + 4000) -----
+  # ----- x86_64 (versionCode = base*10 + 4) -----
   - versionName: '2.3.0'
-    versionCode: 24300
+    versionCode: 203004
     commit: v2.3.0
     srclibs:
       - flutter@3.44.8

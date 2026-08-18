@@ -2,9 +2,9 @@
 
 Reads the current version from pubspec.yaml, derives the base versionCode
 using Flutter's formula (major*10000 + minor*100 + patch), computes
-ABI-specific versionCodes (+1000/+2000/+4000, matching the abiCode*1000+base
-rule Flutter's --split-per-abi applies), and writes changelog
-files to metadata/{lang}/changelogs/ for each ABI.
+ABI-specific versionCodes (base*10 + 1/2/4, matching the ABI override in
+android/app/build.gradle.kts), and writes changelog files to
+metadata/{lang}/changelogs/ for each ABI.
 """
 
 import os
@@ -12,12 +12,12 @@ import re
 import sys
 import yaml
 
-# 与 flutter_tools FlutterPlugin.kt 的 ABI_VERSION 表一致：
-# versionCode = abiCode * 1000 + base（v7a=1, v8a=2, x86_64=4）
-ABI_OFFSETS = {
-    "armeabi-v7a": 1000,
-    "arm64-v8a": 2000,
-    "x86_64": 4000,
+# 与 android/app/build.gradle.kts 的 ABI override 一致：
+# versionCode = base*10 + abiCode（v7a=1, v8a=2, x86_64=4）
+ABI_CODES = {
+    "armeabi-v7a": 1,
+    "arm64-v8a": 2,
+    "x86_64": 4,
 }
 
 METADATA_LANGS = ["en-US", "zh-CN"]
@@ -180,8 +180,8 @@ def write_changelogs(version_code: int, zh_text: str, en_text: str, root_dir: st
     for lang, text in lang_texts.items():
         changelog_dir = os.path.join(root_dir, "metadata", lang, "changelogs")
         os.makedirs(changelog_dir, exist_ok=True)
-        for _abi_name, offset in ABI_OFFSETS.items():
-            vc = version_code + offset
+        for _abi_name, abi_code in ABI_CODES.items():
+            vc = version_code * 10 + abi_code
             filepath = os.path.join(changelog_dir, f"{vc}.txt")
             with open(filepath, "w", encoding="utf-8") as f:
                 f.write(text)
@@ -214,8 +214,8 @@ def main():
         print(f"  Created: {f}")
 
     print(f"\nVersion: {version_name}, base versionCode: {base_vc}")
-    for name, offset in ABI_OFFSETS.items():
-        print(f"  {name}: {base_vc + offset}")
+    for name, abi_code in ABI_CODES.items():
+        print(f"  {name}: {base_vc * 10 + abi_code}")
     print(f"Total files created: {len(created)}")
 
 
