@@ -2649,6 +2649,50 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get leaveStatusDone => '已完成';
+
+  @override
+  String get immersiveSetting => '沉浸光感';
+
+  @override
+  String get immersiveNativeDock => '原生沉浸光感底栏';
+
+  @override
+  String get immersiveNativeDockDesc =>
+      '使用系统级 ImmersiveMaterial 材质渲染悬浮底栏，内容可延伸至底栏下方透出光影';
+
+  @override
+  String get immersiveStyleStrength => '材质强度';
+
+  @override
+  String get immersiveStyleUltraThin => '超薄';
+
+  @override
+  String get immersiveStyleThin => '纤薄';
+
+  @override
+  String get immersiveStyleRegular => '标准';
+
+  @override
+  String get immersiveStyleThick => '醇厚';
+
+  @override
+  String get immersiveStyleUltraThick => '超厚';
+
+  @override
+  String get immersiveColorInvert => '智能反色';
+
+  @override
+  String get immersiveColorInvertDesc => '材质颜色随背景内容智能反转';
+
+  @override
+  String get immersiveInteractive => '按压光效';
+
+  @override
+  String get immersiveInteractiveDesc => '按压底栏时呈现点光源流光反馈';
+
+  @override
+  String get immersiveOhosOnly =>
+      '沉浸光感材质需要 HarmonyOS 6.1.0（API 23）及以上，低版本设备自动降级为毛玻璃效果';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

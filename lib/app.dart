@@ -9,6 +9,7 @@ import 'package:bugaoshan/pages/wizard/eula_gate_page.dart';
 import 'package:bugaoshan/pages/wizard/wizard_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/background_cache_service.dart';
+import 'package:bugaoshan/services/immersive_dock_service.dart';
 import 'package:bugaoshan/theme.dart';
 import 'package:bugaoshan/widgets/common/session_expired_listener.dart';
 import 'package:bugaoshan/widgets/eula_content.dart';
@@ -54,6 +55,8 @@ class _MyAppState extends State<MyApp> {
       ]),
       builder: (context, _) => MaterialApp(
         navigatorKey: navigatorKey,
+        // 原生沉浸光感底栏（HarmonyOS）：监听路由栈，二级页面覆盖时隐藏底栏
+        navigatorObservers: [ImmersiveDockService.routeObserver],
         locale: _appConfig.locale.value,
         onGenerateTitle: (ctx) => AppLocalizations.of(ctx)!.bugaoshan,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -64,13 +67,36 @@ class _MyAppState extends State<MyApp> {
         builder: (context, child) {
           final scale = MediaQuery.textScalerOf(context).scale(1.0);
           final clamped = scale.clamp(1.0, 2.0);
+          Widget result = MouseBackHandler(
+            child: SessionExpiredListener(child: child ?? const SizedBox()),
+          );
+          // 原生沉浸光感底栏（HarmonyOS）可见时，全局为滚动内容增加底部
+          // 限位：内容可滚到底栏上方而不被遮挡；底栏隐藏（如二级页面）时
+          // 自动取消。对未显式设置 padding 的滚动视图统一生效。
+          if (ImmersiveDockService.isOhos) {
+            result = ValueListenableBuilder<bool>(
+              valueListenable: ImmersiveDockService.instance.dockVisible,
+              builder: (context, visible, staticChild) {
+                if (!visible) return staticChild!;
+                final mq = MediaQuery.of(context);
+                return MediaQuery(
+                  data: mq.copyWith(
+                    padding: mq.padding.copyWith(
+                      bottom: mq.padding.bottom +
+                          ImmersiveDockService.dockBottomSpace,
+                    ),
+                  ),
+                  child: staticChild!,
+                );
+              },
+              child: result,
+            );
+          }
           return MediaQuery(
             data: MediaQuery.of(
               context,
             ).copyWith(textScaler: TextScaler.linear(clamped)),
-            child: MouseBackHandler(
-              child: SessionExpiredListener(child: child ?? const SizedBox()),
-            ),
+            child: result,
           );
         },
         home: ValueListenableBuilder<int>(

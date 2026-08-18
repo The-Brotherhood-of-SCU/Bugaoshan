@@ -2735,4 +2735,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get leaveStatusDone => 'Done';
+
+  @override
+  String get immersiveSetting => 'Immersive Material';
+
+  @override
+  String get immersiveNativeDock => 'Native Immersive Dock Bar';
+
+  @override
+  String get immersiveNativeDockDesc =>
+      'Render the floating dock with the system ImmersiveMaterial; content extends beneath the bar';
+
+  @override
+  String get immersiveStyleStrength => 'Material Strength';
+
+  @override
+  String get immersiveStyleUltraThin => 'Ultra Thin';
+
+  @override
+  String get immersiveStyleThin => 'Thin';
+
+  @override
+  String get immersiveStyleRegular => 'Regular';
+
+  @override
+  String get immersiveStyleThick => 'Thick';
+
+  @override
+  String get immersiveStyleUltraThick => 'Ultra Thick';
+
+  @override
+  String get immersiveColorInvert => 'Smart Color Invert';
+
+  @override
+  String get immersiveColorInvertDesc =>
+      'Material color adapts to the content behind it';
+
+  @override
+  String get immersiveInteractive => 'Press Light Effect';
+
+  @override
+  String get immersiveInteractiveDesc =>
+      'Show a point-light ripple when pressing the dock';
+
+  @override
+  String get immersiveOhosOnly =>
+      'Immersive material requires HarmonyOS 6.1.0 (API 23)+; older devices fall back to blur';
 }

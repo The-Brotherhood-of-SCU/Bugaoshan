@@ -3,6 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/services/immersive_dock_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -79,7 +80,8 @@ class _CampusPageState extends State<CampusPage>
                   key: ValueKey(isGridView),
                   slivers: [
                     SliverPadding(
-                      padding: const EdgeInsets.all(AppShapes.medium),
+                      padding: EdgeInsets.all(AppShapes.medium) +
+                          EdgeInsets.only(bottom: context.immersiveDockInset),
                       sliver: isGridView
                           ? _buildGridView(l10n)
                           : _buildListView(l10n),

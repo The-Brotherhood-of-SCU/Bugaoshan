@@ -34,6 +34,11 @@ const String _keyAutoSampleBalanceOnLogin = 'autoSampleBalanceOnLogin';
 const String _keyForceCaptchaForDownload = 'forceCaptchaForDownload';
 const String _keyEnablePageTransitionAnimation =
     'enablePageTransitionAnimation';
+// 沉浸光感底栏（仅 HarmonyOS 生效）
+const String _keyImmersiveDockEnabled = 'immersiveDockEnabled';
+const String _keyImmersiveDockStyle = 'immersiveDockStyle';
+const String _keyImmersiveDockColorInvert = 'immersiveDockColorInvert';
+const String _keyImmersiveDockInteractive = 'immersiveDockInteractive';
 const Curve appCurve = Curves.easeOutQuart;
 
 enum ThemeColorMode { system, backgroundImage, custom }
@@ -92,6 +97,12 @@ class AppConfigProvider {
   final ValueNotifier<bool> enablePageTransitionAnimation = ValueNotifier<bool>(
     true,
   );
+  // 沉浸光感底栏（仅 HarmonyOS 生效）：启用原生 ArkUI 底栏、材质强度
+  // （0 超薄 ~ 4 超厚，对应 uiMaterial.ImmersiveStyle）、智能反色、按压光效
+  final ValueNotifier<bool> immersiveDockEnabled = ValueNotifier<bool>(true);
+  final ValueNotifier<int> immersiveDockStyle = ValueNotifier<int>(2);
+  final ValueNotifier<bool> immersiveDockColorInvert = ValueNotifier<bool>(true);
+  final ValueNotifier<bool> immersiveDockInteractive = ValueNotifier<bool>(true);
 
   Future<void> _loadPreferences() async {
     final localeString = _sharedPreferences.getString(_keyLocale);
@@ -151,6 +162,14 @@ class AppConfigProvider {
         _sharedPreferences.getBool(_keyForceCaptchaForDownload) ?? false;
     enablePageTransitionAnimation.value =
         _sharedPreferences.getBool(_keyEnablePageTransitionAnimation) ?? true;
+    immersiveDockEnabled.value =
+        _sharedPreferences.getBool(_keyImmersiveDockEnabled) ?? true;
+    immersiveDockStyle.value =
+        _sharedPreferences.getInt(_keyImmersiveDockStyle) ?? 2;
+    immersiveDockColorInvert.value =
+        _sharedPreferences.getBool(_keyImmersiveDockColorInvert) ?? true;
+    immersiveDockInteractive.value =
+        _sharedPreferences.getBool(_keyImmersiveDockInteractive) ?? true;
   }
 
   void _addSaveCallback() {
@@ -279,6 +298,30 @@ class AppConfigProvider {
       _sharedPreferences.setBool(
         _keyEnablePageTransitionAnimation,
         enablePageTransitionAnimation.value,
+      );
+    });
+    immersiveDockEnabled.addListener(() {
+      _sharedPreferences.setBool(
+        _keyImmersiveDockEnabled,
+        immersiveDockEnabled.value,
+      );
+    });
+    immersiveDockStyle.addListener(() {
+      _sharedPreferences.setInt(
+        _keyImmersiveDockStyle,
+        immersiveDockStyle.value,
+      );
+    });
+    immersiveDockColorInvert.addListener(() {
+      _sharedPreferences.setBool(
+        _keyImmersiveDockColorInvert,
+        immersiveDockColorInvert.value,
+      );
+    });
+    immersiveDockInteractive.addListener(() {
+      _sharedPreferences.setBool(
+        _keyImmersiveDockInteractive,
+        immersiveDockInteractive.value,
       );
     });
   }

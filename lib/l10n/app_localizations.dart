@@ -5118,6 +5118,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Done'**
   String get leaveStatusDone;
+
+  /// No description provided for @immersiveSetting.
+  ///
+  /// In en, this message translates to:
+  /// **'Immersive Material'**
+  String get immersiveSetting;
+
+  /// No description provided for @immersiveNativeDock.
+  ///
+  /// In en, this message translates to:
+  /// **'Native Immersive Dock Bar'**
+  String get immersiveNativeDock;
+
+  /// No description provided for @immersiveNativeDockDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Render the floating dock with the system ImmersiveMaterial; content extends beneath the bar'**
+  String get immersiveNativeDockDesc;
+
+  /// No description provided for @immersiveStyleStrength.
+  ///
+  /// In en, this message translates to:
+  /// **'Material Strength'**
+  String get immersiveStyleStrength;
+
+  /// No description provided for @immersiveStyleUltraThin.
+  ///
+  /// In en, this message translates to:
+  /// **'Ultra Thin'**
+  String get immersiveStyleUltraThin;
+
+  /// No description provided for @immersiveStyleThin.
+  ///
+  /// In en, this message translates to:
+  /// **'Thin'**
+  String get immersiveStyleThin;
+
+  /// No description provided for @immersiveStyleRegular.
+  ///
+  /// In en, this message translates to:
+  /// **'Regular'**
+  String get immersiveStyleRegular;
+
+  /// No description provided for @immersiveStyleThick.
+  ///
+  /// In en, this message translates to:
+  /// **'Thick'**
+  String get immersiveStyleThick;
+
+  /// No description provided for @immersiveStyleUltraThick.
+  ///
+  /// In en, this message translates to:
+  /// **'Ultra Thick'**
+  String get immersiveStyleUltraThick;
+
+  /// No description provided for @immersiveColorInvert.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Color Invert'**
+  String get immersiveColorInvert;
+
+  /// No description provided for @immersiveColorInvertDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Material color adapts to the content behind it'**
+  String get immersiveColorInvertDesc;
+
+  /// No description provided for @immersiveInteractive.
+  ///
+  /// In en, this message translates to:
+  /// **'Press Light Effect'**
+  String get immersiveInteractive;
+
+  /// No description provided for @immersiveInteractiveDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Show a point-light ripple when pressing the dock'**
+  String get immersiveInteractiveDesc;
+
+  /// No description provided for @immersiveOhosOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Immersive material requires HarmonyOS 6.1.0 (API 23)+; older devices fall back to blur'**
+  String get immersiveOhosOnly;
 }
 
 class _AppLocalizationsDelegate

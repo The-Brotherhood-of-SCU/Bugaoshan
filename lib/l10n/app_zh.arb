@@ -1330,5 +1330,19 @@
     "@leaveNoApplications": {
         "description": "我的申请 Tab 的空状态提示。",
         "type": "text"
-    }
+    },
+    "immersiveSetting": "沉浸光感",
+    "immersiveNativeDock": "原生沉浸光感底栏",
+    "immersiveNativeDockDesc": "使用系统级 ImmersiveMaterial 材质渲染悬浮底栏，内容可延伸至底栏下方透出光影",
+    "immersiveStyleStrength": "材质强度",
+    "immersiveStyleUltraThin": "超薄",
+    "immersiveStyleThin": "纤薄",
+    "immersiveStyleRegular": "标准",
+    "immersiveStyleThick": "醇厚",
+    "immersiveStyleUltraThick": "超厚",
+    "immersiveColorInvert": "智能反色",
+    "immersiveColorInvertDesc": "材质颜色随背景内容智能反转",
+    "immersiveInteractive": "按压光效",
+    "immersiveInteractiveDesc": "按压底栏时呈现点光源流光反馈",
+    "immersiveOhosOnly": "沉浸光感材质需要 HarmonyOS 6.1.0（API 23）及以上，低版本设备自动降级为毛玻璃效果"
 }

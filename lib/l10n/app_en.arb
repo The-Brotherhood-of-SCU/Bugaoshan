@@ -1392,5 +1392,19 @@
     "@leaveNoApplications": {
         "description": "Empty state for the my-applications tab.",
         "type": "text"
-    }
+    },
+    "immersiveSetting": "Immersive Material",
+    "immersiveNativeDock": "Native Immersive Dock Bar",
+    "immersiveNativeDockDesc": "Render the floating dock with the system ImmersiveMaterial; content extends beneath the bar",
+    "immersiveStyleStrength": "Material Strength",
+    "immersiveStyleUltraThin": "Ultra Thin",
+    "immersiveStyleThin": "Thin",
+    "immersiveStyleRegular": "Regular",
+    "immersiveStyleThick": "Thick",
+    "immersiveStyleUltraThick": "Ultra Thick",
+    "immersiveColorInvert": "Smart Color Invert",
+    "immersiveColorInvertDesc": "Material color adapts to the content behind it",
+    "immersiveInteractive": "Press Light Effect",
+    "immersiveInteractiveDesc": "Show a point-light ripple when pressing the dock",
+    "immersiveOhosOnly": "Immersive material requires HarmonyOS 6.1.0 (API 23)+; older devices fall back to blur"
 }

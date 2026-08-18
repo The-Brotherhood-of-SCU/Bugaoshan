@@ -1,5 +1,6 @@
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/services/immersive_dock_service.dart';
 import 'package:bugaoshan/widgets/common/third_center.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/pages/profile/login_status_card.dart';
@@ -30,7 +31,9 @@ class ProfilePage extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+          padding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 0) +
+              EdgeInsets.only(bottom: context.immersiveDockInset),
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: constraints.maxHeight),
             child: ThirdCenter(child: body),

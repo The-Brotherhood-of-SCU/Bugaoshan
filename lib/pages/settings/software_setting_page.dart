@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -11,6 +12,7 @@ import 'package:bugaoshan/pages/settings/set_language_page.dart';
 import 'package:bugaoshan/pages/settings/set_app_icon_page.dart';
 import 'package:bugaoshan/pages/settings/set_course_style_page.dart';
 import 'package:bugaoshan/pages/settings/set_font_page.dart';
+import 'package:bugaoshan/pages/settings/set_immersive_page.dart';
 import 'package:bugaoshan/pages/settings/set_theme_color_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
@@ -85,6 +87,13 @@ class SoftwareSettingPage extends StatelessWidget {
                 label: localizations.setFont,
                 onTap: () => popupOrNavigate(context, const SetFontPage()),
               ),
+              if (!kIsWeb && Platform.operatingSystem == 'ohos')
+                IconTile(
+                  icon: Icons.blur_on,
+                  label: localizations.immersiveSetting,
+                  onTap: () =>
+                      popupOrNavigate(context, const SetImmersivePage()),
+                ),
             ],
           ),
           const SizedBox(height: 14),
