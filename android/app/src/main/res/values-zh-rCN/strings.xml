@@ -5,6 +5,8 @@
     <string name="widget_vacation">放假中</string>
     <string name="widget_vacation_hint">享受假期～</string>
     <string name="widget_empty_today">今天没有课程</string>
+    <string name="widget_empty_tomorrow">明天没课</string>
+    <string name="widget_all_finished">今天的课都上完啦</string>
     <string name="widget_sync_hint">打开 App 同步课表</string>
     <string name="widget_section_single">第%1$d节</string>
     <string name="widget_section_range">第%1$d-%2$d节</string>

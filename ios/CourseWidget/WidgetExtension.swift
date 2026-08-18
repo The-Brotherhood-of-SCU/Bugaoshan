@@ -683,6 +683,13 @@ struct CourseWidgetEntry: TimelineEntry {
     let isOnVacation: Bool
 }
 
+extension CourseWidgetEntry {
+    /// 无课表数据（emptyEntry 返回的 weekText 为空）时，与"今天没课"区分开。
+    var hasNoScheduleData: Bool {
+        courses.isEmpty && weekText.isEmpty
+    }
+}
+
 struct CourseProvider: TimelineProvider {
     func placeholder(in context: Context) -> CourseWidgetEntry {
         CourseWidgetEntry(
@@ -714,22 +721,35 @@ struct CourseProvider: TimelineProvider {
         )
     }
 
-    private func fallbackEntry(in context: Context) -> CourseWidgetEntry {
-        guard isOnBundledAcademicCalendarVacation() else {
-            return placeholder(in: context)
-        }
-
+    /// 无课表数据时的空状态。
+    ///
+    /// 与 [placeholder] 的区别：placeholder 用于 WidgetKit 添加小组件时的预览
+    /// （展示示例课程让用户预览外观）；这里用于实际运行但数据库中没有课表数据时，
+    /// 返回空课程列表，避免把示例课程误当成真实课表展示给用户。
+    /// 无课表且处于校历假期（两个已知学期之间）时，显示「放假中」而非空态。
+    private func emptyEntry() -> CourseWidgetEntry {
         let dateFormatter = DateFormatter()
         dateFormatter.locale = Locale.current
         dateFormatter.setLocalizedDateFormatFromTemplate("MdEEE")
         let now = Date()
+        let dateText = dateFormatter.string(from: now)
+        if isOnBundledAcademicCalendarVacation() {
+            return CourseWidgetEntry(
+                date: now,
+                courses: [],
+                dateText: dateText,
+                weekText: widgetLocalizedString("widget.onVacation"),
+                isTomorrow: false,
+                isOnVacation: true
+            )
+        }
         return CourseWidgetEntry(
             date: now,
             courses: [],
-            dateText: dateFormatter.string(from: now),
-            weekText: widgetLocalizedString("widget.onVacation"),
+            dateText: dateText,
+            weekText: "",
             isTomorrow: false,
-            isOnVacation: true
+            isOnVacation: false
         )
     }
 
@@ -745,7 +765,8 @@ struct CourseProvider: TimelineProvider {
             )
             completion(entry)
         } else {
-            completion(fallbackEntry(in: context))
+            // 添加小组件预览（isPreview）时展示示例课程；实际运行无课表数据时展示空状态
+            completion(context.isPreview ? placeholder(in: context) : emptyEntry())
         }
     }
 
@@ -782,7 +803,8 @@ struct CourseProvider: TimelineProvider {
             let timeline = Timeline(entries: [entry], policy: .after(nextUpdate!))
             completion(timeline)
         } else {
-            let entry = fallbackEntry(in: context)
+            // 添加小组件预览（isPreview）时展示示例课程；实际运行无课表数据时展示空状态
+            let entry = context.isPreview ? placeholder(in: context) : emptyEntry()
             let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: now)
             completion(Timeline(entries: [entry], policy: .after(nextUpdate!)))
         }
@@ -865,6 +887,9 @@ struct DesktopWidgetView: View {
         if entry.isOnVacation {
             return widgetLocalizedString("widget.enjoyVacation")
         }
+        if entry.hasNoScheduleData {
+            return widgetLocalizedString("widget.syncSchedule")
+        }
         if entry.courses.isEmpty {
             return entry.isTomorrow
                 ? widgetLocalizedString("widget.noClassesTomorrow")
@@ -911,15 +936,35 @@ struct LockScreenRectangularView: View {
                 }
                 .widgetAccentable()
 
-                Text(entry.isOnVacation
-                    ? widgetLocalizedString("widget.enjoyVacation")
-                    : widgetLocalizedString("widget.restWell"))
+                Text(lockScreenEmptyStateSubtitle)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
         }
         // 锁屏组件需要撑满靠左对齐
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var lockScreenEmptyStateTitle: String {
+        if entry.isOnVacation {
+            return widgetLocalizedString("widget.onVacation")
+        }
+        if entry.hasNoScheduleData {
+            return widgetLocalizedString("widget.noSchedule")
+        }
+        return entry.isTomorrow
+            ? widgetLocalizedString("widget.noClassesTomorrow")
+            : widgetLocalizedString("widget.todayClassesFinished")
+    }
+
+    private var lockScreenEmptyStateSubtitle: String {
+        if entry.isOnVacation {
+            return widgetLocalizedString("widget.enjoyVacation")
+        }
+        if entry.hasNoScheduleData {
+            return widgetLocalizedString("widget.syncSchedule")
+        }
+        return widgetLocalizedString("widget.restWell")
     }
 
     // 提取格式化时间的工具方法（原先在你写的 CourseCard 里，现在提出来共用）

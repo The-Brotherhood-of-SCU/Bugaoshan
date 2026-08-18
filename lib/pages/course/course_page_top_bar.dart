@@ -6,6 +6,7 @@ class _TopBar extends StatelessWidget {
   final int actualWeek;
   final bool isViewingVacation;
   final bool isTodayOnVacation;
+  final bool isNotStarted;
   final bool canGoPrevious;
   final bool canGoNext;
 
@@ -22,6 +23,7 @@ class _TopBar extends StatelessWidget {
     required this.actualWeek,
     this.isViewingVacation = false,
     this.isTodayOnVacation = false,
+    this.isNotStarted = false,
     this.canGoPrevious = false,
     this.canGoNext = false,
     required this.onPreviousWeek,
@@ -82,6 +84,8 @@ class _TopBar extends StatelessWidget {
                           child: Text(
                             isViewingVacation
                                 ? l10n.onVacation
+                                : isNotStarted
+                                ? l10n.notStarted
                                 : l10n.currentWeek(visibleWeek),
                             textAlign: TextAlign.center,
                             maxLines: 1,
@@ -108,7 +112,10 @@ class _TopBar extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 3),
-                      if (isTodayOnVacation)
+                      if (isNotStarted)
+                        // 未开学：没有「当前周」概念，不显示本周徽章。
+                        const SizedBox.shrink()
+                      else if (isTodayOnVacation)
                         const _VacationBadge()
                       else
                         _WeekBadge(

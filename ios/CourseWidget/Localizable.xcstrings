@@ -27,7 +27,7 @@
     },
     "widget.enjoyVacation" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Enjoy your break" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Enjoy your vacation" } },
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "享受假期～" } }
       }
     },
@@ -40,7 +40,7 @@
     "widget.noClassesToday" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "No classes today" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天没课" } }
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天没有课程" } }
       }
     },
     "widget.noClassesTomorrow" : {
@@ -49,9 +49,15 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "明天没课" } }
       }
     },
+    "widget.noSchedule" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No schedule" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "暂无课表" } }
+      }
+    },
     "widget.onVacation" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "On break" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "On vacation" } },
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "放假中" } }
       }
     },
@@ -113,6 +119,12 @@
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Period %d" } },
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "第%d节" } }
+      }
+    },
+    "widget.syncSchedule" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open the app to sync your schedule" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "打开 App 同步课表" } }
       }
     },
     "widget.todayClassesFinished" : {

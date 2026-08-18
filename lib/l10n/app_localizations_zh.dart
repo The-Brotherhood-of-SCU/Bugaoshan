@@ -511,6 +511,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get notStarted => '未开学';
+
+  @override
   String get thisWeek => '本周';
 
   @override

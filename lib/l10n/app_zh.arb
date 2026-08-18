@@ -204,6 +204,7 @@
     "saturday": "周六",
     "sunday": "周日",
     "currentWeek": "第 {week} 周",
+    "notStarted": "未开学",
     "thisWeek": "本周",
     "weekRange": "{start}-{end} 周",
     "@weekRange": {

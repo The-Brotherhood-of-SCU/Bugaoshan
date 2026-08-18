@@ -170,7 +170,9 @@ object WidgetDataLoader {
             val currentHour = now.get(Calendar.HOUR_OF_DAY)
             val currentMinute = now.get(Calendar.MINUTE)
             val currentTimeMinutes = currentHour * 60 + currentMinute
+            val hadCoursesToday = courses.length() > 0
             courses = attachTimesAndStatuses(courses, timeSlots, currentTimeMinutes, false)
+            var allClassesFinished = hadCoursesToday && courses.length() == 0
             var showingTomorrow = false
             var tomorrowCal: Calendar? = null
             var weekForTomorrow = currentWeek
@@ -191,9 +193,12 @@ object WidgetDataLoader {
                             loadCoursesForSelectedSchedule(currentScheduleId) { scheduleId ->
                                 queryCourses(db, scheduleId, nextDayOfWeek, weekForTomorrow)
                             }
+                        showingTomorrow = true
+                        allClassesFinished = false
                         if (tomorrowCourses.length() > 0) {
                             courses = attachTimesAndStatuses(tomorrowCourses, timeSlots, null, true)
-                            showingTomorrow = true
+                        } else {
+                            courses = JSONArray()
                         }
                     }
                 } catch (e: Exception) {
@@ -236,6 +241,10 @@ object WidgetDataLoader {
                 headerTitle = context.getString(R.string.widget_header_title),
                 emptyText = if (onVacation) {
                     context.getString(R.string.widget_vacation_hint)
+                } else if (showingTomorrow) {
+                    context.getString(R.string.widget_empty_tomorrow)
+                } else if (allClassesFinished) {
+                    context.getString(R.string.widget_all_finished)
                 } else {
                     context.getString(R.string.widget_empty_today)
                 },

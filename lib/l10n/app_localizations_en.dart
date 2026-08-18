@@ -527,6 +527,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get notStarted => 'Not Started';
+
+  @override
   String get thisWeek => 'This week';
 
   @override
