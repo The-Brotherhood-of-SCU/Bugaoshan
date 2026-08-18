@@ -32,7 +32,9 @@ dependencies:
   archive: ^4.0.9
   os_type: ^0.2.2
   crypto: ^3.0.0
-  file_picker: ^12.0.0
+  # 降到 11.x：12.x 引入的 windows_file_picker 依赖 win32 ^6，与 ohos 移植版
+  # 插件链（win32 ^5）冲突；app 只用了 11.0 就有的 FilePicker.saveFile。
+  file_picker: ^11.0.3
   fl_chart: ^1.2.0
   flutter_markdown_plus: ^1.0.7
   image_picker: ^1.2.2
@@ -51,6 +53,71 @@ dependencies:
   tyme: ^1.4.4
   json_annotation: ^4.12.0
   device_info_plus: ^13.2.0
+  # ===== OpenHarmony 平台插件实现 =====
+  # pub.dev 上的官方包均未声明 ohos 平台实现，原 hap 能运行是因为作者构建时
+  # 临时加入了鸿蒙适配版插件。以下 ohos 实现包来自 openharmony-sig 的
+  # gitcode 移植仓库，均以 git 方式引入；主包 API 不变，Dart 代码无需改动。
+  shared_preferences_ohos:
+    git:
+      url: https://gitcode.com/openharmony-sig/flutter_packages.git
+      path: packages/shared_preferences/shared_preferences_ohos
+  url_launcher_ohos:
+    git:
+      url: https://gitcode.com/openharmony-sig/flutter_packages.git
+      path: packages/url_launcher/url_launcher_ohos
+  image_picker_ohos:
+    git:
+      url: https://gitcode.com/openharmony-sig/flutter_packages.git
+      path: packages/image_picker/image_picker_ohos
+
+# os_type 的 ohos 模块未声明对 @ohos/flutter_ohos 的依赖，导致 HarmonyOS
+# 构建报 "Cannot find module '@ohos/flutter_ohos'"。本地副本（third_party/os_type）
+# 已补上该声明，此处用 path 覆盖锁定修复版本；上游修复后可移除此覆盖。
+dependency_overrides:
+  os_type:
+    path: third_party/os_type
+  # path_provider 主包也换成鸿蒙移植版（其内部已声明 ohos 默认实现并自带
+  # path_provider_ohos git 依赖）。注意 URL / path 必须与 share_plus 移植版
+  # 的接口包内写法完全一致，否则 pub 视为不同来源导致冲突。
+  path_provider:
+    git:
+      url: https://gitcode.com/openharmony-sig/flutter_packages.git
+      path: packages/path_provider/path_provider
+  # ===== OpenHarmony 平台插件覆盖 =====
+  # sqflite / share_plus 的 ohos 支持直接做在移植版主包里（而非独立 _ohos
+  # 实现包），因此覆盖主包本身。版本语义与 pub.dev 版保持一致：sqflite 同为
+  # 2.4.2；share_plus 为 12.0.1（app 用的 SharePlus.instance/ShareParams API
+  # 在 12.x 已齐备）。
+  sqflite:
+    git:
+      url: https://gitcode.com/openharmony-sig/flutter_sqflite.git
+      path: sqflite
+      ref: br_v2.4.2_ohos
+  share_plus:
+    git:
+      url: https://gitcode.com/openharmony-sig/flutter_plus_plugins.git
+      path: packages/share_plus/share_plus
+      ref: br_share_plus-v12.0.1_ohos
+  # package_info_plus 同理换成鸿蒙移植版（9.0.0，app 用到的字段全部兼容）。
+  package_info_plus:
+    git:
+      url: https://gitcode.com/openharmony-sig/flutter_plus_plugins.git
+      path: packages/package_info_plus/package_info_plus
+      ref: br_package_info_plus-v9.0.0_ohos
+  # pub.dev 与 gitcode 上的 flutter_secure_storage_ohos 均为 Dart 2 时代约束
+  # （sdk <3.0.0、platform_interface ^1.0.1），无法与本工程共存；third_party
+  # 下的副本已放宽约束并对齐 platform_interface 2.x。注意：该副本只声明 ohos
+  # 平台，构建 Android/iOS/桌面端前需临时移除此覆盖。
+  flutter_secure_storage:
+    path: third_party/flutter_secure_storage
+  # device_info_plus 换成鸿蒙移植版（12.3.0）。它只被 Android 分支调用
+  # （Platform.isAndroid 守卫），降级无影响；同时消除了它与 share_plus 移植版
+  # 之间 win32 5.x/6.x 的冲突（两者 Windows 辅助代码均只能编译 win32 5.x）。
+  device_info_plus:
+    git:
+      url: https://gitcode.com/openharmony-sig/flutter_plus_plugins.git
+      path: packages/device_info_plus/device_info_plus
+      ref: br_device_info_plus-v12.3.0_ohos
 
 dev_dependencies:
   flutter_test:

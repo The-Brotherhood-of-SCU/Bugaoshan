@@ -1,0 +1,10 @@
+{
+  "module": {
+    "name": "os_type",
+    "type": "har",
+    "deviceTypes": [
+      "default",
+      "tablet"
+    ]
+  }
+}

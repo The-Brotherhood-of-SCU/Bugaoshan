@@ -193,7 +193,8 @@ class CalendarExportUtils {
   }) async {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-    Uri? destinationPath;
+    // file_picker 11.x 的 saveFile 返回 String?（12.x 改为 Uri?，当前用 11.x）。
+    String? destinationPath;
     try {
       destinationPath = await FilePicker.saveFile(
         dialogTitle: l10n.exportScheduleAsIcsTo,

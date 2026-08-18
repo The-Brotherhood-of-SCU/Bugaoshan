@@ -1,0 +1,39 @@
+name: os_type
+description: "Useful for OS and web environment detection, supports HarmonyOS."
+version: 0.2.2
+repository: https://github.com/qinshah/os_type
+
+environment:
+  sdk: "^3.0.0"
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
+  plugin_platform_interface: ^2.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        dartPluginClass: OsTypePlugin
+      ios:
+        dartPluginClass: OsTypePlugin
+      linux:
+        dartPluginClass: OsTypePlugin
+      windows:
+        dartPluginClass: OsTypePlugin
+      macos:
+        dartPluginClass: OsTypePlugin
+      web:
+        pluginClass: OsTypePluginWeb
+        fileName: src/os_type_plugin_web.dart
+      ohos:
+        pluginClass: OsTypePlugin

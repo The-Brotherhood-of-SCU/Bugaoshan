@@ -1,0 +1,26 @@
+name: flutter_secure_storage
+description: >-
+  Flutter Secure Storage 的 OpenHarmony 适配版。
+  基于 gitcode.com/openharmony-sig/fluttertpc_flutter_secure_storage
+  （flutter_secure_storage_ohos 1.0.0）改造：包名改回 flutter_secure_storage
+  以便作为 app-facing 包被 dependency_overrides 引用；SDK 约束放宽至 Dart 3.x；
+  platform_interface 升级至 ^2.0.1。仅声明 ohos 平台，其他平台构建请勿使用本覆盖。
+version: 10.0.0
+publish_to: none
+
+environment:
+  sdk: '>=3.5.0 <4.0.0'
+  flutter: '>=3.7.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_secure_storage_platform_interface: ^2.0.1
+  plugin_platform_interface: ^2.0.1
+
+flutter:
+  plugin:
+    platforms:
+      ohos:
+        package: com.example.flutter_secure_storage_ohos
+        pluginClass: FlutterSecureStorageOhosPlugin
