@@ -1,4 +1,5 @@
 import java.util.Properties
+import com.android.build.gradle.internal.api.ApkVariantOutputImpl
 
 plugins {
     id("com.android.application")
@@ -70,6 +71,19 @@ android {
     packaging {
         jniLibs {
             useLegacyPackaging = true
+        }
+    }
+}
+
+// ABI split 版本号方案（与 metadata/io.github.the_brotherhood_of_scu.bugaoshan.yml 一致）：
+// versionCode = base + abiCode，base 来自 pubspec.yaml 的 +N / flutter build --build-number
+val abiCodes = mapOf("armeabi-v7a" to 1000, "arm64-v8a" to 2000, "x86_64" to 4000)
+android.applicationVariants.configureEach {
+    val variant = this
+    variant.outputs.forEach { output ->
+        val abiVersionCode = abiCodes[output.filters.find { it.filterType == "ABI" }?.identifier]
+        if (abiVersionCode != null) {
+            (output as ApkVariantOutputImpl).versionCodeOverride = variant.versionCode + abiVersionCode
         }
     }
 }
