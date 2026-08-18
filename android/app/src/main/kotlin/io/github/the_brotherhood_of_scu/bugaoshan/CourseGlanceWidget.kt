@@ -17,9 +17,9 @@ import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.cornerRadius
+import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.appwidget.lazy.items
-import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -738,7 +738,6 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     )
                 }
             } else {
-                // 课程列表：用 LazyColumn 支持滚动查看全部课程
                 LazyColumn(modifier = GlanceModifier.fillMaxSize()) {
                     items(courses.length()) { index ->
                         val course = courses.getJSONObject(index)
