@@ -18,8 +18,6 @@ import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
-import androidx.glance.appwidget.lazy.LazyColumn
-import androidx.glance.appwidget.lazy.items
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -35,6 +33,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.the_brotherhood_of_scu.bugaoshan.R
@@ -74,6 +73,10 @@ private val TITLE_FONT_SIZE_SP = 14.sp
 private val META_FONT_SIZE_SP = 13.sp
 private val META_SMALL_FONT_SIZE_SP = 11.sp
 private val EMPTY_FONT_SIZE_SP = 13.sp
+
+// 小组件最多渲染的课程数：避免 RemoteViews 元素过多导致系统「无法添加微件」。
+// 小组件空间有限，超出的课程本也显示不下。
+private const val MAX_VISIBLE_COURSES = 6
 
 // Cached layout parameters per widget instance
 data class CachedLayout(
@@ -737,8 +740,13 @@ class CourseGlanceWidget : GlanceAppWidget() {
                     )
                 }
             } else {
-                LazyColumn(modifier = GlanceModifier.fillMaxSize()) {
-                    items(courses.length()) { index ->
+                // 用普通 Column 而非 LazyColumn：Glance 1.1.x 的 LazyColumn 在
+                // SizeMode.Exact 下渲染 RemoteViews 存在兼容问题，会导致
+                // 系统提示「无法添加微件」。课程数量有限（一天最多十余节），
+                // 直接渲染即可。
+                val visibleCount = minOf(courses.length(), MAX_VISIBLE_COURSES)
+                Column(modifier = GlanceModifier.fillMaxSize()) {
+                    for (index in 0 until visibleCount) {
                         val course = courses.getJSONObject(index)
                         Box(modifier = GlanceModifier.padding(vertical = ITEM_VERTICAL_PADDING_DP)) {
                             CourseCard(
@@ -785,7 +793,10 @@ class CourseGlanceWidget : GlanceAppWidget() {
         val rawColor = course.optInt("colorValue", 0)
         val indicatorColor = when {
             isTomorrow -> ColorProvider(R.color.widget_tomorrow_accent)
-            (rawColor ushr 24) != 0 -> ColorProvider(rawColor)
+            // rawColor 是课程自定义 ARGB 颜色值（如 0xff9c27b0），需转为 Compose Color。
+            // 直接传 Int 会被 Glance 当作 color resource ID，渲染时 Resources 找不到
+            // → RemoteViews$ActionException → 系统提示「无法添加微件」。
+            (rawColor ushr 24) != 0 -> ColorProvider(Color(rawColor))
             else -> ColorProvider(R.color.widget_header_default)
         }
         val nameColor = if (isTomorrow) R.color.widget_tomorrow_text_primary else R.color.widget_text_primary
