@@ -85,6 +85,34 @@ class AppLocalizationsZh extends AppLocalizations {
   String get widgetShowTomorrowAfterEnd => '当天课程结束后显示第二天课程';
 
   @override
+  String get widgetAppearanceTitle => '小组件外观';
+
+  @override
+  String get widgetAppearanceDescription => '统一调整本设备上的所有不高山课表小组件。';
+
+  @override
+  String get widgetColorStyle => '配色';
+
+  @override
+  String get widgetColorful => '课程色彩';
+
+  @override
+  String get widgetMonochrome => '单色';
+
+  @override
+  String get widgetDensity => '信息密度';
+
+  @override
+  String get widgetDensityStandard => '标准';
+
+  @override
+  String get widgetDensityCompact => '紧凑';
+
+  @override
+  String get widgetSystemAppearanceHint =>
+      '在 iOS 26 及更高版本中，主屏幕的透明与着色外观会自动使用系统玻璃或着色效果。';
+
+  @override
   String get onboardingSkip => '跳过';
 
   @override

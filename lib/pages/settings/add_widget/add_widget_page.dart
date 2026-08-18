@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/models/widget_appearance.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
@@ -137,6 +138,118 @@ class _AddWidgetContentState extends State<AddWidgetContent>
     );
   }
 
+  void _syncWidgetAppearance(AppConfigProvider appConfig) {
+    unawaited(
+      getIt<WidgetUpdateService>().syncWidgetAppearance(
+        colorStyle: appConfig.widgetColorStyle.value,
+        density: appConfig.widgetDensity.value,
+      ),
+    );
+  }
+
+  Widget _buildAppearanceCard(
+    BuildContext context,
+    AppLocalizations localizations,
+    AppConfigProvider appConfig,
+  ) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return StyledCard(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              localizations.widgetAppearanceTitle,
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              localizations.widgetAppearanceDescription,
+              style: textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(localizations.widgetColorStyle, style: textTheme.labelLarge),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: SegmentedButton<WidgetColorStyle>(
+                segments: [
+                  ButtonSegment(
+                    value: WidgetColorStyle.colorful,
+                    icon: const Icon(Icons.palette_outlined),
+                    label: Text(localizations.widgetColorful),
+                  ),
+                  ButtonSegment(
+                    value: WidgetColorStyle.monochrome,
+                    icon: const Icon(Icons.tonality_outlined),
+                    label: Text(localizations.widgetMonochrome),
+                  ),
+                ],
+                selected: {appConfig.widgetColorStyle.value},
+                onSelectionChanged: (selection) {
+                  appConfig.widgetColorStyle.value = selection.single;
+                  _syncWidgetAppearance(appConfig);
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(localizations.widgetDensity, style: textTheme.labelLarge),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: SegmentedButton<WidgetDensity>(
+                segments: [
+                  ButtonSegment(
+                    value: WidgetDensity.standard,
+                    icon: const Icon(Icons.view_agenda_outlined),
+                    label: Text(localizations.widgetDensityStandard),
+                  ),
+                  ButtonSegment(
+                    value: WidgetDensity.compact,
+                    icon: const Icon(Icons.density_small_outlined),
+                    label: Text(localizations.widgetDensityCompact),
+                  ),
+                ],
+                selected: {appConfig.widgetDensity.value},
+                onSelectionChanged: (selection) {
+                  appConfig.widgetDensity.value = selection.single;
+                  _syncWidgetAppearance(appConfig);
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.auto_awesome_outlined,
+                  size: 18,
+                  color: colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    localizations.widgetSystemAppearanceHint,
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _pinWidget(BuildContext context, WidgetSize size) async {
     final localizations = AppLocalizations.of(context)!;
     final service = getIt<WidgetUpdateService>();
@@ -249,7 +362,11 @@ class _AddWidgetContentState extends State<AddWidgetContent>
         _platform == TargetPlatform.iOS || _platform == TargetPlatform.macOS;
 
     return ListenableBuilder(
-      listenable: appConfig.widgetShowTomorrow,
+      listenable: Listenable.merge([
+        appConfig.widgetShowTomorrow,
+        appConfig.widgetColorStyle,
+        appConfig.widgetDensity,
+      ]),
       builder: (context, _) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -298,6 +415,10 @@ class _AddWidgetContentState extends State<AddWidgetContent>
             // Consolidated single card with size choices (Android only)
             if (isAndroid) _WidgetPickerCard(onPin: _pinWidget),
             if (isAndroid) const SizedBox(height: 16),
+            if (_platform == TargetPlatform.iOS) ...[
+              _buildAppearanceCard(context, localizations, appConfig),
+              const SizedBox(height: 16),
+            ],
             _buildShowTomorrowSwitch(context, localizations),
             if (isAndroid) ...[
               const SizedBox(height: 16),

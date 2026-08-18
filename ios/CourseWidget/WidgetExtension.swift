@@ -568,6 +568,35 @@ func shouldShowTomorrow() -> Bool {
     return sharedDefaults.bool(forKey: "widget_show_tomorrow")
 }
 
+enum WidgetColorStyle: Int {
+    case colorful
+    case monochrome
+}
+
+enum WidgetDensity: Int {
+    case standard
+    case compact
+}
+
+struct WidgetAppearance {
+    let colorStyle: WidgetColorStyle
+    let density: WidgetDensity
+}
+
+func loadWidgetAppearance() -> WidgetAppearance {
+    guard let sharedDefaults = UserDefaults(suiteName: appGroupId) else {
+        return WidgetAppearance(colorStyle: .colorful, density: .standard)
+    }
+    return WidgetAppearance(
+        colorStyle: WidgetColorStyle(
+            rawValue: sharedDefaults.integer(forKey: "widget_color_style")
+        ) ?? .colorful,
+        density: WidgetDensity(
+            rawValue: sharedDefaults.integer(forKey: "widget_density")
+        ) ?? .standard
+    )
+}
+
 func loadWidgetData() -> (courses: [Course], dateText: String, weekText: String, isTomorrow: Bool, nextTransition: Date?, isOnVacation: Bool)? {
     print("BugaoShan Widget: loadWidgetData() called")
 
@@ -813,16 +842,19 @@ struct CourseProvider: TimelineProvider {
 
 // 桌面小组件
 struct DesktopWidgetView: View {
+    @Environment(\.widgetRenderingMode) private var widgetRenderingMode
+
     var entry: CourseProvider.Entry
     var widgetFamily: WidgetFamily
+    var appearance: WidgetAppearance
 
     var body: some View {
         // iOS 17 以后系统自带了 widget margin (约16px)。
         // 如果再加一层外边距会导致内容被过度挤压。建议移除或大幅减小这里的手动 padding。
         let widgetPadding: CGFloat = widgetFamily == .systemSmall ? 0 : 2
 
-        // 适当增大最外层间距，让内容呼吸感更强
-        VStack(alignment: .leading, spacing: widgetFamily == .systemSmall ? 8 : 12) {
+        // 标准模式保留完整信息，紧凑模式缩短间距以容纳更多课程。
+        VStack(alignment: .leading, spacing: outerSpacing) {
             // 1. 动态头部
             HStack {
                 if widgetFamily == .systemLarge {
@@ -857,13 +889,19 @@ struct DesktopWidgetView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                 Spacer(minLength: 0)
             } else {
-                // 中组件限制为2节，大组件限制为6节
-                let maxCourses = (widgetFamily == .systemSmall || widgetFamily == .systemMedium) ? 2 : 6
+                let maxCourses = maximumCourseCount
                 let displayCourses = Array(displayableCourses.prefix(maxCourses))
 
-                VStack(alignment: .leading, spacing: widgetFamily == .systemSmall ? 8 : 10) {
+                VStack(alignment: .leading, spacing: courseSpacing) {
                     ForEach(displayCourses.indices, id: \.self) { index in
-                        CourseCard(course: displayCourses[index], isTomorrow: entry.isTomorrow, compact: widgetFamily == .systemSmall)
+                        CourseCard(
+                            course: displayCourses[index],
+                            isTomorrow: entry.isTomorrow,
+                            compact: usesCompactCards,
+                            showLocation: appearance.density == .standard,
+                            colorStyle: appearance.colorStyle,
+                            isFullColorAppearance: widgetRenderingMode == .fullColor
+                        )
                     }
                 }
                 // 底部剩余课程提示
@@ -881,6 +919,35 @@ struct DesktopWidgetView: View {
             Spacer(minLength: 0)
         }
         .padding(widgetPadding)
+    }
+
+    private var outerSpacing: CGFloat {
+        if widgetFamily == .systemSmall || appearance.density == .compact {
+            return 8
+        }
+        return 12
+    }
+
+    private var courseSpacing: CGFloat {
+        if widgetFamily == .systemSmall {
+            return appearance.density == .compact ? 5 : 8
+        }
+        return appearance.density == .compact ? 6 : 10
+    }
+
+    private var usesCompactCards: Bool {
+        widgetFamily == .systemSmall || appearance.density == .compact
+    }
+
+    private var maximumCourseCount: Int {
+        switch widgetFamily {
+            case .systemSmall:
+                return 2
+            case .systemMedium:
+                return appearance.density == .compact ? 3 : 2
+            default:
+                return appearance.density == .compact ? 7 : 6
+        }
     }
 
     private var emptyStateText: String {
@@ -1005,7 +1072,11 @@ struct CourseWidgetEntryView: View {
                 LockScreenRectangularView(entry: entry)
             default:
                 // 桌面小组件视图
-                DesktopWidgetView(entry: entry, widgetFamily: widgetFamily)
+                DesktopWidgetView(
+                    entry: entry,
+                    widgetFamily: widgetFamily,
+                    appearance: loadWidgetAppearance()
+                )
         }
     }
 }
@@ -1014,6 +1085,9 @@ struct CourseCard: View {
     let course: Course
     let isTomorrow: Bool
     let compact: Bool
+    let showLocation: Bool
+    let colorStyle: WidgetColorStyle
+    let isFullColorAppearance: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: compact ? 2 : 4) {
@@ -1021,15 +1095,17 @@ struct CourseCard: View {
             Text(course.name)
                 .font(compact ? .footnote : .subheadline)
                 .fontWeight(course.status == .inProgress ? .bold : .medium)
-                .foregroundColor(isTomorrow ? .orange : .primary)
-                .lineLimit(2)
+                .foregroundColor(
+                    isTomorrow && usesCourseColors ? .orange : .primary
+                )
+                .lineLimit(compact ? 1 : 2)
 
             // 显示具体小时分钟，如果解析失败则回退到"第x-y节"
             let timeDisplay = course.timeText ?? formatCourseTime()
 
             if compact {
                 // Small 尺寸：分三行，地点与时间独立
-                if !course.location.isEmpty {
+                if showLocation && !course.location.isEmpty {
                     Text(course.location)
                         .font(.caption2)
                         .foregroundColor(.secondary)
@@ -1037,13 +1113,23 @@ struct CourseCard: View {
                 }
                 Text(timeDisplay)
                     .font(.caption2)
-                    .foregroundColor(course.status == .inProgress ? courseColor : .secondary)
+                    .foregroundColor(
+                        course.status == .inProgress
+                            ? resolvedCourseColor
+                            : .secondary
+                    )
                     .lineLimit(1)
             } else {
                 // Medium / Large 尺寸：合并为一行
-                Text("\(timeDisplay) · \(course.location)")
+                Text(showLocation && !course.location.isEmpty
+                    ? "\(timeDisplay) · \(course.location)"
+                    : timeDisplay)
                     .font(.caption)
-                    .foregroundColor(course.status == .inProgress ? courseColor : .secondary)
+                    .foregroundColor(
+                        course.status == .inProgress
+                            ? resolvedCourseColor
+                            : .secondary
+                    )
                     .lineLimit(2)
             }
         }
@@ -1053,15 +1139,27 @@ struct CourseCard: View {
         .padding(.leading, compact ? 9 : 12)
         .overlay(
             RoundedRectangle(cornerRadius: 2)
-                .fill(courseColor)
-                .frame(width: compact ? 3 : 4),
+                .fill(resolvedCourseColor)
+                .frame(width: compact ? 3 : 4)
+                .widgetAccentable(),
             alignment: .leading
         )
         // 由于 HStack 自动包裹高度，竖线会自动与 VStack 等高。无需额外设定高度。
-        .opacity(course.status == .completed ? 0.4 : 1.0)
+        .opacity(
+            course.status == .completed
+                ? (isFullColorAppearance ? 0.45 : 0.6)
+                : 1.0
+        )
     }
 
-    var courseColor: Color {
+    private var usesCourseColors: Bool {
+        colorStyle == .colorful && isFullColorAppearance
+    }
+
+    private var resolvedCourseColor: Color {
+        guard usesCourseColors else {
+            return .primary.opacity(0.72)
+        }
         let argb = UInt32(bitPattern: Int32(truncatingIfNeeded: course.colorValue))
         if argb == 0 || (argb >> 24) == 0 {
             return isTomorrow ? .orange : .blue
@@ -1096,6 +1194,8 @@ struct CourseWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: CourseProvider()) { entry in
             CourseWidgetEntryView(entry: entry)
+                // WidgetKit removes this background for the system Clear and
+                // Tinted appearances, applying Liquid Glass or the system tint.
                 .containerBackground(Color(.systemBackground), for: .widget)
         }
         .configurationDisplayName(LocalizedStringKey("widget.configurationName"))

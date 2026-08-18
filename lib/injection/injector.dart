@@ -321,6 +321,12 @@ void _configureAsyncDependencies() {
         await service.syncWidgetShowTomorrow(
           appConfig.widgetShowTomorrow.value,
         );
+        if (Platform.isIOS) {
+          await service.syncWidgetAppearance(
+            colorStyle: appConfig.widgetColorStyle.value,
+            density: appConfig.widgetDensity.value,
+          );
+        }
       } catch (e) {
         debugPrint('Failed to sync initial widget setting: $e');
       }
