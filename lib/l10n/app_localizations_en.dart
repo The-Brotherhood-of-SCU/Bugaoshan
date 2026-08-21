@@ -91,6 +91,35 @@ class AppLocalizationsEn extends AppLocalizations {
       'Show next day\'s courses after today\'s classes finish';
 
   @override
+  String get widgetAppearanceTitle => 'Widget Appearance';
+
+  @override
+  String get widgetAppearanceDescription =>
+      'Customize every Bugaoshan course widget on this device.';
+
+  @override
+  String get widgetColorStyle => 'Color';
+
+  @override
+  String get widgetColorful => 'Course colors';
+
+  @override
+  String get widgetMonochrome => 'Monochrome';
+
+  @override
+  String get widgetDensity => 'Information density';
+
+  @override
+  String get widgetDensityStandard => 'Standard';
+
+  @override
+  String get widgetDensityCompact => 'Compact';
+
+  @override
+  String get widgetSystemAppearanceHint =>
+      'On iOS 26 and later, Clear and Tinted Home Screen appearances automatically use the system glass or tint treatment.';
+
+  @override
   String get onboardingSkip => 'Skip';
 
   @override
@@ -1479,9 +1508,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get calendarRefreshSuccess => 'Calendar updated';
-
-  @override
-  String get loginFailed => 'Login failed';
 
   @override
   String get invalidCaptcha => 'Invalid captcha, please try again';

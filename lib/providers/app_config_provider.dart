@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Colors, Curve, Curves;
+import 'package:bugaoshan/models/widget_appearance.dart';
 import 'package:bugaoshan/utils/locale_utils.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,6 +24,8 @@ const String _keyVisibleDockIds = 'visibleDockIds';
 const String _keyAcceptedEulaVersion = 'acceptedEulaVersion';
 const String _keyThemeColorMode = 'themeColorMode';
 const String _keyWidgetShowTomorrow = 'widget_show_tomorrow';
+const String _keyWidgetColorStyle = 'widget_color_style';
+const String _keyWidgetDensity = 'widget_density';
 const String _keyUsePreviewUpdateSource = 'usePreviewUpdateSource';
 const String _keyShowTeacherName = 'showTeacherName';
 const String _keyShowLocation = 'showLocation';
@@ -74,6 +77,10 @@ class AppConfigProvider {
   final ValueNotifier<ThemeColorMode> themeColorMode =
       ValueNotifier<ThemeColorMode>(ThemeColorMode.system);
   final ValueNotifier<bool> widgetShowTomorrow = ValueNotifier<bool>(false);
+  final ValueNotifier<WidgetColorStyle> widgetColorStyle =
+      ValueNotifier<WidgetColorStyle>(WidgetColorStyle.colorful);
+  final ValueNotifier<WidgetDensity> widgetDensity =
+      ValueNotifier<WidgetDensity>(WidgetDensity.standard);
   final ValueNotifier<bool> usePreviewUpdateSource = ValueNotifier<bool>(false);
   final ValueNotifier<bool> useGoogleFonts = ValueNotifier<bool>(true);
   final ValueNotifier<bool> showTeacherName = ValueNotifier<bool>(true);
@@ -133,6 +140,17 @@ class AppConfigProvider {
         : ThemeColorMode.custom;
     widgetShowTomorrow.value =
         _sharedPreferences.getBool(_keyWidgetShowTomorrow) ?? false;
+    final widgetColorStyleIndex =
+        _sharedPreferences.getInt(_keyWidgetColorStyle) ?? 0;
+    widgetColorStyle.value =
+        widgetColorStyleIndex < WidgetColorStyle.values.length
+        ? WidgetColorStyle.values[widgetColorStyleIndex]
+        : WidgetColorStyle.colorful;
+    final widgetDensityIndex =
+        _sharedPreferences.getInt(_keyWidgetDensity) ?? 0;
+    widgetDensity.value = widgetDensityIndex < WidgetDensity.values.length
+        ? WidgetDensity.values[widgetDensityIndex]
+        : WidgetDensity.standard;
     usePreviewUpdateSource.value =
         _sharedPreferences.getBool(_keyUsePreviewUpdateSource) ?? false;
     useGoogleFonts.value =
@@ -235,6 +253,15 @@ class AppConfigProvider {
         _keyWidgetShowTomorrow,
         widgetShowTomorrow.value,
       );
+    });
+    widgetColorStyle.addListener(() {
+      _sharedPreferences.setInt(
+        _keyWidgetColorStyle,
+        widgetColorStyle.value.index,
+      );
+    });
+    widgetDensity.addListener(() {
+      _sharedPreferences.setInt(_keyWidgetDensity, widgetDensity.value.index);
     });
     usePreviewUpdateSource.addListener(() {
       _sharedPreferences.setBool(

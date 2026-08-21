@@ -35,6 +35,15 @@
     "@widgetShowTomorrowAfterEnd": {
         "description": "Toggle to show next day's courses in the home screen widget when today's classes are finished."
     },
+    "widgetAppearanceTitle": "Widget Appearance",
+    "widgetAppearanceDescription": "Customize every Bugaoshan course widget on this device.",
+    "widgetColorStyle": "Color",
+    "widgetColorful": "Course colors",
+    "widgetMonochrome": "Monochrome",
+    "widgetDensity": "Information density",
+    "widgetDensityStandard": "Standard",
+    "widgetDensityCompact": "Compact",
+    "widgetSystemAppearanceHint": "On iOS 26 and later, Clear and Tinted Home Screen appearances automatically use the system glass or tint treatment.",
     "onboardingSkip": "Skip",
     "onboardingNext": "Next",
     "onboardingStart": "Get Started",
@@ -556,7 +565,6 @@
     "captchaLoadFailed": "Failed to load captcha",
     "networkError": "Network error",
     "calendarRefreshSuccess": "Calendar updated",
-    "loginFailed": "Login failed",
     "invalidCaptcha": "Invalid captcha, please try again",
     "loginFailedWillLock": "Login failed, {count} more attempt(s) will lock your account",
     "@loginFailedWillLock": {

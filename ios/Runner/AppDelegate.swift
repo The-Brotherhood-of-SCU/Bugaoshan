@@ -67,6 +67,24 @@ import WidgetKit
                     return
                 }
                 self?.syncWidgetShowTomorrow(value: value, result: result)
+            case "syncWidgetAppearance":
+                guard
+                    let arguments = call.arguments as? [String: Any],
+                    let colorStyle = arguments["colorStyle"] as? Int,
+                    let density = arguments["density"] as? Int
+                else {
+                    result(FlutterError(
+                        code: "INVALID_ARGUMENT",
+                        message: "Color style and density are required",
+                        details: nil
+                    ))
+                    return
+                }
+                self?.syncWidgetAppearance(
+                    colorStyle: colorStyle,
+                    density: density,
+                    result: result
+                )
             default:
                 result(FlutterMethodNotImplemented)
             }
@@ -92,6 +110,29 @@ import WidgetKit
         
         WidgetCenter.shared.reloadAllTimelines()
         
+        result(nil)
+    }
+
+    private func syncWidgetAppearance(
+        colorStyle: Int,
+        density: Int,
+        result: @escaping FlutterResult
+    ) {
+        guard let sharedDefaults = UserDefaults(suiteName: appGroupId) else {
+            result(FlutterError(
+                code: "APP_GROUP_UNAVAILABLE",
+                message: "App Group not available",
+                details: nil
+            ))
+            return
+        }
+        sharedDefaults.set(colorStyle, forKey: "widget_color_style")
+        sharedDefaults.set(density, forKey: "widget_density")
+
+        if #available(iOS 14.0, *) {
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+
         result(nil)
     }
 

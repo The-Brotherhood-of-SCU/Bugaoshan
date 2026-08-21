@@ -12,6 +12,11 @@ jobs:
   build-android:
     name: Android
     runs-on: ubuntu-latest
+    env:
+      # 与 F-Droid 构建统一走国内镜像源：提交的 pubspec.lock 是 pub.flutter-io.cn，
+      # 设置 PUB_HOSTED_URL 后 pub get 才会按 lockfile 锁定版本（否则按 pub.dev
+      # 重新解析，依赖版本随发布时间漂移，导致 kernel/libapp.so 不一致）。
+      PUB_HOSTED_URL: https://pub.flutter-io.cn
     steps:
       - uses: actions/checkout@v4
 
@@ -47,6 +52,12 @@ jobs:
           echo 'keyPassword=${{ secrets.KEY_PASSWORD }}' >> android/key.properties
           echo 'keyAlias=${{ secrets.KEY_ALIAS }}' >> android/key.properties
           echo 'storeFile=../keystore/upload-keystore.jks' >> android/key.properties
+
+      - name: Disable dartjni build-id for reproducible builds
+        run: |
+          # libdartjni.so 会按构建路径生成非确定性的 build-id，
+          # 与 F-Droid 构建机不一致，导致可复制构建逐字节比对失败。
+          sed -i -E 's/(-Wl,)(--build-id=none,)?/\1--build-id=none,/' ${PUB_CACHE:-$HOME/.pub-cache}/hosted/*/jni-*/src/CMakeLists.txt
 
       - name: Build universal APK for in-app updates
         run: |

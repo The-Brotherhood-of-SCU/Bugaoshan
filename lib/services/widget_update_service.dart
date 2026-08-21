@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:bugaoshan/models/widget_appearance.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 class WidgetUpdateService {
@@ -116,6 +117,25 @@ class WidgetUpdateService {
       }
     } catch (e, stack) {
       debugPrint('WidgetUpdate: syncWidgetShowTomorrow FAILED: $e');
+      debugPrint('WidgetUpdate: stack: $stack');
+    }
+  }
+
+  /// Syncs the visual style used by the iOS WidgetKit extension.
+  Future<void> syncWidgetAppearance({
+    required WidgetColorStyle colorStyle,
+    required WidgetDensity density,
+  }) async {
+    if (!_platformChecker() || defaultTargetPlatform != TargetPlatform.iOS) {
+      return;
+    }
+    try {
+      await _channel.invokeMethod<void>('syncWidgetAppearance', {
+        'colorStyle': colorStyle.index,
+        'density': density.index,
+      });
+    } catch (e, stack) {
+      debugPrint('WidgetUpdate: syncWidgetAppearance FAILED: $e');
       debugPrint('WidgetUpdate: stack: $stack');
     }
   }
