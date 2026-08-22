@@ -137,7 +137,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get classroomQueryDesc => '查询教室空闲、借用和上课信息';
 
   @override
-  String get utilitiesSection => '实用工具';
+  String get utilitiesSection => '实用功能';
 
   @override
   String get academicSection => '学业';
