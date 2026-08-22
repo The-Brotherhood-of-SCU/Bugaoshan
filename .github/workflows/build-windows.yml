@@ -35,7 +35,8 @@ jobs:
           flutter build windows --release \
             --dart-define=GIT_TAG=${{ steps.setup.outputs.GIT_TAG }} \
             --dart-define=GIT_COMMIT=${{ steps.setup.outputs.GIT_COMMIT }} \
-            --dart-define=GIT_COMMIT_DATE=${{ steps.setup.outputs.GIT_COMMIT_DATE }}
+            --dart-define=GIT_COMMIT_DATE=${{ steps.setup.outputs.GIT_COMMIT_DATE }} \
+            --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
         shell: bash
 
       - name: Archive Windows Release
