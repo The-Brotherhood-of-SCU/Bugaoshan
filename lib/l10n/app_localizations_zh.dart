@@ -2272,6 +2272,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get campusGridViewDesc => '校园页面使用网格布局';
 
   @override
+  String get campusSearchHint => '搜索功能';
+
+  @override
+  String get campusSearchResults => '搜索结果';
+
+  @override
+  String get campusNoSearchResults => '未找到相关功能';
+
+  @override
   String get viewChangelog => '版本更新日志';
 
   @override
