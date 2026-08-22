@@ -64,7 +64,8 @@ jobs:
           flutter build linux --release \
             --dart-define=GIT_TAG=${{ steps.setup.outputs.GIT_TAG }} \
             --dart-define=GIT_COMMIT=${{ steps.setup.outputs.GIT_COMMIT }} \
-            --dart-define=GIT_COMMIT_DATE=${{ steps.setup.outputs.GIT_COMMIT_DATE }}
+            --dart-define=GIT_COMMIT_DATE=${{ steps.setup.outputs.GIT_COMMIT_DATE }} \
+            --dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}"
 
       - name: Archive Linux Release
         run: tar -czvf linux-release.tar.gz -C build/linux/x64/release/bundle .

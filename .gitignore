@@ -33,6 +33,9 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Sentry Native runtime data (local crash sessions; never commit)
+.sentry-native/
+
 # Symbolication related
 app.*.symbols
 
