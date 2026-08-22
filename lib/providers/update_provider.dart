@@ -3,6 +3,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/release_info.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/services/download_notification_service.dart';
+import 'package:bugaoshan/services/update_checker.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/widgets/dialog/download_progress_dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
@@ -102,7 +103,10 @@ class UpdateProvider {
               hasUpdate(currentVersion, stable.tagName!))
           ? UpdateCheckResult.hasUpdate(stable)
           : UpdateCheckResult.noUpdate();
-      previewResult.value = (preview != null && preview.tagName != gitTag)
+      previewResult.value =
+          (preview != null &&
+              preview.tagName != null &&
+              isNewerPrerelease(preview.tagName, currentVersion, gitTag))
           ? UpdateCheckResult.hasUpdate(preview)
           : UpdateCheckResult.noUpdate();
       return (stable, preview);

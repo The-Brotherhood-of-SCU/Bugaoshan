@@ -90,6 +90,39 @@ bool checkHasUpdate(String currentVersion, String latestVersion) {
   return false;
 }
 
+/// 判断预发布 tag（如 `v2.3.0-pre7`）是否比当前构建更新。
+///
+/// 预发布构建的 pubspec 版本仍是上一个正式版的版本号（例如当前软件版本
+/// `2.2.0`、git tag `v2.3.0-pre7`），因此不能直接比较完整 tag 字符串；
+/// 这里提取 tag 中 `-` 之前的基础版本号（`v2.3.0-pre7` → `2.3.0`），
+/// 再与当前软件版本做语义比较。
+///
+/// 返回 `false` 的情况：
+/// - [prereleaseTag] 为 `null` 或与 [gitTag] 相同（当前构建就是该预发布版）；
+/// - tag 无法解析出基础版本号（保守处理，不提示更新）；
+/// - 基础版本号不高于当前软件版本（避免把同版本/旧版本预发布当作更新）。
+bool isNewerPrerelease(
+  String? prereleaseTag,
+  String currentVersion,
+  String gitTag,
+) {
+  if (prereleaseTag == null || prereleaseTag == gitTag) return false;
+  final baseVersion = _prereleaseBaseVersion(prereleaseTag);
+  if (baseVersion == null) return false;
+  return checkHasUpdate(currentVersion, baseVersion);
+}
+
+/// 提取预发布 tag 的基础版本号（`v2.3.0-pre7` → `2.3.0`）。
+///
+/// 无法解析时返回 `null`。
+String? _prereleaseBaseVersion(String tag) {
+  final clean = tag
+      .replaceFirst(RegExp(r'^v', caseSensitive: false), '')
+      .split('-')
+      .first;
+  return _parseVersion(clean) == null ? null : clean;
+}
+
 /// 解析语义版本号字符串为 `[major, minor, patch]`。
 ///
 /// 支持格式：`1.2.3`、`v1.2.3`、`1.2.3+4`。

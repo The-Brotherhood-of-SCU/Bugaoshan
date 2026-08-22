@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修复 iOS 小组件无课表数据时显示示例课程的问题
 - iOS 小组件假期状态改用校历数据判断
 - 统一 iOS 与安卓小组件的空状态文案并支持本地化
+- 修复开启「软件更新使用预览版源」后收不到正式版更新通知的问题
 - 修复 macOS 端课表数据库目录不可写的问题
 
 ## [2.3.0] - 2026-08-14
