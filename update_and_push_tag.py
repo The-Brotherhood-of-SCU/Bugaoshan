@@ -55,9 +55,10 @@ def split_version(version:str):
 def get_build_number(version:str)->int:
     """versionCode 基线 = a*10000 + b*100 + c。
 
-    CI 构建时 Flutter 的 --split-per-abi 会在此基础上自动加 ABI 偏移
-    (v7a +1000 / v8a +2000 / x86_64 +4000)，F-Droid 的 UpdateCheckData
-    依赖 pubspec.yaml 中的 '+N' 提取 vercode，因此发版时必须保留该后缀。
+    android/app/build.gradle.kts 的 ABI override 会在此基础上计算各 ABI 的
+    versionCode（v7a = base*10+1 / v8a = base*10+2 / x86_64 = base*10+4）。
+    F-Droid 的 UpdateCheckData 依赖 pubspec.yaml 中的 '+N' 提取 vercode，
+    因此发版时必须保留该后缀。
     """
     a, b, c = split_version(version)
     return a * 10000 + b * 100 + c
