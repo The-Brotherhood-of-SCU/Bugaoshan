@@ -153,3 +153,24 @@ jobs:
           draft: false
           prerelease: ${{ contains(steps.vars.outputs.tag, '-') }}
           generate_release_notes: false
+
+      - name: Notify documentation repository
+        uses: actions/github-script@v7
+        env:
+          DOCS_REPOSITORY: The-Brotherhood-of-SCU/Bugaoshan_docs_page
+          RELEASE_TAG: ${{ steps.vars.outputs.tag }}
+        with:
+          # 需要主仓库配置可访问文档站仓库的 DOCS_REPO_PAT Secret
+          github-token: ${{ secrets.DOCS_REPO_PAT }}
+          script: |
+            const [owner, repo] = process.env.DOCS_REPOSITORY.split('/')
+
+            await github.rest.repos.createDispatchEvent({
+              owner,
+              repo,
+              event_type: 'release_published',
+              client_payload: {
+                source_repo: `${context.repo.owner}/${context.repo.repo}`,
+                tag: process.env.RELEASE_TAG,
+              },
+            })
