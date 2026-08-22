@@ -53,7 +53,7 @@ class AppConfigProvider {
   //variable
   final ValueNotifier<Locale?> locale = ValueNotifier<Locale?>(null);
   final ValueNotifier<Duration> cardSizeAnimationDuration =
-      ValueNotifier<Duration>(const Duration(milliseconds: 300));
+      ValueNotifier<Duration>(const Duration(milliseconds: 200));
   final ValueNotifier<Color> themeColor = ValueNotifier<Color>(
     Colors.blueAccent,
   );
@@ -105,7 +105,7 @@ class AppConfigProvider {
     locale.value = parseLocale(localeString);
     cardSizeAnimationDuration.value = Duration(
       milliseconds:
-          _sharedPreferences.getInt(_keyCardSizeAnimationDuration) ?? 300,
+          _sharedPreferences.getInt(_keyCardSizeAnimationDuration) ?? 200,
     );
     themeColor.value = Color(
       _sharedPreferences.getInt(_keyThemeColor) ?? Colors.blueAccent.toARGB32(),
