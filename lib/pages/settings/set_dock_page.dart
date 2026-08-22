@@ -127,31 +127,25 @@ class _SetDockPageState extends State<SetDockPage> {
           animation: animation,
           builder: (context, child) {
             final t = Curves.easeInOut.transform(animation.value);
-            return Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppShapes.medium),
-                color: theme.colorScheme.surface,
-                boxShadow: t > 0
-                    ? [
-                        BoxShadow(
-                          color: theme.colorScheme.shadow.withValues(
-                            alpha: 0.3 * t,
-                          ),
-                          blurRadius: 8.0 * t,
-                          offset: Offset(0, 2 * t),
-                        ),
-                      ]
-                    : null,
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: Theme(
-                data: theme.copyWith(
-                  cardTheme: CardThemeData(
-                    margin: EdgeInsets.zero,
-                    elevation: 0,
-                  ),
+            if (t <= 0.0) return child!;
+
+            // 拖动时只添加柔和阴影和轻微上移，
+            // 不施加额外的 borderRadius / Clip，避免裁剪掉 StyledCard 自身的圆角。
+            return Transform.translate(
+              offset: Offset(0, -4 * t),
+              child: Container(
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme.colorScheme.shadow.withValues(
+                        alpha: 0.25 * t,
+                      ),
+                      blurRadius: 14 * t,
+                      offset: Offset(0, 5 * t),
+                    ),
+                  ],
                 ),
-                child: child!,
+                child: child,
               ),
             );
           },
