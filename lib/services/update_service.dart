@@ -260,11 +260,9 @@ class UpdateService {
   ) async {
     try {
       final release = await getLatestPrereleaseFromGitHub();
-      if (release.tagName == gitTag) {
-        //if tag equal to gitTag, no update
-        return UpdateCheckResult.noUpdate();
-      }
-      if (release.tagName != null && release.downloadUrl != null) {
+      if (release.tagName != null &&
+          release.downloadUrl != null &&
+          isNewerPrerelease(release.tagName, currentVersion, gitTag)) {
         return UpdateCheckResult.hasUpdate(release);
       }
       return UpdateCheckResult.noUpdate();
@@ -289,18 +287,28 @@ class UpdateService {
 
   /// Unified update check used by production callers (home / about pages).
   ///
-  /// When [includePreview] is true, the latest prerelease is checked; otherwise
-  /// the latest stable release. Pass [gitTag] only when [includePreview] is true
-  /// (used to suppress the "current build is itself the latest preview" case).
+  /// When [includePreview] is true, the latest prerelease is checked first;
+  /// if there is no newer prerelease (e.g. the current build is already the
+  /// latest preview, or its stable release has shipped), it falls back to the
+  /// stable channel so preview users still receive stable update notifications.
+  /// Pass [gitTag] only when [includePreview] is true (used to suppress the
+  /// "current build is itself the latest preview" case).
   Future<UpdateCheckResult> _checkForUpdate({
     required bool includePreview,
     required String currentVersion,
     String? gitTag,
-  }) {
-    if (includePreview) {
-      return checkPreviewUpdate(currentVersion, gitTag ?? '');
+  }) async {
+    if (!includePreview) {
+      return checkStableUpdate(currentVersion);
     }
-    return checkStableUpdate(currentVersion);
+    final previewResult = await checkPreviewUpdate(
+      currentVersion,
+      gitTag ?? '',
+    );
+    if (previewResult.hasUpdate) return previewResult;
+    if (previewResult.noUpdate) return checkStableUpdate(currentVersion);
+    // 预览检查出错时保留错误状态，避免把错误误报为"无更新"。
+    return previewResult;
   }
 
   Future<void> downloadAndInstall(

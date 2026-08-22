@@ -2348,6 +2348,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get campusGridViewDesc => 'Use grid layout for campus page';
 
   @override
+  String get campusSearchHint => 'Search features';
+
+  @override
+  String get campusSearchResults => 'Search Results';
+
+  @override
+  String get campusNoSearchResults => 'No matching features';
+
+  @override
   String get viewChangelog => 'Version Changelog';
 
   @override

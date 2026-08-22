@@ -150,4 +150,36 @@ void main() {
       expect(checkHasUpdate('0.5', '0.5.7'), isFalse);
     });
   });
+
+  group('isNewerPrerelease', () {
+    test('detects a newer prerelease tag on an older stable build', () {
+      // 当前稳定版 1.2.2，最新预发布 v1.2.3-pre1（基础版本 1.2.3 > 1.2.2）
+      expect(isNewerPrerelease('v1.2.3-pre1', '1.2.2', 'v1.2.2'), isTrue);
+    });
+
+    test('returns false when current build is the latest prerelease', () {
+      // 用户已安装最新预发布 v2.3.0-pre7（pubspec 版本仍是 2.2.0）
+      expect(isNewerPrerelease('v2.3.0-pre7', '2.2.0', 'v2.3.0-pre7'), isFalse);
+    });
+
+    test('returns false for a prerelease of the same version as stable', () {
+      // 当前已是稳定版 1.2.3，旧的 v1.2.3-pre1 不应被当作更新
+      expect(isNewerPrerelease('v1.2.3-pre1', '1.2.3', 'v1.2.3'), isFalse);
+    });
+
+    test('returns false for an older prerelease', () {
+      expect(isNewerPrerelease('v1.2.2-pre1', '1.2.3', 'v1.2.3'), isFalse);
+    });
+
+    test('handles null prerelease tag', () {
+      expect(isNewerPrerelease(null, '1.2.3', 'v1.2.3'), isFalse);
+    });
+
+    test('handles complex prerelease suffixes', () {
+      expect(
+        isNewerPrerelease('v2.3.0-snapshot3-test-update', '2.2.0', 'v2.2.0'),
+        isTrue,
+      );
+    });
+  });
 }

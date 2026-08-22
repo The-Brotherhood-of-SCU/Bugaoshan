@@ -76,10 +76,10 @@ class _FeedbackPageState extends State<FeedbackPage> {
         type: FileType.custom,
         allowedExtensions: const ['log', 'txt'],
       );
-      if (result == null || !mounted) return;
+      if (!mounted) return;
 
       final pickedFiles = <FeedbackLogAttachment>[];
-      for (final platformFile in result.files) {
+      for (final platformFile in result) {
         try {
           final bytes = await platformFile.readAsBytes();
           if (bytes.isEmpty) continue;

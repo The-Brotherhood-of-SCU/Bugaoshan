@@ -87,8 +87,9 @@ class CoursePageController extends ChangeNotifier {
   bool get isTodayOnVacation =>
       showVacationPage.value && actualWeek > totalWeeks;
 
-  /// 学期是否尚未开始（今天早于学期开始日）。此时顶栏显示「未开学」，
-  /// 且点击日期不做「回到当前周」跳转（学期未开始没有当前周可跳）。
+  /// 学期是否尚未开始（今天早于学期开始日）。此时顶栏主标签正常显示周数
+  /// （第 1 周），并以「未开学」徽章标注；点击日期不做「回到当前周」跳转
+  /// （学期未开始没有当前周可跳）。
   bool get isNotStarted {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
