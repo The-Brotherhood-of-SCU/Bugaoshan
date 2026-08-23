@@ -13,10 +13,8 @@ class ReleasePrepareTest(unittest.TestCase):
             root = Path(temp)
             android_dir = root / "android-apk"
             windows_dir = root / "windows-release"
-            linux_dir = root / "linux-release"
             android_dir.mkdir()
             windows_dir.mkdir()
-            linux_dir.mkdir()
 
             packages = {
                 "app-universal-release.apk": b"universal",
@@ -27,7 +25,6 @@ class ReleasePrepareTest(unittest.TestCase):
             for name, content in packages.items():
                 (android_dir / name).write_bytes(content)
             (windows_dir / "windows-release.zip").write_bytes(b"windows")
-            (linux_dir / "linux-release.tar.gz").write_bytes(b"linux")
 
             release_prepare.prepare_release_files("v2.2.0", root=root)
 

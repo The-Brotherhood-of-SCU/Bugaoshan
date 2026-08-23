@@ -60,6 +60,6 @@ DI 注册位于 `lib/injection/injector.dart`：
 
 ## CI
 
-`build-android.yml` / `build-windows.yml` / `build-linux.yml` 在 `flutter build` 时追加
+`build-android.yml` / `build-windows.yml` 在 `flutter build` 时追加
 `--dart-define=SENTRY_DSN="${{ secrets.SENTRY_DSN }}"`。`release.yml` 已 `secrets: inherit`，
 无需额外传递；仓库需在 GitHub Actions Secrets 中配置 `SENTRY_DSN`。
