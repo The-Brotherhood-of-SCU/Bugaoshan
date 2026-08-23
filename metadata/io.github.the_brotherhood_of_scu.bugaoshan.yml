@@ -90,7 +90,7 @@ Builds:
   # ----- armeabi-v7a (versionCode = base*10 + 1) -----
   - versionName: '2.3.0'
     versionCode: 203001
-    commit: v2.3.0
+    commit: aac155f743d27f380a64da3f55d3a0884912aa60
     srclibs:
       - flutter@3.44.8
     rm:
@@ -108,10 +108,8 @@ Builds:
     prebuild:
       - export repo=/home/runner/work/Bugaoshan
       - mkdir -p $repo
-      - export PUB_CACHE=/home/runner/.pub-cache
       - export PUB_HOSTED_URL=https://pub.flutter-io.cn
-      - if [ -e /home/runner/.pub-cache ] && [ ! -L /home/runner/.pub-cache ]; then rm -rf /home/runner/.pub-cache; fi
-      - if [ ! -e /home/runner/.pub-cache ]; then mkdir -p /home/vagrant/.pub-cache; ln -s /home/vagrant/.pub-cache /home/runner/.pub-cache; fi
+      - export PUB_CACHE=/home/runner/.pub-cache
       - if [ -L $$flutter$$ ]; then rm $$flutter$$; fi
       - if [ ! -e $$flutter$$ ] && [ -e /opt/hostedtoolcache/flutter/stable-3.44.8-x64 ]; then mv /opt/hostedtoolcache/flutter/stable-3.44.8-x64 $$flutter$$; fi
       - rm -rf /opt/hostedtoolcache/flutter/stable-3.44.8-x64
@@ -152,7 +150,7 @@ Builds:
   # ----- arm64-v8a (versionCode = base*10 + 2) -----
   - versionName: '2.3.0'
     versionCode: 203002
-    commit: v2.3.0
+    commit: aac155f743d27f380a64da3f55d3a0884912aa60
     srclibs:
       - flutter@3.44.8
     rm:
@@ -172,8 +170,6 @@ Builds:
       - mkdir -p $repo
       - export PUB_CACHE=/home/runner/.pub-cache
       - export PUB_HOSTED_URL=https://pub.flutter-io.cn
-      - if [ -e /home/runner/.pub-cache ] && [ ! -L /home/runner/.pub-cache ]; then rm -rf /home/runner/.pub-cache; fi
-      - if [ ! -e /home/runner/.pub-cache ]; then mkdir -p /home/vagrant/.pub-cache; ln -s /home/vagrant/.pub-cache /home/runner/.pub-cache; fi
       - if [ -L $$flutter$$ ]; then rm $$flutter$$; fi
       - if [ ! -e $$flutter$$ ] && [ -e /opt/hostedtoolcache/flutter/stable-3.44.8-x64 ]; then mv /opt/hostedtoolcache/flutter/stable-3.44.8-x64 $$flutter$$; fi
       - rm -rf /opt/hostedtoolcache/flutter/stable-3.44.8-x64
@@ -214,7 +210,7 @@ Builds:
   # ----- x86_64 (versionCode = base*10 + 4) -----
   - versionName: '2.3.0'
     versionCode: 203004
-    commit: v2.3.0
+    commit: aac155f743d27f380a64da3f55d3a0884912aa60
     srclibs:
       - flutter@3.44.8
     rm:
@@ -232,10 +228,8 @@ Builds:
     prebuild:
       - export repo=/home/runner/work/Bugaoshan
       - mkdir -p $repo
-      - export PUB_CACHE=/home/runner/.pub-cache
       - export PUB_HOSTED_URL=https://pub.flutter-io.cn
-      - if [ -e /home/runner/.pub-cache ] && [ ! -L /home/runner/.pub-cache ]; then rm -rf /home/runner/.pub-cache; fi
-      - if [ ! -e /home/runner/.pub-cache ]; then mkdir -p /home/vagrant/.pub-cache; ln -s /home/vagrant/.pub-cache /home/runner/.pub-cache; fi
+      - export PUB_CACHE=/home/runner/.pub-cache
       - if [ -L $$flutter$$ ]; then rm $$flutter$$; fi
       - if [ ! -e $$flutter$$ ] && [ -e /opt/hostedtoolcache/flutter/stable-3.44.8-x64 ]; then mv /opt/hostedtoolcache/flutter/stable-3.44.8-x64 $$flutter$$; fi
       - rm -rf /opt/hostedtoolcache/flutter/stable-3.44.8-x64
