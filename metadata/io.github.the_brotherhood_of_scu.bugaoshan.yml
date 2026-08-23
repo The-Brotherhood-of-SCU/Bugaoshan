@@ -12,6 +12,11 @@
 #   - 相同构建参数：--release --split-per-abi --obfuscate --split-debug-info
 #     + 相同的 --build-number（base）与 dart-define
 #     （GIT_TAG / GIT_COMMIT / GIT_COMMIT_DATE；均无构建时间戳等非确定性输入）
+#   - SENTRY_DSN：CI 从 GitHub Actions Secret（secrets.SENTRY_DSN）注入，本 recipe
+#     通过 build 命令里的 $SENTRY_DSN 环境变量传入；两侧值必须完全一致（DSN 值会
+#     编译进 libapp.so，不一致会导致逐字节比对失败）。注意：F-Droid 官方构建服务器
+#     不会注入该环境变量，提交 fdroiddata 前需把 $SENTRY_DSN 替换为与 CI Secret
+#     相同的字面 DSN 值（DSN 随 APK 分发、可被提取，非机密信息）。
 #   - prebuild 复刻 CI 的代码生成步骤（build_runner、gen-l10n）
 #   - 两侧（CI 与 F-Droid prebuild/build）均设置 PUB_HOSTED_URL=https://pub.flutter-io.cn：
 #     提交的 pubspec.lock 是 pub.flutter-io.cn 镜像源，设置 PUB_HOSTED_URL 后 pub get
@@ -65,10 +70,16 @@
 #   2. 本地 docker 中 `fdroid build --verify` 通过
 #   3. AllowedAPKSigningKeys 已补充（release keystore 证书的 SHA-256，
 #      取自 apksigner verify --print-certs bugaoshan_2.3.0_arm64-v8a.apk）
+#   4. SENTRY_DSN 已替换为字面值（或构建环境已注入）且与 CI Secret 一致
+#   5. 构建切换到包含 Sentry 的 commit 后，确认下方 Tracking anti-feature 已声明
 
 Categories:
   - Science & Education
 License: AGPL-3.0-only
+# Sentry 错误收集/用户反馈（io.sentry）属于 F-Droid 已知 tracker；
+# 一旦构建内启用 SENTRY_DSN（即非空），必须声明该 anti-feature。
+AntiFeatures:
+  - Tracking
 AuthorName: The-Brotherhood-of-SCU
 WebSite: https://github.com/The-Brotherhood-of-SCU/Bugaoshan
 SourceCode: https://github.com/The-Brotherhood-of-SCU/Bugaoshan
@@ -137,7 +148,7 @@ Builds:
       - "export GIT_TAG=v$(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//')"
       - export GIT_COMMIT=$(git rev-parse HEAD)
       - export GIT_COMMIT_DATE=$(git log -1 --format=%ci)
-      - "$$flutter$$/bin/flutter build apk --release --split-per-abi --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\""
+      - "$$flutter$$/bin/flutter build apk --release --split-per-abi --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\" --dart-define=SENTRY_DSN=\"https://8dee02bdb57c2f1ac87935e37b524959@o4511902957764608.ingest.us.sentry.io/4511919507177472\""
       - popd
       - mv $repo/Bugaoshan io.github.the_brotherhood_of_scu.bugaoshan
       - rm -rf $$flutter$$
@@ -197,7 +208,7 @@ Builds:
       - "export GIT_TAG=v$(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//')"
       - export GIT_COMMIT=$(git rev-parse HEAD)
       - export GIT_COMMIT_DATE=$(git log -1 --format=%ci)
-      - "$$flutter$$/bin/flutter build apk --release --split-per-abi --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\""
+      - "$$flutter$$/bin/flutter build apk --release --split-per-abi --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\" --dart-define=SENTRY_DSN=\"https://8dee02bdb57c2f1ac87935e37b524959@o4511902957764608.ingest.us.sentry.io/4511919507177472\""
       - popd
       - mv $repo/Bugaoshan io.github.the_brotherhood_of_scu.bugaoshan
       - rm -rf $$flutter$$
@@ -257,7 +268,7 @@ Builds:
       - "export GIT_TAG=v$(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//')"
       - export GIT_COMMIT=$(git rev-parse HEAD)
       - export GIT_COMMIT_DATE=$(git log -1 --format=%ci)
-      - "$$flutter$$/bin/flutter build apk --release --split-per-abi --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\""
+      - "$$flutter$$/bin/flutter build apk --release --split-per-abi --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\" --dart-define=SENTRY_DSN=\"https://8dee02bdb57c2f1ac87935e37b524959@o4511902957764608.ingest.us.sentry.io/4511919507177472\""
       - popd
       - mv $repo/Bugaoshan io.github.the_brotherhood_of_scu.bugaoshan
       - rm -rf $$flutter$$
