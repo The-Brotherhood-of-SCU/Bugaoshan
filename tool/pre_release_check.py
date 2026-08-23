@@ -24,8 +24,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-# 与 Flutter --split-per-abi / F-Droid VercodeOperation 一致
-ABI_OFFSETS = (1000, 2000, 4000)
+# 与 android/app/build.gradle.kts 的 ABI override / F-Droid VercodeOperation 一致
+ABI_CODES = (1, 2, 4)
 METADATA_LANGS = ("en-US", "zh-CN")
 
 OK, WARN, FAIL = "OK", "WARN", "FAIL"
@@ -337,7 +337,7 @@ class Checker:
             self.record(FAIL, name, "未找到 metadata/*.yml")
             return
         base = self.base_version_code(self.version)
-        expected_codes = [base + off for off in ABI_OFFSETS]
+        expected_codes = [base * 10 + abi for abi in ABI_CODES]
         text = "\n".join(p.read_text(encoding="utf-8") for p in ymls)
         issues = []
         if not re.search(r"versionName:\s*['\"]?" + re.escape(self.version) + r"['\"]?", text):
@@ -356,7 +356,7 @@ class Checker:
             self.record(OK, name, "预览版不生成 metadata changelogs（CI 会跳过）")
             return
         base = self.base_version_code(self.version)
-        expected = [base + off for off in ABI_OFFSETS]
+        expected = [base * 10 + abi for abi in ABI_CODES]
         missing = []
         empty = []
         for lang in METADATA_LANGS:
