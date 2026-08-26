@@ -131,7 +131,6 @@ jobs:
       - name: Create GitHub Release
         run: |
           set -euo pipefail
-          TAG="${{ steps.vars.outputs.tag }}"
           PRERELEASE=${{ contains(steps.vars.outputs.tag, '-') }}
           printf '%s' "$BODY" > notes.md
 
@@ -158,3 +157,4 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BODY: ${{ steps.release_body.outputs.body }}
+          TAG: ${{ steps.vars.outputs.tag }}
