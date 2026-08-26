@@ -129,14 +129,32 @@ jobs:
           VERSION: ${{ steps.vars.outputs.tag }}
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.vars.outputs.tag }}
-          name: Release ${{ steps.vars.outputs.tag }}
-          body: ${{ steps.release_body.outputs.body }}
-          files: |
-            bugaoshan_*.apk
-            bugaoshan_*.zip
-          draft: false
-          prerelease: ${{ contains(steps.vars.outputs.tag, '-') }}
-          generate_release_notes: false
+        run: |
+          set -euo pipefail
+          PRERELEASE=${{ contains(steps.vars.outputs.tag, '-') }}
+          printf '%s' "$BODY" > notes.md
+
+          GOPTS=()
+          if [ "$PRERELEASE" = "true" ]; then
+            GOPTS+=(--prerelease)
+          fi
+
+          # 不可变发布(Immutable Releases)仓库下，prerelease 必须先落成 draft、
+          # 上传资产、再发布。若直接 publish，GitHub 会立刻将其标记为不可变，之后的资产上传会被拒绝
+          gh release create "$TAG" \
+            --title "Release $TAG" \
+            --notes-file notes.md \
+            --draft \
+            "${GOPTS[@]}"
+
+          gh release upload "$TAG" bugaoshan_*.apk bugaoshan_*.zip
+
+          if [ "$PRERELEASE" = "true" ]; then
+            gh release edit "$TAG" --draft=false --prerelease
+          else
+            gh release edit "$TAG" --draft=false --latest
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BODY: ${{ steps.release_body.outputs.body }}
+          TAG: ${{ steps.vars.outputs.tag }}
