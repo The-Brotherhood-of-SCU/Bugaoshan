@@ -39,10 +39,6 @@ def prepare_release_files(version, root=Path(".")):
     shutil.copy2(windows_src, root / f"bugaoshan_{version}_windows_x64.zip")
     print("Copied windows artifact")
 
-    linux_src = root / "linux-release" / "linux-release.tar.gz"
-    shutil.copy2(linux_src, root / f"bugaoshan_{version}_linux_x64.tar.gz")
-    print("Copied linux artifact")
-
 
 def main():
     version = os.environ.get("VERSION", "")

@@ -151,7 +151,6 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
     │   ├── release.yml         # triggered by tags v*.*.* or manual dispatch
     │   ├── build-android.yml   # workflow_call → APK (split per ABI, obfuscated)
     │   ├── build-windows.yml   # workflow_call → Windows zip
-    │   └── build-linux.yml     # workflow_call → Linux tar.gz
     └── ISSUE_TEMPLATE/feature_request.yml
 ```
 
@@ -322,10 +321,9 @@ Always run `dart format` (the repo's pre-commit hook enforces this on staged `.d
 
 GitHub Actions:
 
-- **`release.yml`** — triggered by tags `v*.*.*` (or `workflow_dispatch`). Calls Android, Windows, and Linux builds, then runs the Python release scripts and publishes all three platforms via `softprops/action-gh-release@v2`. Prerelease tags (containing `-`) are flagged as pre-releases.
+- **`release.yml`** — triggered by tags `v*.*.*` (or `workflow_dispatch`). Calls Android and Windows builds, then runs the Python release scripts and publishes both platforms via `softprops/action-gh-release@v2`. Prerelease tags (containing `-`) are flagged as pre-releases.
 - **`build-android.yml`** — Ubuntu, JDK 21, decodes keystore from `secrets.KEYSTORE_BASE64`, writes `android/key.properties`, builds **split-per-ABI** release APK with `--obfuscate --split-debug-info=build/app/outputs/symbols`.
 - **`build-windows.yml`** — Windows runner, archives `build\windows\x64\runner\Release\*` into `windows-release.zip` via `Compress-Archive`.
-- **`build-linux.yml`** — Ubuntu runner + `debian:sid` container; installs system WPE development packages, verifies the Flutter bundle contains the WebView plugin but no WPE copies, then creates the x64 tar.gz.
 
 ### Release helpers (`.claude/commands/`)
 
@@ -375,4 +373,4 @@ The auto-changelog flow:
 
 ## Platform Support
 
-`flutter_launcher_icons` 为所有 6 个平台生成图标;`flutter_secure_storage` 在所有平台都可用;`sqflite_common_ffi` 处理桌面端 SQLite. UI 通过 `LayoutBuilder`/`MediaQuery` 适配手机/平板/桌面. 主 release pipeline(参见 `release.yml`)打包 **Android (split-per-ABI APK)**、**Windows (zip)** 和 **Linux x64 (tar.gz)**. Linux 分发与 WPE 边界见 `docs/architecture/linux-distribution.md`;新增发布平台时务必同时更新 `release.yml`、`release_prepare.py` 和发布正文.
+`flutter_launcher_icons` 为所有 6 个平台生成图标;`flutter_secure_storage` 在所有平台都可用;`sqflite_common_ffi` 处理桌面端 SQLite. UI 通过 `LayoutBuilder`/`MediaQuery` 适配手机/平板/桌面. 主 release pipeline(参见 `release.yml`)打包 **Android (split-per-ABI APK)** 和 **Windows (zip)**;Linux 仅支持本地构建,不再由 CI 发布. Linux 分发与 WPE 边界见 `docs/architecture/linux-distribution.md`;新增发布平台时务必同时更新 `release.yml`、`release_prepare.py` 和发布正文.
