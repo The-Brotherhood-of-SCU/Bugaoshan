@@ -26,19 +26,5 @@ void main() {
       expect(redacted, isNot(contains('secret.token')));
       expect(redacted, isNot(contains('plain')));
     });
-
-    test('截断 URL 查询参数中的 sp_code 和 state', () {
-      final redacted = AuthLogRedactor.apply(
-        'https://example.com/cb?sp_code=very-long-secret-sp-code'
-        '&state=0123456789abcdef&code=shortcode',
-      );
-
-      expect(redacted, contains('sp_code=very…'));
-      expect(redacted, contains('state=0123…'));
-      expect(redacted, contains('code=shor…'));
-      expect(redacted, isNot(contains('very-long-secret-sp-code')));
-      expect(redacted, isNot(contains('0123456789abcdef')));
-      expect(redacted, isNot(contains('shortcode')));
-    });
   });
 }

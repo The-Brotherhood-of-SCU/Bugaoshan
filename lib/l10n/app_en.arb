@@ -131,54 +131,6 @@
     "materialPicker": "Material",
     "advancedPicker": "Advanced",
     "about": "About",
-    "feedback": "Error Feedback",
-    "feedbackCrashTitle": "The app ran into a problem",
-    "feedbackCrashDesc": "Please describe what you were doing and what happened. The description helps us locate and fix the issue quickly.",
-    "feedbackManualDesc": "Tell us about any problem or suggestion. Logs and screenshots make it much easier to locate the issue.",
-    "feedbackDescription": "What happened?",
-    "feedbackDescriptionHint": "Describe the problem, how to reproduce it, and what you expected to happen...",
-    "feedbackDescriptionRequired": "Please describe the problem first",
-    "feedbackContact": "Contact (optional)",
-    "feedbackContactHint": "Email / QQ etc., so we can reach you if needed",
-    "feedbackScreenshot": "Screenshot",
-    "feedbackScreenshotHint": "Attach a screenshot related to the problem (optional)",
-    "feedbackAddScreenshot": "Add Screenshot",
-    "feedbackScreenshotPickFailed": "Failed to pick screenshot: {error}",
-    "@feedbackScreenshotPickFailed": {
-        "placeholders": {
-            "error": {
-                "type": "String"
-            }
-        }
-    },
-    "feedbackLogs": "Logs",
-    "feedbackLogHint": "Attach .log / .txt files to help diagnose (optional)",
-    "feedbackIncludeAppLog": "Include app runtime log",
-    "feedbackIncludeAppLogHint": "Attach recent in-app auth and operation logs automatically",
-    "feedbackAddLogFile": "Add Log File",
-    "feedbackLogPickFailed": "Failed to pick log file: {error}",
-    "@feedbackLogPickFailed": {
-        "placeholders": {
-            "error": {
-                "type": "String"
-            }
-        }
-    },
-    "feedbackPrivacyHint": "Your feedback, logs and screenshots will be sent to Sentry. Please do not include passwords, tokens or other private information.",
-    "feedbackSubmit": "Submit Feedback",
-    "feedbackSubmitting": "Submitting...",
-    "feedbackSubmitSuccess": "Feedback submitted. Thank you!",
-    "feedbackSubmitFailed": "Failed to submit feedback: {error}",
-    "@feedbackSubmitFailed": {
-        "placeholders": {
-            "error": {
-                "type": "String"
-            }
-        }
-    },
-    "feedbackSentryNotConfigured": "Error reporting service is not configured. Please set SENTRY_DSN and rebuild.",
-    "feedbackTestOpen": "Open Feedback Page",
-    "feedbackTestCrash": "Trigger Test Crash",
     "developmentTeam": "Dev Team",
     "projectInfo": "Project Info",
     "appName": "App Name",

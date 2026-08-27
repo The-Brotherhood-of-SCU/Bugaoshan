@@ -6,7 +6,6 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/dev/auth_log/auth_log_tile.dart';
 import 'package:bugaoshan/pages/dev/changelog/changelog_tile.dart';
 import 'package:bugaoshan/pages/dev/environment_info_tile.dart';
-import 'package:bugaoshan/pages/dev/feedback_test_tile.dart';
 import 'package:bugaoshan/pages/dev/update_card.dart';
 import 'package:bugaoshan/pages/dev/wizard_reset_tile.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
@@ -137,8 +136,6 @@ class _DevPageState extends State<DevPage> {
           const WizardResetTile(),
           const Divider(),
           const AuthLogTile(),
-          const Divider(),
-          const FeedbackTestTile(),
           const Divider(),
           const UiTile(),
           const Divider(),

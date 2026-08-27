@@ -116,7 +116,6 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │   │   ├── campus_page/
 │   │   ├── course/             # Course schedule pages
 │   │   ├── dev/                # Developer tools & auth log viewer
-│   │   ├── feedback/           # Shared error feedback page (Sentry)
 │   │   ├── profile/
 │   │   ├── settings/
 │   │   └── wizard/             # First-launch wizard
@@ -131,8 +130,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │   ├── architecture/           # current implementation architecture
 │   │   ├── authentication.md
 │   │   ├── linux-distribution.md
-│   │   ├── notice-webview.md
-│   │   └── sentry-feedback.md
+│   │   └── notice-webview.md
 │   └── decisions/              # Architecture Decision Records (ADRs)
 │       ├── README.md
 │       ├── 0001-use-webview-and-js-injection-for-notices.md
@@ -217,7 +215,6 @@ The CCYL service is special: its token expires via an explicit business error co
 - **`AcademicCalendarService`** (`lib/services/api/academic_calendar_service.dart`) — academic calendar data with mirror fetch + SharedPreferences cache.
 - **`DynamicIconService`** (`lib/services/dynamic_icon_service.dart`) — runtime app icon switching via MethodChannel `bugaoshan/dynamic_icon` (Android native).
 - **`BackgroundCacheService`** — precaches the user's background image post-frame.
-- **`SentryService`** (`lib/services/sentry/`) — Sentry 初始化（`SENTRY_DSN` dart-define 注入）、异常上报、用户反馈提交（截图 + 日志附件）。`ErrorFeedbackCoordinator` 包装 `FlutterError.onError` / `PlatformDispatcher.onError`，异常时自动弹出共享反馈页并做 15 秒防抖；反馈页同时支持「我的」页面手动打开。
 - **`ExitService`** — unified exit (windowManager.destroy on desktop, exit(0) on mobile).
 - **`WindowStateService`** — desktop window position/size persistence.
 
@@ -227,7 +224,7 @@ All auth-layer modules (`ScuAuth`, `CookieClient`, `AuthCoordinator`, `ZhjwAuth`
 
 - Ring buffer caps at 1000 entries (oldest evicted).
 - Each entry has timestamp + `AuthLogLevel` (`debug` / `info` / `warn` / `error`) + `tag` (e.g. `ScuAuth`, `CookieClient`, `ZhjwAuth`) + redacted message.
-- `AuthLogRedactor.apply()` strips `"access_token":"…"`, `"password":"…"`, `Bearer <token>` and truncates `code=` / `access_token=` / `sp_code=` / `state=` query values before storage, so logs are safe to share via the Dev page "Save" button.
+- `AuthLogRedactor.apply()` strips `"access_token":"…"`, `"password":"…"`, `Bearer <token>` and truncates `?code=` values before storage, so logs are safe to share via the Dev page "Save" button.
 - `tag` is a stable class/module identifier (for example `ScuAuth`, `CookieClient`, or `PAYAPP`) so the Viewer's dropdown groups events by source.
 - `debug` lines are only echoed to console in `kDebugMode`; production builds stay silent.
 - `AuthLogger` is a `ChangeNotifier` — Dev page's `AuthLogTile` and `AuthLogViewerPage` use `ListenableBuilder` for live updates.
@@ -312,7 +309,6 @@ CI builds inject git metadata via `--dart-define` flags: `GIT_TAG`, `GIT_COMMIT`
   - `widget_update_service_test.dart` — debounce / in-flight coalescing / dispose semantics using `fake_async` and a mocked `bugaoshan/update` MethodChannel.
   - `add_widget_picker_test.dart` — widget test with `SharedPreferences.setMockInitialValues` and a `FakeWidgetUpdateService`; resets `getIt` between tests.
   - `test_page_test.dart` — integration-ish page test.
-  - `sentry_service_test.dart` — Sentry 未配置 DSN 时提交反馈抛出 `SentryNotConfiguredException`.
 - Integration driver: `test_driver/main.dart` (`flutter drive`).
 
 Always run `dart format` (the repo's pre-commit hook enforces this on staged `.dart` files — see `.githooks/pre-commit`). When adding new tests, use `SharedPreferences.setMockInitialValues({})` + `getIt.reset()` to keep them hermetic.

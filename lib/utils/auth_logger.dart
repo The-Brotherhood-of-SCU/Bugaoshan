@@ -51,7 +51,7 @@ class AuthLogEntry {
   }
 }
 
-/// 隐私脱敏：把 access_token / password / Bearer / sp_code 等敏感字段遮蔽，
+/// 隐私脱敏：把 access_token / password / Bearer 等敏感字段遮蔽，
 /// 防止日志被分享到 issue 或支持工单时泄露凭据。
 class AuthLogRedactor {
   static final RegExp _accessTokenJson = RegExp(
@@ -66,8 +66,8 @@ class AuthLogRedactor {
     r'(Bearer\s+)[A-Za-z0-9._\-]+',
     caseSensitive: false,
   );
-  static final RegExp _sensitiveQueryParam = RegExp(
-    r'([?&](?:code|access_token|sp_code|state)=)([^&\s"]+)',
+  static final RegExp _oauthCode = RegExp(
+    r'([?&](?:code|access_token)=)([^&\s"]+)',
     caseSensitive: false,
   );
   static final RegExp _principalLabel = RegExp(
@@ -91,7 +91,7 @@ class AuthLogRedactor {
       (m) => '${m[1]}"<redacted>"',
     );
     result = result.replaceAllMapped(_bearerHeader, (m) => '${m[1]}<redacted>');
-    result = result.replaceAllMapped(_sensitiveQueryParam, (m) {
+    result = result.replaceAllMapped(_oauthCode, (m) {
       final prefix = m[1] ?? '';
       final value = m[2] ?? '';
       if (value.length <= 4) return '$prefix<redacted>';
