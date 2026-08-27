@@ -11,7 +11,6 @@
 | [认证架构](architecture/authentication.md) | SCU 根认证、子系统认证、重试、会话隔离和 DI | 当前实现 |
 | [通知 WebView 架构](architecture/notice-webview.md) | 三类通知来源、JS bridge、附件下载和平台边界 | 当前实现 |
 | [Linux 分发架构](architecture/linux-distribution.md) | 本地构建、WPE 边界、Flatpak、AUR 和 Debian 状态 | 当前实现 |
-| [Sentry 错误收集与问题反馈](architecture/sentry-feedback.md) | DSN 注入、错误链路、反馈表单、附件与 CI 配置 | 当前实现 |
 
 ## 设计决策
 

@@ -37,8 +37,6 @@ import 'package:bugaoshan/services/auth/service_auth.dart';
 import 'package:bugaoshan/services/auth/wfw_auth.dart';
 import 'package:bugaoshan/services/download_notification_service.dart';
 import 'package:bugaoshan/services/auth/zhjw_auth.dart';
-import 'package:bugaoshan/services/sentry/error_feedback_coordinator.dart';
-import 'package:bugaoshan/services/sentry/sentry_service.dart';
 import 'package:bugaoshan/services/background_cache_service.dart';
 import 'package:bugaoshan/services/database_service.dart';
 import 'package:bugaoshan/services/download_manager.dart';
@@ -63,23 +61,6 @@ void configureDependencies() {
   getIt.registerSingleton<ExitService>(ExitService());
   getIt.registerSingleton<DownloadManager>(DownloadManager());
   getIt.registerLazySingleton<AuthLogger>(() => AuthLogger());
-  getIt.registerLazySingleton<SentryService>(
-    () => SentryService(
-      getIt<AuthLogger>(),
-      versionProvider: () {
-        try {
-          return getIt.isRegistered<AppInfoProvider>()
-              ? getIt<AppInfoProvider>().currentVersion
-              : 'unknown';
-        } catch (_) {
-          return 'unknown';
-        }
-      },
-    ),
-  );
-  getIt.registerLazySingleton<ErrorFeedbackCoordinator>(
-    () => ErrorFeedbackCoordinator(getIt<SentryService>()),
-  );
   _configureAsyncDependencies();
 }
 

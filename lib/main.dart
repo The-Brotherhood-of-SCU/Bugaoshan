@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
@@ -8,8 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:bugaoshan/app.dart';
 import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/services/sentry/error_feedback_coordinator.dart';
-import 'package:bugaoshan/services/sentry/sentry_service.dart';
 import 'package:bugaoshan/services/window_state_service.dart';
 import 'package:system_theme/system_theme.dart';
 import 'package:bugaoshan/services/update_service.dart';
@@ -20,15 +18,6 @@ Future<void> main() async {
     runApp(MyApp());
   } catch (error, stackTrace) {
     debugPrint('Startup error: $error\n$stackTrace');
-    if (getIt.isRegistered<SentryService>()) {
-      unawaited(
-        getIt<SentryService>().captureException(
-          error,
-          stackTrace,
-          source: 'startup',
-        ),
-      );
-    }
     runApp(_StartupErrorApp(errorMessage: stackTrace.toString()));
   }
 }
@@ -43,15 +32,6 @@ Future<void> _initializeApp() async {
     }
   }
   configureDependencies();
-
-  // Sentry 初始化必须在 runApp 之前完成，并尽早接管全局错误处理，
-  // 这样依赖初始化阶段的异步异常也能被采集。
-  final sentry = getIt<SentryService>();
-  await sentry.initialize();
-  if (sentry.isEnabled) {
-    getIt<ErrorFeedbackCoordinator>().attach();
-  }
-
   await ensureBasicDependencies();
 
   // 清理下载的安装包（首次打开或更新后）。

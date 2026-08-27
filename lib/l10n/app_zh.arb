@@ -130,54 +130,6 @@
     "materialPicker": "材质",
     "advancedPicker": "高级",
     "about": "关于",
-    "feedback": "问题反馈",
-    "feedbackCrashTitle": "应用似乎遇到了问题",
-    "feedbackCrashDesc": "请描述你刚才进行的操作和遇到的问题，这能帮助开发者尽快定位并修复。",
-    "feedbackManualDesc": "欢迎告诉我们遇到的问题或改进建议。附上日志和截图可以让我们更快定位问题。",
-    "feedbackDescription": "问题描述",
-    "feedbackDescriptionHint": "请详细描述问题现象、复现步骤，以及你期望的结果...",
-    "feedbackDescriptionRequired": "请先填写问题描述",
-    "feedbackContact": "联系方式（选填）",
-    "feedbackContactHint": "邮箱 / QQ 等，方便我们联系你",
-    "feedbackScreenshot": "截图",
-    "feedbackScreenshotHint": "可附上与问题相关的截图（选填）",
-    "feedbackAddScreenshot": "添加截图",
-    "feedbackScreenshotPickFailed": "选择截图失败：{error}",
-    "@feedbackScreenshotPickFailed": {
-        "placeholders": {
-            "error": {
-                "type": "String"
-            }
-        }
-    },
-    "feedbackLogs": "日志",
-    "feedbackLogHint": "可添加 .log / .txt 日志文件帮助排查（选填）",
-    "feedbackIncludeAppLog": "附带应用运行日志",
-    "feedbackIncludeAppLogHint": "自动附带应用内的认证、操作等运行日志",
-    "feedbackAddLogFile": "添加日志文件",
-    "feedbackLogPickFailed": "选择日志文件失败：{error}",
-    "@feedbackLogPickFailed": {
-        "placeholders": {
-            "error": {
-                "type": "String"
-            }
-        }
-    },
-    "feedbackPrivacyHint": "反馈内容、日志与截图将发送至 Sentry。请勿包含密码、令牌等敏感信息。",
-    "feedbackSubmit": "提交反馈",
-    "feedbackSubmitting": "正在提交...",
-    "feedbackSubmitSuccess": "反馈已提交，感谢你的帮助！",
-    "feedbackSubmitFailed": "提交反馈失败：{error}",
-    "@feedbackSubmitFailed": {
-        "placeholders": {
-            "error": {
-                "type": "String"
-            }
-        }
-    },
-    "feedbackSentryNotConfigured": "错误收集服务尚未配置，请设置 SENTRY_DSN 后重新构建",
-    "feedbackTestOpen": "打开问题反馈页",
-    "feedbackTestCrash": "触发测试异常",
     "developmentTeam": "开发团队",
     "projectInfo": "项目信息",
     "appName": "应用名称",
