@@ -7,6 +7,7 @@ import 'grid_header.dart';
 import 'grid_section_column.dart';
 import 'grid_day_column.dart';
 import 'grid_logic.dart';
+import 'minimal_weekday_header.dart';
 
 /// 显示周课程表的网格，包含时间槽和课程卡片。
 class CourseGrid extends StatefulWidget {
@@ -98,15 +99,20 @@ class _CourseGridState extends State<CourseGrid> {
 
         return Column(
           children: [
-            GridHeaderRow(
-              config: widget.config,
-              displayWeek: widget.displayWeek,
-              showAllWeeks: widget.showAllWeeks,
-              hasBackground: hasBackground,
-              sectionWidth: _sectionWidth,
-              showWeekend: showWeekend,
-              onSpecialDayTap: widget.onSpecialDayTap,
-            ),
+            if (widget.showAllWeeks)
+              MinimalWeekdayHeader(
+                showWeekend: showWeekend,
+                sectionWidth: _sectionWidth,
+              )
+            else
+              GridHeaderRow(
+                config: widget.config,
+                displayWeek: widget.displayWeek,
+                hasBackground: hasBackground,
+                sectionWidth: _sectionWidth,
+                showWeekend: showWeekend,
+                onSpecialDayTap: widget.onSpecialDayTap,
+              ),
             Expanded(
               child: SingleChildScrollView(
                 scrollDirection: Axis.vertical,

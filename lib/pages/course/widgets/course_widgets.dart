@@ -6,3 +6,4 @@ export 'course_detail_sheet.dart';
 export 'special_day_sheet.dart';
 export 'grid_logic.dart';
 export 'empty_schedule_placeholder.dart';
+export 'minimal_weekday_header.dart';

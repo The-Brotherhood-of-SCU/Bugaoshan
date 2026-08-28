@@ -108,7 +108,6 @@ void main() {
                 semesterName: '2026-2027-1',
               ),
               displayWeek: 1,
-              showAllWeeks: false,
               hasBackground: false,
               showWeekend: true,
               sectionWidth: 24,

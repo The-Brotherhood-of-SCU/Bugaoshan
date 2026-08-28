@@ -5,10 +5,10 @@ import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
 
 /// 课程网格表头行，显示星期名称、日期和节假日/节气标记。
+/// 仅服务单周模式（全量周请用 [MinimalWeekdayHeader]）。
 class GridHeaderRow extends StatelessWidget {
   final ScheduleConfig config;
   final int displayWeek;
-  final bool showAllWeeks;
   final bool hasBackground;
   final bool showWeekend;
   final double sectionWidth;
@@ -18,7 +18,6 @@ class GridHeaderRow extends StatelessWidget {
     super.key,
     required this.config,
     required this.displayWeek,
-    required this.showAllWeeks,
     required this.hasBackground,
     required this.showWeekend,
     required this.sectionWidth,
@@ -71,35 +70,56 @@ class GridHeaderRow extends StatelessWidget {
                     ? (index == 0 ? 7 : index)
                     : index + 1;
                 final date = config.dateForCourseDay(displayWeek, dayOfWeek);
-                final isToday = !showAllWeeks && date.isAtSameMomentAs(today);
-                final specialDay = !showAllWeeks
-                    ? HolidayUtils.getSpecialDay(date)
-                    : SpecialDayInfo(type: SpecialDayType.ordinary);
-                final isHoliday =
-                    !showAllWeeks && specialDay.type == SpecialDayType.holiday;
-                final isFestival =
-                    !showAllWeeks && specialDay.type == SpecialDayType.festival;
-                final isSolarTerm =
-                    !showAllWeeks &&
-                    specialDay.type == SpecialDayType.solarTerm;
-                final isSpecial = isHoliday || isFestival || isSolarTerm;
+                final isToday = date.isAtSameMomentAs(today);
+                final specialDay = HolidayUtils.getSpecialDay(date);
+
+                // 节假日/节气 单独 switch，不混 isToday
+                final (
+                  holidayBg,
+                  holidayBadge,
+                  holidayDateColor,
+                ) = switch (specialDay.type) {
+                  SpecialDayType.holiday => (
+                    Colors.red.withAlpha(30),
+                    (label: l10n.holidayLabel, color: Colors.red),
+                    Colors.red,
+                  ),
+                  SpecialDayType.festival => (
+                    Colors.orange.withAlpha(30),
+                    (label: l10n.festivalLabel, color: Colors.orange),
+                    Colors.orange,
+                  ),
+                  SpecialDayType.solarTerm => (
+                    Colors.green.withAlpha(30),
+                    (label: l10n.solarTermLabel, color: Colors.green),
+                    Colors.green,
+                  ),
+                  _ => (null, null, null),
+                };
+
+                // isToday 单独处理，不与节假日耦合
+                final bgColor =
+                    holidayBg ??
+                    (isToday
+                        ? theme.colorScheme.primaryContainer.withAlpha(180)
+                        : null);
+                final badge = holidayBadge;
+                final dateColor =
+                    holidayDateColor ??
+                    (isToday
+                        ? theme.colorScheme.primary.withAlpha(200)
+                        : theme.colorScheme.onSurfaceVariant);
+
+                final isBadgeDay = badge != null;
 
                 return Expanded(
                   child: GestureDetector(
-                    onTap: !showAllWeeks && isSpecial && onSpecialDayTap != null
+                    onTap: isBadgeDay && onSpecialDayTap != null
                         ? () => onSpecialDayTap!(date, specialDay)
                         : null,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: isHoliday
-                            ? Colors.red.withAlpha(15)
-                            : isFestival
-                            ? Colors.orange.withAlpha(15)
-                            : isSolarTerm
-                            ? Colors.green.withAlpha(15)
-                            : isToday
-                            ? theme.colorScheme.primaryContainer.withAlpha(180)
-                            : null,
+                        color: bgColor,
                         border: Border(
                           right: BorderSide(
                             color: theme.colorScheme.outlineVariant,
@@ -128,54 +148,26 @@ class GridHeaderRow extends StatelessWidget {
                                           : theme.colorScheme.onSurface,
                                     ),
                                   ),
-                                  if (isHoliday) ...[
+                                  if (badge != null) ...[
                                     const SizedBox(width: 2),
-                                    _buildLabelBadge(
-                                      l10n.holidayLabel,
-                                      Colors.red,
-                                    ),
-                                  ],
-                                  if (isFestival) ...[
-                                    const SizedBox(width: 2),
-                                    _buildLabelBadge(
-                                      l10n.festivalLabel,
-                                      Colors.orange,
-                                    ),
-                                  ],
-                                  if (isSolarTerm) ...[
-                                    const SizedBox(width: 2),
-                                    _buildLabelBadge(
-                                      l10n.solarTermLabel,
-                                      Colors.green,
-                                    ),
+                                    _buildLabelBadge(badge.label, badge.color),
                                   ],
                                 ],
                               ),
                             ),
-                            if (!showAllWeeks)
-                              FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text(
-                                  l10n.dateMonthDay(date.month, date.day),
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    fontSize: 10,
-                                    fontWeight: isToday
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
-                                    color: isHoliday
-                                        ? Colors.red
-                                        : isFestival
-                                        ? Colors.orange
-                                        : isSolarTerm
-                                        ? Colors.green
-                                        : isToday
-                                        ? theme.colorScheme.primary.withAlpha(
-                                            200,
-                                          )
-                                        : theme.colorScheme.onSurfaceVariant,
-                                  ),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                l10n.dateMonthDay(date.month, date.day),
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  fontSize: 10,
+                                  fontWeight: isToday
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  color: dateColor,
                                 ),
                               ),
+                            ),
                           ],
                         ),
                       ),
