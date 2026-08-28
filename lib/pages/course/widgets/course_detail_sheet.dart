@@ -99,10 +99,15 @@ class CourseDetailSheet extends StatelessWidget {
                         Navigator.pop(context);
                         final newCourse = course.copyWith();
                         newCourse.name = '${course.name}${l10n.copySuffix}';
+                        final cfg = courseProvider?.scheduleConfig.value;
+                        if (cfg == null) return;
                         if (rootCtx.mounted) {
                           popupOrNavigate(
                             rootCtx,
-                            CourseEditPage(course: newCourse),
+                            CourseEditPage(
+                              scheduleConfig: cfg,
+                              course: newCourse,
+                            ),
                           );
                         }
                       },
@@ -119,10 +124,12 @@ class CourseDetailSheet extends StatelessWidget {
                       onPressed: () {
                         final rootCtx = logicRootContext;
                         Navigator.pop(context);
+                        final cfg = courseProvider?.scheduleConfig.value;
+                        if (cfg == null) return;
                         if (rootCtx.mounted) {
                           popupOrNavigate(
                             rootCtx,
-                            CourseEditPage(course: course),
+                            CourseEditPage(scheduleConfig: cfg, course: course),
                           );
                         }
                       },

@@ -380,7 +380,11 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
 
   void _onExport() => CoursePageActions.showExportSheet(context);
 
-  void _onAddCourse() => CoursePageActions.navigateToAddCourse(context);
+  void _onAddCourse() {
+    final cfg = courseProvider.scheduleConfig.value;
+    if (cfg == null) return;
+    CoursePageActions.navigateToAddCourse(context, cfg);
+  }
 
   void _onCourseTap(Course course) =>
       CoursePageActions.showCourseDetailSheet(context, course, courseProvider);
@@ -388,8 +392,11 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   void _onCourseLongPress(Course course) =>
       CoursePageActions.handleCourseLongPress(context, course, courseProvider);
 
-  void _onEmptyTap(int dayOfWeek, int section) =>
-      CoursePageActions.handleEmptyTap(context, dayOfWeek, section);
+  void _onEmptyTap(int dayOfWeek, int section) {
+    final cfg = courseProvider.scheduleConfig.value;
+    if (cfg == null) return;
+    CoursePageActions.handleEmptyTap(context, dayOfWeek, section, cfg);
+  }
 
   void _onSpecialDayTap(DateTime date, SpecialDayInfo info) =>
       CoursePageActions.handleSpecialDayTap(context, date, info);

@@ -8,15 +8,16 @@ import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
-import '../widgets/empty_schedule_placeholder.dart';
 
 class CourseEditPage extends StatefulWidget {
+  final ScheduleConfig scheduleConfig;
   final Course? course;
   final int? prefillDayOfWeek;
   final int? prefillSection;
 
   const CourseEditPage({
     super.key,
+    required this.scheduleConfig,
     this.course,
     this.prefillDayOfWeek,
     this.prefillSection,
@@ -46,12 +47,7 @@ class _CourseEditPageState extends State<CourseEditPage> {
   void initState() {
     super.initState();
     final course = widget.course;
-    final config =
-        courseProvider.scheduleConfig.value ??
-        ScheduleConfig(
-          semesterStartDate: DateTime.now().toMonday(),
-          totalWeeks: 20,
-        );
+    final config = widget.scheduleConfig;
     final maxSections = config.sectionsPerDay;
 
     _nameController = TextEditingController(text: course?.name ?? '');
@@ -85,21 +81,9 @@ class _CourseEditPageState extends State<CourseEditPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    // 无课表时直接展示空状态，不进入表单
-    if (courseProvider.scheduleConfig.value == null) {
-      return Scaffold(
-        appBar: AppBar(title: Text(l10n.addCourse)),
-        body: const EmptySchedulePlaceholder(),
-      );
-    }
-    final fallbackConfig = ScheduleConfig(
-      semesterStartDate: DateTime.now().toMonday(),
-      totalWeeks: 20,
-    );
-    final totalWeeks =
-        (courseProvider.scheduleConfig.value ?? fallbackConfig).totalWeeks;
-    final sections =
-        (courseProvider.scheduleConfig.value ?? fallbackConfig).sectionsPerDay;
+    final config = widget.scheduleConfig;
+    final totalWeeks = config.totalWeeks;
+    final sections = config.sectionsPerDay;
     final dayNames = [
       l10n.sunday,
       l10n.monday,
@@ -413,12 +397,7 @@ class _CourseEditPageState extends State<CourseEditPage> {
     final l10n = AppLocalizations.of(context)!;
 
     // Check for cross-period validation
-    final config =
-        courseProvider.scheduleConfig.value ??
-        ScheduleConfig(
-          semesterStartDate: DateTime.now().toMonday(),
-          totalWeeks: 20,
-        );
+    final config = widget.scheduleConfig;
     final morningEnd = config.morningSections;
     final afternoonEnd = config.morningSections + config.afternoonSections;
 

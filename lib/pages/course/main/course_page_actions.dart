@@ -106,8 +106,11 @@ class CoursePageActions {
     showExportScheduleSheet(context);
   }
 
-  static void navigateToAddCourse(BuildContext context) {
-    popupOrNavigate(context, const CourseEditPage());
+  static void navigateToAddCourse(
+    BuildContext context,
+    ScheduleConfig scheduleConfig,
+  ) {
+    popupOrNavigate(context, CourseEditPage(scheduleConfig: scheduleConfig));
   }
 
   static void showCourseDetailSheet(
@@ -143,10 +146,19 @@ class CoursePageActions {
     }
   }
 
-  static void handleEmptyTap(BuildContext context, int dayOfWeek, int section) {
+  static void handleEmptyTap(
+    BuildContext context,
+    int dayOfWeek,
+    int section,
+    ScheduleConfig scheduleConfig,
+  ) {
     popupOrNavigate(
       context,
-      CourseEditPage(prefillDayOfWeek: dayOfWeek, prefillSection: section),
+      CourseEditPage(
+        scheduleConfig: scheduleConfig,
+        prefillDayOfWeek: dayOfWeek,
+        prefillSection: section,
+      ),
     );
   }
 
