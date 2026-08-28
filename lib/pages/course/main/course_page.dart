@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -17,6 +15,7 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/pages/course/widgets/course_grid.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
+import 'package:bugaoshan/widgets/background_image_widget.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 class CoursePage extends StatefulWidget {
@@ -47,6 +46,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   late final Listenable _bgImageListenable = Listenable.merge([
     appConfig.backgroundImagePath,
     appConfig.backgroundImageOpacity,
+    appConfig.backgroundImageCrop,
   ]);
 
   bool _hasScheduleListenerAdded = false;
@@ -211,27 +211,10 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   Widget _buildBackgroundImage(BuildContext context, Widget? _) {
     final path = appConfig.backgroundImagePath.value;
     if (path == null) return const SizedBox.shrink();
-    return Positioned.fill(
-      child: Image(
-        image: FileImage(File(path)),
-        fit: BoxFit.cover,
-        // 使用 frameBuilder 监听第一帧完成并做淡入动画，避免白屏突变
-        frameBuilder:
-            (BuildContext ctx, Widget child, int? frame, bool wasSync) {
-              final visible = frame != null || wasSync;
-              return AnimatedOpacity(
-                opacity: visible ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                child: child,
-              );
-            },
-        color: Colors.white.withAlpha(
-          (appConfig.backgroundImageOpacity.value * 255).round(),
-        ),
-        colorBlendMode: BlendMode.modulate,
-        errorBuilder: (_, _, _) => const SizedBox.shrink(),
-      ),
+    return BackgroundImageWidget(
+      imagePath: path,
+      crop: appConfig.backgroundImageCrop.value,
+      opacity: appConfig.backgroundImageOpacity.value,
     );
   }
 

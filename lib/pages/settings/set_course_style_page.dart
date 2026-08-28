@@ -9,6 +9,8 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/common/styled_widget.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/providers/set_theme_color_provider.dart';
+import 'package:bugaoshan/models/background_image_crop.dart';
+import 'package:bugaoshan/pages/settings/background_image_crop_editor.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:system_theme/system_theme.dart';
@@ -238,6 +240,12 @@ class SetCourseStylePage extends StatelessWidget {
           if (appConfig.backgroundImagePath.value != null) ...[
             const SizedBox(height: 8),
             ButtonWithMaxWidth(
+              onPressed: () => _editBackgroundImageCrop(context, appConfig),
+              icon: const Icon(Icons.crop_free),
+              child: Text(localizations.editBackgroundImageCrop),
+            ),
+            const SizedBox(height: 8),
+            ButtonWithMaxWidth(
               onPressed: () => _removeBackgroundImage(appConfig),
               icon: const Icon(Icons.delete_outline),
               child: Text(localizations.removeBackgroundImage),
@@ -302,6 +310,27 @@ class SetCourseStylePage extends StatelessWidget {
     }
   }
 
+  Future<void> _editBackgroundImageCrop(
+    BuildContext context,
+    AppConfigProvider appConfig,
+  ) async {
+    final path = appConfig.backgroundImagePath.value;
+    if (path == null) return;
+    if (!context.mounted) return;
+    final result = await Navigator.of(context).push<BackgroundImageCrop>(
+      MaterialPageRoute(
+        builder: (_) => BackgroundImageCropEditor(
+          imagePath: path,
+          initialCrop: appConfig.backgroundImageCrop.value,
+        ),
+      ),
+    );
+    if (result == null) return;
+    appConfig.backgroundImageCrop.value = result;
+    if (!context.mounted) return;
+    await _maybeExtractColor(context, appConfig);
+  }
+
   Future<void> _pickBackgroundImage(
     BuildContext context,
     AppConfigProvider appConfig,
@@ -330,25 +359,52 @@ class SetCourseStylePage extends StatelessWidget {
     }
 
     await File(picked.path).copy(destPath);
-    appConfig.backgroundImagePath.value = destPath;
-
-    if (appConfig.themeColorMode.value == ThemeColorMode.backgroundImage) {
-      final themeColorProvider = SetThemeColorProvider(appConfig);
-      final result = await themeColorProvider.extractColorFromBackgroundImage();
-      if (result == ExtractColorResult.success &&
-          themeColorProvider.extractedColor != null) {
-        appConfig.themeColor.value = themeColorProvider.extractedColor!;
-      }
-    }
 
     if (!context.mounted) return;
+    // 选图后进入裁剪编辑器；保存时才写入路径与裁剪参数。
+    final crop = await Navigator.of(context).push<BackgroundImageCrop>(
+      MaterialPageRoute(
+        builder: (_) => BackgroundImageCropEditor(imagePath: destPath),
+      ),
+    );
+    if (crop == null) {
+      // 用户取消裁剪：不设置新背景图，清理刚复制的临时文件。
+      FileImage(File(destPath)).evict();
+      if (await File(destPath).exists()) {
+        await File(destPath).delete();
+      }
+      return;
+    }
+
+    // 替换图片时清除旧裁剪参数（新图重新编辑）。
+    appConfig.backgroundImageCrop.value = null;
+    appConfig.backgroundImagePath.value = destPath;
+    appConfig.backgroundImageCrop.value = crop;
+
+    if (!context.mounted) return;
+    await _maybeExtractColor(context, appConfig);
+  }
+
+  /// 设置/调整背景图后，若主题色模式为「从背景图提取」则重新取色。
+  Future<void> _maybeExtractColor(
+    BuildContext context,
+    AppConfigProvider appConfig,
+  ) async {
     if (appConfig.themeColorMode.value != ThemeColorMode.backgroundImage) {
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.backgroundImageSetHint),
           duration: const Duration(seconds: 3),
         ),
       );
+      return;
+    }
+    final themeColorProvider = SetThemeColorProvider(appConfig);
+    final result = await themeColorProvider.extractColorFromBackgroundImage();
+    if (result == ExtractColorResult.success &&
+        themeColorProvider.extractedColor != null) {
+      appConfig.themeColor.value = themeColorProvider.extractedColor!;
     }
   }
 }

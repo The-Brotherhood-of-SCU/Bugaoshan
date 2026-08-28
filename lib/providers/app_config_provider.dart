@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Colors, Curve, Curves;
 import 'package:bugaoshan/models/widget_appearance.dart';
+import 'package:bugaoshan/models/background_image_crop.dart';
 import 'package:bugaoshan/utils/locale_utils.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,6 +20,7 @@ const String _keyShowCourseGrid = 'showCourseGrid';
 const String _keyCourseRowHeight = 'courseRowHeight';
 const String _keyBackgroundImageOpacity = 'backgroundImageOpacity';
 const String _keyBackgroundImagePath = 'backgroundImagePath';
+const String _keyBackgroundImageCrop = 'backgroundImageCrop';
 const String _keyFirstLaunchWizardCompleted = 'firstLaunchWizardCompleted';
 const String _keyHasUpdateNotification = 'hasUpdateNotification';
 const String _keyVisibleDockIds = 'visibleDockIds';
@@ -67,6 +70,8 @@ class AppConfigProvider {
   final ValueNotifier<String?> backgroundImagePath = ValueNotifier<String?>(
     null,
   );
+  final ValueNotifier<BackgroundImageCrop?> backgroundImageCrop =
+      ValueNotifier<BackgroundImageCrop?>(null);
   final ValueNotifier<bool> firstLaunchWizardCompleted = ValueNotifier<bool>(
     false,
   );
@@ -123,6 +128,18 @@ class AppConfigProvider {
     // Existence will be checked later in the Settings UI when needed.
     final savedPath = _sharedPreferences.getString(_keyBackgroundImagePath);
     backgroundImagePath.value = savedPath;
+    // 旧用户无裁剪参数时保持 null → 沿用 BoxFit.cover 居中（向后兼容）。
+    final cropJson = _sharedPreferences.getString(_keyBackgroundImageCrop);
+    if (cropJson != null) {
+      try {
+        final decoded =
+            Map<String, dynamic>.from(jsonDecode(cropJson) as Map);
+        backgroundImageCrop.value = BackgroundImageCrop.fromJson(decoded);
+      } catch (_) {
+        // 损坏数据：忽略，退化为默认 cover。
+        backgroundImageCrop.value = null;
+      }
+    }
     firstLaunchWizardCompleted.value =
         _sharedPreferences.getBool(_keyFirstLaunchWizardCompleted) ??
         kDebugMode;
@@ -215,10 +232,25 @@ class AppConfigProvider {
         _sharedPreferences.setString(_keyBackgroundImagePath, path);
       } else {
         _sharedPreferences.remove(_keyBackgroundImagePath);
+        // 移除背景图时一并清除裁剪参数。
+        if (backgroundImageCrop.value != null) {
+          backgroundImageCrop.value = null;
+        }
+        _sharedPreferences.remove(_keyBackgroundImageCrop);
+        if (themeColorMode.value == ThemeColorMode.backgroundImage) {
+          _switchToSystemColor();
+        }
       }
-      if (path == null &&
-          themeColorMode.value == ThemeColorMode.backgroundImage) {
-        _switchToSystemColor();
+    });
+    backgroundImageCrop.addListener(() {
+      final crop = backgroundImageCrop.value;
+      if (crop != null) {
+        _sharedPreferences.setString(
+          _keyBackgroundImageCrop,
+          jsonEncode(crop.toJson()),
+        );
+      } else {
+        _sharedPreferences.remove(_keyBackgroundImageCrop);
       }
     });
     firstLaunchWizardCompleted.addListener(() {

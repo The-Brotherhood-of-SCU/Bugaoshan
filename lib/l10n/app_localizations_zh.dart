@@ -687,6 +687,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get backgroundImageSetHint => '背景图片已设置，您可以前往「主题颜色」修改主题色';
 
   @override
+  String get editBackgroundImageCrop => '调整显示区域';
+
+  @override
+  String get resetCrop => '重置显示区域';
+
+  @override
+  String get zoom => '缩放';
+
+  @override
+  String get backgroundImageCropHint => '拖动可调整可见区域，双指或滚轮缩放。预览与课程页一致。';
+
+  @override
   String get showTeacher => '显示教师';
 
   @override

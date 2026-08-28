@@ -711,6 +711,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Background image set. You can go to Theme Color to modify the theme color.';
 
   @override
+  String get editBackgroundImageCrop => 'Adjust Background Position';
+
+  @override
+  String get resetCrop => 'Reset Position';
+
+  @override
+  String get zoom => 'Zoom';
+
+  @override
+  String get backgroundImageCropHint =>
+      'Drag to reposition, pinch or scroll to zoom. The preview matches the course page.';
+
+  @override
   String get showTeacher => 'Show Teacher';
 
   @override

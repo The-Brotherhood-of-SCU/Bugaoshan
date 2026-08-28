@@ -1405,6 +1405,30 @@ abstract class AppLocalizations {
   /// **'Background image set. You can go to Theme Color to modify the theme color.'**
   String get backgroundImageSetHint;
 
+  /// No description provided for @editBackgroundImageCrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust Background Position'**
+  String get editBackgroundImageCrop;
+
+  /// No description provided for @resetCrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Position'**
+  String get resetCrop;
+
+  /// No description provided for @zoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom'**
+  String get zoom;
+
+  /// No description provided for @backgroundImageCropHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reposition, pinch or scroll to zoom. The preview matches the course page.'**
+  String get backgroundImageCropHint;
+
   /// No description provided for @showTeacher.
   ///
   /// In en, this message translates to:
