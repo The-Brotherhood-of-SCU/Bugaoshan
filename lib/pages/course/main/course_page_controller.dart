@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import 'package:bugaoshan/models/academic_calendar.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/services/api/academic_calendar_service.dart';
 import 'package:bugaoshan/theme_shape.dart';
 
 /// 课表页的页面级控制器（不进 GetIt —— 项目约定允许页面级非 DI 类；
@@ -38,6 +40,16 @@ class CoursePageController extends ChangeNotifier {
   /// 放假页可用性。grid 只在结构变化（pageCount 增减）时需要重建，所以单独暴露
   /// 而非塞进 [notifyListeners] —— 否则每次翻页都会重建整个 PageView。
   final ValueNotifier<bool> showVacationPage;
+
+  /// 校历中的下学期（用于假期页展示与「切换学期」提示），由
+  /// [ensureCalendarNextSemester] 懒加载，收敛原先 CoursePage 与 VacationView
+  /// 各自 `loadBundledCalendar()` 的重复请求。
+  final ValueNotifier<AcademicCalendarSemester?> calendarNextSemester =
+      ValueNotifier<AcademicCalendarSemester?>(null);
+  final ValueNotifier<bool> calendarNextSemesterLoading = ValueNotifier<bool>(
+    false,
+  );
+  bool _calendarNextSemesterLoaded = false;
 
   late PageController _pageController;
 
@@ -146,6 +158,39 @@ class CoursePageController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 懒加载校历下学期，供假期页与「切换学期」提示共用，避免两处各自
+  /// `AcademicCalendarService.loadBundledCalendar()`。
+  Future<AcademicCalendarSemester?> ensureCalendarNextSemester() async {
+    if (_disposed) return null;
+    if (_calendarNextSemesterLoaded) return calendarNextSemester.value;
+    if (calendarNextSemesterLoading.value) return calendarNextSemester.value;
+    if (_disposed) return null;
+    calendarNextSemesterLoading.value = true;
+    try {
+      final data = await AcademicCalendarService.loadBundledCalendar();
+      if (_disposed) return null;
+      final next = data.findNextSemester(_scheduleConfig.value.semesterEndDate);
+      if (_disposed) return null;
+      calendarNextSemester.value = next;
+      _calendarNextSemesterLoaded = true;
+      return next;
+    } catch (e) {
+      debugPrint('CoursePageController: load calendar failed: $e');
+      return null;
+    } finally {
+      if (!_disposed) {
+        calendarNextSemesterLoading.value = false;
+      }
+    }
+  }
+
+  /// 校历下学期在本机是否已有对应课表。
+  bool get hasCalendarNextSemesterSchedule {
+    final next = calendarNextSemester.value;
+    if (next == null) return false;
+    return next.findMatchingScheduleId(_allSchedules.value) != null;
+  }
+
   /// PageView.onPageChanged 反馈通道。== _pageIndex 时静默吸收
   /// （自己发起的动画回灌）。越界 index 会 clamp 到 [0, pageCount-1]。
   void onPageSettled(int index) {
@@ -214,6 +259,11 @@ class CoursePageController extends ChangeNotifier {
   /// 下一帧再同步一次，确保网格也跳到目标页。
   void _onScheduleConfigChanged() {
     showVacationPage.value = _computeShowVacationPage();
+    // 学期切换后校历下学期需重算：以新 semesterEndDate 为锚点
+    _calendarNextSemesterLoaded = false;
+    calendarNextSemester.value = null;
+    // 触发懒加载（不 await），VacationView / 提示弹框会订阅到结果
+    ensureCalendarNextSemester();
     _moveTo(_indexForToday(), animate: false);
     WidgetsBinding.instance.addPostFrameCallback(_resyncPageController);
     notifyListeners();
@@ -266,6 +316,8 @@ class CoursePageController extends ChangeNotifier {
     _scheduleConfig.removeListener(_onScheduleConfigChanged);
     _allSchedules.removeListener(_onAllSchedulesChanged);
     showVacationPage.dispose();
+    calendarNextSemester.dispose();
+    calendarNextSemesterLoading.dispose();
     _pageController.dispose();
     super.dispose();
   }

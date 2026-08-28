@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/pages/course/course_page.dart';
+import 'package:bugaoshan/pages/course/main/course_preview_data.dart';
+import 'package:bugaoshan/pages/course/widgets/course_grid.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/common/styled_widget.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/providers/set_theme_color_provider.dart';
@@ -52,11 +54,21 @@ class SetCourseStylePage extends StatelessWidget {
                       padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(AppShapes.medium),
-                        child: CoursePage(
-                          key: ValueKey(
-                            appConfig.backgroundImagePath.value ?? '__none__',
-                          ),
-                          demoMode: true,
+                        child: Builder(
+                          builder: (context) {
+                            final previewConfig =
+                                getIt<CourseProvider>().scheduleConfig.value;
+                            return CourseGrid(
+                              key: ValueKey(
+                                appConfig.backgroundImagePath.value ??
+                                    '__none__',
+                              ),
+                              courses: kDemoCourses,
+                              config: previewConfig,
+                              displayWeek: 1,
+                              totalWeeks: previewConfig.totalWeeks,
+                            );
+                          },
                         ),
                       ),
                     ),

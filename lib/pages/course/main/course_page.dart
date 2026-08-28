@@ -1,33 +1,23 @@
 import 'dart:io';
 
-import 'package:bugaoshan/widgets/common/third_center.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/pages/course/course_edit_page.dart';
-import 'package:bugaoshan/pages/course/course_page_controller.dart';
-import 'package:bugaoshan/pages/course/import_schedule_page.dart';
-import 'package:bugaoshan/pages/course/schedule_management_page.dart';
-import 'package:bugaoshan/services/api/academic_calendar_service.dart';
 import 'package:bugaoshan/models/academic_calendar.dart';
+import 'package:bugaoshan/models/course.dart';
+import 'course_page_actions.dart';
+import 'course_page_controller.dart';
+import 'course_page_no_schedule_view.dart';
+import 'course_page_swipe_page_view.dart';
+import 'course_page_top_bar.dart';
+import 'course_page_vacation_view.dart';
+import 'course_preview_data.dart';
+import '../management/schedule_management_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
-import 'package:bugaoshan/widgets/course/course_detail_sheet.dart';
-import 'package:bugaoshan/widgets/course/course_grid.dart';
-import 'package:bugaoshan/widgets/dialog/dialog.dart';
-import 'package:bugaoshan/widgets/route/router_utils.dart';
-import 'package:bugaoshan/utils/export_schedule_utils.dart';
+import 'package:bugaoshan/pages/course/widgets/course_grid.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
-import 'package:bugaoshan/widgets/course/special_day_sheet.dart';
-import 'package:bugaoshan/theme_shape.dart';
-
-part 'course_page_swipe_page_view.dart';
-part 'course_page_top_bar.dart';
-part 'course_page_actions.dart';
-part 'course_page_no_schedule_view.dart';
-part 'course_page_vacation_view.dart';
-part 'course_preview_data.dart';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 class CoursePage extends StatefulWidget {
   const CoursePage({super.key, this.demoMode = false});
@@ -116,7 +106,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
         if (!widget.demoMode)
           ListenableBuilder(
             listenable: _controller!,
-            builder: (context, _) => _TopBar(
+            builder: (context, _) => CoursePageTopBar(
               visibleWeek: _controller!.visibleWeek,
               totalWeeks: _controller!.totalWeeks,
               actualWeek: _controller!.actualWeek,
@@ -125,6 +115,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
               isNotStarted: _controller!.isNotStarted,
               canGoPrevious: _controller!.canGoPrevious,
               canGoNext: _controller!.canGoNext,
+              animationDuration: appConfig.cardSizeAnimationDuration.value,
               onPreviousWeek: _controller!.goToPreviousPage,
               onNextWeek: _controller!.goToNextPage,
               onGoToCurrentWeek: _controller!.goToToday,
@@ -196,7 +187,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   Widget _buildCourseGrid(BuildContext context, Widget? _) {
     final config = courseProvider.scheduleConfig.value;
     final allCourses = widget.demoMode
-        ? _kDemoCourses
+        ? kDemoCourses
         : courseProvider.courses.value;
 
     if (widget.demoMode) {
@@ -212,16 +203,16 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
     final controller = _controller!;
     final totalWeeks = controller.totalWeeks;
     // build 内每次重读 controller.pageController —— detach 期间可能被换实例，
-    // 缓存到局部之外会导致 _SwipePageView 持有失效的旧控制器。
-    return _SwipePageView(
+    // 缓存到局部之外会导致 CourseSwipePageView 持有失效的旧控制器。
+    return CourseSwipePageView(
       controller: controller.pageController,
       itemCount: controller.pageCount,
+      animationDuration: appConfig.cardSizeAnimationDuration.value,
       onPageChanged: controller.onPageSettled,
       itemBuilder: (context, index) {
         if (controller.showVacationPage.value && index >= totalWeeks) {
-          return _VacationView(
-            scheduleConfig: config,
-            allSchedules: courseProvider.allSchedules.value,
+          return VacationView(
+            controller: controller,
             onViewNextSemester: _onViewNextSemester,
           );
         }
@@ -240,7 +231,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   }
 
   Widget _buildNoScheduleView(BuildContext context, Widget? _) {
-    return _NoScheduleView(
+    return NoScheduleView(
       onOpenManagement: () => _openScheduleManagement(context),
       onImport: _onImport,
       onAddSchedule: () => _openAddScheduleDialog(context),
@@ -261,10 +252,9 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
     _promptedNextSemester = true;
 
     try {
-      final data = await AcademicCalendarService.loadBundledCalendar();
-      final nextSemester = data.findNextSemester(
-        courseProvider.scheduleConfig.value.semesterEndDate,
-      );
+      final controller = _controller;
+      if (controller == null) return;
+      final nextSemester = await controller.ensureCalendarNextSemester();
       if (nextSemester == null) return;
 
       final registrationDate =
@@ -324,4 +314,25 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
       ).showSnackBar(SnackBar(content: Text(l10n.noNextSemesterSchedule)));
     }
   }
+
+  // ---- Delegates to CoursePageActions (解耦 extension) ----
+
+  void _onImport() =>
+      CoursePageActions.showImportSheet(context, courseProvider);
+
+  void _onExport() => CoursePageActions.showExportSheet(context);
+
+  void _onAddCourse() => CoursePageActions.navigateToAddCourse(context);
+
+  void _onCourseTap(Course course) =>
+      CoursePageActions.showCourseDetailSheet(context, course, courseProvider);
+
+  void _onCourseLongPress(Course course) =>
+      CoursePageActions.handleCourseLongPress(context, course, courseProvider);
+
+  void _onEmptyTap(int dayOfWeek, int section) =>
+      CoursePageActions.handleEmptyTap(context, dayOfWeek, section);
+
+  void _onSpecialDayTap(DateTime date, SpecialDayInfo info) =>
+      CoursePageActions.handleSpecialDayTap(context, date, info);
 }
