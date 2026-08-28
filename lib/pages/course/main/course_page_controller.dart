@@ -133,8 +133,8 @@ class CoursePageController extends ChangeNotifier {
   /// 注意：不在此处触发 _checkAndPromptNextSemester —— 那是 State 的职责，
   /// 仅在 initState postFrame 调一次。
   void goToToday() {
-    // 未开学：学期尚未开始，没有「当前周」可跳，直接返回。
-    if (isNotStarted) return;
+    // 未开学 / 假期中：没有「当前周」可跳，直接返回。
+    if (isNotStarted || isTodayOnVacation) return;
     refreshVacationAvailability();
     _moveTo(_indexForToday(), animate: true);
   }
