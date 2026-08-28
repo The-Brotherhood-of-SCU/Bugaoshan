@@ -19,13 +19,17 @@ import 'package:bugaoshan/theme_shape.dart';
 /// 而非缓存 int 比较 —— 根治「同值不通知」bug 类。
 class CoursePageController extends ChangeNotifier {
   CoursePageController({
-    required ValueListenable<ScheduleConfig> scheduleConfig,
+    required ValueListenable<ScheduleConfig?> scheduleConfig,
     required ValueListenable<List<ScheduleConfig>> allSchedules,
     required ValueListenable<Duration> animationDuration,
   }) : _scheduleConfig = scheduleConfig,
        _allSchedules = allSchedules,
        _animationDuration = animationDuration,
        showVacationPage = ValueNotifier<bool>(false) {
+    assert(
+      scheduleConfig.value != null,
+      'CoursePageController requires non-null scheduleConfig',
+    );
     showVacationPage.value = _computeShowVacationPage();
     _pageIndex = _indexForToday();
     _pageController = PageController(initialPage: _pageIndex);
@@ -33,7 +37,7 @@ class CoursePageController extends ChangeNotifier {
     _allSchedules.addListener(_onAllSchedulesChanged);
   }
 
-  final ValueListenable<ScheduleConfig> _scheduleConfig;
+  final ValueListenable<ScheduleConfig?> _scheduleConfig;
   final ValueListenable<List<ScheduleConfig>> _allSchedules;
   final ValueListenable<Duration> _animationDuration;
 
@@ -85,15 +89,17 @@ class CoursePageController extends ChangeNotifier {
 
   int get pageCount => showVacationPage.value ? totalWeeks + 1 : totalWeeks;
 
-  ScheduleConfig get config => _scheduleConfig.value;
+  ScheduleConfig get config => _scheduleConfig.value!;
 
   /// 防止 [ScheduleConfig.totalWeeks] 为 0 时 clamp(1, 0) 抛 ArgumentError。
-  int get totalWeeks => _scheduleConfig.value.totalWeeks < 1
-      ? 1
-      : _scheduleConfig.value.totalWeeks;
+  int get totalWeeks {
+    final c = _scheduleConfig.value;
+    if (c == null) return 1;
+    return c.totalWeeks < 1 ? 1 : c.totalWeeks;
+  }
 
   /// 未 clamp 的日历周（基于 [ScheduleConfig.getCurrentWeek]）。
-  int get actualWeek => _scheduleConfig.value.getCurrentWeek();
+  int get actualWeek => _scheduleConfig.value?.getCurrentWeek() ?? 1;
 
   /// 顶栏徽章：今天是否在假期中（学期已结束且下学期未开始）。
   bool get isTodayOnVacation =>
@@ -103,9 +109,11 @@ class CoursePageController extends ChangeNotifier {
   /// （第 1 周），并以「未开学」徽章标注；点击日期不做「回到当前周」跳转
   /// （学期未开始没有当前周可跳）。
   bool get isNotStarted {
+    final c = _scheduleConfig.value;
+    if (c == null) return false;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final start = _scheduleConfig.value.semesterStartDate;
+    final start = c.semesterStartDate;
     final startDay = DateTime(start.year, start.month, start.day);
     return today.isBefore(startDay);
   }
@@ -160,6 +168,8 @@ class CoursePageController extends ChangeNotifier {
   /// `AcademicCalendarService.loadBundledCalendar()`。
   Future<AcademicCalendarSemester?> ensureCalendarNextSemester() async {
     if (_disposed) return null;
+    final cfg = _scheduleConfig.value;
+    if (cfg == null) return null;
     if (_calendarNextSemesterLoaded) return calendarNextSemester.value;
     if (calendarNextSemesterLoading.value) return calendarNextSemester.value;
     if (_disposed) return null;
@@ -167,7 +177,7 @@ class CoursePageController extends ChangeNotifier {
     try {
       final data = await AcademicCalendarService.loadBundledCalendar();
       if (_disposed) return null;
-      final next = data.findNextSemester(_scheduleConfig.value.semesterEndDate);
+      final next = data.findNextSemester(cfg.semesterEndDate);
       if (_disposed) return null;
       calendarNextSemester.value = next;
       _calendarNextSemesterLoaded = true;
@@ -285,6 +295,7 @@ class CoursePageController extends ChangeNotifier {
   /// 从 course_page.dart 原样搬入：当前学期已结束且下学期未开始 → 显示放假页。
   bool _computeShowVacationPage() {
     final config = _scheduleConfig.value;
+    if (config == null) return false;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 

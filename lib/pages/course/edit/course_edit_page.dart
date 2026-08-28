@@ -45,7 +45,12 @@ class _CourseEditPageState extends State<CourseEditPage> {
   void initState() {
     super.initState();
     final course = widget.course;
-    final config = courseProvider.scheduleConfig.value;
+    final config =
+        courseProvider.scheduleConfig.value ??
+        ScheduleConfig(
+          semesterStartDate: DateTime.now().toMonday(),
+          totalWeeks: 20,
+        );
     final maxSections = config.sectionsPerDay;
 
     _nameController = TextEditingController(text: course?.name ?? '');
@@ -79,8 +84,14 @@ class _CourseEditPageState extends State<CourseEditPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final totalWeeks = courseProvider.scheduleConfig.value.totalWeeks;
-    final sections = courseProvider.scheduleConfig.value.sectionsPerDay;
+    final fallbackConfig = ScheduleConfig(
+      semesterStartDate: DateTime.now().toMonday(),
+      totalWeeks: 20,
+    );
+    final totalWeeks =
+        (courseProvider.scheduleConfig.value ?? fallbackConfig).totalWeeks;
+    final sections =
+        (courseProvider.scheduleConfig.value ?? fallbackConfig).sectionsPerDay;
     final dayNames = [
       l10n.sunday,
       l10n.monday,
@@ -394,7 +405,12 @@ class _CourseEditPageState extends State<CourseEditPage> {
     final l10n = AppLocalizations.of(context)!;
 
     // Check for cross-period validation
-    final config = courseProvider.scheduleConfig.value;
+    final config =
+        courseProvider.scheduleConfig.value ??
+        ScheduleConfig(
+          semesterStartDate: DateTime.now().toMonday(),
+          totalWeeks: 20,
+        );
     final morningEnd = config.morningSections;
     final afternoonEnd = config.morningSections + config.afternoonSections;
 

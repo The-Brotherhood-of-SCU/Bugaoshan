@@ -126,7 +126,7 @@ class ScheduleManagementPage extends StatelessWidget {
           ]),
           builder: (context, _) {
             final allSchedules = courseProvider.allSchedules.value;
-            final currentId = courseProvider.scheduleConfig.value.id;
+            final currentId = courseProvider.scheduleConfig.value?.id;
 
             if (allSchedules.isEmpty) {
               return ThirdCenter(

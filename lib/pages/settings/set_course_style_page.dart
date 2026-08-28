@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/course/main/course_preview_data.dart';
 import 'package:bugaoshan/pages/course/widgets/course_grid.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
@@ -57,7 +58,11 @@ class SetCourseStylePage extends StatelessWidget {
                         child: Builder(
                           builder: (context) {
                             final previewConfig =
-                                getIt<CourseProvider>().scheduleConfig.value;
+                                getIt<CourseProvider>().scheduleConfig.value ??
+                                ScheduleConfig(
+                                  semesterStartDate: DateTime.now().toMonday(),
+                                  totalWeeks: 20,
+                                );
                             return CourseGrid(
                               key: ValueKey(
                                 appConfig.backgroundImagePath.value ??

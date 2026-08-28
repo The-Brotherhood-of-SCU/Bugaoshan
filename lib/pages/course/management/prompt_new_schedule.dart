@@ -46,9 +46,15 @@ Future<void> promptForNewScheduleConfig(
     return;
   }
 
-  // 复用当前选中的课表配置（timeSlots 等）作为模板
+  // 复用当前选中的课表配置（timeSlots 等）作为模板；无课表时用默认配置
   final currentConfig = courseProvider.scheduleConfig.value;
-  final newConfig = currentConfig.copyWith(
+  final template =
+      currentConfig ??
+      ScheduleConfig(
+        semesterStartDate: DateTime.now().toMonday(),
+        totalWeeks: 20,
+      );
+  final newConfig = template.copyWith(
     id: DateTime.now().millisecondsSinceEpoch.toString(),
     semesterName: newName,
     semesterStartDate: DateTime.now().toMonday(),

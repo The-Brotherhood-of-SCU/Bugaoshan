@@ -32,7 +32,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   final courseProvider = getIt<CourseProvider>();
   final appConfig = getIt<AppConfigProvider>();
 
-  /// 页面级控制器（demo 模式为 null）。
+  /// 页面级控制器（demo 模式或无课表时为 null）。
   /// 不进 GetIt —— demo/真实两个 CoursePage 实例共存时单例语义错误。
   CoursePageController? _controller;
 
@@ -42,12 +42,14 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   /// 还需 courses、allSchedules 和 controller.showVacationPage（pageCount 变化时
   /// PageView 需重建）。grid 不监听 controller 本身 —— 翻页由 PageController
   /// 直接驱动，不需要整 PageView 重建。
-  late final Listenable _gridListenable;
+  late Listenable _gridListenable;
 
   late final Listenable _bgImageListenable = Listenable.merge([
     appConfig.backgroundImagePath,
     appConfig.backgroundImageOpacity,
   ]);
+
+  bool _hasScheduleListenerAdded = false;
 
   @override
   void initState() {
@@ -61,6 +63,19 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
       return;
     }
 
+    if (!courseProvider.hasSchedule) {
+      // 无课表：不建控制器，不注册 observer，监听 allSchedules/scheduleConfig 等待首条课表创建
+      _gridListenable = courseProvider.allSchedules;
+      courseProvider.allSchedules.addListener(_onHasScheduleChanged);
+      courseProvider.scheduleConfig.addListener(_onHasScheduleChanged);
+      _hasScheduleListenerAdded = true;
+      return;
+    }
+
+    _createController();
+  }
+
+  void _createController() {
     WidgetsBinding.instance.addObserver(this);
     _controller = CoursePageController(
       scheduleConfig: courseProvider.scheduleConfig,
@@ -79,11 +94,46 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
     });
   }
 
+  void _onHasScheduleChanged() {
+    final hasSchedule = courseProvider.hasSchedule;
+    final hasConfig = courseProvider.scheduleConfig.value != null;
+    if (hasSchedule && hasConfig && _controller == null && !widget.demoMode) {
+      // 无→有：创建控制器并重建
+      // 先移除空状态监听，避免重复触发
+      if (_hasScheduleListenerAdded) {
+        courseProvider.allSchedules.removeListener(_onHasScheduleChanged);
+        courseProvider.scheduleConfig.removeListener(_onHasScheduleChanged);
+        _hasScheduleListenerAdded = false;
+      }
+      setState(() {
+        _createController();
+      });
+    } else if (!hasSchedule && _controller != null) {
+      // 有→无：销毁控制器，回到空状态监听
+      WidgetsBinding.instance.removeObserver(this);
+      _controller?.dispose();
+      _controller = null;
+      _gridListenable = courseProvider.allSchedules;
+      if (!_hasScheduleListenerAdded) {
+        courseProvider.allSchedules.addListener(_onHasScheduleChanged);
+        courseProvider.scheduleConfig.addListener(_onHasScheduleChanged);
+        _hasScheduleListenerAdded = true;
+      }
+      setState(() {});
+    }
+  }
+
   @override
   void dispose() {
     if (!widget.demoMode) {
-      WidgetsBinding.instance.removeObserver(this);
-      _controller?.dispose();
+      if (_hasScheduleListenerAdded) {
+        courseProvider.allSchedules.removeListener(_onHasScheduleChanged);
+        courseProvider.scheduleConfig.removeListener(_onHasScheduleChanged);
+      }
+      if (_controller != null) {
+        WidgetsBinding.instance.removeObserver(this);
+        _controller?.dispose();
+      }
     }
     super.dispose();
   }
@@ -91,6 +141,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state != AppLifecycleState.resumed) return;
+    if (_controller == null) return;
     // 跨天或长时间后台后回前台：刷新放假页可用性 + 顶栏徽章。
     // 刻意不跳周 —— 回前台不自动跳当前周。
     // 裸 setState 必须保留：CourseGrid 的今天列高亮/节假日角标读 DateTime.now()，
@@ -103,7 +154,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        if (!widget.demoMode)
+        if (!widget.demoMode && _controller != null)
           ListenableBuilder(
             listenable: _controller!,
             builder: (context, _) => CoursePageTopBar(
@@ -185,7 +236,13 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   }
 
   Widget _buildCourseGrid(BuildContext context, Widget? _) {
-    final config = courseProvider.scheduleConfig.value;
+    // demo 模式：若 provider 暂无 schedule，用本地占位 config 保证预览可渲染
+    final config =
+        courseProvider.scheduleConfig.value ??
+        ScheduleConfig(
+          semesterStartDate: DateTime.now().toMonday(),
+          totalWeeks: 20,
+        );
     final allCourses = widget.demoMode
         ? kDemoCourses
         : courseProvider.courses.value;
@@ -264,6 +321,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
 
       // Check if already viewing next semester
       final currentSchedule = courseProvider.scheduleConfig.value;
+      if (currentSchedule == null) return;
       if (currentSchedule.semesterStartDate.year == registrationDate.year &&
           currentSchedule.semesterStartDate.month == registrationDate.month) {
         return;

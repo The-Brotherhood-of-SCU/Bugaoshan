@@ -39,6 +39,23 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
 
   void _loadConfig() {
     final config = courseProvider.scheduleConfig.value;
+    if (config == null) {
+      // 无课表时用占位，避免空异常；该页正常仅在有课表时可进入
+      final fallback = ScheduleConfig(
+        semesterStartDate: DateTime.now().toMonday(),
+        totalWeeks: 20,
+      );
+      _startDate = fallback.semesterStartDate;
+      _totalWeeks = fallback.totalWeeks;
+      _morningSections = fallback.morningSections;
+      _afternoonSections = fallback.afternoonSections;
+      _eveningSections = fallback.eveningSections;
+      _courseDuration = fallback.courseDuration;
+      _breakDuration = fallback.breakDuration;
+      _autoSyncTime = fallback.autoSyncTime;
+      _timeSlots = List.from(fallback.timeSlots);
+      return;
+    }
     _startDate = config.semesterStartDate;
     _totalWeeks = config.totalWeeks;
     _morningSections = config.morningSections;
@@ -384,6 +401,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
 
   Future<void> _save() async {
     final currentConfig = courseProvider.scheduleConfig.value;
+    if (currentConfig == null) return;
     final config = currentConfig.copyWith(
       semesterStartDate: _startDate,
       totalWeeks: _totalWeeks,

@@ -53,6 +53,7 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
 
   void _autoSave() {
     final currentConfig = courseProvider.scheduleConfig.value;
+    if (currentConfig == null) return;
     final config = currentConfig.copyWith(
       morningSections: _morningSections,
       afternoonSections: _afternoonSections,
