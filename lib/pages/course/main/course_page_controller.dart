@@ -130,8 +130,6 @@ class CoursePageController extends ChangeNotifier {
   void goToNextPage() => _moveTo(_pageIndex + 1, animate: true);
 
   /// 顶栏点日期：refresh + _moveTo(_indexForToday(), animate)。
-  /// 注意：不在此处触发 _checkAndPromptNextSemester —— 那是 State 的职责，
-  /// 仅在 initState postFrame 调一次。
   void goToToday() {
     // 未开学 / 假期中：没有「当前周」可跳，直接返回。
     if (isNotStarted || isTodayOnVacation) return;
