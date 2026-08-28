@@ -73,7 +73,7 @@ class GridHeaderRow extends StatelessWidget {
                 final isToday = date.isAtSameMomentAs(today);
                 final specialDay = HolidayUtils.getSpecialDay(date);
 
-                // 节假日/节气 单独 switch，不混 isToday
+                // 节假日/节气 单独 switch
                 final (
                   holidayBg,
                   holidayBadge,
@@ -81,18 +81,18 @@ class GridHeaderRow extends StatelessWidget {
                 ) = switch (specialDay.type) {
                   SpecialDayType.holiday => (
                     Colors.red.withAlpha(30),
-                    (label: l10n.holidayLabel, color: Colors.red),
-                    Colors.red,
+                    (label: l10n.holidayLabel, color: Colors.red.shade700),
+                    Colors.red.shade700,
                   ),
                   SpecialDayType.festival => (
                     Colors.orange.withAlpha(30),
-                    (label: l10n.festivalLabel, color: Colors.orange),
-                    Colors.orange,
+                    (label: l10n.festivalLabel, color: Colors.orange.shade800),
+                    Colors.orange.shade800,
                   ),
                   SpecialDayType.solarTerm => (
                     Colors.green.withAlpha(30),
-                    (label: l10n.solarTermLabel, color: Colors.green),
-                    Colors.green,
+                    (label: l10n.solarTermLabel, color: Colors.green.shade700),
+                    Colors.green.shade700,
                   ),
                   _ => (null, null, null),
                 };
