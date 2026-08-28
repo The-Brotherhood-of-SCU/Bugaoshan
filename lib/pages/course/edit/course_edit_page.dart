@@ -6,9 +6,9 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
-import 'package:bugaoshan/widgets/common/third_center.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
+import '../widgets/empty_schedule_placeholder.dart';
 
 class CourseEditPage extends StatefulWidget {
   final Course? course;
@@ -89,56 +89,7 @@ class _CourseEditPageState extends State<CourseEditPage> {
     if (courseProvider.scheduleConfig.value == null) {
       return Scaffold(
         appBar: AppBar(title: Text(l10n.addCourse)),
-        body: ThirdCenter(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 360),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 96,
-                    height: 96,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.calendar_month_outlined,
-                      size: 48,
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    l10n.noSchedule,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    l10n.noScheduleHint,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text(l10n.back),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+        body: const EmptySchedulePlaceholder(),
       );
     }
     final fallbackConfig = ScheduleConfig(

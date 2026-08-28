@@ -13,6 +13,7 @@ import 'package:bugaoshan/widgets/common/info_card.dart';
 import 'package:bugaoshan/widgets/common/section_title.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
+import '../widgets/empty_schedule_placeholder.dart';
 import 'package:bugaoshan/theme_shape.dart';
 
 class CourseScheduleSetting extends StatefulWidget {
@@ -114,6 +115,12 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    if (courseProvider.scheduleConfig.value == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text(l10n.scheduleSetting)),
+        body: const EmptySchedulePlaceholder(),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.scheduleSetting)),
