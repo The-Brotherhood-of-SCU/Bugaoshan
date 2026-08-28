@@ -96,6 +96,7 @@ class CourseCard extends StatelessWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     color: color,
+                    borderRadius: BorderRadius.circular(AppShapes.small),
                     border: isActive
                         ? null
                         : Border.all(
