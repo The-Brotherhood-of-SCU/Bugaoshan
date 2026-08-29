@@ -54,6 +54,7 @@ class CoursePageController extends ChangeNotifier {
     false,
   );
   bool _calendarNextSemesterLoaded = false;
+  int _calendarLoadGen = 0;
 
   late PageController _pageController;
 
@@ -173,12 +174,13 @@ class CoursePageController extends ChangeNotifier {
     if (_calendarNextSemesterLoaded) return calendarNextSemester.value;
     if (calendarNextSemesterLoading.value) return calendarNextSemester.value;
     if (_disposed) return null;
+    final gen = ++_calendarLoadGen;
     calendarNextSemesterLoading.value = true;
     try {
       final data = await AcademicCalendarService.loadBundledCalendar();
-      if (_disposed) return null;
+      if (_disposed || gen != _calendarLoadGen) return null;
       final next = data.findNextSemester(cfg.semesterEndDate);
-      if (_disposed) return null;
+      if (_disposed || gen != _calendarLoadGen) return null;
       calendarNextSemester.value = next;
       _calendarNextSemesterLoaded = true;
       return next;
@@ -186,7 +188,7 @@ class CoursePageController extends ChangeNotifier {
       debugPrint('CoursePageController: load calendar failed: $e');
       return null;
     } finally {
-      if (!_disposed) {
+      if (!_disposed && gen == _calendarLoadGen) {
         calendarNextSemesterLoading.value = false;
       }
     }
@@ -268,8 +270,14 @@ class CoursePageController extends ChangeNotifier {
   void _onScheduleConfigChanged() {
     showVacationPage.value = _computeShowVacationPage();
     // 学期切换后校历下学期需重算：以新 semesterEndDate 为锚点
+    // 若此时旧的 ensure 仍在 loading，先作废并重置 loading，
+    // 避免二次 ensure 被 loading 早退拦截而拿不到新锚点的下学期数据。
+    // gen 机制会丢弃旧请求的写入，finally 也不会误清新请求的 loading。
     _calendarNextSemesterLoaded = false;
-    calendarNextSemester.value = null;
+    if (!_disposed) {
+      calendarNextSemester.value = null;
+      calendarNextSemesterLoading.value = false;
+    }
     // 触发懒加载（不 await），VacationView / 提示弹框会订阅到结果
     ensureCalendarNextSemester();
     _moveTo(_indexForToday(), animate: false);
@@ -322,6 +330,8 @@ class CoursePageController extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    // 递增 gen 使任何在途的 ensure 立即作废，finally 不会再写已 dispose 的 notifier
+    _calendarLoadGen++;
     _scheduleConfig.removeListener(_onScheduleConfigChanged);
     _allSchedules.removeListener(_onAllSchedulesChanged);
     showVacationPage.dispose();
