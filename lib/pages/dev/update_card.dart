@@ -76,9 +76,7 @@ class UpdateCard extends StatelessWidget {
                               'Error: ${r.error}',
                               style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.error,
+                                    color: Theme.of(context).colorScheme.error,
                                   ),
                             ),
                           ],
@@ -118,9 +116,7 @@ class UpdateCard extends StatelessWidget {
                                   const SizedBox(width: 12),
                                   Text(
                                     '$percent%',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
+                                    style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(
                                           color: Theme.of(
                                             context,
