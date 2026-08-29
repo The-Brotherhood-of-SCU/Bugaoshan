@@ -2,12 +2,6 @@
 
 欢迎提交 Issue 和 Pull Request！
 
-## 📥 下载体验
-
-**前往 [Release 页面](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/latest) 下载最新版本**
-
----
-
 ## 💻 本地开发
 
 ### 环境要求
@@ -81,7 +75,6 @@ tool/install_ios_profile.sh <device>
 
 脚本会先结束旧 App 及 Widget Extension 进程，再覆盖安装并启动新包。请不要直接对正在运行的 App 反复执行 `devicectl device install app`：iOS 可能保留指向旧安装路径的 Runner 进程，表现为安装成功但启动后白屏。若启动在 15 秒内没有完成，脚本会停止等待并提示解锁或重启设备。
 
----
 
 ## 📁 项目结构
 
@@ -99,7 +92,6 @@ lib/
 └── main.dart             # 入口
 ```
 
----
 
 ## 🛠️ 技术栈
 
@@ -114,7 +106,7 @@ lib/
 | 国密算法 | [dart_sm](https://pub.dev/packages/dart_sm)（SM2/SM3/SM4）                                                   |
 | OCR      | [scu_ocr_lite](https://github.com/The-Brotherhood-of-SCU/scu_ocr_lite_dart)（纯 Dart 实现）                  |
 
----
+
 
 ## 🔄 贡献流程
 
@@ -124,13 +116,42 @@ lib/
 4. 推送分支 (`git push origin feature/your-feature`)
 5. 发起 Pull Request
 
----
+
+
+## 🤖 AI Assistant Policy
+
+本项目鼓励使用 AI 工具提升开发效率。我们关心的是代码质量与最终效果，而非内容是否由 AI 生成。
+
+> [!IMPORTANT]  
+> AI 是工具，人是责任主体。请勿直接提交（Pull Request）未经审查的 AI 生成内容。
+
+
+| 原则 | 说明 |
+|------|------|
+| 无需披露 | 使用 AI 时不必声明、不必标注生成来源 |
+| 必须复核 | AI 输出须经人工审查，确认正确、安全、可维护 |
+
+### ✅ 推荐使用 AI 的场景
+- 代码审查（Code Review）与重构建议
+- 编写单元测试、补充注释与文档
+- 撰写 Commit Message、Pull Request 描述
+- 阅读代码、理解业务逻辑
+
+### ⚠️ 需要人工重点审查的场景
+
+- 编写核心业务逻辑
+- 架构设计、技术选型与依赖引入
+- 数据迁移、Schema 变更等不可逆操作
+
+> [!NOTE]  
+> 长程任务中建议全程人工监督，及时纠偏，避免 AI 产生“能跑即止”的妥协实现。
+
+
+
 
 ## 团队
 
 **The-Brotherhood-of-SCU** — 一个非官方的四川大学开源组织
-
----
 
 ## 许可证
 
