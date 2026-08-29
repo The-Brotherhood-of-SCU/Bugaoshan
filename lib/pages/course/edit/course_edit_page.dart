@@ -396,8 +396,9 @@ class _CourseEditPageState extends State<CourseEditPage> {
 
     final l10n = AppLocalizations.of(context)!;
 
-    // Check for cross-period validation
-    final config = widget.scheduleConfig;
+    // 重新读取当前课表的最新配置，避免打开编辑页后切表导致的快照错位
+    final config = courseProvider.scheduleConfig.value;
+    if (config == null) return;
     final morningEnd = config.morningSections;
     final afternoonEnd = config.morningSections + config.afternoonSections;
 

@@ -89,7 +89,7 @@ class CoursePageController extends ChangeNotifier {
 
   int get pageCount => showVacationPage.value ? totalWeeks + 1 : totalWeeks;
 
-  ScheduleConfig get config => _scheduleConfig.value!;
+  ScheduleConfig? get config => _scheduleConfig.value;
 
   /// 防止 [ScheduleConfig.totalWeeks] 为 0 时 clamp(1, 0) 抛 ArgumentError。
   int get totalWeeks {

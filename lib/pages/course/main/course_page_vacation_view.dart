@@ -34,6 +34,15 @@ class _VacationViewState extends State<VacationView> {
     final textTheme = Theme.of(context).textTheme;
 
     final config = widget.controller.config;
+    if (config == null) {
+      return ThirdCenter(
+        child: Text(
+          l10n.noSchedule,
+          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final vacationStart = config.semesterEndDate.add(const Duration(days: 1));
