@@ -65,3 +65,4 @@ docs/draft/*
 /tmp/
 # 真实抓包 fixture（含个人敏感信息，仅本地校准用，校准测试缺文件自动 skip）
 test/fixtures/
+.trae-html-share-packages/
