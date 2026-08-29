@@ -60,19 +60,20 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
       // —— 修 demoMode 干扰真实课表页的 bug（以前 postFrame 写全局 currentWeek
       // 把 IndexedStack 里的真实页顶回当前周，甚至弹「切换学期」对话框）。
       _gridListenable = courseProvider.scheduleConfig;
-      return;
-    }
-
-    if (!courseProvider.hasSchedule) {
-      // 无课表：不建控制器，不注册 observer，监听 allSchedules/scheduleConfig 等待首条课表创建
-      _gridListenable = courseProvider.allSchedules;
+    } else {
+      // 非 demo 模式：始终监听 hasSchedule 空↔非空翻转，覆盖「无→有」与「有→无」两个方向。
+      // 这样初始有课表时也能在删除最后一条课表时及时回到空状态，避免只在空状态才监听导致的失联。
       courseProvider.allSchedules.addListener(_onHasScheduleChanged);
       courseProvider.scheduleConfig.addListener(_onHasScheduleChanged);
       _hasScheduleListenerAdded = true;
-      return;
-    }
 
-    _createController();
+      if (!courseProvider.hasSchedule) {
+        // 无课表：不建控制器，不注册 observer，等待首条课表创建
+        _gridListenable = courseProvider.allSchedules;
+      } else {
+        _createController();
+      }
+    }
   }
 
   void _createController() {
@@ -98,27 +99,18 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
     final hasSchedule = courseProvider.hasSchedule;
     final hasConfig = courseProvider.scheduleConfig.value != null;
     if (hasSchedule && hasConfig && _controller == null && !widget.demoMode) {
-      // 无→有：创建控制器并重建
-      // 先移除空状态监听，避免重复触发
-      if (_hasScheduleListenerAdded) {
-        courseProvider.allSchedules.removeListener(_onHasScheduleChanged);
-        courseProvider.scheduleConfig.removeListener(_onHasScheduleChanged);
-        _hasScheduleListenerAdded = false;
-      }
+      // 无→有：创建控制器并重建。保持监听以便后续还能感知「有→无」。
+      if (!mounted) return;
       setState(() {
         _createController();
       });
     } else if (!hasSchedule && _controller != null) {
-      // 有→无：销毁控制器，回到空状态监听
+      // 有→无：销毁控制器，回到空状态。保持监听以便再次「无→有」。
       WidgetsBinding.instance.removeObserver(this);
       _controller?.dispose();
       _controller = null;
       _gridListenable = courseProvider.allSchedules;
-      if (!_hasScheduleListenerAdded) {
-        courseProvider.allSchedules.addListener(_onHasScheduleChanged);
-        courseProvider.scheduleConfig.addListener(_onHasScheduleChanged);
-        _hasScheduleListenerAdded = true;
-      }
+      if (!mounted) return;
       setState(() {});
     }
   }

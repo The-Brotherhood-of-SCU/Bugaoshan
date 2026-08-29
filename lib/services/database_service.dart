@@ -382,19 +382,6 @@ class DatabaseService {
 
   // ==================== Helpers ====================
 
-  /// 占位用 ScheduleConfig，仅在 _schedulesCache 为空时返回，
-  /// 用于周次/总周数等算术保护，**不会**被持久化。
-  // ignore: unused_element
-  ScheduleConfig _placeholderScheduleConfig() {
-    final now = DateTime.now();
-    return ScheduleConfig(
-      id: '',
-      semesterName: '',
-      semesterStartDate: now.toMonday(),
-      totalWeeks: 20,
-    );
-  }
-
   Map<String, dynamic> _decodeJson(String str) =>
       Map<String, dynamic>.from(json.decode(str) as Map);
 
