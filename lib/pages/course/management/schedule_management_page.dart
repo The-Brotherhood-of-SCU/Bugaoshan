@@ -127,6 +127,7 @@ class ScheduleManagementPage extends StatelessWidget {
           builder: (context, _) {
             final allSchedules = courseProvider.allSchedules.value;
             final currentId = courseProvider.scheduleConfig.value?.id;
+            // currentId 可空：无课表时为 null，此时所有 isCurrent 均为 false，符合预期。
 
             if (allSchedules.isEmpty) {
               return ThirdCenter(
@@ -154,7 +155,7 @@ class ScheduleManagementPage extends StatelessWidget {
               itemCount: allSchedules.length,
               itemBuilder: (context, index) {
                 final schedule = allSchedules[index];
-                final isCurrent = schedule.id == currentId;
+                final isCurrent = currentId != null && schedule.id == currentId;
                 return ListTile(
                   leading: Icon(
                     isCurrent ? Icons.check_circle : Icons.circle_outlined,

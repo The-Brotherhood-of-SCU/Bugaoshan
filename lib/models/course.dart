@@ -35,6 +35,8 @@ class TimeSlot {
 }
 
 class ScheduleConfig {
+  static const int kDefaultTotalWeeks = 20;
+
   String id;
   String semesterName;
   DateTime semesterStartDate;
@@ -64,7 +66,7 @@ class ScheduleConfig {
     this.id = 'default',
     this.semesterName = '',
     required this.semesterStartDate,
-    this.totalWeeks = 20,
+    this.totalWeeks = kDefaultTotalWeeks,
     this.morningSections = 4,
     this.afternoonSections = 5,
     this.eveningSections = 3,
@@ -87,7 +89,7 @@ class ScheduleConfig {
           DateTime.now();
       totalWeeks = (endDate.difference(startDate).inDays / 7).ceil();
     } else {
-      totalWeeks = 20;
+      totalWeeks = kDefaultTotalWeeks;
     }
 
     int morning = json['morningSections'] as int? ?? 4;
@@ -450,7 +452,7 @@ class Course {
       teacher: json['teacher'] as String? ?? '',
       location: json['location'] as String? ?? '',
       startWeek: json['startWeek'] as int? ?? 1,
-      endWeek: json['endWeek'] as int? ?? 20,
+      endWeek: json['endWeek'] as int? ?? ScheduleConfig.kDefaultTotalWeeks,
       dayOfWeek: json['dayOfWeek'] as int? ?? 1,
       startSection: json['startSection'] as int? ?? 1,
       endSection: json['endSection'] as int? ?? 1,

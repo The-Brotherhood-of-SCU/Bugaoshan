@@ -52,7 +52,7 @@ Future<void> promptForNewScheduleConfig(
       currentConfig ??
       ScheduleConfig(
         semesterStartDate: DateTime.now().toMonday(),
-        totalWeeks: 20,
+        totalWeeks: ScheduleConfig.kDefaultTotalWeeks,
       );
   final newConfig = template.copyWith(
     id: DateTime.now().millisecondsSinceEpoch.toString(),
