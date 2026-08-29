@@ -48,14 +48,14 @@ class UpdateCard extends StatelessWidget {
                       children: [
                         Icon(icon, size: 20),
                         const SizedBox(width: 8),
-                        Flexible(
+                        Expanded(
                           child: Text(
                             title,
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ),
                         if (r.checking) ...[
-                          const Spacer(),
+                          const SizedBox(width: 12),
                           const SizedBox(
                             width: 20,
                             height: 20,
