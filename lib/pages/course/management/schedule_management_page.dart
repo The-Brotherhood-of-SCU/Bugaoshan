@@ -2,65 +2,15 @@ import 'package:bugaoshan/widgets/common/third_center.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/pages/course/import_schedule_page.dart';
+import '../import/import_schedule_page.dart';
+import 'prompt_new_schedule.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/utils/export_schedule_utils.dart';
 import 'package:bugaoshan/theme_shape.dart';
 
-/// 弹窗让用户输入新课表名称，校验重名后通过 [courseProvider.addSchedule] 添加。
-/// 复用当前选中的课表配置（timeSlots 等）作为模板。
-/// 供 [ScheduleManagementPage] 的 AppBar `+` 按钮和 [CoursePage] 空状态视图调用。
-Future<void> promptForNewScheduleConfig(
-  BuildContext context,
-  CourseProvider courseProvider,
-) async {
-  final l10n = AppLocalizations.of(context)!;
-  final controller = TextEditingController();
-  final newName = await showDialog<String>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      title: Text(l10n.semesterName),
-      content: TextField(
-        controller: controller,
-        autofocus: true,
-        decoration: InputDecoration(hintText: l10n.semesterName),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx),
-          child: Text(l10n.cancel),
-        ),
-        TextButton(
-          onPressed: () {
-            final t = controller.text.trim();
-            if (t.isNotEmpty) Navigator.pop(ctx, t);
-          },
-          child: Text(l10n.save),
-        ),
-      ],
-    ),
-  );
-
-  if (newName == null || newName.isEmpty) return;
-  if (!context.mounted) return;
-
-  if (courseProvider.isScheduleNameTaken(newName)) {
-    showInfoDialog(title: l10n.duplicateScheduleName, content: '');
-    return;
-  }
-
-  // 复用当前选中的课表配置（timeSlots 等）作为模板
-  final currentConfig = courseProvider.scheduleConfig.value;
-  final newConfig = currentConfig.copyWith(
-    id: DateTime.now().millisecondsSinceEpoch.toString(),
-    semesterName: newName,
-    semesterStartDate: DateTime.now().toMonday(),
-  );
-  await courseProvider.addSchedule(newConfig);
-}
+export 'prompt_new_schedule.dart';
 
 class ScheduleManagementPage extends StatelessWidget {
   const ScheduleManagementPage({super.key});
@@ -176,7 +126,8 @@ class ScheduleManagementPage extends StatelessWidget {
           ]),
           builder: (context, _) {
             final allSchedules = courseProvider.allSchedules.value;
-            final currentId = courseProvider.scheduleConfig.value.id;
+            final currentId = courseProvider.scheduleConfig.value?.id;
+            // currentId 可空：无课表时为 null，此时所有 isCurrent 均为 false，符合预期。
 
             if (allSchedules.isEmpty) {
               return ThirdCenter(
@@ -204,7 +155,7 @@ class ScheduleManagementPage extends StatelessWidget {
               itemCount: allSchedules.length,
               itemBuilder: (context, index) {
                 final schedule = allSchedules[index];
-                final isCurrent = schedule.id == currentId;
+                final isCurrent = currentId != null && schedule.id == currentId;
                 return ListTile(
                   leading: Icon(
                     isCurrent ? Icons.check_circle : Icons.circle_outlined,

@@ -129,7 +129,9 @@ class _ClassroomPageState extends State<ClassroomPage> {
         ? ScheduleConfig.timeSlotsForCampusName(campusName)
         : null;
     final timeSlots =
-        campusSlots ?? getIt<CourseProvider>().scheduleConfig.value.timeSlots;
+        campusSlots ??
+        getIt<CourseProvider>().scheduleConfig.value?.timeSlots ??
+        const [];
     if (timeSlots.isEmpty) return null;
 
     final now = DateTime.now();

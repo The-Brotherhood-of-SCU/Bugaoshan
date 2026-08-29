@@ -1,5 +1,5 @@
 import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/pages/course/course_page_controller.dart';
+import 'package:bugaoshan/pages/course/main/course_page_controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';

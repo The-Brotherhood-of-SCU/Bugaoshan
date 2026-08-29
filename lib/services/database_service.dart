@@ -229,8 +229,8 @@ class DatabaseService {
 
   List<ScheduleConfig> getAllSchedules() => List.unmodifiable(_schedulesCache);
 
-  ScheduleConfig getScheduleConfig() {
-    if (_schedulesCache.isEmpty) return _placeholderScheduleConfig();
+  ScheduleConfig? getScheduleConfig() {
+    if (_schedulesCache.isEmpty) return null;
     return _schedulesCache.firstWhere(
       (s) => s.id == _currentScheduleId,
       orElse: () => _schedulesCache.first,
@@ -381,18 +381,6 @@ class DatabaseService {
   }
 
   // ==================== Helpers ====================
-
-  /// 占位用 ScheduleConfig，仅在 _schedulesCache 为空时返回，
-  /// 用于周次/总周数等算术保护，**不会**被持久化。
-  ScheduleConfig _placeholderScheduleConfig() {
-    final now = DateTime.now();
-    return ScheduleConfig(
-      id: '',
-      semesterName: '',
-      semesterStartDate: now.toMonday(),
-      totalWeeks: 20,
-    );
-  }
 
   Map<String, dynamic> _decodeJson(String str) =>
       Map<String, dynamic>.from(json.decode(str) as Map);

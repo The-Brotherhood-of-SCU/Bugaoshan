@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/pages/course/time_slot_setting_page.dart';
+import 'time_slot_setting_page.dart';
 import 'package:bugaoshan/pages/settings/set_course_style_page.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
@@ -13,6 +13,7 @@ import 'package:bugaoshan/widgets/common/info_card.dart';
 import 'package:bugaoshan/widgets/common/section_title.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
+import '../widgets/empty_schedule_placeholder.dart';
 import 'package:bugaoshan/theme_shape.dart';
 
 class CourseScheduleSetting extends StatefulWidget {
@@ -39,6 +40,23 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
 
   void _loadConfig() {
     final config = courseProvider.scheduleConfig.value;
+    if (config == null) {
+      // 无课表时用占位，避免空异常；该页正常仅在有课表时可进入
+      final fallback = ScheduleConfig(
+        semesterStartDate: DateTime.now().toMonday(),
+        totalWeeks: 20,
+      );
+      _startDate = fallback.semesterStartDate;
+      _totalWeeks = fallback.totalWeeks;
+      _morningSections = fallback.morningSections;
+      _afternoonSections = fallback.afternoonSections;
+      _eveningSections = fallback.eveningSections;
+      _courseDuration = fallback.courseDuration;
+      _breakDuration = fallback.breakDuration;
+      _autoSyncTime = fallback.autoSyncTime;
+      _timeSlots = List.from(fallback.timeSlots);
+      return;
+    }
     _startDate = config.semesterStartDate;
     _totalWeeks = config.totalWeeks;
     _morningSections = config.morningSections;
@@ -97,6 +115,12 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    if (courseProvider.scheduleConfig.value == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text(l10n.scheduleSetting)),
+        body: const EmptySchedulePlaceholder(),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.scheduleSetting)),
@@ -384,6 +408,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
 
   Future<void> _save() async {
     final currentConfig = courseProvider.scheduleConfig.value;
+    if (currentConfig == null) return;
     final config = currentConfig.copyWith(
       semesterStartDate: _startDate,
       totalWeeks: _totalWeeks,

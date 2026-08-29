@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/pages/course/import/jwxt_parser.dart' as jwxt_parser;
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/academic_calendar_service.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
-import 'package:bugaoshan/utils/class_week_parser.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
@@ -505,100 +505,22 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
   }
 
   /// 剥离教务处学期标签中的"（当前）"标记。
-  String _cleanSemesterLabel(String label) {
-    return label.replaceAll('（当前）', '').replaceAll('(当前)', '').trim();
-  }
+  String _cleanSemesterLabel(String label) =>
+      jwxt_parser.cleanSemesterLabel(label);
 
   ({ScheduleConfig config, List<Course> courses}) _parseJwxtData(dynamic data) {
     final l10n = AppLocalizations.of(context)!;
-    final Map<String, dynamic> jwxtData = data as Map<String, dynamic>;
-    final List<dynamic> xkxx = jwxtData['xkxx'] as List<dynamic>;
-
-    // Default config
-    final config = ScheduleConfig(
-      semesterStartDate: DateTime.now()
-          .toMonday(), // User might need to adjust this later
-      semesterName: l10n.importedScheduleName(
-        DateTime.now().month,
-        DateTime.now().day,
-      ),
+    final defaultName = l10n.importedScheduleName(
+      DateTime.now().month,
+      DateTime.now().day,
     );
-
-    final List<Course> courses = [];
-    final colors = Colors.primaries;
-    int colorIdx = 0;
-
-    for (final item in xkxx) {
-      final Map<String, dynamic> courseMap = item as Map<String, dynamic>;
-      courseMap.forEach((key, value) {
-        final Map<String, dynamic> details = value as Map<String, dynamic>;
-        final String rawName = details['courseName'] as String? ?? 'Unknown';
-        final String courseSequence =
-            details['id']?['coureSequenceNumber'] as String? ?? '';
-        final String courseName = '$rawName ($courseSequence)';
-        final String teacher = details['attendClassTeacher'] as String? ?? '';
-        final List<dynamic> timeAndPlaceList =
-            details['timeAndPlaceList'] as List<dynamic>? ?? [];
-
-        for (final tp in timeAndPlaceList) {
-          final Map<String, dynamic> tpMap = tp as Map<String, dynamic>;
-          final int dayOfWeek = tpMap['classDay'] as int;
-          final int startSection = tpMap['classSessions'] as int;
-          final int continuingSession = tpMap['continuingSession'] as int;
-          final int endSection = startSection + continuingSession - 1;
-          final String location =
-              '${tpMap['teachingBuildingName'] ?? ''}${tpMap['classroomName'] ?? ''}';
-          final String classWeek = tpMap['classWeek'] as String? ?? '';
-
-          final weekSegments = parseClassWeekSegments(classWeek);
-          if (weekSegments.isNotEmpty) {
-            final colorValue = colors[colorIdx % colors.length].toARGB32();
-            for (final segment in weekSegments) {
-              courses.add(
-                Course(
-                  name: courseName,
-                  teacher: teacher,
-                  location: location,
-                  startWeek: segment.startWeek,
-                  endWeek: segment.endWeek,
-                  dayOfWeek: dayOfWeek,
-                  startSection: startSection,
-                  endSection: endSection,
-                  colorValue: colorValue,
-                  weekType: segment.weekType,
-                ),
-              );
-            }
-            colorIdx++;
-          }
-        }
-      });
-    }
-
-    final hasWeekend = courses.any((c) => c.dayOfWeek == 6 || c.dayOfWeek == 7);
-    getIt<AppConfigProvider>().showWeekend.value = hasWeekend;
-
-    return (config: config, courses: courses);
+    final result = jwxt_parser.parseJwxtData(data, defaultName);
+    getIt<AppConfigProvider>().showWeekend.value = result.hasWeekend;
+    return (config: result.config, courses: result.courses);
   }
 
-  void _validateImportedSchedule(ScheduleConfig config, List<Course> courses) {
-    if (config.totalWeeks < 1 || config.timeSlots.isEmpty) {
-      throw const FormatException('Invalid schedule config');
-    }
-    final maxSection = config.timeSlots.length;
-    for (final course in courses) {
-      if (course.startWeek < 1 ||
-          course.endWeek < course.startWeek ||
-          course.endWeek > config.totalWeeks ||
-          course.dayOfWeek < 1 ||
-          course.dayOfWeek > 7 ||
-          course.startSection < 1 ||
-          course.endSection < course.startSection ||
-          course.endSection > maxSection) {
-        throw FormatException('Invalid course range: ${course.name}');
-      }
-    }
-  }
+  void _validateImportedSchedule(ScheduleConfig config, List<Course> courses) =>
+      jwxt_parser.validateImportedSchedule(config, courses);
 
   /// 检查课表名称是否冲突，如果冲突则弹出对话框询问用户操作。
   /// 返回 `null` 表示无冲突（可继续以原名称导入）。

@@ -32,14 +32,16 @@ class ExportScheduleProvider {
     overrideCourses: courses,
   );
 
-  ScheduleConfig get _config =>
+  ScheduleConfig? get _config =>
       _overrideConfig ?? _courseProvider.scheduleConfig.value;
   List<Course> get _courses =>
       _overrideCourses ?? _courseProvider.courses.value;
 
   Future<ExportResult> copyToClipBoard() async {
+    final cfg = _config;
+    if (cfg == null) return ExportResult.failed;
     final data = {
-      'config': _config.toJson(),
+      'config': cfg.toJson(),
       'courses': _courses.map((e) => e.toJson()).toList(),
     };
     final success = await CalendarExportUtils.copyJsonToClipboard(
@@ -50,8 +52,10 @@ class ExportScheduleProvider {
   }
 
   CalendarExportPayload buildCalendarPayload(String teacherLabel) {
+    final cfg = _config;
+    if (cfg == null) throw StateError('No schedule to export');
     return IcsService.genCourseExportPayload(
-      config: _config,
+      config: cfg,
       courses: _courses,
       teacherLabel: teacherLabel,
     );
