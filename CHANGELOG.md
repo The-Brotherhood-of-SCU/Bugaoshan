@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-08-30
+
 ### Added
 - 课表新增「未开学」状态：未开学时左上角正常显示当前周数，并附「未开学」标签
 - iOS 小组件支持外观设置（课程色彩/单色配色、标准/紧凑信息密度）
