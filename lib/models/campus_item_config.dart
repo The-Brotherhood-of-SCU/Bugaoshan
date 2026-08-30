@@ -17,7 +17,7 @@ import 'package:bugaoshan/pages/campus/notice/notice_page.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/plan_completion_page.dart';
 import 'package:bugaoshan/pages/campus/train_program/train_program_page.dart';
 import 'package:bugaoshan/pages/campus_page/campus_page.dart';
-import 'package:bugaoshan/pages/course/course_page.dart';
+import 'package:bugaoshan/pages/course/main/course_page.dart';
 import 'package:bugaoshan/pages/profile/profile_page.dart';
 
 class CampusItemConfig {

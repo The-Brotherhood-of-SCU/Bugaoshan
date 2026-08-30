@@ -10,12 +10,14 @@ import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 class CourseEditPage extends StatefulWidget {
+  final ScheduleConfig scheduleConfig;
   final Course? course;
   final int? prefillDayOfWeek;
   final int? prefillSection;
 
   const CourseEditPage({
     super.key,
+    required this.scheduleConfig,
     this.course,
     this.prefillDayOfWeek,
     this.prefillSection,
@@ -45,7 +47,7 @@ class _CourseEditPageState extends State<CourseEditPage> {
   void initState() {
     super.initState();
     final course = widget.course;
-    final config = courseProvider.scheduleConfig.value;
+    final config = widget.scheduleConfig;
     final maxSections = config.sectionsPerDay;
 
     _nameController = TextEditingController(text: course?.name ?? '');
@@ -79,8 +81,9 @@ class _CourseEditPageState extends State<CourseEditPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final totalWeeks = courseProvider.scheduleConfig.value.totalWeeks;
-    final sections = courseProvider.scheduleConfig.value.sectionsPerDay;
+    final config = widget.scheduleConfig;
+    final totalWeeks = config.totalWeeks;
+    final sections = config.sectionsPerDay;
     final dayNames = [
       l10n.sunday,
       l10n.monday,
@@ -393,8 +396,9 @@ class _CourseEditPageState extends State<CourseEditPage> {
 
     final l10n = AppLocalizations.of(context)!;
 
-    // Check for cross-period validation
+    // 重新读取当前课表的最新配置，避免打开编辑页后切表导致的快照错位
     final config = courseProvider.scheduleConfig.value;
+    if (config == null) return;
     final morningEnd = config.morningSections;
     final afternoonEnd = config.morningSections + config.afternoonSections;
 

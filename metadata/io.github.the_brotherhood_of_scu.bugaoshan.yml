@@ -8,7 +8,7 @@
 # 开发者签名的 APK。因此 F-Droid 与 GitHub 渠道的安装包签名一致，可互相覆盖安装。
 #
 # 为保证逐字节一致，本 recipe 与 CI（.github/workflows/build-android.yml）严格对齐：
-#   - 相同 Flutter 版本（srclibs flutter@3.44.8 == .github/actions/setup）
+#   - 相同 Flutter 版本（srclibs flutter@3.44.9 == .github/actions/setup）
 #   - 相同构建参数：--release --split-per-abi --obfuscate --split-debug-info
 #     + 相同的 --build-number（base）与 dart-define
 #     （GIT_TAG / GIT_COMMIT / GIT_COMMIT_DATE；均无构建时间戳等非确定性输入）
@@ -55,7 +55,7 @@
 # flutter_server_box 的 fdroiddata recipe）。CI 侧无需为此改动。
 #
 # Flutter SDK 路径镜像：Flutter SDK 源码 URI 同样会编入 kernel，CI 通过
-# subosito/flutter-action 把 SDK 装在 /opt/hostedtoolcache/flutter/stable-3.44.8-x64。
+# subosito/flutter-action 把 SDK 装在 /opt/hostedtoolcache/flutter/stable-3.44.9-x64。
 # 因此 prebuild 先把 srclib 的 flutter 移到该路径（保留 $$flutter$$ 符号链接），
 # build 结束后移回；移动前先清理上次运行可能残留的状态，保证可重复执行。
 #
@@ -99,11 +99,196 @@ Repo: https://github.com/The-Brotherhood-of-SCU/Bugaoshan.git
 
 Builds:
   # ----- armeabi-v7a (versionCode = base*10 + 1) -----
+  - versionName: '2.4.0'
+    versionCode: 204001
+    commit: v2.4.0
+    srclibs:
+      - flutter@3.44.9
+    rm:
+      - .github
+      - ios
+      - linux
+      - macos
+      - windows
+      - web
+    sudo:
+      - mkdir -p /home/runner
+      - chown vagrant /home/runner
+      - mkdir -p /opt/hostedtoolcache/flutter
+      - chown vagrant /opt/hostedtoolcache/flutter
+    prebuild:
+      - export repo=/home/runner/work/Bugaoshan
+      - mkdir -p $repo
+      - export PUB_CACHE=/home/runner/.pub-cache
+      - export PUB_HOSTED_URL=https://pub.flutter-io.cn
+      - if [ -e /home/runner/.pub-cache ] && [ ! -L /home/runner/.pub-cache ]; then rm -rf /home/runner/.pub-cache; fi
+      - if [ ! -e /home/runner/.pub-cache ]; then mkdir -p /home/vagrant/.pub-cache; ln -s /home/vagrant/.pub-cache /home/runner/.pub-cache; fi
+      - if [ -L $$flutter$$ ]; then rm $$flutter$$; fi
+      - if [ ! -e $$flutter$$ ] && [ -e /opt/hostedtoolcache/flutter/stable-3.44.9-x64 ]; then mv /opt/hostedtoolcache/flutter/stable-3.44.9-x64 $$flutter$$; fi
+      - rm -rf /opt/hostedtoolcache/flutter/stable-3.44.9-x64
+      - mv $$flutter$$ /opt/hostedtoolcache/flutter/stable-3.44.9-x64
+      - ln -s /opt/hostedtoolcache/flutter/stable-3.44.9-x64 $$flutter$$
+      - cd ..
+      - rm -rf $repo/Bugaoshan
+      - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
+      - pushd $repo/Bugaoshan
+      - $$flutter$$/bin/flutter config --no-analytics
+      - $$flutter$$/bin/flutter pub get
+      - sed -i -E 's/(-Wl,)(--build-id=none,)?/\1--build-id=none,/' ${PUB_CACHE:-$HOME/.pub-cache}/hosted/*/jni-*/src/CMakeLists.txt
+      - $$flutter$$/bin/dart run build_runner build --delete-conflicting-outputs || true
+      - $$flutter$$/bin/flutter gen-l10n
+      - popd
+      - mv $repo/Bugaoshan io.github.the_brotherhood_of_scu.bugaoshan
+    build:
+      - export repo=/home/runner/work/Bugaoshan
+      - export PUB_CACHE=/home/runner/.pub-cache
+      - export PUB_HOSTED_URL=https://pub.flutter-io.cn
+      - cd ..
+      - rm -rf $repo/Bugaoshan
+      - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
+      - pushd $repo/Bugaoshan
+      - "export GIT_TAG=v$(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//')"
+      - export GIT_COMMIT=$(git rev-parse HEAD)
+      - export GIT_COMMIT_DATE=$(git log -1 --format=%ci)
+      - "$$flutter$$/bin/flutter build apk --release --split-per-abi --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\""
+      - popd
+      - mv $repo/Bugaoshan io.github.the_brotherhood_of_scu.bugaoshan
+      - rm -rf $$flutter$$
+      - mv /opt/hostedtoolcache/flutter/stable-3.44.9-x64 $$flutter$$
+    output: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+    binary: https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/download/v%v/bugaoshan_%v_armeabi-v7a.apk
+    gradleprops:
+      - android.r8.failOnMissingClasses=false
+  # ----- arm64-v8a (versionCode = base*10 + 2) -----
+  - versionName: '2.4.0'
+    versionCode: 204002
+    commit: v2.4.0
+    srclibs:
+      - flutter@3.44.9
+    rm:
+      - .github
+      - ios
+      - linux
+      - macos
+      - windows
+      - web
+    sudo:
+      - mkdir -p /home/runner
+      - chown vagrant /home/runner
+      - mkdir -p /opt/hostedtoolcache/flutter
+      - chown vagrant /opt/hostedtoolcache/flutter
+    prebuild:
+      - export repo=/home/runner/work/Bugaoshan
+      - mkdir -p $repo
+      - export PUB_CACHE=/home/runner/.pub-cache
+      - export PUB_HOSTED_URL=https://pub.flutter-io.cn
+      - if [ -e /home/runner/.pub-cache ] && [ ! -L /home/runner/.pub-cache ]; then rm -rf /home/runner/.pub-cache; fi
+      - if [ ! -e /home/runner/.pub-cache ]; then mkdir -p /home/vagrant/.pub-cache; ln -s /home/vagrant/.pub-cache /home/runner/.pub-cache; fi
+      - if [ -L $$flutter$$ ]; then rm $$flutter$$; fi
+      - if [ ! -e $$flutter$$ ] && [ -e /opt/hostedtoolcache/flutter/stable-3.44.9-x64 ]; then mv /opt/hostedtoolcache/flutter/stable-3.44.9-x64 $$flutter$$; fi
+      - rm -rf /opt/hostedtoolcache/flutter/stable-3.44.9-x64
+      - mv $$flutter$$ /opt/hostedtoolcache/flutter/stable-3.44.9-x64
+      - ln -s /opt/hostedtoolcache/flutter/stable-3.44.9-x64 $$flutter$$
+      - cd ..
+      - rm -rf $repo/Bugaoshan
+      - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
+      - pushd $repo/Bugaoshan
+      - $$flutter$$/bin/flutter config --no-analytics
+      - $$flutter$$/bin/flutter pub get
+      - sed -i -E 's/(-Wl,)(--build-id=none,)?/\1--build-id=none,/' ${PUB_CACHE:-$HOME/.pub-cache}/hosted/*/jni-*/src/CMakeLists.txt
+      - $$flutter$$/bin/dart run build_runner build --delete-conflicting-outputs || true
+      - $$flutter$$/bin/flutter gen-l10n
+      - popd
+      - mv $repo/Bugaoshan io.github.the_brotherhood_of_scu.bugaoshan
+    build:
+      - export repo=/home/runner/work/Bugaoshan
+      - export PUB_CACHE=/home/runner/.pub-cache
+      - export PUB_HOSTED_URL=https://pub.flutter-io.cn
+      - cd ..
+      - rm -rf $repo/Bugaoshan
+      - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
+      - pushd $repo/Bugaoshan
+      - "export GIT_TAG=v$(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//')"
+      - export GIT_COMMIT=$(git rev-parse HEAD)
+      - export GIT_COMMIT_DATE=$(git log -1 --format=%ci)
+      - "$$flutter$$/bin/flutter build apk --release --split-per-abi --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\""
+      - popd
+      - mv $repo/Bugaoshan io.github.the_brotherhood_of_scu.bugaoshan
+      - rm -rf $$flutter$$
+      - mv /opt/hostedtoolcache/flutter/stable-3.44.9-x64 $$flutter$$
+    output: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+    binary: https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/download/v%v/bugaoshan_%v_arm64-v8a.apk
+    gradleprops:
+      - android.r8.failOnMissingClasses=false
+  # ----- x86_64 (versionCode = base*10 + 4) -----
+  - versionName: '2.4.0'
+    versionCode: 204004
+    commit: v2.4.0
+    srclibs:
+      - flutter@3.44.9
+    rm:
+      - .github
+      - ios
+      - linux
+      - macos
+      - windows
+      - web
+    sudo:
+      - mkdir -p /home/runner
+      - chown vagrant /home/runner
+      - mkdir -p /opt/hostedtoolcache/flutter
+      - chown vagrant /opt/hostedtoolcache/flutter
+    prebuild:
+      - export repo=/home/runner/work/Bugaoshan
+      - mkdir -p $repo
+      - export PUB_CACHE=/home/runner/.pub-cache
+      - export PUB_HOSTED_URL=https://pub.flutter-io.cn
+      - if [ -e /home/runner/.pub-cache ] && [ ! -L /home/runner/.pub-cache ]; then rm -rf /home/runner/.pub-cache; fi
+      - if [ ! -e /home/runner/.pub-cache ]; then mkdir -p /home/vagrant/.pub-cache; ln -s /home/vagrant/.pub-cache /home/runner/.pub-cache; fi
+      - if [ -L $$flutter$$ ]; then rm $$flutter$$; fi
+      - if [ ! -e $$flutter$$ ] && [ -e /opt/hostedtoolcache/flutter/stable-3.44.9-x64 ]; then mv /opt/hostedtoolcache/flutter/stable-3.44.9-x64 $$flutter$$; fi
+      - rm -rf /opt/hostedtoolcache/flutter/stable-3.44.9-x64
+      - mv $$flutter$$ /opt/hostedtoolcache/flutter/stable-3.44.9-x64
+      - ln -s /opt/hostedtoolcache/flutter/stable-3.44.9-x64 $$flutter$$
+      - cd ..
+      - rm -rf $repo/Bugaoshan
+      - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
+      - pushd $repo/Bugaoshan
+      - $$flutter$$/bin/flutter config --no-analytics
+      - $$flutter$$/bin/flutter pub get
+      - sed -i -E 's/(-Wl,)(--build-id=none,)?/\1--build-id=none,/' ${PUB_CACHE:-$HOME/.pub-cache}/hosted/*/jni-*/src/CMakeLists.txt
+      - $$flutter$$/bin/dart run build_runner build --delete-conflicting-outputs || true
+      - $$flutter$$/bin/flutter gen-l10n
+      - popd
+      - mv $repo/Bugaoshan io.github.the_brotherhood_of_scu.bugaoshan
+    build:
+      - export repo=/home/runner/work/Bugaoshan
+      - export PUB_CACHE=/home/runner/.pub-cache
+      - export PUB_HOSTED_URL=https://pub.flutter-io.cn
+      - cd ..
+      - rm -rf $repo/Bugaoshan
+      - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
+      - pushd $repo/Bugaoshan
+      - "export GIT_TAG=v$(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//')"
+      - export GIT_COMMIT=$(git rev-parse HEAD)
+      - export GIT_COMMIT_DATE=$(git log -1 --format=%ci)
+      - "$$flutter$$/bin/flutter build apk --release --split-per-abi --build-number=$(( $(grep '^version:' pubspec.yaml | sed 's/.*version: *//; s/+.*//' | awk -F. '{print $1*10000 + $2*100 + $3}') )) --obfuscate --split-debug-info=build/app/outputs/symbols/fdroid --dart-define=GIT_TAG=$GIT_TAG --dart-define=GIT_COMMIT=$GIT_COMMIT --dart-define=GIT_COMMIT_DATE=\"$GIT_COMMIT_DATE\""
+      - popd
+      - mv $repo/Bugaoshan io.github.the_brotherhood_of_scu.bugaoshan
+      - rm -rf $$flutter$$
+      - mv /opt/hostedtoolcache/flutter/stable-3.44.9-x64 $$flutter$$
+    output: build/app/outputs/flutter-apk/app-x86_64-release.apk
+    binary: https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/download/v%v/bugaoshan_%v_x86_64.apk
+    gradleprops:
+      - android.r8.failOnMissingClasses=false
+
+
+  # ----- armeabi-v7a (versionCode = base*10 + 1) -----
   - versionName: '2.3.0'
     versionCode: 203001
     commit: aac155f743d27f380a64da3f55d3a0884912aa60
     srclibs:
-      - flutter@3.44.8
+      - flutter@3.44.9
     rm:
       - .github
       - ios
@@ -122,10 +307,10 @@ Builds:
       - export PUB_HOSTED_URL=https://pub.flutter-io.cn
       - export PUB_CACHE=/home/runner/.pub-cache
       - if [ -L $$flutter$$ ]; then rm $$flutter$$; fi
-      - if [ ! -e $$flutter$$ ] && [ -e /opt/hostedtoolcache/flutter/stable-3.44.8-x64 ]; then mv /opt/hostedtoolcache/flutter/stable-3.44.8-x64 $$flutter$$; fi
-      - rm -rf /opt/hostedtoolcache/flutter/stable-3.44.8-x64
-      - mv $$flutter$$ /opt/hostedtoolcache/flutter/stable-3.44.8-x64
-      - ln -s /opt/hostedtoolcache/flutter/stable-3.44.8-x64 $$flutter$$
+      - if [ ! -e $$flutter$$ ] && [ -e /opt/hostedtoolcache/flutter/stable-3.44.9-x64 ]; then mv /opt/hostedtoolcache/flutter/stable-3.44.9-x64 $$flutter$$; fi
+      - rm -rf /opt/hostedtoolcache/flutter/stable-3.44.9-x64
+      - mv $$flutter$$ /opt/hostedtoolcache/flutter/stable-3.44.9-x64
+      - ln -s /opt/hostedtoolcache/flutter/stable-3.44.9-x64 $$flutter$$
       - cd ..
       - rm -rf $repo/Bugaoshan
       - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
@@ -152,7 +337,7 @@ Builds:
       - popd
       - mv $repo/Bugaoshan io.github.the_brotherhood_of_scu.bugaoshan
       - rm -rf $$flutter$$
-      - mv /opt/hostedtoolcache/flutter/stable-3.44.8-x64 $$flutter$$
+      - mv /opt/hostedtoolcache/flutter/stable-3.44.9-x64 $$flutter$$
     output: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
     binary: https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/download/v%v/bugaoshan_%v_armeabi-v7a.apk
     gradleprops:
@@ -163,7 +348,7 @@ Builds:
     versionCode: 203002
     commit: aac155f743d27f380a64da3f55d3a0884912aa60
     srclibs:
-      - flutter@3.44.8
+      - flutter@3.44.9
     rm:
       - .github
       - ios
@@ -182,10 +367,10 @@ Builds:
       - export PUB_CACHE=/home/runner/.pub-cache
       - export PUB_HOSTED_URL=https://pub.flutter-io.cn
       - if [ -L $$flutter$$ ]; then rm $$flutter$$; fi
-      - if [ ! -e $$flutter$$ ] && [ -e /opt/hostedtoolcache/flutter/stable-3.44.8-x64 ]; then mv /opt/hostedtoolcache/flutter/stable-3.44.8-x64 $$flutter$$; fi
-      - rm -rf /opt/hostedtoolcache/flutter/stable-3.44.8-x64
-      - mv $$flutter$$ /opt/hostedtoolcache/flutter/stable-3.44.8-x64
-      - ln -s /opt/hostedtoolcache/flutter/stable-3.44.8-x64 $$flutter$$
+      - if [ ! -e $$flutter$$ ] && [ -e /opt/hostedtoolcache/flutter/stable-3.44.9-x64 ]; then mv /opt/hostedtoolcache/flutter/stable-3.44.9-x64 $$flutter$$; fi
+      - rm -rf /opt/hostedtoolcache/flutter/stable-3.44.9-x64
+      - mv $$flutter$$ /opt/hostedtoolcache/flutter/stable-3.44.9-x64
+      - ln -s /opt/hostedtoolcache/flutter/stable-3.44.9-x64 $$flutter$$
       - cd ..
       - rm -rf $repo/Bugaoshan
       - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
@@ -212,7 +397,7 @@ Builds:
       - popd
       - mv $repo/Bugaoshan io.github.the_brotherhood_of_scu.bugaoshan
       - rm -rf $$flutter$$
-      - mv /opt/hostedtoolcache/flutter/stable-3.44.8-x64 $$flutter$$
+      - mv /opt/hostedtoolcache/flutter/stable-3.44.9-x64 $$flutter$$
     output: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
     binary: https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/download/v%v/bugaoshan_%v_arm64-v8a.apk
     gradleprops:
@@ -223,7 +408,7 @@ Builds:
     versionCode: 203004
     commit: aac155f743d27f380a64da3f55d3a0884912aa60
     srclibs:
-      - flutter@3.44.8
+      - flutter@3.44.9
     rm:
       - .github
       - ios
@@ -242,10 +427,10 @@ Builds:
       - export PUB_HOSTED_URL=https://pub.flutter-io.cn
       - export PUB_CACHE=/home/runner/.pub-cache
       - if [ -L $$flutter$$ ]; then rm $$flutter$$; fi
-      - if [ ! -e $$flutter$$ ] && [ -e /opt/hostedtoolcache/flutter/stable-3.44.8-x64 ]; then mv /opt/hostedtoolcache/flutter/stable-3.44.8-x64 $$flutter$$; fi
-      - rm -rf /opt/hostedtoolcache/flutter/stable-3.44.8-x64
-      - mv $$flutter$$ /opt/hostedtoolcache/flutter/stable-3.44.8-x64
-      - ln -s /opt/hostedtoolcache/flutter/stable-3.44.8-x64 $$flutter$$
+      - if [ ! -e $$flutter$$ ] && [ -e /opt/hostedtoolcache/flutter/stable-3.44.9-x64 ]; then mv /opt/hostedtoolcache/flutter/stable-3.44.9-x64 $$flutter$$; fi
+      - rm -rf /opt/hostedtoolcache/flutter/stable-3.44.9-x64
+      - mv $$flutter$$ /opt/hostedtoolcache/flutter/stable-3.44.9-x64
+      - ln -s /opt/hostedtoolcache/flutter/stable-3.44.9-x64 $$flutter$$
       - cd ..
       - rm -rf $repo/Bugaoshan
       - mv io.github.the_brotherhood_of_scu.bugaoshan $repo/Bugaoshan
@@ -272,7 +457,7 @@ Builds:
       - popd
       - mv $repo/Bugaoshan io.github.the_brotherhood_of_scu.bugaoshan
       - rm -rf $$flutter$$
-      - mv /opt/hostedtoolcache/flutter/stable-3.44.8-x64 $$flutter$$
+      - mv /opt/hostedtoolcache/flutter/stable-3.44.9-x64 $$flutter$$
     output: build/app/outputs/flutter-apk/app-x86_64-release.apk
     binary: https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/download/v%v/bugaoshan_%v_x86_64.apk
     gradleprops:

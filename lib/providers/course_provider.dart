@@ -14,24 +14,14 @@ class CourseProvider {
   }
 
   final ValueNotifier<List<Course>> courses = ValueNotifier<List<Course>>([]);
-  final ValueNotifier<ScheduleConfig> scheduleConfig =
-      ValueNotifier<ScheduleConfig>(_defaultConfig());
+  final ValueNotifier<ScheduleConfig?> scheduleConfig =
+      ValueNotifier<ScheduleConfig?>(null);
   final ValueNotifier<List<ScheduleConfig>> allSchedules =
       ValueNotifier<List<ScheduleConfig>>([]);
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
 
   /// 当前数据库中是否存在课表。UI 据此在「暂无课表」空状态和 grid 之间切换。
   bool get hasSchedule => allSchedules.value.isNotEmpty;
-
-  static ScheduleConfig _defaultConfig() {
-    final now = DateTime.now();
-    return ScheduleConfig(
-      id: 'default',
-      semesterName: '默认课表',
-      semesterStartDate: now.toMonday(),
-      totalWeeks: 20,
-    );
-  }
 
   Future<void> _loadData() async {
     isLoading.value = true;

@@ -4297,6 +4297,24 @@ abstract class AppLocalizations {
   /// **'Use grid layout for campus page'**
   String get campusGridViewDesc;
 
+  /// No description provided for @campusSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search features'**
+  String get campusSearchHint;
+
+  /// No description provided for @campusSearchResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Search Results'**
+  String get campusSearchResults;
+
+  /// No description provided for @campusNoSearchResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching features'**
+  String get campusNoSearchResults;
+
   /// No description provided for @viewChangelog.
   ///
   /// In en, this message translates to:

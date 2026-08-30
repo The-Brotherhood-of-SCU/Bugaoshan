@@ -1,12 +1,15 @@
-part of 'course_page.dart';
+import 'package:bugaoshan/widgets/common/third_center.dart';
+import 'package:flutter/material.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
 
 /// 课表为空时显示的占位视图：图标 + 「暂无课表」+ 「课表管理」/「导入课表」/「新建课表」按钮。
-class _NoScheduleView extends StatelessWidget {
+class NoScheduleView extends StatelessWidget {
   final VoidCallback onOpenManagement;
   final VoidCallback onImport;
   final VoidCallback onAddSchedule;
 
-  const _NoScheduleView({
+  const NoScheduleView({
+    super.key,
     required this.onOpenManagement,
     required this.onImport,
     required this.onAddSchedule,

@@ -135,12 +135,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
     }
 
     // Build summary card
-    final categoryNodes = _provider.nodes.where((n) => n.isCategory).toList();
-    final totalEarned = categoryNodes.fold<double>(
-      0,
-      (sum, n) => sum + (double.tryParse(n.earnedCredits) ?? 0),
-    );
-    final completedCount = categoryNodes.where((n) => n.completed).length;
+    final stats = computeSummaryStats(_provider.nodes);
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -148,9 +143,9 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
         _buildSummaryCard(
           context,
           l10n,
-          totalEarned,
-          completedCount,
-          categoryNodes.length,
+          stats.totalEarned,
+          stats.completedCount,
+          stats.moduleCount,
         ),
         const SizedBox(height: 16),
         ...rootNodes.map((node) => _buildCategoryTile(context, node, 0)),
@@ -215,11 +210,12 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
     final l10n = AppLocalizations.of(context)!;
     final children = _provider.getChildren(node.id);
 
+    // 无子节点的模块（如美育、创新创业教育、跨学科专业教育）以列表项形式展示，
+    // 与教务处方案层级保持一致。
     if (children.isEmpty && !node.isCourse) {
-      return const SizedBox.shrink();
+      return _buildLeafModuleTile(context, node, depth);
     }
 
-    // If this is a leaf category with no children, skip
     if (node.isCourse) {
       return _buildCourseTile(context, node, depth);
     }
@@ -302,6 +298,72 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
       return '${l10n.planCompletionCourses}: $passed/$total';
     }
     return '';
+  }
+
+  Widget _buildLeafModuleTile(
+    BuildContext context,
+    PlanCompletionNode node,
+    int depth,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    final earned = double.tryParse(node.earnedCredits) ?? 0;
+    final required = double.tryParse(node.requiredCredits) ?? 0;
+    final theme = Theme.of(context);
+
+    return StyledCard(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(
+              node.completed
+                  ? Icons.check_circle
+                  : Icons.radio_button_unchecked,
+              color: node.completed
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurfaceVariant,
+              size: 22,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _extractCategoryDisplayName(node.name),
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${l10n.planCompletionCredits}: ${node.earnedCredits}/${node.requiredCredits}',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            SizedBox(
+              width: 64,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(AppShapes.xs),
+                child: LinearProgressIndicator(
+                  value: required > 0
+                      ? (earned / required).clamp(0.0, 1.0)
+                      : 0.0,
+                  minHeight: 4,
+                  backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildCourseTile(
@@ -402,4 +464,39 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
       ),
     );
   }
+}
+
+/// 摘要卡的统计结果。
+class PlanCompletionSummaryStats {
+  final double totalEarned;
+  final int completedCount;
+  final int moduleCount;
+
+  const PlanCompletionSummaryStats({
+    required this.totalEarned,
+    required this.completedCount,
+    required this.moduleCount,
+  });
+}
+
+/// 计算摘要卡的统计值。
+///
+/// 统计根级模块（pId == '-1'）的完成情况，与教务处方案层级一致。
+/// 根级模块包括 '001' 大类（如公共基础课、学科基础课）和 '002' 课程组
+/// （如选择性思政、通用英语等），不含子层的必修/选修/限选分类节点。
+/// 已获学分取各根级模块自身的 yxxf 之和。
+PlanCompletionSummaryStats computeSummaryStats(List<PlanCompletionNode> nodes) {
+  final rootModuleNodes = nodes
+      .where((n) => n.pId == '-1' && (n.isCategory || n.isSubCategory))
+      .toList();
+  final totalEarned = rootModuleNodes.fold<double>(
+    0,
+    (sum, n) => sum + (double.tryParse(n.earnedCredits) ?? 0),
+  );
+  final completedCount = rootModuleNodes.where((n) => n.completed).length;
+  return PlanCompletionSummaryStats(
+    totalEarned: totalEarned,
+    completedCount: completedCount,
+    moduleCount: rootModuleNodes.length,
+  );
 }

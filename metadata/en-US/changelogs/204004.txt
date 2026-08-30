@@ -1,0 +1,16 @@
+- Added a "Not Started" status to the class schedule: before the semester starts, the current week number is still shown in the top-left corner with a "Not Started" label
+- iOS widgets support appearance settings (course colors/monochrome, standard/compact information density)
+- iOS widgets and the app name support Chinese/English localization
+
+- iOS minimum system version raised to 15
+
+- Fixed the issue where the Android home-screen widget could not be added when the class schedule had courses
+- Fixed incorrect training program completion statistics, and improved the display of modules without child nodes
+- Fixed the issue where rounded corners did not fit properly when dragging to reorder the custom Dock bar
+- Display the specific failure reason when login fails
+- Fixed the issue where iOS widgets showed sample courses when there was no class schedule data
+- iOS widgets now use academic calendar data to determine holiday status
+- Unified the empty-state wording of iOS and Android widgets and added localization support
+- Fixed the issue where stable update notifications were not received after enabling "Use preview source for software updates"
+- Fixed the issue where the course schedule database directory was not writable on macOS
+- Refactored the course schedule code to improve the class schedule experience

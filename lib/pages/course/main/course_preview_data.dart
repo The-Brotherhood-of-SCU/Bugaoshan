@@ -1,8 +1,8 @@
-part of 'course_page.dart';
+import 'package:bugaoshan/models/course.dart';
 
 /// 课程表样式预览中使用的示例课程。
 /// 覆盖周一至周五，分布在上午和下午时段，便于在 [SetCourseStylePage] 中预览样式变化。
-final List<Course> _kDemoCourses = [
+final List<Course> kDemoCourses = [
   Course(
     name: '高等数学',
     teacher: '张教授',

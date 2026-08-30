@@ -1,6 +1,9 @@
-part of 'course_page.dart';
+import 'package:flutter/material.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/theme_shape.dart';
 
-class _TopBar extends StatelessWidget {
+class CoursePageTopBar extends StatelessWidget {
   final int visibleWeek;
   final int totalWeeks;
   final int actualWeek;
@@ -9,6 +12,7 @@ class _TopBar extends StatelessWidget {
   final bool isNotStarted;
   final bool canGoPrevious;
   final bool canGoNext;
+  final Duration animationDuration;
 
   final VoidCallback onPreviousWeek;
   final VoidCallback? onNextWeek;
@@ -17,7 +21,8 @@ class _TopBar extends StatelessWidget {
   final VoidCallback onExport;
   final VoidCallback onAddCourse;
 
-  const _TopBar({
+  const CoursePageTopBar({
+    super.key,
     required this.visibleWeek,
     required this.totalWeeks,
     required this.actualWeek,
@@ -26,6 +31,7 @@ class _TopBar extends StatelessWidget {
     this.isNotStarted = false,
     this.canGoPrevious = false,
     this.canGoNext = false,
+    required this.animationDuration,
     required this.onPreviousWeek,
     required this.onNextWeek,
     required this.onGoToCurrentWeek,
@@ -78,14 +84,11 @@ class _TopBar extends StatelessWidget {
                       const SizedBox(width: 5),
                       Flexible(
                         child: AnimatedSize(
-                          duration:
-                              appConfigService.cardSizeAnimationDuration.value,
+                          duration: animationDuration,
                           curve: appCurve,
                           child: Text(
                             isViewingVacation
                                 ? l10n.onVacation
-                                : isNotStarted
-                                ? l10n.notStarted
                                 : l10n.currentWeek(visibleWeek),
                             textAlign: TextAlign.center,
                             maxLines: 1,
@@ -113,8 +116,8 @@ class _TopBar extends StatelessWidget {
                       ),
                       const SizedBox(width: 3),
                       if (isNotStarted)
-                        // 未开学：没有「当前周」概念，不显示本周徽章。
-                        const SizedBox.shrink()
+                        // 未开学：主标签正常显示周数，旁边以徽章标注「未开学」。
+                        const _NotStartedBadge()
                       else if (isTodayOnVacation)
                         const _VacationBadge()
                       else
@@ -123,6 +126,7 @@ class _TopBar extends StatelessWidget {
                           // 无放假页时学期过末 actualWeek 会超过 totalWeeks，
                           // clamp 避免徽章显示越界周数。
                           actualCurrentWeek: actualWeek.clamp(1, totalWeeks),
+                          animationDuration: animationDuration,
                         ),
                     ],
                   ),
@@ -161,10 +165,12 @@ class _TopBar extends StatelessWidget {
 class _WeekBadge extends StatelessWidget {
   final bool isCurrentCalendarWeek;
   final int actualCurrentWeek;
+  final Duration animationDuration;
 
   const _WeekBadge({
     required this.isCurrentCalendarWeek,
     required this.actualCurrentWeek,
+    required this.animationDuration,
   });
 
   @override
@@ -194,12 +200,38 @@ class _WeekBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppShapes.full),
       ),
       child: AnimatedSize(
-        duration: appConfigService.cardSizeAnimationDuration.value,
+        duration: animationDuration,
         curve: appCurve,
         child: textWidget,
       ),
     );
     return body;
+  }
+}
+
+class _NotStartedBadge extends StatelessWidget {
+  const _NotStartedBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppShapes.full),
+      ),
+      child: Text(
+        l10n.notStarted,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: scheme.onSurfaceVariant,
+          fontWeight: FontWeight.w600,
+          fontSize: 9,
+        ),
+      ),
+    );
   }
 }
 

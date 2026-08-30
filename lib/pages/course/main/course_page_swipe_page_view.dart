@@ -1,26 +1,30 @@
-part of 'course_page.dart';
+import 'package:flutter/material.dart';
+import 'package:bugaoshan/theme_shape.dart';
 
 /// A PageView wrapper that only triggers page switching when the horizontal
 /// displacement is significantly larger than vertical, so vertical scrolling
 /// inside the page is not accidentally intercepted.
-class _SwipePageView extends StatefulWidget {
+class CourseSwipePageView extends StatefulWidget {
   final PageController controller;
   final int itemCount;
+  final Duration animationDuration;
   final void Function(int index) onPageChanged;
   final Widget Function(BuildContext context, int index) itemBuilder;
 
-  const _SwipePageView({
+  const CourseSwipePageView({
+    super.key,
     required this.controller,
     required this.itemCount,
+    required this.animationDuration,
     required this.onPageChanged,
     required this.itemBuilder,
   });
 
   @override
-  State<_SwipePageView> createState() => _SwipePageViewState();
+  State<CourseSwipePageView> createState() => _CourseSwipePageViewState();
 }
 
-class _SwipePageViewState extends State<_SwipePageView> {
+class _CourseSwipePageViewState extends State<CourseSwipePageView> {
   double _dragStartX = 0;
   double _dragStartY = 0;
   bool? _isHorizontalDrag; // null = undecided
@@ -72,7 +76,7 @@ class _SwipePageViewState extends State<_SwipePageView> {
     }
     widget.controller.animateToPage(
       targetPage,
-      duration: appConfigService.cardSizeAnimationDuration.value,
+      duration: widget.animationDuration,
       curve: AppCurves.quick,
     );
   }

@@ -7,9 +7,9 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/class_schedule_inquiry_provider.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/theme_shape.dart';
+import 'package:bugaoshan/pages/course/widgets/course_detail_sheet.dart';
+import 'package:bugaoshan/pages/course/widgets/course_grid.dart';
 import 'package:bugaoshan/utils/week_parser.dart';
-import 'package:bugaoshan/widgets/course/course_grid.dart';
-import 'package:bugaoshan/widgets/course/course_detail_sheet.dart';
 
 /// 班级课表详情页 - 以课表网格展示班级课程
 class ClassScheduleInquiryDetailPage extends StatefulWidget {
