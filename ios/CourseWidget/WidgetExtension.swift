@@ -1049,16 +1049,6 @@ struct LockScreenRectangularView: View {
             )
         }
     }
-
-    private var lockScreenEmptyStateTitle: String {
-        if entry.isOnVacation {
-            return widgetLocalizedString("widget.onVacation")
-        }
-        if entry.isTomorrow {
-            return widgetLocalizedString("widget.noClassesTomorrow")
-        }
-        return widgetLocalizedString("widget.todayClassesFinished")
-    }
 }
 
 struct CourseWidgetEntryView: View {
