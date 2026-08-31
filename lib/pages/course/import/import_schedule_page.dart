@@ -154,25 +154,10 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
       } else if (resolution.isCancel) {
         return;
       } else if (resolution.isUpdate) {
-        // Update existing schedule's courses instead of creating new.
         // Regenerate IDs to avoid PRIMARY KEY conflicts (source JSON may have
-        // empty or duplicate IDs).
+        // empty or duplicate IDs). copyWith 保留全部字段（含 campus）。
         final newCourses = courses
-            .map(
-              (c) => Course(
-                name: c.name,
-                teacher: c.teacher,
-                location: c.location,
-                campus: c.campus,
-                startWeek: c.startWeek,
-                endWeek: c.endWeek,
-                dayOfWeek: c.dayOfWeek,
-                startSection: c.startSection,
-                endSection: c.endSection,
-                colorValue: c.colorValue,
-                weekType: c.weekType,
-              ),
-            )
+            .map((c) => c.copyWith(id: Course.generateId()))
             .toList();
         await widget.courseProvider.replaceScheduleCourses(
           resolution.existingScheduleId!,
