@@ -273,23 +273,6 @@ class ScheduleConfig {
   /// 从上课地点推断校区时使用的关键词，顺序即匹配优先级。
   static const List<String> campusKeywords = ['江安', '望江', '华西'];
 
-  /// 从一批上课地点统计主导校区。
-  ///
-  /// 每个地点按 [campusKeywords] 顺序取第一个命中的关键词计数一次；
-  /// 返回出现次数严格最多的校区名。无任何命中或存在并列时返回 null。
-  static String? dominantCampusOfLocations(Iterable<String> locations) {
-    final counts = <String, int>{};
-    for (final location in locations) {
-      for (final keyword in campusKeywords) {
-        if (location.contains(keyword)) {
-          counts[keyword] = (counts[keyword] ?? 0) + 1;
-          break;
-        }
-      }
-    }
-    return _majorityCampus(counts);
-  }
-
   /// 单门课程的校区关键词。
   ///
   /// 优先取教务处 `campusName` 字段命中的校区关键词；未命中时回退到
@@ -305,13 +288,21 @@ class ScheduleConfig {
   }
 
   /// 从一批课程统计主导校区（依据 [campusKeywordOfCourse]）。
+  ///
+  /// 按 [Course.name] 去重后计数——解析时同一门课会按多个周段/多节次
+  /// 展开成多条记录，逐条计数会让节次多的课程主导结果。同一课程名的
+  /// 多条记录取第一条命中的校区。无任何命中或并列时返回 null。
   static String? dominantCampusOfCourses(List<Course> courses) {
-    final counts = <String, int>{};
+    final campusOfName = <String, String>{};
     for (final course in courses) {
       final keyword = campusKeywordOfCourse(course);
       if (keyword != null) {
-        counts[keyword] = (counts[keyword] ?? 0) + 1;
+        campusOfName.putIfAbsent(course.name, () => keyword);
       }
+    }
+    final counts = <String, int>{};
+    for (final keyword in campusOfName.values) {
+      counts[keyword] = (counts[keyword] ?? 0) + 1;
     }
     return _majorityCampus(counts);
   }
@@ -327,19 +318,52 @@ class ScheduleConfig {
     return sorted.first.key;
   }
 
+  /// 判断 [slots] 是否与某个预置时间表完全一致（即用户未自定义过）。
+  static bool isPresetTimeSlots(List<TimeSlot> slots) =>
+      _sameTimeSlots(slots, jiangAnTimeSlots) ||
+      _sameTimeSlots(slots, wangJiangHuaXiTimeSlots);
+
+  static bool _sameTimeSlots(List<TimeSlot> a, List<TimeSlot> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      final s = a[i], t = b[i];
+      if (s.startTime.hour != t.startTime.hour ||
+          s.startTime.minute != t.startTime.minute ||
+          s.endTime.hour != t.endTime.hour ||
+          s.endTime.minute != t.endTime.minute) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /// 若 [courses] 存在主导校区，返回该校区的预置时间表；否则返回 null。
+  static List<TimeSlot>? campusTimeSlotsForCourses(List<Course> courses) {
+    final campus = dominantCampusOfCourses(courses);
+    if (campus == null) return null;
+    return timeSlotsForCampusName(campus);
+  }
+
   /// 若 [courses] 存在主导校区，则将 [config] 的时间表替换为该校区的
   /// 预置时间表（会新建列表，不共享预设常量）。
   ///
+  /// 仅当 [config] 的节数为默认 4-5-3 时才应用——预置时间表固定 12 节，
+  /// 非 4-5-3 配置应用后会导致 `sectionsPerDay` 与 `timeSlots.length`
+  /// 不一致（课程网格行数与时间列对不上）。
+  ///
   /// 校区判定优先使用课程的 `campus` 字段（教务处 campusName），其次
-  /// 从地点字符串推断。返回是否发生了修改；无主导校区时保持 [config]
+  /// 从地点字符串推断。返回是否发生了修改；不满足条件时保持 [config]
   /// 不变并返回 false。
   static bool applyCampusTimeSlotsForCourses(
     ScheduleConfig config,
     List<Course> courses,
   ) {
-    final campus = dominantCampusOfCourses(courses);
-    if (campus == null) return false;
-    final slots = timeSlotsForCampusName(campus);
+    if (config.morningSections != 4 ||
+        config.afternoonSections != 5 ||
+        config.eveningSections != 3) {
+      return false;
+    }
+    final slots = campusTimeSlotsForCourses(courses);
     if (slots == null) return false;
     config.timeSlots = List.of(slots);
     return true;
@@ -515,10 +539,12 @@ class Course {
     required this.endSection,
     required this.colorValue,
     this.weekType = WeekType.every,
-  }) : id = id ?? _generateId();
+  }) : id = id ?? generateId();
 
   static int _idCounter = 0;
-  static String _generateId() {
+
+  /// 生成唯一课程 ID（微秒时间戳 + 自增序号）。
+  static String generateId() {
     final now = DateTime.now();
     _idCounter++;
     return '${now.microsecondsSinceEpoch}_$_idCounter';
@@ -606,7 +632,10 @@ class Course {
     return first <= end;
   }
 
+  /// 复制并可选覆盖字段。[id] 传 `null` 时保留原 ID；需要重新生成 ID 时
+  /// 显式传入 [Course.generateId]()。
   Course copyWith({
+    String? id,
     String? name,
     String? teacher,
     String? location,
@@ -620,7 +649,7 @@ class Course {
     WeekType? weekType,
   }) {
     return Course(
-      id: id,
+      id: id ?? this.id,
       name: name ?? this.name,
       teacher: teacher ?? this.teacher,
       location: location ?? this.location,

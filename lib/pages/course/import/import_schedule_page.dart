@@ -194,23 +194,14 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
 
       // Save to DB via provider
       await widget.courseProvider.addSchedule(config);
-      // Switch is automatic in addSchedule, now add courses
-      // Assign new IDs to avoid PRIMARY KEY conflicts with existing courses
-      for (final course in courses) {
-        await widget.courseProvider.addCourse(
-          Course(
-            name: course.name,
-            teacher: course.teacher,
-            location: course.location,
-            startWeek: course.startWeek,
-            endWeek: course.endWeek,
-            dayOfWeek: course.dayOfWeek,
-            startSection: course.startSection,
-            endSection: course.endSection,
-            colorValue: course.colorValue,
-            weekType: course.weekType,
-          ),
-        );
+      // Switch is automatic in addSchedule, now add courses.
+      // 传入原对象以保留全部字段（含 campus），避免逐字段复制时遗漏；
+      // 分享 JSON 可能带空/重复 ID，重新生成以避免主键冲突。
+      for (var course in courses) {
+        if (course.id.isEmpty) {
+          course = course.copyWith(id: Course.generateId());
+        }
+        await widget.courseProvider.addCourse(course);
       }
 
       if (mounted) {
@@ -540,6 +531,9 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
       jwxt_parser.validateImportedSchedule(config, courses);
 
   /// 更新已有课表（仅替换课程）后，按课程主导校区刷新其时间表。
+  ///
+  /// 仅当已有课表的时间表仍是预置（用户未自定义）时才覆盖，避免静默
+  /// 改动用户手动调整过的每节课起止时间。
   Future<void> _applyCampusTimeSlotsToExisting(
     String scheduleId,
     List<Course> courses,
@@ -548,9 +542,14 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         .where((s) => s.id == scheduleId)
         .firstOrNull;
     if (existing == null) return;
-    if (ScheduleConfig.applyCampusTimeSlotsForCourses(existing, courses)) {
-      await widget.courseProvider.updateScheduleConfig(existing);
-    }
+    if (!ScheduleConfig.isPresetTimeSlots(existing.timeSlots)) return;
+    final slots = ScheduleConfig.campusTimeSlotsForCourses(courses);
+    if (slots == null) return;
+    // 拷贝后再落库，避免原地修改 allSchedules 缓存中的对象，
+    // 造成内存与 DB 状态不一致。
+    await widget.courseProvider.updateScheduleConfig(
+      existing.copyWith(timeSlots: List.of(slots)),
+    );
   }
 
   /// 检查课表名称是否冲突，如果冲突则弹出对话框询问用户操作。
