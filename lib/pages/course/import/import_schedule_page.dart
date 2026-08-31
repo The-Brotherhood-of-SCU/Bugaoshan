@@ -163,6 +163,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
                 name: c.name,
                 teacher: c.teacher,
                 location: c.location,
+                campus: c.campus,
                 startWeek: c.startWeek,
                 endWeek: c.endWeek,
                 dayOfWeek: c.dayOfWeek,

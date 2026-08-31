@@ -67,6 +67,7 @@ void validateImportedSchedule(ScheduleConfig config, List<Course> courses) {
         final int endSection = startSection + continuingSession - 1;
         final String location =
             '${tpMap['teachingBuildingName'] ?? ''}${tpMap['classroomName'] ?? ''}';
+        final String campusName = tpMap['campusName'] as String? ?? '';
         final String classWeek = tpMap['classWeek'] as String? ?? '';
 
         final weekSegments = parseClassWeekSegments(classWeek);
@@ -78,6 +79,7 @@ void validateImportedSchedule(ScheduleConfig config, List<Course> courses) {
                 name: courseName,
                 teacher: teacher,
                 location: location,
+                campus: campusName,
                 startWeek: segment.startWeek,
                 endWeek: segment.endWeek,
                 dayOfWeek: dayOfWeek,

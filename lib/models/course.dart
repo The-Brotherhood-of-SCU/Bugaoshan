@@ -273,7 +273,7 @@ class ScheduleConfig {
   /// 从上课地点推断校区时使用的关键词，顺序即匹配优先级。
   static const List<String> campusKeywords = ['江安', '望江', '华西'];
 
-  /// 统计一批上课地点中的主导校区。
+  /// 从一批上课地点统计主导校区。
   ///
   /// 每个地点按 [campusKeywords] 顺序取第一个命中的关键词计数一次；
   /// 返回出现次数严格最多的校区名。无任何命中或存在并列时返回 null。
@@ -287,6 +287,37 @@ class ScheduleConfig {
         }
       }
     }
+    return _majorityCampus(counts);
+  }
+
+  /// 单门课程的校区关键词。
+  ///
+  /// 优先取教务处 `campusName` 字段命中的校区关键词；未命中时回退到
+  /// 从上课地点字符串推断。
+  static String? campusKeywordOfCourse(Course course) {
+    for (final keyword in campusKeywords) {
+      if (course.campus.contains(keyword)) return keyword;
+    }
+    for (final keyword in campusKeywords) {
+      if (course.location.contains(keyword)) return keyword;
+    }
+    return null;
+  }
+
+  /// 从一批课程统计主导校区（依据 [campusKeywordOfCourse]）。
+  static String? dominantCampusOfCourses(List<Course> courses) {
+    final counts = <String, int>{};
+    for (final course in courses) {
+      final keyword = campusKeywordOfCourse(course);
+      if (keyword != null) {
+        counts[keyword] = (counts[keyword] ?? 0) + 1;
+      }
+    }
+    return _majorityCampus(counts);
+  }
+
+  /// 取计数表中严格最多的校区；空表或并列时返回 null。
+  static String? _majorityCampus(Map<String, int> counts) {
     if (counts.isEmpty) return null;
     final sorted = counts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
@@ -296,15 +327,17 @@ class ScheduleConfig {
     return sorted.first.key;
   }
 
-  /// 若 [courses] 的上课地点存在主导校区，则将 [config] 的时间表替换为
-  /// 该校区的预置时间表（会新建列表，不共享预设常量）。
+  /// 若 [courses] 存在主导校区，则将 [config] 的时间表替换为该校区的
+  /// 预置时间表（会新建列表，不共享预设常量）。
   ///
-  /// 返回是否发生了修改；无主导校区时保持 [config] 不变并返回 false。
+  /// 校区判定优先使用课程的 `campus` 字段（教务处 campusName），其次
+  /// 从地点字符串推断。返回是否发生了修改；无主导校区时保持 [config]
+  /// 不变并返回 false。
   static bool applyCampusTimeSlotsForCourses(
     ScheduleConfig config,
     List<Course> courses,
   ) {
-    final campus = dominantCampusOfLocations(courses.map((c) => c.location));
+    final campus = dominantCampusOfCourses(courses);
     if (campus == null) return false;
     final slots = timeSlotsForCampusName(campus);
     if (slots == null) return false;
@@ -457,6 +490,10 @@ class Course {
   String name;
   String teacher;
   String location;
+
+  /// 上课校区（来自教务处 `campusName` 字段，如"江安校区"）。
+  /// 旧数据 / 分享 JSON 无此字段时为空串，此时从 [location] 推断。
+  String campus;
   int startWeek;
   int endWeek;
   int dayOfWeek; // 1=Mon ... 7=Sun
@@ -470,6 +507,7 @@ class Course {
     required this.name,
     required this.teacher,
     required this.location,
+    this.campus = '',
     required this.startWeek,
     required this.endWeek,
     required this.dayOfWeek,
@@ -493,6 +531,7 @@ class Course {
       name: json['name'] as String? ?? '',
       teacher: json['teacher'] as String? ?? '',
       location: json['location'] as String? ?? '',
+      campus: json['campus'] as String? ?? '',
       startWeek: json['startWeek'] as int? ?? 1,
       endWeek: json['endWeek'] as int? ?? ScheduleConfig.kDefaultTotalWeeks,
       dayOfWeek: json['dayOfWeek'] as int? ?? 1,
@@ -510,6 +549,7 @@ class Course {
     'name': name,
     'teacher': teacher,
     'location': location,
+    'campus': campus,
     'startWeek': startWeek,
     'endWeek': endWeek,
     'dayOfWeek': dayOfWeek,
@@ -570,6 +610,7 @@ class Course {
     String? name,
     String? teacher,
     String? location,
+    String? campus,
     int? startWeek,
     int? endWeek,
     int? dayOfWeek,
@@ -583,6 +624,7 @@ class Course {
       name: name ?? this.name,
       teacher: teacher ?? this.teacher,
       location: location ?? this.location,
+      campus: campus ?? this.campus,
       startWeek: startWeek ?? this.startWeek,
       endWeek: endWeek ?? this.endWeek,
       dayOfWeek: dayOfWeek ?? this.dayOfWeek,
