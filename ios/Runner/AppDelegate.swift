@@ -129,9 +129,7 @@ import WidgetKit
         sharedDefaults.set(colorStyle, forKey: "widget_color_style")
         sharedDefaults.set(density, forKey: "widget_density")
 
-        if #available(iOS 14.0, *) {
-            WidgetCenter.shared.reloadAllTimelines()
-        }
+        WidgetCenter.shared.reloadAllTimelines()
 
         result(nil)
     }
