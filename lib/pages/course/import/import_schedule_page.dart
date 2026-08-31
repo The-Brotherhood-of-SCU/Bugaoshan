@@ -139,6 +139,8 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
 
       config.id = DateTime.now().millisecondsSinceEpoch.toString();
       _validateImportedSchedule(config, courses);
+      // 按主导校区自动应用预置时间表（无主导校区时保持原时间表）
+      ScheduleConfig.applyCampusTimeSlotsForCourses(config, courses);
 
       // Resolve name conflict if any
       final desiredName = config.semesterName.isEmpty
@@ -172,6 +174,11 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
             )
             .toList();
         await widget.courseProvider.replaceScheduleCourses(
+          resolution.existingScheduleId!,
+          newCourses,
+        );
+        // 课程已整体替换，同步按主导校区刷新已有课表的时间表
+        await _applyCampusTimeSlotsToExisting(
           resolution.existingScheduleId!,
           newCourses,
         );
@@ -395,6 +402,8 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         config.semesterName = scheduleName;
         config.id = DateTime.now().millisecondsSinceEpoch.toString();
         _validateImportedSchedule(config, parsed.courses);
+        // 按主导校区自动应用预置时间表（无主导校区时保持原时间表）
+        ScheduleConfig.applyCampusTimeSlotsForCourses(config, parsed.courses);
 
         if (!importAll) {
           // 单个导入：询问用户如何处理名称冲突
@@ -405,6 +414,11 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
             return;
           } else if (resolution.isUpdate) {
             await widget.courseProvider.replaceScheduleCourses(
+              resolution.existingScheduleId!,
+              parsed.courses,
+            );
+            // 课程已整体替换，同步按主导校区刷新已有课表的时间表
+            await _applyCampusTimeSlotsToExisting(
               resolution.existingScheduleId!,
               parsed.courses,
             );
@@ -426,6 +440,8 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
               existingId,
               parsed.courses,
             );
+            // 课程已整体替换，同步按主导校区刷新已有课表的时间表
+            await _applyCampusTimeSlotsToExisting(existingId, parsed.courses);
             importedSchedules.add((id: existingId, name: scheduleName));
             continue;
           }
@@ -521,6 +537,20 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
 
   void _validateImportedSchedule(ScheduleConfig config, List<Course> courses) =>
       jwxt_parser.validateImportedSchedule(config, courses);
+
+  /// 更新已有课表（仅替换课程）后，按课程主导校区刷新其时间表。
+  Future<void> _applyCampusTimeSlotsToExisting(
+    String scheduleId,
+    List<Course> courses,
+  ) async {
+    final existing = widget.courseProvider.allSchedules.value
+        .where((s) => s.id == scheduleId)
+        .firstOrNull;
+    if (existing == null) return;
+    if (ScheduleConfig.applyCampusTimeSlotsForCourses(existing, courses)) {
+      await widget.courseProvider.updateScheduleConfig(existing);
+    }
+  }
 
   /// 检查课表名称是否冲突，如果冲突则弹出对话框询问用户操作。
   /// 返回 `null` 表示无冲突（可继续以原名称导入）。

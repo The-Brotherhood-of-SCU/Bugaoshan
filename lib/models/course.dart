@@ -270,6 +270,48 @@ class ScheduleConfig {
     return null;
   }
 
+  /// 从上课地点推断校区时使用的关键词，顺序即匹配优先级。
+  static const List<String> campusKeywords = ['江安', '望江', '华西'];
+
+  /// 统计一批上课地点中的主导校区。
+  ///
+  /// 每个地点按 [campusKeywords] 顺序取第一个命中的关键词计数一次；
+  /// 返回出现次数严格最多的校区名。无任何命中或存在并列时返回 null。
+  static String? dominantCampusOfLocations(Iterable<String> locations) {
+    final counts = <String, int>{};
+    for (final location in locations) {
+      for (final keyword in campusKeywords) {
+        if (location.contains(keyword)) {
+          counts[keyword] = (counts[keyword] ?? 0) + 1;
+          break;
+        }
+      }
+    }
+    if (counts.isEmpty) return null;
+    final sorted = counts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    if (sorted.length > 1 && sorted.first.value == sorted[1].value) {
+      return null; // 并列，无法确定主导校区
+    }
+    return sorted.first.key;
+  }
+
+  /// 若 [courses] 的上课地点存在主导校区，则将 [config] 的时间表替换为
+  /// 该校区的预置时间表（会新建列表，不共享预设常量）。
+  ///
+  /// 返回是否发生了修改；无主导校区时保持 [config] 不变并返回 false。
+  static bool applyCampusTimeSlotsForCourses(
+    ScheduleConfig config,
+    List<Course> courses,
+  ) {
+    final campus = dominantCampusOfLocations(courses.map((c) => c.location));
+    if (campus == null) return false;
+    final slots = timeSlotsForCampusName(campus);
+    if (slots == null) return false;
+    config.timeSlots = List.of(slots);
+    return true;
+  }
+
   static List<TimeSlot> _defaultTimeSlots(
     int morning,
     int afternoon,
