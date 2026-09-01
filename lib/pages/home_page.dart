@@ -123,16 +123,20 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     appConfig.enablePageTransitionAnimation,
                   ]),
                   builder: (context, _) {
-                    return AuthScopedIndexedStack(
-                      authListenable: authProvider,
-                      isAuthenticated: () => authProvider.isLoggedIn,
-                      visibleIds: visibleIds,
-                      selectedIndex: _currentIndex,
-                      duration: appConfig.cardSizeAnimationDuration.value,
-                      enableAnimation:
-                          appConfig.enablePageTransitionAnimation.value,
-                      axis: showRail ? Axis.vertical : Axis.horizontal,
-                      pageBuilder: (id) => campusItemConfigById(id).page(),
+                    return SafeArea(
+                      top: true,
+                      bottom: false,
+                      child: AuthScopedIndexedStack(
+                        authListenable: authProvider,
+                        isAuthenticated: () => authProvider.isLoggedIn,
+                        visibleIds: visibleIds,
+                        selectedIndex: _currentIndex,
+                        duration: appConfig.cardSizeAnimationDuration.value,
+                        enableAnimation:
+                            appConfig.enablePageTransitionAnimation.value,
+                        axis: showRail ? Axis.vertical : Axis.horizontal,
+                        pageBuilder: (id) => campusItemConfigById(id).page(),
+                      ),
                     );
                   },
                 );

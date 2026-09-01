@@ -16,7 +16,10 @@ import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 Future<void> main() async {
   try {
     await _initializeApp();
-    runApp(LiquidGlassWidgets.wrap(child: MyApp()));
+    runApp(LiquidGlassWidgets.wrap(
+      child: MyApp(),
+      brightnessResolver: Theme.maybeBrightnessOf,
+    ));
   } catch (error, stackTrace) {
     debugPrint('Startup error: $error\n$stackTrace');
     runApp(_StartupErrorApp(errorMessage: stackTrace.toString()));
