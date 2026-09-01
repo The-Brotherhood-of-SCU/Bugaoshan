@@ -44,12 +44,12 @@ void main() {
 
     final notices = await service.fetchNotices();
 
-    expect(notices.single['title'], '恢复后的通知');
+    expect(notices.single.title, '恢复后的通知');
     expect(auth.getClientCalls, 2);
     expect(auth.invalidations, 1);
   });
 
-  test('成绩查询保留年份参数和原始数据 Map 形状', () async {
+  test('成绩查询保留年份参数并解析为 typed 模型', () async {
     http.Request? received;
     final client = CookieClient(
       inner: MockClient((request) async {
@@ -71,7 +71,8 @@ void main() {
 
     final score = await service.fetchScore(2024);
 
-    expect(score, {'total_score': 95, 'student_name': '张三'});
+    expect(score?.totalScore, 95);
+    expect(score?.studentName, '张三');
     expect(received?.url.path, contains('getStudentScore'));
     expect(received?.body, 'year_num=2024');
   });

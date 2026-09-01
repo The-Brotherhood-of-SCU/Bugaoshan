@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/pages/campus/fitness_test/models/fitness_models.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -129,9 +130,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     );
   }
 
-  Widget _buildNoticeCard(Map<String, dynamic> notice, AppLocalizations l10n) {
-    final isSticky = notice['is_stick'] == 1;
-
+  Widget _buildNoticeCard(FitnessNotice notice, AppLocalizations l10n) {
     return StyledCard(
       margin: const EdgeInsets.only(bottom: 8),
       onTap: () => _showNoticeDetail(notice, l10n),
@@ -142,7 +141,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
           children: [
             Row(
               children: [
-                if (isSticky) ...[
+                if (notice.isSticky) ...[
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 6,
@@ -163,7 +162,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                 ],
                 Expanded(
                   child: Text(
-                    notice['title'] ?? '',
+                    notice.title,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -181,7 +180,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  notice['create_time'] ?? '',
+                  notice.createTime,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -194,7 +193,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '${notice['read_num'] ?? 0} ${l10n.fitnessTestReadCount}',
+                  '${notice.readNum} ${l10n.fitnessTestReadCount}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -207,7 +206,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     );
   }
 
-  void _showNoticeDetail(Map<String, dynamic> notice, AppLocalizations l10n) {
+  void _showNoticeDetail(FitnessNotice notice, AppLocalizations l10n) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -224,7 +223,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                 children: [
                   Expanded(
                     child: Text(
-                      notice['title'] ?? '',
+                      notice.title,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -252,7 +251,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        notice['create_time'] ?? '',
+                        notice.createTime,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -265,7 +264,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '${notice['read_num'] ?? 0} ${l10n.fitnessTestReadCount}',
+                        '${notice.readNum} ${l10n.fitnessTestReadCount}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -274,7 +273,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    _stripHtml(notice['content'] ?? ''),
+                    notice.plainContent,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
@@ -284,20 +283,6 @@ class _FitnessTestPageState extends State<FitnessTestPage>
         ),
       ),
     );
-  }
-
-  String _stripHtml(String html) {
-    return html
-        .replaceAll(RegExp(r'<br\s*/?>'), '\n')
-        .replaceAll(RegExp(r'<p>|<p\s[^>]*>'), '')
-        .replaceAll('</p>', '\n')
-        .replaceAll(RegExp(r'<[^>]+>'), '')
-        .replaceAll('&nbsp;', ' ')
-        .replaceAll('&lt;', '<')
-        .replaceAll('&gt;', '>')
-        .replaceAll('&amp;', '&')
-        .replaceAll(RegExp(r'\n{3,}'), '\n\n')
-        .trim();
   }
 
   // ==================== Scores Tab ====================
@@ -397,9 +382,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
 
   Widget _buildTotalScoreCard(AppLocalizations l10n) {
     final score = _provider.scoreData!;
-    final totalScore = score['total_score'] ?? 0;
-    final totalGrade = score['total_grade']?.toString() ?? '';
-    final gradeColor = _getGradeColor(totalGrade);
+    final gradeColor = score.gradeColorFor(context);
 
     return StyledCard(
       child: Padding(
@@ -416,7 +399,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
               ),
               alignment: Alignment.center,
               child: Text(
-                '$totalScore',
+                '${score.totalScore}',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: gradeColor,
@@ -445,7 +428,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                       borderRadius: BorderRadius.circular(AppShapes.medium),
                     ),
                     child: Text(
-                      totalGrade,
+                      score.totalGrade,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: gradeColor,
                         fontWeight: FontWeight.w600,
@@ -471,8 +454,6 @@ class _FitnessTestPageState extends State<FitnessTestPage>
 
   Widget _buildInfoCard(AppLocalizations l10n) {
     final score = _provider.scoreData!;
-    final name = score['student_name']?.toString() ?? '-';
-    final studentNum = score['student_num']?.toString() ?? '-';
 
     return StyledCard(
       child: Padding(
@@ -483,7 +464,9 @@ class _FitnessTestPageState extends State<FitnessTestPage>
               onTap: () => setState(() => _privacyHidden = !_privacyHidden),
               child: _infoRow(
                 l10n.fitnessTestStudentName,
-                _privacyHidden ? _maskText(name) : name,
+                _privacyHidden
+                    ? _maskText(score.studentName)
+                    : score.studentName,
                 trailing: Icon(
                   _privacyHidden
                       ? Icons.visibility_off_outlined
@@ -498,8 +481,12 @@ class _FitnessTestPageState extends State<FitnessTestPage>
               child: _infoRow(
                 l10n.fitnessTestStudentNum,
                 _privacyHidden
-                    ? _maskText(studentNum, visibleStart: 2, visibleEnd: 2)
-                    : studentNum,
+                    ? _maskText(
+                        score.studentNum,
+                        visibleStart: 2,
+                        visibleEnd: 2,
+                      )
+                    : score.studentNum,
                 trailing: Icon(
                   _privacyHidden
                       ? Icons.visibility_off_outlined
@@ -509,19 +496,10 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                 ),
               ),
             ),
-            _infoRow(l10n.fitnessTestSex, score['sex']?.toString() ?? '-'),
-            _infoRow(
-              l10n.fitnessTestStudentYear,
-              score['studentYear']?.toString() ?? '-',
-            ),
-            _infoRow(
-              l10n.fitnessTestReportType,
-              score['report_type']?.toString() ?? '-',
-            ),
-            _infoRow(
-              l10n.fitnessTestReportStatus,
-              score['report_status']?.toString() ?? '-',
-            ),
+            _infoRow(l10n.fitnessTestSex, score.sex),
+            _infoRow(l10n.fitnessTestStudentYear, score.studentYear),
+            _infoRow(l10n.fitnessTestReportType, score.reportType),
+            _infoRow(l10n.fitnessTestReportStatus, score.reportStatus),
           ],
         ),
       ),
@@ -538,60 +516,46 @@ class _FitnessTestPageState extends State<FitnessTestPage>
       _ScoreItem(
         icon: Icons.monitor_weight_outlined,
         label: l10n.fitnessTestBmi,
-        rawScore: '${score['bmi_score'] ?? '-'}',
-        gradedScore: '${score['bmi_score2'] ?? '-'}',
-        grade: '${score['bmi_grade'] ?? '-'}',
-        colorClass: '${score['bmi_class'] ?? 'green'}',
+        data: score.bmi,
+        rawScoreDisplay: score.bmi.rawScore,
       ),
       _ScoreItem(
         icon: Icons.air,
         label: l10n.fitnessTestVitalCapacity,
-        rawScore: '${score['vc_score'] ?? '-'}',
-        gradedScore: '${score['vc_score2'] ?? '-'}',
-        grade: '${score['vc_grade'] ?? '-'}',
-        colorClass: '${score['vc_class'] ?? 'green'}',
+        data: score.vitalCapacity,
+        rawScoreDisplay: score.vitalCapacity.rawScore,
       ),
       _ScoreItem(
         icon: Icons.directions_run,
         label: l10n.fitnessTestStandingLongJump,
-        rawScore: '${score['jump_score'] ?? '-'} cm',
-        gradedScore: '${score['jump_score2'] ?? '-'}',
-        grade: '${score['jump_grade'] ?? '-'}',
-        colorClass: '${score['jump_class'] ?? 'green'}',
+        data: score.jump,
+        rawScoreDisplay: '${score.jump.rawScore} cm',
       ),
       _ScoreItem(
         icon: Icons.accessibility_new,
         label: l10n.fitnessTestSitAndReach,
-        rawScore: '${score['sit_and_reach_score'] ?? '-'} cm',
-        gradedScore: '${score['sit_and_reach_score2'] ?? '-'}',
-        grade: '${score['sit_and_reach_grade'] ?? '-'}',
-        colorClass: '${score['sit_and_reach_class'] ?? 'green'}',
+        data: score.sitAndReach,
+        rawScoreDisplay: '${score.sitAndReach.rawScore} cm',
       ),
       _ScoreItem(
         icon: Icons.fitness_center,
-        label: score['sex'] == '女'
+        label: score.sex == '女'
             ? l10n.fitnessTestSitUp
             : l10n.fitnessTestPullUp,
-        rawScore: '${score['pull_and_sit_score'] ?? '-'}',
-        gradedScore: '${score['pull_and_sit_score2'] ?? '-'}',
-        grade: '${score['pull_and_sit_grade'] ?? '-'}',
-        colorClass: '${score['pull_and_sit_class'] ?? 'green'}',
+        data: score.pullAndSit,
+        rawScoreDisplay: score.pullAndSit.rawScore,
       ),
       _ScoreItem(
         icon: Icons.speed,
         label: l10n.fitnessTestFiftyMeters,
-        rawScore: '${score['50m_score'] ?? '-'} s',
-        gradedScore: '${score['50m_score2'] ?? '-'}',
-        grade: '${score['50m_grade'] ?? '-'}',
-        colorClass: '${score['50m_class'] ?? 'green'}',
+        data: score.fiftyM,
+        rawScoreDisplay: '${score.fiftyM.rawScore} s',
       ),
       _ScoreItem(
         icon: Icons.timer_outlined,
         label: l10n.fitnessTestRun,
-        rawScore: '${score['run_score'] ?? '-'}',
-        gradedScore: '${score['run_score2'] ?? '-'}',
-        grade: '${score['run_grade'] ?? '-'}',
-        colorClass: '${score['run_class'] ?? 'green'}',
+        data: score.run,
+        rawScoreDisplay: score.run.rawScore,
       ),
     ];
 
@@ -607,7 +571,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
   }
 
   Widget _buildScoreItemRow(_ScoreItem item) {
-    final color = item.colorClass == 'red'
+    final color = item.data.isFail
         ? Theme.of(context).colorScheme.error
         : Colors.green;
 
@@ -627,13 +591,13 @@ class _FitnessTestPageState extends State<FitnessTestPage>
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                item.rawScore,
+                item.rawScoreDisplay,
                 style: Theme.of(
                   context,
                 ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
               ),
               Text(
-                '${item.gradedScore} · ${item.grade}',
+                '${item.data.gradedScore} · ${item.data.grade}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: color,
                   fontWeight: FontWeight.w500,
@@ -645,38 +609,18 @@ class _FitnessTestPageState extends State<FitnessTestPage>
       ),
     );
   }
-
-  Color _getGradeColor(String grade) {
-    if (grade.contains('优秀') || grade.contains('Excellent')) {
-      return Colors.blue;
-    }
-    if (grade.contains('良好') || grade.contains('Good')) {
-      return Colors.green;
-    }
-    if (grade.contains('及格') || grade.contains('Pass')) {
-      return Colors.orange;
-    }
-    if (grade.contains('不及格') || grade.contains('Fail')) {
-      return Colors.red;
-    }
-    return Colors.grey;
-  }
 }
 
 class _ScoreItem {
   const _ScoreItem({
     required this.icon,
     required this.label,
-    required this.rawScore,
-    required this.gradedScore,
-    required this.grade,
-    required this.colorClass,
+    required this.data,
+    required this.rawScoreDisplay,
   });
 
   final IconData icon;
   final String label;
-  final String rawScore;
-  final String gradedScore;
-  final String grade;
-  final String colorClass;
+  final FitnessScoreItem data;
+  final String rawScoreDisplay;
 }
