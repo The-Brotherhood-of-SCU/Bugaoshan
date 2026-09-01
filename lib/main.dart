@@ -75,11 +75,10 @@ class _StartupErrorApp extends StatelessWidget {
                     textScaler: TextScaler.linear(1.5),
                   ),
                   const SizedBox(height: 16),
-                  if (kDebugMode)
-                    SelectableText(
-                      errorMessage ?? '',
-                      textAlign: TextAlign.start,
-                    ),
+                  SelectableText(
+                    errorMessage ?? '',
+                    textAlign: TextAlign.start,
+                  ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () async {
