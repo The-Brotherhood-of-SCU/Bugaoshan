@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bugaoshan/pages/campus/fitness_test/models/fitness_models.dart';
 import 'package:bugaoshan/services/api/api_request.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/fitness_auth.dart';
@@ -8,9 +9,9 @@ import 'package:bugaoshan/utils/constants.dart';
 
 /// 体测系统业务 API 的最小契约，供 [FitnessTestProvider] 注入和测试替身使用。
 abstract interface class FitnessTestApi {
-  Future<List<Map<String, dynamic>>> fetchNotices();
+  Future<List<FitnessNotice>> fetchNotices();
 
-  Future<Map<String, dynamic>?> fetchScore(int year);
+  Future<FitnessScore?> fetchScore(int year);
 }
 
 /// 体测系统 API Service（第 1 层）。
@@ -34,7 +35,7 @@ class FitnessApiService implements FitnessTestApi {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> fetchNotices() {
+  Future<List<FitnessNotice>> fetchNotices() {
     return _request((client) async {
       final response = await client.post(
         Uri.parse('$_baseUrl/index/News/getSchoolNoticeList'),
@@ -47,14 +48,16 @@ class FitnessApiService implements FitnessTestApi {
       }
       return data
           .map(
-            (item) => Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
+            (item) => FitnessNotice.fromJson(
+              Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
+            ),
           )
           .toList();
     });
   }
 
   @override
-  Future<Map<String, dynamic>?> fetchScore(int year) {
+  Future<FitnessScore?> fetchScore(int year) {
     return _request((client) async {
       final response = await client.post(
         Uri.parse('$_baseUrl/index/Report/getStudentScore'),
@@ -63,7 +66,8 @@ class FitnessApiService implements FitnessTestApi {
       );
       final json = _decodeResponse(response.body, 'getStudentScore');
       final data = json['data'];
-      return data is Map ? Map<String, dynamic>.from(data) : null;
+      if (data is! Map) return null;
+      return FitnessScore.fromJson(Map<String, dynamic>.from(data));
     });
   }
 

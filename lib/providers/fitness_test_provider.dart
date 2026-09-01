@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:bugaoshan/pages/campus/fitness_test/models/fitness_models.dart';
 import 'package:bugaoshan/services/api/fitness_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
@@ -33,15 +34,15 @@ class FitnessTestProvider extends ChangeNotifier {
   int _selectedYear = DateTime.now().year;
   int get selectedYear => _selectedYear;
 
-  List<Map<String, dynamic>> _notices = const [];
-  List<Map<String, dynamic>> get notices => List.unmodifiable(_notices);
+  List<FitnessNotice> _notices = const [];
+  List<FitnessNotice> get notices => List.unmodifiable(_notices);
   FitnessTestLoadState _noticesState = FitnessTestLoadState.idle;
   FitnessTestLoadState get noticesState => _noticesState;
   Object? _noticesError;
   Object? get noticesError => _noticesError;
 
-  Map<String, dynamic>? _scoreData;
-  Map<String, dynamic>? get scoreData => _scoreData;
+  FitnessScore? _scoreData;
+  FitnessScore? get scoreData => _scoreData;
   FitnessTestLoadState _scoreState = FitnessTestLoadState.idle;
   FitnessTestLoadState get scoreState => _scoreState;
   Object? _scoreError;

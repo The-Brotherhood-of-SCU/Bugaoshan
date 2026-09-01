@@ -357,13 +357,11 @@ ensureAuthenticated
 
 ### 7.3 Fitness
 
-体测目前没有独立 API Service，HTTP 和恢复逻辑仍位于 [`fitness_test_page.dart`](../../lib/pages/campus/fitness_test/fitness_test_page.dart)：
+体测通过独立的 [`FitnessApiService`](../../lib/services/api/fitness_api_service.dart)（第 1 层）承载业务 HTTP，页面仅通过 `FitnessTestProvider` 消费已解析的 `FitnessNotice` / `FitnessScore` 模型：
 
-- `FitnessAuth.getClient()` 按需建立 SSO。
-- `UnauthenticatedException` 会重试请求一次。
-- 体测业务响应明确表示 session 过期时，先 `FitnessAuth.invalidate()`，再重试一次。
-
-这是当前实现的例外，不应据此把新的后端 HTTP 逻辑继续放入页面。后续若体测 API 扩大，应提取无状态 `FitnessApiService` 并统一恢复边界。
+- `FitnessAuth.getClient()` 按需建立 SSO（`SsoRelayAuth`）。
+- `FitnessApiService._request` 统一走 `retryOnUnauthenticated(getClient, fn, invalidate: _auth.invalidate)`，业务响应中 `登录信息失效/请重新登录` 转为 `UnauthenticatedException` 后单次重试，其余 `ServiceException` 透传。
+- 解析与 HTML → 纯文本转换由 `FitnessNotice.fromJson` / `FitnessScore.fromJson` 负责，`fitness_test_page.dart` 不再直接持有 HTTP、重试或 `Map` 字段解析逻辑。
 
 ### 7.4 HTTP ClientException
 

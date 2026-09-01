@@ -1,10 +1,73 @@
 import 'dart:async';
 
+import 'package:bugaoshan/pages/campus/fitness_test/models/fitness_models.dart';
 import 'package:bugaoshan/providers/fitness_test_provider.dart';
 import 'package:bugaoshan/services/api/fitness_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+FitnessNotice _notice(String title) => FitnessNotice(
+  title: title,
+  content: '<p>$title</p>',
+  plainContent: title,
+  createTime: '2024-01-01',
+  readNum: 0,
+  isSticky: false,
+);
+
+FitnessScore _score(int totalScore) => FitnessScore(
+  totalScore: totalScore,
+  totalGrade: '优秀',
+  studentName: '张三',
+  studentNum: '20240001',
+  sex: '男',
+  studentYear: '2024',
+  reportType: '-',
+  reportStatus: '-',
+  bmi: const FitnessScoreItem(
+    rawScore: '-',
+    gradedScore: '-',
+    grade: '-',
+    colorClass: 'green',
+  ),
+  vitalCapacity: const FitnessScoreItem(
+    rawScore: '-',
+    gradedScore: '-',
+    grade: '-',
+    colorClass: 'green',
+  ),
+  jump: const FitnessScoreItem(
+    rawScore: '-',
+    gradedScore: '-',
+    grade: '-',
+    colorClass: 'green',
+  ),
+  sitAndReach: const FitnessScoreItem(
+    rawScore: '-',
+    gradedScore: '-',
+    grade: '-',
+    colorClass: 'green',
+  ),
+  pullAndSit: const FitnessScoreItem(
+    rawScore: '-',
+    gradedScore: '-',
+    grade: '-',
+    colorClass: 'green',
+  ),
+  fiftyM: const FitnessScoreItem(
+    rawScore: '-',
+    gradedScore: '-',
+    grade: '-',
+    colorClass: 'green',
+  ),
+  run: const FitnessScoreItem(
+    rawScore: '-',
+    gradedScore: '-',
+    grade: '-',
+    colorClass: 'green',
+  ),
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -13,10 +76,8 @@ void main() {
     SharedPreferences.setMockInitialValues({kFitnessTestSelectedYearKey: 2025});
     final prefs = await SharedPreferences.getInstance();
     final api = _FakeFitnessApi()
-      ..notices = [
-        {'title': '通知'},
-      ]
-      ..scores[2025] = {'total_score': 90};
+      ..notices = [_notice('通知')]
+      ..scores[2025] = _score(90);
     final provider = FitnessTestProvider(prefs, api);
 
     await Future.wait([provider.ensureLoaded(), provider.ensureLoaded()]);
@@ -24,16 +85,16 @@ void main() {
 
     expect(api.noticeCalls, 1);
     expect(api.scoreCalls, [2025]);
-    expect(provider.notices.single['title'], '通知');
-    expect(provider.scoreData?['total_score'], 90);
+    expect(provider.notices.single.title, '通知');
+    expect(provider.scoreData?.totalScore, 90);
   });
 
   test('切换年份时旧成绩请求不能回写新年份', () async {
     SharedPreferences.setMockInitialValues({kFitnessTestSelectedYearKey: 2025});
     final prefs = await SharedPreferences.getInstance();
     final api = _FakeFitnessApi()..notices = const [];
-    final oldScore = Completer<Map<String, dynamic>?>();
-    final newScore = Completer<Map<String, dynamic>?>();
+    final oldScore = Completer<FitnessScore?>();
+    final newScore = Completer<FitnessScore?>();
     api.pendingScores[2025] = oldScore;
     api.pendingScores[2024] = newScore;
     final provider = FitnessTestProvider(prefs, api);
@@ -41,14 +102,14 @@ void main() {
     final oldRequest = provider.ensureScore();
     final newRequest = provider.selectYear(2024);
     await Future<void>.delayed(Duration.zero);
-    newScore.complete({'total_score': 88});
+    newScore.complete(_score(88));
     await newRequest;
 
-    oldScore.complete({'total_score': 59});
+    oldScore.complete(_score(59));
     await oldRequest;
 
     expect(provider.selectedYear, 2024);
-    expect(provider.scoreData?['total_score'], 88);
+    expect(provider.scoreData?.totalScore, 88);
     expect(prefs.getInt(kFitnessTestSelectedYearKey), 2024);
   });
 
@@ -56,15 +117,13 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final api = _FakeFitnessApi();
-    final pending = Completer<List<Map<String, dynamic>>>();
+    final pending = Completer<List<FitnessNotice>>();
     api.pendingNotices = pending;
     final provider = FitnessTestProvider(prefs, api);
 
     final request = provider.ensureNotices();
     provider.clear();
-    pending.complete([
-      {'title': '旧账号通知'},
-    ]);
+    pending.complete([_notice('旧账号通知')]);
     await request;
 
     expect(provider.notices, isEmpty);
@@ -76,7 +135,7 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     final api = _FakeFitnessApi()
       ..scoreFailures = 1
-      ..scores[2025] = {'total_score': 100};
+      ..scores[2025] = _score(100);
     final provider = FitnessTestProvider(prefs, api);
 
     await provider.ensureScore();
@@ -85,21 +144,21 @@ void main() {
 
     await provider.refreshScore();
     expect(provider.scoreState, FitnessTestLoadState.loaded);
-    expect(provider.scoreData?['total_score'], 100);
+    expect(provider.scoreData?.totalScore, 100);
   });
 }
 
 class _FakeFitnessApi implements FitnessTestApi {
   int noticeCalls = 0;
   final scoreCalls = <int>[];
-  List<Map<String, dynamic>> notices = const [];
-  final scores = <int, Map<String, dynamic>?>{};
-  final pendingScores = <int, Completer<Map<String, dynamic>?>>{};
-  Completer<List<Map<String, dynamic>>>? pendingNotices;
+  List<FitnessNotice> notices = const [];
+  final scores = <int, FitnessScore?>{};
+  final pendingScores = <int, Completer<FitnessScore?>>{};
+  Completer<List<FitnessNotice>>? pendingNotices;
   int scoreFailures = 0;
 
   @override
-  Future<List<Map<String, dynamic>>> fetchNotices() {
+  Future<List<FitnessNotice>> fetchNotices() {
     noticeCalls++;
     final pending = pendingNotices;
     if (pending != null) return pending.future;
@@ -107,7 +166,7 @@ class _FakeFitnessApi implements FitnessTestApi {
   }
 
   @override
-  Future<Map<String, dynamic>?> fetchScore(int year) {
+  Future<FitnessScore?> fetchScore(int year) {
     scoreCalls.add(year);
     final pending = pendingScores[year];
     if (pending != null) return pending.future;
