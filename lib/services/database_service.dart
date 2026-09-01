@@ -100,7 +100,15 @@ class DatabaseService {
 
     _db = await openDatabase(
       dbPath,
-      version: 1,
+      version: 2,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          // v2: courses 增加 campus 列（教务处 campusName 字段）
+          await db.execute(
+            "ALTER TABLE courses ADD COLUMN campus TEXT NOT NULL DEFAULT ''",
+          );
+        }
+      },
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE metadata (
@@ -121,6 +129,7 @@ class DatabaseService {
             name TEXT,
             teacher TEXT,
             location TEXT,
+            campus TEXT NOT NULL DEFAULT '',
             start_week INTEGER,
             end_week INTEGER,
             day_of_week INTEGER,
@@ -181,6 +190,7 @@ class DatabaseService {
     'name': course.name,
     'teacher': course.teacher,
     'location': course.location,
+    'campus': course.campus,
     'start_week': course.startWeek,
     'end_week': course.endWeek,
     'day_of_week': course.dayOfWeek,
@@ -197,6 +207,7 @@ class DatabaseService {
       name: row['name'] as String? ?? '',
       teacher: row['teacher'] as String? ?? '',
       location: row['location'] as String? ?? '',
+      campus: row['campus'] as String? ?? '',
       startWeek: row['start_week'] as int,
       endWeek: row['end_week'] as int,
       dayOfWeek: row['day_of_week'] as int,
