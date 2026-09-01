@@ -14,6 +14,7 @@ import 'package:bugaoshan/services/auth/auth_coordinator.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/common/auth_scoped_indexed_stack.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -135,13 +136,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     );
                   },
                 );
-                return Scaffold(
-                  body: Row(
-                    children: [
-                      // Rail placeholder: always present, hidden via Offstage
-                      Offstage(
-                        offstage: !showRail,
-                        child: NavigationRail(
+                if (showRail) {
+                  return Scaffold(
+                    body: Row(
+                      children: [
+                        NavigationRail(
                           selectedIndex: _currentIndex,
                           onDestinationSelected: (index) {
                             setState(() => _currentIndex = index);
@@ -154,27 +153,54 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                               )
                               .toList(),
                         ),
+                        const VerticalDivider(thickness: 1, width: 1),
+                        Expanded(child: pageContent),
+                      ],
+                    ),
+                  );
+                }
+
+                final theme = Theme.of(context);
+                final isDark = theme.brightness == Brightness.dark;
+
+                return GlassScaffold(
+                  background: null,
+                  backgroundColor: theme.scaffoldBackgroundColor,
+                  themeOverride: GlassThemeData(
+                    interaction: const GlassInteractionSettings(
+                      resistance: 0.05,
+                      interactionScale: 1.03,
+                      anchorStretchSettings: AnchorStretchSettings(
+                        intensity: 0.3,
+                        bounciness: 0.05,
+                        translationDamping: 0.05,
                       ),
-                      Offstage(
-                        offstage: !showRail,
-                        child: const VerticalDivider(thickness: 1, width: 1),
+                    ),
+                    light: GlassThemeVariant.light.copyWith(
+                      glowColors: GlassGlowColors.fallback.copyWith(
+                        primary: theme.colorScheme.primary,
                       ),
-                      // Page content: always at index 2
-                      Expanded(child: SafeArea(child: pageContent)),
-                    ],
+                    ),
+                    dark: GlassThemeVariant.dark.copyWith(
+                      glowColors: GlassGlowColors.fallback.copyWith(
+                        primary: theme.colorScheme.primary,
+                      ),
+                    ),
                   ),
-                  bottomNavigationBar: showBar
-                      ? NavigationBar(
-                          selectedIndex: _currentIndex,
-                          onDestinationSelected: (index) {
-                            setState(() => _currentIndex = index);
-                          },
-                          destinations: visibleIds
+                  statusBarStyle:
+                      isDark ? GlassStatusBarStyle.light : GlassStatusBarStyle.dark,
+                  body: pageContent,
+                  bottomBar: showBar
+                      ? GlassTabBar.bottom(
+                          tabs: visibleIds
                               .map(
-                                (id) =>
-                                    _buildBarDestination(id, hasUpdate, l10n),
+                                (id) => _buildGlassTab(id, hasUpdate, l10n),
                               )
                               .toList(),
+                          selectedIndex: _currentIndex,
+                          onTabSelected: (index) {
+                            setState(() => _currentIndex = index);
+                          },
                         )
                       : null,
                 );
@@ -183,6 +209,29 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           },
         );
       },
+    );
+  }
+
+  GlassTab _buildGlassTab(
+    String id,
+    bool hasUpdate,
+    AppLocalizations l10n,
+  ) {
+    final config = campusItemConfigById(id);
+    final isProfile = id == dockIdProfile;
+    final label = config.dockLabel(l10n);
+
+    return GlassTab(
+      icon: isProfile
+          ? _buildUpdateBadge(showBadge: hasUpdate, child: Icon(config.icon))
+          : Icon(config.icon),
+      activeIcon: isProfile
+          ? _buildUpdateBadge(
+              showBadge: hasUpdate,
+              child: Icon(config.selectedIcon),
+            )
+          : Icon(config.selectedIcon),
+      label: label,
     );
   }
 
@@ -212,28 +261,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             )
           : Icon(config.selectedIcon),
       label: Text(config.dockLabel(l10n)),
-    );
-  }
-
-  NavigationDestination _buildBarDestination(
-    String id,
-    bool hasUpdate,
-    AppLocalizations l10n,
-  ) {
-    final config = campusItemConfigById(id);
-    final isProfile = id == dockIdProfile;
-    return NavigationDestination(
-      icon: isProfile
-          ? _buildUpdateBadge(showBadge: hasUpdate, child: Icon(config.icon))
-          : Icon(config.icon),
-      selectedIcon: isProfile
-          ? _buildUpdateBadge(
-              showBadge: hasUpdate,
-              child: Icon(config.selectedIcon),
-            )
-          : Icon(config.selectedIcon),
-      label: config.dockLabel(l10n),
-      tooltip: '',
     );
   }
 }

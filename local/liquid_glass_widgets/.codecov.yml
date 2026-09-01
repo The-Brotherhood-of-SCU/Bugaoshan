@@ -1,0 +1,15 @@
+coverage:
+  # Effective coverage excludes GPU renderer files that cannot execute in a
+  # headless VM (no GPU rasterizer). These 16 CustomPainter / RenderObject
+  # files are documented as untestable in ARCHITECTURE.md.
+  # Raw coverage on Codecov was ~81-82% because it included these paths;
+  # effective coverage (what CI gates on) is ≥ 91%.
+  ignore:
+    - "lib/src/renderer/**"
+
+  status:
+    project:
+      default:
+        # Match the CI effective-coverage threshold.
+        target: 90%
+        threshold: 1%

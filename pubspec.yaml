@@ -51,6 +51,8 @@ dependencies:
   tyme: ^1.4.4
   json_annotation: ^4.12.0
   device_info_plus: ^13.2.0
+  liquid_glass_widgets:
+    path: ./local/liquid_glass_widgets
 
 dev_dependencies:
   flutter_test:

@@ -68,8 +68,11 @@ class _MyAppState extends State<MyApp> {
             data: MediaQuery.of(
               context,
             ).copyWith(textScaler: TextScaler.linear(clamped)),
-            child: MouseBackHandler(
-              child: SessionExpiredListener(child: child ?? const SizedBox()),
+            child: Material(
+              type: MaterialType.transparency,
+              child: MouseBackHandler(
+                child: SessionExpiredListener(child: child ?? const SizedBox()),
+              ),
             ),
           );
         },

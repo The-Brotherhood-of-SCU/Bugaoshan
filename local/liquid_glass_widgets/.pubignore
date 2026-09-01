@@ -1,0 +1,44 @@
+# Build artifacts
+build/
+.dart_tool/
+.packages
+*.log
+coverage/
+
+# Local working docs
+doc/
+docs/
+.agent/
+CHANGELOG_ARCHIVE.md
+
+# Test suite — consumers don't need these; tests are on GitHub
+test/
+integration_test/
+
+# Example app platform folders
+example/ios/
+example/macos/
+example/web/
+example/android/
+example/windows/
+example/linux/
+
+# Example app — exclude the full app (demos, repros, assets) from the package.
+# Only example/example.dart (standalone) and example/pubspec.yaml are published.
+# example/example.dart is the highest-priority file for the pub.dev Example tab.
+# The full showcase app lives in example/lib/ and is available on GitHub.
+example/showcase/
+example/assets/
+example/**/*.md
+example/lib/
+example/integration_test/
+
+# Tools (internal sync scripts)
+tools/
+
+# Root-level scratch/debug output and scripts (not for package consumers)
+test_output.txt
+test_output2.log
+update_demo.py
+update_glow.py
+ARCHITECTURE.md
