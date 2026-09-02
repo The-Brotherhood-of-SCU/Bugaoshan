@@ -18,11 +18,13 @@ import 'package:bugaoshan/providers/exam_plan_provider.dart';
 import 'package:bugaoshan/providers/fitness_test_provider.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/providers/network_device_provider.dart';
+import 'package:bugaoshan/providers/passpoint_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/providers/service_applications_provider.dart';
 import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/services/api/ccyl_api_service.dart';
 import 'package:bugaoshan/services/api/fitness_api_service.dart';
+import 'package:bugaoshan/services/api/new_service_api_service.dart';
 import 'package:bugaoshan/services/api/payapp_api_service.dart';
 import 'package:bugaoshan/services/api/service_api_service.dart';
 import 'package:bugaoshan/services/api/wfw_api_service.dart';
@@ -31,6 +33,7 @@ import 'package:bugaoshan/services/auth/auth_coordinator.dart';
 import 'package:bugaoshan/services/auth/auth_state.dart';
 import 'package:bugaoshan/services/auth/ccyl_auth.dart';
 import 'package:bugaoshan/services/auth/fitness_auth.dart';
+import 'package:bugaoshan/services/auth/new_service_auth.dart';
 import 'package:bugaoshan/services/auth/payapp_auth.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/service_auth.dart';
@@ -123,6 +126,10 @@ void _configureAsyncDependencies() {
     await getIt.isReady<ScuAuth>();
     return ServiceAuth(getIt<ScuAuth>());
   });
+  getIt.registerSingletonAsync<NewServiceAuth>(() async {
+    await getIt.isReady<ScuAuth>();
+    return NewServiceAuth(getIt<ScuAuth>());
+  });
   getIt.registerSingletonAsync<CcylAuth>(() async {
     await getIt.isReady<ScuAuth>();
     final auth = CcylAuth(getIt<ScuAuth>());
@@ -136,6 +143,7 @@ void _configureAsyncDependencies() {
     await getIt.isReady<FitnessAuth>();
     await getIt.isReady<CcylAuth>();
     await getIt.isReady<ServiceAuth>();
+    await getIt.isReady<NewServiceAuth>();
     return AuthCoordinator([
       getIt<ZhjwAuth>(),
       getIt<WfwAuth>(),
@@ -143,6 +151,7 @@ void _configureAsyncDependencies() {
       getIt<FitnessAuth>(),
       getIt<CcylAuth>(),
       getIt<ServiceAuth>(),
+      getIt<NewServiceAuth>(),
     ]);
   });
 
@@ -170,6 +179,10 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<ServiceApiService>(() async {
     await getIt.isReady<ServiceAuth>();
     return ServiceApiService(getIt<ServiceAuth>());
+  });
+  getIt.registerSingletonAsync<NewServiceApiService>(() async {
+    await getIt.isReady<NewServiceAuth>();
+    return NewServiceApiService(getIt<NewServiceAuth>());
   });
 
   // ── Provider ────────────────────────────────────────────────────
@@ -244,6 +257,16 @@ void _configureAsyncDependencies() {
     return NetworkDeviceProvider(
       getIt<WfwApiService>(),
       getIt<WfwAuth>(),
+      getIt<ScuAuth>(),
+    );
+  });
+  getIt.registerSingletonAsync<PasspointProvider>(() async {
+    await getIt.isReady<NewServiceApiService>();
+    await getIt.isReady<NewServiceAuth>();
+    await getIt.isReady<ScuAuth>();
+    return PasspointProvider(
+      getIt<NewServiceApiService>(),
+      getIt<NewServiceAuth>(),
       getIt<ScuAuth>(),
     );
   });
@@ -354,6 +377,9 @@ void _configureAsyncDependencies() {
         }
         if (getIt.isRegistered<NetworkDeviceProvider>()) {
           getIt<NetworkDeviceProvider>().clear();
+        }
+        if (getIt.isRegistered<PasspointProvider>()) {
+          getIt<PasspointProvider>().clear();
         }
         if (getIt.isRegistered<ClassroomProvider>()) {
           getIt<ClassroomProvider>().clear();

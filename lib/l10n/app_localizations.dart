@@ -2899,6 +2899,144 @@ abstract class AppLocalizations {
   /// **'Operation successful'**
   String get networkDeviceOperationSuccess;
 
+  /// No description provided for @passpointTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Passive Authentication'**
+  String get passpointTitle;
+
+  /// No description provided for @passpointDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Bind device MAC to auto authenticate on campus network'**
+  String get passpointDesc;
+
+  /// No description provided for @passpointAddDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Device'**
+  String get passpointAddDevice;
+
+  /// No description provided for @passpointUserInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'User Information'**
+  String get passpointUserInfo;
+
+  /// No description provided for @passpointUserGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'User Group'**
+  String get passpointUserGroup;
+
+  /// No description provided for @passpointAccountState.
+  ///
+  /// In en, this message translates to:
+  /// **'Account State'**
+  String get passpointAccountState;
+
+  /// No description provided for @passpointOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get passpointOnline;
+
+  /// No description provided for @passpointOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline'**
+  String get passpointOffline;
+
+  /// No description provided for @passpointMyDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'My Devices'**
+  String get passpointMyDevices;
+
+  /// No description provided for @passpointExpireTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Expire Time'**
+  String get passpointExpireTime;
+
+  /// No description provided for @passpointExpireLongest.
+  ///
+  /// In en, this message translates to:
+  /// **'Max 6 years'**
+  String get passpointExpireLongest;
+
+  /// No description provided for @passpointExit.
+  ///
+  /// In en, this message translates to:
+  /// **'Device Exit'**
+  String get passpointExit;
+
+  /// No description provided for @passpointMac.
+  ///
+  /// In en, this message translates to:
+  /// **'MAC Address'**
+  String get passpointMac;
+
+  /// No description provided for @passpointCancelAuth.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Passive Auth'**
+  String get passpointCancelAuth;
+
+  /// No description provided for @passpointCancelAuthConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to cancel passive authentication for this device?'**
+  String get passpointCancelAuthConfirm;
+
+  /// No description provided for @passpointOperationSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Operation successful'**
+  String get passpointOperationSuccess;
+
+  /// No description provided for @operationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Operation failed'**
+  String get operationFailed;
+
+  /// No description provided for @passpointMacRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter MAC'**
+  String get passpointMacRequired;
+
+  /// No description provided for @passpointMacInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid MAC format, need 12 hex digits'**
+  String get passpointMacInvalid;
+
+  /// No description provided for @passpointExpireRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter binding validity'**
+  String get passpointExpireRequired;
+
+  /// No description provided for @passpointExpireInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Validity must be between 0 and 365'**
+  String get passpointExpireInvalid;
+
+  /// No description provided for @passpointExpireHint.
+  ///
+  /// In en, this message translates to:
+  /// **'0-365 days, 0 means max 6 years'**
+  String get passpointExpireHint;
+
+  /// No description provided for @passpointAddWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Note: once passive authentication is enabled, the device will auto join the campus network and dormitory traffic will be billed. Please use with caution!'**
+  String get passpointAddWarning;
+
   /// No description provided for @captchaLoadFailed.
   ///
   /// In en, this message translates to:
@@ -3522,6 +3660,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Network'**
   String get dockLabelNetworkDevice;
+
+  /// No description provided for @dockLabelPasspoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Passive'**
+  String get dockLabelPasspoint;
 
   /// No description provided for @dockLabelBalanceQuery.
   ///

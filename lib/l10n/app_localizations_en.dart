@@ -1501,6 +1501,78 @@ class AppLocalizationsEn extends AppLocalizations {
   String get networkDeviceOperationSuccess => 'Operation successful';
 
   @override
+  String get passpointTitle => 'Passive Authentication';
+
+  @override
+  String get passpointDesc =>
+      'Bind device MAC to auto authenticate on campus network';
+
+  @override
+  String get passpointAddDevice => 'Add Device';
+
+  @override
+  String get passpointUserInfo => 'User Information';
+
+  @override
+  String get passpointUserGroup => 'User Group';
+
+  @override
+  String get passpointAccountState => 'Account State';
+
+  @override
+  String get passpointOnline => 'Online';
+
+  @override
+  String get passpointOffline => 'Offline';
+
+  @override
+  String get passpointMyDevices => 'My Devices';
+
+  @override
+  String get passpointExpireTime => 'Expire Time';
+
+  @override
+  String get passpointExpireLongest => 'Max 6 years';
+
+  @override
+  String get passpointExit => 'Device Exit';
+
+  @override
+  String get passpointMac => 'MAC Address';
+
+  @override
+  String get passpointCancelAuth => 'Cancel Passive Auth';
+
+  @override
+  String get passpointCancelAuthConfirm =>
+      'Are you sure you want to cancel passive authentication for this device?';
+
+  @override
+  String get passpointOperationSuccess => 'Operation successful';
+
+  @override
+  String get operationFailed => 'Operation failed';
+
+  @override
+  String get passpointMacRequired => 'Please enter MAC';
+
+  @override
+  String get passpointMacInvalid => 'Invalid MAC format, need 12 hex digits';
+
+  @override
+  String get passpointExpireRequired => 'Please enter binding validity';
+
+  @override
+  String get passpointExpireInvalid => 'Validity must be between 0 and 365';
+
+  @override
+  String get passpointExpireHint => '0-365 days, 0 means max 6 years';
+
+  @override
+  String get passpointAddWarning =>
+      'Note: once passive authentication is enabled, the device will auto join the campus network and dormitory traffic will be billed. Please use with caution!';
+
+  @override
   String get captchaLoadFailed => 'Failed to load captcha';
 
   @override
@@ -1839,6 +1911,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dockLabelNetworkDevice => 'Network';
+
+  @override
+  String get dockLabelPasspoint => 'Passive';
 
   @override
   String get dockLabelBalanceQuery => 'Electricity';
