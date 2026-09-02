@@ -4951,6 +4951,18 @@ abstract class AppLocalizations {
   /// **'Please select a repair item'**
   String get repairSelectProject;
 
+  /// Hint of the repair category dropdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a category first'**
+  String get repairSelectCategory;
+
+  /// Shown when a category has no available repair items.
+  ///
+  /// In en, this message translates to:
+  /// **'No repair items in this category'**
+  String get repairNoProjectInCategory;
+
   /// Hint shown before repair items load.
   ///
   /// In en, this message translates to:

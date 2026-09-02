@@ -344,6 +344,40 @@ class ZhhqApiService {
     }
   }
 
+  /// 提交前预取：按区域+维修项目获取负责部门与收费信息。
+  ///
+  /// 对应前端提交链的第一步 `getAcceptUserByAreaIdAndProjectId`。返回的
+  /// `dept`（或第一个 `user`）含 `deptId`/`deptName`/`payName`，是
+  /// `publish` 请求体里 `acceptDeptId`/`acceptDeptName`/`payName` 的来源；
+  /// 失败时返回 null（提交链的 `checkIfHadProjectIdByAreaId` 为可选校验，
+  /// 服务端以 `publish` 缺参为由拒单时再暴露给用户）。
+  Future<RepairAcceptDept?> fetchAcceptDept({
+    required String areaId,
+    required String projectId,
+  }) async {
+    final json = await _request((client, tokenKey) async {
+      final resp = await client.post(
+        Uri.parse('$_base/repair/publish/getAcceptUserByAreaIdAndProjectId'),
+        headers: _headers(client, tokenKey),
+        body: {'areaId': areaId, 'projectId': projectId},
+      );
+      return _decode(resp.body, resp.statusCode);
+    });
+    final data = json['data'];
+    if (data is! Map) return null;
+    final dept = data['dept'];
+    if (dept is Map) {
+      return RepairAcceptDept.fromJson(Map<String, dynamic>.from(dept));
+    }
+    final users = data['users'];
+    if (users is List && users.isNotEmpty && users.first is Map) {
+      return RepairAcceptDept.fromJson(
+        Map<String, dynamic>.from(users.first as Map),
+      );
+    }
+    return null;
+  }
+
   /// 上传报修图片，返回服务端 `path`（用于提交工单的 `resourcesVOS.fileUrl`）。
   ///
   /// 对应前端 `POST /api/file/upload`（multipart：`file` + `system=manager`）。

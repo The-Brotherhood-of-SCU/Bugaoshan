@@ -1311,6 +1311,16 @@
         "description": "Hint when no repair item is selected.",
         "type": "text"
     },
+    "repairSelectCategory": "Please select a category first",
+    "@repairSelectCategory": {
+        "description": "Hint of the repair category dropdown.",
+        "type": "text"
+    },
+    "repairNoProjectInCategory": "No repair items in this category",
+    "@repairNoProjectInCategory": {
+        "description": "Shown when a category has no available repair items.",
+        "type": "text"
+    },
     "repairSelectProjectHint": "Select a fault address first to load repair items",
     "@repairSelectProjectHint": {
         "description": "Hint shown before repair items load.",

@@ -2649,6 +2649,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get repairSelectProject => 'Please select a repair item';
 
   @override
+  String get repairSelectCategory => 'Please select a category first';
+
+  @override
+  String get repairNoProjectInCategory => 'No repair items in this category';
+
+  @override
   String get repairSelectProjectHint =>
       'Select a fault address first to load repair items';
 

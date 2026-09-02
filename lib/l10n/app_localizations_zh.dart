@@ -2566,6 +2566,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get repairSelectProject => '请选择维修项目';
 
   @override
+  String get repairSelectCategory => '请先选择类别';
+
+  @override
+  String get repairNoProjectInCategory => '该类别下暂无维修项目';
+
+  @override
   String get repairSelectProjectHint => '请先选择故障地址以加载维修项目';
 
   @override

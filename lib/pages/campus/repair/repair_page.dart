@@ -291,7 +291,8 @@ class _SubmitTabState extends State<_SubmitTab> {
       return;
     }
 
-    // 提交时统一上传图片，全部成功后才发送工单
+    // 提交时统一上传图片 + 预取维修部门，全部成功后才发送工单。
+    // _uploadingImages 贯穿整个提交链（上传/预取/publish），期间按钮禁用防重复提交。
     setState(() => _uploadingImages = true);
     final resources = <Map<String, String>>[];
     try {
@@ -306,25 +307,43 @@ class _SubmitTabState extends State<_SubmitTab> {
       return;
     }
     if (!mounted) return;
+
+    // 预取维修负责部门（acceptDeptId/acceptDeptName/payName 来源）
+    final dept = await widget.provider.fetchAcceptDept(
+      areaId: _selectedAddress!.areaId,
+      projectId: _projectValue!,
+    );
+    if (!mounted) return;
     setState(() => _uploadingImages = false);
 
     final payload = <String, dynamic>{
-      'areaId': _selectedAddress!.areaId,
-      'address': _selectedAddress!.displayName,
-      'repairUserAddressId': _selectedAddress!.id,
-      'projectId': _projectValue,
+      // 与前端提交链完全一致（缺字段服务端会报"缺少参数"）
+      'type': '0',
+      'ifShielding': '1',
+      'areaName': _selectedAddress!.areaName,
+      'address': _selectedAddress!.addressDetail,
       'projectName': _projectLabel,
-      'content': _contentController.text.trim(),
+      'bookDate': _bookDate ?? '',
+      'bookTime': _bookTime ?? '',
+      'repairUserName': getIt<ScuAuthProvider>().userRealname ?? '',
       'repairUserMobile': _selectedAddress!.phone,
+      'repairDeptName': '',
       'ifOnduty': _allowNoOneRepair ? '1' : '0',
+      'repairNum': 1,
+      'content': _contentController.text.trim(),
       'ifPublish': '1',
       'ifUrgent': '0',
-      'source': '1',
-      'repairNum': 1,
-      'repairDeptName': '',
+      'id': '',
       'resourcesVOS': resources,
-      if (_bookDate != null) 'bookDate': _bookDate,
-      if (_bookTime != null) 'bookTime': _bookTime,
+      'source': '1',
+      'projectId': _projectValue,
+      'areaId': _selectedAddress!.areaId,
+      if (dept != null) ...{
+        'payName': dept.payName,
+        'acceptDeptId': dept.deptId,
+        'acceptDeptName': dept.deptName,
+      },
+      'ifRecord': 0,
     };
 
     final success = await widget.provider.submitTicket(payload);
@@ -660,7 +679,7 @@ class _SubmitTabState extends State<_SubmitTab> {
   }
 }
 
-/// 维修项目选择器（按区域加载，支持搜索）。
+/// 维修项目选择器（按区域加载，两级：大类 → 具体项目）。
 class _ProjectSelector extends StatefulWidget {
   const _ProjectSelector({
     required this.areaId,
@@ -679,7 +698,8 @@ class _ProjectSelector extends StatefulWidget {
 }
 
 class _ProjectSelectorState extends State<_ProjectSelector> {
-  List<RepairProject> _projects = const [];
+  List<RepairProject> _categories = const [];
+  RepairProject? _selectedCategory;
   bool _loading = false;
 
   @override
@@ -695,6 +715,11 @@ class _ProjectSelectorState extends State<_ProjectSelector> {
   void didUpdateWidget(covariant _ProjectSelector oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.areaId != widget.areaId) {
+      // 区域变化：清空已选类目，重新加载
+      if (_selectedCategory != null || widget.value != null) {
+        _selectedCategory = null;
+        widget.onChanged('', '');
+      }
       _loadProjects();
     }
   }
@@ -705,9 +730,9 @@ class _ProjectSelectorState extends State<_ProjectSelector> {
     setState(() => _loading = true);
     try {
       final projects = await getIt<ZhhqRepairProvider>().fetchProjects(areaId);
-      if (mounted) setState(() => _projects = projects);
+      if (mounted) setState(() => _categories = projects);
     } catch (_) {
-      if (mounted) setState(() => _projects = const []);
+      if (mounted) setState(() => _categories = const []);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -724,7 +749,7 @@ class _ProjectSelectorState extends State<_ProjectSelector> {
         ),
       );
     }
-    if (_projects.isEmpty) {
+    if (_categories.isEmpty) {
       return Text(
         l10n.repairSelectProjectHint,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -732,31 +757,89 @@ class _ProjectSelectorState extends State<_ProjectSelector> {
         ),
       );
     }
-    return DropdownButtonFormField<String>(
-      initialValue: widget.value,
-      hint: Text(l10n.repairSelectProject),
-      decoration: const InputDecoration(border: OutlineInputBorder()),
-      items: _projects
-          .map(
-            (p) => DropdownMenuItem(
-              value: p.value,
+
+    final category = _selectedCategory;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 第一级：大类
+        DropdownButtonFormField<RepairProject>(
+          initialValue: category,
+          hint: Text(l10n.repairSelectCategory),
+          isExpanded: true,
+          decoration: const InputDecoration(border: OutlineInputBorder()),
+          items: _categories
+              .map(
+                (c) => DropdownMenuItem(
+                  value: c,
+                  child: Text(
+                    c.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              )
+              .toList(),
+          onChanged: (c) {
+            setState(() => _selectedCategory = c);
+            // 已有已选叶子项目则交给用户重选
+            if (widget.value != null && widget.value!.isNotEmpty) {
+              widget.onChanged('', '');
+            }
+          },
+        ),
+        if (category != null) ...[
+          const SizedBox(height: 8),
+          // 第二级：具体项目
+          if (category.children.isNotEmpty)
+            DropdownButtonFormField<String>(
+              initialValue: widget.value,
+              hint: Text(l10n.repairSelectProject),
+              isExpanded: true,
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              items: category.children
+                  .map(
+                    (p) => DropdownMenuItem(
+                      value: p.value,
+                      child: Text(
+                        p.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (v) {
+                final label = category.children
+                    .where((p) => p.value == v)
+                    .map((p) => p.label)
+                    .firstOrNull;
+                // projectName 用「大类/项目」完整名（与前端提交一致）
+                widget.onChanged(v ?? '', '$categoryLabel/$label');
+              },
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
               child: Text(
-                p.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                l10n.repairNoProjectInCategory,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
-          )
-          .toList(),
-      onChanged: (v) {
-        final label = _projects
-            .where((p) => p.value == v)
-            .map((p) => p.label)
-            .firstOrNull;
-        widget.onChanged(v ?? '', label ?? '');
-      },
+        ],
+      ],
     );
   }
+
+  String get categoryLabel =>
+      _selectedCategory?.label ??
+      _categories
+          .where((c) => c.children.any((p) => p.value == widget.value))
+          .map((c) => c.label)
+          .firstOrNull ??
+      '';
 }
 
 /// 「新增地址」入口按钮 + 弹窗。

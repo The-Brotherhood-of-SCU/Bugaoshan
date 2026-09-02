@@ -259,6 +259,18 @@ class _ControllableZhhqApi implements ZhhqApiService {
   Future<List<RepairProject>> fetchProjects(String areaId) async => const [];
 
   @override
+  Future<RepairAcceptDept?> fetchAcceptDept({
+    required String areaId,
+    required String projectId,
+  }) async {
+    return const RepairAcceptDept(
+      deptId: 'dept-1',
+      deptName: '维修与通讯服务中心望江校区',
+      payName: '无偿',
+    );
+  }
+
+  @override
   Future<List<RepairAreaNode>> fetchAreaTreeNodes() async => const [];
 
   @override

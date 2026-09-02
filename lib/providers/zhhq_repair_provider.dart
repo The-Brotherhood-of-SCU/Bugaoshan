@@ -301,6 +301,18 @@ class ZhhqRepairProvider extends ChangeNotifier {
     }
   }
 
+  /// 提交前预取维修负责部门（areaId + projectId）。失败返回 null。
+  Future<RepairAcceptDept?> fetchAcceptDept({
+    required String areaId,
+    required String projectId,
+  }) async {
+    try {
+      return await _api.fetchAcceptDept(areaId: areaId, projectId: projectId);
+    } on ScuException {
+      return null;
+    }
+  }
+
   /// 获取报修区域树（新增地址用）。失败返回空列表。
   Future<List<RepairAreaNode>> fetchAreaTree() async {
     try {

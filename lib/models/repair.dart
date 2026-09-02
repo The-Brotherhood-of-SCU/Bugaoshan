@@ -48,23 +48,60 @@ class RepairAddress {
   }
 }
 
-/// 维修项目（`publish/getProjectByAreaId` 返回的树节点）。
+/// 维修项目（`publish/getProjectByAreaId` 返回的**两级树**节点）。
+///
+/// 顶层节点是大类（如「水」「木」「泥」），其 `children` 是具体维修项目
+/// （如「水龙头类」「门锁窗扣类」）。提交工单时 `projectId` 需为**叶子**
+/// 项目的 `value`（如 `101`），`projectName` 用「大类/项目」完整名。
 class RepairProject {
   final String label;
   final String value;
-  final String? parentId;
+  final List<RepairProject> children;
 
   const RepairProject({
     required this.label,
     required this.value,
-    this.parentId,
+    this.children = const [],
   });
 
+  bool get isCategory => children.isNotEmpty;
+
   factory RepairProject.fromJson(Map<String, dynamic> json) {
+    final children = json['children'] is List
+        ? (json['children'] as List)
+              .whereType<Map>()
+              .map((e) => RepairProject.fromJson(Map<String, dynamic>.from(e)))
+              .toList(growable: false)
+        : const <RepairProject>[];
     return RepairProject(
       label: json['label']?.toString() ?? '',
       value: json['value']?.toString() ?? json['id']?.toString() ?? '',
-      parentId: json['pId']?.toString(),
+      children: children,
+    );
+  }
+}
+
+/// 报修负责部门（`getAcceptUserByAreaIdAndProjectId` 返回）。
+///
+/// 提交工单的前提：用该接口按区域+项目预取维修负责部门，
+/// 其 `deptId`/`deptName`/`payName` 直接作为 `publish` 请求体的
+/// `acceptDeptId`/`acceptDeptName`/`payName`。
+class RepairAcceptDept {
+  final String deptId;
+  final String deptName;
+  final String payName;
+
+  const RepairAcceptDept({
+    required this.deptId,
+    required this.deptName,
+    required this.payName,
+  });
+
+  factory RepairAcceptDept.fromJson(Map<String, dynamic> json) {
+    return RepairAcceptDept(
+      deptId: json['deptId']?.toString() ?? '',
+      deptName: json['deptName']?.toString() ?? '',
+      payName: json['payName']?.toString() ?? '',
     );
   }
 }

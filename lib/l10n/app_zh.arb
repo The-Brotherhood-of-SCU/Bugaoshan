@@ -1249,6 +1249,16 @@
         "description": "未选择维修项目时的提示。",
         "type": "text"
     },
+    "repairSelectCategory": "请先选择类别",
+    "@repairSelectCategory": {
+        "description": "维修大类下拉框的提示。",
+        "type": "text"
+    },
+    "repairNoProjectInCategory": "该类别下暂无维修项目",
+    "@repairNoProjectInCategory": {
+        "description": "类别下没有可维修项目时展示。",
+        "type": "text"
+    },
     "repairSelectProjectHint": "请先选择故障地址以加载维修项目",
     "@repairSelectProjectHint": {
         "description": "维修项目加载前的提示。",
