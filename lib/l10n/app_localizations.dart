@@ -4897,6 +4897,210 @@ abstract class AppLocalizations {
   /// **'Service Hall'**
   String get dockLabelLeave;
 
+  /// Short dock label for the online repair entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Repair'**
+  String get dockLabelRepair;
+
+  /// Title of the online repair page.
+  ///
+  /// In en, this message translates to:
+  /// **'Online Repair'**
+  String get repairTitle;
+
+  /// Description of the online repair feature on the campus entry card.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit dorm/classroom facility repairs and track progress'**
+  String get repairDesc;
+
+  /// Tab label of the repair submission form.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get repairTabSubmit;
+
+  /// Tab label of the my repairs list.
+  ///
+  /// In en, this message translates to:
+  /// **'My Repairs'**
+  String get repairTabMyTickets;
+
+  /// Field title of the fault address in the repair form.
+  ///
+  /// In en, this message translates to:
+  /// **'Fault Address'**
+  String get repairAddress;
+
+  /// Hint when no fault address is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a fault address'**
+  String get repairSelectAddress;
+
+  /// Field title of the repair item in the form.
+  ///
+  /// In en, this message translates to:
+  /// **'Repair Item'**
+  String get repairProject;
+
+  /// Hint when no repair item is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a repair item'**
+  String get repairSelectProject;
+
+  /// Hint shown before repair items load.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a fault address first to load repair items'**
+  String get repairSelectProjectHint;
+
+  /// Field title of the fault description in the form.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get repairContent;
+
+  /// Placeholder of the description input.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe the fault in detail to help the technician bring tools'**
+  String get repairContentHint;
+
+  /// Hint when the description is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please fill in the description'**
+  String get repairContentRequired;
+
+  /// Field title of the photo upload in the form.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos / Videos'**
+  String get repairPhotos;
+
+  /// Button label shown while images are being uploaded on submit.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading image…'**
+  String get repairImageUploading;
+
+  /// Field title of the expected repair time in the form.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected Repair Time'**
+  String get repairSchedule;
+
+  /// Switch for allowing the technician to repair unattended.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow repair when no one is home'**
+  String get repairAllowNoOne;
+
+  /// Expected repair date picker item.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Date'**
+  String get repairBookDate;
+
+  /// Expected repair time slot picker item.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Time Slot'**
+  String get repairBookTime;
+
+  /// Placeholder when no date/time is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Not selected'**
+  String get repairNotSelected;
+
+  /// Hint when there are no available booking dates.
+  ///
+  /// In en, this message translates to:
+  /// **'No available booking dates'**
+  String get repairNoBookDate;
+
+  /// Hint when there are no available time slots.
+  ///
+  /// In en, this message translates to:
+  /// **'No available time slots for this date'**
+  String get repairNoBookTime;
+
+  /// Submit button label of the repair form.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Repair'**
+  String get repairSubmit;
+
+  /// Toast after a successful repair submission.
+  ///
+  /// In en, this message translates to:
+  /// **'Repair submitted successfully'**
+  String get repairSubmitSuccess;
+
+  /// Toast after a failed repair submission.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to submit repair, please try again'**
+  String get repairSubmitFailed;
+
+  /// Generic name of a repair ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'Repair Ticket'**
+  String get repairTicket;
+
+  /// Fault location label in a repair ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'Fault Location'**
+  String get repairArea;
+
+  /// Button to add a repair address.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Address'**
+  String get repairAddAddress;
+
+  /// Hint to select an area when adding an address.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Area'**
+  String get repairSelectArea;
+
+  /// Detailed address field in the add-address form.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed Address'**
+  String get repairAddressDetail;
+
+  /// Hint when the detailed address is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please fill in the detailed address'**
+  String get repairAddressDetailRequired;
+
+  /// Hint when the phone number is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please fill in the phone number'**
+  String get repairPhoneRequired;
+
+  /// Hint when the phone number format is invalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid phone number format'**
+  String get repairPhoneInvalid;
+
+  /// Toast after saving a new address.
+  ///
+  /// In en, this message translates to:
+  /// **'Address saved'**
+  String get repairAddressSaved;
+
   /// Title for the service hall sub-page listing available matters.
   ///
   /// In en, this message translates to:

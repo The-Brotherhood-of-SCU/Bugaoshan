@@ -2621,6 +2621,112 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dockLabelLeave => 'Service Hall';
 
   @override
+  String get dockLabelRepair => 'Repair';
+
+  @override
+  String get repairTitle => 'Online Repair';
+
+  @override
+  String get repairDesc =>
+      'Submit dorm/classroom facility repairs and track progress';
+
+  @override
+  String get repairTabSubmit => 'Submit';
+
+  @override
+  String get repairTabMyTickets => 'My Repairs';
+
+  @override
+  String get repairAddress => 'Fault Address';
+
+  @override
+  String get repairSelectAddress => 'Please select a fault address';
+
+  @override
+  String get repairProject => 'Repair Item';
+
+  @override
+  String get repairSelectProject => 'Please select a repair item';
+
+  @override
+  String get repairSelectProjectHint =>
+      'Select a fault address first to load repair items';
+
+  @override
+  String get repairContent => 'Description';
+
+  @override
+  String get repairContentHint =>
+      'Describe the fault in detail to help the technician bring tools';
+
+  @override
+  String get repairContentRequired => 'Please fill in the description';
+
+  @override
+  String get repairPhotos => 'Photos / Videos';
+
+  @override
+  String get repairImageUploading => 'Uploading image…';
+
+  @override
+  String get repairSchedule => 'Expected Repair Time';
+
+  @override
+  String get repairAllowNoOne => 'Allow repair when no one is home';
+
+  @override
+  String get repairBookDate => 'Select Date';
+
+  @override
+  String get repairBookTime => 'Select Time Slot';
+
+  @override
+  String get repairNotSelected => 'Not selected';
+
+  @override
+  String get repairNoBookDate => 'No available booking dates';
+
+  @override
+  String get repairNoBookTime => 'No available time slots for this date';
+
+  @override
+  String get repairSubmit => 'Submit Repair';
+
+  @override
+  String get repairSubmitSuccess => 'Repair submitted successfully';
+
+  @override
+  String get repairSubmitFailed => 'Failed to submit repair, please try again';
+
+  @override
+  String get repairTicket => 'Repair Ticket';
+
+  @override
+  String get repairArea => 'Fault Location';
+
+  @override
+  String get repairAddAddress => 'Add Address';
+
+  @override
+  String get repairSelectArea => 'Select Area';
+
+  @override
+  String get repairAddressDetail => 'Detailed Address';
+
+  @override
+  String get repairAddressDetailRequired =>
+      'Please fill in the detailed address';
+
+  @override
+  String get repairPhoneRequired => 'Please fill in the phone number';
+
+  @override
+  String get repairPhoneInvalid => 'Invalid phone number format';
+
+  @override
+  String get repairAddressSaved => 'Address saved';
+
+  @override
   String get serviceHallTitle => 'Service Hall';
 
   @override

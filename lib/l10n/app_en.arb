@@ -1266,6 +1266,176 @@
         "description": "Short dock label for the service hall entry.",
         "type": "text"
     },
+    "dockLabelRepair": "Repair",
+    "@dockLabelRepair": {
+        "description": "Short dock label for the online repair entry.",
+        "type": "text"
+    },
+    "repairTitle": "Online Repair",
+    "@repairTitle": {
+        "description": "Title of the online repair page.",
+        "type": "text"
+    },
+    "repairDesc": "Submit dorm/classroom facility repairs and track progress",
+    "@repairDesc": {
+        "description": "Description of the online repair feature on the campus entry card.",
+        "type": "text"
+    },
+    "repairTabSubmit": "Submit",
+    "@repairTabSubmit": {
+        "description": "Tab label of the repair submission form.",
+        "type": "text"
+    },
+    "repairTabMyTickets": "My Repairs",
+    "@repairTabMyTickets": {
+        "description": "Tab label of the my repairs list.",
+        "type": "text"
+    },
+    "repairAddress": "Fault Address",
+    "@repairAddress": {
+        "description": "Field title of the fault address in the repair form.",
+        "type": "text"
+    },
+    "repairSelectAddress": "Please select a fault address",
+    "@repairSelectAddress": {
+        "description": "Hint when no fault address is selected.",
+        "type": "text"
+    },
+    "repairProject": "Repair Item",
+    "@repairProject": {
+        "description": "Field title of the repair item in the form.",
+        "type": "text"
+    },
+    "repairSelectProject": "Please select a repair item",
+    "@repairSelectProject": {
+        "description": "Hint when no repair item is selected.",
+        "type": "text"
+    },
+    "repairSelectProjectHint": "Select a fault address first to load repair items",
+    "@repairSelectProjectHint": {
+        "description": "Hint shown before repair items load.",
+        "type": "text"
+    },
+    "repairContent": "Description",
+    "@repairContent": {
+        "description": "Field title of the fault description in the form.",
+        "type": "text"
+    },
+    "repairContentHint": "Describe the fault in detail to help the technician bring tools",
+    "@repairContentHint": {
+        "description": "Placeholder of the description input.",
+        "type": "text"
+    },
+    "repairContentRequired": "Please fill in the description",
+    "@repairContentRequired": {
+        "description": "Hint when the description is empty.",
+        "type": "text"
+    },
+    "repairPhotos": "Photos / Videos",
+    "@repairPhotos": {
+        "description": "Field title of the photo upload in the form.",
+        "type": "text"
+    },
+    "repairImageUploading": "Uploading image…",
+    "@repairImageUploading": {
+        "description": "Button label shown while images are being uploaded on submit.",
+        "type": "text"
+    },
+    "repairSchedule": "Expected Repair Time",
+    "@repairSchedule": {
+        "description": "Field title of the expected repair time in the form.",
+        "type": "text"
+    },
+    "repairAllowNoOne": "Allow repair when no one is home",
+    "@repairAllowNoOne": {
+        "description": "Switch for allowing the technician to repair unattended.",
+        "type": "text"
+    },
+    "repairBookDate": "Select Date",
+    "@repairBookDate": {
+        "description": "Expected repair date picker item.",
+        "type": "text"
+    },
+    "repairBookTime": "Select Time Slot",
+    "@repairBookTime": {
+        "description": "Expected repair time slot picker item.",
+        "type": "text"
+    },
+    "repairNotSelected": "Not selected",
+    "@repairNotSelected": {
+        "description": "Placeholder when no date/time is selected.",
+        "type": "text"
+    },
+    "repairNoBookDate": "No available booking dates",
+    "@repairNoBookDate": {
+        "description": "Hint when there are no available booking dates.",
+        "type": "text"
+    },
+    "repairNoBookTime": "No available time slots for this date",
+    "@repairNoBookTime": {
+        "description": "Hint when there are no available time slots.",
+        "type": "text"
+    },
+    "repairSubmit": "Submit Repair",
+    "@repairSubmit": {
+        "description": "Submit button label of the repair form.",
+        "type": "text"
+    },
+    "repairSubmitSuccess": "Repair submitted successfully",
+    "@repairSubmitSuccess": {
+        "description": "Toast after a successful repair submission.",
+        "type": "text"
+    },
+    "repairSubmitFailed": "Failed to submit repair, please try again",
+    "@repairSubmitFailed": {
+        "description": "Toast after a failed repair submission.",
+        "type": "text"
+    },
+    "repairTicket": "Repair Ticket",
+    "@repairTicket": {
+        "description": "Generic name of a repair ticket.",
+        "type": "text"
+    },
+    "repairArea": "Fault Location",
+    "@repairArea": {
+        "description": "Fault location label in a repair ticket.",
+        "type": "text"
+    },
+    "repairAddAddress": "Add Address",
+    "@repairAddAddress": {
+        "description": "Button to add a repair address.",
+        "type": "text"
+    },
+    "repairSelectArea": "Select Area",
+    "@repairSelectArea": {
+        "description": "Hint to select an area when adding an address.",
+        "type": "text"
+    },
+    "repairAddressDetail": "Detailed Address",
+    "@repairAddressDetail": {
+        "description": "Detailed address field in the add-address form.",
+        "type": "text"
+    },
+    "repairAddressDetailRequired": "Please fill in the detailed address",
+    "@repairAddressDetailRequired": {
+        "description": "Hint when the detailed address is empty.",
+        "type": "text"
+    },
+    "repairPhoneRequired": "Please fill in the phone number",
+    "@repairPhoneRequired": {
+        "description": "Hint when the phone number is empty.",
+        "type": "text"
+    },
+    "repairPhoneInvalid": "Invalid phone number format",
+    "@repairPhoneInvalid": {
+        "description": "Hint when the phone number format is invalid.",
+        "type": "text"
+    },
+    "repairAddressSaved": "Address saved",
+    "@repairAddressSaved": {
+        "description": "Toast after saving a new address.",
+        "type": "text"
+    },
     "serviceHallTitle": "Service Hall",
     "@serviceHallTitle": {
         "description": "Title for the service hall sub-page listing available matters.",
