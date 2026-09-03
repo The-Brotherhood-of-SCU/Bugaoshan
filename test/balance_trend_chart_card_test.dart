@@ -8,17 +8,28 @@ import 'package:bugaoshan/services/balance/balance_trend_calculator.dart';
 
 /// 构造余额趋势结果,数据范围 [minBalance]~[maxBalance](照明电量在 272.x 度
 /// 附近波动时范围很窄,是 issue #261 的重叠场景)。
+///
+/// [startHour]/[endHour] 控制数据起止时刻,用于复现底部边界处 fl_chart
+/// 生成同一天重复刻度的场景(如首点 10 点、末点 6 点时,最后一天会出现
+/// 两个 08/30 刻度)。
 TrendResult _trend({
   required double minBalance,
   required double maxBalance,
   required int days,
+  int startHour = 10,
+  int? endHour,
 }) {
   final points = <BalanceRecord>[
     for (var i = 0; i < days; i++)
       BalanceRecord(
         roomKey: 'r',
         balanceType: 1,
-        timestamp: DateTime.utc(2026, 8, 1 + i, 10),
+        timestamp: DateTime.utc(
+          2026,
+          8,
+          1 + i,
+          i == days - 1 && endHour != null ? endHour : startHour,
+        ),
         balance: minBalance + (maxBalance - minBalance) * i / (days - 1),
         price: 0.5,
       ),
@@ -84,6 +95,23 @@ List<Rect> _yAxisLabelRects(WidgetTester tester) {
   return rects;
 }
 
+/// 收集底部日期标签文本(形如 `08/29`),返回按像素横坐标升序的矩形列表。
+/// 用 `find.byWidget` 取每个 Text 元素的独立 rect,避免重复标签被
+/// `find.text(...).first` 误去重。
+List<Rect> _xAxisDateRects(WidgetTester tester) {
+  final rects = <Rect>[];
+  for (final element in tester.widgetList<Text>(find.byType(Text))) {
+    final text = element.data;
+    if (text == null) continue;
+    // 底部日期是 MM/dd 格式(如 08/29),Y 轴数字标签不含斜杠。
+    if (!RegExp(r'^\d{2}/\d{2}$').hasMatch(text)) continue;
+    final rect = tester.getRect(find.byWidget(element));
+    rects.add(rect);
+  }
+  rects.sort((a, b) => a.left.compareTo(b.left));
+  return rects;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -124,6 +152,33 @@ void main() {
           gap,
           greaterThanOrEqualTo(0),
           reason: '刻度 ${labels[i - 1]} 与 ${labels[i]} 不应重叠(间距 $gap)',
+        );
+      }
+    });
+
+    testWidgets('底部日期标签同一天不重复显示(边界刻度重叠)', (tester) async {
+      // fl_chart 在数据边界会同时生成 interval 序列末刻度与 max(或 min 与
+      // 序列首刻度),两者可能落在同一天且都通过 pos 过滤,底部会渲染两个
+      // 相同日期标签重叠(如用户报告的左下角两个 08/29)。
+      await _pumpChart(
+        tester,
+        trend: _trend(
+          minBalance: 272.5,
+          maxBalance: 272.7,
+          days: 30,
+          startHour: 10,
+          endHour: 6,
+        ),
+      );
+
+      final dates = _xAxisDateRects(tester);
+      expect(dates.length, greaterThanOrEqualTo(2), reason: '应渲染出日期标签');
+      // 同一天只能出现一次,且标签矩形不能重叠。
+      for (var i = 1; i < dates.length; i++) {
+        expect(
+          dates[i].left - dates[i - 1].right,
+          greaterThanOrEqualTo(0),
+          reason: '日期 ${dates[i - 1]} 与 ${dates[i]} 不应重叠',
         );
       }
     });

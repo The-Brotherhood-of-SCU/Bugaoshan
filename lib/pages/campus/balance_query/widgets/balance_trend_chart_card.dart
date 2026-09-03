@@ -104,6 +104,10 @@ class BalanceTrendChartCard extends StatelessWidget {
     minY -= padding;
     maxY += padding;
 
+    // 底部日期标签去重状态:fl_chart 边界处可能生成同一天的重复刻度,
+    // 闭包内按日期字符串去重,同一天只显示第一个标签。
+    String? lastShownBottomDate;
+
     return StyledCard(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(8, 20, 16, 8),
@@ -150,8 +154,36 @@ class BalanceTrendChartCard extends StatelessWidget {
                         showTitles: true,
                         reservedSize: 32,
                         interval: niceTimeInterval(minX, maxX),
-                        getTitlesWidget: (value, meta) =>
-                            _bottomTitle(context, value, meta, minX, maxX),
+                        getTitlesWidget: (value, meta) {
+                          final range = maxX - minX;
+                          if (range <= 0) return const SizedBox.shrink();
+                          final pos = (value - minX) / range;
+                          if ((pos - pos.round()).abs() > 0.02) {
+                            return const SizedBox.shrink();
+                          }
+                          final dt = DateTime.fromMillisecondsSinceEpoch(
+                            value.toInt(),
+                            isUtc: true,
+                          );
+                          final dateStr = formatBeijing(dt, 'MM/dd');
+                          // fl_chart 边界处会同时生成 interval 序列末尾刻度
+                          // 与 max(或 min 与序列首刻度),两者可能落在同一天且都
+                          // 通过 pos 过滤,导致左下角出现两个相同日期标签重叠。
+                          // 按日期去重,同一天只保留第一个标签。
+                          if (dateStr == lastShownBottomDate) {
+                            return const SizedBox.shrink();
+                          }
+                          lastShownBottomDate = dateStr;
+                          return SideTitleWidget(
+                            meta: meta,
+                            child: Text(
+                              dateStr,
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodySmall?.copyWith(fontSize: 10),
+                            ),
+                          );
+                        },
                       ),
                     ),
                     leftTitles: AxisTitles(
@@ -226,29 +258,6 @@ class BalanceTrendChartCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _bottomTitle(
-    BuildContext context,
-    double value,
-    TitleMeta meta,
-    double minX,
-    double maxX,
-  ) {
-    final range = maxX - minX;
-    if (range <= 0) return const SizedBox.shrink();
-    final pos = (value - minX) / range;
-    if ((pos - pos.round()).abs() > 0.02) {
-      return const SizedBox.shrink();
-    }
-    final dt = DateTime.fromMillisecondsSinceEpoch(value.toInt(), isUtc: true);
-    return SideTitleWidget(
-      meta: meta,
-      child: Text(
-        formatBeijing(dt, 'MM/dd'),
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 10),
       ),
     );
   }
