@@ -24,23 +24,46 @@ String formatDate(DateTime t) => formatBeijing(t, 'yyyy-MM-dd');
 String formatDateTime(DateTime t) => formatBeijing(t, 'yyyy-MM-dd HH:mm');
 
 /// 计算"好看"的 Y 轴刻度间隔(1/2/5 × 10^n)。
-double niceInterval(double min, double max) {
+///
+/// [chartHeight] 为图表像素高度,[minPixelSpacing] 为相邻刻度标签的
+/// 最小像素间距。数据范围很窄时(如照明电量在 272.x 附近波动)原始
+/// `range / 4` 可能算出过小的间隔,导致刻度标签互相重叠;这里在间隔
+/// 过小时会向上取整到更大的 1/2/5 间隔,保证像素间距不小于
+/// [minPixelSpacing]。
+double niceInterval(
+  double min,
+  double max, {
+  double chartHeight = 240,
+  double minPixelSpacing = 40,
+}) {
   final range = max - min;
   if (range <= 0) return 1;
-  final raw = range / 4;
+  var interval = _niceIntervalOf(range / 4);
+  // 间隔对应的像素间距 = chartHeight * interval / range,
+  // 若小于 minPixelSpacing 则向上取整到更大的 1/2/5 间隔。
+  final minInterval = minPixelSpacing * range / chartHeight;
+  while (interval < minInterval) {
+    interval = _nextNiceUp(interval);
+  }
+  return interval;
+}
+
+double _niceIntervalOf(double raw) {
   final mag = pow(10, (log(raw) / ln10).floor()).toDouble();
   final norm = raw / mag;
-  double nice;
-  if (norm < 1.5) {
-    nice = 1;
-  } else if (norm < 3) {
-    nice = 2;
-  } else if (norm < 7) {
-    nice = 5;
-  } else {
-    nice = 10;
-  }
-  return nice * mag;
+  if (norm < 1.5) return 1 * mag;
+  if (norm < 3) return 2 * mag;
+  if (norm < 7) return 5 * mag;
+  return 10 * mag;
+}
+
+/// 向上取整到下一个 1/2/5 × 10^n 间隔。
+double _nextNiceUp(double interval) {
+  final mag = pow(10, (log(interval) / ln10).floor()).toDouble();
+  final norm = interval / mag;
+  if (norm < 2) return 2 * mag;
+  if (norm < 5) return 5 * mag;
+  return 10 * mag;
 }
 
 /// X 轴(时间)间隔:至少 4 段。
