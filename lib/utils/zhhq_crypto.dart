@@ -16,7 +16,13 @@ class ZhhqCrypto {
   static const String _responseKey = '1974051005060708';
   static const String _responseIv = '1974051005060708';
 
-  /// 智慧后勤客户端固定配置（来自前端模块 83d6）。
+  /// 智慧后勤客户端固定配置（来自前端 webpack 模块 83d6，属公开前端常量）。
+  ///
+  /// ⚠️ 尽管命名为 `clientSecret`，它**不是服务端机密**——和响应加解密
+  /// 默认 key/iv 一样，任何能打开 zhhq 前端页面的人都能从 JS 里提取，
+  /// 其作用只是让客户端请求通过服务端的签名/参数校验。
+  /// 请勿将其当作凭据对待（不要轮换、不要放入 SecureStorage、不要在日志
+  /// 中脱敏），它是与前端行为精确一致的固定常量。
   static const String clientId = 'web201911chengdu';
   static const String clientSecret = 'bf8ec0449942e7f4';
 

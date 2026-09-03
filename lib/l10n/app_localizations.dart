@@ -5257,6 +5257,18 @@ abstract class AppLocalizations {
   /// **'Address saved'**
   String get repairAddressSaved;
 
+  /// Toast when the selected image format is not supported.
+  ///
+  /// In en, this message translates to:
+  /// **'Only JPG/PNG/HEIC images are supported'**
+  String get repairImageTypeInvalid;
+
+  /// Toast when the selected image exceeds the size limit.
+  ///
+  /// In en, this message translates to:
+  /// **'Image must be smaller than 10MB'**
+  String get repairImageTooLarge;
+
   /// Title for the service hall sub-page listing available matters.
   ///
   /// In en, this message translates to:

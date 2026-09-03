@@ -2808,6 +2808,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get repairAddressSaved => 'Address saved';
 
   @override
+  String get repairImageTypeInvalid => 'Only JPG/PNG/HEIC images are supported';
+
+  @override
+  String get repairImageTooLarge => 'Image must be smaller than 10MB';
+
+  @override
   String get serviceHallTitle => 'Service Hall';
 
   @override

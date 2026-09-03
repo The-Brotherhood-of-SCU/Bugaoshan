@@ -59,6 +59,10 @@ class ZhhqAuth extends ChangeNotifier implements SubsystemAuth {
   /// 但 tokenKey 已恢复即可走快速路径秒发业务请求；SCU 登出时
   /// [_onScuAuthChanged] 会同步清除持久化的 tokenKey，不会残留脏数据。
   ///
+  /// 已知边界：冷启动时 SCU 会话已过期（storage 尚未被登出回调清理）且
+  /// 本方法恢复了 tokenKey，`isReady=true` 会走一次快速路径请求，由 API
+  /// 层 4010-4017 自愈（invalidate → 完整认证），不会永久卡在脏状态。
+  ///
   /// 若 SCU 已登录且本地存有 tokenKey，直接复用（跳过慢速 SSO ——
   /// id.scu.edu.cn 响应可能需 5-8s），加速冷启动进入报修页。
   Future<void> init() async {
@@ -183,9 +187,15 @@ class ZhhqAuth extends ChangeNotifier implements SubsystemAuth {
     }
 
     // 从回跳 URL 解析 userinfo（account/login?userinfo=<加密串>）
+    // 注意：完整 URL 含加密 userinfo，日志只记录是否存在与长度，不打印 URL。
     final finalUrl = response.request?.url;
-    _log.i(_tag, 'SSO 回跳 URL: ${finalUrl?.toString()}');
     final userinfo = finalUrl?.queryParameters['userinfo'];
+    _log.i(
+      _tag,
+      'SSO 回跳: path=${finalUrl?.path} '
+      'hasUserinfo=${userinfo != null && userinfo.isNotEmpty} '
+      'userinfoLen=${userinfo?.length ?? 0}',
+    );
     if (userinfo == null || userinfo.isEmpty) {
       _log.e(_tag, 'SSO 回跳缺少 userinfo');
       throw const UnauthenticatedException('zhhq 认证回跳缺少 userinfo');

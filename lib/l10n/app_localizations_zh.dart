@@ -2720,6 +2720,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get repairAddressSaved => '地址已保存';
 
   @override
+  String get repairImageTypeInvalid => '仅支持 JPG/PNG/HEIC 格式图片';
+
+  @override
+  String get repairImageTooLarge => '图片不能超过 10MB';
+
+  @override
   String get serviceHallTitle => '办事大厅';
 
   @override

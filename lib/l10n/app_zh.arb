@@ -1407,6 +1407,16 @@
         "description": "新增地址成功后的提示。",
         "type": "text"
     },
+    "repairImageTypeInvalid": "仅支持 JPG/PNG/HEIC 格式图片",
+    "@repairImageTypeInvalid": {
+        "description": "选择的图片格式不支持时提示。",
+        "type": "text"
+    },
+    "repairImageTooLarge": "图片不能超过 10MB",
+    "@repairImageTooLarge": {
+        "description": "选择的图片超过大小上限时提示。",
+        "type": "text"
+    },
     "serviceHallTitle": "办事大厅",
     "@serviceHallTitle": {
         "description": "办事大厅二级页面标题，列出可办理事项。",

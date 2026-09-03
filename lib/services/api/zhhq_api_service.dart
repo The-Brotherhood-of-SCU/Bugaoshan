@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/models/repair.dart';
@@ -54,26 +55,24 @@ class ZhhqApiService {
     );
   }
 
+  /// 生成 v4 风格 GUID（`xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`）。
+  ///
+  /// 使用 [Random.secure]（操作系统级 CSPRNG），避免自研 LCG
+  /// 的可预测性问题——GUID 虽非安全关键字段，但随机源应无可争议。
+  static final Random _random = Random.secure();
+
   static String _guid() {
     const pattern = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
     final r = StringBuffer();
     for (final c in pattern.split('')) {
       if (c == 'x' || c == 'y') {
-        final n =
-            (DateTime.now().microsecondsSinceEpoch + _rand()).toUnsigned(32) &
-            0xF;
+        final n = _random.nextInt(16);
         r.write(c == 'x' ? n.toRadixString(16) : (3 & n | 8).toRadixString(16));
       } else {
         r.write(c);
       }
     }
     return r.toString();
-  }
-
-  static int _randSeed = DateTime.now().microsecondsSinceEpoch;
-  static int _rand() {
-    _randSeed = (_randSeed * 1103515245 + 12345) & 0x7fffffff;
-    return _randSeed;
   }
 
   Future<T> _request<T>(
@@ -150,7 +149,11 @@ class ZhhqApiService {
       _log.w('ZHhq', 'token 错误 errorCode=$code: ${json['message']}');
       throw const UnauthenticatedException('zhhq 会话已失效');
     }
-    if (status != 'success' && json['errorCode'] != null) {
+    // 业务错误统一判定：status 明确非 success，或 errorCode 明确非 0。
+    // （原来 `status != 'success' && errorCode != null` 会放过
+    //   status 非 success 但 errorCode 缺失的响应，导致错误被当成功返回。）
+    if ((status.isNotEmpty && status != 'success') ||
+        (code.isNotEmpty && code != '0')) {
       final message = json['message']?.toString() ?? '操作失败';
       _log.w('ZHhq', '业务错误 errorCode=$code: $message');
       throw ServiceException(message);
@@ -414,7 +417,10 @@ class ZhhqApiService {
           ..headers.addAll(_headers(client, tokenKey))
           ..fields['system'] = 'manager'
           ..files.add(await http.MultipartFile.fromPath('file', file.path));
-    final streamed = await client.send(request);
+    // 图片上传属于大文件传输，超时放宽到 30s，避免弱网下无限挂起
+    //（普通 JSON 请求仍用 kHttpTimeout=15s）。
+    const uploadTimeout = Duration(seconds: 30);
+    final streamed = await client.send(request).timeout(uploadTimeout);
     final resp = await http.Response.fromStream(streamed);
     if (resp.statusCode == 302 ||
         resp.statusCode == 401 ||
@@ -428,8 +434,13 @@ class ZhhqApiService {
     } catch (_) {
       throw ServiceException('图片上传失败：响应解析异常');
     }
-    if (json['errorCode']?.toString() != '0' &&
-        json['status']?.toString() != 'success') {
+    // 与 _decode 的业务错误判定一致：status 明确非 success 或
+    // errorCode 明确非 0 均视为失败（原来用 `&&` 会放过
+    // errorCode 非 0 但 status=success 的响应）。
+    final code = json['errorCode']?.toString() ?? '';
+    final status = json['status']?.toString() ?? '';
+    if ((status.isNotEmpty && status != 'success') ||
+        (code.isNotEmpty && code != '0')) {
       throw ServiceException(json['message']?.toString() ?? '图片上传失败');
     }
     final data = json['data'];

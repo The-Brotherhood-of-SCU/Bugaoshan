@@ -1470,6 +1470,16 @@
         "description": "Toast after saving a new address.",
         "type": "text"
     },
+    "repairImageTypeInvalid": "Only JPG/PNG/HEIC images are supported",
+    "@repairImageTypeInvalid": {
+        "description": "Toast when the selected image format is not supported.",
+        "type": "text"
+    },
+    "repairImageTooLarge": "Image must be smaller than 10MB",
+    "@repairImageTooLarge": {
+        "description": "Toast when the selected image exceeds the size limit.",
+        "type": "text"
+    },
     "serviceHallTitle": "Service Hall",
     "@serviceHallTitle": {
         "description": "Title for the service hall sub-page listing available matters.",

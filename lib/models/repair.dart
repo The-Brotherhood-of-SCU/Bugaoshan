@@ -110,28 +110,42 @@ class RepairAcceptDept {
 class RepairAreaNode {
   final String id;
   final String name;
+
+  /// 父级节点名（递归解析时携带），根节点为空串。
+  final String parentName;
   final List<RepairAreaNode> children;
 
   const RepairAreaNode({
     required this.id,
     required this.name,
-    required this.children,
+    this.parentName = '',
+    this.children = const [],
   });
 
   /// 从根到该节点的完整区域名（如 `望江学生区/东苑五栋`）。
-  String get fullName =>
-      children.isEmpty ? name : '$name/${children.map((c) => c.name).first}';
+  ///
+  /// 递归携带父级路径，避免深树丢层级（旧实现只拼第一层子节点）。
+  String get fullName => parentName.isEmpty ? name : '$parentName/$name';
 
-  factory RepairAreaNode.fromJson(Map<String, dynamic> json) {
+  factory RepairAreaNode.fromJson(
+    Map<String, dynamic> json, {
+    String parentName = '',
+  }) {
     final children = json['children'] is List
         ? (json['children'] as List)
               .whereType<Map>()
-              .map((e) => RepairAreaNode.fromJson(Map<String, dynamic>.from(e)))
+              .map(
+                (e) => RepairAreaNode.fromJson(
+                  Map<String, dynamic>.from(e),
+                  parentName: json['name']?.toString() ?? '',
+                ),
+              )
               .toList(growable: false)
         : const <RepairAreaNode>[];
     return RepairAreaNode(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
+      parentName: parentName,
       children: children,
     );
   }

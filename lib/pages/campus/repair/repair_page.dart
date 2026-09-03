@@ -292,12 +292,31 @@ class _SubmitTabState extends State<_SubmitTab> {
     _selectedAddress = common ?? addresses.first;
   }
 
+  /// 图片格式白名单（与 zhhq 上传接口支持的格式一致）。
+  static const _allowedImageExts = {'jpg', 'jpeg', 'png', 'heic', 'heif'};
+
+  /// 单张图片大小上限（10MB，防止超大图上传慢 / OOM）。
+  static const _maxImageBytes = 10 * 1024 * 1024;
+
   Future<void> _pickImages() async {
     if (_images.length >= 3) return;
+    final l10n = AppLocalizations.of(context)!;
     final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (picked == null) return;
     final file = File(picked.path);
     if (!await file.exists()) return;
+    // 类型校验：仅允许常见图片格式，避免误选其他文件类型
+    final ext = picked.path.split('.').last.toLowerCase();
+    if (!_allowedImageExts.contains(ext)) {
+      _showError(l10n.repairImageTypeInvalid);
+      return;
+    }
+    // 大小校验：超过上限直接拒绝
+    final size = await file.length();
+    if (size > _maxImageBytes) {
+      _showError(l10n.repairImageTooLarge);
+      return;
+    }
     setState(() => _images.add(file));
   }
 

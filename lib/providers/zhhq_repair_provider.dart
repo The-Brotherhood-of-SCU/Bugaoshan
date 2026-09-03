@@ -2,12 +2,14 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/models/repair.dart';
 import 'package:bugaoshan/services/api/zhhq_api_service.dart';
 import 'package:bugaoshan/services/auth/auth_state.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/zhhq_auth.dart';
+import 'package:bugaoshan/utils/auth_logger.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 
 enum RepairLoadState { idle, loading, loaded, error }
@@ -17,7 +19,10 @@ enum RepairLoadState { idle, loading, loaded, error }
 /// 页面只读取本 Provider 的地址/项目/工单列表与提交状态；zhhq 会话失效后
 /// 的 token 重建、API 重试和旧异步结果屏蔽均由底层认证/API 层及本类负责。
 class ZhhqRepairProvider extends ChangeNotifier {
-  ZhhqRepairProvider(this._api, this._auth, this._scuAuth) {
+  static const String _tag = 'ZhhqRepairProvider';
+
+  ZhhqRepairProvider(this._api, this._auth, this._scuAuth, {AuthLogger? logger})
+    : _log = logger ?? getIt<AuthLogger>() {
     _lastAuthReady = _auth.isReady;
     _lastScuAuthState = _scuAuth.state;
     _auth.addListener(_onAuthChanged);
@@ -35,6 +40,7 @@ class ZhhqRepairProvider extends ChangeNotifier {
   final ZhhqApiService _api;
   final ZhhqAuth _auth;
   final ScuAuth _scuAuth;
+  final AuthLogger _log;
 
   List<RepairAddress> _addresses = const [];
   List<RepairTicket> _tickets = const [];
@@ -119,7 +125,7 @@ class ZhhqRepairProvider extends ChangeNotifier {
     try {
       await _auth.ensureAuthenticated();
     } catch (e) {
-      debugPrint('ZhhqRepairProvider retryAuth failed: $e');
+      _log.w(_tag, 'retryAuth failed: $e');
     }
     if (!_auth.isReady) {
       _state = RepairLoadState.error;
@@ -153,12 +159,12 @@ class ZhhqRepairProvider extends ChangeNotifier {
         if (!_isCurrent(generation)) return;
         _addresses = List.unmodifiable(addresses);
         _state = RepairLoadState.loaded;
-        debugPrint('ZhhqRepairProvider loaded: addresses=${addresses.length}');
+        _log.d(_tag, 'loaded: addresses=${addresses.length}');
       } catch (error) {
         if (!_isCurrent(generation)) return;
         _state = RepairLoadState.error;
         _error = _mapError(error);
-        debugPrint('ZhhqRepairProvider load error: $error');
+        _log.w(_tag, 'load error: $error');
       } finally {
         if (_isCurrent(generation)) {
           _loadFuture = null;
@@ -190,9 +196,9 @@ class ZhhqRepairProvider extends ChangeNotifier {
       final tickets = await _api.fetchDynamicTickets(userId: userId);
       _tickets = List.unmodifiable(tickets);
       _ticketsLoaded = true;
-      debugPrint('ZhhqRepairProvider tickets loaded: ${tickets.length}');
+      _log.d(_tag, 'tickets loaded: ${tickets.length}');
     } catch (error) {
-      debugPrint('ZhhqRepairProvider tickets load error: $error');
+      _log.w(_tag, 'tickets load error: $error');
     } finally {
       _isLoadingTickets = false;
       notifyListeners();
