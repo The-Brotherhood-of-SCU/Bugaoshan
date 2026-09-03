@@ -122,8 +122,35 @@ void main() {
     },
   );
 
+  test('fetchPlanCompletion: login page triggers re-auth path', () async {
+    final helper = _buildRoutingApi(
+      {
+        '/student/integratedQuery/planCompletion/index':
+            '<html><body><form action="/login">请登录</form></body></html>',
+      },
+      prefs,
+      logger,
+    );
+    addTearDown(helper.auth.dispose);
+
+    // 入口页含 login 特征 → _checkSessionExpiry 抛 UnauthenticatedException
+    // → retryOnUnauthenticated 触发重认证（SSO）。测试环境无真实 SSO，
+    // 重认证失败表现为 ServiceException('教务 SSO 登录失败')——
+    // 重点是与下方"格式异常"用例区分：会话过期走重认证而非格式错误提示。
+    await expectLater(
+      helper.api.fetchPlanCompletion(),
+      throwsA(
+        isA<ServiceException>().having(
+          (e) => e.message,
+          'message',
+          contains('SSO'),
+        ),
+      ),
+    );
+  });
+
   test('fetchPlanCompletion: malformed page without zNodes and links throws '
-      '(never silently returns empty)', () async {
+      'ServiceException (never silently returns empty)', () async {
     final helper = _buildRoutingApi(
       {
         '/student/integratedQuery/planCompletion/index':
@@ -135,12 +162,17 @@ void main() {
     addTearDown(helper.auth.dispose);
 
     // 核心诉求（issue #246）：解析失败必须抛可诊断错误，不能静默返回 []。
-    // 页面既无 zNodes 也无链接 → 被视为非业务页，抛 UnauthenticatedException
-    // 触发重认证；测试环境无真实 SSO，重认证失败表现为 ServiceException。
-    // 两者都属于 ScuException，这里只验证"不会静默返回空列表"。
+    // 页面既无 zNodes 也无链接、也不是登录页 → 抛 ServiceException('格式异常')，
+    // 由 Provider 展示可诊断错误，且不会误走重认证路径。
     await expectLater(
       helper.api.fetchPlanCompletion(),
-      throwsA(isA<ScuException>()),
+      throwsA(
+        isA<ServiceException>().having(
+          (e) => e.message,
+          'message',
+          contains('格式异常'),
+        ),
+      ),
     );
   });
 

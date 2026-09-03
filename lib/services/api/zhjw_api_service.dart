@@ -500,6 +500,12 @@ class ZhjwApiService {
         throw const RateLimitedException();
       }
 
+      // 会话过期检测（302 / 空 body / HTML 登录页），与详情页一致：
+      // 过期时抛 UnauthenticatedException 交给 retryOnUnauthenticated 重认证，
+      // 而不是落入下方分支 4 抛 ServiceException（用户会看到"格式异常"
+      // 而非触发重新登录）。
+      _checkSessionExpiry(body, resp.statusCode);
+
       // 1) 尝试直接解析 zNodes（单方案场景）。
       //    仅当正则匹配到 zNodes 时才解析；匹配不上返回 null，不抛错，
       //    以便继续走链接提取分支（多方案选择页可能不含 zNodes）。

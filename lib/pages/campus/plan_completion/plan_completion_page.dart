@@ -183,6 +183,10 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
         ),
         Expanded(
           child: PageView.builder(
+            // 方案数量变化（如刷新后多方案缩容为单方案）时强制重建 PageView，
+            // 使视口回到第 0 页——否则内部页面位置仍停在旧索引，
+            // 而 Provider 的 currentPlanIndex 已被重置为 0，两者失配导致空白。
+            key: ValueKey(plans.length),
             itemCount: plans.length,
             // 跟随内容而非跳页动画，左右滑动切换方案。
             onPageChanged: (index) => _provider.selectPlan(index),
