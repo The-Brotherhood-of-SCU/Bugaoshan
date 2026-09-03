@@ -18,12 +18,14 @@ import 'package:bugaoshan/providers/exam_plan_provider.dart';
 import 'package:bugaoshan/providers/fitness_test_provider.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/providers/network_device_provider.dart';
+import 'package:bugaoshan/providers/passpoint_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/providers/service_applications_provider.dart';
 import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/providers/zhhq_repair_provider.dart';
 import 'package:bugaoshan/services/api/ccyl_api_service.dart';
 import 'package:bugaoshan/services/api/fitness_api_service.dart';
+import 'package:bugaoshan/services/api/new_service_api_service.dart';
 import 'package:bugaoshan/services/api/payapp_api_service.dart';
 import 'package:bugaoshan/services/api/service_api_service.dart';
 import 'package:bugaoshan/services/api/wfw_api_service.dart';
@@ -33,6 +35,7 @@ import 'package:bugaoshan/services/auth/auth_coordinator.dart';
 import 'package:bugaoshan/services/auth/auth_state.dart';
 import 'package:bugaoshan/services/auth/ccyl_auth.dart';
 import 'package:bugaoshan/services/auth/fitness_auth.dart';
+import 'package:bugaoshan/services/auth/new_service_auth.dart';
 import 'package:bugaoshan/services/auth/payapp_auth.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/service_auth.dart';
@@ -132,6 +135,10 @@ void _configureAsyncDependencies() {
     await auth.init();
     return auth;
   });
+  getIt.registerSingletonAsync<NewServiceAuth>(() async {
+    await getIt.isReady<ScuAuth>();
+    return NewServiceAuth(getIt<ScuAuth>());
+  });
   getIt.registerSingletonAsync<CcylAuth>(() async {
     await getIt.isReady<ScuAuth>();
     final auth = CcylAuth(getIt<ScuAuth>());
@@ -146,6 +153,7 @@ void _configureAsyncDependencies() {
     await getIt.isReady<CcylAuth>();
     await getIt.isReady<ServiceAuth>();
     await getIt.isReady<ZhhqAuth>();
+    await getIt.isReady<NewServiceAuth>();
     return AuthCoordinator([
       getIt<ZhjwAuth>(),
       getIt<WfwAuth>(),
@@ -154,6 +162,7 @@ void _configureAsyncDependencies() {
       getIt<CcylAuth>(),
       getIt<ServiceAuth>(),
       getIt<ZhhqAuth>(),
+      getIt<NewServiceAuth>(),
     ]);
   });
 
@@ -185,6 +194,10 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<ZhhqApiService>(() async {
     await getIt.isReady<ZhhqAuth>();
     return ZhhqApiService(getIt<ZhhqAuth>());
+  });
+  getIt.registerSingletonAsync<NewServiceApiService>(() async {
+    await getIt.isReady<NewServiceAuth>();
+    return NewServiceApiService(getIt<NewServiceAuth>());
   });
 
   // ── Provider ────────────────────────────────────────────────────
@@ -269,6 +282,16 @@ void _configureAsyncDependencies() {
     return ZhhqRepairProvider(
       getIt<ZhhqApiService>(),
       getIt<ZhhqAuth>(),
+      getIt<ScuAuth>(),
+    );
+  });
+  getIt.registerSingletonAsync<PasspointProvider>(() async {
+    await getIt.isReady<NewServiceApiService>();
+    await getIt.isReady<NewServiceAuth>();
+    await getIt.isReady<ScuAuth>();
+    return PasspointProvider(
+      getIt<NewServiceApiService>(),
+      getIt<NewServiceAuth>(),
       getIt<ScuAuth>(),
     );
   });
@@ -382,6 +405,9 @@ void _configureAsyncDependencies() {
         }
         if (getIt.isRegistered<ZhhqRepairProvider>()) {
           getIt<ZhhqRepairProvider>().clear();
+        }
+        if (getIt.isRegistered<PasspointProvider>()) {
+          getIt<PasspointProvider>().clear();
         }
         if (getIt.isRegistered<ClassroomProvider>()) {
           getIt<ClassroomProvider>().clear();

@@ -1454,6 +1454,76 @@ class AppLocalizationsZh extends AppLocalizations {
   String get networkDeviceOperationSuccess => '操作成功';
 
   @override
+  String get passpointTitle => '无感认证';
+
+  @override
+  String get passpointDesc => '绑定设备 MAC，接入校园网自动认证';
+
+  @override
+  String get passpointAddDevice => '添加无感设备';
+
+  @override
+  String get passpointUserInfo => '用户信息';
+
+  @override
+  String get passpointUserGroup => '用户组';
+
+  @override
+  String get passpointAccountState => '账户状态';
+
+  @override
+  String get passpointOnline => '在线';
+
+  @override
+  String get passpointOffline => '离线';
+
+  @override
+  String get passpointMyDevices => '我的设备';
+
+  @override
+  String get passpointExpireTime => '到期时间';
+
+  @override
+  String get passpointExpireLongest => '最长有效期6年';
+
+  @override
+  String get passpointExit => '无感设备出口';
+
+  @override
+  String get passpointMac => 'MAC 地址';
+
+  @override
+  String get passpointCancelAuth => '取消无感认证';
+
+  @override
+  String get passpointCancelAuthConfirm => '确定要取消该设备的无感认证吗？';
+
+  @override
+  String get passpointOperationSuccess => '操作成功';
+
+  @override
+  String get operationFailed => '操作失败';
+
+  @override
+  String get passpointMacRequired => '请填写MAC';
+
+  @override
+  String get passpointMacInvalid => 'MAC 格式无效，需 12 位十六进制';
+
+  @override
+  String get passpointExpireRequired => '请填写绑定有效期';
+
+  @override
+  String get passpointExpireInvalid => '有效期需在 0-365 之间';
+
+  @override
+  String get passpointExpireHint => '0-365 天，0 表示最长有效期 6 年';
+
+  @override
+  String get passpointAddWarning =>
+      '特别提醒：自助开通无感知设备（MAC）后设备将自动接入校园网，学生宿舍区域将自动计时，请谨慎选择！';
+
+  @override
   String get captchaLoadFailed => '验证码加载失败';
 
   @override
@@ -1782,6 +1852,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dockLabelNetworkDevice => '校园网';
+
+  @override
+  String get dockLabelPasspoint => '无感';
 
   @override
   String get dockLabelBalanceQuery => '电费';
