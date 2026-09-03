@@ -259,10 +259,35 @@ class _SubmitTabState extends State<_SubmitTab> {
 
   /// 地址加载后自动选中默认地址（isCommon），无默认则选第一个。
   /// 在 build 前调用，保证 `_selectedAddress` 非空以便项目栏加载。
+  ///
+  /// 注意：Provider 刷新（如提交成功后的 `refresh()`）会用**新对象**替换地址列表，
+  /// 必须按 id 把 `_selectedAddress` 重新同步为列表中的实例，否则
+  /// `DropdownButtonFormField` 的 value 会指向列表外的旧对象 → 断言崩溃。
+  /// （`DropdownButtonFormField` 在 `initialValue` 引用变化时才会 `setValue` 同步
+  /// 内部值，所以即使 id 相同也要换用列表中的新实例，不能保留旧引用。）
   void _ensureDefaultAddress() {
-    if (_selectedAddress != null) return;
     final addresses = widget.provider.addresses;
-    if (addresses.isEmpty) return;
+    if (addresses.isEmpty) {
+      if (_selectedAddress != null) _selectedAddress = null;
+      return;
+    }
+    if (_selectedAddress != null) {
+      // 在刷新后的列表中找同 id 的新实例
+      final matched = addresses
+          .where((a) => a.id == _selectedAddress!.id)
+          .firstOrNull;
+      if (matched != null) {
+        _selectedAddress = matched;
+      } else {
+        // 原地址已被删除：重置，走默认选择逻辑；项目跟随地址清空，让用户重选
+        _selectedAddress = null;
+        if (_projectValue != null && _projectValue!.isNotEmpty) {
+          _projectValue = null;
+          _projectLabel = '';
+        }
+      }
+    }
+    if (_selectedAddress != null) return;
     final common = addresses.where((a) => a.isCommon).firstOrNull;
     _selectedAddress = common ?? addresses.first;
   }
