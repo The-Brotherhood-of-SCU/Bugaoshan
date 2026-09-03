@@ -121,7 +121,84 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
 
   Widget _buildTree(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final rootNodes = _provider.rootNodes;
+    final plans = _provider.plans;
+
+    if (plans.isEmpty) {
+      return Center(
+        child: Text(
+          l10n.planCompletionNoData,
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      );
+    }
+
+    // 顶部方案名指示栏 + PageView 承载各方案内容：
+    // - 单方案：只有一页，无法左右滑动（滑动不反应）；
+    // - 多方案：左右滑动切换，顶部指示栏跟随更新。
+    return Column(
+      children: [
+        ListenableBuilder(
+          listenable: _provider,
+          builder: (context, _) {
+            final index = _provider.currentPlanIndex;
+            final name = plans[index].name;
+            final showCount = plans.length > 1;
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // 多方案时才提示可滑动，单方案不误导。
+                  if (showCount) ...[
+                    Icon(
+                      Icons.swipe,
+                      size: 16,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 6),
+                  ],
+                  Flexible(
+                    child: Text(
+                      name.isNotEmpty ? name : l10n.planCompletionPlanFallback,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  if (showCount) ...[
+                    const SizedBox(width: 6),
+                    Text(
+                      '${index + 1}/${plans.length}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            );
+          },
+        ),
+        Expanded(
+          child: PageView.builder(
+            itemCount: plans.length,
+            // 跟随内容而非跳页动画，左右滑动切换方案。
+            onPageChanged: (index) => _provider.selectPlan(index),
+            itemBuilder: (context, index) =>
+                _buildPlanPage(context, plans[index]),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 渲染单份方案的内容（摘要卡 + 根模块树）。
+  Widget _buildPlanPage(BuildContext context, PlanCompletionPlan plan) {
+    final l10n = AppLocalizations.of(context)!;
+    final nodes = plan.nodes;
+    final rootNodes = nodes.where((n) => n.pId == '-1').toList();
 
     if (rootNodes.isEmpty) {
       return Center(
@@ -135,7 +212,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
     }
 
     // Build summary card
-    final stats = computeSummaryStats(_provider.nodes);
+    final stats = computeSummaryStats(nodes);
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -148,7 +225,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
           stats.moduleCount,
         ),
         const SizedBox(height: 16),
-        ...rootNodes.map((node) => _buildCategoryTile(context, node, 0)),
+        ...rootNodes.map((node) => _buildCategoryTile(context, nodes, node, 0)),
       ],
     );
   }
@@ -204,11 +281,12 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
 
   Widget _buildCategoryTile(
     BuildContext context,
+    List<PlanCompletionNode> nodes,
     PlanCompletionNode node,
     int depth,
   ) {
     final l10n = AppLocalizations.of(context)!;
-    final children = _provider.getChildren(node.id);
+    final children = nodes.where((n) => n.pId == node.id).toList();
 
     // 无子节点的模块（如美育、创新创业教育、跨学科专业教育）以列表项形式展示，
     // 与教务处方案层级保持一致。
@@ -273,7 +351,9 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
           ],
         ),
         children: children
-            .map((child) => _buildCategoryTile(context, child, depth + 1))
+            .map(
+              (child) => _buildCategoryTile(context, nodes, child, depth + 1),
+            )
             .toList(),
       ),
     );

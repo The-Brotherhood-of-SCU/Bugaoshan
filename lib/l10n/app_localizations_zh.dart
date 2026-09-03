@@ -1223,6 +1223,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get planCompletionCourses => '课程';
 
   @override
+  String get planCompletionPlanFallback => '培养方案';
+
+  @override
   String get planCompletionRateLimited => '请勿频繁刷新，请稍后再试';
 
   @override

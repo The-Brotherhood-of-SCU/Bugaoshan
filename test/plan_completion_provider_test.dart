@@ -22,11 +22,16 @@ void main() {
       await provider.clearCache();
       final newRequest = provider.fetchPlanCompletion(forceRefresh: true);
 
-      api.requests[1].complete([_node('new-account')]);
+      api.requests[1].complete([
+        _plan('new', [_node('new-account')]),
+      ]);
       await newRequest;
       expect(provider.nodes.single.id, 'new-account');
+      expect(provider.plans.single.name, '方案new');
 
-      api.requests[0].complete([_node('old-account')]);
+      api.requests[0].complete([
+        _plan('old', [_node('old-account')]),
+      ]);
       await oldRequest;
 
       expect(provider.nodes.single.id, 'new-account');
@@ -37,6 +42,66 @@ void main() {
       );
     },
   );
+
+  test('multiple plans: selectPlan switches current plan nodes', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final api = _ControllableZhjwApiService();
+    final provider = PlanCompletionProvider(prefs, api);
+
+    final request = provider.fetchPlanCompletion(forceRefresh: true);
+    api.requests.single.complete([
+      _plan('1', [_node('plan1-root')]),
+      _plan('2', [_node('plan2-root')]),
+    ]);
+    await request;
+
+    expect(provider.plans, hasLength(2));
+    expect(provider.currentPlanIndex, 0);
+    expect(provider.nodes.single.id, 'plan1-root');
+
+    provider.selectPlan(1);
+    expect(provider.currentPlanIndex, 1);
+    expect(provider.nodes.single.id, 'plan2-root');
+
+    // 越界索引被忽略
+    provider.selectPlan(5);
+    expect(provider.currentPlanIndex, 1);
+  });
+
+  test('refresh after plans shrink resets current index to 0', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final api = _ControllableZhjwApiService();
+    final provider = PlanCompletionProvider(prefs, api);
+
+    var request = provider.fetchPlanCompletion(forceRefresh: true);
+    api.requests[0].complete([
+      _plan('1', [_node('plan1-root')]),
+      _plan('2', [_node('plan2-root')]),
+    ]);
+    await request;
+    provider.selectPlan(1);
+
+    request = provider.fetchPlanCompletion(forceRefresh: true);
+    api.requests[1].complete([
+      _plan('1', [_node('plan1-root')]),
+    ]);
+    await request;
+
+    expect(provider.plans, hasLength(1));
+    expect(provider.currentPlanIndex, 0);
+  });
+
+  test('cached empty plans list decodes as empty (no nodes)', () async {
+    SharedPreferences.setMockInitialValues({'plan_completion_nodes': '[]'});
+    final prefs = await SharedPreferences.getInstance();
+    final api = _ControllableZhjwApiService();
+    final provider = PlanCompletionProvider(prefs, api);
+    expect(provider.state, PlanCompletionLoadState.loaded);
+    expect(provider.plans, isEmpty);
+    expect(provider.nodes, isEmpty);
+  });
 
   test(
     'summary stats only count root-level modules (pId=-1) matching school hierarchy',
@@ -175,11 +240,11 @@ PlanCompletionNode _node(String id) => PlanCompletionNode.fromJson({
 });
 
 class _ControllableZhjwApiService implements ZhjwApiService {
-  final requests = <Completer<List<PlanCompletionNode>>>[];
+  final requests = <Completer<List<PlanCompletionPlan>>>[];
 
   @override
-  Future<List<PlanCompletionNode>> fetchPlanCompletion() {
-    final request = Completer<List<PlanCompletionNode>>();
+  Future<List<PlanCompletionPlan>> fetchPlanCompletion() {
+    final request = Completer<List<PlanCompletionPlan>>();
     requests.add(request);
     return request.future;
   }
@@ -187,3 +252,6 @@ class _ControllableZhjwApiService implements ZhjwApiService {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
+
+PlanCompletionPlan _plan(String id, List<PlanCompletionNode> nodes) =>
+    PlanCompletionPlan(id: id, name: '方案$id', nodes: nodes);
