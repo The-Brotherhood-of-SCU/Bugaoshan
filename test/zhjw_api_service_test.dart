@@ -70,22 +70,24 @@ void main() {
     expect(plans.single.nodes.single.name, '公共基础课');
   });
 
-  test('fetchPlanCompletion: multiple plans follow getPyfaIndex links', () async {
+  test('fetchPlanCompletion: multiple plans follow getPyfaIndex buttons '
+      '(real HTML form from 教务处选择页)', () async {
     final helper = _buildRoutingApi(
       {
         '/student/integratedQuery/planCompletion/index': '''
-          <html>
-            <ul class="plan-list">
-              <li><a href="/student/integratedQuery/planCompletion/getPyfaIndex/10101">2023级-软件工程-主修</a></li>
-              <li><a href="/student/integratedQuery/planCompletion/getPyfaIndex/10102">2023级-软件工程-辅修</a></li>
-            </ul>
-            <script>var zNodes = [];</script>
-          </html>
-        ''',
-        '/student/integratedQuery/planCompletion/getPyfaIndex/10101':
+            <html>
+              <button class="btn btn-success btn-round" title="广播电视编导培养方案(10692)" onclick="getPyfaIndex(&#39;10692&#39;);return false;">
+                广播电视编导培养方案 (主修)
+              </button>
+              <button class="btn btn-success btn-round" title="生成式人工智能与影视工业化（微专业）教学计划(202601221181)" onclick="getPyfaIndex(&#39;202601221181&#39;);return false;">
+                生成式人工智能与影视工业化（微专业）教学计划
+              </button>
+            </html>
+          ''',
+        '/student/integratedQuery/planCompletion/getPyfaIndex/10692':
             '<html><script>var zNodes = [${_nodeJson('a', '-1', '主修方案')}];</script></html>',
-        '/student/integratedQuery/planCompletion/getPyfaIndex/10102':
-            '<html><script>var zNodes = [${_nodeJson('b', '-1', '辅修方案')}];</script></html>',
+        '/student/integratedQuery/planCompletion/getPyfaIndex/202601221181':
+            '<html><script>var zNodes = [${_nodeJson('b', '-1', '微专业方案')}];</script></html>',
       },
       prefs,
       logger,
@@ -94,12 +96,12 @@ void main() {
 
     final plans = await helper.api.fetchPlanCompletion();
     expect(plans, hasLength(2));
-    expect(plans[0].id, '10101');
-    expect(plans[0].name, '2023级-软件工程-主修');
+    expect(plans[0].id, '10692');
+    expect(plans[0].name, '广播电视编导培养方案');
     expect(plans[0].nodes.single.name, '主修方案');
-    expect(plans[1].id, '10102');
-    expect(plans[1].name, '2023级-软件工程-辅修');
-    expect(plans[1].nodes.single.name, '辅修方案');
+    expect(plans[1].id, '202601221181');
+    expect(plans[1].name, '生成式人工智能与影视工业化（微专业）教学计划');
+    expect(plans[1].nodes.single.name, '微专业方案');
   });
 
   test(
