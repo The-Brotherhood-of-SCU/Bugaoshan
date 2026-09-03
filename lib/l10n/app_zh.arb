@@ -1228,6 +1228,195 @@
         "description": "办事大厅入口的短 dock 标签。",
         "type": "text"
     },
+    "dockLabelRepair": "报修",
+    "@dockLabelRepair": {
+        "description": "在线报修入口的短 dock 标签。",
+        "type": "text"
+    },
+    "repairTitle": "在线报修",
+    "@repairTitle": {
+        "description": "在线报修页面标题。",
+        "type": "text"
+    },
+    "repairDesc": "提交宿舍/教室设施报修并跟踪维修进度",
+    "@repairDesc": {
+        "description": "校园入口卡片上显示的在线报修功能描述。",
+        "type": "text"
+    },
+    "repairTabSubmit": "我要报修",
+    "@repairTabSubmit": {
+        "description": "在线报修页提交表单的 Tab 标签。",
+        "type": "text"
+    },
+    "repairTabMyTickets": "我的报修",
+    "@repairTabMyTickets": {
+        "description": "在线报修页我的报修列表的 Tab 标签。",
+        "type": "text"
+    },
+    "repairAddress": "故障地址",
+    "@repairAddress": {
+        "description": "在线报修表单中的故障地址字段标题。",
+        "type": "text"
+    },
+    "repairSelectAddress": "请选择故障地址",
+    "@repairSelectAddress": {
+        "description": "未选择故障地址时的提示。",
+        "type": "text"
+    },
+    "repairProject": "维修项目",
+    "@repairProject": {
+        "description": "在线报修表单中的维修项目字段标题。",
+        "type": "text"
+    },
+    "repairSelectProject": "请选择维修项目",
+    "@repairSelectProject": {
+        "description": "未选择维修项目时的提示。",
+        "type": "text"
+    },
+    "repairSelectCategory": "请先选择类别",
+    "@repairSelectCategory": {
+        "description": "维修大类下拉框的提示。",
+        "type": "text"
+    },
+    "repairNoProjectInCategory": "该类别下暂无维修项目",
+    "@repairNoProjectInCategory": {
+        "description": "类别下没有可维修项目时展示。",
+        "type": "text"
+    },
+    "repairSelectProjectHint": "请先选择故障地址以加载维修项目",
+    "@repairSelectProjectHint": {
+        "description": "维修项目加载前的提示。",
+        "type": "text"
+    },
+    "repairContent": "故障描述",
+    "@repairContent": {
+        "description": "在线报修表单中的故障描述字段标题。",
+        "type": "text"
+    },
+    "repairContentHint": "请描述故障详细情况，便于维修师傅携带工具",
+    "@repairContentHint": {
+        "description": "故障描述输入框的占位提示。",
+        "type": "text"
+    },
+    "repairContentRequired": "请填写故障描述",
+    "@repairContentRequired": {
+        "description": "故障描述为空时的提示。",
+        "type": "text"
+    },
+    "repairPhotos": "图片视频",
+    "@repairPhotos": {
+        "description": "在线报修表单中的图片上传字段标题。",
+        "type": "text"
+    },
+    "repairImageUploading": "上传中…",
+    "@repairImageUploading": {
+        "description": "提交时图片上传中的按钮文案。",
+        "type": "text"
+    },
+    "repairSchedule": "期望维修时间",    "@repairSchedule": {
+        "description": "在线报修表单中的期望维修时间字段标题。",
+        "type": "text"
+    },
+    "repairAllowNoOne": "允许无人时维修",
+    "@repairAllowNoOne": {
+        "description": "是否允许维修师傅无人时上门维修的开关。",
+        "type": "text"
+    },
+    "repairBookDate": "选择日期",
+    "@repairBookDate": {
+        "description": "期望维修日期选择项。",
+        "type": "text"
+    },
+    "repairBookTime": "选择时间段",
+    "@repairBookTime": {
+        "description": "期望维修时间段选择项。",
+        "type": "text"
+    },
+    "repairNotSelected": "未选择",
+    "@repairNotSelected": {
+        "description": "未选择日期/时间段的占位文本。",
+        "type": "text"
+    },
+    "repairNoBookDate": "暂无可用预约日期",
+    "@repairNoBookDate": {
+        "description": "无可预约日期时的提示。",
+        "type": "text"
+    },
+    "repairNoBookTime": "该日期暂无可用时间段",
+    "@repairNoBookTime": {
+        "description": "该日期无可预约时间段时的提示。",
+        "type": "text"
+    },
+    "repairSubmit": "提交报修",
+    "@repairSubmit": {
+        "description": "在线报修表单的提交按钮文案。",
+        "type": "text"
+    },
+    "repairSubmitSuccess": "报修提交成功",
+    "@repairSubmitSuccess": {
+        "description": "报修提交成功后的提示。",
+        "type": "text"
+    },
+    "repairSubmitFailed": "报修提交失败，请稍后重试",
+    "@repairSubmitFailed": {
+        "description": "报修提交失败后的提示。",
+        "type": "text"
+    },
+    "repairTicket": "报修工单",
+    "@repairTicket": {
+        "description": "报修工单的通用名称。",
+        "type": "text"
+    },
+    "repairArea": "故障地点",
+    "@repairArea": {
+        "description": "报修工单中的故障地点标签。",
+        "type": "text"
+    },
+    "repairAddAddress": "新增地址",
+    "@repairAddAddress": {
+        "description": "新增报修地址按钮文案。",
+        "type": "text"
+    },
+    "repairSelectArea": "请选择区域",
+    "@repairSelectArea": {
+        "description": "新增地址时选择区域的提示。",
+        "type": "text"
+    },
+    "repairAddressDetail": "详细地址",
+    "@repairAddressDetail": {
+        "description": "新增地址表单的详细地址字段。",
+        "type": "text"
+    },
+    "repairAddressDetailRequired": "请填写详细地址",
+    "@repairAddressDetailRequired": {
+        "description": "详细地址为空时的提示。",
+        "type": "text"
+    },
+    "repairPhoneRequired": "请填写手机号",
+    "@repairPhoneRequired": {
+        "description": "手机号为空时的提示。",
+        "type": "text"
+    },
+    "repairPhoneInvalid": "手机号格式不正确",
+    "@repairPhoneInvalid": {
+        "description": "手机号格式不正确时的提示。",
+        "type": "text"
+    },
+    "repairAddressSaved": "地址已保存",
+    "@repairAddressSaved": {
+        "description": "新增地址成功后的提示。",
+        "type": "text"
+    },
+    "repairImageTypeInvalid": "仅支持 JPG/PNG/HEIC 格式图片",
+    "@repairImageTypeInvalid": {
+        "description": "选择的图片格式不支持时提示。",
+        "type": "text"
+    },
+    "repairImageTooLarge": "图片不能超过 10MB",
+    "@repairImageTooLarge": {
+        "description": "选择的图片超过大小上限时提示。",
+        "type": "text"
+    },
     "serviceHallTitle": "办事大厅",
     "@serviceHallTitle": {
         "description": "办事大厅二级页面标题，列出可办理事项。",

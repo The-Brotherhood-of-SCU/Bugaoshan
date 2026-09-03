@@ -7,3 +7,4 @@ const kScuRememberPassword = 'scu_remember_password';
 const kScuUserRealname = 'scu_user_realname';
 const kScuUserNumber = 'scu_user_number';
 const kScuAutoLogin = 'scu_auto_login';
+const kZhhqTokenKey = 'zhhq_token_key';

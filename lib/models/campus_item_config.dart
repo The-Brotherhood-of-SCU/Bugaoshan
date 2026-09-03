@@ -16,6 +16,7 @@ import 'package:bugaoshan/pages/campus/network_device/network_device_page.dart';
 import 'package:bugaoshan/pages/campus/passpoint/passpoint_page.dart';
 import 'package:bugaoshan/pages/campus/notice/notice_page.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/plan_completion_page.dart';
+import 'package:bugaoshan/pages/campus/repair/repair_page.dart';
 import 'package:bugaoshan/pages/campus/train_program/train_program_page.dart';
 import 'package:bugaoshan/pages/campus_page/campus_page.dart';
 import 'package:bugaoshan/pages/course/main/course_page.dart';
@@ -238,6 +239,16 @@ final campusItemLeave = CampusItemConfig(
   page: () => const ServiceHallPage(),
 );
 
+final campusItemRepair = CampusItemConfig(
+  id: dockIdRepair,
+  icon: Icons.build_outlined,
+  selectedIcon: Icons.build,
+  dockLabel: (l10n) => l10n.dockLabelRepair,
+  dockFullLabel: (l10n) => l10n.repairTitle,
+  desc: (l10n) => l10n.repairDesc,
+  page: () => const RepairPage(),
+);
+
 final campusSections = [
   CampusSection(
     title: (l10n) => l10n.academicSection,
@@ -258,6 +269,7 @@ final campusSections = [
       campusItemNetworkDevice,
       campusItemPasspoint,
       campusItemBalanceQuery,
+      campusItemRepair,
       campusItemAcademicCalendar,
       campusItemZysc,
       campusItemLeave,
