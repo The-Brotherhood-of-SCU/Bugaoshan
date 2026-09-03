@@ -22,6 +22,10 @@ class ZhjwApiService {
   final ZhjwAuth _auth;
   ZhjwApiService(this._auth);
 
+  /// 多方案详情页请求之间的间隔，避免一次打开页面连续请求
+  /// 多个 getPyfaIndex 详情页被教务系统限流（"请勿频繁刷新"）。
+  static Duration planDetailRequestGap = const Duration(milliseconds: 600);
+
   Future<T> _request<T>(Future<T> Function(CookieClient client) fn) {
     return retryOnUnauthenticated(
       _auth.getClient,
@@ -463,10 +467,23 @@ class ZhjwApiService {
   //  计划完成度（从 PlanCompletionProvider 迁移 HTTP + 解析逻辑）
   // ═══════════════════════════════════════════════════════════════════
 
-  /// 获取计划完成度数据
+  /// 获取计划完成度数据，返回多份培养方案（每份含树节点列表）。
   ///
-  /// 返回解析后的节点列表。如果遇到频率限制，抛出 [RateLimitedException]。
-  Future<List<PlanCompletionNode>> fetchPlanCompletion() async {
+  /// 教务系统行为：
+  /// - 单方案用户：`/planCompletion/index` 直接返回含 zNodes 的数据页；
+  /// - 多方案用户（主修+辅修等）：`/index` 是方案选择页，不含数据，
+  ///   真正的树数据在 `/getPyfaIndex/<方案ID>` 详情页。
+  ///
+  /// 解析策略：
+  /// 1. 请求 `/index`；若页面含非空 zNodes（有根节点）→ 单方案，直接解析；
+  /// 2. 否则从页面提取 `getPyfaIndex/<ID>` 链接逐个请求详情页；
+  /// 3. 两者皆无且 zNodes 明确为空数组 → 代表"账号无方案"，返回空列表；
+  /// 4. 页面结构异常（无法匹配 zNodes 也无链接）→ 按会话过期处理，
+  ///    解析失败（正则不匹配/JSON 损坏）→ 抛 [ServiceException] 可诊断，
+  ///    不再静默返回空数组。
+  ///
+  /// 如果遇到频率限制，抛出 [RateLimitedException]。
+  Future<List<PlanCompletionPlan>> fetchPlanCompletion() async {
     return _request((client) async {
       final resp = await client.get(
         Uri.parse('$kZhjwBase/student/integratedQuery/planCompletion/index'),
@@ -483,13 +500,203 @@ class ZhjwApiService {
         throw const RateLimitedException();
       }
 
-      // Session 过期检测（正常响应也是 HTML，需要区分）
-      if (body.startsWith('<') && !body.contains('zNodes')) {
-        throw const UnauthenticatedException();
+      // 会话过期检测（302 / 空 body / HTML 登录页），与详情页一致：
+      // 过期时抛 UnauthenticatedException 交给 retryOnUnauthenticated 重认证，
+      // 而不是落入下方分支 4 抛 ServiceException（用户会看到"格式异常"
+      // 而非触发重新登录）。
+      _checkSessionExpiry(body, resp.statusCode);
+
+      // 1) 尝试直接解析 zNodes（单方案场景）。
+      //    仅当正则匹配到 zNodes 时才解析；匹配不上返回 null，不抛错，
+      //    以便继续走链接提取分支（多方案选择页可能不含 zNodes）。
+      final directNodes = _tryParseZNodes(body);
+      if (directNodes != null && directNodes.isNotEmpty) {
+        return [
+          PlanCompletionPlan(
+            id: '',
+            name: _extractPlanName(body),
+            nodes: directNodes,
+          ),
+        ];
       }
 
-      return _parseZNodes(body);
+      // 2) 多方案场景：从入口页提取 getPyfaIndex 链接，逐个请求详情页。
+      final planLinks = _extractPlanLinks(body);
+      if (planLinks.isNotEmpty) {
+        final plans = <PlanCompletionPlan>[];
+        for (final link in planLinks) {
+          // 教务系统对连续请求有限流（"请勿频繁刷新"），详情页之间
+          // 加短暂间隔，避免打开页面时一次触发 N+1 个请求被限流。
+          if (plans.isNotEmpty) {
+            await Future<void>.delayed(planDetailRequestGap);
+          }
+          final detailResp = await client.get(
+            Uri.parse('$kZhjwBase${link.path}'),
+            headers: {
+              'Accept': 'text/html,*/*',
+              'Referer':
+                  '$kZhjwBase/student/integratedQuery/planCompletion/index',
+              'User-Agent': kDefaultUserAgent,
+            },
+          );
+          final detailBody = detailResp.body;
+          // 详情页可能返回登录页（会话过期）或限流提示
+          _checkSessionExpiry(detailBody, detailResp.statusCode);
+          if (detailBody.contains('请勿频繁刷新')) {
+            throw const RateLimitedException();
+          }
+          // 详情页必须包含数据；解析失败/结构异常在此抛错，不再静默返回空。
+          final nodes = _parseZNodes(detailBody);
+          plans.add(
+            PlanCompletionPlan(id: link.id, name: link.name, nodes: nodes),
+          );
+        }
+        return plans;
+      }
+
+      // 3) 无数据也无链接：zNodes 明确存在但为空数组 → 账号无方案。
+      if (directNodes != null) {
+        return const [];
+      }
+
+      // 4) 页面结构异常（既无 zNodes 也无 getPyfaIndex 链接）：
+      //    - 页面是登录页/会话过期页 → 抛 UnauthenticatedException 走重认证；
+      //    - 其它无法识别的 HTML（如错误页）→ 抛 ServiceException，
+      //      避免触发重认证风暴（每次都会重新 SSO，进一步触发限流）。
+      if (body.toLowerCase().contains('login')) {
+        throw const UnauthenticatedException();
+      }
+      throw const ServiceException('方案修读数据格式异常：页面无法解析');
     });
+  }
+
+  /// 尝试从 HTML 提取 zNodes 数组。
+  ///
+  /// 正则未匹配时返回 null（不代表"无方案"，可能是选择页），
+  /// 匹配成功但 JSON/字段解析失败时抛 [ServiceException]（可诊断错误）。
+  List<PlanCompletionNode>? _tryParseZNodes(String html) {
+    final match = RegExp(
+      r'var\s+zNodes\s*=\s*(\[.*?\]);',
+      dotAll: true,
+    ).firstMatch(html);
+    if (match == null) return null;
+    return _decodeZNodes(match.group(1)!);
+  }
+
+  /// 解析 zNodes 数组；正则未匹配或解析失败均抛 [ServiceException]。
+  List<PlanCompletionNode> _parseZNodes(String html) {
+    final match = RegExp(
+      r'var\s+zNodes\s*=\s*(\[.*?\]);',
+      dotAll: true,
+    ).firstMatch(html);
+    if (match == null) {
+      throw const ServiceException('方案修读数据格式异常：未找到 zNodes 数据');
+    }
+    return _decodeZNodes(match.group(1)!);
+  }
+
+  List<PlanCompletionNode> _decodeZNodes(String jsonStr) {
+    try {
+      final List<dynamic> list = jsonDecode(jsonStr);
+      return list
+          .map((e) => PlanCompletionNode.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      throw ServiceException('方案修读数据解析失败：$e');
+    }
+  }
+
+  /// 提取方案名（单方案场景，来自 index 页 echarts 雷达图 legend）。
+  ///
+  /// 页面 JS 形如 `legend: { data: ['某某培养方案'], ... }`。
+  /// 提取不到时返回空串，由 UI 兜底显示通用名称。
+  String _extractPlanName(String html) {
+    final match = RegExp(
+      r"""data:\s*\[\s*'([^']+)'\s*\]""",
+      dotAll: true,
+    ).firstMatch(html);
+    if (match == null) return '';
+    final name = match.group(1)!.trim();
+    return name.length > 60 ? name.substring(0, 60) : name;
+  }
+
+  /// 从方案选择页提取 `getPyfaIndex/<方案ID>` 入口。
+  ///
+  /// 教务系统多方案选择页的入口形态（真机抓包确认）：
+  /// - 按钮：`<button ... title="方案名(方案ID)" onclick="getPyfaIndex('ID');...">`，
+  ///   onclick 中方案 ID 可能带 `&#39;` HTML 实体；
+  /// - 链接：`<a href="...getPyfaIndex/123...">方案名</a>`（兜底兼容）。
+  ///
+  /// 返回去重后的入口列表；方案名取自 title 属性或链接文本，无名称时
+  /// 用 `方案<ID>` 兜底，保证多方案用户至少能看到可区分的名称。
+  List<_PlanLink> _extractPlanLinks(String html) {
+    final links = <_PlanLink>[];
+    final seen = <String>{};
+
+    void addPlan(String id, String name) {
+      if (!seen.add(id)) return;
+      final trimmed = name.trim();
+      links.add(
+        _PlanLink(
+          id: id,
+          name: trimmed.isNotEmpty ? trimmed : '方案$id',
+          path: '/student/integratedQuery/planCompletion/getPyfaIndex/$id',
+        ),
+      );
+    }
+
+    // 1) 按钮形态：onclick="getPyfaIndex('ID');" + title="方案名(ID)"
+    //    真机抓包确认 onclick 里的引号是 &#39; HTML 实体,需显式处理。
+    final buttonRe = RegExp(
+      r'''onclick=["'][^"']*getPyfaIndex\(\s*(?:&#39;|&quot;|['"])?(\d+)(?:&#39;|&quot;|['"])?\s*\)''',
+      dotAll: true,
+    );
+    for (final m in buttonRe.allMatches(html)) {
+      final id = m.group(1)!;
+      // 按钮的 title 属性含方案名（如 广播电视编导培养方案(10692)）
+      final tagStart = html.lastIndexOf('<button', m.start);
+      final tagEnd = html.indexOf('>', m.start);
+      if (tagStart >= 0 && tagEnd > tagStart) {
+        final tag = html.substring(tagStart, tagEnd);
+        final titleMatch = RegExp(
+          r'''title=["']([^"']*)["']''',
+        ).firstMatch(tag);
+        if (titleMatch != null) {
+          // title 形如 方案名(10692)，去掉尾部 (ID)
+          var name = titleMatch.group(1)!.trim();
+          name = name.replaceFirst(RegExp(r'\(\d+\)\s*$'), '').trim();
+          addPlan(id, name);
+          continue;
+        }
+      }
+      addPlan(id, '方案$id');
+    }
+
+    // 2) 链接形态：<a href="...getPyfaIndex/123...">名称</a>
+    if (links.isEmpty) {
+      final anchorRe = RegExp(
+        r"""<a[^>]*href=["'][^"']*getPyfaIndex/(\d+)[^"']*["'][^>]*>(.*?)</a>""",
+        dotAll: true,
+      );
+      for (final m in anchorRe.allMatches(html)) {
+        final id = m.group(1)!;
+        final rawName = m
+            .group(2)!
+            .replaceAll(RegExp(r'<[^>]+>'), '')
+            .replaceAll('&nbsp;', ' ')
+            .trim();
+        addPlan(id, rawName);
+      }
+    }
+
+    // 3) 兜底：非按钮/链接形态（如 JS 字符串）也提取 ID
+    if (links.isEmpty) {
+      final bareRe = RegExp(r'getPyfaIndex/(\d+)');
+      for (final m in bareRe.allMatches(html)) {
+        addPlan(m.group(1)!, '方案${m.group(1)}');
+      }
+    }
+    return links;
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -829,22 +1036,13 @@ class ZhjwApiService {
         )
         .toList();
   }
+}
 
-  List<PlanCompletionNode> _parseZNodes(String html) {
-    final match = RegExp(
-      r'var\s+zNodes\s*=\s*(\[.*?\]);',
-      dotAll: true,
-    ).firstMatch(html);
-    if (match == null) return [];
+/// 方案选择页中解析出的培养方案入口链接。
+class _PlanLink {
+  final String id;
+  final String name;
+  final String path;
 
-    final jsonStr = match.group(1)!;
-    try {
-      final List<dynamic> list = jsonDecode(jsonStr);
-      return list
-          .map((e) => PlanCompletionNode.fromJson(e as Map<String, dynamic>))
-          .toList();
-    } catch (_) {
-      return [];
-    }
-  }
+  const _PlanLink({required this.id, required this.name, required this.path});
 }

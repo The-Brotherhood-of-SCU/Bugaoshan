@@ -485,6 +485,7 @@
     "planCompletionCredits": "Credits",
     "planCompletionCreditsUnit": "cr",
     "planCompletionCourses": "Courses",
+    "planCompletionPlanFallback": "Training Program",
     "planCompletionRateLimited": "Too many requests, please try again later",
     "ccylTitle": "Second Classroom",
     "ccylDesc": "Browse activities, participate, make reservations",

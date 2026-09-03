@@ -465,6 +465,7 @@
     "planCompletionCredits": "学分",
     "planCompletionCreditsUnit": "学分",
     "planCompletionCourses": "课程",
+    "planCompletionPlanFallback": "培养方案",
     "planCompletionRateLimited": "请勿频繁刷新，请稍后再试",
     "ccylTitle": "第二课堂",
     "ccylDesc": "查看活动、参与活动、预约活动",

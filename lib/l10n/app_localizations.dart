@@ -2437,6 +2437,12 @@ abstract class AppLocalizations {
   /// **'Courses'**
   String get planCompletionCourses;
 
+  /// No description provided for @planCompletionPlanFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Training Program'**
+  String get planCompletionPlanFallback;
+
   /// No description provided for @planCompletionRateLimited.
   ///
   /// In en, this message translates to:

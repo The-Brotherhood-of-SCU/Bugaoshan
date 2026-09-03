@@ -21,9 +21,7 @@ class PlanCompletionProvider extends ChangeNotifier {
     if (cached != null) {
       try {
         final list = jsonDecode(cached) as List<dynamic>;
-        _nodes = list
-            .map((e) => PlanCompletionNode.fromJson(e as Map<String, dynamic>))
-            .toList();
+        _plans = _decodeCached(list);
         _state = PlanCompletionLoadState.loaded;
       } catch (e) {
         debugPrint('PlanCompletionProvider cache decode error: $e');
@@ -31,19 +29,37 @@ class PlanCompletionProvider extends ChangeNotifier {
     }
   }
 
-  List<PlanCompletionNode> _nodes = [];
+  List<PlanCompletionPlan> _plans = [];
+  int _currentPlanIndex = 0;
   PlanCompletionLoadState _state = PlanCompletionLoadState.idle;
   LoadErrorType? _error;
 
-  List<PlanCompletionNode> get nodes => _nodes;
+  /// 全部培养方案（单方案时为 1 个元素；无方案时为空列表）。
+  List<PlanCompletionPlan> get plans => _plans;
+
+  /// 当前方案索引（多方案滑动切换后更新，用于页面方案名指示）。
+  int get currentPlanIndex => _currentPlanIndex;
+
+  /// 当前方案的节点列表（无方案时为空）。
+  List<PlanCompletionNode> get nodes =>
+      _plans.isEmpty ? const [] : _plans[_currentPlanIndex].nodes;
+
   PlanCompletionLoadState get state => _state;
   LoadErrorType? get error => _error;
 
   List<PlanCompletionNode> get rootNodes =>
-      _nodes.where((n) => n.pId == '-1').toList();
+      nodes.where((n) => n.pId == '-1').toList();
 
   List<PlanCompletionNode> getChildren(String parentId) =>
-      _nodes.where((n) => n.pId == parentId).toList();
+      nodes.where((n) => n.pId == parentId).toList();
+
+  /// 切换当前方案（越界忽略）。
+  void selectPlan(int index) {
+    if (index < 0 || index >= _plans.length) return;
+    if (index == _currentPlanIndex) return;
+    _currentPlanIndex = index;
+    _safeNotify();
+  }
 
   void _safeNotify() {
     WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
@@ -61,16 +77,18 @@ class PlanCompletionProvider extends ChangeNotifier {
     _safeNotify();
 
     try {
-      final nodes = await _zhjwApi.fetchPlanCompletion();
+      final plans = await _zhjwApi.fetchPlanCompletion();
       if (generation != _requestGeneration) return;
-      _nodes = nodes;
+      _plans = plans;
+      // 若已滑到最后一个方案且刷新后方案变少，回退到 0，避免越界。
+      if (_currentPlanIndex >= _plans.length) _currentPlanIndex = 0;
       _state = PlanCompletionLoadState.loaded;
       _error = null;
       await _saveToCache();
       if (generation != _requestGeneration) return;
     } on RateLimitedException catch (_) {
       if (generation != _requestGeneration) return;
-      if (_nodes.isNotEmpty) {
+      if (_plans.isNotEmpty) {
         _state = PlanCompletionLoadState.loaded;
       } else {
         _state = PlanCompletionLoadState.error;
@@ -78,7 +96,7 @@ class PlanCompletionProvider extends ChangeNotifier {
       _error = LoadErrorType.rateLimited;
     } on ServiceException catch (_) {
       if (generation != _requestGeneration) return;
-      if (_nodes.isNotEmpty) {
+      if (_plans.isNotEmpty) {
         _state = PlanCompletionLoadState.loaded;
         _error = campusNetworkErrorType(LoadErrorType.loadFailed);
       } else {
@@ -87,7 +105,7 @@ class PlanCompletionProvider extends ChangeNotifier {
       }
     } on UnauthenticatedException {
       if (generation != _requestGeneration) return;
-      if (_nodes.isNotEmpty) {
+      if (_plans.isNotEmpty) {
         _state = PlanCompletionLoadState.loaded;
       } else {
         _state = PlanCompletionLoadState.error;
@@ -95,7 +113,7 @@ class PlanCompletionProvider extends ChangeNotifier {
       _error = LoadErrorType.sessionExpired;
     } catch (_) {
       if (generation != _requestGeneration) return;
-      if (_nodes.isNotEmpty) {
+      if (_plans.isNotEmpty) {
         _state = PlanCompletionLoadState.loaded;
       } else {
         _state = PlanCompletionLoadState.error;
@@ -106,8 +124,46 @@ class PlanCompletionProvider extends ChangeNotifier {
   }
 
   Future<void> _saveToCache() async {
-    final json = jsonEncode(_nodes.map((n) => _nodeToJson(n)).toList());
+    final json = jsonEncode(
+      _plans
+          .map(
+            (p) => {
+              'id': p.id,
+              'name': p.name,
+              'nodes': p.nodes.map((n) => _nodeToJson(n)).toList(),
+            },
+          )
+          .toList(),
+    );
     await _prefs.setString(_keyPlanCompletion, json);
+  }
+
+  /// 缓存解析：优先按新格式（元素含 id/name/nodes 字段）。
+  /// 兼容旧格式（元素本身是节点对象）——将整个列表视为单方案，
+  /// 避免旧缓存全量失效。
+  List<PlanCompletionPlan> _decodeCached(List<dynamic> list) {
+    if (list.isEmpty) return const [];
+    final isNewFormat = list.every(
+      (e) => e is Map<String, dynamic> && e['nodes'] is List,
+    );
+    if (isNewFormat) {
+      return list.map((e) {
+        final map = e as Map<String, dynamic>;
+        final nodes = (map['nodes'] as List)
+            .map((n) => PlanCompletionNode.fromJson(n as Map<String, dynamic>))
+            .toList();
+        return PlanCompletionPlan(
+          id: map['id'] as String? ?? '',
+          name: map['name'] as String? ?? '',
+          nodes: nodes,
+        );
+      }).toList();
+    }
+    // 旧缓存：直接是节点数组，包装为单个方案
+    final nodes = list
+        .map((e) => PlanCompletionNode.fromJson(e as Map<String, dynamic>))
+        .toList();
+    return [PlanCompletionPlan(id: '', name: '', nodes: nodes)];
   }
 
   Map<String, dynamic> _nodeToJson(PlanCompletionNode node) => {
@@ -123,7 +179,8 @@ class PlanCompletionProvider extends ChangeNotifier {
 
   Future<void> clearCache() async {
     _requestGeneration++;
-    _nodes = [];
+    _plans = [];
+    _currentPlanIndex = 0;
     _state = PlanCompletionLoadState.idle;
     _error = null;
     _safeNotify();

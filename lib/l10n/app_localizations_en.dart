@@ -1263,6 +1263,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get planCompletionCourses => 'Courses';
 
   @override
+  String get planCompletionPlanFallback => 'Training Program';
+
+  @override
   String get planCompletionRateLimited =>
       'Too many requests, please try again later';
 

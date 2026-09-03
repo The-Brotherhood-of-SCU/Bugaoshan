@@ -1,3 +1,21 @@
+/// 一份培养方案的修读数据。
+///
+/// 教务系统对有多份培养方案(如主修+辅修、多学位)的用户,`/planCompletion/index`
+/// 返回的是方案选择页(不含 zNodes 数据),真正的树数据在
+/// `/getPyfaIndex/<方案ID>` 详情页;单方案用户则直接由 index 页返回数据。
+/// [id] 为空串表示数据直接来自 index 页(单方案场景)。
+class PlanCompletionPlan {
+  final String id;
+  final String name;
+  final List<PlanCompletionNode> nodes;
+
+  const PlanCompletionPlan({
+    required this.id,
+    required this.name,
+    required this.nodes,
+  });
+}
+
 class PlanCompletionNode {
   final String id;
   final String pId;
