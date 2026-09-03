@@ -124,7 +124,12 @@ class BalanceTrendChartCard extends StatelessWidget {
                   gridData: FlGridData(
                     show: true,
                     drawVerticalLine: false,
-                    horizontalInterval: niceInterval(minY, maxY),
+                    horizontalInterval: niceInterval(
+                      minY,
+                      maxY,
+                      chartHeight: 240,
+                      minPixelSpacing: 40,
+                    ),
                     getDrawingHorizontalLine: (v) => FlLine(
                       color: theme.colorScheme.outlineVariant.withValues(
                         alpha: 0.5,
@@ -153,7 +158,18 @@ class BalanceTrendChartCard extends StatelessWidget {
                       sideTitles: SideTitles(
                         showTitles: true,
                         reservedSize: 48,
-                        interval: niceInterval(minY, maxY),
+                        // 数据范围很窄时(如照明电量在 272.x 附近波动),
+                        // 边界刻度(min/max)会与相邻 interval 刻度几乎重合,
+                        // 顶部标签与相邻刻度重叠。关闭边界刻度,只保留
+                        // 均匀间隔的刻度,并保证刻度像素间距不小于标签高度。
+                        minIncluded: false,
+                        maxIncluded: false,
+                        interval: niceInterval(
+                          minY,
+                          maxY,
+                          chartHeight: 240,
+                          minPixelSpacing: 40,
+                        ),
                         getTitlesWidget: (value, meta) =>
                             _leftTitle(value, meta, theme),
                       ),
