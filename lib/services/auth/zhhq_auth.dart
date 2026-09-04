@@ -66,12 +66,18 @@ class ZhhqAuth extends ChangeNotifier implements SubsystemAuth {
   /// 若 SCU 已登录且本地存有 tokenKey，直接复用（跳过慢速 SSO ——
   /// id.scu.edu.cn 响应可能需 5-8s），加速冷启动进入报修页。
   Future<void> init() async {
-    final saved = await SecureStorageProvider.instance.read(key: kZhhqTokenKey);
-    if (saved == null || saved.isEmpty) return;
-    _tokenKey = saved;
-    _ready = true;
-    _log.i(_tag, 'init: restored tokenKey, ready');
-    notifyListeners();
+    try {
+      final saved = await SecureStorageProvider.instance
+          .read(key: kZhhqTokenKey)
+          .catchError((_) => null);
+      if (saved == null || saved.isEmpty) return;
+      _tokenKey = saved;
+      _ready = true;
+      _log.i(_tag, 'init: restored tokenKey, ready');
+      notifyListeners();
+    } catch (e) {
+      _log.w(_tag, 'init: failed to restore session: $e');
+    }
   }
 
   void _onScuAuthChanged() {
