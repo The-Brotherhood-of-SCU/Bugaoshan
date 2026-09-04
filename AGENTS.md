@@ -186,6 +186,8 @@ Authoritative reference: `docs/architecture/authentication.md`.
 - **`PayAppAuth`** — payapp OAuth warrant jump, depends on `WfwAuth`.
 - **`FitnessAuth`** — fitness test SSO jump.
 - **`CcylAuth`** — second-classroom OAuth token management via `CcylOAuthService` (SCU → CCYL bridge); binds the persisted token to the current SCU principal and rejects stale async login results.
+- **`ZhhqAuth`** (`zhhq_auth.dart`) — 智慧后勤（zhhq，在线报修）认证. Shares SCU's `CookieClient`, follows SSO (scdxplugin_jwt31) → `login/auto` to exchange **tokenKey**; persists tokenKey to `FlutterSecureStorage` (`kZhhqTokenKey`), `init()` unconditionally restores it for a fast path (业务请求只依赖 Token/TokenKey 头，不依赖 SCU 会话), and `getClientFast()` returns an isolated `CookieClient`. On 4010-4017 token errors → `invalidate()` + full re-auth.
+- **`NewServiceAuth`** (`new_service_auth.dart`) — 校园网无感认证（Passpoint）子系统认证，绑定设备 MAC 自动认证.
 - **`CookieClient`** (`cookie_client.dart`) — domain-isolated cookie jar + manual `followRedirects()` collecting `Set-Cookie` per hop + `http.ClientException` retry with fresh `http.Client`.
 
 **Layer 1 — API Services (stateless HTTP tools):**
@@ -195,6 +197,8 @@ Authoritative reference: `docs/architecture/authentication.md`.
 - **`CcylApiService`** (`ccyl_api_service.dart`) — 第二课堂.
 - **`CcylService`** (`lib/services/ccyl/ccyl_service.dart`) — CCYL static stateless data API.
 - **`BalanceQueryService`** (`lib/services/api/balance_query_service.dart`) — dorm balance data service (HTTP query methods + model classes; called inside `PayAppApiService._request()` so retry is handled by the parent, not by this service itself).
+- **`ZhhqApiService`** (`zhhq_api_service.dart`) — 智慧后勤 API（在线报修）：地址 / 区域树 / 项目 / 预约日期时段 / 工单列表（`activeTemplateData/list`）/ 提交工单（`publish`）/ 图片上传（multipart 明文 JSON）. 业务请求用独立 token（AES 加密 `{tokenKey, clientId, timestamp, GUID}`），4010-4017 错误码触发认证层重建.
+- **`NewServiceApiService`** (`new_service_api_service.dart`) — 校园网无感认证（Passpoint）API.
 
 ZHJW, WFW, and PayApp API services follow the **`_request()` template** (internally calls `retryOnUnauthenticated` from `lib/services/api/api_request.dart`):
 1. `getClient()` → 2. business HTTP → 3. on `UnauthenticatedException` → 4. `invalidate?.call()` + retry once → 5. still failing → propagate to the Provider (which converts to UI state).
@@ -269,6 +273,8 @@ Shared downloads module lives in `lib/pages/campus/downloads/`:
 | `CcylProvider` | 第二课堂登录状态管理。委托 `CcylAuth` 持久化 OAuth token (`FlutterSecureStorage`)，通过 `service` getter 暴露 `CcylApiService`. |
 | `TrainProgramProvider` | 培养方案查询；管理学院/年级/方案列表 + 详情加载状态. |
 | `PlanCompletionProvider` | 培养方案完成度；缓存到 SharedPreferences，处理 rate-limit 错误. |
+| `ZhhqRepairProvider` | 在线报修（智慧后勤）会话级状态：地址/项目/工单列表/提交状态；tokenKey 就绪即可请求（不依赖 SCU 会话），认证失败进入 error 态供重试，登出时 clear. |
+| `PasspointProvider` | 校园网无感认证状态管理（绑定设备 MAC 自动认证）. |
 | `ExportScheduleProvider` | 课表导出（剪贴板 JSON / .ics 文件 / 通过 .ics 间接导入系统日历）. |
 | `SecureStorageProvider` (`lib/utils/secure_storage.dart`) | `FlutterSecureStorage` 单例封装. |
 
