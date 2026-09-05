@@ -202,6 +202,10 @@ class IcsService {
     buffer.writeln('SUMMARY:${_escapeIcsText(event.title)}');
     buffer.writeln('LOCATION:${_escapeIcsText(event.location)}');
     final structuredLocation = event.structuredLocation;
+    // 注意：当前 CalendarLocationMapper.resolve() 的所有返回路径都未产出
+    // latitude/longitude 坐标（见 calendar_event_utils.dart），因此 GEO 与
+    // X-APPLE-STRUCTURED-LOCATION 行暂不会输出。此块保留，等待坐标数据源
+    // 接入后即可启用；若确认不再需要坐标请删除本块。
     if (structuredLocation != null &&
         structuredLocation.latitude != null &&
         structuredLocation.longitude != null) {

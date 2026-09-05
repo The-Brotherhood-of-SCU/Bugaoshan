@@ -311,9 +311,12 @@ class AcademicCalendarService {
       );
       buffer.writeln('SUMMARY:${_escapeIcsText(event.title)}');
       buffer.writeln('LOCATION:${_escapeIcsText(event.location)}');
-      if (event.structuredLocation != null) {
+      final structuredLocation = event.structuredLocation;
+      if (structuredLocation != null &&
+          structuredLocation.latitude != null &&
+          structuredLocation.longitude != null) {
         buffer.writeln(
-          'GEO:${event.structuredLocation!.latitude};${event.structuredLocation!.longitude}',
+          'GEO:${structuredLocation.latitude};${structuredLocation.longitude}',
         );
       }
       buffer.writeln('DESCRIPTION:${_escapeIcsText(event.description)}');

@@ -467,22 +467,20 @@ class CalendarLocationMapper {
     }
 
     // 2. 尝试匹配高精度建筑（OSM 坐标 + 标准建筑全称）
+    //    最长 pattern 优先：避免短 pattern（如"一教"）截胡长 pattern
+    //    （如"一教A101"应命中"第一教学楼A座"而非无座版），不依赖表项顺序。
     _BuildingGeoReference? matchedBuilding;
     if (location.isNotEmpty) {
-      if (explicitCampus != null) {
-        for (final building in _buildingLocations) {
-          if (building.campusName == explicitCampus.fullName &&
-              building.matches(location)) {
-            matchedBuilding = building;
-            break;
-          }
+      var bestLength = 0;
+      for (final building in _buildingLocations) {
+        if (explicitCampus != null &&
+            building.campusName != explicitCampus.fullName) {
+          continue;
         }
-      } else {
-        for (final building in _buildingLocations) {
-          if (building.matches(location)) {
-            matchedBuilding = building;
-            break;
-          }
+        final length = building.longestMatchLength(location);
+        if (length > bestLength) {
+          bestLength = length;
+          matchedBuilding = building;
         }
       }
     }
@@ -756,11 +754,6 @@ class _CampusGeoReference {
     required this.keywords,
     this.buildingKeywords = const [],
   });
-
-  bool matches(String text) {
-    return keywords.any((keyword) => text.contains(keyword)) ||
-        buildingKeywords.any((building) => text.contains(building));
-  }
 }
 
 class _BuildingGeoReference {
@@ -776,7 +769,26 @@ class _BuildingGeoReference {
     this.redirectNote,
   });
 
-  bool matches(String text) {
-    return matchPatterns.any((pattern) => text.contains(pattern));
+  /// 返回命中的最高匹配得分（0 表示未命中）。
+  ///
+  /// 以"最长 pattern 优先"取代布尔 contains，使 `一教A101` 稳定命中
+  /// `第一教学楼A座`（pattern `一教A`）而非被 `一教` 截胡命中无座版，
+  /// 匹配结果不再依赖 `_buildingLocations` 表项顺序。
+  ///
+  /// 以字母结尾的 pattern 表示带座号（如 `一教A` / `基础教学楼B`），
+  /// 额外 +1 权重：`第一教学楼A座` 输入下 `第一教学楼A` 与 `第一教学楼`
+  /// 字长相同，权重确保带座号版本胜出，避免平局回退到表序。
+  int longestMatchLength(String text) {
+    var longest = 0;
+    for (final pattern in matchPatterns) {
+      if (pattern.isNotEmpty && text.contains(pattern)) {
+        final score =
+            pattern.length + (RegExp(r'[A-Za-z]$').hasMatch(pattern) ? 1 : 0);
+        if (score > longest) {
+          longest = score;
+        }
+      }
+    }
+    return longest;
   }
 }

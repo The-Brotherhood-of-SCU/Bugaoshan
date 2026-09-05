@@ -99,5 +99,35 @@ void main() {
       final course = result.courses.first;
       expect(course.location, '第二基础实验大楼B501');
     });
+
+    test('tolerates non-String field values via toString fallback', () {
+      // 教务接口偶发数字型字段（如 classroomName 为 int），不应抛类型错误。
+      final mockData = {
+        'xkxx': [
+          {
+            'course4': {
+              'courseName': '程序设计',
+              'attendClassTeacher': '王老师',
+              'id': {'coureSequenceNumber': '04'},
+              'timeAndPlaceList': [
+                {
+                  'classDay': 2,
+                  'classSessions': 1,
+                  'continuingSession': 1,
+                  'teachingBuildingName': '第一教学楼',
+                  'classroomName': 101,
+                  'campusName': '江安校区',
+                  'classWeek': '1010',
+                },
+              ],
+            },
+          },
+        ],
+      };
+
+      final result = parseJwxtData(mockData, '默认课表');
+      expect(result.courses, hasLength(1));
+      expect(result.courses.first.location, '第一教学楼101');
+    });
   });
 }

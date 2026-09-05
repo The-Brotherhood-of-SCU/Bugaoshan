@@ -58,9 +58,19 @@ void main() {
       expect(yiJiaoLoc.title, '四川大学江安校区第一教学楼A座 · A101');
       expect(yiJiaoLoc.structuredLocation?.title, '四川大学江安校区第一教学楼A座 · A101');
 
+      // 回归：全称形式（第一教学楼A座）不得因子串冲突命中无座版。
+      final yiJiaoFull = CalendarLocationMapper.resolve('第一教学楼A座');
+      expect(yiJiaoFull.title, '四川大学江安校区第一教学楼A座');
+      expect(yiJiaoFull.structuredLocation?.title, '四川大学江安校区第一教学楼A座');
+
       final yiJiaoOnlyBuilding = CalendarLocationMapper.resolve('一教A座');
       expect(yiJiaoOnlyBuilding.title, '四川大学江安校区第一教学楼A座');
       expect(yiJiaoOnlyBuilding.structuredLocation?.title, '四川大学江安校区第一教学楼A座');
+
+      // 回归：无座号时仍应命中无座版。
+      final yiJiaoPlain = CalendarLocationMapper.resolve('第一教学楼');
+      expect(yiJiaoPlain.title, '四川大学江安校区第一教学楼');
+      expect(yiJiaoPlain.structuredLocation?.title, '四川大学江安校区第一教学楼');
 
       final wangJiangLoc = CalendarLocationMapper.resolve('基础教学楼B101');
       expect(wangJiangLoc.title, '四川大学望江校区基础教学楼B座 · B101');

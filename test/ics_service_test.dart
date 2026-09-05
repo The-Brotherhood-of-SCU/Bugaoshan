@@ -115,6 +115,8 @@ void main() {
       expect(ics, contains('SUMMARY:课序号 02 大学英语'));
       expect(ics, contains('UID:course-english_1@bugaoshan'));
       expect(ics, contains('LOCATION:四川大学华西校区第十教学楼 · 201'));
+      // 回归：无坐标（latitude/longitude 为 null）时不输出 GEO:null;null
+      expect(ics, isNot(contains('GEO:null')));
     });
 
     test('builds course calendar export payload in one place', () {
