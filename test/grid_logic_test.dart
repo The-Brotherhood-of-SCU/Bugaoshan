@@ -1,5 +1,5 @@
 import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/widgets/course/grid_logic.dart';
+import 'package:bugaoshan/pages/course/widgets/grid_logic.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
