@@ -38,6 +38,49 @@ jobs:
             --dart-define=GIT_COMMIT_DATE=${{ steps.setup.outputs.GIT_COMMIT_DATE }}
         shell: bash
 
+      - name: Bundle WebView2Loader.dll
+        shell: pwsh
+        run: |
+          # flutter_inappwebview_windows 的 prebuilt DLL 静态导入 WebView2Loader.dll，
+          # 但 prebuilt 模式下不会链接 Microsoft.Web.WebView2 的 NuGet targets，
+          # 构建产物里不会自动带上该加载器。这里从官方 NuGet 包取回并放入 Release 目录，
+          # 确保最终 windows-release.zip 包含此依赖。
+          # 版本不硬编码：从插件 CMakeLists.txt 解析 WEBVIEW_VERSION，随插件升级自动跟随。
+          $cmake = "windows\flutter\ephemeral\.plugin_symlinks\flutter_inappwebview_windows\windows\CMakeLists.txt"
+          if (-not (Test-Path $cmake)) {
+            # 兜底：从 pub cache 的 git 依赖缓存中搜索（避免 Flutter 版本间目录结构差异）
+            $stale = Get-ChildItem "$env:LOCALAPPDATA\Pub\Cache\git\cache" -Recurse -Filter "CMakeLists.txt" -ErrorAction SilentlyContinue |
+              Where-Object { $_.FullName -match "flutter_inappwebview_windows[\\/]windows[\\/]CMakeLists.txt$" } |
+              Select-Object -First 1
+            if ($stale) { $cmake = $stale.FullName }
+          }
+          if (-not (Test-Path $cmake)) {
+            throw "flutter_inappwebview_windows CMakeLists.txt not found: $cmake"
+          }
+          $versionMatch = Select-String -Path $cmake -Pattern 'set\(WEBVIEW_VERSION\s+"([^"]+)"\)'
+          if (-not $versionMatch) {
+            throw "Unable to parse WEBVIEW_VERSION from $cmake"
+          }
+          $version = $versionMatch.Matches[0].Groups[1].Value
+          Write-Host "Parsed WEBVIEW_VERSION = $version (from $cmake)"
+          $releaseDir = "build\windows\x64\runner\Release"
+          $tmp = Join-Path $env:RUNNER_TEMP "webview2"
+          $zip = Join-Path $env:RUNNER_TEMP "webview2.zip"
+
+          Invoke-WebRequest -Uri "https://www.nuget.org/api/v2/package/Microsoft.Web.WebView2/$version" -OutFile $zip
+          Expand-Archive $zip -DestinationPath $tmp -Force
+
+          $loader = Get-ChildItem $tmp -Recurse -Filter "WebView2Loader.dll" |
+            Where-Object { $_.FullName -match "runtimes[\\/]win-x64[\\/]native" } |
+            Select-Object -First 1
+          if (-not $loader) { throw "WebView2Loader.dll (win-x64) not found in Microsoft.Web.WebView2 $version" }
+
+          Copy-Item $loader.FullName (Join-Path $releaseDir "WebView2Loader.dll") -Force
+          if (-not (Test-Path (Join-Path $releaseDir "WebView2Loader.dll"))) {
+            throw "WebView2Loader.dll was not staged into $releaseDir"
+          }
+          Get-Item (Join-Path $releaseDir "WebView2Loader.dll") | Select-Object FullName, Length
+
       - name: Archive Windows Release
         run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath
           windows-release.zip
