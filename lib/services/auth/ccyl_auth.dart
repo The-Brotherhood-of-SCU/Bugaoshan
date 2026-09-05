@@ -65,16 +65,18 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
 
   /// 从安全存储恢复 token（应用启动时调用）。
   Future<void> init() async {
-    final secure = SecureStorageProvider.instance;
-    final raw = await secure.read(key: _keyCcylSession);
-    await secure.delete(key: _keyCcylToken);
-    await secure.delete(key: _keyCcylUserId);
-    if (raw == null) {
-      _log.d(_tag, 'init: no saved token');
-      return;
-    }
-
     try {
+      final secure = SecureStorageProvider.instance;
+      final raw = await secure.read(key: _keyCcylSession).catchError((_) => null);
+      try {
+        await secure.delete(key: _keyCcylToken).catchError((_) {});
+        await secure.delete(key: _keyCcylUserId).catchError((_) {});
+      } catch (_) {}
+      if (raw == null) {
+        _log.d(_tag, 'init: no saved token');
+        return;
+      }
+
       final session = jsonDecode(raw) as Map<String, dynamic>;
       final token = session['token']?.toString();
       final userId = session['userId']?.toString();
@@ -99,8 +101,8 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
         orgName: '',
       );
       _log.i(_tag, 'init: token restored');
-    } catch (_) {
-      _log.w(_tag, 'init: malformed saved session, discarding');
+    } catch (e) {
+      _log.w(_tag, 'init: error restoring saved session, discarding: $e');
       await _clearPersistedSession();
     }
   }

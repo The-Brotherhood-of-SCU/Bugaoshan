@@ -128,19 +128,23 @@ class ScuAuth extends ChangeNotifier {
 
   /// 从安全存储恢复 token（应用启动时调用）。
   Future<void> init() async {
-    _accessToken = await SecureStorageProvider.instance.read(
-      key: kScuAccessToken,
-    );
-    _principal = await _restorePrincipal(_accessToken);
-    _loginTimestamp = _prefs.getInt(kScuLoginTimestamp);
+    try {
+      _accessToken = await SecureStorageProvider.instance.read(
+        key: kScuAccessToken,
+      ).catchError((_) => null);
+      _principal = await _restorePrincipal(_accessToken);
+      _loginTimestamp = _prefs.getInt(kScuLoginTimestamp);
 
-    if (_accessToken != null && !isExpired) {
-      _log.i('ScuAuth', 'init: token restored, ts=$_loginTimestamp');
-      state = AuthState.ready;
-    } else if (_accessToken != null) {
-      _log.w('ScuAuth', 'init: token restored but expired');
-    } else {
-      _log.d('ScuAuth', 'init: no saved token');
+      if (_accessToken != null && !isExpired) {
+        _log.i('ScuAuth', 'init: token restored, ts=$_loginTimestamp');
+        state = AuthState.ready;
+      } else if (_accessToken != null) {
+        _log.w('ScuAuth', 'init: token restored but expired');
+      } else {
+        _log.d('ScuAuth', 'init: no saved token');
+      }
+    } catch (e) {
+      _log.w('ScuAuth', 'init: failed to restore session: $e');
     }
   }
 

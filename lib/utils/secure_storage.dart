@@ -10,6 +10,9 @@ class SecureStorageProvider {
     iOptions: IOSOptions(
       accessibility: KeychainAccessibility.first_unlock_this_device,
     ),
+    mOptions: MacOsOptions(
+      usesDataProtectionKeychain: false,
+    ),
   );
 
   static FlutterSecureStorage get instance => _instance;
