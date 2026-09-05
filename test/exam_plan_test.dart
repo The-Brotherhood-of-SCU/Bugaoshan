@@ -51,8 +51,7 @@ void main() {
       expect(ics, contains('DTSTART;TZID=Asia/Shanghai:20260627T090000'));
       expect(ics, contains('DTEND;TZID=Asia/Shanghai:20260627T110000'));
       expect(ics, contains('SUMMARY:高等数学A考试'));
-      expect(ics, contains('LOCATION:四川大学江安校区 · 江安一教A101'));
-      expect(ics, contains('GEO:30.5601863;103.9973029'));
+      expect(ics, contains('LOCATION:四川大学江安校区第一教学楼A座 · A101'));
       expect(ics, contains('座位号: 12'));
     });
 
@@ -97,15 +96,12 @@ void main() {
       expect(events, hasLength(1));
       final payload = events.single.toPlatformJson();
       expect(payload['title'], '(107447030-31) 高等数学A考试');
-      expect(payload['location'], '四川大学江安校区 · 江安一教A101');
+      expect(payload['location'], '四川大学江安校区第一教学楼A座 · A101');
       expect(payload['notes'], contains('座位号: 12'));
       expect(payload['notes'], contains('准考证号: SCU20260627'));
       expect(payload['timeZone'], 'Asia/Shanghai');
       expect(payload['structuredLocation'], {
-        'title': '四川大学江安校区 · 江安一教A101',
-        'latitude': 30.5601863,
-        'longitude': 103.9973029,
-        'radius': 250.0,
+        'title': '四川大学江安校区第一教学楼A座 · A101',
       });
       expect(payload['start'], {
         'year': 2026,

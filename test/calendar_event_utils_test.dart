@@ -43,13 +43,47 @@ void main() {
     test('maps campus location to display title and coordinates', () {
       final location = CalendarLocationMapper.resolve('江安 综合楼B座 B503');
 
-      expect(location.title, '四川大学江安校区 · 江安 综合楼B座 B503');
+      expect(location.title, '四川大学江安校区逸夫教学楼 · B503 (综B)');
       expect(location.structuredLocation?.toPlatformJson(), {
-        'title': '四川大学江安校区 · 江安 综合楼B座 B503',
-        'latitude': 30.5601863,
-        'longitude': 103.9973029,
-        'radius': 250.0,
+        'title': '四川大学江安校区逸夫教学楼 · B503 (综B)',
       });
+    });
+
+    test('infers campus from building keywords without campus prefix', () {
+      final jiangAnLoc = CalendarLocationMapper.resolve('综C407');
+      expect(jiangAnLoc.title, '四川大学江安校区逸夫教学楼 · C407 (综C)');
+      expect(jiangAnLoc.structuredLocation?.title, '四川大学江安校区逸夫教学楼 · C407 (综C)');
+
+      final yiJiaoLoc = CalendarLocationMapper.resolve('一教A101');
+      expect(yiJiaoLoc.title, '四川大学江安校区第一教学楼A座 · A101');
+      expect(yiJiaoLoc.structuredLocation?.title, '四川大学江安校区第一教学楼A座 · A101');
+
+      final yiJiaoOnlyBuilding = CalendarLocationMapper.resolve('一教A座');
+      expect(yiJiaoOnlyBuilding.title, '四川大学江安校区第一教学楼A座');
+      expect(yiJiaoOnlyBuilding.structuredLocation?.title, '四川大学江安校区第一教学楼A座');
+
+      final wangJiangLoc = CalendarLocationMapper.resolve('基础教学楼B101');
+      expect(wangJiangLoc.title, '四川大学望江校区基础教学楼B座 · B101');
+      expect(wangJiangLoc.structuredLocation?.title, '四川大学望江校区基础教学楼B座 · B101');
+
+      final huaXiLoc = CalendarLocationMapper.resolve('第八教学楼302');
+      expect(huaXiLoc.title, '四川大学华西校区第八教学楼 · 302');
+      expect(huaXiLoc.structuredLocation?.title, '四川大学华西校区第八教学楼 · 302');
+    });
+
+    test('uses campusName when provided', () {
+      final location = CalendarLocationMapper.resolve(
+        'A101',
+        campusName: '江安校区',
+      );
+      expect(location.title, '四川大学江安校区 · A101');
+      expect(location.structuredLocation?.title, '四川大学江安校区 · A101');
+    });
+
+    test('resolves empty location with campusName to campus full name', () {
+      final location = CalendarLocationMapper.resolve('', campusName: '望江校区');
+      expect(location.title, '四川大学望江校区');
+      expect(location.structuredLocation?.title, '四川大学望江校区');
     });
 
     test('keeps unknown locations without coordinates', () {

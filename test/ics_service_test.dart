@@ -75,16 +75,13 @@ void main() {
       final payload = events.single.toPlatformJson();
       expect(payload['title'], '(107447030-31) 高等数学A');
       expect(payload['uid'], '107447030-31_1@bugaoshan');
-      expect(payload['location'], '四川大学江安校区 · 江安一教A101');
+      expect(payload['location'], '四川大学江安校区第一教学楼A座 · A101');
       expect(payload['structuredLocation'], {
-        'title': '四川大学江安校区 · 江安一教A101',
-        'latitude': 30.5601863,
-        'longitude': 103.9973029,
-        'radius': 250.0,
+        'title': '四川大学江安校区第一教学楼A座 · A101',
       });
     });
 
-    test('exports mapped campus coordinates to ICS GEO', () {
+    test('exports mapped campus title to ICS LOCATION', () {
       final config = ScheduleConfig(
         semesterStartDate: DateTime(2026, 2, 23),
         semesterName: '2025-2026-2',
@@ -117,8 +114,7 @@ void main() {
 
       expect(ics, contains('SUMMARY:课序号 02 大学英语'));
       expect(ics, contains('UID:course-english_1@bugaoshan'));
-      expect(ics, contains('LOCATION:四川大学华西校区 · 华西十教201'));
-      expect(ics, contains('GEO:30.6425541;104.0673888'));
+      expect(ics, contains('LOCATION:四川大学华西校区第十教学楼 · 201'));
     });
 
     test('builds course calendar export payload in one place', () {
@@ -157,6 +153,45 @@ void main() {
       expect(payload.icsContent, contains('UID:course-english_1@bugaoshan'));
       expect(payload.events, hasLength(1));
       expect(payload.events.single['location'], '四川大学望江校区 · 望江一教101');
+    });
+
+    test('resolves location using course.campus and building keyword', () {
+      final config = ScheduleConfig(
+        semesterStartDate: DateTime(2026, 2, 23),
+        semesterName: '2025-2026-2',
+        timeSlots: const [
+          TimeSlot(
+            startTime: TimeOfDay(hour: 8, minute: 15),
+            endTime: TimeOfDay(hour: 9, minute: 0),
+          ),
+        ],
+      );
+
+      final events = IcsService.genCourseCalendarEvents(
+        config: config,
+        courses: [
+          Course(
+            id: 'course-calc',
+            name: '微积分',
+            teacher: '王老师',
+            location: '综C407',
+            campus: '江安校区',
+            startWeek: 1,
+            endWeek: 1,
+            dayOfWeek: 1,
+            startSection: 1,
+            endSection: 1,
+            colorValue: 0xff2196f3,
+          ),
+        ],
+        teacherLabel: '教师',
+      );
+
+      expect(events.single.location, '四川大学江安校区逸夫教学楼 · C407 (综C)');
+      expect(
+        events.single.structuredLocation?.title,
+        '四川大学江安校区逸夫教学楼 · C407 (综C)',
+      );
     });
   });
 }

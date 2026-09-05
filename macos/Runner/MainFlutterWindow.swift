@@ -476,18 +476,19 @@ class MainFlutterWindow: NSWindow {
   ) -> EKStructuredLocation? {
     guard
       let locationPayload = payload["structuredLocation"] as? [String: Any],
-      let title = locationPayload["title"] as? String,
-      let latitude = doubleValue(locationPayload["latitude"]),
-      let longitude = doubleValue(locationPayload["longitude"])
+      let title = locationPayload["title"] as? String
     else {
       return nil
     }
 
     let structuredLocation = EKStructuredLocation(title: title)
-    structuredLocation.geoLocation = CLLocation(
-      latitude: latitude,
-      longitude: longitude
-    )
+    if let latitude = doubleValue(locationPayload["latitude"]),
+       let longitude = doubleValue(locationPayload["longitude"]) {
+      structuredLocation.geoLocation = CLLocation(
+        latitude: latitude,
+        longitude: longitude
+      )
+    }
     if let radius = doubleValue(locationPayload["radius"]) {
       structuredLocation.radius = radius
     }
