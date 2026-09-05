@@ -134,6 +134,13 @@ void main() {
       expect(payload.icsContent, contains('BEGIN:VCALENDAR'));
       expect(payload.icsContent, contains('SUMMARY:国庆节假期'));
       expect(payload.icsContent, contains('UID:acad-2026-2027学年秋季学期-国庆节假期-'));
+      // 回归：当前无坐标数据源（结构化位置恒 null），ICS 不得输出 GEO:null;null
+      // 或 X-APPLE 行；若未来接入坐标，此处立即捕获纬经度缺失的守卫遗漏。
+      expect(payload.icsContent, isNot(contains('GEO:null')));
+      expect(
+        payload.icsContent,
+        isNot(contains('X-APPLE-STRUCTURED-LOCATION')),
+      );
     });
   });
 }

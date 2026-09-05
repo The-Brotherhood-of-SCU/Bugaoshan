@@ -70,13 +70,13 @@ void validateImportedSchedule(ScheduleConfig config, List<Course> courses) {
                     tpMap['jxlm'] ??
                     tpMap['building'] ??
                     '')
-                as String;
+                .toString();
         final String room =
             (tpMap['classroomName'] ??
                     tpMap['jasm'] ??
                     tpMap['classroom'] ??
                     '')
-                as String;
+                .toString();
         var location = '$building$room'.trim();
         if (location.isEmpty) {
           location =
@@ -85,7 +85,7 @@ void validateImportedSchedule(ScheduleConfig config, List<Course> courses) {
                       tpMap['place'] ??
                       tpMap['skdd'] ??
                       '')
-                  as String;
+                  .toString();
           location = location.trim();
         }
         final String campusName = tpMap['campusName'] as String? ?? '';
