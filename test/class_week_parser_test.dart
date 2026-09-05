@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/pages/course/widgets/grid_logic.dart';
 import 'package:bugaoshan/services/ics_service.dart';
 import 'package:bugaoshan/utils/class_week_parser.dart';
-import 'package:bugaoshan/widgets/course/grid_logic.dart';
 
 void main() {
   group('classWeek parsing', () {

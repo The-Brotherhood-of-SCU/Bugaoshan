@@ -3,9 +3,9 @@ import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/widgets/common/info_row.dart';
 import 'package:bugaoshan/widgets/common/status_chip.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
+import 'package:bugaoshan/pages/course/widgets/grid_header.dart';
+import 'package:bugaoshan/pages/course/widgets/grid_section_column.dart';
 import 'package:bugaoshan/widgets/common/styled_widget.dart';
-import 'package:bugaoshan/widgets/course/grid_header.dart';
-import 'package:bugaoshan/widgets/course/grid_section_column.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
