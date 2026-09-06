@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/course/main/course_page.dart';
+import 'package:bugaoshan/pages/settings/background_crop_editor_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/common/styled_widget.dart';
 import 'package:bugaoshan/theme_shape.dart';
@@ -25,6 +26,7 @@ class SetCourseStylePage extends StatelessWidget {
       listenable: Listenable.merge([
         appConfig.backgroundImagePath,
         appConfig.backgroundImageOpacity,
+        appConfig.backgroundImageCrop,
         appConfig.colorOpacity,
         appConfig.courseCardFontSize,
         appConfig.showCourseGrid,
@@ -238,6 +240,12 @@ class SetCourseStylePage extends StatelessWidget {
           if (appConfig.backgroundImagePath.value != null) ...[
             const SizedBox(height: 8),
             ButtonWithMaxWidth(
+              onPressed: () => _editBackgroundCrop(context, appConfig),
+              icon: const Icon(Icons.crop_free),
+              child: Text(localizations.editBackgroundArea),
+            ),
+            const SizedBox(height: 8),
+            ButtonWithMaxWidth(
               onPressed: () => _removeBackgroundImage(appConfig),
               icon: const Icon(Icons.delete_outline),
               child: Text(localizations.removeBackgroundImage),
@@ -292,6 +300,7 @@ class SetCourseStylePage extends StatelessWidget {
   Future<void> _removeBackgroundImage(AppConfigProvider appConfig) async {
     final oldPath = appConfig.backgroundImagePath.value;
     appConfig.backgroundImagePath.value = null;
+    appConfig.backgroundImageCrop.value = null;
     if (oldPath != null) {
       FileImage(File(oldPath)).evict();
       File(oldPath).delete().ignore();
@@ -300,6 +309,20 @@ class SetCourseStylePage extends StatelessWidget {
       await SystemTheme.accentColor.load();
       appConfig.themeColor.value = SystemTheme.accentColor.accent;
     }
+  }
+
+  /// 打开裁剪编辑器调整当前背景图的显示区域。
+  Future<void> _editBackgroundCrop(
+    BuildContext context,
+    AppConfigProvider appConfig,
+  ) async {
+    final path = appConfig.backgroundImagePath.value;
+    if (path == null) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BackgroundCropEditorPage(imagePath: path),
+      ),
+    );
   }
 
   Future<void> _pickBackgroundImage(
@@ -331,6 +354,8 @@ class SetCourseStylePage extends StatelessWidget {
 
     await File(picked.path).copy(destPath);
     appConfig.backgroundImagePath.value = destPath;
+    // 新背景图不继承旧裁剪参数，保持默认(cover)显示，由裁剪编辑器调整。
+    appConfig.backgroundImageCrop.value = null;
 
     if (appConfig.themeColorMode.value == ThemeColorMode.backgroundImage) {
       final themeColorProvider = SetThemeColorProvider(appConfig);
@@ -340,6 +365,14 @@ class SetCourseStylePage extends StatelessWidget {
         appConfig.themeColor.value = themeColorProvider.extractedColor!;
       }
     }
+
+    if (!context.mounted) return;
+    // 选图后进入裁剪编辑器：可拖动/缩放调整显示区域，直接返回则保持默认。
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BackgroundCropEditorPage(imagePath: destPath),
+      ),
+    );
 
     if (!context.mounted) return;
     if (appConfig.themeColorMode.value != ThemeColorMode.backgroundImage) {
