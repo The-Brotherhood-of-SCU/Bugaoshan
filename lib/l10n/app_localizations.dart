@@ -1393,6 +1393,18 @@ abstract class AppLocalizations {
   /// **'Remove Background Image'**
   String get removeBackgroundImage;
 
+  /// No description provided for @editBackgroundArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust Visible Area'**
+  String get editBackgroundArea;
+
+  /// No description provided for @cropEditorHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reposition, pinch or scroll to zoom.'**
+  String get cropEditorHint;
+
   /// No description provided for @backgroundImageOpacity.
   ///
   /// In en, this message translates to:
