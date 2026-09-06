@@ -681,6 +681,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get removeBackgroundImage => '移除背景图片';
 
   @override
+  String get editBackgroundArea => '调整显示区域';
+
+  @override
+  String get cropEditorHint => '拖动调整位置，双指或滚轮缩放';
+
+  @override
   String get backgroundImageOpacity => '背景图片不透明度';
 
   @override

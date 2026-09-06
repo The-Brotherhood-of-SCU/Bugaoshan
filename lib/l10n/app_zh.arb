@@ -280,6 +280,8 @@
     "themeColorAutoExtractedHint": "主题色已从背景图片提取，如需修改请前往软件设置->主题颜色",
     "noBackgroundImageSet": "请先设置背景图片",
     "removeBackgroundImage": "移除背景图片",
+    "editBackgroundArea": "调整显示区域",
+    "cropEditorHint": "拖动调整位置，双指或滚轮缩放",
     "backgroundImageOpacity": "背景图片不透明度",
     "backgroundImageSetHint": "背景图片已设置，您可以前往「主题颜色」修改主题色",
     "showTeacher": "显示教师",

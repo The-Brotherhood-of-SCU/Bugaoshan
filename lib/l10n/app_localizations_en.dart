@@ -704,6 +704,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get removeBackgroundImage => 'Remove Background Image';
 
   @override
+  String get editBackgroundArea => 'Adjust Visible Area';
+
+  @override
+  String get cropEditorHint => 'Drag to reposition, pinch or scroll to zoom.';
+
+  @override
   String get backgroundImageOpacity => 'Background Image Opacity';
 
   @override
