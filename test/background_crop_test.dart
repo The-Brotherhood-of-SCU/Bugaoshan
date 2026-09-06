@@ -1,9 +1,48 @@
 import 'dart:math';
 
 import 'package:bugaoshan/models/background_crop.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  group('AppConfigProvider 裁剪参数持久化', () {
+    test('写入后新实例可读回，清空后回到 cover 行为', () async {
+      SharedPreferences.setMockInitialValues({});
+      final preferences = await SharedPreferences.getInstance();
+      final provider = AppConfigProvider(preferences);
+      await provider.init();
+
+      expect(provider.backgroundImageCrop.value, isNull);
+
+      const crop = BackgroundCropParams(focusX: 0.4, focusY: 0.6, zoom: 1.5);
+      provider.backgroundImageCrop.value = crop;
+      expect(preferences.getString('backgroundImageCrop'), crop.encode());
+
+      // 模拟重启：新实例从同一 SharedPreferences 恢复。
+      final reloaded = AppConfigProvider(preferences);
+      await reloaded.init();
+      expect(reloaded.backgroundImageCrop.value, crop);
+
+      // 清空 → 移除持久化 key。
+      reloaded.backgroundImageCrop.value = null;
+      expect(preferences.getString('backgroundImageCrop'), isNull);
+      final cleared = AppConfigProvider(preferences);
+      await cleared.init();
+      expect(cleared.backgroundImageCrop.value, isNull);
+    });
+
+    test('持久化数据损坏时回退为 null（cover 行为）', () async {
+      SharedPreferences.setMockInitialValues({
+        'backgroundImageCrop': '{broken json',
+      });
+      final preferences = await SharedPreferences.getInstance();
+      final provider = AppConfigProvider(preferences);
+      await provider.init();
+      expect(provider.backgroundImageCrop.value, isNull);
+    });
+  });
+
   group('BackgroundCropParams 序列化', () {
     test('encode/tryDecode 往返一致', () {
       const params = BackgroundCropParams(focusX: 0.3, focusY: 0.7, zoom: 2.5);
