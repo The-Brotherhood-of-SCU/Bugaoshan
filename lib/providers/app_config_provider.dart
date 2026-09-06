@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Colors, Curve, Curves;
+import 'package:bugaoshan/models/background_crop.dart';
 import 'package:bugaoshan/models/widget_appearance.dart';
 import 'package:bugaoshan/utils/locale_utils.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
@@ -18,6 +19,7 @@ const String _keyShowCourseGrid = 'showCourseGrid';
 const String _keyCourseRowHeight = 'courseRowHeight';
 const String _keyBackgroundImageOpacity = 'backgroundImageOpacity';
 const String _keyBackgroundImagePath = 'backgroundImagePath';
+const String _keyBackgroundImageCrop = 'backgroundImageCrop';
 const String _keyFirstLaunchWizardCompleted = 'firstLaunchWizardCompleted';
 const String _keyHasUpdateNotification = 'hasUpdateNotification';
 const String _keyVisibleDockIds = 'visibleDockIds';
@@ -67,6 +69,10 @@ class AppConfigProvider {
   final ValueNotifier<String?> backgroundImagePath = ValueNotifier<String?>(
     null,
   );
+
+  /// 背景图裁剪/显示区域参数；null 表示沿用 BoxFit.cover 居中裁剪（旧行为）。
+  final ValueNotifier<BackgroundCropParams?> backgroundImageCrop =
+      ValueNotifier<BackgroundCropParams?>(null);
   final ValueNotifier<bool> firstLaunchWizardCompleted = ValueNotifier<bool>(
     false,
   );
@@ -123,6 +129,9 @@ class AppConfigProvider {
     // Existence will be checked later in the Settings UI when needed.
     final savedPath = _sharedPreferences.getString(_keyBackgroundImagePath);
     backgroundImagePath.value = savedPath;
+    backgroundImageCrop.value = BackgroundCropParams.tryDecode(
+      _sharedPreferences.getString(_keyBackgroundImageCrop),
+    );
     firstLaunchWizardCompleted.value =
         _sharedPreferences.getBool(_keyFirstLaunchWizardCompleted) ??
         kDebugMode;
@@ -219,6 +228,14 @@ class AppConfigProvider {
       if (path == null &&
           themeColorMode.value == ThemeColorMode.backgroundImage) {
         _switchToSystemColor();
+      }
+    });
+    backgroundImageCrop.addListener(() {
+      final crop = backgroundImageCrop.value;
+      if (crop != null) {
+        _sharedPreferences.setString(_keyBackgroundImageCrop, crop.encode());
+      } else {
+        _sharedPreferences.remove(_keyBackgroundImageCrop);
       }
     });
     firstLaunchWizardCompleted.addListener(() {
