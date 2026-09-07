@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/repair.dart';
+import 'package:bugaoshan/pages/campus/repair/repair_detail_page.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/providers/zhhq_repair_provider.dart';
 import 'package:bugaoshan/theme_shape.dart';
@@ -118,7 +119,11 @@ class _MyTicketsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final tickets = provider.tickets;
-    if (tickets.isEmpty && !provider.isLoadingTickets) {
+    // 首次加载中（列表为空且正在拉取）：显示加载指示，避免白屏
+    if (tickets.isEmpty && provider.isLoadingTickets) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (tickets.isEmpty) {
       return RefreshIndicator(
         onRefresh: provider.loadTickets,
         child: ListView(
@@ -155,6 +160,7 @@ class _MyTicketsTab extends StatelessWidget {
     RepairTicket ticket,
   ) {
     return StyledCard(
+      onTap: () => _openDetail(context, ticket),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -199,6 +205,13 @@ class _MyTicketsTab extends StatelessWidget {
                 '${l10n.repairArea}: ${ticket.areaName}',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
+            if (ticket.serviceUnit.isNotEmpty)
+              Text(
+                ticket.serviceUnit,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
             if (ticket.content.isNotEmpty)
               Text(
                 ticket.content,
@@ -210,6 +223,27 @@ class _MyTicketsTab extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// 点击工单卡片进入详情页（支持撤回/评价操作）。
+  void _openDetail(BuildContext context, RepairTicket ticket) {
+    Navigator.of(context)
+        .push<bool>(
+          MaterialPageRoute(
+            builder: (_) => RepairDetailPage(
+              ticketId: ticket.id,
+              initialTitle: ticket.projectName.isEmpty
+                  ? AppLocalizations.of(context)!.repairTicket
+                  : ticket.projectName,
+              initialStatus: ticket.statusLabel,
+            ),
+          ),
+        )
+        // 详情页发生撤回/评价等状态变更时 pop(true)；仅此时强制刷新工单列表，
+        // 确保「我的报修」显示最新状态（普通返回无操作则不浪费一次请求）。
+        .then((changed) {
+          if (changed == true) provider.loadTickets(force: true);
+        });
   }
 
   Color _statusColor(BuildContext context, String status) {
@@ -498,6 +532,7 @@ class _SubmitTabState extends State<_SubmitTab> {
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: _ProjectSelector(
+              provider: widget.provider,
               areaId: _selectedAddress?.areaId,
               value: _projectValue,
               label: _projectLabel,
@@ -726,12 +761,14 @@ class _SubmitTabState extends State<_SubmitTab> {
 /// 维修项目选择器（按区域加载，两级：大类 → 具体项目）。
 class _ProjectSelector extends StatefulWidget {
   const _ProjectSelector({
+    required this.provider,
     required this.areaId,
     required this.value,
     required this.label,
     required this.onChanged,
   });
 
+  final ZhhqRepairProvider provider;
   final String? areaId;
   final String? value;
   final String label;
@@ -773,7 +810,7 @@ class _ProjectSelectorState extends State<_ProjectSelector> {
     if (areaId == null || areaId.isEmpty) return;
     setState(() => _loading = true);
     try {
-      final projects = await getIt<ZhhqRepairProvider>().fetchProjects(areaId);
+      final projects = await widget.provider.fetchProjects(areaId);
       if (mounted) setState(() => _categories = projects);
     } catch (_) {
       if (mounted) setState(() => _categories = const []);

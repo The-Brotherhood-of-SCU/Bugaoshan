@@ -184,9 +184,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
   /// 不再需要分页。userId 从常用地址取（[RepairAddress.userId]）。
   ///
   /// 页面每次重建都会调用本方法（fire-and-forget），因此默认跳过已加载
-  /// 的会话；下拉刷新或提交成功后需重新拉取时传 [force] = true。
+  /// 的会话；下拉刷新或提交/撤回/评价成功后需重新拉取时传 [force] = true。
   Future<void> loadTickets({bool force = false}) async {
-    if (!_canLoad || _isLoadingTickets) return;
+    if (!_canLoad) return;
+    // force 刷新：等待进行中的加载完成后再重新拉取，避免被并发守卫吞掉
+    // （如详情页撤回/评价后立即 force 刷新，而下层页面仍在 fire-and-forget 加载）。
+    while (_isLoadingTickets) {
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
     if (!force && _ticketsLoaded) return;
     final userId = _addresses.isEmpty ? '' : _addresses.first.userId;
     if (userId.isEmpty) return;
@@ -202,6 +207,51 @@ class ZhhqRepairProvider extends ChangeNotifier {
     } finally {
       _isLoadingTickets = false;
       notifyListeners();
+    }
+  }
+
+  /// 获取工单详情（详情页用）。失败抛异常（页面临时展示）。
+  Future<RepairTicketDetail> fetchTicketDetail({required String id}) {
+    return _api.fetchRepairDetail(id: id);
+  }
+
+  /// 查询当前工单是否允许撤回；失败返回 false。
+  Future<bool> ifAllowWithdrawRepair({required String id}) async {
+    try {
+      return await _api.ifAllowWithdrawRepair(id: id);
+    } on ScuException {
+      return false;
+    }
+  }
+
+  /// 撤回报修工单；成功后工单列表需重新拉取。
+  Future<void> withdrawRepair({required String id}) async {
+    await _api.withdrawRepair(id: id);
+    _ticketsLoaded = false;
+  }
+
+  /// 评价报修工单；成功后工单列表需重新拉取。
+  Future<void> evaluateRepair({
+    required String repairId,
+    required List<Map<String, dynamic>> common,
+    String content = '',
+    List<String> labels = const [],
+  }) async {
+    await _api.evaluateRepair(
+      repairId: repairId,
+      common: common,
+      content: content,
+      labels: labels,
+    );
+    _ticketsLoaded = false;
+  }
+
+  /// 获取工单评价项（维修质量/维修态度/维修速度等）。失败返回空列表。
+  Future<List<RepairEvaluateProject>> fetchEvaluateProjects() async {
+    try {
+      return await _api.fetchEvaluateProjects();
+    } on ScuException {
+      return const [];
     }
   }
 

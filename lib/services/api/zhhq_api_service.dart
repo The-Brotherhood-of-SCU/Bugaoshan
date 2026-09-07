@@ -75,12 +75,16 @@ class ZhhqApiService {
     return r.toString();
   }
 
-  Future<T> _request<T>(
+  /// 统一请求执行：拿到可用 client + tokenKey 后调用 [fn]。
+  ///
+  /// 认证获取策略（所有业务请求共用，含 multipart 上传）：
+  /// 1. 快速路径：tokenKey 已持久化/缓存时，跳过 SCU 会话（冷启动 SCU 过期
+  ///    也无需等 5-8s refresh），直接用独立 CookieClient 发请求。
+  ///    业务请求只依赖 Token/TokenKey 头，不依赖 SCU cookie。
+  /// 2. tokenKey 失效（4010-4017）：invalidate 后走完整认证重建重试一次。
+  Future<T> _executeWithRetry<T>(
     Future<T> Function(CookieClient client, String tokenKey) fn,
   ) async {
-    // 快速路径：tokenKey 已持久化/缓存时，跳过 SCU 会话（冷启动 SCU 过期
-    // 也无需等 5-8s refresh），直接用独立 CookieClient 发请求。
-    // 业务请求只依赖 Token/TokenKey 头，不依赖 SCU cookie。
     final fastClient = _auth.getClientFast();
     final fastTokenKey = _auth.tokenKey;
     if (fastClient != null && fastTokenKey != null) {
@@ -104,6 +108,12 @@ class ZhhqApiService {
       if (tokenKey == null) throw const UnauthenticatedException();
       return await fn(client, tokenKey);
     }
+  }
+
+  Future<T> _request<T>(
+    Future<T> Function(CookieClient client, String tokenKey) fn,
+  ) {
+    return _executeWithRetry(fn);
   }
 
   Map<String, String> _headers(
@@ -142,7 +152,6 @@ class ZhhqApiService {
       throw ServiceException('zhhq 响应解析失败');
     }
     final code = json['errorCode']?.toString() ?? '';
-    final status = json['status']?.toString() ?? '';
     // 4010-4017 均为 token 类错误（无效/超时/签名错误），触发重新认证
     final codeInt = int.tryParse(code);
     if (codeInt != null && codeInt >= 4010 && codeInt <= 4017) {
@@ -150,15 +159,27 @@ class ZhhqApiService {
       throw const UnauthenticatedException('zhhq 会话已失效');
     }
     // 业务错误统一判定：status 明确非 success，或 errorCode 明确非 0。
-    // （原来 `status != 'success' && errorCode != null` 会放过
-    //   status 非 success 但 errorCode 缺失的响应，导致错误被当成功返回。）
-    if ((status.isNotEmpty && status != 'success') ||
-        (code.isNotEmpty && code != '0')) {
-      final message = json['message']?.toString() ?? '操作失败';
+    final message = _businessErrorMessage(json);
+    if (message != null) {
       _log.w('ZHhq', '业务错误 errorCode=$code: $message');
       throw ServiceException(message);
     }
     return json;
+  }
+
+  /// 业务错误统一判定：status 明确非 success，或 errorCode 明确非 0。
+  ///
+  /// 返回服务端 `message`（可展示给用户）；无错误返回 null。
+  /// （原来 `status != 'success' && errorCode != null` 会放过
+  ///   status 非 success 但 errorCode 缺失的响应，导致错误被当成功返回。）
+  static String? _businessErrorMessage(Map<String, dynamic> json) {
+    final code = json['errorCode']?.toString() ?? '';
+    final status = json['status']?.toString() ?? '';
+    if ((status.isNotEmpty && status != 'success') ||
+        (code.isNotEmpty && code != '0')) {
+      return json['message']?.toString() ?? '操作失败';
+    }
+    return null;
   }
 
   /// 获取常用地址列表。
@@ -247,33 +268,37 @@ class ZhhqApiService {
   /// 使用 `manager/activeTemplateData/list`（首页「我的动态」同源接口）：
   /// - **快**：~600ms（`oneNetPublish/myList` 需 20s+）
   /// - 返回的 `status` 直接是中文文案（已关闭/待完工/待评价/已撤回）
-  /// - `content` 为 JSON 字符串（维修项目/故障地点/故障描述）
+  /// - `content` 为 JSON 字符串或对象（维修项目/故障地点/服务单位/故障描述），
+  ///   由 [RepairTicket.fromDynamicJson] 统一兼容解析
   ///
   /// [userId] 为当前用户的 `createUser`（用于筛选本人工单），
   /// 可从常用地址（[RepairAddress.userId]）获取。
   Future<List<RepairTicket>> fetchDynamicTickets({
     required String userId,
-    int page = 1,
-    int pageSize = 50,
   }) async {
     final json = await _request((client, tokenKey) async {
+      // 与前端请求参数完全一致（抓包确认）：
+      // - search 数组每条用 searchValue（非 value）
+      // - systemCode 放进 search 数组，而非顶层字段
+      // - 带 order 排序参数，无 pageIndex/pageSize
       final search = jsonEncode([
         {
           'andOr': 'and',
           'searchField': 'createUser',
           'operator': '=',
-          'value': userId,
+          'searchValue': userId,
+        },
+        {
+          'andOr': 'and',
+          'searchField': 'systemCode',
+          'operator': '=',
+          'searchValue': 'newRepair',
         },
       ]);
       final resp = await client.post(
         Uri.parse('$_base/manager/activeTemplateData/list'),
         headers: _headers(client, tokenKey),
-        body: {
-          'pageIndex': '$page',
-          'pageSize': '$pageSize',
-          'systemCode': 'newRepair',
-          'search': search,
-        },
+        body: {'search': search, 'order': 'createTime desc'},
       );
       return _decode(resp.body, resp.statusCode);
     });
@@ -295,6 +320,105 @@ class ZhhqApiService {
       return b.createTime.compareTo(a.createTime);
     });
     return tickets;
+  }
+
+  /// 获取报修工单详情（`repairInfo/get`，web 前端 `A.a.Get`）。
+  ///
+  /// [id] 传入列表行的 `activeId`（web 详情路由 `repairDetail?id=` 即用它）。
+  ///
+  /// 返回字段与列表行不同：`status` 是数字（如 `"3"`）、`projectName`
+  /// 已解析为纯文本、`content` 是纯描述文本。
+  Future<RepairTicketDetail> fetchRepairDetail({required String id}) async {
+    final json = await _request((client, tokenKey) async {
+      final resp = await client.post(
+        Uri.parse('$_base/repair/repairInfo/get'),
+        headers: _headers(client, tokenKey),
+        body: {'id': id},
+      );
+      return _decode(resp.body, resp.statusCode);
+    });
+    final data = json['data'];
+    if (data is! Map) throw const ServiceException('报修详情数据异常');
+    return RepairTicketDetail.fromJson(Map<String, dynamic>.from(data));
+  }
+
+  /// 查询当前工单是否允许撤回（`myRepair/ifAllowWithdrawMyRepair`）。
+  ///
+  /// 返回 `data`（用于控制「撤回」按钮是否可点）。
+  Future<bool> ifAllowWithdrawRepair({required String id}) async {
+    final json = await _request((client, tokenKey) async {
+      final resp = await client.post(
+        Uri.parse('$_base/repair/myRepair/ifAllowWithdrawMyRepair'),
+        headers: _headers(client, tokenKey),
+        body: {'id': id},
+      );
+      return _decode(resp.body, resp.statusCode);
+    });
+    final data = json['data'];
+    if (data is bool) return data;
+    return data?.toString() == 'true' || data?.toString() == '1';
+  }
+
+  /// 撤回报修工单（`myRepair/withdrawMyRepair`）。
+  Future<void> withdrawRepair({required String id}) async {
+    await _request((client, tokenKey) async {
+      final resp = await client.post(
+        Uri.parse('$_base/repair/myRepair/withdrawMyRepair'),
+        headers: _headers(client, tokenKey),
+        body: {'id': id},
+      );
+      return _decode(resp.body, resp.statusCode);
+    });
+  }
+
+  /// 获取工单评价项（`commontProject/getProject`，web 前端 `GetProjectList`）。
+  ///
+  /// 返回评价维度列表（如「维修质量/维修态度/维修速度」），每项含
+  /// `id`/`name`/`weight`；用户逐项打分后填 `star`（1-5）并随评价提交。
+  Future<List<RepairEvaluateProject>> fetchEvaluateProjects() async {
+    final json = await _request((client, tokenKey) async {
+      final resp = await client.post(
+        Uri.parse('$_base/repair/commontProject/getProject'),
+        headers: _headers(client, tokenKey),
+      );
+      return _decode(resp.body, resp.statusCode);
+    });
+    final data = json['data'];
+    if (data is! List) return const [];
+    return data
+        .whereType<Map>()
+        .map(
+          (e) => RepairEvaluateProject.fromJson(Map<String, dynamic>.from(e)),
+        )
+        .toList(growable: false);
+  }
+
+  /// 评价报修工单（`visitEvaluateUser/save`，web 前端 `VisitEvaluateUser`）。
+  ///
+  /// [repairId] 为详情中 `finishedInfo.repairId`（工单完成后的评价对象 id）；
+  /// [common] 为评价项数组（前端直接提交 `GetProjectList` 返回的完整对象，
+  /// 每项含 `id`/`name`/`weight`，用户打分后 `star` 为 1-5）；[labels] 为评价标签。
+  Future<void> evaluateRepair({
+    required String repairId,
+    required List<Map<String, dynamic>> common,
+    String content = '',
+    List<String> labels = const [],
+  }) async {
+    final payload = {
+      'common': common,
+      'content': content,
+      'repairId': repairId,
+      'source': '0',
+      'label': labels.join(','),
+    };
+    await _request((client, tokenKey) async {
+      final resp = await client.post(
+        Uri.parse('$_base/repair/visitEvaluateUser/save'),
+        headers: _headers(client, tokenKey, json: true),
+        body: jsonEncode(payload),
+      );
+      return _decode(resp.body, resp.statusCode);
+    });
   }
 
   /// 保存（新增）常用报修地址。
@@ -385,26 +509,12 @@ class ZhhqApiService {
   ///
   /// 对应前端 `POST /api/file/upload`（multipart：`file` + `system=manager`）。
   /// 注意：本接口响应是**明文 JSON**（拦截器对 `/api/file/upload` 跳过 AES 解密），
-  /// 不走 `_request`/`_decode`，直接解析。
-  Future<String> uploadImage({required File file}) async {
-    // 快速路径优先：tokenKey 有效时无需等待 SCU 会话（与 _request 模板一致）。
-    // 失效时 invalidate + 完整认证后重试一次（multipart 上传幂等，可安全重放）。
-    var client = _auth.getClientFast();
-    var tokenKey = _auth.tokenKey;
-    if (client == null || tokenKey == null) {
-      client = await _auth.getClient();
-      tokenKey = _auth.tokenKey;
-    }
-    try {
-      if (tokenKey == null) throw const UnauthenticatedException();
-      return await _uploadImageWith(client, tokenKey, file);
-    } on UnauthenticatedException {
-      _auth.invalidate();
-      client = await _auth.getClient();
-      tokenKey = _auth.tokenKey;
-      if (tokenKey == null) throw const UnauthenticatedException();
-      return await _uploadImageWith(client, tokenKey, file);
-    }
+  /// 不走 `_decode`，直接解析。
+  Future<String> uploadImage({required File file}) {
+    // 与 _request 共用认证获取/重试逻辑（multipart 上传幂等，可安全重放）
+    return _executeWithRetry(
+      (client, tokenKey) => _uploadImageWith(client, tokenKey, file),
+    );
   }
 
   Future<String> _uploadImageWith(
@@ -434,14 +544,10 @@ class ZhhqApiService {
     } catch (_) {
       throw ServiceException('图片上传失败：响应解析异常');
     }
-    // 与 _decode 的业务错误判定一致：status 明确非 success 或
-    // errorCode 明确非 0 均视为失败（原来用 `&&` 会放过
-    // errorCode 非 0 但 status=success 的响应）。
-    final code = json['errorCode']?.toString() ?? '';
-    final status = json['status']?.toString() ?? '';
-    if ((status.isNotEmpty && status != 'success') ||
-        (code.isNotEmpty && code != '0')) {
-      throw ServiceException(json['message']?.toString() ?? '图片上传失败');
+    // 与 _decode 共用业务错误判定
+    final message = _businessErrorMessage(json);
+    if (message != null) {
+      throw ServiceException(message);
     }
     final data = json['data'];
     if (data is! Map) throw const ServiceException('图片上传失败：响应异常');

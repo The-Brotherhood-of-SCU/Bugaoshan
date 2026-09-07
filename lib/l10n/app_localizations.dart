@@ -5287,6 +5287,90 @@ abstract class AppLocalizations {
   /// **'Image must be smaller than 10MB'**
   String get repairImageTooLarge;
 
+  /// Title of the repair ticket detail page.
+  ///
+  /// In en, this message translates to:
+  /// **'Repair Detail'**
+  String get repairDetail;
+
+  /// Label of the service unit field in a repair ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'Service Unit'**
+  String get repairServiceUnit;
+
+  /// Label of the charge type field in a repair ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'Charge Type'**
+  String get repairPayType;
+
+  /// Title of the repair progress timeline.
+  ///
+  /// In en, this message translates to:
+  /// **'Repair Progress'**
+  String get repairProgress;
+
+  /// Button text to withdraw a repair ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw Repair'**
+  String get repairWithdraw;
+
+  /// Confirmation prompt before withdrawing a repair ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw this repair ticket?'**
+  String get repairWithdrawConfirm;
+
+  /// Toast after a repair ticket is withdrawn.
+  ///
+  /// In en, this message translates to:
+  /// **'Repair withdrawn'**
+  String get repairWithdrawSuccess;
+
+  /// Toast when withdrawing a repair ticket fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw failed, please try again later'**
+  String get repairWithdrawFailed;
+
+  /// Button text to evaluate a repair ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'Evaluate Repair'**
+  String get repairEvaluate;
+
+  /// Placeholder of the evaluation content input.
+  ///
+  /// In en, this message translates to:
+  /// **'Write your review (optional)'**
+  String get repairEvaluateHint;
+
+  /// Toast after a repair evaluation is submitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Evaluation submitted'**
+  String get repairEvaluateSuccess;
+
+  /// Status text when a repair ticket has been evaluated.
+  ///
+  /// In en, this message translates to:
+  /// **'Evaluated'**
+  String get repairEvaluated;
+
+  /// Status text when a repair ticket has been withdrawn.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawn'**
+  String get repairWithdrawn;
+
+  /// Toast when submitting a repair evaluation fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Evaluation failed, please try again later'**
+  String get repairEvaluateFailed;
+
   /// Title for the service hall sub-page listing available matters.
   ///
   /// In en, this message translates to:

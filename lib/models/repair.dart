@@ -153,11 +153,29 @@ class RepairAreaNode {
 
 /// 报修工单（`activeTemplateData/list`「我的动态」的行）。
 class RepairTicket {
+  /// 详情接口（`repairInfo/get`）使用的工单 id（= 列表行的 `activeId`）。
   final String id;
+
+  /// 列表行自己的 id（`activeId`，跳详情用）。
+  final String activeId;
+
+  /// 故障地点（content 解析自 `故障地点`）。
   final String areaName;
+
+  /// 维修项目（content 解析自 `维修项目`）。
   final String projectName;
+
+  /// 服务单位（content 解析自 `服务单位`，部分工单才有）。
+  final String serviceUnit;
+
+  /// 故障描述（content 解析自 `故障描述`）。
+  ///
+  /// 解析失败时回退为各字段拼接，**不会**展示原始 JSON 字符串。
   final String content;
+
+  /// 中文状态（后端直接返回：已关闭/待完工/待评价/已撤回）。
   final String status;
+
   final int createTime;
 
   /// 动态列表的展示时间（`activeTime`，`YYYY-MM-DD HH:mm:ss`），
@@ -166,11 +184,13 @@ class RepairTicket {
 
   const RepairTicket({
     required this.id,
-    required this.areaName,
-    required this.projectName,
-    required this.content,
-    required this.status,
-    required this.createTime,
+    this.activeId = '',
+    this.areaName = '',
+    this.projectName = '',
+    this.serviceUnit = '',
+    this.content = '',
+    this.status = '',
+    this.createTime = 0,
     this.activeTime = '',
   });
 
@@ -179,28 +199,262 @@ class RepairTicket {
 
   /// 从「我的动态」接口（`activeTemplateData/list`）的行构造工单。
   ///
-  /// 该接口的 `status` 直接是中文文案（已关闭/待完工/待评价/已撤回），
-  /// `content` 是 JSON 字符串（含维修项目/故障地点/故障描述）。
+  /// 该接口的 `status` 直接是中文文案（已关闭/待完工/待评价/已撤回）。
+  /// `content` 是 JSON 字符串（含维修项目/故障地点/服务单位/故障描述），
+  /// 但个别模板/异常数据可能是双层转义、或已是对象，这里统一兼容。
   factory RepairTicket.fromDynamicJson(Map<String, dynamic> json) {
-    Map<String, dynamic> parsed = const {};
-    final rawContent = json['content']?.toString() ?? '';
-    if (rawContent.isNotEmpty) {
-      try {
-        final decoded = jsonDecode(rawContent);
-        if (decoded is Map<String, dynamic>) parsed = decoded;
-      } catch (_) {
-        // content 非 JSON 时原样作为故障描述
-      }
-    }
+    final activeId =
+        json['activeId']?.toString() ?? json['id']?.toString() ?? '';
+    final parsed = _decodeContent(json['content']);
     return RepairTicket(
-      id: json['id']?.toString() ?? json['activeId']?.toString() ?? '',
+      // 详情接口用 activeId 作为 id；列表行自身有独立 id
+      id: activeId,
+      activeId: activeId,
       areaName: parsed['故障地点']?.toString() ?? '',
       projectName: parsed['维修项目']?.toString() ?? '',
-      content: parsed['故障描述']?.toString() ?? rawContent,
+      serviceUnit: parsed['服务单位']?.toString() ?? '',
+      content: _displayContent(parsed, json['content']),
       // 后端直接返回中文状态
       status: json['status']?.toString() ?? '',
       createTime: int.tryParse(json['createTime']?.toString() ?? '0') ?? 0,
       activeTime: json['activeTime']?.toString() ?? '',
+    );
+  }
+
+  /// 把 `content` 统一解析为 Map。
+  ///
+  /// 兼容三种形态：
+  /// - Map（后端已解析为对象）
+  /// - JSON 字符串（`{"维修项目":...}`）
+  /// - 双层转义 JSON 字符串（字符串内嵌 JSON 字符串，如 `"{\"维修项目\":...}"`）
+  static Map<String, dynamic> _decodeContent(dynamic content) {
+    var current = content;
+    // 最多解两层（字符串内再套字符串）
+    for (var i = 0; i < 2; i++) {
+      if (current is Map) {
+        return Map<String, dynamic>.from(current);
+      }
+      if (current is! String || current.trim().isEmpty) {
+        return const {};
+      }
+      final trimmed = current.trim();
+      // 快速判断是否 JSON：以 { 或 [ 开头
+      if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
+        return const {};
+      }
+      try {
+        final decoded = jsonDecode(trimmed);
+        current = decoded;
+      } catch (_) {
+        return const {};
+      }
+    }
+    return current is Map ? Map<String, dynamic>.from(current) : const {};
+  }
+
+  /// 展示内容：优先「故障描述」字段；缺失时回退为字段拼接
+  /// （维修项目/故障地点/服务单位），**绝不**回退为原始 JSON 文本。
+  static String _displayContent(
+    Map<String, dynamic> parsed,
+    dynamic rawContent,
+  ) {
+    final desc = parsed['故障描述']?.toString();
+    if (desc != null && desc.trim().isNotEmpty) {
+      return desc;
+    }
+    final project = parsed['维修项目']?.toString() ?? '';
+    final location = parsed['故障地点']?.toString() ?? '';
+    final unit = parsed['服务单位']?.toString() ?? '';
+    final parts = [project, location, unit].where((s) => s.isNotEmpty);
+    if (parts.isNotEmpty) return parts.join(' · ');
+    // 完全无字段：content 本就不是 JSON 时原样展示（如纯文本描述）
+    if (rawContent is String && rawContent.isNotEmpty) {
+      final trimmed = rawContent.trim();
+      if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
+        return trimmed;
+      }
+    }
+    return '';
+  }
+}
+
+/// 报修工单详情（`repairInfo/get` 返回）。
+///
+/// 字段与列表行（[RepairTicket]）完全不同：
+/// - `status` 是**数字**（如 `"3"`），需要映射为中文文案
+/// - `projectName`/`content` 已是纯文本（非 JSON）
+/// - `finishedInfo` 含完成信息（`repairId` 供评价请求使用）
+/// - `logVOS` 为工单进度时间线
+class RepairTicketDetail {
+  /// 工单 id（撤回报文用它）。
+  final String id;
+
+  /// 报修编号（如 `202609030009`）。
+  final String serialNumber;
+
+  /// 维修项目（已解析的纯文本）。
+  final String projectName;
+
+  /// 故障描述（纯文本）。
+  final String content;
+
+  /// 故障地点（`areaName` 可能为 `区域/楼栋`，`address` 为详细地址）。
+  final String areaName;
+  final String address;
+
+  /// 服务单位（负责人部门）。
+  final String acceptDeptName;
+
+  /// 收费类型（如「无偿」）。
+  final String payName;
+
+  /// 期望时间（`bookTimeString`，如 `2026-09-03 10:00-12:00`）。
+  final String bookTimeString;
+
+  /// 是否允许无人时维修。
+  final bool ifOnduty;
+
+  /// 状态数字（如 `"3"`）。中文状态文案以「我的动态」列表页的
+  /// [RepairTicket.statusLabel] 为准（后端直接返回中文）；
+  /// 详情页操作按钮仅用数字状态判断（如 `status == '4'` 且未评价 → 可评价）。
+  final String status;
+
+  /// 是否已评价（`"0"`=否）。
+  final String ifCommont;
+
+  /// 是否已办结（`"0"`=否）。
+  final String ifComplete;
+
+  /// 工单进度时间线（倒序，最新在前）。
+  final List<RepairLogItem> logs;
+
+  /// 完成信息（待评价工单用 `finishedInfo.repairId` 发评价）。
+  final RepairFinishedInfo? finishedInfo;
+
+  const RepairTicketDetail({
+    required this.id,
+    this.serialNumber = '',
+    this.projectName = '',
+    this.content = '',
+    this.areaName = '',
+    this.address = '',
+    this.acceptDeptName = '',
+    this.payName = '',
+    this.bookTimeString = '',
+    this.ifOnduty = false,
+    this.status = '',
+    this.ifCommont = '0',
+    this.ifComplete = '0',
+    this.logs = const [],
+    this.finishedInfo,
+  });
+
+  factory RepairTicketDetail.fromJson(Map<String, dynamic> json) {
+    final logRaw = json['logVOS'];
+    final logs = logRaw is List
+        ? logRaw
+              .whereType<Map>()
+              .map((e) => RepairLogItem.fromJson(Map<String, dynamic>.from(e)))
+              .toList(growable: false)
+        : const <RepairLogItem>[];
+    final finishedRaw = json['finishedInfo'];
+    final finishedInfo = finishedRaw is Map
+        ? RepairFinishedInfo.fromJson(Map<String, dynamic>.from(finishedRaw))
+        : null;
+    return RepairTicketDetail(
+      id: json['id']?.toString() ?? '',
+      serialNumber: json['serialNumber']?.toString() ?? '',
+      projectName: json['projectName']?.toString() ?? '',
+      content: json['content']?.toString() ?? '',
+      areaName: json['areaName']?.toString() ?? '',
+      address: json['address']?.toString() ?? '',
+      acceptDeptName: json['acceptDeptName']?.toString() ?? '',
+      payName: json['payName']?.toString() ?? '',
+      bookTimeString: json['bookTimeString']?.toString() ?? '',
+      ifOnduty: json['ifOnduty']?.toString() == '1',
+      status: json['status']?.toString() ?? '',
+      ifCommont: json['ifCommont']?.toString() ?? '0',
+      ifComplete: json['ifComplete']?.toString() ?? '0',
+      logs: logs,
+      finishedInfo: finishedInfo,
+    );
+  }
+}
+
+/// 工单进度时间线单条（`logVOS` 元素）。
+class RepairLogItem {
+  /// 状态名（如「派工」「审核」「报修」）。
+  final String statusName;
+
+  /// 描述内容（如「被【曾伟地】指派维修工…」）。
+  final String content;
+
+  /// 时间（`createTime`，`YYYY-MM-DD HH:mm:ss`）。
+  final String createTime;
+
+  const RepairLogItem({
+    this.statusName = '',
+    this.content = '',
+    this.createTime = '',
+  });
+
+  factory RepairLogItem.fromJson(Map<String, dynamic> json) {
+    return RepairLogItem(
+      statusName: json['statusName']?.toString() ?? '',
+      content: json['content']?.toString() ?? '',
+      createTime: json['createTime']?.toString() ?? '',
+    );
+  }
+}
+
+/// 工单完成信息（`finishedInfo`）。
+class RepairFinishedInfo {
+  /// 评价请求（`visitEvaluateUser/save`）使用的 `repairId`。
+  final String repairId;
+
+  /// 维修完成时间（`completeTime`）。
+  final String completeTime;
+
+  /// 实际收费金额。
+  final String totalAmount;
+
+  const RepairFinishedInfo({
+    this.repairId = '',
+    this.completeTime = '',
+    this.totalAmount = '',
+  });
+
+  factory RepairFinishedInfo.fromJson(Map<String, dynamic> json) {
+    return RepairFinishedInfo(
+      repairId: json['repairId']?.toString() ?? '',
+      completeTime: json['completeTime']?.toString() ?? '',
+      totalAmount: json['totalAmount']?.toString() ?? '',
+    );
+  }
+}
+
+/// 工单评价项（`commontProject/getProject` 返回）。
+///
+/// 前端评价弹窗会逐项显示（如「维修质量/维修态度/维修速度」）并打分，
+/// 提交时 `common` 数组即这些对象的完整形态（`star` 为用户评分 1-5）。
+class RepairEvaluateProject {
+  final String id;
+  final String name;
+
+  /// 权重（如 50/25/25）。
+  final String weight;
+
+  const RepairEvaluateProject({
+    required this.id,
+    required this.name,
+    this.weight = '',
+  });
+
+  factory RepairEvaluateProject.fromJson(Map<String, dynamic> json) {
+    return RepairEvaluateProject(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      weight: json['weight']?.toString() ?? '',
     );
   }
 }

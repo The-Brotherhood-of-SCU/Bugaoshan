@@ -165,6 +165,56 @@ void main() {
     expect(provider.submitError, '请选择维修项目');
     provider.dispose();
   });
+
+  test('evaluateRepair 后 force 刷新列表能拿到最新状态', () async {
+    final api = _ControllableZhhqApi();
+    final provider = _readyProvider(api);
+
+    // 加载地址（含 userId，工单列表依赖它）
+    final initial = provider.ensureLoaded();
+    api.completeAddresses([
+      const RepairAddress(
+        id: 'addr-1',
+        areaName: '望江学生区/东苑五栋',
+        addressDetail: '主楼315',
+        phone: '18500000000',
+        areaId: '10005',
+        isCommon: true,
+        userId: 'user-123',
+      ),
+    ]);
+    await initial;
+
+    // 首次加载列表（待评价）
+    final load = provider.loadTickets();
+    api.completeTickets([
+      RepairTicket(
+        id: 't-1',
+        projectName: '电/线路维修类',
+        content: '跳闸',
+        status: '待评价',
+        createTime: 1,
+      ),
+    ]);
+    await load;
+    expect(provider.tickets.single.statusLabel, '待评价');
+
+    // 评价成功后 loadTickets(force: true) 重新拉取
+    final refresh = provider.loadTickets(force: true);
+    expect(api.ticketRequests, hasLength(2));
+    api.completeTickets([
+      RepairTicket(
+        id: 't-1',
+        projectName: '电/线路维修类',
+        content: '跳闸',
+        status: '已评价',
+        createTime: 1,
+      ),
+    ]);
+    await refresh;
+    expect(provider.tickets.single.statusLabel, '已评价');
+    provider.dispose();
+  });
 }
 
 class _FakeZhhqAuth extends ChangeNotifier implements ZhhqAuth {

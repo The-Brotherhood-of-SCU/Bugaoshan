@@ -1483,6 +1483,76 @@
         "description": "Toast when the selected image exceeds the size limit.",
         "type": "text"
     },
+    "repairDetail": "Repair Detail",
+    "@repairDetail": {
+        "description": "Title of the repair ticket detail page.",
+        "type": "text"
+    },
+    "repairServiceUnit": "Service Unit",
+    "@repairServiceUnit": {
+        "description": "Label of the service unit field in a repair ticket.",
+        "type": "text"
+    },
+    "repairPayType": "Charge Type",
+    "@repairPayType": {
+        "description": "Label of the charge type field in a repair ticket.",
+        "type": "text"
+    },
+    "repairProgress": "Repair Progress",
+    "@repairProgress": {
+        "description": "Title of the repair progress timeline.",
+        "type": "text"
+    },
+    "repairWithdraw": "Withdraw Repair",
+    "@repairWithdraw": {
+        "description": "Button text to withdraw a repair ticket.",
+        "type": "text"
+    },
+    "repairWithdrawConfirm": "Withdraw this repair ticket?",
+    "@repairWithdrawConfirm": {
+        "description": "Confirmation prompt before withdrawing a repair ticket.",
+        "type": "text"
+    },
+    "repairWithdrawSuccess": "Repair withdrawn",
+    "@repairWithdrawSuccess": {
+        "description": "Toast after a repair ticket is withdrawn.",
+        "type": "text"
+    },
+    "repairWithdrawFailed": "Withdraw failed, please try again later",
+    "@repairWithdrawFailed": {
+        "description": "Toast when withdrawing a repair ticket fails.",
+        "type": "text"
+    },
+    "repairEvaluate": "Evaluate Repair",
+    "@repairEvaluate": {
+        "description": "Button text to evaluate a repair ticket.",
+        "type": "text"
+    },
+    "repairEvaluateHint": "Write your review (optional)",
+    "@repairEvaluateHint": {
+        "description": "Placeholder of the evaluation content input.",
+        "type": "text"
+    },
+    "repairEvaluateSuccess": "Evaluation submitted",
+    "@repairEvaluateSuccess": {
+        "description": "Toast after a repair evaluation is submitted.",
+        "type": "text"
+    },
+    "repairEvaluated": "Evaluated",
+    "@repairEvaluated": {
+        "description": "Status text when a repair ticket has been evaluated.",
+        "type": "text"
+    },
+    "repairWithdrawn": "Withdrawn",
+    "@repairWithdrawn": {
+        "description": "Status text when a repair ticket has been withdrawn.",
+        "type": "text"
+    },
+    "repairEvaluateFailed": "Evaluation failed, please try again later",
+    "@repairEvaluateFailed": {
+        "description": "Toast when submitting a repair evaluation fails.",
+        "type": "text"
+    },
     "serviceHallTitle": "Service Hall",
     "@serviceHallTitle": {
         "description": "Title for the service hall sub-page listing available matters.",
