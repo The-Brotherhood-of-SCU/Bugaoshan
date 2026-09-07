@@ -197,7 +197,7 @@ class CoursePageTopBar extends StatelessWidget {
                         children: [
                           // 缩进与上方课表项文字对齐（图标 20 + 间距 8）。
                           const SizedBox(width: 28),
-                          Text(l10n.scheduleManagement),
+                          Expanded(child: Text(l10n.scheduleManagement)),
                         ],
                       ),
                     ),
