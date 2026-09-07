@@ -223,17 +223,21 @@ class _MyTicketsTab extends StatelessWidget {
 
   /// 点击工单卡片进入详情页（支持撤回/评价操作）。
   void _openDetail(BuildContext context, RepairTicket ticket) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => RepairDetailPage(
-          ticketId: ticket.id,
-          initialTitle: ticket.projectName.isEmpty
-              ? AppLocalizations.of(context)!.repairTicket
-              : ticket.projectName,
-          initialStatus: ticket.statusLabel,
-        ),
-      ),
-    );
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(
+            builder: (_) => RepairDetailPage(
+              ticketId: ticket.id,
+              initialTitle: ticket.projectName.isEmpty
+                  ? AppLocalizations.of(context)!.repairTicket
+                  : ticket.projectName,
+              initialStatus: ticket.statusLabel,
+            ),
+          ),
+        )
+        // 详情页可能发生了撤回/评价等状态变更，返回后强制刷新工单列表，
+        // 确保「我的报修」显示最新状态（否则可能因 provider 缓存显示旧值）。
+        .then((_) => provider.loadTickets(force: true));
   }
 
   Color _statusColor(BuildContext context, String status) {
