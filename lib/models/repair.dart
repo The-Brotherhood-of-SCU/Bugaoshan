@@ -432,3 +432,29 @@ class RepairFinishedInfo {
     );
   }
 }
+
+/// 工单评价项（`commontProject/getProject` 返回）。
+///
+/// 前端评价弹窗会逐项显示（如「维修质量/维修态度/维修速度」）并打分，
+/// 提交时 `common` 数组即这些对象的完整形态（`star` 为用户评分 1-5）。
+class RepairEvaluateProject {
+  final String id;
+  final String name;
+
+  /// 权重（如 50/25/25）。
+  final String weight;
+
+  const RepairEvaluateProject({
+    required this.id,
+    required this.name,
+    this.weight = '',
+  });
+
+  factory RepairEvaluateProject.fromJson(Map<String, dynamic> json) {
+    return RepairEvaluateProject(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      weight: json['weight']?.toString() ?? '',
+    );
+  }
+}

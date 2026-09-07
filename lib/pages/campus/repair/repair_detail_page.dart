@@ -358,16 +358,24 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
     if (repairId.isEmpty) return;
     if (!mounted) return;
 
+    // 先加载评价项（维修质量/维修态度/维修速度，含 id/weight）
+    final projects = await _provider.fetchEvaluateProjects();
+    if (!mounted) return;
+    if (projects.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.repairEvaluateFailed)));
+      return;
+    }
+
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => _EvaluateDialog(
-        title: detail.projectName,
-        onConfirm: (score, content) async {
+        projects: projects,
+        onConfirm: (common, content) async {
           await _provider.evaluateRepair(
             repairId: repairId,
-            common: [
-              {'projectName': detail.projectName, 'score': score},
-            ],
+            common: common,
             content: content,
           );
           return true;
@@ -386,21 +394,33 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
   }
 }
 
-/// 评价对话框：星级评分 + 可选评价内容。
+/// 评价对话框：逐项星级评分（对齐前端「维修质量/维修态度/维修速度」）
+/// + 可选评价内容。
+///
+/// 提交的 `common` 数组为评价项完整对象（`id`/`name`/`weight`/`star`），
+/// 与前端 `GetProjectList` 返回结构与 `VisitEvaluateUser` 请求体一致。
 class _EvaluateDialog extends StatefulWidget {
-  final String title;
-  final Future<bool> Function(int score, String content) onConfirm;
+  final List<RepairEvaluateProject> projects;
+  final Future<bool> Function(List<Map<String, dynamic>> common, String content)
+  onConfirm;
 
-  const _EvaluateDialog({required this.title, required this.onConfirm});
+  const _EvaluateDialog({required this.projects, required this.onConfirm});
 
   @override
   State<_EvaluateDialog> createState() => _EvaluateDialogState();
 }
 
 class _EvaluateDialogState extends State<_EvaluateDialog> {
-  int _score = 5;
+  /// 每项评价的星级（默认 5 星），key 为评价项 id。
+  late final Map<String, int> _scores;
   final _contentController = TextEditingController();
   bool _submitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scores = {for (final p in widget.projects) p.id: 5};
+  }
 
   @override
   void dispose() {
@@ -408,50 +428,79 @@ class _EvaluateDialogState extends State<_EvaluateDialog> {
     super.dispose();
   }
 
+  /// 构建提交用的 common 数组（评价项完整对象 + star 评分）。
+  List<Map<String, dynamic>> _buildCommon() {
+    return [
+      for (final p in widget.projects)
+        {
+          'id': p.id,
+          'name': p.name,
+          'weight': p.weight,
+          'star': _scores[p.id] ?? 5,
+        },
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
       title: Text(l10n.repairEvaluate),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (widget.title.isNotEmpty)
-            Text(
-              widget.title,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-            ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 360),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              for (var i = 1; i <= 5; i++)
-                IconButton(
-                  onPressed: _submitting
-                      ? null
-                      : () => setState(() => _score = i),
-                  icon: Icon(
-                    i <= _score ? Icons.star : Icons.star_border,
-                    color: i <= _score
-                        ? Colors.amber
-                        : Theme.of(context).colorScheme.outline,
+              // 逐项评价（维修质量/维修态度/维修速度等）
+              for (final project in widget.projects)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          project.name,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                      for (var i = 1; i <= 5; i++)
+                        IconButton(
+                          onPressed: _submitting
+                              ? null
+                              : () => setState(() => _scores[project.id] = i),
+                          iconSize: 26,
+                          visualDensity: VisualDensity.compact,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                            minWidth: 32,
+                            minHeight: 32,
+                          ),
+                          icon: Icon(
+                            i <= (_scores[project.id] ?? 0)
+                                ? Icons.star
+                                : Icons.star_border,
+                            color: i <= (_scores[project.id] ?? 0)
+                                ? Colors.amber
+                                : Theme.of(context).colorScheme.outline,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _contentController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: l10n.repairEvaluateHint,
+                  border: const OutlineInputBorder(),
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _contentController,
-            maxLines: 3,
-            decoration: InputDecoration(
-              hintText: l10n.repairEvaluateHint,
-              border: const OutlineInputBorder(),
-            ),
-          ),
-        ],
+        ),
       ),
       actions: [
         TextButton(
@@ -471,7 +520,10 @@ class _EvaluateDialogState extends State<_EvaluateDialog> {
   Future<void> _submit() async {
     setState(() => _submitting = true);
     try {
-      final ok = await widget.onConfirm(_score, _contentController.text.trim());
+      final ok = await widget.onConfirm(
+        _buildCommon(),
+        _contentController.text.trim(),
+      );
       if (mounted) Navigator.of(context).pop(ok);
     } catch (e) {
       // 评价接口失败：不关闭对话框，提示后允许重试

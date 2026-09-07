@@ -241,6 +241,15 @@ class ZhhqRepairProvider extends ChangeNotifier {
     _ticketsLoaded = false;
   }
 
+  /// 获取工单评价项（维修质量/维修态度/维修速度等）。失败返回空列表。
+  Future<List<RepairEvaluateProject>> fetchEvaluateProjects() async {
+    try {
+      return await _api.fetchEvaluateProjects();
+    } on ScuException {
+      return const [];
+    }
+  }
+
   /// 新增常用报修地址，成功后刷新地址列表。
   Future<bool> addAddress({
     required String areaId,

@@ -275,7 +275,12 @@ void main() {
       await api.evaluateRepair(
         repairId: 'fin-1',
         common: [
-          {'projectName': '水/上下水管类', 'score': 5},
+          {
+            'id': '7adc451a-1e9e-4016-bd3d-63f15efdb816',
+            'name': '维修质量',
+            'weight': '50',
+            'star': 5,
+          },
         ],
         content: '很好',
         labels: const ['及时'],
@@ -286,8 +291,59 @@ void main() {
       expect(decoded['repairId'], 'fin-1');
       expect(decoded['source'], '0');
       expect(decoded['label'], '及时');
+      // 提交的 common 含完整评价项对象（id/name/weight/star）
+      final common = decoded['common'] as List;
+      expect(common, hasLength(1));
+      final item = common.single as Map;
+      expect(item['id'], '7adc451a-1e9e-4016-bd3d-63f15efdb816');
+      expect(item['name'], '维修质量');
+      expect(item['weight'], '50');
+      expect(item['star'], 5);
       // JSON content-type
       expect(capturedHeaders!['Content-Type'], contains('application/json'));
+    });
+
+    test('fetchEvaluateProjects 调用 commontProject/getProject 返回评价项', () async {
+      final paths = <String>[];
+      late MockClient inner;
+      inner = MockClient((request) async {
+        // getProject 请求体为空（前端 A.a.stringify() 无参数），按路径收集
+        paths.add(request.url.path);
+        return _authResponse({
+          'status': 'success',
+          'errorCode': '0',
+          'data': [
+            {
+              'id': '7adc451a-1e9e-4016-bd3d-63f15efdb816',
+              'name': '维修质量',
+              'weight': 50,
+            },
+            {
+              'id': 'b705e0ce-659a-4b72-a447-2dd5fc333315',
+              'name': '维修态度',
+              'weight': 25,
+            },
+            {
+              'id': 'eaa47855-0a4d-49e4-97a3-1c3927e19332',
+              'name': '维修速度',
+              'weight': 25,
+            },
+          ],
+        });
+      });
+      final auth = _FakeZhhqAuth(inner);
+      final api = ZhhqApiService(auth);
+
+      final projects = await api.fetchEvaluateProjects();
+      // 第一个请求可能是 CookieClient 域探测（非业务路径），业务路径必须出现
+      expect(
+        paths.where((p) => p.endsWith('/repair/commontProject/getProject')),
+        isNotEmpty,
+      );
+      expect(projects, hasLength(3));
+      expect(projects.first.name, '维修质量');
+      expect(projects.first.id, '7adc451a-1e9e-4016-bd3d-63f15efdb816');
+      expect(projects.first.weight, '50');
     });
   });
 

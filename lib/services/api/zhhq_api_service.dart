@@ -352,8 +352,33 @@ class ZhhqApiService {
 
   /// 评价报修工单（`visitEvaluateUser/save`，web 前端 `VisitEvaluateUser`）。
   ///
+  /// 获取工单评价项（`commontProject/getProject`，web 前端 `GetProjectList`）。
+  ///
+  /// 返回评价维度列表（如「维修质量/维修态度/维修速度」），每项含
+  /// `id`/`name`/`weight`；用户逐项打分后填 `star`（1-5）并随评价提交。
+  Future<List<RepairEvaluateProject>> fetchEvaluateProjects() async {
+    final json = await _request((client, tokenKey) async {
+      final resp = await client.post(
+        Uri.parse('$_base/repair/commontProject/getProject'),
+        headers: _headers(client, tokenKey),
+      );
+      return _decode(resp.body, resp.statusCode);
+    });
+    final data = json['data'];
+    if (data is! List) return const [];
+    return data
+        .whereType<Map>()
+        .map(
+          (e) => RepairEvaluateProject.fromJson(Map<String, dynamic>.from(e)),
+        )
+        .toList(growable: false);
+  }
+
+  /// 评价报修工单（`visitEvaluateUser/save`，web 前端 `VisitEvaluateUser`）。
+  ///
   /// [repairId] 为详情中 `finishedInfo.repairId`（工单完成后的评价对象 id）；
-  /// [common] 为各评价项目评分；[labels] 为评价标签。
+  /// [common] 为评价项数组（前端直接提交 `GetProjectList` 返回的完整对象，
+  /// 每项含 `id`/`name`/`weight`，用户打分后 `star` 为 1-5）；[labels] 为评价标签。
   Future<void> evaluateRepair({
     required String repairId,
     required List<Map<String, dynamic>> common,
