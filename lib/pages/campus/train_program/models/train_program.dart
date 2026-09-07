@@ -1,3 +1,5 @@
+import 'package:bugaoshan/utils/json_utils.dart';
+
 class TrainProgram {
   final String fajhh;
   final String nj;
@@ -171,10 +173,10 @@ class TrainProgramBasicInfo {
       ksxqdm: json['ksxqdm']?.toString() ?? '',
       pymb: json['pymb']?.toString() ?? '',
       xdyq: json['xdyq']?.toString() ?? '',
-      yqzxf: (json['yqzxf'] as num?)?.toDouble() ?? 0.0,
-      kczxf: (json['kczxf'] as num?)?.toDouble() ?? 0.0,
-      kczms: (json['kczms'] as num?)?.toInt() ?? 0,
-      kczxs: (json['kczxs'] as num?)?.toDouble() ?? 0.0,
+      yqzxf: safeDouble(json['yqzxf']),
+      kczxf: safeDouble(json['kczxf']),
+      kczms: safeInt(json['kczms']),
+      kczxs: safeDouble(json['kczxs']),
       bz: json['bz']?.toString() ?? '',
       xsm: json['xsm']?.toString() ?? '',
       fajhlx: json['fajhlx']?.toString() ?? '',
