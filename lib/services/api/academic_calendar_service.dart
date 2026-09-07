@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -201,8 +200,9 @@ class AcademicCalendarService {
       }
       return null;
     } catch (e) {
-      debugPrint(
-        'AcademicCalendarService: failed to find matching semester: $e',
+      AppLog.w(
+        'AcademicCalendarService',
+        'Failed to find matching semester: $e',
       );
       return null;
     }
@@ -232,8 +232,9 @@ class AcademicCalendarService {
       }
       return null;
     } catch (e) {
-      debugPrint(
-        'AcademicCalendarService: failed to find matching semester: $e',
+      AppLog.w(
+        'AcademicCalendarService',
+        'Failed to find matching semester: $e',
       );
       return null;
     }
