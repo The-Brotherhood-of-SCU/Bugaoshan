@@ -314,7 +314,9 @@ class RepairTicketDetail {
   /// 是否允许无人时维修。
   final bool ifOnduty;
 
-  /// 状态数字（如 `"3"`）；映射文案见 [statusLabel]。
+  /// 状态数字（如 `"3"`）。中文状态文案以「我的动态」列表页的
+  /// [RepairTicket.statusLabel] 为准（后端直接返回中文）；
+  /// 详情页操作按钮仅用数字状态判断（如 `status == '4'` 且未评价 → 可评价）。
   final String status;
 
   /// 是否已评价（`"0"`=否）。
@@ -346,14 +348,6 @@ class RepairTicketDetail {
     this.logs = const [],
     this.finishedInfo,
   });
-
-  /// 状态中文文案（数字状态映射，与「我的动态」列表页文案一致）。
-  String get statusLabel => switch (status) {
-    '0' => '已关闭',
-    '1' => '待完工',
-    '2' => '已撤回',
-    _ => '待评价', // 3=待评价? / 4=待评价（可评价）
-  };
 
   factory RepairTicketDetail.fromJson(Map<String, dynamic> json) {
     final logRaw = json['logVOS'];

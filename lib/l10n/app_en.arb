@@ -1538,6 +1538,11 @@
         "description": "Toast after a repair evaluation is submitted.",
         "type": "text"
     },
+    "repairEvaluateFailed": "Evaluation failed, please try again later",
+    "@repairEvaluateFailed": {
+        "description": "Toast when submitting a repair evaluation fails.",
+        "type": "text"
+    },
     "serviceHallTitle": "Service Hall",
     "@serviceHallTitle": {
         "description": "Title for the service hall sub-page listing available matters.",

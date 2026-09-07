@@ -2856,6 +2856,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get repairEvaluateSuccess => 'Evaluation submitted';
 
   @override
+  String get repairEvaluateFailed =>
+      'Evaluation failed, please try again later';
+
+  @override
   String get serviceHallTitle => 'Service Hall';
 
   @override

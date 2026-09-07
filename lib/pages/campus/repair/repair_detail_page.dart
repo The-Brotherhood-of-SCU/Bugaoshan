@@ -66,11 +66,8 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
   }
 
   Future<void> _maybeCheckWithdraw(RepairTicketDetail detail) async {
-    // 仅对可能处于可撤回状态的工单查询（已关闭/已撤回没必要再查）
-    final status = detail.status;
-    final mayWithdraw =
-        status == '1' || status.isEmpty || detail.ifComplete != '1';
-    if (!mayWithdraw) return;
+    // 仅对未办结的工单查询是否可撤回（已办结/已关闭的工单不需要撤回按钮）
+    if (detail.ifComplete == '1') return;
     if (!mounted) return;
     setState(() => _loadingWithdrawCheck = true);
     final allow = await _provider.ifAllowWithdrawRepair(id: detail.id);
@@ -473,7 +470,19 @@ class _EvaluateDialogState extends State<_EvaluateDialog> {
 
   Future<void> _submit() async {
     setState(() => _submitting = true);
-    final ok = await widget.onConfirm(_score, _contentController.text.trim());
-    if (mounted) Navigator.of(context).pop(ok);
+    try {
+      final ok = await widget.onConfirm(_score, _contentController.text.trim());
+      if (mounted) Navigator.of(context).pop(ok);
+    } catch (e) {
+      // 评价接口失败：不关闭对话框，提示后允许重试
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.repairEvaluateFailed),
+          ),
+        );
+        setState(() => _submitting = false);
+      }
+    }
   }
 }

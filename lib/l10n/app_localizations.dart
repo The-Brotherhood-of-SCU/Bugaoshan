@@ -5353,6 +5353,12 @@ abstract class AppLocalizations {
   /// **'Evaluation submitted'**
   String get repairEvaluateSuccess;
 
+  /// Toast when submitting a repair evaluation fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Evaluation failed, please try again later'**
+  String get repairEvaluateFailed;
+
   /// Title for the service hall sub-page listing available matters.
   ///
   /// In en, this message translates to:

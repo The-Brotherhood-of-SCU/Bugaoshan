@@ -254,8 +254,6 @@ class ZhhqApiService {
   /// 可从常用地址（[RepairAddress.userId]）获取。
   Future<List<RepairTicket>> fetchDynamicTickets({
     required String userId,
-    int page = 1,
-    int pageSize = 50,
   }) async {
     final json = await _request((client, tokenKey) async {
       // 与前端请求参数完全一致（抓包确认）：

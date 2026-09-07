@@ -1475,6 +1475,11 @@
         "description": "评价成功后的提示。",
         "type": "text"
     },
+    "repairEvaluateFailed": "评价失败，请稍后重试",
+    "@repairEvaluateFailed": {
+        "description": "评价失败后的提示。",
+        "type": "text"
+    },
     "serviceHallTitle": "办事大厅",
     "@serviceHallTitle": {
         "description": "办事大厅二级页面标题，列出可办理事项。",
