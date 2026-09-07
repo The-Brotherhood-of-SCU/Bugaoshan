@@ -247,7 +247,8 @@ class ZhhqApiService {
   /// 使用 `manager/activeTemplateData/list`（首页「我的动态」同源接口）：
   /// - **快**：~600ms（`oneNetPublish/myList` 需 20s+）
   /// - 返回的 `status` 直接是中文文案（已关闭/待完工/待评价/已撤回）
-  /// - `content` 为 JSON 字符串（维修项目/故障地点/故障描述）
+  /// - `content` 为 JSON 字符串或对象（维修项目/故障地点/服务单位/故障描述），
+  ///   由 [RepairTicket.fromDynamicJson] 统一兼容解析
   ///
   /// [userId] 为当前用户的 `createUser`（用于筛选本人工单），
   /// 可从常用地址（[RepairAddress.userId]）获取。
@@ -257,23 +258,28 @@ class ZhhqApiService {
     int pageSize = 50,
   }) async {
     final json = await _request((client, tokenKey) async {
+      // 与前端请求参数完全一致（抓包确认）：
+      // - search 数组每条用 searchValue（非 value）
+      // - systemCode 放进 search 数组，而非顶层字段
+      // - 带 order 排序参数，无 pageIndex/pageSize
       final search = jsonEncode([
         {
           'andOr': 'and',
           'searchField': 'createUser',
           'operator': '=',
-          'value': userId,
+          'searchValue': userId,
+        },
+        {
+          'andOr': 'and',
+          'searchField': 'systemCode',
+          'operator': '=',
+          'searchValue': 'newRepair',
         },
       ]);
       final resp = await client.post(
         Uri.parse('$_base/manager/activeTemplateData/list'),
         headers: _headers(client, tokenKey),
-        body: {
-          'pageIndex': '$page',
-          'pageSize': '$pageSize',
-          'systemCode': 'newRepair',
-          'search': search,
-        },
+        body: {'search': search, 'order': 'createTime desc'},
       );
       return _decode(resp.body, resp.statusCode);
     });
@@ -295,6 +301,82 @@ class ZhhqApiService {
       return b.createTime.compareTo(a.createTime);
     });
     return tickets;
+  }
+
+  /// 获取报修工单详情（`repairInfo/get`，web 前端 `A.a.Get`）。
+  ///
+  /// [id] 传入列表行的 `activeId`（web 详情路由 `repairDetail?id=` 即用它）。
+  ///
+  /// 返回字段与列表行不同：`status` 是数字（如 `"3"`）、`projectName`
+  /// 已解析为纯文本、`content` 是纯描述文本。
+  Future<RepairTicketDetail> fetchRepairDetail({required String id}) async {
+    final json = await _request((client, tokenKey) async {
+      final resp = await client.post(
+        Uri.parse('$_base/repair/repairInfo/get'),
+        headers: _headers(client, tokenKey),
+        body: {'id': id},
+      );
+      return _decode(resp.body, resp.statusCode);
+    });
+    final data = json['data'];
+    if (data is! Map) throw const ServiceException('报修详情数据异常');
+    return RepairTicketDetail.fromJson(Map<String, dynamic>.from(data));
+  }
+
+  /// 查询当前工单是否允许撤回（`myRepair/ifAllowWithdrawMyRepair`）。
+  ///
+  /// 返回 `data`（用于控制「撤回」按钮是否可点）。
+  Future<bool> ifAllowWithdrawRepair({required String id}) async {
+    final json = await _request((client, tokenKey) async {
+      final resp = await client.post(
+        Uri.parse('$_base/repair/myRepair/ifAllowWithdrawMyRepair'),
+        headers: _headers(client, tokenKey),
+        body: {'id': id},
+      );
+      return _decode(resp.body, resp.statusCode);
+    });
+    final data = json['data'];
+    if (data is bool) return data;
+    return data?.toString() == 'true' || data?.toString() == '1';
+  }
+
+  /// 撤回报修工单（`myRepair/withdrawMyRepair`）。
+  Future<void> withdrawRepair({required String id}) async {
+    await _request((client, tokenKey) async {
+      final resp = await client.post(
+        Uri.parse('$_base/repair/myRepair/withdrawMyRepair'),
+        headers: _headers(client, tokenKey),
+        body: {'id': id},
+      );
+      return _decode(resp.body, resp.statusCode);
+    });
+  }
+
+  /// 评价报修工单（`visitEvaluateUser/save`，web 前端 `VisitEvaluateUser`）。
+  ///
+  /// [repairId] 为详情中 `finishedInfo.repairId`（工单完成后的评价对象 id）；
+  /// [common] 为各评价项目评分；[labels] 为评价标签。
+  Future<void> evaluateRepair({
+    required String repairId,
+    required List<Map<String, dynamic>> common,
+    String content = '',
+    List<String> labels = const [],
+  }) async {
+    final payload = {
+      'common': common,
+      'content': content,
+      'repairId': repairId,
+      'source': '0',
+      'label': labels.join(','),
+    };
+    await _request((client, tokenKey) async {
+      final resp = await client.post(
+        Uri.parse('$_base/repair/visitEvaluateUser/save'),
+        headers: _headers(client, tokenKey, json: true),
+        body: jsonEncode(payload),
+      );
+      return _decode(resp.body, resp.statusCode);
+    });
   }
 
   /// 保存（新增）常用报修地址。

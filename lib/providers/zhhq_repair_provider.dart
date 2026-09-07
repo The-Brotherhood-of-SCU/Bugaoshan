@@ -205,6 +205,42 @@ class ZhhqRepairProvider extends ChangeNotifier {
     }
   }
 
+  /// 获取工单详情（详情页用）。失败抛异常（页面临时展示）。
+  Future<RepairTicketDetail> fetchTicketDetail({required String id}) {
+    return _api.fetchRepairDetail(id: id);
+  }
+
+  /// 查询当前工单是否允许撤回；失败返回 false。
+  Future<bool> ifAllowWithdrawRepair({required String id}) async {
+    try {
+      return await _api.ifAllowWithdrawRepair(id: id);
+    } on ScuException {
+      return false;
+    }
+  }
+
+  /// 撤回报修工单；成功后工单列表需重新拉取。
+  Future<void> withdrawRepair({required String id}) async {
+    await _api.withdrawRepair(id: id);
+    _ticketsLoaded = false;
+  }
+
+  /// 评价报修工单；成功后工单列表需重新拉取。
+  Future<void> evaluateRepair({
+    required String repairId,
+    required List<Map<String, dynamic>> common,
+    String content = '',
+    List<String> labels = const [],
+  }) async {
+    await _api.evaluateRepair(
+      repairId: repairId,
+      common: common,
+      content: content,
+      labels: labels,
+    );
+    _ticketsLoaded = false;
+  }
+
   /// 新增常用报修地址，成功后刷新地址列表。
   Future<bool> addAddress({
     required String areaId,

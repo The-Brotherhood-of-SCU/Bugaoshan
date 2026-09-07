@@ -142,6 +142,155 @@ void main() {
     });
   });
 
+  group('fetchDynamicTickets 请求参数对齐前端', () {
+    test('search 数组用 searchValue、systemCode 进 search、带 order', () async {
+      Map<String, String>? captured;
+      late MockClient inner;
+      inner = MockClient((request) async {
+        // 第一个请求是 CookieClient 域探测（无 body），其余为业务请求
+        if (request.body.isNotEmpty) {
+          captured = request.bodyFields;
+        }
+        return _authResponse({
+          'status': 'success',
+          'errorCode': '0',
+          'data': [
+            {
+              'activeId': 't-1',
+              'status': '待完工',
+              'activeTime': '2026-09-03 07:49:23',
+              'content': '{"维修项目":"水/上下水管类","故障描述":"漏水"}',
+            },
+          ],
+        });
+      });
+      final auth = _FakeZhhqAuth(inner);
+      final api = ZhhqApiService(auth);
+
+      final tickets = await api.fetchDynamicTickets(userId: 'user-1');
+      expect(tickets, hasLength(1));
+      expect(tickets.single.projectName, '水/上下水管类');
+
+      // 对齐前端：searchValue 而非 value
+      final search = jsonDecode(captured!['search']!) as List;
+      expect(search, hasLength(2));
+      final first = search[0] as Map;
+      expect(first['searchField'], 'createUser');
+      expect(first['searchValue'], 'user-1');
+      expect(first.containsKey('value'), isFalse);
+      // systemCode 进 search 数组
+      final second = search[1] as Map;
+      expect(second['searchField'], 'systemCode');
+      expect(second['searchValue'], 'newRepair');
+      // 无 pageIndex/pageSize，带 order
+      expect(captured!.containsKey('pageIndex'), isFalse);
+      expect(captured!.containsKey('pageSize'), isFalse);
+      expect(captured!['order'], 'createTime desc');
+    });
+  });
+
+  group('fetchRepairDetail / withdrawRepair / evaluateRepair', () {
+    test('fetchRepairDetail 调用 repairInfo/get 并解析数字状态', () async {
+      late String? lastBody;
+      late MockClient inner;
+      inner = MockClient((request) async {
+        if (request.body.isNotEmpty) lastBody = request.body;
+        return _authResponse({
+          'status': 'success',
+          'errorCode': '0',
+          'data': {
+            'id': 'abc',
+            'serialNumber': '202609030009',
+            'projectName': '水/上下水管类',
+            'content': '漏水',
+            'areaName': '望江学生区/东苑五栋',
+            'address': '主楼315',
+            'acceptDeptName': '维修与通讯服务中心望江校区',
+            'payName': '无偿',
+            'status': '3',
+            'ifCommont': '0',
+            'finishedInfo': {'repairId': 'fin-1'},
+            'logVOS': [
+              {
+                'statusName': '派工',
+                'content': '被指派维修',
+                'createTime': '2026-09-03 07:49:23',
+              },
+            ],
+          },
+        });
+      });
+      final auth = _FakeZhhqAuth(inner);
+      final api = ZhhqApiService(auth);
+
+      final detail = await api.fetchRepairDetail(id: 'abc');
+      expect(lastBody, contains('id=abc'));
+      expect(detail.id, 'abc');
+      expect(detail.serialNumber, '202609030009');
+      expect(detail.projectName, '水/上下水管类');
+      expect(detail.content, '漏水');
+      expect(detail.acceptDeptName, '维修与通讯服务中心望江校区');
+      expect(detail.payName, '无偿');
+      expect(detail.logs, hasLength(1));
+      expect(detail.logs.single.statusName, '派工');
+      expect(detail.finishedInfo?.repairId, 'fin-1');
+    });
+
+    test('withdrawRepair 调用 myRepair/withdrawMyRepair', () async {
+      late String? lastBody;
+      late MockClient inner;
+      inner = MockClient((request) async {
+        if (request.body.isNotEmpty) lastBody = request.body;
+        return _authResponse({
+          'status': 'success',
+          'errorCode': '0',
+          'data': null,
+        });
+      });
+      final auth = _FakeZhhqAuth(inner);
+      final api = ZhhqApiService(auth);
+
+      await api.withdrawRepair(id: 'abc');
+      expect(lastBody, contains('id=abc'));
+    });
+
+    test('evaluateRepair 用 JSON 体调用 visitEvaluateUser/save', () async {
+      late Map<String, String>? capturedHeaders;
+      late String? lastBody;
+      late MockClient inner;
+      inner = MockClient((request) async {
+        if (request.body.isNotEmpty) {
+          capturedHeaders = request.headers;
+          lastBody = request.body;
+        }
+        return _authResponse({
+          'status': 'success',
+          'errorCode': '0',
+          'data': null,
+        });
+      });
+      final auth = _FakeZhhqAuth(inner);
+      final api = ZhhqApiService(auth);
+
+      await api.evaluateRepair(
+        repairId: 'fin-1',
+        common: [
+          {'projectName': '水/上下水管类', 'score': 5},
+        ],
+        content: '很好',
+        labels: const ['及时'],
+      );
+
+      expect(lastBody, isNotNull);
+      final decoded = jsonDecode(lastBody!) as Map;
+      expect(decoded['repairId'], 'fin-1');
+      expect(decoded['source'], '0');
+      expect(decoded['label'], '及时');
+      // JSON content-type
+      expect(capturedHeaders!['Content-Type'], contains('application/json'));
+    });
+  });
+
   group('uploadImage', () {
     test(
       '明文 JSON 中 errorCode 非 0 且 status=success → ServiceException',

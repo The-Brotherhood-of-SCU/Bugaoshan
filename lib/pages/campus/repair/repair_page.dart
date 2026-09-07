@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/repair.dart';
+import 'package:bugaoshan/pages/campus/repair/repair_detail_page.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/providers/zhhq_repair_provider.dart';
 import 'package:bugaoshan/theme_shape.dart';
@@ -155,6 +156,7 @@ class _MyTicketsTab extends StatelessWidget {
     RepairTicket ticket,
   ) {
     return StyledCard(
+      onTap: () => _openDetail(context, ticket),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -199,6 +201,13 @@ class _MyTicketsTab extends StatelessWidget {
                 '${l10n.repairArea}: ${ticket.areaName}',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
+            if (ticket.serviceUnit.isNotEmpty)
+              Text(
+                ticket.serviceUnit,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
             if (ticket.content.isNotEmpty)
               Text(
                 ticket.content,
@@ -207,6 +216,21 @@ class _MyTicketsTab extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// 点击工单卡片进入详情页（支持撤回/评价操作）。
+  void _openDetail(BuildContext context, RepairTicket ticket) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => RepairDetailPage(
+          ticketId: ticket.id,
+          initialTitle: ticket.projectName.isEmpty
+              ? AppLocalizations.of(context)!.repairTicket
+              : ticket.projectName,
+          initialStatus: ticket.statusLabel,
         ),
       ),
     );
