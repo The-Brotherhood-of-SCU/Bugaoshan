@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'balance_card.dart';
 
 class BalanceList extends StatefulWidget {
@@ -78,7 +79,7 @@ class _BalanceListState extends State<BalanceList> {
         await widget.provider.refreshBalance(type);
       } catch (e) {
         failed = true;
-        debugPrint('Balance refresh error: $e');
+        AppLog.e('BalanceList', 'Refresh error: $e');
       }
     }
     if (!failed || !context.mounted) return;

@@ -6,6 +6,7 @@ import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/status_chip.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 
 class CreditListPage extends StatefulWidget {
   const CreditListPage({super.key});
@@ -74,7 +75,7 @@ class _CreditListPageState extends State<CreditListPage> {
         _hasMore = results.length >= 10;
       });
     } catch (e) {
-      debugPrint('Credit list load error: $e');
+      AppLog.e('CcylCreditList', 'Load error: $e');
       if (mounted) {
         setState(() {
           _error = campusNetworkErrorType(LoadErrorType.ccylActivityLoadFailed);
@@ -178,7 +179,7 @@ class _CreditListPageState extends State<CreditListPage> {
         _selectedIds.clear();
       });
     } catch (e) {
-      debugPrint('Export error: $e');
+      AppLog.e('CcylCreditList', 'Export error: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),

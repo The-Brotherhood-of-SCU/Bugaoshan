@@ -7,6 +7,7 @@ import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activity_lib_detail_page.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 
 class ActivitiesTab extends StatefulWidget {
   const ActivitiesTab({super.key});
@@ -74,7 +75,7 @@ class _ActivitiesTabState extends State<ActivitiesTab> {
         _hasMore = results.length >= 10;
       });
     } catch (e) {
-      debugPrint('Activities load error: $e');
+      AppLog.e('CcylActivitiesTab', 'Activities load error: $e');
       if (mounted) {
         setState(() {
           _error = campusNetworkErrorType(LoadErrorType.ccylActivityLoadFailed);

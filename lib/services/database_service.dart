@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_app_group_directory/flutter_app_group_directory.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:sqflite/sqflite.dart';
 import 'package:bugaoshan/models/balance_record.dart';
@@ -59,7 +60,7 @@ class DatabaseService {
           dir = await getApplicationSupportDirectory();
         }
       } catch (e) {
-        debugPrint('BugaoShan Database: Failed to get App Group directory: $e');
+        AppLog.w('DatabaseService', 'Failed to get App Group directory: $e');
         dir = await getApplicationSupportDirectory();
       }
     } else {
@@ -94,7 +95,7 @@ class DatabaseService {
           );
         }
       } catch (e) {
-        debugPrint('BugaoShan Database: Error during database migration: $e');
+        AppLog.w('DatabaseService', 'Error during database migration: $e');
       }
     }
 

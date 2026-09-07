@@ -6,10 +6,10 @@ import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/services/update_asset_selector.dart';
 import 'package:bugaoshan/services/update_checker.dart';
 import 'package:crypto/crypto.dart' as crypto;
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 import 'package:bugaoshan/models/release_info.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -228,14 +228,14 @@ class UpdateService {
               try {
                 await ent.delete();
               } catch (e) {
-                debugPrint('UpdateService.cleanupOldPackages delete error: $e');
+                AppLog.w('UpdateService', 'Cleanup delete error: $e');
               }
             }
           }
         }
       }
     } catch (e) {
-      debugPrint('UpdateService.cleanupOldPackages error: $e');
+      AppLog.w('UpdateService', 'CleanupOldPackages error: $e');
     }
     await _prefs.setString(_keyLastInstalledVersion, _currentVersion);
   }

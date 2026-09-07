@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/services/database_service.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 
 class CourseProvider {
   final DatabaseService _db;
@@ -31,7 +32,7 @@ class CourseProvider {
       final config = _db.getScheduleConfig();
       scheduleConfig.value = config;
     } catch (e) {
-      debugPrint('CourseProvider: failed to load data: $e');
+      AppLog.e('CourseProvider', 'Failed to load data: $e');
     } finally {
       isLoading.value = false;
       onCoursesChanged?.call();

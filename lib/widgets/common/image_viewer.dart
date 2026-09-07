@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/share_utils.dart';
 
 void showFullScreenImageViewer(
@@ -121,7 +122,7 @@ class ImageViewerPage extends StatelessWidget {
         ).showSnackBar(SnackBar(content: Text(l10n.imageSavedToGallery)));
       }
     } catch (e) {
-      debugPrint('Save image error: $e');
+      AppLog.e('ImageViewer', 'Save image error: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -145,7 +146,7 @@ class ImageViewerPage extends StatelessWidget {
       if (!context.mounted) return;
       await shareSingleFile(file.path, context: context);
     } catch (e) {
-      debugPrint('Share image error: $e');
+      AppLog.e('ImageViewer', 'Share image error: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

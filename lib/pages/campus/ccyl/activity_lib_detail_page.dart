@@ -8,6 +8,7 @@ import 'package:bugaoshan/pages/campus/ccyl/activity_detail_page.dart';
 import 'package:bugaoshan/widgets/common/icon_info_row.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 
 class ActivityLibDetailPage extends StatefulWidget {
   final String activityLibraryId;
@@ -52,7 +53,7 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
         _loading = false;
       });
     } catch (e) {
-      debugPrint('Activity lib detail load error: $e');
+      AppLog.e('CcylActivityLibDetail', 'Detail load error: $e');
       if (!mounted) return;
       setState(() {
         _error = LoadErrorType.ccylActivityLoadFailed;
@@ -87,7 +88,7 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
         ),
       );
     } catch (e) {
-      debugPrint('Subscription action error: $e');
+      AppLog.e('CcylActivityLibDetail', 'Subscription action error: $e');
       if (!mounted) return;
       setState(() => _actionLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(

@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/models/plan_completion.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 
 const _keyPlanCompletion = 'plan_completion_nodes';
@@ -24,7 +25,7 @@ class PlanCompletionProvider extends ChangeNotifier {
         _plans = _decodeCached(list);
         _state = PlanCompletionLoadState.loaded;
       } catch (e) {
-        debugPrint('PlanCompletionProvider cache decode error: $e');
+        AppLog.w('PlanCompletionProvider', 'Cache decode error: $e');
       }
     }
   }
