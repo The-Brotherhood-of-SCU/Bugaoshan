@@ -59,7 +59,6 @@ dev_dependencies:
   flutter_driver:
     sdk: flutter
   flutter_lints: ^6.0.0
-  pub_semver: ^2.1.4
   build_runner: any
   injectable_generator: any
   json_serializable: any
