@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 
 enum ClassroomLoadState { idle, loading, loaded, error }
@@ -65,7 +66,7 @@ class ClassroomProvider extends ChangeNotifier {
       _indexError = LoadErrorType.sessionExpired;
     } catch (error) {
       if (generation != _indexGeneration) return;
-      debugPrint('Classroom index load error: $error');
+      AppLog.e('ClassroomProvider', 'Index load error: $error');
       _indexState = ClassroomLoadState.error;
       _indexError = campusNetworkErrorType(LoadErrorType.loadFailed);
     }
@@ -151,7 +152,7 @@ class ClassroomProvider extends ChangeNotifier {
       resource.error = LoadErrorType.sessionExpired;
     } catch (error) {
       if (epoch != _queryEpoch) return;
-      debugPrint('Classroom query error: $error');
+      AppLog.e('ClassroomProvider', 'Query error: $error');
       resource.state = ClassroomLoadState.error;
       resource.error = campusNetworkErrorType(LoadErrorType.loadFailed);
     } finally {

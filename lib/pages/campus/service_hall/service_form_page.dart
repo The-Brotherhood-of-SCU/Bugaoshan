@@ -14,6 +14,7 @@ import 'package:bugaoshan/services/api/service_form_models.dart';
 import 'package:bugaoshan/services/api/service_plugin_models.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/service_auth.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/auth_logger.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/service_region_picker.dart';
@@ -117,7 +118,7 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
       // starterDepartId 已在 _fetchSchema 中先行请求）
       unawaited(_loadDataSources());
     } catch (e) {
-      debugPrint('Service form schema load failed: $e');
+      AppLog.e('ServiceFormPage', 'Schema load failed: $e');
     } finally {
       if (mounted) setState(() => _schemaLoading = false);
     }
@@ -169,7 +170,7 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
         startData: startData,
       );
     } catch (e) {
-      debugPrint('Service live schema unavailable: $e');
+      AppLog.w('ServiceFormPage', 'Live schema unavailable: $e');
     }
     final fallback = widget.app.fallbackSchema;
     if (fallback != null) {
@@ -190,7 +191,7 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
       if (!mounted || id == null) return;
       setState(() => _starterDepartId = id);
     } catch (e) {
-      debugPrint('Service starter depart id load skipped: $e');
+      AppLog.w('ServiceFormPage', 'Starter depart id load skipped: $e');
     }
   }
 
@@ -214,7 +215,7 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
         if (d == null) continue;
         setState(() => controller.applyDataSourceValue(p, d['list']));
       } catch (e) {
-        debugPrint('Service dataSource ${p.key} load skipped: $e');
+        AppLog.w('ServiceFormPage', 'DataSource ${p.key} load skipped: $e');
       }
     }
   }
@@ -232,7 +233,10 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
         data = await getIt<ServiceApiService>().fetchProvinces();
         if (data.isEmpty) throw StateError('empty provinces');
       } catch (e) {
-        debugPrint('Service region online load failed, fallback to asset: $e');
+        AppLog.w(
+          'ServiceFormPage',
+          'Region online load failed, fallback to asset: $e',
+        );
         final raw = await rootBundle.loadString('assets/region_data.json');
         data = jsonDecode(raw) as List;
       }
@@ -244,7 +248,7 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
         });
       }
     } catch (e) {
-      debugPrint('Service region load skipped: $e');
+      AppLog.w('ServiceFormPage', 'Region load skipped: $e');
     } finally {
       if (mounted) setState(() => _regionsLoading = false);
     }
@@ -323,7 +327,7 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
     } on UnauthenticatedException {
       if (mounted) _showSnack(l10n.loginRequired, isError: true);
     } catch (e) {
-      debugPrint('Service submit error: $e');
+      AppLog.e('ServiceFormPage', 'Submit error: $e');
       if (mounted) _showSnack(l10n.leaveSubmitFailed, isError: true);
     } finally {
       if (mounted) setState(() => _submitting = false);

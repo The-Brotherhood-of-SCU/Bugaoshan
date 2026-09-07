@@ -10,6 +10,7 @@ import 'package:bugaoshan/pages/auth/scu_login_header_image.dart';
 import 'package:bugaoshan/pages/auth/scu_login_input_field.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart' show CaptchaResult;
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/ocr_service.dart';
 import 'package:bugaoshan/theme_shape.dart';
@@ -43,7 +44,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
   void initState() {
     super.initState();
     OcrService.init().catchError((e) {
-      debugPrint('OCR Init error: $e');
+      AppLog.e('ScuLoginPage', 'OCR Init error: $e');
     });
     _loadSaved();
     _loadCaptcha();
@@ -84,7 +85,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       try {
         imageBytes = _decodeBase64Image(captcha.captchaBase64);
       } catch (e) {
-        debugPrint('Captcha decode error: $e');
+        AppLog.e('ScuLoginPage', 'Captcha decode error: $e');
       }
 
       String? recognizedText;
@@ -92,7 +93,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
         try {
           recognizedText = await OcrService.performOcr(imageBytes);
         } catch (e) {
-          debugPrint('OCR error: $e');
+          AppLog.e('ScuLoginPage', 'OCR error: $e');
         }
       }
 
@@ -111,7 +112,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
         }
       });
     } catch (e) {
-      debugPrint('Captcha load error: $e');
+      AppLog.e('ScuLoginPage', 'Captcha load error: $e');
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       setState(() => _errorMsg = l10n.captchaLoadFailed);
@@ -158,13 +159,13 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       if (!logicRootContext.mounted) return;
       Navigator.of(logicRootContext).pop(true);
     } on ScuLoginException catch (e) {
-      debugPrint('Login failed: ${e.message}');
+      AppLog.w('ScuLoginPage', 'Login failed: ${e.message}');
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       setState(() => _errorMsg = _localizeLoginError(e, l10n));
       _loadCaptcha();
     } catch (e) {
-      debugPrint('Login network error: $e');
+      AppLog.e('ScuLoginPage', 'Login network error: $e');
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       setState(() => _errorMsg = l10n.networkError);

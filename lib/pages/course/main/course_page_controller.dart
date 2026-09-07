@@ -5,6 +5,7 @@ import 'package:bugaoshan/models/academic_calendar.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/services/api/academic_calendar_service.dart';
 import 'package:bugaoshan/theme_shape.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 
 /// 课表页的页面级控制器（不进 GetIt —— 项目约定允许页面级非 DI 类；
 /// 且 demo/真实两个 CoursePage 实例共存，单例语义错误）。
@@ -185,7 +186,7 @@ class CoursePageController extends ChangeNotifier {
       _calendarNextSemesterLoaded = true;
       return next;
     } catch (e) {
-      debugPrint('CoursePageController: load calendar failed: $e');
+      AppLog.e('CoursePageController', 'Load calendar failed: $e');
       return null;
     } finally {
       if (!_disposed && gen == _calendarLoadGen) {

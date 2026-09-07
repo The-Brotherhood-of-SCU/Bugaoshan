@@ -10,6 +10,7 @@ import 'package:bugaoshan/services/api/payapp_api_service.dart';
 import 'package:bugaoshan/services/auth/payapp_auth.dart';
 import 'package:bugaoshan/services/balance/balance_trend_calculator.dart';
 import 'package:bugaoshan/services/database_service.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/beijing_time.dart';
 
 const _keyBindingInfo = 'balance_query_binding';
@@ -205,18 +206,18 @@ class BalanceQueryProvider extends ChangeNotifier {
         try {
           await _loadBalanceFor(binding, kBalanceTypeElectric, force: true);
         } catch (e) {
-          debugPrint('Auto-sample electric failed: $e');
+          AppLog.w('BalanceQueryProvider', 'Auto-sample electric failed: $e');
         }
       }
       if (acRecords.isEmpty) {
         try {
           await _loadBalanceFor(binding, kBalanceTypeAc, force: true);
         } catch (e) {
-          debugPrint('Auto-sample AC failed: $e');
+          AppLog.w('BalanceQueryProvider', 'Auto-sample AC failed: $e');
         }
       }
     } catch (e) {
-      debugPrint('Auto-sample balance failed: $e');
+      AppLog.w('BalanceQueryProvider', 'Auto-sample balance failed: $e');
     } finally {
       _autoSampling = false;
     }
@@ -283,7 +284,10 @@ class BalanceQueryProvider extends ChangeNotifier {
             .map((e) => RoomBinding.fromJson(e as Map<String, dynamic>))
             .toList();
       } catch (e) {
-        debugPrint('Failed to load balance binding info: $e');
+        AppLog.w(
+          'BalanceQueryProvider',
+          'Failed to load balance binding info: $e',
+        );
       }
     }
     _currentIndex = _prefs.getInt(_keyCurrentRoomIndex) ?? 0;
@@ -324,7 +328,10 @@ class BalanceQueryProvider extends ChangeNotifier {
     try {
       await _db.deleteBalanceRecordsByRoom(roomKey);
     } catch (e) {
-      debugPrint('Failed to clean balance history for removed room: $e');
+      AppLog.w(
+        'BalanceQueryProvider',
+        'Failed to clean balance history for removed room: $e',
+      );
     }
     ensureCurrentBalances();
   }
@@ -661,7 +668,7 @@ class BalanceQueryProvider extends ChangeNotifier {
             key.roomKey == record.roomKey && key.balanceType == balanceType,
       );
     } catch (e) {
-      debugPrint('Failed to record balance history: $e');
+      AppLog.w('BalanceQueryProvider', 'Failed to record balance history: $e');
     }
   }
 

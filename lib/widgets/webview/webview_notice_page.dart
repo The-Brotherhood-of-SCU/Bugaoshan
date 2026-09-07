@@ -2,6 +2,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/downloads/shared_notice_downloads.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -143,13 +144,19 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
       try {
         await controller.evaluateJavascript(source: _beautifyScript);
       } catch (e) {
-        debugPrint('${widget.debugLabel} beautify script error: $e');
+        AppLog.e(
+          'WebViewNoticePage',
+          '${widget.debugLabel} beautify script error: $e',
+        );
       }
       if (_domReadyScript.isNotEmpty) {
         try {
           await controller.evaluateJavascript(source: _domReadyScript);
         } catch (e) {
-          debugPrint('${widget.debugLabel} dom ready script error: $e');
+          AppLog.e(
+            'WebViewNoticePage',
+            '${widget.debugLabel} dom ready script error: $e',
+          );
           await _finishLoading();
         }
         return;
@@ -289,7 +296,10 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
                 onLoadStart: _onLoadStart,
                 onLoadStop: _onLoadStop,
                 onReceivedError: (controller, request, error) {
-                  debugPrint('${widget.debugLabel} WebView error: $error');
+                  AppLog.e(
+                    'WebViewNoticePage',
+                    '${widget.debugLabel} WebView error: $error',
+                  );
                   if ((request.isForMainFrame ?? false) &&
                       _errorHtmlTemplate.isNotEmpty) {
                     final html = _errorHtmlTemplate.replaceAll(

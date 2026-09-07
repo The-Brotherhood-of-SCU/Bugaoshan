@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/pages/campus/exam_plan/models/exam_info.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 
 enum ExamPlanLoadState { idle, loading, loaded, error }
@@ -44,7 +45,7 @@ class ExamPlanProvider extends ChangeNotifier {
       _error = LoadErrorType.notLoggedIn;
     } catch (error) {
       if (generation != _generation) return;
-      debugPrint('Exam plan load error: $error');
+      AppLog.e('ExamPlanProvider', 'Load error: $error');
       _state = ExamPlanLoadState.error;
       _error = campusNetworkErrorType(LoadErrorType.loadFailed);
     }
