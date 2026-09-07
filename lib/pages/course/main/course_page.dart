@@ -221,7 +221,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
         courseProvider.scheduleConfig.value ??
         ScheduleConfig(
           semesterStartDate: DateTime.now().toMonday(),
-          totalWeeks: ScheduleConfig.kDefaultTotalWeeks,
+          totalWeeks: kDefaultTotalWeeks,
         );
     final allCourses = widget.demoMode
         ? kDemoCourses
