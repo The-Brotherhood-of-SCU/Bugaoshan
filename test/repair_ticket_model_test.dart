@@ -55,6 +55,38 @@ void main() {
       expect(ticket.content, '阳台灯不亮');
     });
 
+    test('值内含裸换行的 JSON（多行故障描述）也能解析（issue #273 实例）', () {
+      // 后端拼接 content 时不转义用户输入：多行描述的裸换行让整段 JSON 非法，
+      // jsonDecode 抛 "Control character in string"，此前导致卡片全字段为空
+      const content =
+          '{"维修项目":"水/下水疏通类",'
+          '"故障地点":"江安学生区/西苑六栋5单元301C",'
+          '"服务单位":"维修与通讯服务中心江安校区",'
+          '"故障描述":"1. 厕所洗拖把的水池堵塞\n2.厕所洗拖把的水池水龙头滴水关不紧'
+          '\n3.厕所靠门口的坑位的冲水按钮损坏，按下不回弹一直冲水"}';
+      final ticket = RepairTicket.fromDynamicJson({
+        'activeId': 'nl-1',
+        'status': '待评价',
+        'content': content,
+      });
+      expect(ticket.projectName, '水/下水疏通类');
+      expect(ticket.areaName, '江安学生区/西苑六栋5单元301C');
+      expect(ticket.serviceUnit, '维修与通讯服务中心江安校区');
+      expect(ticket.content, contains('1. 厕所洗拖把的水池堵塞'));
+      expect(ticket.content, contains('3.厕所靠门口的坑位的冲水按钮损坏'));
+      expect(ticket.content, isNot(contains('"故障描述"'))); // 不出现原始 JSON 键
+    });
+
+    test('值内含裸回车/制表符的 JSON 也能解析', () {
+      const content = '{"维修项目":"木/床柜类","故障描述":"床板异响\t翻身后更明显\r\n影响睡眠"}';
+      final ticket = RepairTicket.fromDynamicJson({
+        'activeId': 'cr-1',
+        'content': content,
+      });
+      expect(ticket.projectName, '木/床柜类');
+      expect(ticket.content, contains('床板异响\t翻身后更明显'));
+    });
+
     test('解析失败不回退为原始 JSON 文本（issue #273 核心）', () {
       // 无法解析的 content：展示字段拼接或空，绝不显示原始 JSON
       final ticket = RepairTicket.fromDynamicJson({

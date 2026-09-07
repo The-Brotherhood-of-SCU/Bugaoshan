@@ -223,10 +223,12 @@ class RepairTicket {
 
   /// 把 `content` 统一解析为 Map。
   ///
-  /// 兼容三种形态：
+  /// 兼容以下形态：
   /// - Map（后端已解析为对象）
   /// - JSON 字符串（`{"维修项目":...}`）
   /// - 双层转义 JSON 字符串（字符串内嵌 JSON 字符串，如 `"{\"维修项目\":...}"`）
+  /// - 值内含**裸控制字符**的 JSON 字符串（issue #273：后端拼接 content 时
+  ///   未转义多行故障描述中的换行符，导致整段 JSON 非法）
   static Map<String, dynamic> _decodeContent(dynamic content) {
     var current = content;
     // 最多解两层（字符串内再套字符串）
@@ -242,14 +244,80 @@ class RepairTicket {
       if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
         return const {};
       }
-      try {
-        final decoded = jsonDecode(trimmed);
-        current = decoded;
-      } catch (_) {
+      final decoded = _tryJsonDecode(trimmed);
+      if (decoded == null) {
         return const {};
       }
+      current = decoded;
     }
     return current is Map ? Map<String, dynamic>.from(current) : const {};
+  }
+
+  /// 解码 JSON；失败时尝试转义字符串值内的裸控制字符后重试。
+  ///
+  /// 后端按模板拼接 content（`{"故障描述":"<用户输入>"}`）时不转义用户输入，
+  /// 多行描述里的裸换行/回车/制表符会让整段 JSON 非法
+  /// （`FormatException: Control character in string`，issue #273 实例）。
+  /// 只转义**字符串值内部**的控制字符——token 之间的空白本就合法，不动。
+  static dynamic _tryJsonDecode(String input) {
+    try {
+      return jsonDecode(input);
+    } catch (_) {
+      final repaired = _escapeRawControlChars(input);
+      if (repaired == null) return null;
+      try {
+        return jsonDecode(repaired);
+      } catch (_) {
+        return null;
+      }
+    }
+  }
+
+  /// 把 JSON 字符串值内部的裸控制字符转义为 `\n` / `\r` / `\t` / `\uXXXX`。
+  ///
+  /// 返回 null 表示没有需要转义的字符。扫描时追踪引号与 `\` 转义状态，
+  /// 保证只改写字符串值内部，不影响结构字符。
+  static String? _escapeRawControlChars(String input) {
+    final buf = StringBuffer();
+    var inString = false;
+    var changed = false;
+    for (var i = 0; i < input.length; i++) {
+      final ch = input.codeUnitAt(i);
+      if (inString) {
+        if (ch == 0x5C) {
+          // 反斜杠：连同其转义的下一个字符原样保留
+          buf.writeCharCode(ch);
+          i++;
+          if (i < input.length) buf.writeCharCode(input.codeUnitAt(i));
+          continue;
+        }
+        if (ch == 0x22) {
+          inString = false;
+        } else if (ch < 0x20) {
+          changed = true;
+          buf.write(_escapeControlChar(ch));
+          continue;
+        }
+        buf.writeCharCode(ch);
+      } else {
+        if (ch == 0x22) inString = true;
+        buf.writeCharCode(ch);
+      }
+    }
+    return changed ? buf.toString() : null;
+  }
+
+  static String _escapeControlChar(int ch) {
+    switch (ch) {
+      case 0x0A:
+        return r'\n';
+      case 0x0D:
+        return r'\r';
+      case 0x09:
+        return r'\t';
+      default:
+        return '\\u${ch.toRadixString(16).padLeft(4, '0')}';
+    }
   }
 
   /// 展示内容：优先「故障描述」字段；缺失时回退为字段拼接
