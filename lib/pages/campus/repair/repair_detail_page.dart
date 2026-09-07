@@ -107,9 +107,9 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.repairWithdrawSuccess)));
-      // 返回列表页；列表刷新由 _openDetail 的 .then() 统一处理
-      // （activeTemplateData/list 会返回最新状态「已撤回」）。
-      Navigator.of(context).pop(true);
+      // 留在详情页：重新拉取详情，状态徽标变为「已撤回」、
+      // 撤回按钮消失（_operatorVisible 按最新详情重算）。
+      await _load();
       return true;
     } catch (e) {
       if (!mounted) return false;
@@ -403,12 +403,12 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
       ),
     );
     if (result == true && mounted) {
-      // 评价成功：返回列表页；列表刷新由 _openDetail 的 .then() 统一处理
-      // （activeTemplateData/list 会返回最新状态「已评价」）。
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.repairEvaluateSuccess)));
-      Navigator.of(context).pop(true);
+      // 留在详情页：重新拉取详情，状态徽标变为「已评价」、
+      // 评价按钮消失（_operatorVisible 按最新详情重算）。
+      await _load();
     }
   }
 }

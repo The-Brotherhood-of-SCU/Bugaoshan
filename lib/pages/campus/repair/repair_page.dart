@@ -30,6 +30,9 @@ class RepairPage extends StatefulWidget {
 }
 
 class _RepairPageState extends State<RepairPage> {
+  /// 用于让 AppBar 刷新按钮直接调用工单列表的统一刷新（force 拉取 + 滚回顶端）。
+  final _myTicketsKey = GlobalKey<_MyTicketsTabState>();
+
   @override
   Widget build(BuildContext context) {
     final auth = getIt<ScuAuthProvider>();
@@ -53,9 +56,14 @@ class _RepairPageState extends State<RepairPage> {
               actions: [
                 IconButton(
                   icon: const Icon(Icons.refresh),
+                  // 手动刷新：地址与工单列表都刷新。
+                  // 列表走统一 _refresh()（force 拉取 + 滚回顶端）。
                   onPressed: provider.state == RepairLoadState.loading
                       ? null
-                      : provider.refresh,
+                      : () {
+                          provider.refresh();
+                          _myTicketsKey.currentState?._refresh();
+                        },
                   tooltip: l10n.refresh,
                 ),
               ],
@@ -103,17 +111,46 @@ class _RepairPageState extends State<RepairPage> {
     return TabBarView(
       children: [
         _SubmitTab(provider: provider),
-        _MyTicketsTab(provider: provider),
+        _MyTicketsTab(key: _myTicketsKey, provider: provider),
       ],
     );
   }
 }
 
 /// 我的报修工单列表（含状态显示）。
-class _MyTicketsTab extends StatelessWidget {
-  const _MyTicketsTab({required this.provider});
+///
+/// 持有 [ScrollController]：每次刷新（下拉/操作返回/点击刷新按钮）后
+/// 列表都滚回顶端，确保用户能看到最新的工单状态。
+class _MyTicketsTab extends StatefulWidget {
+  const _MyTicketsTab({super.key, required this.provider});
 
   final ZhhqRepairProvider provider;
+
+  @override
+  State<_MyTicketsTab> createState() => _MyTicketsTabState();
+}
+
+class _MyTicketsTabState extends State<_MyTicketsTab> {
+  final _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  ZhhqRepairProvider get provider => widget.provider;
+
+  /// 刷新列表并滚回顶端。
+  Future<void> _refresh() async {
+    await provider.loadTickets(force: true);
+    if (!_scrollController.hasClients) return;
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,8 +162,9 @@ class _MyTicketsTab extends StatelessWidget {
     }
     if (tickets.isEmpty) {
       return RefreshIndicator(
-        onRefresh: provider.loadTickets,
+        onRefresh: _refresh,
         child: ListView(
+          controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
             const SizedBox(height: 120),
@@ -143,8 +181,9 @@ class _MyTicketsTab extends StatelessWidget {
       );
     }
     return RefreshIndicator(
-      onRefresh: provider.loadTickets,
+      onRefresh: _refresh,
       child: ListView.separated(
+        controller: _scrollController,
         padding: const EdgeInsets.all(16),
         itemCount: tickets.length,
         separatorBuilder: (_, _) => const SizedBox(height: 12),
@@ -226,24 +265,22 @@ class _MyTicketsTab extends StatelessWidget {
   }
 
   /// 点击工单卡片进入详情页（支持撤回/评价操作）。
+  ///
+  /// 撤回/评价成功后用户留在详情页（详情实时刷新状态/按钮），
+  /// 不 pop 返回列表，因此这里无需任何返回刷新链路；
+  /// 列表展示最新状态交给：下拉刷新 / AppBar 刷新（均为 force）。
   void _openDetail(BuildContext context, RepairTicket ticket) {
-    Navigator.of(context)
-        .push<bool>(
-          MaterialPageRoute(
-            builder: (_) => RepairDetailPage(
-              ticketId: ticket.id,
-              initialTitle: ticket.projectName.isEmpty
-                  ? AppLocalizations.of(context)!.repairTicket
-                  : ticket.projectName,
-              initialStatus: ticket.statusLabel,
-            ),
-          ),
-        )
-        // 详情页发生撤回/评价等状态变更时 pop(true)；仅此时强制刷新工单列表，
-        // 确保「我的报修」显示最新状态（普通返回无操作则不浪费一次请求）。
-        .then((changed) {
-          if (changed == true) provider.loadTickets(force: true);
-        });
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => RepairDetailPage(
+          ticketId: ticket.id,
+          initialTitle: ticket.projectName.isEmpty
+              ? AppLocalizations.of(context)!.repairTicket
+              : ticket.projectName,
+          initialStatus: ticket.statusLabel,
+        ),
+      ),
+    );
   }
 
   Color _statusColor(BuildContext context, String status) {
@@ -693,7 +730,7 @@ class _SubmitTabState extends State<_SubmitTab> {
 
   Future<void> _showBookDatePicker() async {
     final l10n = AppLocalizations.of(context)!;
-    final dates = await _fetchBookDates();
+    final dates = await widget.provider.fetchBookDates();
     if (!mounted) return;
     if (dates.isEmpty) {
       _showError(l10n.repairNoBookDate);
@@ -724,7 +761,7 @@ class _SubmitTabState extends State<_SubmitTab> {
   Future<void> _showBookTimePicker() async {
     final l10n = AppLocalizations.of(context)!;
     if (_bookDate == null) return;
-    final times = await _fetchBookTimes(_bookDate!);
+    final times = await widget.provider.fetchBookTimes(_bookDate!);
     if (!mounted) return;
     if (times.isEmpty) {
       _showError(l10n.repairNoBookTime);
@@ -747,14 +784,6 @@ class _SubmitTabState extends State<_SubmitTab> {
     if (selected != null && mounted) {
       setState(() => _bookTime = selected);
     }
-  }
-
-  Future<List<String>> _fetchBookDates() async {
-    return widget.provider.fetchBookDates();
-  }
-
-  Future<List<String>> _fetchBookTimes(String date) async {
-    return widget.provider.fetchBookTimes(date);
   }
 }
 
