@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:bugaoshan/models/repair.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -126,6 +128,39 @@ void main() {
       });
       expect(ticket.id, 'fallback-id');
       expect(ticket.activeId, 'fallback-id');
+    });
+
+    test('三层转义 JSON 字符串也能解析（循环解到无法再解）', () {
+      // 后端极端情况下可能嵌套多层转义；_decodeContent 不再是固定两层。
+      // content 值本身是「JSON 字符串的字符串」：用标准 jsonEncode 保证
+      // 内层引号被正确转义（raw 拼接会产出非法 JSON）。
+      const inner =
+          '{"维修项目":"电/室内照明类","故障地点":"江安学生区/西苑八栋",'
+          '"故障描述":"走廊灯闪烁"}';
+      // 解一层：inner 字符串 → 内层 JSON
+      // 再套一层：middle 字符串 → 内含 inner 字符串
+      final middle = jsonEncode(inner);
+      final ticket = RepairTicket.fromDynamicJson({
+        'activeId': 'deep-1',
+        'content': middle,
+      });
+      expect(ticket.projectName, '电/室内照明类');
+      expect(ticket.areaName, '江安学生区/西苑八栋');
+      expect(ticket.content, '走廊灯闪烁');
+    });
+
+    test('超出防嵌套上限的深层字符串不回退为原始 JSON', () {
+      // 恶意/异常深层嵌套（>5 层）：安全返回空，不抛异常
+      var nested = jsonEncode({'维修项目': '木/床柜类'});
+      for (var i = 0; i < 8; i++) {
+        nested = jsonEncode(nested);
+      }
+      final ticket = RepairTicket.fromDynamicJson({
+        'activeId': 'tool-deep-1',
+        'content': nested,
+      });
+      // 解析不崩溃；超限内容无法取到字段，展示回退为空串
+      expect(ticket.content, isEmpty);
     });
   });
 }

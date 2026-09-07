@@ -225,32 +225,37 @@ class RepairTicket {
   ///
   /// 兼容以下形态：
   /// - Map（后端已解析为对象）
-  /// - JSON 字符串（`{"维修项目":...}`）
-  /// - 双层转义 JSON 字符串（字符串内嵌 JSON 字符串，如 `"{\"维修项目\":...}"`）
+  /// - JSON 对象字符串（`{"维修项目":...}`）
+  /// - 多层转义 JSON 字符串（字符串值本身是 JSON 字符串，如 `"{\"维修项目\":...}"`）
   /// - 值内含**裸控制字符**的 JSON 字符串（issue #273：后端拼接 content 时
   ///   未转义多行故障描述中的换行符，导致整段 JSON 非法）
+  ///
+  /// 策略：能 JSON 解码就解一层——解出 Map 直接返回；解出 String 说明
+  /// 该字符串值就是更深一层的 JSON，继续解（上限 5 层防异常嵌套）。
+  /// 不做 `startsWith('{')` 预判：外层是**转义后的 JSON 字符串值**时以
+  /// 双引号开头（如 `"{\"维修项目\":...}"`），预判会误过滤掉这一形态。
   static Map<String, dynamic> _decodeContent(dynamic content) {
     var current = content;
-    // 最多解两层（字符串内再套字符串）
-    for (var i = 0; i < 2; i++) {
+    for (var i = 0; i < 5; i++) {
       if (current is Map) {
         return Map<String, dynamic>.from(current);
       }
       if (current is! String || current.trim().isEmpty) {
         return const {};
       }
-      final trimmed = current.trim();
-      // 快速判断是否 JSON：以 { 或 [ 开头
-      if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
-        return const {};
-      }
-      final decoded = _tryJsonDecode(trimmed);
+      final decoded = _tryJsonDecode(current.trim());
       if (decoded == null) {
+        // 非 JSON（纯文本描述）或 JSON 已损坏：不再继续解
         return const {};
       }
+      if (decoded is Map) {
+        return Map<String, dynamic>.from(decoded);
+      }
+      // 解出的是字符串：值是更深一层的 JSON，继续循环
       current = decoded;
     }
-    return current is Map ? Map<String, dynamic>.from(current) : const {};
+    // 超过上限仍是字符串：视为不可解析
+    return const {};
   }
 
   /// 解码 JSON；失败时尝试转义字符串值内的裸控制字符后重试。
@@ -335,10 +340,14 @@ class RepairTicket {
     final unit = parsed['服务单位']?.toString() ?? '';
     final parts = [project, location, unit].where((s) => s.isNotEmpty);
     if (parts.isNotEmpty) return parts.join(' · ');
-    // 完全无字段：content 本就不是 JSON 时原样展示（如纯文本描述）
+    // 完全无字段：content 本就不是 JSON 时原样展示（如纯文本描述）。
+    // 排除看似 JSON 转义文本（含 `\"` 或 `\\\"`）的损坏数据——那些是
+    // 多层转义的 JSON，解不开时展示会是一堆反斜杠，回退为空更合理。
     if (rawContent is String && rawContent.isNotEmpty) {
       final trimmed = rawContent.trim();
-      if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
+      if (!trimmed.startsWith('{') &&
+          !trimmed.startsWith('[') &&
+          !trimmed.contains(r'\"')) {
         return trimmed;
       }
     }
@@ -439,7 +448,8 @@ class RepairTicketDetail {
       acceptDeptName: json['acceptDeptName']?.toString() ?? '',
       payName: json['payName']?.toString() ?? '',
       bookTimeString: json['bookTimeString']?.toString() ?? '',
-      ifOnduty: json['ifOnduty']?.toString() == '1',
+      // 兼容后端返回字符串 '1' 或布尔 true 两种形态
+      ifOnduty: json['ifOnduty'] == true || json['ifOnduty']?.toString() == '1',
       status: json['status']?.toString() ?? '',
       ifCommont: json['ifCommont']?.toString() ?? '0',
       ifComplete: json['ifComplete']?.toString() ?? '0',
