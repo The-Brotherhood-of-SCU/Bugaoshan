@@ -1,4 +1,4 @@
-/// 办事大厅动态表单插件模型。
+/// 办事大厅动态表单插件模型（汇总出口）。
 ///
 /// 结构来自对真实接口的抓包校准（test/fixtures/service_capture*.json）：
 /// - `/site/process/start-info` 的 `d.form[]` 只有 form_id/version/name/version_id，
@@ -13,145 +13,29 @@
 /// **所有解析均做多候选容错**：任一环节不符合预期时抛 [FormatException]，
 /// 由调用方走 fallback（350 有硬编码元数据兜底；其他事项失败封闭，
 /// 绝不渲染猜测的表单）。
+///
+/// 实现按职责拆分：
+/// - `service_field_type.dart` — 字段类型枚举 + 类型推断/解析
+/// - `service_showhide_rule.dart` — ShowHide 规则 + 表达式求值
+/// - 本文件保留 DataSource / 日期顺序 / 插件 / schema
 library;
 
 import 'dart:convert';
 
+import 'package:bugaoshan/services/api/service_field_type.dart';
 import 'package:bugaoshan/services/api/service_form_fields.dart'
     show ServiceFieldOption;
 import 'package:bugaoshan/services/api/service_form_models.dart';
+import 'package:bugaoshan/services/api/service_showhide_rule.dart';
 
-/// 字段类型。优先取插件声明的组件类型（`type` 字段，如 dRadio），
-/// 缺失时按 key 前缀推断（Radio_30 → radio）。
-enum ServiceFieldType {
-  input,
-  multiInput,
-  radio,
-  select,
-
-  /// 新下拉组件（dSelectV2）：提交为 [{value, name}] 数组（单选也是数组）。
-  selectV2,
-  checkbox,
-  calendar,
-  region,
-
-  /// 附件/图片上传（dFile / dXImage）：提交 [{name, url, id}]。
-  file,
-  dataSource,
-  user,
-  showHide,
-  variate,
-  validate,
-  conversion,
-  repeatTable,
-
-  /// 静态说明文字（dOneInput，Text_*）。只读展示，不参与填写。
-  text,
-
-  /// 静态图片（dImage）。占位不渲染。
-  image,
-
-  /// 布局容器（dTable）。占位不渲染。
-  table,
-  unknown,
-}
-
-/// key 前缀 → 类型（key 形如 `Radio_30`，前缀与组件名一一对应）。
-const Map<String, ServiceFieldType> _kPrefixTypes = {
-  'Input_': ServiceFieldType.input,
-  'MultiInput_': ServiceFieldType.multiInput,
-  'MultiText_': ServiceFieldType.multiInput,
-  'Radio_': ServiceFieldType.radio,
-  'Select_': ServiceFieldType.select,
-  'SelectV2_': ServiceFieldType.selectV2,
-  'Checkbox_': ServiceFieldType.checkbox,
-  'Calendar_': ServiceFieldType.calendar,
-  'Region_': ServiceFieldType.region,
-  'File_': ServiceFieldType.file,
-  'Ximage_': ServiceFieldType.file,
-  'DataSource_': ServiceFieldType.dataSource,
-  'User_': ServiceFieldType.user,
-  'ShowHide_': ServiceFieldType.showHide,
-  'Variate_': ServiceFieldType.variate,
-  'Validate_': ServiceFieldType.validate,
-  'Conversion_': ServiceFieldType.conversion,
-  'RepeatTable_': ServiceFieldType.repeatTable,
-  'Text_': ServiceFieldType.text,
-  'Image_': ServiceFieldType.image,
-  'Table_': ServiceFieldType.table,
-};
-
-/// 组件名（去 `d` 前缀、小写）→ 类型。来自真实抓包的组件清单：
-/// dInput/dmultiText/dmultiInputs/dRadio/dSelect/dSelectV2/dCheckbox/
-/// dCalendar/dRegion/dFile/dXImage/dDataSource/dUser/dShowHide/dVariate/
-/// dValidate/dConversion/dRepeatTable/dOneInput（静态文字）/dImage/dTable。
-const Map<String, ServiceFieldType> _kComponentTypes = {
-  'input': ServiceFieldType.input,
-  'integerinput': ServiceFieldType.input,
-  'numericinput': ServiceFieldType.input,
-  'phonenumber': ServiceFieldType.input,
-  'multitext': ServiceFieldType.multiInput,
-  'multiinputs': ServiceFieldType.multiInput,
-  'radio': ServiceFieldType.radio,
-  'select': ServiceFieldType.select,
-  'selectv2': ServiceFieldType.selectV2,
-  'checkbox': ServiceFieldType.checkbox,
-  'calendar': ServiceFieldType.calendar,
-  'region': ServiceFieldType.region,
-  'file': ServiceFieldType.file,
-  'ximage': ServiceFieldType.file,
-  'datasource': ServiceFieldType.dataSource,
-  'user': ServiceFieldType.user,
-  'showhide': ServiceFieldType.showHide,
-  'variate': ServiceFieldType.variate,
-  'validate': ServiceFieldType.validate,
-  'conversion': ServiceFieldType.conversion,
-  'repeattable': ServiceFieldType.repeatTable,
-  'oneinput': ServiceFieldType.text,
-  'text': ServiceFieldType.text,
-  'show': ServiceFieldType.text,
-  'image': ServiceFieldType.image,
-  'table': ServiceFieldType.table,
-};
-
-/// 按 key 前缀推断字段类型（无法推断返回 [ServiceFieldType.unknown]）。
-ServiceFieldType serviceFieldTypeFromKey(String key) {
-  for (final entry in _kPrefixTypes.entries) {
-    if (key.startsWith(entry.key)) return entry.value;
-  }
-  return ServiceFieldType.unknown;
-}
-
-String? _firstString(Map<dynamic, dynamic> map, List<String> keys) {
-  for (final k in keys) {
-    final v = map[k];
-    if (v is String && v.isNotEmpty) return v;
-    if (v is num) return v.toString();
-  }
-  return null;
-}
-
-int _toInt(dynamic v, {int fallback = 0}) {
-  if (v is int) return v;
-  if (v is double) return v.toInt();
-  if (v is String) return int.tryParse(v) ?? fallback;
-  return fallback;
-}
-
-/// 解析字段类型：优先组件声明（如 `dRadio`，大小写不敏感），
-/// 缺失/不认识时按 key 前缀推断。
-ServiceFieldType resolveServiceFieldType(String? declaredType, String key) {
-  if (declaredType != null && declaredType.isNotEmpty) {
-    var name = declaredType.trim().toLowerCase();
-    // 组件名以 d 开头（dRadio/dmultiText…），去掉后查表
-    if (name.startsWith('d') && name.length > 1) {
-      name = name.substring(1);
-    }
-    final t = _kComponentTypes[name];
-    if (t != null) return t;
-  }
-  return serviceFieldTypeFromKey(key);
-}
+export 'package:bugaoshan/services/api/service_field_type.dart'
+    show ServiceFieldType, serviceFieldTypeFromKey, resolveServiceFieldType;
+export 'package:bugaoshan/services/api/service_showhide_rule.dart'
+    show
+        ServiceShowHideCondition,
+        ServiceShowHideControl,
+        ServiceShowHideRule,
+        evalServiceShowHideExpression;
 
 /// DataSource 字段的取数配置（`POST /site/data-source/detail`）。
 ///
@@ -240,243 +124,20 @@ class ServiceDateOrderRule {
   }
 }
 
-/// ShowHide 插件的一个条件（`attr.data.conditions[i]`）。
-class ServiceShowHideCondition {
-  final String name;
-  final String expression;
-
-  const ServiceShowHideCondition({
-    required this.name,
-    required this.expression,
-  });
-}
-
-/// ShowHide 条件命中后的动作（`attr.data.controls[i].setInfo`）。
-class ServiceShowHideControl {
-  /// 目标字段是否显示（isShow: 1 → 显示，0 → 隐藏；null → 不动）。
-  final bool? isShow;
-
-  /// 目标字段是否必填（isRequired: 1 → 必填，0/2 → 非必填；null → 不动）。
-  final bool? isRequired;
-
-  /// 隐藏时是否清空值（isEmpty: 1 → 清空）。提交组装对隐藏字段统一给空值，
-  /// 效果等价，故仅作记录。
-  final bool clearWhenHidden;
-
-  /// 作用目标字段 key 列表。
-  final List<String> targets;
-
-  const ServiceShowHideControl({
-    this.isShow,
-    this.isRequired,
-    this.clearWhenHidden = false,
-    this.targets = const [],
-  });
-}
-
-/// ShowHide 插件的完整规则：有序条件 + conkey → 动作。
-///
-/// 已确认语义（对照 350/337/357 实表）：按条件顺序求值，**所有**命中条件的
-/// 动作按顺序应用（后者覆盖前者的同字段设置）。"默认 true" 条件通常在最前，
-/// 给出基准状态，后续条件覆盖。表达式支持形态见
-/// [evalServiceShowHideExpression]。
-class ServiceShowHideRule {
-  final List<ServiceShowHideCondition> conditions;
-  final Map<String, ServiceShowHideControl> controls;
-
-  const ServiceShowHideRule({required this.conditions, required this.controls});
-
-  /// 从 ShowHide 插件的 attr.data 解析；结构不符时返回 null。
-  static ServiceShowHideRule? tryParse(Map<String, dynamic> attrData) {
-    final rawConds = attrData['conditions'];
-    final rawControls = attrData['controls'];
-    if (rawConds == null || rawControls == null) return null;
-
-    // conditions 可能是 List 或 Map（{"0": {...}, "1": {...}}）
-    final condEntries = <(String, ServiceShowHideCondition)>[];
-    void addCond(dynamic key, dynamic v) {
-      if (v is! Map) return;
-      condEntries.add((
-        key.toString(),
-        ServiceShowHideCondition(
-          name: v['name']?.toString() ?? '',
-          expression: v['expression']?.toString() ?? '',
-        ),
-      ));
-    }
-
-    if (rawConds is List) {
-      for (var i = 0; i < rawConds.length; i++) {
-        addCond(i, rawConds[i]);
-      }
-    } else if (rawConds is Map) {
-      for (final e in rawConds.entries) {
-        addCond(e.key, e.value);
-      }
-    }
-    if (condEntries.isEmpty) return null;
-
-    final controls = <String, ServiceShowHideControl>{};
-    if (rawControls is List) {
-      for (final c in rawControls) {
-        if (c is! Map) continue;
-        final conkey = c['conkey']?.toString();
-        final setInfo = c['setInfo'];
-        if (conkey == null || setInfo is! Map) continue;
-        controls[conkey] = _parseControl(setInfo);
-      }
-    }
-    return ServiceShowHideRule(
-      conditions: [for (final (_, c) in condEntries) c],
-      controls: controls,
-    );
+String? _firstString(Map<dynamic, dynamic> map, List<String> keys) {
+  for (final k in keys) {
+    final v = map[k];
+    if (v is String && v.isNotEmpty) return v;
+    if (v is num) return v.toString();
   }
-
-  static ServiceShowHideControl _parseControl(Map<dynamic, dynamic> setInfo) {
-    final isShow = _toInt(setInfo['isShow'], fallback: -1);
-    final isRequired = _toInt(setInfo['isRequired'], fallback: -1);
-    final isEmpty = _toInt(setInfo['isEmpty'], fallback: 0);
-    final rawPlugins = setInfo['plugins'];
-    final targets = rawPlugins is List
-        ? rawPlugins.map((e) => e.toString()).toList(growable: false)
-        : const <String>[];
-    return ServiceShowHideControl(
-      isShow: isShow == -1 ? null : isShow == 1,
-      isRequired: isRequired == -1 ? null : isRequired == 1,
-      clearWhenHidden: isEmpty == 1,
-      targets: targets,
-    );
-  }
-}
-
-/// 求值 ShowHide 条件表达式。返回 null 表示形态未支持（按不命中处理，
-/// "默认 true" 基准条件总是可求值，因此字段不会卡在未知状态）。
-///
-/// 已支持形态（全部来自 4 个实表的 conditions）：
-/// - `true` / `false`
-/// - `{p_K}==v` / `{p_K}!=v`（v 为数字或 '字符串'，宽松比较）
-/// - `{p_K}.indexOf(v)!==-1` / `==-1`（包含 / 不包含）
-/// - `{p_K}[0].value==v` / `{p_K}[0]==v`（SelectV2 数组取值，!=同理）
-/// - `new Date({p_K}) <= new Date('yyyy-MM-dd')`（及 <, >, >=）
-/// - `{p_K}.includes('s')`、`{p_K}==''` / `!=''`
-/// - `A||B` 复合（356 的审批意见判断用到）
-bool? evalServiceShowHideExpression(
-  String expression,
-  Object? Function(String key) valueOf,
-) {
-  final expr = expression.trim();
-  if (expr.isEmpty) return null;
-  if (expr == 'true') return true;
-  if (expr == 'false') return false;
-  // || 复合（JS 中 && 优先级更高，但实表只出现 ||，逐段求值即可）
-  if (expr.contains('||')) {
-    var any = false;
-    for (final part in expr.split('||')) {
-      final r = evalServiceShowHideExpression(part, valueOf);
-      if (r == true) return true;
-      if (r == null) return null; // 有未知段则不妄断
-    }
-    return any;
-  }
-
-  String norm(Object? v) {
-    if (v == null) return '';
-    if (v is DateTime) return v.toIso8601String();
-    return v.toString().trim();
-  }
-
-  String unquote(String s) {
-    final t = s.trim();
-    if (t.length >= 2 &&
-        ((t.startsWith("'") && t.endsWith("'")) ||
-            (t.startsWith('"') && t.endsWith('"')))) {
-      return t.substring(1, t.length - 1);
-    }
-    return t;
-  }
-
-  // {p_K}=='' / {p_K}!=''
-  var m = RegExp(r"^\{p_([A-Za-z0-9_]+)\}\s*(==|!=)\s*''$").firstMatch(expr);
-  if (m != null) {
-    final empty = norm(valueOf(m.group(1)!)).isEmpty;
-    return m.group(2) == '==' ? empty : !empty;
-  }
-
-  // {p_K}.indexOf(v)!==-1 / ==-1
-  m = RegExp(
-    r'^\{p_([A-Za-z0-9_]+)\}\.indexOf\(([^)]+)\)\s*(!==-1|==-1)$',
-  ).firstMatch(expr);
-  if (m != null) {
-    final v = norm(valueOf(m.group(1)!));
-    final needle = unquote(m.group(2)!);
-    final hit = needle.isNotEmpty && v.contains(needle);
-    return m.group(3) == '!==-1' ? hit : !hit;
-  }
-
-  // {p_K}.includes('s')
-  m = RegExp(
-    r'''^\{p_([A-Za-z0-9_]+)\}\.includes\(([^)]+)\)$''',
-  ).firstMatch(expr);
-  if (m != null) {
-    final v = norm(valueOf(m.group(1)!));
-    return v.contains(unquote(m.group(2)!));
-  }
-
-  // {p_K}[0].value==v / {p_K}[0]==v（!=同理）
-  m = RegExp(
-    r'^\{p_([A-Za-z0-9_]+)\}\[0\](?:\.value)?\s*(==|!=)\s*(\S+)$',
-  ).firstMatch(expr);
-  if (m != null) {
-    final v = norm(valueOf(m.group(1)!));
-    final target = unquote(m.group(3)!);
-    // SelectV2 值在本应用中存为单个 value 字符串；[0] 语义即"所选值"
-    final hit = v == target;
-    return m.group(2) == '==' ? hit : !hit;
-  }
-
-  // new Date({p_K}) <= new Date('yyyy-MM-dd')
-  m = RegExp(
-    r"^new Date\(\{p_([A-Za-z0-9_]+)\}\)\s*(<=|>=|<|>)\s*new Date\('([^']+)'\)$",
-  ).firstMatch(expr);
-  if (m != null) {
-    final a = _parseServiceDate(valueOf(m.group(1)!));
-    final b = _parseServiceDate(m.group(3));
-    if (a == null || b == null) return null;
-    final cmp = a.compareTo(b);
-    return switch (m.group(2)) {
-      '<=' => cmp <= 0,
-      '>=' => cmp >= 0,
-      '<' => cmp < 0,
-      '>' => cmp > 0,
-      _ => null,
-    };
-  }
-
-  // {p_K}==v / {p_K}!=v（放最后，避免吞掉上面的形态）
-  m = RegExp(r'^\{p_([A-Za-z0-9_]+)\}\s*(==|!=)\s*(\S+)$').firstMatch(expr);
-  if (m != null) {
-    final v = norm(valueOf(m.group(1)!));
-    final target = unquote(m.group(3)!);
-    final hit = v == target;
-    return m.group(2) == '==' ? hit : !hit;
-  }
-
   return null;
 }
 
-/// 宽松解析服务端日期（'2026-08-10'、'2026-08-10T17:10:21+' 等）。
-DateTime? _parseServiceDate(Object? raw) {
-  if (raw == null) return null;
-  if (raw is DateTime) return raw;
-  var s = raw.toString().trim();
-  if (s.isEmpty) return null;
-  // 截断的时区标记（'2026-08-10T17:10:21+'）→ 去掉尾部非日期内容
-  final m = RegExp(
-    r'^(\d{4}-\d{2}-\d{2})(?:[T ](\d{2}:\d{2}(?::\d{2})?))?',
-  ).firstMatch(s);
-  if (m == null) return null;
-  s = m.group(2) != null ? '${m.group(1)}T${m.group(2)}' : m.group(1)!;
-  return DateTime.tryParse(s);
+int _toInt(dynamic v, {int fallback = 0}) {
+  if (v is int) return v;
+  if (v is double) return v.toInt();
+  if (v is String) return int.tryParse(v) ?? fallback;
+  return fallback;
 }
 
 /// 单个表单字段（插件）。
