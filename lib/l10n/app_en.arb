@@ -1538,6 +1538,11 @@
         "description": "Toast after a repair evaluation is submitted.",
         "type": "text"
     },
+    "repairEvaluated": "Evaluated",
+    "@repairEvaluated": {
+        "description": "Status text when a repair ticket has been evaluated.",
+        "type": "text"
+    },
     "repairEvaluateFailed": "Evaluation failed, please try again later",
     "@repairEvaluateFailed": {
         "description": "Toast when submitting a repair evaluation fails.",

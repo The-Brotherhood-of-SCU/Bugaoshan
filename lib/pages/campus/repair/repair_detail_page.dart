@@ -110,7 +110,8 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.repairWithdrawSuccess)));
-      Navigator.of(context).pop(true);
+      // 重新加载详情：撤回后详情接口状态变化（撤回按钮消失）
+      await _load();
       return true;
     } catch (e) {
       if (!mounted) return false;
@@ -149,6 +150,11 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
     final title = detail.projectName.isNotEmpty
         ? detail.projectName
         : widget.initialTitle;
+    // 状态实时计算：已评价（ifCommont=1）优先展示「已评价」，
+    // 否则用列表传入的状态（详情接口的 status 是数字，无中文文案）。
+    final statusText = detail.ifCommont == '1'
+        ? l10n.repairEvaluated
+        : widget.initialStatus;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -166,7 +172,7 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                if (widget.initialStatus.isNotEmpty)
+                if (statusText.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 6),
                     child: Container(
@@ -181,7 +187,7 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
                         borderRadius: BorderRadius.circular(AppShapes.small),
                       ),
                       child: Text(
-                        widget.initialStatus,
+                        statusText,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.w600,
@@ -383,13 +389,14 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
       ),
     );
     if (result == true && mounted) {
-      // 评价成功：刷新列表并返回
+      // 评价成功：刷新工单列表，并重新加载详情使状态变为「已评价」、
+      // 评价按钮消失（详情接口 ifCommont 已变为 1）。
       await _provider.loadTickets(force: true);
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.repairEvaluateSuccess)));
-      Navigator.of(context).pop(true);
+      await _load();
     }
   }
 }

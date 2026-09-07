@@ -5353,6 +5353,12 @@ abstract class AppLocalizations {
   /// **'Evaluation submitted'**
   String get repairEvaluateSuccess;
 
+  /// Status text when a repair ticket has been evaluated.
+  ///
+  /// In en, this message translates to:
+  /// **'Evaluated'**
+  String get repairEvaluated;
+
   /// Toast when submitting a repair evaluation fails.
   ///
   /// In en, this message translates to:
