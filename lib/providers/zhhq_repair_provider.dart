@@ -184,9 +184,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
   /// 不再需要分页。userId 从常用地址取（[RepairAddress.userId]）。
   ///
   /// 页面每次重建都会调用本方法（fire-and-forget），因此默认跳过已加载
-  /// 的会话；下拉刷新或提交成功后需重新拉取时传 [force] = true。
+  /// 的会话；下拉刷新或提交/撤回/评价成功后需重新拉取时传 [force] = true。
   Future<void> loadTickets({bool force = false}) async {
-    if (!_canLoad || _isLoadingTickets) return;
+    if (!_canLoad) return;
+    // force 刷新：等待进行中的加载完成后再重新拉取，避免被并发守卫吞掉
+    // （如详情页撤回/评价后立即 force 刷新，而下层页面仍在 fire-and-forget 加载）。
+    while (_isLoadingTickets) {
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
     if (!force && _ticketsLoaded) return;
     final userId = _addresses.isEmpty ? '' : _addresses.first.userId;
     if (userId.isEmpty) return;

@@ -104,14 +104,12 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
     try {
       await _provider.withdrawRepair(id: _detail!.id);
       if (!mounted) return false;
-      // 刷新列表，使「我的报修」状态同步为已撤回
-      await _provider.loadTickets(force: true);
-      if (!mounted) return false;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.repairWithdrawSuccess)));
-      // 重新加载详情：撤回后详情接口状态变化（撤回按钮消失）
-      await _load();
+      // 返回列表页；列表刷新由 _openDetail 的 .then() 统一处理
+      // （activeTemplateData/list 会返回最新状态「已撤回」）。
+      Navigator.of(context).pop(true);
       return true;
     } catch (e) {
       if (!mounted) return false;
@@ -133,6 +131,23 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
     );
   }
 
+  /// 详情页状态文案：按详情接口的最新状态映射。
+  ///
+  /// 详情接口 `status` 是数字（如 `'4'`=待评价可评价、`'2'`=已撤回），
+  /// 评价/撤回后列表传入的 initialStatus 会过期，必须按最新详情状态展示：
+  /// - 已评价（ifCommont=1）→「已评价」
+  /// - 已撤回（status=2）→「已撤回」
+  /// - 其余回退列表传入的中文状态
+  String _detailStatusText(
+    RepairTicketDetail detail,
+    String initialStatus,
+    AppLocalizations l10n,
+  ) {
+    if (detail.ifCommont == '1') return l10n.repairEvaluated;
+    if (detail.status == '2') return l10n.repairWithdrawn;
+    return initialStatus;
+  }
+
   Widget _buildBody(AppLocalizations l10n) {
     if (_error != null) {
       return RetryableErrorWidget(
@@ -150,11 +165,10 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
     final title = detail.projectName.isNotEmpty
         ? detail.projectName
         : widget.initialTitle;
-    // 状态实时计算：已评价（ifCommont=1）优先展示「已评价」，
-    // 否则用列表传入的状态（详情接口的 status 是数字，无中文文案）。
-    final statusText = detail.ifCommont == '1'
-        ? l10n.repairEvaluated
-        : widget.initialStatus;
+    // 状态实时计算：优先按详情接口的最新状态展示（撤回/已评价等），
+    // 详情接口的 status 是数字（如 '2'=已撤回），若无法映射则回退
+    // 列表传入的中文状态。
+    final statusText = _detailStatusText(detail, widget.initialStatus, l10n);
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -389,14 +403,12 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
       ),
     );
     if (result == true && mounted) {
-      // 评价成功：刷新工单列表，并重新加载详情使状态变为「已评价」、
-      // 评价按钮消失（详情接口 ifCommont 已变为 1）。
-      await _provider.loadTickets(force: true);
-      if (!mounted) return;
+      // 评价成功：返回列表页；列表刷新由 _openDetail 的 .then() 统一处理
+      // （activeTemplateData/list 会返回最新状态「已评价」）。
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.repairEvaluateSuccess)));
-      await _load();
+      Navigator.of(context).pop(true);
     }
   }
 }

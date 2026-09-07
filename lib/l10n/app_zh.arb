@@ -1480,6 +1480,11 @@
         "description": "工单已评价状态文案。",
         "type": "text"
     },
+    "repairWithdrawn": "已撤回",
+    "@repairWithdrawn": {
+        "description": "工单已撤回状态文案。",
+        "type": "text"
+    },
     "repairEvaluateFailed": "评价失败，请稍后重试",
     "@repairEvaluateFailed": {
         "description": "评价失败后的提示。",

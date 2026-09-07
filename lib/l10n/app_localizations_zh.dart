@@ -2771,6 +2771,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get repairEvaluated => '已评价';
 
   @override
+  String get repairWithdrawn => '已撤回';
+
+  @override
   String get repairEvaluateFailed => '评价失败，请稍后重试';
 
   @override

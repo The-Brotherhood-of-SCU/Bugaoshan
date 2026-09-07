@@ -2859,6 +2859,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get repairEvaluated => 'Evaluated';
 
   @override
+  String get repairWithdrawn => 'Withdrawn';
+
+  @override
   String get repairEvaluateFailed =>
       'Evaluation failed, please try again later';
 

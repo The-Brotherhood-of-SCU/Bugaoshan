@@ -5359,6 +5359,12 @@ abstract class AppLocalizations {
   /// **'Evaluated'**
   String get repairEvaluated;
 
+  /// Status text when a repair ticket has been withdrawn.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawn'**
+  String get repairWithdrawn;
+
   /// Toast when submitting a repair evaluation fails.
   ///
   /// In en, this message translates to:

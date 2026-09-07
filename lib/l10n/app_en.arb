@@ -1543,6 +1543,11 @@
         "description": "Status text when a repair ticket has been evaluated.",
         "type": "text"
     },
+    "repairWithdrawn": "Withdrawn",
+    "@repairWithdrawn": {
+        "description": "Status text when a repair ticket has been withdrawn.",
+        "type": "text"
+    },
     "repairEvaluateFailed": "Evaluation failed, please try again later",
     "@repairEvaluateFailed": {
         "description": "Toast when submitting a repair evaluation fails.",
