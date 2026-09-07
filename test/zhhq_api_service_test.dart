@@ -380,39 +380,38 @@ void main() {
       },
     );
 
-    test(
-      'HTTP 302/401/403 → UnauthenticatedException → invalidate 并重试',
-      () async {
-        var calls = 0;
-        final inner = MockClient((request) async {
-          calls++;
-          if (calls == 1) {
-            return http.Response('', 302, request: request);
-          }
-          final bytes = utf8.encode(
-            jsonEncode({
-              'status': 'success',
-              'errorCode': '0',
-              'data': {'path': '/upload/2026/abc.jpg'},
-            }),
-          );
-          return http.Response.bytes(
-            bytes,
-            200,
-            headers: const {'content-type': 'application/json; charset=utf-8'},
-            request: request,
-          );
-        });
-        final auth = _FakeZhhqAuth(inner);
-        final api = ZhhqApiService(auth);
+    test('HTTP 302/401/403 → UnauthenticatedException → 完整认证重试成功', () async {
+      var calls = 0;
+      final inner = MockClient((request) async {
+        calls++;
+        if (calls == 1) {
+          return http.Response('', 302, request: request);
+        }
+        final bytes = utf8.encode(
+          jsonEncode({
+            'status': 'success',
+            'errorCode': '0',
+            'data': {'path': '/upload/2026/abc.jpg'},
+          }),
+        );
+        return http.Response.bytes(
+          bytes,
+          200,
+          headers: const {'content-type': 'application/json; charset=utf-8'},
+          request: request,
+        );
+      });
+      final auth = _FakeZhhqAuth(inner);
+      final api = ZhhqApiService(auth);
 
-        final file = await _tempImage();
-        final path = await api.uploadImage(file: file);
-        expect(path, '/upload/2026/abc.jpg');
-        expect(calls, 2);
-        expect(auth.invalidateCount, 1);
-      },
-    );
+      final file = await _tempImage();
+      final path = await api.uploadImage(file: file);
+      expect(path, '/upload/2026/abc.jpg');
+      expect(calls, 2);
+      // fast path 失效走完整认证重试（与 _request 模板一致：fast 失效
+      // 不立即 invalidate，留给完整路径一次机会；仅完整路径也失败才重建）
+      expect(auth.invalidateCount, 0);
+    });
   });
 }
 

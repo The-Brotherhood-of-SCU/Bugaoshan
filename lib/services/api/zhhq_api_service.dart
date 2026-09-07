@@ -75,12 +75,16 @@ class ZhhqApiService {
     return r.toString();
   }
 
-  Future<T> _request<T>(
+  /// 统一请求执行：拿到可用 client + tokenKey 后调用 [fn]。
+  ///
+  /// 认证获取策略（所有业务请求共用，含 multipart 上传）：
+  /// 1. 快速路径：tokenKey 已持久化/缓存时，跳过 SCU 会话（冷启动 SCU 过期
+  ///    也无需等 5-8s refresh），直接用独立 CookieClient 发请求。
+  ///    业务请求只依赖 Token/TokenKey 头，不依赖 SCU cookie。
+  /// 2. tokenKey 失效（4010-4017）：invalidate 后走完整认证重建重试一次。
+  Future<T> _executeWithRetry<T>(
     Future<T> Function(CookieClient client, String tokenKey) fn,
   ) async {
-    // 快速路径：tokenKey 已持久化/缓存时，跳过 SCU 会话（冷启动 SCU 过期
-    // 也无需等 5-8s refresh），直接用独立 CookieClient 发请求。
-    // 业务请求只依赖 Token/TokenKey 头，不依赖 SCU cookie。
     final fastClient = _auth.getClientFast();
     final fastTokenKey = _auth.tokenKey;
     if (fastClient != null && fastTokenKey != null) {
@@ -104,6 +108,12 @@ class ZhhqApiService {
       if (tokenKey == null) throw const UnauthenticatedException();
       return await fn(client, tokenKey);
     }
+  }
+
+  Future<T> _request<T>(
+    Future<T> Function(CookieClient client, String tokenKey) fn,
+  ) {
+    return _executeWithRetry(fn);
   }
 
   Map<String, String> _headers(
@@ -142,7 +152,6 @@ class ZhhqApiService {
       throw ServiceException('zhhq 响应解析失败');
     }
     final code = json['errorCode']?.toString() ?? '';
-    final status = json['status']?.toString() ?? '';
     // 4010-4017 均为 token 类错误（无效/超时/签名错误），触发重新认证
     final codeInt = int.tryParse(code);
     if (codeInt != null && codeInt >= 4010 && codeInt <= 4017) {
@@ -150,15 +159,27 @@ class ZhhqApiService {
       throw const UnauthenticatedException('zhhq 会话已失效');
     }
     // 业务错误统一判定：status 明确非 success，或 errorCode 明确非 0。
-    // （原来 `status != 'success' && errorCode != null` 会放过
-    //   status 非 success 但 errorCode 缺失的响应，导致错误被当成功返回。）
-    if ((status.isNotEmpty && status != 'success') ||
-        (code.isNotEmpty && code != '0')) {
-      final message = json['message']?.toString() ?? '操作失败';
+    final message = _businessErrorMessage(json);
+    if (message != null) {
       _log.w('ZHhq', '业务错误 errorCode=$code: $message');
       throw ServiceException(message);
     }
     return json;
+  }
+
+  /// 业务错误统一判定：status 明确非 success，或 errorCode 明确非 0。
+  ///
+  /// 返回服务端 `message`（可展示给用户）；无错误返回 null。
+  /// （原来 `status != 'success' && errorCode != null` 会放过
+  ///   status 非 success 但 errorCode 缺失的响应，导致错误被当成功返回。）
+  static String? _businessErrorMessage(Map<String, dynamic> json) {
+    final code = json['errorCode']?.toString() ?? '';
+    final status = json['status']?.toString() ?? '';
+    if ((status.isNotEmpty && status != 'success') ||
+        (code.isNotEmpty && code != '0')) {
+      return json['message']?.toString() ?? '操作失败';
+    }
+    return null;
   }
 
   /// 获取常用地址列表。
@@ -488,26 +509,12 @@ class ZhhqApiService {
   ///
   /// 对应前端 `POST /api/file/upload`（multipart：`file` + `system=manager`）。
   /// 注意：本接口响应是**明文 JSON**（拦截器对 `/api/file/upload` 跳过 AES 解密），
-  /// 不走 `_request`/`_decode`，直接解析。
-  Future<String> uploadImage({required File file}) async {
-    // 快速路径优先：tokenKey 有效时无需等待 SCU 会话（与 _request 模板一致）。
-    // 失效时 invalidate + 完整认证后重试一次（multipart 上传幂等，可安全重放）。
-    var client = _auth.getClientFast();
-    var tokenKey = _auth.tokenKey;
-    if (client == null || tokenKey == null) {
-      client = await _auth.getClient();
-      tokenKey = _auth.tokenKey;
-    }
-    try {
-      if (tokenKey == null) throw const UnauthenticatedException();
-      return await _uploadImageWith(client, tokenKey, file);
-    } on UnauthenticatedException {
-      _auth.invalidate();
-      client = await _auth.getClient();
-      tokenKey = _auth.tokenKey;
-      if (tokenKey == null) throw const UnauthenticatedException();
-      return await _uploadImageWith(client, tokenKey, file);
-    }
+  /// 不走 `_decode`，直接解析。
+  Future<String> uploadImage({required File file}) {
+    // 与 _request 共用认证获取/重试逻辑（multipart 上传幂等，可安全重放）
+    return _executeWithRetry(
+      (client, tokenKey) => _uploadImageWith(client, tokenKey, file),
+    );
   }
 
   Future<String> _uploadImageWith(
@@ -537,14 +544,10 @@ class ZhhqApiService {
     } catch (_) {
       throw ServiceException('图片上传失败：响应解析异常');
     }
-    // 与 _decode 的业务错误判定一致：status 明确非 success 或
-    // errorCode 明确非 0 均视为失败（原来用 `&&` 会放过
-    // errorCode 非 0 但 status=success 的响应）。
-    final code = json['errorCode']?.toString() ?? '';
-    final status = json['status']?.toString() ?? '';
-    if ((status.isNotEmpty && status != 'success') ||
-        (code.isNotEmpty && code != '0')) {
-      throw ServiceException(json['message']?.toString() ?? '图片上传失败');
+    // 与 _decode 共用业务错误判定
+    final message = _businessErrorMessage(json);
+    if (message != null) {
+      throw ServiceException(message);
     }
     final data = json['data'];
     if (data is! Map) throw const ServiceException('图片上传失败：响应异常');
