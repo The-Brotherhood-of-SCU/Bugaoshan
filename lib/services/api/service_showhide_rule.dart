@@ -226,6 +226,8 @@ bool? evalServiceShowHideExpression(
   return null;
 }
 
+// 拆分前与 service_plugin_models.dart 共享同一个私有 helper；两边是
+// 各自 library 的同名私有副本，修改时务必同步。
 int _toInt(dynamic v, {int fallback = 0}) {
   if (v is int) return v;
   if (v is double) return v.toInt();

@@ -1,7 +1,7 @@
 // 本文件是 `repair_page.dart` 的 part：报修提交表单（最大的子 widget）。
 //
 // ⚠️ 不要在此文件引入主 library 之外的新 import；依赖主文件已有的
-// import（material / models / providers / theme_shapes 等）。
+// import（material / models / providers / theme_shape 等）。
 part of 'repair_page.dart';
 
 /// 提交报修表单。
