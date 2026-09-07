@@ -350,8 +350,6 @@ class ZhhqApiService {
     });
   }
 
-  /// 评价报修工单（`visitEvaluateUser/save`，web 前端 `VisitEvaluateUser`）。
-  ///
   /// 获取工单评价项（`commontProject/getProject`，web 前端 `GetProjectList`）。
   ///
   /// 返回评价维度列表（如「维修质量/维修态度/维修速度」），每项含
