@@ -126,7 +126,15 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.repairDetail)),
+      // AppBar 标题用列表传入的维修项目名（与正文标题一致）；
+      // 列表传入为空时回退通用文案「报修详情」。
+      appBar: AppBar(
+        title: Text(
+          widget.initialTitle.isNotEmpty
+              ? widget.initialTitle
+              : l10n.repairDetail,
+        ),
+      ),
       body: _buildBody(l10n),
     );
   }

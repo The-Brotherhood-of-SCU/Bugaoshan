@@ -6,6 +6,8 @@ library;
 
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+
 /// 常用地址（`oneNetPublish/getCommonAddress` 返回）。
 class RepairAddress {
   final String id;
@@ -254,7 +256,14 @@ class RepairTicket {
       // 解出的是字符串：值是更深一层的 JSON，继续循环
       current = decoded;
     }
-    // 超过上限仍是字符串：视为不可解析
+    // 超过上限仍是字符串：视为不可解析。理论不该发生（后端最多 2 层），
+    // 留 trace 日志便于以后排查异常工单。
+    if (kDebugMode) {
+      debugPrint(
+        '[RepairTicket] content 超过 5 层转义上限，无法解析：'
+        '${current.toString().length} 字符',
+      );
+    }
     return const {};
   }
 
@@ -290,7 +299,9 @@ class RepairTicket {
       final ch = input.codeUnitAt(i);
       if (inString) {
         if (ch == 0x5C) {
-          // 反斜杠：连同其转义的下一个字符原样保留
+          // 反斜杠：连同其转义的下一个字符原样保留。
+          // 边界：`\` 是最后一个字符（尾部悬挂）时，i++ 后 i == input.length，
+          // 只写回反斜杠本身；循环条件 i < input.length 兜底退出，不越界。
           buf.writeCharCode(ch);
           i++;
           if (i < input.length) buf.writeCharCode(input.codeUnitAt(i));
@@ -448,8 +459,10 @@ class RepairTicketDetail {
       acceptDeptName: json['acceptDeptName']?.toString() ?? '',
       payName: json['payName']?.toString() ?? '',
       bookTimeString: json['bookTimeString']?.toString() ?? '',
-      // 兼容后端返回字符串 '1' 或布尔 true 两种形态
-      ifOnduty: json['ifOnduty'] == true || json['ifOnduty']?.toString() == '1',
+      // 兼容后端返回布尔 true、字符串 '1' / 'true' 三种形态
+      ifOnduty:
+          json['ifOnduty'] == true ||
+          const {'1', 'true'}.contains(json['ifOnduty']?.toString()),
       status: json['status']?.toString() ?? '',
       ifCommont: json['ifCommont']?.toString() ?? '0',
       ifComplete: json['ifComplete']?.toString() ?? '0',
