@@ -1,6 +1,8 @@
 /// 第二课堂数据模型
 library;
 
+import 'package:bugaoshan/utils/json_utils.dart';
+
 class CyclActivity {
   final String? activityId;
   final String activityLibraryId;
@@ -84,16 +86,14 @@ class CyclActivity {
               ?.map((e) => e.toString())
               .toList() ??
           [],
-      classHour: (json['classHour'] as num?)?.toDouble() ?? 0.0,
+      classHour: safeDouble(json['classHour']),
       describe: json['describe']?.toString(),
       poster: json['poster']?.toString() ?? '',
       startTime: json['startTime']?.toString(),
       endTime: json['endTime']?.toString(),
       enrollStartTime: json['enrollStartTime']?.toString(),
       enrollEndTime: json['enrollEndTime']?.toString(),
-      quota: json['quota'] is int
-          ? json['quota']
-          : int.tryParse(json['quota']?.toString() ?? '0') ?? 0,
+      quota: safeInt(json['quota']),
       activityTarget: json['activityTarget']?.toString() ?? '',
       activityTargetName: json['activityTargetName']?.toString(),
       isSignIn: json['isSignIn']?.toString() ?? '0',
@@ -240,7 +240,7 @@ class CyclCredit {
     userName: json['userName']?.toString() ?? '',
     activityName: json['activityName']?.toString() ?? '',
     activityType: json['activityType']?.toString(),
-    classHour: (json['classHour'] as num?)?.toDouble() ?? 0.0,
+    classHour: safeDouble(json['classHour']),
     scoreType: json['scoreType']?.toString() ?? '',
     classCredit: json['classCredit']?.toString(),
     creditStatus: json['creditStatus']?.toString() ?? '',
@@ -335,13 +335,11 @@ class CyclActivityLib {
                 ?.map((e) => e.toString())
                 .toList() ??
             [],
-        classHour: (json['classHour'] as num?)?.toDouble() ?? 0.0,
+        classHour: safeDouble(json['classHour']),
         classCredit: json['classCredit']?.toString(),
         avgRank: json['avgRank']?.toString(),
         isPrize: json['isPrize']?.toString(),
-        prizeClassHour: json['prizeClassHour'] is int
-            ? json['prizeClassHour']
-            : int.tryParse(json['prizeClassHour']?.toString() ?? '0') ?? 0,
+        prizeClassHour: safeInt(json['prizeClassHour']),
         describe: json['describe']?.toString(),
         scoringMode: json['scoringMode']?.toString() ?? '',
         creator: json['creator']?.toString() ?? '',
@@ -353,7 +351,7 @@ class CyclActivityLib {
         liablePerPhone: json['liablePerPhone']?.toString() ?? '',
         liableTer: json['liableTer']?.toString() ?? '',
         liableTerPhone: json['liableTerPhone']?.toString() ?? '',
-        instructorHour: (json['instructorHour'] as num?)?.toDouble() ?? 0.0,
+        instructorHour: safeDouble(json['instructorHour']),
         orgName: json['orgName']?.toString() ?? '',
         levelName: json['levelName']?.toString(),
         starName: json['starName']?.toString(),

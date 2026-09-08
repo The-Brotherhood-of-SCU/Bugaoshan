@@ -289,6 +289,7 @@ Shared downloads module lives in `lib/pages/campus/downloads/`:
 - **Theme system** — `lib/theme.dart` defines MD3 expressive overrides (PredictiveBack on Android, Cupertino on iOS, FadeForwards on desktop). Supports system accent color, custom color, or color derived from the background image (with opacity).
 - **EULA gate** — `app.dart` checks `AppConfigProvider.acceptedEulaVersion`; below `currentEulaVersion` shows `EulaGatePage` (EULA text is in `lib/widgets/eula_content.dart` and `assets/eula.md`).
 - **First-launch wizard** — `WizardPage` shown if `firstLaunchWizardCompleted` is false.
+- **手写 JSON 解析** — 统一用 `lib/utils/json_utils.dart` 的 `safeDouble` / `safeInt` / `safeString` / `safeBool` 宽松取值，替代 `(json['x'] as num?)?.toDouble() ?? 0` 样板与裸强转（脏数据回退默认值而非崩溃）。**刻意不引入** json_serializable 全量迁移——现有手写规模不值得。
 
 ### Storage
 

@@ -1,3 +1,5 @@
+import 'package:bugaoshan/utils/json_utils.dart';
+
 class SchemeScoreItem {
   final String courseName;
   final String? englishCourseName;
@@ -29,9 +31,8 @@ class SchemeScoreItem {
 
   factory SchemeScoreItem.fromJson(Map<String, dynamic> json) {
     final gradeName = json['gradeName']?.toString() ?? '';
-    final courseScore = (json['courseScore'] as num?)?.toDouble() ?? 0.0;
-    final gradePointScore =
-        (json['gradePointScore'] as num?)?.toDouble() ?? 0.0;
+    final courseScore = safeDouble(json['courseScore']);
+    final gradePointScore = safeDouble(json['gradePointScore']);
     return SchemeScoreItem(
       courseName: json['courseName']?.toString() ?? '',
       englishCourseName: json['englishCourseName']?.toString(),
@@ -93,11 +94,11 @@ class SchemeScoreSummary {
         [];
 
     return SchemeScoreSummary(
-      zxf: (json['zxf'] as num?)?.toDouble() ?? 0.0,
-      yxxf: (json['yxxf'] as num?)?.toDouble() ?? 0.0,
-      tgms: (json['tgms'] as num?)?.toInt() ?? 0,
-      wtgms: (json['wtgms'] as num?)?.toInt() ?? 0,
-      zms: (json['zms'] as num?)?.toInt() ?? 0,
+      zxf: safeDouble(json['zxf']),
+      yxxf: safeDouble(json['yxxf']),
+      tgms: safeInt(json['tgms']),
+      wtgms: safeInt(json['wtgms']),
+      zms: safeInt(json['zms']),
       cjlx: json['cjlx']?.toString() ?? '',
       items: cjList,
     );

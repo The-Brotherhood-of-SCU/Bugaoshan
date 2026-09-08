@@ -1,3 +1,5 @@
+import 'package:bugaoshan/utils/json_utils.dart';
+
 class BalanceRecord {
   final int? id;
   final String roomKey;
@@ -24,8 +26,8 @@ class BalanceRecord {
         row['timestamp'] as int,
         isUtc: true,
       ),
-      balance: (row['balance'] as num).toDouble(),
-      price: (row['price'] as num).toDouble(),
+      balance: safeDouble(row['balance']),
+      price: safeDouble(row['price']),
     );
   }
 
