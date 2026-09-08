@@ -9,6 +9,7 @@ ADR 保存已经影响代码边界、后续开发仍需遵守的设计决策。�
 | [0003](0003-make-course-display-settings-global.md) | 2026-07-05 | 已接受并实施 | 课表显示偏好归属全局设置域 |
 | [0004](0004-use-distribution-wpe-on-linux.md) | 2026-07-29 | 已接受并实施 | Linux WebView 保留插件，但由分发环境提供 WPE |
 | [0005](0005-remove-balance-history-account-isolation.md) | 2026-08-12 | 已接受并实施 | 撤销余额历史记录的账号隔离，余额数据按房间共享 |
+| [0006](0006-reject-group-shadow-schedule-overlap.md) | 2026-09-08 | 已拒绝 | 不引入“小组课表重叠（Group Shadow）” |
 
 ## 状态定义
 
