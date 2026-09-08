@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -302,7 +303,7 @@ class SetCourseStylePage extends StatelessWidget {
     appConfig.backgroundImagePath.value = null;
     appConfig.backgroundImageCrop.value = null;
     if (oldPath != null) {
-      FileImage(File(oldPath)).evict();
+      unawaited(FileImage(File(oldPath)).evict());
       File(oldPath).delete().ignore();
     }
     if (appConfig.themeColorMode.value == ThemeColorMode.backgroundImage) {
@@ -345,7 +346,7 @@ class SetCourseStylePage extends StatelessWidget {
     // Delete old background file and evict from image cache
     final oldPath = appConfig.backgroundImagePath.value;
     if (oldPath != null) {
-      FileImage(File(oldPath)).evict();
+      unawaited(FileImage(File(oldPath)).evict());
       final oldFile = File(oldPath);
       if (await oldFile.exists()) {
         await oldFile.delete();

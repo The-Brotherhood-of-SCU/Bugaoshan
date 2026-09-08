@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
@@ -96,7 +98,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
       setState(() {
         _startDate = newStartDate;
       });
-      _save();
+      unawaited(_save());
     } on ScuException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -263,7 +265,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
               setState(() {
                 _totalWeeks = selected;
               });
-              _save();
+              unawaited(_save());
             }
           },
         ),
@@ -377,7 +379,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
       setState(() {
         _startDate = newStartDate;
       });
-      _save();
+      unawaited(_save());
     }
   }
 
@@ -402,7 +404,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
       setState(() {
         _startDate = finalDate;
       });
-      _save();
+      unawaited(_save());
     }
   }
 

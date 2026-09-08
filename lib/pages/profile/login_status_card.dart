@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -78,7 +80,7 @@ class _LoginStatusCardState extends State<LoginStatusCard> {
     final result = await popupOrNavigate(context, const ScuLoginPage());
     if (!mounted) return;
     if (result == true) {
-      _loadUsername();
+      unawaited(_loadUsername());
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(
         context,

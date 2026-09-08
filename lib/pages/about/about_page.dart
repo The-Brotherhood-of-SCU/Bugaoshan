@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -82,21 +84,27 @@ class _AboutPageState extends State<AboutPage> {
 
         if (!mounted) return;
       } else if (result.status == UpdateCheckStatus.error) {
-        showInfoDialog(
-          title: localizations.checkForUpdates,
-          content: localizations.loadFailed,
+        unawaited(
+          showInfoDialog(
+            title: localizations.checkForUpdates,
+            content: localizations.loadFailed,
+          ),
         );
       } else {
-        showInfoDialog(
-          title: localizations.checkForUpdates,
-          content: localizations.noUpdateAvailable,
+        unawaited(
+          showInfoDialog(
+            title: localizations.checkForUpdates,
+            content: localizations.noUpdateAvailable,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
-        showInfoDialog(
-          title: localizations.checkForUpdates,
-          content: localizations.loadFailed,
+        unawaited(
+          showInfoDialog(
+            title: localizations.checkForUpdates,
+            content: localizations.loadFailed,
+          ),
         );
       }
     }

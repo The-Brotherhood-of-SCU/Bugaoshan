@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:bugaoshan/injection/injector.dart';
@@ -163,13 +164,13 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       setState(() => _errorMsg = _localizeLoginError(e, l10n));
-      _loadCaptcha();
+      unawaited(_loadCaptcha());
     } catch (e) {
       AppLog.e('ScuLoginPage', 'Login network error: $e');
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       setState(() => _errorMsg = l10n.networkError);
-      _loadCaptcha();
+      unawaited(_loadCaptcha());
     } finally {
       if (mounted) setState(() => _loading = false);
     }

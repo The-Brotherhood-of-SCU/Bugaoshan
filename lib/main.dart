@@ -35,7 +35,7 @@ Future<void> _initializeApp() async {
   await ensureBasicDependencies();
 
   // 清理下载的安装包（首次打开或更新后）。
-  getIt<UpdateService>().cleanupOldPackages();
+  unawaited(getIt<UpdateService>().cleanupOldPackages());
 
   // 桌面端记住窗口位置和大小，下次启动时恢复
   if (!kIsWeb && _isDesktopPlatform) {

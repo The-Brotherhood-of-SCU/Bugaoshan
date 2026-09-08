@@ -58,7 +58,7 @@ class DownloadPathIndex {
     } finally {
       gate.complete();
       if (identical(_directoryQueues[_queueKey], current)) {
-        _directoryQueues.remove(_queueKey);
+        unawaited(_directoryQueues.remove(_queueKey));
       }
     }
   }
