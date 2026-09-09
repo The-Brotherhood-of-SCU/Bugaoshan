@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -332,7 +334,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
         ),
       );
       if (confirmed == true) {
-        courseProvider.switchSchedule(matchId);
+        unawaited(courseProvider.switchSchedule(matchId));
       }
     } catch (e) {
       AppLog.w('CoursePage', 'Failed to check next semester: $e');

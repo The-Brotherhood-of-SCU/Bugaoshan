@@ -35,10 +35,13 @@ class _MyTicketsTabState extends State<_MyTicketsTab> {
   Future<void> _refresh() async {
     await provider.loadTickets(force: true);
     if (!_scrollController.hasClients) return;
-    _scrollController.animateTo(
-      0,
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeOut,
+    // 滚动动画无需等待完成即视为刷新结束（fire-and-forget）。
+    unawaited(
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      ),
     );
   }
 

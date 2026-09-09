@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -415,9 +416,11 @@ class _CourseEditPageState extends State<CourseEditPage> {
     }
 
     if (!isValidPeriod) {
-      showInfoDialog(
-        title: l10n.crossPeriodError,
-        content: l10n.crossPeriodErrorMessage,
+      unawaited(
+        showInfoDialog(
+          title: l10n.crossPeriodError,
+          content: l10n.crossPeriodErrorMessage,
+        ),
       );
       return;
     }
@@ -444,9 +447,11 @@ class _CourseEditPageState extends State<CourseEditPage> {
 
     if (hasConflict) {
       if (!mounted) return;
-      showInfoDialog(
-        title: l10n.timeConflict,
-        content: l10n.timeConflictMessage,
+      unawaited(
+        showInfoDialog(
+          title: l10n.timeConflict,
+          content: l10n.timeConflictMessage,
+        ),
       );
       return;
     }

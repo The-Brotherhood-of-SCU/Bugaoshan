@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:bugaoshan/injection/injector.dart';
@@ -363,7 +364,7 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
       ),
     );
     _exitSelection();
-    _loadFiles();
+    unawaited(_loadFiles());
   }
 
   // ── UI helpers ────────────────────────────────────────────────────────────────────

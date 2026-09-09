@@ -1,4 +1,6 @@
-﻿import 'package:async/async.dart';
+﻿import 'dart:async';
+
+import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -138,7 +140,7 @@ Future showLoadingDialogWithErrorString({
   final l10n = AppLocalizations.of(logicRootContext)!;
   bool isError = false;
   ContextWrapper contextWrapper = ContextWrapper();
-  rebuildDialog() {
+  void rebuildDialog() {
     if (contextWrapper.context.mounted) {
       (contextWrapper.context as Element).markNeedsBuild();
     }

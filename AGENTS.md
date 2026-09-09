@@ -240,6 +240,17 @@ Dev page (`lib/pages/dev/auth_log/`) gains:
 - `AuthLogFilterBar` — filter chips for log level and tag selection.
 - `AuthLogViewerPage` — full-screen viewer with level filter chips + tag dropdown + clear + copy + save actions.
 
+### 业务日志（AppLog）
+
+`AppLog`（`lib/utils/app_log.dart`）是业务层日志门面：与 `AuthLogger` **共享同一个**内存环形缓冲、脱敏规则与文件落盘，Dev 页日志查看器能看到全部来源的日志。延迟从 GetIt 取 `AuthLogger` 单例；测试环境未注册时退化为独立裸实例，保证日志调用永不抛异常。
+
+约定（与 Auth Logging 一并遵守）：
+
+- 错误路径（catch 分支、失败状态）→ `AppLog.e` / `AppLog.w`，**不要**在错误分支写 `debugPrint`。
+- 生命周期 / 关键里程碑 → `AppLog.i`。
+- 本地调试输出 → `AppLog.d`（生产静默）；`debugPrint` 仅限 kDebugMode 下的 DI 装配期 / 启动期调试。
+- 消息中的 access_token / password 等敏感字段由 `AuthLogRedactor` 自动脱敏，无需手动处理。
+
 ### Notice Pages
 
 Three notice sources, each in its own subdirectory under `lib/pages/campus/notice/` (see `docs/architecture/notice-webview.md`):
@@ -290,6 +301,7 @@ Shared downloads module lives in `lib/pages/campus/downloads/`:
 - **EULA gate** — `app.dart` checks `AppConfigProvider.acceptedEulaVersion`; below `currentEulaVersion` shows `EulaGatePage` (EULA text is in `lib/widgets/eula_content.dart` and `assets/eula.md`).
 - **First-launch wizard** — `WizardPage` shown if `firstLaunchWizardCompleted` is false.
 - **手写 JSON 解析** — 统一用 `lib/utils/json_utils.dart` 的 `safeDouble` / `safeInt` / `safeString` / `safeBool` 宽松取值，替代 `(json['x'] as num?)?.toDouble() ?? 0` 样板与裸强转（脏数据回退默认值而非崩溃）。**刻意不引入** json_serializable 全量迁移——现有手写规模不值得。
+- **大文件拆分约定** — 超大文件（600+ 行）拆分用两种模式，均保持外部 import 零改动：① `part` 文件（私有符号跨文件共享，如 `repair_page.dart` + `repair_submit_tab.dart`/`repair_widgets.dart`、`zhjw_api_service.dart` + `zhjw_html_parsers.dart`、`balance_query_provider.dart` + `balance_query_state.dart`）；② barrel re-export（如 `calendar_event_utils.dart`、`service_plugin_models.dart`、`course.dart`）。**有意不拆**的单文件（勿再起拆分之心）：`notice_downloaded_page.dart` / `classroom_page.dart` / `scu_auth.dart` 为单一内聚 State/状态机；`calendar_location_mapper.dart` 为纯静态数据表（有专项单测守着）。向 `zhjw` / `zhhq` 等仍在增长的主文件加解析逻辑时，新代码进对应 part 文件而非主文件。
 
 ### Storage
 
@@ -311,11 +323,12 @@ CI builds inject git metadata via `--dart-define` flags: `GIT_TAG`, `GIT_COMMIT`
 
 ## Testing
 
-- Unit + widget tests in `test/` (`flutter test`).
+- Unit + widget tests in `test/` (`flutter test`) — 共 60+ 测试文件,覆盖认证 / API service / Provider / 纯函数工具 / Widget;下列条目仅为早期代表,非全集.
   - `widget_test.dart` — pure logic tests on `Course` + `selectVisibleCoursesForDay`.
   - `widget_update_service_test.dart` — debounce / in-flight coalescing / dispose semantics using `fake_async` and a mocked `bugaoshan/update` MethodChannel.
   - `add_widget_picker_test.dart` — widget test with `SharedPreferences.setMockInitialValues` and a `FakeWidgetUpdateService`; resets `getIt` between tests.
   - `test_page_test.dart` — integration-ish page test.
+- `service_capture_calibration_test.dart` — 办事大厅表单引擎的真实抓包端到端校准,依赖 `test/fixtures/service_capture.json`(含真实个人信息,**不入库**);fixture 缺失时整套显式 skip,测试输出中的 `~1` 跳过即此,属预期.
 - Integration driver: `test_driver/main.dart` (`flutter drive`).
 
 Always run `dart format` (the repo's pre-commit hook enforces this on staged `.dart` files — see `.githooks/pre-commit`). When adding new tests, use `SharedPreferences.setMockInitialValues({})` + `getIt.reset()` to keep them hermetic.
@@ -357,6 +370,7 @@ The auto-changelog flow:
 ## Code Style
 
 - 遵循 `package:flutter_lints/flutter.yaml`(`analysis_options.yaml` 仅引用,未禁用任何规则).
+- 额外启用 `unawaited_futures` 与 `always_declare_return_types`(逐条实测 0 噪点后启用); 有意 fire-and-forget 的 Future 用 `unawaited()` 显式声明.
 - `dart format` 由 pre-commit 强制执行,提交前不要手动改格式.
 - `.editorconfig`: LF / UTF-8 / 2 空格缩进 / 末尾换行.
 - 内部注释与日志主要使用中文;UI 文案走 ARB 国际化.

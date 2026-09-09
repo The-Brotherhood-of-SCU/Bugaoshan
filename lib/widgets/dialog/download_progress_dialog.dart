@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -235,22 +236,24 @@ Future<bool> showDownloadProgressDialog({
   final progressState = updateProvider.progressState;
   var visible = true;
 
-  showDialog(
-    context: context,
-    useRootNavigator: true,
-    barrierDismissible: false,
-    builder: (dialogContext) => DownloadProgressDialogView(
-      progressState: progressState,
-      l10n: l10n,
-      filename: filename,
-      onDownloadInBackground: () {
-        visible = false;
-        Navigator.of(dialogContext).pop();
-      },
-      onCancel: () {
-        updateProvider.cancelDownload();
-        Navigator.of(dialogContext).pop();
-      },
+  unawaited(
+    showDialog(
+      context: context,
+      useRootNavigator: true,
+      barrierDismissible: false,
+      builder: (dialogContext) => DownloadProgressDialogView(
+        progressState: progressState,
+        l10n: l10n,
+        filename: filename,
+        onDownloadInBackground: () {
+          visible = false;
+          Navigator.of(dialogContext).pop();
+        },
+        onCancel: () {
+          updateProvider.cancelDownload();
+          Navigator.of(dialogContext).pop();
+        },
+      ),
     ),
   );
 
@@ -265,7 +268,7 @@ Future<bool> showDownloadProgressDialog({
     return false;
   } catch (e) {
     if (context.mounted && visible) {
-      Navigator.of(context, rootNavigator: true).maybePop();
+      unawaited(Navigator.of(context, rootNavigator: true).maybePop());
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('${l10n.updateFailed}: $e')));
@@ -274,7 +277,7 @@ Future<bool> showDownloadProgressDialog({
   }
 
   if (context.mounted && visible) {
-    Navigator.of(context, rootNavigator: true).maybePop();
+    unawaited(Navigator.of(context, rootNavigator: true).maybePop());
   }
   return true;
 }

@@ -30,6 +30,14 @@ linter:
   # `// ignore_for_file: name_of_lint` syntax on the line or in the file
   # producing the lint.
   rules:
+    # unawaited_futures：async 函数中未 await 的 Future（浮空 Future 会静默吞错）。
+    # 有意 fire-and-forget 处用 unawaited() 显式声明（代码库既有惯用法）。
+    - unawaited_futures
+    # always_declare_return_types：缺省返回类型的函数/闭包（补齐类型信息）。
+    - always_declare_return_types
+    # avoid_redundant_argument_values：实测 138 命中（UI 刻意显式传参为主），
+    # 噪音过高不启用，仅留档备查。
+    # - avoid_redundant_argument_values
     # avoid_print: false  # Uncomment to disable the `avoid_print` rule
     # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
 

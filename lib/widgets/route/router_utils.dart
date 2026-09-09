@@ -1,4 +1,6 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:async';
+
+import 'package:flutter/material.dart';
 import 'package:bugaoshan/theme_shape.dart';
 
 import 'popup_context.dart';
@@ -93,12 +95,14 @@ Future<dynamic> popupOrNavigate(
 
   // 如果已经在弹窗内，直接导航而不是再弹窗
   if (isInPopup) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (builder) {
-          return page;
-        },
+    unawaited(
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (builder) {
+            return page;
+          },
+        ),
       ),
     );
     return;
