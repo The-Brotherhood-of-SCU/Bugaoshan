@@ -210,12 +210,12 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
     );
   }
 
-  /// 查询条件下拉框统一 40 逻辑像素高，与课程课表页的筛选控件保持一致。
+  /// 查询条件下拉框与文本框共用同一套装饰配置，高度逻辑与
+  /// 课程课表页保持一致：不加 isDense，取 M3 标准交互高度
+  /// （kMinInteractiveDimension = 48），与应用内其他筛选控件等高。
   static const InputDecoration _filterInputDecoration = InputDecoration(
-    contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     border: OutlineInputBorder(),
-    isDense: true,
-    constraints: BoxConstraints(minHeight: 40),
   );
 
   Widget _buildDropdown({

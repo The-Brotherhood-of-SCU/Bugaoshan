@@ -206,13 +206,13 @@ class _CourseCurriculumPageState extends State<CourseCurriculumPage> {
     _provider.search();
   }
 
-  /// 查询条件里下拉框与文本框共用同一套装饰配置，
-  /// 用固定 minHeight 保证同一行内两种控件完全等高。
+  /// 查询条件里下拉框与文本框共用同一套装饰配置。
+  /// 不加 isDense，让 InputDecorator 取 M3 标准交互高度
+  /// （kMinInteractiveDimension = 48），与培养方案、成绩等页面的
+  /// 筛选控件高度一致，避免比应用内其他输入框矮一截。
   static const InputDecoration _filterInputDecoration = InputDecoration(
-    contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     border: OutlineInputBorder(),
-    isDense: true,
-    constraints: BoxConstraints(minHeight: 40),
   );
 
   Widget _buildTextField({
