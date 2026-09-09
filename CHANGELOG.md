@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - 优化课表导入逻辑：优先使用教务处的校区信息判定主导校区
 - Windows 安装包内置打包 WebView2Loader.dll，解决未安装运行时的 Windows 启动报错
+- 班级课表支持按周查看课程
 
 ### Fixed
 - 修复课表与考表导出到系统日历时地点缺失与坐标偏移问题：现在 iOS / macOS 导出到系统日历可直接联动系统日程的地图显示与导航（规范三校区教学建筑 POI 并智能匹配系统地图引擎）
