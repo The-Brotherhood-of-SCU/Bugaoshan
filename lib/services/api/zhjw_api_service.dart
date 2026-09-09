@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart';
 import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
+import 'package:bugaoshan/pages/campus/models/course_curriculum_model.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/models/plan_completion.dart';
 import 'package:bugaoshan/pages/campus/exam_plan/models/exam_info.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program.dart';
@@ -947,6 +948,140 @@ class ZhjwApiService {
           'Accept': 'application/json, text/javascript, */*; q=0.01',
           'Referer':
               '$kZhjwBase/student/teachingResources/classCurriculum/index',
+          'User-Agent': kDefaultUserAgent,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      );
+      final body = resp.body.trim();
+      _checkSessionExpiry(body, resp.statusCode);
+      final json = jsonDecode(body) as List<dynamic>;
+      final list = (json.isNotEmpty ? json[0] : []) as List<dynamic>;
+      return list
+          .map(
+            (e) => ClassScheduleInquiryItem.fromJson(e as Map<String, dynamic>),
+          )
+          .toList();
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  课程课表
+  // ═══════════════════════════════════════════════════════════════════
+
+  /// 获取课程课表首页的筛选选项（学年学期 / 开课院系 / 课程类别）
+  Future<
+    ({
+      List<SemesterOption> semesters,
+      List<DepartmentOption> departments,
+      List<CourseCategoryOption> categories,
+    })
+  >
+  fetchCourseCurriculumIndex() {
+    return _request((client) async {
+      final resp = await client.get(
+        Uri.parse(
+          '$kZhjwBase/student/teachingResources/courseCurriculum/index',
+        ),
+        headers: {
+          'Accept': 'text/html,*/*',
+          'Referer': '$kZhjwBase/',
+          'User-Agent': kDefaultUserAgent,
+        },
+      );
+      final body = resp.body.trim();
+      _checkSessionExpiry(body, resp.statusCode);
+
+      final semesterOptions = _parseSelectOptions(body, 'zxjxjhh');
+      final semesters = semesterOptions
+          .where((o) => o.value.isNotEmpty)
+          .map((o) => SemesterOption(value: o.value, label: o.label))
+          .toList();
+
+      final deptOptions = _parseSelectOptions(body, 'kkxsh');
+      final departments = deptOptions
+          .where((o) => o.value.isNotEmpty)
+          .map((o) => DepartmentOption(value: o.value, name: o.label))
+          .toList();
+
+      final categoryOptions = _parseSelectOptions(body, 'kclb');
+      final categories = categoryOptions
+          .where((o) => o.value.isNotEmpty)
+          .map((o) => CourseCategoryOption(code: o.value, name: o.label))
+          .toList();
+
+      return (
+        semesters: semesters,
+        departments: departments,
+        categories: categories,
+      );
+    });
+  }
+
+  /// 搜索课程列表（支持学期 / 院系 / 课程名 / 课程号 / 课序号 / 课程类别筛选）
+  Future<({List<CourseSectionInfo> courses, int totalCount})> fetchCourseList({
+    int pageNum = 1,
+    int pageSize = 30,
+    String semester = '',
+    String department = '',
+    String courseName = '',
+    String courseCode = '',
+    String courseSeq = '',
+    String category = '',
+  }) {
+    return _request((client) async {
+      final resp = await client.post(
+        Uri.parse(
+          '$kZhjwBase/student/teachingResources/courseCurriculum/search',
+        ),
+        headers: {
+          'Accept': 'application/json, text/javascript, */*; q=0.01',
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          'Referer':
+              '$kZhjwBase/student/teachingResources/courseCurriculum/index',
+          'User-Agent': kDefaultUserAgent,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body:
+            'zxjxjhh=${Uri.encodeComponent(semester)}'
+            '&kkxsh=${Uri.encodeComponent(department)}'
+            '&kcm=${Uri.encodeComponent(courseName)}'
+            '&kch=${Uri.encodeComponent(courseCode)}'
+            '&kxh=${Uri.encodeComponent(courseSeq)}'
+            '&kclb=${Uri.encodeComponent(category)}'
+            '&pageNum=$pageNum&pageSize=$pageSize',
+      );
+      final body = resp.body.trim();
+      _checkSessionExpiry(body, resp.statusCode);
+      final json = jsonDecode(body) as Map<String, dynamic>;
+      final records = (json['records'] as List<dynamic>?) ?? [];
+      final totalCount =
+          (json['pageContext']?['totalCount'] as num?)?.toInt() ?? 0;
+      final courses = records
+          .map((e) => CourseSectionInfo.fromJson(e as Map<String, dynamic>))
+          .toList();
+      return (courses: courses, totalCount: totalCount);
+    });
+  }
+
+  /// 获取指定课程（教学班）的课表，返回结构与班级课表一致
+  Future<List<ClassScheduleInquiryItem>> fetchCourseSchedule({
+    required String planCode,
+    required String courseCode,
+    required String courseSequenceCode,
+  }) {
+    return _request((client) async {
+      final resp = await client.get(
+        Uri.parse(
+          '$kZhjwBase/student/teachingResources/courseCurriculum'
+          '/searchCurriculum/callback'
+          '?planCode=${Uri.encodeComponent(planCode)}'
+          '&courseCode=${Uri.encodeComponent(courseCode)}'
+          '&courseSequenceCode=${Uri.encodeComponent(courseSequenceCode)}',
+        ),
+        headers: {
+          'Accept': 'application/json, text/javascript, */*; q=0.01',
+          'Referer':
+              '$kZhjwBase/student/teachingResources/courseCurriculum/index',
           'User-Agent': kDefaultUserAgent,
           'X-Requested-With': 'XMLHttpRequest',
         },

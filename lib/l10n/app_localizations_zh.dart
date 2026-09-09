@@ -2244,6 +2244,48 @@ class AppLocalizationsZh extends AppLocalizations {
   String get classScheduleInquiryLoadMore => '加载更多';
 
   @override
+  String get dockLabelCourseCurriculum => '课程课表';
+
+  @override
+  String get courseCurriculum => '课程课表';
+
+  @override
+  String get courseCurriculumDesc => '查询各课程教学班的课表信息';
+
+  @override
+  String get courseCurriculumNoData => '暂无课程数据';
+
+  @override
+  String get courseCurriculumNoSchedule => '暂无课表数据';
+
+  @override
+  String get courseCurriculumFilter => '查询条件';
+
+  @override
+  String get courseCurriculumSemester => '学年学期';
+
+  @override
+  String get courseCurriculumDepartment => '开课院系';
+
+  @override
+  String get courseCurriculumCategory => '课程类别';
+
+  @override
+  String get courseCurriculumCourseName => '课程名';
+
+  @override
+  String get courseCurriculumCourseCode => '课程号';
+
+  @override
+  String get courseCurriculumCourseSeq => '课序号';
+
+  @override
+  String get courseCurriculumSearch => '查询';
+
+  @override
+  String get courseCurriculumLoadMore => '加载更多';
+
+  @override
   String holidayTotalDays(int days) {
     return '共$days天假';
   }

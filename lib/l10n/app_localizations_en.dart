@@ -2313,6 +2313,48 @@ class AppLocalizationsEn extends AppLocalizations {
   String get classScheduleInquiryLoadMore => 'Load More';
 
   @override
+  String get dockLabelCourseCurriculum => 'Course Table';
+
+  @override
+  String get courseCurriculum => 'Course Curriculum';
+
+  @override
+  String get courseCurriculumDesc => 'View schedules for each course section';
+
+  @override
+  String get courseCurriculumNoData => 'No course data';
+
+  @override
+  String get courseCurriculumNoSchedule => 'No schedule data';
+
+  @override
+  String get courseCurriculumFilter => 'Filter';
+
+  @override
+  String get courseCurriculumSemester => 'Semester';
+
+  @override
+  String get courseCurriculumDepartment => 'Department';
+
+  @override
+  String get courseCurriculumCategory => 'Course Category';
+
+  @override
+  String get courseCurriculumCourseName => 'Course Name';
+
+  @override
+  String get courseCurriculumCourseCode => 'Course Code';
+
+  @override
+  String get courseCurriculumCourseSeq => 'Course Seq';
+
+  @override
+  String get courseCurriculumSearch => 'Search';
+
+  @override
+  String get courseCurriculumLoadMore => 'Load More';
+
+  @override
   String holidayTotalDays(int days) {
     return '$days-day holiday';
   }
