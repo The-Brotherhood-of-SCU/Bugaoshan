@@ -133,12 +133,82 @@ void main() {
     );
     addTearDown(helper.auth.dispose);
 
-    // 入口页含 login 特征 → _checkSessionExpiry 抛 UnauthenticatedException
-    // → retryOnUnauthenticated 触发重认证（SSO）。测试环境无真实 SSO，
-    // 重认证失败表现为 ServiceException('教务 SSO 登录失败')——
+    // 入口页含登录页强特征（表单提交到 /login）→ _checkSessionExpiry 抛
+    // UnauthenticatedException → retryOnUnauthenticated 触发重认证（SSO）。
+    // 测试环境无真实 SSO，重认证失败表现为 ServiceException('教务 SSO 登录失败')——
     // 重点是与下方"格式异常"用例区分：会话过期走重认证而非格式错误提示。
     await expectLater(
       helper.api.fetchPlanCompletion(),
+      throwsA(
+        isA<ServiceException>().having(
+          (e) => e.message,
+          'message',
+          contains('SSO'),
+        ),
+      ),
+    );
+  });
+
+  test('fetchSemesters: business page containing login substrings must not '
+      'trigger invalidate (issue #282)', () async {
+    // issue #282 的真实场景：calendarSemesterCurriculum/index 正常返回 200，
+    // 页面里的 loginStatus / clientLogin / 登录链接都是业务内容，
+    // 旧判断 `startsWith('<') && contains('login')` 会误判为登录页，
+    // 触发 invalidate + 重走 SSO。新判断应正常解析出学期列表。
+    final helper = _buildRoutingApi(
+      {
+        '/student/courseSelect/calendarSemesterCurriculum/index': '''
+<html>
+<head><title>学期理论课表</title></head>
+<body>
+  <script>var loginStatus = 1; function clientLogin() {}</script>
+  <a href="/login?refer=%2Fstudent" class="hidden">登录</a>
+  <select name="xnxdm">
+    <option value="2025-2026-2-1">2025-2026学年2学期</option>
+  </select>
+</body>
+</html>
+''',
+      },
+      prefs,
+      logger,
+    );
+    addTearDown(helper.auth.dispose);
+
+    final semesters = await helper.api.fetchSemesters();
+    expect(semesters, hasLength(1));
+    expect(semesters.single.value, '2025-2026-2-1');
+  });
+
+  test('fetchSemesters: real login page still triggers re-auth', () async {
+    // fixture 按真实 zhjw 登录页（2026-09 抓取样本）裁剪：
+    // <title>登录</title> + form action=/j_spring_security_check +
+    // j_username/j_password 字段。
+    final helper = _buildRoutingApi(
+      {
+        '/student/courseSelect/calendarSemesterCurriculum/index': '''
+<html>
+<head><title>登录</title></head>
+<body>
+  <h2>欢迎登录四川大学教务管理系统<br />学生端</h2>
+  <form class="form-signin" action="/j_spring_security_check" method="post">
+    <input type="text" id="input_username" name="j_username" maxlength="50" placeholder="学号"/>
+    <input type="password" id="input_password" name="j_password" autocomplete="off" placeholder="密码"/>
+    <input type="submit" id="loginButton" value="登 录"/>
+  </form>
+</body>
+</html>
+''',
+      },
+      prefs,
+      logger,
+    );
+    addTearDown(helper.auth.dispose);
+
+    // 真登录页 → UnauthenticatedException → 重认证（测试环境 SSO 失败
+    // 表现为 '教务 SSO 登录失败'），而不是"无法获取学期列表"。
+    await expectLater(
+      helper.api.fetchSemesters(),
       throwsA(
         isA<ServiceException>().having(
           (e) => e.message,
