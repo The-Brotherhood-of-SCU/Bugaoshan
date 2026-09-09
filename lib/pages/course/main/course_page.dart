@@ -151,7 +151,11 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
       children: [
         if (!widget.demoMode && _controller != null)
           ListenableBuilder(
-            listenable: _controller!,
+            listenable: Listenable.merge([
+              _controller!,
+              courseProvider.allSchedules,
+              courseProvider.scheduleConfig,
+            ]),
             builder: (context, _) => CoursePageTopBar(
               visibleWeek: _controller!.visibleWeek,
               totalWeeks: _controller!.totalWeeks,
@@ -168,6 +172,11 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
               onImport: _onImport,
               onExport: _onExport,
               onAddCourse: _onAddCourse,
+              schedules: courseProvider.allSchedules.value,
+              currentScheduleId: courseProvider.scheduleConfig.value?.id,
+              onSwitchSchedule: (id) => courseProvider.switchSchedule(id),
+              onOpenScheduleManagement: () =>
+                  _openScheduleManagement(logicRootContext),
             ),
           ),
         Expanded(
