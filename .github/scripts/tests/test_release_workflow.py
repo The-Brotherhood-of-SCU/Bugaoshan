@@ -12,8 +12,23 @@ class ReleaseWorkflowTest(unittest.TestCase):
         ).read_text(encoding="utf-8")
 
         self.assertIn(
-            "https://github.com/Visio-Vanitas/Bugaoshan/releases/download/"
-            "v{version}/bugaoshan_{version}_macos_arm64.dmg",
+            "[dmg](https://github.com/Visio-Vanitas/Bugaoshan/releases/download/"
+            "v{version}/bugaoshan_{version}_macos_arm64.dmg)",
+            release_body,
+        )
+
+    def test_ios_download_points_to_apple_mirror_release(self):
+        release_body = (
+            REPOSITORY_ROOT / ".github/scripts/release_body.py"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn(
+            "[ipa](https://github.com/Visio-Vanitas/Bugaoshan/releases/download/"
+            "v{version}/bugaoshan_{version}_ios_unsigned.ipa)",
+            release_body,
+        )
+        self.assertIn(
+            "ipa仅供理解有关技术的同学测试使用，非技术背景同学请勿下载",
             release_body,
         )
 
