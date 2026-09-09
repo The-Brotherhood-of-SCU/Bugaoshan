@@ -6,6 +6,7 @@ import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/balance_query_service.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 
 class BindRoomDialog extends StatefulWidget {
@@ -143,7 +144,7 @@ class BindRoomDialogState extends State<BindRoomDialog> {
         });
       }
     } catch (e) {
-      debugPrint('Verify error: $e');
+      AppLog.e('BindRoomDialog', 'Verify error: $e');
       if (mounted) {
         setState(() {
           _isVerifying = false;

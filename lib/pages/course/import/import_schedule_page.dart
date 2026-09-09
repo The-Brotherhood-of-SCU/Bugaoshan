@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
@@ -10,6 +11,7 @@ import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/academic_calendar_service.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
@@ -193,9 +195,14 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         _showSuccessAndPop();
       }
     } catch (e) {
-      debugPrint('Import from share error: $e');
+      AppLog.e('ImportSchedulePage', 'Import from share error: $e');
       if (mounted) {
-        showInfoDialog(title: l10n.importFailed, content: l10n.importFailedTip);
+        unawaited(
+          showInfoDialog(
+            title: l10n.importFailed,
+            content: l10n.importFailedTip,
+          ),
+        );
       }
     }
   }
@@ -206,7 +213,9 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
 
     if (!authProvider.isLoggedIn) {
       if (mounted) {
-        showInfoDialog(title: l10n.loginRequired, content: l10n.scuLogin);
+        unawaited(
+          showInfoDialog(title: l10n.loginRequired, content: l10n.scuLogin),
+        );
       }
       return;
     }
@@ -228,13 +237,17 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         }
       }
     } on ScuException catch (e) {
-      if (mounted) showInfoDialog(title: l10n.importFailed, content: e.message);
+      if (mounted) {
+        unawaited(showInfoDialog(title: l10n.importFailed, content: e.message));
+      }
       if (mounted) setState(() => _loading = false);
       return;
     } catch (e) {
-      debugPrint('Import online error: $e');
+      AppLog.e('ImportSchedulePage', 'Import online error: $e');
       if (mounted) {
-        showInfoDialog(title: l10n.importFailed, content: l10n.importFailed);
+        unawaited(
+          showInfoDialog(title: l10n.importFailed, content: l10n.importFailed),
+        );
         setState(() => _loading = false);
       }
       return;
@@ -486,11 +499,15 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         }
       }
     } on ScuException catch (e) {
-      if (mounted) showInfoDialog(title: l10n.importFailed, content: e.message);
-    } catch (e) {
-      debugPrint('Import from jwxt error: $e');
       if (mounted) {
-        showInfoDialog(title: l10n.importFailed, content: l10n.importFailed);
+        unawaited(showInfoDialog(title: l10n.importFailed, content: e.message));
+      }
+    } catch (e) {
+      AppLog.e('ImportSchedulePage', 'Import from jwxt error: $e');
+      if (mounted) {
+        unawaited(
+          showInfoDialog(title: l10n.importFailed, content: l10n.importFailed),
+        );
       }
     } finally {
       if (mounted) setState(() => _loading = false);

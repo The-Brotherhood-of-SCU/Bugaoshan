@@ -85,7 +85,7 @@ void main() {
     await started.future;
 
     // Request another update while in-flight (force immediate path sets _needsRunAgain)
-    service.updateWidgetData(force: true);
+    unawaited(service.updateWidgetData(force: true));
 
     // Unblock the first native call
     block.complete();

@@ -107,7 +107,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
         _selectedDate = picked;
       });
       if (_selectedBuilding != null) {
-        _queryBuilding(_selectedBuilding!);
+        unawaited(_queryBuilding(_selectedBuilding!));
       }
     }
   }

@@ -1434,6 +1434,76 @@
         "description": "选择的图片超过大小上限时提示。",
         "type": "text"
     },
+    "repairDetail": "报修详情",
+    "@repairDetail": {
+        "description": "报修工单详情页标题。",
+        "type": "text"
+    },
+    "repairServiceUnit": "服务单位",
+    "@repairServiceUnit": {
+        "description": "报修工单中的服务单位字段标签。",
+        "type": "text"
+    },
+    "repairPayType": "收费类型",
+    "@repairPayType": {
+        "description": "报修工单中的收费类型字段标签。",
+        "type": "text"
+    },
+    "repairProgress": "工单进度",
+    "@repairProgress": {
+        "description": "工单进度时间线标题。",
+        "type": "text"
+    },
+    "repairWithdraw": "撤回报修",
+    "@repairWithdraw": {
+        "description": "撤回报修按钮文案。",
+        "type": "text"
+    },
+    "repairWithdrawConfirm": "确定要撤回该报修工单吗？",
+    "@repairWithdrawConfirm": {
+        "description": "撤回报修前的确认提示。",
+        "type": "text"
+    },
+    "repairWithdrawSuccess": "报修已撤回",
+    "@repairWithdrawSuccess": {
+        "description": "撤回报修成功后的提示。",
+        "type": "text"
+    },
+    "repairWithdrawFailed": "撤回失败，请稍后重试",
+    "@repairWithdrawFailed": {
+        "description": "撤回报修失败后的提示。",
+        "type": "text"
+    },
+    "repairEvaluate": "评价工单",
+    "@repairEvaluate": {
+        "description": "评价报修工单按钮文案。",
+        "type": "text"
+    },
+    "repairEvaluateHint": "请填写评价内容（可选）",
+    "@repairEvaluateHint": {
+        "description": "评价内容输入框的占位提示。",
+        "type": "text"
+    },
+    "repairEvaluateSuccess": "评价成功",
+    "@repairEvaluateSuccess": {
+        "description": "评价成功后的提示。",
+        "type": "text"
+    },
+    "repairEvaluated": "已评价",
+    "@repairEvaluated": {
+        "description": "工单已评价状态文案。",
+        "type": "text"
+    },
+    "repairWithdrawn": "已撤回",
+    "@repairWithdrawn": {
+        "description": "工单已撤回状态文案。",
+        "type": "text"
+    },
+    "repairEvaluateFailed": "评价失败，请稍后重试",
+    "@repairEvaluateFailed": {
+        "description": "评价失败后的提示。",
+        "type": "text"
+    },
     "serviceHallTitle": "办事大厅",
     "@serviceHallTitle": {
         "description": "办事大厅二级页面标题，列出可办理事项。",

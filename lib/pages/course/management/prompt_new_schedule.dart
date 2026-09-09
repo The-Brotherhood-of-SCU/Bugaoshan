@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
@@ -42,7 +44,7 @@ Future<void> promptForNewScheduleConfig(
   if (!context.mounted) return;
 
   if (courseProvider.isScheduleNameTaken(newName)) {
-    showInfoDialog(title: l10n.duplicateScheduleName, content: '');
+    unawaited(showInfoDialog(title: l10n.duplicateScheduleName, content: ''));
     return;
   }
 
@@ -52,7 +54,7 @@ Future<void> promptForNewScheduleConfig(
       currentConfig ??
       ScheduleConfig(
         semesterStartDate: DateTime.now().toMonday(),
-        totalWeeks: ScheduleConfig.kDefaultTotalWeeks,
+        totalWeeks: kDefaultTotalWeeks,
       );
   final newConfig = template.copyWith(
     id: DateTime.now().millisecondsSinceEpoch.toString(),

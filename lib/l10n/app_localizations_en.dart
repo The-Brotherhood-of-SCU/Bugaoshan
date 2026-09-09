@@ -2865,6 +2865,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String get repairImageTooLarge => 'Image must be smaller than 10MB';
 
   @override
+  String get repairDetail => 'Repair Detail';
+
+  @override
+  String get repairServiceUnit => 'Service Unit';
+
+  @override
+  String get repairPayType => 'Charge Type';
+
+  @override
+  String get repairProgress => 'Repair Progress';
+
+  @override
+  String get repairWithdraw => 'Withdraw Repair';
+
+  @override
+  String get repairWithdrawConfirm => 'Withdraw this repair ticket?';
+
+  @override
+  String get repairWithdrawSuccess => 'Repair withdrawn';
+
+  @override
+  String get repairWithdrawFailed => 'Withdraw failed, please try again later';
+
+  @override
+  String get repairEvaluate => 'Evaluate Repair';
+
+  @override
+  String get repairEvaluateHint => 'Write your review (optional)';
+
+  @override
+  String get repairEvaluateSuccess => 'Evaluation submitted';
+
+  @override
+  String get repairEvaluated => 'Evaluated';
+
+  @override
+  String get repairWithdrawn => 'Withdrawn';
+
+  @override
+  String get repairEvaluateFailed =>
+      'Evaluation failed, please try again later';
+
+  @override
   String get serviceHallTitle => 'Service Hall';
 
   @override

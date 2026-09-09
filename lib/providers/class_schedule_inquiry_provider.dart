@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 
 enum ClassScheduleInquiryLoadState { idle, loading, loaded, error }
@@ -149,7 +150,7 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
       notifyListeners();
     } catch (error) {
       if (generation != _indexGeneration) return;
-      debugPrint('Class schedule index load error: $error');
+      AppLog.e('ClassScheduleInquiryProvider', 'Index load error: $error');
       _indexState = ClassScheduleInquiryLoadState.error;
       _indexError = campusNetworkErrorType(LoadErrorType.loadFailed);
       notifyListeners();
@@ -180,7 +181,7 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
           department != _selectedDepartment) {
         return;
       }
-      debugPrint('Class schedule subjects load error: $error');
+      AppLog.e('ClassScheduleInquiryProvider', 'Subjects load error: $error');
       _subjects = const [];
       _subjectsState = ClassScheduleInquiryLoadState.error;
     }
@@ -221,7 +222,10 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
           subject != _selectedSubject) {
         return;
       }
-      debugPrint('Class schedule class options load error: $error');
+      AppLog.e(
+        'ClassScheduleInquiryProvider',
+        'Class options load error: $error',
+      );
       _classOptions = const [];
       _classOptionsState = ClassScheduleInquiryLoadState.error;
     }
@@ -303,7 +307,7 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
       )) {
         return;
       }
-      debugPrint('Class schedule classes load error: $error');
+      AppLog.e('ClassScheduleInquiryProvider', 'Classes load error: $error');
       _classesState = ClassScheduleInquiryLoadState.error;
       _classesError = campusNetworkErrorType(LoadErrorType.loadFailed);
     }
@@ -373,7 +377,7 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
       );
     } catch (error) {
       if (_detailGenerations[key] != generation) return;
-      debugPrint('Class schedule detail load error: $error');
+      AppLog.e('ClassScheduleInquiryProvider', 'Detail load error: $error');
       _details[key] = ClassScheduleDetailState(
         courses: previous.courses,
         state: ClassScheduleInquiryLoadState.error,

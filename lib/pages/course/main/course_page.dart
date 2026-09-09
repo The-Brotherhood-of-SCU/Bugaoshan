@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -11,6 +13,7 @@ import 'course_page_top_bar.dart';
 import 'course_page_vacation_view.dart';
 import 'course_preview_data.dart';
 import '../management/schedule_management_page.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/pages/course/widgets/course_grid.dart';
@@ -148,7 +151,11 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
       children: [
         if (!widget.demoMode && _controller != null)
           ListenableBuilder(
-            listenable: _controller!,
+            listenable: Listenable.merge([
+              _controller!,
+              courseProvider.allSchedules,
+              courseProvider.scheduleConfig,
+            ]),
             builder: (context, _) => CoursePageTopBar(
               visibleWeek: _controller!.visibleWeek,
               totalWeeks: _controller!.totalWeeks,
@@ -165,6 +172,11 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
               onImport: _onImport,
               onExport: _onExport,
               onAddCourse: _onAddCourse,
+              schedules: courseProvider.allSchedules.value,
+              currentScheduleId: courseProvider.scheduleConfig.value?.id,
+              onSwitchSchedule: (id) => courseProvider.switchSchedule(id),
+              onOpenScheduleManagement: () =>
+                  _openScheduleManagement(logicRootContext),
             ),
           ),
         Expanded(
@@ -220,7 +232,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
         courseProvider.scheduleConfig.value ??
         ScheduleConfig(
           semesterStartDate: DateTime.now().toMonday(),
-          totalWeeks: ScheduleConfig.kDefaultTotalWeeks,
+          totalWeeks: kDefaultTotalWeeks,
         );
     final allCourses = widget.demoMode
         ? kDemoCourses
@@ -331,10 +343,10 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
         ),
       );
       if (confirmed == true) {
-        courseProvider.switchSchedule(matchId);
+        unawaited(courseProvider.switchSchedule(matchId));
       }
     } catch (e) {
-      debugPrint('CoursePage: failed to check next semester: $e');
+      AppLog.w('CoursePage', 'Failed to check next semester: $e');
     }
   }
 

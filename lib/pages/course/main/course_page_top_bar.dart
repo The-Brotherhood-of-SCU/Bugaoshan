@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/theme_shape.dart';
+
+/// 切换课表菜单里「管理课表」项的哨兵值，不会与课表 id 冲突。
+const _kScheduleManagementMenuValue = '__management__';
 
 class CoursePageTopBar extends StatelessWidget {
   final int visibleWeek;
@@ -21,6 +25,12 @@ class CoursePageTopBar extends StatelessWidget {
   final VoidCallback onExport;
   final VoidCallback onAddCourse;
 
+  /// 课表快捷切换：多于一份课表时在右侧按钮区最前显示弹窗菜单。
+  final List<ScheduleConfig> schedules;
+  final String? currentScheduleId;
+  final ValueChanged<String> onSwitchSchedule;
+  final VoidCallback onOpenScheduleManagement;
+
   const CoursePageTopBar({
     super.key,
     required this.visibleWeek,
@@ -38,6 +48,10 @@ class CoursePageTopBar extends StatelessWidget {
     required this.onImport,
     required this.onExport,
     required this.onAddCourse,
+    this.schedules = const [],
+    this.currentScheduleId,
+    required this.onSwitchSchedule,
+    required this.onOpenScheduleManagement,
   });
 
   @override
@@ -136,6 +150,59 @@ class CoursePageTopBar extends StatelessWidget {
           ),
           Row(
             children: [
+              if (schedules.length > 1)
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.swap_horiz, size: 20),
+                  tooltip: l10n.switchSchedule,
+                  // padding 6 + 20px 图标 = 32×32，与旁边 IconButton 的
+                  // constraints 对齐（constraints 参数约束的是菜单不是按钮）。
+                  padding: const EdgeInsets.all(6),
+                  onSelected: (id) {
+                    if (id == _kScheduleManagementMenuValue) {
+                      onOpenScheduleManagement();
+                    } else {
+                      onSwitchSchedule(id);
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    ...schedules.map(
+                      (schedule) => PopupMenuItem<String>(
+                        value: schedule.id,
+                        child: Row(
+                          children: [
+                            if (schedule.id == currentScheduleId)
+                              Icon(
+                                Icons.check,
+                                color: Theme.of(context).colorScheme.primary,
+                                size: 20,
+                              )
+                            else
+                              const SizedBox(width: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                schedule.semesterName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const PopupMenuDivider(),
+                    PopupMenuItem<String>(
+                      value: _kScheduleManagementMenuValue,
+                      child: Row(
+                        children: [
+                          // 缩进与上方课表项文字对齐（图标 20 + 间距 8）。
+                          const SizedBox(width: 28),
+                          Expanded(child: Text(l10n.scheduleManagement)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               IconButton(
                 onPressed: onImport,
                 icon: const Icon(Icons.download_rounded, size: 20),

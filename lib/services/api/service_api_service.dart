@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/services/api/api_request.dart';
@@ -10,6 +9,7 @@ import 'package:bugaoshan/services/api/service_plugin_models.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/service_auth.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/auth_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
@@ -111,8 +111,9 @@ class ServiceApiService {
     _checkSessionExpiry(body, statusCode);
     // 诊断日志：记录非 2xx/非 JSON 的响应，便于定位服务端拒绝原因
     if (statusCode < 200 || statusCode >= 300) {
-      debugPrint(
-        'ServiceApi non-2xx: status=$statusCode body=${body.length > 500 ? body.substring(0, 500) : body}',
+      AppLog.w(
+        'ServiceApi',
+        'non-2xx: status=$statusCode body=${body.length > 500 ? body.substring(0, 500) : body}',
       );
     }
     final json = jsonDecode(body) as Map<String, dynamic>;
@@ -123,7 +124,6 @@ class ServiceApiService {
     // 业务错误记录到 AuthLogger，导出 auth log 可直接查看 e/m
     if (json['e']?.toString() != '0') {
       final msg = '业务错误 e=${json['e']} m=${json['m']} status=$statusCode';
-      debugPrint('ServiceApi business error: $msg');
       _log.w('SERVICE', msg);
     }
     return json;

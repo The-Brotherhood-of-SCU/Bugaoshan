@@ -8,6 +8,7 @@ import 'package:bugaoshan/widgets/common/icon_info_row.dart';
 import 'package:bugaoshan/widgets/common/image_viewer.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 
 class ActivityDetailPage extends StatefulWidget {
   final String activityId;
@@ -52,7 +53,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
         _loading = false;
       });
     } catch (e) {
-      debugPrint('Activity detail load error: $e');
+      AppLog.e('CcylActivityDetail', 'Detail load error: $e');
       if (!mounted) return;
       setState(() {
         _error = LoadErrorType.ccylActivityLoadFailed;
@@ -103,7 +104,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
         selectedType.code ?? '',
       );
     } catch (e) {
-      debugPrint('Sign up error: $e');
+      AppLog.e('CcylActivityDetail', 'Sign up error: $e');
       if (!mounted) return;
       setState(() => _actionLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -133,7 +134,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
       final provider = getIt<CcylProvider>();
       await provider.service.cancelSignUp(widget.activityId);
     } catch (e) {
-      debugPrint('Cancel sign up error: $e');
+      AppLog.e('CcylActivityDetail', 'Cancel sign up error: $e');
       if (!mounted) return;
       setState(() => _actionLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(

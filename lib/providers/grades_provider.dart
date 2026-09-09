@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/models/scheme_score.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 
 const _keySchemeScores = 'grades_scheme_scores';
@@ -58,7 +59,7 @@ class GradesProvider extends ChangeNotifier {
         );
         _schemeState = GradesLoadState.loaded;
       } catch (e) {
-        debugPrint('GradesProvider scheme cache decode error: $e');
+        AppLog.w('GradesProvider', 'Scheme cache decode error: $e');
       }
     }
     final cachedPassing = _prefs.getString(
@@ -71,7 +72,7 @@ class GradesProvider extends ChangeNotifier {
         );
         _passingState = GradesLoadState.loaded;
       } catch (e) {
-        debugPrint('GradesProvider passing cache decode error: $e');
+        AppLog.w('GradesProvider', 'Passing cache decode error: $e');
       }
     }
   }
@@ -141,7 +142,7 @@ class GradesProvider extends ChangeNotifier {
       }
     } catch (e) {
       if (generation != _identityGeneration) return;
-      debugPrint('Scheme scores load error: $e');
+      AppLog.e('GradesProvider', 'Scheme scores load error: $e');
       if (_schemes != null) {
         _schemeState = GradesLoadState.loaded;
         _schemeError = campusNetworkErrorType(LoadErrorType.loadFailed);
@@ -196,7 +197,7 @@ class GradesProvider extends ChangeNotifier {
       }
     } catch (e) {
       if (generation != _identityGeneration) return;
-      debugPrint('Passing scores load error: $e');
+      AppLog.e('GradesProvider', 'Passing scores load error: $e');
       if (_passingScores != null) {
         _passingState = GradesLoadState.loaded;
         _passingError = campusNetworkErrorType(LoadErrorType.loadFailed);

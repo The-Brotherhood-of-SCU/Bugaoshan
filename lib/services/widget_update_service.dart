@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:bugaoshan/models/widget_appearance.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 class WidgetUpdateService {
@@ -116,8 +117,10 @@ class WidgetUpdateService {
         await updateWidgetData(force: true);
       }
     } catch (e, stack) {
-      debugPrint('WidgetUpdate: syncWidgetShowTomorrow FAILED: $e');
-      debugPrint('WidgetUpdate: stack: $stack');
+      AppLog.e(
+        'WidgetUpdateService',
+        'syncWidgetShowTomorrow FAILED: $e\n$stack',
+      );
     }
   }
 
@@ -135,8 +138,10 @@ class WidgetUpdateService {
         'density': density.index,
       });
     } catch (e, stack) {
-      debugPrint('WidgetUpdate: syncWidgetAppearance FAILED: $e');
-      debugPrint('WidgetUpdate: stack: $stack');
+      AppLog.e(
+        'WidgetUpdateService',
+        'syncWidgetAppearance FAILED: $e\n$stack',
+      );
     }
   }
 
@@ -179,8 +184,7 @@ class WidgetUpdateService {
             'BugaoShan WidgetUpdateService: native updateWidget completed successfully',
           );
         } catch (e, stack) {
-          debugPrint('BugaoShan WidgetUpdateService: updateWidget FAILED: $e');
-          debugPrint('BugaoShan WidgetUpdateService: stack: $stack');
+          AppLog.e('WidgetUpdateService', 'updateWidget FAILED: $e\n$stack');
           // Clear follow-up flag to avoid stale state causing extra runs
           _needsRunAgain = false;
           // Propagate error to awaiting callers and stop further runs
@@ -251,7 +255,7 @@ class WidgetUpdateService {
         return false;
       }
     } catch (e) {
-      debugPrint('WidgetUpdate: pinWidget FAILED: $e');
+      AppLog.e('WidgetUpdateService', 'pinWidget FAILED: $e');
       return false;
     }
   }
@@ -265,7 +269,7 @@ class WidgetUpdateService {
       final result = await _channel.invokeMethod<List<dynamic>>('getWidgetIds');
       return result?.whereType<int>().toSet() ?? {};
     } catch (e) {
-      debugPrint('WidgetUpdate: getWidgetIds FAILED: $e');
+      AppLog.e('WidgetUpdateService', 'getWidgetIds FAILED: $e');
       return {};
     }
   }
@@ -279,7 +283,7 @@ class WidgetUpdateService {
       final result = await _channel.invokeMethod<bool>('openAppSettings');
       return result ?? false;
     } catch (e) {
-      debugPrint('WidgetUpdate: openAppSettings FAILED: $e');
+      AppLog.e('WidgetUpdateService', 'openAppSettings FAILED: $e');
       return false;
     }
   }
@@ -292,7 +296,10 @@ class WidgetUpdateService {
       );
       return result ?? false;
     } catch (e) {
-      debugPrint('WidgetUpdate: isIgnoringBatteryOptimizations FAILED: $e');
+      AppLog.e(
+        'WidgetUpdateService',
+        'isIgnoringBatteryOptimizations FAILED: $e',
+      );
       return false;
     }
   }
@@ -305,7 +312,10 @@ class WidgetUpdateService {
       );
       return result ?? false;
     } catch (e) {
-      debugPrint('WidgetUpdate: requestIgnoreBatteryOptimizations FAILED: $e');
+      AppLog.e(
+        'WidgetUpdateService',
+        'requestIgnoreBatteryOptimizations FAILED: $e',
+      );
       return false;
     }
   }

@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/models/academic_calendar.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/calendar_event_utils.dart';
 
 class AcademicCalendarService {
@@ -109,8 +109,9 @@ class AcademicCalendarService {
       try {
         return _parseCalendarJson(cached);
       } catch (e) {
-        debugPrint(
-          'AcademicCalendarService: failed to parse cached calendar: $e',
+        AppLog.w(
+          'AcademicCalendarService',
+          'Failed to parse cached calendar: $e',
         );
       }
     }
@@ -121,7 +122,7 @@ class AcademicCalendarService {
       );
       return _parseCalendarJson(assetContent);
     } catch (e) {
-      debugPrint('AcademicCalendarService: failed to load bundled asset: $e');
+      AppLog.w('AcademicCalendarService', 'Failed to load bundled asset: $e');
       return null;
     }
   }
@@ -147,8 +148,9 @@ class AcademicCalendarService {
         }
       }
     } catch (e) {
-      debugPrint(
-        'AcademicCalendarService: failed to fetch remote calendar from $url: $e',
+      AppLog.w(
+        'AcademicCalendarService',
+        'Failed to fetch remote calendar from $url: $e',
       );
     }
     return null;
@@ -198,8 +200,9 @@ class AcademicCalendarService {
       }
       return null;
     } catch (e) {
-      debugPrint(
-        'AcademicCalendarService: failed to find matching semester: $e',
+      AppLog.w(
+        'AcademicCalendarService',
+        'Failed to find matching semester: $e',
       );
       return null;
     }
@@ -229,8 +232,9 @@ class AcademicCalendarService {
       }
       return null;
     } catch (e) {
-      debugPrint(
-        'AcademicCalendarService: failed to find matching semester: $e',
+      AppLog.w(
+        'AcademicCalendarService',
+        'Failed to find matching semester: $e',
       );
       return null;
     }

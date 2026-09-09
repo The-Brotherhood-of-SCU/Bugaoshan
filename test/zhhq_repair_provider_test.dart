@@ -165,6 +165,174 @@ void main() {
     expect(provider.submitError, '请选择维修项目');
     provider.dispose();
   });
+
+  test('evaluateRepair 后 force 刷新列表能拿到最新状态', () async {
+    final api = _ControllableZhhqApi();
+    final provider = _readyProvider(api);
+
+    // 加载地址（含 userId，工单列表依赖它）
+    final initial = provider.ensureLoaded();
+    api.completeAddresses([
+      const RepairAddress(
+        id: 'addr-1',
+        areaName: '望江学生区/东苑五栋',
+        addressDetail: '主楼315',
+        phone: '18500000000',
+        areaId: '10005',
+        isCommon: true,
+        userId: 'user-123',
+      ),
+    ]);
+    await initial;
+
+    // 首次加载列表（待评价）
+    final load = provider.loadTickets();
+    api.completeTickets([
+      RepairTicket(
+        id: 't-1',
+        projectName: '电/线路维修类',
+        content: '跳闸',
+        status: '待评价',
+        createTime: 1,
+      ),
+    ]);
+    await load;
+    expect(provider.tickets.single.statusLabel, '待评价');
+
+    // 评价成功后 loadTickets(force: true) 重新拉取
+    final refresh = provider.loadTickets(force: true);
+    expect(api.ticketRequests, hasLength(2));
+    api.completeTickets([
+      RepairTicket(
+        id: 't-1',
+        projectName: '电/线路维修类',
+        content: '跳闸',
+        status: '已评价',
+        createTime: 1,
+      ),
+    ]);
+    await refresh;
+    expect(provider.tickets.single.statusLabel, '已评价');
+    provider.dispose();
+  });
+
+  test('evaluateRepair 后列表标记过期，返回列表 force 刷新能拿到最新状态', () async {
+    final api = _ControllableZhhqApi();
+    final provider = _readyProvider(api);
+
+    final initial = provider.ensureLoaded();
+    api.completeAddresses([
+      const RepairAddress(
+        id: 'addr-1',
+        areaName: '望江学生区/东苑五栋',
+        addressDetail: '主楼315',
+        phone: '18500000000',
+        areaId: '10005',
+        isCommon: true,
+        userId: 'user-123',
+      ),
+    ]);
+    await initial;
+
+    // 首次加载列表（待评价）
+    final load = provider.loadTickets();
+    api.completeTickets([
+      RepairTicket(
+        id: 't-1',
+        projectName: '电/线路维修类',
+        content: '跳闸',
+        status: '待评价',
+        createTime: 1,
+      ),
+    ]);
+    await load;
+    expect(provider.tickets.single.statusLabel, '待评价');
+
+    // 评价成功：provider 只标记列表过期，不立即发请求
+    // （服务端写库后需短暂时间同步，刷新时机由 UI 返回列表后决定）
+    await provider.evaluateRepair(
+      repairId: 'r-1',
+      common: const [
+        {'id': '1', 'name': '维修质量', 'weight': '50', 'star': 5},
+      ],
+    );
+    expect(api.ticketRequests, hasLength(1));
+
+    // 返回列表后 force 刷新：重新拉取（第 2 次请求），拿到「已评价」
+    final refresh = provider.loadTickets(force: true);
+    expect(api.ticketRequests, hasLength(2));
+    api.completeTickets([
+      RepairTicket(
+        id: 't-1',
+        projectName: '电/线路维修类',
+        content: '跳闸',
+        status: '已评价',
+        createTime: 1,
+      ),
+    ]);
+    await refresh;
+    expect(provider.tickets.single.statusLabel, '已评价');
+    provider.dispose();
+  });
+
+  test('force 刷新在列表加载进行中时等待并重新拉取（不被吞掉）', () async {
+    final api = _ControllableZhhqApi();
+    final provider = _readyProvider(api);
+
+    final initial = provider.ensureLoaded();
+    api.completeAddresses([
+      const RepairAddress(
+        id: 'addr-1',
+        areaName: '望江学生区/东苑五栋',
+        addressDetail: '主楼315',
+        phone: '18500000000',
+        areaId: '10005',
+        isCommon: true,
+        userId: 'user-123',
+      ),
+    ]);
+    await initial;
+
+    // 第一次加载（尚未完成）→ 正在加载中
+    final firstLoad = provider.loadTickets();
+    expect(api.ticketRequests, hasLength(1));
+
+    // 加载进行中立即 force 刷新：不立即发起新请求（先等待第一个完成）
+    var forceDone = false;
+    final forceRefresh = provider.loadTickets(force: true).then((_) {
+      forceDone = true;
+    });
+    await Future<void>.delayed(Duration.zero);
+    expect(api.ticketRequests, hasLength(1));
+
+    // 第一个完成；force 等待后重新拉取（发出第二次请求，拿到最新状态）
+    api.completeTickets([
+      RepairTicket(
+        id: 't-1',
+        projectName: '电/线路维修类',
+        content: '跳闸',
+        status: '待评价',
+        createTime: 1,
+      ),
+    ]);
+    await firstLoad;
+    await Future<void>.delayed(Duration.zero);
+    // force 等待后发起了第二次全新拉取
+    expect(api.ticketRequests, hasLength(2));
+    api.completeTickets([
+      RepairTicket(
+        id: 't-1',
+        projectName: '电/线路维修类',
+        content: '跳闸',
+        status: '已评价',
+        createTime: 1,
+      ),
+    ]);
+    await forceRefresh;
+    expect(forceDone, isTrue);
+    expect(provider.tickets.single.statusLabel, '已评价');
+    provider.dispose();
+  });
 }
 
 class _FakeZhhqAuth extends ChangeNotifier implements ZhhqAuth {
@@ -258,6 +426,21 @@ class _ControllableZhhqApi implements ZhhqApiService {
 
   void failSubmit(int index, Object error) {
     submitRequests[index].completeError(error);
+  }
+
+  @override
+  Future<void> evaluateRepair({
+    required String repairId,
+    required List<Map<String, dynamic>> common,
+    String content = '',
+    List<String> labels = const [],
+  }) async {
+    // 直接成功（测试不关心评价请求体）
+  }
+
+  @override
+  Future<void> withdrawRepair({required String id}) async {
+    // 直接成功
   }
 
   @override

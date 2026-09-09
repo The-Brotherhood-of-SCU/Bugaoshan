@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:tyme/tyme.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 
 /// 特殊日类型
 enum SpecialDayType { ordinary, festival, holiday, solarTerm }
@@ -53,7 +53,7 @@ class HolidayUtils {
         return legalHoliday.isWork() ? null : legalHoliday.getName();
       }
     } catch (e) {
-      debugPrint('HolidayUtils.getHolidayName error: $e');
+      AppLog.w('HolidayUtils', 'getHolidayName error: $e');
     }
     // tyme 无此日数据 → 固定日期放假兜底
     return _getFixedHolidayFallback(date);
@@ -142,7 +142,7 @@ class HolidayUtils {
               count++;
             }
           } catch (e) {
-            debugPrint('HolidayUtils._computeHolidayTotalDays error: $e');
+            AppLog.w('HolidayUtils', '_computeHolidayTotalDays error: $e');
           }
         }
       }
@@ -165,7 +165,7 @@ class HolidayUtils {
         if (name != '春节' && name != '清明节') return name;
       }
     } catch (e) {
-      debugPrint('HolidayUtils.getFestivalName error: $e');
+      AppLog.w('HolidayUtils', 'getFestivalName error: $e');
     }
     return null;
   }
@@ -182,7 +182,7 @@ class HolidayUtils {
         return termDay.getSolarTerm().getName();
       }
     } catch (e) {
-      debugPrint('HolidayUtils.getSolarTermName error: $e');
+      AppLog.w('HolidayUtils', 'getSolarTermName error: $e');
     }
     return null;
   }
@@ -256,7 +256,7 @@ class HolidayUtils {
         );
       }
     } catch (e) {
-      debugPrint('HolidayUtils.getSpecialDay error: $e');
+      AppLog.w('HolidayUtils', 'getSpecialDay error: $e');
     }
 
     return SpecialDayInfo(type: SpecialDayType.ordinary);

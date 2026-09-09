@@ -7,6 +7,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/widget_appearance.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/models/widget_size.dart';
 import 'package:bugaoshan/theme_shape.dart';
@@ -131,7 +132,7 @@ class _AddWidgetContentState extends State<AddWidgetContent>
         try {
           await service.syncWidgetShowTomorrow(v);
         } catch (e, st) {
-          debugPrint('WidgetUpdate toggle failed: $e');
+          AppLog.e('AddWidgetPage', 'WidgetUpdate toggle failed: $e');
           debugPrint('$st');
         }
       },

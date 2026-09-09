@@ -58,6 +58,7 @@ class ZhhqRepairProvider extends ChangeNotifier {
   // 工单列表状态（activeTemplateData/list 一次加载全部，无分页）
   bool _isLoadingTickets = false;
   bool _ticketsLoaded = false;
+  Future<void>? _ticketsFuture;
 
   List<RepairAddress> get addresses => List.unmodifiable(_addresses);
   List<RepairTicket> get tickets => List.unmodifiable(_tickets);
@@ -183,13 +184,34 @@ class ZhhqRepairProvider extends ChangeNotifier {
   /// 使用 `activeTemplateData/list`（快、返回中文状态），一次加载全部；
   /// 不再需要分页。userId 从常用地址取（[RepairAddress.userId]）。
   ///
-  /// 页面每次重建都会调用本方法（fire-and-forget），因此默认跳过已加载
-  /// 的会话；下拉刷新或提交成功后需重新拉取时传 [force] = true。
+  /// 并发语义（单飞）：
+  /// - 非 force：已加载则直接返回；有进行中的加载则复用同一个 future。
+  /// - force：**等待**进行中的加载完成后重新拉取一次，保证调用方
+  ///   （详情页撤回/评价成功后）拿到最新状态，而不是被旧结果吞掉。
   Future<void> loadTickets({bool force = false}) async {
-    if (!_canLoad || _isLoadingTickets) return;
+    if (!_canLoad) return;
     if (!force && _ticketsLoaded) return;
     final userId = _addresses.isEmpty ? '' : _addresses.first.userId;
     if (userId.isEmpty) return;
+
+    final inFlight = _ticketsFuture;
+    if (inFlight != null) {
+      if (!force) return inFlight;
+      // force：等当前加载完成后再拉一次（若已是最新则结果相同，无副作用）
+      try {
+        await inFlight;
+      } catch (_) {
+        // 前一次失败不阻塞本次重新拉取
+      }
+      if (!_canLoad || userId.isEmpty) return;
+    }
+
+    final future = _fetchTickets(userId);
+    _ticketsFuture = future;
+    return future;
+  }
+
+  Future<void> _fetchTickets(String userId) async {
     _isLoadingTickets = true;
     notifyListeners();
     try {
@@ -201,7 +223,61 @@ class ZhhqRepairProvider extends ChangeNotifier {
       _log.w(_tag, 'tickets load error: $error');
     } finally {
       _isLoadingTickets = false;
+      _ticketsFuture = null;
       notifyListeners();
+    }
+  }
+
+  /// 获取工单详情（详情页用）。失败抛异常（页面临时展示）。
+  Future<RepairTicketDetail> fetchTicketDetail({required String id}) {
+    return _api.fetchRepairDetail(id: id);
+  }
+
+  /// 查询当前工单是否允许撤回；失败返回 false。
+  Future<bool> ifAllowWithdrawRepair({required String id}) async {
+    try {
+      return await _api.ifAllowWithdrawRepair(id: id);
+    } on ScuException {
+      return false;
+    }
+  }
+
+  /// 撤回报修工单；成功后工单列表需重新拉取（由调用方触发 force 刷新）。
+  Future<void> withdrawRepair({required String id}) async {
+    await _api.withdrawRepair(id: id);
+    // 标记列表过期：列表展示最新状态需重新拉取（见 _openDetail 返回刷新）。
+    // 不在操作点立即 force 拉取——activeTemplateData/list 服务端可能
+    // 尚未同步最新状态（评价/撤回写库需短暂时间），过早刷新会拿到旧数据；
+    // 返回列表后再刷新（自然间隔数百 ms），才大概率命中已同步的数据。
+    _ticketsLoaded = false;
+  }
+
+  /// 评价报修工单；成功后工单列表需重新拉取（由调用方触发 force 刷新）。
+  Future<void> evaluateRepair({
+    required String repairId,
+    required List<Map<String, dynamic>> common,
+    String content = '',
+    List<String> labels = const [],
+  }) async {
+    await _api.evaluateRepair(
+      repairId: repairId,
+      common: common,
+      content: content,
+      labels: labels,
+    );
+    // 标记列表过期：列表展示最新状态需重新拉取（见 _openDetail 返回刷新）。
+    // 不在操作点立即 force 拉取——activeTemplateData/list 服务端可能
+    // 尚未同步最新状态（评价/撤回写库需短暂时间），过早刷新会拿到旧数据；
+    // 返回列表后再刷新（自然间隔数百 ms），才大概率命中已同步的数据。
+    _ticketsLoaded = false;
+  }
+
+  /// 获取工单评价项（维修质量/维修态度/维修速度等）。失败返回空列表。
+  Future<List<RepairEvaluateProject>> fetchEvaluateProjects() async {
+    try {
+      return await _api.fetchEvaluateProjects();
+    } on ScuException {
+      return const [];
     }
   }
 
@@ -340,6 +416,7 @@ class ZhhqRepairProvider extends ChangeNotifier {
     _submitError = null;
     _isLoadingTickets = false;
     _ticketsLoaded = false;
+    _ticketsFuture = null;
     notifyListeners();
   }
 

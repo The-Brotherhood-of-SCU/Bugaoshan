@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bugaoshan/widgets/common/third_center.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
@@ -231,9 +233,11 @@ class ScheduleManagementPage extends StatelessWidget {
                               excludeId: schedule.id,
                             )) {
                               if (context.mounted) {
-                                showInfoDialog(
-                                  title: l10n.duplicateScheduleName,
-                                  content: '',
+                                unawaited(
+                                  showInfoDialog(
+                                    title: l10n.duplicateScheduleName,
+                                    content: '',
+                                  ),
                                 );
                               }
                               return;

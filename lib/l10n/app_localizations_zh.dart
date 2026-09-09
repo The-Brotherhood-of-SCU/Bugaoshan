@@ -2777,6 +2777,48 @@ class AppLocalizationsZh extends AppLocalizations {
   String get repairImageTooLarge => '图片不能超过 10MB';
 
   @override
+  String get repairDetail => '报修详情';
+
+  @override
+  String get repairServiceUnit => '服务单位';
+
+  @override
+  String get repairPayType => '收费类型';
+
+  @override
+  String get repairProgress => '工单进度';
+
+  @override
+  String get repairWithdraw => '撤回报修';
+
+  @override
+  String get repairWithdrawConfirm => '确定要撤回该报修工单吗？';
+
+  @override
+  String get repairWithdrawSuccess => '报修已撤回';
+
+  @override
+  String get repairWithdrawFailed => '撤回失败，请稍后重试';
+
+  @override
+  String get repairEvaluate => '评价工单';
+
+  @override
+  String get repairEvaluateHint => '请填写评价内容（可选）';
+
+  @override
+  String get repairEvaluateSuccess => '评价成功';
+
+  @override
+  String get repairEvaluated => '已评价';
+
+  @override
+  String get repairWithdrawn => '已撤回';
+
+  @override
+  String get repairEvaluateFailed => '评价失败，请稍后重试';
+
+  @override
   String get serviceHallTitle => '办事大厅';
 
   @override

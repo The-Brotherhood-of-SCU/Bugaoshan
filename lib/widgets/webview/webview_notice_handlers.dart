@@ -4,6 +4,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/downloads/shared_notice_downloads.dart';
 import 'package:bugaoshan/services/download_manager.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/common/image_viewer.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart'; // for appConfigService
 import 'package:flutter/material.dart';
@@ -35,7 +36,10 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
           .toList();
       if (mounted) setState(() => pageAttachments = attachments);
     } catch (e) {
-      debugPrint('$debugLabel parse attachments error: $e');
+      AppLog.e(
+        'WebViewNoticeHandlers',
+        '$debugLabel parse attachments error: $e',
+      );
     }
   }
 
@@ -238,7 +242,10 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
         );
       }
     } catch (e) {
-      debugPrint('$debugLabel download attachment error: $e');
+      AppLog.e(
+        'WebViewNoticeHandlers',
+        '$debugLabel download attachment error: $e',
+      );
     }
   }
 
@@ -265,7 +272,7 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
       }
       return true;
     } catch (e) {
-      debugPrint('$debugLabel download error: $e');
+      AppLog.e('WebViewNoticeHandlers', '$debugLabel download error: $e');
       return false;
     }
   }

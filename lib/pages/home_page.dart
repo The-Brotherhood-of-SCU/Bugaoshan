@@ -10,6 +10,7 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/providers/update_provider.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/services/auth/auth_coordinator.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
@@ -43,7 +44,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       }
       await authProvider.autoLogin();
     } catch (e) {
-      debugPrint('Auto login attempt error: $e');
+      AppLog.w('HomePage', 'Auto login attempt error: $e');
     }
   }
 
@@ -61,7 +62,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         appConfig.hasUpdateNotification.value = true;
       }
     } catch (e) {
-      debugPrint('HomePage._checkForUpdateInBackground error: $e');
+      AppLog.w('HomePage', 'CheckForUpdateInBackground error: $e');
     }
   }
 
@@ -83,7 +84,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       try {
         await getIt<WidgetUpdateService>().updateWidgetData();
       } catch (e) {
-        debugPrint('Widget update failed: $e');
+        AppLog.e('HomePage', 'Widget update failed: $e');
       }
     }
   }
