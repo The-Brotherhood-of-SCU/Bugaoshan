@@ -46,7 +46,7 @@ class GridSectionColumn extends StatelessWidget {
                   color: isBoundary
                       ? theme.colorScheme.primary.withAlpha(150)
                       : theme.colorScheme.outlineVariant,
-                  width: isBoundary ? 1.5 : 0.5,
+                  width: isBoundary ? 2.5 : 0.5,
                 ),
                 right: BorderSide(color: theme.colorScheme.outlineVariant),
               ),

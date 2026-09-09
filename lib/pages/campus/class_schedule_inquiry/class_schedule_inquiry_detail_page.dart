@@ -91,13 +91,20 @@ class _ClassScheduleInquiryDetailPageState
     const int totalPeriods = 12;
     final gridHeight = headerHeight + totalPeriods * rowHeight;
 
+    // 川大标准时段 4-5-3：CourseGrid 依据这三个值在第 4、9 节后
+    // 绘制加粗分隔线，区分上午 / 下午 / 晚上。
+    const int morningSections = 4;
+    const int afternoonSections = 5;
+    final int eveningSections =
+        totalPeriods - morningSections - afternoonSections;
+
     // showAllWeeks 模式不读取 semesterStartDate，设任意值即可。
     // 班级详情只在当前网格局部决定是否显示周末，不能改写用户主课表偏好。
     final gridConfig = ScheduleConfig(
       semesterStartDate: DateTime(2025, 9, 1),
-      morningSections: 0,
-      afternoonSections: 0,
-      eveningSections: totalPeriods,
+      morningSections: morningSections,
+      afternoonSections: afternoonSections,
+      eveningSections: eveningSections,
       timeSlots: [],
     );
 
