@@ -16,6 +16,10 @@ class CourseGrid extends StatefulWidget {
   final int displayWeek;
   final int totalWeeks;
   final bool showAllWeeks;
+
+  /// 表头是否显示日期（今天高亮、节假日标记）。查询类课表涉及历年学期，
+  /// 日期无意义，可关掉以换用仅周几的最小表头。
+  final bool showHeaderDates;
   final bool? showWeekendOverride;
   final void Function(Course course)? onCourseTap;
   final void Function(Course course)? onCourseLongPress;
@@ -29,6 +33,7 @@ class CourseGrid extends StatefulWidget {
     required this.displayWeek,
     this.totalWeeks = 20,
     this.showAllWeeks = false,
+    this.showHeaderDates = true,
     this.showWeekendOverride,
     this.onCourseTap,
     this.onCourseLongPress,
@@ -99,7 +104,7 @@ class _CourseGridState extends State<CourseGrid> {
 
         return Column(
           children: [
-            if (widget.showAllWeeks)
+            if (widget.showAllWeeks || !widget.showHeaderDates)
               MinimalWeekdayHeader(
                 showWeekend: showWeekend,
                 sectionWidth: _sectionWidth,
