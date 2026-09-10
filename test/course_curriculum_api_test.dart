@@ -9,6 +9,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/zhjw_auth.dart';
 import 'package:bugaoshan/utils/auth_logger.dart';
 
@@ -205,6 +206,91 @@ void main() {
       expect(item.classroom, 'D405');
     },
   );
+
+  // zhjw 网关异常时可能返回非 JSON、非登录页的文本（如 nginx 502），
+  // 解析失败应抛 ServiceException 而不是让 FormatException 裸奔。
+  const gateway502Body =
+      '<html><head><title>502 Bad Gateway</title></head>'
+      '<body><center><h1>502 Bad Gateway</h1></center></body></html>';
+
+  test('fetchCourseList throws ServiceException on non-JSON body', () async {
+    final helper = _buildRoutingApi(
+      {'/student/teachingResources/courseCurriculum/search': gateway502Body},
+      prefs,
+      logger,
+    );
+    addTearDown(helper.auth.dispose);
+
+    await expectLater(
+      helper.api.fetchCourseList(),
+      throwsA(isA<ServiceException>()),
+    );
+  });
+
+  test('fetchCourseSchedule throws ServiceException on non-JSON body', () async {
+    final helper = _buildRoutingApi(
+      {
+        '/student/teachingResources/courseCurriculum/searchCurriculum/callback':
+            gateway502Body,
+      },
+      prefs,
+      logger,
+    );
+    addTearDown(helper.auth.dispose);
+
+    await expectLater(
+      helper.api.fetchCourseSchedule(
+        planCode: '2026-2027-1-1',
+        courseCode: '101022020',
+        courseSequenceCode: '01',
+      ),
+      throwsA(isA<ServiceException>()),
+    );
+  });
+
+  test('fetchCourseSchedule throws ServiceException when outer element is not '
+      'a list', () async {
+    // 外层元素是对象而非数组：结构不符按格式异常处理，而非 TypeError。
+    final helper = _buildRoutingApi(
+      {
+        '/student/teachingResources/courseCurriculum/searchCurriculum/callback':
+            jsonEncode([
+              {'kcm': '中外经典舞蹈佳作赏析'},
+            ]),
+      },
+      prefs,
+      logger,
+    );
+    addTearDown(helper.auth.dispose);
+
+    await expectLater(
+      helper.api.fetchCourseSchedule(
+        planCode: '2026-2027-1-1',
+        courseCode: '101022020',
+        courseSequenceCode: '01',
+      ),
+      throwsA(isA<ServiceException>()),
+    );
+  });
+
+  test('fetchCourseSchedule returns empty on empty outer array', () async {
+    final helper = _buildRoutingApi(
+      {
+        '/student/teachingResources/courseCurriculum/searchCurriculum/callback':
+            jsonEncode([]),
+      },
+      prefs,
+      logger,
+    );
+    addTearDown(helper.auth.dispose);
+
+    final courses = await helper.api.fetchCourseSchedule(
+      planCode: '2026-2027-1-1',
+      courseCode: '101022020',
+      courseSequenceCode: '01',
+    );
+    expect(courses, isEmpty);
+  });
 }
 
 /// 构建按 URL 路径路由响应的 MockClient。

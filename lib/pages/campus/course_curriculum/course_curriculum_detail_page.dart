@@ -174,6 +174,8 @@ class _CourseCurriculumDetailPageState
       Colors.cyan,
       Colors.brown,
     ];
-    return colors[hash.abs() % colors.length];
+    // hashCode 为 int 最小负数时 abs() 溢出仍为负，取模得负索引会越界，
+    // 用掩码清符号位保证非负。
+    return colors[(hash & 0x7fffffff) % colors.length];
   }
 }

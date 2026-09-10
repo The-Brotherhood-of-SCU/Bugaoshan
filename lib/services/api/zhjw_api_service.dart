@@ -871,7 +871,13 @@ class ZhjwApiService {
       );
       final body = resp.body.trim();
       _checkSessionExpiry(body, resp.statusCode);
-      final json = jsonDecode(body) as Map<String, dynamic>;
+      // 网关异常时可能返回非 JSON 文本（如 502 页面），解析失败抛
+      // ServiceException 而不是让 FormatException 裸奔。
+      final json = parseJson(
+        body,
+        'jwxt/courseCurriculum/search',
+        (msg) => ServiceException('课程列表数据格式异常：$msg'),
+      );
       final records = (json['records'] as List<dynamic>?) ?? [];
       final totalCount =
           (json['pageContext']?['totalCount'] as num?)?.toInt() ?? 0;
@@ -907,8 +913,18 @@ class ZhjwApiService {
       );
       final body = resp.body.trim();
       _checkSessionExpiry(body, resp.statusCode);
-      final json = jsonDecode(body) as List<dynamic>;
-      final list = (json.isNotEmpty ? json[0] : []) as List<dynamic>;
+      // 响应结构为 [[item, item, ...]]：外层数组只有一个元素，内层才是课表项。
+      // 解析失败或外层元素不是数组都按格式异常处理，不再裸强转。
+      final json = parseJsonList(
+        body,
+        'jwxt/courseCurriculum/searchCurriculum',
+        (msg) => ServiceException('课程课表数据格式异常：$msg'),
+      );
+      if (json.isEmpty) return const <ClassScheduleInquiryItem>[];
+      final list = json.first;
+      if (list is! List<dynamic>) {
+        throw const ServiceException('课程课表数据格式异常：外层元素不是数组');
+      }
       return list
           .map(
             (e) => ClassScheduleInquiryItem.fromJson(e as Map<String, dynamic>),
