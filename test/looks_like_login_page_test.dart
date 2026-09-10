@@ -27,6 +27,36 @@ void main() {
     test('JSON 业务响应不命中', () {
       expect(looksLikeLoginPage('{"e":0,"m":"","d":{"labels":[]}}'), isFalse);
     });
+
+    test('JSON 里含登录端点 / location.href 字面量不命中', () {
+      // 业务 JSON 里带登录跳转 URL 字面量很常见，不能据此触发重认证。
+      const body =
+          '{"e":0,"m":"","d":{'
+          '"authApi":"/j_spring_security_check",'
+          '"jump":"location.href=\'/login\'"}}';
+      expect(looksLikeLoginPage(body), isFalse);
+    });
+
+    test('登录端点只出现在 form action 里才命中', () {
+      // HTML/JS 文本中提及端点（业务脚本里的 URL 常量）不算登录页。
+      expect(
+        looksLikeLoginPage(
+          '<html><body>'
+          '<script>var checkUrl = "/j_spring_security_check";</script>'
+          '</body></html>',
+        ),
+        isFalse,
+      );
+    });
+
+    test('JS location 缺少属性赋值 / 方法调用时不命中', () {
+      // `location("…")`、`location "…"` 这类乱写与纯字符串不算跳转特征。
+      expect(
+        looksLikeLoginPage("<script>location('/login')</script>"),
+        isFalse,
+      );
+      expect(looksLikeLoginPage('<p>请前往 location "login" 页面</p>'), isFalse);
+    });
   });
 
   group('looksLikeLoginPage: 登录页强特征应命中', () {
