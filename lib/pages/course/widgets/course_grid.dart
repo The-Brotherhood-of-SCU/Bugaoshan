@@ -15,7 +15,15 @@ class CourseGrid extends StatefulWidget {
   final ScheduleConfig config;
   final int displayWeek;
   final int totalWeeks;
+
+  /// 是否聚合显示全部周次的课程（查询类课表用，无“当前周”概念）。
+  /// 聚合模式下日期同样无意义，会与 [showHeaderDates] = false 一起
+  /// 落到最小周几表头，两个开关语义独立、表头选型收敛到同一处。
   final bool showAllWeeks;
+
+  /// 表头是否显示日期（今天高亮、节假日标记）。查询类课表涉及历年学期，
+  /// 日期无意义，可关掉以换用仅周几的最小表头。
+  final bool showHeaderDates;
   final bool? showWeekendOverride;
   final void Function(Course course)? onCourseTap;
   final void Function(Course course)? onCourseLongPress;
@@ -29,6 +37,7 @@ class CourseGrid extends StatefulWidget {
     required this.displayWeek,
     this.totalWeeks = 20,
     this.showAllWeeks = false,
+    this.showHeaderDates = true,
     this.showWeekendOverride,
     this.onCourseTap,
     this.onCourseLongPress,
@@ -99,7 +108,9 @@ class _CourseGridState extends State<CourseGrid> {
 
         return Column(
           children: [
-            if (widget.showAllWeeks)
+            // 两条路径都认为日期无意义，统一走最小周几表头：
+            // showAllWeeks（聚合各周，无当前周）/ !showHeaderDates（历史学期）。
+            if (widget.showAllWeeks || !widget.showHeaderDates)
               MinimalWeekdayHeader(
                 showWeekend: showWeekend,
                 sectionWidth: _sectionWidth,

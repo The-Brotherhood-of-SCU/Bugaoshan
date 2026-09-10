@@ -19,6 +19,7 @@ const String dockIdFitnessTest = 'fitness_test';
 const String dockIdNotice = 'notice';
 const String dockIdDownloadedAttachments = 'downloaded_attachments';
 const String dockIdClassScheduleInquiry = 'class_schedule_inquiry';
+const String dockIdCourseCurriculum = 'course_curriculum';
 const String dockIdExamPlan = 'exam_plan';
 const String dockIdZysc = 'zysc';
 const String dockIdLeave = 'leave';

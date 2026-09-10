@@ -1,31 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/pages/campus/class_schedule_inquiry/class_schedule_inquiry_detail_page.dart';
+import 'package:bugaoshan/pages/campus/course_curriculum/course_curriculum_detail_page.dart';
 import 'package:bugaoshan/pages/campus/filter_input_decoration.dart';
-import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart';
-import 'package:bugaoshan/providers/class_schedule_inquiry_provider.dart';
+import 'package:bugaoshan/pages/campus/models/course_curriculum_model.dart';
+import 'package:bugaoshan/providers/course_curriculum_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 
-class ClassScheduleInquiryPage extends StatefulWidget {
-  const ClassScheduleInquiryPage({super.key});
+class CourseCurriculumPage extends StatefulWidget {
+  const CourseCurriculumPage({super.key});
 
   @override
-  State<ClassScheduleInquiryPage> createState() =>
-      _ClassScheduleInquiryPageState();
+  State<CourseCurriculumPage> createState() => _CourseCurriculumPageState();
 }
 
-class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
-  late final ClassScheduleInquiryProvider _provider;
+class _CourseCurriculumPageState extends State<CourseCurriculumPage> {
+  late final CourseCurriculumProvider _provider;
+  final _courseNameController = TextEditingController();
+  final _courseCodeController = TextEditingController();
+  final _courseSeqController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _provider = getIt<ClassScheduleInquiryProvider>();
+    _provider = getIt<CourseCurriculumProvider>();
     getIt<ScuAuthProvider>().addListener(_onAuthChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _onAuthChanged();
@@ -35,6 +37,9 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
   @override
   void dispose() {
     getIt<ScuAuthProvider>().removeListener(_onAuthChanged);
+    _courseNameController.dispose();
+    _courseCodeController.dispose();
+    _courseSeqController.dispose();
     super.dispose();
   }
 
@@ -47,7 +52,7 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.classScheduleInquiry)),
+      appBar: AppBar(title: Text(l10n.courseCurriculum)),
       body: ListenableBuilder(
         listenable: Listenable.merge([_provider, getIt<ScuAuthProvider>()]),
         builder: (context, _) {
@@ -63,11 +68,11 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
   }
 
   Widget _buildContent(BuildContext context) {
-    if (_provider.indexState == ClassScheduleInquiryLoadState.loading) {
+    if (_provider.indexState == CourseCurriculumLoadState.loading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_provider.indexError != null && _provider.classes.isEmpty) {
+    if (_provider.indexError != null && _provider.courses.isEmpty) {
       return RetryableErrorWidget(
         errorType: _provider.indexError!,
         onRetry: () => _provider.loadIndex(forceRefresh: true),
@@ -77,7 +82,7 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
     return Column(
       children: [
         _buildFilterBar(context),
-        Expanded(child: _buildClassList(context)),
+        Expanded(child: _buildCourseList(context)),
       ],
     );
   }
@@ -86,7 +91,7 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return CardWithTitle(
-      title: l10n.classScheduleInquiryFilter,
+      title: l10n.courseCurriculumFilter,
       icon: const Icon(Icons.tune),
       margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
       child: Padding(
@@ -111,49 +116,24 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
                         )
                         .toList(),
                     onChanged: _provider.setSelectedSemester,
-                    hint: l10n.classScheduleInquirySemester,
+                    hint: l10n.courseCurriculumSemester,
                   ),
                 ),
                 const SizedBox(width: 8),
-                Expanded(
-                  child: _buildDropdown(
-                    value: _provider.selectedGrade,
-                    items: _provider.grades
-                        .map(
-                          (g) => DropdownMenuItem(
-                            value: g,
-                            child: Text(
-                              l10n.gradeSuffix(g.toString()),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: _provider.setSelectedGrade,
-                    hint: l10n.classScheduleInquiryGrade,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
                 Expanded(
                   child: _buildDropdown(
                     value: _provider.selectedDepartment,
-                    items: _provider.departments
-                        .map(
-                          (d) => DropdownMenuItem(
-                            value: d.value,
-                            child: Text(
-                              d.name,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        )
-                        .toList(),
+                    items: [
+                      DropdownMenuItem(value: '', child: Text(l10n.all)),
+                      ..._provider.departments.map(
+                        (d) => DropdownMenuItem(
+                          value: d.value,
+                          child: Text(d.name, overflow: TextOverflow.ellipsis),
+                        ),
+                      ),
+                    ],
                     onChanged: _provider.setSelectedDepartment,
-                    hint: l10n.classScheduleInquiryDepartment,
+                    hint: l10n.courseCurriculumDepartment,
                   ),
                 ),
               ],
@@ -163,35 +143,43 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
               children: [
                 Expanded(
                   child: _buildDropdown(
-                    value: _provider.selectedSubject,
+                    value: _provider.selectedCategory,
                     items: [
                       DropdownMenuItem(value: '', child: Text(l10n.all)),
-                      ..._provider.subjects.map(
-                        (s) => DropdownMenuItem(
-                          value: s.code,
-                          child: Text(s.name, overflow: TextOverflow.ellipsis),
-                        ),
-                      ),
-                    ],
-                    onChanged: _provider.setSelectedSubject,
-                    hint: l10n.classScheduleInquirySubject,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildDropdown(
-                    value: _provider.selectedClass,
-                    items: [
-                      DropdownMenuItem(value: '', child: Text(l10n.all)),
-                      ..._provider.classOptions.map(
+                      ..._provider.categories.map(
                         (c) => DropdownMenuItem(
                           value: c.code,
                           child: Text(c.name, overflow: TextOverflow.ellipsis),
                         ),
                       ),
                     ],
-                    onChanged: _provider.setSelectedClass,
-                    hint: l10n.classScheduleInquiryClass,
+                    onChanged: _provider.setSelectedCategory,
+                    hint: l10n.courseCurriculumCategory,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildTextField(
+                    controller: _courseNameController,
+                    hint: l10n.courseCurriculumCourseName,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildTextField(
+                    controller: _courseCodeController,
+                    hint: l10n.courseCurriculumCourseCode,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildTextField(
+                    controller: _courseSeqController,
+                    hint: l10n.courseCurriculumCourseSeq,
                   ),
                 ),
               ],
@@ -200,13 +188,35 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
-                onPressed: _provider.search,
+                onPressed: _search,
                 icon: const Icon(Icons.search),
-                label: Text(l10n.classScheduleInquirySearch),
+                label: Text(l10n.courseCurriculumSearch),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _search() {
+    FocusScope.of(context).unfocus();
+    _provider.setCourseName(_courseNameController.text.trim());
+    _provider.setCourseCode(_courseCodeController.text.trim());
+    _provider.setCourseSeq(_courseSeqController.text.trim());
+    _provider.search();
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hint,
+  }) {
+    return TextField(
+      controller: controller,
+      style: Theme.of(context).textTheme.bodyMedium,
+      decoration: kFilterInputDecoration.copyWith(
+        hintText: hint,
+        hintStyle: Theme.of(context).textTheme.bodyMedium,
       ),
     );
   }
@@ -233,25 +243,25 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
     );
   }
 
-  Widget _buildClassList(BuildContext context) {
+  Widget _buildCourseList(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    if (_provider.classesState == ClassScheduleInquiryLoadState.loading &&
-        _provider.classes.isEmpty) {
+    if (_provider.coursesState == CourseCurriculumLoadState.loading &&
+        _provider.courses.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_provider.classesError != null && _provider.classes.isEmpty) {
+    if (_provider.coursesError != null && _provider.courses.isEmpty) {
       return RetryableErrorWidget(
-        errorType: _provider.classesError!,
+        errorType: _provider.coursesError!,
         onRetry: _provider.search,
       );
     }
 
-    if (_provider.classes.isEmpty) {
+    if (_provider.courses.isEmpty) {
       return Center(
         child: Text(
-          l10n.classScheduleInquiryNoData,
+          l10n.courseCurriculumNoData,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
@@ -263,34 +273,34 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
       onRefresh: _provider.refresh,
       child: ListView.builder(
         padding: const EdgeInsets.all(12),
-        itemCount: _provider.classes.length + (_provider.hasMore ? 1 : 0),
+        itemCount: _provider.courses.length + (_provider.hasMore ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index == _provider.classes.length) {
+          if (index == _provider.courses.length) {
             return Padding(
               padding: const EdgeInsets.all(16),
               child: Center(
                 child: _provider.isLoadingMore
                     ? const CircularProgressIndicator()
                     : FilledButton.tonal(
-                        // 列表非空时的 classesError 只可能来自
+                        // 列表非空时的 coursesError 只可能来自
                         // 加载更多失败，此时按钮即重试入口。
                         onPressed: _provider.loadMore,
                         child: Text(
-                          _provider.classesError != null
+                          _provider.coursesError != null
                               ? l10n.retry
-                              : l10n.classScheduleInquiryLoadMore,
+                              : l10n.courseCurriculumLoadMore,
                         ),
                       ),
               ),
             );
           }
-          final classInfo = _provider.classes[index];
-          return _ClassCard(
-            classInfo: classInfo,
+          final courseInfo = _provider.courses[index];
+          return _CourseCard(
+            courseInfo: courseInfo,
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) =>
-                    ClassScheduleInquiryDetailPage(classInfo: classInfo),
+                    CourseCurriculumDetailPage(courseInfo: courseInfo),
               ),
             ),
           );
@@ -300,11 +310,11 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
   }
 }
 
-class _ClassCard extends StatelessWidget {
-  final ClassInfo classInfo;
+class _CourseCard extends StatelessWidget {
+  final CourseSectionInfo courseInfo;
   final VoidCallback onTap;
 
-  const _ClassCard({required this.classInfo, required this.onTap});
+  const _CourseCard({required this.courseInfo, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -315,9 +325,7 @@ class _ClassCard extends StatelessWidget {
         leading: CircleAvatar(
           backgroundColor: Theme.of(context).colorScheme.primaryContainer,
           child: Text(
-            classInfo.className.length >= 4
-                ? classInfo.className.substring(classInfo.className.length - 4)
-                : classInfo.className,
+            courseInfo.credits.isNotEmpty ? courseInfo.credits : '-',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -326,7 +334,7 @@ class _ClassCard extends StatelessWidget {
           ),
         ),
         title: Text(
-          classInfo.className,
+          courseInfo.courseName,
           style: Theme.of(
             context,
           ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
@@ -336,15 +344,28 @@ class _ClassCard extends StatelessWidget {
           children: [
             const SizedBox(height: 4),
             Text(
-              classInfo.subjectName,
+              '${courseInfo.courseCode} · ${courseInfo.courseSeq}',
               style: Theme.of(context).textTheme.bodySmall,
             ),
-            if (classInfo.departmentName.isNotEmpty)
+            if (courseInfo.teachers.isNotEmpty)
               Text(
-                classInfo.departmentName,
+                courseInfo.teachers,
+                style: Theme.of(context).textTheme.bodySmall,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            if (courseInfo.category.isNotEmpty ||
+                courseInfo.department.isNotEmpty)
+              Text(
+                [
+                  if (courseInfo.category.isNotEmpty) courseInfo.category,
+                  if (courseInfo.department.isNotEmpty) courseInfo.department,
+                ].join(' · '),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
           ],
         ),

@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 新增【在线报修】：在 App 内直接提交宿舍报修工单（选择地址与维修项目、填写故障描述、上传现场照片、预约上门时间），并可在「我的报修」中查看处理进度与工单详情，支持工单撤回与服务评价
 - 接入校园网无感认证（Passpoint）：绑定设备 MAC 地址后，连接校园网自动完成认证，无需手动登录
+- 新增课程课表查询页：可在线查询课程的课表安排
 - 新增课表快捷切换：课表主页顶栏一键切换不同学期的课表，并附「管理课表」入口
 - 新增课表背景图片区域调整设置，可以调整背景图片的显示区域
 - 方案修读情况支持多份培养方案（主修/辅修/微专业）：可左右滑动切换查看各方案进度
@@ -25,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - 优化课表导入逻辑：优先使用教务处的校区信息判定主导校区
 - Windows 安装包内置打包 WebView2Loader.dll，解决未安装运行时的 Windows 启动报错
+- 班级课表支持按周查看课程
 
 ### Fixed
 - 修复课表与考表导出到系统日历时地点缺失与坐标偏移问题：现在 iOS / macOS 导出到系统日历可直接联动系统日程的地图显示与导航（规范三校区教学建筑 POI 并智能匹配系统地图引擎）
@@ -36,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 修复在线报修提交成功后地址下拉框崩溃及工单详情 JSON 解析容错
 - 修复 Android 桌面小组件启动时特定场景下的任务重建问题
 - 修复启动失败页在 release 包中不显示错误详情的问题（#259）
+- 修复班级课表页面显示无区分上午中午下午课程
 
 ## [2.4.1] - 2026-08-31
 

@@ -13,6 +13,7 @@ import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/providers/class_schedule_inquiry_provider.dart';
 import 'package:bugaoshan/providers/classroom_provider.dart';
+import 'package:bugaoshan/providers/course_curriculum_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/exam_plan_provider.dart';
 import 'package:bugaoshan/providers/fitness_test_provider.dart';
@@ -303,6 +304,10 @@ void _configureAsyncDependencies() {
     await getIt.isReady<ZhjwApiService>();
     return ClassScheduleInquiryProvider(getIt<ZhjwApiService>());
   });
+  getIt.registerSingletonAsync<CourseCurriculumProvider>(() async {
+    await getIt.isReady<ZhjwApiService>();
+    return CourseCurriculumProvider(getIt<ZhjwApiService>());
+  });
   getIt.registerSingletonAsync<ExamPlanProvider>(() async {
     await getIt.isReady<ZhjwApiService>();
     return ExamPlanProvider(getIt<ZhjwApiService>());
@@ -414,6 +419,9 @@ void _configureAsyncDependencies() {
         }
         if (getIt.isRegistered<ClassScheduleInquiryProvider>()) {
           getIt<ClassScheduleInquiryProvider>().clear();
+        }
+        if (getIt.isRegistered<CourseCurriculumProvider>()) {
+          getIt<CourseCurriculumProvider>().clear();
         }
         if (getIt.isRegistered<ExamPlanProvider>()) {
           getIt<ExamPlanProvider>().clear();

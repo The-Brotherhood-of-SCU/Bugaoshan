@@ -22,6 +22,25 @@ Map<String, dynamic> parseJson(
   }
 }
 
+/// 安全解析 JSON 数组，失败时通过 [exceptionFactory] 抛出带上下文的异常。
+///
+/// 日志策略与 [parseJson] 相同：只记录响应长度与前 200 字符摘要。
+List<dynamic> parseJsonList(
+  String body,
+  String api,
+  Exception Function(String message) exceptionFactory,
+) {
+  try {
+    return jsonDecode(body) as List<dynamic>;
+  } catch (e) {
+    final preview = body.length > 200
+        ? '${body.substring(0, 200)}…(${body.length}B)'
+        : body;
+    debugPrint('[$api] JSON 解析失败(len=${body.length}): $preview');
+    throw exceptionFactory('[$api] 响应解析失败');
+  }
+}
+
 // ── 手写 JSON 解析的安全取值 helper ─────────────────────────────────
 //
 // 统一手写 fromJson 中的宽松取值模式，替代各模型里重复的

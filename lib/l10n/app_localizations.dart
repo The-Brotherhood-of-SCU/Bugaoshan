@@ -4417,6 +4417,90 @@ abstract class AppLocalizations {
   /// **'Load More'**
   String get classScheduleInquiryLoadMore;
 
+  /// No description provided for @dockLabelCourseCurriculum.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Table'**
+  String get dockLabelCourseCurriculum;
+
+  /// No description provided for @courseCurriculum.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Curriculum'**
+  String get courseCurriculum;
+
+  /// No description provided for @courseCurriculumDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'View schedules for each course section'**
+  String get courseCurriculumDesc;
+
+  /// No description provided for @courseCurriculumNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'No course data'**
+  String get courseCurriculumNoData;
+
+  /// No description provided for @courseCurriculumNoSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'No schedule data'**
+  String get courseCurriculumNoSchedule;
+
+  /// No description provided for @courseCurriculumFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter'**
+  String get courseCurriculumFilter;
+
+  /// No description provided for @courseCurriculumSemester.
+  ///
+  /// In en, this message translates to:
+  /// **'Semester'**
+  String get courseCurriculumSemester;
+
+  /// No description provided for @courseCurriculumDepartment.
+  ///
+  /// In en, this message translates to:
+  /// **'Department'**
+  String get courseCurriculumDepartment;
+
+  /// No description provided for @courseCurriculumCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Category'**
+  String get courseCurriculumCategory;
+
+  /// No description provided for @courseCurriculumCourseName.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Name'**
+  String get courseCurriculumCourseName;
+
+  /// No description provided for @courseCurriculumCourseCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Code'**
+  String get courseCurriculumCourseCode;
+
+  /// No description provided for @courseCurriculumCourseSeq.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Seq'**
+  String get courseCurriculumCourseSeq;
+
+  /// No description provided for @courseCurriculumSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get courseCurriculumSearch;
+
+  /// No description provided for @courseCurriculumLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load More'**
+  String get courseCurriculumLoadMore;
+
   /// Shows total holiday days, e.g. '3-day holiday'
   ///
   /// In en, this message translates to:
