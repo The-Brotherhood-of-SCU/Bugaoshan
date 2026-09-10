@@ -63,7 +63,8 @@ class NewServiceApiService {
         body.trim().isEmpty) {
       throw const UnauthenticatedException();
     }
-    if (body.trimLeft().startsWith('<') && body.contains('login')) {
+    // 登录页强特征判断，不做裸 login 子串匹配（issue #282）
+    if (looksLikeLoginPage(body)) {
       throw const UnauthenticatedException();
     }
   }

@@ -40,6 +40,9 @@ class ZhjwApiService {
   ///
   /// zhjw 在 session 过期时返回 302、空 body 或 HTML 登录页。
   /// 检测到时抛 [UnauthenticatedException]，由 [_request] 捕获重试。
+  /// 登录页用 [looksLikeLoginPage] 的强特征组合判断，不做裸 login 子串
+  /// 匹配——正常业务页（如选课页含 loginStatus/clientLogin）不能误伤
+  /// （issue #282）。
   void _checkSessionExpiry(String body, int statusCode) {
     if (statusCode == 302) {
       throw const UnauthenticatedException();
@@ -47,7 +50,7 @@ class ZhjwApiService {
     if (body.trim().isEmpty) {
       throw const UnauthenticatedException();
     }
-    if (body.startsWith('<') && body.contains('login')) {
+    if (looksLikeLoginPage(body)) {
       throw const UnauthenticatedException();
     }
   }
@@ -160,7 +163,7 @@ class ZhjwApiService {
         r'var\s+url\s*=\s*"(/student/integratedQuery/scoreQuery/[^/]+/allPassingScores/callback)"',
       ).firstMatch(indexBody);
       if (urlMatch == null) {
-        if (indexBody.contains('login') || indexBody.contains('Login')) {
+        if (looksLikeLoginPage(indexBody)) {
           throw const UnauthenticatedException();
         }
         throw const ServiceException('无法从页面提取 allPassingScores callback URL');
@@ -206,7 +209,7 @@ class ZhjwApiService {
         r'var\s+url\s*=\s*"(/student/integratedQuery/scoreQuery/[^/]+/schemeScores/callback)"',
       ).firstMatch(indexBody);
       if (urlMatch == null) {
-        if (indexBody.contains('login') || indexBody.contains('Login')) {
+        if (looksLikeLoginPage(indexBody)) {
           throw const UnauthenticatedException();
         }
         throw const ServiceException('无法从页面提取 schemeScores callback URL');
@@ -565,7 +568,7 @@ class ZhjwApiService {
       //    - 页面是登录页/会话过期页 → 抛 UnauthenticatedException 走重认证；
       //    - 其它无法识别的 HTML（如错误页）→ 抛 ServiceException，
       //      避免触发重认证风暴（每次都会重新 SSO，进一步触发限流）。
-      if (body.toLowerCase().contains('login')) {
+      if (looksLikeLoginPage(body)) {
         throw const UnauthenticatedException();
       }
       throw const ServiceException('方案修读数据格式异常：页面无法解析');
