@@ -24,7 +24,7 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
 
   static const pageSize = 30;
 
-  /// 班级课表详情按班级缓存；超过上限时淘汰最旧的，
+  /// 班级课表详情按班级缓存；超过上限时按 LRU 淘汰，
   /// 避免长时间使用会话内 Map 无界增长。
   static const _maxDetailEntries = 50;
 
@@ -55,6 +55,7 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
       ClassScheduleInquiryLoadState.idle;
   LoadErrorType? _indexError;
   LoadErrorType? _classesError;
+  bool _isLoadingMorePage = false;
   int _indexGeneration = 0;
   int _subjectsGeneration = 0;
   int _classOptionsGeneration = 0;
@@ -79,7 +80,8 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
   LoadErrorType? get indexError => _indexError;
   LoadErrorType? get classesError => _classesError;
   bool get isLoadingMore =>
-      _classesState == ClassScheduleInquiryLoadState.loading && _pageNum > 1;
+      _classesState == ClassScheduleInquiryLoadState.loading &&
+      _isLoadingMorePage;
   bool get hasMore => _classes.length < _totalCount;
 
   void setSelectedSemester(String value) {
@@ -233,29 +235,31 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
   }
 
   Future<void> search() async {
-    _pageNum = 1;
     _totalCount = 0;
     _classes = const [];
     _classesError = null;
-    await _loadClasses(replace: true);
+    await _loadClasses(page: 1, replace: true);
   }
 
   Future<void> refresh() => search();
 
   Future<void> loadMore() async {
-    if (isLoadingMore || !hasMore) return;
-    _pageNum++;
-    await _loadClasses(replace: false);
+    if (_classesState == ClassScheduleInquiryLoadState.loading || !hasMore) {
+      return;
+    }
+    // 页码用局部变量传递，成功后才提交到 _pageNum：
+    // 失败时重试仍请求同一页，避免一次失败导致整页数据被跳过。
+    await _loadClasses(page: _pageNum + 1, replace: false);
   }
 
-  Future<void> _loadClasses({required bool replace}) async {
+  Future<void> _loadClasses({required int page, required bool replace}) async {
     final semester = _selectedSemester;
     final grade = _selectedGrade;
     final department = _selectedDepartment;
     final subject = _selectedSubject;
     final classCode = _selectedClass;
-    final page = _pageNum;
     final generation = ++_classesGeneration;
+    _isLoadingMorePage = !replace;
     _classesState = ClassScheduleInquiryLoadState.loading;
     _classesError = null;
     notifyListeners();
@@ -274,10 +278,10 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
           grade != _selectedGrade ||
           department != _selectedDepartment ||
           subject != _selectedSubject ||
-          classCode != _selectedClass ||
-          page != _pageNum) {
+          classCode != _selectedClass) {
         return;
       }
+      _pageNum = page;
       _classes = replace ? result.classes : [..._classes, ...result.classes];
       _totalCount = result.totalCount;
       _classesState = ClassScheduleInquiryLoadState.loaded;
@@ -289,7 +293,6 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
         department: department,
         subject: subject,
         classCode: classCode,
-        page: page,
       )) {
         return;
       }
@@ -303,7 +306,6 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
         department: department,
         subject: subject,
         classCode: classCode,
-        page: page,
       )) {
         return;
       }
@@ -321,19 +323,23 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
     required String department,
     required String subject,
     required String classCode,
-    required int page,
   }) =>
       generation == _classesGeneration &&
       semester == _selectedSemester &&
       grade == _selectedGrade &&
       department == _selectedDepartment &&
       subject == _selectedSubject &&
-      classCode == _selectedClass &&
-      page == _pageNum;
+      classCode == _selectedClass;
 
-  ClassScheduleDetailState detailStateFor(ClassInfo classInfo) =>
-      _details[_ClassScheduleKey.fromClass(classInfo)] ??
-      const ClassScheduleDetailState();
+  ClassScheduleDetailState detailStateFor(ClassInfo classInfo) {
+    final key = _ClassScheduleKey.fromClass(classInfo);
+    final state = _details.remove(key);
+    if (state == null) return const ClassScheduleDetailState();
+    // 先移除再插入，把该 key 挪到迭代序末尾（LRU 访问序），
+    // 保证 _evictOldestDetailEntries 淘汰的是最近最少使用的条目。
+    _details[key] = state;
+    return state;
+  }
 
   Future<void> ensureSchedule(ClassInfo classInfo) => loadSchedule(classInfo);
 
@@ -388,7 +394,9 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 按插入序淘汰最旧的班级课表详情缓存。
+  /// 按 LRU 淘汰最久未使用的班级课表详情缓存。
+  /// Dart Map 按插入序迭代，detailStateFor / loadSchedule 的写入
+  /// 都会把 key 挪到末尾，因此队首即最久未使用的条目。
   void _evictOldestDetailEntries() {
     if (_details.length <= _maxDetailEntries) return;
     final keys = _details.keys.toList();
@@ -428,6 +436,7 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
     _classOptionsState = ClassScheduleInquiryLoadState.idle;
     _indexError = null;
     _classesError = null;
+    _isLoadingMorePage = false;
     notifyListeners();
   }
 }

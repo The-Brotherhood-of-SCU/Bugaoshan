@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/class_schedule_inquiry/class_schedule_inquiry_detail_page.dart';
+import 'package:bugaoshan/pages/campus/filter_input_decoration.dart';
 import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart';
 import 'package:bugaoshan/providers/class_schedule_inquiry_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
@@ -210,14 +211,6 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
     );
   }
 
-  /// 查询条件下拉框与文本框共用同一套装饰配置，高度逻辑与
-  /// 课程课表页保持一致：不加 isDense，取 M3 标准交互高度
-  /// （kMinInteractiveDimension = 48），与应用内其他筛选控件等高。
-  static const InputDecoration _filterInputDecoration = InputDecoration(
-    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-    border: OutlineInputBorder(),
-  );
-
   Widget _buildDropdown({
     required String value,
     required List<DropdownMenuItem<String>> items,
@@ -230,7 +223,7 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
       key: ValueKey('dropdown_$value'),
       initialValue: initialValue,
       style: Theme.of(context).textTheme.bodyMedium,
-      decoration: _filterInputDecoration,
+      decoration: kFilterInputDecoration,
       isExpanded: true,
       hint: Text(hint, style: Theme.of(context).textTheme.bodyMedium),
       items: items,
@@ -279,8 +272,14 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
                 child: _provider.isLoadingMore
                     ? const CircularProgressIndicator()
                     : FilledButton.tonal(
+                        // 列表非空时的 classesError 只可能来自
+                        // 加载更多失败，此时按钮即重试入口。
                         onPressed: _provider.loadMore,
-                        child: Text(l10n.classScheduleInquiryLoadMore),
+                        child: Text(
+                          _provider.classesError != null
+                              ? l10n.retry
+                              : l10n.classScheduleInquiryLoadMore,
+                        ),
                       ),
               ),
             );

@@ -24,7 +24,7 @@ class CourseCurriculumProvider extends ChangeNotifier {
 
   static const pageSize = 30;
 
-  /// 课程课表详情按课程（教学班）缓存；超过上限时淘汰最旧的，
+  /// 课程课表详情按课程（教学班）缓存；超过上限时按 LRU 淘汰，
   /// 避免长时间使用会话内 Map 无界增长。
   static const _maxDetailEntries = 50;
 
@@ -48,6 +48,7 @@ class CourseCurriculumProvider extends ChangeNotifier {
   CourseCurriculumLoadState _coursesState = CourseCurriculumLoadState.idle;
   LoadErrorType? _indexError;
   LoadErrorType? _coursesError;
+  bool _isLoadingMorePage = false;
   int _indexGeneration = 0;
   int _coursesGeneration = 0;
   final Map<_CourseScheduleKey, int> _detailGenerations = {};
@@ -67,7 +68,7 @@ class CourseCurriculumProvider extends ChangeNotifier {
   LoadErrorType? get indexError => _indexError;
   LoadErrorType? get coursesError => _coursesError;
   bool get isLoadingMore =>
-      _coursesState == CourseCurriculumLoadState.loading && _pageNum > 1;
+      _coursesState == CourseCurriculumLoadState.loading && _isLoadingMorePage;
   bool get hasMore => _courses.length < _totalCount;
 
   void setSelectedSemester(String value) {
@@ -145,30 +146,30 @@ class CourseCurriculumProvider extends ChangeNotifier {
   }
 
   Future<void> search() async {
-    _pageNum = 1;
     _totalCount = 0;
     _courses = const [];
     _coursesError = null;
-    await _loadCourses(replace: true);
+    await _loadCourses(page: 1, replace: true);
   }
 
   Future<void> refresh() => search();
 
   Future<void> loadMore() async {
-    if (isLoadingMore || !hasMore) return;
-    _pageNum++;
-    await _loadCourses(replace: false);
+    if (_coursesState == CourseCurriculumLoadState.loading || !hasMore) return;
+    // 页码用局部变量传递，成功后才提交到 _pageNum：
+    // 失败时重试仍请求同一页，避免一次失败导致整页数据被跳过。
+    await _loadCourses(page: _pageNum + 1, replace: false);
   }
 
-  Future<void> _loadCourses({required bool replace}) async {
+  Future<void> _loadCourses({required int page, required bool replace}) async {
     final semester = _selectedSemester;
     final department = _selectedDepartment;
     final category = _selectedCategory;
     final courseName = _courseName;
     final courseCode = _courseCode;
     final courseSeq = _courseSeq;
-    final page = _pageNum;
     final generation = ++_coursesGeneration;
+    _isLoadingMorePage = !replace;
     _coursesState = CourseCurriculumLoadState.loading;
     _coursesError = null;
     notifyListeners();
@@ -189,10 +190,10 @@ class CourseCurriculumProvider extends ChangeNotifier {
           category != _selectedCategory ||
           courseName != _courseName ||
           courseCode != _courseCode ||
-          courseSeq != _courseSeq ||
-          page != _pageNum) {
+          courseSeq != _courseSeq) {
         return;
       }
+      _pageNum = page;
       _courses = replace ? result.courses : [..._courses, ...result.courses];
       _totalCount = result.totalCount;
       _coursesState = CourseCurriculumLoadState.loaded;
@@ -205,7 +206,6 @@ class CourseCurriculumProvider extends ChangeNotifier {
         courseName: courseName,
         courseCode: courseCode,
         courseSeq: courseSeq,
-        page: page,
       )) {
         return;
       }
@@ -220,7 +220,6 @@ class CourseCurriculumProvider extends ChangeNotifier {
         courseName: courseName,
         courseCode: courseCode,
         courseSeq: courseSeq,
-        page: page,
       )) {
         return;
       }
@@ -239,7 +238,6 @@ class CourseCurriculumProvider extends ChangeNotifier {
     required String courseName,
     required String courseCode,
     required String courseSeq,
-    required int page,
   }) =>
       generation == _coursesGeneration &&
       semester == _selectedSemester &&
@@ -247,12 +245,17 @@ class CourseCurriculumProvider extends ChangeNotifier {
       category == _selectedCategory &&
       courseName == _courseName &&
       courseCode == _courseCode &&
-      courseSeq == _courseSeq &&
-      page == _pageNum;
+      courseSeq == _courseSeq;
 
-  CourseScheduleDetailState detailStateFor(CourseSectionInfo courseInfo) =>
-      _details[_CourseScheduleKey.fromCourse(courseInfo)] ??
-      const CourseScheduleDetailState();
+  CourseScheduleDetailState detailStateFor(CourseSectionInfo courseInfo) {
+    final key = _CourseScheduleKey.fromCourse(courseInfo);
+    final state = _details.remove(key);
+    if (state == null) return const CourseScheduleDetailState();
+    // 先移除再插入，把该 key 挪到迭代序末尾（LRU 访问序），
+    // 保证 _evictOldestDetailEntries 淘汰的是最近最少使用的条目。
+    _details[key] = state;
+    return state;
+  }
 
   Future<void> ensureSchedule(CourseSectionInfo courseInfo) =>
       loadSchedule(courseInfo);
@@ -308,7 +311,9 @@ class CourseCurriculumProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 按插入序淘汰最旧的课程课表详情缓存。
+  /// 按 LRU 淘汰最久未使用的课程课表详情缓存。
+  /// Dart Map 按插入序迭代，detailStateFor / loadSchedule 的写入
+  /// 都会把 key 挪到末尾，因此队首即最久未使用的条目。
   void _evictOldestDetailEntries() {
     if (_details.length <= _maxDetailEntries) return;
     final keys = _details.keys.toList();
@@ -343,6 +348,7 @@ class CourseCurriculumProvider extends ChangeNotifier {
     _coursesState = CourseCurriculumLoadState.idle;
     _indexError = null;
     _coursesError = null;
+    _isLoadingMorePage = false;
     notifyListeners();
   }
 }

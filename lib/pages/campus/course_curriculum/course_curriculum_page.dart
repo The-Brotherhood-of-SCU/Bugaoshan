@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/course_curriculum/course_curriculum_detail_page.dart';
+import 'package:bugaoshan/pages/campus/filter_input_decoration.dart';
 import 'package:bugaoshan/pages/campus/models/course_curriculum_model.dart';
 import 'package:bugaoshan/providers/course_curriculum_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
@@ -206,15 +207,6 @@ class _CourseCurriculumPageState extends State<CourseCurriculumPage> {
     _provider.search();
   }
 
-  /// 查询条件里下拉框与文本框共用同一套装饰配置。
-  /// 不加 isDense，让 InputDecorator 取 M3 标准交互高度
-  /// （kMinInteractiveDimension = 48），与培养方案、成绩等页面的
-  /// 筛选控件高度一致，避免比应用内其他输入框矮一截。
-  static const InputDecoration _filterInputDecoration = InputDecoration(
-    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-    border: OutlineInputBorder(),
-  );
-
   Widget _buildTextField({
     required TextEditingController controller,
     required String hint,
@@ -222,7 +214,7 @@ class _CourseCurriculumPageState extends State<CourseCurriculumPage> {
     return TextField(
       controller: controller,
       style: Theme.of(context).textTheme.bodyMedium,
-      decoration: _filterInputDecoration.copyWith(
+      decoration: kFilterInputDecoration.copyWith(
         hintText: hint,
         hintStyle: Theme.of(context).textTheme.bodyMedium,
       ),
@@ -241,7 +233,7 @@ class _CourseCurriculumPageState extends State<CourseCurriculumPage> {
       key: ValueKey('dropdown_$value'),
       initialValue: initialValue,
       style: Theme.of(context).textTheme.bodyMedium,
-      decoration: _filterInputDecoration,
+      decoration: kFilterInputDecoration,
       isExpanded: true,
       hint: Text(hint, style: Theme.of(context).textTheme.bodyMedium),
       items: items,
@@ -290,8 +282,14 @@ class _CourseCurriculumPageState extends State<CourseCurriculumPage> {
                 child: _provider.isLoadingMore
                     ? const CircularProgressIndicator()
                     : FilledButton.tonal(
+                        // 列表非空时的 coursesError 只可能来自
+                        // 加载更多失败，此时按钮即重试入口。
                         onPressed: _provider.loadMore,
-                        child: Text(l10n.courseCurriculumLoadMore),
+                        child: Text(
+                          _provider.coursesError != null
+                              ? l10n.retry
+                              : l10n.courseCurriculumLoadMore,
+                        ),
                       ),
               ),
             );
