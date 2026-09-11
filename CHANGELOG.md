@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.1] - 2026-09-11
+
 ### Added
 - 新增【在线报修】：在 App 内直接提交宿舍报修工单（选择地址与维修项目、填写故障描述、上传现场照片、预约上门时间），并可在「我的报修」中查看处理进度与工单详情，支持工单撤回与服务评价
 - 接入校园网无感认证（Passpoint）：绑定设备 MAC 地址后，连接校园网自动完成认证，无需手动登录
