@@ -149,6 +149,42 @@ lib/
 
 
 
+## 🌿 Git 分支模型与流水线 (Branching & Release Pipeline)
+
+本项目采用 **双轨自动化发布流水线**：
+
+```text
+Feature Branch (feat/*) ──► PR ──► [Pre-flight Gate] ──► Merge to `preview` ──► Auto Preview Release (vX.Y.Z-preview)
+                                                                │
+                                                         PR to `main`
+                                                                │
+                                                                ▼
+                                                        [Pre-flight Gate]
+                                                                │
+                                                        Merge to `main`
+                                                                │
+                                                                ▼
+                                                    Auto Formal Release (vX.Y.Z)
+```
+
+### 分支规范
+
+| 分支 | 职责 | 触发动作 |
+|---|---|---|
+| `main` | **正式版生产分支**。仅接收来自 `preview` 或紧急 Hotfix 的 PR。 | 合并后自动创建 Tag `vX.Y.Z`，构建并发布 **Formal 正式版** (GitHub Release latest)。 |
+| `preview` | **预览版预发布分支**。所有日常功能、修复 PR 均以 `preview` 为目标分支。 | 合并后自动创建 Tag `vX.Y.Z-preview` (或递增序)，构建并发布 **Preview 预览版** (prerelease)。 |
+| `feat/*`, `fix/*` | **特性/修复工作分支**。从 `preview` 分支切出。 | 提交 PR 至 `preview` 时自动触发 Pre-flight 质量门禁检查。 |
+
+### 质量门禁 (Pre-flight Checks)
+
+每次向 `preview` 或 `main` 提交 Pull Request 时，GitHub Actions 会自动运行发布前检查：
+1. `dart analyze --fatal-infos`：严格的 Dart 静态代码检查。
+2. `flutter test`：全套单元与 Widget 测试。
+3. `git diff --exit-code`：代码生成物 (`build_runner` / `flutter gen-l10n`) 完整性检查。
+4. Python 自动化发布脚本单元测试与版本格式预检。
+
+---
+
 ## 团队
 
 **The-Brotherhood-of-SCU** — 一个非官方的四川大学开源组织

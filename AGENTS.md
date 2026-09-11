@@ -335,18 +335,34 @@ Always run `dart format` (the repo's pre-commit hook enforces this on staged `.d
 
 ## Continuous Integration & Release
 
-GitHub Actions:
+### Branching Model & Workflow Architecture
 
-- **`release.yml`** — triggered by tags `v*.*.*` (or `workflow_dispatch`). Calls Android and Windows builds, then runs the Python release scripts and publishes both platforms via `softprops/action-gh-release@v2`. Prerelease tags (containing `-`) are flagged as pre-releases.
-- **`build-android.yml`** — Ubuntu, JDK 21, decodes keystore from `secrets.KEYSTORE_BASE64`, writes `android/key.properties`, builds **split-per-ABI** release APK with `--obfuscate --split-debug-info=build/app/outputs/symbols`.
-- **`build-windows.yml`** — Windows runner, archives `build\windows\x64\runner\Release\*` into `windows-release.zip` via `Compress-Archive`.
+The repository operates a dual-track release model across `main` and `preview`:
 
-### Release helpers (`.claude/commands/`)
+- **`preview` (Staging / Preview Track)**: Long-lived branch for staging upcoming features and bug fixes.
+  - All feature/fix/refactor pull requests must target `preview`.
+  - Merges into `preview` automatically trigger the release pipeline to publish a **Preview Release** (`prerelease: true`, tag sequence `vX.Y.Z-preview` or `vX.Y.Z-preview.N`).
+- **`main` (Production / Formal Track)**: Production branch.
+  - Accepts PRs from `preview` (and emergency hotfixes).
+  - Merges into `main` automatically trigger the release pipeline to publish a **Formal Stable Release** (`prerelease: false, latest: true`, tag `vX.Y.Z`), generate F-Droid changelogs, and commit metadata.
 
-These are project-specific Claude Code slash commands (all interactions in Chinese):
+### CI Workflows
 
-- `release.md` (`/release <version>`) — full release: validates workspace, edits `pubspec.yaml` version, updates `CHANGELOG.md` (auto-generates from git log via subagent if `[Unreleased]` is empty), commits + tags + pushes.
-- `prerelease.md` (`/prerelease <tag>`) — preview release: same changelog flow but **does not modify `pubspec.yaml`**; pushes a `vX.Y.Z-{suffix}` tag and lets the release workflow mark it as a GitHub prerelease.
+- **`pre-flight.yml` (Quality Gate)**:
+  - Triggers on PRs to `main` / `preview`, pushes to `main` / `preview`, and `workflow_dispatch`.
+  - Runs `dart analyze --fatal-infos`, `flutter test`, codegen cleanliness check (`git diff --exit-code`), Python CI unit tests (`.github/scripts/tests/`), and `tool/pre_release_check.py --ci`.
+- **`release.yml` (Release Pipeline)**:
+  - Triggers on pushes to `main` / `preview`, tags matching `v*.*.*`, and `workflow_dispatch`.
+  - Determines channel via `.github/scripts/resolve_release_version.py` (idempotent, skips existing formal releases).
+  - Triggers `build-android.yml` (universal + split APKs with Java 21) and `build-windows.yml` (Windows zip with dynamic WebView2Loader).
+  - Publishes GitHub Releases with safe Draft -> Upload -> Publish ordering to support Immutable Releases.
+
+### Release Helpers (`.claude/commands/`)
+
+These are project-specific Claude Code slash commands:
+
+- `release.md` (`/release <version>`) — prepares formal release: updates `pubspec.yaml` (e.g. `2.5.1+20501`), formats `CHANGELOG.md [X.Y.Z]`, generates F-Droid metadata changelogs, runs `tool/pre_release_check.py`, and opens/merges a PR from `preview` to `main`.
+- `prerelease.md` (`/prerelease [tag]`) — prepares preview release: updates `CHANGELOG.md [Unreleased]`, runs pre-flight checks, and merges into `preview` to trigger automated preview builds.
 
 The auto-changelog flow:
 1. Find last stable tag: `git tag -l "v[0-9]*.[0-9]*.[0-9]*" --sort=-v:refname | grep -E "^v[0-9]+\.[0-9]+\.[0-9]+$" | head -n 1`.

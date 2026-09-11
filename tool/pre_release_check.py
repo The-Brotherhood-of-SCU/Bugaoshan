@@ -226,10 +226,10 @@ class Checker:
 
         if self.is_prerelease:
             new_tuple = self.semver_tuple(self.base_version)
-            if pub_tuple and new_tuple and new_tuple > pub_tuple:
-                self.record(OK, name, f"pubspec {raw}（预览版不改 pubspec，基础版本 {self.base_version} 更大）")
+            if pub_tuple and new_tuple and new_tuple >= pub_tuple:
+                self.record(OK, name, f"pubspec {raw}（预览版基础版本 {self.base_version} 合法）")
             elif pub_tuple and new_tuple:
-                self.record(FAIL, name, f"预览版基础版本 {self.base_version} 应大于 pubspec 当前 {raw}")
+                self.record(FAIL, name, f"预览版基础版本 {self.base_version} 应大于或等于 pubspec 当前 {raw}")
             else:
                 self.record(FAIL, name, f"pubspec 版本 {raw} 格式非法")
             return
@@ -435,15 +435,34 @@ def main(argv=None):
     parser = argparse.ArgumentParser(
         description="Bugaoshan 发布前检查。用法示例: python tool/pre_release_check.py 2.3.0",
     )
-    parser.add_argument("version", help="目标版本号，如 2.3.0 或 2.3.0-pre8")
+    parser.add_argument("version", nargs="?", default="", help="目标版本号，如 2.3.0 或 2.3.0-preview（在 CI 模式下可省略）")
     parser.add_argument(
         "--prerelease",
         action="store_true",
         help="按预览版检查（等价于版本号里含 '-'）",
     )
+    parser.add_argument(
+        "--ci",
+        action="store_true",
+        help="CI 运行模式：自动从 pubspec.yaml 读取版本号，并在有未通过项时退出码为 1",
+    )
     args = parser.parse_args(argv)
 
     version = args.version
+    if not version and args.ci:
+        # Auto-read from pubspec.yaml
+        pub_path = ROOT / "pubspec.yaml"
+        if pub_path.exists():
+            for line in pub_path.read_text(encoding="utf-8").splitlines():
+                if line.strip().startswith("version:"):
+                    raw = line.split(":", 1)[1].strip().split("+")[0].strip()
+                    version = raw
+                    break
+
+    if not version:
+        print("错误: 未指定版本号，且无法从 pubspec.yaml 解析", file=sys.stderr)
+        return 2
+
     if args.prerelease and "-" not in version:
         version = f"{version}-prerelease"
 
