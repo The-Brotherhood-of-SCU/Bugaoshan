@@ -1,26 +1,33 @@
 # Prerelease Skill
 
-为 Bugaoshan 项目创建预览版发布。按以下步骤执行：
+为 Bugaoshan 项目准备预览版发布。按以下步骤执行：
 
 **所有与用户的交互必须使用中文。**
 
-## Step 1: 获取预览版名称
+> **流水线背景**：仓库采用 `feature -> preview -> main` 两级流水线。变更合并进
+> `preview` 分支后，`release.yml`（preview 通道）会自动从 `pubspec.yaml` 读取
+> 基础版本并推导 tag：首个预览版为 `vX.Y.Z-preview`，同版本多轮发布自动递增为
+> `vX.Y.Z-preview.2`、`.3`…，并发布 GitHub Prerelease。本命令只准备 CHANGELOG
+> 并推送到 `preview`，**不修改 `pubspec.yaml`，也不手动打 tag**。
+>
+> 注意：流水线只自动推导 `-preview[.N]` 后缀，不再支持自定义后缀（`-rc1`、
+> `-beta` 等）。如确需特殊后缀，请在 GitHub Actions 手动触发 `release.yml`，
+> 通过 `version_override` 输入指定。
 
-如果用户在调用时提供了参数（如 `/prerelease v1.2.3-preview`），直接用作预览版名称。否则，向用户询问预览版名称（如 `v1.2.3-preview`、`v1.2.3-rc1`、`v1.2.3-beta` 等）。
+## Step 1: 检查工作区与分支
 
-## Step 2: 检验版本号
+- 运行 `git status --short` 检查未提交的更改。如果有未提交的更改，**警告用户**并列出变更文件，询问是否继续或中止。未经用户确认不要继续。
+- 运行 `git branch --show-current` 确认当前在 **`preview`** 分支。若不是，说明预览版发布必须在 `preview` 上进行，询问用户是否切换：
 
-从 `pubspec.yaml` 读取当前 `version:` 字段，提取基础版本号。
+  ```bash
+  git fetch origin && git checkout preview && git pull origin preview
+  ```
 
-验证：预览版名称版本号语义上必须>基础版本号。否则警告。
+- 从 `pubspec.yaml` 读取 `version:` 字段的基础版本号，告知用户：本次预览版将基于 `X.Y.Z`，最终 tag（`vX.Y.Z-preview` 或下一序号）由 CI 自动推导。
 
-## Step 3: 检查工作区
+## Step 2: 检查 CHANGELOG.md
 
-运行 `git status --short` 检查未提交的更改。如果有未提交的更改，**警告用户**并列出变更文件，询问是否继续或中止。未经用户确认不要继续。
-
-## Step 4: 检查 CHANGELOG.md
-
-读取 `CHANGELOG.md`，检查 `## [unreleased]` 条目是否存在且有内容。
+读取 `CHANGELOG.md`，检查 `## [Unreleased]` 条目是否存在且有内容。
 
 - **如果有内容**：转到下一步。
 - **如果为空或不存在**：警告用户，然后提供两个选项：
@@ -59,25 +66,32 @@
 > - 修复aaa问题
 > ```
 
-将子代理的输出插入 `## [unreleased]` 条目（若不存在则先创建）。
+将子代理的输出插入 `## [Unreleased]` 条目（若不存在则先创建）。
 
-## Step 5: 推送前审查确认
+**不要重命名 `[Unreleased]` 章节**：预览版的 release body 取 CHANGELOG 第一个章节的内容，`[Unreleased]` 留到正式版 `/release` 时才重命名为 `[X.Y.Z]`。
 
-向用户展示变更摘要以获取最终确认：
+## Step 3: 本地预检
 
-- 即将创建的 tag：`vX.Y.Z-{后缀}`
-- 注意：不会修改 `pubspec.yaml` 版本号
+```bash
+python tool/pre_release_check.py --ci --prerelease
+```
+
+- 该命令为 CI 门禁模式：发布时机类检查（版本号递增、tag 冲突、`[Unreleased]` 空置）为 **WARN** 提示，向用户展示即可。
+- 版本号格式、CHANGELOG 结构等**结构性 FAIL** 必须处理后重跑，通过前不要继续。
+
+## Step 4: 提交并推送 preview
+
+推送前，向用户展示变更摘要以获取最终确认：
+
+- 本次预览版基于 `X.Y.Z`，最终 tag 由流水线自动推导，**不会修改 `pubspec.yaml`**。
 - 询问用户确认：继续推送，还是中止。
 
-只有用户明确确认后才继续。
-
-## Step 6: 打 tag 并推送
+只有用户明确确认后才继续：
 
 ```bash
 git add CHANGELOG.md
 git commit -m "docs: 更新 CHANGELOG prerelease 条目"  # 仅在 CHANGELOG 有变更时
-git tag vX.Y.Z-{后缀}
-git push && git push --tags
+git push origin preview
 ```
 
-推送完成后，向用户确认发布已触发，说明 GitHub Actions 会自动检测到 tag 并构建预览版发布（标记为 prerelease）。
+推送完成后，向用户确认预览版流水线已触发：CI 会自动创建 `vX.Y.Z-preview`（或递增序号）tag、构建并发布 GitHub Prerelease。全程**不要手动 `git tag` / `git push --tags`**。
