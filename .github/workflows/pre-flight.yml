@@ -5,10 +5,12 @@ on:
     branches:
       - main
       - preview
+      - dev
   push:
     branches:
       - main
       - preview
+      - dev
   workflow_dispatch:
 
 concurrency:
@@ -16,6 +18,33 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  branch-policy:
+    name: Enforce Branch Flow Policy
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify branch flow compliance
+        run: |
+          BASE="${{ github.base_ref }}"
+          HEAD="${{ github.head_ref }}"
+          echo "Base branch (target): $BASE"
+          echo "Head branch (source): $HEAD"
+
+          # Strict flow policy:
+          # feature/*, fix/* -> dev -> preview -> main
+          if [ "$BASE" = "main" ]; then
+            if [ "$HEAD" != "preview" ]; then
+              echo "::error::[Branch Policy Violation] 禁止直接向 main 分支合并！main 只能接收来自 preview 分支的 PR（标准流向: dev -> preview -> main）。当前来源: $HEAD"
+              exit 1
+            fi
+          elif [ "$BASE" = "preview" ]; then
+            if [ "$HEAD" != "dev" ]; then
+              echo "::error::[Branch Policy Violation] 禁止直接向 preview 分支合并！preview 只能接收来自 dev 分支的 PR（标准流向: dev -> preview -> main）。当前来源: $HEAD"
+              exit 1
+            fi
+          fi
+          echo "Branch policy check passed: $HEAD -> $BASE is compliant."
+
   check:
     name: Lint, Test & Verification Gate
     runs-on: ubuntu-latest

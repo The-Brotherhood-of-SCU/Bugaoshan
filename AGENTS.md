@@ -337,19 +337,25 @@ Always run `dart format` (the repo's pre-commit hook enforces this on staged `.d
 
 ### Branching Model & Workflow Architecture
 
-The repository operates a dual-track release model across `main` and `preview`:
+The repository operates a strict three-tier release model (`dev` -> `preview` -> `main`):
 
-- **`preview` (Staging / Preview Track)**: Long-lived branch for staging upcoming features and bug fixes.
-  - All feature/fix/refactor pull requests must target `preview`.
+- **`dev` (Daily Development & Feature Integration)**:
+  - Base branch for all daily development.
+  - All feature/fix/refactor/docs PRs must target `dev`.
+- **`preview` (Staging / Preview Release Track)**:
+  - Staging branch for preview testing.
+  - **Only accepts PRs from `dev`**. Direct PRs from other branches are rejected by `pre-flight.yml`.
   - Merges into `preview` automatically trigger the release pipeline to publish a **Preview Release** (`prerelease: true`, tag sequence `vX.Y.Z-preview` or `vX.Y.Z-preview.N`).
-- **`main` (Production / Formal Track)**: Production branch.
-  - Accepts PRs from `preview` (and emergency hotfixes).
+- **`main` (Production / Formal Stable Release Track)**:
+  - Production stable branch.
+  - **Only accepts PRs from `preview`**. Direct pushes or direct feature PRs are strictly forbidden.
   - Merges into `main` automatically trigger the release pipeline to publish a **Formal Stable Release** (`prerelease: false, latest: true`, tag `vX.Y.Z`), generate F-Droid changelogs, and commit metadata.
 
 ### CI Workflows
 
-- **`pre-flight.yml` (Quality Gate)**:
-  - Triggers on PRs to `main` / `preview`, pushes to `main` / `preview`, and `workflow_dispatch`.
+- **`pre-flight.yml` (Quality Gate & Policy Enforcement)**:
+  - Triggers on PRs to `main` / `preview` / `dev`, pushes to `main` / `preview` / `dev`, and `workflow_dispatch`.
+  - Enforces branch flow policy: `preview` must originate from `dev`, `main` must originate from `preview`.
   - Runs `dart analyze --fatal-infos`, `flutter test`, codegen cleanliness check (`git diff --exit-code`), Python CI unit tests (`.github/scripts/tests/`), and `tool/pre_release_check.py --ci`.
 - **`release.yml` (Release Pipeline)**:
   - Triggers on pushes to `main` / `preview`, tags matching `v*.*.*`, and `workflow_dispatch`.
