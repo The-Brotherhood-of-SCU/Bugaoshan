@@ -332,6 +332,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get about => 'About';
 
   @override
+  String get featureGuideAndFaq => 'Features & FAQ';
+
+  @override
   String get developmentTeam => 'Dev Team';
 
   @override
@@ -362,6 +365,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get projectRepository => 'Repository';
+
+  @override
+  String get officialWebsite => 'Website';
 
   @override
   String get checkForUpdates => 'Check Updates';

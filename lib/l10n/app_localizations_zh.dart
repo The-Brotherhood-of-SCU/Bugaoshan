@@ -319,6 +319,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get about => '关于';
 
   @override
+  String get featureGuideAndFaq => '功能介绍与常见问题';
+
+  @override
   String get developmentTeam => '开发团队';
 
   @override
@@ -349,6 +352,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get projectRepository => '项目仓库';
+
+  @override
+  String get officialWebsite => '官网';
 
   @override
   String get checkForUpdates => '检查更新';

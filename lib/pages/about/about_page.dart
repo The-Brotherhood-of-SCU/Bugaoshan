@@ -8,7 +8,8 @@ import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/theme_shape.dart';
-import 'package:bugaoshan/utils/open_link.dart' show openProjectRepository;
+import 'package:bugaoshan/utils/open_link.dart'
+    show openOfficialWebsite, openProjectRepository;
 import 'package:bugaoshan/pages/about/team_page.dart';
 import 'package:bugaoshan/pages/about/update_tile.dart';
 import 'package:bugaoshan/pages/settings/eula_status_page.dart';
@@ -219,6 +220,12 @@ class _AboutPageState extends State<AboutPage> {
                 label: localizations.projectRepository,
                 value: "Github",
                 onTap: () => openProjectRepository(),
+              ),
+              LinkTile(
+                icon: Icons.language_rounded,
+                label: localizations.officialWebsite,
+                value: "bugaoshan.scubro.dev",
+                onTap: () => openOfficialWebsite(),
               ),
               StackedTile(
                 icon: Icons.group_outlined,
