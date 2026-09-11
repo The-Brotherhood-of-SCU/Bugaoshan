@@ -12,6 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/utils/share_utils.dart';
+import 'package:bugaoshan/widgets/common/swipe_page_view.dart';
 import 'file_utils.dart';
 
 class _DirConfig {
@@ -726,8 +727,9 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
           ],
         ),
         Expanded(
-          child: TabBarView(
-            controller: _tabController,
+          child: SwipePageView(
+            tabController: _tabController,
+            keepPagesAlive: true,
             children: [
               for (final cfg in _dirConfigs)
                 _buildFileList(filtered[cfg.dirName] ?? [], l10n),
