@@ -31,6 +31,8 @@ jobs:
   resolve-metadata:
     name: Resolve Release Metadata
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       channel: ${{ steps.resolve.outputs.channel }}
       tag: ${{ steps.resolve.outputs.tag }}
@@ -65,9 +67,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag "$TAG"
-          git push origin "refs/tags/$TAG" || echo "Tag push returned $? (tag may already exist)"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 推送失败即终止（tag 被并发 run 抢占或受保护时，继续构建只会在
+          # publish 阶段以更晚、更难排查的方式失败）
+          if ! git push origin "refs/tags/$TAG"; then
+            echo "::error::Failed to push tag $TAG. 另一个发布 run 可能已占用该 tag，请检查 Actions 运行记录。"
+            exit 1
+          fi
 
   build-android:
     name: Android Build

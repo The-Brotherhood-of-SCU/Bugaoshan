@@ -52,13 +52,24 @@ def _try_reconfigure_encoding():
 
 
 class Checker:
-    def __init__(self, version):
+    def __init__(self, version, ci=False):
         self.version = version
         self.base_version = version.split("-", 1)[0]
         self.is_prerelease = "-" in version
+        self.ci = ci
         self.results = []  # (status, name, message)
         self.tag = f"v{self.version}"
         self.base_tag = f"v{self.base_version}"
+
+    def _release_timing_status(self):
+        """发布时机类检查（版本递增 / tag 冲突 / Unreleased 空置）的状态。
+
+        CI 门禁（--ci）跑在任意 PR/push 上，代码库经常处于「两个版本之间」
+        的正常状态（刚发完 X.Y.Z、pubspec 还未 bump），此时这些检查必然
+        不满足，硬 FAIL 会让 main/dev 的门禁长期挂红。CI 模式下降级为
+        WARN 供人工确认；本地手动 /release 流程保持 FAIL 严格拦截。
+        """
+        return WARN if self.ci else FAIL
 
     # ---- 基础工具 ----
 
@@ -169,15 +180,16 @@ class Checker:
 
     def check_tag_not_exists(self):
         name = "本地/远端 tag 冲突"
+        timing = self._release_timing_status()
         if not self.is_prerelease:
             code, out, err = self.run("git", "tag", "--list", self.tag)
             if code == 0 and out.strip():
-                self.record(FAIL, name, f"本地已存在 tag {self.tag}，发布会冲突")
+                self.record(timing, name, f"本地已存在 tag {self.tag}，发布会冲突")
                 return
         code, out, err = self.run("git", "ls-remote", "--tags", "origin", f"refs/tags/{self.tag}", timeout=20)
         if code == 0:
             if out.strip():
-                self.record(FAIL, name, f"远端 origin 已存在 tag {self.tag}")
+                self.record(timing, name, f"远端 origin 已存在 tag {self.tag}")
             else:
                 self.record(OK, name, f"tag {self.tag} 尚未使用")
         else:
@@ -201,12 +213,13 @@ class Checker:
         new_tuple = self.semver_tuple(self.base_version)
         if new_tuple is None:
             return
+        timing = self._release_timing_status()
         if new_tuple > latest_tuple:
             self.record(OK, name, f"{self.base_version} > 上一稳定版本 {latest_tag[1:]}")
         elif new_tuple == latest_tuple:
-            self.record(FAIL, name, f"{self.base_version} 与最新稳定版本 {latest_tag} 相同")
+            self.record(timing, name, f"{self.base_version} 与最新稳定版本 {latest_tag} 相同")
         else:
-            self.record(FAIL, name, f"{self.base_version} < 最新稳定版本 {latest_tag}，版本号应递增")
+            self.record(timing, name, f"{self.base_version} < 最新稳定版本 {latest_tag}，版本号应递增")
 
     def check_pubspec(self):
         name = "pubspec.yaml 版本"
@@ -274,15 +287,16 @@ class Checker:
             return sum(1 for ln in content if ln.lstrip().startswith(("- ", "* ")))
 
         if self.is_prerelease:
+            timing = self._release_timing_status()
             unreleased = next((i for i, (h, _) in enumerate(sections) if h.strip().lower() in ("[unreleased]", "unreleased")), None)
             if unreleased is None:
-                self.record(FAIL, name, "预览版需要 ## [Unreleased] 章节，未找到")
+                self.record(timing, name, "预览版需要 ## [Unreleased] 章节，未找到")
                 return
             bullets = count_bullets(section_content(unreleased))
             if bullets > 0:
                 self.record(OK, name, f"[Unreleased] 有 {bullets} 条内容")
             else:
-                self.record(FAIL, name, "[Unreleased] 为空，预览版没有更新说明")
+                self.record(timing, name, "[Unreleased] 为空，预览版没有更新说明")
             return
 
         # 稳定版：找到 [X.Y.Z] 章节
@@ -444,7 +458,8 @@ def main(argv=None):
     parser.add_argument(
         "--ci",
         action="store_true",
-        help="CI 运行模式：自动从 pubspec.yaml 读取版本号，并在有未通过项时退出码为 1",
+        help="CI 门禁模式：自动从 pubspec.yaml 读取版本号，发布时机类检查"
+             "（版本递增 / tag 冲突 / Unreleased 空置）降级为 WARN，其余检查未通过时退出码为 1",
     )
     args = parser.parse_args(argv)
 
@@ -470,7 +485,7 @@ def main(argv=None):
         print(f"错误: 非法版本号 '{args.version}'，应为 X.Y.Z 或 X.Y.Z-suffix", file=sys.stderr)
         return 2
 
-    return Checker(version).run_all()
+    return Checker(version, ci=args.ci).run_all()
 
 
 if __name__ == "__main__":
