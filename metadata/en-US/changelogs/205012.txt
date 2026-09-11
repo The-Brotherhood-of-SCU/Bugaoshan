@@ -1,0 +1,23 @@
+- Added online repair reporting: submit dormitory repair tickets directly in the app (choose the address and repair item, describe the fault, upload on-site photos, book a visit time); track progress and ticket details in "My Repairs", with ticket withdrawal and service rating support
+- Added campus network seamless authentication (Passpoint): after binding the device MAC address, connecting to the campus network authenticates automatically — no manual login needed
+- Added a course timetable lookup page: check a course's timetable arrangement online
+- Added quick schedule switching: switch between semesters' schedules with one tap in the schedule page top bar, plus a "Manage schedules" entry
+- Added a setting to adjust the display area of the schedule background image
+- Training program progress now supports multiple programs (major/minor/micro-major): swipe left/right to switch between programs
+- When importing a schedule, the preset time table is now applied automatically based on the dominant campus, reducing manual adjustments
+- The Release page now offers a download link for the unsigned iOS debug/test IPA
+
+- Improved schedule import: the Academic Affairs campus info is now preferred when determining the dominant campus
+- The Windows installer now bundles WebView2Loader.dll, fixing startup errors on Windows without the WebView2 runtime installed
+- Class schedules now support viewing courses week by week
+
+- Fixed missing locations and offset coordinates when exporting schedules and exam plans to the system calendar: exports on iOS / macOS now link directly with the system calendar's map display and navigation (teaching-building POIs across the three campuses are standardized and matched to the system map engine)
+- Fixed occasional startup crashes caused by macOS keychain permission errors, and cleaned up the build configuration
+- Fixed the issue where users with multiple training programs could not view program progress data (#246)
+- Fixed overlapping Y-axis tick labels in the electricity "lighting usage" line chart (#261)
+- Fixed duplicated and overlapping date labels at the bottom-left of the electricity trend chart
+- Fixed truncation of long "record time range" text in the electricity trend statistics card
+- Fixed a crash in the address dropdown after successfully submitting a repair ticket, and hardened JSON parsing of ticket details
+- Fixed task re-creation in specific scenarios when the Android home-screen widget launches
+- Fixed the startup failure page not showing error details in release builds (#259)
+- Fixed the class schedule page not distinguishing morning/noon/afternoon courses
