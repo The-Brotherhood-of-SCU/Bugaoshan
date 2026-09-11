@@ -337,14 +337,11 @@ Always run `dart format` (the repo's pre-commit hook enforces this on staged `.d
 
 ### Branching Model & Workflow Architecture
 
-The repository operates a strict three-tier release model (`dev` -> `preview` -> `main`):
+The repository operates a strict two-tier release model (`preview` -> `main`):
 
-- **`dev` (Daily Development & Feature Integration)**:
-  - Base branch for all daily development.
-  - All feature/fix/refactor/docs PRs must target `dev`.
 - **`preview` (Staging / Preview Release Track)**:
-  - Staging branch for preview testing.
-  - **Only accepts PRs from `dev`**. Direct PRs from other branches are rejected by `pre-flight.yml`.
+  - Staging branch for preview testing and daily integration.
+  - Accepts PRs from any feature/fix/refactor/docs branch directly.
   - Merges into `preview` automatically trigger the release pipeline to publish a **Preview Release** (`prerelease: true`, tag sequence `vX.Y.Z-preview` or `vX.Y.Z-preview.N`).
 - **`main` (Production / Formal Stable Release Track)**:
   - Production stable branch.
@@ -354,9 +351,9 @@ The repository operates a strict three-tier release model (`dev` -> `preview` ->
 ### CI Workflows
 
 - **`pre-flight.yml` (Quality Gate & Policy Enforcement)**:
-  - Triggers on PRs to `main` / `preview` / `dev`, pushes to `main` / `preview` / `dev`, and `workflow_dispatch`.
-  - Enforces branch flow policy: `preview` must originate from `dev`, `main` must originate from `preview`.
-  - Runs `dart analyze --fatal-infos`, `flutter test`, codegen cleanliness check (`git diff --exit-code`), Python CI unit tests (`.github/scripts/tests/`), and `tool/pre_release_check.py --ci`.
+  - Triggers on PRs to `main` / `preview`, pushes to `main` / `preview`, and `workflow_dispatch`.
+  - Enforces branch flow policy: `main` must originate from `preview` (there is no `dev` branch; feature branches target `preview` directly).
+  - Runs `dart analyze --fatal-infos`, `flutter test`, codegen cleanliness check (`git status --porcelain` after codegen), Python CI unit tests (`.github/scripts/tests/`), and `tool/pre_release_check.py --ci` (release-timing checks are advisory WARNs in CI; structural checks still fail the gate).
 - **`release.yml` (Release Pipeline)**:
   - Triggers on pushes to `main` / `preview`, tags matching `v*.*.*`, and `workflow_dispatch`.
   - Determines channel via `.github/scripts/resolve_release_version.py` (idempotent, skips existing formal releases).

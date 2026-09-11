@@ -5,12 +5,10 @@ on:
     branches:
       - main
       - preview
-      - dev
   push:
     branches:
       - main
       - preview
-      - dev
   workflow_dispatch:
 
 concurrency:
@@ -31,15 +29,10 @@ jobs:
           echo "Head branch (source): $HEAD"
 
           # Strict flow policy:
-          # feature/*, fix/* -> dev -> preview -> main
+          # feature/*, fix/* -> preview -> main
           if [ "$BASE" = "main" ]; then
             if [ "$HEAD" != "preview" ]; then
-              echo "::error::[Branch Policy Violation] 禁止直接向 main 分支合并！main 只能接收来自 preview 分支的 PR（标准流向: dev -> preview -> main）。当前来源: $HEAD"
-              exit 1
-            fi
-          elif [ "$BASE" = "preview" ]; then
-            if [ "$HEAD" != "dev" ]; then
-              echo "::error::[Branch Policy Violation] 禁止直接向 preview 分支合并！preview 只能接收来自 dev 分支的 PR（标准流向: dev -> preview -> main）。当前来源: $HEAD"
+              echo "::error::[Branch Policy Violation] 禁止直接向 main 分支合并！main 只能接收来自 preview 分支的 PR（标准流向: feature -> preview -> main）。当前来源: $HEAD"
               exit 1
             fi
           fi

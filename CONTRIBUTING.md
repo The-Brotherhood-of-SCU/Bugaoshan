@@ -154,12 +154,9 @@ lib/
 本项目采用严格单向流转的 **分级自动化发布流水线**：
 
 ```text
-日常开发分支 (feat/*, fix/*)
+日常开发分支 (feat/*, fix/*, docs/* ...)
        │
        ▼ (发起 PR, 触发 Pre-flight 门禁)
-`dev` 分支 (日常集成)
-       │
-       ▼ (仅允许来自 dev 的 PR, 触发 Pre-flight 门禁)
 `preview` 分支 ────► 自动触发 release.yml ────► 自动发布 vX.Y.Z-preview 预览版 (Prerelease)
        │
        ▼ (仅允许来自 preview 的 PR, 触发 Pre-flight 门禁)
@@ -168,12 +165,11 @@ lib/
 
 ### 严格流转规则 (Branch Flow Policy)
 - **禁止向 `main` 分支直接推送或提交日常 PR**：`main` 只能接收来自 `preview` 分支的 Pull Request。
-- **禁止向 `preview` 分支直接提交日常 PR**：`preview` 只能接收来自 `dev` 分支的 Pull Request。
-- **所有日常功能与修复**（`feat/*`、`fix/*`、`docs/*` 等）：请统一向 **`dev`** 分支发起 Pull Request。
+- **所有日常功能与修复**（`feat/*`、`fix/*`、`docs/*` 等）：请统一向 **`preview`** 分支发起 Pull Request。
 
 ### 自动化发布与门禁触发
-- **PR 门禁 (`pre-flight.yml`)**：向 `dev`、`preview`、`main` 发起 PR 时，会自动执行分支合规检查、代码静态分析 (`dart analyze`)、生成文件漂移检测、测试套件 (`flutter test`) 以及发布前预检。
-- **`preview` 分支更新**：当 `dev` 合入 `preview` 后，触发全平台构建并发布 **Preview 预发布版本**。
+- **PR 门禁 (`pre-flight.yml`)**：向 `preview`、`main` 发起 PR 时，会自动执行分支合规检查、代码静态分析 (`dart analyze`)、生成文件漂移检测、测试套件 (`flutter test`) 以及发布前预检。
+- **`preview` 分支更新**：当 feature 分支合入 `preview` 后，触发全平台构建并发布 **Preview 预发布版本**。
 - **`main` 分支更新**：当 `preview` 合入 `main` 后，触发全平台构建、更新 F-Droid 元数据并发布 **Formal 正式版本**。
 
 ### 分支规范
@@ -181,17 +177,16 @@ lib/
 | 分支 | 职责 | 触发动作 |
 |---|---|---|
 | `main` | **正式版生产分支**。仅接收来自 `preview` 的 PR（禁止日常直接提交）。 | 合并后自动创建 Tag `vX.Y.Z`，构建并发布 **Formal 正式版** (GitHub Release latest)。 |
-| `preview` | **预览版预发布分支**。仅接收来自 `dev` 的 PR（禁止日常直接提交）。 | 合并后自动创建 Tag `vX.Y.Z-preview` (或递增序)，构建并发布 **Preview 预览版** (prerelease)。 |
-| `dev` | **日常集成开发分支**。所有日常功能、修复 PR 均以 `dev` 为目标分支。 | 提交 PR 至 `dev` 或合并时自动触发 Pre-flight 质量门禁检查。 |
-| `feat/*`, `fix/*` | **特性/修复工作分支**。从 `dev` 分支切出。 | 提交 PR 至 `dev` 时自动触发 Pre-flight 质量门禁检查。 |
+| `preview` | **预览版预发布分支，兼日常集成分支**。所有日常功能、修复 PR 均以 `preview` 为目标分支。 | 合并后自动创建 Tag `vX.Y.Z-preview` (或递增序)，构建并发布 **Preview 预览版** (prerelease)。 |
+| `feat/*`, `fix/*` | **特性/修复工作分支**。从 `preview` 分支切出。 | 提交 PR 至 `preview` 时自动触发 Pre-flight 质量门禁检查。 |
 
 ### 质量门禁 (Pre-flight Checks)
 
-每次向 `dev`、`preview` 或 `main` 提交 Pull Request 时，GitHub Actions 会自动运行发布前检查：
+每次向 `preview` 或 `main` 提交 Pull Request 时，GitHub Actions 会自动运行发布前检查：
 1. `dart analyze --fatal-infos`：严格的 Dart 静态代码检查。
 2. `flutter test`：全套单元与 Widget 测试。
-3. `git diff --exit-code`：代码生成物 (`build_runner` / `flutter gen-l10n`) 完整性检查。
-4. Python 自动化发布脚本单元测试与版本格式预检。
+3. `git status --porcelain`：代码生成物 (`build_runner` / `flutter gen-l10n`) 完整性检查。
+4. Python 自动化发布脚本单元测试与版本格式预检（发布时机类检查在 CI 中为 WARN 级提示）。
 
 ---
 
