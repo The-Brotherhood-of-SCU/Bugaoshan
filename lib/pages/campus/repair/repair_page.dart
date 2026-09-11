@@ -14,6 +14,7 @@ import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
+import 'package:bugaoshan/widgets/common/swipe_page_view.dart';
 
 part 'repair_submit_tab.dart';
 part 'repair_widgets.dart';
@@ -35,9 +36,24 @@ class RepairPage extends StatefulWidget {
   State<RepairPage> createState() => _RepairPageState();
 }
 
-class _RepairPageState extends State<RepairPage> {
+class _RepairPageState extends State<RepairPage>
+    with SingleTickerProviderStateMixin {
   /// 用于让 AppBar 刷新按钮直接调用工单列表的统一刷新（force 拉取 + 滚回顶端）。
   final _myTicketsKey = GlobalKey<_MyTicketsTabState>();
+
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,34 +64,32 @@ class _RepairPageState extends State<RepairPage> {
       listenable: Listenable.merge([auth, provider]),
       builder: (context, _) {
         final l10n = AppLocalizations.of(context)!;
-        return DefaultTabController(
-          length: 2,
-          child: Scaffold(
-            appBar: AppBar(
-              title: Text(l10n.repairTitle),
-              bottom: TabBar(
-                tabs: [
-                  Tab(text: l10n.repairTabSubmit),
-                  Tab(text: l10n.repairTabMyTickets),
-                ],
-              ),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.refresh),
-                  // 手动刷新：地址与工单列表都刷新。
-                  // 列表走统一 _refresh()（force 拉取 + 滚回顶端）。
-                  onPressed: provider.state == RepairLoadState.loading
-                      ? null
-                      : () {
-                          provider.refresh();
-                          _myTicketsKey.currentState?._refresh();
-                        },
-                  tooltip: l10n.refresh,
-                ),
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(l10n.repairTitle),
+            bottom: TabBar(
+              controller: _tabController,
+              tabs: [
+                Tab(text: l10n.repairTabSubmit),
+                Tab(text: l10n.repairTabMyTickets),
               ],
             ),
-            body: _buildBody(l10n, auth, provider),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                // 手动刷新：地址与工单列表都刷新。
+                // 列表走统一 _refresh()（force 拉取 + 滚回顶端）。
+                onPressed: provider.state == RepairLoadState.loading
+                    ? null
+                    : () {
+                        provider.refresh();
+                        _myTicketsKey.currentState?._refresh();
+                      },
+                tooltip: l10n.refresh,
+              ),
+            ],
           ),
+          body: _buildBody(l10n, auth, provider),
         );
       },
     );
@@ -114,7 +128,10 @@ class _RepairPageState extends State<RepairPage> {
     // 异步加载工单列表（不阻塞地址展示；myList 服务端慢，独立处理）
     unawaited(provider.loadTickets());
 
-    return TabBarView(
+    return SwipePageView(
+      tabController: _tabController,
+      // 保留表单页状态：滑到工单列表再滑回来，填了一半的报修内容不丢。
+      keepPagesAlive: true,
       children: [
         _SubmitTab(provider: provider),
         _MyTicketsTab(key: _myTicketsKey, provider: provider),

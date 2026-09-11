@@ -8,6 +8,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/academic_calendar.dart';
 import 'package:bugaoshan/services/api/academic_calendar_service.dart';
 import 'package:bugaoshan/utils/calendar_export_utils.dart';
+import 'package:bugaoshan/widgets/common/swipe_page_view.dart';
 
 import 'interactive_calendar_view.dart';
 import 'official_calendar_view.dart';
@@ -296,8 +297,9 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
             ),
         ],
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: SwipePageView(
+        tabController: _tabController,
+        keepPagesAlive: true,
         children: [
           InteractiveCalendarView(
             data: _interactiveData,

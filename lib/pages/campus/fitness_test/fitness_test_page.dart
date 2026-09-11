@@ -10,6 +10,7 @@ import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/info_row.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
+import 'package:bugaoshan/widgets/common/swipe_page_view.dart';
 
 class FitnessTestPage extends StatefulWidget {
   const FitnessTestPage({super.key});
@@ -89,8 +90,9 @@ class _FitnessTestPageState extends State<FitnessTestPage>
       return _buildError(noticesError, _provider.refresh);
     }
 
-    return TabBarView(
-      controller: _tabController,
+    return SwipePageView(
+      tabController: _tabController,
+      keepPagesAlive: true,
       children: [_buildScoresTab(l10n), _buildNoticesTab(l10n)],
     );
   }
