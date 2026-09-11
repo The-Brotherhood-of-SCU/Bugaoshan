@@ -27,6 +27,8 @@ class PasspointPage extends StatefulWidget {
 }
 
 class _PasspointPageState extends State<PasspointPage> {
+  bool _privacyHidden = true;
+
   @override
   Widget build(BuildContext context) {
     final auth = getIt<ScuAuthProvider>();
@@ -145,6 +147,42 @@ class _PasspointPageState extends State<PasspointPage> {
     );
   }
 
+  String _maskText(String text, {int visibleStart = 1, int visibleEnd = 0}) {
+    if (text.length <= visibleStart + visibleEnd) return '*' * text.length;
+    final start = text.substring(0, visibleStart);
+    final end = visibleEnd > 0 ? text.substring(text.length - visibleEnd) : '';
+    final masked = '*' * (text.length - visibleStart - visibleEnd);
+    return '$start$masked$end';
+  }
+
+  Widget _buildPrivacyRow(
+    String label,
+    String value, {
+    int visibleStart = 1,
+    int visibleEnd = 0,
+  }) {
+    return GestureDetector(
+      onTap: () => setState(() => _privacyHidden = !_privacyHidden),
+      child: InfoRow(
+        label: label,
+        value: _privacyHidden
+            ? _maskText(
+                value,
+                visibleStart: visibleStart,
+                visibleEnd: visibleEnd,
+              )
+            : value,
+        trailing: Icon(
+          _privacyHidden
+              ? Icons.visibility_off_outlined
+              : Icons.visibility_outlined,
+          size: 16,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
+    );
+  }
+
   Widget _buildUserInfoCard(AppLocalizations l10n, PasspointUserInfo user) {
     return CardWithTitle(
       title: l10n.passpointUserInfo,
@@ -154,8 +192,13 @@ class _PasspointPageState extends State<PasspointPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            InfoRow(label: l10n.nameLabel, value: user.userName),
-            InfoRow(label: l10n.studentIdLabel, value: user.userId),
+            _buildPrivacyRow(l10n.nameLabel, user.userName),
+            _buildPrivacyRow(
+              l10n.studentIdLabel,
+              user.userId,
+              visibleStart: 2,
+              visibleEnd: 2,
+            ),
             if (user.userGroupName.isNotEmpty)
               InfoRow(
                 label: l10n.passpointUserGroup,
