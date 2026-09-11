@@ -1429,6 +1429,12 @@ abstract class AppLocalizations {
   /// **'Show Location'**
   String get showLocation;
 
+  /// No description provided for @showCourseWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Course Weeks'**
+  String get showCourseWeeks;
+
   /// No description provided for @showWeekend.
   ///
   /// In en, this message translates to:

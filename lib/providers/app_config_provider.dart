@@ -31,6 +31,7 @@ const String _keyWidgetDensity = 'widget_density';
 const String _keyUsePreviewUpdateSource = 'usePreviewUpdateSource';
 const String _keyShowTeacherName = 'showTeacherName';
 const String _keyShowLocation = 'showLocation';
+const String _keyShowCourseWeeks = 'showCourseWeeks';
 const String _keyShowWeekend = 'showWeekend';
 const String _keyShowNonCurrentWeekCourses = 'showNonCurrentWeekCourses';
 const String _keyUseGoogleFonts = 'useGoogleFonts';
@@ -91,6 +92,7 @@ class AppConfigProvider {
   final ValueNotifier<bool> useGoogleFonts = ValueNotifier<bool>(true);
   final ValueNotifier<bool> showTeacherName = ValueNotifier<bool>(true);
   final ValueNotifier<bool> showLocation = ValueNotifier<bool>(true);
+  final ValueNotifier<bool> showCourseWeeks = ValueNotifier<bool>(true);
   final ValueNotifier<bool> showWeekend = ValueNotifier<bool>(false);
   final ValueNotifier<bool> showNonCurrentWeekCourses = ValueNotifier<bool>(
     true,
@@ -167,6 +169,8 @@ class AppConfigProvider {
     showTeacherName.value =
         _sharedPreferences.getBool(_keyShowTeacherName) ?? true;
     showLocation.value = _sharedPreferences.getBool(_keyShowLocation) ?? true;
+    showCourseWeeks.value =
+        _sharedPreferences.getBool(_keyShowCourseWeeks) ?? true;
     showWeekend.value = _sharedPreferences.getBool(_keyShowWeekend) ?? false;
     showNonCurrentWeekCourses.value =
         _sharedPreferences.getBool(_keyShowNonCurrentWeekCourses) ?? true;
@@ -294,6 +298,9 @@ class AppConfigProvider {
     });
     showLocation.addListener(() {
       _sharedPreferences.setBool(_keyShowLocation, showLocation.value);
+    });
+    showCourseWeeks.addListener(() {
+      _sharedPreferences.setBool(_keyShowCourseWeeks, showCourseWeeks.value);
     });
     showWeekend.addListener(() {
       _sharedPreferences.setBool(_keyShowWeekend, showWeekend.value);

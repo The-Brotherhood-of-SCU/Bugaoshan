@@ -34,6 +34,7 @@ class SetCourseStylePage extends StatelessWidget {
         appConfig.courseRowHeight,
         appConfig.showTeacherName,
         appConfig.showLocation,
+        appConfig.showCourseWeeks,
         appConfig.showWeekend,
         appConfig.showNonCurrentWeekCourses,
       ]),
@@ -207,6 +208,12 @@ class SetCourseStylePage extends StatelessWidget {
         contentPadding: EdgeInsets.zero,
       ),
       SwitchListTile(
+        title: Text(localizations.showCourseWeeks),
+        value: appConfig.showCourseWeeks.value,
+        onChanged: (v) => appConfig.showCourseWeeks.value = v,
+        contentPadding: EdgeInsets.zero,
+      ),
+      SwitchListTile(
         title: Text(localizations.showWeekend),
         value: appConfig.showWeekend.value,
         onChanged: (v) => appConfig.showWeekend.value = v,
@@ -288,6 +295,7 @@ class SetCourseStylePage extends StatelessWidget {
             appConfig.backgroundImageOpacity.value = 0.3;
             appConfig.showTeacherName.value = true;
             appConfig.showLocation.value = true;
+            appConfig.showCourseWeeks.value = true;
             appConfig.showWeekend.value = false;
             appConfig.showNonCurrentWeekCourses.value = true;
           },

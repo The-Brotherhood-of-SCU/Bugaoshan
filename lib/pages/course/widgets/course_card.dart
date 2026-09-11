@@ -34,6 +34,7 @@ class CourseCard extends StatelessWidget {
         appConfig.courseCardFontSize,
         appConfig.showLocation,
         appConfig.showTeacherName,
+        appConfig.showCourseWeeks,
       ]),
       builder: (context, _) {
         final isActive = showAllWeeks || course.isActiveInWeek(displayWeek);
@@ -57,11 +58,12 @@ class CourseCard extends StatelessWidget {
                 ),
               if (appConfig.showTeacherName.value && course.teacher.isNotEmpty)
                 (text: course.teacher, preferredMaxLines: 1, renderMaxLines: 2),
-              (
-                text: l10n.weekRange(course.startWeek, course.endWeek),
-                preferredMaxLines: 1,
-                renderMaxLines: 4,
-              ),
+              if (appConfig.showCourseWeeks.value)
+                (
+                  text: l10n.weekRange(course.startWeek, course.endWeek),
+                  preferredMaxLines: 1,
+                  renderMaxLines: 4,
+                ),
             ];
 
         return GestureDetector(
