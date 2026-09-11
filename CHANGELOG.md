@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- 课表显示设置新增「显示课程周数」开关，支持自由控制课程卡片上是否显示周数范围
+
 ## [2.5.1] - 2026-09-11
 
 ### Added

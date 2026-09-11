@@ -307,6 +307,7 @@
     "backgroundImageSetHint": "Background image set. You can go to Theme Color to modify the theme color.",
     "showTeacher": "Show Teacher",
     "showLocation": "Show Location",
+    "showCourseWeeks": "Show Course Weeks",
     "showWeekend": "Show Weekend",
     "showNonCurrentWeekCourses": "Show Non-Current Week Courses",
     "save": "Save",

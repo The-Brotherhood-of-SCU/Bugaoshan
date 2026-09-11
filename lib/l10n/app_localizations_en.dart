@@ -723,6 +723,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get showLocation => 'Show Location';
 
   @override
+  String get showCourseWeeks => 'Show Course Weeks';
+
+  @override
   String get showWeekend => 'Show Weekend';
 
   @override

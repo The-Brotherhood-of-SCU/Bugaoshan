@@ -699,6 +699,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get showLocation => '显示教室';
 
   @override
+  String get showCourseWeeks => '显示课程周数';
+
+  @override
   String get showWeekend => '显示周末';
 
   @override
