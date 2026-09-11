@@ -9,6 +9,14 @@ Future<void> openProjectRepository() async {
   await openLink(appLink);
 }
 
+Future<void> openOfficialWebsite() async {
+  await openLink(officialWebsiteLink);
+}
+
+Future<void> openUserManual() async {
+  await openLink(userManualLink);
+}
+
 Future<void> openDeveloperTeam() async {
   await openLink(orgLink);
 }
