@@ -7,6 +7,14 @@ on:
         description: "tag name"
         required: false
         type: string
+      build_name:
+        description: "构建注入的 versionName（--build-name；预览=上一正式版，formal=pubspec）"
+        required: false
+        type: string
+      build_number:
+        description: "构建注入的 versionCode 基数（--build-number）"
+        required: false
+        type: string
 
 jobs:
   build-android:
@@ -61,8 +69,14 @@ jobs:
 
       - name: Build universal APK for in-app updates
         run: |
+          # 版本注入：预览通道统一使用上一正式版的版本号（pubspec 的 /release bump
+          # 不影响预览构建），formal 与 pubspec 一致；空值时回退 pubspec 默认。
+          BUILD_ARGS=()
+          if [ -n "${{ inputs.build_name }}" ]; then BUILD_ARGS+=(--build-name "${{ inputs.build_name }}"); fi
+          if [ -n "${{ inputs.build_number }}" ]; then BUILD_ARGS+=(--build-number "${{ inputs.build_number }}"); fi
           flutter build apk --release \
             --obfuscate --split-debug-info=build/app/outputs/symbols/universal \
+            "${BUILD_ARGS[@]}" \
             --dart-define=GIT_TAG=${{ steps.setup.outputs.GIT_TAG }} \
             --dart-define=GIT_COMMIT=${{ steps.setup.outputs.GIT_COMMIT }} \
             --dart-define=GIT_COMMIT_DATE=${{ steps.setup.outputs.GIT_COMMIT_DATE }}
@@ -72,8 +86,12 @@ jobs:
 
       - name: Build ABI split APKs for manual downloads
         run: |
+          BUILD_ARGS=()
+          if [ -n "${{ inputs.build_name }}" ]; then BUILD_ARGS+=(--build-name "${{ inputs.build_name }}"); fi
+          if [ -n "${{ inputs.build_number }}" ]; then BUILD_ARGS+=(--build-number "${{ inputs.build_number }}"); fi
           flutter build apk --release --split-per-abi \
             --obfuscate --split-debug-info=build/app/outputs/symbols/split \
+            "${BUILD_ARGS[@]}" \
             --dart-define=GIT_TAG=${{ steps.setup.outputs.GIT_TAG }} \
             --dart-define=GIT_COMMIT=${{ steps.setup.outputs.GIT_COMMIT }} \
             --dart-define=GIT_COMMIT_DATE=${{ steps.setup.outputs.GIT_COMMIT_DATE }}

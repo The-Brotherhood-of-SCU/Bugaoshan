@@ -1,0 +1,79 @@
+name: Pre-flight Quality Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+      - preview
+  push:
+    branches:
+      - main
+      - preview
+  workflow_dispatch:
+
+concurrency:
+  group: preflight-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  branch-policy:
+    name: Enforce Branch Flow Policy
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify branch flow compliance
+        run: |
+          BASE="${{ github.base_ref }}"
+          HEAD="${{ github.head_ref }}"
+          echo "Base branch (target): $BASE"
+          echo "Head branch (source): $HEAD"
+
+          # Strict flow policy:
+          # feature/*, fix/* -> preview -> main
+          if [ "$BASE" = "main" ]; then
+            if [ "$HEAD" != "preview" ]; then
+              echo "::error::[Branch Policy Violation] 禁止直接向 main 分支合并！main 只能接收来自 preview 分支的 PR（标准流向: feature -> preview -> main）。当前来源: $HEAD"
+              exit 1
+            fi
+          fi
+          echo "Branch policy check passed: $HEAD -> $BASE is compliant."
+
+  check:
+    name: Lint, Test & Verification Gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Flutter and Environment
+        uses: ./.github/actions/setup
+
+      - name: Static Analysis
+        run: dart analyze --fatal-infos
+
+      - name: Verify Clean Working Tree after Code Generation
+        run: |
+          git status --porcelain
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::Generated code drift detected! Please run 'dart run build_runner build --delete-conflicting-outputs' and 'flutter gen-l10n', then commit the updated files."
+            git diff
+            exit 1
+          fi
+
+      - name: Run Flutter Tests
+        run: flutter test
+
+      - name: Run Python CI Automation Tests
+        run: |
+          python3 -m unittest discover -s .github/scripts/tests/
+          python3 -m unittest discover -s .github/scripts/
+
+      - name: Pre-release Metadata & Consistency Check
+        run: |
+          if [ "${{ github.base_ref || github.ref_name }}" = "main" ]; then
+            python3 tool/pre_release_check.py --ci
+          else
+            python3 tool/pre_release_check.py --ci --prerelease
+          fi
