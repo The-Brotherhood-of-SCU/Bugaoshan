@@ -1,111 +1,179 @@
-name: Build App
+name: Release Pipeline
 
 on:
   push:
+    branches:
+      - main
+      - preview
     tags:
       - "v*.*.*"
   workflow_dispatch:
     inputs:
-      version:
-        description: "tag name"
+      channel:
+        description: "Release channel (auto / formal / preview)"
+        required: false
+        default: "auto"
+        type: choice
+        options:
+          - auto
+          - formal
+          - preview
+      version_override:
+        description: "Explicit version or tag (optional, e.g. 2.5.1 or v2.5.1-rc1)"
         required: false
         type: string
 
+concurrency:
+  group: release-${{ github.ref }}
+  # 预览轨道只保留最新一轮：连续合并/ dispatch 到 preview 时取消进行中的旧发布；
+  # main 与 tag 事件绝不取消，正式发布必须完整走完。
+  cancel-in-progress: ${{ github.ref_type == 'branch' && github.ref_name == 'preview' }}
+
 jobs:
-  build-android:
-    uses: ./.github/workflows/build-android.yml
-    with:
-      version: ${{ github.event.inputs.version }}
-    secrets: inherit
-
-  build-windows:
-    uses: ./.github/workflows/build-windows.yml
-    with:
-      version: ${{ github.event.inputs.version }}
-    secrets: inherit
-
-  release:
-    name: Release
-    needs: [ build-android, build-windows ]
+  resolve-metadata:
+    name: Resolve Release Metadata
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name ==
-      'workflow_dispatch'
     permissions:
       contents: write
-
+    outputs:
+      channel: ${{ steps.resolve.outputs.channel }}
+      tag: ${{ steps.resolve.outputs.tag }}
+      version_name: ${{ steps.resolve.outputs.version_name }}
+      is_prerelease: ${{ steps.resolve.outputs.is_prerelease }}
+      should_release: ${{ steps.resolve.outputs.should_release }}
+      build_only: ${{ steps.resolve.outputs.build_only }}
+      build_version: ${{ steps.resolve.outputs.build_version }}
+      build_number: ${{ steps.resolve.outputs.build_number }}
+      release_title: ${{ steps.resolve.outputs.release_title }}
+      skip_reason: ${{ steps.resolve.outputs.skip_reason }}
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Download APK
+      - name: Setup Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.12"
+
+      - name: Resolve Version & Channel
+        id: resolve
+        env:
+          INPUT_CHANNEL: ${{ github.event.inputs.channel || 'auto' }}
+          INPUT_VERSION_OVERRIDE: ${{ github.event.inputs.version_override || '' }}
+        run: python3 .github/scripts/resolve_release_version.py
+
+      - name: Tag commit in repository (if new branch release)
+        if: steps.resolve.outputs.should_release == 'true' && github.ref_type != 'tag'
+        run: |
+          TAG="${{ steps.resolve.outputs.tag }}"
+          echo "Applying tag $TAG to HEAD..."
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$TAG"
+          # 推送失败即终止（tag 被并发 run 抢占或受保护时，继续构建只会在
+          # publish 阶段以更晚、更难排查的方式失败）
+          if ! git push origin "refs/tags/$TAG"; then
+            echo "::error::Failed to push tag $TAG. 另一个发布 run 可能已占用该 tag，请检查 Actions 运行记录。"
+            exit 1
+          fi
+
+  build-android:
+    name: Android Build
+    needs: resolve-metadata
+    if: needs.resolve-metadata.outputs.should_release == 'true' || needs.resolve-metadata.outputs.build_only == 'true'
+    uses: ./.github/workflows/build-android.yml
+    with:
+      version: ${{ needs.resolve-metadata.outputs.tag }}
+      build_name: ${{ needs.resolve-metadata.outputs.build_version }}
+      build_number: ${{ needs.resolve-metadata.outputs.build_number }}
+    secrets: inherit
+
+  build-windows:
+    name: Windows Build
+    needs: resolve-metadata
+    if: needs.resolve-metadata.outputs.should_release == 'true' || needs.resolve-metadata.outputs.build_only == 'true'
+    uses: ./.github/workflows/build-windows.yml
+    with:
+      version: ${{ needs.resolve-metadata.outputs.tag }}
+      build_name: ${{ needs.resolve-metadata.outputs.build_version }}
+      build_number: ${{ needs.resolve-metadata.outputs.build_number }}
+
+  publish-release:
+    name: Publish Release
+    needs: [resolve-metadata, build-android, build-windows]
+    if: needs.resolve-metadata.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Android Artifacts
         uses: actions/download-artifact@v4
         with:
           name: android-apk
           path: android-apk
 
-      - name: Download Windows
+      - name: Download Windows Artifacts
         uses: actions/download-artifact@v4
         with:
           name: windows-release
           path: windows-release
 
-      - name: Cache Argos Translate models
-        uses: actions/cache@v4
-        with:
-          path: ~/.local/share/argos-translate
-          key: argos-translate-zh-en-v1
-
-      - name: Set up Python 3
+      - name: Set up Python
         uses: actions/setup-python@v3
         with:
           python-version: "3.12"
 
       - name: Install Python dependencies
-        run: pip install pyyaml deep-translator argostranslate
-
-      - name: Pre-install Argos Translate model (cached)
         run: |
-          python3 -c "
+          pip install pyyaml deep-translator argostranslate
+
+      - name: Cache Argos Translate model
+        uses: actions/cache@v4
+        id: cache-argos
+        with:
+          path: ~/.local/share/argos-translate
+          key: argos-translate-zh-en-v1
+
+      - name: Download Argos Translate zh->en model
+        if: steps.cache-argos.outputs.cache-hit != 'true'
+        run: |
+          python -c "
           import argostranslate.package
-          import argostranslate.translate
-          installed = argostranslate.translate.get_installed_languages()
-          if not any(l.code == 'zh' for l in installed):
-              argostranslate.package.update_package_index()
-              pkgs = argostranslate.package.get_available_packages()
-              zh_en = next(p for p in pkgs if p.from_code == 'zh' and p.to_code == 'en')
-              zh_en.download()
-              argostranslate.package.install_from_path(zh_en.download())
-              print('Model installed')
-          else:
-              print('Model already cached')
+          argostranslate.package.update_package_index()
+          available = argostranslate.package.get_available_packages()
+          zh_en = next(p for p in available if p.from_code == 'zh' and p.to_code == 'en')
+          argostranslate.package.install_from_path(zh_en.download())
           "
 
-      - name: Get version and tags
+      - name: Resolve release tag & range
         id: vars
         run: python .github/scripts/release_tags.py
         env:
-          VERSION: ${{ github.event.inputs.version }}
-          GITHUB_REF_NAME: ${{ github.ref_name }}
+          VERSION: ${{ needs.resolve-metadata.outputs.tag }}
 
-      - name: Generate metadata changelogs
-        if: ${{ !contains(github.ref_name, '-') }}
+      - name: Generate metadata changelogs (formal releases only)
+        if: needs.resolve-metadata.outputs.is_prerelease != 'true'
         run: python .github/scripts/metadata_changelog.py --skip-existing
 
       - name: Commit & push metadata changelogs (safety net)
-        if: ${{ !contains(github.ref_name, '-') }}
+        if: needs.resolve-metadata.outputs.is_prerelease != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet && git diff --cached --quiet; then
-            echo "No metadata changelog changes to commit."
-          else
+          git status --porcelain
+          if [ -n "$(git status --porcelain metadata/*/changelogs/)" ]; then
             git add metadata/*/changelogs/*.txt
             git commit -m "chore: update F-Droid metadata changelogs for ${{ steps.vars.outputs.tag }}"
-            git fetch origin main
-            git rebase origin/main || { git rebase --abort || true; echo "rebase failed, continuing"; }
+            git pull --rebase origin main || { git rebase --abort || true; echo "rebase failed, continuing"; }
             git push origin HEAD:main || echo "safety-net push failed (main moved on), continuing"
+          else
+            echo "No metadata changelog changes to commit."
           fi
 
       - name: Extract changelog
@@ -114,12 +182,12 @@ jobs:
         env:
           VERSION: ${{ steps.vars.outputs.tag }}
 
-      - name: Build release body
+      - name: Generate release body
         id: release_body
         run: python .github/scripts/release_body.py
         env:
           VERSION: ${{ steps.vars.outputs.tag }}
-          REPO: https://github.com/${{ github.repository }}
+          REPO: ${{ github.server_url }}/${{ github.repository }}
           CHANGELOG: ${{ steps.changelog.outputs.changelog }}
           PREV: ${{ steps.vars.outputs.prev }}
 
@@ -128,28 +196,31 @@ jobs:
         env:
           VERSION: ${{ steps.vars.outputs.tag }}
 
-      - name: Create GitHub Release
+      - name: Create Release and Upload Assets
         run: |
           set -euo pipefail
-          PRERELEASE=${{ contains(steps.vars.outputs.tag, '-') }}
-          printf '%s' "$BODY" > notes.md
+
+          TAG="${{ steps.vars.outputs.tag }}"
+          IS_PRERELEASE="${{ needs.resolve-metadata.outputs.is_prerelease }}"
+          TITLE="${{ needs.resolve-metadata.outputs.release_title }}"
 
           GOPTS=()
-          if [ "$PRERELEASE" = "true" ]; then
+          if [ "$IS_PRERELEASE" = "true" ]; then
             GOPTS+=(--prerelease)
           fi
 
-          # 不可变发布(Immutable Releases)仓库下，prerelease 必须先落成 draft、
-          # 上传资产、再发布。若直接 publish，GitHub 会立刻将其标记为不可变，之后的资产上传会被拒绝
+          # 创建 Draft Release -> 上传制品 -> 发布（确保与不可变 Release 策略完全兼容）
+          printf "%s\n" "$BODY" > notes.md
+
           gh release create "$TAG" \
-            --title "Release $TAG" \
+            --title "$TITLE" \
             --notes-file notes.md \
             --draft \
             "${GOPTS[@]}"
 
           gh release upload "$TAG" bugaoshan_*.apk bugaoshan_*.zip
 
-          if [ "$PRERELEASE" = "true" ]; then
+          if [ "$IS_PRERELEASE" = "true" ]; then
             gh release edit "$TAG" --draft=false --prerelease
           else
             gh release edit "$TAG" --draft=false --latest
@@ -157,4 +228,3 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BODY: ${{ steps.release_body.outputs.body }}
-          TAG: ${{ steps.vars.outputs.tag }}

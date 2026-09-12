@@ -16,9 +16,10 @@ def main():
     end_idx = len(lines)
 
     if is_prerelease:
-        # Prerelease: use the latest (first) changelog section
+        # 预览/RC 固定取 [Unreleased] 章节：按名称匹配而非按位置取第一个章节，
+        # 避免章节缺失时静默借用其他版本（通常是上一个正式版）的更新说明。
         for i, line in enumerate(lines):
-            if re.match(r"^##\s", line.strip()):
+            if re.match(r"^##\s*\[?unreleased\]?\s*$", line.strip(), re.IGNORECASE):
                 start_idx = i
                 break
     else:
@@ -31,6 +32,8 @@ def main():
     if start_idx == -1:
         if is_prerelease:
             changelog = "*No changelog entry for this version.*"
+            if os.environ.get("GITHUB_OUTPUT"):
+                print("::warning::CHANGELOG.md 缺少 [Unreleased] 章节，本次预发布版将没有更新说明")
         else:
             print(f"::error::No changelog entry found for release version {version}. "
                   "Please add a changelog entry before releasing.", file=sys.stderr)
@@ -52,6 +55,9 @@ def main():
             print(f"::error::Changelog entry for {version} is empty. "
                   "Please add content before releasing.", file=sys.stderr)
             sys.exit(1)
+        if is_prerelease and changelog.startswith("*No changelog"):
+            if os.environ.get("GITHUB_OUTPUT"):
+                print("::warning::CHANGELOG.md 的 [Unreleased] 章节为空，本次预发布版将没有更新说明")
 
     output = os.environ.get("GITHUB_OUTPUT", "")
     if output:

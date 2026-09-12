@@ -38,6 +38,11 @@ runs:
     - name: Get dependencies
       run: flutter pub get
       shell: bash
+      # 提交的 pubspec.lock 锁定的是国内镜像：不设 PUB_HOSTED_URL 时 pub get 会把
+      # lock 全量翻成 pub.dev，造成「生成物漂移」假失败（三个调用方共用本 action，
+      # 在此统一设置；build-android 自身的 job 级 env 与此处取值相同，保留无妨）。
+      env:
+        PUB_HOSTED_URL: https://pub.flutter-io.cn
 
     - name: Set up Python 3
       uses: actions/setup-python@v3
