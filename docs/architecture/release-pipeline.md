@@ -77,8 +77,8 @@ branch-policy 只做一条硬校验：**`main` 只能接收来自 `preview` 的 
 ### 4.2 preview 通道没有跳过开关
 每次合入 `preview` 都会真实构建并发版。不要把 preview 当作「只合代码、不发版」的集成分支使用；不希望发版的改动（如纯文档微调）也应接受一次预览版，或攒到下一轮一起合。
 
-### 4.3 代码生成物漂移对 SDK 版本敏感
-`lib/injection/injector.config.dart` 由 build_runner 经 **SDK 自带的 dart_style** 格式化，输出随 Flutter patch 版本变化。CI 在 setup action 中精确钉住 `flutter-version: "3.44.9"`，生成物以 CI 产物为准；本地 SDK 版本不同时重新生成可能产生纯格式 diff，不要把它提交回去。`pubspec.lock` 锁定的是国内镜像 `pub.flutter-io.cn`，setup action 已统一设置 `PUB_HOSTED_URL`（缺了它 CI 的 `pub get` 会把 lock 全量翻成 pub.dev 造成漂移）。
+### 4.3 代码生成物漂移对解析来源敏感
+`lib/injection/injector.config.dart` 由 build_runner（injectable_generator + dart_style）生成，输出取决于 **pub get 实际解析到的工具链状态**：`pubspec.lock` 锁定国内镜像 `pub.flutter-io.cn`，若 CI 未设置 `PUB_HOSTED_URL`，pub get 会按 pub.dev 重解析——除把 lock 的 hosted URL 全量翻成 pub.dev 外，还可能产出格式不同的生成物（曾在依赖版本完全相同的情况下复现为 injector.config.dart 多一行空行）。setup action 已统一设置 `PUB_HOSTED_URL`，生成随之确定；生成物以锁定工具链的产物为准，出现纯格式 diff 时不要提交回去（干净树检查会在 CI 兜底拦截）。
 
 ### 4.4 门禁红不等于挡合并
 `main` 的 ruleset（`protect-main`）要求 1 个 approve、评论必须解决、禁止删除与强推，但**未配置 required status checks**。pre-flight 挂红只是展示性的，不阻塞合并；流程的真正闸门是人工 review。若要让门禁硬生效，需在仓库设置中将 pre-flight 的 check 配为 required。
