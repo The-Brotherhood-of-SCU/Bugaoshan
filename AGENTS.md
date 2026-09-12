@@ -146,7 +146,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
     │   ├── release_body.py         # build the GitHub release markdown body
     │   └── release_prepare.py      # rename APK/zip/tar artifacts for upload
     ├── workflows/
-    │   ├── release.yml         # triggered by tags v*.*.* or manual dispatch
+    │   ├── release.yml         # releases on push to main/preview, target-gated tags, or manual dispatch
     │   ├── build-android.yml   # workflow_call → APK (split per ABI, obfuscated)
     │   ├── build-windows.yml   # workflow_call → Windows zip
     └── ISSUE_TEMPLATE/feature_request.yml
@@ -336,18 +336,37 @@ Always run `dart format` (the repo's pre-commit hook enforces this on staged `.d
 
 ## Continuous Integration & Release
 
-GitHub Actions:
+### Branching Model & Workflow Architecture
 
-- **`release.yml`** — triggered by tags `v*.*.*` (or `workflow_dispatch`). Calls Android and Windows builds, then runs the Python release scripts and publishes both platforms via `softprops/action-gh-release@v2`. Prerelease tags (containing `-`) are flagged as pre-releases.
-- **`build-android.yml`** — Ubuntu, JDK 21, decodes keystore from `secrets.KEYSTORE_BASE64`, writes `android/key.properties`, builds **split-per-ABI** release APK with `--obfuscate --split-debug-info=build/app/outputs/symbols`.
-- **`build-windows.yml`** — Windows runner, archives `build\windows\x64\runner\Release\*` into `windows-release.zip` via `Compress-Archive`.
+The repository operates a strict two-tier release model (`preview` -> `main`):
 
-### Release helpers (`.claude/commands/`)
+- **`preview` (Staging / Preview Release Track)**:
+  - Staging branch for preview testing and daily integration.
+  - Accepts PRs from any feature/fix/refactor/docs branch directly.
+  - Merges into `preview` automatically trigger the release pipeline to publish a **Preview Release** (`prerelease: true`, tag sequence `vX.Y.Z-preview` or `vX.Y.Z-preview.N`).
+- **`main` (Production / Formal Stable Release Track)**:
+  - Production stable branch.
+  - **Only accepts PRs from `preview`**. Direct pushes or direct feature PRs are strictly forbidden.
+  - Merges into `main` automatically trigger the release pipeline to publish a **Formal Stable Release** (`prerelease: false, latest: true`, tag `vX.Y.Z`), generate F-Droid changelogs, and commit metadata.
 
-These are project-specific Claude Code slash commands (all interactions in Chinese):
+### CI Workflows
 
-- `release.md` (`/release <version>`) — full release: validates workspace, edits `pubspec.yaml` version, updates `CHANGELOG.md` (auto-generates from git log via subagent if `[Unreleased]` is empty), commits + tags + pushes.
-- `prerelease.md` (`/prerelease <tag>`) — preview release: same changelog flow but **does not modify `pubspec.yaml`**; pushes a `vX.Y.Z-{suffix}` tag and lets the release workflow mark it as a GitHub prerelease.
+- **`pre-flight.yml` (Quality Gate & Policy Enforcement)**:
+  - Triggers on PRs to `main` / `preview`, pushes to `main` / `preview`, and `workflow_dispatch`.
+  - Enforces branch flow policy: `main` must originate from `preview` (there is no `dev` branch; feature branches target `preview` directly).
+  - Runs `dart analyze --fatal-infos`, `flutter test`, codegen cleanliness check (`git status --porcelain` after codegen), Python CI unit tests (`.github/scripts/tests/`), and `tool/pre_release_check.py --ci` (release-timing checks are advisory WARNs in CI; structural checks still fail the gate).
+- **`release.yml` (Release Pipeline)**:
+  - Triggers on pushes to `main` / `preview`, tags matching `v*.*.*` (published only when the tag targets the main/preview head), and `workflow_dispatch` (build-only on other branches).
+  - Version/tag rules via `.github/scripts/resolve_release_version.py` (formal: pubspec, idempotent; preview: anchored to the last formal tag with a patch increment `-preview[.N]`; the `/release` prep phase switches to `-rc` naming; preview builds inject the last formal versionName/versionCode).
+  - Triggers `build-android.yml` (universal + split APKs with Java 21) and `build-windows.yml` (Windows zip with dynamic WebView2Loader).
+  - Publishes GitHub Releases with safe Draft -> Upload -> Publish ordering to support Immutable Releases.
+
+### Release Helpers (`.claude/commands/`)
+
+These are project-specific Claude Code slash commands:
+
+- `release.md` (`/release <version>`) — prepares formal release: updates `pubspec.yaml` (e.g. `2.5.1+20501`), formats `CHANGELOG.md [X.Y.Z]`, generates F-Droid metadata changelogs, runs `tool/pre_release_check.py`, and opens/merges a PR from `preview` to `main`.
+- `prerelease.md` (`/prerelease [tag]`) — prepares preview release: updates `CHANGELOG.md [Unreleased]`, runs pre-flight checks, and merges into `preview` to trigger automated preview builds.
 
 The auto-changelog flow:
 1. Find last stable tag: `git tag -l "v[0-9]*.[0-9]*.[0-9]*" --sort=-v:refname | grep -E "^v[0-9]+\.[0-9]+\.[0-9]+$" | head -n 1`.
