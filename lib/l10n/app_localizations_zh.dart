@@ -992,6 +992,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get captchaNotLoaded => '请先加载验证码';
 
   @override
+  String get resetPassword => '重置密码';
+
+  @override
   String get gradesStats => '成绩统计';
 
   @override

@@ -390,6 +390,7 @@
     "autoLoggingIn": "正在登录中...",
     "loginButton": "登录",
     "captchaNotLoaded": "请先加载验证码",
+    "resetPassword": "重置密码",
     "gradesStats": "成绩统计",
     "gradesStatsDesc": "查看和分析你的学业成绩",
     "gradesStatsComingSoon": "功能即将上线",

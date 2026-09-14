@@ -48,12 +48,10 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
   String _beautifyScript = '';
   String _domReadyScript = '';
   bool _realLoading = false;
-  //disable loading if beautify script is empty
-  bool get _loading =>
-      _beautifyScript.isNotEmpty && _realLoading && widget.enableLoadingMask;
-  set _loading(bool value) {
-    if (_beautifyScript.isNotEmpty) _realLoading = value;
-  }
+  // 无 beautify 脚本的页面（如统一认证重置密码页）没有 DOMReady 握手，
+  // 遮罩只跟随 onLoadStart/onLoadStop；beautify 页仍会等脚本注入完成才消失。
+  bool get _loading => _realLoading && widget.enableLoadingMask;
+  set _loading(bool value) => _realLoading = value;
 
   bool _canGoBack = false;
   bool _canGoForward = false;

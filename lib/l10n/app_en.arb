@@ -410,6 +410,7 @@
     "autoLoggingIn": "Logging in...",
     "loginButton": "Login",
     "captchaNotLoaded": "Please load the captcha first",
+    "resetPassword": "Reset Password",
     "gradesStats": "Grade Statistics",
     "gradesStatsDesc": "View and analyze your academic performance",
     "gradesStatsComingSoon": "Coming soon",

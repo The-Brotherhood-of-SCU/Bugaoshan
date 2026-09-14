@@ -1026,6 +1026,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get captchaNotLoaded => 'Please load the captcha first';
 
   @override
+  String get resetPassword => 'Reset Password';
+
+  @override
   String get gradesStats => 'Grade Statistics';
 
   @override

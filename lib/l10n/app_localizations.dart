@@ -1987,6 +1987,12 @@ abstract class AppLocalizations {
   /// **'Please load the captcha first'**
   String get captchaNotLoaded;
 
+  /// No description provided for @resetPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Password'**
+  String get resetPassword;
+
   /// No description provided for @gradesStats.
   ///
   /// In en, this message translates to:

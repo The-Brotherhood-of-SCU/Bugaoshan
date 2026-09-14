@@ -9,6 +9,7 @@ import 'package:bugaoshan/pages/auth/scu_login_checkbox.dart';
 import 'package:bugaoshan/pages/auth/scu_login_disclaimer.dart';
 import 'package:bugaoshan/pages/auth/scu_login_header_image.dart';
 import 'package:bugaoshan/pages/auth/scu_login_input_field.dart';
+import 'package:bugaoshan/pages/auth/scu_reset_password_page.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart' show CaptchaResult;
 import 'package:bugaoshan/utils/app_log.dart';
@@ -283,6 +284,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
               validator: (v) =>
                   (v == null || v.isEmpty) ? l10n.passwordRequired : null,
             ),
+            _buildResetPasswordEntry(l10n),
             const SizedBox(height: 16),
             ScuLoginCaptchaRow(
               controller: _captchaCtrl,
@@ -331,6 +333,28 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
             const SizedBox(height: 16),
             ScuLoginDisclaimer(l10n: l10n, isDark: isDark),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// 官方登录页在验证码下方提供「重置密码」入口，此处保持相同位置，
+  /// 点击后以内置 WebView 打开官方三步重置流程。
+  Widget _buildResetPasswordEntry(AppLocalizations l10n) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: TextButton.icon(
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ScuResetPasswordPage()),
+        ),
+        icon: const Icon(Icons.lock_reset, size: 18),
+        label: Text(l10n.resetPassword),
+        style: TextButton.styleFrom(
+          foregroundColor: _brandColor,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          minimumSize: Size.zero,
+          textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
         ),
       ),
     );

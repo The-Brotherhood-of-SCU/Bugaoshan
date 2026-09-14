@@ -5,6 +5,10 @@ const String appLink = "https://github.com/The-Brotherhood-of-SCU/Bugaoshan";
 const String officialWebsiteLink = "https://bugaoshan.scubro.dev/";
 const String userManualLink = "https://bugaoshan-docs.scubro.dev/manual/";
 
+/// 统一身份认证「重置密码」页（三步：确认账户 → 安全验证 → 重置密码）
+const String scuResetPasswordUrl =
+    "https://id.scu.edu.cn/frontend/login#/resetPassword";
+
 const String dockIdCourse = 'course';
 const String dockIdCampus = 'campus';
 const String dockIdProfile = 'profile';
