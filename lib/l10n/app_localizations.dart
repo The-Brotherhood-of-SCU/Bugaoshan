@@ -1987,6 +1987,126 @@ abstract class AppLocalizations {
   /// **'Please load the captcha first'**
   String get captchaNotLoaded;
 
+  /// No description provided for @resetPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Password'**
+  String get resetPassword;
+
+  /// No description provided for @resetPasswordStepAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get resetPasswordStepAccount;
+
+  /// No description provided for @resetPasswordStepVerify.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification'**
+  String get resetPasswordStepVerify;
+
+  /// No description provided for @resetPasswordStepReset.
+  ///
+  /// In en, this message translates to:
+  /// **'New Password'**
+  String get resetPasswordStepReset;
+
+  /// No description provided for @resetPasswordNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get resetPasswordNext;
+
+  /// No description provided for @resetPasswordChooseMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'You are resetting your login password. Choose a verification method:'**
+  String get resetPasswordChooseMethod;
+
+  /// No description provided for @resetPasswordViaSms.
+  ///
+  /// In en, this message translates to:
+  /// **'Via SMS'**
+  String get resetPasswordViaSms;
+
+  /// No description provided for @resetPasswordSmsTip.
+  ///
+  /// In en, this message translates to:
+  /// **'A verification code will be sent via SMS to your phone {phone}'**
+  String resetPasswordSmsTip(String phone);
+
+  /// No description provided for @resetPasswordViaEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Via Email'**
+  String get resetPasswordViaEmail;
+
+  /// No description provided for @resetPasswordEmailTip.
+  ///
+  /// In en, this message translates to:
+  /// **'A verification code will be sent via email to {email}'**
+  String resetPasswordEmailTip(String email);
+
+  /// No description provided for @resetPasswordSendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Code'**
+  String get resetPasswordSendCode;
+
+  /// No description provided for @resetPasswordResendAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend in {seconds}s'**
+  String resetPasswordResendAfter(int seconds);
+
+  /// No description provided for @resetPasswordCodeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the 6-digit verification code'**
+  String get resetPasswordCodeRequired;
+
+  /// No description provided for @resetPasswordNewPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New Password'**
+  String get resetPasswordNewPasswordLabel;
+
+  /// No description provided for @resetPasswordConfirmPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Password'**
+  String get resetPasswordConfirmPasswordLabel;
+
+  /// No description provided for @resetPasswordPasswordMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get resetPasswordPasswordMismatch;
+
+  /// No description provided for @resetPasswordPolicyTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters and contain upper/lower case letters, digits and special characters'**
+  String get resetPasswordPolicyTip;
+
+  /// No description provided for @resetPasswordSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get resetPasswordSubmit;
+
+  /// No description provided for @resetPasswordSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset successfully. Please log in with your new password.'**
+  String get resetPasswordSuccess;
+
+  /// No description provided for @resetPasswordBackToLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Login'**
+  String get resetPasswordBackToLogin;
+
   /// No description provided for @gradesStats.
   ///
   /// In en, this message translates to:

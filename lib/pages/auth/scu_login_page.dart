@@ -9,6 +9,7 @@ import 'package:bugaoshan/pages/auth/scu_login_checkbox.dart';
 import 'package:bugaoshan/pages/auth/scu_login_disclaimer.dart';
 import 'package:bugaoshan/pages/auth/scu_login_header_image.dart';
 import 'package:bugaoshan/pages/auth/scu_login_input_field.dart';
+import 'package:bugaoshan/pages/auth/scu_reset_password_page.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart' show CaptchaResult;
 import 'package:bugaoshan/utils/app_log.dart';
@@ -292,6 +293,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
               captchaImageBytes: _captchaImageBytes,
               captchaLoading: _captchaLoading,
               onRefresh: _loadCaptcha,
+              labelTrailing: _buildResetPasswordEntry(l10n),
             ),
             const SizedBox(height: 20),
             Wrap(
@@ -332,6 +334,26 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
             ScuLoginDisclaimer(l10n: l10n, isDark: isDark),
           ],
         ),
+      ),
+    );
+  }
+
+  /// 与「验证码」标签同行、右对齐的「重置密码」入口，避免单独占一行
+  /// 拉开表单纵向间距；点击跳转应用内三步重置流程。
+  Widget _buildResetPasswordEntry(AppLocalizations l10n) {
+    return TextButton.icon(
+      onPressed: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const ScuResetPasswordPage()),
+      ),
+      icon: const Icon(Icons.lock_reset, size: 16),
+      label: Text(l10n.resetPassword),
+      style: TextButton.styleFrom(
+        foregroundColor: _brandColor,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
       ),
     );
   }

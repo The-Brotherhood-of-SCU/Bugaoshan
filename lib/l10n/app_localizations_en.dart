@@ -1026,6 +1026,76 @@ class AppLocalizationsEn extends AppLocalizations {
   String get captchaNotLoaded => 'Please load the captcha first';
 
   @override
+  String get resetPassword => 'Reset Password';
+
+  @override
+  String get resetPasswordStepAccount => 'Account';
+
+  @override
+  String get resetPasswordStepVerify => 'Verification';
+
+  @override
+  String get resetPasswordStepReset => 'New Password';
+
+  @override
+  String get resetPasswordNext => 'Next';
+
+  @override
+  String get resetPasswordChooseMethod =>
+      'You are resetting your login password. Choose a verification method:';
+
+  @override
+  String get resetPasswordViaSms => 'Via SMS';
+
+  @override
+  String resetPasswordSmsTip(String phone) {
+    return 'A verification code will be sent via SMS to your phone $phone';
+  }
+
+  @override
+  String get resetPasswordViaEmail => 'Via Email';
+
+  @override
+  String resetPasswordEmailTip(String email) {
+    return 'A verification code will be sent via email to $email';
+  }
+
+  @override
+  String get resetPasswordSendCode => 'Send Code';
+
+  @override
+  String resetPasswordResendAfter(int seconds) {
+    return 'Resend in ${seconds}s';
+  }
+
+  @override
+  String get resetPasswordCodeRequired =>
+      'Please enter the 6-digit verification code';
+
+  @override
+  String get resetPasswordNewPasswordLabel => 'New Password';
+
+  @override
+  String get resetPasswordConfirmPasswordLabel => 'Confirm Password';
+
+  @override
+  String get resetPasswordPasswordMismatch => 'Passwords do not match';
+
+  @override
+  String get resetPasswordPolicyTip =>
+      'Password must be at least 8 characters and contain upper/lower case letters, digits and special characters';
+
+  @override
+  String get resetPasswordSubmit => 'Confirm';
+
+  @override
+  String get resetPasswordSuccess =>
+      'Password reset successfully. Please log in with your new password.';
+
+  @override
+  String get resetPasswordBackToLogin => 'Back to Login';
+
+  @override
   String get gradesStats => 'Grade Statistics';
 
   @override

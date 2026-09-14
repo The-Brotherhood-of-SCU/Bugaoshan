@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 ///
 /// 点击验证码图片触发 [onRefresh] 重新拉取验证码。
 /// 验证码未加载时图片区域显示刷新图标，同样可点击刷新。
+/// [labelTrailing] 可选，渲染在「验证码」标签行右侧（如「重置密码」入口）。
 class ScuLoginCaptchaRow extends StatelessWidget {
   const ScuLoginCaptchaRow({
     super.key,
@@ -19,6 +20,7 @@ class ScuLoginCaptchaRow extends StatelessWidget {
     required this.captchaImageBytes,
     required this.captchaLoading,
     required this.onRefresh,
+    this.labelTrailing,
   });
 
   final TextEditingController controller;
@@ -28,20 +30,28 @@ class ScuLoginCaptchaRow extends StatelessWidget {
   final Uint8List? captchaImageBytes;
   final bool captchaLoading;
   final VoidCallback onRefresh;
+  final Widget? labelTrailing;
 
   @override
   Widget build(BuildContext context) {
+    final label = Text(
+      l10n.captcha,
+      style: TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w500,
+        color: isDark ? Colors.white70 : Colors.grey.shade700,
+      ),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.captcha,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: isDark ? Colors.white70 : Colors.grey.shade700,
+        if (labelTrailing == null)
+          label
+        else
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [label, labelTrailing!],
           ),
-        ),
         const SizedBox(height: 8),
         Row(
           children: [

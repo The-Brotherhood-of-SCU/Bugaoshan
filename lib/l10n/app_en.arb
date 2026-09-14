@@ -410,6 +410,47 @@
     "autoLoggingIn": "Logging in...",
     "loginButton": "Login",
     "captchaNotLoaded": "Please load the captcha first",
+    "resetPassword": "Reset Password",
+    "resetPasswordStepAccount": "Account",
+    "resetPasswordStepVerify": "Verification",
+    "resetPasswordStepReset": "New Password",
+    "resetPasswordNext": "Next",
+    "resetPasswordChooseMethod": "You are resetting your login password. Choose a verification method:",
+    "resetPasswordViaSms": "Via SMS",
+    "resetPasswordSmsTip": "A verification code will be sent via SMS to your phone {phone}",
+    "@resetPasswordSmsTip": {
+        "placeholders": {
+            "phone": {
+                "type": "String"
+            }
+        }
+    },
+    "resetPasswordViaEmail": "Via Email",
+    "resetPasswordEmailTip": "A verification code will be sent via email to {email}",
+    "@resetPasswordEmailTip": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "resetPasswordSendCode": "Send Code",
+    "resetPasswordResendAfter": "Resend in {seconds}s",
+    "@resetPasswordResendAfter": {
+        "placeholders": {
+            "seconds": {
+                "type": "int"
+            }
+        }
+    },
+    "resetPasswordCodeRequired": "Please enter the 6-digit verification code",
+    "resetPasswordNewPasswordLabel": "New Password",
+    "resetPasswordConfirmPasswordLabel": "Confirm Password",
+    "resetPasswordPasswordMismatch": "Passwords do not match",
+    "resetPasswordPolicyTip": "Password must be at least 8 characters and contain upper/lower case letters, digits and special characters",
+    "resetPasswordSubmit": "Confirm",
+    "resetPasswordSuccess": "Password reset successfully. Please log in with your new password.",
+    "resetPasswordBackToLogin": "Back to Login",
     "gradesStats": "Grade Statistics",
     "gradesStatsDesc": "View and analyze your academic performance",
     "gradesStatsComingSoon": "Coming soon",
