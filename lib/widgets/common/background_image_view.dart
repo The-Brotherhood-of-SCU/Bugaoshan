@@ -35,6 +35,8 @@ class BackgroundImageView extends StatefulWidget {
 }
 
 class _BackgroundImageViewState extends State<BackgroundImageView> {
+  static const Duration _fadeInDuration = Duration(milliseconds: 300);
+
   ImageStream? _stream;
   ImageStreamListener? _listener;
   Size? _imageSize;
@@ -106,17 +108,27 @@ class _BackgroundImageViewState extends State<BackgroundImageView> {
   @override
   Widget build(BuildContext context) {
     final imageSize = _imageSize;
-    if (imageSize == null || imageSize.isEmpty) {
-      return const SizedBox.shrink();
-    }
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final container = constraints.biggest;
-        if (container.isEmpty) return const SizedBox.shrink();
-        return _hasCustomCrop
-            ? _buildCroppedImage(imageSize, container)
-            : _buildImage(fit: BoxFit.cover);
-      },
+    final ready = imageSize != null && !imageSize.isEmpty;
+    // 淡入必须由这个固定位置的 AnimatedOpacity 驱动，不能用内层 Image 的
+    // frameBuilder：等尺寸就绪后才构建 Image 的话，ImageCache 必然同步命中，
+    // frameBuilder 首帧即 wasSync=true，AnimatedOpacity 没有从 0 起播的机会，
+    // 300ms 淡入会被整个跳过。缓存命中时 initState 同步回调就绪，首帧即为
+    // opacity 1 直接显示，与旧版 frameBuilder 在 wasSync 下的行为一致。
+    return AnimatedOpacity(
+      opacity: ready ? 1.0 : 0.0,
+      duration: _fadeInDuration,
+      curve: Curves.easeInOut,
+      child: ready
+          ? LayoutBuilder(
+              builder: (context, constraints) {
+                final container = constraints.biggest;
+                if (container.isEmpty) return const SizedBox.shrink();
+                return _hasCustomCrop
+                    ? _buildCroppedImage(imageSize, container)
+                    : _buildImage(fit: BoxFit.cover);
+              },
+            )
+          : const SizedBox.shrink(),
     );
   }
 
@@ -148,16 +160,7 @@ class _BackgroundImageViewState extends State<BackgroundImageView> {
     return Image(
       image: FileImage(File(widget.path)),
       fit: fit,
-      // 使用 frameBuilder 监听第一帧完成并做淡入动画，避免白屏突变
-      frameBuilder: (BuildContext ctx, Widget child, int? frame, bool wasSync) {
-        final visible = frame != null || wasSync;
-        return AnimatedOpacity(
-          opacity: visible ? 1.0 : 0.0,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          child: child,
-        );
-      },
+      // 淡入由外层 AnimatedOpacity 统一驱动，这里只负责渲染。
       color: Colors.white.withAlpha(
         (widget.overlayOpacity.clamp(0.0, 1.0) * 255).round(),
       ),

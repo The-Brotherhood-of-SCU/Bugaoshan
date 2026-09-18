@@ -38,7 +38,7 @@ cd Bugaoshan
 
 > #### 设置镜像源
 >
-> 安装依赖前设置国内镜像源，否则 `pubspec.lock` 会变国际源，导致工作区产生不必要的 diff。
+> 安装依赖前设置国内镜像源：提交的 `pubspec.lock` 锁定 `pub.flutter-io.cn`，CI 的依赖解析与生成物一致性检查均按镜像进行。本地不设置镜像时，`pub get` 会把 lock 切到国际源并可能引起生成格式漂移，导致 pre-flight 的「生成物一致性检查」失败。
 >
 > 持久化设置：
 >
@@ -110,11 +110,15 @@ lib/
 
 ## 🔄 贡献流程
 
-1. Fork 本仓库
-2. 创建功能分支 (`git checkout -b feature/your-feature`)
-3. 提交更改 (`git commit -m 'feat: add some feature'`)
-4. 推送分支 (`git push origin feature/your-feature`)
-5. 发起 Pull Request
+1. Fork 本仓库（组织成员可直接在仓库建分支）
+2. 从 **`preview`** 分支切出功能分支 (`git checkout -b feat/your-feature preview`)
+3. 提交更改 (`git commit -m 'feat: add some feature'`，pre-commit 会自动执行 `dart format`)
+4. 若变更包含用户可感知的行为，请在 `CHANGELOG.md` 的 `## [Unreleased]` 中补充条目
+5. 推送分支 (`git push origin feat/your-feature`)
+6. 向 **`preview` 分支**发起 Pull Request——门禁全绿且 review 通过后合并，合并会自动发布一轮预览版（无需手动操作）
+
+> [!NOTE]
+> 请勿手动推送 `v*.*.*` tag 或在非 `main` / `preview` 分支上触发发布——手动入口的行为边界见 `docs/architecture/release-pipeline.md`。
 
 
 

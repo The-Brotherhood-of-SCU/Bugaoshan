@@ -114,8 +114,8 @@
     "currentAnimationDuration": "当前动画时长: {value} ms",
     "animationDurationUpdated": "动画时长已更新为 {value} ms",
     "animationDurationHint": "提示：调整滑块查看动画效果，点击确认后才会保存设置",
-    "enablePageTransitionAnimation": "页面切换动画",
-    "enablePageTransitionAnimationHint": "切换页面时启用滑动与淡入淡出动画",
+    "enablePageTransitionAnimation": "Dock栏页面切换动画",
+    "enablePageTransitionAnimationHint": "切换Dock栏页面时启用滑动与淡入淡出动画",
     "themeColor": "主题颜色",
     "changeThemeColor": "更改主题颜色",
     "confirmButton": "确认",
@@ -340,6 +340,8 @@
     "exportScheduleSelectCalendar": "选择目标日历",
     "exportScheduleCalendarDefault": "默认日历",
     "copySuffix": " (副本)",
+    "copyCourseTitle": "新建副本",
+    "copyCourseSave": "保存副本",
     "notThisWeek": "[非本周]",
     "actualCurrentWeek": "本周第 {week} 周",
     "totalWeeksSubtitle": "共 {count} 周",
@@ -390,6 +392,48 @@
     "autoLoggingIn": "正在登录中...",
     "loginButton": "登录",
     "captchaNotLoaded": "请先加载验证码",
+    "resetPassword": "重置密码",
+    "resetPasswordStepAccount": "确认账户",
+    "resetPasswordStepVerify": "安全验证",
+    "resetPasswordStepReset": "重置密码",
+    "resetPasswordNext": "下一步",
+    "resetPasswordChooseMethod": "您正在重置登录密码，请选择以下安全验证方式：",
+    "resetPasswordViaSms": "通过短信验证",
+    "resetPasswordSmsTip": "您的手机 {phone} 将收到一条短信验证码",
+    "@resetPasswordSmsTip": {
+        "placeholders": {
+            "phone": {
+                "type": "String"
+            }
+        }
+    },
+    "resetPasswordViaEmail": "通过邮件验证",
+    "resetPasswordEmailTip": "您的邮箱 {email} 将收到一条邮件验证码",
+    "@resetPasswordEmailTip": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "resetPasswordSendCode": "发送验证码",
+    "resetPasswordResendAfter": "{seconds}s后可重发",
+    "@resetPasswordResendAfter": {
+        "placeholders": {
+            "seconds": {
+                "type": "int"
+            }
+        }
+    },
+    "resetPasswordCodeRequired": "请输入6位数字验证码",
+    "resetPasswordNewPasswordLabel": "新密码",
+    "resetPasswordConfirmPasswordLabel": "确认新密码",
+    "resetPasswordPasswordMismatch": "两次输入的密码不一致",
+    "resetPasswordPolicyTip": "密码至少包含大小写字母+数字+特殊字符，长度至少 8 位",
+    "resetPasswordPolicyInvalid": "密码不符合要求",
+    "resetPasswordSubmit": "确定",
+    "resetPasswordSuccess": "密码重置成功，请使用新密码登录",
+    "resetPasswordBackToLogin": "返回登录",
     "gradesStats": "成绩统计",
     "gradesStatsDesc": "查看和分析你的学业成绩",
     "gradesStatsComingSoon": "功能即将上线",

@@ -130,7 +130,8 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │   ├── architecture/           # current implementation architecture
 │   │   ├── authentication.md
 │   │   ├── linux-distribution.md
-│   │   └── notice-webview.md
+│   │   ├── notice-webview.md
+│   │   └── release-pipeline.md
 │   └── decisions/              # Architecture Decision Records (ADRs)
 │       ├── README.md
 │       ├── 0001-use-webview-and-js-injection-for-notices.md

@@ -115,8 +115,8 @@
     "currentAnimationDuration": "Current Animation Duration: {value} ms",
     "animationDurationUpdated": "Animation Duration updated to {value} ms",
     "animationDurationHint": "Hint: Adjust the slider to preview the animation, click Confirm to save the settings",
-    "enablePageTransitionAnimation": "Page Transition Animation",
-    "enablePageTransitionAnimationHint": "Enable slide and fade animation when switching pages",
+    "enablePageTransitionAnimation": "Dock Page Transition Animation",
+    "enablePageTransitionAnimationHint": "Enable slide and fade animation when switching Dock pages",
     "themeColor": "Theme Color",
     "changeThemeColor": "Change Theme Color",
     "confirmButton": "Confirm",
@@ -360,6 +360,8 @@
     "exportScheduleSelectCalendar": "Choose Calendar",
     "exportScheduleCalendarDefault": "Default calendar",
     "copySuffix": " (Copy)",
+    "copyCourseTitle": "New Copy",
+    "copyCourseSave": "Save Copy",
     "notThisWeek": "[Not]",
     "actualCurrentWeek": "Week {week}",
     "totalWeeksSubtitle": "{count} weeks",
@@ -410,6 +412,48 @@
     "autoLoggingIn": "Logging in...",
     "loginButton": "Login",
     "captchaNotLoaded": "Please load the captcha first",
+    "resetPassword": "Reset Password",
+    "resetPasswordStepAccount": "Account",
+    "resetPasswordStepVerify": "Verification",
+    "resetPasswordStepReset": "New Password",
+    "resetPasswordNext": "Next",
+    "resetPasswordChooseMethod": "You are resetting your login password. Choose a verification method:",
+    "resetPasswordViaSms": "Via SMS",
+    "resetPasswordSmsTip": "A verification code will be sent via SMS to your phone {phone}",
+    "@resetPasswordSmsTip": {
+        "placeholders": {
+            "phone": {
+                "type": "String"
+            }
+        }
+    },
+    "resetPasswordViaEmail": "Via Email",
+    "resetPasswordEmailTip": "A verification code will be sent via email to {email}",
+    "@resetPasswordEmailTip": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "resetPasswordSendCode": "Send Code",
+    "resetPasswordResendAfter": "Resend in {seconds}s",
+    "@resetPasswordResendAfter": {
+        "placeholders": {
+            "seconds": {
+                "type": "int"
+            }
+        }
+    },
+    "resetPasswordCodeRequired": "Please enter the 6-digit verification code",
+    "resetPasswordNewPasswordLabel": "New Password",
+    "resetPasswordConfirmPasswordLabel": "Confirm Password",
+    "resetPasswordPasswordMismatch": "Passwords do not match",
+    "resetPasswordPolicyTip": "Password must be at least 8 characters and contain upper/lower case letters, digits and special characters",
+    "resetPasswordPolicyInvalid": "Password does not meet the requirements",
+    "resetPasswordSubmit": "Confirm",
+    "resetPasswordSuccess": "Password reset successfully. Please log in with your new password.",
+    "resetPasswordBackToLogin": "Back to Login",
     "gradesStats": "Grade Statistics",
     "gradesStatsDesc": "View and analyze your academic performance",
     "gradesStatsComingSoon": "Coming soon",

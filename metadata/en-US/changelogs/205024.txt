@@ -1,0 +1,10 @@
+- A new "Show course week number" switch has been added to the class schedule display settings to support free control of whether to display the week range on the course card
+- Added user manual and official website entrance: the personal information page can open the official user manual and official website with one click
+- Added "Reset Password" to the login page: Complete the official three-step password reset process within the app
+- Added page transition duration and animation switches on the settings page, which can dynamically adjust the transition animation effect
+
+- Fixed the issue where "Copy Course" in the class schedule overwrites the original course and fails to generate a copy: now clicking "Copy" will open the "New Copy" interface, adjust the time period and save it to generate a copy. If canceled, no copy will be generated (#312)
+- Fixed the issue where campus information was cleared after editing courses
+- Fixed the issue where the page switching animation switch only takes effect on Dock bar switching
+- Fixed the issue where the fade-in of the class schedule background image was skipped due to image cache synchronization hit
+- Fixed the problem of grade parsing failure caused by changes in the structure of the program grade interface

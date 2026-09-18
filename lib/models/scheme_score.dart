@@ -31,7 +31,11 @@ class SchemeScoreItem {
 
   factory SchemeScoreItem.fromJson(Map<String, dynamic> json) {
     final gradeName = json['gradeName']?.toString() ?? '';
-    final courseScore = safeDouble(json['courseScore']);
+    // schemeScores 接口（2026-09 起）把百分制成绩挪进了复合主键 id 对象；
+    // allPassingScores 接口仍返回顶层 courseScore，留作回退兼容。
+    final courseScore = safeDouble(
+      (json['id'] as Map?)?['courseScore'] ?? json['courseScore'],
+    );
     final gradePointScore = safeDouble(json['gradePointScore']);
     return SchemeScoreItem(
       courseName: json['courseName']?.toString() ?? '',

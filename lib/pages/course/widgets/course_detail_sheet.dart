@@ -97,16 +97,17 @@ class CourseDetailSheet extends StatelessWidget {
                       onPressed: () {
                         final rootCtx = logicRootContext;
                         Navigator.pop(context);
-                        final newCourse = course.copyWith();
-                        newCourse.name = '${course.name}${l10n.copySuffix}';
                         final cfg = courseProvider?.scheduleConfig.value;
                         if (cfg == null) return;
                         if (rootCtx.mounted) {
+                          // 以「新建副本」模式打开编辑页：副本自带全新 id，
+                          // 用户改好时段保存后按新增落库，取消则不产生副本。
                           popupOrNavigate(
                             rootCtx,
-                            CourseEditPage(
+                            CourseEditPage.createCopy(
                               scheduleConfig: cfg,
-                              course: newCourse,
+                              source: course,
+                              nameSuffix: l10n.copySuffix,
                             ),
                           );
                         }

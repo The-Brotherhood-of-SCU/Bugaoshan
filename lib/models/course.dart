@@ -141,7 +141,7 @@ class Course {
   }
 
   /// 复制并可选覆盖字段。[id] 传 `null` 时保留原 ID；需要重新生成 ID 时
-  /// 显式传入 [Course.generateId]()。
+  /// 显式传入 [Course.generateId]()，或直接使用 [duplicate] 复制整门课程。
   Course copyWith({
     String? id,
     String? name,
@@ -171,6 +171,13 @@ class Course {
       weekType: weekType ?? this.weekType,
     );
   }
+
+  /// 复制一门课程：字段与原课程完全一致，但使用全新的 [id]，名称追加 [nameSuffix]。
+  ///
+  /// 复制结果在语义上是「新课程」，必须通过新增落库；若沿用原 id，
+  /// 数据层会按 id 执行 UPDATE，从而覆盖原课程而不是产生副本。
+  Course duplicate({String nameSuffix = ''}) =>
+      copyWith(id: generateId(), name: '$name$nameSuffix');
 }
 
 extension DateTimeExtension on DateTime {

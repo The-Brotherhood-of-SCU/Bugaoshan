@@ -271,10 +271,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get animationDurationHint => '提示：调整滑块查看动画效果，点击确认后才会保存设置';
 
   @override
-  String get enablePageTransitionAnimation => '页面切换动画';
+  String get enablePageTransitionAnimation => 'Dock栏页面切换动画';
 
   @override
-  String get enablePageTransitionAnimationHint => '切换页面时启用滑动与淡入淡出动画';
+  String get enablePageTransitionAnimationHint => '切换Dock栏页面时启用滑动与淡入淡出动画';
 
   @override
   String get themeColor => '主题颜色';
@@ -864,6 +864,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get copySuffix => ' (副本)';
 
   @override
+  String get copyCourseTitle => '新建副本';
+
+  @override
+  String get copyCourseSave => '保存副本';
+
+  @override
   String get notThisWeek => '[非本周]';
 
   @override
@@ -990,6 +996,75 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get captchaNotLoaded => '请先加载验证码';
+
+  @override
+  String get resetPassword => '重置密码';
+
+  @override
+  String get resetPasswordStepAccount => '确认账户';
+
+  @override
+  String get resetPasswordStepVerify => '安全验证';
+
+  @override
+  String get resetPasswordStepReset => '重置密码';
+
+  @override
+  String get resetPasswordNext => '下一步';
+
+  @override
+  String get resetPasswordChooseMethod => '您正在重置登录密码，请选择以下安全验证方式：';
+
+  @override
+  String get resetPasswordViaSms => '通过短信验证';
+
+  @override
+  String resetPasswordSmsTip(String phone) {
+    return '您的手机 $phone 将收到一条短信验证码';
+  }
+
+  @override
+  String get resetPasswordViaEmail => '通过邮件验证';
+
+  @override
+  String resetPasswordEmailTip(String email) {
+    return '您的邮箱 $email 将收到一条邮件验证码';
+  }
+
+  @override
+  String get resetPasswordSendCode => '发送验证码';
+
+  @override
+  String resetPasswordResendAfter(int seconds) {
+    return '${seconds}s后可重发';
+  }
+
+  @override
+  String get resetPasswordCodeRequired => '请输入6位数字验证码';
+
+  @override
+  String get resetPasswordNewPasswordLabel => '新密码';
+
+  @override
+  String get resetPasswordConfirmPasswordLabel => '确认新密码';
+
+  @override
+  String get resetPasswordPasswordMismatch => '两次输入的密码不一致';
+
+  @override
+  String get resetPasswordPolicyTip => '密码至少包含大小写字母+数字+特殊字符，长度至少 8 位';
+
+  @override
+  String get resetPasswordPolicyInvalid => '密码不符合要求';
+
+  @override
+  String get resetPasswordSubmit => '确定';
+
+  @override
+  String get resetPasswordSuccess => '密码重置成功，请使用新密码登录';
+
+  @override
+  String get resetPasswordBackToLogin => '返回登录';
 
   @override
   String get gradesStats => '成绩统计';

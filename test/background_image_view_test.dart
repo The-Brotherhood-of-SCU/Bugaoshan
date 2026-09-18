@@ -138,6 +138,51 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.byType(Image), findsNothing);
   });
+
+  testWidgets('未预缓存（冷加载）时首帧透明占位，无 Image', (tester) async {
+    final file = await _writeTestImage(tester);
+    // 不走 _warmImageCache，模拟冷加载（首次进入课程页/更换背景图）。
+    await tester.pumpWidget(
+      _wrap(
+        SizedBox(
+          width: containerSize.width,
+          height: containerSize.height,
+          child: BackgroundImageView(path: file.path, overlayOpacity: 0.3),
+        ),
+      ),
+    );
+    // 解码未完成：淡入起点必须是透明占位，而不是直接渲染 Image
+    //（否则 ImageCache 同步命中会让 AnimatedOpacity 首帧即为 1，淡入被跳过）。
+    expect(_backgroundOpacity(tester), 0.0);
+    expect(find.byType(Image), findsNothing);
+  });
+
+  testWidgets('图片已在缓存中时首帧即不透明（不播淡入）', (tester) async {
+    final file = await _writeTestImage(tester);
+    await _warmImageCache(tester, file);
+    await tester.pumpWidget(
+      _wrap(
+        SizedBox(
+          width: containerSize.width,
+          height: containerSize.height,
+          child: BackgroundImageView(path: file.path, overlayOpacity: 0.3),
+        ),
+      ),
+    );
+    // 缓存命中时 initState 同步拿到尺寸，与旧版 frameBuilder 的 wasSync
+    // 行为一致：直接显示，不播淡入。
+    expect(_backgroundOpacity(tester), 1.0);
+    expect(find.byType(Image), findsOneWidget);
+  });
 }
+
+double _backgroundOpacity(WidgetTester tester) => tester
+    .widget<AnimatedOpacity>(
+      find.descendant(
+        of: find.byType(BackgroundImageView),
+        matching: find.byType(AnimatedOpacity),
+      ),
+    )
+    .opacity;
 
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));

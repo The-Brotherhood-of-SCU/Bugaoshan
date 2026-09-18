@@ -16,13 +16,32 @@ class CourseEditPage extends StatefulWidget {
   final int? prefillDayOfWeek;
   final int? prefillSection;
 
+  /// 副本模式：`course` 是「待新增的副本」而非既有课程，保存走新增。
+  final bool _isCopy;
+
   const CourseEditPage({
     super.key,
     required this.scheduleConfig,
     this.course,
     this.prefillDayOfWeek,
     this.prefillSection,
-  });
+  }) : _isCopy = false;
+
+  /// 以 [source] 为蓝本新建副本：副本使用全新 id（避免按 id 覆盖源课程），
+  /// 保存时按新增落库。
+  ///
+  /// 草稿保留源课程的全部字段并把 [nameSuffix] 追加到名称后，用户可先调整
+  /// 时段；保存前走与新增一致的冲突校验，因此保持原时段会被判定为与源课程
+  /// 冲突。取消返回不会产生任何副本。
+  CourseEditPage.createCopy({
+    super.key,
+    required this.scheduleConfig,
+    required Course source,
+    required String nameSuffix,
+  }) : course = source.duplicate(nameSuffix: nameSuffix),
+       prefillDayOfWeek = null,
+       prefillSection = null,
+       _isCopy = true;
 
   @override
   State<CourseEditPage> createState() => _CourseEditPageState();
@@ -42,7 +61,10 @@ class _CourseEditPageState extends State<CourseEditPage> {
   late int _startSection;
   late int _endSection;
   late WeekType _weekType;
-  bool get _isEditMode => widget.course != null;
+
+  /// 编辑既有课程。副本模式下 [CourseEditPage.course] 非空，但它是一门
+  /// 尚未入库的新课程，保存时必须走新增，否则会按 id 覆盖源课程。
+  bool get _isEditMode => widget.course != null && !widget._isCopy;
 
   @override
   void initState() {
@@ -97,8 +119,17 @@ class _CourseEditPageState extends State<CourseEditPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditMode ? l10n.editCourse : l10n.addCourse),
-        actions: [TextButton(onPressed: _save, child: Text(l10n.save))],
+        title: Text(
+          widget._isCopy
+              ? l10n.copyCourseTitle
+              : (_isEditMode ? l10n.editCourse : l10n.addCourse),
+        ),
+        actions: [
+          TextButton(
+            onPressed: _save,
+            child: Text(widget._isCopy ? l10n.copyCourseSave : l10n.save),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -430,6 +461,8 @@ class _CourseEditPageState extends State<CourseEditPage> {
       name: _nameController.text.trim(),
       teacher: _teacherController.text.trim(),
       location: _locationController.text.trim(),
+      // 编辑页不提供校区输入，保留原值避免教务导入的校区被清空。
+      campus: widget.course?.campus ?? '',
       startWeek: _startWeek,
       endWeek: _endWeek,
       dayOfWeek: _dayOfWeek,
@@ -440,9 +473,11 @@ class _CourseEditPageState extends State<CourseEditPage> {
     );
 
     // Check for conflicts
+    // 编辑：排除自身，避免与旧记录冲突；副本：副本尚未入库，不排除任何
+    // 课程，因此沿用源课程时段会被判为冲突，用户需先调整时段才能保存。
     final hasConflict = await courseProvider.hasConflict(
       course,
-      excludeId: widget.course?.id,
+      excludeId: _isEditMode ? widget.course?.id : null,
     );
 
     if (hasConflict) {

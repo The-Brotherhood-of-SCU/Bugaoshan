@@ -281,11 +281,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Hint: Adjust the slider to preview the animation, click Confirm to save the settings';
 
   @override
-  String get enablePageTransitionAnimation => 'Page Transition Animation';
+  String get enablePageTransitionAnimation => 'Dock Page Transition Animation';
 
   @override
   String get enablePageTransitionAnimationHint =>
-      'Enable slide and fade animation when switching pages';
+      'Enable slide and fade animation when switching Dock pages';
 
   @override
   String get themeColor => 'Theme Color';
@@ -894,6 +894,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get copySuffix => ' (Copy)';
 
   @override
+  String get copyCourseTitle => 'New Copy';
+
+  @override
+  String get copyCourseSave => 'Save Copy';
+
+  @override
   String get notThisWeek => '[Not]';
 
   @override
@@ -1024,6 +1030,80 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get captchaNotLoaded => 'Please load the captcha first';
+
+  @override
+  String get resetPassword => 'Reset Password';
+
+  @override
+  String get resetPasswordStepAccount => 'Account';
+
+  @override
+  String get resetPasswordStepVerify => 'Verification';
+
+  @override
+  String get resetPasswordStepReset => 'New Password';
+
+  @override
+  String get resetPasswordNext => 'Next';
+
+  @override
+  String get resetPasswordChooseMethod =>
+      'You are resetting your login password. Choose a verification method:';
+
+  @override
+  String get resetPasswordViaSms => 'Via SMS';
+
+  @override
+  String resetPasswordSmsTip(String phone) {
+    return 'A verification code will be sent via SMS to your phone $phone';
+  }
+
+  @override
+  String get resetPasswordViaEmail => 'Via Email';
+
+  @override
+  String resetPasswordEmailTip(String email) {
+    return 'A verification code will be sent via email to $email';
+  }
+
+  @override
+  String get resetPasswordSendCode => 'Send Code';
+
+  @override
+  String resetPasswordResendAfter(int seconds) {
+    return 'Resend in ${seconds}s';
+  }
+
+  @override
+  String get resetPasswordCodeRequired =>
+      'Please enter the 6-digit verification code';
+
+  @override
+  String get resetPasswordNewPasswordLabel => 'New Password';
+
+  @override
+  String get resetPasswordConfirmPasswordLabel => 'Confirm Password';
+
+  @override
+  String get resetPasswordPasswordMismatch => 'Passwords do not match';
+
+  @override
+  String get resetPasswordPolicyTip =>
+      'Password must be at least 8 characters and contain upper/lower case letters, digits and special characters';
+
+  @override
+  String get resetPasswordPolicyInvalid =>
+      'Password does not meet the requirements';
+
+  @override
+  String get resetPasswordSubmit => 'Confirm';
+
+  @override
+  String get resetPasswordSuccess =>
+      'Password reset successfully. Please log in with your new password.';
+
+  @override
+  String get resetPasswordBackToLogin => 'Back to Login';
 
   @override
   String get gradesStats => 'Grade Statistics';

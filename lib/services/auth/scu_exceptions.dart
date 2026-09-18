@@ -39,3 +39,12 @@ class RateLimitedException extends ServiceException {
 class ScuLoginException extends ScuException {
   const ScuLoginException(super.message);
 }
+
+/// 忘记密码流程业务错误（图形验证码错误/过期、账号不存在、
+/// 短信/邮件验证码错误、密码不满足策略等）。
+class ForgotPasswordException extends ScuException {
+  /// 服务端业务错误码（如 400 验证码错误、439 验证码过期）。
+  final int? businessCode;
+
+  const ForgotPasswordException(super.message, {this.businessCode});
+}
