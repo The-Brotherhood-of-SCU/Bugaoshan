@@ -8,6 +8,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
 
 export 'schedule_config.dart' show ScheduleConfig, TimeSlot;
 
@@ -34,6 +35,10 @@ class Course {
   int colorValue; // ARGB
   WeekType weekType;
 
+  /// 自定义离散周次列表（升序排列，例如 [1, 2, 4, 6]）。
+  /// 为 null 时表示使用 [startWeek]..[endWeek] 结合 [weekType] 的连续/单双周规则。
+  List<int>? customWeeks;
+
   Course({
     String? id,
     required this.name,
@@ -47,6 +52,7 @@ class Course {
     required this.endSection,
     required this.colorValue,
     this.weekType = WeekType.every,
+    this.customWeeks,
   }) : id = id ?? generateId();
 
   static int _idCounter = 0;
@@ -60,6 +66,8 @@ class Course {
 
   factory Course.fromJson(Map<String, dynamic> json) {
     final weekTypeIndex = json['weekType'] as int?;
+    final customWeeksRaw = json['customWeeks'] as List<dynamic>?;
+    final customWeeks = customWeeksRaw?.map((e) => (e as num).toInt()).toList();
     return Course(
       id: json['id'] as String? ?? '',
       name: json['name'] as String? ?? '',
@@ -75,6 +83,7 @@ class Course {
       weekType: weekTypeIndex != null && weekTypeIndex < WeekType.values.length
           ? WeekType.values[weekTypeIndex]
           : WeekType.every,
+      customWeeks: customWeeks,
     );
   }
 
@@ -91,6 +100,7 @@ class Course {
     'endSection': endSection,
     'colorValue': colorValue,
     'weekType': weekType.index,
+    if (customWeeks != null) 'customWeeks': customWeeks,
   };
 
   Color get color => Color(colorValue);
@@ -103,6 +113,9 @@ class Course {
 
   /// Check if this course is active in the given week
   bool isActiveInWeek(int week) {
+    if (customWeeks != null && customWeeks!.isNotEmpty) {
+      return customWeeks!.contains(week);
+    }
     if (!isInWeekRange(week)) return false;
     if (weekType == WeekType.odd && week.isEven) return false;
     if (weekType == WeekType.even && week.isOdd) return false;
@@ -117,27 +130,56 @@ class Course {
     if (endSection < other.startSection || startSection > other.endSection) {
       return false;
     }
-    // Week overlap check considering WeekType (O(1))
+    // Week overlap check
     final overlapStart = startWeek > other.startWeek
         ? startWeek
         : other.startWeek;
     final overlapEnd = endWeek < other.endWeek ? endWeek : other.endWeek;
     if (overlapStart > overlapEnd) return false;
-    return _hasSharedWeek(overlapStart, overlapEnd, weekType, other.weekType);
+
+    for (int w = overlapStart; w <= overlapEnd; w++) {
+      if (isActiveInWeek(w) && other.isActiveInWeek(w)) {
+        return true;
+      }
+    }
+    return false;
   }
 
-  static bool _hasSharedWeek(int start, int end, WeekType a, WeekType b) {
-    if (a == WeekType.even && b == WeekType.odd) return false;
-    if (a == WeekType.odd && b == WeekType.even) return false;
-    if (a == WeekType.every && b == WeekType.every) return true;
-    final needOdd = a == WeekType.odd || b == WeekType.odd;
-    int first;
-    if (needOdd) {
-      first = start.isOdd ? start : start + 1;
-    } else {
-      first = start.isEven ? start : start + 1;
+  /// 将一组周数格式化为紧凑的区间描述，例如 `1-3, 5, 8-10`
+  static String formatSegments(List<int> weeks) {
+    if (weeks.isEmpty) return '';
+    final sorted = List<int>.from(weeks)..sort();
+    final segments = <String>[];
+    int start = sorted.first;
+    int end = start;
+
+    for (int i = 1; i < sorted.length; i++) {
+      final current = sorted[i];
+      if (current == end + 1) {
+        end = current;
+      } else {
+        segments.add(start == end ? '$start' : '$start-$end');
+        start = current;
+        end = current;
+      }
     }
-    return first <= end;
+    segments.add(start == end ? '$start' : '$start-$end');
+    return segments.join(', ');
+  }
+
+  /// 本地化周次显示文本。若为自定义离散周则返回离散区间，否则返回标准起止周及单双周标识。
+  String formatWeeks(AppLocalizations l10n) {
+    if (customWeeks != null && customWeeks!.isNotEmpty) {
+      final segs = formatSegments(customWeeks!);
+      final isZh = l10n.localeName.startsWith('zh');
+      return isZh ? '$segs 周' : 'Weeks $segs';
+    }
+    final range = l10n.weekRange(startWeek, endWeek);
+    return switch (weekType) {
+      WeekType.odd => '$range ${l10n.oddWeek}',
+      WeekType.even => '$range ${l10n.evenWeek}',
+      WeekType.every => range,
+    };
   }
 
   /// 复制并可选覆盖字段。[id] 传 `null` 时保留原 ID；需要重新生成 ID 时
@@ -155,6 +197,7 @@ class Course {
     int? endSection,
     int? colorValue,
     WeekType? weekType,
+    List<int>? customWeeks,
   }) {
     return Course(
       id: id ?? this.id,
@@ -169,6 +212,7 @@ class Course {
       endSection: endSection ?? this.endSection,
       colorValue: colorValue ?? this.colorValue,
       weekType: weekType ?? this.weekType,
+      customWeeks: customWeeks ?? this.customWeeks,
     );
   }
 

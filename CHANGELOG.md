@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- 课程编辑支持自定义点选离散周数（如跳周、隔周等非连续周次），并在课表卡片、详情、桌面小组件及日历导出中同步适配离散周展示
+
+
 ## [2.5.2] - 2026-09-18
 
 ### Added

@@ -253,6 +253,9 @@
     "everyWeek": "Every Week",
     "oddWeek": "Odd Week",
     "evenWeek": "Even Week",
+    "customWeeksHint": "Custom Weeks",
+    "selectAtLeastOneWeek": "Please select at least one week",
+    "activeWeeks": "Active Weeks",
     "section": "Sec",
     "sectionRange": "Sec {start}-{end}",
     "@sectionRange": {
