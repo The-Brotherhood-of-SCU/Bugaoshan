@@ -17,6 +17,13 @@ Future<void> openUserManual() async {
   await openLink(userManualLink);
 }
 
+Future<void> openPrivacyPolicy() async {
+  await launchUrl(
+    Uri.parse(privacyPolicyLink),
+    mode: LaunchMode.externalApplication,
+  );
+}
+
 Future<void> openDeveloperTeam() async {
   await openLink(orgLink);
 }

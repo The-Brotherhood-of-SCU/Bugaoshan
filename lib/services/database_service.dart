@@ -43,7 +43,7 @@ class DatabaseService {
     // iOS 使用 App Group 共享目录，让 Widget Extension 也能访问数据库。
     // macOS 没有 Widget Extension，继续使用应用自己的 Support 目录。
     if (!kIsWeb && Platform.isIOS) {
-      const appGroupId = 'group.io.github.thebrotherhoodofscu.bugaoshan';
+      const appGroupId = 'group.io.github.thebrotherhoodofscu.bugaoshan.ios';
       try {
         final appGroupDir = await FlutterAppGroupDirectory.getAppGroupDirectory(
           appGroupId,

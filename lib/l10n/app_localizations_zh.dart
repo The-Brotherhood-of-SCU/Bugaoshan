@@ -2052,6 +2052,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get eulaTitle => '用户协议';
 
   @override
+  String get privacyPolicy => '隐私政策';
+
+  @override
   String get eulaScrollToBottom => '请先阅读完协议内容';
 
   @override

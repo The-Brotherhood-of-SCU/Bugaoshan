@@ -2116,6 +2116,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eulaTitle => 'User Agreement';
 
   @override
+  String get privacyPolicy => 'Privacy Policy';
+
+  @override
   String get eulaScrollToBottom => 'Please read the entire agreement first';
 
   @override

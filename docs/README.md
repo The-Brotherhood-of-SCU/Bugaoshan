@@ -1,6 +1,8 @@
 # Bugaoshan 工程文档
 
-本目录只保存需要长期维护的架构说明和设计决策。功能介绍、构建方式和贡献流程分别以仓库根目录的 `README.md`、`CONTRIBUTING.md` 和 `AGENTS.md` 为准。
+本目录保存需要长期维护的架构说明、设计决策，以及随应用公开的支持与隐私文档。功能介绍、构建方式和贡献流程分别以仓库根目录的 `README.md`、`CONTRIBUTING.md` 和 `AGENTS.md` 为准。
+
+公开文档：[隐私政策](legal/privacy-policy.md) · [应用支持](legal/support.md)。
 
 ## 当前架构
 
@@ -11,6 +13,7 @@
 | [认证架构](architecture/authentication.md) | SCU 根认证、子系统认证、重试、会话隔离和 DI | 当前实现 |
 | [通知 WebView 架构](architecture/notice-webview.md) | 三类通知来源、JS bridge、附件下载和平台边界 | 当前实现 |
 | [Linux 分发架构](architecture/linux-distribution.md) | 本地构建、WPE 边界、Flatpak、AUR 和 Debian 状态 | 当前实现 |
+| [iOS TestFlight 分发](architecture/ios-distribution.md) | 本地归档、签名、上传、测试分发和加密问卷 | 当前实现 |
 | [发布流水线](architecture/release-pipeline.md) | 两级分支流、预览/正式双通道、版本号模型与边界情况 | 当前实现 |
 
 ## 设计决策

@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- 更新隐私说明，明确校园业务提交、第三方网页统计及数据清理范围
+- iOS 的志愿四川入口改为在系统浏览器打开，并新增应用内隐私政策入口
+
 ## [2.5.2] - 2026-09-18
 
 ### Added

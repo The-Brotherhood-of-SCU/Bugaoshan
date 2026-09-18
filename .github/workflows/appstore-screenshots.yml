@@ -1,0 +1,44 @@
+name: Capture iOS App Store screenshots
+
+on:
+  push:
+    branches: [build/ios-testflight]
+    paths:
+      - .github/workflows/appstore-screenshots.yml
+      - tool/appstore_capture/**
+
+permissions:
+  contents: read
+
+jobs:
+  screenshots:
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      PUB_HOSTED_URL: https://pub.flutter-io.cn
+      COCOAPODS_DISABLE_STATS: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2.18.0
+        with:
+          flutter-version: '3.44.9'
+          channel: stable
+          cache: true
+      - name: Dependencies and generated sources
+        run: |
+          flutter pub get
+          dart run build_runner build --delete-conflicting-outputs
+          flutter gen-l10n
+      - name: Capture real iPhone and iPad UI
+        run: bash tool/appstore_capture/capture.sh
+      - name: Upload screenshots and diagnostic logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-appstore-screenshots
+          path: |
+            build/appstore/screenshots
+            build/appstore/logs
+          if-no-files-found: error
+          retention-days: 14

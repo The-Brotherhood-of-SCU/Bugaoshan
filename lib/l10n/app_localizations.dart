@@ -4045,6 +4045,12 @@ abstract class AppLocalizations {
   /// **'User Agreement'**
   String get eulaTitle;
 
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacyPolicy;
+
   /// No description provided for @eulaScrollToBottom.
   ///
   /// In en, this message translates to:
