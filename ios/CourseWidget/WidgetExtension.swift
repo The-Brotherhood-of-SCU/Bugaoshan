@@ -366,8 +366,15 @@ func isOnBundledAcademicCalendarVacation(date: Date = Date()) -> Bool {
     return true
 }
 
-func isCourseActive(currentWeek: Int, startWeek: Int, endWeek: Int, weekType: Int) -> Bool {
-    print("BugaoShan Widget: isCourseActive - currentWeek: \(currentWeek), startWeek: \(startWeek), endWeek: \(endWeek), weekType: \(weekType)")
+func isCourseActive(currentWeek: Int, startWeek: Int, endWeek: Int, weekType: Int, customWeeks: String? = nil) -> Bool {
+    print("BugaoShan Widget: isCourseActive - currentWeek: \(currentWeek), startWeek: \(startWeek), endWeek: \(endWeek), weekType: \(weekType), customWeeks: \(customWeeks ?? "nil")")
+
+    if let customWeeks = customWeeks, !customWeeks.isEmpty {
+        let activeWeeks = customWeeks.split(separator: ",").compactMap { Int($0.trimmingCharacters(in: .whitespaces)) }
+        if !activeWeeks.isEmpty {
+            return activeWeeks.contains(currentWeek)
+        }
+    }
 
     guard currentWeek >= startWeek && currentWeek <= endWeek else {
         print("BugaoShan Widget: isCourseActive - week out of range, returning false")
@@ -423,8 +430,22 @@ func queryCourses(_ db: OpaquePointer, scheduleId: String, dayOfWeek: Int, curre
         print("BugaoShan Widget: Failed to prepare debug query")
     }
 
+    var hasCustomWeeks = false
+    var pragmaStmt: OpaquePointer?
+    if sqlite3_prepare_v2(db, "PRAGMA table_info(courses)", -1, &pragmaStmt, nil) == SQLITE_OK {
+        while sqlite3_step(pragmaStmt) == SQLITE_ROW {
+            if let colName = sqlite3_column_text(pragmaStmt, 1).flatMap({ String(cString: $0) }), colName == "custom_weeks" {
+                hasCustomWeeks = true
+                break
+            }
+        }
+        sqlite3_finalize(pragmaStmt)
+    }
+
     var stmt: OpaquePointer?
-    let query = "SELECT name, teacher, location, start_week, end_week, start_section, end_section, color_value, week_type FROM courses WHERE schedule_id = ? AND day_of_week = ?"
+    let query = hasCustomWeeks
+        ? "SELECT name, teacher, location, start_week, end_week, start_section, end_section, color_value, week_type, custom_weeks FROM courses WHERE schedule_id = ? AND day_of_week = ?"
+        : "SELECT name, teacher, location, start_week, end_week, start_section, end_section, color_value, week_type FROM courses WHERE schedule_id = ? AND day_of_week = ?"
 
     guard sqlite3_prepare_v2(db, query, -1, &stmt, nil) == SQLITE_OK else {
         print("BugaoShan Widget: Failed to prepare course query")
@@ -446,11 +467,12 @@ func queryCourses(_ db: OpaquePointer, scheduleId: String, dayOfWeek: Int, curre
         let startWeek = Int(sqlite3_column_int(stmt, 3))
         let endWeek = Int(sqlite3_column_int(stmt, 4))
         let weekType = Int(sqlite3_column_int(stmt, 8))
+        let customWeeks = hasCustomWeeks ? (sqlite3_column_text(stmt, 9).flatMap { String(cString: $0) }) : nil
 
         let name = sqlite3_column_text(stmt, 0).flatMap { String(cString: $0) } ?? ""
         print("BugaoShan Widget: Found course candidate: \(name)")
 
-        guard isCourseActive(currentWeek: currentWeek, startWeek: startWeek, endWeek: endWeek, weekType: weekType) else {
+        guard isCourseActive(currentWeek: currentWeek, startWeek: startWeek, endWeek: endWeek, weekType: weekType, customWeeks: customWeeks) else {
             continue
         }
 

@@ -1171,6 +1171,24 @@ abstract class AppLocalizations {
   /// **'Even Week'**
   String get evenWeek;
 
+  /// No description provided for @customWeeksHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Weeks'**
+  String get customWeeksHint;
+
+  /// No description provided for @selectAtLeastOneWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select at least one week'**
+  String get selectAtLeastOneWeek;
+
+  /// No description provided for @activeWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Weeks'**
+  String get activeWeeks;
+
   /// No description provided for @section.
   ///
   /// In en, this message translates to:
