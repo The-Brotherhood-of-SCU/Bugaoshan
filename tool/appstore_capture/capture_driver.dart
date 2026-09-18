@@ -32,6 +32,12 @@ Future<void> main() async {
   }
 
   try {
+    // The driver connects before async database seeding and production startup
+    // finish. This command explicitly permits running before runApp().
+    await driver.waitForCondition(
+      const FirstFrameRasterized(),
+      timeout: const Duration(minutes: 2),
+    );
     await driver.runUnsynchronized(() async {
       await driver.waitFor(
         find.byType('CoursePageTopBar'),
