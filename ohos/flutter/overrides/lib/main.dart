@@ -1,17 +1,30 @@
 ﻿import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/app.dart';
 import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/utils/ohos_debug_diagnostics.dart';
+import 'package:bugaoshan/utils/ohos_startup_error.dart';
 
 Future<void> main() async {
+  final diagnostics = kDebugMode ? OhosDebugDiagnostics() : null;
+  diagnostics?.install();
   try {
+    diagnostics?.mark('initializing-dependencies');
     await _initializeApp();
+    diagnostics?.mark('dependencies-ready');
     runApp(MyApp());
+    diagnostics?.mark('runApp-called');
   } catch (error, stackTrace) {
-    debugPrint('Startup error: $error\n$stackTrace');
-    runApp(_StartupErrorApp(errorMessage: stackTrace.toString()));
+    final errorMessage = formatOhosStartupError(error, stackTrace);
+    if (diagnostics != null) {
+      diagnostics.report('startup', error, stackTrace);
+    } else {
+      debugPrint('Startup error: $errorMessage');
+    }
+    runApp(_StartupErrorApp(errorMessage: errorMessage));
   }
 }
 

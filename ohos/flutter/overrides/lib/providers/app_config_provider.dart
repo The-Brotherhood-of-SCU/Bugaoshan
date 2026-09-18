@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Colors, Curve, Curves;
 import 'package:bugaoshan/models/background_crop.dart';
 import 'package:bugaoshan/models/widget_appearance.dart';
+import 'package:bugaoshan/utils/app_log.dart';
+import 'package:bugaoshan/utils/json_utils.dart';
 import 'package:bugaoshan/utils/locale_utils.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -118,15 +120,21 @@ class AppConfigProvider {
     themeColor.value = Color(
       _sharedPreferences.getInt(_keyThemeColor) ?? Colors.blueAccent.toARGB32(),
     );
-    colorOpacity.value = _sharedPreferences.getDouble(_keyColorOpacity) ?? 0.85;
-    courseCardFontSize.value =
-        _sharedPreferences.getDouble(_keyCourseCardFontSize) ?? 14.0;
+    colorOpacity.value = _readDoublePreference(_keyColorOpacity, fallback: 0.85);
+    courseCardFontSize.value = _readDoublePreference(
+      _keyCourseCardFontSize,
+      fallback: 14.0,
+    );
     showCourseGrid.value =
         _sharedPreferences.getBool(_keyShowCourseGrid) ?? true;
-    courseRowHeight.value =
-        _sharedPreferences.getDouble(_keyCourseRowHeight) ?? 72.0;
-    backgroundImageOpacity.value =
-        _sharedPreferences.getDouble(_keyBackgroundImageOpacity) ?? 0.3;
+    courseRowHeight.value = _readDoublePreference(
+      _keyCourseRowHeight,
+      fallback: 72.0,
+    );
+    backgroundImageOpacity.value = _readDoublePreference(
+      _keyBackgroundImageOpacity,
+      fallback: 0.3,
+    );
     // Load the saved path immediately to allow early image loading.
     // Existence will be checked later in the Settings UI when needed.
     final savedPath = _sharedPreferences.getString(_keyBackgroundImagePath);
@@ -182,6 +190,22 @@ class AppConfigProvider {
         _sharedPreferences.getBool(_keyForceCaptchaForDownload) ?? false;
     enablePageTransitionAnimation.value =
         _sharedPreferences.getBool(_keyEnablePageTransitionAnimation) ?? true;
+  }
+
+  double _readDoublePreference(String key, {required double fallback}) {
+    // OH's message codec encodes integral ArkTS numbers (e.g. 72.0) as ints.
+    // getDouble casts the cached value, so reading it after restart can throw.
+    // Normalize at the read boundary; writing it back as double would not fix
+    // the next platform round trip, and must not reset unrelated preferences.
+    final raw = _sharedPreferences.get(key);
+    if (raw == null) return fallback;
+    final value = safeDouble(raw, fallback: double.nan);
+    if (value.isFinite) return value;
+    AppLog.w(
+      'AppConfigProvider',
+      'Invalid numeric preference "$key" (${raw.runtimeType}); using default',
+    );
+    return fallback;
   }
 
   void _addSaveCallback() {

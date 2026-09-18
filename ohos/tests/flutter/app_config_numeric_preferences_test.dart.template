@@ -1,0 +1,106 @@
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+void main() {
+  setUp(() async {
+    await getIt.reset();
+    SharedPreferences.setMockInitialValues({});
+  });
+  tearDown(() => getIt.reset());
+
+  test('loads integral OH values without clearing saved preferences', () async {
+    SharedPreferences.setMockInitialValues({
+      'colorOpacity': 1,
+      'courseCardFontSize': 18,
+      'courseRowHeight': 88,
+      'backgroundImageOpacity': 0,
+      'locale': 'zh',
+      'showWeekend': true,
+      'visibleDockIds': <String>['course', 'profile'],
+    });
+    final preferences = await SharedPreferences.getInstance();
+    final before = {
+      for (final key in preferences.getKeys()) key: preferences.get(key),
+    };
+    final provider = AppConfigProvider(preferences);
+    await provider.init();
+
+    expect(provider.colorOpacity.value, 1.0);
+    expect(provider.courseCardFontSize.value, 18.0);
+    expect(provider.courseRowHeight.value, 88.0);
+    expect(provider.backgroundImageOpacity.value, 0.0);
+    expect(provider.locale.value?.languageCode, 'zh');
+    expect(provider.showWeekend.value, isTrue);
+    expect(provider.visibleDockIds.value, ['course', 'profile']);
+    expect({
+      for (final key in preferences.getKeys()) key: preferences.get(key),
+    }, before);
+  });
+
+  test('preserves fractional values and accepts numeric strings', () async {
+    SharedPreferences.setMockInitialValues({
+      'colorOpacity': 0.65,
+      'courseCardFontSize': 15.5,
+      'courseRowHeight': ' 76.5 ',
+      'backgroundImageOpacity': 0.25,
+    });
+    final provider = AppConfigProvider(await SharedPreferences.getInstance());
+    await provider.init();
+
+    expect(provider.colorOpacity.value, 0.65);
+    expect(provider.courseCardFontSize.value, 15.5);
+    expect(provider.courseRowHeight.value, 76.5);
+    expect(provider.backgroundImageOpacity.value, 0.25);
+  });
+
+  test('new installs retain the existing defaults', () async {
+    final provider = AppConfigProvider(await SharedPreferences.getInstance());
+    await provider.init();
+    expect(provider.colorOpacity.value, 0.85);
+    expect(provider.courseCardFontSize.value, 14.0);
+    expect(provider.courseRowHeight.value, 72.0);
+    expect(provider.backgroundImageOpacity.value, 0.3);
+  });
+
+  test(
+    'invalid numeric values fall back without affecting other settings',
+    () async {
+      SharedPreferences.setMockInitialValues({
+        'colorOpacity': double.nan,
+        'courseCardFontSize': 'invalid',
+        'courseRowHeight': true,
+        'backgroundImageOpacity': double.infinity,
+        'showWeekend': true,
+      });
+      final preferences = await SharedPreferences.getInstance();
+      final provider = AppConfigProvider(preferences);
+      await provider.init();
+
+      expect(provider.colorOpacity.value, 0.85);
+      expect(provider.courseCardFontSize.value, 14.0);
+      expect(provider.courseRowHeight.value, 72.0);
+      expect(provider.backgroundImageOpacity.value, 0.3);
+      expect(provider.showWeekend.value, isTrue);
+      expect(preferences.get('courseRowHeight'), isTrue);
+    },
+  );
+
+  test('a changed height survives a cold-start integer round trip', () async {
+    final preferences = await SharedPreferences.getInstance();
+    final first = AppConfigProvider(preferences);
+    await first.init();
+    first.courseRowHeight.value = 96.0;
+    expect(preferences.get('courseRowHeight'), 96.0);
+
+    // Model the OH codec response on the next launch, not the in-memory cache
+    // immediately after setDouble (which still contains a Dart double).
+    SharedPreferences.setMockInitialValues({
+      'courseRowHeight': (preferences.get('courseRowHeight')! as num).toInt(),
+    });
+    final restarted = AppConfigProvider(await SharedPreferences.getInstance());
+    await restarted.init();
+    expect(restarted.courseRowHeight.value, 96.0);
+  });
+}

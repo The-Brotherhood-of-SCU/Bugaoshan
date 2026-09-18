@@ -1,0 +1,37 @@
+import 'package:bugaoshan/utils/ohos_startup_error.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  test('includes the error cause and unchanged stack addresses', () {
+    final stack = StackTrace.fromString('#0 virt 0000000000552abf\n#1 caller');
+    final report = formatOhosStartupError(StateError('wrong value type'), stack);
+    expect(report, contains('StateError'));
+    expect(report, contains('wrong value type'));
+    expect(report, contains(stack.toString()));
+  });
+
+  test('redacts credentials before showing or logging a startup error', () {
+    final report = formatOhosStartupError(
+      StateError('{"password":"secret","access_token":"token"}'),
+      StackTrace.fromString('#0 caller'),
+    );
+    expect(report, isNot(contains('secret')));
+    expect(report, isNot(contains('"token"')));
+    expect(report, contains('<redacted>'));
+    expect(report, contains('#0 caller'));
+  });
+
+  test('a broken exception formatter still preserves the original stack', () {
+    final report = formatOhosStartupError(
+      _BrokenError(),
+      StackTrace.fromString('#0 originalFailure'),
+    );
+    expect(report, contains('text unavailable'));
+    expect(report, contains('#0 originalFailure'));
+  });
+}
+
+class _BrokenError implements Exception {
+  @override
+  String toString() => throw StateError('broken formatter');
+}

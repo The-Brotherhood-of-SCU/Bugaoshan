@@ -1,0 +1,125 @@
+import 'dart:convert';
+import 'dart:ui' show PlatformDispatcher;
+
+import 'package:bugaoshan/utils/ohos_debug_diagnostics.dart';
+import 'package:fake_async/fake_async.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  test('raw reporting keeps frames and avoids diagnostic collectors', () {
+    final oldFlutterError = FlutterError.onError;
+    final oldPlatformError = PlatformDispatcher.instance.onError;
+    final oldErrorWidget = ErrorWidget.builder;
+    final lines = <String>[];
+    final diagnostics = OhosDebugDiagnostics(writeLine: lines.add);
+    try {
+      fakeAsync((async) {
+        diagnostics.install();
+        FlutterError.reportError(
+          FlutterErrorDetails(
+            exception: StackOverflowError(),
+            stack: StackTrace.fromString('#0 firstFrame\n#1 recursiveFrame'),
+            informationCollector: () => throw StateError('must not run'),
+          ),
+        );
+        expect(lines, isEmpty);
+        async.flushMicrotasks();
+        expect(lines.join('\n'), contains('#0 firstFrame\n'));
+        expect(lines.join('\n'), contains('#1 recursiveFrame'));
+        expect(lines.join('\n'), contains('StackOverflowError'));
+
+        final handled = PlatformDispatcher.instance.onError!(
+          StateError('async failure'),
+          StackTrace.fromString('#0 asyncFrame'),
+        );
+        expect(handled, isTrue);
+        async.flushMicrotasks();
+        expect(lines.join('\n'), contains('BEGIN platform'));
+        expect(lines.join('\n'), contains('#0 asyncFrame'));
+      });
+    } finally {
+      FlutterError.onError = oldFlutterError;
+      PlatformDispatcher.instance.onError = oldPlatformError;
+      ErrorWidget.builder = oldErrorWidget;
+    }
+  });
+
+  test('broken error text and log sinks do not lose the stack or recurse', () {
+    fakeAsync((async) {
+      final lines = <String>[];
+      late OhosDebugDiagnostics diagnostics;
+      diagnostics = OhosDebugDiagnostics(
+        writeLine: (line) {
+          lines.add(line);
+          diagnostics.report('nested', StateError('sink'), null);
+        },
+      );
+      diagnostics.report('test', _BrokenError(), StackTrace.fromString('#0 raw'));
+      async.flushMicrotasks();
+      expect(lines.join('\n'), contains('#0 raw'));
+      expect(lines.join('\n'), contains('<error text unavailable>'));
+      expect(lines.join('\n'), isNot(contains('nested')));
+      OhosDebugDiagnostics(
+        writeLine: (_) => throw StateError('sink failed'),
+      ).report('test', StateError('original'), null);
+      async.flushMicrotasks();
+    });
+  });
+
+  test('redacts before chunking and keeps every raw stack frame', () {
+    fakeAsync((async) {
+      final lines = <String>[];
+      final secret = List.filled(800, 's').join();
+      final longFrame = '#0 ${List.filled(508, 'x').join()}😀 tail';
+      final frames = [
+        longFrame,
+        for (var i = 1; i <= 150; i++) '#$i repeatedFrame',
+      ];
+      OhosDebugDiagnostics(writeLine: lines.add).report(
+        'test',
+        StateError('{"password":"$secret"}'),
+        StackTrace.fromString(frames.join('\n')),
+      );
+      async.flushMicrotasks();
+      final stackChunks = lines
+          .where((line) => line.startsWith('[BugaoshanDiagnostic 1 stack] '))
+          .map((line) => line.substring(line.indexOf('] ') + 2))
+          .toList();
+      expect(stackChunks.join(), frames.join());
+      expect(stackChunks.every((chunk) => chunk.length <= 512), isTrue);
+      for (final chunk in stackChunks) {
+        expect(utf8.decode(utf8.encode(chunk)), chunk);
+      }
+      expect(lines.join('\n'), contains('<redacted>'));
+      expect(lines.join('\n'), isNot(contains(secret)));
+      expect(lines.join('\n'), contains('#150 repeatedFrame'));
+    });
+  });
+
+  testWidgets('a failed build gets a leaf error widget and raw log', (
+    tester,
+  ) async {
+    final oldFlutterError = FlutterError.onError;
+    final oldPlatformError = PlatformDispatcher.instance.onError;
+    final oldErrorWidget = ErrorWidget.builder;
+    final lines = <String>[];
+    try {
+      OhosDebugDiagnostics(writeLine: lines.add).install();
+      await tester.pumpWidget(Builder(builder: (_) => throw _BrokenError()));
+      expect(find.byType(ErrorWidget), findsOneWidget);
+      expect(lines.join('\n'), contains('BEGIN flutter'));
+      expect(lines.join('\n'), contains('<error text unavailable>'));
+      await tester.pumpWidget(const SizedBox.shrink());
+    } finally {
+      FlutterError.onError = oldFlutterError;
+      PlatformDispatcher.instance.onError = oldPlatformError;
+      ErrorWidget.builder = oldErrorWidget;
+    }
+  });
+}
+
+class _BrokenError implements Exception {
+  @override
+  String toString() => throw StateError('cannot stringify');
+}

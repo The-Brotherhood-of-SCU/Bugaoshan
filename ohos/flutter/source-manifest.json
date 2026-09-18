@@ -203,6 +203,14 @@
       "upstreamSha256": null
     },
     {
+      "path": "lib/utils/ohos_debug_diagnostics.dart",
+      "upstreamSha256": null
+    },
+    {
+      "path": "lib/utils/ohos_startup_error.dart",
+      "upstreamSha256": null
+    },
+    {
       "path": "lib/utils/ohos_system_accent_color.dart",
       "upstreamSha256": null
     },

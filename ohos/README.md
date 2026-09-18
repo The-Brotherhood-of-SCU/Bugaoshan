@@ -29,6 +29,14 @@
 API 20 的能力差异及验证范围见 [兼容性说明](docs/compatibility/api20.md)；
 动态图标切换采用 API 26 接口，低版本点击入口时显示不支持提示。
 
+API 20 x86_64 模拟器的 Debug 白屏排查及本次改动见
+[启动白屏记录](docs/audits/api20-debug-white-screen.md)：按当前维护范围不处理 x86_64
+专属缺库问题；保留原始 Dart 异常诊断，真机若同样失败再据调用栈定位。
+
+ARM64 真机“启动失败”截图已通过匹配符号定位到课表行高的数值类型转换；
+[修复与验收说明](docs/audits/startup-preferences-type-mismatch.md)记录了四项浮点设置的
+兼容读取和启动报告改进。重新构建后覆盖安装即可验证，无需清空设置。
+
 以下命令以 PowerShell 为例。在当前终端的 `PATH` 中配置 `python`、Flutter OH 的 `flutter`、
 `git`，以及 DevEco 配套的 `hvigorw`、`ohpm` 和 `node`。通过 `DEVECO_SDK_HOME`，
 或 `flutter config --ohos-sdk <SDK目录>` 指定 HarmonyOS SDK。
