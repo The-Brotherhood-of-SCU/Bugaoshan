@@ -9,7 +9,7 @@ import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/open_link.dart'
-    show openOfficialWebsite, openProjectRepository;
+    show openOfficialWebsite, openPrivacyPolicy, openProjectRepository;
 import 'package:bugaoshan/pages/about/team_page.dart';
 import 'package:bugaoshan/pages/about/update_tile.dart';
 import 'package:bugaoshan/pages/settings/eula_status_page.dart';
@@ -239,6 +239,11 @@ class _AboutPageState extends State<AboutPage> {
                 icon: Icons.gavel,
                 label: localizations.eulaTitle,
                 onTap: () => popupOrNavigate(context, const EulaStatusPage()),
+              ),
+              LinkTile(
+                icon: Icons.privacy_tip_outlined,
+                label: localizations.privacyPolicy,
+                onTap: () => openPrivacyPolicy(),
               ),
               IconTile(
                 icon: Icons.description_outlined,

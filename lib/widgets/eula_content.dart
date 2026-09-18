@@ -6,7 +6,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/theme_shape.dart';
 
 /// EULA 版本号，需要与 eula.md 中的 version 保持一致
-const int currentEulaVersion = 1;
+const int currentEulaVersion = 2;
 
 /// EULA 内容展示组件，包含滚动检测和同意复选框
 class EulaContent extends StatefulWidget {

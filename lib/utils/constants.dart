@@ -4,6 +4,8 @@ const String orgLink = "https://github.com/The-Brotherhood-of-SCU";
 const String appLink = "https://github.com/The-Brotherhood-of-SCU/Bugaoshan";
 const String officialWebsiteLink = "https://bugaoshan.scubro.dev/";
 const String userManualLink = "https://bugaoshan-docs.scubro.dev/manual/";
+const String privacyPolicyLink =
+    "https://github.com/The-Brotherhood-of-SCU/Bugaoshan/blob/build/ios-testflight/docs/legal/privacy-policy.md";
 
 const String dockIdCourse = 'course';
 const String dockIdCampus = 'campus';

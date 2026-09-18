@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B48E94D1B01041D391B552D1 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E2D960933DA44C1F9C6466B5 /* PrivacyInfo.xcprivacy */; };
+		D29424805CC14C14893138DC /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C1A9C3AF419244F99B490471 /* PrivacyInfo.xcprivacy */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		28D7CCB24FF6C832D92C2DC0 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F32EA16813A9651D5A8C91F8 /* Pods_Runner.framework */; };
 		32A1DE723010E68D00E054EA /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32A1DE183010D84A00E054EA /* WidgetKit.framework */; };
@@ -71,6 +73,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		E2D960933DA44C1F9C6466B5 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		C1A9C3AF419244F99B490471 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
 		32A1DE183010D84A00E054EA /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
@@ -143,6 +147,7 @@
 		32A1DE743010E68D00E054EA /* CourseWidget */ = {
 			isa = PBXGroup;
 			children = (
+				C1A9C3AF419244F99B490471 /* PrivacyInfo.xcprivacy */,
 				32E5A21A3010F48500D73941 /* CourseWidgetExtension.entitlements */,
 				32A1DE793010E68D00E054EA /* WidgetExtension.swift */,
 				32A1DE7B3010E68E00E054EA /* Assets.xcassets */,
@@ -213,6 +218,7 @@
 		97C146F01CF9000F007C117D /* Runner */ = {
 			isa = PBXGroup;
 			children = (
+				E2D960933DA44C1F9C6466B5 /* PrivacyInfo.xcprivacy */,
 				32A1DE333010D9B000E054EA /* Runner.entitlements */,
 				97C146FA1CF9000F007C117D /* Main.storyboard */,
 				97C146FD1CF9000F007C117D /* Assets.xcassets */,
@@ -352,6 +358,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D29424805CC14C14893138DC /* PrivacyInfo.xcprivacy in Resources */,
 				32A1DE7C3010E68E00E054EA /* Assets.xcassets in Resources */,
 				E72BF849EAB84D15A1E8F436 /* InfoPlist.xcstrings in Resources */,
 				048BF1A1065B47CDA3294652 /* Localizable.xcstrings in Resources */,
@@ -370,6 +377,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B48E94D1B01041D391B552D1 /* PrivacyInfo.xcprivacy in Resources */,
 				97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */,
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
@@ -598,14 +606,14 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
-				DEVELOPMENT_TEAM = 2F6UXH5569;
+				DEVELOPMENT_TEAM = 2MDTD66RDG;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = io.github.thebrotherhoodofscu.bugaoshan;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.thebrotherhoodofscu.bugaoshan.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -629,7 +637,7 @@
 				CODE_SIGN_ENTITLEMENTS = CourseWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
-				DEVELOPMENT_TEAM = 2F6UXH5569;
+				DEVELOPMENT_TEAM = 2MDTD66RDG;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -646,7 +654,7 @@
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = io.github.thebrotherhoodofscu.bugaoshan.CourseWidget;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.thebrotherhoodofscu.bugaoshan.ios.CourseWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
@@ -673,7 +681,7 @@
 				CODE_SIGN_ENTITLEMENTS = CourseWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
-				DEVELOPMENT_TEAM = 2F6UXH5569;
+				DEVELOPMENT_TEAM = 2MDTD66RDG;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -689,7 +697,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = io.github.thebrotherhoodofscu.bugaoshan.CourseWidget;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.thebrotherhoodofscu.bugaoshan.ios.CourseWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -714,7 +722,7 @@
 				CODE_SIGN_ENTITLEMENTS = CourseWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
-				DEVELOPMENT_TEAM = 2F6UXH5569;
+				DEVELOPMENT_TEAM = 2MDTD66RDG;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -730,7 +738,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = "$(FLUTTER_BUILD_NAME)";
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = io.github.thebrotherhoodofscu.bugaoshan.CourseWidget;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.thebrotherhoodofscu.bugaoshan.ios.CourseWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -746,10 +754,10 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2F6UXH5569;
+				DEVELOPMENT_TEAM = 2MDTD66RDG;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = io.github.thebrotherhoodofscu.bugaoshan.RunnerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.thebrotherhoodofscu.bugaoshan.ios.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -765,10 +773,10 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2F6UXH5569;
+				DEVELOPMENT_TEAM = 2MDTD66RDG;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = io.github.thebrotherhoodofscu.bugaoshan.RunnerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.thebrotherhoodofscu.bugaoshan.ios.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Runner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Runner";
@@ -782,10 +790,10 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 2F6UXH5569;
+				DEVELOPMENT_TEAM = 2MDTD66RDG;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = io.github.thebrotherhoodofscu.bugaoshan.RunnerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.thebrotherhoodofscu.bugaoshan.ios.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Runner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Runner";
@@ -912,14 +920,14 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
-				DEVELOPMENT_TEAM = 2F6UXH5569;
+				DEVELOPMENT_TEAM = 2MDTD66RDG;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = io.github.thebrotherhoodofscu.bugaoshan;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.thebrotherhoodofscu.bugaoshan.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -937,14 +945,14 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
-				DEVELOPMENT_TEAM = 2F6UXH5569;
+				DEVELOPMENT_TEAM = 2MDTD66RDG;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = io.github.thebrotherhoodofscu.bugaoshan;
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.thebrotherhoodofscu.bugaoshan.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
