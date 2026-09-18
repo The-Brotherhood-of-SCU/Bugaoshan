@@ -607,6 +607,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get evenWeek => 'Even Week';
 
   @override
+  String get customWeeksHint => 'Custom Weeks';
+
+  @override
+  String get selectAtLeastOneWeek => 'Please select at least one week';
+
+  @override
+  String get activeWeeks => 'Active Weeks';
+
+  @override
   String get section => 'Sec';
 
   @override

@@ -586,6 +586,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get evenWeek => '双周';
 
   @override
+  String get customWeeksHint => '自定义周次';
+
+  @override
+  String get selectAtLeastOneWeek => '请至少选择一个上课周次';
+
+  @override
+  String get activeWeeks => '上课周次';
+
+  @override
   String get section => '节';
 
   @override

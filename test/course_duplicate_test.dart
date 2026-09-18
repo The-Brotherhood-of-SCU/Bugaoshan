@@ -109,7 +109,8 @@ Future<_ServiceHarness> _openService() async {
       start_section INTEGER,
       end_section INTEGER,
       color_value INTEGER,
-      week_type INTEGER
+      week_type INTEGER,
+      custom_weeks TEXT
     )
   ''');
 

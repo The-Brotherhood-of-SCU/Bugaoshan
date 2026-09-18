@@ -321,12 +321,33 @@ object WidgetDataLoader {
         dayOfWeek: Int,
         currentWeek: Int,
     ): JSONArray {
-        val result = JSONArray()
-        db.rawQuery(
+        val hasCustomWeeksCol = try {
+            db.rawQuery("PRAGMA table_info(courses)", null).use { pragma ->
+                var found = false
+                while (pragma.moveToNext()) {
+                    if (pragma.getString(1) == "custom_weeks") {
+                        found = true
+                        break
+                    }
+                }
+                found
+            }
+        } catch (_: Exception) { false }
+
+        val sql = if (hasCustomWeeksCol) {
+            """SELECT name, teacher, location, start_week, end_week,
+                      start_section, end_section, color_value, week_type, custom_weeks
+               FROM courses
+               WHERE schedule_id = ? AND day_of_week = ?"""
+        } else {
             """SELECT name, teacher, location, start_week, end_week,
                       start_section, end_section, color_value, week_type
                FROM courses
-               WHERE schedule_id = ? AND day_of_week = ?""",
+               WHERE schedule_id = ? AND day_of_week = ?"""
+        }
+
+        db.rawQuery(
+            sql,
             arrayOf(scheduleId, dayOfWeek.toString()),
         ).use { cursor ->
             while (cursor.moveToNext()) {
@@ -334,7 +355,8 @@ object WidgetDataLoader {
                 val startWeek = cursor.getInt(3)
                 val endWeek = cursor.getInt(4)
                 val weekType = cursor.getInt(8)
-                if (!isCourseActive(currentWeek, startWeek, endWeek, weekType)) continue
+                val customWeeks = if (hasCustomWeeksCol) cursor.getString(9) else null
+                if (!isCourseActive(currentWeek, startWeek, endWeek, weekType, customWeeks)) continue
                 val obj = JSONObject()
                 obj.put("name", name)
                 obj.put("teacher", cursor.getString(1) ?: "")
@@ -422,7 +444,13 @@ object WidgetDataLoader {
         }.timeInMillis
     }
 
-    private fun isCourseActive(week: Int, startWeek: Int, endWeek: Int, weekType: Int): Boolean {
+    private fun isCourseActive(week: Int, startWeek: Int, endWeek: Int, weekType: Int, customWeeks: String? = null): Boolean {
+        if (!customWeeks.isNullOrEmpty()) {
+            val activeWeeks = customWeeks.split(",").mapNotNull { it.trim().toIntOrNull() }
+            if (activeWeeks.isNotEmpty()) {
+                return week in activeWeeks
+            }
+        }
         if (week < startWeek || week > endWeek) return false
         if (weekType == 1 && week % 2 == 0) return false
         if (weekType == 2 && week % 2 == 1) return false
