@@ -108,7 +108,7 @@ DevEco 后续构建沿用它们，不依赖从图形界面启动的 DevEco 是�
 | `ohos/flutter/pubspec.lock` | 维护中的鸿蒙锁文件 |
 | `ohos/.flutter-workspace/lib/` | 真实目录；手写 Dart 逐文件链接，生成 Dart 和合并 ARB 为本地普通文件 |
 | `ohos/.flutter-workspace/assets/` | 指向根 `assets/` 的目录链接 |
-| `ohos/.flutter-workspace/test/` | 共用测试及 OH 测试模板的文件链接 |
+| `ohos/.flutter-workspace/test/` | 共用测试及 OH 测试模板的文件链接；课程复制和主题转场的上游测试由 `test/ohos/` 模板替代 |
 | `ohos/.flutter-workspace/pubspec*.yaml`、`pubspec.lock`、`.dart_tool/` | 鸿蒙独立的 Pub 配置、解析与生成缓存 |
 | `ohos/.flutter-workspace/tooling/` | 本地 Flutter framework 补丁副本、SDK Hvigor 适配和插件声明读取器 |
 | `ohos/.flutter-workspace/build/` | Flutter 编译输出、补丁处理后的嵌入层 HAR |

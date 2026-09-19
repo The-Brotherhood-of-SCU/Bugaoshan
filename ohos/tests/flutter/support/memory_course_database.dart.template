@@ -1,0 +1,75 @@
+import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/services/database_service.dart';
+
+/// Course-only in-memory replacement used by OH host tests.
+///
+/// It deliberately avoids opening sqflite, so these tests do not require the
+/// desktop-only sqflite_common_ffi package or a native database plugin.
+class MemoryCourseDatabase extends DatabaseService {
+  MemoryCourseDatabase({
+    required ScheduleConfig config,
+    Iterable<Course> courses = const [],
+  }) : _currentScheduleId = config.id,
+       _schedules = <String, ScheduleConfig>{config.id: config},
+       _courses = <String, List<Course>>{
+         config.id: [...courses],
+       };
+
+  String _currentScheduleId;
+  final Map<String, ScheduleConfig> _schedules;
+  final Map<String, List<Course>> _courses;
+
+  List<Course> get _currentCourses =>
+      _courses.putIfAbsent(_currentScheduleId, () => <Course>[]);
+
+  @override
+  bool get hasSchedule => _schedules.isNotEmpty;
+
+  @override
+  String getCurrentScheduleId() => _currentScheduleId;
+
+  @override
+  List<ScheduleConfig> getAllSchedules() =>
+      List<ScheduleConfig>.unmodifiable(_schedules.values);
+
+  @override
+  ScheduleConfig? getScheduleConfig() => _schedules[_currentScheduleId];
+
+  @override
+  List<Course> getCourses({String? scheduleId}) => List<Course>.unmodifiable(
+    _courses[scheduleId ?? _currentScheduleId] ?? const <Course>[],
+  );
+
+  @override
+  Future<List<Course>> getCoursesAsync({String? scheduleId}) async =>
+      getCourses(scheduleId: scheduleId);
+
+  @override
+  Future<bool> hasConflict(Course course, {String? excludeId}) async =>
+      _currentCourses.any(
+        (existing) => existing.conflictsWith(course, excludeId: excludeId),
+      );
+
+  @override
+  Future<void> addCourse(Course course) async {
+    if (_currentScheduleId.isEmpty) return;
+    if (_currentCourses.any((existing) => existing.id == course.id)) {
+      throw StateError('Duplicate course id: ${course.id}');
+    }
+    _currentCourses.add(course);
+  }
+
+  @override
+  Future<void> updateCourse(Course course) async {
+    final index = _currentCourses.indexWhere(
+      (existing) => existing.id == course.id,
+    );
+    if (index < 0) throw StateError('Unknown course id: ${course.id}');
+    _currentCourses[index] = course;
+  }
+
+  @override
+  Future<void> deleteCourse(String courseId) async {
+    _currentCourses.removeWhere((course) => course.id == courseId);
+  }
+}

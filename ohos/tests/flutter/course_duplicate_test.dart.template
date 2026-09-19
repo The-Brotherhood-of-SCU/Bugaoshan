@@ -1,0 +1,76 @@
+import 'package:bugaoshan/models/course.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import 'support/memory_course_database.dart';
+
+void main() {
+  group('Course.duplicate', () {
+    test('generates a new id and preserves every field except the name', () {
+      final original = _course();
+      final copy = original.duplicate(nameSuffix: ' (副本)');
+
+      expect(copy.id, isNotEmpty);
+      expect(copy.id, isNot(original.id));
+      expect(copy.name, '${original.name} (副本)');
+      expect(copy.teacher, original.teacher);
+      expect(copy.location, original.location);
+      expect(copy.campus, original.campus);
+      expect(copy.startWeek, original.startWeek);
+      expect(copy.endWeek, original.endWeek);
+      expect(copy.dayOfWeek, original.dayOfWeek);
+      expect(copy.startSection, original.startSection);
+      expect(copy.endSection, original.endSection);
+      expect(copy.colorValue, original.colorValue);
+      expect(copy.weekType, original.weekType);
+    });
+
+    test('copyWith retains id while duplicate always creates a new id', () {
+      final original = _course();
+
+      expect(original.copyWith().id, original.id);
+      expect(original.duplicate().id, isNot(original.id));
+      expect(original.duplicate().name, original.name);
+    });
+  });
+
+  test('a duplicate is inserted without replacing the source course', () async {
+    final original = _course();
+    final database = MemoryCourseDatabase(
+      config: _schedule(),
+      courses: [original],
+    );
+
+    await database.addCourse(original.duplicate(nameSuffix: ' (副本)'));
+
+    final courses = await database.getCoursesAsync();
+    expect(courses, hasLength(2));
+    expect(
+      courses.singleWhere((course) => course.id == original.id).name,
+      original.name,
+    );
+    final copy = courses.singleWhere((course) => course.id != original.id);
+    expect(copy.name, '${original.name} (副本)');
+    expect(copy.campus, original.campus);
+    expect(copy.startSection, original.startSection);
+  });
+}
+
+Course _course() => Course(
+  id: 'course-original',
+  name: '高等数学',
+  teacher: '张三',
+  location: '江安一教 A101',
+  campus: '江安校区',
+  startWeek: 1,
+  endWeek: 16,
+  dayOfWeek: DateTime.monday,
+  startSection: 1,
+  endSection: 2,
+  colorValue: 0xFF2196F3,
+);
+
+ScheduleConfig _schedule() => ScheduleConfig(
+  id: 'S1',
+  semesterName: '测试课表',
+  semesterStartDate: DateTime(2026, 9, 1),
+);

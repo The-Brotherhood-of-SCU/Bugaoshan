@@ -26,6 +26,7 @@ import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/providers/zhhq_repair_provider.dart';
 import 'package:bugaoshan/services/api/ccyl_api_service.dart';
 import 'package:bugaoshan/services/api/fitness_api_service.dart';
+import 'package:bugaoshan/services/api/forgot_password_service.dart';
 import 'package:bugaoshan/services/api/new_service_api_service.dart';
 import 'package:bugaoshan/services/api/payapp_api_service.dart';
 import 'package:bugaoshan/services/api/service_api_service.dart';
@@ -70,6 +71,10 @@ void configureDependencies() {
   getIt.registerSingleton<ExitService>(ExitService());
   getIt.registerSingleton<DownloadManager>(DownloadManager());
   getIt.registerLazySingleton<AuthLogger>(() => AuthLogger());
+  // 忘记密码流程不依赖登录态，纯 HTTP 工具，同步注册即可
+  getIt.registerLazySingleton<ForgotPasswordService>(
+    () => ForgotPasswordService(),
+  );
   _configureAsyncDependencies();
 }
 

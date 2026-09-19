@@ -43,6 +43,11 @@ REQUIRED_OHOS_PLUGINS = (
     "url_launcher_ohos",
 )
 SOURCE_DIRECTORIES = ("lib", "test")
+OH_REPLACED_TESTS = {
+    "test/course_copy_mode_test.dart",
+    "test/course_duplicate_test.dart",
+    "test/theme_page_transitions_test.dart",
+}
 SOURCE_FILES = (
     "pubspec.yaml",
     "analysis_options.yaml",
@@ -423,6 +428,8 @@ def prepare_workspace(root):
     inputs = {}
     for name in SOURCE_DIRECTORIES:
         collect_sources(root, name, inputs)
+    for relative in OH_REPLACED_TESTS:
+        inputs.pop(relative, None)
     if (root / "assets").is_dir():
         inputs["assets"] = LinkedSource(root / "assets", directory=True)
     for name in SOURCE_FILES:

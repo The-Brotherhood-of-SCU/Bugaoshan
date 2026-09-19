@@ -128,6 +128,27 @@ class OhosBuildTest(unittest.TestCase):
                 "ohos/tests/flutter/platform_adapters_test.dart.template": (
                     "void main() {}\n"
                 ),
+                "ohos/tests/flutter/course_copy_mode_test.dart.template": (
+                    "void main() { /* OH copy test */ }\n"
+                ),
+                "ohos/tests/flutter/course_duplicate_test.dart.template": (
+                    "void main() { /* OH duplicate test */ }\n"
+                ),
+                "ohos/tests/flutter/theme_page_transitions_test.dart.template": (
+                    "void main() { /* OH theme test */ }\n"
+                ),
+                "ohos/tests/flutter/support/memory_course_database.dart.template": (
+                    "class MemoryCourseDatabase {}\n"
+                ),
+                "test/course_copy_mode_test.dart": (
+                    "import 'package:sqflite_common_ffi/sqflite_ffi.dart';\n"
+                ),
+                "test/course_duplicate_test.dart": (
+                    "import 'package:sqflite_common_ffi/sqflite_ffi.dart';\n"
+                ),
+                "test/theme_page_transitions_test.dart": (
+                    "void main() { /* upstream platforms */ }\n"
+                ),
                 "ohos/flutter/source-manifest.json": json.dumps(
                     {
                         "schemaVersion": 1,
@@ -184,6 +205,31 @@ class OhosBuildTest(unittest.TestCase):
             self.assertEqual(
                 (workspace / "test/ohos/platform_adapters_test.dart").read_text(),
                 "void main() {}\n",
+            )
+            self.assertEqual(
+                (
+                    workspace / "test/ohos/support/memory_course_database.dart"
+                ).read_text(),
+                "class MemoryCourseDatabase {}\n",
+            )
+            self.assertFalse((workspace / "test/course_copy_mode_test.dart").exists())
+            self.assertFalse((workspace / "test/course_duplicate_test.dart").exists())
+            self.assertFalse(
+                (workspace / "test/theme_page_transitions_test.dart").exists()
+            )
+            self.assertIn(
+                "OH copy test",
+                (workspace / "test/ohos/course_copy_mode_test.dart").read_text(),
+            )
+            self.assertIn(
+                "OH duplicate test",
+                (workspace / "test/ohos/course_duplicate_test.dart").read_text(),
+            )
+            self.assertIn(
+                "OH theme test",
+                (
+                    workspace / "test/ohos/theme_page_transitions_test.dart"
+                ).read_text(),
             )
             self.assertFalse((root / "test/ohos/platform_adapters_test.dart").exists())
             self.assertFalse((root / "lib/utils/mobile_device_info.dart").exists())

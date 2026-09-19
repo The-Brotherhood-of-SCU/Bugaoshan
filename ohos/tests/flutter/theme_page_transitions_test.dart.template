@@ -1,0 +1,56 @@
+import 'package:bugaoshan/theme.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  tearDown(() => debugDefaultTargetPlatformOverride = null);
+
+  test(
+    'OH uses the native transition builder with the configured duration',
+    () {
+      final theme = buildTheme(
+        brightness: Brightness.light,
+        seedColor: Colors.blue,
+        pageTransitionDuration: const Duration(milliseconds: 123),
+      );
+      final builder = theme.pageTransitionsTheme.builders[TargetPlatform.ohos];
+
+      expect(builder, isA<OpenRightwardsPageTransitionsBuilder>());
+      expect(builder?.transitionDuration, const Duration(milliseconds: 123));
+      expect(
+        builder?.reverseTransitionDuration,
+        const Duration(milliseconds: 123),
+      );
+    },
+  );
+
+  testWidgets('MaterialPageRoute reads the OH transition duration', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.ohos;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildTheme(
+          brightness: Brightness.light,
+          seedColor: Colors.blue,
+          pageTransitionDuration: const Duration(milliseconds: 123),
+        ),
+        home: const Scaffold(body: SizedBox()),
+      ),
+    );
+
+    final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+    final route = MaterialPageRoute<void>(
+      builder: (_) => const Scaffold(body: SizedBox()),
+    );
+    final pushed = navigator.push<void>(route);
+    await tester.pumpAndSettle();
+
+    expect(route.transitionDuration, const Duration(milliseconds: 123));
+    expect(route.reverseTransitionDuration, const Duration(milliseconds: 123));
+
+    navigator.pop();
+    await tester.pumpAndSettle();
+    await pushed;
+  });
+}

@@ -1,0 +1,148 @@
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/pages/course/edit/course_edit_page.dart';
+import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import 'support/memory_course_database.dart';
+
+void main() {
+  setUp(() async => getIt.reset());
+  tearDown(() async => getIt.reset());
+
+  testWidgets('copy mode uses copy labels and has no delete action', (
+    tester,
+  ) async {
+    final harness = _openHarness();
+
+    await tester.pumpWidget(_wrap(_copyPage(harness)));
+    await tester.pumpAndSettle();
+
+    expect(find.text(harness.l10n.copyCourseTitle), findsOneWidget);
+    expect(find.text(harness.l10n.copyCourseSave), findsOneWidget);
+    expect(find.text(harness.l10n.editCourse), findsNothing);
+    expect(find.byIcon(Icons.delete), findsNothing);
+    expect(
+      find.text('${harness.source.name}${harness.l10n.copySuffix}'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('saving the unchanged time is rejected as a conflict', (
+    tester,
+  ) async {
+    final harness = _openHarness();
+
+    await tester.pumpWidget(_wrap(_copyPage(harness)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(harness.l10n.copyCourseSave));
+    await tester.pumpAndSettle();
+
+    expect(find.text(harness.l10n.timeConflict), findsOneWidget);
+    expect(harness.database.getCourses().map((course) => course.name), [
+      harness.source.name,
+    ]);
+  });
+
+  testWidgets('saving at a free time inserts a copy and preserves the source', (
+    tester,
+  ) async {
+    final harness = _openHarness();
+
+    await tester.pumpWidget(_wrap(_copyPage(harness)));
+    await tester.pumpAndSettle();
+    final tuesday = find.text(harness.l10n.tuesday);
+    await tester.ensureVisible(tuesday);
+    await tester.pumpAndSettle();
+    await tester.tap(tuesday);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(harness.l10n.copyCourseSave));
+    await tester.pumpAndSettle();
+
+    expect(find.text(harness.l10n.timeConflict), findsNothing);
+    final courses = harness.database.getCourses();
+    expect(courses, hasLength(2));
+    expect(
+      courses.singleWhere((course) => course.id == harness.source.id).name,
+      harness.source.name,
+    );
+    final copy = courses.singleWhere(
+      (course) => course.id != harness.source.id,
+    );
+    expect(copy.name, '${harness.source.name}${harness.l10n.copySuffix}');
+    expect(copy.dayOfWeek, DateTime.tuesday);
+    expect(copy.startSection, harness.source.startSection);
+    expect(copy.campus, harness.source.campus);
+  });
+
+  testWidgets('opening copy mode without saving does not insert a course', (
+    tester,
+  ) async {
+    final harness = _openHarness();
+
+    await tester.pumpWidget(_wrap(_copyPage(harness)));
+    await tester.pumpAndSettle();
+
+    expect(harness.database.getCourses(), [harness.source]);
+  });
+}
+
+Widget _wrap(Widget child) => MaterialApp(
+  navigatorKey: navigatorKey,
+  locale: const Locale('zh'),
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  home: child,
+);
+
+CourseEditPage _copyPage(_Harness harness) => CourseEditPage.createCopy(
+  scheduleConfig: harness.config,
+  source: harness.source,
+  nameSuffix: harness.l10n.copySuffix,
+);
+
+class _Harness {
+  const _Harness({
+    required this.database,
+    required this.config,
+    required this.source,
+    required this.l10n,
+  });
+
+  final MemoryCourseDatabase database;
+  final ScheduleConfig config;
+  final Course source;
+  final AppLocalizations l10n;
+}
+
+_Harness _openHarness() {
+  final config = ScheduleConfig(
+    id: 'S1',
+    semesterName: '测试课表',
+    semesterStartDate: DateTime(2026, 9, 1),
+  );
+  final source = Course(
+    id: 'course-source',
+    name: '高等数学',
+    teacher: '张三',
+    location: '江安一教 A101',
+    campus: '江安校区',
+    startWeek: 1,
+    endWeek: 16,
+    dayOfWeek: DateTime.monday,
+    startSection: 1,
+    endSection: 2,
+    colorValue: 0xFF2196F3,
+  );
+  final database = MemoryCourseDatabase(config: config, courses: [source]);
+  getIt.registerSingleton<CourseProvider>(CourseProvider(database));
+  return _Harness(
+    database: database,
+    config: config,
+    source: source,
+    l10n: lookupAppLocalizations(const Locale('zh')),
+  );
+}

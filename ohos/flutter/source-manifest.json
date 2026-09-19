@@ -1,30 +1,18 @@
 {
   "schemaVersion": 1,
-  "upstreamRevision": "3b603e11d976e8495f1e9ad77e9d2a3297386451",
+  "upstreamRevision": "4ade79df1f7681289a17780220376bb7bc7a4e17",
   "files": [
     {
       "path": "lib/app.dart",
-      "upstreamSha256": "ce6ec7f1896b17770514fb684bbd089d225115894c94a88a558fb814fe348ccf"
+      "upstreamSha256": "f85d9274e7713f28e087b4afad7a5fc89bab0d14c9e0fdd45d29fb8d5343bd7e"
     },
     {
       "path": "lib/injection/injector.dart",
-      "upstreamSha256": "4d227585f2d17cd6270220fd04a8db60e2a6526d775289cf21a71cec9bc5056d"
+      "upstreamSha256": "f67e5641c1dac9cc91cc0525a462451f0f34a8f7984641c401a02b86a099f445"
     },
     {
       "path": "lib/main.dart",
       "upstreamSha256": "c091a1881b4172867505c58c641e6a97d9a47f77cad90fcc0968d9f8e5f398de"
-    },
-    {
-      "path": "lib/pages/about/about_page.dart",
-      "upstreamSha256": "22744abd33f32bb3cb8261c427fda06e8242c9d4091a3d384e156a1b97049fac"
-    },
-    {
-      "path": "lib/pages/about/team_page.dart",
-      "upstreamSha256": "100736b4c63f616d282c20be2d15bb121cc8744e1771c90db5881162602f0a78"
-    },
-    {
-      "path": "lib/pages/auth/scu_login_page.dart",
-      "upstreamSha256": "85f445eefafaaceef28edf6dc7eb884bc8f036fd4a8dce33cc0dff88e74e8c9f"
     },
     {
       "path": "lib/pages/campus/downloads/attachments_sheet.dart",
@@ -39,48 +27,16 @@
       "upstreamSha256": "25b120563fa4ee01f839167308a5b439a56ccd2d7b3a50147414b1d8a0f64bb1"
     },
     {
-      "path": "lib/pages/campus/repair/repair_submit_tab.dart",
-      "upstreamSha256": "5e2ef373c96ac96426cb1eb268389fe7d473f088890ade3a6665a8fa8d519d0a"
-    },
-    {
-      "path": "lib/pages/campus/repair/repair_widgets.dart",
-      "upstreamSha256": "97d0598b738e32d9bacf0efbfc4e346c828bba8761b75af5bd2391f51ab4ba86"
-    },
-    {
       "path": "lib/pages/campus/service_hall/service_field_widgets.dart",
       "upstreamSha256": "4276acb5c135973a978e760217c51c6a5ce57872a3901399d93193c2a9ef85a8"
-    },
-    {
-      "path": "lib/pages/campus/service_hall/service_form_page.dart",
-      "upstreamSha256": "39a0f53e054bf50e42b6cf9f1b55221fe0cdef2f769f556350c73829c769cb73"
-    },
-    {
-      "path": "lib/pages/dev/auth_log/auth_log_viewer_page.dart",
-      "upstreamSha256": "24ca2185dc7a7ea08b10c4e619f1465d0f34f1cfdf9abd8315d1872aea9dd30f"
-    },
-    {
-      "path": "lib/pages/dev/dev_page.dart",
-      "upstreamSha256": "6257010a4cec6cad36f6823c4da270b6302f1f65e80462411bd02fb0d3990ddc"
     },
     {
       "path": "lib/pages/dev/environment_info_page.dart",
       "upstreamSha256": "d64c0ed841003ddf8bd3787fda2263523c8322589cf1461729270d7b2fffdfbe"
     },
     {
-      "path": "lib/pages/home_page.dart",
-      "upstreamSha256": "4953eb02be3d7e69618a9d05fe33f7f0c046fb36b7a3b9efbc5e28d282a40978"
-    },
-    {
-      "path": "lib/pages/profile/profile_menu_card.dart",
-      "upstreamSha256": "61acac9831c0a699751462bdacbae41b37bac2976a4aa3ea8efc089e1f164893"
-    },
-    {
       "path": "lib/pages/settings/add_widget/add_widget_page.dart",
       "upstreamSha256": "5c47a4a19bdaafe596c6c8b1eaa87f8381c30fabfe3db5498f8653fc7ff0913a"
-    },
-    {
-      "path": "lib/pages/settings/background_crop_editor_page.dart",
-      "upstreamSha256": "bf210ec7bca412aba748e5d3246392f8fd1869232a5b133de09e2c9e196e892b"
     },
     {
       "path": "lib/pages/settings/set_course_style_page.dart",
@@ -107,48 +63,8 @@
       "upstreamSha256": "7756b197f282747f1c6725752d86294385dc5a992bc9d14dd1c5cfd99f4a3c39"
     },
     {
-      "path": "lib/providers/passpoint_provider.dart",
-      "upstreamSha256": "234d2d82c353c2f9f9e693e506d30917818a8856923525d29256353e52725bf6"
-    },
-    {
-      "path": "lib/providers/scu_auth_provider.dart",
-      "upstreamSha256": "9dbc9f685044e1b0c44a932dd3127cdf74b0dcdfc4d9c7c4d2f2d1939d12a06e"
-    },
-    {
       "path": "lib/providers/set_theme_color_provider.dart",
       "upstreamSha256": "40fd67e5b686f976f88e643bfcd18725d3b14f672a760f30a5f97b59f4b4e34f"
-    },
-    {
-      "path": "lib/services/api/api_request.dart",
-      "upstreamSha256": "cb060401135a726ca7e72e027e6b248f62f965cd4be55216ae1a7cb9af7d88d3"
-    },
-    {
-      "path": "lib/services/api/new_service_api_service.dart",
-      "upstreamSha256": "0e35b4f76543affaeed5b926e31202d58663e97baa5a497929cba7fef37f5440"
-    },
-    {
-      "path": "lib/services/api/service_api_service.dart",
-      "upstreamSha256": "a02281f77f6b055427eafb0cf3103c0c683c223dcf073611ac3d78abebf824f9"
-    },
-    {
-      "path": "lib/services/api/zhhq_api_service.dart",
-      "upstreamSha256": "a686c2bbbfd9991eaca6164e0d36b07dbbe1fcc1b893adb32049cac40de461f2"
-    },
-    {
-      "path": "lib/services/auth/ccyl_auth.dart",
-      "upstreamSha256": "19691357a521364ef21b535cf8d82ab38386e5f3ad22377b0842a935c72dfcf7"
-    },
-    {
-      "path": "lib/services/auth/scu_auth.dart",
-      "upstreamSha256": "f42f7343d8b0eaf887b95277edd05527df09f403f6798e266d19d7a9b7140d32"
-    },
-    {
-      "path": "lib/services/auth/sso_relay_auth.dart",
-      "upstreamSha256": "1cb6af3d2fc26dde312d79903b6a4366a52a3c4258020d5dc5712fbb2bba97db"
-    },
-    {
-      "path": "lib/services/auth/zhhq_auth.dart",
-      "upstreamSha256": "a4400d7643439f1703c281fffc3693920c81f70c4eb437cc916aa022bdffa8d7"
     },
     {
       "path": "lib/services/dynamic_icon_service.dart",
@@ -180,7 +96,7 @@
     },
     {
       "path": "lib/theme.dart",
-      "upstreamSha256": "e45262ed2104e9ca497cc4daafc73c7e6ea1bb37b2e3ae55ee96ea51b3d4a75f"
+      "upstreamSha256": "74d336b386c800f085cc073f7ebddfc57ae4776cddb4b0ea49d818f678d62ab5"
     },
     {
       "path": "lib/utils/calendar_export_utils.dart",
@@ -221,14 +137,6 @@
     {
       "path": "lib/utils/open_link.dart",
       "upstreamSha256": "e5d6c525347b37b3ff299292a6bf62c6612f0009f5df70627f88a30435e3e686"
-    },
-    {
-      "path": "lib/utils/share_utils.dart",
-      "upstreamSha256": "cfbc4168c8ae08a27fa08241ccd35b9d8fccb3fd7ed0739437c58a21d3771766"
-    },
-    {
-      "path": "lib/widgets/common/auth_scoped_indexed_stack.dart",
-      "upstreamSha256": "0e005e26764fff6fa1d83dd03507a590ab4c2c3b776ed47ecd38af57224921ec"
     },
     {
       "path": "lib/widgets/common/image_viewer.dart",

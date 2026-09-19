@@ -32,6 +32,18 @@ flutter test --no-pub test/ohos/home_page_loading_test.dart test/auth_scoped_ind
 
 该组检查覆盖未访问页不初始化、已访问页状态保留、导航重排及移除、认证变化后清理页面状态。
 
+课程复制与 OH 转场检查：
+
+```powershell
+flutter test --no-pub test/ohos/course_duplicate_test.dart test/ohos/course_copy_mode_test.dart test/ohos/theme_page_transitions_test.dart
+```
+
+课程测试使用 `support/memory_course_database.dart` 的内存替身，不依赖
+`sqflite_common_ffi`，也不打开原生数据库插件。准备 OH 工作区时，上游的
+`course_copy_mode_test.dart`、`course_duplicate_test.dart` 和
+`theme_page_transitions_test.dart` 不会被链接；它们分别由上述 OH 模板
+替代，避免全量 `flutter test` 解析桌面依赖或使用缺少 OH 项的平台断言。
+
 本次迁移新增了上游变化拒绝、翻译合并、路径边界及组装前完整检查的 Python 测试，
 并更新原有副本测试；代理未执行测试。`ohos_sources.py --check` 只检查维护输入，不代替测试。
 

@@ -185,6 +185,7 @@ OH 专项 Flutter 测试以 `*.dart.template` 维护，准备工程时会链接�
 ```powershell
 dart analyze lib
 flutter test --no-pub test/ohos/platform_adapters_test.dart test/webview_notice_handlers_test.dart
+flutter test --no-pub test/ohos/course_duplicate_test.dart test/ohos/course_copy_mode_test.dart test/ohos/theme_page_transitions_test.dart
 ```
 
 测试范围及原生测试入口见 [测试说明](tests/README.md)。平台通道测试使用模拟实现；
