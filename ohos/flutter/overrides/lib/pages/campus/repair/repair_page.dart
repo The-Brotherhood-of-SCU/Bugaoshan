@@ -2,12 +2,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/utils/image_pick.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/repair.dart';
-import 'package:bugaoshan/utils/app_log.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/pages/campus/repair/repair_detail_page.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/providers/zhhq_repair_provider.dart';
