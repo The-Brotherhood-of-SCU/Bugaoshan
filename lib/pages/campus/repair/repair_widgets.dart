@@ -281,7 +281,10 @@ class _ProjectSelectorState extends State<_ProjectSelector> {
       children: [
         // 第一级：大类
         DropdownButtonFormField<RepairProject>(
-          initialValue: category,
+          key: ValueKey('repair_category_${widget.areaId}'),
+          initialValue: _categories.any((c) => c.value == category?.value)
+              ? category
+              : null,
           hint: Text(l10n.repairSelectCategory),
           isExpanded: true,
           decoration: const InputDecoration(border: OutlineInputBorder()),
@@ -310,7 +313,11 @@ class _ProjectSelectorState extends State<_ProjectSelector> {
           // 第二级：具体项目
           if (category.children.isNotEmpty)
             DropdownButtonFormField<String>(
-              initialValue: widget.value,
+              key: ValueKey('repair_sub_project_${category.value}'),
+              initialValue:
+                  category.children.any((p) => p.value == widget.value)
+                  ? widget.value
+                  : null,
               hint: Text(l10n.repairSelectProject),
               isExpanded: true,
               decoration: const InputDecoration(border: OutlineInputBorder()),
@@ -327,12 +334,14 @@ class _ProjectSelectorState extends State<_ProjectSelector> {
                   )
                   .toList(),
               onChanged: (v) {
+                if (v == null || v.isEmpty) return;
                 final label = category.children
                     .where((p) => p.value == v)
                     .map((p) => p.label)
                     .firstOrNull;
+                if (label == null) return;
                 // projectName 用「大类/项目」完整名（与前端提交一致）
-                widget.onChanged(v ?? '', '$categoryLabel/$label');
+                widget.onChanged(v, '$categoryLabel/$label');
               },
             )
           else

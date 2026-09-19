@@ -73,6 +73,9 @@ class RepairProject {
         ? (json['children'] as List)
               .whereType<Map>()
               .map((e) => RepairProject.fromJson(Map<String, dynamic>.from(e)))
+              .where(
+                (p) => p.label.trim().isNotEmpty && p.value.trim().isNotEmpty,
+              )
               .toList(growable: false)
         : const <RepairProject>[];
     return RepairProject(
@@ -81,6 +84,16 @@ class RepairProject {
       children: children,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RepairProject &&
+          runtimeType == other.runtimeType &&
+          value == other.value;
+
+  @override
+  int get hashCode => value.hashCode;
 }
 
 /// 报修负责部门（`getAcceptUserByAreaIdAndProjectId` 返回）。
