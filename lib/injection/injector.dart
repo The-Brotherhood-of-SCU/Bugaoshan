@@ -18,6 +18,7 @@ import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/exam_plan_provider.dart';
 import 'package:bugaoshan/providers/fitness_test_provider.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
+import 'package:bugaoshan/providers/graduate_grades_provider.dart';
 import 'package:bugaoshan/providers/network_device_provider.dart';
 import 'package:bugaoshan/providers/passpoint_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
@@ -218,6 +219,11 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<GsApiService>(() async {
     await getIt.isReady<GsAuth>();
     return GsApiService(getIt<GsAuth>());
+  });
+  // 研究生成绩：依赖 GsApiService（_postForm 自愈链）。
+  getIt.registerSingletonAsync<GraduateGradesProvider>(() async {
+    await getIt.isReady<GsApiService>();
+    return GraduateGradesProvider(getIt<GsApiService>());
   });
 
   // ── Provider ────────────────────────────────────────────────────
@@ -448,6 +454,9 @@ void _configureAsyncDependencies() {
         }
         if (getIt.isRegistered<ExamPlanProvider>()) {
           getIt<ExamPlanProvider>().clear();
+        }
+        if (getIt.isRegistered<GraduateGradesProvider>()) {
+          getIt<GraduateGradesProvider>().clear();
         }
         if (getIt.isRegistered<ServiceApplicationsProvider>()) {
           getIt<ServiceApplicationsProvider>().clear();

@@ -5,9 +5,11 @@ import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/gs_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/models/graduate_grades.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/graduate_schedule_parser.dart';
+import 'package:bugaoshan/utils/graduate_grades_parser.dart';
 import 'package:bugaoshan/utils/gs_json_envelope.dart';
 
 /// 研教务（gsapp / EMAP）API 服务（第1层）。
@@ -22,9 +24,11 @@ import 'package:bugaoshan/utils/gs_json_envelope.dart';
 ///   行字段 KCMC/JSXM/JASMC/XQ(星期,周一=1)/KSJCDM/JSJCDM/ZCMC/ZCBH/KSSJ/JSSJ；
 /// - 学期列表 `kfdxnxqcx.do`、首次上课日期 `xsjxrwcx.do`（SCSKRQ）。
 ///
-/// 成绩 / 培养计划的 `.do` 端点尚未定案，对应方法随功能一并添加
-/// （应用入口：成绩 `/sys/wdcjapp/*default/index.do`、
-/// 培养计划 `/sys/wdpyjhapp/*default/index.do`、
+/// 成绩链路（2026-09-20 抓包定案）：`POST xscjcx.do`（wdcjapp），标准 GS
+/// 信封，行字段见 [GraduateGradeRow]。
+///
+/// 培养计划的 `.do` 端点尚未定案，对应方法随功能一并添加
+/// （应用入口：培养进度 `/sys/wdpyjhapp/*default/index.do`、
 /// 培养方案 `/sys/wdpyfaappscu/*default/index.do#/pyfaxq`）。
 class GsApiService {
   GsApiService(this._gsAuth);
@@ -100,6 +104,18 @@ class GsApiService {
       'pageNumber': '1',
       'pageSize': '999',
     });
+  }
+
+  /// 研究生成绩行（wdcjapp，2026-09-20 抓包定案）。
+  ///
+  /// 抓包请求未带查询参数（服务端默认分页 pageSize=12），这里沿用 EMAP
+  /// 分页约定拉满一次取全；统计由 [graduateGradesStatsFromRows] 完成。
+  Future<List<GraduateGradeRow>> fetchGrades() async {
+    final rows = await _postForm(kGsGradesEndpointPath, {
+      'pageNumber': '1',
+      'pageSize': '999',
+    });
+    return graduateGradeRowsFromJson(rows);
   }
 
   /// POST 表单到 ehall 域的 `.do` 接口，解包信封为行列表。
