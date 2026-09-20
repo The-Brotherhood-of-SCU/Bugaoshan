@@ -10,6 +10,7 @@ import 'package:bugaoshan/utils/app_log.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:bugaoshan/models/balance_record.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/services/arkweb/native_bridge.dart';
 
 const String _keyCurrentScheduleId = 'currentScheduleId';
 
@@ -36,8 +37,14 @@ class DatabaseService {
     await _createBalanceRecordsTable(_db);
   }
 
-  Future<void> init() async {
-    debugPrint('BugaoShan Database: Initializing database...');
+  Future<String> _resolveDatabasePath() async {
+    if (kIsWeb) {
+      if (!isArkWebNativeAvailable) {
+        throw UnsupportedError('Web 数据库需要鸿蒙容器提供 bugaoshanNative 桥接。');
+      }
+      // 只传逻辑文件名，由鸿蒙端映射到沙箱数据库目录。
+      return 'bugaoshan.db';
+    }
 
     Directory dir;
     // iOS 使用 App Group 共享目录，让 Widget Extension 也能访问数据库。
@@ -98,6 +105,13 @@ class DatabaseService {
         AppLog.w('DatabaseService', 'Error during database migration: $e');
       }
     }
+
+    return dbPath;
+  }
+
+  Future<void> init() async {
+    debugPrint('BugaoShan Database: Initializing database...');
+    final dbPath = await _resolveDatabasePath();
 
     _db = await openDatabase(
       dbPath,

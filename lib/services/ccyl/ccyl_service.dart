@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
+import 'package:bugaoshan/services/platform_http_client.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/json_utils.dart';
 
@@ -415,7 +415,9 @@ class CcylService {
     Map<String, String> headers,
   ) async {
     try {
-      final resp = await http.get(uri, headers: headers).timeout(kHttpTimeout);
+      final resp = await withPlatformHttpClient(
+        (client) => client.get(uri, headers: headers).timeout(kHttpTimeout),
+      );
       if (resp.statusCode != 200) {
         throw CcylException('[$api] HTTP 错误: ${resp.statusCode}');
       }

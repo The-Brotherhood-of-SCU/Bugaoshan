@@ -3,6 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/utils/auth_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
+import 'package:bugaoshan/services/platform_http_client.dart';
 
 /// Cookie 感知的 http.Client，按域名隔离存储，发送时只带当前请求域的 cookie。
 class CookieClient extends http.BaseClient {
@@ -15,7 +16,8 @@ class CookieClient extends http.BaseClient {
 
   http.Client _inner;
 
-  CookieClient({http.Client? inner}) : _inner = inner ?? http.Client();
+  CookieClient({http.Client? inner})
+    : _inner = inner ?? createPlatformHttpClient();
 
   // 按域名存 cookie：host -> {name: value}
   final _jar = <String, Map<String, String>>{};
@@ -200,7 +202,7 @@ class CookieClient extends http.BaseClient {
     } on http.ClientException catch (e) {
       _log.w(_tag, 'send: ClientException, retrying: $e');
       _inner.close();
-      _inner = http.Client();
+      _inner = createPlatformHttpClient();
       final retryRequest = http.Request(request.method, request.url)
         ..followRedirects = request.followRedirects
         ..maxRedirects = request.maxRedirects

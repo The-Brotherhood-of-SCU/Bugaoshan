@@ -11,6 +11,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/services/window_state_service.dart';
 import 'package:system_theme/system_theme.dart';
 import 'package:bugaoshan/services/update_service.dart';
+import 'package:bugaoshan/services/arkweb/arkweb_support.dart';
 
 Future<void> main() async {
   try {
@@ -24,6 +25,7 @@ Future<void> main() async {
 
 Future<void> _initializeApp() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeArkWebSupport();
   if (!kIsWeb) {
     DartPluginRegistrant.ensureInitialized();
     if (_isDesktopPlatform) {

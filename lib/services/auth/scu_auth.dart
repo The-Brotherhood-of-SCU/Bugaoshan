@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:crypto/crypto.dart';
 import 'package:bugaoshan/injection/injector.dart';
@@ -11,6 +10,7 @@ import 'package:bugaoshan/services/auth/auth_state.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/ocr_service.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
+import 'package:bugaoshan/services/platform_http_client.dart';
 import 'package:bugaoshan/utils/auth_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/json_utils.dart';
@@ -129,9 +129,9 @@ class ScuAuth extends ChangeNotifier {
   /// 从安全存储恢复 token（应用启动时调用）。
   Future<void> init() async {
     try {
-      _accessToken = await SecureStorageProvider.instance.read(
-        key: kScuAccessToken,
-      ).catchError((_) => null);
+      _accessToken = await SecureStorageProvider.instance
+          .read(key: kScuAccessToken)
+          .catchError((_) => null);
       _principal = await _restorePrincipal(_accessToken);
       _loginTimestamp = _prefs.getInt(kScuLoginTimestamp);
 
@@ -157,7 +157,9 @@ class ScuAuth extends ChangeNotifier {
       '$_base/api/public/bff/v1.2/one_time_login/captcha'
       '?_enterprise_id=$_enterpriseId&timestamp=$ts',
     );
-    final resp = await http.get(uri, headers: _headers).timeout(kHttpTimeout);
+    final resp = await withPlatformHttpClient(
+      (client) => client.get(uri, headers: _headers).timeout(kHttpTimeout),
+    );
 
     Map<String, dynamic> json;
     try {

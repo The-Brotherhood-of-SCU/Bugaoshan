@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:bugaoshan/services/auth/scu_auth.dart' show CaptchaResult;
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/services/platform_http_client.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/json_utils.dart';
@@ -80,7 +81,7 @@ class ForgotPasswordService {
   late final http.Client _client = _clientFactory();
 
   ForgotPasswordService({http.Client Function()? clientFactory})
-    : _clientFactory = clientFactory ?? http.Client.new;
+    : _clientFactory = clientFactory ?? createPlatformHttpClient;
 
   /// 获取步骤1的图形验证码（与登录共用同一端点，实例各自独立）。
   Future<CaptchaResult> fetchCaptcha() async {
