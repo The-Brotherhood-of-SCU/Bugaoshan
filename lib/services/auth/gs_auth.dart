@@ -135,6 +135,20 @@ class GsAuth extends ChangeNotifier implements SubsystemAuth {
     }
     _log.i(_tag, 'ehall SSO: ok (status=${ehallResponse.statusCode})');
 
+    // wdcjapp（成绩）应用会话预热：EMAP 各应用可能有独立的应用会话，课表
+    // （wdkbapp）能直接 .do 成功不代表其它应用不需要先访各自 index。与
+    // gsapp 预热同策略：失败仅记日志，不阻断主链路（真正失败由 .do 的
+    // 自愈重试兜底）。
+    try {
+      final gradesIndex = await client.followRedirects(
+        Uri.parse(kGsGradesAppIndexUrl),
+        headers: ssoHeaders,
+      );
+      _log.d(_tag, 'wdcjapp index: status=${gradesIndex.statusCode}');
+    } catch (e) {
+      _log.w(_tag, 'wdcjapp index 预热失败（忽略）：$e');
+    }
+
     _cachedClient = client;
     _log.i(_tag, 'SSO login: ok');
     return client;
