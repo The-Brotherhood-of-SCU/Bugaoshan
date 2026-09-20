@@ -48,6 +48,23 @@ LoadErrorType zhjwAuthErrorType(
   LoadErrorType fallback = LoadErrorType.sessionExpired,
 }) => error.undergradOnly ? LoadErrorType.undergradOnly : fallback;
 
+/// 「有缓存但后台刷新失败」场景的提示文案：会话类错误给针对性指引
+/// （会话过期 → 重新登录重试；本科教务会话未建立 → 去研究生区），
+/// 其余一律走调用方的通用失败文案（[fallback]）。
+///
+/// 与全量错误态的 [RetryableErrorWidget] 不同，这类场景旧数据还在展示，
+/// 提示弱一些是可接受的，但不能把 undergradOnly 落到通用文案——那会
+/// 丢掉「研究生账号请用研究生区」的关键指引。
+String refreshFailureMessage(
+  LoadErrorType type,
+  AppLocalizations l10n, {
+  required String fallback,
+}) => switch (type) {
+  LoadErrorType.sessionExpired => l10n.sessionExpired,
+  LoadErrorType.undergradOnly => l10n.undergradDataOnly,
+  _ => fallback,
+};
+
 /// 教务系统（23:00-次日6:00）校外访问关闭。
 bool isZhjwClosedAtNight() {
   final hour = DateTime.now().hour;

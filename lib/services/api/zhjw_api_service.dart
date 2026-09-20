@@ -14,6 +14,7 @@ import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart' show kZhjwBase;
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/json_utils.dart';
+import 'package:flutter/foundation.dart';
 
 part 'zhjw_html_parsers.dart';
 
@@ -49,14 +50,34 @@ class ZhjwApiService {
   /// 说明统一认证有效、本科教务却始终不认——多半是子系统没有此账号
   /// （研究生账号）。打上 undergradOnly 标记，UI 据此给针对性指引而非
   /// 「会话已过期请重试」。
+  ///
+  /// **只对「确实被踢回登录页」的强证据打标**（302 重定向、登录页
+  /// HTML）。空 body 不是这种证据：zhjw 夜间关站（23:00-6:00）或偶发
+  /// 空响应时，已登录的本科账号也会拿到空响应，打成 undergradOnly 会
+  /// 误导他们去研究生区，所以空 body 走默认的「会话已过期」语义。
   void _checkSessionExpiry(String body, int statusCode) {
+    final failure = classifyZhjwSessionFailure(body, statusCode);
+    if (failure != null) throw failure;
+  }
+
+  /// 会话失效判定（证据规则见 [_checkSessionExpiry] 注释）；未失效返回 null。
+  ///
+  /// 抽成静态纯函数以便直接断言 undergradOnly 标记的有无。
+  @visibleForTesting
+  static UnauthenticatedException? classifyZhjwSessionFailure(
+    String body,
+    int statusCode,
+  ) {
     const flagged = UnauthenticatedException(
       '本科教务会话未建立',
       true,
     );
-    if (statusCode == 302) throw flagged;
-    if (body.trim().isEmpty) throw flagged;
-    if (looksLikeLoginPage(body)) throw flagged;
+    if (statusCode == 302) return flagged;
+    if (body.trim().isEmpty) {
+      return const UnauthenticatedException('教务系统返回了空响应');
+    }
+    if (looksLikeLoginPage(body)) return flagged;
+    return null;
   }
 
   // ═══════════════════════════════════════════════════════════════════

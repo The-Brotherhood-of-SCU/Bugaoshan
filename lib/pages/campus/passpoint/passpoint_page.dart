@@ -120,9 +120,11 @@ class _PasspointPageState extends State<PasspointPage> {
     Future<void> Function() onRetry,
   ) {
     final scheme = Theme.of(context).colorScheme;
-    final message = error == LoadErrorType.sessionExpired
-        ? l10n.sessionExpired
-        : l10n.loadFailed;
+    final message = refreshFailureMessage(
+      error,
+      l10n,
+      fallback: l10n.loadFailed,
+    );
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 4, 4, 4),
       decoration: BoxDecoration(

@@ -31,9 +31,11 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
             provider.clearPassingError();
             if (!mounted) return;
             final l10n = AppLocalizations.of(context)!;
-            final message = errorKey == LoadErrorType.sessionExpired
-                ? l10n.sessionExpired
-                : l10n.gradesRefreshFailed;
+            final message = refreshFailureMessage(
+              errorKey!,
+              l10n,
+              fallback: l10n.gradesRefreshFailed,
+            );
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text(message)));
