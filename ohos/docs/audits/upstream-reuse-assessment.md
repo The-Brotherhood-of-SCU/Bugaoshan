@@ -13,9 +13,10 @@
 `4ade79d` 的现有实现。18 份通用修复的迁移前快照已经由维护者剪切出
 当前仓库，不参与 Flutter／鸿蒙源码组装。
 
-因此当前活动覆盖为 **29 个上游覆盖 + 15 个 OH 新增文件**。下表 A、B 的
+因此当前活动覆盖为 **28 个上游覆盖 + 15 个 OH 新增文件**。下表 A、B 的
 “恢复条件与建议”保留原审计结论，用来说明这次选择放弃或暂存了哪些行为；
-B 类只链接当前共享源；对应修复没有启用。C、D 类仍是活动覆盖。
+B 类只链接当前共享源；对应修复没有启用。C、D 类在审计时为活动覆盖，其中
+`pages/campus/repair/repair_page.dart` 此后已移除，见下方「2.5.2 合并后的同步」。
 
 ### 2.5.2 合并后的同步
 
@@ -28,6 +29,8 @@ B 类只链接当前共享源；对应修复没有启用。C、D 类仍是活动
   已剪切出仓库的 `sessionEpoch` 通用认证修复，导致接口不匹配。
 - 课程复制和转场测试以 OH 模板维护。课程测试使用内存假数据库，不依赖
   `sqflite_common_ffi` 或原生数据库插件。
+- `pages/campus/repair/repair_page.dart` 的覆盖已移除：提交 `f0d1910` 已把父库
+  imports 还原为上游写法，文件与上游逐字节一致，不再构成有效覆盖，清单条目一并删除。
 
 | 分类 | 数量 | 当前建议 |
 | --- | ---: | --- |
@@ -87,7 +90,7 @@ A～C 共 35 个有逐步复用机会，**不表示现在即可从 52 个降到 
 | 文件 | 可行性 | 当前差异／直接恢复的影响 | 恢复条件与建议 |
 | --- | --- | --- | --- |
 | [app.dart](../../flutter/overrides/lib/app.dart) · [上游](../../../lib/app.dart) | 高；主题策略集中后 | 真实平台差异是系统强调色回退；Dock 开关耦合则是此次合并未同步的上游修复。 | 统一强调色来源，并与 theme.dart 一起同步上游 Dock 动画作用域修复。 |
-| [pages/campus/repair/repair_page.dart](../../flutter/overrides/lib/pages/campus/repair/repair_page.dart) · [上游](../../../lib/pages/campus/repair/repair_page.dart) | 高；part 组配套 | 父库 imports 改为选图 helper，增加 AppLog 和认证异常引用，服务于两个 part 的修复。 | 将选图和错误处理封装共享，与两个 part 一起恢复共享源。 |
+| `pages/campus/repair/repair_page.dart` · [上游](../../../lib/pages/campus/repair/repair_page.dart)（覆盖已移除） | 高；part 组配套 | 父库 imports 改为选图 helper，增加 AppLog 和认证异常引用，服务于两个 part 的修复。 | 将选图和错误处理封装共享，与两个 part 一起恢复共享源。 |
 | [pages/campus/downloads/attachments_sheet.dart](../../flutter/overrides/lib/pages/campus/downloads/attachments_sheet.dart) · [上游](../../../lib/pages/campus/downloads/attachments_sheet.dart) | 高；统一文件打开入口后 | OpenFilex.open 改为 openLocalFile(path, context)，底层仍调用同一插件，主要增加结果检查和提示。 | 共享文件打开封装及调用，不必为错误处理保留整页副本。 |
 | [pages/campus/downloads/notice_downloaded_page.dart](../../flutter/overrides/lib/pages/campus/downloads/notice_downloaded_page.dart) · [上游](../../../lib/pages/campus/downloads/notice_downloaded_page.dart) | 高；统一文件打开入口后 | 同样是文件打开结果和失败反馈的封装差异。 | 与附件面板共享 openLocalFile，保留原有错误反馈。 |
 | [pages/campus/service_hall/service_field_widgets.dart](../../flutter/overrides/lib/pages/campus/service_hall/service_field_widgets.dart) · [上游](../../../lib/pages/campus/service_hall/service_field_widgets.dart) | 高；统一选图入口后 | ImagePicker 改为 pickGalleryImage(context)，补 mounted；helper 底层仍为 ImagePicker。 | 共享选图互斥、文件检查和提示，避免整页覆盖。 |

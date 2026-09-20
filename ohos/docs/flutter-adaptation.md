@@ -27,13 +27,13 @@
 
 ## Dart 文件覆盖
 
-[覆盖目录](../flutter/overrides/README.md) 只保存有鸿蒙适配的完整文件，目前 65 个：
-52 个替换上游文件、13 个鸿蒙新增文件。它们通过同一个包名和最终 `lib/` 与共用文件一起编译。
+[覆盖目录](../flutter/overrides/README.md) 只保存有鸿蒙适配的完整文件，目前 43 个：
+28 个替换上游文件、15 个鸿蒙新增文件。它们通过同一个包名和最终 `lib/` 与共用文件一起编译。
 构建时不再对应用源码执行 `git apply`。旧 26 个补丁及最终目标的对应关系见
-[迁移记录](audits/source-overlay-migration.md)。
+[迁移记录](audits/source-overlay-migration.md)；上游已具备同等实现的适配会取消覆盖，
+直接使用根 `lib/`。
 
 - `main.dart`、`app.dart` 和主题相关文件：鸿蒙启动及主题回退，移除非 OH 的入口调用。
-- `widgets/common/auth_scoped_indexed_stack.dart`：导航页首次访问时创建，保留状态及认证隔离。
 - `utils/file_save.dart`、`gallery_save.dart`、`image_pick.dart`、`open_file.dart`：
   接入 CPF 选择、保存及打开接口，统一结果和失败处理。
 - `widgets/webview/download_webview.dart`：OH WebView 入口、下载回调、全局禁用回弹及实例生命周期。
@@ -41,7 +41,7 @@
   青春川大移动视口、CSS 重排及加载控制，关闭缩放。
 - `widgets/webview/notice_layout_ready.dart`、`notice_webview_scripts.dart`：
   布局稳定后展示、教务处搜索框配色。主题由 ArkWeb AUTO 和原生配置更新处理，不自动 reload。
-- 认证、API 和表单文件：保留登录恢复、账号隔离、并发保护、上传与错误处理。
+- 认证、API、表单与导航容器文件：相关覆盖已取消，直接采用根 `lib/` 的上游实现。
 - `services/ohos_course_card_snapshot.dart`、`ohos_course_card_sync.dart`：课表快照、前台和设置同步。
 - `utils/mobile_device_info.dart`、动态图标及开发者页文件：环境信息、图标 API 保护和文案。
 

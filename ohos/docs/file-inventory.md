@@ -1,14 +1,14 @@
 **鸿蒙独立维护文件清单**
 
-按当前迁移结果统计，`ohos/` 共 **169 个**维护文件，不计本清单文件。每个文件占一行，左列为文件，右列为用途。链接采用仓库相对路径，重新 clone 后仍可使用。
+按当前迁移结果统计，`ohos/` 共 **168 个**维护文件，不计本清单文件。每个文件占一行，左列为文件，右列为用途。链接采用仓库相对路径，重新 clone 后仍可使用。
 
-其中，`ohos/flutter/overrides/lib/` 有 **44 个 Dart 文件：29 个覆盖上游，15 个鸿蒙新增**。原先 5 个优先恢复候选和 18 个通用修复覆盖已取消，组装工程直接使用根 `lib/` 的现有上游实现。18 份未合入的修复快照已由维护者剪切出当前仓库，不计入本清单，也不参与构建。
+其中，`ohos/flutter/overrides/lib/` 有 **43 个 Dart 文件：28 个覆盖上游，15 个鸿蒙新增**。原先 5 个优先恢复候选和 18 个通用修复覆盖已取消，组装工程直接使用根 `lib/` 的现有上游实现；另有 1 个覆盖（`pages/campus/repair/repair_page.dart`）因与上游字节一致而移除。18 份未合入的修复快照已由维护者剪切出当前仓库，不计入本清单，也不参与构建。
 
 范围不含 `.flutter-workspace/`、`.pub-cache/`、`oh_modules/`、`node_modules/`、构建输出和本机忽略文件。原生测试脚手架及历史补丁迁移输入仍属于受版本控制的维护文件，已逐项列出。用途说明不等于已通过构建或真机验证。
 
 | 类别 | 文件数 |
 | --- | ---: |
-| 覆盖上游的 Dart 文件 | 29 |
+| 覆盖上游的 Dart 文件 | 28 |
 | 鸿蒙新增的 Dart 文件 | 15 |
 | 原生功能代码 | 9 |
 | 原生工程配置与资源 | 25 |
@@ -19,7 +19,7 @@
 | DevEco 原生测试工程 | 10 |
 | 文档与维护约定 | 30 |
 
-**覆盖上游的 Dart 文件（29 个）**
+**覆盖上游的 Dart 文件（28 个）**
 
 原 52 个文件的逐项判断和本次迁移结果见 [上游复用评估](audits/upstream-reuse-assessment.md)。
 
@@ -32,7 +32,6 @@
 | [main.dart](../flutter/overrides/lib/main.dart) | 鸿蒙启动入口；清理桌面及其他平台启动调用，接入启动错误报告和 Debug 诊断。 |
 | [pages/campus/downloads/attachments_sheet.dart](../flutter/overrides/lib/pages/campus/downloads/attachments_sheet.dart) | 通知附件操作面板；对接鸿蒙文件打开、分享及失败提示。 |
 | [pages/campus/downloads/notice_downloaded_page.dart](../flutter/overrides/lib/pages/campus/downloads/notice_downloaded_page.dart) | 已下载附件管理；适配本地文件打开、分享和错误反馈。 |
-| [pages/campus/repair/repair_page.dart](../flutter/overrides/lib/pages/campus/repair/repair_page.dart) | 在线报修主页面；适配选图，并在账号切换时清理表单状态。 |
 | [pages/campus/service_hall/service_field_widgets.dart](../flutter/overrides/lib/pages/campus/service_hall/service_field_widgets.dart) | 办事大厅表单字段；适配鸿蒙图片选择及失败处理。 |
 | [pages/dev/environment_info_page.dart](../flutter/overrides/lib/pages/dev/environment_info_page.dart) | 环境信息页面；展示原生设备信息，支持完整复制和读取重试。 |
 | [pages/settings/add_widget/add_widget_page.dart](../flutter/overrides/lib/pages/settings/add_widget/add_widget_page.dart) | 添加桌面卡片页面；提供鸿蒙课表卡片管理入口和说明。 |

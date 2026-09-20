@@ -80,6 +80,10 @@ DevEco Sync 已接入首次自动准备和失效运行环境重建。这次入�
 - [ ] 用户执行文件覆盖迁移后的源码检查、格式、分析、测试和 HAP 构建；历史通过记录不代替本次验收。
 - [x] 将根 `ohos/` 接为唯一原生工程；共用源码改用文件链接，Flutter 解析和生成代码独立放在
   `.flutter-workspace/`，Pub 缓存放在 `.pub-cache/`，接入本地 Hvigor 路径适配。
+- [x] 精简源码覆盖：提交 `0fd213a` 后覆盖共 67 个；2026-09-19 提交 `f7e0933` 取消
+  23 个已可改用上游实现的覆盖，降至 44 个；其后移除与上游逐字节一致的 `repair_page.dart`。
+  当前为 28 个上游覆盖 + 15 个 OH 新增，共 43 个 Dart 文件；数量以
+  `ohos_sources.py --check` 的输出为准。
 - [x] 将首次准备和依赖/路径失效后的重建接入 DevEco Sync，保留 `--prepare-only` 作为手动入口。
 - [x] 提交无签名 `build-profile.json5` 基线，使 DevEco 在首次 Sync 前能识别根 `ohos/` 工程。
 - [ ] 用户执行根 `ohos/` 首次 DevEco Sync、Build 和真机验证。

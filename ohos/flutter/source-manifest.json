@@ -23,10 +23,6 @@
       "upstreamSha256": "c8e3d2c56b4b0b4a5e8b5a930f5dd1b352883d9405868fde6b30ec4cbce3b47b"
     },
     {
-      "path": "lib/pages/campus/repair/repair_page.dart",
-      "upstreamSha256": "25b120563fa4ee01f839167308a5b439a56ccd2d7b3a50147414b1d8a0f64bb1"
-    },
-    {
       "path": "lib/pages/campus/service_hall/service_field_widgets.dart",
       "upstreamSha256": "4276acb5c135973a978e760217c51c6a5ce57872a3901399d93193c2a9ef85a8"
     },

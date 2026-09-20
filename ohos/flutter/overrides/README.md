@@ -46,5 +46,6 @@ python ohos/tool/ohos_sources.py --check
 它也不改变 `dart format` 的文件选择规则。
 
 构建命令仍使用 [build_ohos.py](../../tool/build_ohos.py)，见 [脚本说明](../../tool/README.md)。
-此前 26 个源码补丁已转换为这里的 65 个文件；编号、内容摘要和迁移范围见
+此前 26 个源码补丁已转换为这里的完整 Dart 文件。迁移时为 65 个，后经精简为当前的
+43 个：28 个覆盖上游、15 个仅鸿蒙新增。编号、内容摘要和迁移范围见
 [迁移记录](../../docs/audits/source-overlay-migration.md)。插件和嵌入层仍使用各自补丁。
