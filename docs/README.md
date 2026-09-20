@@ -9,7 +9,7 @@
 | 文档 | 范围 | 状态 |
 |---|---|---|
 | [认证架构](architecture/authentication.md) | SCU 根认证、子系统认证、重试、会话隔离和 DI | 当前实现 |
-| [ArkWeb 原生能力桥接](architecture/arkweb-bridge.md) | Flutter 数据库/HTTP 适配与鸿蒙宿主接口约定 | Flutter 已接入，宿主待实现 |
+| [ArkWeb 原生能力桥接](architecture/arkweb-bridge.md) | Flutter 数据库/HTTP 适配与鸿蒙宿主实现 | 两端代码已接入，尚未联调 |
 | [通知 WebView 架构](architecture/notice-webview.md) | 三类通知来源、JS bridge、附件下载和平台边界 | 当前实现 |
 | [Linux 分发架构](architecture/linux-distribution.md) | 本地构建、WPE 边界、Flatpak、AUR 和 Debian 状态 | 当前实现 |
 | [发布流水线](architecture/release-pipeline.md) | 两级分支流、预览/正式双通道、版本号模型与边界情况 | 当前实现 |

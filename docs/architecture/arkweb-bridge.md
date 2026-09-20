@@ -1,6 +1,6 @@
 # ArkWeb 原生能力桥接
 
-Flutter Web 通过一层适配调用鸿蒙容器提供的数据库和 HTTP 能力。Flutter 侧入口已接入；`ohos/` 尚未实现这里约定的原生接口，因此这次改动本身不代表容器已能正常启动、登录。
+Flutter Web 通过一层适配调用鸿蒙容器提供的数据库和 HTTP 能力。Flutter 与 `ohos/` 的桥接代码均已接入，尚未进行构建、测试或设备联调。数据库使用鸿蒙关系型数据库，网络使用 RCP；当前实现面向兼容版本 API 20 及以上的项目配置。
 
 ## 接入位置
 
@@ -8,6 +8,7 @@ Flutter Web 通过一层适配调用鸿蒙容器提供的数据库和 HTTP 能�
 - [`DatabaseService`](../../lib/services/database_service.dart) 在 Web 下只传数据库逻辑文件名 `bugaoshan.db`。原有 SQL、表结构升级、事务、批处理和缓存仍由现有 Dart 代码管理。
 - [`platform_http_client.dart`](../../lib/services/platform_http_client.dart) 在发现原生桥接时创建 `ArkWebHttpClient`。CookieClient 的初次创建和重建、登录验证码、忘记密码及第二课堂直接请求使用这个入口。
 - Cookie 隔离、SSO 手动重定向及登录状态继续由现有认证层管理。鸿蒙端只承担请求传输。
+- [`NativeBridge.ets`](../../ohos/entry/src/main/ets/bridge/NativeBridge.ets) 实现协议握手与调用分发；[`Index.ets`](../../ohos/entry/src/main/ets/pages/Index.ets) 在页面脚本运行前注册代理，并限制调用来源。每次握手会清理上一轮页面的资源，页面关闭时也会取消 HTTP 请求、回滚并关闭数据库。
 
 非 Web 平台不注册此桥接，HTTP 工厂返回原有 `http.Client()`；调用方显式注入的客户端继续生效。普通浏览器没有这座桥，也没有通过本次改动获得 Web 数据库实现。
 
@@ -21,7 +22,7 @@ window.bugaoshanNative = {
 };
 ```
 
-这是接口签名；实际对象由宿主提供。如果 ArkWeb 原始代理使用同步方法或回调，宿主需要在 JavaScript 中包装成此 Promise 接口，并关联并发请求与各自的响应。不能在 Flutter 已经开始初始化数据库后才注入。
+这是接口签名；实际对象由宿主提供。当前通过 Web 组件的 `javaScriptProxy` 注册 `NativeBridge.invoke`，方法返回 `Promise<string>`。此方法放在 `methodList` 中；`asyncMethodList` 不返回调用结果，不能用于本接口。代理必须在 Flutter 初始化之前注册。
 
 每次调用发送一个 JSON 字符串：
 
@@ -61,6 +62,10 @@ Flutter 复用 sqflite 的标准 `com.tekartik.sqflite` MethodChannel，将调�
 ```
 
 当前 sqflite 在 Web 下保留逻辑文件名；宿主负责把它映射到应用沙箱内的数据库，不将页面传入的路径直接作为任意系统路径使用。数据库版本由 Dart 通过 `PRAGMA user_version` 读写；宿主不要另行触发表结构创建或升级。
+
+[`NativeDatabase.ets`](../../ohos/entry/src/main/ets/bridge/NativeDatabase.ets) 将 `bugaoshan.db` 和 `/databases/bugaoshan.db` 映射到 `context.databaseDir/rdb/arkweb/bugaoshan.db`，其他数据库路径会被拒绝。禁止损坏后自动重建空库。所有数据库调用顺序执行，失败后队列仍允许后续回滚和关闭操作执行。
+
+鸿蒙 `RdbStore.execute` 不接受事务控制 SQL。实现将 BEGIN 转换成对应模式的 `createTransaction()`，事务内的 SQL 和查询使用该 `Transaction` 对象，COMMIT/ROLLBACK 转为其原生方法；BEGIN 返回 null，继续使用 sqflite 的 Dart 事务锁。查询结果集读取完成后立即关闭。
 
 当前应用的数据库操作需要以下 sqflite 方法。表中响应均指成功信封内的 `result`：
 
@@ -150,8 +155,14 @@ SQL 参数缺省时按空数组处理；SQL 中的 `?` 使用绑定参数，不�
 
 不要在宿主额外重放请求；已有业务层对写操作的重试限制仍需保留。
 
+[`NativeHttp.ets`](../../ohos/entry/src/main/ets/bridge/NativeHttp.ets) 通过 RCP Session 发送请求，关闭自动重定向、响应缓存和详细跟踪，不配置 Cookie 仓库。需要跟随跳转时逐跳发送，逐跳检查域名并移除跨来源敏感头。当前允许 `scu.edu.cn` 及其子域名的 HTTP/HTTPS 默认端口；其他目标返回 `http_forbidden`。接口支持 GET、HEAD、POST、PUT、PATCH、DELETE、OPTIONS。
+
+超时计时覆盖整个重定向链；支持 1–120000 毫秒和 0–50 次跳转，Flutter 当前发送 15000 毫秒。超时或关闭客户端会取消原生请求并结束对应 Promise。关闭过的客户端 id 在当前页面会话内不能重新打开。`persistentConnection:false` 使用独立 Session，完成后释放，避免影响同客户端的并发请求。模块已声明 `ohos.permission.INTERNET`。
+
 ## 边界
 
 桥接只向 `https://app.bugaoshan.invalid` 的受信任应用页面开放，宿主负责限制可访问的网络目标和数据库，外部网页不能获得相同代理。业务端点包括 HTTP 的教务系统，不能把协议限制误写为仅 HTTPS；每次原生自动重定向也需要遵守宿主的访问限制。
 
 当前适配面向数据库及认证/API 请求，HTTP 请求和响应会完整缓冲，再经 Base64 传输，尚未提供大文件流式下载或单请求主动取消接口。其他独立网络入口、文件操作、通知 WebView 和平台插件仍需要各自的平台支持。这份接口不等同于整个应用已经完成鸿蒙移植。
+
+Flutter 源码变动后，需要重新生成 Web 产物并复制到 `ohos/entry/src/main/resources/rawfile/web/`，同时保留本地 CanvasKit 配置和禁用 Service Worker 的启动设置。本次原生适配没有重新生成或替换该目录下的 Web 产物。

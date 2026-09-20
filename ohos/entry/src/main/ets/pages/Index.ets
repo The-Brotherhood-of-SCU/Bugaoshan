@@ -1,9 +1,10 @@
 import { webview } from '@kit.ArkWeb';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { BRIDGE_PERMISSION, LOCAL_ORIGIN } from '../bridge/BridgeProtocol';
+import { NativeBridge } from '../bridge/NativeBridge';
 
 // 此来源的所有请求均由应用响应，资源位于 rawfile/web/。
-const LOCAL_ORIGIN: string = 'https://app.bugaoshan.invalid';
 const MIME_TYPES: Record<string, string> = {
   'html': 'text/html',
   'js': 'application/javascript',
@@ -29,6 +30,20 @@ const MIME_TYPES: Record<string, string> = {
 @Component
 struct Index {
   private controller: webview.WebviewController = new webview.WebviewController();
+  private nativeBridge: NativeBridge = new NativeBridge();
+
+  aboutToAppear(): void {
+    const context = this.getUIContext().getHostContext();
+    if (context) {
+      this.nativeBridge.attach(context);
+    }
+  }
+
+  aboutToDisappear(): void {
+    this.nativeBridge.dispose().catch(() => {
+      hilog.error(0x0000, 'NativeBridge', '页面关闭时释放原生资源失败');
+    });
+  }
 
   private errorResponse(code: number, message: string): WebResourceResponse {
     const response = new WebResourceResponse();
@@ -95,6 +110,17 @@ struct Index {
       Web({ src: LOCAL_ORIGIN + '/index.html', controller: this.controller })
         .javaScriptAccess(true)
         .domStorageAccess(true)
+        .javaScriptProxy({
+          object: this.nativeBridge,
+          name: 'bugaoshanNative',
+          methodList: ['invoke'],
+          controller: this.controller,
+          permission: BRIDGE_PERMISSION
+        })
+        .onOverrideUrlLoading((request: WebResourceRequest) => {
+          const address = request.getRequestUrl();
+          return request.isMainFrame() && address !== LOCAL_ORIGIN && !address.startsWith(LOCAL_ORIGIN + '/');
+        })
         .onInterceptRequest((event) => {
           if (!event) {
             return null;
