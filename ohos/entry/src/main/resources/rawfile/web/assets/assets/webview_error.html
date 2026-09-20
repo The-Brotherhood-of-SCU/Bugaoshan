@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {
+    margin: 0; padding: 40px 24px;
+    font-family: -apple-system, sans-serif;
+    text-align: center;
+    color: #666;
+    background: #fafafa;
+  }
+  .icon { font-size: 48px; margin-bottom: 16px; }
+  h2 { color: #333; margin: 0 0 8px; font-size: 18px; }
+  .error-detail {
+    margin: 0 auto 24px; padding: 12px 16px;
+    max-width: 320px; border-radius: 8px;
+    background: #f0f0f0; font-size: 12px;
+    color: #999; word-break: break-all;
+  }
+  button {
+    padding: 10px 32px; border: none; border-radius: 8px;
+    background: #1976d2; color: #fff; font-size: 15px;
+    cursor: pointer;
+  }
+  button:active { opacity: 0.8; }
+
+  @media (prefers-color-scheme: dark) {
+    body { color: #aaa; background: #1a1a1a; }
+    h2 { color: #e0e0e0; }
+    .error-detail { background: #2a2a2a; color: #777; }
+    button { background: #64b5f6; color: #000; }
+  }
+</style>
+</head>
+<body>
+  <div class="icon">📡</div>
+  <h2>页面加载失败</h2>
+  <div class="error-detail">{{error}}</div>
+  <button onclick="location.reload()">重新加载</button>
+</body>
+</html>
