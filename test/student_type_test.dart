@@ -47,7 +47,7 @@ void main() {
         for (final item in section.items) item.id,
     ];
 
-    test('本科生模式：含全部教务功能，研究生分区整体隐藏', () {
+    test('本科生模式：含全部教务功能，研究生条目隐藏', () {
       final ids = sectionItemIds(
         campusSectionsForStudentType(StudentType.undergraduate),
       );
@@ -70,7 +70,7 @@ void main() {
       expect(ids, isNot(contains(dockIdGraduateScheduleImport)));
     });
 
-    test('研究生模式：教务功能隐藏，研究生分区可见', () {
+    test('研究生模式：教务功能隐藏，研究生条目可见', () {
       final ids = sectionItemIds(
         campusSectionsForStudentType(StudentType.graduate),
       );

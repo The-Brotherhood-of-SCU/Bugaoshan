@@ -28,7 +28,7 @@
   "studentTypeUndergraduate": "Undergraduate",
   "studentTypeGraduate": "Graduate",
   "studentTypeUndergraduateDesc": "Show undergraduate features: grade statistics, exam plans, classroom availability, training programs, etc.",
-  "studentTypeGraduateDesc": "Show graduate features: graduate schedule import, etc.",
+  "studentTypeGraduateDesc": "Show graduate features: graduate grades, training progress, schedule import, etc.",
   "studentTypeHint": "After switching, schedule import options and campus features adjust accordingly. Saved schedules and custom layouts are kept; you can switch back anytime.",
   "wizardFeatureTitle": "Explore More Features",
   "wizardFeatureCourse": "Course Schedule",

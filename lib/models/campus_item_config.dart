@@ -312,12 +312,17 @@ final campusItemGraduateScheduleImport = CampusItemConfig(
 );
 
 final campusSections = [
+  // 研究生条目不单设分区：有全局身份开关后按「对应本科功能」的位置
+  // 就地并入——研究生成绩挨着成绩统计、培养进度挨着方案修读情况，
+  // 课表导入挨着班级课表/课程课表。audience 过滤负责显隐。
   CampusSection(
     title: (l10n) => l10n.academicSection,
     items: [
       campusItemGrades,
+      campusItemGraduateGrades,
       campusItemCcyl,
       campusItemPlanCompletion,
+      campusItemGraduateTrainPlan,
       campusItemFitnessTest,
       campusItemExamPlan,
     ],
@@ -328,6 +333,7 @@ final campusSections = [
       campusItemTrainProgram,
       campusItemClassScheduleInquiry,
       campusItemCourseCurriculum,
+      campusItemGraduateScheduleImport,
       campusItemClassroom,
       campusItemNetworkDevice,
       campusItemPasspoint,
@@ -341,14 +347,6 @@ final campusSections = [
   CampusSection(
     title: (l10n) => l10n.noticeSection,
     items: [campusItemNotice, campusItemDownloads],
-  ),
-  CampusSection(
-    title: (l10n) => l10n.graduateSection,
-    items: [
-      campusItemGraduateGrades,
-      campusItemGraduateTrainPlan,
-      campusItemGraduateScheduleImport,
-    ],
   ),
 ];
 

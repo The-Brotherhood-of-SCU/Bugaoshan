@@ -232,7 +232,7 @@ abstract class AppLocalizations {
   /// No description provided for @studentTypeGraduateDesc.
   ///
   /// In en, this message translates to:
-  /// **'Show graduate features: graduate schedule import, etc.'**
+  /// **'Show graduate features: graduate grades, training progress, schedule import, etc.'**
   String get studentTypeGraduateDesc;
 
   /// No description provided for @studentTypeHint.

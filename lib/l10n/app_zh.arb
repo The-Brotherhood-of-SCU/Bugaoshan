@@ -28,7 +28,7 @@
   "studentTypeUndergraduate": "本科生",
   "studentTypeGraduate": "研究生",
   "studentTypeUndergraduateDesc": "展示本科教务功能：成绩统计、考试安排、教室查询、培养方案等",
-  "studentTypeGraduateDesc": "展示研究生功能：研究生课表导入等",
+  "studentTypeGraduateDesc": "展示研究生功能：研究生成绩、培养进度、课表导入等",
   "studentTypeHint": "切换后课表导入入口与校园页功能会随之调整，已保存的课表和自定义配置不受影响，可随时再切换。",
   "wizardFeatureTitle": "探索更多功能",
   "wizardFeatureCourse": "课表管理",
