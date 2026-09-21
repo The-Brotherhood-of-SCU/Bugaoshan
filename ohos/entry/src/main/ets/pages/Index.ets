@@ -1,9 +1,30 @@
 import { webview } from '@kit.ArkWeb';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { text } from '@kit.ArkGraphics2D';
+import { fileIo } from '@kit.CoreFileKit';
 import { BRIDGE_PERMISSION, LOCAL_ORIGIN } from '../bridge/BridgeProtocol';
 import { NativeBridge } from '../bridge/NativeBridge';
 import { NativeViewport } from '../bridge/NativeViewport';
+
+// Flutter 3.44 CanvasKit 的默认字体请求；升级引擎时需核对 canvaskit/fonts.dart。
+// 沿用 Roboto 注册名，实际提供 HarmonyOS Sans SC，复用引擎已有的字体加载。
+const FLUTTER_DEFAULT_FONT_URL: string =
+  'https://fonts.gstatic.com/s/roboto/v32/KFOmCnqEu92Fr1Me4GZLCzYlKw.woff2';
+
+interface SystemFontResource {
+  data: ArrayBuffer;
+  mimeType: string;
+}
+
+function harmonyChineseFontPriority(path: string): number {
+  const name = path.substring(path.lastIndexOf('/') + 1).replace(/[\s_-]/g, '').toLowerCase();
+  if (!/^harmonyossanssc.*\.(ttf|otf)$/.test(name) || /italic|oblique/.test(name)) {
+    return -1;
+  }
+  // 无字重后缀的系统字体及 Regular 优先，其他字重仅在读取失败时尝试。
+  return /^harmonyossanssc(regular)?\.(ttf|otf)$/.test(name) ? 0 : 1;
+}
 
 // 此来源的所有请求均由应用响应，资源位于 rawfile/web/。
 const MIME_TYPES: Record<string, string> = {
@@ -33,6 +54,7 @@ struct Index {
   private controller: webview.WebviewController = new webview.WebviewController();
   private nativeViewport: NativeViewport = new NativeViewport(this.controller);
   private nativeBridge: NativeBridge = new NativeBridge();
+  private systemFont?: Promise<SystemFontResource>;
 
   aboutToAppear(): void {
     const context = this.getUIContext().getHostContext();
@@ -43,6 +65,7 @@ struct Index {
   }
 
   aboutToDisappear(): void {
+    this.systemFont = undefined;
     this.nativeViewport.dispose();
     this.nativeBridge.dispose().catch(() => {
       hilog.error(0x0000, 'NativeBridge', '页面关闭时释放原生资源失败');
@@ -60,6 +83,9 @@ struct Index {
   }
 
   private loadLocalResource(url: string, method: string): WebResourceResponse | null {
+    if (url.split(/[?#]/)[0] === FLUTTER_DEFAULT_FONT_URL) {
+      return this.loadSystemFont(method);
+    }
     if (url !== LOCAL_ORIGIN && !url.startsWith(LOCAL_ORIGIN + '/')) {
       return null;
     }
@@ -107,6 +133,96 @@ struct Index {
         response.setResponseIsReady(true);
       });
     return response;
+  }
+
+  private loadSystemFont(method: string): WebResourceResponse {
+    const response = new WebResourceResponse();
+    // URL 属于 Google，但响应由容器提供；浏览器仍会进行跨来源检查。
+    response.setResponseHeader([
+      { headerKey: 'Access-Control-Allow-Origin', headerValue: LOCAL_ORIGIN },
+      { headerKey: 'Cache-Control', headerValue: 'no-store' }
+    ]);
+    if (method !== 'GET' && method !== 'HEAD') {
+      response.setResponseCode(405);
+      response.setReasonMessage('Method Not Allowed');
+      response.setResponseData('Method Not Allowed');
+      return response;
+    }
+    response.setResponseIsReady(false);
+    if (this.systemFont === undefined) {
+      // 同一容器实例内复用查询和读取结果，包括并发请求。
+      this.systemFont = this.readSystemFont();
+    }
+    this.systemFont.then((font: SystemFontResource) => {
+      response.setResponseCode(200);
+      response.setReasonMessage('OK');
+      response.setResponseMimeType(font.mimeType);
+      response.setResponseData(method === 'HEAD' ? new ArrayBuffer(0) : font.data);
+      response.setResponseIsReady(true);
+    }).catch((error: BusinessError) => {
+      this.systemFont = undefined;
+      hilog.error(0x0000, 'SystemFont', '加载 HarmonyOS Sans SC 失败: %{public}s', error.message);
+      // 结束这条启动请求，避免失败后又等待 Google；后续缺字仍走引擎的回退机制。
+      response.setResponseCode(503);
+      response.setReasonMessage('Service Unavailable');
+      response.setResponseMimeType('text/plain');
+      response.setResponseData(method === 'HEAD' ? '' : 'System font unavailable');
+      response.setResponseIsReady(true);
+    });
+    return response;
+  }
+
+  private async readSystemFont(): Promise<SystemFontResource> {
+    const startedAt = Date.now();
+    // 最低 API 23：只查询配置中的文件路径，避免解析全部字体描述符及可变字体轴。
+    const paths = text.getFontPathsByType(text.SystemFontType.GENERIC)
+      .filter((path: string) => harmonyChineseFontPriority(path) >= 0);
+    // 优先常规字重；只加载一份字体，避免把多个字重都放到首屏之前。
+    paths.sort((left: string, right: string) => {
+      return harmonyChineseFontPriority(left) - harmonyChineseFontPriority(right) || left.localeCompare(right);
+    });
+    for (const path of paths) {
+      try {
+        const resource = await this.readFontFile(path);
+        hilog.info(0x0000, 'SystemFont', '已读取 %{public}s: %{public}d 字节, %{public}d ms',
+          path, resource.data.byteLength, Date.now() - startedAt);
+        return resource;
+      } catch (error) {
+        hilog.warn(0x0000, 'SystemFont', '读取字体 %{public}s 失败: %{public}s',
+          path, (error as BusinessError).message);
+      }
+    }
+    throw new Error('No readable HarmonyOS Sans SC system font found');
+  }
+
+  private async readFontFile(path: string): Promise<SystemFontResource> {
+    // 路径仅来自系统字体路径接口，不接受网页传入的任意文件路径。
+    const file = await fileIo.open(path, fileIo.OpenMode.READ_ONLY);
+    try {
+      const stat = await fileIo.stat(file.fd);
+      if (stat.size < 12) {
+        throw new Error('System font file is empty or incomplete');
+      }
+      const data = new ArrayBuffer(stat.size);
+      let offset = await fileIo.read(file.fd, data);
+      while (offset < data.byteLength) {
+        const remainder = new ArrayBuffer(data.byteLength - offset);
+        const count = await fileIo.read(file.fd, remainder);
+        if (count <= 0) {
+          throw new Error('Unexpected end of system font file');
+        }
+        new Uint8Array(data).set(new Uint8Array(remainder, 0, count), offset);
+        offset += count;
+      }
+      const signature = new DataView(data).getUint32(0);
+      // CanvasKit 此加载入口不能选择 TTC 中的字体索引，避免静默使用集合里的错误字形。
+      if (signature !== 0x00010000 && signature !== 0x74727565 && signature !== 0x4F54544F) {
+        throw new Error('System font must be a standalone TTF or OTF');
+      }
+      return { data: data, mimeType: signature === 0x4F54544F ? 'font/otf' : 'font/ttf' };
+    } finally {
+      await fileIo.close(file);
+    }
   }
 
   build() {

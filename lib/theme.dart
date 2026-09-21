@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'services/arkweb/native_bridge.dart';
 import 'theme_shape.dart';
 
 /// 页面转场时长跟随「设置 → 动画时长」滑杆（进页与退出同值）；转场形态
@@ -126,7 +127,11 @@ ThemeData buildTheme({
   double textScale = 1.0,
   Duration pageTransitionDuration = const Duration(milliseconds: 300),
 }) {
+  final useHarmonyFont = isArkWebNativeAvailable;
   final baseTheme = ThemeData(
+    // 鸿蒙容器把引擎默认 Roboto 请求响应为系统 HarmonyOS Sans SC。
+    fontFamily: useHarmonyFont ? 'Roboto' : null,
+    fontFamilyFallback: useHarmonyFont ? const ['Roboto'] : null,
     colorScheme: ColorScheme.fromSeed(
       seedColor: seedColor,
       brightness: brightness,
@@ -149,7 +154,7 @@ ThemeData buildTheme({
   );
 
   TextTheme textTheme = baseTheme.textTheme;
-  if (useGoogleFonts) {
+  if (useGoogleFonts && !useHarmonyFont) {
     textTheme = GoogleFonts.notoSansScTextTheme(textTheme);
   }
   return baseTheme.copyWith(textTheme: textTheme);
