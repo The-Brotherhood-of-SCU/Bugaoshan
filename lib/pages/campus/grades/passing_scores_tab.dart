@@ -24,15 +24,17 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
       listenable: getIt<GradesProvider>(),
       builder: (context, _) {
         final provider = getIt<GradesProvider>();
+        final errorKey = provider.passingError;
+        // 判空收进同一个 if：errorKey 是 final 局部变量，判空后 flow
+        // analysis 在闭包内保持提升，无需 errorKey! 断言。
         if (provider.passingState == GradesLoadState.loaded &&
-            provider.passingError != null) {
-          final errorKey = provider.passingError;
+            errorKey != null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             provider.clearPassingError();
             if (!mounted) return;
             final l10n = AppLocalizations.of(context)!;
             final message = refreshFailureMessage(
-              errorKey!,
+              errorKey,
               l10n,
               fallback: l10n.gradesRefreshFailed,
             );
