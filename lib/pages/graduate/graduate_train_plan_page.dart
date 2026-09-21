@@ -1,11 +1,13 @@
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/models/graduate_grades.dart';
 import 'package:bugaoshan/models/graduate_train_plan.dart';
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
 import 'package:bugaoshan/providers/graduate_train_plan_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/utils/app_log.dart';
+import 'package:bugaoshan/utils/graduate_train_plan_progress.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
@@ -14,10 +16,11 @@ import 'package:flutter/material.dart';
 
 /// 研究生培养进度页。
 ///
-/// 数据链（2026-09-21 抓包定案）：wdxx.do 方案信息 + wdkclbtj.do 分类学分
-/// 统计 + wdfakcxx.do 方案课程明细（见 GraduateTrainPlanProvider）。
+/// 数据链（2026-09-21 抓包定案）：wdxx.do 方案信息 + wdkclbtj.do 方案要求
+/// + wdfakcxx.do 课程类别归属 + xscjcx.do 成绩行（及格有效=已修，重修去
+/// 重），归并逻辑见 graduate_train_plan_progress.dart。
 /// 结构：总进度卡「已修 X / 要求 Y 学分」+ 方案信息卡 + 各课程类别
-/// （分类学分进度 + 该类方案课程列表）。
+/// （该类已修/要求 + 已修课程列表）。
 class GraduateTrainPlanPage extends StatefulWidget {
   const GraduateTrainPlanPage({super.key});
 
@@ -184,38 +187,38 @@ class _GraduateTrainPlanPageState extends State<GraduateTrainPlanPage> {
     }
     return TrainPlanContentView(
       info: info,
-      stats: stats,
-      categories: _provider.categories,
-      courses: _provider.courses,
+      requiredCredits: stats.requiredCredits,
+      sections: _provider.sections,
+      earnedTotal: _provider.earnedTotal,
     );
   }
 }
 
 /// 培养进度数据视图：总进度卡 + 方案信息卡 + 各课程类别
-/// （分类学分进度 + 该类方案课程列表）。
+/// （该类已修学分/要求 + 已修课程列表）。
 class TrainPlanContentView extends StatelessWidget {
   const TrainPlanContentView({
     super.key,
     required this.info,
-    required this.stats,
-    required this.categories,
-    required this.courses,
+    required this.requiredCredits,
+    required this.sections,
+    required this.earnedTotal,
   });
 
   final GraduateTrainPlanInfo info;
-  final GraduateTrainPlanCreditStats stats;
-  final List<GraduateTrainPlanCategoryProgress> categories;
-  final List<GraduateTrainPlanCourse> courses;
+
+  /// 计划要求总学分（wdkclbtj.do reMapData.ZDXF）。
+  final double requiredCredits;
+
+  final List<TrainPlanProgressSection> sections;
+
+  /// 已修（通过）学分总和，含方案外。
+  final double earnedTotal;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-
-    final grouped = <String, List<GraduateTrainPlanCourse>>{};
-    for (final course in courses) {
-      grouped.putIfAbsent(course.kclbdm, () => []).add(course);
-    }
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
@@ -233,8 +236,8 @@ class TrainPlanContentView extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 l10n.graduateTrainPlanCreditText(
-                  fmtCredits(stats.selectedCredits),
-                  fmtCredits(stats.requiredCredits),
+                  graduateTrainPlanFmtCredits(earnedTotal),
+                  graduateTrainPlanFmtCredits(requiredCredits),
                 ),
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w700,
@@ -242,11 +245,8 @@ class TrainPlanContentView extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               LinearProgressIndicator(
-                value: stats.requiredCredits > 0
-                    ? (stats.selectedCredits / stats.requiredCredits).clamp(
-                        0.0,
-                        1.0,
-                      )
+                value: requiredCredits > 0
+                    ? (earnedTotal / requiredCredits).clamp(0.0, 1.0)
                     : null,
                 minHeight: 8,
                 borderRadius: BorderRadius.circular(4),
@@ -278,7 +278,7 @@ class TrainPlanContentView extends StatelessWidget {
             ],
           ),
         ),
-        for (final category in _planSections(categories, courses)) ...[
+        for (final section in sections) ...[
           const SizedBox(height: 12),
           _Card(
             child: Column(
@@ -289,15 +289,15 @@ class TrainPlanContentView extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        category.title,
+                        section.title,
                         style: theme.textTheme.titleMedium,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Text(
                       l10n.graduateTrainPlanModuleCredit(
-                        fmtCredits(category.selectedCredits),
-                        fmtCredits(category.requiredCredits),
+                        graduateTrainPlanFmtCredits(section.earnedCredits),
+                        graduateTrainPlanFmtCredits(section.requiredCredits),
                       ),
                       style: theme.textTheme.labelMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
@@ -305,16 +305,17 @@ class TrainPlanContentView extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
-                if (category.requiredCredits > 0)
+                if (section.requiredCredits > 0) ...[
+                  const SizedBox(height: 10),
                   LinearProgressIndicator(
-                    value: (category.selectedCredits / category.requiredCredits)
+                    value: (section.earnedCredits / section.requiredCredits)
                         .clamp(0.0, 1.0),
                     minHeight: 6,
                     borderRadius: BorderRadius.circular(3),
                   ),
+                ],
                 const SizedBox(height: 10),
-                if (category.courses.isEmpty)
+                if (section.rows.isEmpty)
                   Text(
                     l10n.graduateTrainPlanNoCourses,
                     style: theme.textTheme.bodySmall?.copyWith(
@@ -322,9 +323,9 @@ class TrainPlanContentView extends StatelessWidget {
                     ),
                   )
                 else
-                  for (final course in category.courses) ...[
+                  for (final row in section.rows) ...[
                     const Divider(height: 12, thickness: 0.5),
-                    _CourseRow(course: course),
+                    _CompletedCourseRow(row: row),
                   ],
               ],
             ),
@@ -335,72 +336,19 @@ class TrainPlanContentView extends StatelessWidget {
   }
 }
 
-/// 一个课程类别区块：标题（类别名）+ 分类学分进度 + 该类方案课程列表。
-class _PlanSection {
-  const _PlanSection({
-    required this.title,
-    required this.selectedCredits,
-    required this.requiredCredits,
-    required this.courses,
-  });
+/// 已修课程行：课程名 + 学期/成绩显示小字 + 学分。
+class _CompletedCourseRow extends StatelessWidget {
+  const _CompletedCourseRow({required this.row});
 
-  final String title;
-  final double selectedCredits;
-  final double requiredCredits;
-  final List<GraduateTrainPlanCourse> courses;
-}
-
-/// 以 `wdkclbtj` 的分类行为主序，把 `wdfakcxx` 的课程按 KCLBDM 归组；
-/// 分类行里没有、但课程里出现的类别，按类别名补到末尾。
-List<_PlanSection> _planSections(
-  List<GraduateTrainPlanCategoryProgress> rows,
-  List<GraduateTrainPlanCourse> courses,
-) {
-  final grouped = <String, List<GraduateTrainPlanCourse>>{};
-  for (final course in courses) {
-    grouped.putIfAbsent(course.kclbdm, () => []).add(course);
-  }
-
-  final sections = [
-    for (final row in rows)
-      _PlanSection(
-        title: row.mc.isEmpty ? (row.dm.isEmpty ? '' : row.dm) : row.mc,
-        selectedCredits: row.selectedCredits,
-        requiredCredits: row.requiredCredits,
-        courses: grouped.remove(row.dm) ?? const [],
-      ),
-  ];
-  for (final entry in grouped.entries) {
-    final first = entry.value.first;
-    sections.add(
-      _PlanSection(
-        title: first.kclbdmDisplay?.isNotEmpty == true
-            ? first.kclbdmDisplay!
-            : entry.key,
-        selectedCredits: entry.value.fold(
-          0.0,
-          (sum, course) => sum + course.credits,
-        ),
-        requiredCredits: 0.0,
-        courses: entry.value,
-      ),
-    );
-  }
-  return sections;
-}
-
-class _CourseRow extends StatelessWidget {
-  const _CourseRow({required this.course});
-
-  final GraduateTrainPlanCourse course;
+  final GraduateGradeRow row;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final badges = <String>[
-      if (course.outOfPlan) '方案外',
-      if (course.remark != null) course.remark!,
-      if (course.stage != null) course.stage!,
+    final subtitle = <String>[
+      if (row.termName != null) row.termName!,
+      if (row.gradeDisplay != null) row.gradeDisplay!,
+      if (row.remark != null) row.remark!,
     ];
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -409,11 +357,11 @@ class _CourseRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(course.kcmc, style: theme.textTheme.bodyMedium),
-              if (badges.isNotEmpty) ...[
+              Text(row.courseName, style: theme.textTheme.bodyMedium),
+              if (subtitle.isNotEmpty) ...[
                 const SizedBox(height: 2),
                 Text(
-                  badges.join(' · '),
+                  subtitle.join(' · '),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -424,7 +372,7 @@ class _CourseRow extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         Text(
-          fmtCredits(course.credits),
+          graduateTrainPlanFmtCredits(row.credit),
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
@@ -473,7 +421,3 @@ class _Chip extends StatelessWidget {
     );
   }
 }
-
-/// 学分数字显示：整数去尾零（14.0 → 14），其余保留一位（5.5 → 5.5）。
-String fmtCredits(double value) =>
-    value == value.roundToDouble() ? '${value.toInt()}' : '$value';

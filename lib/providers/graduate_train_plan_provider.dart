@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/models/graduate_train_plan.dart';
 import 'package:bugaoshan/services/api/gs_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/utils/graduate_train_plan_progress.dart';
 
 /// 研究生培养方案/培养进度加载状态。
 enum GraduateTrainPlanLoadState { idle, loading, loaded, error }
@@ -19,14 +20,15 @@ enum GraduateTrainPlanErrorKind {
 
 /// 研究生培养进度（GraduateTrainPlanPage）状态。
 ///
-/// 数据链（2026-09-21 应用抓包定案，见 wdpyjhapp index.js 与模拟机实测）：
+/// 数据链（2026-09-21 抓包定案，见 GraduateTrainPlanProvider 文档与
+/// graduate_train_plan_progress.dart）：
 /// - `wdxx.do` → 方案基本信息（方案名/方案代码/培养层次/审核状态）；
-/// - `wdkclbtj.do` → 分类学分统计：`reMapData` 给总计（已选 YXXF / 要求
-///   ZDXF / 方案内 FANYXXF / 方案外 FAWYXXF），`reListData` 给每类
-///   （已选 YXXF / 要求 ZDXF / 已选门数 YXMS）；
-/// - `wdfakcxx.do` → 方案内课程明细（按课程类别分组的fakcxx[]）。
-/// 全部为 GET 无参零信封（success/reListData/reMapData），走 _getZeroJson
-/// 自愈链。
+/// - `wdkclbtj.do` → 方案要求：总计要求学分 ZDXF + 每课程类别要求；
+/// - `wdfakcxx.do` → 方案课程明细（KCDM → 课程类别归属）；
+/// - `xscjcx.do` → 成绩行，**及格且有效**的课视为已修（重修去重），
+///   归并到课程类别上得到「已修 X / 要求 Y」。
+/// 前三个为 GET 无参零信封（success/reListData/reMapData），走
+/// _getZeroJson 自愈链；成绩走信封分页链。
 class GraduateTrainPlanProvider extends ChangeNotifier {
   GraduateTrainPlanProvider(this._gsApi);
 
@@ -39,16 +41,16 @@ class GraduateTrainPlanProvider extends ChangeNotifier {
 
   GraduateTrainPlanInfo? _info;
   GraduateTrainPlanCreditStats? _creditStats;
-  List<GraduateTrainPlanCategoryProgress> _categories = const [];
-  List<GraduateTrainPlanCourse> _courses = const [];
+  List<TrainPlanProgressSection> _sections = const [];
+  double _earnedTotal = 0.0;
 
   GraduateTrainPlanLoadState get state => _state;
   GraduateTrainPlanErrorKind? get errorKind => _errorKind;
   String? get errorMessage => _errorMessage;
   GraduateTrainPlanInfo? get info => _info;
   GraduateTrainPlanCreditStats? get creditStats => _creditStats;
-  List<GraduateTrainPlanCategoryProgress> get categories => _categories;
-  List<GraduateTrainPlanCourse> get courses => _courses;
+  List<TrainPlanProgressSection> get sections => _sections;
+  double get earnedTotal => _earnedTotal;
 
   Future<void> ensureLoaded() => refresh();
 
@@ -65,12 +67,20 @@ class GraduateTrainPlanProvider extends ChangeNotifier {
       if (generation != _generation) return;
       final (stats, categories) = await _gsApi.fetchTrainPlanCreditStats();
       if (generation != _generation) return;
-      final courses = await _gsApi.fetchTrainPlanCourses();
+      final planCourses = await _gsApi.fetchTrainPlanCourses();
       if (generation != _generation) return;
+      final gradeRows = await _gsApi.fetchGrades();
+      if (generation != _generation) return;
+
+      final sections = graduateTrainPlanSections(
+        categories: categories,
+        planCourses: planCourses,
+        gradeRows: gradeRows,
+      );
       _info = info;
       _creditStats = stats;
-      _categories = categories;
-      _courses = courses;
+      _sections = sections;
+      _earnedTotal = graduateTrainPlanEarnedTotal(sections);
       _state = GraduateTrainPlanLoadState.loaded;
       _errorKind = null;
       _errorMessage = null;
@@ -92,8 +102,8 @@ class GraduateTrainPlanProvider extends ChangeNotifier {
     _generation++;
     _info = null;
     _creditStats = null;
-    _categories = const [];
-    _courses = const [];
+    _sections = const [];
+    _earnedTotal = 0.0;
     _state = GraduateTrainPlanLoadState.idle;
     _errorKind = null;
     _errorMessage = null;
