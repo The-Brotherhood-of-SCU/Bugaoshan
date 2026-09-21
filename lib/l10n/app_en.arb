@@ -1702,7 +1702,6 @@
     "description": "Empty state for the my-applications tab.",
     "type": "text"
   },
-  "graduateSection": "Graduate",
   "graduateGrades": "Graduate Grades",
   "graduateGradesDesc": "View graduate course grades",
   "graduateGradesEmpty": "No graduate grades yet",
