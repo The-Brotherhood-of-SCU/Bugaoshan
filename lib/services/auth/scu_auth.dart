@@ -204,13 +204,15 @@ class ScuAuth extends ChangeNotifier {
     Map<String, dynamic>? sm2Data;
     for (int attempt = 0; attempt < 3; attempt++) {
       try {
-        final sm2Resp = await http
-            .post(
-              Uri.parse('$_base/api/public/bff/v1.2/sm2_key'),
-              headers: _headers,
-              body: '{}',
-            )
-            .timeout(kHttpTimeout);
+        final sm2Resp = await withPlatformHttpClient(
+          (client) => client
+              .post(
+                Uri.parse('$_base/api/public/bff/v1.2/sm2_key'),
+                headers: _headers,
+                body: '{}',
+              )
+              .timeout(kHttpTimeout),
+        );
         final sm2Json = parseJson(
           sm2Resp.body,
           'sm2_key',
@@ -261,13 +263,15 @@ class ScuAuth extends ChangeNotifier {
       'cap_text': captchaText,
     });
 
-    final tokenResp = await http
-        .post(
-          Uri.parse('$_base/api/public/bff/v1.2/rest_token'),
-          headers: _headers,
-          body: payload,
-        )
-        .timeout(kHttpTimeout);
+    final tokenResp = await withPlatformHttpClient(
+      (client) => client
+          .post(
+            Uri.parse('$_base/api/public/bff/v1.2/rest_token'),
+            headers: _headers,
+            body: payload,
+          )
+          .timeout(kHttpTimeout),
+    );
 
     if (tokenResp.statusCode < 200 || tokenResp.statusCode >= 300) {
       // 密码错误等服务端以非 2xx（如 400）返回，且 body 里带有具体原因；

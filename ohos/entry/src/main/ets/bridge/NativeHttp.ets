@@ -199,6 +199,9 @@ export class NativeHttp {
       operation.rejectCancellation = (error: BridgeError): void => reject(error);
     });
     const timer = setTimeout(() => {
+      // 只记录方法、域名、请求 ID 和时限，避免输出 URL 参数、Cookie 或登录正文。
+      hilog.warn(0x0000, 'NativeHttp', '%{public}s %{public}s 请求超时，requestId=%{public}s，timeoutMs=%{public}d',
+        args.method, target.hostname, operation.request?.id ?? '-', timeout);
       operation.cancel(new BridgeError('http_timeout', '原生 HTTP 请求超时'));
     }, timeout);
     try {
@@ -212,6 +215,8 @@ export class NativeHttp {
         throw error as BridgeError;
       }
       const code = (error as BusinessError).code;
+      hilog.warn(0x0000, 'NativeHttp', '%{public}s %{public}s 请求失败，requestId=%{public}s，code=%{public}d',
+        args.method, target.hostname, operation.request?.id ?? '-', code);
       if (code === 1007900028) {
         throw new BridgeError('http_timeout', '原生 HTTP 请求超时');
       }

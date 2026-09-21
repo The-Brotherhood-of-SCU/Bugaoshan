@@ -393,9 +393,11 @@ class CcylService {
     Map<String, dynamic> body,
   ) async {
     try {
-      final resp = await http
-          .post(uri, headers: headers, body: jsonEncode(body))
-          .timeout(kHttpTimeout);
+      final resp = await withPlatformHttpClient(
+        (client) => client
+            .post(uri, headers: headers, body: jsonEncode(body))
+            .timeout(kHttpTimeout),
+      );
       if (resp.statusCode != 200) {
         throw CcylException('[$api] HTTP 错误: ${resp.statusCode}');
       }
