@@ -3082,10 +3082,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get graduateStatsPassRate => 'Pass Rate';
 
   @override
-  String get graduateTrainPlan => 'Training Plan';
+  String get graduateTrainPlan => 'Training Progress';
 
   @override
-  String get graduateTrainPlanDesc => 'View the graduate training plan';
+  String get graduateTrainPlanDesc => 'View your graduate training progress';
 
   @override
   String get graduateScheduleImport => 'Import Schedule';
@@ -3150,7 +3150,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Emergency web capture (when direct connection is unavailable)';
 
   @override
-  String get graduateTrainPlanEmpty => 'No training plan data';
+  String get graduateTrainPlanEmpty => 'No training progress data';
 
   @override
   String get graduateTrainPlanProgress => 'Progress';

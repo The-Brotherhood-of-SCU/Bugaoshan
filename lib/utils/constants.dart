@@ -61,6 +61,23 @@ const String kGsSchedulePageUrl =
     '$kGsEhallBaseUrl/gsapp/sys/wdkbapp/*default/index.do'
     '?THEME=cherry&EMAP_LANG=zh#/xskcb';
 
+/// 研究生「我的成绩」应用页面地址（EMAP 应用 index，建立应用会话用）。
+const String kGsGradesAppIndexUrl =
+    '$kGsEhallBaseUrl/gsapp/sys/wdcjapp/*default/index.do';
+
+/// 研究生「培养进度」应用页面地址（EMAP 应用 index，建立应用会话用）。
+const String kGsTrainPlanAppIndexUrl =
+    '$kGsEhallBaseUrl/gsapp/sys/wdpyjhapp/*default/index.do';
+
+/// 除课表页（[kGsSchedulePageUrl]，兼做 ehall 会话检测）之外需要 SSO
+/// 预热的 EMAP 应用 index 列表——EMAP 应用会话要靠访问应用自身 index
+/// 建立，缺了会「明明已登录却进不去」。**新增研究生模块时把该应用的
+/// index 追加进列表即可，无需再改 gs_auth 主链。**
+const List<String> kGsExtraAppIndexUrls = [
+  kGsGradesAppIndexUrl,
+  kGsTrainPlanAppIndexUrl,
+];
+
 // ── 研教务 wdkbapp 数据接口（2026-09-15 登录抓包实测确认）──────────────
 //
 // 均为 POST + form-urlencoded，基址用 [kGsEhallBaseUrl]（与页面同源，
@@ -79,6 +96,17 @@ const String kGsSemesterListPath =
 /// 首次上课日期（含 SCSKRQ + PKSJ，用于反推学期第1周周一）。
 const String kGsFirstClassPath = '/gsapp/sys/wdkbapp/modules/xskcb/xsjxrwcx.do';
 
+// ── 研教务 wdcjapp 数据接口（2026-09-20 抓包定案）────────────────────
+//
+// 成绩查询同样是 POST + form-urlencoded、ehall 域、标准 GS 信封
+// `{"code":"0","datas":{"xscjcx":{"rows":[…]}}}`。
+
+/// 研究生成绩查询：每门课一行，字段 KCMC/KCDM/XNXQDM/XF(学分)/
+/// DYBFZCJ(对应百分成绩)/JDZ(绩点)/CJ(成绩原文,分制内编码)/CJXSZ(显示值,
+/// 如「免修通过」)/SFJG(是否及格)/SFYX(是否有效)/BZSM(备注)。
+const String kGsGradesEndpointPath =
+    '/gsapp/sys/wdcjapp/modules/wdcj/xscjcx.do';
+
 const MethodChannel kUpdateMethodChannel = MethodChannel('bugaoshan/update');
 const MethodChannel kDynamicIconMethodChannel = MethodChannel(
   'bugaoshan/dynamic_icon',
@@ -86,7 +114,6 @@ const MethodChannel kDynamicIconMethodChannel = MethodChannel(
 const EventChannel kDownloadCancelEventChannel = EventChannel(
   'bugaoshan/download_cancel',
 );
-
 
 // 以下常量自上游 main 移植（2026-09-15 同步）
 const String dockIdCourseCurriculum = 'course_curriculum';

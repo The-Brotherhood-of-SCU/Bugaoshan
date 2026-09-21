@@ -65,6 +65,8 @@ void main() {
         expect(ids, contains(id));
       }
       // 研究生专属项不可见。
+      expect(ids, isNot(contains(dockIdGraduateGrades)));
+      expect(ids, isNot(contains(dockIdGraduateTrainPlan)));
       expect(ids, isNot(contains(dockIdGraduateScheduleImport)));
     });
 
@@ -84,7 +86,15 @@ void main() {
       ]) {
         expect(ids, isNot(contains(id)));
       }
-      expect(ids, contains(dockIdGraduateScheduleImport));
+      // 研究生专属项全部可见：成绩、培养进度、课表导入。
+      expect(
+        ids,
+        containsAll([
+          dockIdGraduateGrades,
+          dockIdGraduateTrainPlan,
+          dockIdGraduateScheduleImport,
+        ]),
+      );
     });
 
     test('通用功能两种身份都可见，且过滤后无空分区', () {
