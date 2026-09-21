@@ -108,13 +108,12 @@ class GsApiService {
 
   /// 研究生成绩行（wdcjapp，2026-09-20 抓包定案）。
   ///
-  /// 抓包请求未带查询参数（服务端默认分页 pageSize=12），这里沿用 EMAP
-  /// 分页约定拉满一次取全；统计由 [graduateGradesStatsFromRows] 完成。
+  /// 抓包请求未带查询参数（服务端默认分页 pageSize=12，样本里
+  /// totalSize/pageNumber/pageSize/extParams.totalPage 齐全）。这里按信封
+  /// 分页元数据**循环翻页取全**，不赌一次大 pageSize——服务端对 pageSize
+  /// 有 cap 时也能取全，统计不会静默缺行。
   Future<List<GraduateGradeRow>> fetchGrades() async {
-    final rows = await _postForm(kGsGradesEndpointPath, {
-      'pageNumber': '1',
-      'pageSize': '999',
-    });
+    final rows = await _postFormAllPages(kGsGradesEndpointPath, const {});
     return graduateGradeRowsFromJson(rows);
   }
 
@@ -129,21 +128,71 @@ class GsApiService {
   ) {
     return retryOnUnauthenticated(
       _gsAuth.getClient,
-      (client) => _postFormOnce(client, path, fields),
+      (client) => _postEnvelopeOnce(client, path, fields)
+          .then(gsRows),
       invalidate: _gsAuth.invalidate,
     );
   }
 
-  /// [retryOnUnauthenticated] 里的单次请求：状态码校验 + 信封解包。
+  /// 按 EMAP 分页信封循环翻页，聚合全部行。
+  ///
+  /// 每页独立包一层 [retryOnUnauthenticated]（某页会话中途过期也能自愈，
+  /// 重试只重发当前页）。终止条件按可信度依次兜底：
+  /// - 返回空页立即停（防 totalPage 谎报导致死循环）；
+  /// - `extParams.totalPage` 给了且翻满 → 停；
+  /// - `totalSize` 给了且累计行数够了 → 停；
+  /// - 返回行数少于请求 pageSize（未满页即最后一页）→ 停；
+  /// - 硬上限 [_maxPagedRequests] 次防呆。
+  Future<List<Map<String, dynamic>>> _postFormAllPages(
+    String path,
+    Map<String, String> fields, {
+    int pageSize = 200,
+  }) async {
+    final all = <Map<String, dynamic>>[];
+    var page = 1;
+    while (true) {
+      final envelope = await retryOnUnauthenticated(
+        _gsAuth.getClient,
+        (client) async {
+          final decoded = await _postEnvelopeOnce(client, path, {
+            ...fields,
+            'pageNumber': '$page',
+            'pageSize': '$pageSize',
+          });
+          return gsPagedEnvelope(decoded) ??
+              GsPagedEnvelope(rows: const []);
+        },
+        invalidate: _gsAuth.invalidate,
+      );
+      if (envelope.rows.isEmpty) break;
+      all.addAll(envelope.rows);
+      final totalPage = envelope.totalPage;
+      final totalSize = envelope.totalSize;
+      if (totalPage != null && page >= totalPage) break;
+      if (totalSize != null && all.length >= totalSize) break;
+      // 未满页即最后一页。页大小以信封回显的 pageSize 为准——服务端
+      // cap 过 pageSize 时它反映的是实际容量，不能用请求值判断。
+      final effectivePageSize = envelope.pageSize ?? pageSize;
+      if (envelope.rows.length < effectivePageSize) break;
+      page++;
+      if (page > 50) break;
+    }
+    return all;
+  }
+
+  /// [retryOnUnauthenticated] 里的单次请求：状态码校验 + 信封 JSON 解码。
   ///
   /// - 401/403 → [UnauthenticatedException]；
+  /// - **空 body → [UnauthenticatedException]**：会话过期时服务端可能回
+  ///   200 空响应（网关剥 body），当成「无数据」会让成绩页显示「暂无
+  ///   成绩」而不是「去登录」——空 body 走自愈重试，重试仍空才穿透；
   /// - 响应不是 JSON：会话失效时服务端给的是登录页 HTML，用
   ///   [looksLikeLoginPage] 强特征判定后抛 [UnauthenticatedException]（让
   ///   自动重试与全局「登录会话已过期」提示生效），其余非 JSON 抛
   ///   [ServiceException]；
   /// - 信封 `code` 非成功值 → 由 [unwrapGsEnvelope] 抛 [ServiceException]，
   ///   这里**不吞**该异常。
-  Future<List<Map<String, dynamic>>> _postFormOnce(
+  Future<Object?> _postEnvelopeOnce(
     CookieClient client,
     String path,
     Map<String, String> fields,
@@ -164,7 +213,9 @@ class GsApiService {
     if (response.statusCode < 200 || response.statusCode >= 400) {
       throw ServiceException('研教务请求失败', statusCode: response.statusCode);
     }
-    if (response.body.isEmpty) return const [];
+    if (response.body.isEmpty) {
+      throw const UnauthenticatedException('研教务返回了空响应');
+    }
 
     final Object? decoded;
     try {
@@ -176,6 +227,6 @@ class GsApiService {
       AppLog.e(_tag, '$path 响应非 JSON（len=${response.body.length}）');
       throw ServiceException('研教务返回了无法解析的数据');
     }
-    return gsRows(decoded);
+    return decoded;
   }
 }

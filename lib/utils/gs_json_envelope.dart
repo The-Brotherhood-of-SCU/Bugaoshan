@@ -48,6 +48,66 @@ List<Map<String, dynamic>> gsRows(Object? json) {
   return payload.whereType<Map<String, dynamic>>().toList();
 }
 
+/// EMAP 分页信封的元数据（供调用方决定是否继续翻页）。
+///
+/// `totalPage` 取自 `extParams`；两者都缺时由 [GsApiService] 用
+/// `totalSize` 与实际页行数推算。
+class GsPagedEnvelope {
+  const GsPagedEnvelope({
+    required this.rows,
+    this.totalSize,
+    this.pageNumber,
+    this.pageSize,
+    this.totalPage,
+  });
+
+  final List<Map<String, dynamic>> rows;
+  final int? totalSize;
+  final int? pageNumber;
+  final int? pageSize;
+
+  /// `extParams.totalPage`（服务端宣称的总页数；实测样本里该值可信）。
+  final int? totalPage;
+}
+
+/// 定位信封里「带 `rows` 的那个分页 Map」，连同 `totalSize` / `pageNumber` /
+/// `pageSize` / `extParams.totalPage` 一起返回；找不到 rows 结构返回 null。
+///
+/// 与 [gsRows] 的差别：这里**保留分页元数据**——成绩等个人数据接口必须按
+/// totalPage/totalSize 循环翻页取全，不能赌一次大 pageSize（服务端 cap 了
+/// 也不知道）。搜索规则与 [_findRows] 相同（动作名键不可预知，逐层下探）。
+GsPagedEnvelope? gsPagedEnvelope(Object? json) {
+  if (json is! Map) return null;
+  final owner = _findRowsOwner(json);
+  if (owner == null) return null;
+  return GsPagedEnvelope(
+    rows: (owner['rows'] as List).whereType<Map<String, dynamic>>().toList(),
+    totalSize: _asInt(owner['totalSize']),
+    pageNumber: _asInt(owner['pageNumber']),
+    pageSize: _asInt(owner['pageSize']),
+    totalPage: _asInt(
+      (owner['extParams'] as Map?)?['totalPage'],
+    ),
+  );
+}
+
+/// 递归找「带 `rows` 的 Map」（rows 的父级分页对象），规则同 [_findRows]。
+Map<String, dynamic>? _findRowsOwner(Object? node, [int depth = 0]) {
+  if (node is! Map || depth > _maxEnvelopeDepth) return null;
+  if (node['rows'] is List) return Map<String, dynamic>.from(node);
+  for (final value in node.values) {
+    final found = _findRowsOwner(value, depth + 1);
+    if (found != null) return found;
+  }
+  return null;
+}
+
+int? _asInt(Object? value) {
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value.trim());
+  return null;
+}
+
 bool _isSuccessCode(Object code) =>
     _kSuccessCodes.contains(code.toString().trim().toLowerCase());
 

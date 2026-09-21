@@ -146,6 +146,10 @@ class GraduateGradeRow {
 /// - 课程数 / 总学分：按全部有效行（[GraduateGradeRow.valid]）计数、求和；
 /// - 加权均分：只对有 [GraduateGradeRow.percentile] 的行按学分加权平均；
 /// - 通过率：`passed` 门数占比（百分数 0-100）。
+///
+/// TODO(gs-api) 口径待校准：免修课（DYBFZCJ 有值）目前**计入**加权均分，
+/// 成绩一多均分会虚高；等真实多类型成绩数据到位后校准是否剔除/降权，
+/// 别让人拿这个数字去算奖学金。
 class GraduateGradesStats {
   const GraduateGradesStats({
     required this.courseCount,
@@ -178,5 +182,13 @@ double? _asDouble(Object? value) {
   return null;
 }
 
-/// 宽松 0/1 标志：1 → true，其余（0/null/字符串）按字面判断。
-bool _asFlag(Object? value) => value?.toString().trim() == '1';
+/// 宽松 0/1 标志归一化：布尔、数字（0 以外）、数字字符串、'true' 都算
+/// true。实测信封给的是数字 1/0，但 JSON 源头若给 true / 1.0 也不能误判。
+bool _asFlag(Object? value) => switch (value) {
+  null => false,
+  bool b => b,
+  num n => n != 0,
+  String s =>
+    s.trim() == 'true' || (double.tryParse(s.trim()) ?? 0) != 0,
+  _ => false,
+};
