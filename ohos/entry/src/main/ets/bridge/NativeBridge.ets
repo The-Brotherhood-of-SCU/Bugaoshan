@@ -3,21 +3,28 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { BridgeError, BridgeRequest, errorResponse, requireObject, successResponse } from './BridgeProtocol';
 import { NativeDatabase } from './NativeDatabase';
 import { NativeHttp } from './NativeHttp';
+import { NativeViewport } from './NativeViewport';
 
 interface BridgeInfo {
   version: number;
   capabilities: string[];
 }
 
+interface SystemBarStyle {
+  dark: boolean;
+}
+
 export class NativeBridge {
   private context?: common.Context;
   private database?: NativeDatabase;
   private http?: NativeHttp;
+  private viewport?: NativeViewport;
   private lifecycle: Promise<void> = Promise.resolve();
   private disposed: boolean = false;
 
-  attach(context: common.Context): void {
+  attach(context: common.Context, viewport: NativeViewport): void {
     this.context = context;
+    this.viewport = viewport;
     this.disposed = false;
   }
 
@@ -38,17 +45,29 @@ export class NativeBridge {
       }
       if (request.method === 'bridge.info') {
         await this.startSession();
-        const info: BridgeInfo = { version: 1, capabilities: ['database', 'http'] };
+        const info: BridgeInfo = { version: 1, capabilities: ['database', 'http', 'viewport'] };
         return successResponse(info);
       }
       await this.lifecycle;
       const database = this.database;
       const http = this.http;
-      if (this.disposed || database === undefined || http === undefined) {
+      const viewport = this.viewport;
+      if (this.disposed || database === undefined || http === undefined || viewport === undefined) {
         throw new BridgeError('bridge_not_ready', '请先完成 bridge.info 握手');
+      }
+      if (request.method === 'window.getMetrics') {
+        return successResponse(await viewport.getMetrics());
       }
       const args = requireObject(request.arguments);
       switch (request.method) {
+        case 'window.setSystemBarStyle': {
+          const style = args as SystemBarStyle;
+          if (typeof style.dark !== 'boolean') {
+            throw new BridgeError('invalid_request', '系统栏主题必须是布尔值');
+          }
+          await viewport.setDarkMode(style.dark);
+          return successResponse(null);
+        }
         case 'database.invoke':
           return successResponse(await database.invoke(args));
         case 'http.request':

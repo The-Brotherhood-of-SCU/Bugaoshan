@@ -6,6 +6,7 @@ import 'package:system_theme/system_theme.dart';
 import 'package:bugaoshan/utils/json_utils.dart';
 
 import 'native_bridge.dart';
+import 'viewport_web.dart';
 
 bool _initialized = false;
 
@@ -65,5 +66,8 @@ Future<void> initializeArkWebSupport() async {
   // 复用全局 Web 插件注册器，保留其他插件的消息处理。
   webPluginRegistrar.registerMessageHandler();
   SqflitePlugin.registerWith();
+  if (capabilities.contains('viewport')) {
+    await initializeArkWebViewport();
+  }
   _initialized = true;
 }

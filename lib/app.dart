@@ -10,6 +10,7 @@ import 'package:bugaoshan/pages/wizard/wizard_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/background_cache_service.dart';
 import 'package:bugaoshan/theme.dart';
+import 'package:bugaoshan/widgets/common/arkweb_safe_area.dart';
 import 'package:bugaoshan/widgets/common/session_expired_listener.dart';
 import 'package:bugaoshan/widgets/eula_content.dart';
 import 'package:bugaoshan/widgets/route/mouse_back_handler.dart';
@@ -71,8 +72,10 @@ class _MyAppState extends State<MyApp> {
             data: MediaQuery.of(
               context,
             ).copyWith(textScaler: TextScaler.linear(clamped)),
-            child: MouseBackHandler(
-              child: SessionExpiredListener(child: child ?? const SizedBox()),
+            child: ArkWebSafeArea(
+              child: MouseBackHandler(
+                child: SessionExpiredListener(child: child ?? const SizedBox()),
+              ),
             ),
           );
         },

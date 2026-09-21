@@ -3,6 +3,7 @@ import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { BRIDGE_PERMISSION, LOCAL_ORIGIN } from '../bridge/BridgeProtocol';
 import { NativeBridge } from '../bridge/NativeBridge';
+import { NativeViewport } from '../bridge/NativeViewport';
 
 // 此来源的所有请求均由应用响应，资源位于 rawfile/web/。
 const MIME_TYPES: Record<string, string> = {
@@ -30,16 +31,19 @@ const MIME_TYPES: Record<string, string> = {
 @Component
 struct Index {
   private controller: webview.WebviewController = new webview.WebviewController();
+  private nativeViewport: NativeViewport = new NativeViewport(this.controller);
   private nativeBridge: NativeBridge = new NativeBridge();
 
   aboutToAppear(): void {
     const context = this.getUIContext().getHostContext();
     if (context) {
-      this.nativeBridge.attach(context);
+      this.nativeViewport.attach(context);
+      this.nativeBridge.attach(context, this.nativeViewport);
     }
   }
 
   aboutToDisappear(): void {
+    this.nativeViewport.dispose();
     this.nativeBridge.dispose().catch(() => {
       hilog.error(0x0000, 'NativeBridge', '页面关闭时释放原生资源失败');
     });
@@ -110,6 +114,10 @@ struct Index {
       Web({ src: LOCAL_ORIGIN + '/index.html', controller: this.controller })
         .javaScriptAccess(true)
         .domStorageAccess(true)
+        // 键盘交由 Web 缩小内容区；安全区扩展只针对系统栏和挖孔。
+        .keyboardAvoidMode(WebKeyboardAvoidMode.RESIZE_CONTENT)
+        .onPageBegin(() => this.nativeViewport.onPageBegin())
+        .onPageEnd(() => this.nativeViewport.onPageEnd())
         .javaScriptProxy({
           object: this.nativeBridge,
           name: 'bugaoshanNative',
@@ -129,8 +137,12 @@ struct Index {
         })
         .width('100%')
         .height('100%')
+        .expandSafeArea([SafeAreaType.SYSTEM, SafeAreaType.CUTOUT], [SafeAreaEdge.TOP,
+          SafeAreaEdge.BOTTOM, SafeAreaEdge.START, SafeAreaEdge.END])
     }
     .height('100%')
     .width('100%')
+    .expandSafeArea([SafeAreaType.SYSTEM, SafeAreaType.CUTOUT], [SafeAreaEdge.TOP,
+      SafeAreaEdge.BOTTOM, SafeAreaEdge.START, SafeAreaEdge.END])
   }
 }
