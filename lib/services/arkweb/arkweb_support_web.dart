@@ -28,7 +28,7 @@ Future<void> initializeArkWebSupport() async {
   final channel = MethodChannel(
     'com.tekartik.sqflite',
     const StandardMethodCodec(),
-    registrar,
+    webPluginRegistrar,
   );
   channel.setMethodCallHandler((call) async {
     try {
@@ -45,8 +45,8 @@ Future<void> initializeArkWebSupport() async {
       );
     }
   });
-  // 复用全局 registrar，保留其他 Web 插件的消息处理。
-  registrar.registerMessageHandler();
+  // 复用全局 Web 插件注册器，保留其他插件的消息处理。
+  webPluginRegistrar.registerMessageHandler();
   SqflitePlugin.registerWith();
   _initialized = true;
 }

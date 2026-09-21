@@ -1,5 +1,6 @@
 import { common } from '@kit.AbilityKit';
 import { relationalStore } from '@kit.ArkData';
+import { BusinessError } from '@kit.BasicServicesKit';
 import { fileIo } from '@kit.CoreFileKit';
 import { BridgeError, SqlWireValue, WireBytes, decodeBytes, encodeBytes, requireObject } from './BridgeProtocol';
 
@@ -63,7 +64,9 @@ function databaseError(error: Error): BridgeError {
   if (error instanceof BridgeError) {
     return error;
   }
-  return new BridgeError('sqlite_error', error.message || '原生数据库操作失败');
+  const nativeCode = (error as BusinessError).code;
+  const prefix = typeof nativeCode === 'number' ? '[' + nativeCode + '] ' : '';
+  return new BridgeError('sqlite_error', prefix + (error.message || '原生数据库操作失败'));
 }
 
 function decodeArguments(values?: SqlWireValue[]): relationalStore.ValueType[] {
@@ -74,8 +77,15 @@ function decodeArguments(values?: SqlWireValue[]): relationalStore.ValueType[] {
     throw new BridgeError('sqlite_error', 'SQL 参数必须是数组');
   }
   return values.map((value: SqlWireValue): relationalStore.ValueType => {
-    if (value === null || typeof value === 'string' || typeof value === 'boolean') {
-      return value;
+    // ArkTS 对组合条件的联合类型收窄有限，逐项判断并返回明确类型。
+    if (value === null) {
+      return null;
+    }
+    if (typeof value === 'string') {
+      return value as string;
+    }
+    if (typeof value === 'boolean') {
+      return value as boolean;
     }
     if (typeof value === 'number' && Number.isFinite(value)) {
       return value;
@@ -85,8 +95,17 @@ function decodeArguments(values?: SqlWireValue[]): relationalStore.ValueType[] {
 }
 
 function encodeValue(value: relationalStore.ValueType): SqlWireValue {
-  if (value === null || typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number') {
-    return value;
+  if (value === null) {
+    return null;
+  }
+  if (typeof value === 'string') {
+    return value as string;
+  }
+  if (typeof value === 'boolean') {
+    return value as boolean;
+  }
+  if (typeof value === 'number') {
+    return value as number;
   }
   if (value instanceof Uint8Array) {
     return encodeBytes(value);
@@ -120,7 +139,9 @@ export class NativeDatabase {
     const result = this.queue.then(() => this.dispatch(call));
     this.queue = result.then(() => {}, () => {});
     return result.catch((error: Error) => {
-      throw databaseError(error);
+      const failure = databaseError(error);
+      // 保留失败方法和系统错误码，便于从 Flutter 启动错误中定位；不附加 SQL 参数。
+      throw new BridgeError(failure.code, call.method + ': ' + failure.message);
     });
   }
 
