@@ -24,16 +24,20 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
       listenable: getIt<GradesProvider>(),
       builder: (context, _) {
         final provider = getIt<GradesProvider>();
+        final errorKey = provider.schemeError;
+        // 判空收进同一个 if：errorKey 是 final 局部变量，判空后 flow
+        // analysis 在闭包内保持提升，无需 errorKey! 断言。
         if (provider.schemeState == GradesLoadState.loaded &&
-            provider.schemeError != null) {
-          final errorKey = provider.schemeError;
+            errorKey != null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             provider.clearSchemeError();
             if (!mounted) return;
             final l10n = AppLocalizations.of(context)!;
-            final message = errorKey == LoadErrorType.sessionExpired
-                ? l10n.sessionExpired
-                : l10n.gradesRefreshFailed;
+            final message = refreshFailureMessage(
+              errorKey,
+              l10n,
+              fallback: l10n.gradesRefreshFailed,
+            );
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text(message)));

@@ -1,4 +1,5 @@
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:flutter/material.dart';
@@ -38,6 +39,92 @@ void main() {
           fallback: LoadErrorType.notLoggedIn,
         ),
         LoadErrorType.undergradOnly,
+      );
+    });
+  });
+
+  group('classifyZhjwSessionFailure 打标证据规则', () {
+    test('空 body 不打标（夜间关站/偶发空响应不能误导本科账号）', () {
+      final failure = ZhjwApiService.classifyZhjwSessionFailure('', 200);
+      expect(failure, isNotNull);
+      expect(failure!.undergradOnly, isFalse);
+      expect(failure.message, '教务系统返回了空响应');
+    });
+
+    test('空白 body 同样不打标', () {
+      final failure = ZhjwApiService.classifyZhjwSessionFailure(
+        '  \n\t',
+        200,
+      );
+      expect(failure, isNotNull);
+      expect(failure!.undergradOnly, isFalse);
+    });
+
+    test('302 重定向与登录页 HTML 是打标强证据', () {
+      expect(
+        ZhjwApiService.classifyZhjwSessionFailure('', 302)!.undergradOnly,
+        isTrue,
+      );
+      final loginPage = ZhjwApiService.classifyZhjwSessionFailure(
+        '<html><body><form action="/login">请登录</form></body></html>',
+        200,
+      );
+      expect(loginPage, isNotNull);
+      expect(loginPage!.undergradOnly, isTrue);
+    });
+
+    test('正常业务页返回 null', () {
+      expect(
+        ZhjwApiService.classifyZhjwSessionFailure(
+          '<html><body>第 1 周</body></html>',
+          200,
+        ),
+        isNull,
+      );
+    });
+  });
+
+  group('refreshFailureMessage（有缓存刷新失败提示文案）', () {
+    final l10n = lookupAppLocalizations(const Locale('zh'));
+
+    test('undergradOnly → 针对性指引而非通用刷新失败', () {
+      expect(
+        refreshFailureMessage(
+          LoadErrorType.undergradOnly,
+          l10n,
+          fallback: l10n.gradesRefreshFailed,
+        ),
+        l10n.undergradDataOnly,
+      );
+    });
+
+    test('sessionExpired → 会话过期', () {
+      expect(
+        refreshFailureMessage(
+          LoadErrorType.sessionExpired,
+          l10n,
+          fallback: l10n.gradesRefreshFailed,
+        ),
+        l10n.sessionExpired,
+      );
+    });
+
+    test('其余类型一律走调用方通用文案', () {
+      expect(
+        refreshFailureMessage(
+          LoadErrorType.loadFailed,
+          l10n,
+          fallback: '通用失败',
+        ),
+        '通用失败',
+      );
+      expect(
+        refreshFailureMessage(
+          LoadErrorType.networkError,
+          l10n,
+          fallback: l10n.gradesRefreshFailed,
+        ),
+        l10n.gradesRefreshFailed,
       );
     });
   });
