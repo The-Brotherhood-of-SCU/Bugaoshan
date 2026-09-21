@@ -286,6 +286,7 @@ final campusItemGraduateGrades = CampusItemConfig(
   dockFullLabel: (l10n) => l10n.graduateGrades,
   desc: (l10n) => l10n.graduateGradesDesc,
   page: () => const GraduateGradesPage(),
+  audience: StudentType.graduate,
 );
 
 final campusItemGraduateTrainPlan = CampusItemConfig(
@@ -296,6 +297,7 @@ final campusItemGraduateTrainPlan = CampusItemConfig(
   dockFullLabel: (l10n) => l10n.graduateTrainPlan,
   desc: (l10n) => l10n.graduateTrainPlanDesc,
   page: () => const GraduateTrainPlanPage(),
+  audience: StudentType.graduate,
 );
 
 final campusItemGraduateScheduleImport = CampusItemConfig(
