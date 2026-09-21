@@ -2957,9 +2957,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get leaveStatusDone => '已完成';
 
   @override
-  String get graduateSection => '研究生';
-
-  @override
   String get graduateGrades => '研究生成绩';
 
   @override

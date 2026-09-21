@@ -3055,9 +3055,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get leaveStatusDone => 'Done';
 
   @override
-  String get graduateSection => 'Graduate';
-
-  @override
   String get graduateGrades => 'Graduate Grades';
 
   @override

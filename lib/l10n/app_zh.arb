@@ -1640,7 +1640,6 @@
     "description": "我的申请 Tab 的空状态提示。",
     "type": "text"
   },
-  "graduateSection": "研究生",
   "graduateGrades": "研究生成绩",
   "graduateGradesDesc": "查看研究生课程成绩",
   "graduateGradesEmpty": "暂无研究生成绩",

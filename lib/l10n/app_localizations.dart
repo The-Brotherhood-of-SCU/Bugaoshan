@@ -5725,12 +5725,6 @@ abstract class AppLocalizations {
   /// **'Done'**
   String get leaveStatusDone;
 
-  /// No description provided for @graduateSection.
-  ///
-  /// In en, this message translates to:
-  /// **'Graduate'**
-  String get graduateSection;
-
   /// No description provided for @graduateGrades.
   ///
   /// In en, this message translates to:
