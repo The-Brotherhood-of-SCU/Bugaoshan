@@ -33,6 +33,9 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Flutter Web build output bundled by the HarmonyOS container
+/ohos/entry/src/main/resources/rawfile/web/
+
 # Symbolication related
 app.*.symbols
 
