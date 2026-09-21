@@ -72,7 +72,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get studentTypeUndergraduateDesc => '展示本科教务功能：成绩统计、考试安排、教室查询、培养方案等';
 
   @override
-  String get studentTypeGraduateDesc => '展示研究生功能：研究生课表导入等';
+  String get studentTypeGraduateDesc => '展示研究生功能：研究生成绩、培养进度、课表导入等';
 
   @override
   String get studentTypeHint => '切换后课表导入入口与校园页功能会随之调整，已保存的课表和自定义配置不受影响，可随时再切换。';

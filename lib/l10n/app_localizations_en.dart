@@ -77,7 +77,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get studentTypeGraduateDesc =>
-      'Show graduate features: graduate schedule import, etc.';
+      'Show graduate features: graduate grades, training progress, schedule import, etc.';
 
   @override
   String get studentTypeHint =>
