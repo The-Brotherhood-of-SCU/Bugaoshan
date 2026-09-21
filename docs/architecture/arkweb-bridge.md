@@ -1,10 +1,12 @@
 # ArkWeb 原生能力桥接
 
-Flutter Web 通过一层适配调用鸿蒙容器提供的数据库和 HTTP 能力。Flutter 与 `ohos/` 的桥接代码均已接入，尚未进行构建、测试或设备联调。数据库使用鸿蒙关系型数据库，网络使用 RCP；当前实现面向兼容版本 API 20 及以上的项目配置。
+Flutter Web 通过一层适配调用鸿蒙容器提供的数据库和 HTTP 能力。Flutter 与 `ohos/` 的桥接代码均已接入。数据库使用鸿蒙关系型数据库，网络使用 RCP；当前实现面向兼容版本 API 20 及以上的项目配置。
 
 ## 接入位置
 
 - [`main.dart`](../../lib/main.dart) 在依赖注入之前调用 `initializeArkWebSupport()`，检查桥接协议并注册 sqflite 的 Web 平台处理器。
+- ArkWeb 适配层同时接管 `system_theme` 的取色调用，返回 null，让插件保留启动时预设的蓝色。当前未桥接鸿蒙系统强调色；这样可避开 `system_theme_web` 的 CSS 颜色解析异常，并覆盖启动、主题设置和预览中的取色调用。
+- [`NativeViewport.ets`](../../ohos/entry/src/main/ets/bridge/NativeViewport.ets) 传递窗口安全区；Flutter 根部的 [`ArkWebSafeArea`](../../lib/widgets/common/arkweb_safe_area.dart) 将其合并到 `MediaQuery`，用于沉浸式布局。
 - [`DatabaseService`](../../lib/services/database_service.dart) 在 Web 下只传数据库逻辑文件名 `bugaoshan.db`。原有 SQL、表结构升级、事务、批处理和缓存仍由现有 Dart 代码管理。
 - [`platform_http_client.dart`](../../lib/services/platform_http_client.dart) 在发现原生桥接时创建 `ArkWebHttpClient`。CookieClient 的初次创建和重建、登录验证码、忘记密码及第二课堂直接请求使用这个入口。
 - Cookie 隔离、SSO 手动重定向及登录状态继续由现有认证层管理。鸿蒙端只承担请求传输。
@@ -33,7 +35,7 @@ window.bugaoshanNative = {
 Promise 返回的值也必须是 JSON 字符串。成功：
 
 ```json
-{"ok":true,"result":{"version":1,"capabilities":["database","http"]}}
+{"ok":true,"result":{"version":1,"capabilities":["database","http","viewport"]}}
 ```
 
 失败：
@@ -43,6 +45,8 @@ Promise 返回的值也必须是 JSON 字符串。成功：
 ```
 
 `bridge.info` 是启动握手，必须返回协议版本 `1` 和 `database`、`http` 两项能力；Flutter 最多等待 10 秒。原生能力没有实现时不能宣告具备该能力。未知版本、方法和预期的操作失败均返回错误信封，不返回成功占位值。
+
+`viewport` 是可选能力，新容器提供安全区查询、变化通知和系统栏颜色设置；没有此能力的旧容器沿用原有 Flutter 布局。
 
 二进制值递归编码为只有一个键的对象 `{"$bytes":"BASE64"}`，空字节为 `{"$bytes":""}`。这个规则同时适用于 HTTP 正文、SQL BLOB 参数和查询结果。其余类型使用 JSON 的字符串、数值、布尔值、数组、对象和 null；对象键必须是字符串。不要对二进制正文做 UTF-8 解码再编码。
 
@@ -157,12 +161,32 @@ SQL 参数缺省时按空数组处理；SQL 中的 `?` 使用绑定参数，不�
 
 [`NativeHttp.ets`](../../ohos/entry/src/main/ets/bridge/NativeHttp.ets) 通过 RCP Session 发送请求，关闭自动重定向、响应缓存和详细跟踪，不配置 Cookie 仓库。需要跟随跳转时逐跳发送，逐跳检查域名并移除跨来源敏感头。当前允许 `scu.edu.cn` 及其子域名的 HTTP/HTTPS 默认端口；其他目标返回 `http_forbidden`。接口支持 GET、HEAD、POST、PUT、PATCH、DELETE、OPTIONS。
 
-超时计时覆盖整个重定向链；支持 1–120000 毫秒和 0–50 次跳转，Flutter 当前发送 15000 毫秒。超时或关闭客户端会取消原生请求并结束对应 Promise。关闭过的客户端 id 在当前页面会话内不能重新打开。`persistentConnection:false` 使用独立 Session，完成后释放，避免影响同客户端的并发请求。模块已声明 `ohos.permission.INTERNET`。
+超时计时覆盖整个重定向链；支持 1–120000 毫秒和 0–50 次跳转，Flutter 当前发送 15000 毫秒。超时或关闭客户端会取消原生请求并结束对应 Promise。失败日志仅记录方法、域名、请求 ID、时限或系统错误码，不记录 URL 参数、请求头和正文。关闭过的客户端 id 在当前页面会话内不能重新打开。`persistentConnection:false` 使用独立 Session，完成后释放，避免影响同客户端的并发请求。模块已声明 `ohos.permission.INTERNET`。
+
+## 沉浸式窗口与安全区
+
+[`EntryAbility.ets`](../../ohos/entry/src/main/ets/entryability/EntryAbility.ets) 在加载页面前启用 `setWindowLayoutFullScreen(true)` 并将系统栏背景设为透明；保留状态栏、导航栏和手势条。`Index.ets` 中的 Web 与外层容器同时扩展到系统栏和挖孔区域。Flutter 初始化后为引擎创建的 viewport 标签补上 `viewport-fit=cover`，避免 HTML 中的静态设置被引擎覆盖。
+
+`window.getMetrics` 接受空 `arguments`，返回以下结构（数字仅为示例）：
+
+```json
+{"padding":{"top":136,"right":0,"bottom":98,"left":0},"keyboardVisible":false}
+```
+
+`padding` 采用窗口物理像素，合并状态栏、挖孔、底部手势条的各边遮挡深度；重叠区域取最大值。Flutter 按 `MediaQuery.devicePixelRatio` 换算，更新 `viewPadding` 与 `padding`，不在整页外层增加实体空白。已有的 AppBar、SafeArea 和 NavigationBar 根据这些尺寸避让，页面与底部导航栏背景仍绘制到系统栏下方。
+
+原生监听 `avoidAreaChange` 和 `windowSizeChange`，通过 `window.bugaoshanViewportChanged(metricsJson)` 通知 Flutter，支持旋转、分屏和系统栏变化。Flutter 先注册回调再查询初始值；页面重新加载时再次查询，页面销毁时原生移除监听。事件只向本地应用来源投递。
+
+键盘保持 `WebKeyboardAvoidMode.RESIZE_CONTENT`，不扩展到键盘区域。原生额外通知键盘可见状态；Flutter 保留引擎计算的 `viewInsets`，键盘弹出时取消底部手势条的额外 padding，避免双重避让。
+
+`window.setSystemBarStyle` 接受 `{"dark":true}` 或 `{"dark":false}`，按 Flutter 当前明暗主题设置状态栏及三键导航栏文字颜色，背景保持透明。手势指示条由系统管理。本次适配需要同时重新构建 Flutter Web 并打包鸿蒙容器。
 
 ## 边界
+
+验证码 OCR 使用随 Web 产物打包的 `scu_ocr_lite` 模型，不需要联网识别。Flutter Web 调用同步 `recognize()`，避免依赖库的 `recognizeAsync()` 调用 Web 不支持的 `Isolate.run`；其他平台继续使用异步识别。Web 识别在页面线程执行。
 
 桥接只向 `https://app.bugaoshan.invalid` 的受信任应用页面开放，宿主负责限制可访问的网络目标和数据库，外部网页不能获得相同代理。业务端点包括 HTTP 的教务系统，不能把协议限制误写为仅 HTTPS；每次原生自动重定向也需要遵守宿主的访问限制。
 
 当前适配面向数据库及认证/API 请求，HTTP 请求和响应会完整缓冲，再经 Base64 传输，尚未提供大文件流式下载或单请求主动取消接口。其他独立网络入口、文件操作、通知 WebView 和平台插件仍需要各自的平台支持。这份接口不等同于整个应用已经完成鸿蒙移植。
 
-Flutter 源码变动后，需要重新生成 Web 产物并复制到 `ohos/entry/src/main/resources/rawfile/web/`，同时保留本地 CanvasKit 配置和禁用 Service Worker 的启动设置。本次原生适配没有重新生成或替换该目录下的 Web 产物。
+Flutter 源码变动后，需要重新生成 Web 产物并复制到 `ohos/entry/src/main/resources/rawfile/web/`。[构建模板](../../web/flutter_bootstrap.js) 使用相对页面 base href 的本地 CanvasKit 地址，并且不传入 `serviceWorkerSettings`，因此后续构建会自动保留这两项配置。产物中的 `flutter_service_worker.js` 文件本身不会启用 Service Worker，是否注册取决于启动脚本。
