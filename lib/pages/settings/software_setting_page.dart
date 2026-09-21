@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -14,6 +15,7 @@ import 'package:bugaoshan/pages/settings/set_font_page.dart';
 import 'package:bugaoshan/pages/settings/set_theme_color_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/services/arkweb/native_bridge.dart';
 import 'package:bugaoshan/widgets/common/info_card.dart';
 import 'package:bugaoshan/widgets/common/section_title.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
@@ -41,7 +43,7 @@ class SoftwareSettingPage extends StatelessWidget {
                 label: localizations.modifyLanguage,
                 onTap: () => popupOrNavigate(context, SetLanguagePage()),
               ),
-              if (Platform.isAndroid)
+              if (!kIsWeb && Platform.isAndroid)
                 IconTile(
                   icon: Icons.photo_size_select_actual_outlined,
                   label: localizations.appIcon,
@@ -57,7 +59,7 @@ class SoftwareSettingPage extends StatelessWidget {
                 label: localizations.customDock,
                 onTap: () => popupOrNavigate(context, const SetDockPage()),
               ),
-              if (Platform.isAndroid)
+              if (!kIsWeb && Platform.isAndroid)
                 IconTile(
                   icon: Icons.widgets_outlined,
                   label: localizations.addWidgetPageTitle,
@@ -80,11 +82,12 @@ class SoftwareSettingPage extends StatelessWidget {
                 onTap: () =>
                     popupOrNavigate(context, const SetCourseStylePage()),
               ),
-              IconTile(
-                icon: Icons.font_download,
-                label: localizations.setFont,
-                onTap: () => popupOrNavigate(context, const SetFontPage()),
-              ),
+              if (!isArkWebNativeAvailable)
+                IconTile(
+                  icon: Icons.font_download,
+                  label: localizations.setFont,
+                  onTap: () => popupOrNavigate(context, const SetFontPage()),
+                ),
             ],
           ),
           const SizedBox(height: 14),
