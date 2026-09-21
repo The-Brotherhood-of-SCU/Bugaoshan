@@ -56,6 +56,35 @@ void main() {
     expect(row.valid, isFalse);
   });
 
+  test('_asFlag 归一化：bool / 1.0 / "true" 均为 true，0 / "0" / "false" 为 false', () {
+    final jsonRow = GraduateGradeRow.fromJson(const {
+      'KCMC': '课程A',
+      'XF': 1.0,
+      'SFJG': true,
+      'SFYX': 1.0,
+    });
+    expect(jsonRow.passed, isTrue);
+    expect(jsonRow.valid, isTrue);
+
+    final strRow = GraduateGradeRow.fromJson(const {
+      'KCMC': '课程B',
+      'XF': 1.0,
+      'SFJG': 'true',
+      'SFYX': '1',
+    });
+    expect(strRow.passed, isTrue);
+    expect(strRow.valid, isTrue);
+
+    final falseRow = GraduateGradeRow.fromJson(const {
+      'KCMC': '课程C',
+      'XF': 1.0,
+      'SFJG': '0',
+      'SFYX': 'false',
+    });
+    expect(falseRow.passed, isFalse);
+    expect(falseRow.valid, isFalse);
+  });
+
   test('统计口径：计数按有效行，加权均分只算有百分成绩的行，通过率按门数', () {
     final rows = graduateGradeRowsFromJson([
       // 85.0×3 + 80.0×2 = 415，除以 5 → 83.0
