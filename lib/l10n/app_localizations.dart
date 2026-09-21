@@ -193,6 +193,54 @@ abstract class AppLocalizations {
   /// **'Auto-fetch schedule after login'**
   String get wizardImportHint;
 
+  /// No description provided for @wizardStudentTypeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Your Identity'**
+  String get wizardStudentTypeTitle;
+
+  /// No description provided for @wizardStudentTypeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'This decides how you import your schedule and which campus features are shown. You can change it later in Settings'**
+  String get wizardStudentTypeDesc;
+
+  /// No description provided for @studentTypeSetting.
+  ///
+  /// In en, this message translates to:
+  /// **'Student Type'**
+  String get studentTypeSetting;
+
+  /// No description provided for @studentTypeUndergraduate.
+  ///
+  /// In en, this message translates to:
+  /// **'Undergraduate'**
+  String get studentTypeUndergraduate;
+
+  /// No description provided for @studentTypeGraduate.
+  ///
+  /// In en, this message translates to:
+  /// **'Graduate'**
+  String get studentTypeGraduate;
+
+  /// No description provided for @studentTypeUndergraduateDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Show undergraduate features: grade statistics, exam plans, classroom availability, training programs, etc.'**
+  String get studentTypeUndergraduateDesc;
+
+  /// No description provided for @studentTypeGraduateDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Show graduate features: graduate schedule import, etc.'**
+  String get studentTypeGraduateDesc;
+
+  /// No description provided for @studentTypeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'After switching, schedule import options and campus features adjust accordingly. Saved schedules and custom layouts are kept; you can switch back anytime.'**
+  String get studentTypeHint;
+
   /// No description provided for @wizardFeatureTitle.
   ///
   /// In en, this message translates to:

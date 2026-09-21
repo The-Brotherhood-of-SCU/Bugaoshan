@@ -56,6 +56,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wizardImportHint => 'Auto-fetch schedule after login';
 
   @override
+  String get wizardStudentTypeTitle => 'Choose Your Identity';
+
+  @override
+  String get wizardStudentTypeDesc =>
+      'This decides how you import your schedule and which campus features are shown. You can change it later in Settings';
+
+  @override
+  String get studentTypeSetting => 'Student Type';
+
+  @override
+  String get studentTypeUndergraduate => 'Undergraduate';
+
+  @override
+  String get studentTypeGraduate => 'Graduate';
+
+  @override
+  String get studentTypeUndergraduateDesc =>
+      'Show undergraduate features: grade statistics, exam plans, classroom availability, training programs, etc.';
+
+  @override
+  String get studentTypeGraduateDesc =>
+      'Show graduate features: graduate schedule import, etc.';
+
+  @override
+  String get studentTypeHint =>
+      'After switching, schedule import options and campus features adjust accordingly. Saved schedules and custom layouts are kept; you can switch back anytime.';
+
+  @override
   String get wizardFeatureTitle => 'Explore More Features';
 
   @override

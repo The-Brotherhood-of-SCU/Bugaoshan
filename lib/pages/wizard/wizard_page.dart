@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/pages/wizard/welcome_page.dart';
+import 'package:bugaoshan/pages/wizard/student_type_page.dart';
 import 'package:bugaoshan/pages/wizard/login_page.dart';
 import 'package:bugaoshan/pages/wizard/features_page.dart';
 import 'package:bugaoshan/pages/wizard/widget_page.dart';
@@ -32,6 +33,7 @@ class _WizardPageState extends State<WizardPage> {
 
     _pages = [
       const WelcomePage(),
+      const StudentTypePage(),
       const LoginPage(),
       const FeaturesPage(),
       if (Platform.isAndroid) const WidgetPage(),

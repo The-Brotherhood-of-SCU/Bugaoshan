@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Colors, Curve, Curves;
 import 'package:bugaoshan/models/background_crop.dart';
+import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/models/widget_appearance.dart';
 import 'package:bugaoshan/utils/locale_utils.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
@@ -40,6 +41,7 @@ const String _keyAutoSampleBalanceOnLogin = 'autoSampleBalanceOnLogin';
 const String _keyForceCaptchaForDownload = 'forceCaptchaForDownload';
 const String _keyEnablePageTransitionAnimation =
     'enablePageTransitionAnimation';
+const String _keyStudentType = 'studentType';
 const Curve appCurve = Curves.easeOutQuart;
 
 enum ThemeColorMode { system, backgroundImage, custom }
@@ -106,6 +108,11 @@ class AppConfigProvider {
   );
   final ValueNotifier<bool> enablePageTransitionAnimation = ValueNotifier<bool>(
     true,
+  );
+
+  /// 学生身份（本科生 / 研究生），决定课表导入入口与校园页功能分区展示范围。
+  final ValueNotifier<StudentType> studentType = ValueNotifier<StudentType>(
+    StudentType.undergraduate,
   );
 
   Future<void> _loadPreferences() async {
@@ -182,6 +189,12 @@ class AppConfigProvider {
         _sharedPreferences.getBool(_keyForceCaptchaForDownload) ?? false;
     enablePageTransitionAnimation.value =
         _sharedPreferences.getBool(_keyEnablePageTransitionAnimation) ?? true;
+    final studentTypeIndex =
+        _sharedPreferences.getInt(_keyStudentType) ??
+        StudentType.undergraduate.index;
+    studentType.value = studentTypeIndex < StudentType.values.length
+        ? StudentType.values[studentTypeIndex]
+        : StudentType.undergraduate;
   }
 
   void _addSaveCallback() {
@@ -331,6 +344,9 @@ class AppConfigProvider {
         _keyEnablePageTransitionAnimation,
         enablePageTransitionAnimation.value,
       );
+    });
+    studentType.addListener(() {
+      _sharedPreferences.setInt(_keyStudentType, studentType.value.index);
     });
   }
 

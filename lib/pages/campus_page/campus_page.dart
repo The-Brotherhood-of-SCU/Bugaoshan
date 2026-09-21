@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
+import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
@@ -80,12 +81,15 @@ class _CampusPageState extends State<CampusPage>
     _searchFocusNode.requestFocus();
   }
 
-  /// 按标题/描述过滤校园功能，忽略大小写。
-  List<CampusItemConfig> _searchResults(AppLocalizations l10n) {
+  /// 按标题/描述过滤校园功能，忽略大小写；仅在当前身份可见的分区中搜索。
+  List<CampusItemConfig> _searchResults(
+    AppLocalizations l10n,
+    List<CampusSection> sections,
+  ) {
     final query = _searchQuery.trim().toLowerCase();
     if (query.isEmpty) return const [];
     return [
-      for (final section in campusSections)
+      for (final section in sections)
         for (final item in section.items)
           if (item.dockLabel(l10n).toLowerCase().contains(query) ||
               item.dockFullLabel(l10n).toLowerCase().contains(query) ||
@@ -107,115 +111,130 @@ class _CampusPageState extends State<CampusPage>
     final bgColor = Theme.of(context).scaffoldBackgroundColor;
     final appConfig = getIt<AppConfigProvider>();
 
-    return ValueListenableBuilder<bool>(
-      valueListenable: appConfig.campusGridView,
-      builder: (context, isGridView, _) {
-        return Stack(
-          children: [
-            NotificationListener<ScrollNotification>(
-              onNotification: (notification) {
-                _onScroll(notification);
-                return false;
-              },
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                switchInCurve: Curves.easeInOut,
-                switchOutCurve: Curves.easeInOut,
-                transitionBuilder: (child, animation) {
-                  return FadeTransition(opacity: animation, child: child);
-                },
-                child: CustomScrollView(
-                  key: ValueKey(isGridView),
-                  slivers: [
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppShapes.medium,
-                        AppShapes.medium,
-                        AppShapes.medium,
-                        0,
-                      ),
-                      sliver: SliverToBoxAdapter(child: _buildSearchArea(l10n)),
+    // 学生身份切换后，校园页分区与搜索范围随之调整。
+    return ValueListenableBuilder<StudentType>(
+      valueListenable: appConfig.studentType,
+      builder: (context, studentType, _) {
+        final sections = campusSectionsForStudentType(studentType);
+        return ValueListenableBuilder<bool>(
+          valueListenable: appConfig.campusGridView,
+          builder: (context, isGridView, _) {
+            return Stack(
+              children: [
+                NotificationListener<ScrollNotification>(
+                  onNotification: (notification) {
+                    _onScroll(notification);
+                    return false;
+                  },
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    switchInCurve: Curves.easeInOut,
+                    switchOutCurve: Curves.easeInOut,
+                    transitionBuilder: (child, animation) {
+                      return FadeTransition(opacity: animation, child: child);
+                    },
+                    child: CustomScrollView(
+                      key: ValueKey(isGridView),
+                      slivers: [
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(
+                            AppShapes.medium,
+                            AppShapes.medium,
+                            AppShapes.medium,
+                            0,
+                          ),
+                          sliver: SliverToBoxAdapter(
+                            child: _buildSearchArea(l10n, sections),
+                          ),
+                        ),
+                        if (_searchExpanded && _searchQuery.trim().isNotEmpty)
+                          SliverPadding(
+                            padding: const EdgeInsets.all(AppShapes.medium),
+                            sliver: _buildSearchResults(
+                              l10n,
+                              sections,
+                              isGridView,
+                            ),
+                          )
+                        else
+                          SliverPadding(
+                            padding: const EdgeInsets.all(AppShapes.medium),
+                            sliver: isGridView
+                                ? _buildGridView(l10n, sections)
+                                : _buildListView(l10n, sections),
+                          ),
+                      ],
                     ),
-                    if (_searchExpanded && _searchQuery.trim().isNotEmpty)
-                      SliverPadding(
-                        padding: const EdgeInsets.all(AppShapes.medium),
-                        sliver: _buildSearchResults(l10n, isGridView),
-                      )
-                    else
-                      SliverPadding(
-                        padding: const EdgeInsets.all(AppShapes.medium),
-                        sliver: isGridView
-                            ? _buildGridView(l10n)
-                            : _buildListView(l10n),
-                      ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: IgnorePointer(
-                child: AnimatedOpacity(
-                  opacity: _showHint ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 300),
-                  child: Container(
-                    height: 64,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          bgColor.withValues(alpha: 0),
-                          bgColor.withValues(alpha: 0.95),
-                        ],
-                      ),
-                    ),
-                    alignment: Alignment.center,
-                    child: AnimatedBuilder(
-                      animation: _arrowAnimation,
-                      builder: (context, child) => Transform.translate(
-                        offset: Offset(0, _arrowAnimation.value),
-                        child: child,
-                      ),
-                      child: Icon(
-                        Icons.keyboard_arrow_down,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                        size: AppShapes.extraLarge,
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: IgnorePointer(
+                    child: AnimatedOpacity(
+                      opacity: _showHint ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 300),
+                      child: Container(
+                        height: 64,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              bgColor.withValues(alpha: 0),
+                              bgColor.withValues(alpha: 0.95),
+                            ],
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: AnimatedBuilder(
+                          animation: _arrowAnimation,
+                          builder: (context, child) => Transform.translate(
+                            offset: Offset(0, _arrowAnimation.value),
+                            child: child,
+                          ),
+                          child: Icon(
+                            Icons.keyboard_arrow_down,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant
+                                .withValues(alpha: 0.6),
+                            size: AppShapes.extraLarge,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         );
       },
     );
   }
 
   /// 顶部搜索区：收起时与第一个分区标题同行显示右侧圆形角标，点击后展开为搜索框。
-  Widget _buildSearchArea(AppLocalizations l10n) {
+  Widget _buildSearchArea(AppLocalizations l10n, List<CampusSection> sections) {
     return AnimatedSize(
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeInOutCubic,
       alignment: Alignment.topCenter,
       child: _searchExpanded
           ? _buildSearchField(l10n)
-          : _buildSearchBadgeRow(l10n),
+          : _buildSearchBadgeRow(l10n, sections),
     );
   }
 
   /// 角标与第一个分区标题同行：标题在左、角标在右，避免独占一行留白。
-  Widget _buildSearchBadgeRow(AppLocalizations l10n) {
+  Widget _buildSearchBadgeRow(
+    AppLocalizations l10n,
+    List<CampusSection> sections,
+  ) {
     return Row(
       children: [
-        Expanded(
-          child: CampusSectionHeader(title: campusSections.first.title(l10n)),
-        ),
+        Expanded(child: CampusSectionHeader(title: sections.first.title(l10n))),
         const SizedBox(width: 8),
         _buildSearchBadge(l10n),
       ],
@@ -278,8 +297,12 @@ class _CampusPageState extends State<CampusPage>
   }
 
   /// 搜索结果：网格/列表布局，与正常模式保持一致。
-  Widget _buildSearchResults(AppLocalizations l10n, bool isGridView) {
-    final results = _searchResults(l10n);
+  Widget _buildSearchResults(
+    AppLocalizations l10n,
+    List<CampusSection> sections,
+    bool isGridView,
+  ) {
+    final results = _searchResults(l10n, sections);
     if (results.isEmpty) {
       return SliverToBoxAdapter(child: _buildNoSearchResults(l10n));
     }
@@ -359,10 +382,10 @@ class _CampusPageState extends State<CampusPage>
     );
   }
 
-  Widget _buildListView(AppLocalizations l10n) {
+  Widget _buildListView(AppLocalizations l10n, List<CampusSection> sections) {
     final children = <Widget>[];
-    for (var i = 0; i < campusSections.length; i++) {
-      final section = campusSections[i];
+    for (var i = 0; i < sections.length; i++) {
+      final section = sections[i];
       // 收起搜索时第一个分区标题已与角标同行展示，不再重复渲染。
       final showHeader = _searchExpanded || i != 0;
       if (showHeader) {
@@ -419,10 +442,10 @@ class _CampusPageState extends State<CampusPage>
     );
   }
 
-  Widget _buildGridView(AppLocalizations l10n) {
+  Widget _buildGridView(AppLocalizations l10n, List<CampusSection> sections) {
     final slivers = <Widget>[];
-    for (var i = 0; i < campusSections.length; i++) {
-      final section = campusSections[i];
+    for (var i = 0; i < sections.length; i++) {
+      final section = sections[i];
       // 收起搜索时第一个分区标题已与角标同行展示，不再重复渲染。
       final showHeader = _searchExpanded || i != 0;
       if (showHeader) {

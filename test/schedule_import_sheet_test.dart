@@ -1,6 +1,9 @@
+import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/pages/course/import/import_source_sheet.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/services/database_service.dart';
 import 'package:flutter/material.dart';
@@ -22,8 +25,17 @@ class _FakeDatabaseService implements DatabaseService {
 }
 
 void main() {
-  setUp(() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  late AppConfigProvider appConfig;
+
+  setUp(() async {
     SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    appConfig = AppConfigProvider(prefs);
+    await appConfig.init();
+    await getIt.reset();
+    getIt.registerSingleton<AppConfigProvider>(appConfig);
   });
 
   /// 打开共用导入弹窗并返回 l10n（用于取文案）。
@@ -58,28 +70,41 @@ void main() {
     return l10n;
   }
 
-  testWidgets('导入弹窗列出四个入口（含研究生课表导入）', (tester) async {
+  testWidgets('本科生模式：分享 + 教务处两入口，无研究生入口', (tester) async {
     final l10n = await openSheet(tester);
 
-    expect(find.byType(ListTile), findsNWidgets(4));
+    expect(appConfig.studentType.value, StudentType.undergraduate);
+    expect(find.byType(ListTile), findsNWidgets(3));
     for (final label in [
       l10n.importFromShare,
       l10n.importFromJwxt,
       l10n.importFromJwxtOnline,
-      l10n.importFromGraduate,
     ]) {
       expect(find.text(label), findsOneWidget);
     }
+    expect(find.text(l10n.importFromGraduate), findsNothing);
   });
 
-  testWidgets('矮屏/横屏下第四个入口仍可滚动触达（回归：9/16 屏高裁切）', (tester) async {
-    // 1080x700 物理像素 ÷ 2.625 ≈ 411x267 逻辑像素，比四个入口加标题的总高度还矮。
+  testWidgets('研究生模式：分享 + 研究生入口，无教务处入口', (tester) async {
+    appConfig.studentType.value = StudentType.graduate;
+    final l10n = await openSheet(tester);
+
+    expect(find.byType(ListTile), findsNWidgets(2));
+    for (final label in [l10n.importFromShare, l10n.importFromGraduate]) {
+      expect(find.text(label), findsOneWidget);
+    }
+    expect(find.text(l10n.importFromJwxt), findsNothing);
+    expect(find.text(l10n.importFromJwxtOnline), findsNothing);
+  });
+
+  testWidgets('矮屏/横屏下最后一个入口仍可滚动触达（回归：9/16 屏高裁切）', (tester) async {
+    // 1080x700 物理像素 ÷ 2.625 ≈ 411x267 逻辑像素，比入口加标题的总高度还矮。
     tester.view.physicalSize = const Size(1080, 700);
     tester.view.devicePixelRatio = 2.625;
     addTearDown(tester.view.reset);
 
     final l10n = await openSheet(tester);
-    final lastTile = find.text(l10n.importFromGraduate);
+    final lastTile = find.text(l10n.importFromJwxtOnline);
     expect(lastTile, findsOneWidget);
 
     // 弹窗内容不可滚动时 ensureVisible 会抛「no Scrollable ancestor」，即本回归的失败点。

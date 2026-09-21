@@ -2,6 +2,7 @@ import 'package:bugaoshan/pages/campus/service_hall/service_hall_page.dart';
 import 'package:bugaoshan/pages/campus/zysc/zysc_page.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/pages/campus/academic_calendar/academic_calendar_page.dart';
 import 'package:bugaoshan/pages/campus/balance_query/balance_query_page.dart';
@@ -33,6 +34,12 @@ class CampusItemConfig {
   final String Function(AppLocalizations) desc;
   final Widget Function() page;
 
+  /// 目标受众；null 表示通用（本科生 / 研究生都展示）。
+  ///
+  /// 仅本科教务（zhjw）或研教务（gsapp）专属功能需要打标，
+  /// 由 [campusItemVisibleForStudentType] 按全局学生身份过滤。
+  final StudentType? audience;
+
   CampusItemConfig({
     required this.id,
     required this.icon,
@@ -41,6 +48,7 @@ class CampusItemConfig {
     required this.dockFullLabel,
     required this.desc,
     required this.page,
+    this.audience,
   });
 }
 
@@ -89,6 +97,7 @@ final campusItemGrades = CampusItemConfig(
   dockFullLabel: (l10n) => l10n.gradesStats,
   desc: (l10n) => l10n.gradesStatsDesc,
   page: () => const GradesPage(),
+  audience: StudentType.undergraduate,
 );
 
 final campusItemCcyl = CampusItemConfig(
@@ -109,6 +118,7 @@ final campusItemPlanCompletion = CampusItemConfig(
   dockFullLabel: (l10n) => l10n.planCompletion,
   desc: (l10n) => l10n.planCompletionDesc,
   page: () => const PlanCompletionPage(),
+  audience: StudentType.undergraduate,
 );
 
 final campusItemFitnessTest = CampusItemConfig(
@@ -129,6 +139,7 @@ final campusItemTrainProgram = CampusItemConfig(
   dockFullLabel: (l10n) => l10n.trainProgram,
   desc: (l10n) => l10n.trainProgramDesc,
   page: () => const TrainProgramPage(),
+  audience: StudentType.undergraduate,
 );
 
 final campusItemClassroom = CampusItemConfig(
@@ -139,6 +150,7 @@ final campusItemClassroom = CampusItemConfig(
   dockFullLabel: (l10n) => l10n.classroomQuery,
   desc: (l10n) => l10n.classroomQueryDesc,
   page: () => const ClassroomPage(),
+  audience: StudentType.undergraduate,
 );
 
 final campusItemClassScheduleInquiry = CampusItemConfig(
@@ -149,6 +161,7 @@ final campusItemClassScheduleInquiry = CampusItemConfig(
   dockFullLabel: (l10n) => l10n.classScheduleInquiry,
   desc: (l10n) => l10n.classScheduleInquiryDesc,
   page: () => const ClassScheduleInquiryPage(),
+  audience: StudentType.undergraduate,
 );
 
 final campusItemCourseCurriculum = CampusItemConfig(
@@ -159,6 +172,7 @@ final campusItemCourseCurriculum = CampusItemConfig(
   dockFullLabel: (l10n) => l10n.courseCurriculum,
   desc: (l10n) => l10n.courseCurriculumDesc,
   page: () => const CourseCurriculumPage(),
+  audience: StudentType.undergraduate,
 );
 
 final campusItemNetworkDevice = CampusItemConfig(
@@ -209,6 +223,7 @@ final campusItemExamPlan = CampusItemConfig(
   dockFullLabel: (l10n) => l10n.examPlan,
   desc: (l10n) => l10n.examPlanDesc,
   page: () => const ExamPlanPage(),
+  audience: StudentType.undergraduate,
 );
 
 final campusItemNotice = CampusItemConfig(
@@ -269,6 +284,7 @@ final campusItemGraduateScheduleImport = CampusItemConfig(
   dockFullLabel: (l10n) => l10n.graduateScheduleImport,
   desc: (l10n) => l10n.graduateScheduleImportDesc,
   page: () => const GraduateScheduleImportPage(),
+  audience: StudentType.graduate,
 );
 
 final campusSections = [
@@ -321,3 +337,31 @@ CampusItemConfig campusItemConfigById(String id) => allCampusItems.firstWhere(
   (item) => item.id == id,
   orElse: () => campusItemProfile,
 );
+
+/// 该功能项在指定学生身份下是否展示；[CampusItemConfig.audience] 为 null
+/// （通用）时恒为 true。
+bool campusItemVisibleForStudentType(CampusItemConfig item, StudentType type) =>
+    item.audience == null || item.audience == type;
+
+/// 按学生身份过滤校园页功能分区；过滤后为空的分区整个隐藏
+/// （如本科生模式下「研究生」分区）。
+List<CampusSection> campusSectionsForStudentType(StudentType type) => [
+  for (final section in campusSections)
+    if (section.items.any(
+      (item) => campusItemVisibleForStudentType(item, type),
+    ))
+      CampusSection(
+        title: section.title,
+        items: [
+          for (final item in section.items)
+            if (campusItemVisibleForStudentType(item, type)) item,
+        ],
+      ),
+];
+
+/// 按学生身份过滤全部功能项（含课程/校园/我的三项），供 dock 自定义页
+/// 与首页 dock 渲染使用。
+List<CampusItemConfig> allCampusItemsForStudentType(StudentType type) => [
+  for (final item in allCampusItems)
+    if (campusItemVisibleForStudentType(item, type)) item,
+];
