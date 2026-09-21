@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/models/graduate_train_plan.dart';
 import 'package:bugaoshan/pages/graduate/graduate_train_plan_page.dart';
 import 'package:bugaoshan/providers/graduate_train_plan_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/services/api/gs_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
@@ -18,9 +22,10 @@ void main() {
     await getIt.reset();
   });
 
-  group('GraduateTrainPlanProvider', () {
-    test('refresh：idle → loading → loaded，骨架落空态不发请求', () async {
-      final provider = GraduateTrainPlanProvider();
+  group('GraduateTrainPlanProvider 数据链', () {
+    test('refresh：三个接口依次完成 → loaded 且数据就位', () async {
+      final api = _ImmediateGsApiService();
+      final provider = GraduateTrainPlanProvider(api);
       expect(provider.state, GraduateTrainPlanLoadState.idle);
 
       await provider.refresh();
@@ -28,43 +33,84 @@ void main() {
       expect(provider.state, GraduateTrainPlanLoadState.loaded);
       expect(provider.errorKind, isNull);
       expect(provider.errorMessage, isNull);
+      expect(provider.info?.famc, '2026级学术学位0817 测试2026级研究生培养方案');
+      expect(provider.creditStats?.selectedCredits, 29.0);
+      expect(provider.creditStats?.requiredCredits, 24.0);
+      expect(provider.categories, hasLength(3));
+      expect(provider.categories.singleWhere((c) => c.dm == '1').mc, '必修课');
+      expect(provider.courses, hasLength(2));
     });
 
-    test('骨架阶段连续两次 refresh 各完成一轮状态通知', () async {
-      final provider = GraduateTrainPlanProvider();
-      var notifications = 0;
-      provider.addListener(() => notifications++);
+    test('重入守卫：loading 中二次 refresh 不发新请求', () async {
+      final api = _QueuedGsApiService();
+      final provider = GraduateTrainPlanProvider(api);
 
-      // 骨架 refresh 无真实 await，同步完成一轮（loading+loaded）；
-      // 接线后重入守卫生效，届时补可控 Completer 版本的重入测试。
-      await provider.refresh();
-      await provider.refresh();
+      final first = provider.refresh();
+      final second = provider.refresh();
+
+      expect(api.infoCalls, 1);
+      expect(api.statsCalls, 0);
+      api.autoCompleteRest = true;
+      api.completeHeldInfo();
+      await first;
+      await second;
 
       expect(provider.state, GraduateTrainPlanLoadState.loaded);
-      expect(notifications, 4);
+      expect(api.infoCalls, 1);
+      expect(api.statsCalls, 1);
+      expect(api.coursesCalls, 1);
     });
 
-    test('clear 复位为 idle', () async {
-      final provider = GraduateTrainPlanProvider();
+    test('UnauthenticatedException → unauthenticated 态', () async {
+      final api = _ThrowingGsApiService(
+        infoError: const UnauthenticatedException('研教务会话已过期'),
+      );
+      final provider = GraduateTrainPlanProvider(api);
+
+      await provider.refresh();
+
+      expect(provider.state, GraduateTrainPlanLoadState.error);
+      expect(provider.errorKind, GraduateTrainPlanErrorKind.unauthenticated);
+      expect(provider.errorMessage, isNull);
+    });
+
+    test('其它异常 → failed 态且带原文', () async {
+      final api = _ThrowingGsApiService(infoError: Exception('解析失败'));
+      final provider = GraduateTrainPlanProvider(api);
+
+      await provider.refresh();
+
+      expect(provider.state, GraduateTrainPlanLoadState.error);
+      expect(provider.errorKind, GraduateTrainPlanErrorKind.failed);
+      expect(provider.errorMessage, contains('解析失败'));
+    });
+
+    test('clear 复位数据与状态', () async {
+      final provider = GraduateTrainPlanProvider(_ImmediateGsApiService());
       await provider.refresh();
 
       provider.clear();
 
       expect(provider.state, GraduateTrainPlanLoadState.idle);
+      expect(provider.info, isNull);
+      expect(provider.creditStats, isNull);
+      expect(provider.categories, isEmpty);
+      expect(provider.courses, isEmpty);
     });
 
     test('ensureLoaded 与 refresh 等价', () async {
-      final provider = GraduateTrainPlanProvider();
+      final provider = GraduateTrainPlanProvider(_ImmediateGsApiService());
 
       await provider.ensureLoaded();
 
       expect(provider.state, GraduateTrainPlanLoadState.loaded);
+      expect(provider.info, isNotNull);
     });
   });
 
-  testWidgets('页面骨架：已登录、无数据显示空态', (tester) async {
+  testWidgets('页面：已登录且数据加载完成，渲染总进度与分类进度', (tester) async {
     getIt.registerSingleton<GraduateTrainPlanProvider>(
-      GraduateTrainPlanProvider(),
+      GraduateTrainPlanProvider(_ImmediateGsApiService()),
     );
     getIt.registerSingleton<ScuAuthProvider>(_FakeScuAuthProvider());
 
@@ -75,13 +121,28 @@ void main() {
         home: const GraduateTrainPlanPage(),
       ),
     );
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     final l10n = AppLocalizations.of(
       tester.element(find.byType(GraduateTrainPlanPage)),
     )!;
     expect(find.text(l10n.graduateTrainPlan), findsOneWidget);
-    expect(find.text(l10n.graduateTrainPlanEmpty), findsOneWidget);
+    // 总进度卡：已修 29 / 要求 24 学分
+    expect(
+      find.text(l10n.graduateTrainPlanCreditText('29', '24')),
+      findsOneWidget,
+    );
+    expect(find.text('2026级学术学位0817 测试2026级研究生培养方案'), findsOneWidget);
+    // 分类卡：必修课已修 14/14（有课程列表），必修环节无课程 → 空态文案
+    expect(
+      find.text(l10n.graduateTrainPlanModuleCredit('14', '14')),
+      findsOneWidget,
+    );
+    expect(find.text('必修课'), findsOneWidget);
+    expect(find.text('数理方法'), findsOneWidget);
+    expect(find.text('化学反应工程进展'), findsOneWidget);
+    expect(find.text('方案外 · 测试必选'), findsOneWidget);
+    expect(find.text(l10n.graduateTrainPlanNoCourses), findsOneWidget);
   });
 
   testWidgets('会话自愈失败：不抛未捕获异常，落到「请先登录」引导', (tester) async {
@@ -89,7 +150,7 @@ void main() {
     // 非自动登录中）→ 页面走 ScuAuth.refresh() 自愈分支；refresh 抛异常时
     // 必须被页面接住，否则 fire-and-forget 的 Future 会变成 unhandled error。
     getIt.registerSingleton<GraduateTrainPlanProvider>(
-      GraduateTrainPlanProvider(),
+      GraduateTrainPlanProvider(_ImmediateGsApiService()),
     );
     getIt.registerSingleton<ScuAuthProvider>(_ExpiredSessionAuthProvider());
     getIt.registerSingleton<ScuAuth>(_FailingRefreshScuAuth());
@@ -107,6 +168,162 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.byType(LoginRequiredWidget), findsOneWidget);
   });
+}
+
+// ── 脱敏 fixture（虚构数据，非真实账号）────────────────────────────────
+
+GraduateTrainPlanInfo _info() => GraduateTrainPlanInfo.fromJson(const {
+  'XH': '2026223070099',
+  'FAMC': '2026级学术学位0817 测试2026级研究生培养方案',
+  'FADM': '2026003307081799999',
+  'ZYDM_DISPLAY': '0817 测试工程',
+  'YXDM_DISPLAY': '测试学院',
+  'NJDM_DISPLAY': '2026级',
+  'PYCCDM_DISPLAY': '硕士',
+  'SHZT_DISPLAY': '待院系审核',
+});
+
+(GraduateTrainPlanCreditStats, List<GraduateTrainPlanCategoryProgress>)
+_stats() => (
+  GraduateTrainPlanCreditStats.fromJson(const {
+    'YXXF': 29.0,
+    'ZDXF': 24.0,
+    'FANYXXF': 22.0,
+    'FAWYXXF': 7.0,
+  }),
+  [
+    GraduateTrainPlanCategoryProgress.fromJson(const {
+      'DM': '1',
+      'MC': '必修课',
+      'YXXF': 14.0,
+      'ZDXF': 14.0,
+      'YXMS': 6,
+    }),
+    GraduateTrainPlanCategoryProgress.fromJson(const {
+      'DM': '2',
+      'MC': '选修课',
+      'YXXF': 13.0,
+      'ZDXF': 5.0,
+      'YXMS': 6,
+    }),
+    GraduateTrainPlanCategoryProgress.fromJson(const {
+      'DM': '7',
+      'MC': '必修环节',
+      'YXXF': 2.0,
+      'ZDXF': 2.0,
+      'YXMS': 2,
+    }),
+  ],
+);
+
+List<GraduateTrainPlanCourse> _courses() => [
+  GraduateTrainPlanCourse.fromJson(const {
+    'KCDM': 'S00000202',
+    'KCMC': '数理方法',
+    'KCLBDM': '1',
+    'KCLBDM_DISPLAY': '必修课',
+    'XF': 3.0,
+    'SFKZY_DISPLAY': null,
+    'BZ': null,
+  }),
+  GraduateTrainPlanCourse.fromJson(const {
+    'KCDM': 'B08170004',
+    'KCMC': '化学反应工程进展',
+    'KCLBDM': '2',
+    'KCLBDM_DISPLAY': '选修课',
+    'XF': 3.0,
+    'SFKZY_DISPLAY': '方案外',
+    'BZ': '测试必选',
+  }),
+];
+
+// ── 可控 GsApiService 假件 ────────────────────────────────────────────
+
+/// 三个接口立即以 fixture 完成。
+class _ImmediateGsApiService implements GsApiService {
+  @override
+  Future<GraduateTrainPlanInfo> fetchTrainPlanInfo() async => _info();
+
+  @override
+  Future<
+    (GraduateTrainPlanCreditStats, List<GraduateTrainPlanCategoryProgress>)
+  >
+  fetchTrainPlanCreditStats() async => _stats();
+
+  @override
+  Future<List<GraduateTrainPlanCourse>> fetchTrainPlanCourses() async =>
+      _courses();
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// info 请求被挂起、由测试控制何时完成；开启 [autoCompleteRest] 后，
+/// 后续 stats/courses 请求立即以 fixture 完成（info 完成后才发起）。
+class _QueuedGsApiService implements GsApiService {
+  int infoCalls = 0;
+  int statsCalls = 0;
+  int coursesCalls = 0;
+
+  bool autoCompleteRest = false;
+
+  final _heldInfo = <Completer<GraduateTrainPlanInfo>>[];
+
+  @override
+  Future<GraduateTrainPlanInfo> fetchTrainPlanInfo() {
+    infoCalls++;
+    if (autoCompleteRest) return Future.value(_info());
+    final completer = Completer<GraduateTrainPlanInfo>();
+    _heldInfo.add(completer);
+    return completer.future;
+  }
+
+  @override
+  Future<
+    (GraduateTrainPlanCreditStats, List<GraduateTrainPlanCategoryProgress>)
+  >
+  fetchTrainPlanCreditStats() async {
+    statsCalls++;
+    return _stats();
+  }
+
+  @override
+  Future<List<GraduateTrainPlanCourse>> fetchTrainPlanCourses() async {
+    coursesCalls++;
+    return _courses();
+  }
+
+  void completeHeldInfo() {
+    for (final completer in _heldInfo) {
+      if (!completer.isCompleted) completer.complete(_info());
+    }
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// info 抛异常、其余不触达（unauthenticated / failed 分类测试）。
+class _ThrowingGsApiService implements GsApiService {
+  _ThrowingGsApiService({required this.infoError});
+
+  final Object infoError;
+
+  @override
+  Future<GraduateTrainPlanInfo> fetchTrainPlanInfo() async => throw infoError;
+
+  @override
+  Future<
+    (GraduateTrainPlanCreditStats, List<GraduateTrainPlanCategoryProgress>)
+  >
+  fetchTrainPlanCreditStats() async => _stats();
+
+  @override
+  Future<List<GraduateTrainPlanCourse>> fetchTrainPlanCourses() async =>
+      _courses();
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class _FakeScuAuthProvider extends ChangeNotifier implements ScuAuthProvider {

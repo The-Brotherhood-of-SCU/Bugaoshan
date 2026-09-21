@@ -69,6 +69,22 @@ const String kGsGradesAppIndexUrl =
 const String kGsTrainPlanAppIndexUrl =
     '$kGsEhallBaseUrl/gsapp/sys/wdpyjhapp/*default/index.do';
 
+/// 研究生「我的培养计划」数据接口（2026-09-21 模拟机内抓包定案：
+/// MODULE_PATH 取自应用 index.js，均为 GET 无参，零框架信封
+/// `{success, reListData, reMapData, msg}`，与 wdcjapp 的 EMAP
+/// datas 信封不同）。
+const String kGsTrainPlanModulePath = '/gsapp/sys/wdpyjhapp/modules/wdpyjh';
+
+/// 方案基本信息（方案名/方案代码/培养层次/审核状态）。
+const String kGsTrainPlanInfoPath = '$kGsTrainPlanModulePath/wdxx.do';
+
+/// 分类学分统计（总计已选/要求 + 方案内外 + 每课程类别一行）。
+const String kGsTrainPlanCreditStatsPath =
+    '$kGsTrainPlanModulePath/wdkclbtj.do';
+
+/// 方案课程明细（fakcxx[]，含方案内外标记）。
+const String kGsTrainPlanCoursesPath = '$kGsTrainPlanModulePath/wdfakcxx.do';
+
 /// 除课表页（[kGsSchedulePageUrl]，兼做 ehall 会话检测）之外需要 SSO
 /// 预热的 EMAP 应用 index 列表——EMAP 应用会话要靠访问应用自身 index
 /// 建立，缺了会「明明已登录却进不去」。**新增研究生模块时把该应用的

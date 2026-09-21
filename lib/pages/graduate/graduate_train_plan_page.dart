@@ -1,5 +1,6 @@
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/models/graduate_train_plan.dart';
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
 import 'package:bugaoshan/providers/graduate_train_plan_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
@@ -13,10 +14,10 @@ import 'package:flutter/material.dart';
 
 /// 研究生培养进度页。
 ///
-/// 骨架：培养进度端点尚未抓包定案，先按标准套路落页面结构与状态机；
-/// 总进度「已修 X / 要求 Y 学分」+ 各模块学分进度与课程列表（文案已预留
-/// graduateTrainPlan* 全套）随端点定案一并接线（见 GraduateTrainPlanProvider
-/// 的 TODO(gs-api)）。
+/// 数据链（2026-09-21 抓包定案）：wdxx.do 方案信息 + wdkclbtj.do 分类学分
+/// 统计 + wdfakcxx.do 方案课程明细（见 GraduateTrainPlanProvider）。
+/// 结构：总进度卡「已修 X / 要求 Y 学分」+ 方案信息卡 + 各课程类别
+/// （分类学分进度 + 该类方案课程列表）。
 class GraduateTrainPlanPage extends StatefulWidget {
   const GraduateTrainPlanPage({super.key});
 
@@ -169,13 +170,310 @@ class _GraduateTrainPlanPageState extends State<GraduateTrainPlanPage> {
       );
     }
 
-    return Center(
+    final info = _provider.info;
+    final stats = _provider.creditStats;
+    if (info == null || stats == null) {
+      return Center(
+        child: Text(
+          l10n.graduateTrainPlanEmpty,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      );
+    }
+    return TrainPlanContentView(
+      info: info,
+      stats: stats,
+      categories: _provider.categories,
+      courses: _provider.courses,
+    );
+  }
+}
+
+/// 培养进度数据视图：总进度卡 + 方案信息卡 + 各课程类别
+/// （分类学分进度 + 该类方案课程列表）。
+class TrainPlanContentView extends StatelessWidget {
+  const TrainPlanContentView({
+    super.key,
+    required this.info,
+    required this.stats,
+    required this.categories,
+    required this.courses,
+  });
+
+  final GraduateTrainPlanInfo info;
+  final GraduateTrainPlanCreditStats stats;
+  final List<GraduateTrainPlanCategoryProgress> categories;
+  final List<GraduateTrainPlanCourse> courses;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
+    final grouped = <String, List<GraduateTrainPlanCourse>>{};
+    for (final course in courses) {
+      grouped.putIfAbsent(course.kclbdm, () => []).add(course);
+    }
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+      children: [
+        _Card(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.graduateTrainPlanProgress,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                l10n.graduateTrainPlanCreditText(
+                  fmtCredits(stats.selectedCredits),
+                  fmtCredits(stats.requiredCredits),
+                ),
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 12),
+              LinearProgressIndicator(
+                value: stats.requiredCredits > 0
+                    ? (stats.selectedCredits / stats.requiredCredits).clamp(
+                        0.0,
+                        1.0,
+                      )
+                    : null,
+                minHeight: 8,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        _Card(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(info.famc, style: theme.textTheme.titleMedium),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final text in [
+                    info.njdmDisplay,
+                    info.pyccdmDisplay,
+                    info.zydmDisplay,
+                    info.yxdmDisplay,
+                    info.shztDisplay,
+                  ])
+                    if (text != null) _Chip(text: text),
+                ],
+              ),
+            ],
+          ),
+        ),
+        for (final category in _planSections(categories, courses)) ...[
+          const SizedBox(height: 12),
+          _Card(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        category.title,
+                        style: theme.textTheme.titleMedium,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      l10n.graduateTrainPlanModuleCredit(
+                        fmtCredits(category.selectedCredits),
+                        fmtCredits(category.requiredCredits),
+                      ),
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                if (category.requiredCredits > 0)
+                  LinearProgressIndicator(
+                    value: (category.selectedCredits / category.requiredCredits)
+                        .clamp(0.0, 1.0),
+                    minHeight: 6,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                const SizedBox(height: 10),
+                if (category.courses.isEmpty)
+                  Text(
+                    l10n.graduateTrainPlanNoCourses,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  )
+                else
+                  for (final course in category.courses) ...[
+                    const Divider(height: 12, thickness: 0.5),
+                    _CourseRow(course: course),
+                  ],
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// 一个课程类别区块：标题（类别名）+ 分类学分进度 + 该类方案课程列表。
+class _PlanSection {
+  const _PlanSection({
+    required this.title,
+    required this.selectedCredits,
+    required this.requiredCredits,
+    required this.courses,
+  });
+
+  final String title;
+  final double selectedCredits;
+  final double requiredCredits;
+  final List<GraduateTrainPlanCourse> courses;
+}
+
+/// 以 `wdkclbtj` 的分类行为主序，把 `wdfakcxx` 的课程按 KCLBDM 归组；
+/// 分类行里没有、但课程里出现的类别，按类别名补到末尾。
+List<_PlanSection> _planSections(
+  List<GraduateTrainPlanCategoryProgress> rows,
+  List<GraduateTrainPlanCourse> courses,
+) {
+  final grouped = <String, List<GraduateTrainPlanCourse>>{};
+  for (final course in courses) {
+    grouped.putIfAbsent(course.kclbdm, () => []).add(course);
+  }
+
+  final sections = [
+    for (final row in rows)
+      _PlanSection(
+        title: row.mc.isEmpty ? (row.dm.isEmpty ? '' : row.dm) : row.mc,
+        selectedCredits: row.selectedCredits,
+        requiredCredits: row.requiredCredits,
+        courses: grouped.remove(row.dm) ?? const [],
+      ),
+  ];
+  for (final entry in grouped.entries) {
+    final first = entry.value.first;
+    sections.add(
+      _PlanSection(
+        title: first.kclbdmDisplay?.isNotEmpty == true
+            ? first.kclbdmDisplay!
+            : entry.key,
+        selectedCredits: entry.value.fold(
+          0.0,
+          (sum, course) => sum + course.credits,
+        ),
+        requiredCredits: 0.0,
+        courses: entry.value,
+      ),
+    );
+  }
+  return sections;
+}
+
+class _CourseRow extends StatelessWidget {
+  const _CourseRow({required this.course});
+
+  final GraduateTrainPlanCourse course;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final badges = <String>[
+      if (course.outOfPlan) '方案外',
+      if (course.remark != null) course.remark!,
+      if (course.stage != null) course.stage!,
+    ];
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(course.kcmc, style: theme.textTheme.bodyMedium),
+              if (badges.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(
+                  badges.join(' · '),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          fmtCredits(course.credits),
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _Card extends StatelessWidget {
+  const _Card({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 0,
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(padding: const EdgeInsets.all(16), child: child),
+    );
+  }
+}
+
+class _Chip extends StatelessWidget {
+  const _Chip({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(999),
+      ),
       child: Text(
-        l10n.graduateTrainPlanEmpty,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        text,
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
         ),
       ),
     );
   }
 }
+
+/// 学分数字显示：整数去尾零（14.0 → 14），其余保留一位（5.5 → 5.5）。
+String fmtCredits(double value) =>
+    value == value.roundToDouble() ? '${value.toInt()}' : '$value';
