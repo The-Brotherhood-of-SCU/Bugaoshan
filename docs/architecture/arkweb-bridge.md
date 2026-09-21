@@ -181,6 +181,16 @@ SQL 参数缺省时按空数组处理；SQL 中的 `?` 使用绑定参数，不�
 
 `window.setSystemBarStyle` 接受 `{"dark":true}` 或 `{"dark":false}`，按 Flutter 当前明暗主题设置状态栏及三键导航栏文字颜色，背景保持透明。手势指示条由系统管理。本次适配需要同时重新构建 Flutter Web 并打包鸿蒙容器。
 
+## 本地中文字体
+
+`web/fonts/` 提供完整的 Noto Sans SC 常规（400）、中等（500）、半粗（600）和粗体（700）WOFF2 文件及 OFL 许可证。该目录随 Flutter Web 构建复制到 `build/web/fonts/`，无需修改 `pubspec.yaml`，Android、Windows 等原生构建也不会因此打包字体。
+
+[`arkweb_fonts.dart`](../../lib/services/arkweb/arkweb_fonts.dart) 仅在存在 ArkWeb 原生桥时执行。它通过浏览器 HTTP 客户端读取相对页面 `base href` 的 `fonts/` 资源，由现有鸿蒙请求拦截从 `rawfile/web/fonts/` 返回；不用原生校园网 HTTP 代理，也不读取设备系统字体。初始化等待四个字重通过 `FontLoader` 注册完成后才调用 `runApp`，避免主界面先显示缺字方框。
+
+加载成功后，主题固定使用 `BugaoshanNotoSansSC` 字体族，并跳过 Google Fonts 的运行时主题加载。其他平台和普通浏览器保留原有字体设置。字体设置入口在 ArkWeb 中隐藏。字体文件缺失或请求失败会记录日志并进入已有启动错误页面，不会静默改为在线下载。特殊字符或本字体未覆盖的语言仍可能触发 Flutter 引擎的备用字体机制。
+
+字体来源、原始文件指纹及压缩方式见 [`web/fonts/README.md`](../../web/fonts/README.md)。修改后需要重新构建 Web、将完整产物复制到鸿蒙 `rawfile/web/`，再打包安装。
+
 ## 边界
 
 验证码 OCR 使用随 Web 产物打包的 `scu_ocr_lite` 模型，不需要联网识别。Flutter Web 调用同步 `recognize()`，避免依赖库的 `recognizeAsync()` 调用 Web 不支持的 `Isolate.run`；其他平台继续使用异步识别。Web 识别在页面线程执行。
