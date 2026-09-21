@@ -172,6 +172,40 @@ void main() {
       expect(graduateTrainPlanEarnedInPlan(sections), 0.0);
     });
 
+    test('wdfakcxx 的「方案外」行不建映射：其成绩落方案外区块而非方案内', () {
+      // 实测 fakcxx 混有方案外选课行（66 行中 18 行）——映射必须跳过，
+      // 否则这类已修课会被算进方案内分子（口径泄漏，ImZhiXia review）。
+      final sections = graduateTrainPlanSections(
+        categories: [
+          GraduateTrainPlanCategoryProgress.fromJson(const {
+            'DM': '1',
+            'MC': '必修课',
+            'ZDXF': 14.0,
+          }),
+        ],
+        planCourses: [
+          GraduateTrainPlanCourse.fromJson(const {
+            'KCDM': 'B08170004',
+            'KCMC': '化学反应工程进展',
+            'KCLBDM': '1',
+            'KCLBDM_DISPLAY': '必修课',
+            'XF': 3.0,
+            'SFKZY_DISPLAY': '方案外',
+            'BZ': '化学工艺研究生必选',
+          }),
+        ],
+        gradeRows: [_gradeRow('B08170004', '化学反应工程进展', credit: 3.0)],
+      );
+
+      expect(sections, hasLength(2));
+      expect(sections.first.rows, isEmpty);
+      final outOfPlan = sections.last;
+      expect(outOfPlan.outOfPlan, isTrue);
+      expect(outOfPlan.rows.single.courseName, '化学反应工程进展');
+      expect(outOfPlan.earnedCredits, 3.0);
+      expect(graduateTrainPlanEarnedInPlan(sections), 0.0);
+    });
+
     test('类别码不在分类行里的已修课走兜底区块，不静默消失', () {
       final sections = graduateTrainPlanSections(
         categories: [

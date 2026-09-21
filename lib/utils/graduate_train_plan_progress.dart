@@ -9,6 +9,8 @@
 /// 口径约定：
 /// - **方案内已修**（[graduateTrainPlanEarnedInPlan]）与方案要求（ZDXF）
 ///   同口径，用作总进度的分子；
+/// - 建课程→类别映射时**跳过 wdfakcxx 里的「方案外」行**（实测混有此类
+///   选课行），其成绩落「方案外」区块单列展示；
 /// - 归属到方案课程、但其类别码不在分类要求行里的已修课，进「未匹配
 ///   类别」兜底区块（属方案内、无要求分），**绝不静默丢学分**；
 /// - 方案课程明细里完全找不到的成绩行落「方案外」区块，单列展示，
@@ -61,10 +63,13 @@ List<TrainPlanProgressSection> graduateTrainPlanSections({
     passedByCourse.putIfAbsent(row.courseCode, () => row);
   }
 
-  // 方案课程 → 类别。
+  // 方案课程 → 类别。**跳过「方案外」行**：fakcxx 实测混有方案外选课行
+  // （2026-09-21 抓包 66 行中 18 行，如导师要求的专业课），它们不算方案内，
+  // 其成绩应落「方案外」区块，否则会被算进方案内分子（口径泄漏）。
   final planCategoryByCourse = <String, String>{
     for (final course in planCourses)
-      if (course.kcdm.isNotEmpty) course.kcdm: course.kclbdm,
+      if (course.kcdm.isNotEmpty && !course.outOfPlan)
+        course.kcdm: course.kclbdm,
   };
 
   // 按类别归已修行；方案内匹配不到的进 outOfPlan。
