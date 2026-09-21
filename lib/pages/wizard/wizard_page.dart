@@ -2,6 +2,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/theme_shape.dart';
@@ -34,7 +35,7 @@ class _WizardPageState extends State<WizardPage> {
       const WelcomePage(),
       const LoginPage(),
       const FeaturesPage(),
-      if (Platform.isAndroid) const WidgetPage(),
+      if (!kIsWeb && Platform.isAndroid) const WidgetPage(),
     ];
     _totalPages = _pages.length;
 

@@ -19,12 +19,14 @@ Future<void> main() async {
     runApp(MyApp());
   } catch (error, stackTrace) {
     debugPrint('Startup error: $error\n$stackTrace');
-    runApp(_StartupErrorApp(errorMessage: stackTrace.toString()));
+    runApp(_StartupErrorApp(errorMessage: '$error\n\n$stackTrace'));
   }
 }
 
 Future<void> _initializeApp() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // 在 DI 首次读取 SystemTheme.accentColor 前设置默认色。
+  SystemTheme.fallbackColor = Colors.blue;
   await initializeArkWebSupport();
   if (!kIsWeb) {
     DartPluginRegistrant.ensureInitialized();
@@ -45,7 +47,6 @@ Future<void> _initializeApp() async {
   }
 
   // 获取系统主题颜色
-  SystemTheme.fallbackColor = Colors.blue;
   await SystemTheme.accentColor.load();
 
   // 启动时不再在 main 进行图片解码或等待；预加载交由 app 层在 post-frame 时处理，以避免重复加载与启动阻塞。

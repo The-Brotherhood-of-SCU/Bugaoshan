@@ -10,6 +10,7 @@ import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 import 'package:bugaoshan/models/release_info.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -74,6 +75,7 @@ class UpdateService {
   UpdateService(this._prefs, this._currentVersion);
 
   bool get supportsInAppUpdate =>
+      !kIsWeb &&
       // F-Droid 渠道安装的包由 F-Droid 负责更新，应用内自更新对其隐藏。
       // 用运行时安装来源判断而非构建时开关，以保持 F-Droid 可复制构建
       // 与 CI 产物逐字节一致。
@@ -83,6 +85,7 @@ class UpdateService {
           Platform.isWindows);
 
   UpdateAssetPlatform? get _assetPlatform {
+    if (kIsWeb) return null;
     if (Platform.isAndroid) return UpdateAssetPlatform.android;
     if (Platform.isWindows) return UpdateAssetPlatform.windows;
     if (Platform.isLinux) return UpdateAssetPlatform.linux;
@@ -212,7 +215,7 @@ class UpdateService {
 
   /// 清理临时目录中旧版本的安装包，仅在版本变化时执行一次。
   Future<void> cleanupOldPackages() async {
-    if (!Platform.isAndroid) return;
+    if (kIsWeb || !Platform.isAndroid) return;
     final lastVersion = _prefs.getString(_keyLastInstalledVersion);
     if (lastVersion == _currentVersion) return;
     try {

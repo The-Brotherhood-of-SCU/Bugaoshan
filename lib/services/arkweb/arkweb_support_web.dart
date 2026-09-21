@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:system_theme/system_theme.dart';
 
 import 'package:bugaoshan/utils/json_utils.dart';
 
@@ -8,7 +9,7 @@ import 'native_bridge.dart';
 
 bool _initialized = false;
 
-/// 在 DI 和数据库初始化之前，把 sqflite 的平台调用接到原生桥。
+/// 在 DI 初始化之前接入原生数据库，并适配 ArkWeb 的平台插件行为。
 Future<void> initializeArkWebSupport() async {
   if (_initialized || !isArkWebNativeAvailable) return;
 
@@ -44,6 +45,22 @@ Future<void> initializeArkWebSupport() async {
         details: error.details,
       );
     }
+  });
+  final themeChannel = MethodChannel(
+    'system_theme',
+    const StandardMethodCodec(),
+    webPluginRegistrar,
+  );
+  themeChannel.setMethodCallHandler((call) async {
+    if (call.method == SystemTheme.getSystemAccentColorMethodName) {
+      // system_theme_web 的 CSS 取色会抛出 Unknown color format。
+      // 返回 null 表示无系统色，插件保留 fallbackColor；同时覆盖首次读取
+      // accentColor 时自动触发的 load()，避免未等待的异步异常。
+      return null;
+    }
+    throw MissingPluginException(
+      'Unsupported system_theme method: ${call.method}',
+    );
   });
   // 复用全局 Web 插件注册器，保留其他插件的消息处理。
   webPluginRegistrar.registerMessageHandler();
