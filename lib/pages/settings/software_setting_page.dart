@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/pages/settings/add_widget/add_widget_page.dart';
 import 'package:bugaoshan/pages/settings/set_dock_page.dart';
 import 'package:bugaoshan/pages/settings/set_duration_page.dart';
@@ -11,9 +11,11 @@ import 'package:bugaoshan/pages/settings/set_language_page.dart';
 import 'package:bugaoshan/pages/settings/set_app_icon_page.dart';
 import 'package:bugaoshan/pages/settings/set_course_style_page.dart';
 import 'package:bugaoshan/pages/settings/set_font_page.dart';
+import 'package:bugaoshan/pages/settings/set_student_type_page.dart';
 import 'package:bugaoshan/pages/settings/set_theme_color_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/common/info_card.dart';
 import 'package:bugaoshan/widgets/common/section_title.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
@@ -40,6 +42,18 @@ class SoftwareSettingPage extends StatelessWidget {
                 icon: Icons.language,
                 label: localizations.modifyLanguage,
                 onTap: () => popupOrNavigate(context, SetLanguagePage()),
+              ),
+              ValueListenableBuilder<StudentType>(
+                valueListenable: appConfig.studentType,
+                builder: (context, studentType, _) => IconTile(
+                  icon: Icons.badge_outlined,
+                  label: localizations.studentTypeSetting,
+                  value: studentType == StudentType.graduate
+                      ? localizations.studentTypeGraduate
+                      : localizations.studentTypeUndergraduate,
+                  onTap: () =>
+                      popupOrNavigate(context, const SetStudentTypePage()),
+                ),
               ),
               if (Platform.isAndroid)
                 IconTile(

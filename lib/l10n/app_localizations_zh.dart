@@ -54,6 +54,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wizardImportHint => '登录后可自动获取课表';
 
   @override
+  String get wizardStudentTypeTitle => '选择你的身份';
+
+  @override
+  String get wizardStudentTypeDesc => '决定课表导入方式与校园页展示的功能，之后可在设置中更改';
+
+  @override
+  String get studentTypeSetting => '学生类型';
+
+  @override
+  String get studentTypeUndergraduate => '本科生';
+
+  @override
+  String get studentTypeGraduate => '研究生';
+
+  @override
+  String get studentTypeUndergraduateDesc => '展示本科教务功能：成绩统计、考试安排、教室查询、培养方案等';
+
+  @override
+  String get studentTypeGraduateDesc => '展示研究生功能：研究生课表导入等';
+
+  @override
+  String get studentTypeHint => '切换后课表导入入口与校园页功能会随之调整，已保存的课表和自定义配置不受影响，可随时再切换。';
+
+  @override
   String get wizardFeatureTitle => '探索更多功能';
 
   @override

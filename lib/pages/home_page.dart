@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
+import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
@@ -106,78 +107,102 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
     return ValueListenableBuilder<List<String>>(
       valueListenable: appConfig.visibleDockIds,
-      builder: (context, visibleIds, _) {
-        _clampCurrentIndex(visibleIds);
+      builder: (context, savedIds, _) {
+        // dock 中不属于当前学生身份的功能项临时隐藏，
+        // 不改动 visibleDockIds 里保存的配置，切回身份后恢复。
+        return ValueListenableBuilder<StudentType>(
+          valueListenable: appConfig.studentType,
+          builder: (context, studentType, _) {
+            final visibleIds = [
+              for (final id in savedIds)
+                if (campusItemVisibleForStudentType(
+                  campusItemConfigById(id),
+                  studentType,
+                ))
+                  id,
+            ];
+            _clampCurrentIndex(visibleIds);
 
-        return ValueListenableBuilder<bool>(
-          valueListenable: appConfig.hasUpdateNotification,
-          builder: (context, hasUpdate, _) {
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                final isWide = constraints.maxWidth >= 600;
-                final showRail = isWide && visibleIds.length >= 2;
-                final showBar = !isWide && visibleIds.length >= 2;
-                final pageContent = ListenableBuilder(
-                  listenable: Listenable.merge([
-                    appConfig.cardSizeAnimationDuration,
-                    appConfig.enablePageTransitionAnimation,
-                  ]),
-                  builder: (context, _) {
-                    return AuthScopedIndexedStack(
-                      authListenable: authProvider,
-                      isAuthenticated: () => authProvider.isLoggedIn,
-                      visibleIds: visibleIds,
-                      selectedIndex: _currentIndex,
-                      duration: appConfig.cardSizeAnimationDuration.value,
-                      enableAnimation:
-                          appConfig.enablePageTransitionAnimation.value,
-                      axis: showRail ? Axis.vertical : Axis.horizontal,
-                      pageBuilder: (id) => campusItemConfigById(id).page(),
+            return ValueListenableBuilder<bool>(
+              valueListenable: appConfig.hasUpdateNotification,
+              builder: (context, hasUpdate, _) {
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isWide = constraints.maxWidth >= 600;
+                    final showRail = isWide && visibleIds.length >= 2;
+                    final showBar = !isWide && visibleIds.length >= 2;
+                    final pageContent = ListenableBuilder(
+                      listenable: Listenable.merge([
+                        appConfig.cardSizeAnimationDuration,
+                        appConfig.enablePageTransitionAnimation,
+                      ]),
+                      builder: (context, _) {
+                        return AuthScopedIndexedStack(
+                          authListenable: authProvider,
+                          isAuthenticated: () => authProvider.isLoggedIn,
+                          visibleIds: visibleIds,
+                          selectedIndex: _currentIndex,
+                          duration: appConfig.cardSizeAnimationDuration.value,
+                          enableAnimation:
+                              appConfig.enablePageTransitionAnimation.value,
+                          axis: showRail ? Axis.vertical : Axis.horizontal,
+                          pageBuilder: (id) => campusItemConfigById(id).page(),
+                        );
+                      },
+                    );
+                    return Scaffold(
+                      body: Row(
+                        children: [
+                          // Rail placeholder: always present, hidden via Offstage
+                          Offstage(
+                            offstage: !showRail,
+                            child: NavigationRail(
+                              selectedIndex: _currentIndex,
+                              onDestinationSelected: (index) {
+                                setState(() => _currentIndex = index);
+                              },
+                              labelType: NavigationRailLabelType.all,
+                              destinations: visibleIds
+                                  .map(
+                                    (id) => _buildRailDestination(
+                                      id,
+                                      hasUpdate,
+                                      l10n,
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                          ),
+                          Offstage(
+                            offstage: !showRail,
+                            child: const VerticalDivider(
+                              thickness: 1,
+                              width: 1,
+                            ),
+                          ),
+                          // Page content: always at index 2
+                          Expanded(child: SafeArea(child: pageContent)),
+                        ],
+                      ),
+                      bottomNavigationBar: showBar
+                          ? NavigationBar(
+                              selectedIndex: _currentIndex,
+                              onDestinationSelected: (index) {
+                                setState(() => _currentIndex = index);
+                              },
+                              destinations: visibleIds
+                                  .map(
+                                    (id) => _buildBarDestination(
+                                      id,
+                                      hasUpdate,
+                                      l10n,
+                                    ),
+                                  )
+                                  .toList(),
+                            )
+                          : null,
                     );
                   },
-                );
-                return Scaffold(
-                  body: Row(
-                    children: [
-                      // Rail placeholder: always present, hidden via Offstage
-                      Offstage(
-                        offstage: !showRail,
-                        child: NavigationRail(
-                          selectedIndex: _currentIndex,
-                          onDestinationSelected: (index) {
-                            setState(() => _currentIndex = index);
-                          },
-                          labelType: NavigationRailLabelType.all,
-                          destinations: visibleIds
-                              .map(
-                                (id) =>
-                                    _buildRailDestination(id, hasUpdate, l10n),
-                              )
-                              .toList(),
-                        ),
-                      ),
-                      Offstage(
-                        offstage: !showRail,
-                        child: const VerticalDivider(thickness: 1, width: 1),
-                      ),
-                      // Page content: always at index 2
-                      Expanded(child: SafeArea(child: pageContent)),
-                    ],
-                  ),
-                  bottomNavigationBar: showBar
-                      ? NavigationBar(
-                          selectedIndex: _currentIndex,
-                          onDestinationSelected: (index) {
-                            setState(() => _currentIndex = index);
-                          },
-                          destinations: visibleIds
-                              .map(
-                                (id) =>
-                                    _buildBarDestination(id, hasUpdate, l10n),
-                              )
-                              .toList(),
-                        )
-                      : null,
                 );
               },
             );
