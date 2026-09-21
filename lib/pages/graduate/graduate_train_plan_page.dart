@@ -189,7 +189,7 @@ class _GraduateTrainPlanPageState extends State<GraduateTrainPlanPage> {
       info: info,
       requiredCredits: stats.requiredCredits,
       sections: _provider.sections,
-      earnedTotal: _provider.earnedTotal,
+      earnedInPlan: _provider.earnedInPlan,
     );
   }
 }
@@ -202,18 +202,18 @@ class TrainPlanContentView extends StatelessWidget {
     required this.info,
     required this.requiredCredits,
     required this.sections,
-    required this.earnedTotal,
+    required this.earnedInPlan,
   });
 
   final GraduateTrainPlanInfo info;
 
-  /// 计划要求总学分（wdkclbtj.do reMapData.ZDXF）。
+  /// 计划要求总学分（wdkclbtj.do reMapData.ZDXF，方案内）。
   final double requiredCredits;
 
   final List<TrainPlanProgressSection> sections;
 
-  /// 已修（通过）学分总和，含方案外。
-  final double earnedTotal;
+  /// 方案内已修（通过）学分，与 [requiredCredits] 同口径；方案外单列。
+  final double earnedInPlan;
 
   @override
   Widget build(BuildContext context) {
@@ -236,7 +236,7 @@ class TrainPlanContentView extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 l10n.graduateTrainPlanCreditText(
-                  graduateTrainPlanFmtCredits(earnedTotal),
+                  graduateTrainPlanFmtCredits(earnedInPlan),
                   graduateTrainPlanFmtCredits(requiredCredits),
                 ),
                 style: theme.textTheme.headlineSmall?.copyWith(
@@ -246,7 +246,7 @@ class TrainPlanContentView extends StatelessWidget {
               const SizedBox(height: 12),
               LinearProgressIndicator(
                 value: requiredCredits > 0
-                    ? (earnedTotal / requiredCredits).clamp(0.0, 1.0)
+                    ? (earnedInPlan / requiredCredits).clamp(0.0, 1.0)
                     : null,
                 minHeight: 8,
                 borderRadius: BorderRadius.circular(4),
@@ -272,7 +272,7 @@ class TrainPlanContentView extends StatelessWidget {
                     info.yxdmDisplay,
                     info.shztDisplay,
                   ])
-                    if (text != null) _Chip(text: text),
+                    if (text.isNotEmpty) _Chip(text: text),
                 ],
               ),
             ],

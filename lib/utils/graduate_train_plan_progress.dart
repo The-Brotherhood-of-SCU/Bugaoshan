@@ -4,11 +4,15 @@
 /// - 要求学分（总 ZDXF / 每类 ZDXF）来自 `wdkclbtj.do`；
 /// - KCDM → 课程类别的归属来自 `wdfakcxx.do` 的方案课程明细；
 /// - 已修 = 成绩行（`xscjcx.do`）里**及格且有效**的课程；同一课程代码
-///   多次通过（重修/补考）只计一次，学分取首条及格记录；
-/// - 方案课程明细里找不到的成绩行视为「方案外」课程。
+///   多次通过（重修/补考）只计一次，学分取首条及格记录。
 ///
-/// 注意：培养计划官方页的「当前选课学分」是**选课侧**口径（含未出成绩的
-/// 在修课程），与本文件「已修（通过）」口径不同，不要混用。
+/// 口径约定：
+/// - **方案内已修**（[graduateTrainPlanEarnedInPlan]）与方案要求（ZDXF）
+///   同口径，用作总进度的分子；
+/// - 归属到方案课程、但其类别码不在分类要求行里的已修课，进「未匹配
+///   类别」兜底区块（属方案内、无要求分），**绝不静默丢学分**；
+/// - 方案课程明细里完全找不到的成绩行落「方案外」区块，单列展示，
+///   不计入总进度的分子。
 library;
 
 import 'package:bugaoshan/models/graduate_grades.dart';
@@ -21,33 +25,29 @@ class TrainPlanProgressSection {
     required this.earnedCredits,
     required this.requiredCredits,
     required this.rows,
+    this.outOfPlan = false,
   });
 
-  /// 类别名（方案外的区块标题用数据原文「方案外」）。
+  /// 区块标题（类别名；兜底区块用类别码/名称，方案外区块用数据原文）。
   final String title;
 
-  /// 该类已修（通过）学分。
+  /// 该区块已修（通过）学分。
   final double earnedCredits;
 
-  /// 该类要求学分（方案外区块为 0，UI 不画进度条）。
+  /// 该区块要求学分（无要求定义的区块为 0，UI 不画进度条）。
   final double requiredCredits;
 
   /// 已修课程（按学期序，每门课取首条及格记录）。
   final List<GraduateGradeRow> rows;
+
+  /// 是否方案外区块（不计入方案内已修总和）。
+  final bool outOfPlan;
 }
 
-/// 培养进度计算结果。
-class TrainPlanProgress {
-  const TrainPlanProgress({required this.sections, required this.earnedTotal});
-
-  /// 各区块（方案类别为主序，方案外垫底）。
-  final List<TrainPlanProgressSection> sections;
-
-  /// 已修（通过）学分总和，含方案外。
-  final double earnedTotal;
-}
-
-/// 归并主入口。
+/// 归并主入口：返回全部区块。
+///
+/// 顺序：wdkclbtj 分类行主序 → 方案内「未匹配类别」兜底区块（方案课程
+/// 的 kclbdm 有成绩落、但分类行没有该码）→「方案外」垫底。
 List<TrainPlanProgressSection> graduateTrainPlanSections({
   required List<GraduateTrainPlanCategoryProgress> categories,
   required List<GraduateTrainPlanCourse> planCourses,
@@ -67,7 +67,7 @@ List<TrainPlanProgressSection> graduateTrainPlanSections({
       if (course.kcdm.isNotEmpty) course.kcdm: course.kclbdm,
   };
 
-  // 按类别归已修行。
+  // 按类别归已修行；方案内匹配不到的进 outOfPlan。
   final rowsByCategory = <String, List<GraduateGradeRow>>{};
   final outOfPlan = <GraduateGradeRow>[];
   for (final row in passedByCourse.values) {
@@ -79,6 +79,17 @@ List<TrainPlanProgressSection> graduateTrainPlanSections({
     rowsByCategory.putIfAbsent(kclbdm, () => []).add(row);
   }
 
+  // 方案内兜底：分类行里没有、但方案课程确实归类了的类别码。
+  final coveredCodes = {for (final category in categories) category.dm};
+  final orphanTitles = <String, String>{};
+  for (final course in planCourses) {
+    final code = course.kclbdm;
+    if (code.isEmpty || coveredCodes.contains(code)) continue;
+    orphanTitles[code] ??= course.kclbdmDisplay.isNotEmpty
+        ? course.kclbdmDisplay
+        : code;
+  }
+
   final sections = [
     for (final category in categories)
       TrainPlanProgressSection(
@@ -86,6 +97,14 @@ List<TrainPlanProgressSection> graduateTrainPlanSections({
         earnedCredits: _creditsOf(rowsByCategory[category.dm] ?? const []),
         requiredCredits: category.requiredCredits,
         rows: rowsByCategory[category.dm] ?? const [],
+      ),
+    // 未匹配类别兜底：这些行已在方案内归类，只是分类行缺码。
+    for (final entry in orphanTitles.entries)
+      TrainPlanProgressSection(
+        title: entry.value,
+        earnedCredits: _creditsOf(rowsByCategory[entry.key] ?? const []),
+        requiredCredits: 0.0,
+        rows: rowsByCategory[entry.key] ?? const [],
       ),
   ];
   if (outOfPlan.isNotEmpty) {
@@ -95,16 +114,20 @@ List<TrainPlanProgressSection> graduateTrainPlanSections({
         earnedCredits: _creditsOf(outOfPlan),
         requiredCredits: 0.0,
         rows: outOfPlan,
+        outOfPlan: true,
       ),
     );
   }
   return sections;
 }
 
-/// 已修学分总和：全部区块每门及格课程计一次（行已按课程代码去重）。
-double graduateTrainPlanEarnedTotal(List<TrainPlanProgressSection> sections) {
+/// 方案内已修学分总和：全部**非方案外**区块每门及格课程计一次
+/// （行已按课程代码去重）。与 [GraduateTrainPlanCreditStats.requiredCredits]
+/// 同口径，作总进度分子。
+double graduateTrainPlanEarnedInPlan(List<TrainPlanProgressSection> sections) {
   var total = 0.0;
   for (final section in sections) {
+    if (section.outOfPlan) continue;
     for (final row in section.rows) {
       total += row.credit;
     }

@@ -20,13 +20,13 @@ enum GraduateTrainPlanErrorKind {
 
 /// 研究生培养进度（GraduateTrainPlanPage）状态。
 ///
-/// 数据链（2026-09-21 抓包定案，见 GraduateTrainPlanProvider 文档与
-/// graduate_train_plan_progress.dart）：
+/// 数据链（2026-09-21 抓包定案，见 graduate_train_plan_progress.dart）：
 /// - `wdxx.do` → 方案基本信息（方案名/方案代码/培养层次/审核状态）；
 /// - `wdkclbtj.do` → 方案要求：总计要求学分 ZDXF + 每课程类别要求；
 /// - `wdfakcxx.do` → 方案课程明细（KCDM → 课程类别归属）；
-/// - `xscjcx.do` → 成绩行，**及格且有效**的课视为已修（重修去重），
-///   归并到课程类别上得到「已修 X / 要求 Y」。
+/// - `xscjcx.do` → 成绩行，**及格且有效**的课视为已修（重修去重）。
+/// 总进度分子 = 方案内已修（graduateTrainPlanEarnedInPlan），与分母
+/// ZDXF 同口径；方案外单列展示不计入分子。
 /// 前三个为 GET 无参零信封（success/reListData/reMapData），走
 /// _getZeroJson 自愈链；成绩走信封分页链。
 class GraduateTrainPlanProvider extends ChangeNotifier {
@@ -42,7 +42,7 @@ class GraduateTrainPlanProvider extends ChangeNotifier {
   GraduateTrainPlanInfo? _info;
   GraduateTrainPlanCreditStats? _creditStats;
   List<TrainPlanProgressSection> _sections = const [];
-  double _earnedTotal = 0.0;
+  double _earnedInPlan = 0.0;
 
   GraduateTrainPlanLoadState get state => _state;
   GraduateTrainPlanErrorKind? get errorKind => _errorKind;
@@ -50,7 +50,10 @@ class GraduateTrainPlanProvider extends ChangeNotifier {
   GraduateTrainPlanInfo? get info => _info;
   GraduateTrainPlanCreditStats? get creditStats => _creditStats;
   List<TrainPlanProgressSection> get sections => _sections;
-  double get earnedTotal => _earnedTotal;
+
+  /// 方案内已修学分（与 [GraduateTrainPlanCreditStats.requiredCredits]
+  /// 同口径，作总进度分子；方案外单列展示不计入）。
+  double get earnedInPlan => _earnedInPlan;
 
   Future<void> ensureLoaded() => refresh();
 
@@ -80,7 +83,7 @@ class GraduateTrainPlanProvider extends ChangeNotifier {
       _info = info;
       _creditStats = stats;
       _sections = sections;
-      _earnedTotal = graduateTrainPlanEarnedTotal(sections);
+      _earnedInPlan = graduateTrainPlanEarnedInPlan(sections);
       _state = GraduateTrainPlanLoadState.loaded;
       _errorKind = null;
       _errorMessage = null;
@@ -103,7 +106,7 @@ class GraduateTrainPlanProvider extends ChangeNotifier {
     _info = null;
     _creditStats = null;
     _sections = const [];
-    _earnedTotal = 0.0;
+    _earnedInPlan = 0.0;
     _state = GraduateTrainPlanLoadState.idle;
     _errorKind = null;
     _errorMessage = null;

@@ -37,15 +37,16 @@ void main() {
       expect(provider.errorMessage, isNull);
       expect(provider.info?.famc, '2026级学术学位0817 测试2026级研究生培养方案');
       expect(provider.creditStats?.requiredCredits, 24.0);
-      // 已修：数理方法（必修课，方案内）3 + 化学反应工程进展（方案外）3 = 6
-      expect(provider.earnedTotal, 6.0);
+      // 方案内已修：数理方法（必修课，方案内）3.0；方案外的化学反应工程
+      // 进展不计入分子，单列展示。
+      expect(provider.earnedInPlan, 3.0);
       expect(provider.sections, hasLength(4));
       final required = provider.sections.singleWhere((s) => s.title == '必修课');
       expect(required.earnedCredits, 3.0);
       expect(required.requiredCredits, 14.0);
       expect(required.rows.single.courseName, '数理方法');
       final outOfPlan = provider.sections.last;
-      expect(outOfPlan.title, '方案外');
+      expect(outOfPlan.outOfPlan, isTrue);
       expect(outOfPlan.earnedCredits, 3.0);
     });
 
@@ -104,7 +105,7 @@ void main() {
       expect(provider.info, isNull);
       expect(provider.creditStats, isNull);
       expect(provider.sections, isEmpty);
-      expect(provider.earnedTotal, 0.0);
+      expect(provider.earnedInPlan, 0.0);
     });
 
     test('ensureLoaded 与 refresh 等价', () async {
@@ -124,7 +125,6 @@ void main() {
           GraduateTrainPlanCategoryProgress.fromJson(const {
             'DM': '1',
             'MC': '必修课',
-            'YXXF': 0.0,
             'ZDXF': 14.0,
           }),
         ],
@@ -148,16 +148,15 @@ void main() {
       expect(sections, hasLength(1));
       expect(sections.first.earnedCredits, 3.0);
       expect(sections.first.rows, hasLength(1));
-      expect(graduateTrainPlanEarnedTotal(sections), 3.0);
+      expect(graduateTrainPlanEarnedInPlan(sections), 3.0);
     });
 
-    test('方案课程里找不到的成绩行落「方案外」区块', () {
+    test('方案课程里找不到的成绩行落「方案外」，不计入方案内已修', () {
       final sections = graduateTrainPlanSections(
         categories: [
           GraduateTrainPlanCategoryProgress.fromJson(const {
             'DM': '1',
             'MC': '必修课',
-            'YXXF': 0.0,
             'ZDXF': 14.0,
           }),
         ],
@@ -167,9 +166,42 @@ void main() {
 
       expect(sections, hasLength(2));
       expect(sections.first.rows, isEmpty);
-      expect(sections.last.title, '方案外');
+      expect(sections.last.outOfPlan, isTrue);
       expect(sections.last.earnedCredits, 3.0);
-      expect(graduateTrainPlanEarnedTotal(sections), 3.0);
+      // 总进度分子只算方案内。
+      expect(graduateTrainPlanEarnedInPlan(sections), 0.0);
+    });
+
+    test('类别码不在分类行里的已修课走兜底区块，不静默消失', () {
+      final sections = graduateTrainPlanSections(
+        categories: [
+          GraduateTrainPlanCategoryProgress.fromJson(const {
+            'DM': '1',
+            'MC': '必修课',
+            'ZDXF': 14.0,
+          }),
+        ],
+        // 方案课程把该课归到类别码 9，但 wdkclbtj 分类行里没有 DM=9。
+        planCourses: [
+          GraduateTrainPlanCourse.fromJson(const {
+            'KCDM': 'X99999999',
+            'KCMC': '素质拓展课',
+            'KCLBDM': '9',
+            'KCLBDM_DISPLAY': '素质拓展',
+            'XF': 2.0,
+          }),
+        ],
+        gradeRows: [_gradeRow('X99999999', '素质拓展课', credit: 2.0)],
+      );
+
+      // 必修课 + 未匹配类别兜底（非方案外）。
+      expect(sections, hasLength(2));
+      final orphan = sections.last;
+      expect(orphan.outOfPlan, isFalse);
+      expect(orphan.title, '素质拓展');
+      expect(orphan.earnedCredits, 2.0);
+      // 兜底区块属于方案内，计入总进度分子。
+      expect(graduateTrainPlanEarnedInPlan(sections), 2.0);
     });
   });
 
@@ -192,9 +224,9 @@ void main() {
       tester.element(find.byType(GraduateTrainPlanPage)),
     )!;
     expect(find.text(l10n.graduateTrainPlan), findsOneWidget);
-    // 总进度卡：已修 6 / 要求 24 学分
+    // 总进度卡：方案内已修 3 / 要求 24 学分
     expect(
-      find.text(l10n.graduateTrainPlanCreditText('6', '24')),
+      find.text(l10n.graduateTrainPlanCreditText('3', '24')),
       findsOneWidget,
     );
     expect(find.text('2026级学术学位0817 测试2026级研究生培养方案'), findsOneWidget);
