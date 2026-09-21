@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:bugaoshan/services/arkweb/arkweb_fonts.dart';
 
 import 'theme_shape.dart';
 
@@ -127,9 +126,7 @@ ThemeData buildTheme({
   double textScale = 1.0,
   Duration pageTransitionDuration = const Duration(milliseconds: 300),
 }) {
-  final localFontFamily = arkWebFontFamily;
   final baseTheme = ThemeData(
-    fontFamily: localFontFamily,
     colorScheme: ColorScheme.fromSeed(
       seedColor: seedColor,
       brightness: brightness,
@@ -152,7 +149,7 @@ ThemeData buildTheme({
   );
 
   TextTheme textTheme = baseTheme.textTheme;
-  if (useGoogleFonts && localFontFamily == null) {
+  if (useGoogleFonts) {
     textTheme = GoogleFonts.notoSansScTextTheme(textTheme);
   }
   return baseTheme.copyWith(textTheme: textTheme);

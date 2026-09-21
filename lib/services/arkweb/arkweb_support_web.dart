@@ -1,5 +1,3 @@
-import 'dart:js_interop';
-
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:sqflite/sqflite.dart';
@@ -7,12 +5,8 @@ import 'package:system_theme/system_theme.dart';
 
 import 'package:bugaoshan/utils/json_utils.dart';
 
-import 'arkweb_fonts.dart';
 import 'native_bridge.dart';
 import 'viewport_web.dart';
-
-@JS('document.baseURI')
-external JSString get _documentBaseUri;
 
 bool _initialized = false;
 
@@ -75,7 +69,5 @@ Future<void> initializeArkWebSupport() async {
   if (capabilities.contains('viewport')) {
     await initializeArkWebViewport();
   }
-  // 主界面首次绘制前注册完整中文字形，并遵循页面的 base href。
-  await initializeArkWebFonts(Uri.parse(_documentBaseUri.toDart));
   _initialized = true;
 }
