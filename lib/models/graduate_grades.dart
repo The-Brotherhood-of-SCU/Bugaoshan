@@ -100,9 +100,7 @@ class GraduateGradeRow {
   String? get percentileLabel {
     final value = percentile;
     if (value == null) return null;
-    return value % 1 == 0
-        ? value.toStringAsFixed(0)
-        : value.toStringAsFixed(1);
+    return value % 1 == 0 ? value.toStringAsFixed(0) : value.toStringAsFixed(1);
   }
 
   /// 卡片副显示（成绩大字下方的小字）：优先百分成绩，仅当它与成绩显示值
@@ -134,8 +132,7 @@ class GraduateGradeRow {
     if (remark == null || remark.trim().isEmpty) return false;
     final display = gradeDisplay ?? gradeText;
     if (display == null) return false;
-    String core(String s) =>
-        s.replaceAll('合格', '').replaceAll('通过', '').trim();
+    String core(String s) => s.replaceAll('合格', '').replaceAll('通过', '').trim();
     return core(remark) == core(display);
   }
 }
@@ -182,13 +179,13 @@ double? _asDouble(Object? value) {
   return null;
 }
 
-/// 宽松 0/1 标志归一化：布尔、数字（0 以外）、数字字符串、'true' 都算
-/// true。实测信封给的是数字 1/0，但 JSON 源头若给 true / 1.0 也不能误判。
+/// 0/1 标志归一化：布尔透传；数字/数字字符串**严格等于 1** 才算 true——
+/// 实测信封只给 0/1，将来若冒出 `2`（不适用/未评之类的编码）不能被
+/// 「非零即真」静默算进通过率；'true' 字符串同样认账。
 bool _asFlag(Object? value) => switch (value) {
   null => false,
   bool b => b,
-  num n => n != 0,
-  String s =>
-    s.trim() == 'true' || (double.tryParse(s.trim()) ?? 0) != 0,
+  num n => n == 1,
+  String s => s.trim() == 'true' || (double.tryParse(s.trim()) ?? -1) == 1,
   _ => false,
 };

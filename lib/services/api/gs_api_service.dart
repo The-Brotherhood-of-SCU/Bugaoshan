@@ -35,6 +35,10 @@ class GsApiService {
 
   static const String _tag = 'GsApiService';
 
+  /// 分页循环防呆硬上限：正常请求 totalPage / totalSize / 未满页都会先
+  /// 于它命中，只兜「服务端元数据全撒谎」的死循环。
+  static const int _maxPagedRequests = 50;
+
   final GsAuth _gsAuth;
 
   /// 研究生课表（供课表导入，直连）。
@@ -95,9 +99,7 @@ class GsApiService {
 
   /// 首次上课日期行（SCSKRQ / PKSJ），供学期第 1 周周一反推，
   /// 见 [semesterStartMondayFromFirstClassRows]。
-  Future<List<Map<String, dynamic>>> fetchFirstClassRows(
-    String xnxqdm,
-  ) async {
+  Future<List<Map<String, dynamic>>> fetchFirstClassRows(String xnxqdm) async {
     return _postForm(kGsFirstClassPath, {
       'XNXQDM': xnxqdm,
       'XH': '',
@@ -128,8 +130,7 @@ class GsApiService {
   ) {
     return retryOnUnauthenticated(
       _gsAuth.getClient,
-      (client) => _postEnvelopeOnce(client, path, fields)
-          .then(gsRows),
+      (client) => _postEnvelopeOnce(client, path, fields).then(gsRows),
       invalidate: _gsAuth.invalidate,
     );
   }
@@ -151,19 +152,16 @@ class GsApiService {
     final all = <Map<String, dynamic>>[];
     var page = 1;
     while (true) {
-      final envelope = await retryOnUnauthenticated(
-        _gsAuth.getClient,
-        (client) async {
-          final decoded = await _postEnvelopeOnce(client, path, {
-            ...fields,
-            'pageNumber': '$page',
-            'pageSize': '$pageSize',
-          });
-          return gsPagedEnvelope(decoded) ??
-              GsPagedEnvelope(rows: const []);
-        },
-        invalidate: _gsAuth.invalidate,
-      );
+      final envelope = await retryOnUnauthenticated(_gsAuth.getClient, (
+        client,
+      ) async {
+        final decoded = await _postEnvelopeOnce(client, path, {
+          ...fields,
+          'pageNumber': '$page',
+          'pageSize': '$pageSize',
+        });
+        return gsPagedEnvelope(decoded) ?? GsPagedEnvelope(rows: const []);
+      }, invalidate: _gsAuth.invalidate);
       if (envelope.rows.isEmpty) break;
       all.addAll(envelope.rows);
       final totalPage = envelope.totalPage;
@@ -175,7 +173,7 @@ class GsApiService {
       final effectivePageSize = envelope.pageSize ?? pageSize;
       if (envelope.rows.length < effectivePageSize) break;
       page++;
-      if (page > 50) break;
+      if (page > _maxPagedRequests) break;
     }
     return all;
   }
