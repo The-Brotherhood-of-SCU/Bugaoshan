@@ -2984,10 +2984,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get graduateStatsPassRate => '通过率';
 
   @override
-  String get graduateTrainPlan => '培养方案';
+  String get graduateTrainPlan => '培养进度';
 
   @override
-  String get graduateTrainPlanDesc => '查看研究生培养方案';
+  String get graduateTrainPlanDesc => '查看研究生培养进度';
 
   @override
   String get graduateScheduleImport => '课表导入';
@@ -3048,7 +3048,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get graduateScheduleImportEmergencyCapture => '应急网页抓取（直连不可用时）';
 
   @override
-  String get graduateTrainPlanEmpty => '暂无培养方案数据';
+  String get graduateTrainPlanEmpty => '暂无培养进度数据';
 
   @override
   String get graduateTrainPlanProgress => '培养进度';

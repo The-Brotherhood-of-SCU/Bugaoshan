@@ -23,6 +23,7 @@ import 'package:bugaoshan/pages/campus/train_program/train_program_page.dart';
 import 'package:bugaoshan/pages/campus_page/campus_page.dart';
 import 'package:bugaoshan/pages/course/main/course_page.dart';
 import 'package:bugaoshan/pages/graduate/graduate_grades_page.dart';
+import 'package:bugaoshan/pages/graduate/graduate_train_plan_page.dart';
 import 'package:bugaoshan/pages/graduate/schedule_import_page.dart';
 import 'package:bugaoshan/pages/profile/profile_page.dart';
 
@@ -287,6 +288,16 @@ final campusItemGraduateGrades = CampusItemConfig(
   page: () => const GraduateGradesPage(),
 );
 
+final campusItemGraduateTrainPlan = CampusItemConfig(
+  id: dockIdGraduateTrainPlan,
+  icon: Icons.account_tree_outlined,
+  selectedIcon: Icons.account_tree,
+  dockLabel: (l10n) => l10n.graduateTrainPlan,
+  dockFullLabel: (l10n) => l10n.graduateTrainPlan,
+  desc: (l10n) => l10n.graduateTrainPlanDesc,
+  page: () => const GraduateTrainPlanPage(),
+);
+
 final campusItemGraduateScheduleImport = CampusItemConfig(
   id: dockIdGraduateScheduleImport,
   icon: Icons.cloud_download_outlined,
@@ -331,7 +342,11 @@ final campusSections = [
   ),
   CampusSection(
     title: (l10n) => l10n.graduateSection,
-    items: [campusItemGraduateGrades, campusItemGraduateScheduleImport],
+    items: [
+      campusItemGraduateGrades,
+      campusItemGraduateTrainPlan,
+      campusItemGraduateScheduleImport,
+    ],
   ),
 ];
 

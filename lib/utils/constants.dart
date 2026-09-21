@@ -65,11 +65,18 @@ const String kGsSchedulePageUrl =
 const String kGsGradesAppIndexUrl =
     '$kGsEhallBaseUrl/gsapp/sys/wdcjapp/*default/index.do';
 
+/// 研究生「培养进度」应用页面地址（EMAP 应用 index，建立应用会话用）。
+const String kGsTrainPlanAppIndexUrl =
+    '$kGsEhallBaseUrl/gsapp/sys/wdpyjhapp/*default/index.do';
+
 /// 除课表页（[kGsSchedulePageUrl]，兼做 ehall 会话检测）之外需要 SSO
 /// 预热的 EMAP 应用 index 列表——EMAP 应用会话要靠访问应用自身 index
 /// 建立，缺了会「明明已登录却进不去」。**新增研究生模块时把该应用的
 /// index 追加进列表即可，无需再改 gs_auth 主链。**
-const List<String> kGsExtraAppIndexUrls = [kGsGradesAppIndexUrl];
+const List<String> kGsExtraAppIndexUrls = [
+  kGsGradesAppIndexUrl,
+  kGsTrainPlanAppIndexUrl,
+];
 
 // ── 研教务 wdkbapp 数据接口（2026-09-15 登录抓包实测确认）──────────────
 //
@@ -107,7 +114,6 @@ const MethodChannel kDynamicIconMethodChannel = MethodChannel(
 const EventChannel kDownloadCancelEventChannel = EventChannel(
   'bugaoshan/download_cancel',
 );
-
 
 // 以下常量自上游 main 移植（2026-09-15 同步）
 const String dockIdCourseCurriculum = 'course_curriculum';

@@ -21,6 +21,7 @@ Color campusItemAccent(String id) => switch (id) {
   dockIdZysc => const Color(0xFF9A7FD1), // 淡紫
   dockIdLeave => const Color(0xFF6488C4), // 灰蓝
   dockIdGraduateGrades => const Color(0xFF4A7BA6), // 钢蓝
+  dockIdGraduateTrainPlan => const Color(0xFF6B5CA5), // 深紫
   dockIdNotice => const Color(0xFFE05D5D), // 朱红
   dockIdDownloadedAttachments => const Color(0xFF8F9BA8), // 蓝灰
   _ => const Color(0xFF5B8DEF),

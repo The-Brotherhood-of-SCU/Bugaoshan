@@ -19,6 +19,7 @@ import 'package:bugaoshan/providers/exam_plan_provider.dart';
 import 'package:bugaoshan/providers/fitness_test_provider.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/providers/graduate_grades_provider.dart';
+import 'package:bugaoshan/providers/graduate_train_plan_provider.dart';
 import 'package:bugaoshan/providers/network_device_provider.dart';
 import 'package:bugaoshan/providers/passpoint_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
@@ -225,6 +226,10 @@ void _configureAsyncDependencies() {
     await getIt.isReady<GsApiService>();
     return GraduateGradesProvider(getIt<GsApiService>());
   });
+  // 研究生培养进度骨架：端点未定案，暂无外部依赖。
+  getIt.registerSingleton<GraduateTrainPlanProvider>(
+    GraduateTrainPlanProvider(),
+  );
 
   // ── Provider ────────────────────────────────────────────────────
   getIt.registerSingletonAsync<ScuAuthProvider>(() async {
@@ -457,6 +462,9 @@ void _configureAsyncDependencies() {
         }
         if (getIt.isRegistered<GraduateGradesProvider>()) {
           getIt<GraduateGradesProvider>().clear();
+        }
+        if (getIt.isRegistered<GraduateTrainPlanProvider>()) {
+          getIt<GraduateTrainPlanProvider>().clear();
         }
         if (getIt.isRegistered<ServiceApplicationsProvider>()) {
           getIt<ServiceApplicationsProvider>().clear();

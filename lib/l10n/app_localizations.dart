@@ -5782,13 +5782,13 @@ abstract class AppLocalizations {
   /// No description provided for @graduateTrainPlan.
   ///
   /// In en, this message translates to:
-  /// **'Training Plan'**
+  /// **'Training Progress'**
   String get graduateTrainPlan;
 
   /// No description provided for @graduateTrainPlanDesc.
   ///
   /// In en, this message translates to:
-  /// **'View the graduate training plan'**
+  /// **'View your graduate training progress'**
   String get graduateTrainPlanDesc;
 
   /// No description provided for @graduateScheduleImport.
@@ -5896,7 +5896,7 @@ abstract class AppLocalizations {
   /// No description provided for @graduateTrainPlanEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No training plan data'**
+  /// **'No training progress data'**
   String get graduateTrainPlanEmpty;
 
   /// No description provided for @graduateTrainPlanProgress.
