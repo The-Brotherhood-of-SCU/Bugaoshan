@@ -80,6 +80,7 @@ flutter:
     - assets/js/
     - assets/scripts/
     - CHANGELOG.md
+    - docs/legal/
   config:
     enable-swift-package-manager: false
 flutter_launcher_icons:

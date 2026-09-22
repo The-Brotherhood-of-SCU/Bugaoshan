@@ -77,7 +77,6 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │   ├── icon.svg                # icon source vector
 │   ├── icon_old.png            # legacy icon
 │   ├── academic_calendar.json  # academic calendar data
-│   ├── eula.md                 # EULA text bundled into the app
 │   ├── js/                     # beautify scripts injected by WebView notice pages
 │   │   ├── dom_ready.js
 │   │   ├── jwc_notice_beautify.js
@@ -132,6 +131,10 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │   │   ├── linux-distribution.md
 │   │   ├── notice-webview.md
 │   │   └── release-pipeline.md
+│   ├── legal/                  # 公开法律文档（随应用打包/外链）
+│   │   ├── eula.md             # EULA text bundled into the app (pubspec.yaml assets)
+│   │   ├── privacy-policy.md
+│   │   └── support.md
 │   └── decisions/              # Architecture Decision Records (ADRs)
 │       ├── README.md
 │       ├── 0001-use-webview-and-js-injection-for-notices.md
@@ -300,7 +303,7 @@ Shared downloads module lives in `lib/pages/campus/downloads/`:
 - **国密 (SM2)** — `dart_sm` encrypts the password before sending to SCU's auth API (`lib/utils/sm2_crypto.dart`).
 - **Dynamic navigation** — Home page uses a customizable dock system (`lib/models/campus_item_config.dart`). Users can enable/disable/reorder dock items. Pages are lazily built and cached in an `IndexedStack`.
 - **Theme system** — `lib/theme.dart` defines MD3 expressive overrides (PredictiveBack on Android, Cupertino on iOS, FadeForwards on desktop). Supports system accent color, custom color, or color derived from the background image (with opacity).
-- **EULA gate** — `app.dart` checks `AppConfigProvider.acceptedEulaVersion`; below `currentEulaVersion` shows `EulaGatePage` (EULA text is in `lib/widgets/eula_content.dart` and `assets/eula.md`).
+- **EULA gate** — `app.dart` checks `AppConfigProvider.acceptedEulaVersion`; below `currentEulaVersion` shows `EulaGatePage` (EULA text is in `lib/widgets/eula_content.dart` and `docs/legal/eula.md`).
 - **First-launch wizard** — `WizardPage` shown if `firstLaunchWizardCompleted` is false.
 - **手写 JSON 解析** — 统一用 `lib/utils/json_utils.dart` 的 `safeDouble` / `safeInt` / `safeString` / `safeBool` 宽松取值，替代 `(json['x'] as num?)?.toDouble() ?? 0` 样板与裸强转（脏数据回退默认值而非崩溃）。**刻意不引入** json_serializable 全量迁移——现有手写规模不值得。
 - **大文件拆分约定** — 超大文件（600+ 行）拆分用两种模式，均保持外部 import 零改动：① `part` 文件（私有符号跨文件共享，如 `repair_page.dart` + `repair_submit_tab.dart`/`repair_widgets.dart`、`zhjw_api_service.dart` + `zhjw_html_parsers.dart`、`balance_query_provider.dart` + `balance_query_state.dart`）；② barrel re-export（如 `calendar_event_utils.dart`、`service_plugin_models.dart`、`course.dart`）。**有意不拆**的单文件（勿再起拆分之心）：`notice_downloaded_page.dart` / `classroom_page.dart` / `scu_auth.dart` 为单一内聚 State/状态机；`calendar_location_mapper.dart` 为纯静态数据表（有专项单测守着）。向 `zhjw` / `zhhq` 等仍在增长的主文件加解析逻辑时，新代码进对应 part 文件而非主文件。
@@ -405,7 +408,7 @@ The auto-changelog flow:
 - 凭据(access token、CCYL OAuth token、保存的账号密码)统一存到 `FlutterSecureStorage`,**不要**改用 SharedPreferences.
 - 用户敏感信息(学号、姓名等)在某些查询页默认隐藏,展示前请尊重 `set_privacy_*` 类的设置开关(详见 `CHANGELOG.md` 中 1.1.1 "部分查询页隐藏隐私信息").
 - `CHANGELOG.md` 1.1.0 中提到的"单一认证节点无法使用导致全部功能无法使用"已被修复 —— 新增节点时务必保留单点失败隔离(L2 Auth 间通过依赖图表达关系——同级无依赖的模块可并行互不阻塞；但 PayAppAuth 依赖 WfwAuth，若 WfwAuth 失败 PayAppAuth 也会失败).
-- EULA 文本位于 `assets/eula.md` 与 `lib/widgets/eula_content.dart`,版本号定义在两处 — 修改后请同步并通过 `AppConfigProvider.acceptedEulaVersion` 强制老用户重新接受.
+- EULA 文本位于 `docs/legal/eula.md` 与 `lib/widgets/eula_content.dart`,版本号定义在两处 — 修改后请同步并通过 `AppConfigProvider.acceptedEulaVersion` 强制老用户重新接受.
 - Android keystore 仅在 CI 从 `secrets.KEYSTORE_BASE64` 解码,本地仓库里的 `upload-keystore.jks` 文件**请勿提交真实生产凭据**.
 - 桌面端 `assets/scripts/update.{bat,sh}` 在更新流程中执行 — 修改时注意命令注入.
 

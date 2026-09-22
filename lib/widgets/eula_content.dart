@@ -46,7 +46,7 @@ class _EulaContentState extends State<EulaContent>
 
   Future<void> _loadEulaContent() async {
     try {
-      final content = await rootBundle.loadString('assets/eula.md');
+      final content = await rootBundle.loadString('docs/legal/eula.md');
       if (mounted) {
         setState(() {
           _eulaContent = content;

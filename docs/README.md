@@ -2,7 +2,7 @@
 
 本目录保存需要长期维护的架构说明、设计决策，以及随应用公开的支持与隐私文档。功能介绍、构建方式和贡献流程分别以仓库根目录的 `README.md`、`CONTRIBUTING.md` 和 `AGENTS.md` 为准。
 
-公开文档：[隐私政策](legal/privacy-policy.md) · [应用支持](legal/support.md)。
+公开文档：[EULA](legal/eula.md) · [隐私政策](legal/privacy-policy.md) · [应用支持](legal/support.md)。
 
 ## 当前架构
 
