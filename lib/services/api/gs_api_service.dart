@@ -6,6 +6,7 @@ import 'package:bugaoshan/services/auth/gs_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/models/graduate_grades.dart';
+import 'package:bugaoshan/models/graduate_train_plan.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/graduate_schedule_parser.dart';
@@ -224,6 +225,112 @@ class GsApiService {
       }
       AppLog.e(_tag, '$path 响应非 JSON（len=${response.body.length}）');
       throw ServiceException('研教务返回了无法解析的数据');
+    }
+    return decoded;
+  }
+
+  /// ── 研究生培养进度（wdpyjhapp，2026-09-21 模拟机内抓包定案）────────
+  ///
+  /// 三个 GET 无参接口，零框架信封（`{success, reListData, reMapData, msg}`），
+  /// 与 wdcjapp 的 EMAP datas 信封不同，单独走 [_getZeroJson]。
+
+  /// 方案基本信息（方案名/方案代码/培养层次/审核状态）。
+  Future<GraduateTrainPlanInfo> fetchTrainPlanInfo() async {
+    final decoded = await _getZeroJson(kGsTrainPlanInfoPath);
+    final reMapData = _zeroReMapData(decoded);
+    final xsxx = reMapData['XSXX'];
+    return GraduateTrainPlanInfo.fromJson(
+      xsxx is Map<String, dynamic> ? xsxx : const {},
+    );
+  }
+
+  /// 分类学分统计：返回（总计, 每课程类别一行）。
+  ///
+  /// `reMapData`：YXXF 总计已选 / ZDXF 学分要求 / FANYXXF 方案内 / FAWYXXF
+  /// 方案外；`reListData`：每类 DM/MC/YXXF（已选）/ZDXF（要求）/YXMS（门数）。
+  Future<
+    (GraduateTrainPlanCreditStats, List<GraduateTrainPlanCategoryProgress>)
+  >
+  fetchTrainPlanCreditStats() async {
+    final decoded = await _getZeroJson(kGsTrainPlanCreditStatsPath);
+    final reMapData = _zeroReMapData(decoded);
+    final stats = GraduateTrainPlanCreditStats.fromJson(reMapData);
+    final list = decoded['reListData'];
+    final rows = [
+      if (list is List)
+        for (final row in list)
+          if (row is Map<String, dynamic>)
+            GraduateTrainPlanCategoryProgress.fromJson(row),
+    ];
+    return (stats, rows);
+  }
+
+  /// 方案课程明细（按课程类别分组展示用，含方案内外标记）。
+  Future<List<GraduateTrainPlanCourse>> fetchTrainPlanCourses() async {
+    final decoded = await _getZeroJson(kGsTrainPlanCoursesPath);
+    final list = decoded['fakcxx'];
+    return [
+      if (list is List)
+        for (final row in list)
+          if (row is Map<String, dynamic>)
+            GraduateTrainPlanCourse.fromJson(row),
+    ];
+  }
+
+  Map<String, dynamic> _zeroReMapData(Map<String, dynamic> decoded) {
+    final reMapData = decoded['reMapData'];
+    return reMapData is Map<String, dynamic> ? reMapData : const {};
+  }
+
+  /// GET 零信封请求（带自愈）。会话失效判定与 [_postEnvelopeOnce] 一致：
+  /// 401/403、空 body、登录页 HTML；零信封额外要求 `success == true`。
+  Future<Map<String, dynamic>> _getZeroJson(String path) {
+    return retryOnUnauthenticated(
+      _gsAuth.getClient,
+      (client) => _getZeroOnce(client, path),
+      invalidate: _gsAuth.invalidate,
+    );
+  }
+
+  Future<Map<String, dynamic>> _getZeroOnce(
+    CookieClient client,
+    String path,
+  ) async {
+    final response = await client.followRedirects(
+      Uri.parse('$kGsEhallBaseUrl$path'),
+      headers: {
+        'Accept': 'application/json, text/javascript, */*; q=0.01',
+        'User-Agent': kDefaultUserAgent,
+        'Referer': kGsTrainPlanAppIndexUrl,
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    );
+    if (response.statusCode == 401 || response.statusCode == 403) {
+      throw const UnauthenticatedException();
+    }
+    if (response.statusCode < 200 || response.statusCode >= 400) {
+      throw ServiceException('研教务请求失败', statusCode: response.statusCode);
+    }
+    if (response.body.isEmpty) {
+      throw const UnauthenticatedException('研教务返回了空响应');
+    }
+
+    final Object? decoded;
+    try {
+      decoded = jsonDecode(response.body);
+    } catch (_) {
+      if (looksLikeLoginPage(response.body)) {
+        throw const UnauthenticatedException('研教务会话已过期');
+      }
+      AppLog.e(_tag, '$path 响应非 JSON（len=${response.body.length}）');
+      throw ServiceException('研教务返回了无法解析的数据');
+    }
+    if (decoded is! Map<String, dynamic>) {
+      throw ServiceException('研教务返回了无法解析的数据');
+    }
+    if (decoded['success'] != true) {
+      final msg = decoded['msg']?.toString();
+      throw ServiceException((msg == null || msg.isEmpty) ? '研教务接口返回失败' : msg);
     }
     return decoded;
   }

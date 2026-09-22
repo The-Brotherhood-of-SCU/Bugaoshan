@@ -226,10 +226,11 @@ void _configureAsyncDependencies() {
     await getIt.isReady<GsApiService>();
     return GraduateGradesProvider(getIt<GsApiService>());
   });
-  // 研究生培养进度骨架：端点未定案，暂无外部依赖。
-  getIt.registerSingleton<GraduateTrainPlanProvider>(
-    GraduateTrainPlanProvider(),
-  );
+  // 研究生培养进度：依赖 GsApiService（wdpyjhapp 零信封 GET 自愈链）。
+  getIt.registerSingletonAsync<GraduateTrainPlanProvider>(() async {
+    await getIt.isReady<GsApiService>();
+    return GraduateTrainPlanProvider(getIt<GsApiService>());
+  });
 
   // ── Provider ────────────────────────────────────────────────────
   getIt.registerSingletonAsync<ScuAuthProvider>(() async {
