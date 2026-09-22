@@ -92,7 +92,10 @@ const int _maxSectionsPerDay = 20;
 
 /// 学期最大周数上限。位串（如 `"1111111100"`）会被当成一个巨大的整数，
 /// 靠这个上限挡掉，否则会造出第 1111111100 周的课。
-const int _maxWeeksPerTerm = 60;
+///
+/// 直接复用 [kMaxCourseWeeks]，与 [Course] 接受的上界保持单一来源——超过该
+/// 上限的周次在模型层也会被丢弃，两处独立定义迟早会漂移。
+const int _maxWeeksPerTerm = kMaxCourseWeeks;
 
 /// 形态识别下探的最大深度（负载嵌套不会很深，防御异常结构）。
 const int _maxCaptureDepth = 6;
@@ -721,14 +724,14 @@ DateTime? semesterStartMondayFromFirstClassRows(List<dynamic> rows) {
     if (firstClass == null || startWeek == null || startWeek < 1) continue;
 
     final sameWeekdayInWeek1 = DateTime(
-      firstClass.year, 
-      firstClass.month, 
-      firstClass.day - (startWeek - 1) * 7
+      firstClass.year,
+      firstClass.month,
+      firstClass.day - (startWeek - 1) * 7,
     );
     final monday = DateTime(
-      sameWeekdayInWeek1.year, 
-      sameWeekdayInWeek1.month, 
-      sameWeekdayInWeek1.day - (sameWeekdayInWeek1.weekday - 1)
+      sameWeekdayInWeek1.year,
+      sameWeekdayInWeek1.month,
+      sameWeekdayInWeek1.day - (sameWeekdayInWeek1.weekday - 1),
     );
     final day = DateTime(monday.year, monday.month, monday.day);
     votes[day] = (votes[day] ?? 0) + 1;

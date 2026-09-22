@@ -56,7 +56,7 @@ class IcsService {
 
     for (final course in courses) {
       for (int week = course.startWeek; week <= course.endWeek; week++) {
-        if (!_isWeekActive(course, week)) continue;
+        if (!course.isActiveInWeek(week)) continue;
 
         final courseDate = config.dateForCourseDay(week, course.dayOfWeek);
         final startTime = config.timeSlots[course.startSection - 1].startTime;
@@ -220,12 +220,6 @@ class IcsService {
     buffer.writeln('DESCRIPTION:${_escapeIcsText(event.description)}');
     buffer.writeln('UID:${event.uid}');
     buffer.writeln('END:VEVENT');
-  }
-
-  static bool _isWeekActive(Course course, int week) {
-    if (course.weekType == WeekType.odd && week.isEven) return false;
-    if (course.weekType == WeekType.even && week.isOdd) return false;
-    return true;
   }
 
   static DateTime _combineDateTime(DateTime date, TimeOfDay time) {

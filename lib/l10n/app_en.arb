@@ -259,6 +259,18 @@
   "everyWeek": "Every Week",
   "oddWeek": "Odd Week",
   "evenWeek": "Even Week",
+  "customWeeksHint": "Custom Weeks",
+  "selectAtLeastOneWeek": "Please select at least one week",
+  "activeWeeks": "Active Weeks",
+  "weekSegments": "Weeks {segments}",
+  "@weekSegments": {
+    "description": "自定义离散周次的展示文本，segments 形如 1-3, 5, 8-10",
+    "placeholders": {
+      "segments": {
+        "type": "String"
+      }
+    }
+  },
   "section": "Sec",
   "sectionRange": "Sec {start}-{end}",
   "@sectionRange": {
