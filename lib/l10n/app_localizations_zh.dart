@@ -2055,10 +2055,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get privacyPolicy => '隐私政策';
 
   @override
+  String get legalInfo => '法律信息';
+
+  @override
+  String get supportAndHelp => '支持与帮助';
+
+  @override
+  String get docLoadFailed => '文档加载失败';
+
+  @override
   String get eulaScrollToBottom => '请先阅读完协议内容';
 
   @override
-  String get eulaAgreeCheckbox => '我已阅读并同意《用户协议》';
+  String get eulaAgreeCheckbox => '我已阅读并同意《用户协议》与《隐私政策》';
 
   @override
   String get eulaAgree => '同意';

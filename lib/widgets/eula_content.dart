@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/theme_shape.dart';
+import 'package:bugaoshan/utils/app_log.dart';
+import 'package:bugaoshan/utils/constants.dart';
+import 'package:bugaoshan/widgets/common/markdown_viewer.dart';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 /// EULA 版本号，需要与 eula.md 中的 version 保持一致
 const int currentEulaVersion = 2;
@@ -29,6 +31,7 @@ class _EulaContentState extends State<EulaContent>
   bool get wantKeepAlive => true;
   String _eulaContent = '';
   bool _isLoading = true;
+  bool _loadFailed = false;
   bool _agreed = false;
   final ScrollController _scrollController = ScrollController();
 
@@ -46,7 +49,7 @@ class _EulaContentState extends State<EulaContent>
 
   Future<void> _loadEulaContent() async {
     try {
-      final content = await rootBundle.loadString('docs/legal/eula.md');
+      final content = await rootBundle.loadString(kEulaAsset);
       if (mounted) {
         setState(() {
           _eulaContent = content;
@@ -54,9 +57,10 @@ class _EulaContentState extends State<EulaContent>
         });
       }
     } catch (e) {
+      AppLog.e('EulaContent', 'load $kEulaAsset failed: $e');
       if (mounted) {
         setState(() {
-          _eulaContent = 'Failed to load EULA content';
+          _loadFailed = true;
           _isLoading = false;
         });
       }
@@ -82,6 +86,8 @@ class _EulaContentState extends State<EulaContent>
         Expanded(
           child: _isLoading
               ? const Center(child: CircularProgressIndicator())
+              : _loadFailed
+              ? Center(child: Text(l10n.docLoadFailed))
               : Container(
                   decoration: BoxDecoration(
                     border: Border.all(
@@ -91,36 +97,46 @@ class _EulaContentState extends State<EulaContent>
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(AppShapes.small),
-                    child: Markdown(
+                    child: MarkdownViewer(
                       data: _eulaContent,
-                      selectable: true,
                       controller: _scrollController,
-                      onTapLink: (text, href, title) {
-                        if (href != null) {
-                          launchUrl(Uri.parse(href));
-                        }
-                      },
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
                         vertical: 8,
                       ),
-                      styleSheet:
-                          MarkdownStyleSheet.fromTheme(
-                            Theme.of(context),
-                          ).copyWith(
-                            p: colorScheme.textTheme.bodyMedium,
-                            blockquoteDecoration: BoxDecoration(
-                              color: colorScheme
-                                  .colorScheme
-                                  .surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(
-                                AppShapes.small,
-                              ),
-                            ),
-                          ),
                     ),
                   ),
                 ),
+        ),
+        // 相关文档入口
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 4,
+            children: [
+              TextButton(
+                onPressed: () => popupOrNavigate(
+                  context,
+                  MarkdownAssetPage(
+                    assetPath: kPrivacyPolicyAsset,
+                    title: l10n.privacyPolicy,
+                  ),
+                ),
+                child: Text(l10n.privacyPolicy),
+              ),
+              TextButton(
+                onPressed: () => popupOrNavigate(
+                  context,
+                  MarkdownAssetPage(
+                    assetPath: kSupportAsset,
+                    title: l10n.supportAndHelp,
+                  ),
+                ),
+                child: Text(l10n.supportAndHelp),
+              ),
+            ],
+          ),
         ),
         if (widget.showCheckbox) ...[
           const SizedBox(height: 4),

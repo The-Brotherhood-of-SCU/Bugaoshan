@@ -778,8 +778,11 @@
     "dockLabelDownloads": "附件",
     "eulaTitle": "用户协议",
     "privacyPolicy": "隐私政策",
+    "legalInfo": "法律信息",
+    "supportAndHelp": "支持与帮助",
+    "docLoadFailed": "文档加载失败",
     "eulaScrollToBottom": "请先阅读完协议内容",
-    "eulaAgreeCheckbox": "我已阅读并同意《用户协议》",
+    "eulaAgreeCheckbox": "我已阅读并同意《用户协议》与《隐私政策》",
     "eulaAgree": "同意",
     "eulaDisagree": "不同意",
     "revokeEula": "撤回用户协议同意",
@@ -1378,7 +1381,8 @@
         "description": "提交时图片上传中的按钮文案。",
         "type": "text"
     },
-    "repairSchedule": "期望维修时间",    "@repairSchedule": {
+    "repairSchedule": "期望维修时间",
+    "@repairSchedule": {
         "description": "在线报修表单中的期望维修时间字段标题。",
         "type": "text"
     },
