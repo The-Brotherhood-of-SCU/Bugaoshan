@@ -104,6 +104,38 @@ void main() {
   });
 
   test(
+    'empty cached plans triggers refetch on fetchPlanCompletion (no forceRefresh)',
+    () async {
+      SharedPreferences.setMockInitialValues({'plan_completion_nodes': '[]'});
+      final prefs = await SharedPreferences.getInstance();
+      final api = _ControllableZhjwApiService();
+      final provider = PlanCompletionProvider(prefs, api);
+
+      // 缓存已加载但内容为空——state 为 loaded，plans 为空
+      expect(provider.state, PlanCompletionLoadState.loaded);
+      expect(provider.plans, isEmpty);
+
+      // 不带 forceRefresh 调用也应发起请求：缓存为空说明不是有效数据，必须重新拉取
+      final request = provider.fetchPlanCompletion();
+      expect(
+        api.requests,
+        isNotEmpty,
+        reason: 'should refetch when cache is empty',
+      );
+      expect(provider.state, PlanCompletionLoadState.loading);
+
+      api.requests.single.complete([
+        _plan('1', [_node('course1')]),
+      ]);
+      await request;
+
+      expect(provider.state, PlanCompletionLoadState.loaded);
+      expect(provider.plans, hasLength(1));
+      expect(provider.nodes.single.id, 'course1');
+    },
+  );
+
+  test(
     'summary stats only count root-level modules (pId=-1) matching school hierarchy',
     () {
       // 模拟真实场景：根级模块（pId=-1）包括 001 大类和 002 课程组，

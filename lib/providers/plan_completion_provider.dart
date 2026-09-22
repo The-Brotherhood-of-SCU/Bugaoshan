@@ -69,8 +69,13 @@ class PlanCompletionProvider extends ChangeNotifier {
   Future<void> fetchPlanCompletion({bool forceRefresh = false}) async {
     if (_state == PlanCompletionLoadState.loading) return;
 
-    // Use cache if already loaded and not forcing refresh
-    if (!forceRefresh && _state == PlanCompletionLoadState.loaded) return;
+    // 已加载且缓存里有真实方案数据时直接用缓存；若缓存为空（例如上次因网络/限流/假期
+    // 拿到的空结果），继续重新拉取，避免用户永远卡在「暂无培养进度数据」的空状态。
+    if (!forceRefresh &&
+        _state == PlanCompletionLoadState.loaded &&
+        _plans.isNotEmpty) {
+      return;
+    }
     final generation = ++_requestGeneration;
 
     _state = PlanCompletionLoadState.loading;
