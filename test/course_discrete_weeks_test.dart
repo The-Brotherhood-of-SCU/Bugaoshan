@@ -157,6 +157,90 @@ void main() {
         expect(discreteEven.conflictsWith(regularOdd), isFalse);
       },
     );
+
+    test('起止周不重叠但离散周相交时仍判冲突（不按起止周裁剪）', () {
+      // A 的 range=[1,2] 但自定义周点亮了第 10 周；B 只在第 10 周。
+      // 旧实现先取起止周交集（[10,2] 为空）直接 return false → 漏报。
+      final courseA = Course(
+        name: 'Course A',
+        teacher: 'T1',
+        location: 'L1',
+        startWeek: 1,
+        endWeek: 2,
+        dayOfWeek: 1,
+        startSection: 1,
+        endSection: 2,
+        colorValue: 0xFF000000,
+        customWeeks: [1, 10],
+      );
+
+      final courseB = Course(
+        name: 'Course B',
+        teacher: 'T2',
+        location: 'L2',
+        startWeek: 10,
+        endWeek: 10,
+        dayOfWeek: 1,
+        startSection: 1,
+        endSection: 2,
+        colorValue: 0xFF111111,
+        customWeeks: [10],
+      );
+
+      expect(courseA.isActiveInWeek(10), isTrue);
+      expect(courseB.isActiveInWeek(10), isTrue);
+      expect(courseA.conflictsWith(courseB), isTrue);
+      expect(courseB.conflictsWith(courseA), isTrue);
+    });
+
+    test('非离散课程语义不变：起止周不重叠即无冲突', () {
+      Course course({required int startWeek, required int endWeek}) => Course(
+        name: 'c',
+        teacher: '',
+        location: '',
+        startWeek: startWeek,
+        endWeek: endWeek,
+        dayOfWeek: 1,
+        startSection: 1,
+        endSection: 2,
+        colorValue: 0,
+      );
+
+      expect(
+        course(
+          startWeek: 1,
+          endWeek: 2,
+        ).conflictsWith(course(startWeek: 5, endWeek: 6)),
+        isFalse,
+      );
+      // 单双周互补仍无交集
+      final odd = Course(
+        name: 'odd',
+        teacher: '',
+        location: '',
+        startWeek: 1,
+        endWeek: 6,
+        dayOfWeek: 1,
+        startSection: 1,
+        endSection: 2,
+        colorValue: 0,
+        weekType: WeekType.odd,
+      );
+      final even = Course(
+        name: 'even',
+        teacher: '',
+        location: '',
+        startWeek: 1,
+        endWeek: 6,
+        dayOfWeek: 1,
+        startSection: 1,
+        endSection: 2,
+        colorValue: 0,
+        weekType: WeekType.even,
+      );
+      expect(odd.conflictsWith(even), isFalse);
+      expect(even.conflictsWith(odd), isFalse);
+    });
   });
 
   group('Course.formatSegments', () {
@@ -211,6 +295,69 @@ void main() {
 
       final course = Course.fromJson(dirtyJson);
       expect(course.customWeeks, [1, 2, 3, 5]);
+    });
+
+    test('非 List 类型的 customWeeks 不抛异常（旧实现会 TypeError）', () {
+      // 旧实现 `json['customWeeks'] as List<dynamic>?` 遇到数字 / 字符串 /
+      // 对象会抛 TypeError，被导入外层 catch 兜成通用的「导入失败」。
+      expect(
+        Course.fromJson({'name': 'x', 'customWeeks': 5}).customWeeks,
+        isNull,
+      );
+      expect(
+        Course.fromJson({
+          'name': 'x',
+          'customWeeks': {'1': true},
+        }).customWeeks,
+        isNull,
+      );
+      expect(
+        Course.fromJson({'name': 'x', 'customWeeks': null}).customWeeks,
+        isNull,
+      );
+      // 无有效值（全被过滤）也回落为 null，不产生非法的空离散集合
+      expect(
+        Course.fromJson({'name': 'x', 'customWeeks': []}).customWeeks,
+        isNull,
+      );
+      expect(
+        Course.fromJson({
+          'name': 'x',
+          'customWeeks': [-1, 0],
+        }).customWeeks,
+        isNull,
+      );
+    });
+
+    test('接受 CSV 字符串形态的 customWeeks', () {
+      // 数据库用 CSV 存 custom_weeks，分享/备份 JSON 可能混入同一形态。
+      final course = Course.fromJson({'name': 'x', 'customWeeks': '1, 2,4'});
+      expect(course.customWeeks, [1, 2, 4]);
+    });
+
+    test('起止周收敛到 customWeeks 的 min/max（维持消费方依赖的不变量）', () {
+      final course = Course.fromJson({
+        'name': 'x',
+        'startWeek': 1,
+        'endWeek': 16,
+        'customWeeks': [3, 4, 9],
+      });
+      expect(course.startWeek, 3);
+      expect(course.endWeek, 9);
+      expect(
+        course.customWeeks!.every(
+          (w) => w >= course.startWeek && w <= course.endWeek,
+        ),
+        isTrue,
+      );
+    });
+
+    test('超出 kMaxCourseWeeks 的脏周次被丢弃（避免撑大冲突检测循环）', () {
+      final course = Course.fromJson({
+        'name': 'x',
+        'customWeeks': [1, 99999],
+      });
+      expect(course.customWeeks, [1]);
     });
   });
 
@@ -312,8 +459,8 @@ void main() {
         // '自定义周次' hint should now appear
         final l10n = lookupAppLocalizations(const Locale('zh'));
         expect(find.text(l10n.customWeeksHint), findsOneWidget);
-        // Week range text should now be discrete: "1-2, 4-20 周"
-        expect(find.text('1-2, 4-20 周'), findsOneWidget);
+        // Week range text should now be discrete, via l10n (不再硬编码 "周")
+        expect(find.text(l10n.weekSegments('1-2, 4-20')), findsOneWidget);
       },
     );
   });

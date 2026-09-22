@@ -202,7 +202,9 @@ class _CourseEditPageState extends State<CourseEditPage> {
                 children: [
                   Text(
                     _isCustomDiscrete && _selectedWeeks.isNotEmpty
-                        ? '${Course.formatSegments(_selectedWeeks.toList())} 周'
+                        ? l10n.weekSegments(
+                            Course.formatSegments(_selectedWeeks.toList()),
+                          )
                         : l10n.weekRange(_startWeek, _endWeek),
                     style: Theme.of(context).textTheme.titleSmall,
                   ),

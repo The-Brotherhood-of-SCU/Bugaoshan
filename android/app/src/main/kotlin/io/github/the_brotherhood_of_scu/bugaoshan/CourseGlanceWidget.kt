@@ -321,6 +321,8 @@ object WidgetDataLoader {
         dayOfWeek: Int,
         currentWeek: Int,
     ): JSONArray {
+        val result = JSONArray()
+
         val hasCustomWeeksCol = try {
             db.rawQuery("PRAGMA table_info(courses)", null).use { pragma ->
                 var found = false

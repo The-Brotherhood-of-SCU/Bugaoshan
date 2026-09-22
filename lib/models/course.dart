@@ -15,6 +15,14 @@ export 'schedule_config.dart' show ScheduleConfig, TimeSlot;
 /// 默认学期总周数（教务系统标准 20 周）。
 const int kDefaultTotalWeeks = 20;
 
+/// 单个课程允许的最大教学周次。
+///
+/// 用于给反序列化的自定义周次设上界：脏数据里一个夸张的周次（如 99999）会
+/// 把 [Course.conflictsWith] 的周循环撑大，导入时表现为卡顿。
+///
+/// `graduate_schedule_parser` 的学期周次上限也复用该值，避免两处魔数漂移。
+const int kMaxCourseWeeks = 60;
+
 /// 周类型：每周 / 单周 / 双周。
 enum WeekType { every, odd, even }
 
@@ -64,29 +72,54 @@ class Course {
     return '${now.microsecondsSinceEpoch}_$_idCounter';
   }
 
+  /// 解析自定义离散周次（容忍脏数据，绝不抛异常）。
+  ///
+  /// 接受 `List`（元素可为 int 或字符串数字）与 `String`（数据库里的 CSV 形态
+  /// `"1,2,4"`——分享码/备份 JSON 可能混入这种写法）；其余类型一律视为
+  /// 「没有自定义周次」。只保留 1..[kMaxCourseWeeks] 的整数，去重后升序；
+  /// 无有效值返回 `null`。
+  ///
+  /// 之所以不做硬转换（`as List`）：反序列化是分享码 / 备份导入的入口，
+  /// 不可信输入不应让整个导入以通用错误收场（旧实现会抛 `TypeError`）。
+  static List<int>? parseCustomWeeks(Object? raw) {
+    final Iterable<dynamic> items;
+    if (raw is List) {
+      items = raw;
+    } else if (raw is String) {
+      items = raw.split(',');
+    } else {
+      return null;
+    }
+    final weeks = <int>{};
+    for (final item in items) {
+      final week = item is num
+          ? item.toInt()
+          : int.tryParse(item.toString().trim());
+      if (week != null && week >= 1 && week <= kMaxCourseWeeks) {
+        weeks.add(week);
+      }
+    }
+    if (weeks.isEmpty) return null;
+    return weeks.toList()..sort();
+  }
+
   factory Course.fromJson(Map<String, dynamic> json) {
     final weekTypeIndex = json['weekType'] as int?;
-    final customWeeksRaw = json['customWeeks'] as List<dynamic>?;
-    List<int>? customWeeks;
-    if (customWeeksRaw != null) {
-      customWeeks =
-          customWeeksRaw
-              .map((e) => (e is num) ? e.toInt() : int.tryParse(e.toString()))
-              .whereType<int>()
-              .where((w) => w >= 1)
-              .toSet()
-              .toList()
-            ..sort();
-      if (customWeeks.isEmpty) customWeeks = null;
-    }
+    final customWeeks = parseCustomWeeks(json['customWeeks']);
+    // 离散周是活跃周的权威来源：起止周收敛到其 min/max，以维持
+    // `customWeeks ⊆ [startWeek, endWeek]` 不变量——ICS 导出循环、课表网格的
+    // isInWeekRange 过滤、冲突检测都依赖它。非离散课程保持原值不动。
+    final startWeek = customWeeks?.first ?? (json['startWeek'] as int? ?? 1);
+    final endWeek =
+        customWeeks?.last ?? (json['endWeek'] as int? ?? kDefaultTotalWeeks);
     return Course(
       id: json['id'] as String? ?? '',
       name: json['name'] as String? ?? '',
       teacher: json['teacher'] as String? ?? '',
       location: json['location'] as String? ?? '',
       campus: json['campus'] as String? ?? '',
-      startWeek: json['startWeek'] as int? ?? 1,
-      endWeek: json['endWeek'] as int? ?? kDefaultTotalWeeks,
+      startWeek: startWeek,
+      endWeek: endWeek,
       dayOfWeek: json['dayOfWeek'] as int? ?? 1,
       startSection: json['startSection'] as int? ?? 1,
       endSection: json['endSection'] as int? ?? 1,
@@ -142,13 +175,16 @@ class Course {
       return false;
     }
     // Week overlap check
-    final overlapStart = startWeek > other.startWeek
-        ? startWeek
-        : other.startWeek;
-    final overlapEnd = endWeek < other.endWeek ? endWeek : other.endWeek;
-    if (overlapStart > overlapEnd) return false;
-
-    for (int w = overlapStart; w <= overlapEnd; w++) {
+    //
+    // 遍历两门课程「起止周并集」的跨度，而不是先按起止周取交集再裁剪：
+    // [isActiveInWeek] 对自定义离散周是纯成员判断、不受起止周约束，先裁剪会
+    // 漏报——例如 A(range=[1,2], customWeeks=[1,10]) 与 B(range=[10,10],
+    // customWeeks=[10]) 共享第 10 周，但交集为 [10,2] 会被判成「无重叠」。
+    // 对非自定义课程，[isActiveInWeek] 在起止周之外恒为 false，故结果与裁剪
+    // 写法完全一致（等价性有测试覆盖）。
+    final spanStart = startWeek < other.startWeek ? startWeek : other.startWeek;
+    final spanEnd = endWeek > other.endWeek ? endWeek : other.endWeek;
+    for (int w = spanStart; w <= spanEnd; w++) {
       if (isActiveInWeek(w) && other.isActiveInWeek(w)) {
         return true;
       }
@@ -182,9 +218,7 @@ class Course {
   /// 本地化周次显示文本。若为自定义离散周则返回离散区间，否则返回标准起止周及单双周标识。
   String formatWeeks(AppLocalizations l10n) {
     if (customWeeks != null && customWeeks!.isNotEmpty) {
-      final segs = formatSegments(customWeeks!);
-      final isZh = l10n.localeName.startsWith('zh');
-      return isZh ? '$segs 周' : 'Weeks $segs';
+      return l10n.weekSegments(formatSegments(customWeeks!));
     }
     final range = l10n.weekRange(startWeek, endWeek);
     return switch (weekType) {
@@ -196,6 +230,10 @@ class Course {
 
   /// 复制并可选覆盖字段。[id] 传 `null` 时保留原 ID；需要重新生成 ID 时
   /// 显式传入 [Course.generateId]()，或直接使用 [duplicate] 复制整门课程。
+  ///
+  /// 注意：[customWeeks] 传 `null` 表示「保留原值」，**无法用它把离散周清空**。
+  /// 需要把课程切回「起止周 + 单双周」模式时，请直接构造 `Course(...)` 并把
+  /// `customWeeks` 显式设为 `null`（编辑页的保存路径就是这么做的）。
   Course copyWith({
     String? id,
     String? name,

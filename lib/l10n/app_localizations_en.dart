@@ -616,6 +616,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activeWeeks => 'Active Weeks';
 
   @override
+  String weekSegments(String segments) {
+    return 'Weeks $segments';
+  }
+
+  @override
   String get section => 'Sec';
 
   @override

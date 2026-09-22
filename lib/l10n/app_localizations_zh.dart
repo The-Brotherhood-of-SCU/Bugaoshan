@@ -595,6 +595,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get activeWeeks => '上课周次';
 
   @override
+  String weekSegments(String segments) {
+    return '$segments 周';
+  }
+
+  @override
   String get section => '节';
 
   @override

@@ -1225,6 +1225,12 @@ abstract class AppLocalizations {
   /// **'Active Weeks'**
   String get activeWeeks;
 
+  /// 自定义离散周次的展示文本，segments 形如 1-3, 5, 8-10
+  ///
+  /// In en, this message translates to:
+  /// **'Weeks {segments}'**
+  String weekSegments(String segments);
+
   /// No description provided for @section.
   ///
   /// In en, this message translates to:

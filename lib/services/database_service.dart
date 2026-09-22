@@ -214,28 +214,17 @@ class DatabaseService {
 
   Course _rowToCourse(Map<String, dynamic> row) {
     final weekTypeIndex = row['week_type'] as int? ?? 0;
-    final customWeeksStr = row['custom_weeks'] as String?;
-    List<int>? customWeeks;
-    if (customWeeksStr != null && customWeeksStr.isNotEmpty) {
-      customWeeks =
-          customWeeksStr
-              .split(',')
-              .map((s) => int.tryParse(s.trim()))
-              .whereType<int>()
-              .where((w) => w >= 1)
-              .toSet()
-              .toList()
-            ..sort();
-      if (customWeeks.isEmpty) customWeeks = null;
-    }
+    // 与 Course.fromJson 共用同一套解析与边界归一，避免两处口径漂移。
+    final customWeeks = Course.parseCustomWeeks(row['custom_weeks']);
     return Course(
       id: row['id'] as String,
       name: row['name'] as String? ?? '',
       teacher: row['teacher'] as String? ?? '',
       location: row['location'] as String? ?? '',
       campus: row['campus'] as String? ?? '',
-      startWeek: row['start_week'] as int,
-      endWeek: row['end_week'] as int,
+      // 离散周是权威：起止周收敛到其 min/max（见 Course.fromJson 注释）。
+      startWeek: customWeeks?.first ?? row['start_week'] as int,
+      endWeek: customWeeks?.last ?? row['end_week'] as int,
       dayOfWeek: row['day_of_week'] as int,
       startSection: row['start_section'] as int,
       endSection: row['end_section'] as int,

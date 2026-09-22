@@ -241,6 +241,7 @@
   "customWeeksHint": "自定义周次",
   "selectAtLeastOneWeek": "请至少选择一个上课周次",
   "activeWeeks": "上课周次",
+  "weekSegments": "{segments} 周",
   "section": "节",
   "sectionRange": "第{start}-{end}节",
   "@sectionRange": {
