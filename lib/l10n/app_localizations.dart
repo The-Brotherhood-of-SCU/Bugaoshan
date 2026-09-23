@@ -6583,6 +6583,42 @@ abstract class AppLocalizations {
   /// **'No messages in your inbox'**
   String get emailInboxEmpty;
 
+  /// No description provided for @emailInboxFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Inbox'**
+  String get emailInboxFolder;
+
+  /// No description provided for @emailJunkFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Junk'**
+  String get emailJunkFolder;
+
+  /// No description provided for @emailDraftsFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Drafts'**
+  String get emailDraftsFolder;
+
+  /// No description provided for @emailSentFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent'**
+  String get emailSentFolder;
+
+  /// No description provided for @emailTrashFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Trash'**
+  String get emailTrashFolder;
+
+  /// No description provided for @emailFolderLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load this folder. Try again later.'**
+  String get emailFolderLoadFailed;
+
   /// No description provided for @emailCompose.
   ///
   /// In en, this message translates to:

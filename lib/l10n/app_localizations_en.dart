@@ -3534,6 +3534,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailInboxEmpty => 'No messages in your inbox';
 
   @override
+  String get emailInboxFolder => 'Inbox';
+
+  @override
+  String get emailJunkFolder => 'Junk';
+
+  @override
+  String get emailDraftsFolder => 'Drafts';
+
+  @override
+  String get emailSentFolder => 'Sent';
+
+  @override
+  String get emailTrashFolder => 'Trash';
+
+  @override
+  String get emailFolderLoadFailed =>
+      'Could not load this folder. Try again later.';
+
+  @override
   String get emailCompose => 'Compose';
 
   @override

@@ -3419,6 +3419,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get emailInboxEmpty => '收件箱暂无邮件';
 
   @override
+  String get emailInboxFolder => '收件箱';
+
+  @override
+  String get emailJunkFolder => '垃圾邮件';
+
+  @override
+  String get emailDraftsFolder => '草稿';
+
+  @override
+  String get emailSentFolder => '已发送邮件';
+
+  @override
+  String get emailTrashFolder => '已删除邮件';
+
+  @override
+  String get emailFolderLoadFailed => '该文件夹加载失败，请稍后重试。';
+
+  @override
   String get emailCompose => '写邮件';
 
   @override

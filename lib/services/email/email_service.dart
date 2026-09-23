@@ -11,6 +11,18 @@ import 'package:path_provider/path_provider.dart';
 
 enum EmailConnectionStage { imapLogin, inbox, smtpLogin }
 
+enum EmailFolder { inbox, junk, drafts, sent, trash }
+
+extension EmailFolderFlag on EmailFolder {
+  MailboxFlag get mailboxFlag => switch (this) {
+    EmailFolder.inbox => MailboxFlag.inbox,
+    EmailFolder.junk => MailboxFlag.junk,
+    EmailFolder.drafts => MailboxFlag.drafts,
+    EmailFolder.sent => MailboxFlag.sent,
+    EmailFolder.trash => MailboxFlag.trash,
+  };
+}
+
 /// Identifies the failed step without exposing server responses or credentials.
 class EmailConnectionException implements Exception {
   const EmailConnectionException(this.stage);
@@ -119,8 +131,15 @@ class EmailService {
   }
 
   Future<List<MimeMessage>> fetchInbox({int page = 1}) async {
+    return fetchFolder(EmailFolder.inbox, page: page);
+  }
+
+  Future<List<MimeMessage>> fetchFolder(
+    EmailFolder folder, {
+    int page = 1,
+  }) async {
     final client = _requireClient();
-    await client.selectInbox();
+    await client.selectMailboxByFlag(folder.mailboxFlag);
     final messages = await client.fetchMessages(
       count: 30,
       page: page,
@@ -159,7 +178,7 @@ class EmailService {
         filename: attachment.name,
       );
     }
-    await _requireClient().sendMessageBuilder(builder, appendToSent: false);
+    await _requireClient().sendMessageBuilder(builder);
   }
 
   Future<File> downloadAttachment(MimeMessage message, ContentInfo info) async {

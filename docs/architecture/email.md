@@ -5,7 +5,7 @@
 ## 接入方式
 
 - `lib/pages/campus/email/` 使用 Flutter 组件展示绑定、收件箱、邮件详情、附件和写信页面，不加载网页邮箱。
-- `lib/services/email/email_service.dart` 使用 IMAP over TLS 收信、SMTP over TLS 发信。列表只读取 envelope，点开邮件时再取正文和附件信息；附件按需下载。
+- `lib/services/email/email_service.dart` 使用 IMAP over TLS 收信、SMTP over TLS 发信。列表只读取 envelope，点开邮件时再取正文和附件信息；附件按需下载。收件箱、垃圾邮件、草稿、已发送邮件和已删除邮件通过 IMAP 标准 mailbox flags 切换。
 - 账号、密码或客户端授权码、服务器参数以单个 JSON 值写入 `SecureStorageProvider`。解绑时删除该值并断开连接。邮件正文不另做本地缓存。
 - HTML 邮件只提取纯文本，不执行脚本，也不加载远程图片。
 - Web 目标使用说明页；原生页面通过条件导出提供给支持 `dart:io` 的目标。

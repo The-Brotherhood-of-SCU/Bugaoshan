@@ -30,6 +30,7 @@ class _EmailPageState extends State<EmailPage> {
   List<MimeMessage> _messages = [];
   bool _busy = true;
   bool _connected = false;
+  EmailFolder _folder = EmailFolder.inbox;
   bool _hasMore = false;
   bool _loadingMore = false;
   bool _obscurePassword = true;
@@ -82,6 +83,7 @@ class _EmailPageState extends State<EmailPage> {
       if (!mounted) return;
       setState(() {
         _messages = messages;
+        _folder = EmailFolder.inbox;
         _page = 1;
         _hasMore = messages.length == 30;
         _connected = true;
@@ -147,7 +149,7 @@ class _EmailPageState extends State<EmailPage> {
 
   Future<void> _refresh() async {
     try {
-      final messages = await _service.fetchInbox();
+      final messages = await _service.fetchFolder(_folder);
       if (!mounted) return;
       setState(() {
         _messages = messages;
@@ -169,7 +171,7 @@ class _EmailPageState extends State<EmailPage> {
     if (_loadingMore || !_hasMore) return;
     setState(() => _loadingMore = true);
     try {
-      final more = await _service.fetchInbox(page: _page + 1);
+      final more = await _service.fetchFolder(_folder, page: _page + 1);
       if (!mounted) return;
       setState(() {
         _messages.addAll(more);
@@ -274,25 +276,124 @@ class _EmailPageState extends State<EmailPage> {
       body: _busy
           ? const Center(child: CircularProgressIndicator())
           : _connected
-          ? _buildInbox(l10n)
+          ? _buildMailbox(l10n)
           : _buildSetup(l10n),
     );
   }
 
-  Widget _buildInbox(AppLocalizations l10n) => RefreshIndicator(
-    onRefresh: _refresh,
-    child: _messages.isEmpty
-        ? ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            children: [
-              SizedBox(
-                height: 320,
-                child: Center(child: Text(l10n.emailInboxEmpty)),
-              ),
-            ],
-          )
-        : _buildMessageList(l10n),
+  Widget _buildMailbox(AppLocalizations l10n) => LayoutBuilder(
+    builder: (context, constraints) {
+      final navigation = _buildFolderNavigation(l10n, horizontal: false);
+      final list = _buildMessageListWithRefresh(l10n);
+      if (constraints.maxWidth >= 700) {
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(width: 190, child: navigation),
+            const VerticalDivider(width: 1),
+            Expanded(child: list),
+          ],
+        );
+      }
+      return Column(
+        children: [
+          _buildFolderNavigation(l10n, horizontal: true),
+          const Divider(height: 1),
+          Expanded(child: list),
+        ],
+      );
+    },
   );
+
+  Widget _buildMessageListWithRefresh(AppLocalizations l10n) =>
+      RefreshIndicator(
+        onRefresh: _refresh,
+        child: _messages.isEmpty
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(
+                    height: 320,
+                    child: Center(child: Text(l10n.emailInboxEmpty)),
+                  ),
+                ],
+              )
+            : _buildMessageList(l10n),
+      );
+
+  Widget _buildFolderNavigation(
+    AppLocalizations l10n, {
+    required bool horizontal,
+  }) {
+    final folders = [
+      (EmailFolder.inbox, Icons.inbox_outlined, l10n.emailInboxFolder),
+      (EmailFolder.junk, Icons.report_outlined, l10n.emailJunkFolder),
+      (EmailFolder.drafts, Icons.drafts_outlined, l10n.emailDraftsFolder),
+      (EmailFolder.sent, Icons.send_outlined, l10n.emailSentFolder),
+      (EmailFolder.trash, Icons.delete_outline, l10n.emailTrashFolder),
+    ];
+    final children = folders.map((entry) {
+      final selected = entry.$1 == _folder;
+      return Padding(
+        padding: horizontal
+            ? const EdgeInsets.symmetric(horizontal: 4)
+            : const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        child: SizedBox(
+          width: horizontal ? 140 : double.infinity,
+          child: ListTile(
+            dense: true,
+            selected: selected,
+            selectedTileColor: Theme.of(
+              context,
+            ).colorScheme.secondaryContainer.withValues(alpha: 0.65),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            leading: Icon(entry.$2),
+            title: Text(entry.$3),
+            onTap: selected ? null : () => unawaited(_selectFolder(entry.$1)),
+          ),
+        ),
+      );
+    }).toList();
+    if (horizontal) {
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(children: children),
+      );
+    }
+    return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      children: children,
+    );
+  }
+
+  Future<void> _selectFolder(EmailFolder folder) async {
+    setState(() {
+      _folder = folder;
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final messages = await _service.fetchFolder(folder);
+      if (!mounted) return;
+      setState(() {
+        _messages = messages;
+        _page = 1;
+        _hasMore = messages.length == 30;
+        _busy = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _busy = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.emailFolderLoadFailed),
+        ),
+      );
+    }
+  }
 
   Widget _buildMessageList(AppLocalizations l10n) => ListView.builder(
     physics: const AlwaysScrollableScrollPhysics(),
