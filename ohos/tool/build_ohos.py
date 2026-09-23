@@ -25,6 +25,10 @@ from ohos_links import (
 ROOT = Path(__file__).resolve().parents[2]
 TOOLCHAIN_LOCK = "toolchain.lock.json"
 PUBSPEC_DEPENDENCIES = "pubspec_dependencies.json"
+LOCAL_OHOS_PACKAGES = {
+    "package_info_plus_ohos": "../vendor/cpf/package_info_plus/packages/package_info_plus/package_info_plus_ohos",
+    "share_plus_ohos": "../vendor/cpf/share_plus/packages/share_plus/share_plus_ohos",
+}
 REQUIRED_OHOS_PLUGINS = (
     "file_picker_ohos",
     "flutter_inappwebview_ohos",
@@ -33,9 +37,9 @@ REQUIRED_OHOS_PLUGINS = (
     "image_picker_ohos",
     "open_filex",
     "os_type",
-    "package_info_plus",
+    "package_info_plus_ohos",
     "path_provider_ohos",
-    "share_plus",
+    "share_plus_ohos",
     "shared_preferences_ohos",
     "sqflite_ohos",
     "url_launcher_ohos",
@@ -185,6 +189,10 @@ def yaml_scalar(value):
 def dependency_yaml(name, dependency):
     if not re.fullmatch(r"[a-zA-Z_][a-zA-Z0-9_]*", name):
         raise ValueError(f"无效的鸿蒙依赖名：{name!r}。")
+    if isinstance(dependency, dict) and set(dependency) == {"path"}:
+        if name not in LOCAL_OHOS_PACKAGES or dependency["path"] != LOCAL_OHOS_PACKAGES[name]:
+            raise ValueError(f"本地 OH 依赖路径与约定的 CPF 工作副本不一致：{name}")
+        return f"  {name}:\n    path: {yaml_scalar(dependency['path'])}\n"
     if not isinstance(dependency, dict) or set(dependency) != {"git"}:
         raise ValueError(f"鸿蒙依赖 {name} 必须使用固定 Git 来源。")
     git = dependency["git"]
@@ -243,6 +251,16 @@ def ohos_pubspec(content, config_path):
             raise ValueError(f"根 pubspec.yaml 未声明待排除依赖 {name}。")
 
     content = content[:section.start("body")] + body + content[section.end("body"):]
+
+    # Local paths can live in dependencies or dependency_overrides. Rebase the
+    # path source while preserving any separate direct version declaration.
+    for name, path in LOCAL_OHOS_PACKAGES.items():
+        pattern = re.compile(
+            rf"^  {re.escape(name)}:[ \t]*\n    path:[^\n]*\n?",
+            re.MULTILINE,
+        )
+        content = pattern.sub(lambda _: dependency_yaml(name, {"path": path}), content)
+
     match = re.search(r"^dependencies:\s*$", content, re.MULTILINE)
     insert_at = match.end()
     additions = []
@@ -423,6 +441,12 @@ def prepare_workspace(root):
         (root / "pubspec.yaml").read_text(encoding="utf-8"), config / PUBSPEC_DEPENDENCIES,
     )
     lockfile_content = workspace_lockfile(root)
+    for name, path in LOCAL_OHOS_PACKAGES.items():
+        if re.search(rf"^  {re.escape(name)}:", pubspec_content, re.MULTILINE):
+            package = (root / "ohos/.flutter-workspace" / path).resolve()
+            if not (package / "pubspec.yaml").is_file() or not (package / "ohos/index.ets").is_file():
+                raise ValueError(f"缺少本地 OH 插件 {name}，请恢复带独立包的 CPF 工作副本：{package}")
+
     # Validate the upstream baseline before creating any shared source links.
     overrides, file_count, entry_count = plan_source_overrides(root, config)
     inputs = {}

@@ -19,6 +19,44 @@ SPEC.loader.exec_module(build_ohos)
 
 
 class OhosBuildTest(unittest.TestCase):
+    def test_root_local_plugin_paths_are_rebased_without_duplicate_dependencies(self):
+        with tempfile.TemporaryDirectory() as directory:
+            config = Path(directory) / "dependencies.json"
+            config.write_text(json.dumps({
+                "schemaVersion": 1,
+                "dependencies": {"extra_ohos": {"git": {
+                    "url": "https://example.invalid/plugin.git", "ref": "a" * 40, "path": ".",
+                }}},
+            }), encoding="utf-8")
+            content = "name: app\ndependencies:\n  flutter:\n    sdk: flutter\n"
+            for name in build_ohos.LOCAL_OHOS_PACKAGES:
+                content += f"  {name}: 0.1.0\n"
+            content += "dev_dependencies:\n  flutter_test:\n    sdk: flutter\n"
+            content += "dependency_overrides:\n"
+            for name, path in build_ohos.LOCAL_OHOS_PACKAGES.items():
+                content += f"  {name}:\n    path: ohos/{path.removeprefix('../')}\n"
+            result = build_ohos.ohos_pubspec(content, config)
+            direct_dependencies, overrides = result.split("dependency_overrides:\n")
+            for name, path in build_ohos.LOCAL_OHOS_PACKAGES.items():
+                self.assertEqual(direct_dependencies.count(f"  {name}: 0.1.0\n"), 1)
+                self.assertNotIn(f"  {name}:\n", direct_dependencies)
+                self.assertEqual(overrides.count(f"  {name}:\n"), 1)
+                self.assertIn(f'    path: "{path}"\n', overrides)
+                self.assertNotIn(f"path: ohos/{path.removeprefix('../')}", result)
+            self.assertIn("  extra_ohos:\n", result)
+
+    def test_local_oh_dependencies_reference_only_the_named_cpf_checkouts(self):
+        for name, path in build_ohos.LOCAL_OHOS_PACKAGES.items():
+            rendered = build_ohos.dependency_yaml(name, {"path": path})
+            self.assertEqual(rendered, f'  {name}:\n    path: "{path}"\n')
+        for name, path in (
+            ("share_plus_ohos", "../../outside"),
+            ("share_plus_ohos", "../flutter/plugins/share_plus_ohos"),
+            ("unknown_ohos", "../vendor/cpf/unknown"),
+        ):
+            with self.subTest(name=name, path=path), self.assertRaises(ValueError):
+                build_ohos.dependency_yaml(name, {"path": path})
+
     def test_only_locked_sdk_version_is_accepted(self):
         self.assertEqual(
             build_ohos.validate_sdk_version({"flutterVersion": "3.44.9+ohos-0.0.1-canary1"}),

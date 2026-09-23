@@ -7,6 +7,8 @@
 /.flutter-workspace/
 /.flutter-workspace.lock
 /.pub-cache/
+# Local CPF source clones; origins and revisions are recorded in docs/dependencies/root-lock-differences.md.
+/vendor/cpf/
 /build/
 /tool/__pycache__/
 /tests/**/__pycache__/

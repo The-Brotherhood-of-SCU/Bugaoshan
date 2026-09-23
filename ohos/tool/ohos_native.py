@@ -65,12 +65,26 @@ def fingerprint(paths, base):
 
 
 def dependency_fingerprint(root):
+    from build_ohos import LOCAL_OHOS_PACKAGES
+
     config = root / "ohos/flutter"
     files = [root / "pubspec.yaml", root / "pubspec.lock"]
     files.extend(config / name for name in (
         "pubspec_dependencies.json", "toolchain.lock.json",
     ))
     files.extend(p for p in (config / "patches").rglob("*") if p.is_file() and p.suffix != ".md")
+    dependencies = json.loads((config / "pubspec_dependencies.json").read_text(encoding="utf-8"))
+    for dependency in dependencies.get("dependencies", {}).values():
+        if isinstance(dependency, dict) and "path" in dependency:
+            pubspec = (root / "ohos/.flutter-workspace" / dependency["path"] / "pubspec.yaml").resolve()
+            if pubspec.is_file():
+                files.append(pubspec)
+    root_pubspec = (root / "pubspec.yaml").read_text(encoding="utf-8")
+    for name, path in LOCAL_OHOS_PACKAGES.items():
+        if re.search(rf"^  {re.escape(name)}:", root_pubspec, re.MULTILINE):
+            pubspec = (root / "ohos/.flutter-workspace" / path / "pubspec.yaml").resolve()
+            if pubspec.is_file() and pubspec not in files:
+                files.append(pubspec)
     return fingerprint(files, root)
 
 
