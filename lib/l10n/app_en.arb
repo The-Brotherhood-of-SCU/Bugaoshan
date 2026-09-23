@@ -1948,6 +1948,8 @@
   "emailUnlink": "Disconnect account",
   "emailUnlinkConfirm": "Remove the saved mail account from this device?",
   "emailAttachment": "Attachment",
+  "emailAddAttachment": "Add attachment",
+  "emailRemoveAttachment": "Remove attachment",
   "emailAttachmentFailed": "Could not download the attachment",
   "emailOpenFailed": "Could not open the file",
   "emailReadFailed": "Could not load this message",

@@ -1878,6 +1878,8 @@
   "emailUnlink": "解绑邮箱",
   "emailUnlinkConfirm": "从此设备移除已保存的邮箱账号？",
   "emailAttachment": "附件",
+  "emailAddAttachment": "添加附件",
+  "emailRemoveAttachment": "移除附件",
   "emailAttachmentFailed": "附件下载失败",
   "emailOpenFailed": "文件打开失败",
   "emailReadFailed": "邮件加载失败",

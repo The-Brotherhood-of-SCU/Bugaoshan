@@ -6490,7 +6490,7 @@ abstract class AppLocalizations {
   /// No description provided for @emailPassword.
   ///
   /// In en, this message translates to:
-  /// **'Mail password or authorization code'**
+  /// **'Mail authorization code'**
   String get emailPassword;
 
   /// No description provided for @emailImapHost.
@@ -6636,6 +6636,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Attachment'**
   String get emailAttachment;
+
+  /// No description provided for @emailAddAttachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Add attachment'**
+  String get emailAddAttachment;
+
+  /// No description provided for @emailRemoveAttachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove attachment'**
+  String get emailRemoveAttachment;
 
   /// No description provided for @emailAttachmentFailed.
   ///

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:bugaoshan/services/email/email_account.dart';
 import 'package:bugaoshan/utils/secure_storage.dart';
@@ -15,6 +16,15 @@ class EmailConnectionException implements Exception {
   const EmailConnectionException(this.stage);
 
   final EmailConnectionStage stage;
+}
+
+class EmailAttachment {
+  const EmailAttachment({required this.name, required this.bytes});
+
+  final String name;
+  final Uint8List bytes;
+
+  int get size => bytes.length;
 }
 
 /// Email has its own credentials and is deliberately outside ScuAuth.
@@ -133,14 +143,22 @@ class EmailService {
     required String recipient,
     required String subject,
     required String body,
+    List<EmailAttachment> attachments = const [],
   }) async {
     final from = _account?.address;
     if (from == null) throw StateError('Email account is not connected');
-    final builder =
-        MessageBuilder.prepareMultipartAlternativeMessage(plainText: body)
-          ..from = [MailAddress(null, from)]
-          ..to = [MailAddress(null, recipient)]
-          ..subject = subject;
+    final builder = MessageBuilder.prepareMultipartMixedMessage()
+      ..from = [MailAddress(null, from)]
+      ..to = [MailAddress(null, recipient)]
+      ..subject = subject
+      ..addTextPlain(body);
+    for (final attachment in attachments) {
+      builder.addBinary(
+        attachment.bytes,
+        MediaType.guessFromFileName(attachment.name),
+        filename: attachment.name,
+      );
+    }
     await _requireClient().sendMessageBuilder(builder, appendToSent: false);
   }
 

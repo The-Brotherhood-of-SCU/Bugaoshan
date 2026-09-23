@@ -1,5 +1,6 @@
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/services/email/email_service.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 class EmailComposePage extends StatefulWidget {
@@ -16,7 +17,33 @@ class _EmailComposePageState extends State<EmailComposePage> {
   final _recipient = TextEditingController();
   final _subject = TextEditingController();
   final _body = TextEditingController();
+  final _attachments = <EmailAttachment>[];
   bool _sending = false;
+
+  Future<void> _pickAttachments() async {
+    final l10n = AppLocalizations.of(context)!;
+    // The multi-file picker still exposes this option in file_picker 12.
+    // ignore: deprecated_member_use
+    final files = await FilePicker.pickFiles(allowMultiple: true);
+    if (!mounted) return;
+    final selected = <EmailAttachment>[];
+    for (final file in files) {
+      try {
+        selected.add(
+          EmailAttachment(name: file.name, bytes: await file.readAsBytes()),
+        );
+      } catch (_) {
+        // Keep files that can be read and report the failed ones below.
+      }
+    }
+    if (selected.length != files.length) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.emailAttachmentFailed)));
+    }
+    if (selected.isNotEmpty) setState(() => _attachments.addAll(selected));
+  }
 
   Future<void> _send() async {
     if (!_formKey.currentState!.validate() || _sending) return;
@@ -27,6 +54,7 @@ class _EmailComposePageState extends State<EmailComposePage> {
         recipient: _recipient.text.trim(),
         subject: _subject.text.trim(),
         body: _body.text,
+        attachments: _attachments,
       );
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -91,6 +119,34 @@ class _EmailComposePageState extends State<EmailComposePage> {
                   ? l10n.emailRequired
                   : null,
             ),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: _sending ? null : _pickAttachments,
+              icon: const Icon(Icons.attach_file),
+              label: Text(l10n.emailAddAttachment),
+            ),
+            if (_attachments.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              for (var i = 0; i < _attachments.length; i++)
+                ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.insert_drive_file_outlined),
+                  title: Text(
+                    _attachments[i].name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  subtitle: Text(_formatBytes(_attachments[i].size)),
+                  trailing: IconButton(
+                    tooltip: l10n.emailRemoveAttachment,
+                    onPressed: _sending
+                        ? null
+                        : () => setState(() => _attachments.removeAt(i)),
+                    icon: const Icon(Icons.close),
+                  ),
+                ),
+            ],
             const SizedBox(height: 24),
             FilledButton.icon(
               onPressed: _sending ? null : _send,
@@ -107,5 +163,11 @@ class _EmailComposePageState extends State<EmailComposePage> {
         ),
       ),
     );
+  }
+
+  String _formatBytes(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 }

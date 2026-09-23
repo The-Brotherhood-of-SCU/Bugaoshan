@@ -3446,6 +3446,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get emailAttachment => '附件';
 
   @override
+  String get emailAddAttachment => '添加附件';
+
+  @override
+  String get emailRemoveAttachment => '移除附件';
+
+  @override
   String get emailAttachmentFailed => '附件下载失败';
 
   @override

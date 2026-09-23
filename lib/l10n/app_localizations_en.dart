@@ -3562,6 +3562,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailAttachment => 'Attachment';
 
   @override
+  String get emailAddAttachment => 'Add attachment';
+
+  @override
+  String get emailRemoveAttachment => 'Remove attachment';
+
+  @override
   String get emailAttachmentFailed => 'Could not download the attachment';
 
   @override
