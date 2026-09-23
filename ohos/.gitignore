@@ -1,6 +1,7 @@
 /node_modules
 /oh_modules
 /local.properties
+# Legacy embedding runtime; no longer generated or read.
 /.flutter-embedding-runtime.json
 /.flutter-runtime.json
 /.flutter-workspace/

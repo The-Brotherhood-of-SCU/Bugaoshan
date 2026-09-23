@@ -102,7 +102,6 @@ class OhosNativeTest(unittest.TestCase):
         refresh.assert_not_called()
 
     def test_bootstrap_refreshes_complete_runtime_without_full_preparation(self):
-        self.write("ohos/.flutter-embedding-runtime.json", "{}")
         self.write("ohos/.flutter-workspace/tooling/flutter-hvigor-plugin/index.ts", "export {}\n")
         with (
             patch.object(ohos_native, "load_runtime", return_value={}),

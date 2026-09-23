@@ -107,8 +107,6 @@ def prepare_native_runtime(root, workspace, sdk, env):
     # Invalidate first: interrupted re-preparation must never look ready in DevEco.
     (native / RUNTIME_FILE).unlink(missing_ok=True)
     prepare_hvigor_adapter(native, workspace, sdk)
-    from ohos_embedding import prepare_embedding_runtime
-    prepare_embedding_runtime(workspace, native)
     profile = native / "build-profile.json5"
     if not profile.is_file():
         raise ValueError("缺少 DevEco 工程配置：ohos/build-profile.json5")
@@ -175,7 +173,6 @@ def bootstrap_native(root):
     workspace = workspace_path(root)
     required = (
         workspace / "tooling/flutter-hvigor-plugin/index.ts",
-        root / "ohos/.flutter-embedding-runtime.json",
     )
     needs_preparation = False
     try:
