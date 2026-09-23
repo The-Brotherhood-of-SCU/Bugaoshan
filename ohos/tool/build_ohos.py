@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""以文件链接共用源码，使用稳定版 SDK 准备鸿蒙工程或构建 HAP。"""
+"""以文件链接共用源码，使用锁定的 SDK 准备鸿蒙工程或构建 HAP。"""
 
 import argparse
 import json
@@ -24,7 +24,6 @@ from ohos_links import (
 
 
 ROOT = Path(__file__).resolve().parents[2]
-STABLE_SDK_VERSION = re.compile(r"\d+\.\d+\.\d+-ohos-\d+\.\d+\.\d+")
 TOOLCHAIN_LOCK = "toolchain.lock.json"
 PUBSPEC_DEPENDENCIES = "pubspec_dependencies.json"
 REQUIRED_OHOS_PLUGINS = (
@@ -62,11 +61,10 @@ def validate_sdk_version(info, expected=None):
     if expected is None:
         expected = load_toolchain(ROOT)["flutter"]["flutterVersion"]
     version = info.get("flutterVersion", "")
-    if not isinstance(version, str) or not STABLE_SDK_VERSION.fullmatch(version):
-        raise ValueError(
-            f"需要锁定的 Flutter OH 正式版 {expected}，当前为 {version!r}。"
-            "不支持 canary、beta 或 dev 版本。"
-        )
+    if not isinstance(expected, str) or not expected:
+        raise ValueError("工具链锁必须指定非空的 Flutter OH 版本。")
+    if not isinstance(version, str) or not version:
+        raise ValueError(f"需要锁定的 Flutter OH 版本 {expected}，当前为 {version!r}。")
     if version != expected:
         raise ValueError(f"Flutter OH 版本不匹配：需要 {expected}，当前为 {version}。")
     return version
@@ -130,11 +128,14 @@ def validate_flutter_sdk(sdk, info, expected, env):
         raise ValueError(
             f"Flutter OH 实际提交不匹配：需要 {expected['frameworkRevision']}，当前为 {revision}。"
         )
-    tag_revision = command_output(
-        ["git", "rev-parse", f"{expected['tag']}^{{}}"], sdk, env,
-    )
-    if tag_revision != revision:
-        raise ValueError(f"Flutter OH 当前提交不是正式 tag {expected['tag']}。")
+    # Development snapshots are pinned by frameworkRevision; a release lock
+    # may additionally require that revision to match a tag.
+    if expected.get("tag"):
+        tag_revision = command_output(
+            ["git", "rev-parse", f"{expected['tag']}^{{}}"], sdk, env,
+        )
+        if tag_revision != revision:
+            raise ValueError(f"Flutter OH 当前提交不是锁定 tag {expected['tag']}。")
     repository = command_output(["git", "remote", "get-url", "origin"], sdk, env)
     if normalize_repository_url(repository) != normalize_repository_url(expected["repositoryUrl"]):
         raise ValueError(

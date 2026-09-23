@@ -1,19 +1,18 @@
 {
   "schemaVersion": 1,
   "flutter": {
-    "tag": "3.41.10-ohos-1.0.1",
-    "flutterVersion": "3.41.10-ohos-1.0.1",
+    "flutterVersion": "3.44.9+ohos-0.0.1-canary1",
     "repositoryUrl": "https://gitcode.com/CPF-Flutter/flutter_flutter.git",
-    "frameworkRevision": "adaf911c35c9136a7d18fc424d714c9ec7724e60",
-    "engineRevision": "42d3d75a56efe1a2e9902f52dc8006099c45d937",
-    "dartSdkVersion": "3.11.5",
+    "frameworkRevision": "498bc73e6214a7842bad50f8793f70cb538ca78e",
+    "engineRevision": "5a2a6a42cce67f965cf540fcecf616faca624aa1",
+    "dartSdkVersion": "3.12.2",
     "ohosArtifacts": {
-      "engineRevision": "3fb08d34b6f96a15fbb219b903c9d0ab37b6c2e0",
-      "harRevision": "3fb08d34b6f96a15fbb219b903c9d0ab37b6c2e0",
-      "dartSdkRevision": "ee3baaa7621306ad8eaa2c4961abec5cbf8672a6",
+      "engineRevision": "10a8d012d86cd7ee13e0acc859fea796c8a01764",
+      "harRevision": "4741be5782cac17fae45c773bc5126d62b36eb28",
+      "dartSdkRevision": "e7da8dddd3b32b81a1d83cebbb9109ea3f01fca5",
       "platformSha256": {
-        "flutter_patched_sdk": "6bb2231472fc399bd1bc75e6344d4380cfb94b1db21705a7b1a36f1ea1c914b8",
-        "flutter_patched_sdk_product": "0945faf70f121e17288d4e30b9ffcf77d9f3b2a842ccbf628ba9087f796127b3"
+        "flutter_patched_sdk": "7feaa6726fe21a665239df355ab64fcf11c873b7644f665b1bacce56532de382",
+        "flutter_patched_sdk_product": "2e8023f87641aaa2817979d1d48595550a977a4b61fb725ba75d43a9e2c40090"
       }
     }
   },

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "frameworkRevision": "adaf911c35c9136a7d18fc424d714c9ec7724e60",
+  "frameworkRevision": "498bc73e6214a7842bad50f8793f70cb538ca78e",
   "sources": [
     {
       "path": "index.ts",
@@ -12,7 +12,7 @@
     },
     {
       "path": "src/plugin/flutter-hvigor-plugin.ts",
-      "sha256": "9b83ebb1b1e85ddee21f4c685755cef8a23bd4971333a5d5227471611a5ed40a"
+      "sha256": "5d108283590c76956d62ee8de86e6254ff196dc29759092a107cb86aa9dfa2a7"
     },
     {
       "path": "src/util/file-util.ts",

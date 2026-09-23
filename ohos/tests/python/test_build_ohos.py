@@ -19,14 +19,14 @@ SPEC.loader.exec_module(build_ohos)
 
 
 class OhosBuildTest(unittest.TestCase):
-    def test_only_locked_stable_sdk_is_accepted(self):
+    def test_only_locked_sdk_version_is_accepted(self):
         self.assertEqual(
-            build_ohos.validate_sdk_version({"flutterVersion": "3.41.10-ohos-1.0.1"}),
-            "3.41.10-ohos-1.0.1",
+            build_ohos.validate_sdk_version({"flutterVersion": "3.44.9+ohos-0.0.1-canary1"}),
+            "3.44.9+ohos-0.0.1-canary1",
         )
         for version in (
-            "3.41.10-ohos-1.0.1-beta", "3.44.9+ohos-0.0.1-canary1",
-            "3.41.10-ohos-1.0.1-dev", "3.44.9", "3.41.10-ohos-0.0.2", "",
+            "3.41.10-ohos-1.0.1", "3.44.9+ohos-0.0.1-canary2",
+            "3.44.9+ohos-0.0.1-dev", "3.44.9", "", None,
         ):
             with self.subTest(version=version), self.assertRaises(ValueError):
                 build_ohos.validate_sdk_version({"flutterVersion": version})
@@ -69,6 +69,24 @@ class OhosBuildTest(unittest.TestCase):
         wrong_info = dict(info, engineRevision="other-engine")
         with self.assertRaises(ValueError):
             build_ohos.validate_flutter_sdk(Path("sdk"), wrong_info, expected, {})
+
+        # A snapshot without a release tag must still match the actual Git HEAD,
+        # even when its cached version information claims the locked revision.
+        snapshot = dict(expected)
+        del snapshot["tag"]
+        snapshot["flutterVersion"] = "3.44.9+ohos-0.0.1-canary1"
+        snapshot_info = dict(info, flutterVersion=snapshot["flutterVersion"])
+        with patch.object(build_ohos, "command_output", side_effect=[
+            snapshot["frameworkRevision"], snapshot["repositoryUrl"],
+        ]) as command:
+            self.assertEqual(
+                build_ohos.validate_flutter_sdk(Path("sdk"), snapshot_info, snapshot, {}),
+                snapshot["flutterVersion"],
+            )
+            self.assertEqual(command.call_count, 2)
+        with patch.object(build_ohos, "command_output", return_value="other-revision"):
+            with self.assertRaisesRegex(ValueError, "实际提交不匹配"):
+                build_ohos.validate_flutter_sdk(Path("sdk"), snapshot_info, snapshot, {})
 
     def test_supported_sdk_version_is_read_from_lock_instead_of_a_fixed_release(self):
         version = "4.0.0-ohos-2.1.0"
