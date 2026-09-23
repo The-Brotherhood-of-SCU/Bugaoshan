@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:open_filex/open_filex.dart';
+import 'package:bugaoshan/utils/open_file.dart';
 
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -160,7 +160,7 @@ class _SheetAttachmentTile extends StatelessWidget {
     return Icons.insert_drive_file;
   }
 
-  void _open(String path) => OpenFilex.open(path);
+  void _open(String path) => openFile(path);
   void _share(BuildContext context, String path) =>
       shareSingleFile(path, context: context);
 

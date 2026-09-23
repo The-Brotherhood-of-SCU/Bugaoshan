@@ -15,14 +15,6 @@
       "upstreamSha256": "c091a1881b4172867505c58c641e6a97d9a47f77cad90fcc0968d9f8e5f398de"
     },
     {
-      "path": "lib/pages/campus/downloads/attachments_sheet.dart",
-      "upstreamSha256": "58dc039ce8124d5d4b705b1f1dec233085b19cd315a6a397b8c585f71011c3d1"
-    },
-    {
-      "path": "lib/pages/campus/downloads/notice_downloaded_page.dart",
-      "upstreamSha256": "c8e3d2c56b4b0b4a5e8b5a930f5dd1b352883d9405868fde6b30ec4cbce3b47b"
-    },
-    {
       "path": "lib/pages/campus/service_hall/service_field_widgets.dart",
       "upstreamSha256": "4276acb5c135973a978e760217c51c6a5ce57872a3901399d93193c2a9ef85a8"
     },
@@ -96,7 +88,7 @@
     },
     {
       "path": "lib/utils/calendar_export_utils.dart",
-      "upstreamSha256": "25349aa7aa800adcb0d90cdaf717d7c5b6429125277bea6d81c2a0519e3d311e"
+      "upstreamSha256": "3f1436da73304272dd99621a70ec873eaf1be7c862d251dda9902fc886059666"
     },
     {
       "path": "lib/utils/file_save.dart",
@@ -124,10 +116,6 @@
     },
     {
       "path": "lib/utils/ohos_system_accent_color.dart",
-      "upstreamSha256": null
-    },
-    {
-      "path": "lib/utils/open_file.dart",
       "upstreamSha256": null
     },
     {

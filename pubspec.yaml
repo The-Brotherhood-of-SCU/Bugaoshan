@@ -43,6 +43,11 @@ dependencies:
   share_plus: ^13.1.0
   gal: ^2.3.0
   open_filex: ^4.7.0
+  open_file_ohos:
+    git:
+      url: https://gitcode.com/CPF-Flutter/fluttertpc_open_file.git
+      ref: 85db425fc4b8cc403983fc854a36da6f300ad952
+      path: ohos
   flutter_inappwebview:
     git:
       url: https://github.com/The-Brotherhood-of-SCU/flutter_inappwebview.git

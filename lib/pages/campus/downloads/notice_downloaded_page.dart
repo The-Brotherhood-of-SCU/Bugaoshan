@@ -6,7 +6,7 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/download_manager.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:open_filex/open_filex.dart';
+import 'package:bugaoshan/utils/open_file.dart';
 import 'package:path/path.dart' as p;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -398,7 +398,7 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
-  void _openFile(File file) => OpenFilex.open(file.path);
+  void _openFile(File file) => openFile(file.path);
 
   void _shareFile(File file) => shareSingleFile(file.path, context: context);
 

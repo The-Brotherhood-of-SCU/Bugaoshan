@@ -3,9 +3,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:bugaoshan/utils/open_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:open_filex/open_filex.dart';
+import 'package:open_filex/open_filex.dart' show ResultType;
 import 'package:path_provider/path_provider.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/theme_shape.dart';
@@ -263,7 +264,7 @@ class CalendarExportUtils {
         );
       } else {
         final icsPath = await saveIcsToCache();
-        final openResult = await OpenFilex.open(icsPath);
+        final openResult = await openFile(icsPath);
         if (openResult.type != ResultType.done) {
           throw PlatformException(
             code: 'OPEN_ICS_FAILED',

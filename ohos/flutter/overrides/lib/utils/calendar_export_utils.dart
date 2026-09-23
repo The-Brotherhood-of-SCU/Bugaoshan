@@ -3,9 +3,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bugaoshan/utils/file_save.dart';
+import 'package:bugaoshan/utils/open_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:open_filex/open_filex.dart';
+import 'package:open_filex/open_filex.dart' show ResultType;
 import 'package:path_provider/path_provider.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/theme_shape.dart';
@@ -265,7 +266,7 @@ class CalendarExportUtils {
         );
       } else {
         final icsPath = await saveIcsToCache();
-        final openResult = await OpenFilex.open(icsPath);
+        final openResult = await openFile(icsPath);
         if (openResult.type != ResultType.done) {
           throw PlatformException(
             code: 'OPEN_ICS_FAILED',
@@ -283,7 +284,10 @@ class CalendarExportUtils {
           );
         }
         // 打开接收端并不代表用户已确认导入，不显示“已导入到日历”。
-        AppLog.i(logTag, 'Calendar handoff opened; user confirmation is pending');
+        AppLog.i(
+          logTag,
+          'Calendar handoff opened; user confirmation is pending',
+        );
         return;
       }
       if (!context.mounted) return;

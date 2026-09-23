@@ -35,7 +35,7 @@ REQUIRED_OHOS_PLUGINS = (
     "flutter_secure_storage_ohos",
     "image_gallery_saver_plus",
     "image_picker_ohos",
-    "open_filex",
+    "open_file_ohos",
     "os_type",
     "package_info_plus_ohos",
     "path_provider_ohos",
