@@ -3460,11 +3460,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get emailSetupHint =>
-      'Use your separate mail username and password or client authorization code. Server settings can be changed under Advanced Settings.';
+      'Use your separate mail username and client authorization code. Server settings can be changed under Advanced Settings.';
 
   @override
   String get emailVerificationHint =>
-      'If webmail asks you to verify a new device, complete that step first. With two-factor authentication, generate a client-specific password under Mail Settings → Security Settings → Client-Specific Password and enter it here.';
+      'SCU student mail uses two-factor authentication by default. Generate a client-specific password under Mail Settings → Security Settings → Client-Specific Password in webmail and enter it here.';
 
   @override
   String get emailOpenWebmail => 'Open official student webmail';
@@ -3480,7 +3480,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailAdvancedSettings => 'Server settings (advanced)';
 
   @override
-  String get emailPassword => 'Mail password or authorization code';
+  String get emailPassword => 'Mail authorization code';
 
   @override
   String get emailImapHost => 'Incoming server (IMAP)';

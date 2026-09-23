@@ -6454,13 +6454,13 @@ abstract class AppLocalizations {
   /// No description provided for @emailSetupHint.
   ///
   /// In en, this message translates to:
-  /// **'Use your separate mail username and password or client authorization code. Server settings can be changed under Advanced Settings.'**
+  /// **'Use your separate mail username and client authorization code. Server settings can be changed under Advanced Settings.'**
   String get emailSetupHint;
 
   /// No description provided for @emailVerificationHint.
   ///
   /// In en, this message translates to:
-  /// **'If webmail asks you to verify a new device, complete that step first. With two-factor authentication, generate a client-specific password under Mail Settings → Security Settings → Client-Specific Password and enter it here.'**
+  /// **'SCU student mail uses two-factor authentication by default. Generate a client-specific password under Mail Settings → Security Settings → Client-Specific Password in webmail and enter it here.'**
   String get emailVerificationHint;
 
   /// No description provided for @emailOpenWebmail.

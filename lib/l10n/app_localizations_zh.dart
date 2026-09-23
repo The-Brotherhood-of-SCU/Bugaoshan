@@ -3350,11 +3350,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get emailSetupTitle => '绑定学生邮箱';
 
   @override
-  String get emailSetupHint => '使用独立的邮箱用户名和密码或客户端授权码。服务器参数可在高级设置中修改。';
+  String get emailSetupHint => '使用独立的邮箱用户名和客户端授权码。服务器参数可在高级设置中修改。';
 
   @override
   String get emailVerificationHint =>
-      '如果网页邮箱要求验证新设备，请先完成验证；启用二次验证时，在网页邮箱的「邮箱设置 → 安全设置 → 客户端专用密码」生成专用密码后填入。';
+      '川大邮箱默认启用二次验证，请在网页邮箱的「邮箱设置 → 安全设置 → 客户端专用密码」生成专用密码后填入。';
 
   @override
   String get emailOpenWebmail => '打开学生邮箱官网';
@@ -3369,7 +3369,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get emailAdvancedSettings => '服务器设置（高级）';
 
   @override
-  String get emailPassword => '邮箱密码或客户端授权码';
+  String get emailPassword => '客户端授权码';
 
   @override
   String get emailImapHost => '收件服务器（IMAP）';
