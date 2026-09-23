@@ -1,6 +1,6 @@
 # 鸿蒙 Flutter 适配
 
-根工程维护共享业务、上游依赖和上游锁文件。构建入口先检查对应上游源码基线，
+根工程维护共享业务、共用依赖声明和根锁文件。构建入口先检查对应上游源码基线，
 在 `ohos/.flutter-workspace/` 通过文件链接共用根 Dart 源码，有覆盖的路径链接鸿蒙完整 Dart 文件。
 `assets/` 直接链接根资源目录；生成代码、合并后的翻译及依赖配置使用独立本地文件。
 原生工程直接使用仓库 `ohos/`，Flutter 工作目录内不放置原生工程。
@@ -18,17 +18,14 @@
 | `ohos/tool/flutter_bootstrap.ts` | DevEco Sync 首次自举、失效环境重建及 OH 插件模块注入 |
 | `ohos/flutter/patches/hvigor/` | SDK Hvigor 路径适配与源码哈希 |
 | `ohos/flutter/pubspec_dependencies.json` | 仅在副本增加 OH 依赖、排除不使用的根依赖 |
-| `ohos/flutter/pubspec_overrides.yaml` | 固定 CPF 主包及平台接口/实现的 Git 提交 |
-| `ohos/flutter/pubspec.lock` | 鸿蒙稳定 SDK 对应的独立依赖锁 |
-| `ohos/flutter/patches/plugins/` | 插件补丁、版本清单和安全存储兼容处理 |
+| `pubspec.lock` | 所有平台共用的依赖锁；准备时复制并转换本地包路径，使用 `--enforce-lockfile` |
 | `ohos/flutter/patches/framework/` | 已移除的 Flutter framework 诊断补丁记录 |
-| `ohos/flutter/patches/embedding/` | Flutter OH HAR 主题配置补丁、包版本与源码哈希 |
 | `ohos/tests/` | 源码组装与插件脚本测试、OH Flutter 测试模板 |
 
 ## Dart 文件覆盖
 
-[覆盖目录](../flutter/overrides/README.md) 只保存有鸿蒙适配的完整文件，目前 43 个：
-28 个替换上游文件、15 个鸿蒙新增文件。它们通过同一个包名和最终 `lib/` 与共用文件一起编译。
+[覆盖目录](../flutter/overrides/README.md) 只保存有鸿蒙适配的完整文件，目前 41 个：
+27 个替换上游文件、14 个鸿蒙新增文件。它们通过同一个包名和最终 `lib/` 与共用文件一起编译。
 构建时不再对应用源码执行 `git apply`。旧 26 个补丁及最终目标的对应关系见
 [迁移记录](audits/source-overlay-migration.md)；上游已具备同等实现的适配会取消覆盖，
 直接使用根 `lib/`。
@@ -65,36 +62,30 @@
 python ohos/tool/ohos_sources.py --check
 ```
 
-## 插件补丁
+## 第三方插件
 
-`webview-configuration-update.patch` 将系统主题配置更新传给现有的 WebBuilderNode，
-与 [Flutter 嵌入层补丁](../flutter/patches/embedding/README.md) 配合，移除主题变化导致的原生节点重建。
-嵌入层 HAR 由 Hvigor 在副本中准备，不写入 SDK；这一补丁不属于 Pub 缓存补丁。
+第三方插件补丁及旧缓存迁移逻辑已移除。构建直接使用依赖锁指定的上游源码，
+应用信息和分享的独立 OH 包在本地 CPF 仓库维护，其余插件不再应用补丁。
+当前 7 个独立 OH 包的 Git/path 来源集中在根 `pubspec.yaml` 的 `dependency_overrides`，
+鸿蒙副本继承并转换本地路径，仍使用根锁；额外 OH 依赖由增减配置接入。
+根锁现与 main `7fab588` 完全一致，尚未包含 overrides 的解析结果，当前严格锁校验会失败。
+准备时清除残留的独立 `pubspec_overrides.yaml`，避免旧配置覆盖根声明。当前兼容性尚未验证。
+open_filex 沿用 main 的 hosted 4.7.0；`open_file_ohos 1.0.0` 在根 dependencies 指定 Git 来源。
+统一入口为根 `lib/utils/open_file.dart` 的 `openFile(path)`，按平台调用独立 OH 包或官方主包并统一返回类型；
+插件检查要求 `open_file_ohos`。两个附件页及打开工具共用根源码，日历的其他 OH 适配继续保留。
+此接入尚未完成依赖解析、构建和真机验证。
 
-`file-picker-save-bytes.patch` 让保存操作直接使用本次传入的 bytes 和文件名，
-不依赖此前选择文件产生的缓存；处理空内容、部分写入、取消和文件句柄关闭。
+为避免已有补丁残留在 Pub 缓存中，新流程使用 `ohos/.pub-cache/upstream/`。
+此前 `ohos/.pub-cache/` 下的缓存不再参与解析；不会自动删除旧缓存或全局缓存。
+首次切换需要重新执行 DevEco Sync，更新解析结果和原生插件注册。
 
-`gallery-save-result.patch` 保证重复调用和异常都返回 Flutter 结果，且在 finally 中恢复
-保存状态，避免出错后后续保存永久等待。
+安全存储覆盖文件直接导入 `flutter_secure_storage_ohos` 自带的 `FlutterSecureStorage`，
+该接口原生支持 OH options，因此不再修改主包的平台选择或 macOS 参数。
+接口继续调用真实的原生加密存储，不使用空实现或普通偏好存储替代。
 
-第三阶段新增 `open-file-result.patch`、`share-files-result.patch`、`image-picker-result.patch`，
-修复系统打开结果、分享文件准备及错误回复、选图取消和失败分类。
-配套 Dart 实现已迁入覆盖目录（原 `0005` 至 `0007`），行为和权限依据见 [第三阶段代码说明](phases/phase3.md)。
-原 `0008` 至 `0012` 的最终实现补齐登录恢复、账号切换、表单和上传的异常路径；
-`secure-storage-results.patch` 修复 OH 安全存储的错误回传和并发操作。
-旧数据处理与逐项审查结果见 [代码审查记录](audits/phase3-code.md)。
-
-`secure-storage.json` 保留 EasyNode 同类接入方式：OH 固定正式版 9.2.4，解析后为
-`_selectOptions()` 增加空 options 回退，并补上根源码使用的 macOS 参数别名。
-它校验包版本和待替换原文；根依赖继续使用 10.x。
-
-上述插件补丁只应用到 `ohos/.pub-cache/` 专用缓存。每次先校验包版本、提交及补丁上下文；
-完整应用过的补丁允许重入，遇到源码漂移立即失败。不要直接修改全局 Pub 缓存作为维护方式。
-安全存储补丁现将六处捕获后重新抛出的异常转换为明确的 `Error`，满足 ArkTS 的 `arkts-limited-throw` 限制。
-已应用旧版的缓存通过清单中的 `previousPatch` 识别，再应用 `upgradePatch`；下一次运行构建入口时自动处理。
-`legacy/secure-storage-results-untyped-throw.patch` 仅用于识别旧状态，不作为新构建的应用目标。
-`secure-storage-error-types.patch` 仅用于将该旧状态升级到当前完整补丁，避免清空缓存或覆盖其他修改。
-升级插件时必须重新审查补丁，更新锁文件并重跑测试和无签名构建。
+Hvigor 路径适配仍由清单维护；嵌入层直接使用 SDK 原始 HAR。先前有补丁时的验证记录仅供历史参考，
+不能用于认定当前原版插件组合已经通过。文件、图片、分享、凭据、SQLite 和 WebView
+需在实际构建后重新验收。
 
 ## 验证命令
 
@@ -103,10 +94,9 @@ python ohos/tool/ohos_sources.py --check
 ```powershell
 python -m unittest discover -s ohos/tests/python -p "test_*.py"
 python ohos/tool/build_ohos.py --mode release
-python ohos/tool/generate_ohos_dependency_inventory.py
 ```
 
-只有依赖有意变更时才执行 `python ohos/tool/build_ohos.py --update-lockfile`。
+鸿蒙不保存独立锁文件，依赖在每次准备时于 `ohos/.flutter-workspace/` 内重新求解。
 测试维护目录及运行位置见 [测试说明](../tests/README.md)。构建脚本将
 `ohos/tests/flutter/*.dart.template` 链接为工程的 `test/ohos/*.dart`，遇到与根测试同名的文件即停止。
 在已组装源码并完成代码生成的构建副本根目录中，使用同一 Flutter OH SDK 执行：

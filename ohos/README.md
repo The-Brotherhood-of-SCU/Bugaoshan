@@ -4,8 +4,26 @@
 鸿蒙端与其他平台在同一分支维护。编译工程通过文件链接共用根目录的业务代码，
 有适配的路径链接 `flutter/overrides/lib/` 中的完整 Dart 文件。
 
-上游与 Flutter OH 使用不同的 SDK 和依赖锁。构建鸿蒙版本时，请使用本目录的构建入口，
-由脚本加载 `ohos/flutter/` 中的配置，保持根目录的源码、依赖锁和生成文件供上游环境使用。
+上游与 Flutter OH 使用不同的 SDK 和依赖配置。构建鸿蒙版本时，请使用本目录的构建入口，
+由脚本加载 `ohos/flutter/` 中的配置，并与其他平台共用根 `pubspec.lock` 的锁定版本。
+
+根 `pubspec.yaml` 配置 7 个独立 OH 平台包的 overrides（5 个 Git、2 个本地 CPF），
+另将 open_file_ohos 1.0.0 作为普通 Git 依赖；鸿蒙副本继承这些声明。
+open_filex 沿用 main 的 hosted 4.7.0。根 [lib/utils/open_file.dart](../lib/utils/open_file.dart) 的 `openFile(path)`
+在 OH 调用独立 OH 包，其他平台调用官方 OpenFilex；插件检查同步要求 open_file_ohos。
+附件弹窗和下载管理共用根文件，已删除仅用于文件打开的三个 OH 覆盖文件。
+根锁完全采用 main `7fab588` 的 205 项基线，这 8 个 OH 包均尚未解析到根锁。
+额外 OH 依赖和排除项由 `flutter/pubspec_dependencies.json` 配置。
+
+鸿蒙侧不维护独立锁文件：准备时从根 `pubspec.lock` 生成工作目录中的普通文件副本，
+只转换本地 path 包的相对路径；随后执行 `flutter pub get --no-example --enforce-lockfile`。
+鸿蒙继承根声明及根 overrides，准备时转换本地 path 来源，不加载独立 `pubspec_overrides.yaml`。
+剩余 OH 增减依赖与根锁不兼容时直接报错，
+不自动改版本或回写根锁；兼容性待后续处理。
+当前根锁与这些覆盖不一致，严格校验会失败；文件打开代码已接入，未执行依赖解析、测试或构建。
+
+应用信息、分享已拆为 [本地 CPF Git 仓库中的独立 OH 包](docs/dependencies/local-cpf-plugins.md)，
+通过 path 接入并直接修改源码。
 
 ## 环境要求
 
@@ -13,13 +31,18 @@
 | --- | --- |
 | Python | 3.10 或更新版本，构建脚本仅依赖标准库 |
 | Git | 可通过 `PATH` 调用 |
-| Flutter OH | `3.41.10-ohos-1.0.1` 正式版，配套 Dart `3.11.5` |
+| Flutter OH | `3.44.9+ohos-0.0.1-canary1`，配套 Dart `3.12.2` |
 | HarmonyOS SDK | API 26，`26.0.0.105` Release |
 | DevEco Studio | `26.0.0.821`，使用配套 Node、OHPM 和 Hvigor |
 
 精确版本、Flutter 仓库来源及 framework/engine 提交见
 [toolchain.lock.json](flutter/toolchain.lock.json)。构建脚本会校验这些信息，
-仅支持锁定的正式工具链。
+仅支持锁定的工具链。当前固定 framework 提交 `498bc73e6214a7842bad50f8793f70cb538ca78e`，
+它是 `oh-3.44.9-dev` 的开发快照，并非最初的 canary 标签提交；仅版本号相同不足以通过校验。
+
+当前已更新工具链锁与 Hvigor 源码适配基线，尚未完成 3.44 构建验证。
+嵌入层补丁及其构建接入已移除，直接使用 SDK 原始 HAR。
+之前独立 OH 锁的解析记录不代表当前共用根锁配置已通过验证；依赖解析、HAP 构建与真机验证由维护者执行。
 
 准备和 DevEco 增量构建还会核对 OH 产物提交与两份平台 `.dill` 的 SHA-256，
 防止 SDK 版本相同但平台缓存不配套造成 Release 原生函数地址截断。
@@ -83,7 +106,7 @@ Flutter 工作目录固定在 `ohos/.flutter-workspace/`，原生工程直接使
 
 1. 校验工具链和上游源码基线，建立或更新共用代码、鸿蒙覆盖文件及资源链接。
 2. 在本地文件中合并翻译、准备独立依赖配置，检查代码生成路径隔离。
-3. 严格解析依赖，应用插件补丁并检查 OH 插件注册。
+3. 在 `ohos/.pub-cache/upstream/` 严格解析原版插件依赖并检查 OH 插件注册，不修改第三方插件源码。
 4. 生成 Dart 代码、本地化资源和根原生工程的插件注册文件。
 5. 普通构建在仓库 `ohos/` 调用 Hvigor Sync 和 `assembleHap`，并校验 HAP 版本。
 
@@ -110,7 +133,7 @@ HarmonyOS/Hvigor 工程。本机签名可由 DevEco 写入该文件，但签名�
 原生改动直接维护在这个工程中，无需从生成工程中迁回。
 
 已有手写 Dart 文件和资源的修改通过链接直接可见。DevEco 的 Sync/Build 配置阶段检查上游基线、
-更新链接和翻译，并在输入变化时更新生成代码。依赖声明、锁或插件补丁变化后，下次 Sync 会自动重新准备。
+更新链接和翻译，并在输入变化时更新生成代码。依赖声明、锁或 SDK 适配配置变化后，下次 Sync 会自动重新准备。
 编辑链接文件会修改它指向的维护文件；鸿蒙适配请直接编辑 `flutter/overrides/lib/`，
 不要在整个链接工程上运行 `dart format lib`，以免格式化共用源码。
 准备与 Flutter 编译共享文件锁；同一原生工程不要同时启动两个 Hvigor 构建。
@@ -138,17 +161,13 @@ ohos/
 ├── build-profile.json5                # DevEco 工程识别与基础构建配置
 ├── flutter/
 │   ├── pubspec_dependencies.json      # 鸿蒙依赖增减配置
-│   ├── pubspec_overrides.yaml         # 鸿蒙依赖覆盖
-│   ├── pubspec.lock                   # 鸿蒙独立依赖锁
-│   ├── toolchain.lock.json            # 正式工具链版本与提交
+│   ├── toolchain.lock.json            # 锁定工具链版本与提交
 │   ├── overrides/lib/                # 适配后的完整 Dart 文件
 │   ├── l10n/                         # 鸿蒙新增或覆盖的翻译条目
 │   ├── source-manifest.json          # 文件覆盖及上游基线
 │   └── patches/
-│       ├── plugins/                   # 第三方插件补丁与版本约束
-│       ├── embedding/                 # Flutter OH HAR 补丁与源码哈希
 │       └── hvigor/                    # 显式原生工程路径适配与 SDK 源码哈希
-├── tool/                              # 构建、源码组装、插件补丁与依赖清单脚本
+├── tool/                              # 构建、源码组装与依赖清单脚本
 ├── tests/
 │   ├── python/                        # 构建与补丁脚本测试
 │   └── flutter/                       # OH 专项测试模板
@@ -163,7 +182,7 @@ ohos/
 │   ├── lib/、assets/、test/            # 共用文件链接及独立生成代码
 │   ├── .dart_tool/                    # 鸿蒙解析与生成缓存
 │   ├── tooling/                       # 本地 Hvigor 适配和注册工具
-│   └── build/                         # Flutter 编译结果与嵌入层 HAR
+│   └── build/                         # Flutter 编译结果
 ├── .pub-cache/                        # 鸿蒙专用 Pub 缓存，不提交
 └── build/                             # 正常原生构建输出，不提交
 ```
@@ -208,21 +227,19 @@ flutter test --no-pub test/ohos/course_duplicate_test.dart test/ohos/course_copy
 python ohos/tool/ohos_sources.py --check
 ```
 
-调整插件版本时，更新鸿蒙依赖配置，并显式重新生成鸿蒙锁文件：
+调整插件版本时，统一维护根锁，并同步对应依赖声明，随后重新执行 `--prepare-only` 和相关检查：
 
 ```powershell
-python ohos/tool/build_ohos.py --update-lockfile
-python ohos/tool/generate_ohos_dependency_inventory.py
+python ohos/tool/build_ohos.py --prepare-only
 ```
 
-审查锁文件、Git 提交和补丁差异，随后重新执行 `--prepare-only` 和相关检查。
-依赖清单输出到 `ohos/docs/dependencies/lock-inventory.md`，应由脚本生成。
-普通构建严格使用现有锁文件，不自动升级依赖。
+根 `pubspec.lock` 是所有平台共用的依赖锁；根锁变化会触发鸿蒙重新准备。
+不要手动修改工作目录里的锁文件，下次准备会从根锁重新生成。没有 OH 单独更新锁的入口。
 
 ## 参考文档
 
-- [Flutter 适配机制](docs/flutter-adaptation.md)：源码覆盖、翻译合并、插件和嵌入层补丁的工作方式。
-- [依赖替代矩阵](docs/dependencies/replacements.md)与[完整依赖对照](docs/dependencies/lock-inventory.md)。
+- [Flutter 适配机制](docs/flutter-adaptation.md)：源码覆盖、翻译合并、插件接入和 SDK HAR 的使用方式。
+- [本地 CPF 插件](docs/dependencies/local-cpf-plugins.md)：应用信息、分享两个独立 OH 包的接入方式。
 - [API 20 兼容性说明](docs/compatibility/api20.md)。
 - [通知页与 WebView 排查记录](docs/audits/notice-webview.md)。
 - [Release 启动 SIGSEGV 修复步骤](docs/audits/release-aot-cache-repair.md)：平台缓存 ABI 错位、哈希校验、重建与真机验收。

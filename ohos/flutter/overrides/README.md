@@ -47,5 +47,6 @@ python ohos/tool/ohos_sources.py --check
 
 构建命令仍使用 [build_ohos.py](../../tool/build_ohos.py)，见 [脚本说明](../../tool/README.md)。
 此前 26 个源码补丁已转换为这里的完整 Dart 文件。迁移时为 65 个，后经精简为当前的
-43 个：28 个覆盖上游、15 个仅鸿蒙新增。编号、内容摘要和迁移范围见
-[迁移记录](../../docs/audits/source-overlay-migration.md)。插件和嵌入层仍使用各自补丁。
+41 个：27 个覆盖上游、14 个仅鸿蒙新增。文件打开入口和两个附件页已合入根源码，删除对应覆盖。
+安全存储覆盖直接使用插件的 OH Dart 接口。编号、内容摘要和迁移范围见
+[迁移记录](../../docs/audits/source-overlay-migration.md)。插件和嵌入层补丁均已移除，直接使用上游插件及 SDK 原始 HAR。

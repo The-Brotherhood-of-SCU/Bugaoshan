@@ -492,6 +492,11 @@ git commit -m 'test(ohos): 添加构建脚本与平台适配测试'
 
 ## 17 · 记录依赖替代方案与完整锁表
 
+> **已作废（2026-09-23）**：本节对应的双锁对比文档与生成脚本已按用户要求删除
+> （`lock-inventory.md`、`overview.md`、`replacements.md`、
+> `generate_ohos_dependency_inventory.py` 等）。鸿蒙不再维护独立锁文件，
+> 保留本节仅作历史记录，命令不可再执行。
+
 加入依赖调研、替代矩阵、完整 Dart 依赖对照及对应生成脚本，保留正式版本和固定 Git 提交依据。
 
 暂存并检查：

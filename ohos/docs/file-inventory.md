@@ -1,25 +1,25 @@
 **鸿蒙独立维护文件清单**
 
-按当前迁移结果统计，`ohos/` 共 **168 个**维护文件，不计本清单文件。每个文件占一行，左列为文件，右列为用途。链接采用仓库相对路径，重新 clone 后仍可使用。
+本清单列出 `ohos/` 的主项目维护文件，不计本清单文件。每个文件占一行，左列为文件，右列为用途。链接采用仓库相对路径，重新 clone 后仍可使用。
 
-其中，`ohos/flutter/overrides/lib/` 有 **43 个 Dart 文件：28 个覆盖上游，15 个鸿蒙新增**。原先 5 个优先恢复候选和 18 个通用修复覆盖已取消，组装工程直接使用根 `lib/` 的现有上游实现；另有 1 个覆盖（`pages/campus/repair/repair_page.dart`）因与上游字节一致而移除。18 份未合入的修复快照已由维护者剪切出当前仓库，不计入本清单，也不参与构建。
+其中，`ohos/flutter/overrides/lib/` 有 **41 个 Dart 文件：27 个覆盖上游，14 个鸿蒙新增**。原先 5 个优先恢复候选和 18 个通用修复覆盖已取消，组装工程直接使用根 `lib/` 的现有上游实现；另有 1 个覆盖（`pages/campus/repair/repair_page.dart`）因与上游字节一致而移除。文件打开工具、附件弹窗和下载管理页已合入根源码，删除对应 3 个覆盖。18 份未合入的修复快照已由维护者剪切出当前仓库，不计入本清单，也不参与构建。
 
-范围不含 `.flutter-workspace/`、`.pub-cache/`、`oh_modules/`、`node_modules/`、构建输出和本机忽略文件。原生测试脚手架及历史补丁迁移输入仍属于受版本控制的维护文件，已逐项列出。用途说明不等于已通过构建或真机验证。
+范围不含 `.flutter-workspace/`、`.pub-cache/`、`vendor/cpf/` 中的独立 Git 源码克隆、`oh_modules/`、`node_modules/`、构建输出和本机忽略文件。原生测试脚手架仍属于受版本控制的维护文件；第三方插件补丁、嵌入层补丁及旧缓存迁移输入已移除，其余文件已逐项列出。用途说明不等于已通过构建或真机验证。
 
 | 类别 | 文件数 |
 | --- | ---: |
-| 覆盖上游的 Dart 文件 | 28 |
+| 覆盖上游的 Dart 文件 | 29 |
 | 鸿蒙新增的 Dart 文件 | 15 |
 | 原生功能代码 | 9 |
 | 原生工程配置与资源 | 25 |
 | Flutter 依赖、翻译与覆盖配置 | 8 |
-| 插件、嵌入层与 Hvigor 补丁 | 16 |
-| 构建与维护工具 | 12 |
-| Flutter 与 Python 测试 | 15 |
+| Hvigor 路径适配 | 1 |
+| 构建与维护工具 | 9 |
+| Flutter 与 Python 测试 | 14 |
 | DevEco 原生测试工程 | 10 |
-| 文档与维护约定 | 30 |
+| 文档与维护约定 | 31 |
 
-**覆盖上游的 Dart 文件（28 个）**
+**覆盖上游的 Dart 文件（27 个）**
 
 原 52 个文件的逐项判断和本次迁移结果见 [上游复用评估](audits/upstream-reuse-assessment.md)。
 
@@ -30,8 +30,6 @@
 | [app.dart](../flutter/overrides/lib/app.dart) | 应用主题和全局界面装配；使用鸿蒙系统强调色回退。 |
 | [injection/injector.dart](../flutter/overrides/lib/injection/injector.dart) | 鸿蒙依赖注入装配；接入课表卡片快照和同步服务。 |
 | [main.dart](../flutter/overrides/lib/main.dart) | 鸿蒙启动入口；清理桌面及其他平台启动调用，接入启动错误报告和 Debug 诊断。 |
-| [pages/campus/downloads/attachments_sheet.dart](../flutter/overrides/lib/pages/campus/downloads/attachments_sheet.dart) | 通知附件操作面板；对接鸿蒙文件打开、分享及失败提示。 |
-| [pages/campus/downloads/notice_downloaded_page.dart](../flutter/overrides/lib/pages/campus/downloads/notice_downloaded_page.dart) | 已下载附件管理；适配本地文件打开、分享和错误反馈。 |
 | [pages/campus/service_hall/service_field_widgets.dart](../flutter/overrides/lib/pages/campus/service_hall/service_field_widgets.dart) | 办事大厅表单字段；适配鸿蒙图片选择及失败处理。 |
 | [pages/dev/environment_info_page.dart](../flutter/overrides/lib/pages/dev/environment_info_page.dart) | 环境信息页面；展示原生设备信息，支持完整复制和读取重试。 |
 | [pages/settings/add_widget/add_widget_page.dart](../flutter/overrides/lib/pages/settings/add_widget/add_widget_page.dart) | 添加桌面卡片页面；提供鸿蒙课表卡片管理入口和说明。 |
@@ -50,13 +48,14 @@
 | [theme.dart](../flutter/overrides/lib/theme.dart) | 应用主题；兼容 Flutter OH 的主题导入和转场接口。 |
 | [utils/calendar_export_utils.dart](../flutter/overrides/lib/utils/calendar_export_utils.dart) | 课表日历导出；保存 ICS，并通过鸿蒙通道交给日历应用确认导入。 |
 | [utils/open_link.dart](../flutter/overrides/lib/utils/open_link.dart) | 统一外链打开；使用系统接收应用并反馈失败。 |
+| [utils/secure_storage.dart](../flutter/overrides/lib/utils/secure_storage.dart) | 直接调用安全存储插件自带的 OH Dart API，不修改第三方插件源码。 |
 | [widgets/common/image_viewer.dart](../flutter/overrides/lib/widgets/common/image_viewer.dart) | 图片查看器；接入鸿蒙相册保存接口及结果反馈。 |
 | [widgets/eula_content.dart](../flutter/overrides/lib/widgets/eula_content.dart) | 用户协议展示；适配协议内外部链接的打开方式。 |
 | [widgets/webview/captcha_webview_dialog.dart](../flutter/overrides/lib/widgets/webview/captcha_webview_dialog.dart) | 网页验证码弹窗；接入鸿蒙 WebView 及兼容接口。 |
 | [widgets/webview/webview_notice_handlers.dart](../flutter/overrides/lib/widgets/webview/webview_notice_handlers.dart) | 通知 WebView 回调；兼容 CPF 6.1.5 下载接口及附件处理。 |
 | [widgets/webview/webview_notice_page.dart](../flutter/overrides/lib/widgets/webview/webview_notice_page.dart) | 共享通知页面；鸿蒙 WebView、美化、首帧遮罩、主题跟随及加载重试。 |
 
-**鸿蒙新增的 Dart 文件（15 个）**
+**鸿蒙新增的 Dart 文件（14 个）**
 
 本组目录：`ohos/flutter/overrides/lib/`。
 
@@ -71,7 +70,6 @@
 | [utils/ohos_debug_diagnostics.dart](../flutter/overrides/lib/utils/ohos_debug_diagnostics.dart) | Debug 原始异常与堆栈输出；脱敏、分段并避免错误报告递归。 |
 | [utils/ohos_startup_error.dart](../flutter/overrides/lib/utils/ohos_startup_error.dart) | 格式化启动失败原因及原始堆栈，展示前脱敏。 |
 | [utils/ohos_system_accent_color.dart](../flutter/overrides/lib/utils/ohos_system_accent_color.dart) | 集中定义鸿蒙系统强调色的回退值。 |
-| [utils/open_file.dart](../flutter/overrides/lib/utils/open_file.dart) | 封装系统打开本地文件，统一打开结果和失败处理。 |
 | [widgets/webview/download_webview.dart](../flutter/overrides/lib/widgets/webview/download_webview.dart) | 封装鸿蒙 WebView 创建、下载回调、主题跟随、禁用回弹及实例生命周期。 |
 | [widgets/webview/notice_layout_ready.dart](../flutter/overrides/lib/widgets/webview/notice_layout_ready.dart) | 判断通知页面美化后的布局是否稳定，控制正文展示时机。 |
 | [widgets/webview/notice_webview_scripts.dart](../flutter/overrides/lib/widgets/webview/notice_webview_scripts.dart) | 通知页注入脚本；包括教务处搜索框配色等页面调整。 |
@@ -123,7 +121,7 @@
 | [entry/src/main/resources/zh_CN/element/string.json](../entry/src/main/resources/zh_CN/element/string.json) | 原生界面和课表卡片简体中文文案。 |
 | [hvigor/hvigor-config.json5](../hvigor/hvigor-config.json5) | Hvigor 工具依赖及执行配置。 |
 | [hvigorconfig.ts](../hvigorconfig.ts) | DevEco 配置阶段入口；自举 Flutter 工作目录并注入已解析插件模块。 |
-| [hvigorfile.ts](../hvigorfile.ts) | 应用级构建任务；接入 Flutter 编译适配和嵌入层 HAR 补丁。 |
+| [hvigorfile.ts](../hvigorfile.ts) | 应用级构建任务；接入 Flutter 编译适配，使用 SDK 原始 HAR。 |
 | [oh-package.json5](../oh-package.json5) | 鸿蒙根工程的 OHPM 包声明和依赖配置。 |
 
 **Flutter 依赖、翻译与覆盖配置**
@@ -135,34 +133,18 @@
 | [l10n/app_en.arb](../flutter/l10n/app_en.arb) | 鸿蒙新增或覆盖的英文翻译条目，组装时与上游按键合并。 |
 | [l10n/app_zh.arb](../flutter/l10n/app_zh.arb) | 鸿蒙新增或覆盖的中文翻译条目，组装时与上游按键合并。 |
 | [overrides/analysis_options.yaml](../flutter/overrides/analysis_options.yaml) | 避免根 SDK 单独分析不完整的覆盖目录；不替代最终组装工程的分析规则。 |
-| [pubspec.lock](../flutter/pubspec.lock) | 鸿蒙独立的 Dart 依赖锁文件。 |
+| [根 pubspec.lock](../../pubspec.lock) | 所有平台共用的 Dart 依赖锁文件。 |
 | [pubspec_dependencies.json](../flutter/pubspec_dependencies.json) | 声明鸿蒙新增依赖和需要排除的上游平台依赖。 |
-| [pubspec_overrides.yaml](../flutter/pubspec_overrides.yaml) | 固定鸿蒙适用的主包、平台接口及实现版本和 Git 提交。 |
 | [source-manifest.json](../flutter/source-manifest.json) | 登记全部 Dart 覆盖／新增文件和翻译差异，并检查上游基线哈希。 |
 | [toolchain.lock.json](../flutter/toolchain.lock.json) | 锁定 Flutter OH、Dart、HarmonyOS 和构建工具版本，以及 OH 平台缓存哈希。 |
 
-**插件、嵌入层与 Hvigor 补丁**
+**Hvigor 路径适配**
 
 本组目录：`ohos/flutter/patches/`。
 
 | 文件 | 用途 |
 | --- | --- |
-| [embedding/color-mode-update.patch](../flutter/patches/embedding/color-mode-update.patch) | 修复系统主题配置更新传递，避免主题变化时重建嵌入层节点。 |
-| [embedding/manifest.json](../flutter/patches/embedding/manifest.json) | 锁定嵌入层 HAR 补丁的版本、源文件哈希和应用范围。 |
 | [hvigor/manifest.json](../flutter/patches/hvigor/manifest.json) | 登记 SDK Hvigor 适配输入及哈希，保证路径适配基于匹配版本。 |
-| [plugins/file-picker-save-bytes.patch](../flutter/patches/plugins/file-picker-save-bytes.patch) | 按本次传入的文件名和 bytes 保存文件，处理取消、部分写入和句柄关闭。 |
-| [plugins/gallery-save-result.patch](../flutter/patches/plugins/gallery-save-result.patch) | 保证相册保存成功或失败都返回结果，并恢复保存状态。 |
-| [plugins/image-picker-result.patch](../flutter/patches/plugins/image-picker-result.patch) | 修复选图取消、失败分类及平台结果回传。 |
-| [plugins/legacy/secure-storage-results-untyped-throw.patch](../flutter/patches/plugins/legacy/secure-storage-results-untyped-throw.patch) | 识别旧版安全存储补丁缓存状态，供迁移使用；不是新构建的目标补丁。 |
-| [plugins/manifest.json](../flutter/patches/plugins/manifest.json) | 声明原生插件补丁对应的包版本、Git 提交、应用顺序及旧补丁升级关系。 |
-| [plugins/open-file-result.patch](../flutter/patches/plugins/open-file-result.patch) | 修复调用系统打开文件后的结果及错误回传。 |
-| [plugins/secure-storage-error-types.patch](../flutter/patches/plugins/secure-storage-error-types.patch) | 将旧补丁中的无类型抛出改为明确 Error，满足 ArkTS 限制。 |
-| [plugins/secure-storage-results.patch](../flutter/patches/plugins/secure-storage-results.patch) | 修复安全存储操作的错误回传和并发处理，包含当前异常类型修复。 |
-| [plugins/secure-storage.json](../flutter/patches/plugins/secure-storage.json) | 安全存储主包的 options 回退和 macOS 参数兼容规则。 |
-| [plugins/share-files-result.patch](../flutter/patches/plugins/share-files-result.patch) | 修复分享文件准备及成功／失败结果回传。 |
-| [plugins/sqflite-main-thread-channel.patch](../flutter/patches/plugins/sqflite-main-thread-channel.patch) | 将数据库插件通道从自管理 Worker 恢复到主线程，避免 Worker 加载 UI 模块；不代表单独修复 Native 崩溃。 |
-| [plugins/url-launcher-ability-kit.patch](../flutter/patches/plugins/url-launcher-ability-kit.patch) | 把 Want 等旧模块导入迁移到 API 26 的 AbilityKit。 |
-| [plugins/webview-configuration-update.patch](../flutter/patches/plugins/webview-configuration-update.patch) | 把系统主题配置更新传给现有 WebView 节点，配合嵌入层补丁。 |
 
 **构建与维护工具**
 
@@ -172,13 +154,9 @@
 | --- | --- |
 | [build_ohos.py](../tool/build_ohos.py) | 总构建入口；工具链校验、工作目录组装、依赖解析、补丁接入和 HAP 构建／版本核对。 |
 | [flutter_bootstrap.ts](../tool/flutter_bootstrap.ts) | DevEco Sync 自举；发现 Python、准备工作目录和注入鸿蒙插件模块。 |
-| [flutter_embedding_plugin.ts](../tool/flutter_embedding_plugin.ts) | Hvigor 插件；按模式和架构选择 HAR 后应用嵌入层补丁。 |
 | [flutter_project.ts](../tool/flutter_project.ts) | Hvigor 与 Python 工具桥接；加载运行配置并使用本地 SDK 构建适配层。 |
-| [generate_ohos_dependency_inventory.py](../tool/generate_ohos_dependency_inventory.py) | 对比根依赖锁与鸿蒙锁，生成依赖清单文档。 |
-| [ohos_embedding.py](../tool/ohos_embedding.py) | 校验并修补嵌入层 HAR，在工作目录生成适配产物。 |
 | [ohos_links.py](../tool/ohos_links.py) | 建立及维护逐文件源码链接、构建锁和代码生成隔离检查。 |
 | [ohos_native.py](../tool/ohos_native.py) | 原生工程与 Flutter 工作目录衔接；生成代码、注册插件、注入版本、增量编译及 AOT 符号配置。 |
-| [ohos_patches.py](../tool/ohos_patches.py) | 按清单校验和应用插件补丁，处理已应用状态及旧缓存升级。 |
 | [ohos_sources.py](../tool/ohos_sources.py) | 检查覆盖文件及翻译条目的上游基线，规划覆盖和合并翻译。 |
 | [ohos_toolchain.py](../tool/ohos_toolchain.py) | 校验锁定 OH 产物提交及两份平台缓存哈希，拒绝不匹配 SDK 缓存。 |
 | [plugin_registrant.dart.template](../tool/plugin_registrant.dart.template) | 在鸿蒙依赖环境读取插件声明，供原生插件注册代码生成使用。 |
@@ -201,7 +179,6 @@
 | [python/test_build_ohos.py](../tests/python/test_build_ohos.py) | 验证构建入口、版本与依赖配置、工作目录组装等逻辑。 |
 | [python/test_ohos_links.py](../tests/python/test_ohos_links.py) | 验证源码链接维护、路径边界及生成文件隔离。 |
 | [python/test_ohos_native.py](../tests/python/test_ohos_native.py) | 验证原生入口准备、增量复用、插件注册及构建参数处理。 |
-| [python/test_ohos_patches.py](../tests/python/test_ohos_patches.py) | 验证插件补丁校验、重复应用及缓存升级。 |
 | [python/test_ohos_sources.py](../tests/python/test_ohos_sources.py) | 验证源码基线、翻译合并、未登记文件和越界拒绝。 |
 | [python/test_ohos_toolchain.py](../tests/python/test_ohos_toolchain.py) | 验证 OH 工具链产物及平台缓存一致性检查。 |
 
@@ -241,10 +218,8 @@
 | [docs/audits/upstream-reuse-assessment.md](audits/upstream-reuse-assessment.md) | 52 个历史 Dart 覆盖的上游复用评估及迁移结果。 |
 | [docs/commit-plan.md](commit-plan.md) | 鸿蒙适配的提交整理计划与范围说明。 |
 | [docs/compatibility/api20.md](compatibility/api20.md) | 最低 API 20 与高版本 API 功能的兼容性说明。 |
-| [docs/dependencies/lock-inventory.md](dependencies/lock-inventory.md) | 根依赖锁和鸿蒙依赖锁的详细对比清单。 |
-| [docs/dependencies/overview.md](dependencies/overview.md) | 鸿蒙依赖策略、来源及维护方式说明。 |
-| [docs/dependencies/replacements.md](dependencies/replacements.md) | 上游插件与鸿蒙替代实现的对应关系。 |
-| [docs/flutter-adaptation.md](flutter-adaptation.md) | Dart 覆盖、源码组装、依赖和插件补丁机制说明。 |
+| [docs/dependencies/local-cpf-plugins.md](dependencies/local-cpf-plugins.md) | 两个本地 CPF 独立 OH 包的源码位置、Git 维护方式、接入和待解析状态。 |
+| [docs/flutter-adaptation.md](flutter-adaptation.md) | Dart 覆盖、源码组装、原版依赖及 SDK 适配机制说明。 |
 | [docs/phases/phase3.md](phases/phase3.md) | 第三阶段平台能力、认证和异常路径的实现及验收说明。 |
 | [docs/phases/phase4.md](phases/phase4.md) | 第四阶段通知 WebView 布局、主题和加载行为说明。 |
 | [docs/phases/phase5.md](phases/phase5.md) | 第五阶段动态图标、桌面卡片和环境信息说明。 |
@@ -252,9 +227,7 @@
 | [flutter/README.md](../flutter/README.md) | 鸿蒙 Flutter 配置目录入口。 |
 | [flutter/l10n/README.md](../flutter/l10n/README.md) | 鸿蒙翻译差异的维护与合并规则。 |
 | [flutter/overrides/README.md](../flutter/overrides/README.md) | 完整 Dart 覆盖的维护、基线更新和分析规则。 |
-| [flutter/patches/embedding/README.md](../flutter/patches/embedding/README.md) | Flutter OH HAR 补丁的目的、生成与验证方式。 |
 | [flutter/patches/framework/README.md](../flutter/patches/framework/README.md) | 已移除 framework 诊断补丁的历史记录，当前不参与补丁应用。 |
 | [flutter/patches/hvigor/README.md](../flutter/patches/hvigor/README.md) | SDK Hvigor 路径适配、哈希校验及本地产物说明。 |
-| [flutter/patches/plugins/README.md](../flutter/patches/plugins/README.md) | 插件补丁、版本约束和旧缓存迁移说明。 |
 | [tests/README.md](../tests/README.md) | Python、Flutter 模板及原生测试的运行位置与范围。 |
 | [tool/README.md](../tool/README.md) | 构建工具参数、文件归属、DevEco 接入和故障排查说明。 |

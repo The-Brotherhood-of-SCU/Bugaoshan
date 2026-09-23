@@ -1,5 +1,64 @@
 # 鸿蒙端上游同步工作计划
 
+2026-09-23 最新更新：文件打开统一入口已移至根 `lib/utils/open_file.dart`，`openFile(path)` 按平台分发：OH 使用
+`open_file_ohos 1.0.0`，其他平台使用官方 `OpenFilex.open`，统一返回 `OpenResult`。
+所有平台的附件页直接调用 `openFile`，保留原有单参数调用方式；两个附件页及打开工具的 OH 覆盖已删除。
+日历导出的通用打开分支也使用共享入口，其余 OH 保存与原生导入适配继续保留；插件检查要求 `open_file_ohos`。
+根 overrides 现有 7 个独立 OH 包，open_file_ohos 改为普通 Git 依赖；根锁仍保留 main 的 205 项基线，open_filex 为 hosted 4.7.0。
+本次未运行依赖解析、测试或构建。
+
+此前已核对远端 main 为 `7fab588704291616077e6670994bf6ea9d78633e`。
+按用户要求，根 `pubspec.lock` 与该提交逐字节一致，共 205 项；根 `pubspec.yaml` 相比 main
+增加现有 7 项 `dependency_overrides` 及 open_file_ohos 普通 Git 依赖。
+这 8 个 OH 包尚未重新解析到根锁；当前严格锁校验会拒绝这些差异。
+本次只静态核对文件，没有运行依赖解析、测试或构建。下述 212 项及解析成功记录为历史状态。
+
+此前按用户要求采用旧仓库的声明形式，将 7 个独立 OH 包及 open_filex
+的 Git/path 来源集中到根 `pubspec.yaml` 的 `dependency_overrides`；`dependencies` 保留直接依赖。
+鸿蒙继承根 overrides 并转换本地路径；8 项的版本、来源和提交不变，根锁记录不需要改动。
+仍共用根锁并严格校验，不恢复独立 `pubspec_overrides.yaml`。未执行依赖解析、测试或构建。
+
+2026-09-23 更新：按用户要求，鸿蒙改用根 `pubspec.lock`，本次先切换锁来源，不处理兼容性。
+准备时生成工作目录中的根锁副本，仅转换本地 path 包的相对路径，并执行 `--enforce-lockfile`；
+根锁变化会使准备缓存失效。现有 OH 声明若与根锁冲突则直接失败，不独立解锁或回写根锁。
+`ohos/flutter/pubspec.lock`、双锁对比文档及依赖生成脚本保持删除，`--update-lockfile` 不再提供。
+本次未执行依赖解析、测试或构建；下文的独立 OH 锁解析及验收记录均为历史状态。
+
+同日按用户要求移除全部 OH 依赖 overrides，删除 `ohos/flutter/pubspec_overrides.yaml`。
+主包沿用根声明与根锁；准备时清除工作目录中的旧 overrides。
+额外 OH 依赖及排除项仍由 `pubspec_dependencies.json` 配置，其兼容性留待后续处理。
+
+同日按用户要求在根依赖声明带 OH 实现的 `open_filex 4.7.0`，使用 CPF 标签
+`4.7.0-ohos-1.0.0` 对应提交 `850a9abd0220316dc2bb45924315cb2304ff4ab6`。
+根锁同步将这一项从 hosted 改为 Git，版本及其 Flutter/ffi 依赖约束不变，所有平台共用此来源。
+本次根据已核对的 Git 提交手动更新锁记录，未运行 Pub 解析、测试或构建。
+
+2026-09-23 更新：按用户要求将 shared_preferences_ohos 2.5.5、image_picker_ohos 1.2.3、
+path_provider_ohos 2.2.17、sqflite_ohos 2.4.2、url_launcher_ohos 6.3.2 纳入根 pubspec 与根锁。
+根锁原 205 项均未变化，现为 210 项。两组配置均通过 Pub 解析；未执行分析、测试或构建。
+
+2026-09-22 更新：按用户要求移除全部第三方插件补丁及旧缓存迁移逻辑，改用原版插件和
+`ohos/.pub-cache/upstream/` 缓存；安全存储直接接入 OH 包自带的 Dart API。
+下文先前的插件补丁及验收记录为历史状态，不代表当前无插件补丁组合已验证。
+本次未执行依赖解析、构建或真机测试。
+
+同日工具链更新：锁定 Flutter OH `3.44.9+ohos-0.0.1-canary1` / Dart `3.12.2`，
+framework 为 `498bc73e6214a7842bad50f8793f70cb538ca78e`，同步引擎、平台缓存和 Hvigor 基线。
+嵌入层补丁及其构建接入已移除，直接使用 SDK 原始 HAR。随后按用户要求重新解析 Pub 锁，
+meta 更新为 1.18.0、test_api 为 0.7.11、path 保持 1.9.1，严格锁文件校验通过；
+以下 3.41 验收记录不覆盖此工具链，嵌入层补丁相关条目仅为历史记录。
+
+随后按用户要求将 image_picker 主包和 OH 实现升级为 1.2.3，固定到 flutter_packages 的
+oh-3.44.9-dev 提交 4c19d0ade6deb07620921fdcaa3afbb0586dd541，依赖解析与严格锁校验通过。
+随后于 2026-09-23 按用户要求撤回 Git LFS 示例视频的跳过下载设置，恢复默认下载行为。
+撤回后未重新执行依赖解析、测试、HAP 构建或真机验证。
+
+同日继续按根锁对齐依赖：shared_preferences 主包/OH 升至 2.5.5，采用与 image_picker
+相同的 dev 固定提交；injectable_generator 升至 3.1.1、analyzer 升至 13.0.0，
+system_theme 升至 3.3.0，连同其他传递包共升级 16 项（15 项与根锁一致，另 1 项为 OH 实现）。
+Pub 重新解析和 13 个 OH 插件元数据检查通过，根源码和根锁未变；
+保留 22 个受 OH 插件版本/接口约束的共同包版本差异。未执行分析、测试或 HAP 构建。
+
 更新日期：2026-09-17。状态：阶段一和阶段二原实现已完成，阶段二真机基础流程已通过。
 前两阶段及第三阶段源码适配均保存在 OH 补丁中。用户于 2026-09-16 确认下列四项第三阶段
 真机功能验证通过，已据此勾选；代理后续仅修改 OH 代码补丁和文档，没有构建或测试。
@@ -21,8 +80,8 @@ ArkWeb AUTO 配合现有深浅 CSS，不再因主题变化主动刷新或重建 
 - Dart 适配保存为 `ohos/flutter/overrides/lib/` 下的完整文件，翻译差异放在 `ohos/flutter/l10n/`；
   `source-manifest.json` 登记上游基线，组装前检查。根源码、文档和测试保持上游状态。
 - 代理当前只修改代码和文档，测试、依赖解析、构建及真机调试由用户执行。
-- 鸿蒙只使用正式稳定版 Flutter OH SDK，不使用 canary、beta、dev 等预览版本。
-- 其他平台继续使用上游 Flutter 环境；鸿蒙专用依赖配置和锁文件放在 `ohos/flutter/`。
+- 鸿蒙只使用工具链锁指定的 SDK；当前采用 3.44.9 canary 开发快照，按完整提交固定。
+- 所有平台共用根 `pubspec.lock`；鸿蒙专用依赖配置和工具链锁放在 `ohos/flutter/`。
 - 鸿蒙依赖解析、代码生成和构建在独立副本中执行，避免改动根工程的锁文件和生成物。
 - 本文用于跟踪同步工作。只有取得对应验证证据后，才勾选完成项；构建方法以 [鸿蒙开发说明](../README.md) 为准。
 
@@ -39,8 +98,8 @@ ArkWeb AUTO 配合现有深浅 CSS，不再因主题变化主动刷新或重建 
 | 旧鸿蒙版本声明 | `ohos/AppScope/app.json5` 为 `2.2.0` / versionCode `3`；`ohos/oh-package.json5` 为 `2.2.0` |
 | 对照历史版本 | `v2.2.0`，提交 `e02eada`，发布日期 2026-07-13 |
 | 上游 SDK | CI 使用 Flutter `3.44.9`；根锁文件要求 Dart `>=3.12.0` |
-| 本机 OH SDK 报告值 | Flutter `3.41.10-ohos-1.0.0` / Dart `3.11.5` |
-| 当前 OH SDK | 正式 tag `3.41.10-ohos-1.0.1`，提交 `adaf911c35c9136a7d18fc424d714c9ec7724e60`，已验证 |
+| 调查时 OH SDK 报告值 | Flutter `3.41.10-ohos-1.0.0` / Dart `3.11.5` |
+| 原验证 OH SDK | 正式 tag `3.41.10-ohos-1.0.1`，提交 `adaf911c35c9136a7d18fc424d714c9ec7724e60`；当前锁定值见文首更新 |
 | 当前 API 工具链 | DevEco Studio `26.0.0.821`、API 26 SDK `26.0.0.105`、Hvigor `6.26.4`、ohpm `26.0.0.630`、Node.js `v24.14.1` |
 
 从 `v2.2.0` 到本次目标共有 366 个非合并提交，477 个文件变化，新增 53,718 行、删除 9,668 行。这是全仓库的差异规模，不是鸿蒙需要重新实现的工作量。
@@ -56,8 +115,8 @@ DevEco Sync 已接入首次自动准备和失效运行环境重建。这次入�
 依赖解析、代码生成、构建和真机验证由用户执行，尚未标记通过。
 
 - [x] 确定同分支、共享源码、鸿蒙独立依赖锁的目录方案。
-- [x] 创建 `ohos/flutter/pubspec_overrides.yaml` 和 `ohos/flutter/pubspec.lock`。
-- [x] 建立 `ohos/tool/build_ohos.py`，支持独立副本、严格锁定解析、显式更新锁文件和 HAP 构建入口。
+- [x] 历史上的 OH 依赖覆盖和独立锁均已于 2026-09-23 移除，现沿用根声明与根锁。
+- [x] 建立 `ohos/tool/build_ohos.py`，支持独立副本、依赖解析和 HAP 构建入口。
 - [x] 使用当前本机 OH SDK 执行 `--prepare-only`，严格依赖解析通过。
 - [x] 构建脚本 18 个测试、补丁校验 1 个测试、8 个 Dart 适配/下载处理测试及 3 个主题转场测试通过。
 - [x] 固定并验证正式 SDK tag、提交和 API 26 配套工具链。
@@ -82,7 +141,7 @@ DevEco Sync 已接入首次自动准备和失效运行环境重建。这次入�
   `.flutter-workspace/`，Pub 缓存放在 `.pub-cache/`，接入本地 Hvigor 路径适配。
 - [x] 精简源码覆盖：提交 `0fd213a` 后覆盖共 67 个；2026-09-19 提交 `f7e0933` 取消
   23 个已可改用上游实现的覆盖，降至 44 个；其后移除与上游逐字节一致的 `repair_page.dart`。
-  当前为 28 个上游覆盖 + 15 个 OH 新增，共 43 个 Dart 文件；数量以
+  当前为 27 个上游覆盖 + 14 个 OH 新增，共 41 个 Dart 文件；数量以
   `ohos_sources.py --check` 的输出为准。
 - [x] 将首次准备和依赖/路径失效后的重建接入 DevEco Sync，保留 `--prepare-only` 作为手动入口。
 - [x] 提交无签名 `build-profile.json5` 基线，使 DevEco 在首次 Sync 前能识别根 `ohos/` 工程。
@@ -93,8 +152,8 @@ DevEco Sync 已接入首次自动准备和失效运行环境重建。这次入�
 相册保存使用 `image_gallery_saver_plus 3.0.5`，WebView 使用 CPF `6.1.5` / OH `1.1.3`。
 鸿蒙依赖配置与补丁位于 `ohos/flutter/`，测试位于 `ohos/tests/`，阶段与排查文档位于
 `ohos/docs/`；目录职责见 [开发入口](../README.md) 和 [适配说明](flutter-adaptation.md)。
-`win32` 临时覆盖已移除，依赖自然解析到 5.15.0；鸿蒙锁共 194 包，与根锁有 43 项不同、
-21 项仅根锁存在、10 项仅 OH 锁存在。完整对照见 [完整依赖对照](dependencies/lock-inventory.md)。
+此前独立 OH 解析的 `win32` 为 5.15.0；当前已切换到根锁，其中 `win32` 为 6.4.0，
+现有依赖约束的兼容性尚未处理，不再维护独立 OH 版本选择。
 
 当前 `plugins.ohos` 和 ArkTS 注册文件包含全部 13 项：`file_picker_ohos`、
 `flutter_inappwebview_ohos`、`image_gallery_saver_plus`、`flutter_secure_storage_ohos`、
@@ -107,31 +166,24 @@ DevEco Sync 已接入首次自动准备和失效运行环境重建。这次入�
 | 位置 | 职责 |
 | --- | --- |
 | [根 pubspec.yaml](../../pubspec.yaml) | 共用的应用版本、资源和依赖声明 |
-| [根 pubspec.lock](../../pubspec.lock) | 上游 Flutter 环境的依赖锁 |
-| [依赖覆盖](../flutter/pubspec_overrides.yaml) | 鸿蒙专用插件替换和兼容覆盖 |
+| [根 pubspec.lock](../../pubspec.lock) | 所有平台共用的依赖锁，鸿蒙准备时读取并严格校验 |
 | [依赖增减配置](../flutter/pubspec_dependencies.json) | 只在隔离构建副本中注入或排除的直接依赖 |
 | [Dart 覆盖文件](../flutter/overrides/README.md) | 适配后的完整文件，按同一路径复制到 OH 副本 |
 | [源码清单](../flutter/source-manifest.json)及[翻译条目](../flutter/l10n/README.md) | 文件基线检查及 ARB 按键合并 |
 | [Python 测试](../tests/python/) | 构建及补丁脚本测试 |
 | [Flutter 测试模板](../tests/flutter/) | 仅在 OH 副本还原为 Dart 文件的专项测试 |
-| [插件补丁](../flutter/patches/plugins/) | 原生插件补丁、版本清单和旧缓存迁移依据 |
-| [鸿蒙依赖锁](../flutter/pubspec.lock) | 鸿蒙 SDK 对应的完整依赖锁 |
-| [工具链锁](../flutter/toolchain.lock.json) | 正式 Flutter OH、API 26 和 DevEco 工具版本锁定，不含本机路径 |
-| [依赖说明](dependencies/overview.md) | 直接依赖、OH 插件需求、OHPM 与工具链分类清单 |
-| [依赖替代矩阵](dependencies/replacements.md) | 全部直接依赖的 CPF 稳定替代、迁移和排除结论 |
-| [完整依赖对照](dependencies/lock-inventory.md) | 根锁与鸿蒙锁的全部包、版本、来源和差异状态 |
+| [工具链锁](../flutter/toolchain.lock.json) | Flutter OH、API 26 和 DevEco 工具版本锁定，不含本机路径 |
 | [原生源码与资源](../entry/src/main/) | ArkTS 入口、原生通道、页面、权限和资源 |
 | [应用配置](../AppScope/) | 应用标识、版本字段和应用资源 |
 | [ohos/tool/build_ohos.py](../tool/build_ohos.py) | 鸿蒙依赖准备与构建入口 |
 | [ohos/tool/ohos_sources.py](../tool/ohos_sources.py) | 上游基线检查、Dart 覆盖和 ARB 合并 |
-| [ohos/tool/ohos_patches.py](../tool/ohos_patches.py) | 第三方插件补丁应用逻辑 |
-| [ohos/tool/generate_ohos_dependency_inventory.py](../tool/generate_ohos_dependency_inventory.py) | 从两份锁文件重建完整 Dart 依赖对照表 |
 | [开发入口](../README.md) | 鸿蒙开发环境、构建及 DevEco 调试说明 |
 | `ohos/.flutter-workspace/` | 链接共用源码的鸿蒙编译工程，依赖和生成物独立，不提交 |
-| `ohos/.pub-cache/` | 鸿蒙专用 Pub 缓存与插件补丁应用位置，不提交 |
+| `ohos/.pub-cache/upstream/` | 鸿蒙原版依赖缓存，与旧补丁缓存隔离，不提交 |
 | `ohos/` | 唯一原生工程及 DevEco 打开位置，不再复制到 Flutter 工作目录 |
 
-`ohos/flutter/` 下的覆盖配置不会被根工程自动采用。构建脚本将它和鸿蒙锁文件复制到构建副本根目录后，Pub 才按这套配置解析。
+构建按根声明和依赖增减配置组装工作目录的 `pubspec.yaml`，复制根锁并转换本地路径后严格校验；
+继承根 `dependency_overrides` 并转换本地路径，不生成或加载独立 `pubspec_overrides.yaml`。
 
 ## 5. 分阶段实施
 
@@ -178,7 +230,7 @@ DevEco Sync 已接入首次自动准备和失效运行环境重建。这次入�
 插件补丁应用到 `ohos/.pub-cache/`，源码覆盖及翻译合并只写入构建副本；文件都位于
 `ohos/flutter/patches/`。版本、提交或上下文不匹配会停止构建。
 
-补丁迁移前的验证记录：严格锁定解析、代码生成、OH 副本全部 `lib/` 与专用测试静态分析通过；
+补丁迁移前的验证记录：依赖解析、代码生成、OH 副本全部 `lib/` 与专用测试静态分析通过；
 19 个 Python 测试、8 个 Dart 文件/相册及下载处理测试、3 个主题转场测试通过。
 历史副本 `build/ohos-workspace/run-ys4hv2r0/` 曾生成约 33.5 MiB 的 unsigned release HAP，
 版本为 `2.5.1+20501`，bundleName 为 `com.scubrotherhood.bugaoshan`，target API 26。
@@ -248,7 +300,7 @@ Windows 默认插件声明会产生非阻塞提示，其 ArkTS 源码也有编�
 - [x] `0017` 的主题刷新方案已被 `0018` 替换；保留其手动重试前先绘制遮罩的时序。
 - [x] 编写 `0018-notice-native-theme.patch`：ArkWeb 原生 AUTO 配合上游两套 CSS，显式关闭算法强制染色；移除上一版网页属性转换和主题刷新，教务处搜索框沿用动态媒体查询。
 - [x] 编写嵌入层 `color-mode-update.patch`：系统主题变化改为对现有 BuilderNode 调用 `updateConfiguration()`；插件补丁继续传递到内部 WebBuilderNode，避免因主题变化重新创建 Web 文档。
-- [x] 接入 Hvigor：读取 Flutter 实际选择的 SDK HAR，按版本/源码哈希在副本中应用补丁，以独立依赖 URL 引用；SDK 安装目录不修改。见 [嵌入层补丁](../flutter/patches/embedding/README.md)。
+- [x] 历史接入 Hvigor：读取 SDK HAR，在副本中应用补丁并以独立依赖 URL 引用；该补丁及接入已于 2026-09-22 移除。
 - [x] 本次 WebView 原生主题修复运行通过：用户于 2026-09-16 反馈“这个部分正常运行了”，关闭已显示页面切换深浅模式时刷新、卡住及 Load Failed 的问题。
 - [x] 补充确认首次以深浅主题打开、连续快速切换、返回前台及旋转/尺寸变化时的表现。
 - [x] 真机验证所有 WebView 顶底边缘无回弹、正常滚动和验证码操作，以及三个通知页的深浅切换、青春川大分页和附件操作。
@@ -289,7 +341,7 @@ Windows 默认插件声明会产生非阻塞提示，其 ArkTS 源码也有编�
 ### 阶段六：建立持续同步检查
 
 - [ ] 使用上游 Flutter 3.44 SDK 完成代码生成、格式检查、静态分析和 Flutter 测试，确认鸿蒙兼容修改不影响 Android、iOS 和桌面端。
-- [ ] 在 `ohos/tool/` 提供独立的依赖解析、代码生成、分析和测试检查入口，配置及测试放在 `ohos/`，使用正式 SDK 和鸿蒙锁文件，供 CI 调用。
+- [ ] 在 `ohos/tool/` 提供独立的依赖解析、代码生成、分析和测试检查入口，配置及测试放在 `ohos/`，使用正式 SDK，供 CI 调用。
 - [ ] 在具备原生工具链的环境通过上述入口执行 unsigned HAP 构建；当前修改范围不包含 `.github/` 工作流。
 - [ ] 为涉及平台能力、数据库或认证存储的变更安排真机回归，并保存验证记录。
 - [ ] 只有未来正式发布的 OH SDK 能满足上游要求且验证通过后，才评估合并 SDK 基线、减少依赖覆盖。
@@ -329,9 +381,9 @@ Windows 默认插件声明会产生非阻塞提示，其 ArkTS 源码也有编�
 
 ## 7. 每次同步上游的执行流程
 
-1. 记录上一次验证通过的源码提交、本次目标提交、正式 SDK 提交和鸿蒙锁文件版本。
+1. 记录上一次验证通过的源码提交、本次目标提交和正式 SDK 提交。
 2. 从同一分支的上游更新中检查四类变化：共享 Dart / Flutter API、插件依赖、原生通道、数据库或持久化格式。
-3. 先用当前鸿蒙锁严格解析；如果必须调整依赖，修改鸿蒙覆盖配置，再显式更新锁文件并审查差异。
+3. 鸿蒙使用根 `pubspec.lock`：准备时复制并转换本地路径，以 `--enforce-lockfile` 严格校验；依赖版本统一在根锁维护。
 4. 将兼容修改保存为 `ohos/` 下的补丁，由脚本应用到 OH 副本；不修改根共享代码。由用户执行代码生成、格式、分析和测试，双 SDK 校验按安排在阶段六开展。
 5. 构建 HAP，并按变化范围回归真机功能；发布候选包至少验证冷启动、登录、课表、数据持久化和覆盖升级。
 6. 更新能力矩阵和验证记录。只完成源码同步、解析或编译时，应保留尚未完成的运行验证项。
@@ -343,13 +395,10 @@ Windows 默认插件声明会产生非阻塞提示，其 ArkTS 源码也有编�
 在仓库根目录执行，使用 Python 3.10+。脚本从 PowerShell 的 `PATH` 查找 Flutter OH，从环境变量或 `flutter config --ohos-sdk` 读取 HarmonyOS SDK；仓库不记录本机路径。Flutter / Dart 命令需要能够访问依赖源和 Flutter 资源。
 
 ```powershell
-# 创建独立副本并严格验证锁文件；不会执行代码生成和 HAP 构建。
+# 创建工作目录、求解依赖并准备代码生成和 DevEco 入口；不构建 HAP。
 python ohos/tool/build_ohos.py --prepare-only
 
-# 仅在有意调整依赖时执行：更新 ohos/flutter/pubspec.lock 后退出。
-python ohos/tool/build_ohos.py --update-lockfile
-
-# 适配完成后执行：严格解析、代码生成、本地化生成及 unsigned HAP 构建。
+# 适配完成后执行：依赖解析、代码生成、本地化生成及 unsigned HAP 构建。
 python ohos/tool/build_ohos.py --mode release
 ```
 

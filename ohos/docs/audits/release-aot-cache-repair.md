@@ -1,5 +1,8 @@
 # Release 启动 SIGSEGV：Flutter OH 平台缓存修复步骤
 
+2026-09-22 状态更新：工具链已升级到 3.44.9 开发快照，插件和嵌入层补丁均已移除。
+下文保留 3.41 的排查证据；当前版本及平台缓存哈希以 `ohos/flutter/toolchain.lock.json` 为准。
+
 审计日期：2026-09-17。适用对象：本工程锁定的 Flutter OH `3.41.10-ohos-1.0.1`、
 Dart `3.11.5`、ARM64 Release 启动崩溃。
 

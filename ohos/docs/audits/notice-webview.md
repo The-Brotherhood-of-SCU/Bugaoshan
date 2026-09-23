@@ -236,7 +236,7 @@ OH 插件会在进度事件重放文档开始脚本，因此使用文档级标�
 又会在未使用 keepAlive 时 dispose WebBuilderNode 并释放 Web 资源。因此 Dart Widget 即使被保留，
 主题变化仍可能替换其下面的原生组件，产生重新加载或控制器失效；这与系统浏览器的接入路径不同。
 
-已编写 [嵌入层补丁](../../flutter/patches/embedding/README.md)：仅把主题分支改为调用已有 BuilderNode 的
+历史实现（嵌入层与插件补丁均已于 2026-09-22 移除）：仅把主题分支改为调用已有 BuilderNode 的
 `updateConfiguration()`，不改变尺寸或渲染表面变化等其他重建入口。API 26 的声明明确该接口
 用于传递系统配置变化。另在 CPF WebView 的 `onWillApplyTheme()` 中通知内部持有的 WebBuilderNode，
 使其使用现有 Web 和控制器更新配置。原生 AUTO 及现有深浅 CSS 继续负责配色。

@@ -1,5 +1,10 @@
 # 第四阶段收尾清单
 
+2026-09-22 变更：第三方插件补丁和旧缓存迁移已移除，安全存储改用 OH 包自带接口。
+嵌入层补丁及其构建接入也已移除，直接使用 SDK 原始 HAR。
+本文此前关于补丁及其验证的内容保留为历史记录，不能代表当前原版插件与 HAR 已通过验证。
+当前接入方式见 [Flutter 适配说明](../flutter-adaptation.md)。
+
 更新日期：2026-09-16。状态：第四阶段完成。用户先确认原生主题修复正常运行，
 随后确认下列剩余部分“都没有问题了”，已按用户验收结果全部勾选。
 第三阶段常用平台能力和四项业务验收已通过，旧包覆盖升级统一留到阶段七。
@@ -17,8 +22,7 @@
 应用源码现维护在 `ohos/flutter/overrides/lib/widgets/webview/`，由完整文件直接覆盖副本。
 原 `0004`、`0013` 至 `0018` 已合成为最终实现，`0017` 的自动刷新不在最终文件中；
 旧编号映射见 [迁移记录](../audits/source-overlay-migration.md)。
-原生补丁继续位于 `ohos/flutter/patches/embedding/` 和
-`ohos/flutter/patches/plugins/webview-configuration-update.patch`。
+当时的嵌入层与 WebView 插件补丁均已于 2026-09-22 移除。
 
 ## 已验收范围
 
