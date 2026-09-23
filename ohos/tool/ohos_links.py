@@ -78,6 +78,8 @@ def _target(workspace, relative):
     if not isinstance(relative, str):
         raise ValueError("链接清单路径必须是字符串。")
     path = PurePosixPath(relative)
+    # Keep pubspec_overrides.yaml accepted here only so old journal entries
+    # can be removed when assembling a workspace without dependency overrides.
     root_files = {
         "pubspec.yaml", "pubspec.lock", "pubspec_overrides.yaml", "analysis_options.yaml",
         "l10n.yaml", ".metadata", "CHANGELOG.md", "LICENSE",

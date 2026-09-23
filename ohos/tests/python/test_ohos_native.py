@@ -62,6 +62,15 @@ class OhosNativeTest(unittest.TestCase):
         self.assertEqual(profile.read_text(), "local DevEco config\n")
         self.assertFalse((self.workspace / "ohos").exists())
 
+    def test_root_lock_change_invalidates_dependency_preparation(self):
+        self.write("pubspec.yaml", "dependencies: {}\n")
+        lockfile = self.write("pubspec.lock", "original root lock\n")
+        self.write("ohos/flutter/pubspec_dependencies.json", '{"dependencies": {}}\n')
+        self.write("ohos/flutter/toolchain.lock.json", "{}\n")
+        before = ohos_native.dependency_fingerprint(self.root)
+        lockfile.write_text("updated root lock\n", encoding="utf-8")
+        self.assertNotEqual(ohos_native.dependency_fingerprint(self.root), before)
+
     def test_changed_dependency_resolution_is_rejected_before_preparation(self):
         self.write("ohos/.flutter-runtime.json", json.dumps({
             "schemaVersion": 1, "workspace": str(self.workspace), "nativeProject": str(self.native),

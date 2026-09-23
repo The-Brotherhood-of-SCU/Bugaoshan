@@ -125,8 +125,6 @@ class OhosBuildTest(unittest.TestCase):
                 "lib/shared.dart": "shared source\n",
                 "lib/models/example.g.dart": "// GENERATED CODE\noriginal generated source\n",
                 "assets/libs/data.txt": "application asset\n",
-                "ohos/flutter/pubspec.lock": "ohos lock\n",
-                "ohos/flutter/pubspec_overrides.yaml": "dependency_overrides: {}\n",
                 "ohos/flutter/pubspec_dependencies.json": json.dumps(
                     {
                         "schemaVersion": 1,
@@ -196,6 +194,8 @@ class OhosBuildTest(unittest.TestCase):
 
             workspace = build_ohos.prepare_workspace(root)
             self.assertEqual(workspace, root / "ohos/.flutter-workspace")
+            self.assertEqual((workspace / "pubspec.lock").read_text(), "upstream lock\n")
+            self.assertFalse((workspace / "pubspec.lock").is_symlink())
             self.assertTrue((workspace / "lib/main.dart").is_symlink())
             self.assertEqual(
                 (workspace / "lib/main.dart").resolve(),
@@ -206,11 +206,7 @@ class OhosBuildTest(unittest.TestCase):
             self.assertTrue((workspace / "assets").is_symlink())
             self.assertEqual((workspace / "assets").resolve(), root / "assets")
             self.assertFalse((workspace / "lib/models/example.g.dart").is_symlink())
-            self.assertEqual((workspace / "pubspec.lock").read_text(), "ohos lock\n")
-            self.assertEqual(
-                (workspace / "pubspec_overrides.yaml").read_text(),
-                "dependency_overrides: {}\n",
-            )
+            self.assertFalse((workspace / "pubspec_overrides.yaml").exists())
             workspace_pubspec = (workspace / "pubspec.yaml").read_text()
             self.assertIn("  flutter_secure_storage_ohos:\n", workspace_pubspec)
             self.assertIn(f'      ref: "{"a" * 40}"\n', workspace_pubspec)
@@ -268,8 +264,15 @@ class OhosBuildTest(unittest.TestCase):
             for name, content in files.items():
                 self.assertEqual((root / name).read_text(), content, name)
 
+            (workspace / "pubspec.lock").write_text("stale OH lock\n")
+            (workspace / "pubspec_overrides.yaml").write_text(
+                "dependency_overrides:\n  package_info_plus: 9.0.0\n",
+            )
             second_workspace = build_ohos.prepare_workspace(root)
             self.assertEqual(workspace, second_workspace)
+            self.assertFalse((workspace / "pubspec_overrides.yaml").exists())
+            self.assertEqual((workspace / "pubspec.lock").read_text(), "upstream lock\n")
+            self.assertEqual((root / "pubspec.lock").read_text(), "upstream lock\n")
             self.assertEqual((second_workspace / "lib/main.dart").read_text(), "patched source\n")
             self.assertEqual(
                 (second_workspace / "lib/models/example.g.dart").read_text(), "OH generated source\n",
@@ -483,26 +486,49 @@ class OhosBuildTest(unittest.TestCase):
             ):
                 build_ohos.build_hap(["hvigorw", "assembleHap"], workspace, {})
 
-    def test_missing_platform_lockfile_fails_before_creating_workspace(self):
+    def test_missing_platform_config_fails_before_creating_workspace(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             with self.assertRaises(ValueError):
                 build_ohos.prepare_workspace(root)
             self.assertFalse((root / "ohos/.flutter-workspace").exists())
 
-    def test_normal_resolution_enforces_the_platform_lockfile(self):
+    def test_root_lock_preserves_packages_and_rebases_only_local_paths(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            content = (
+                "packages:\n"
+                "  local_plugin:\n"
+                '    dependency: "direct main"\n'
+                "    description:\n"
+                '      path: "ohos/vendor/local plugin"\n'
+                "      relative: true\n"
+                "    source: path\n"
+                '    version: "0.1.0"\n'
+                "  git_plugin:\n"
+                '    dependency: "direct main"\n'
+                "    description:\n"
+                '      path: "packages/plugin"\n'
+                '      ref: "pinned"\n'
+                '      resolved-ref: "pinned"\n'
+                '      url: "https://example.invalid/plugin.git"\n'
+                "    source: git\n"
+                '    version: "1.2.3"\n'
+            )
+            lockfile = root / "pubspec.lock"
+            lockfile.write_text(content, encoding="utf-8")
+            self.assertEqual(
+                build_ohos.workspace_lockfile(root),
+                content.replace('"ohos/vendor/local plugin"', '"../vendor/local plugin"'),
+            )
+            self.assertEqual(lockfile.read_text(encoding="utf-8"), content)
+
+    def test_dependency_resolution_enforces_the_root_lock(self):
         with patch.object(build_ohos, "run") as run:
             build_ohos.resolve_dependencies("flutter", Path("workspace"), {})
             run.assert_called_once_with(
                 ["flutter", "pub", "get", "--no-example", "--enforce-lockfile"],
                 Path("workspace"), {},
-            )
-
-    def test_explicit_lock_update_allows_dependency_resolution(self):
-        with patch.object(build_ohos, "run") as run:
-            build_ohos.resolve_dependencies("flutter", Path("workspace"), {}, True)
-            run.assert_called_once_with(
-                ["flutter", "pub", "get", "--no-example"], Path("workspace"), {},
             )
 
 

@@ -66,9 +66,9 @@ def fingerprint(paths, base):
 
 def dependency_fingerprint(root):
     config = root / "ohos/flutter"
-    files = [root / "pubspec.yaml"]
+    files = [root / "pubspec.yaml", root / "pubspec.lock"]
     files.extend(config / name for name in (
-        "pubspec.lock", "pubspec_overrides.yaml", "pubspec_dependencies.json", "toolchain.lock.json",
+        "pubspec_dependencies.json", "toolchain.lock.json",
     ))
     files.extend(p for p in (config / "patches").rglob("*") if p.is_file() and p.suffix != ".md")
     return fingerprint(files, root)
@@ -125,7 +125,7 @@ def prepare_native_runtime(root, workspace, sdk, env):
 
 def resolved_fingerprint(workspace):
     return fingerprint([
-        workspace / "pubspec.yaml", workspace / "pubspec.lock", workspace / "pubspec_overrides.yaml",
+        workspace / "pubspec.yaml", workspace / "pubspec.lock",
         workspace / ".dart_tool/package_config.json", workspace / ".flutter-plugins-dependencies",
     ], workspace)
 
@@ -222,7 +222,7 @@ def generate_code(root, workspace, flutter, dart, env):
                 target = outputs if generated_dart(path.relative_to(workspace), path) else inputs
                 target.append(path)
     inputs.extend(workspace / name for name in (
-        "pubspec.yaml", "pubspec.lock", "pubspec_overrides.yaml", "l10n.yaml", ".dart_tool/package_config.json",
+        "pubspec.yaml", "pubspec.lock", "l10n.yaml", ".dart_tool/package_config.json",
     ) if (workspace / name).is_file())
     if (root / "build.yaml").is_file():
         raise ValueError("上游新增了 build.yaml；请先将生成器配置纳入鸿蒙组装规则。")

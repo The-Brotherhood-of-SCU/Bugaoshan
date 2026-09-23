@@ -384,16 +384,45 @@ def collect_sources(root, name, inputs):
             inputs[source.relative_to(root).as_posix()] = source
 
 
+def workspace_lockfile(root):
+    """Use the root lock, rebasing only relative path package locations."""
+    lockfile = root / "pubspec.lock"
+    if not lockfile.is_file():
+        raise ValueError(f"缺少共享依赖锁文件：{lockfile}")
+    content = lockfile.read_text(encoding="utf-8")
+
+    def rebase(match):
+        scalar = match.group("path")
+        if scalar.startswith('"'):
+            path = json.loads(scalar)
+        elif scalar.startswith("'"):
+            path = scalar[1:-1].replace("''", "'")
+        else:
+            path = scalar
+        relative = Path(os.path.relpath(root / path, root / "ohos/.flutter-workspace"))
+        return match.group(1) + yaml_scalar(relative.as_posix()) + match.group(3)
+
+    # Pub writes path descriptions in this order. Git subdirectory paths have
+    # no relative flag and must remain untouched.
+    return re.sub(
+        r"(^      path: )(?P<path>[^\n]+)(\n      relative: true\n    source: path$)",
+        rebase, content, flags=re.MULTILINE,
+    )
+
+
 def prepare_workspace(root):
     root = root.resolve()
     config = root / "ohos" / "flutter"
     for name in (
-        "pubspec_overrides.yaml", "pubspec.lock", TOOLCHAIN_LOCK,
-        PUBSPEC_DEPENDENCIES, SOURCE_MANIFEST,
+        TOOLCHAIN_LOCK, PUBSPEC_DEPENDENCIES, SOURCE_MANIFEST,
     ):
         if not (config / name).is_file():
             raise ValueError(f"缺少鸿蒙依赖配置：{config / name}")
 
+    pubspec_content = ohos_pubspec(
+        (root / "pubspec.yaml").read_text(encoding="utf-8"), config / PUBSPEC_DEPENDENCIES,
+    )
+    lockfile_content = workspace_lockfile(root)
     # Validate the upstream baseline before creating any shared source links.
     overrides, file_count, entry_count = plan_source_overrides(root, config)
     inputs = {}
@@ -407,11 +436,8 @@ def prepare_workspace(root):
         source = root / name
         if source.is_file():
             inputs[name] = source
-    for name in ("pubspec_overrides.yaml", "pubspec.lock"):
-        inputs[name] = config / name
-    inputs["pubspec.yaml"] = ohos_pubspec(
-        (root / "pubspec.yaml").read_text(encoding="utf-8"), config / PUBSPEC_DEPENDENCIES,
-    ).encode("utf-8")
+    inputs["pubspec.yaml"] = pubspec_content.encode("utf-8")
+    inputs["pubspec.lock"] = lockfile_content.encode("utf-8")
     for relative, content in overrides:
         inputs[relative] = config / "overrides" / relative if relative.endswith(".dart") else content
     materialize_flutter_tests(root, inputs)
@@ -431,6 +457,9 @@ def prepare_workspace(root):
     workspace = assemble_linked_workspace(
         root, inputs, preserve_generated=local_generated,
     )
+    # Also remove overrides left outside the old assembly journal, so Pub
+    # cannot silently apply a previous set of platform-specific dependencies.
+    (workspace / "pubspec_overrides.yaml").unlink(missing_ok=True)
     validate_codegen_isolation(workspace)
     print(f"已组装鸿蒙源码：{file_count} 个 Dart 文件、{entry_count} 个翻译条目", flush=True)
     return workspace
@@ -507,11 +536,10 @@ def run(command, workspace, env):
     subprocess.run(command, cwd=workspace, env=env, check=True)
 
 
-def resolve_dependencies(flutter, workspace, env, update_lockfile=False):
-    command = [flutter, "pub", "get", "--no-example"]
-    if not update_lockfile:
-        command.append("--enforce-lockfile")
-    run(command, workspace, env)
+def resolve_dependencies(flutter, workspace, env):
+    # The workspace lock comes from the root; incompatible OH declarations
+    # must fail instead of selecting a different set of package versions.
+    run([flutter, "pub", "get", "--no-example", "--enforce-lockfile"], workspace, env)
 
 
 def main(argv=None):
@@ -524,13 +552,8 @@ def main(argv=None):
         "--ohos-sdk", type=Path, default=None,
         help="可选的 HarmonyOS SDK 根目录；默认读取环境变量或 flutter config",
     )
-    actions = parser.add_mutually_exclusive_group()
-    actions.add_argument(
+    parser.add_argument(
         "--prepare-only", action="store_true", help="准备链接、依赖、代码生成和根 ohos 的 DevEco 构建入口，不构建 HAP",
-    )
-    actions.add_argument(
-        "--update-lockfile", action="store_true",
-        help="重新解析依赖并更新 ohos/flutter/pubspec.lock，然后退出",
     )
     parser.add_argument("--mode", choices=("debug", "profile", "release"), default="release")
     args = parser.parse_args(argv)
@@ -573,18 +596,11 @@ def build_workspace(args, flutter, dart, env):
         print(f"Flutter 工作目录：{workspace}\n原生工程：{native}", flush=True)
         version_name, version_code = sync_workspace_version(ROOT, workspace)
         print(f"鸿蒙应用版本：{version_name}+{version_code}", flush=True)
-        resolve_dependencies(flutter, workspace, env, args.update_lockfile)
+        resolve_dependencies(flutter, workspace, env)
         sdk = Path(flutter).parent.parent.resolve()
         if package_root(workspace, "flutter") != (sdk / "packages/flutter").resolve():
             raise ValueError("Dart package_config 中的 flutter package 不属于锁定 SDK。")
         validate_ohos_plugins(workspace)
-        if args.update_lockfile:
-            target = native / "flutter/pubspec.lock"
-            shutil.copy2(workspace / "pubspec.lock", target)
-            # The old runtime remains only as a source of local tool paths. Its
-            # dependency fingerprint is stale, so the next Sync must rebuild it.
-            print(f"已更新鸿蒙锁文件：{target}；下次 DevEco Sync 将自动重新准备。", flush=True)
-            return 0
         prepare_native_runtime(ROOT, workspace, Path(flutter).parent.parent, env)
     refresh_native(ROOT)
     if args.prepare_only:
