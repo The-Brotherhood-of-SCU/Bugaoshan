@@ -201,6 +201,49 @@ class EmailService {
     return file.writeAsBytes(bytes, flush: true);
   }
 
+  /// Loads CID referenced inline images. Large images are fetched separately
+  /// because the message body is intentionally capped when it is opened.
+  Future<Map<String, Uint8List>> fetchInlineImages(MimeMessage message) async {
+    final infos = <ContentInfo>[
+      ...message.findContentInfo(disposition: ContentDisposition.inline),
+      ...message.findContentInfo(),
+    ];
+    final result = <String, Uint8List>{};
+    final seen = <String>{};
+    for (final info in infos) {
+      final cid = _normalizeContentId(info.cid);
+      if (cid == null || !seen.add(cid)) continue;
+
+      MimePart? part;
+      try {
+        part = message.getPart(info.fetchId);
+      } catch (_) {
+        part = null;
+      }
+      var bytes = part == null ? null : decodeAttachmentBytes(part);
+      if (bytes == null || bytes.isEmpty) {
+        try {
+          part = await _requireClient().fetchMessagePart(message, info.fetchId);
+          bytes = decodeAttachmentBytes(part);
+        } catch (_) {
+          bytes = null;
+        }
+      }
+      if (bytes != null && bytes.isNotEmpty) result[cid] = bytes;
+    }
+    return result;
+  }
+
+  static String? _normalizeContentId(String? value) {
+    if (value == null) return null;
+    var normalized = value.trim().toLowerCase();
+    if (normalized.startsWith('cid:')) normalized = normalized.substring(4);
+    if (normalized.startsWith('<') && normalized.endsWith('>')) {
+      normalized = normalized.substring(1, normalized.length - 1);
+    }
+    return normalized.isEmpty ? null : normalized;
+  }
+
   /// Decodes an attachment without passing raw binary data through UTF-8.
   ///
   /// Coremail can store a sent attachment with the `binary` transfer
