@@ -183,7 +183,7 @@ class EmailService {
 
   Future<File> downloadAttachment(MimeMessage message, ContentInfo info) async {
     final part = await _requireClient().fetchMessagePart(message, info.fetchId);
-    final bytes = part.decodeContentBinary();
+    final bytes = decodeAttachmentBytes(part);
     if (bytes == null) throw StateError('Attachment content is unavailable');
     final base = path.basename(info.fileName ?? 'attachment');
     final safeName = base.replaceAll(RegExp(r'[<>:"/\\|?*\x00-\x1F]'), '_');
@@ -199,6 +199,108 @@ class EmailService {
       ),
     );
     return file.writeAsBytes(bytes, flush: true);
+  }
+
+  /// Decodes an attachment without passing raw binary data through UTF-8.
+  ///
+  /// Coremail can store a sent attachment with the `binary` transfer
+  /// encoding. enough_mail's binary MIME decoder converts that data to a
+  /// string before decoding it, which changes bytes above 0x7f and produces
+  /// an unreadable file. Keep the original body for 7bit/8bit/binary parts,
+  /// and also recover the occasional double-base64 encoded sent copy.
+  static Uint8List? decodeAttachmentBytes(MimePart part) {
+    final transferEncoding = part
+        .getHeaderValue('content-transfer-encoding')
+        ?.trim()
+        .toLowerCase();
+    final rawBody = _rawMimeBody(part);
+    if (rawBody != null &&
+        (transferEncoding == '7bit' ||
+            transferEncoding == '8bit' ||
+            transferEncoding == 'binary')) {
+      return _trimMimeLineEnding(rawBody);
+    }
+
+    final decoded = part.decodeContentBinary();
+    if (decoded == null) return null;
+
+    // Some sent copies contain base64 text after the MIME layer has already
+    // been decoded. Decode it once more only when the result has a known file
+    // signature, so ordinary text attachments are left untouched.
+    final secondPass = _decodeBase64FileBytes(decoded);
+    return secondPass ?? decoded;
+  }
+
+  static Uint8List? _rawMimeBody(MimePart part) {
+    final data = part.mimeData;
+    if (data is BinaryMimeData) {
+      final bytes = data.data;
+      final marker = const <int>[13, 10, 13, 10];
+      for (var i = 0; i <= bytes.length - marker.length; i++) {
+        var matches = true;
+        for (var j = 0; j < marker.length; j++) {
+          if (bytes[i + j] != marker[j]) {
+            matches = false;
+            break;
+          }
+        }
+        if (matches) return Uint8List.sublistView(bytes, i + marker.length);
+      }
+      return bytes;
+    }
+    if (data is TextMimeData) {
+      return Uint8List.fromList(utf8.encode(data.body));
+    }
+    return null;
+  }
+
+  static Uint8List _trimMimeLineEnding(Uint8List bytes) {
+    if (bytes.length >= 2 &&
+        bytes[bytes.length - 2] == 13 &&
+        bytes[bytes.length - 1] == 10) {
+      return Uint8List.sublistView(bytes, 0, bytes.length - 2);
+    }
+    return bytes;
+  }
+
+  static Uint8List? _decodeBase64FileBytes(Uint8List bytes) {
+    if (bytes.length < 8) return null;
+    final text = String.fromCharCodes(bytes);
+    if (!RegExp(r'^[A-Za-z0-9+/=\r\n\t ]+$').hasMatch(text)) {
+      return null;
+    }
+    final compact = text.replaceAll(RegExp(r'\s'), '');
+    if (compact.length < 8 || compact.length % 4 != 0) return null;
+    try {
+      final decoded = Uint8List.fromList(base64.decode(compact));
+      return _hasKnownFileSignature(decoded) ? decoded : null;
+    } on FormatException {
+      return null;
+    }
+  }
+
+  static bool _hasKnownFileSignature(Uint8List bytes) {
+    bool startsWith(List<int> signature) {
+      if (bytes.length < signature.length) return false;
+      for (var i = 0; i < signature.length; i++) {
+        if (bytes[i] != signature[i]) return false;
+      }
+      return true;
+    }
+
+    if (startsWith(const [0xff, 0xd8, 0xff]) ||
+        startsWith(const [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]) ||
+        startsWith(const [0x47, 0x49, 0x46, 0x38]) ||
+        startsWith(const [0x25, 0x50, 0x44, 0x46]) ||
+        startsWith(const [0x50, 0x4b, 0x03, 0x04])) {
+      return true;
+    }
+    return bytes.length >= 12 &&
+        startsWith(const [0x52, 0x49, 0x46, 0x46]) &&
+        bytes[8] == 0x57 &&
+        bytes[9] == 0x45 &&
+        bytes[10] == 0x42 &&
+        bytes[11] == 0x50;
   }
 
   Future<void> disconnect() async {
