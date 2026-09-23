@@ -164,7 +164,7 @@ class OhosNativeTest(unittest.TestCase):
             f"-dSplitDebugInfo={self.workspace / 'build/symbols/release'}",
             command,
         )
-        self.assertEqual(env["PUB_CACHE"], str(self.native / ".pub-cache"))
+        self.assertEqual(env["PUB_CACHE"], str(self.native / ".pub-cache/upstream"))
         encoded = next(a.split("=", 1)[1] for a in command if a.startswith("--DartDefines="))
         values = dict(base64.b64decode(value).decode().split("=", 1) for value in encoded.split(","))
         self.assertEqual(values["GIT_TAG"], "override")

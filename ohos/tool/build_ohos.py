@@ -14,7 +14,6 @@ from urllib.parse import unquote, urlparse
 from urllib.request import url2pathname
 import zipfile
 
-from ohos_patches import apply_dependency_patches
 from ohos_toolchain import validate_flutter_artifacts
 from ohos_sources import SOURCE_MANIFEST, plan_source_overrides
 from ohos_links import (
@@ -279,35 +278,6 @@ def package_root(workspace, package_name):
     if not root.is_dir():
         raise ValueError(f"{package_name} 源码目录不存在：{root}")
     return root
-
-
-def replace_package_source(path, before, after, marker):
-    content = path.read_text(encoding="utf-8")
-    if marker in content:
-        return False
-    if content.count(before) != 1:
-        raise ValueError(f"鸿蒙补丁与依赖源码不匹配：{path}")
-    path.write_text(content.replace(before, after), encoding="utf-8")
-    return True
-
-
-def patch_flutter_secure_storage(workspace):
-    config = read_json(
-        ROOT / "ohos" / "flutter" / "patches" / "plugins" / "secure-storage.json",
-        "安全存储兼容补丁",
-    )
-    package = package_root(workspace, "flutter_secure_storage")
-    pubspec = package / "pubspec.yaml"
-    version = pubspec.read_text(encoding="utf-8")
-    if re.search(
-        rf"^version:\s*{re.escape(config['version'])}\s*$", version, re.MULTILINE,
-    ) is None:
-        raise ValueError(f"鸿蒙安全存储补丁版本不匹配：{pubspec}")
-    for edit in config["edits"]:
-        replace_package_source(
-            package / edit["path"], edit["before"], edit["after"], edit["marker"],
-        )
-    print("已校验并应用鸿蒙安全存储兼容补丁。", flush=True)
 
 
 def validate_ohos_plugins(workspace, required_plugins=REQUIRED_OHOS_PLUGINS):
@@ -593,11 +563,11 @@ def main(argv=None):
 
 
 def build_workspace(args, flutter, dart, env):
-    from ohos_native import prepare_native_runtime, refresh_native
+    from ohos_native import prepare_native_runtime, pub_cache_path, refresh_native
 
     native = ROOT / "ohos"
-    # 插件补丁仅写入鸿蒙专用 Pub 缓存，不修改其他平台使用的缓存。
-    env["PUB_CACHE"] = str(native / ".pub-cache")
+    # 使用独立的原版依赖缓存，避免复用曾被旧插件补丁修改的源码。
+    env["PUB_CACHE"] = str(pub_cache_path(ROOT))
     with workspace_lock(ROOT):
         workspace = prepare_workspace(ROOT)
         print(f"Flutter 工作目录：{workspace}\n原生工程：{native}", flush=True)
@@ -607,8 +577,6 @@ def build_workspace(args, flutter, dart, env):
         sdk = Path(flutter).parent.parent.resolve()
         if package_root(workspace, "flutter") != (sdk / "packages/flutter").resolve():
             raise ValueError("Dart package_config 中的 flutter package 不属于锁定 SDK。")
-        patch_flutter_secure_storage(workspace)
-        apply_dependency_patches(workspace, native / "flutter", package_root)
         validate_ohos_plugins(workspace)
         if args.update_lockfile:
             target = native / "flutter/pubspec.lock"

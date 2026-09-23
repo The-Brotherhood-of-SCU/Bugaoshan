@@ -135,6 +135,10 @@
       "upstreamSha256": "e5d6c525347b37b3ff299292a6bf62c6612f0009f5df70627f88a30435e3e686"
     },
     {
+      "path": "lib/utils/secure_storage.dart",
+      "upstreamSha256": "a490dc71171139633681b3e5d3abc1d85c9aab1b7e1748709c815136e9479e17"
+    },
+    {
       "path": "lib/widgets/common/image_viewer.dart",
       "upstreamSha256": "41539caa9a99dea44e847e87cced0ba73ee55cbd417c12ada037f217483c54a3"
     },

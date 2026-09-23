@@ -28,6 +28,11 @@ class PreparationRequiredError(ValueError):
     """The local Flutter package must be prepared again before Hvigor can continue."""
 
 
+def pub_cache_path(root):
+    """Keep upstream packages separate from the formerly patched Pub cache."""
+    return root / "ohos/.pub-cache/upstream"
+
+
 def write_local(path, content):
     """Atomic ordinary files only; never overwrite a maintained file through a link."""
     if path.resolve() != path or (path.is_file() and path.stat().st_nlink != 1):
@@ -197,7 +202,7 @@ def runtime_environment(root, runtime):
     env = os.environ.copy()
     # Only selected non-secret tool settings are persisted, never the whole shell environment.
     env.update({key: value for key, value in runtime["environment"].items() if key in ENV_KEYS})
-    env["PUB_CACHE"] = str(root / "ohos/.pub-cache")
+    env["PUB_CACHE"] = str(pub_cache_path(root))
     sdk = Path(runtime["flutterSdk"])
     bins = [sdk / "bin"]
     if runtime.get("git"):
