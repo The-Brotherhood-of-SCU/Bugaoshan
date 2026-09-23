@@ -306,6 +306,7 @@ class _EmailPageState extends State<EmailPage> {
       final title = sender?.personalName?.isNotEmpty == true
           ? sender!.personalName!
           : sender?.email ?? '';
+      final subject = message.decodeSubject();
       final date = message.decodeDate();
       return ListTile(
         leading: Icon(
@@ -322,9 +323,7 @@ class _EmailPageState extends State<EmailPage> {
               : const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
-          message.decodeSubject()?.isNotEmpty == true
-              ? message.decodeSubject()!
-              : l10n.emailSubject,
+          subject?.isNotEmpty == true ? subject! : l10n.emailSubject,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -333,8 +332,11 @@ class _EmailPageState extends State<EmailPage> {
           await Navigator.push(
             context,
             MaterialPageRoute<void>(
-              builder: (_) =>
-                  EmailDetailPage(service: _service, message: message),
+              builder: (_) => EmailDetailPage(
+                service: _service,
+                message: message,
+                subject: subject ?? '',
+              ),
             ),
           );
           if (mounted) setState(() {});

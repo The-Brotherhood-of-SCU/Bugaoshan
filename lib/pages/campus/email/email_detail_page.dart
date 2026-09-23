@@ -10,10 +10,14 @@ class EmailDetailPage extends StatefulWidget {
     super.key,
     required this.service,
     required this.message,
+    required this.subject,
   });
 
   final EmailService service;
   final MimeMessage message;
+
+  /// The decoded IMAP envelope subject, before full-message header parsing.
+  final String subject;
 
   @override
   State<EmailDetailPage> createState() => _EmailDetailPageState();
@@ -101,10 +105,7 @@ class _EmailDetailPageState extends State<EmailDetailPage> {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        Text(
-          message.decodeSubject() ?? '',
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
+        Text(widget.subject, style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 16),
         Text(senderText, style: Theme.of(context).textTheme.titleSmall),
         if (date != null) ...[
