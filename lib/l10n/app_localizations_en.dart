@@ -3460,7 +3460,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get emailSetupHint =>
-      'Use your separate mail account and password or client authorization code. Server settings can be changed below.';
+      'Use your separate mail username and password or client authorization code. Server settings can be changed under Advanced Settings.';
 
   @override
   String get emailVerificationHint =>
@@ -3474,7 +3474,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not open official student webmail';
 
   @override
-  String get emailAddress => 'Email address';
+  String get emailAddress => 'Mail username';
+
+  @override
+  String get emailAdvancedSettings => 'Server settings (advanced)';
 
   @override
   String get emailPassword => 'Mail password or authorization code';
@@ -3495,7 +3498,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emailConnect => 'Connect';
 
   @override
-  String get emailInvalidAddress => 'Enter a valid @stu.scu.edu.cn address';
+  String get emailInvalidAddress =>
+      'Enter the mail username without @stu.scu.edu.cn';
 
   @override
   String get emailInvalidPort => 'Enter a port from 1 to 65535';

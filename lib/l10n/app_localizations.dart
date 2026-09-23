@@ -6454,7 +6454,7 @@ abstract class AppLocalizations {
   /// No description provided for @emailSetupHint.
   ///
   /// In en, this message translates to:
-  /// **'Use your separate mail account and password or client authorization code. Server settings can be changed below.'**
+  /// **'Use your separate mail username and password or client authorization code. Server settings can be changed under Advanced Settings.'**
   String get emailSetupHint;
 
   /// No description provided for @emailVerificationHint.
@@ -6478,8 +6478,14 @@ abstract class AppLocalizations {
   /// No description provided for @emailAddress.
   ///
   /// In en, this message translates to:
-  /// **'Email address'**
+  /// **'Mail username'**
   String get emailAddress;
+
+  /// No description provided for @emailAdvancedSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Server settings (advanced)'**
+  String get emailAdvancedSettings;
 
   /// No description provided for @emailPassword.
   ///
@@ -6520,7 +6526,7 @@ abstract class AppLocalizations {
   /// No description provided for @emailInvalidAddress.
   ///
   /// In en, this message translates to:
-  /// **'Enter a valid @stu.scu.edu.cn address'**
+  /// **'Enter the mail username without @stu.scu.edu.cn'**
   String get emailInvalidAddress;
 
   /// No description provided for @emailInvalidPort.

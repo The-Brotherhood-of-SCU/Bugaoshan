@@ -20,6 +20,7 @@ class EmailPage extends StatefulWidget {
 class _EmailPageState extends State<EmailPage> {
   final _service = EmailService();
   final _formKey = GlobalKey<FormState>();
+  final _serverSettingsController = ExpansibleController();
   final _address = TextEditingController();
   final _password = TextEditingController();
   final _imapHost = TextEditingController(text: EmailAccount.defaultHost);
@@ -62,7 +63,7 @@ class _EmailPageState extends State<EmailPage> {
   }
 
   void _fill(EmailAccount account) {
-    _address.text = account.address;
+    _address.text = EmailAccount.usernameFromAddress(account.address);
     _password.text = account.password;
     _imapHost.text = account.imapHost;
     _imapPort.text = account.imapPort.toString();
@@ -124,9 +125,17 @@ class _EmailPageState extends State<EmailPage> {
   }
 
   void _submit() {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      if (_imapHost.text.trim().isEmpty ||
+          !_validPort(_imapPort.text) ||
+          _smtpHost.text.trim().isEmpty ||
+          !_validPort(_smtpPort.text)) {
+        _serverSettingsController.expand();
+      }
+      return;
+    }
     final account = EmailAccount(
-      address: _address.text.trim(),
+      address: EmailAccount.addressForUsername(_address.text),
       password: _password.text,
       imapHost: _imapHost.text.trim(),
       imapPort: int.parse(_imapPort.text.trim()),
@@ -219,6 +228,7 @@ class _EmailPageState extends State<EmailPage> {
     _imapPort.dispose();
     _smtpHost.dispose();
     _smtpPort.dispose();
+    _serverSettingsController.dispose();
     super.dispose();
   }
 
@@ -376,14 +386,14 @@ class _EmailPageState extends State<EmailPage> {
         ],
         TextFormField(
           controller: _address,
-          keyboardType: TextInputType.emailAddress,
-          autofillHints: const [AutofillHints.email],
-          decoration: InputDecoration(labelText: l10n.emailAddress),
+          keyboardType: TextInputType.text,
+          autofillHints: const [AutofillHints.username],
+          decoration: InputDecoration(
+            labelText: l10n.emailAddress,
+            suffixText: '@${EmailAccount.studentDomain}',
+          ),
           validator: (value) =>
-              RegExp(
-                r'^[^@\s]+@stu\.scu\.edu\.cn$',
-                caseSensitive: false,
-              ).hasMatch(value?.trim() ?? '')
+              RegExp(r'^[^@\s]+$').hasMatch(value?.trim() ?? '')
               ? null
               : l10n.emailInvalidAddress,
         ),
@@ -405,35 +415,45 @@ class _EmailPageState extends State<EmailPage> {
           validator: (value) =>
               value == null || value.isEmpty ? l10n.emailRequired : null,
         ),
-        const SizedBox(height: 20),
-        TextFormField(
-          controller: _imapHost,
-          decoration: InputDecoration(labelText: l10n.emailImapHost),
-          validator: (value) =>
-              value == null || value.trim().isEmpty ? l10n.emailRequired : null,
-        ),
         const SizedBox(height: 12),
-        TextFormField(
-          controller: _imapPort,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(labelText: l10n.emailImapPort),
-          validator: (value) =>
-              _validPort(value) ? null : l10n.emailInvalidPort,
-        ),
-        const SizedBox(height: 12),
-        TextFormField(
-          controller: _smtpHost,
-          decoration: InputDecoration(labelText: l10n.emailSmtpHost),
-          validator: (value) =>
-              value == null || value.trim().isEmpty ? l10n.emailRequired : null,
-        ),
-        const SizedBox(height: 12),
-        TextFormField(
-          controller: _smtpPort,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(labelText: l10n.emailSmtpPort),
-          validator: (value) =>
-              _validPort(value) ? null : l10n.emailInvalidPort,
+        ExpansionTile(
+          controller: _serverSettingsController,
+          title: Text(l10n.emailAdvancedSettings),
+          tilePadding: EdgeInsets.zero,
+          maintainState: true,
+          children: [
+            TextFormField(
+              controller: _imapHost,
+              decoration: InputDecoration(labelText: l10n.emailImapHost),
+              validator: (value) => value == null || value.trim().isEmpty
+                  ? l10n.emailRequired
+                  : null,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _imapPort,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(labelText: l10n.emailImapPort),
+              validator: (value) =>
+                  _validPort(value) ? null : l10n.emailInvalidPort,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _smtpHost,
+              decoration: InputDecoration(labelText: l10n.emailSmtpHost),
+              validator: (value) => value == null || value.trim().isEmpty
+                  ? l10n.emailRequired
+                  : null,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _smtpPort,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(labelText: l10n.emailSmtpPort),
+              validator: (value) =>
+                  _validPort(value) ? null : l10n.emailInvalidPort,
+            ),
+          ],
         ),
         const SizedBox(height: 24),
         FilledButton(onPressed: _submit, child: Text(l10n.emailConnect)),

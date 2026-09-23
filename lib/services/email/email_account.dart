@@ -17,6 +17,17 @@ class EmailAccount {
 
   // Both encrypted mail ports present a valid certificate for this host.
   static const defaultHost = 'uni-edu.icoremail.net';
+  static const studentDomain = 'stu.scu.edu.cn';
+
+  static String addressForUsername(String username) =>
+      '${username.trim()}@$studentDomain';
+
+  static String usernameFromAddress(String address) {
+    const suffix = '@$studentDomain';
+    return address.toLowerCase().endsWith(suffix)
+        ? address.substring(0, address.length - suffix.length)
+        : address;
+  }
 
   Map<String, Object> toJson() => {
     'address': address,

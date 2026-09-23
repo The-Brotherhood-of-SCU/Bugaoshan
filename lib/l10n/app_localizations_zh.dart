@@ -3350,7 +3350,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get emailSetupTitle => '绑定学生邮箱';
 
   @override
-  String get emailSetupHint => '使用独立的邮箱账号和密码或客户端授权码。下方服务器参数可以修改。';
+  String get emailSetupHint => '使用独立的邮箱用户名和密码或客户端授权码。服务器参数可在高级设置中修改。';
 
   @override
   String get emailVerificationHint =>
@@ -3363,7 +3363,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get emailOpenWebmailFailed => '无法打开学生邮箱官网';
 
   @override
-  String get emailAddress => '邮箱地址';
+  String get emailAddress => '邮箱用户名';
+
+  @override
+  String get emailAdvancedSettings => '服务器设置（高级）';
 
   @override
   String get emailPassword => '邮箱密码或客户端授权码';
@@ -3384,7 +3387,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get emailConnect => '连接';
 
   @override
-  String get emailInvalidAddress => '请输入有效的 @stu.scu.edu.cn 邮箱地址';
+  String get emailInvalidAddress => '请输入邮箱用户名，不含 @stu.scu.edu.cn';
 
   @override
   String get emailInvalidPort => '请输入 1 到 65535 的端口';
