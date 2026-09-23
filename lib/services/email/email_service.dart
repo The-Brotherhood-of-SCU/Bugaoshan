@@ -8,6 +8,15 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
+enum EmailConnectionStage { imapLogin, inbox, smtpLogin }
+
+/// Identifies the failed step without exposing server responses or credentials.
+class EmailConnectionException implements Exception {
+  const EmailConnectionException(this.stage);
+
+  final EmailConnectionStage stage;
+}
+
 /// Email has its own credentials and is deliberately outside ScuAuth.
 class EmailService {
   EmailService();
@@ -43,15 +52,32 @@ class EmailService {
     );
     final next = MailClient(mailAccount, isLogEnabled: false);
     try {
-      await next.connect(timeout: const Duration(seconds: 15));
-      await next.selectInbox();
-      final messages = await next.fetchMessages(
-        count: 30,
-        fetchPreference: FetchPreference.envelope,
-      );
+      try {
+        await next.connect(timeout: const Duration(seconds: 15));
+      } catch (_) {
+        throw const EmailConnectionException(EmailConnectionStage.imapLogin);
+      }
+      late final List<MimeMessage> messages;
+      try {
+        await next.selectInbox();
+        messages = await next.fetchMessages(
+          count: 30,
+          fetchPreference: FetchPreference.envelope,
+        );
+      } catch (_) {
+        throw const EmailConnectionException(EmailConnectionStage.inbox);
+      }
       // Authenticate SMTP before saving credentials, without sending a message.
-      await next.supports8BitEncoding();
-      await next.lowLevelOutgoingMailClient.disconnect();
+      try {
+        await next.supports8BitEncoding();
+      } catch (_) {
+        throw const EmailConnectionException(EmailConnectionStage.smtpLogin);
+      }
+      try {
+        await next.lowLevelOutgoingMailClient.disconnect();
+      } catch (_) {
+        // SMTP authentication succeeded; keep the verified IMAP connection.
+      }
       final previous = _client;
       _client = next;
       _account = account;

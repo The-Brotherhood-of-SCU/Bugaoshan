@@ -3463,6 +3463,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Use your separate mail account and password or client authorization code. Server settings can be changed below.';
 
   @override
+  String get emailVerificationHint =>
+      'If webmail asks you to verify a new device, complete that step first. With two-factor authentication, generate a client-specific password under Mail Settings → Security Settings → Client-Specific Password and enter it here.';
+
+  @override
+  String get emailOpenWebmail => 'Open official student webmail';
+
+  @override
+  String get emailOpenWebmailFailed =>
+      'Could not open official student webmail';
+
+  @override
   String get emailAddress => 'Email address';
 
   @override
@@ -3495,6 +3506,18 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get emailConnectFailed =>
       'Could not connect. Check the server, password or client authorization code.';
+
+  @override
+  String get emailImapConnectionFailed =>
+      'Could not connect to or sign in to the incoming server. Complete webmail verification and check your client-specific password.';
+
+  @override
+  String get emailInboxConnectionFailed =>
+      'Connected to the incoming server, but could not read the inbox. Check whether client mail access is enabled.';
+
+  @override
+  String get emailSmtpConnectionFailed =>
+      'The inbox loaded, but the outgoing server connection or sign-in failed. Check the outgoing settings and client-specific password.';
 
   @override
   String get emailLoadFailed => 'Could not load mail. Pull down to retry.';

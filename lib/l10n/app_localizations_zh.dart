@@ -3353,6 +3353,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get emailSetupHint => '使用独立的邮箱账号和密码或客户端授权码。下方服务器参数可以修改。';
 
   @override
+  String get emailVerificationHint =>
+      '如果网页邮箱要求验证新设备，请先完成验证；启用二次验证时，在网页邮箱的「邮箱设置 → 安全设置 → 客户端专用密码」生成专用密码后填入。';
+
+  @override
+  String get emailOpenWebmail => '打开学生邮箱官网';
+
+  @override
+  String get emailOpenWebmailFailed => '无法打开学生邮箱官网';
+
+  @override
   String get emailAddress => '邮箱地址';
 
   @override
@@ -3384,6 +3394,17 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get emailConnectFailed => '连接失败，请检查服务器、邮箱密码或客户端授权码。';
+
+  @override
+  String get emailImapConnectionFailed =>
+      '收件服务器连接或登录失败。请先在网页邮箱完成验证，并检查客户端专用密码。';
+
+  @override
+  String get emailInboxConnectionFailed => '收件服务器已连接，但无法读取收件箱。请检查邮箱是否已开通客户端收信。';
+
+  @override
+  String get emailSmtpConnectionFailed =>
+      '收件箱已读取，但发件服务器连接或登录失败。请检查发件设置和客户端专用密码。';
 
   @override
   String get emailLoadFailed => '邮件加载失败，下拉重试。';

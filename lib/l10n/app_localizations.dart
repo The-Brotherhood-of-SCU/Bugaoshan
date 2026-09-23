@@ -6457,6 +6457,24 @@ abstract class AppLocalizations {
   /// **'Use your separate mail account and password or client authorization code. Server settings can be changed below.'**
   String get emailSetupHint;
 
+  /// No description provided for @emailVerificationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'If webmail asks you to verify a new device, complete that step first. With two-factor authentication, generate a client-specific password under Mail Settings → Security Settings → Client-Specific Password and enter it here.'**
+  String get emailVerificationHint;
+
+  /// No description provided for @emailOpenWebmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Open official student webmail'**
+  String get emailOpenWebmail;
+
+  /// No description provided for @emailOpenWebmailFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open official student webmail'**
+  String get emailOpenWebmailFailed;
+
   /// No description provided for @emailAddress.
   ///
   /// In en, this message translates to:
@@ -6522,6 +6540,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not connect. Check the server, password or client authorization code.'**
   String get emailConnectFailed;
+
+  /// No description provided for @emailImapConnectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect to or sign in to the incoming server. Complete webmail verification and check your client-specific password.'**
+  String get emailImapConnectionFailed;
+
+  /// No description provided for @emailInboxConnectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected to the incoming server, but could not read the inbox. Check whether client mail access is enabled.'**
+  String get emailInboxConnectionFailed;
+
+  /// No description provided for @emailSmtpConnectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The inbox loaded, but the outgoing server connection or sign-in failed. Check the outgoing settings and client-specific password.'**
+  String get emailSmtpConnectionFailed;
 
   /// No description provided for @emailLoadFailed.
   ///

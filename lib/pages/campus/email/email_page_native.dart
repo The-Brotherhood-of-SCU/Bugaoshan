@@ -8,6 +8,7 @@ import 'package:bugaoshan/services/email/email_service.dart';
 import 'package:enough_mail/enough_mail.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class EmailPage extends StatefulWidget {
   const EmailPage({super.key});
@@ -85,13 +86,41 @@ class _EmailPageState extends State<EmailPage> {
         _connected = true;
         _busy = false;
       });
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = AppLocalizations.of(context)!.emailConnectFailed;
+        _error = _connectionError(AppLocalizations.of(context)!, error);
       });
     }
+  }
+
+  String _connectionError(AppLocalizations l10n, Object error) {
+    if (error is EmailConnectionException) {
+      return switch (error.stage) {
+        EmailConnectionStage.imapLogin => l10n.emailImapConnectionFailed,
+        EmailConnectionStage.inbox => l10n.emailInboxConnectionFailed,
+        EmailConnectionStage.smtpLogin => l10n.emailSmtpConnectionFailed,
+      };
+    }
+    return l10n.emailConnectFailed;
+  }
+
+  Future<void> _openWebmail() async {
+    try {
+      final opened = await launchUrl(
+        Uri.parse('https://mail.stu.scu.edu.cn/'),
+        mode: LaunchMode.externalApplication,
+      );
+      if (opened || !mounted) return;
+    } catch (_) {
+      if (!mounted) return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.emailOpenWebmailFailed),
+      ),
+    );
   }
 
   void _submit() {
@@ -325,6 +354,16 @@ class _EmailPageState extends State<EmailPage> {
         ),
         const SizedBox(height: 8),
         Text(l10n.emailSetupHint),
+        const SizedBox(height: 8),
+        Text(l10n.emailVerificationHint),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: _openWebmail,
+            icon: const Icon(Icons.open_in_new),
+            label: Text(l10n.emailOpenWebmail),
+          ),
+        ),
         const SizedBox(height: 24),
         if (_error != null) ...[
           Text(
