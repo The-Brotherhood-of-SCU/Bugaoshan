@@ -6432,6 +6432,192 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Load More'**
   String get courseCurriculumLoadMore;
+
+  /// No description provided for @campusEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Campus Mail'**
+  String get campusEmail;
+
+  /// No description provided for @campusEmailDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Read and send mail with your SCU student account'**
+  String get campusEmailDesc;
+
+  /// No description provided for @emailSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect student mail'**
+  String get emailSetupTitle;
+
+  /// No description provided for @emailSetupHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use your separate mail account and password or client authorization code. Server settings can be changed below.'**
+  String get emailSetupHint;
+
+  /// No description provided for @emailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address'**
+  String get emailAddress;
+
+  /// No description provided for @emailPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Mail password or authorization code'**
+  String get emailPassword;
+
+  /// No description provided for @emailImapHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Incoming server (IMAP)'**
+  String get emailImapHost;
+
+  /// No description provided for @emailImapPort.
+  ///
+  /// In en, this message translates to:
+  /// **'IMAP port'**
+  String get emailImapPort;
+
+  /// No description provided for @emailSmtpHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Outgoing server (SMTP)'**
+  String get emailSmtpHost;
+
+  /// No description provided for @emailSmtpPort.
+  ///
+  /// In en, this message translates to:
+  /// **'SMTP port'**
+  String get emailSmtpPort;
+
+  /// No description provided for @emailConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get emailConnect;
+
+  /// No description provided for @emailInvalidAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid @stu.scu.edu.cn address'**
+  String get emailInvalidAddress;
+
+  /// No description provided for @emailInvalidPort.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a port from 1 to 65535'**
+  String get emailInvalidPort;
+
+  /// No description provided for @emailRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get emailRequired;
+
+  /// No description provided for @emailConnectFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect. Check the server, password or client authorization code.'**
+  String get emailConnectFailed;
+
+  /// No description provided for @emailLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load mail. Pull down to retry.'**
+  String get emailLoadFailed;
+
+  /// No description provided for @emailSendFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send mail. Check the outgoing server settings.'**
+  String get emailSendFailed;
+
+  /// No description provided for @emailInboxEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages in your inbox'**
+  String get emailInboxEmpty;
+
+  /// No description provided for @emailCompose.
+  ///
+  /// In en, this message translates to:
+  /// **'Compose'**
+  String get emailCompose;
+
+  /// No description provided for @emailRecipient.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get emailRecipient;
+
+  /// No description provided for @emailSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get emailSubject;
+
+  /// No description provided for @emailBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get emailBody;
+
+  /// No description provided for @emailSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get emailSend;
+
+  /// No description provided for @emailSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Message sent'**
+  String get emailSent;
+
+  /// No description provided for @emailUnlink.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect account'**
+  String get emailUnlink;
+
+  /// No description provided for @emailUnlinkConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove the saved mail account from this device?'**
+  String get emailUnlinkConfirm;
+
+  /// No description provided for @emailAttachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachment'**
+  String get emailAttachment;
+
+  /// No description provided for @emailAttachmentFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not download the attachment'**
+  String get emailAttachmentFailed;
+
+  /// No description provided for @emailOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the file'**
+  String get emailOpenFailed;
+
+  /// No description provided for @emailReadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load this message'**
+  String get emailReadFailed;
+
+  /// No description provided for @emailWebUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Campus mail is available in the Android, iOS and desktop apps.'**
+  String get emailWebUnsupported;
 }
 
 class _AppLocalizationsDelegate

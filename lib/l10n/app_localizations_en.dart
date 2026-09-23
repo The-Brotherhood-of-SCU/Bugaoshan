@@ -3447,4 +3447,103 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get courseCurriculumLoadMore => 'Load More';
+
+  @override
+  String get campusEmail => 'Campus Mail';
+
+  @override
+  String get campusEmailDesc =>
+      'Read and send mail with your SCU student account';
+
+  @override
+  String get emailSetupTitle => 'Connect student mail';
+
+  @override
+  String get emailSetupHint =>
+      'Use your separate mail account and password or client authorization code. Server settings can be changed below.';
+
+  @override
+  String get emailAddress => 'Email address';
+
+  @override
+  String get emailPassword => 'Mail password or authorization code';
+
+  @override
+  String get emailImapHost => 'Incoming server (IMAP)';
+
+  @override
+  String get emailImapPort => 'IMAP port';
+
+  @override
+  String get emailSmtpHost => 'Outgoing server (SMTP)';
+
+  @override
+  String get emailSmtpPort => 'SMTP port';
+
+  @override
+  String get emailConnect => 'Connect';
+
+  @override
+  String get emailInvalidAddress => 'Enter a valid @stu.scu.edu.cn address';
+
+  @override
+  String get emailInvalidPort => 'Enter a port from 1 to 65535';
+
+  @override
+  String get emailRequired => 'Required';
+
+  @override
+  String get emailConnectFailed =>
+      'Could not connect. Check the server, password or client authorization code.';
+
+  @override
+  String get emailLoadFailed => 'Could not load mail. Pull down to retry.';
+
+  @override
+  String get emailSendFailed =>
+      'Could not send mail. Check the outgoing server settings.';
+
+  @override
+  String get emailInboxEmpty => 'No messages in your inbox';
+
+  @override
+  String get emailCompose => 'Compose';
+
+  @override
+  String get emailRecipient => 'To';
+
+  @override
+  String get emailSubject => 'Subject';
+
+  @override
+  String get emailBody => 'Message';
+
+  @override
+  String get emailSend => 'Send';
+
+  @override
+  String get emailSent => 'Message sent';
+
+  @override
+  String get emailUnlink => 'Disconnect account';
+
+  @override
+  String get emailUnlinkConfirm =>
+      'Remove the saved mail account from this device?';
+
+  @override
+  String get emailAttachment => 'Attachment';
+
+  @override
+  String get emailAttachmentFailed => 'Could not download the attachment';
+
+  @override
+  String get emailOpenFailed => 'Could not open the file';
+
+  @override
+  String get emailReadFailed => 'Could not load this message';
+
+  @override
+  String get emailWebUnsupported =>
+      'Campus mail is available in the Android, iOS and desktop apps.';
 }

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 /// primaryContainer，视觉上更有层次、更易辨识。颜色取自一组兼顾
 /// 明暗主题的调和色板。
 Color campusItemAccent(String id) => switch (id) {
+  'email' => Colors.blue,
   dockIdGrades => const Color(0xFF5B8DEF), // 蓝
   dockIdCcyl => const Color(0xFF8B7CF6), // 紫
   dockIdPlanCompletion => const Color(0xFF3FA796), // 青绿

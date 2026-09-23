@@ -1,5 +1,6 @@
 import 'package:bugaoshan/pages/campus/service_hall/service_hall_page.dart';
 import 'package:bugaoshan/pages/campus/zysc/zysc_page.dart';
+import 'package:bugaoshan/pages/campus/email/email_page.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/student_type.dart';
@@ -258,6 +259,16 @@ final campusItemZysc = CampusItemConfig(
   page: () => const ZyscPage(),
 );
 
+final campusItemEmail = CampusItemConfig(
+  id: dockIdEmail,
+  icon: Icons.mail_outline,
+  selectedIcon: Icons.mail,
+  dockLabel: (l10n) => l10n.campusEmail,
+  dockFullLabel: (l10n) => l10n.campusEmail,
+  desc: (l10n) => l10n.campusEmailDesc,
+  page: () => const EmailPage(),
+);
+
 final campusItemLeave = CampusItemConfig(
   id: dockIdLeave,
   icon: Icons.fact_check_outlined,
@@ -341,6 +352,7 @@ final campusSections = [
       campusItemRepair,
       campusItemAcademicCalendar,
       campusItemZysc,
+      campusItemEmail,
       campusItemLeave,
     ],
   ),

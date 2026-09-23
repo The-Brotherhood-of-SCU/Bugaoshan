@@ -23,6 +23,7 @@ const String dockIdExamPlan = 'exam_plan';
 const String dockIdZysc = 'zysc';
 const String dockIdLeave = 'leave';
 const String dockIdRepair = 'repair';
+const String dockIdEmail = 'email';
 
 // ── 研究生（gsapp）dock 项 ─────────────────────────────────────
 const String dockIdGraduateSection = 'graduate';

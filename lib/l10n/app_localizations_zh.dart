@@ -3339,6 +3339,99 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get courseCurriculumLoadMore => '加载更多';
+
+  @override
+  String get campusEmail => '校园邮箱';
+
+  @override
+  String get campusEmailDesc => '使用川大学生邮箱收发邮件';
+
+  @override
+  String get emailSetupTitle => '绑定学生邮箱';
+
+  @override
+  String get emailSetupHint => '使用独立的邮箱账号和密码或客户端授权码。下方服务器参数可以修改。';
+
+  @override
+  String get emailAddress => '邮箱地址';
+
+  @override
+  String get emailPassword => '邮箱密码或客户端授权码';
+
+  @override
+  String get emailImapHost => '收件服务器（IMAP）';
+
+  @override
+  String get emailImapPort => 'IMAP 端口';
+
+  @override
+  String get emailSmtpHost => '发件服务器（SMTP）';
+
+  @override
+  String get emailSmtpPort => 'SMTP 端口';
+
+  @override
+  String get emailConnect => '连接';
+
+  @override
+  String get emailInvalidAddress => '请输入有效的 @stu.scu.edu.cn 邮箱地址';
+
+  @override
+  String get emailInvalidPort => '请输入 1 到 65535 的端口';
+
+  @override
+  String get emailRequired => '必填';
+
+  @override
+  String get emailConnectFailed => '连接失败，请检查服务器、邮箱密码或客户端授权码。';
+
+  @override
+  String get emailLoadFailed => '邮件加载失败，下拉重试。';
+
+  @override
+  String get emailSendFailed => '发送失败，请检查发件服务器设置。';
+
+  @override
+  String get emailInboxEmpty => '收件箱暂无邮件';
+
+  @override
+  String get emailCompose => '写邮件';
+
+  @override
+  String get emailRecipient => '收件人';
+
+  @override
+  String get emailSubject => '主题';
+
+  @override
+  String get emailBody => '正文';
+
+  @override
+  String get emailSend => '发送';
+
+  @override
+  String get emailSent => '邮件已发送';
+
+  @override
+  String get emailUnlink => '解绑邮箱';
+
+  @override
+  String get emailUnlinkConfirm => '从此设备移除已保存的邮箱账号？';
+
+  @override
+  String get emailAttachment => '附件';
+
+  @override
+  String get emailAttachmentFailed => '附件下载失败';
+
+  @override
+  String get emailOpenFailed => '文件打开失败';
+
+  @override
+  String get emailReadFailed => '邮件加载失败';
+
+  @override
+  String get emailWebUnsupported => '校园邮箱可在 Android、iOS 和桌面客户端使用。';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).
