@@ -134,7 +134,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     final pageContent = ListenableBuilder(
                       listenable: Listenable.merge([
                         appConfig.cardSizeAnimationDuration,
-                        appConfig.enablePageTransitionAnimation,
+                        appConfig.enableDockSwitchAnimation,
                       ]),
                       builder: (context, _) {
                         return AuthScopedIndexedStack(
@@ -144,7 +144,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                           selectedIndex: _currentIndex,
                           duration: appConfig.cardSizeAnimationDuration.value,
                           enableAnimation:
-                              appConfig.enablePageTransitionAnimation.value,
+                              appConfig.enableDockSwitchAnimation.value,
                           axis: showRail ? Axis.vertical : Axis.horizontal,
                           pageBuilder: (id) => campusItemConfigById(id).page(),
                         );

@@ -649,17 +649,17 @@ abstract class AppLocalizations {
   /// **'Hint: Adjust the slider to preview the animation, click Confirm to save the settings'**
   String get animationDurationHint;
 
-  /// No description provided for @enablePageTransitionAnimation.
+  /// No description provided for @enableDockSwitchAnimation.
   ///
   /// In en, this message translates to:
-  /// **'Page Transition Animation'**
-  String get enablePageTransitionAnimation;
+  /// **'Dock Switch Animation'**
+  String get enableDockSwitchAnimation;
 
-  /// No description provided for @enablePageTransitionAnimationHint.
+  /// No description provided for @enableDockSwitchAnimationHint.
   ///
   /// In en, this message translates to:
-  /// **'Enable slide and fade animation when switching pages'**
-  String get enablePageTransitionAnimationHint;
+  /// **'Enable slide and fade animation when switching between Dock items'**
+  String get enableDockSwitchAnimationHint;
 
   /// No description provided for @themeColor.
   ///

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
-import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
@@ -32,6 +31,7 @@ class _CampusPageState extends State<CampusPage>
   String _searchQuery = '';
   final _searchTextController = TextEditingController();
   final _searchFocusNode = FocusNode();
+  late final AppConfigProvider _appConfig = getIt<AppConfigProvider>();
 
   @override
   void initState() {
@@ -109,107 +109,102 @@ class _CampusPageState extends State<CampusPage>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final bgColor = Theme.of(context).scaffoldBackgroundColor;
-    final appConfig = getIt<AppConfigProvider>();
 
-    // 学生身份切换后，校园页分区与搜索范围随之调整。
-    return ValueListenableBuilder<StudentType>(
-      valueListenable: appConfig.studentType,
-      builder: (context, studentType, _) {
-        final sections = campusSectionsForStudentType(studentType);
-        return ValueListenableBuilder<bool>(
-          valueListenable: appConfig.campusGridView,
-          builder: (context, isGridView, _) {
-            return Stack(
-              children: [
-                NotificationListener<ScrollNotification>(
-                  onNotification: (notification) {
-                    _onScroll(notification);
-                    return false;
-                  },
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    switchInCurve: Curves.easeInOut,
-                    switchOutCurve: Curves.easeInOut,
-                    transitionBuilder: (child, animation) {
-                      return FadeTransition(opacity: animation, child: child);
-                    },
-                    child: CustomScrollView(
-                      key: ValueKey(isGridView),
-                      slivers: [
-                        SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(
-                            AppShapes.medium,
-                            AppShapes.medium,
-                            AppShapes.medium,
-                            0,
-                          ),
-                          sliver: SliverToBoxAdapter(
-                            child: _buildSearchArea(l10n, sections),
-                          ),
-                        ),
-                        if (_searchExpanded && _searchQuery.trim().isNotEmpty)
-                          SliverPadding(
-                            padding: const EdgeInsets.all(AppShapes.medium),
-                            sliver: _buildSearchResults(
-                              l10n,
-                              sections,
-                              isGridView,
-                            ),
-                          )
-                        else
-                          SliverPadding(
-                            padding: const EdgeInsets.all(AppShapes.medium),
-                            sliver: isGridView
-                                ? _buildGridView(l10n, sections)
-                                : _buildListView(l10n, sections),
-                          ),
-                      ],
+    final mergedListenVariables = Listenable.merge([
+      _appConfig.studentType,
+      _appConfig.campusGridView,
+    ]);
+    return ListenableBuilder(
+      listenable: mergedListenVariables,
+      builder: (context, _) {
+        final sections = campusSectionsForStudentType(
+          _appConfig.studentType.value,
+        );
+        final isGridView = _appConfig.campusGridView.value;
+        return Stack(
+          children: [
+            NotificationListener<ScrollNotification>(
+              onNotification: (notification) {
+                _onScroll(notification);
+                return false;
+              },
+              child: AnimatedSwitcher(
+                duration: _appConfig.cardSizeAnimationDuration.value,
+                switchInCurve: Curves.easeInOut,
+                switchOutCurve: Curves.easeInOut,
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+                child: CustomScrollView(
+                  key: ValueKey(isGridView),
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppShapes.medium,
+                        AppShapes.medium,
+                        AppShapes.medium,
+                        0,
+                      ),
+                      sliver: SliverToBoxAdapter(
+                        child: _buildSearchArea(l10n, sections),
+                      ),
                     ),
-                  ),
+                    if (_searchExpanded && _searchQuery.trim().isNotEmpty)
+                      SliverPadding(
+                        padding: const EdgeInsets.all(AppShapes.medium),
+                        sliver: _buildSearchResults(l10n, sections, isGridView),
+                      )
+                    else
+                      SliverPadding(
+                        padding: const EdgeInsets.all(AppShapes.medium),
+                        sliver: isGridView
+                            ? _buildGridView(l10n, sections)
+                            : _buildListView(l10n, sections),
+                      ),
+                  ],
                 ),
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: IgnorePointer(
-                    child: AnimatedOpacity(
-                      opacity: _showHint ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 300),
-                      child: Container(
-                        height: 64,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              bgColor.withValues(alpha: 0),
-                              bgColor.withValues(alpha: 0.95),
-                            ],
-                          ),
-                        ),
-                        alignment: Alignment.center,
-                        child: AnimatedBuilder(
-                          animation: _arrowAnimation,
-                          builder: (context, child) => Transform.translate(
-                            offset: Offset(0, _arrowAnimation.value),
-                            child: child,
-                          ),
-                          child: Icon(
-                            Icons.keyboard_arrow_down,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant
-                                .withValues(alpha: 0.6),
-                            size: AppShapes.extraLarge,
-                          ),
-                        ),
+              ),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: IgnorePointer(
+                child: AnimatedOpacity(
+                  opacity: _showHint ? 1.0 : 0.0,
+                  duration: _appConfig.cardSizeAnimationDuration.value,
+                  child: Container(
+                    height: 64,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          bgColor.withValues(alpha: 0),
+                          bgColor.withValues(alpha: 0.95),
+                        ],
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: AnimatedBuilder(
+                      animation: _arrowAnimation,
+                      builder: (context, child) => Transform.translate(
+                        offset: Offset(0, _arrowAnimation.value),
+                        child: child,
+                      ),
+                      child: Icon(
+                        Icons.keyboard_arrow_down,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                        size: AppShapes.extraLarge,
                       ),
                     ),
                   ),
                 ),
-              ],
-            );
-          },
+              ),
+            ),
+          ],
         );
       },
     );
@@ -218,8 +213,8 @@ class _CampusPageState extends State<CampusPage>
   /// 顶部搜索区：收起时与第一个分区标题同行显示右侧圆形角标，点击后展开为搜索框。
   Widget _buildSearchArea(AppLocalizations l10n, List<CampusSection> sections) {
     return AnimatedSize(
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.easeInOutCubic,
+      duration: _appConfig.cardSizeAnimationDuration.value,
+      curve: AppCurves.ease,
       alignment: Alignment.topCenter,
       child: _searchExpanded
           ? _buildSearchField(l10n)
@@ -290,6 +285,7 @@ class _CampusPageState extends State<CampusPage>
                 onPressed: _clearSearch,
                 icon: const Icon(Icons.close),
               ),
+            TextButton(onPressed: _stopSearch, child: Text(l10n.cancel)),
           ],
         ),
       ),
