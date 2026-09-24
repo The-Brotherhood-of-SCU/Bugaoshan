@@ -1,30 +1,27 @@
 /node_modules
 /oh_modules
 /local.properties
-# Legacy embedding runtime; no longer generated or read.
-/.flutter-embedding-runtime.json
-/.flutter-runtime.json
+# 本地 CPF 源码克隆；根 pubspec.yaml 通过 path 引用其中两个独立 OH 包。
+/vendor/cpf/
+# Flutter / DevEco / 构建产物
 /.flutter-workspace/
 /.flutter-workspace.lock
 /.pub-cache/
-# Local CPF source clones; origins and revisions are recorded in docs/dependencies/root-lock-differences.md.
-/vendor/cpf/
 /build/
-/tool/__pycache__/
-/tests/**/__pycache__/
 /.idea
 /.appanalyzer
-**/build
 /.hvigor
-.cxx
 /.clangd
 /.clang-format
 /.clang-tidy
+/.test
+**/build
 **/.test
 **/BuildProfile.ets
 **/oh-package-lock.json5
 /package.json
 /package-lock.json
+.cxx
 
 **/src/main/resources/rawfile/flutter_assets/
 **/libs/**/libapp.so

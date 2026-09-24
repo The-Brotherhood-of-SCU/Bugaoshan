@@ -1,6 +1,0 @@
-# Maintenance sources are assembled into the build workspace before analysis.
-# Keep the upstream SDK from analyzing these incomplete OH-specific libraries.
-# This file stays here; it is never copied over the workspace's analysis options.
-analyzer:
-  exclude:
-    - lib/**
