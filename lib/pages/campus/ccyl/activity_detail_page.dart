@@ -529,11 +529,11 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
               label: l10n.ccylOrganizer,
               value: lib.orgName,
             ),
-            if (lib.levelName != null)
+            if (_libStarText(lib).isNotEmpty)
               IconInfoRow(
                 icon: Icons.star,
                 label: l10n.ccylStarLevel,
-                value: lib.starName ?? lib.star,
+                value: _libStarText(lib),
               ),
             if (lib.qualityName != null)
               IconInfoRow(
@@ -546,6 +546,10 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
       ),
     );
   }
+
+  /// 星级展示文本；星级与星级名均为空时返回空串（隐藏该行）。
+  String _libStarText(CyclActivityLib lib) =>
+      lib.starName?.isNotEmpty == true ? lib.starName! : lib.star;
 
   Widget _buildSignRow({
     required IconData icon,
