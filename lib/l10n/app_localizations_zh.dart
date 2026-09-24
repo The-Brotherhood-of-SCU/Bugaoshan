@@ -1463,6 +1463,64 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ccylOrganizer => '主办单位';
 
   @override
+  String get ccylStatusEnrolling => '报名中';
+
+  @override
+  String get ccylStatusNotStarted => '未开始';
+
+  @override
+  String get ccylFilter => '筛选';
+
+  @override
+  String get ccylFilterStatus => '状态';
+
+  @override
+  String get ccylFilterClassHour => '学时';
+
+  @override
+  String get ccylFilterLevel => '活动等级';
+
+  @override
+  String get ccylFilterOrganizer => '主办方';
+
+  @override
+  String get ccylFilterUnlimited => '不限';
+
+  @override
+  String get ccylFilterReset => '重置';
+
+  @override
+  String get ccylFilterApply => '应用';
+
+  @override
+  String get ccylFilterClear => '清除筛选';
+
+  @override
+  String ccylFilterMinHoursValue(int hours) {
+    return '$hours 学时以上';
+  }
+
+  @override
+  String get ccylFilterNoMatch => '没有符合筛选条件的活动';
+
+  @override
+  String ccylFilterLocalHint(int count) {
+    return '状态与学时筛选基于已加载的 $count 条活动';
+  }
+
+  @override
+  String get ccylFilterChooseOrganizer => '选择主办方';
+
+  @override
+  String get ccylFilterSearchOrganizer => '搜索主办方';
+
+  @override
+  String get ccylFilterNoOrganizer => '未找到匹配的主办方';
+
+  @override
+  String get ccylLoadMore => '加载更多';
+
+  @override
   String get noData => '暂无数据';
 
   @override

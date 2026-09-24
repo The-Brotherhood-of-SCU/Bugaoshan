@@ -572,6 +572,38 @@
   "ccylDisabled": "Disabled",
   "ccylSeriesName": "Series Name",
   "ccylOrganizer": "Organizer",
+  "ccylStatusEnrolling": "Enrolling",
+  "ccylStatusNotStarted": "Not Started",
+  "ccylFilter": "Filter",
+  "ccylFilterStatus": "Status",
+  "ccylFilterClassHour": "Class Hours",
+  "ccylFilterLevel": "Activity Level",
+  "ccylFilterOrganizer": "Organizer",
+  "ccylFilterUnlimited": "Unlimited",
+  "ccylFilterReset": "Reset",
+  "ccylFilterApply": "Apply",
+  "ccylFilterClear": "Clear Filters",
+  "ccylFilterMinHoursValue": "{hours}+ class hours",
+  "@ccylFilterMinHoursValue": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "ccylFilterNoMatch": "No activities match the filters",
+  "ccylFilterLocalHint": "Status and class-hour filters apply to the {count} loaded activities",
+  "@ccylFilterLocalHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ccylFilterChooseOrganizer": "Choose Organizer",
+  "ccylFilterSearchOrganizer": "Search organizer",
+  "ccylFilterNoOrganizer": "No matching organizer",
+  "ccylLoadMore": "Load More",
   "noData": "No Data",
   "noFreeClassrooms": "No free classrooms right now",
   "networkDeviceQuery": "Network Device Query",

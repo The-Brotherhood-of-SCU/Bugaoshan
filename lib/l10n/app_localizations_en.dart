@@ -1511,6 +1511,64 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ccylOrganizer => 'Organizer';
 
   @override
+  String get ccylStatusEnrolling => 'Enrolling';
+
+  @override
+  String get ccylStatusNotStarted => 'Not Started';
+
+  @override
+  String get ccylFilter => 'Filter';
+
+  @override
+  String get ccylFilterStatus => 'Status';
+
+  @override
+  String get ccylFilterClassHour => 'Class Hours';
+
+  @override
+  String get ccylFilterLevel => 'Activity Level';
+
+  @override
+  String get ccylFilterOrganizer => 'Organizer';
+
+  @override
+  String get ccylFilterUnlimited => 'Unlimited';
+
+  @override
+  String get ccylFilterReset => 'Reset';
+
+  @override
+  String get ccylFilterApply => 'Apply';
+
+  @override
+  String get ccylFilterClear => 'Clear Filters';
+
+  @override
+  String ccylFilterMinHoursValue(int hours) {
+    return '$hours+ class hours';
+  }
+
+  @override
+  String get ccylFilterNoMatch => 'No activities match the filters';
+
+  @override
+  String ccylFilterLocalHint(int count) {
+    return 'Status and class-hour filters apply to the $count loaded activities';
+  }
+
+  @override
+  String get ccylFilterChooseOrganizer => 'Choose Organizer';
+
+  @override
+  String get ccylFilterSearchOrganizer => 'Search organizer';
+
+  @override
+  String get ccylFilterNoOrganizer => 'No matching organizer';
+
+  @override
+  String get ccylLoadMore => 'Load More';
+
+  @override
   String get noData => 'No Data';
 
   @override

@@ -544,6 +544,38 @@
   "ccylDisabled": "关闭",
   "ccylSeriesName": "系列名称",
   "ccylOrganizer": "主办单位",
+  "ccylStatusEnrolling": "报名中",
+  "ccylStatusNotStarted": "未开始",
+  "ccylFilter": "筛选",
+  "ccylFilterStatus": "状态",
+  "ccylFilterClassHour": "学时",
+  "ccylFilterLevel": "活动等级",
+  "ccylFilterOrganizer": "主办方",
+  "ccylFilterUnlimited": "不限",
+  "ccylFilterReset": "重置",
+  "ccylFilterApply": "应用",
+  "ccylFilterClear": "清除筛选",
+  "ccylFilterMinHoursValue": "{hours} 学时以上",
+  "@ccylFilterMinHoursValue": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "ccylFilterNoMatch": "没有符合筛选条件的活动",
+  "ccylFilterLocalHint": "状态与学时筛选基于已加载的 {count} 条活动",
+  "@ccylFilterLocalHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ccylFilterChooseOrganizer": "选择主办方",
+  "ccylFilterSearchOrganizer": "搜索主办方",
+  "ccylFilterNoOrganizer": "未找到匹配的主办方",
+  "ccylLoadMore": "加载更多",
   "noData": "暂无数据",
   "noFreeClassrooms": "当前没有空闲教室",
   "networkDeviceQuery": "校园网设备查询",

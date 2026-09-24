@@ -2911,6 +2911,114 @@ abstract class AppLocalizations {
   /// **'Organizer'**
   String get ccylOrganizer;
 
+  /// No description provided for @ccylStatusEnrolling.
+  ///
+  /// In en, this message translates to:
+  /// **'Enrolling'**
+  String get ccylStatusEnrolling;
+
+  /// No description provided for @ccylStatusNotStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Started'**
+  String get ccylStatusNotStarted;
+
+  /// No description provided for @ccylFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter'**
+  String get ccylFilter;
+
+  /// No description provided for @ccylFilterStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get ccylFilterStatus;
+
+  /// No description provided for @ccylFilterClassHour.
+  ///
+  /// In en, this message translates to:
+  /// **'Class Hours'**
+  String get ccylFilterClassHour;
+
+  /// No description provided for @ccylFilterLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity Level'**
+  String get ccylFilterLevel;
+
+  /// No description provided for @ccylFilterOrganizer.
+  ///
+  /// In en, this message translates to:
+  /// **'Organizer'**
+  String get ccylFilterOrganizer;
+
+  /// No description provided for @ccylFilterUnlimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited'**
+  String get ccylFilterUnlimited;
+
+  /// No description provided for @ccylFilterReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get ccylFilterReset;
+
+  /// No description provided for @ccylFilterApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get ccylFilterApply;
+
+  /// No description provided for @ccylFilterClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Filters'**
+  String get ccylFilterClear;
+
+  /// No description provided for @ccylFilterMinHoursValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}+ class hours'**
+  String ccylFilterMinHoursValue(int hours);
+
+  /// No description provided for @ccylFilterNoMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No activities match the filters'**
+  String get ccylFilterNoMatch;
+
+  /// No description provided for @ccylFilterLocalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Status and class-hour filters apply to the {count} loaded activities'**
+  String ccylFilterLocalHint(int count);
+
+  /// No description provided for @ccylFilterChooseOrganizer.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Organizer'**
+  String get ccylFilterChooseOrganizer;
+
+  /// No description provided for @ccylFilterSearchOrganizer.
+  ///
+  /// In en, this message translates to:
+  /// **'Search organizer'**
+  String get ccylFilterSearchOrganizer;
+
+  /// No description provided for @ccylFilterNoOrganizer.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching organizer'**
+  String get ccylFilterNoOrganizer;
+
+  /// No description provided for @ccylLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load More'**
+  String get ccylLoadMore;
+
   /// No description provided for @noData.
   ///
   /// In en, this message translates to:
