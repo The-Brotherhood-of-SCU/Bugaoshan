@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/passpoint.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/passpoint_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/theme_shape.dart';
@@ -222,31 +223,38 @@ class _PasspointPageState extends State<PasspointPage> {
     AppLocalizations l10n,
     PasspointProvider provider,
   ) {
-    return CardWithTitle(
-      title: l10n.passpointMyDevices,
-      icon: const Icon(Icons.devices_outlined),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (provider.devices.isEmpty)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    l10n.noData,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    final appConfigService = getIt<AppConfigProvider>();
+
+    return AnimatedSize(
+      duration: appConfigService.cardSizeAnimationDuration.value,
+      curve: appCurve,
+      alignment: Alignment.topCenter,
+      child: CardWithTitle(
+        title: l10n.passpointMyDevices,
+        icon: const Icon(Icons.devices_outlined),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (provider.devices.isEmpty)
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      l10n.noData,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
+                )
+              else
+                ...provider.devices.map(
+                  (device) => _buildDeviceItem(device, l10n, provider),
                 ),
-              )
-            else
-              ...provider.devices.map(
-                (device) => _buildDeviceItem(device, l10n, provider),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

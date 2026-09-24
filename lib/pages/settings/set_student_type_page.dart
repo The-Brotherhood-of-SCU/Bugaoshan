@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/widgets/common/info_card.dart';
+import 'package:bugaoshan/widgets/common/student_type_selector.dart';
 
 /// 学生类型（本科生 / 研究生）切换页。
 ///
 /// 切换立即生效并持久化：课表导入入口与校园页功能分区随之调整，
 /// 不改动已保存的课表与 dock 自定义配置。
+/// 选择卡片复用公共组件 [StudentTypeSelector]，与引导页保持一致。
 class SetStudentTypePage extends StatelessWidget {
   const SetStudentTypePage({super.key});
 
@@ -23,55 +23,16 @@ class SetStudentTypePage extends StatelessWidget {
       body: ListenableBuilder(
         listenable: appConfig.studentType,
         builder: (context, _) {
-          final studentType = appConfig.studentType.value;
           return ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8.0,
-                  vertical: 8.0,
-                ),
-                child: SegmentedButton<StudentType>(
-                  segments: [
-                    ButtonSegment<StudentType>(
-                      value: StudentType.undergraduate,
-                      label: Text(l10n.studentTypeUndergraduate),
-                      icon: const Icon(Icons.school_outlined),
-                    ),
-                    ButtonSegment<StudentType>(
-                      value: StudentType.graduate,
-                      label: Text(l10n.studentTypeGraduate),
-                      icon: const Icon(Icons.cast_for_education_outlined),
-                    ),
-                  ],
-                  selected: {studentType},
-                  onSelectionChanged: (selection) {
-                    appConfig.studentType.value = selection.first;
-                  },
-                ),
+              StudentTypeSelector(
+                value: appConfig.studentType.value,
+                onChanged: (type) => appConfig.studentType.value = type,
               ),
-              const SizedBox(height: 12),
-              InfoCard(
-                children: [
-                  ListTile(
-                    leading: Icon(
-                      studentType == StudentType.graduate
-                          ? Icons.cast_for_education_outlined
-                          : Icons.school_outlined,
-                      color: theme.colorScheme.primary,
-                    ),
-                    title: Text(
-                      studentType == StudentType.graduate
-                          ? l10n.studentTypeGraduateDesc
-                          : l10n.studentTypeUndergraduateDesc,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
                 child: Text(
                   l10n.studentTypeHint,
                   style: theme.textTheme.bodyMedium?.copyWith(
