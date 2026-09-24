@@ -106,7 +106,7 @@ class _StartupErrorAppState extends State<StartupErrorApp> {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Danger Zone',
+                            '危险操作 / Danger Zone',
                             style: TextStyle(
                               color: colorScheme.error,
                               fontWeight: FontWeight.bold,
