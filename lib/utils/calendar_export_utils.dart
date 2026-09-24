@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
+import 'package:bugaoshan/utils/file_save.dart';
 import 'package:bugaoshan/utils/open_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -196,7 +196,7 @@ class CalendarExportUtils {
 
     Uri? destinationPath;
     try {
-      destinationPath = await FilePicker.saveFile(
+      destinationPath = await saveFile(
         dialogTitle: l10n.exportScheduleAsIcsTo,
         fileName: fileName,
         bytes: bytes,
