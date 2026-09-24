@@ -106,7 +106,7 @@ class AppConfigProvider {
   final ValueNotifier<bool> forceCaptchaForDownload = ValueNotifier<bool>(
     false,
   );
-  final ValueNotifier<bool> enablePageTransitionAnimation = ValueNotifier<bool>(
+  final ValueNotifier<bool> enableDockSwitchAnimation = ValueNotifier<bool>(
     true,
   );
 
@@ -187,7 +187,7 @@ class AppConfigProvider {
         _sharedPreferences.getBool(_keyAutoSampleBalanceOnLogin) ?? false;
     forceCaptchaForDownload.value =
         _sharedPreferences.getBool(_keyForceCaptchaForDownload) ?? false;
-    enablePageTransitionAnimation.value =
+    enableDockSwitchAnimation.value =
         _sharedPreferences.getBool(_keyEnablePageTransitionAnimation) ?? true;
     final studentTypeIndex =
         _sharedPreferences.getInt(_keyStudentType) ??
@@ -339,10 +339,10 @@ class AppConfigProvider {
         forceCaptchaForDownload.value,
       );
     });
-    enablePageTransitionAnimation.addListener(() {
+    enableDockSwitchAnimation.addListener(() {
       _sharedPreferences.setBool(
         _keyEnablePageTransitionAnimation,
-        enablePageTransitionAnimation.value,
+        enableDockSwitchAnimation.value,
       );
     });
     studentType.addListener(() {

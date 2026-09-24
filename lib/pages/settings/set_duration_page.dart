@@ -85,15 +85,15 @@ class _SetDurationPageState extends State<SetDurationPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ValueListenableBuilder<bool>(
-              valueListenable: appConfigService.enablePageTransitionAnimation,
+              valueListenable: appConfigService.enableDockSwitchAnimation,
               builder: (context, enabled, _) {
                 return SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(appLang.enablePageTransitionAnimation),
-                  subtitle: Text(appLang.enablePageTransitionAnimationHint),
+                  title: Text(appLang.enableDockSwitchAnimation),
+                  subtitle: Text(appLang.enableDockSwitchAnimationHint),
                   value: enabled,
                   onChanged: (v) =>
-                      appConfigService.enablePageTransitionAnimation.value = v,
+                      appConfigService.enableDockSwitchAnimation.value = v,
                 );
               },
             ),
