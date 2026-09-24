@@ -42,6 +42,11 @@ dependencies:
   google_fonts: ^8.1.0
   share_plus: ^13.1.0
   gal: ^2.3.0
+  # CPF 5.1.1，包含 OH 实现。
+  image_gallery_saver_plus:
+    git:
+      url: https://gitcode.com/CPF-Flutter/fluttertpc_image_gallery_saver_plus.git
+      ref: 4297d23fd7b1b707e6c4b5b0d73fd387e851fc8f
   open_filex: ^4.7.0
   open_file_ohos:
     git:
