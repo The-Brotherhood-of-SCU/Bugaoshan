@@ -51,7 +51,7 @@ dependencies:
   flutter_inappwebview:
     git:
       url: https://github.com/The-Brotherhood-of-SCU/flutter_inappwebview.git
-      ref: 666bc33f776285076327e4a94aafc103c693e17a
+      ref: a3880161e8e8630eef76c22762f5ab5045c5781c
       path: flutter_inappwebview
   tyme: ^1.4.4
   json_annotation: ^4.12.0
