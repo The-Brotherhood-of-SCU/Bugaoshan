@@ -528,10 +528,11 @@ packages:
   flutter_secure_storage:
     dependency: "direct main"
     description:
-      name: flutter_secure_storage
-      sha256: "7686b1d6a29985dcbb808c59518226e603e3bfa7c0ddfd1a0d00e4cda77c868e"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
+      path: flutter_secure_storage
+      ref: abe7c6cfbc5932b9da53492da3879e284c3a8665
+      resolved-ref: abe7c6cfbc5932b9da53492da3879e284c3a8665
+      url: "https://github.com/HuajiFruit/flutter_secure_storage.git"
+    source: git
     version: "10.3.1"
   flutter_secure_storage_darwin:
     dependency: transitive
@@ -549,6 +550,15 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.0.1"
+  flutter_secure_storage_ohos:
+    dependency: transitive
+    description:
+      path: flutter_secure_storage_ohos
+      ref: abe7c6cfbc5932b9da53492da3879e284c3a8665
+      resolved-ref: abe7c6cfbc5932b9da53492da3879e284c3a8665
+      url: "https://github.com/HuajiFruit/flutter_secure_storage.git"
+    source: git
+    version: "0.1.0"
   flutter_secure_storage_platform_interface:
     dependency: transitive
     description:

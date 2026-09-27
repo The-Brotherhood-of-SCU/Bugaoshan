@@ -49,7 +49,11 @@ dependencies:
       path: packages/path_provider/path_provider_ohos
   path: ^1.9.0
   dart_sm: ^0.1.4
-  flutter_secure_storage: ^10.0.0
+  flutter_secure_storage:
+    git:
+      url: https://github.com/HuajiFruit/flutter_secure_storage.git
+      ref: abe7c6cfbc5932b9da53492da3879e284c3a8665
+      path: flutter_secure_storage
   scu_ocr_lite:
     git:
       url: https://github.com/The-Brotherhood-of-SCU/scu_ocr_lite_dart.git
