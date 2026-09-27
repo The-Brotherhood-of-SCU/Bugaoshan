@@ -3,6 +3,10 @@ import 'package:os_type/os_type.dart';
 import 'package:path_provider/path_provider.dart';
 
 Future<String> getEnvironmentInfo() async {
+  if (OS.isHarmony) {
+    await OS.initHarmonyDeviceType();
+  }
+
   var dartVersion = Platform.version;
   var system = Platform.operatingSystem;
   var env = Platform.executableArguments;
