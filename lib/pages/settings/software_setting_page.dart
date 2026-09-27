@@ -14,6 +14,7 @@ import 'package:bugaoshan/pages/settings/set_font_page.dart';
 import 'package:bugaoshan/pages/settings/set_theme_color_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/utils/platform_utils.dart';
 import 'package:bugaoshan/widgets/common/info_card.dart';
 import 'package:bugaoshan/widgets/common/section_title.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
@@ -57,7 +58,7 @@ class SoftwareSettingPage extends StatelessWidget {
                 label: localizations.customDock,
                 onTap: () => popupOrNavigate(context, const SetDockPage()),
               ),
-              if (Platform.isAndroid)
+              if (Platform.isAndroid || isOhos)
                 IconTile(
                   icon: Icons.widgets_outlined,
                   label: localizations.addWidgetPageTitle,

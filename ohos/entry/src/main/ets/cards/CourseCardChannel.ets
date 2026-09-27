@@ -13,17 +13,20 @@ export class CourseCardChannel {
   }
 
   handle(call: MethodCall, result: MethodResult): boolean {
-    if (call.method !== 'updateWidget' && call.method !== 'openCourseFormManager') return false;
+    if (call.method !== 'updateWidget' && call.method !== 'syncWidgetShowTomorrow' &&
+      call.method !== 'openCourseFormManager') return false;
     this.queue = this.queue.then(async () => {
       try {
         if (this.disposed) throw new Error('Course card channel disposed');
-        const store = new CourseCardStore(this.context.filesDir);
+        const store = new CourseCardStore(this.context);
         if (call.method === 'updateWidget') {
-          try {
-            store.save(call.argument('snapshot') as string);
-          } finally {
-            await store.refreshAll();
-          }
+          await store.refreshAll();
+          result.success(null);
+        } else if (call.method === 'syncWidgetShowTomorrow') {
+          const value = call.argument('value') as boolean;
+          if (typeof value !== 'boolean') throw new Error('Show tomorrow value is required');
+          store.setShowTomorrow(value);
+          await store.refreshAll();
           result.success(null);
         } else {
           formProvider.openFormManager({

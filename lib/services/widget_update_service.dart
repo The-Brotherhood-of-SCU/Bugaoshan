@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:bugaoshan/models/widget_appearance.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/constants.dart';
+import 'package:bugaoshan/utils/platform_utils.dart';
 
 class WidgetUpdateService {
   static const _channel = kUpdateMethodChannel;
@@ -26,7 +27,8 @@ class WidgetUpdateService {
            platformChecker ??
            (() =>
                !kIsWeb &&
-               (defaultTargetPlatform == TargetPlatform.android ||
+               (isOhos ||
+                   defaultTargetPlatform == TargetPlatform.android ||
                    defaultTargetPlatform == TargetPlatform.iOS ||
                    defaultTargetPlatform == TargetPlatform.macOS)) {
     _debounceDuration = debounceDuration ?? _debounceDuration;
@@ -88,7 +90,7 @@ class WidgetUpdateService {
     return _pendingCompleter!.future;
   }
 
-  /// Sync the widget show tomorrow setting to App Group and update widget.
+  /// Sync the widget show tomorrow setting to native widget storage.
   Future<void> syncWidgetShowTomorrow(bool value) async {
     debugPrint(
       'BugaoShan WidgetUpdateService: syncWidgetShowTomorrow called with value: $value',
@@ -100,7 +102,8 @@ class WidgetUpdateService {
       return Future.value();
     }
     try {
-      if (defaultTargetPlatform == TargetPlatform.iOS ||
+      if (isOhos ||
+          defaultTargetPlatform == TargetPlatform.iOS ||
           defaultTargetPlatform == TargetPlatform.macOS) {
         debugPrint(
           'BugaoShan WidgetUpdateService: calling native syncWidgetShowTomorrow',
@@ -113,7 +116,7 @@ class WidgetUpdateService {
         );
       }
       // On Android, the setting is already in SharedPreferences which is accessible to widget
-      if (defaultTargetPlatform == TargetPlatform.android) {
+      if (!isOhos && defaultTargetPlatform == TargetPlatform.android) {
         await updateWidgetData(force: true);
       }
     } catch (e, stack) {
@@ -129,7 +132,9 @@ class WidgetUpdateService {
     required WidgetColorStyle colorStyle,
     required WidgetDensity density,
   }) async {
-    if (!_platformChecker() || defaultTargetPlatform != TargetPlatform.iOS) {
+    if (!_platformChecker() ||
+        isOhos ||
+        defaultTargetPlatform != TargetPlatform.iOS) {
       return;
     }
     try {

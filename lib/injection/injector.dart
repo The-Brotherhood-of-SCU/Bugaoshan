@@ -53,6 +53,7 @@ import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/services/api/academic_calendar_service.dart';
 import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/platform_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'injector.config.dart';
@@ -373,8 +374,8 @@ void _configureAsyncDependencies() {
       });
     };
 
-    // Sync initial widget_show_tomorrow setting to App Group
-    if (!kIsWeb && (Platform.isIOS || Platform.isMacOS)) {
+    // Sync the initial widget setting to the native card storage.
+    if (!kIsWeb && (Platform.isIOS || Platform.isMacOS || isOhos)) {
       try {
         await service.syncWidgetShowTomorrow(
           appConfig.widgetShowTomorrow.value,
