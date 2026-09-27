@@ -1,8 +1,12 @@
 ﻿import 'package:bugaoshan/utils/constants.dart';
+import 'package:bugaoshan/utils/platform_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 Future<void> openLink(String link) async {
-  await launchUrl(Uri.parse(link));
+  await launchUrl(
+    Uri.parse(link),
+    mode: isOhos ? LaunchMode.externalApplication : LaunchMode.platformDefault,
+  );
 }
 
 Future<void> openProjectRepository() async {
