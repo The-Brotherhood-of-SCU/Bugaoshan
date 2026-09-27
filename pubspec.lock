@@ -694,6 +694,15 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "4.8.0"
+  image_gallery_saver_plus:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: dc2ffe084c8eef77a529768de31dcf0bc4bd77da
+      resolved-ref: dc2ffe084c8eef77a529768de31dcf0bc4bd77da
+      url: "https://github.com/HuajiFruit/image_gallery_saver_plus_ohos.git"
+    source: git
+    version: "5.1.1"
   image_picker:
     dependency: "direct main"
     description:

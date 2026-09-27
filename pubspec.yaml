@@ -79,11 +79,11 @@ dependencies:
       url: https://github.com/HuajiFruit/share_plus_ohos.git
       ref: 43e69dbc6bd8b13bfda5e8d5b25799086499a021
   gal: ^2.3.0
-  # CPF 5.1.1，包含 OH 实现。
+  # CPF 5.1.1 的 OHOS-only fork；其他平台继续使用 gal。
   image_gallery_saver_plus:
     git:
-      url: https://gitcode.com/CPF-Flutter/fluttertpc_image_gallery_saver_plus.git
-      ref: 4297d23fd7b1b707e6c4b5b0d73fd387e851fc8f
+      url: https://github.com/HuajiFruit/image_gallery_saver_plus_ohos.git
+      ref: dc2ffe084c8eef77a529768de31dcf0bc4bd77da
   open_filex: ^4.7.0
   open_file_ohos:
     git:
