@@ -9,13 +9,12 @@
   本机签名路径、证书和密码不得提交。
 - 本地 CPF 源码克隆放在 `vendor/cpf/`，**不入库**；换机器需另行取得。
   构建不得自动从云端拉取或覆盖这些副本的源码。
-- 根 `pubspec.yaml` 通过 `dependency_overrides` 声明 OH 平台实现，
-  并以 path 引用 `vendor/cpf/` 中 `package_info_plus_ohos`、`share_plus_ohos` 两个独立包；
-  `open_file_ohos` 作为普通 Git 依赖。鸿蒙沿用根 `pubspec.yaml` 与根 `pubspec.lock`，
-  不维护独立锁文件。
-- 根 `pubspec.lock` 以 main 为基线，已将 WebView 相关包同步到 `a3880161e`，
-  包含 `flutter_inappwebview_ohos 1.1.3`。上述 OH 包及 `image_gallery_saver_plus`
-  仍未解析进根锁，严格校验会失败；兼容性待后续处理，不擅自重新解析或手写锁记录。
+- 根 `pubspec.yaml` 通过普通 Git 依赖声明 OH 平台实现，
+  包括 `package_info_plus_ohos`、`share_plus_ohos` 和 `open_file_ohos`。
+  鸿蒙沿用根 `pubspec.yaml` 与根 `pubspec.lock`，不维护独立锁文件。
+- 根 `pubspec.lock` 以 main 为基线，已将 WebView 相关包同步到 `edd0663cf`，
+  包含 `flutter_inappwebview_ohos 1.1.3`、安全存储 OH 实现及其余独立 OH 包。
+  锁记录由 Pub 生成；兼容性待构建与真机验证，不手写锁记录。
 - 第三方插件直接使用锁定的上游源码，不维护或应用插件补丁。
 - 同一分支维护。鸿蒙不提供应用内下载更新包及自安装流程，
   也不接入仅服务自更新的下载通知通道。
