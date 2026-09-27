@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:bugaoshan/utils/file_save.dart';
 import 'package:bugaoshan/utils/open_file.dart';
+import 'package:bugaoshan/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:open_filex/open_filex.dart' show ResultType;
@@ -23,6 +24,7 @@ class CalendarExportUtils {
 
   static bool get nativeCalendarImportAvailable =>
       Platform.isAndroid ||
+      isOhos ||
       Platform.isIOS ||
       Platform.isMacOS ||
       Platform.isWindows;
@@ -256,7 +258,7 @@ class CalendarExportUtils {
           'importIcsToCalendar',
           {'events': events, 'calendarIdentifier': calendarIdentifier},
         );
-      } else if (Platform.isAndroid) {
+      } else if (Platform.isAndroid || isOhos) {
         final icsPath = await saveIcsToCache();
         result = await CalendarImportUtils.channel.invokeMethod<String>(
           'importIcsToCalendar',
