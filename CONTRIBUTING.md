@@ -63,18 +63,6 @@ flutter pub run build_runner build --delete-conflicting-outputs
 flutter run
 ```
 
-根 `dependencies` 配置了固定 Git 提交的 OH 平台包，包括 CPF 的 5 个独立平台包，
-以及分别位于独立仓库的 `package_info_plus_ohos` 和 `share_plus_ohos`。
-`ohos/vendor/cpf/` 中的本地工作副本仅用于维护源码，依赖解析不需要这些目录。
-位置与维护方式见 [鸿蒙开发指南](ohos/README.md)。
-`open_filex` 已恢复 main 的 hosted 4.7.0，主包不再使用 CPF 来源。
-`open_file_ohos 1.0.0` 作为普通 `dependencies`，固定 CPF 正式版提交 `85db425fc4b8cc403983fc854a36da6f300ad952` 的 `ohos/` 包。
-执行 Pub 时需能访问该 Git 仓库；根 [lib/utils/open_file.dart](lib/utils/open_file.dart) 的 `openFile(path)`
-由所有平台共用，OH 调用独立 OH 包，其他平台调用官方 `OpenFilex.open`，等待构建与真机验证。
-根 `pubspec.lock` 以 main `7fab588` 为基线，包含 WebView 提交 `edd0663cf`、
-`flutter_inappwebview_ohos 1.1.3`、安全存储 OH 实现及上述独立 OH 包。
-锁记录由 Flutter OH 3.44.9 的 Pub 解析生成，功能兼容性仍待构建与真机验证。
-
 ### iOS Profile 真机安装
 
 需要以 Profile 模式在已连接的 iPhone 上验证时，使用仓库脚本：
