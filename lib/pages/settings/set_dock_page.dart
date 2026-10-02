@@ -7,7 +7,7 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
-import 'package:bugaoshan/theme_shape.dart';
+import 'package:bugaoshan/widgets/common/liquid_glass_dock.dart';
 
 class SetDockPage extends StatefulWidget {
   const SetDockPage({super.key});
@@ -110,34 +110,20 @@ class _SetDockPageState extends State<SetDockPage> {
                 ),
               ),
               const SizedBox(height: 12),
-              Container(
-                height: 64 * MediaQuery.textScalerOf(context).scale(1.0),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: previewItems
-                      .map(
-                        (item) => Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(item.icon, size: 24),
-                            const SizedBox(height: 4),
-                            FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                item.dockLabel(l10n),
-                                maxLines: 1,
-                                style: theme.textTheme.labelSmall,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                      .toList(),
-                ),
+              // 预览直接复用真实的 LiquidGlassDock，所见即所得。
+              LiquidGlassDock(
+                itemExtent: 64,
+                items: previewItems
+                    .map(
+                      (item) => LiquidGlassDockItem(
+                        icon: Icon(item.icon),
+                        selectedIcon: Icon(item.selectedIcon),
+                        label: item.dockLabel(l10n),
+                      ),
+                    )
+                    .toList(),
+                selectedIndex: 0,
+                onSelected: (_) {},
               ),
             ],
           ),

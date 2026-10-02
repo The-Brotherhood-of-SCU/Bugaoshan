@@ -16,6 +16,7 @@ import 'package:bugaoshan/services/auth/auth_coordinator.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/common/auth_scoped_indexed_stack.dart';
+import 'package:bugaoshan/widgets/common/liquid_glass_dock.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -153,55 +154,48 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                     return Scaffold(
                       body: Row(
                         children: [
-                          // Rail placeholder: always present, hidden via Offstage
-                          Offstage(
-                            offstage: !showRail,
-                            child: NavigationRail(
-                              selectedIndex: _currentIndex,
-                              onDestinationSelected: (index) {
-                                setState(() => _currentIndex = index);
-                              },
-                              labelType: NavigationRailLabelType.all,
-                              destinations: visibleIds
-                                  .map(
-                                    (id) => _buildRailDestination(
-                                      id,
-                                      hasUpdate,
-                                      l10n,
-                                    ),
-                                  )
-                                  .toList(),
+                      Offstage(
+                        offstage: !showRail,
+                        child: SizedBox(
+                          width: _railExtent,
+                          child: LiquidGlassDock(
+                            axis: Axis.vertical,
+                            itemExtent: _railExtent,
+                            duration:
+                                appConfig.cardSizeAnimationDuration.value,
+                            items: _buildDockItems(
+                              visibleIds,
+                              hasUpdate,
+                              l10n,
                             ),
+                            selectedIndex: _currentIndex,
+                            onSelected: (index) {
+                              setState(() => _currentIndex = index);
+                            },
                           ),
-                          Offstage(
-                            offstage: !showRail,
-                            child: const VerticalDivider(
-                              thickness: 1,
-                              width: 1,
-                            ),
-                          ),
-                          // Page content: always at index 2
-                          Expanded(child: SafeArea(child: pageContent)),
-                        ],
+                        ),
                       ),
-                      bottomNavigationBar: showBar
-                          ? NavigationBar(
-                              selectedIndex: _currentIndex,
-                              onDestinationSelected: (index) {
-                                setState(() => _currentIndex = index);
-                              },
-                              destinations: visibleIds
-                                  .map(
-                                    (id) => _buildBarDestination(
-                                      id,
-                                      hasUpdate,
-                                      l10n,
-                                    ),
-                                  )
-                                  .toList(),
-                            )
-                          : null,
-                    );
+                      // Page content
+                      Expanded(child: SafeArea(child: pageContent)),
+                    ],
+                  ),
+                  bottomNavigationBar: showBar
+                      ? LiquidGlassDock(
+                          itemExtent: _barItemExtent,
+                          duration:
+                              appConfig.cardSizeAnimationDuration.value,
+                          items: _buildDockItems(
+                            visibleIds,
+                            hasUpdate,
+                            l10n,
+                          ),
+                          selectedIndex: _currentIndex,
+                          onSelected: (index) {
+                            setState(() => _currentIndex = index);
+                          },
+                        )
+                      : null,
+                );
                   },
                 );
               },
@@ -220,46 +214,37 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
   }
 
-  NavigationRailDestination _buildRailDestination(
-    String id,
-    bool hasUpdate,
-    AppLocalizations l10n,
-  ) {
-    final config = campusItemConfigById(id);
-    final isProfile = id == dockIdProfile;
-    return NavigationRailDestination(
-      icon: isProfile
-          ? _buildUpdateBadge(showBadge: hasUpdate, child: Icon(config.icon))
-          : Icon(config.icon),
-      selectedIcon: isProfile
-          ? _buildUpdateBadge(
-              showBadge: hasUpdate,
-              child: Icon(config.selectedIcon),
-            )
-          : Icon(config.selectedIcon),
-      label: Text(config.dockLabel(l10n)),
-    );
-  }
+  /// 侧边 Dock 的固定宽度。
+  static const double _railExtent = 84;
 
-  NavigationDestination _buildBarDestination(
-    String id,
+  /// 底部 Dock 单个 item 的高度，与原 `NavigationBar` 的默认高度量级一致。
+  static const double _barItemExtent = 64;
+
+  /// 把可见的 Dock 项转换为液态玻璃导航条所需的 item 列表。
+  ///
+  /// 底部与侧边共用这一份构建逻辑，仅呈现方向不同。更新提示的 `Badge`
+  /// 挂在个人中心项上，与原实现保持一致。
+  List<LiquidGlassDockItem> _buildDockItems(
+    List<String> visibleIds,
     bool hasUpdate,
     AppLocalizations l10n,
   ) {
-    final config = campusItemConfigById(id);
-    final isProfile = id == dockIdProfile;
-    return NavigationDestination(
-      icon: isProfile
-          ? _buildUpdateBadge(showBadge: hasUpdate, child: Icon(config.icon))
-          : Icon(config.icon),
-      selectedIcon: isProfile
-          ? _buildUpdateBadge(
-              showBadge: hasUpdate,
-              child: Icon(config.selectedIcon),
-            )
-          : Icon(config.selectedIcon),
-      label: config.dockLabel(l10n),
-      tooltip: '',
-    );
+    return visibleIds.map((id) {
+      final config = campusItemConfigById(id);
+      final isProfile = id == dockIdProfile;
+      return LiquidGlassDockItem(
+        icon: isProfile
+            ? _buildUpdateBadge(showBadge: hasUpdate, child: Icon(config.icon))
+            : Icon(config.icon),
+        selectedIcon: isProfile
+            ? _buildUpdateBadge(
+                showBadge: hasUpdate,
+                child: Icon(config.selectedIcon),
+              )
+            : Icon(config.selectedIcon),
+        label: config.dockLabel(l10n),
+        semanticLabel: config.dockFullLabel(l10n),
+      );
+    }).toList();
   }
 }
