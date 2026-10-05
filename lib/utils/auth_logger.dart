@@ -8,18 +8,27 @@ import 'package:path_provider/path_provider.dart';
 /// 日志级别。
 enum AuthLogLevel { debug, info, warn, error }
 
+/// 分类与级别独立：认证失败仍属于认证日志，业务失败属于业务日志。
+enum AuthLogCategory { authentication, business }
+
 /// 单条日志记录。
 class AuthLogEntry {
   final DateTime timestamp;
   final AuthLogLevel level;
   final String tag;
   final String message;
+  final AuthLogCategory category;
+  final String? error;
+  final String? stackTrace;
 
   const AuthLogEntry({
     required this.timestamp,
     required this.level,
     required this.tag,
     required this.message,
+    this.category = AuthLogCategory.authentication,
+    this.error,
+    this.stackTrace,
   });
 
   /// 输出为单行文本，供 UI 列表 / 文件导出使用。
@@ -29,7 +38,10 @@ class AuthLogEntry {
     final ts = includeDate
         ? _formatDateTime(timestamp)
         : _formatTime(timestamp);
-    return '$ts ${level.name.toUpperCase().padRight(5)} [$tag] $message';
+    final detail = error == null ? '' : '\n  error: $error';
+    final stack = stackTrace == null ? '' : '\n$stackTrace';
+    return '$ts ${level.name.toUpperCase().padRight(5)} '
+        '[${category.name}] [$tag] $message$detail$stack';
   }
 
   static String _two(int n) => n.toString().padLeft(2, '0');
@@ -55,7 +67,7 @@ class AuthLogEntry {
 /// 防止日志被分享到 issue 或支持工单时泄露凭据。
 class AuthLogRedactor {
   static final RegExp _accessTokenJson = RegExp(
-    r'("access_token"\s*:\s*)"[^"]*"',
+    r'("(?:access_?token|refresh_?token|token(?:key)?|cookie|authorization|userinfo|ticket)"\s*:\s*)"[^"]*"',
     caseSensitive: false,
   );
   static final RegExp _passwordJson = RegExp(
@@ -67,7 +79,11 @@ class AuthLogRedactor {
     caseSensitive: false,
   );
   static final RegExp _oauthCode = RegExp(
-    r'([?&](?:code|access_token)=)([^&\s"]+)',
+    r'([?&](?:code|access_?token|refresh_?token|token(?:key)?|password|userinfo|ticket)=)([^&\s"]+)',
+    caseSensitive: false,
+  );
+  static final RegExp _credentialLabel = RegExp(
+    r'\b(access_?token|refresh_?token|tokenkey|password|pwd)\s*=\s*([^\s,;]+)',
     caseSensitive: false,
   );
   static final RegExp _principalLabel = RegExp(
@@ -94,9 +110,16 @@ class AuthLogRedactor {
     result = result.replaceAllMapped(_oauthCode, (m) {
       final prefix = m[1] ?? '';
       final value = m[2] ?? '';
+      if (!RegExp(r'^[?&]code=$', caseSensitive: false).hasMatch(prefix)) {
+        return '$prefix<redacted>';
+      }
       if (value.length <= 4) return '$prefix<redacted>';
       return '$prefix${value.substring(0, 4)}…';
     });
+    result = result.replaceAllMapped(
+      _credentialLabel,
+      (m) => '${m[1]}=<redacted>',
+    );
     result = result.replaceAllMapped(
       _principalLabel,
       (m) => '${m[1]}=<redacted>',
@@ -142,12 +165,20 @@ class AuthLogger extends ChangeNotifier {
     String tag,
     String message, {
     DateTime? timestamp,
+    AuthLogCategory category = AuthLogCategory.authentication,
+    Object? error,
+    StackTrace? stackTrace,
   }) {
     final entry = AuthLogEntry(
       timestamp: timestamp ?? DateTime.now(),
       level: level,
       tag: tag,
       message: AuthLogRedactor.apply(message),
+      category: category,
+      error: error == null ? null : AuthLogRedactor.apply(error.toString()),
+      stackTrace: stackTrace == null
+          ? null
+          : AuthLogRedactor.apply(stackTrace.toString()),
     );
     _buffer.add(entry);
     if (_buffer.length > capacity) {
@@ -171,8 +202,22 @@ class AuthLogger extends ChangeNotifier {
   /// 便捷方法：debug / info / warn / error。
   void d(String tag, String message) => log(AuthLogLevel.debug, tag, message);
   void i(String tag, String message) => log(AuthLogLevel.info, tag, message);
-  void w(String tag, String message) => log(AuthLogLevel.warn, tag, message);
-  void e(String tag, String message) => log(AuthLogLevel.error, tag, message);
+  void w(String tag, String message, {Object? error, StackTrace? stackTrace}) =>
+      log(
+        AuthLogLevel.warn,
+        tag,
+        message,
+        error: error,
+        stackTrace: stackTrace,
+      );
+  void e(String tag, String message, {Object? error, StackTrace? stackTrace}) =>
+      log(
+        AuthLogLevel.error,
+        tag,
+        message,
+        error: error,
+        stackTrace: stackTrace,
+      );
 
   /// 清空当前缓冲（不影响文件落盘的历史记录）。
   void clear() {
@@ -185,7 +230,7 @@ class AuthLogger extends ChangeNotifier {
   String exportToText({bool includeDate = true}) {
     final buf = StringBuffer();
     if (includeDate) {
-      buf.writeln('# Bugaoshan auth log');
+      buf.writeln('# Bugaoshan log (authentication / business)');
       buf.writeln('# exported: ${DateTime.now().toIso8601String()}');
       buf.writeln('# entries: ${_buffer.length}');
       buf.writeln('');
