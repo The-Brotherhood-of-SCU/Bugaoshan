@@ -12,13 +12,16 @@ import 'package:bugaoshan/pages/startup_error_app.dart';
 import 'package:bugaoshan/services/window_state_service.dart';
 import 'package:system_theme/system_theme.dart';
 import 'package:bugaoshan/services/update_service.dart';
+import 'package:bugaoshan/utils/app_error_handlers.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 
 Future<void> main() async {
+  AppErrorHandlers.install();
   try {
     await _initializeApp();
     runApp(MyApp());
   } catch (error, stackTrace) {
-    debugPrint('Startup error: $error\n$stackTrace');
+    AppLog.e('Startup', '应用启动失败', error: error, stackTrace: stackTrace);
     runApp(StartupErrorApp(errorMessage: stackTrace.toString()));
   }
 }
