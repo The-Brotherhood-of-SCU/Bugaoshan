@@ -29,7 +29,7 @@ class AuthLogTile extends StatelessWidget {
                 last.tag,
               );
         return ListTile(
-          leading: const Icon(Icons.key),
+          leading: const Icon(Icons.receipt_long),
           title: Text(localizations.viewAuthLog),
           subtitle: Text(
             subtitle,
