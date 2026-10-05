@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program_model.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
@@ -92,17 +93,35 @@ class TrainProgramProvider extends ChangeNotifier {
       _grades = results[1] as List<Grade>;
       _collegesState = TrainProgramLoadState.loaded;
       _gradesState = TrainProgramLoadState.loaded;
-    } on UnauthenticatedException catch (e) {
+    } on UnauthenticatedException catch (e, logStackTrace) {
+      AppLog.e(
+        'TrainProgramProvider',
+        'fetchCollegesAndGrades 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       _collegesState = TrainProgramLoadState.error;
       _gradesState = TrainProgramLoadState.error;
       _collegesError = zhjwAuthErrorType(e);
       _gradesError = zhjwAuthErrorType(e);
-    } on ServiceException catch (_) {
+    } on ServiceException catch (logError, logStackTrace) {
+      AppLog.e(
+        'TrainProgramProvider',
+        'fetchCollegesAndGrades 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       _collegesState = TrainProgramLoadState.error;
       _gradesState = TrainProgramLoadState.error;
       _collegesError = campusNetworkErrorType(LoadErrorType.loadFailed);
       _gradesError = campusNetworkErrorType(LoadErrorType.loadFailed);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'TrainProgramProvider',
+        'fetchCollegesAndGrades 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       _collegesState = TrainProgramLoadState.error;
       _gradesState = TrainProgramLoadState.error;
       _collegesError = campusNetworkErrorType(LoadErrorType.loadFailed);
@@ -123,13 +142,31 @@ class TrainProgramProvider extends ChangeNotifier {
         grade: _selectedGrade,
       );
       _programsState = TrainProgramLoadState.loaded;
-    } on UnauthenticatedException catch (e) {
+    } on UnauthenticatedException catch (e, logStackTrace) {
+      AppLog.e(
+        'TrainProgramProvider',
+        'searchPrograms 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       _programsState = TrainProgramLoadState.error;
       _programsError = zhjwAuthErrorType(e);
-    } on ServiceException catch (_) {
+    } on ServiceException catch (logError, logStackTrace) {
+      AppLog.e(
+        'TrainProgramProvider',
+        'searchPrograms 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       _programsState = TrainProgramLoadState.error;
       _programsError = campusNetworkErrorType(LoadErrorType.loadFailed);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'TrainProgramProvider',
+        'searchPrograms 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       _programsState = TrainProgramLoadState.error;
       _programsError = campusNetworkErrorType(LoadErrorType.loadFailed);
     }
@@ -147,15 +184,33 @@ class TrainProgramProvider extends ChangeNotifier {
       if (generation != _detailGeneration) return;
       _currentDetail = detail;
       _detailState = TrainProgramLoadState.loaded;
-    } on UnauthenticatedException catch (e) {
+    } on UnauthenticatedException catch (e, logStackTrace) {
+      AppLog.e(
+        'TrainProgramProvider',
+        'fetchProgramDetail 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (generation != _detailGeneration) return;
       _detailState = TrainProgramLoadState.error;
       _detailError = zhjwAuthErrorType(e);
-    } on ServiceException catch (_) {
+    } on ServiceException catch (logError, logStackTrace) {
+      AppLog.e(
+        'TrainProgramProvider',
+        'fetchProgramDetail 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       if (generation != _detailGeneration) return;
       _detailState = TrainProgramLoadState.error;
       _detailError = campusNetworkErrorType(LoadErrorType.loadFailed);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'TrainProgramProvider',
+        'fetchProgramDetail 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       if (generation != _detailGeneration) return;
       _detailState = TrainProgramLoadState.error;
       _detailError = campusNetworkErrorType(LoadErrorType.loadFailed);
@@ -182,15 +237,33 @@ class TrainProgramProvider extends ChangeNotifier {
       if (generation != _courseDetailGeneration) return;
       _currentCourseDetail = detail;
       _courseDetailState = TrainProgramLoadState.loaded;
-    } on UnauthenticatedException catch (e) {
+    } on UnauthenticatedException catch (e, logStackTrace) {
+      AppLog.e(
+        'TrainProgramProvider',
+        'fetchCourseDetail 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (generation != _courseDetailGeneration) return;
       _courseDetailState = TrainProgramLoadState.error;
       _courseDetailError = zhjwAuthErrorType(e);
-    } on ServiceException catch (_) {
+    } on ServiceException catch (logError, logStackTrace) {
+      AppLog.e(
+        'TrainProgramProvider',
+        'fetchCourseDetail 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       if (generation != _courseDetailGeneration) return;
       _courseDetailState = TrainProgramLoadState.error;
       _courseDetailError = campusNetworkErrorType(LoadErrorType.loadFailed);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'TrainProgramProvider',
+        'fetchCourseDetail 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       if (generation != _courseDetailGeneration) return;
       _courseDetailState = TrainProgramLoadState.error;
       _courseDetailError = campusNetworkErrorType(LoadErrorType.loadFailed);

@@ -4,9 +4,35 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program.dart';
 import 'package:bugaoshan/providers/train_program_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/utils/auth_logger.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  late AuthLogger logger;
+  setUp(() async {
+    await getIt.reset();
+    logger = AuthLogger();
+    getIt.registerSingleton<AuthLogger>(logger);
+  });
+  tearDown(() async => getIt.reset());
+
+  test('培养方案查询失败保留业务异常和堆栈', () async {
+    final api = _ControllableZhjwApiService();
+    final provider = TrainProgramProvider(api);
+    final request = provider.fetchProgramDetail('failed');
+    api.programRequests['failed']!.completeError(
+      const ServiceException('服务不可用'),
+    );
+    await request;
+    expect(provider.detailState, TrainProgramLoadState.error);
+    final entry = logger.entries.single;
+    expect(entry.category, AuthLogCategory.business);
+    expect(entry.error, contains('服务不可用'));
+    expect(entry.stackTrace, isNotNull);
+    expect(entry.message, contains('fetchProgramDetail'));
+  });
 
   test('stale program detail cannot overwrite the latest request', () async {
     final api = _ControllableZhjwApiService();
