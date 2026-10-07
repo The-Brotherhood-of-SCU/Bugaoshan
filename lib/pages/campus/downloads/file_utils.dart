@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -6,6 +7,7 @@ import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:open_filex/open_filex.dart';
 
 import 'package:bugaoshan/services/download_manager.dart';
 
@@ -20,6 +22,19 @@ const kTuanweiAttachmentDir = 'tuanwei_attachments';
 
 /// Subdirectory name under `Bugaoshan/` for saved auth log exports.
 const kAuthLogDir = 'auth_logs';
+
+Future<void> openDownloadedFile(String path) {
+  return AppLog.guard('Downloads', '打开下载文件', () async {
+    final result = await OpenFilex.open(path);
+    if (result.type != ResultType.done) {
+      AppLog.e(
+        'Downloads',
+        '打开下载文件失败 type=${result.type}',
+        error: result.message,
+      );
+    }
+  });
+}
 
 /// Persistent URL-to-file index for notice attachments.
 ///
@@ -51,7 +66,13 @@ class DownloadPathIndex {
     try {
       try {
         await previous;
-      } catch (_) {
+      } catch (logError, logStackTrace) {
+        AppLog.e(
+          'FileUtils',
+          '下载索引队列恢复失败',
+          error: logError,
+          stackTrace: logStackTrace,
+        );
         // A previous operation must not poison the per-directory queue.
       }
       return await action();
@@ -158,7 +179,13 @@ class DownloadPathIndex {
         throw const FormatException();
       }
       return rawName;
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'FileUtils',
+        '_readFileName 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       if (await entry.exists()) await entry.delete();
       return null;
     }

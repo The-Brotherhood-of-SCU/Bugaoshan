@@ -1,4 +1,6 @@
+import 'package:bugaoshan/utils/open_link.dart';
 import 'dart:async';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'dart:io';
 
 import 'package:bugaoshan/injection/injector.dart';
@@ -6,9 +8,7 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/download_manager.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
-import 'package:url_launcher/url_launcher.dart';
 
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/utils/share_utils.dart';
@@ -133,15 +133,21 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
     try {
       if (Platform.isAndroid) {
         final encodedPath = _dirPath(_currentDir).replaceAll('/', '%2F');
-        await launchUrl(
+        await openUri(
           Uri.parse(
             'content://com.android.externalstorage.documents/document/primary%3AAndroid%2Fdata%2Fio.github.the_brotherhood_of_scu.bugaoshan%2Ffiles%2F$encodedPath',
           ),
         );
       } else {
-        await launchUrl(Uri.file(dir.path));
+        await openUri(Uri.file(dir.path));
       }
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'NoticeDownloadedPage',
+        '_openFolder 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
@@ -398,7 +404,7 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
-  void _openFile(File file) => OpenFilex.open(file.path);
+  void _openFile(File file) => openDownloadedFile(file.path);
 
   void _shareFile(File file) => shareSingleFile(file.path, context: context);
 

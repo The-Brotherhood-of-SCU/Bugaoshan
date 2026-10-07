@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:bugaoshan/pages/campus/downloads/file_utils.dart';
 
@@ -110,7 +111,15 @@ class DownloadManager extends ChangeNotifier {
       );
       updateTask(task, status: DownloadStatus.done, downloadedPath: path);
       return path;
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      if (e is! DownloadCancelledException) {
+        AppLog.e(
+          'DownloadManager',
+          'download 失败',
+          error: e,
+          stackTrace: logStackTrace,
+        );
+      }
       updateTask(
         task,
         status: DownloadStatus.error,
