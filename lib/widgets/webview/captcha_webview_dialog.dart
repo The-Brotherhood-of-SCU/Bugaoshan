@@ -1,4 +1,5 @@
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/pages/campus/downloads/shared_notice_downloads.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -65,7 +66,13 @@ class _CaptchaWebViewDialogState extends State<CaptchaWebViewDialog> {
           Navigator.pop(context, true);
         }
       }
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'CaptchaWebviewDialog',
+        '_onDownloadStarting 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // 下载失败：若弹窗仍打开则关闭它并返回 false，由调用方把任务标记
       // 为失败；已关闭时调用方已标记 captchaCancelled，无需处理。
       // WebView 始终接管下载（handled: true）不落到默认行为。
@@ -106,6 +113,20 @@ class _CaptchaWebViewDialogState extends State<CaptchaWebViewDialog> {
                     onDownloadStarting: _onDownloadStarting,
                     onLoadStop: (ctrl, uri) {
                       if (mounted) setState(() => _loading = false);
+                    },
+                    onReceivedError: (_, request, error) {
+                      AppLog.e(
+                        'CaptchaWebView',
+                        '验证页面加载失败 url=${request.url}',
+                        error: error,
+                      );
+                      if (mounted) setState(() => _loading = false);
+                    },
+                    onReceivedHttpError: (_, request, response) {
+                      AppLog.e(
+                        'CaptchaWebView',
+                        '验证页面 HTTP ${response.statusCode} url=${request.url}',
+                      );
                     },
                   ),
                   if (_loading)

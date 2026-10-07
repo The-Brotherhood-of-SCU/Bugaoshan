@@ -1,3 +1,4 @@
+import 'package:bugaoshan/utils/open_link.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/downloads/shared_notice_downloads.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
@@ -143,20 +144,25 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
     if (_beautifyScript.isNotEmpty) {
       try {
         await controller.evaluateJavascript(source: _beautifyScript);
-      } catch (e) {
+      } catch (e, logStackTrace) {
         AppLog.e(
-          'WebViewNoticePage',
-          '${widget.debugLabel} beautify script error: $e',
+          'WebviewNoticePage',
+          '_onLoadStop 失败',
+          error: e,
+          stackTrace: logStackTrace,
         );
       }
       if (_domReadyScript.isNotEmpty) {
         try {
           await controller.evaluateJavascript(source: _domReadyScript);
-        } catch (e) {
+        } catch (e, logStackTrace) {
           AppLog.e(
-            'WebViewNoticePage',
-            '${widget.debugLabel} dom ready script error: $e',
+            'WebviewNoticePage',
+            '_onLoadStop 失败',
+            error: e,
+            stackTrace: logStackTrace,
           );
+
           await _finishLoading();
         }
         return;
@@ -174,9 +180,7 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
     if (ctrl == null) return;
     final current = await ctrl.getUrl();
     final uri = current ?? Uri.parse(widget.url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    await openUri(uri, mode: LaunchMode.externalApplication);
   }
 
   Future<void> _goBack() async {
@@ -308,6 +312,12 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
                     );
                     controller.loadData(data: html);
                   }
+                },
+                onReceivedHttpError: (controller, request, response) {
+                  AppLog.e(
+                    'WebViewNoticePage',
+                    '${widget.debugLabel} HTTP ${response.statusCode} url=${request.url}',
+                  );
                 },
               ),
               IgnorePointer(
