@@ -77,6 +77,7 @@ class ServiceApiService {
       _auth.getClient,
       fn,
       invalidate: _auth.invalidate,
+      logTag: 'ServiceApiService',
     );
   }
 
@@ -111,9 +112,9 @@ class ServiceApiService {
     _checkSessionExpiry(body, statusCode);
     // 诊断日志：记录非 2xx/非 JSON 的响应，便于定位服务端拒绝原因
     if (statusCode < 200 || statusCode >= 300) {
-      AppLog.w(
+      AppLog.e(
         'ServiceApi',
-        'non-2xx: status=$statusCode body=${body.length > 500 ? body.substring(0, 500) : body}',
+        'non-2xx: status=$statusCode bodyLength=${body.length}',
       );
     }
     final json = jsonDecode(body) as Map<String, dynamic>;
@@ -121,10 +122,10 @@ class ServiceApiService {
     if (json['e']?.toString() == '10042') {
       throw const UnauthenticatedException('办事大厅会话已失效');
     }
-    // 业务错误记录到 AuthLogger，导出 auth log 可直接查看 e/m
+    // 业务错误按 business 分类记录，导出运行日志可查看 e/m
     if (json['e']?.toString() != '0') {
       final msg = '业务错误 e=${json['e']} m=${json['m']} status=$statusCode';
-      _log.w('SERVICE', msg);
+      _log.e('SERVICE', msg, category: AuthLogCategory.business);
     }
     return json;
   }
@@ -312,16 +313,18 @@ class ServiceApiService {
       return _decodeResponse(resp.body, resp.statusCode);
     });
     if (json['e'] != 0 || json['d'] == null) {
-      _log.w(
+      _log.e(
         'SERVICE',
         'fetchDataSourceValue 失败 e=${json['e']} m=${json['m']}',
+        category: AuthLogCategory.business,
       );
       return null;
     }
     final d = json['d'];
     _log.i(
       'SERVICE',
-      'fetchDataSourceValue(${ref.component}) -> ${jsonEncode(d)}',
+      'fetchDataSourceValue(${ref.component}) -> type=${d.runtimeType}',
+      category: AuthLogCategory.business,
     );
     if (d is Map<String, dynamic>) return d;
     if (d is Map) return Map<String, dynamic>.from(d);
@@ -341,14 +344,22 @@ class ServiceApiService {
       return _decodeResponse(resp.body, resp.statusCode);
     });
     if (json['e'] != 0 || json['d'] == null) {
-      _log.w('SERVICE', 'fetchProvinces 失败 e=${json['e']} m=${json['m']}');
+      _log.e(
+        'SERVICE',
+        'fetchProvinces 失败 e=${json['e']} m=${json['m']}',
+        category: AuthLogCategory.business,
+      );
       return const [];
     }
     final d = json['d'];
     if (d is List) return d;
     if (d is Map && d['list'] is List) return d['list'] as List;
     if (d is Map && d['children'] is List) return d['children'] as List;
-    _log.w('SERVICE', 'fetchProvinces 未知结构: $d');
+    _log.e(
+      'SERVICE',
+      'fetchProvinces 未知结构: ${d.runtimeType}',
+      category: AuthLogCategory.business,
+    );
     return const [];
   }
 
@@ -400,14 +411,28 @@ class ServiceApiService {
           decoded = jsonDecode(decoded);
         }
         json = decoded as Map<String, dynamic>;
-      } catch (e) {
-        _log.w('SERVICE', 'uploadAttachment 响应非 JSON: $body');
+      } catch (e, logStackTrace) {
+        AppLog.e(
+          'ServiceApiService',
+          'uploadAttachment 失败',
+          error: e,
+          stackTrace: logStackTrace,
+        );
+        _log.e(
+          'SERVICE',
+          'uploadAttachment 响应非 JSON: length=${body.length}',
+          category: AuthLogCategory.business,
+        );
         throw ServiceException('上传失败');
       }
       final uploadOk =
           json['url'] != null || json['state']?.toString() == 'SUCCESS';
       if (!uploadOk || json['id'] == null) {
-        _log.w('SERVICE', 'uploadAttachment 失败: $json');
+        _log.e(
+          'SERVICE',
+          'uploadAttachment 失败: state=${json['state']}',
+          category: AuthLogCategory.business,
+        );
         throw ServiceException('上传失败');
       }
       final id = json['id']?.toString() ?? '';
@@ -422,7 +447,11 @@ class ServiceApiService {
         url: '$_base$downloadPath?file_id=$id',
         id: id,
       );
-      _log.i('SERVICE', 'uploadAttachment -> id=$id name=$original');
+      _log.i(
+        'SERVICE',
+        'uploadAttachment -> id=$id',
+        category: AuthLogCategory.business,
+      );
       return attachment;
     });
   }
