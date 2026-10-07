@@ -196,11 +196,13 @@ class ForgotPasswordService {
     Map<String, dynamic> body, {
     required String api,
   }) async {
-    final uri = Uri.parse('$_base$endpoint?_enterprise_id=$_enterpriseId');
-    final resp = await _client
-        .post(uri, headers: _headers, body: jsonEncode(body))
-        .timeout(kHttpTimeout);
-    return _parseResponse(resp, api);
+    return AppLog.guard('ForgotPassword', api, () async {
+      final uri = Uri.parse('$_base$endpoint?_enterprise_id=$_enterpriseId');
+      final resp = await _client
+          .post(uri, headers: _headers, body: jsonEncode(body))
+          .timeout(kHttpTimeout);
+      return _parseResponse(resp, api);
+    });
   }
 
   /// 统一响应校验：非 2xx 或业务 code 非 200/成功标记缺失时抛业务异常。
