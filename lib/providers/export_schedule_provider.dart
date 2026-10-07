@@ -3,6 +3,7 @@ import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/services/ics_service.dart';
 import 'package:bugaoshan/utils/calendar_export_utils.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 
 enum ExportResult { success, failed, canceled }
 
@@ -43,7 +44,10 @@ class ExportScheduleProvider {
 
   Future<ExportResult> copyToClipBoard() async {
     final cfg = _config;
-    if (cfg == null) return ExportResult.failed;
+    if (cfg == null) {
+      AppLog.e('ExportSchedule', '复制课表失败：缺少课表配置');
+      return ExportResult.failed;
+    }
     final data = {
       'config': cfg.toJson(),
       'courses': _courses.map((e) => e.toJson()).toList(),
@@ -57,7 +61,10 @@ class ExportScheduleProvider {
 
   CalendarExportPayload buildCalendarPayload(String teacherLabel) {
     final cfg = _config;
-    if (cfg == null) throw StateError('No schedule to export');
+    if (cfg == null) {
+      AppLog.e('ExportSchedule', '导出课表失败：缺少课表配置');
+      throw StateError('No schedule to export');
+    }
     return IcsService.genCourseExportPayload(
       config: cfg,
       courses: _courses,
