@@ -69,11 +69,11 @@ class _GraduateTrainPlanPageState extends State<GraduateTrainPlanPage> {
     setState(() => _recoveringSession = true);
     try {
       await getIt<ScuAuth>().refresh();
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(_tag, '_recoverSession 失败', error: e, stackTrace: logStackTrace);
       // 自愈失败：这个 Future 由 listener 回调 fire-and-forget 触发、没人接，
       // 不 catch 会变成 unhandled async error。留在未登录分支，由
       // _buildBody 的「请先登录」引导承接。
-      AppLog.w(_tag, '会话自愈失败，转登录引导：$e');
     } finally {
       if (mounted) setState(() => _recoveringSession = false);
     }
