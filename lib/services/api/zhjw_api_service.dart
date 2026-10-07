@@ -35,6 +35,7 @@ class ZhjwApiService {
       _auth.getClient,
       fn,
       invalidate: _auth.invalidate,
+      logTag: 'ZhjwApiService',
     );
   }
 
