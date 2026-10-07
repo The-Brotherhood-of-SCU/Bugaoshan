@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
@@ -99,7 +100,13 @@ class _AboutPageState extends State<AboutPage> {
           ),
         );
       }
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'AboutPage',
+        '_checkForUpdates 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (mounted) {
         unawaited(
           showInfoDialog(

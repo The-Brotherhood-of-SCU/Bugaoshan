@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -222,7 +223,13 @@ Future<bool> showDownloadProgressDialog({
       return true;
     } on UpdateCancelledException {
       return false;
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'DownloadProgressDialog',
+        'showDownloadProgressDialog 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
@@ -266,7 +273,13 @@ Future<bool> showDownloadProgressDialog({
     );
   } on UpdateCancelledException {
     return false;
-  } catch (e) {
+  } catch (e, logStackTrace) {
+    AppLog.e(
+      'DownloadProgressDialog',
+      'showDownloadProgressDialog 失败',
+      error: e,
+      stackTrace: logStackTrace,
+    );
     if (context.mounted && visible) {
       unawaited(Navigator.of(context, rootNavigator: true).maybePop());
       ScaffoldMessenger.of(

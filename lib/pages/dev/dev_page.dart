@@ -1,5 +1,6 @@
 import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:bugaoshan/pages/dev/ui/ui_tile.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:flutter/material.dart';
 
 import 'package:bugaoshan/injection/injector.dart';
@@ -34,7 +35,13 @@ class _DevPageState extends State<DevPage> {
     if (!_supportsUpdate) return;
     try {
       await _updateProvider.getAllLatestReleases();
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'DevPage',
+        '_checkForUpdates 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // provider 已将 error 状态填充到 stableResult/previewResult,此处仅吞异常
     }
   }
