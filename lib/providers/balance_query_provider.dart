@@ -98,19 +98,34 @@ class BalanceQueryProvider extends ChangeNotifier {
       if (electricRecords.isEmpty) {
         try {
           await _loadBalanceFor(binding, kBalanceTypeElectric, force: true);
-        } catch (e) {
-          AppLog.w('BalanceQueryProvider', 'Auto-sample electric failed: $e');
+        } catch (e, logStackTrace) {
+          AppLog.e(
+            'BalanceQueryProvider',
+            '_maybeAutoSample 失败',
+            error: e,
+            stackTrace: logStackTrace,
+          );
         }
       }
       if (acRecords.isEmpty) {
         try {
           await _loadBalanceFor(binding, kBalanceTypeAc, force: true);
-        } catch (e) {
-          AppLog.w('BalanceQueryProvider', 'Auto-sample AC failed: $e');
+        } catch (e, logStackTrace) {
+          AppLog.e(
+            'BalanceQueryProvider',
+            '_maybeAutoSample 失败',
+            error: e,
+            stackTrace: logStackTrace,
+          );
         }
       }
-    } catch (e) {
-      AppLog.w('BalanceQueryProvider', 'Auto-sample balance failed: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'BalanceQueryProvider',
+        '_maybeAutoSample 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
     } finally {
       _autoSampling = false;
     }
@@ -176,10 +191,12 @@ class BalanceQueryProvider extends ChangeNotifier {
         _bindings = list
             .map((e) => RoomBinding.fromJson(e as Map<String, dynamic>))
             .toList();
-      } catch (e) {
-        AppLog.w(
+      } catch (e, logStackTrace) {
+        AppLog.e(
           'BalanceQueryProvider',
-          'Failed to load balance binding info: $e',
+          '_loadBindingInfo 失败',
+          error: e,
+          stackTrace: logStackTrace,
         );
       }
     }
@@ -220,10 +237,12 @@ class BalanceQueryProvider extends ChangeNotifier {
     // 同步删除该房间的历史记录,避免残留。
     try {
       await _db.deleteBalanceRecordsByRoom(roomKey);
-    } catch (e) {
-      AppLog.w(
+    } catch (e, logStackTrace) {
+      AppLog.e(
         'BalanceQueryProvider',
-        'Failed to clean balance history for removed room: $e',
+        'removeBinding 失败',
+        error: e,
+        stackTrace: logStackTrace,
       );
     }
     ensureCurrentBalances();
@@ -278,7 +297,13 @@ class BalanceQueryProvider extends ChangeNotifier {
   Future<void> _silentlyEnsureBalance(int balanceType) async {
     try {
       await ensureBalance(balanceType);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'BalanceQueryProvider',
+        '_silentlyEnsureBalance 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // 错误由 balanceStateFor 暴露给 UI，不让后台预热形成未处理异常。
     }
   }
@@ -400,7 +425,13 @@ class BalanceQueryProvider extends ChangeNotifier {
         entry.value = loaded;
         entry.updatedAt = _now();
         return loaded;
-      } catch (e) {
+      } catch (e, logStackTrace) {
+        AppLog.e(
+          'BalanceQueryProvider',
+          'execute 失败',
+          error: e,
+          stackTrace: logStackTrace,
+        );
         entry.error = e;
         rethrow;
       } finally {
@@ -460,7 +491,13 @@ class BalanceQueryProvider extends ChangeNotifier {
         );
         entry.records = List.unmodifiable(records);
         entry.trend = BalanceTrendCalculator.calculate(entry.records!);
-      } catch (e) {
+      } catch (e, logStackTrace) {
+        AppLog.e(
+          'BalanceQueryProvider',
+          'load 失败',
+          error: e,
+          stackTrace: logStackTrace,
+        );
         entry.error = e;
         rethrow;
       } finally {
@@ -560,8 +597,13 @@ class BalanceQueryProvider extends ChangeNotifier {
         (key, _) =>
             key.roomKey == record.roomKey && key.balanceType == balanceType,
       );
-    } catch (e) {
-      AppLog.w('BalanceQueryProvider', 'Failed to record balance history: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'BalanceQueryProvider',
+        '_recordHistory 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
     }
   }
 
