@@ -1,9 +1,25 @@
 import 'dart:convert';
 
 import 'package:bugaoshan/models/repair.dart';
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/utils/auth_logger.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('损坏的结构化报修内容记录错误，纯文本和修复成功内容保持兼容', () async {
+    await getIt.reset();
+    addTearDown(() => getIt.reset());
+    final logger = AuthLogger();
+    getIt.registerSingleton<AuthLogger>(logger);
+    RepairTicket.fromDynamicJson({'content': '{"故障描述":"private description'});
+    expect(logger.entries.single.level, AuthLogLevel.error);
+    expect(logger.entries.single.stackTrace, isNotEmpty);
+    expect(logger.exportToText(), isNot(contains('private description')));
+    logger.clear();
+    RepairTicket.fromDynamicJson({'content': '普通故障描述'});
+    RepairTicket.fromDynamicJson({'content': '{"故障描述":"第一行\n第二行"}'});
+    expect(logger.entries, isEmpty);
+  });
   group('RepairTicket.fromDynamicJson content 解析', () {
     test('标准 JSON 字符串（含服务单位）正常解析', () {
       final ticket = RepairTicket.fromDynamicJson({

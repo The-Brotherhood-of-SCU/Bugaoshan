@@ -125,8 +125,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
     if (_scuAuth.state == AuthState.unknown) return;
     try {
       await _auth.ensureAuthenticated();
-    } catch (e) {
-      _log.w(_tag, 'retryAuth failed: $e');
+    } catch (e, logStackTrace) {
+      _log.e(
+        'ZhhqRepairProvider',
+        'retryAuth 失败',
+        error: e,
+        stackTrace: logStackTrace,
+        category: AuthLogCategory.business,
+      );
     }
     if (!_auth.isReady) {
       _state = RepairLoadState.error;
@@ -160,12 +166,22 @@ class ZhhqRepairProvider extends ChangeNotifier {
         if (!_isCurrent(generation)) return;
         _addresses = List.unmodifiable(addresses);
         _state = RepairLoadState.loaded;
-        _log.d(_tag, 'loaded: addresses=${addresses.length}');
-      } catch (error) {
+        _log.d(
+          _tag,
+          'loaded: addresses=${addresses.length}',
+          category: AuthLogCategory.business,
+        );
+      } catch (error, logStackTrace) {
+        _log.e(
+          'ZhhqRepairProvider',
+          'execute 失败',
+          error: error,
+          stackTrace: logStackTrace,
+          category: AuthLogCategory.business,
+        );
         if (!_isCurrent(generation)) return;
         _state = RepairLoadState.error;
         _error = _mapError(error);
-        _log.w(_tag, 'load error: $error');
       } finally {
         if (_isCurrent(generation)) {
           _loadFuture = null;
@@ -200,7 +216,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
       // force：等当前加载完成后再拉一次（若已是最新则结果相同，无副作用）
       try {
         await inFlight;
-      } catch (_) {
+      } catch (logError, logStackTrace) {
+        _log.e(
+          'ZhhqRepairProvider',
+          'loadTickets 失败',
+          error: logError,
+          stackTrace: logStackTrace,
+          category: AuthLogCategory.business,
+        );
         // 前一次失败不阻塞本次重新拉取
       }
       if (!_canLoad || userId.isEmpty) return;
@@ -218,9 +241,19 @@ class ZhhqRepairProvider extends ChangeNotifier {
       final tickets = await _api.fetchDynamicTickets(userId: userId);
       _tickets = List.unmodifiable(tickets);
       _ticketsLoaded = true;
-      _log.d(_tag, 'tickets loaded: ${tickets.length}');
-    } catch (error) {
-      _log.w(_tag, 'tickets load error: $error');
+      _log.d(
+        _tag,
+        'tickets loaded: ${tickets.length}',
+        category: AuthLogCategory.business,
+      );
+    } catch (error, logStackTrace) {
+      _log.e(
+        'ZhhqRepairProvider',
+        '_fetchTickets 失败',
+        error: error,
+        stackTrace: logStackTrace,
+        category: AuthLogCategory.business,
+      );
     } finally {
       _isLoadingTickets = false;
       _ticketsFuture = null;
@@ -237,7 +270,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
   Future<bool> ifAllowWithdrawRepair({required String id}) async {
     try {
       return await _api.ifAllowWithdrawRepair(id: id);
-    } on ScuException {
+    } on ScuException catch (logError, logStackTrace) {
+      _log.e(
+        'ZhhqRepairProvider',
+        'ifAllowWithdrawRepair 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+        category: AuthLogCategory.business,
+      );
       return false;
     }
   }
@@ -276,7 +316,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
   Future<List<RepairEvaluateProject>> fetchEvaluateProjects() async {
     try {
       return await _api.fetchEvaluateProjects();
-    } on ScuException {
+    } on ScuException catch (logError, logStackTrace) {
+      _log.e(
+        'ZhhqRepairProvider',
+        'fetchEvaluateProjects 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+        category: AuthLogCategory.business,
+      );
       return const [];
     }
   }
@@ -309,7 +356,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
       if (!_isOperationCurrent(generation)) return false;
       await refresh();
       return _isOperationCurrent(generation);
-    } catch (error) {
+    } catch (error, logStackTrace) {
+      _log.e(
+        'ZhhqRepairProvider',
+        'addAddress 失败',
+        error: error,
+        stackTrace: logStackTrace,
+        category: AuthLogCategory.business,
+      );
       if (_isOperationCurrent(generation)) {
         _submitError = _extractMessage(error);
       }
@@ -343,7 +397,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
       _ticketsLoaded = false;
       await refresh();
       return _isOperationCurrent(generation);
-    } catch (error) {
+    } catch (error, logStackTrace) {
+      _log.e(
+        'ZhhqRepairProvider',
+        'submitTicket 失败',
+        error: error,
+        stackTrace: logStackTrace,
+        category: AuthLogCategory.business,
+      );
       if (_isOperationCurrent(generation)) {
         _submitError = _extractMessage(error);
       }
@@ -360,7 +421,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
   Future<List<String>> fetchBookDates() async {
     try {
       return await _api.fetchBookDates();
-    } on ScuException {
+    } on ScuException catch (logError, logStackTrace) {
+      _log.e(
+        'ZhhqRepairProvider',
+        'fetchBookDates 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+        category: AuthLogCategory.business,
+      );
       return const [];
     }
   }
@@ -369,7 +437,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
   Future<List<String>> fetchBookTimes(String date) async {
     try {
       return await _api.fetchBookTimes(date);
-    } on ScuException {
+    } on ScuException catch (logError, logStackTrace) {
+      _log.e(
+        'ZhhqRepairProvider',
+        'fetchBookTimes 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+        category: AuthLogCategory.business,
+      );
       return const [];
     }
   }
@@ -378,7 +453,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
   Future<List<RepairProject>> fetchProjects(String areaId) async {
     try {
       return await _api.fetchProjects(areaId);
-    } on ScuException {
+    } on ScuException catch (logError, logStackTrace) {
+      _log.e(
+        'ZhhqRepairProvider',
+        'fetchProjects 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+        category: AuthLogCategory.business,
+      );
       return const [];
     }
   }
@@ -390,7 +472,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
   }) async {
     try {
       return await _api.fetchAcceptDept(areaId: areaId, projectId: projectId);
-    } on ScuException {
+    } on ScuException catch (logError, logStackTrace) {
+      _log.e(
+        'ZhhqRepairProvider',
+        'fetchAcceptDept 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+        category: AuthLogCategory.business,
+      );
       return null;
     }
   }
@@ -399,7 +488,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
   Future<List<RepairAreaNode>> fetchAreaTree() async {
     try {
       return await _api.fetchAreaTreeNodes();
-    } on ScuException {
+    } on ScuException catch (logError, logStackTrace) {
+      _log.e(
+        'ZhhqRepairProvider',
+        'fetchAreaTree 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+        category: AuthLogCategory.business,
+      );
       return const [];
     }
   }

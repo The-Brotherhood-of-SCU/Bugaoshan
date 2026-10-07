@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'dart:io';
 import 'dart:math';
 
@@ -90,9 +91,19 @@ class ZhhqApiService {
     if (fastClient != null && fastTokenKey != null) {
       try {
         return await fn(fastClient, fastTokenKey);
-      } on UnauthenticatedException {
+      } on UnauthenticatedException catch (logError, logStackTrace) {
+        AppLog.e(
+          'ZhhqApiService',
+          '_executeWithRetry 失败',
+          error: logError,
+          stackTrace: logStackTrace,
+        );
         // tokenKey 失效（4010-4017）：走完整认证重建
-        _log.w('ZHhq', 'fast path token invalid, re-authenticating');
+        _log.e(
+          'ZHhq',
+          'fast path token invalid, re-authenticating',
+          category: AuthLogCategory.business,
+        );
       }
     }
     // 完整路径：确保 SCU 会话 + zhhq tokenKey（必要时走 SSO）
@@ -101,7 +112,13 @@ class ZhhqApiService {
       final tokenKey = _auth.tokenKey;
       if (tokenKey == null) throw const UnauthenticatedException();
       return await fn(client, tokenKey);
-    } on UnauthenticatedException {
+    } on UnauthenticatedException catch (logError, logStackTrace) {
+      AppLog.e(
+        'ZhhqApiService',
+        '_executeWithRetry 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       _auth.invalidate();
       final client = await _auth.getClient();
       final tokenKey = _auth.tokenKey;
@@ -113,7 +130,11 @@ class ZhhqApiService {
   Future<T> _request<T>(
     Future<T> Function(CookieClient client, String tokenKey) fn,
   ) {
-    return _executeWithRetry(fn);
+    return AppLog.guard(
+      'ZhhqApiService',
+      '智慧后勤请求',
+      () => _executeWithRetry(fn),
+    );
   }
 
   Map<String, String> _headers(
@@ -145,9 +166,10 @@ class ZhhqApiService {
     final json = zhhqDecodeResponse(body);
     if (json == null) {
       // 诊断：解密失败时记录响应片段，便于定位（可能为明文错误页 / 非标准加密）
-      _log.w(
+      _log.e(
         'ZHhq',
-        '响应解析失败，status=$statusCode body=${body.length > 100 ? body.substring(0, 100) : body}',
+        '响应解析失败，status=$statusCode bodyLength=${body.length}',
+        category: AuthLogCategory.business,
       );
       throw ServiceException('zhhq 响应解析失败');
     }
@@ -155,13 +177,21 @@ class ZhhqApiService {
     // 4010-4017 均为 token 类错误（无效/超时/签名错误），触发重新认证
     final codeInt = int.tryParse(code);
     if (codeInt != null && codeInt >= 4010 && codeInt <= 4017) {
-      _log.w('ZHhq', 'token 错误 errorCode=$code: ${json['message']}');
+      _log.e(
+        'ZHhq',
+        'token 错误 errorCode=$code: ${json['message']}',
+        category: AuthLogCategory.business,
+      );
       throw const UnauthenticatedException('zhhq 会话已失效');
     }
     // 业务错误统一判定：status 明确非 success，或 errorCode 明确非 0。
     final message = _businessErrorMessage(json);
     if (message != null) {
-      _log.w('ZHhq', '业务错误 errorCode=$code: $message');
+      _log.e(
+        'ZHhq',
+        '业务错误 errorCode=$code: $message',
+        category: AuthLogCategory.business,
+      );
       throw ServiceException(message);
     }
     return json;
@@ -541,7 +571,13 @@ class ZhhqApiService {
     final Map<String, dynamic> json;
     try {
       json = jsonDecode(resp.body) as Map<String, dynamic>;
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'ZhhqApiService',
+        '_uploadImageWith 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       throw ServiceException('图片上传失败：响应解析异常');
     }
     // 与 _decode 共用业务错误判定
