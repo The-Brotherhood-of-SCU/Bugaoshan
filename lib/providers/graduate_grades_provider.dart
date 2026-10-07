@@ -59,13 +59,25 @@ class GraduateGradesProvider extends ChangeNotifier {
       _rows = rows;
       _stats = graduateGradesStatsFromRows(rows);
       _state = GraduateGradesLoadState.loaded;
-    } on UnauthenticatedException {
+    } on UnauthenticatedException catch (logError, logStackTrace) {
+      AppLog.e(
+        'GraduateGradesProvider',
+        'refresh 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       if (generation != _generation) return;
       _state = GraduateGradesLoadState.error;
       _errorKind = GraduateGradesErrorKind.unauthenticated;
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'GraduateGradesProvider',
+        'refresh 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (generation != _generation) return;
-      AppLog.e('GraduateGradesProvider', 'Load error: $e');
+
       _state = GraduateGradesLoadState.error;
       _errorKind = GraduateGradesErrorKind.failed;
       _errorMessage = e is ServiceException ? e.message : null;
