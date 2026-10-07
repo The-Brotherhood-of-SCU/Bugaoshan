@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform, kIsWeb;
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:flutter/services.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
@@ -31,7 +32,13 @@ class DynamicIconService {
         'getAvailableIcons',
       );
       return list?.cast<String>() ?? [];
-    } on MissingPluginException {
+    } on MissingPluginException catch (logError, logStackTrace) {
+      AppLog.e(
+        'DynamicIconService',
+        'getAvailableIcons 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       return [];
     }
   }
@@ -41,7 +48,13 @@ class DynamicIconService {
     if (!_isSupported) return null;
     try {
       return await _channel.invokeMethod<String?>('getCurrentIconName');
-    } on MissingPluginException {
+    } on MissingPluginException catch (logError, logStackTrace) {
+      AppLog.e(
+        'DynamicIconService',
+        'getCurrentIconName 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       return null;
     }
   }
@@ -53,7 +66,13 @@ class DynamicIconService {
       await _channel.invokeMethod('setAlternateIconName', {
         'iconName': iconName,
       });
-    } on MissingPluginException {
+    } on MissingPluginException catch (logError, logStackTrace) {
+      AppLog.e(
+        'DynamicIconService',
+        'setAlternateIconName 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // Ignore: no native implementation on this platform.
     }
   }
