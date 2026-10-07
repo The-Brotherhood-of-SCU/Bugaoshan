@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:ui' show Offset;
+import 'package:bugaoshan/utils/app_log.dart';
 
 /// 背景图裁剪参数（归一化存储，与图片分辨率、课程页容器尺寸无关）。
 ///
@@ -73,7 +74,13 @@ class BackgroundCropParams {
         focusY: fy.clamp(0.0, 1.0),
         zoom: z.clamp(minZoom, maxZoom),
       );
-    } catch (_) {
+    } catch (error, stackTrace) {
+      AppLog.e(
+        'BackgroundCrop',
+        '恢复背景裁剪配置失败',
+        error: error,
+        stackTrace: stackTrace,
+      );
       return null;
     }
   }

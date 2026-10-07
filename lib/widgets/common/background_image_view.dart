@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/models/background_crop.dart';
@@ -78,7 +79,13 @@ class _BackgroundImageViewState extends State<BackgroundImageView> {
             widget.onImageSize?.call(size);
           }
         },
-        onError: (_, _) {
+        onError: (error, stackTrace) {
+          AppLog.e(
+            'BackgroundImageView',
+            '背景图片解码失败',
+            error: error,
+            stackTrace: stackTrace,
+          );
           // 解码失败保持空显示，与 Image.errorBuilder 行为一致。
           _removeListener();
         },
@@ -86,7 +93,13 @@ class _BackgroundImageViewState extends State<BackgroundImageView> {
       _stream = stream;
       _listener = listener;
       stream.addListener(listener);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'BackgroundImageView',
+        '_resolveImageSize 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // 文件不存在等同步异常：保持空显示。
     }
   }
@@ -94,7 +107,14 @@ class _BackgroundImageViewState extends State<BackgroundImageView> {
   void _removeListener() {
     try {
       _stream?.removeListener(_listener!);
-    } catch (_) {}
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'BackgroundImageView',
+        '_removeListener 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
+    }
     _stream = null;
     _listener = null;
   }
@@ -165,7 +185,15 @@ class _BackgroundImageViewState extends State<BackgroundImageView> {
         (widget.overlayOpacity.clamp(0.0, 1.0) * 255).round(),
       ),
       colorBlendMode: BlendMode.modulate,
-      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+      errorBuilder: (_, error, stackTrace) {
+        AppLog.e(
+          'BackgroundImageView',
+          '背景图片渲染失败',
+          error: error,
+          stackTrace: stackTrace,
+        );
+        return const SizedBox.shrink();
+      },
     );
   }
 }
