@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'dart:math';
 import 'dart:ui' as ui;
 
@@ -28,8 +29,10 @@ class SetThemeColorProvider {
   Color? get extractedColor => _extractedColor;
 
   Future<Color> getSystemAccentColor() async {
-    await SystemTheme.accentColor.load();
-    return SystemTheme.accentColor.accent;
+    return AppLog.guard('ThemeColor', '读取系统主题色', () async {
+      await SystemTheme.accentColor.load();
+      return SystemTheme.accentColor.accent;
+    });
   }
 
   Future<ThemeColorPreviewResult> previewSystemColor() async {
@@ -74,54 +77,61 @@ class SetThemeColorProvider {
   }
 
   Future<ExtractColorResult> extractColorFromBackgroundImage() async {
-    final bgPath = _appConfigProvider.backgroundImagePath.value;
-    if (bgPath == null) {
-      _lastExtractResult = ExtractColorResult.noBackgroundImage;
-      return ExtractColorResult.noBackgroundImage;
-    }
+    return AppLog.guard('ThemeColor', '提取背景主题色', () async {
+      final bgPath = _appConfigProvider.backgroundImagePath.value;
+      if (bgPath == null) {
+        _lastExtractResult = ExtractColorResult.noBackgroundImage;
+        return ExtractColorResult.noBackgroundImage;
+      }
 
-    final file = File(bgPath);
-    if (!await file.exists()) {
-      _lastExtractResult = ExtractColorResult.failure;
-      return ExtractColorResult.failure;
-    }
+      final file = File(bgPath);
+      if (!await file.exists()) {
+        AppLog.e('ThemeColor', '背景图片不存在，提取主题色失败');
+        _lastExtractResult = ExtractColorResult.failure;
+        return ExtractColorResult.failure;
+      }
 
-    final bytes = await file.readAsBytes();
-    final codec = await ui.instantiateImageCodec(bytes);
-    final frame = await codec.getNextFrame();
-    final image = frame.image;
+      final bytes = await file.readAsBytes();
+      final codec = await ui.instantiateImageCodec(bytes);
+      final frame = await codec.getNextFrame();
+      final image = frame.image;
 
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
-    if (byteData == null) {
-      _lastExtractResult = ExtractColorResult.failure;
-      return ExtractColorResult.failure;
-    }
+      final byteData = await image.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      );
+      if (byteData == null) {
+        AppLog.e('ThemeColor', '无法读取背景图片像素，提取主题色失败');
+        _lastExtractResult = ExtractColorResult.failure;
+        return ExtractColorResult.failure;
+      }
 
-    final width = image.width;
-    final height = image.height;
-    final pixelCount = width * height;
-    final sampleStep = max(1, (pixelCount / 5000).ceil());
+      final width = image.width;
+      final height = image.height;
+      final pixelCount = width * height;
+      final sampleStep = max(1, (pixelCount / 5000).ceil());
 
-    final bytesList = byteData.buffer.asUint8List();
+      final bytesList = byteData.buffer.asUint8List();
 
-    final dominantColorValue = await compute(
-      _computeDominantColor,
-      _ColorExtractionParams(
-        bytes: bytesList,
-        width: width,
-        height: height,
-        sampleStep: sampleStep,
-      ),
-    );
+      final dominantColorValue = await compute(
+        _computeDominantColor,
+        _ColorExtractionParams(
+          bytes: bytesList,
+          width: width,
+          height: height,
+          sampleStep: sampleStep,
+        ),
+      );
 
-    if (dominantColorValue == null) {
-      _lastExtractResult = ExtractColorResult.failure;
-      return ExtractColorResult.failure;
-    }
+      if (dominantColorValue == null) {
+        AppLog.e('ThemeColor', '背景图片没有可用像素，提取主题色失败');
+        _lastExtractResult = ExtractColorResult.failure;
+        return ExtractColorResult.failure;
+      }
 
-    _extractedColor = Color(dominantColorValue | 0xFF000000);
-    _lastExtractResult = ExtractColorResult.success;
-    return ExtractColorResult.success;
+      _extractedColor = Color(dominantColorValue | 0xFF000000);
+      _lastExtractResult = ExtractColorResult.success;
+      return ExtractColorResult.success;
+    });
   }
 }
 
