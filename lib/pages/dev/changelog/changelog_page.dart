@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:flutter/services.dart';
 
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -42,7 +43,13 @@ class _ChangelogPageState extends State<ChangelogPage> {
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'ChangelogPage',
+        '_loadChangelog 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (mounted) {
         setState(() => _isLoading = false);
       }
