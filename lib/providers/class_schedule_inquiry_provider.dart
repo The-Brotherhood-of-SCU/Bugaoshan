@@ -145,14 +145,26 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
       _indexState = ClassScheduleInquiryLoadState.loaded;
       notifyListeners();
       await search();
-    } on UnauthenticatedException catch (e) {
+    } on UnauthenticatedException catch (e, logStackTrace) {
+      AppLog.e(
+        'ClassScheduleInquiryProvider',
+        'loadIndex 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (generation != _indexGeneration) return;
       _indexState = ClassScheduleInquiryLoadState.error;
       _indexError = zhjwAuthErrorType(e);
       notifyListeners();
-    } catch (error) {
+    } catch (error, logStackTrace) {
+      AppLog.e(
+        'ClassScheduleInquiryProvider',
+        'loadIndex 失败',
+        error: error,
+        stackTrace: logStackTrace,
+      );
       if (generation != _indexGeneration) return;
-      AppLog.e('ClassScheduleInquiryProvider', 'Index load error: $error');
+
       _indexState = ClassScheduleInquiryLoadState.error;
       _indexError = campusNetworkErrorType(LoadErrorType.loadFailed);
       notifyListeners();
@@ -178,12 +190,18 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
       }
       _subjects = subjects;
       _subjectsState = ClassScheduleInquiryLoadState.loaded;
-    } catch (error) {
+    } catch (error, logStackTrace) {
+      AppLog.e(
+        'ClassScheduleInquiryProvider',
+        'loadSubjects 失败',
+        error: error,
+        stackTrace: logStackTrace,
+      );
       if (generation != _subjectsGeneration ||
           department != _selectedDepartment) {
         return;
       }
-      AppLog.e('ClassScheduleInquiryProvider', 'Subjects load error: $error');
+
       _subjects = const [];
       _subjectsState = ClassScheduleInquiryLoadState.error;
     }
@@ -217,17 +235,20 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
       }
       _classOptions = options;
       _classOptionsState = ClassScheduleInquiryLoadState.loaded;
-    } catch (error) {
+    } catch (error, logStackTrace) {
+      AppLog.e(
+        'ClassScheduleInquiryProvider',
+        'loadClassOptions 失败',
+        error: error,
+        stackTrace: logStackTrace,
+      );
       if (generation != _classOptionsGeneration ||
           grade != _selectedGrade ||
           department != _selectedDepartment ||
           subject != _selectedSubject) {
         return;
       }
-      AppLog.e(
-        'ClassScheduleInquiryProvider',
-        'Class options load error: $error',
-      );
+
       _classOptions = const [];
       _classOptionsState = ClassScheduleInquiryLoadState.error;
     }
@@ -285,7 +306,13 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
       _classes = replace ? result.classes : [..._classes, ...result.classes];
       _totalCount = result.totalCount;
       _classesState = ClassScheduleInquiryLoadState.loaded;
-    } on UnauthenticatedException catch (e) {
+    } on UnauthenticatedException catch (e, logStackTrace) {
+      AppLog.e(
+        'ClassScheduleInquiryProvider',
+        '_loadClasses 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (!_isCurrentClassRequest(
         generation: generation,
         semester: semester,
@@ -298,7 +325,13 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
       }
       _classesState = ClassScheduleInquiryLoadState.error;
       _classesError = zhjwAuthErrorType(e);
-    } catch (error) {
+    } catch (error, logStackTrace) {
+      AppLog.e(
+        'ClassScheduleInquiryProvider',
+        '_loadClasses 失败',
+        error: error,
+        stackTrace: logStackTrace,
+      );
       if (!_isCurrentClassRequest(
         generation: generation,
         semester: semester,
@@ -309,7 +342,7 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
       )) {
         return;
       }
-      AppLog.e('ClassScheduleInquiryProvider', 'Classes load error: $error');
+
       _classesState = ClassScheduleInquiryLoadState.error;
       _classesError = campusNetworkErrorType(LoadErrorType.loadFailed);
     }
@@ -374,16 +407,28 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
         courses: courses,
         state: ClassScheduleInquiryLoadState.loaded,
       );
-    } on UnauthenticatedException catch (e) {
+    } on UnauthenticatedException catch (e, logStackTrace) {
+      AppLog.e(
+        'ClassScheduleInquiryProvider',
+        'loadSchedule 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (_detailGenerations[key] != generation) return;
       _details[key] = ClassScheduleDetailState(
         courses: previous.courses,
         state: ClassScheduleInquiryLoadState.error,
         error: zhjwAuthErrorType(e),
       );
-    } catch (error) {
+    } catch (error, logStackTrace) {
+      AppLog.e(
+        'ClassScheduleInquiryProvider',
+        'loadSchedule 失败',
+        error: error,
+        stackTrace: logStackTrace,
+      );
       if (_detailGenerations[key] != generation) return;
-      AppLog.e('ClassScheduleInquiryProvider', 'Detail load error: $error');
+
       _details[key] = ClassScheduleDetailState(
         courses: previous.courses,
         state: ClassScheduleInquiryLoadState.error,
