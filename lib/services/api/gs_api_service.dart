@@ -92,8 +92,14 @@ class GsApiService {
     try {
       final semesters = await fetchSemesters();
       return semesters.isEmpty ? null : semesters.first;
-    } catch (e) {
-      AppLog.w(_tag, 'latestSemesterCode: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'GsApiService',
+        'latestSemesterCode 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       return null;
     }
   }
@@ -133,6 +139,7 @@ class GsApiService {
       _gsAuth.getClient,
       (client) => _postEnvelopeOnce(client, path, fields).then(gsRows),
       invalidate: _gsAuth.invalidate,
+      logTag: 'GsApiService',
     );
   }
 
@@ -153,16 +160,19 @@ class GsApiService {
     final all = <Map<String, dynamic>>[];
     var page = 1;
     while (true) {
-      final envelope = await retryOnUnauthenticated(_gsAuth.getClient, (
-        client,
-      ) async {
-        final decoded = await _postEnvelopeOnce(client, path, {
-          ...fields,
-          'pageNumber': '$page',
-          'pageSize': '$pageSize',
-        });
-        return gsPagedEnvelope(decoded) ?? GsPagedEnvelope(rows: const []);
-      }, invalidate: _gsAuth.invalidate);
+      final envelope = await retryOnUnauthenticated(
+        _gsAuth.getClient,
+        (client) async {
+          final decoded = await _postEnvelopeOnce(client, path, {
+            ...fields,
+            'pageNumber': '$page',
+            'pageSize': '$pageSize',
+          });
+          return gsPagedEnvelope(decoded) ?? GsPagedEnvelope(rows: const []);
+        },
+        invalidate: _gsAuth.invalidate,
+        logTag: 'GsApiService',
+      );
       if (envelope.rows.isEmpty) break;
       all.addAll(envelope.rows);
       final totalPage = envelope.totalPage;
@@ -219,7 +229,13 @@ class GsApiService {
     final Object? decoded;
     try {
       decoded = jsonDecode(response.body);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'GsApiService',
+        '_postEnvelopeOnce 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       if (looksLikeLoginPage(response.body)) {
         throw const UnauthenticatedException('研教务会话已过期');
       }
@@ -289,6 +305,7 @@ class GsApiService {
       _gsAuth.getClient,
       (client) => _getZeroOnce(client, path),
       invalidate: _gsAuth.invalidate,
+      logTag: 'GsApiService',
     );
   }
 
@@ -318,7 +335,13 @@ class GsApiService {
     final Object? decoded;
     try {
       decoded = jsonDecode(response.body);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'GsApiService',
+        '_getZeroOnce 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       if (looksLikeLoginPage(response.body)) {
         throw const UnauthenticatedException('研教务会话已过期');
       }
