@@ -18,6 +18,7 @@ class WfwApiService {
       _auth.getClient,
       fn,
       invalidate: _auth.invalidate,
+      logTag: 'WfwApiService',
     );
   }
 

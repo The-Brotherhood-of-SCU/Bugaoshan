@@ -9,8 +9,17 @@ import 'package:bugaoshan/services/auth/wfw_auth.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/utils/auth_logger.dart';
 
 void main() {
+  late AuthLogger logger;
+  setUp(() async {
+    await getIt.reset();
+    logger = AuthLogger();
+    getIt.registerSingleton<AuthLogger>(logger);
+  });
+  tearDown(() async => getIt.reset());
   test('concurrent ensure calls share a single list request', () async {
     final api = _ControllableNetworkApi();
     final provider = _readyProvider(api);
@@ -56,6 +65,9 @@ void main() {
 
     expect(provider.state, NetworkDeviceLoadState.error);
     expect(provider.error, LoadErrorType.sessionExpired);
+    expect(logger.entries.single.level, AuthLogLevel.error);
+    expect(logger.entries.single.category, AuthLogCategory.business);
+    expect(logger.entries.single.stackTrace, isNotNull);
     provider.dispose();
   });
 
