@@ -52,8 +52,13 @@ class HolidayUtils {
       if (legalHoliday != null) {
         return legalHoliday.isWork() ? null : legalHoliday.getName();
       }
-    } catch (e) {
-      AppLog.w('HolidayUtils', 'getHolidayName error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'HolidayUtils',
+        'getHolidayName 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
     }
     // tyme 无此日数据 → 固定日期放假兜底
     return _getFixedHolidayFallback(date);
@@ -105,7 +110,13 @@ class HolidayUtils {
             break;
           }
           count++;
-        } catch (_) {
+        } catch (logError, logStackTrace) {
+          AppLog.e(
+            'HolidayUtils',
+            '_computeHolidayTotalDays 失败',
+            error: logError,
+            stackTrace: logStackTrace,
+          );
           break;
         }
         d = d.subtract(const Duration(days: 1));
@@ -125,7 +136,13 @@ class HolidayUtils {
             break;
           }
           count++;
-        } catch (_) {
+        } catch (logError, logStackTrace) {
+          AppLog.e(
+            'HolidayUtils',
+            '_computeHolidayTotalDays 失败',
+            error: logError,
+            stackTrace: logStackTrace,
+          );
           break;
         }
         d = d.add(const Duration(days: 1));
@@ -141,8 +158,13 @@ class HolidayUtils {
                 legalHoliday.getName() == holidayName) {
               count++;
             }
-          } catch (e) {
-            AppLog.w('HolidayUtils', '_computeHolidayTotalDays error: $e');
+          } catch (e, logStackTrace) {
+            AppLog.e(
+              'HolidayUtils',
+              '_computeHolidayTotalDays 失败',
+              error: e,
+              stackTrace: logStackTrace,
+            );
           }
         }
       }
@@ -164,8 +186,13 @@ class HolidayUtils {
         final name = lf.getName();
         if (name != '春节' && name != '清明节') return name;
       }
-    } catch (e) {
-      AppLog.w('HolidayUtils', 'getFestivalName error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'HolidayUtils',
+        'getFestivalName 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
     }
     return null;
   }
@@ -181,8 +208,13 @@ class HolidayUtils {
       if (termDay.dayIndex == 0) {
         return termDay.getSolarTerm().getName();
       }
-    } catch (e) {
-      AppLog.w('HolidayUtils', 'getSolarTermName error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'HolidayUtils',
+        'getSolarTermName 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
     }
     return null;
   }
@@ -219,7 +251,13 @@ class HolidayUtils {
           return SpecialDayInfo(type: SpecialDayType.holiday, name: fallback);
         }
       }
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'HolidayUtils',
+        'getSpecialDay 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // tyme 异常 → 尝试固定日期兜底
       final fallback = _getFixedHolidayFallback(date);
       if (fallback != null) {
@@ -255,8 +293,13 @@ class HolidayUtils {
           name: termDay.getSolarTerm().getName(),
         );
       }
-    } catch (e) {
-      AppLog.w('HolidayUtils', 'getSpecialDay error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'HolidayUtils',
+        'getSpecialDay 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
     }
 
     return SpecialDayInfo(type: SpecialDayType.ordinary);
