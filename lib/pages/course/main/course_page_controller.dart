@@ -185,8 +185,14 @@ class CoursePageController extends ChangeNotifier {
       calendarNextSemester.value = next;
       _calendarNextSemesterLoaded = true;
       return next;
-    } catch (e) {
-      AppLog.e('CoursePageController', 'Load calendar failed: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'CoursePageController',
+        'ensureCalendarNextSemester 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       return null;
     } finally {
       if (!_disposed && gen == _calendarLoadGen) {

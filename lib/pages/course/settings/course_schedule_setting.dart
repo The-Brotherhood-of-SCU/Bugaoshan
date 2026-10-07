@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -100,12 +101,24 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
         _startDate = newStartDate;
       });
       unawaited(_save());
-    } on ScuException catch (e) {
+    } on ScuException catch (e, logStackTrace) {
+      AppLog.e(
+        'CourseScheduleSetting',
+        '_fetchCurrentWeek 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(e.message)));
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'CourseScheduleSetting',
+        '_fetchCurrentWeek 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
