@@ -11,6 +11,7 @@
 | 文档 | 范围 | 状态 |
 |---|---|---|
 | [认证架构](architecture/authentication.md) | SCU 根认证、子系统认证、重试、会话隔离和 DI | 当前实现 |
+| [运行日志](architecture/logging.md) | 认证与业务分类、错误覆盖、脱敏和导出 | 当前实现 |
 | [通知 WebView 架构](architecture/notice-webview.md) | 三类通知来源、JS bridge、附件下载和平台边界 | 当前实现 |
 | [Linux 分发架构](architecture/linux-distribution.md) | 本地构建、WPE 边界、Flatpak、AUR 和 Debian 状态 | 当前实现 |
 | [iOS 液态玻璃适配](architecture/ios-liquid-glass.md) | UIKit 系统标签栏、原生按钮/开关、Flutter 内容延伸与平台回退 | 当前实现 |
