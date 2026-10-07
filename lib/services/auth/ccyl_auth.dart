@@ -67,13 +67,26 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
   Future<void> init() async {
     try {
       final secure = SecureStorageProvider.instance;
-      final raw = await secure
-          .read(key: _keyCcylSession)
-          .catchError((_) => null);
-      try {
-        await secure.delete(key: _keyCcylToken).catchError((_) {});
-        await secure.delete(key: _keyCcylUserId).catchError((_) {});
-      } catch (_) {}
+      final raw = await secure.read(key: _keyCcylSession).catchError((
+        Object error,
+        StackTrace stackTrace,
+      ) {
+        _log.e(_tag, '读取第二课堂会话失败', error: error, stackTrace: stackTrace);
+        return null;
+      });
+      for (final key in [_keyCcylToken, _keyCcylUserId]) {
+        await secure.delete(key: key).catchError((
+          Object error,
+          StackTrace stackTrace,
+        ) {
+          _log.e(
+            _tag,
+            '清理旧会话字段失败 key=$key',
+            error: error,
+            stackTrace: stackTrace,
+          );
+        });
+      }
       if (raw == null) {
         _log.d(_tag, 'init: no saved token');
         return;
@@ -103,8 +116,9 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
         orgName: '',
       );
       _log.i(_tag, 'init: token restored');
-    } catch (e) {
-      _log.w(_tag, 'init: error restoring saved session, discarding: $e');
+    } catch (e, logStackTrace) {
+      _log.e('CcylAuth', 'init 失败', error: e, stackTrace: logStackTrace);
+
       await _clearPersistedSession();
     }
   }
@@ -214,8 +228,9 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
       _log.i(_tag, 'reLogin: ok');
       notifyListeners();
       return true;
-    } catch (e) {
-      _log.e(_tag, 'reLogin: error $e');
+    } catch (e, logStackTrace) {
+      _log.e('CcylAuth', '_doReLogin 失败', error: e, stackTrace: logStackTrace);
+
       return false;
     }
   }
@@ -297,7 +312,12 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
 
   Future<T> _serializeStorage<T>(Future<T> Function() action) {
     final run = _storageTail.then((_) => action());
-    _storageTail = run.then<void>((_) {}, onError: (_, _) {});
+    _storageTail = run.then<void>(
+      (_) {},
+      onError: (Object error, StackTrace stackTrace) {
+        _log.e(_tag, '第二课堂会话存储失败', error: error, stackTrace: stackTrace);
+      },
+    );
     return run;
   }
 }

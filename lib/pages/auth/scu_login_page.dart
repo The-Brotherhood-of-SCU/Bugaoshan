@@ -92,16 +92,26 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       Uint8List? imageBytes;
       try {
         imageBytes = _decodeBase64Image(captcha.captchaBase64);
-      } catch (e) {
-        AppLog.e('ScuLoginPage', 'Captcha decode error: $e');
+      } catch (e, logStackTrace) {
+        AppLog.e(
+          'ScuLoginPage',
+          '_loadCaptcha 失败',
+          error: e,
+          stackTrace: logStackTrace,
+        );
       }
 
       String? recognizedText;
       if (imageBytes != null && OcrService.isSupported) {
         try {
           recognizedText = await OcrService.performOcr(imageBytes);
-        } catch (e) {
-          AppLog.e('ScuLoginPage', 'OCR error: $e');
+        } catch (e, logStackTrace) {
+          AppLog.e(
+            'ScuLoginPage',
+            '_loadCaptcha 失败',
+            error: e,
+            stackTrace: logStackTrace,
+          );
         }
       }
 
@@ -119,8 +129,14 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
           _captchaCtrl.clear();
         }
       });
-    } catch (e) {
-      AppLog.e('ScuLoginPage', 'Captcha load error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'ScuLoginPage',
+        '_loadCaptcha 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       setState(() => _errorMsg = l10n.captchaLoadFailed);
@@ -166,14 +182,26 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
 
       if (!logicRootContext.mounted) return;
       Navigator.of(logicRootContext).pop(true);
-    } on ScuLoginException catch (e) {
-      AppLog.w('ScuLoginPage', 'Login failed: ${e.message}');
+    } on ScuLoginException catch (e, logStackTrace) {
+      AppLog.e(
+        'ScuLoginPage',
+        '_submit 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       setState(() => _errorMsg = _localizeLoginError(e, l10n));
       unawaited(_loadCaptcha());
-    } catch (e) {
-      AppLog.e('ScuLoginPage', 'Login network error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'ScuLoginPage',
+        '_submit 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       setState(() => _errorMsg = _describeNetworkError(e, l10n));

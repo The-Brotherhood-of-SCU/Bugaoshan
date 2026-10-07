@@ -69,14 +69,17 @@ class ZhhqAuth extends ChangeNotifier implements SubsystemAuth {
     try {
       final saved = await SecureStorageProvider.instance
           .read(key: kZhhqTokenKey)
-          .catchError((_) => null);
+          .catchError((Object error, StackTrace stackTrace) {
+            _log.e(_tag, '读取保存的后勤会话失败', error: error, stackTrace: stackTrace);
+            return null;
+          });
       if (saved == null || saved.isEmpty) return;
       _tokenKey = saved;
       _ready = true;
       _log.i(_tag, 'init: restored tokenKey, ready');
       notifyListeners();
-    } catch (e) {
-      _log.w(_tag, 'init: failed to restore session: $e');
+    } catch (e, logStackTrace) {
+      _log.e('ZhhqAuth', 'init 失败', error: e, stackTrace: logStackTrace);
     }
   }
 
@@ -157,11 +160,17 @@ class ZhhqAuth extends ChangeNotifier implements SubsystemAuth {
     _warmUpFuture = future;
     try {
       await future;
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      _log.e(
+        'ZhhqAuth',
+        '_ensureTokenKey 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       // 认证失败（超时/SSO 失败等）：标记失败并通知页面显示错误重试，
       // 避免页面因 isReady 恒为 false 而无限转圈。
       _authFailed = true;
-      _log.w(_tag, 'authenticate failed: $e');
+
       notifyListeners();
       rethrow;
     } finally {

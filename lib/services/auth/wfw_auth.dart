@@ -120,8 +120,9 @@ class WfwAuth extends ChangeNotifier implements SubsystemAuth {
         _log.i(_tag, 'ready');
         notifyListeners();
       }
-    } catch (e) {
-      _log.w(_tag, 'warm-up request failed: $e');
+    } catch (e, logStackTrace) {
+      _log.e('WfwAuth', '_warmUp 失败', error: e, stackTrace: logStackTrace);
+
       rethrow;
     }
   }
@@ -132,7 +133,13 @@ class WfwAuth extends ChangeNotifier implements SubsystemAuth {
     try {
       final json = jsonDecode(body);
       return json is Map<String, dynamic> && json['e'] == 0;
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      _log.e(
+        'WfwAuth',
+        '_isBoundSessionBody 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       return false;
     }
   }

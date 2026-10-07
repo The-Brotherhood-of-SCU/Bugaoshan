@@ -83,7 +83,11 @@ abstract class SsoRelayAuth extends ChangeNotifier implements SubsystemAuth {
     }
 
     _log.i(_tag, 'getClient: starting SSO relay');
-    _loginFuture = _login(scuClient);
+    _loginFuture = _log.guard(
+      _tag,
+      '$moduleId SSO 登录',
+      () => _login(scuClient),
+    );
     try {
       final client = await _loginFuture!;
       if (!_isReady) {

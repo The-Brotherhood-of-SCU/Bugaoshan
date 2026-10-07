@@ -116,9 +116,15 @@ class ScuAuthProvider extends ChangeNotifier {
       final storage = SecureStorageProvider.instance;
       final value = await storage.read(key: kScuAutoLogin);
       return value == 'true';
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      _log.e(
+        'ScuAuthProvider',
+        'isAutoLoginEnabled 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       // 安全存储读取失败（如 Android keystore 损坏）回退为未开启
-      _log.w(_tag, 'isAutoLoginEnabled: read failed, fallback false: $e');
+
       return false;
     }
   }
@@ -131,9 +137,14 @@ class ScuAuthProvider extends ChangeNotifier {
         key: kScuAutoLogin,
         value: enabled ? 'true' : 'false',
       );
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      _log.e(
+        'ScuAuthProvider',
+        'setAutoLogin 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       // 写入失败仅记录日志，避免登录成功后被误判为网络错误而无法跳转
-      _log.w(_tag, 'setAutoLogin: write failed, ignored: $e');
     }
   }
 
@@ -170,8 +181,14 @@ class ScuAuthProvider extends ChangeNotifier {
                 : captcha.captchaBase64;
             final imageBytes = base64.decode(raw);
             captchaText = await OcrService.performOcr(imageBytes);
-          } catch (e) {
-            _log.e(_tag, 'autoLogin: OCR error $e');
+          } catch (e, logStackTrace) {
+            _log.e(
+              'ScuAuthProvider',
+              'autoLogin 失败',
+              error: e,
+              stackTrace: logStackTrace,
+            );
+
             return false;
           }
 
@@ -185,7 +202,13 @@ class ScuAuthProvider extends ChangeNotifier {
           );
           _log.i(_tag, 'autoLogin: ok');
           return true;
-        } on ScuLoginException catch (e) {
+        } on ScuLoginException catch (e, logStackTrace) {
+          _log.e(
+            'ScuAuthProvider',
+            'autoLogin 失败',
+            error: e,
+            stackTrace: logStackTrace,
+          );
           if (e.message == 'invalid_captcha') {
             _log.w(
               _tag,
@@ -193,10 +216,16 @@ class ScuAuthProvider extends ChangeNotifier {
             );
             continue;
           }
-          _log.w(_tag, 'autoLogin: failed (non-captcha): ${e.message}');
+
           return false;
-        } catch (e) {
-          _log.e(_tag, 'autoLogin: network error $e');
+        } catch (e, logStackTrace) {
+          _log.e(
+            'ScuAuthProvider',
+            'autoLogin 失败',
+            error: e,
+            stackTrace: logStackTrace,
+          );
+
           return false;
         }
       }
