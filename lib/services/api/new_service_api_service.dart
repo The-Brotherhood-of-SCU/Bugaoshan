@@ -44,6 +44,7 @@ class NewServiceApiService {
       _auth.getClient,
       fn,
       invalidate: _auth.invalidate,
+      logTag: 'NewServiceApiService',
     );
   }
 
@@ -94,7 +95,11 @@ class NewServiceApiService {
     final errorCode = d['errorCode'];
     if (errorCode != null && errorCode.toString() != '0') {
       final message = d['errorMessage']?.toString() ?? '操作失败';
-      _log.w('NEWSERVICE', 'passpoint 业务错误 errorCode=$errorCode: $message');
+      _log.e(
+        'NEWSERVICE',
+        'passpoint 业务错误 errorCode=$errorCode: $message',
+        category: AuthLogCategory.business,
+      );
       throw ServiceException(message);
     }
     return d;
