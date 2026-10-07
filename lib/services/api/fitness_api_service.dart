@@ -31,6 +31,7 @@ class FitnessApiService implements FitnessTestApi {
       _auth.getClient,
       fn,
       invalidate: _auth.invalidate,
+      logTag: 'FitnessApiService',
     );
   }
 

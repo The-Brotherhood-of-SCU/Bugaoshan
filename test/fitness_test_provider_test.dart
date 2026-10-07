@@ -6,6 +6,8 @@ import 'package:bugaoshan/services/api/fitness_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/utils/auth_logger.dart';
 
 FitnessNotice _notice(String title) => FitnessNotice(
   title: title,
@@ -71,6 +73,13 @@ FitnessScore _score(int totalScore) => FitnessScore(
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  late AuthLogger logger;
+  setUp(() async {
+    await getIt.reset();
+    logger = AuthLogger();
+    getIt.registerSingleton<AuthLogger>(logger);
+  });
+  tearDown(() async => getIt.reset());
 
   test('ensureLoaded 合并并发请求并复用已加载资源', () async {
     SharedPreferences.setMockInitialValues({kFitnessTestSelectedYearKey: 2025});
@@ -141,6 +150,10 @@ void main() {
     await provider.ensureScore();
     expect(provider.scoreState, FitnessTestLoadState.error);
     expect(provider.scoreError, '暂未公布成绩');
+    expect(logger.entries.single.level, AuthLogLevel.error);
+    expect(logger.entries.single.category, AuthLogCategory.business);
+    expect(logger.entries.single.error, contains('暂未公布成绩'));
+    expect(logger.entries.single.stackTrace, isNotNull);
 
     await provider.refreshScore();
     expect(provider.scoreState, FitnessTestLoadState.loaded);
