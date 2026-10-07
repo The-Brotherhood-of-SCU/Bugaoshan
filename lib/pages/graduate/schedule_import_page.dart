@@ -126,9 +126,14 @@ class _GraduateScheduleImportPageState
             await api.fetchFirstClassRows(term),
           );
         }
-      } catch (e) {
+      } catch (e, logStackTrace) {
+        AppLog.e(
+          'ScheduleImportPage',
+          '_tryDirectFetch 失败',
+          error: e,
+          stackTrace: logStackTrace,
+        );
         // 学期起始日推算失败不影响导入，仅退回「本周一」近似。
-        AppLog.w(_tag, '直连学期起始日推算失败：$e');
       }
 
       if (!mounted) return;
@@ -140,7 +145,13 @@ class _GraduateScheduleImportPageState
         _directSemesterStart = semesterStart;
       });
       AppLog.i(_tag, '直连获取课表成功：${data.courses.length} 门课');
-    } on ScuException catch (e) {
+    } on ScuException catch (e, logStackTrace) {
+      AppLog.e(
+        'ScheduleImportPage',
+        '_tryDirectFetch 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       AppLog.i(_tag, '直连获取课表失败：$e');
       if (!mounted) return;
       final l10n = AppLocalizations.of(context);
@@ -151,7 +162,13 @@ class _GraduateScheduleImportPageState
             : _DirectFailureKind.other;
         _directFailureMessage = l10n == null ? null : e.message;
       });
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'ScheduleImportPage',
+        '_tryDirectFetch 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       AppLog.i(_tag, '直连获取课表失败：$e');
       if (!mounted) return;
       setState(() {
@@ -181,8 +198,14 @@ class _GraduateScheduleImportPageState
       raw = await controller.evaluateJavascript(
         source: kGraduateScheduleCaptureQuery,
       );
-    } catch (e) {
-      AppLog.w(_tag, '读取捕获结果失败：$e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'ScheduleImportPage',
+        '_pollCapture 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       return;
     }
     if (!mounted) return;
@@ -220,8 +243,13 @@ class _GraduateScheduleImportPageState
           source: 'window.$kGraduateCaptureGlobal = [];',
         );
         await controller.reload();
-      } catch (e) {
-        AppLog.w(_tag, '重新加载失败：$e');
+      } catch (e, logStackTrace) {
+        AppLog.e(
+          'ScheduleImportPage',
+          '_reload 失败',
+          error: e,
+          stackTrace: logStackTrace,
+        );
       }
       return;
     }
@@ -317,8 +345,14 @@ class _GraduateScheduleImportPageState
         ),
       );
       Navigator.of(context).pop();
-    } catch (e) {
-      AppLog.e(_tag, '导入失败：$e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'ScheduleImportPage',
+        '_import 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (!mounted) return;
       setState(() => _importing = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -496,6 +530,12 @@ class _GraduateScheduleImportPageState
           onReceivedError: (_, request, error) {
             AppLog.e(_tag, 'WebView 加载失败：${error.description}');
             if (mounted) setState(() => _pageLoading = false);
+          },
+          onReceivedHttpError: (_, request, response) {
+            AppLog.e(
+              _tag,
+              '课表页面 HTTP ${response.statusCode} url=${request.url}',
+            );
           },
         ),
         if (_pageLoading)
