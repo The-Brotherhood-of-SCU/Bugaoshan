@@ -74,8 +74,14 @@ class _CreditListPageState extends State<CreditListPage> {
         }
         _hasMore = results.length >= 10;
       });
-    } catch (e) {
-      AppLog.e('CcylCreditList', 'Load error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'CreditListPage',
+        '_loadCredits 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (mounted) {
         setState(() {
           _error = campusNetworkErrorType(LoadErrorType.ccylActivityLoadFailed);
@@ -178,8 +184,14 @@ class _CreditListPageState extends State<CreditListPage> {
         _selecting = false;
         _selectedIds.clear();
       });
-    } catch (e) {
-      AppLog.e('CcylCreditList', 'Export error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'CreditListPage',
+        '_exportToEmail 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),

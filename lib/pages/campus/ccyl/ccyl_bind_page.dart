@@ -45,8 +45,14 @@ class _CcylBindPageState extends State<CcylBindPage> {
       if (mounted) {
         Navigator.of(context).pop(true);
       }
-    } catch (e) {
-      AppLog.e('CcylBindPage', 'Bind error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'CcylBindPage',
+        '_doOAuthBind 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (mounted) {
         setState(() {
           _error = LoadErrorType.ccylBindFailed;

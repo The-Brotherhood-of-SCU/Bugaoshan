@@ -52,8 +52,14 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
         _signedUp = result.signUp;
         _loading = false;
       });
-    } catch (e) {
-      AppLog.e('CcylActivityDetail', 'Detail load error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'ActivityDetailPage',
+        '_loadData 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (!mounted) return;
       setState(() {
         _error = LoadErrorType.ccylActivityLoadFailed;
@@ -103,8 +109,14 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
         widget.activityId,
         selectedType.code ?? '',
       );
-    } catch (e) {
-      AppLog.e('CcylActivityDetail', 'Sign up error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'ActivityDetailPage',
+        '_signUp 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (!mounted) return;
       setState(() => _actionLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -133,8 +145,14 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
     try {
       final provider = getIt<CcylProvider>();
       await provider.service.cancelSignUp(widget.activityId);
-    } catch (e) {
-      AppLog.e('CcylActivityDetail', 'Cancel sign up error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'ActivityDetailPage',
+        '_cancelSignUp 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (!mounted) return;
       setState(() => _actionLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -287,6 +305,12 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
           height: 200,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
+            AppLog.e(
+              'CcylActivity',
+              '活动图片加载失败',
+              error: error,
+              stackTrace: stackTrace,
+            );
             return Container(
               width: double.infinity,
               height: 200,
