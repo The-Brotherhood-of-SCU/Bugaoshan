@@ -58,8 +58,13 @@ class GradesProvider extends ChangeNotifier {
           jsonDecode(cachedScheme) as Map<String, dynamic>,
         );
         _schemeState = GradesLoadState.loaded;
-      } catch (e) {
-        AppLog.w('GradesProvider', 'Scheme cache decode error: $e');
+      } catch (e, logStackTrace) {
+        AppLog.e(
+          'GradesProvider',
+          '_restoreCache 失败',
+          error: e,
+          stackTrace: logStackTrace,
+        );
       }
     }
     final cachedPassing = _prefs.getString(
@@ -71,8 +76,13 @@ class GradesProvider extends ChangeNotifier {
           jsonDecode(cachedPassing) as Map<String, dynamic>,
         );
         _passingState = GradesLoadState.loaded;
-      } catch (e) {
-        AppLog.w('GradesProvider', 'Passing cache decode error: $e');
+      } catch (e, logStackTrace) {
+        AppLog.e(
+          'GradesProvider',
+          '_restoreCache 失败',
+          error: e,
+          stackTrace: logStackTrace,
+        );
       }
     }
   }
@@ -131,7 +141,13 @@ class GradesProvider extends ChangeNotifier {
         );
         if (generation != _identityGeneration) return;
       }
-    } on UnauthenticatedException catch (e) {
+    } on UnauthenticatedException catch (e, logStackTrace) {
+      AppLog.e(
+        'GradesProvider',
+        'refreshSchemeScores 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (generation != _identityGeneration) return;
       if (_schemes != null) {
         _schemeState = GradesLoadState.loaded;
@@ -140,9 +156,15 @@ class GradesProvider extends ChangeNotifier {
         _schemeState = GradesLoadState.error;
         _schemeError = zhjwAuthErrorType(e);
       }
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'GradesProvider',
+        'refreshSchemeScores 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (generation != _identityGeneration) return;
-      AppLog.e('GradesProvider', 'Scheme scores load error: $e');
+
       if (_schemes != null) {
         _schemeState = GradesLoadState.loaded;
         _schemeError = campusNetworkErrorType(LoadErrorType.loadFailed);
@@ -186,7 +208,13 @@ class GradesProvider extends ChangeNotifier {
         );
         if (generation != _identityGeneration) return;
       }
-    } on UnauthenticatedException catch (e) {
+    } on UnauthenticatedException catch (e, logStackTrace) {
+      AppLog.e(
+        'GradesProvider',
+        'refreshPassingScores 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (generation != _identityGeneration) return;
       if (_passingScores != null) {
         _passingState = GradesLoadState.loaded;
@@ -195,9 +223,15 @@ class GradesProvider extends ChangeNotifier {
         _passingState = GradesLoadState.error;
         _passingError = zhjwAuthErrorType(e);
       }
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'GradesProvider',
+        'refreshPassingScores 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (generation != _identityGeneration) return;
-      AppLog.e('GradesProvider', 'Passing scores load error: $e');
+
       if (_passingScores != null) {
         _passingState = GradesLoadState.loaded;
         _passingError = campusNetworkErrorType(LoadErrorType.loadFailed);
