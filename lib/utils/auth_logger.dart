@@ -31,9 +31,9 @@ class AuthLogEntry {
     this.stackTrace,
   });
 
-  /// 输出为单行文本，供 UI 列表 / 文件导出使用。
+  /// 输出为文本，异常和堆栈按多行展示，供 UI / 文件导出使用。
   ///
-  /// 格式：`HH:mm:ss.SSS LEVEL [tag] message`
+  /// 格式：`HH:mm:ss.SSS LEVEL [category] [tag] message`
   String format({bool includeDate = false}) {
     final ts = includeDate
         ? _formatDateTime(timestamp)
@@ -67,23 +67,23 @@ class AuthLogEntry {
 /// 防止日志被分享到 issue 或支持工单时泄露凭据。
 class AuthLogRedactor {
   static final RegExp _accessTokenJson = RegExp(
-    r'("(?:access_?token|refresh_?token|token(?:key)?|cookie|authorization|userinfo|ticket)"\s*:\s*)"[^"]*"',
+    r'("(?:access_?token|refresh_?token|reset_?token|sToken|token(?:key)?|cookie|authorization|userinfo|ticket|jsessionid|sessionid)"\s*:\s*)"[^"]*"',
     caseSensitive: false,
   );
   static final RegExp _passwordJson = RegExp(
-    r'("password"\s*:\s*)"[^"]*"',
+    r'("(?:password|pwd|new_?password|confirm_?password)"\s*:\s*)"[^"]*"',
     caseSensitive: false,
   );
   static final RegExp _bearerHeader = RegExp(
-    r'(Bearer\s+)[A-Za-z0-9._\-]+',
+    r'''(Bearer\s+)[^\s,"']+''',
     caseSensitive: false,
   );
   static final RegExp _oauthCode = RegExp(
-    r'([?&](?:code|access_?token|refresh_?token|token(?:key)?|password|userinfo|ticket)=)([^&\s"]+)',
+    r'([?&](?:code|access_?token|refresh_?token|reset_?token|sToken|token(?:key)?|password|pwd|userinfo|ticket|jsessionid|sessionid)=)([^&\s"]+)',
     caseSensitive: false,
   );
   static final RegExp _credentialLabel = RegExp(
-    r'\b(access_?token|refresh_?token|tokenkey|password|pwd)\s*=\s*([^\s,;]+)',
+    r'\b(access_?token|refresh_?token|reset_?token|sToken|token(?:key)?|ticket|password|pwd|new_?password|confirm_?password)\s*=\s*([^\s,;]+)',
     caseSensitive: false,
   );
   static final RegExp _principalLabel = RegExp(
@@ -147,6 +147,7 @@ class AuthLogger extends ChangeNotifier {
   bool _fileSinkEnabled = false;
   IOSink? _fileSink;
   String? _fileSinkPath;
+  bool _disposed = false;
 
   AuthLogger({this.capacity = _defaultCapacity});
 
@@ -175,7 +176,13 @@ class AuthLogger extends ChangeNotifier {
       tag: tag,
       message: AuthLogRedactor.apply(message),
       category: category,
-      error: error == null ? null : AuthLogRedactor.apply(error.toString()),
+      error: error == null
+          ? null
+          : AuthLogRedactor.apply(
+              error is FormatException
+                  ? 'FormatException: ${error.message} (offset=${error.offset})'
+                  : error.toString(),
+            ),
       stackTrace: stackTrace == null
           ? null
           : AuthLogRedactor.apply(stackTrace.toString()),
@@ -193,31 +200,78 @@ class AuthLogger extends ChangeNotifier {
     }
 
     if (_fileSinkEnabled) {
-      _fileSink?.writeln(entry.format(includeDate: true));
+      try {
+        _fileSink?.writeln(entry.format(includeDate: true));
+      } catch (error, stackTrace) {
+        _fileSink = null;
+        _fileSinkPath = null;
+        _fileSinkEnabled = false;
+        e(
+          'Logger',
+          '写入日志文件失败',
+          error: error,
+          stackTrace: stackTrace,
+          category: AuthLogCategory.business,
+        );
+      }
     }
 
-    notifyListeners();
+    if (!_disposed) notifyListeners();
   }
 
   /// 便捷方法：debug / info / warn / error。
-  void d(String tag, String message) => log(AuthLogLevel.debug, tag, message);
-  void i(String tag, String message) => log(AuthLogLevel.info, tag, message);
-  void w(String tag, String message, {Object? error, StackTrace? stackTrace}) =>
-      log(
-        AuthLogLevel.warn,
-        tag,
-        message,
-        error: error,
-        stackTrace: stackTrace,
-      );
-  void e(String tag, String message, {Object? error, StackTrace? stackTrace}) =>
-      log(
-        AuthLogLevel.error,
-        tag,
-        message,
-        error: error,
-        stackTrace: stackTrace,
-      );
+  void d(
+    String tag,
+    String message, {
+    AuthLogCategory category = AuthLogCategory.authentication,
+  }) => log(AuthLogLevel.debug, tag, message, category: category);
+  void i(
+    String tag,
+    String message, {
+    AuthLogCategory category = AuthLogCategory.authentication,
+  }) => log(AuthLogLevel.info, tag, message, category: category);
+  void w(
+    String tag,
+    String message, {
+    Object? error,
+    StackTrace? stackTrace,
+    AuthLogCategory category = AuthLogCategory.authentication,
+  }) => log(
+    AuthLogLevel.warn,
+    tag,
+    message,
+    error: error,
+    stackTrace: stackTrace,
+    category: category,
+  );
+  void e(
+    String tag,
+    String message, {
+    Object? error,
+    StackTrace? stackTrace,
+    AuthLogCategory category = AuthLogCategory.authentication,
+  }) => log(
+    AuthLogLevel.error,
+    tag,
+    message,
+    error: error,
+    stackTrace: stackTrace,
+    category: category,
+  );
+
+  /// 记录认证操作的最终异常，并保留异常传播。
+  Future<T> guard<T>(
+    String tag,
+    String operation,
+    Future<T> Function() action,
+  ) async {
+    try {
+      return await action();
+    } catch (error, stackTrace) {
+      e(tag, '$operation 失败', error: error, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
 
   /// 清空当前缓冲（不影响文件落盘的历史记录）。
   void clear() {
@@ -258,13 +312,32 @@ class AuthLogger extends ChangeNotifier {
       _fileSink = file.openWrite(mode: FileMode.append);
       _fileSinkPath = file.path;
       _fileSinkEnabled = true;
+      final sink = _fileSink!;
+      unawaited(
+        sink.done.catchError((Object error, StackTrace stackTrace) {
+          if (identical(_fileSink, sink)) {
+            _fileSink = null;
+            _fileSinkPath = null;
+            _fileSinkEnabled = false;
+          }
+          e(
+            'Logger',
+            '日志文件输出失败',
+            error: error,
+            stackTrace: stackTrace,
+            category: AuthLogCategory.business,
+          );
+        }),
+      );
       notifyListeners();
-    } catch (err) {
-      // 落盘失败不应阻塞业务，仅 debug 打印提醒。
-      if (kDebugMode) {
-        // ignore: avoid_print
-        print('AuthLogger: enableFileSink failed: $err');
-      }
+    } catch (error, stackTrace) {
+      e(
+        'Logger',
+        '开启日志文件失败',
+        error: error,
+        stackTrace: stackTrace,
+        category: AuthLogCategory.business,
+      );
     }
   }
 
@@ -289,23 +362,47 @@ class AuthLogger extends ChangeNotifier {
   /// 关闭文件落盘。
   Future<void> disableFileSink() async {
     if (!_fileSinkEnabled) return;
-    try {
-      await _fileSink?.flush();
-      await _fileSink?.close();
-    } catch (_) {
-      // 关闭失败忽略。
-    }
+    final sink = _fileSink;
     _fileSink = null;
     _fileSinkPath = null;
     _fileSinkEnabled = false;
     notifyListeners();
+    if (sink != null) await _closeSink(sink);
+  }
+
+  Future<void> _closeSink(IOSink sink) async {
+    try {
+      await sink.flush();
+    } catch (error, stackTrace) {
+      e(
+        'Logger',
+        '刷新日志文件失败',
+        error: error,
+        stackTrace: stackTrace,
+        category: AuthLogCategory.business,
+      );
+    }
+    try {
+      await sink.close();
+    } catch (error, stackTrace) {
+      e(
+        'Logger',
+        '关闭日志文件失败',
+        error: error,
+        stackTrace: stackTrace,
+        category: AuthLogCategory.business,
+      );
+    }
   }
 
   @override
   void dispose() {
-    _fileSink?.flush().catchError((_) {});
-    _fileSink?.close().catchError((_) {});
+    _disposed = true;
+    final sink = _fileSink;
     _fileSink = null;
+    _fileSinkPath = null;
+    _fileSinkEnabled = false;
+    if (sink != null) unawaited(_closeSink(sink));
     super.dispose();
   }
 }

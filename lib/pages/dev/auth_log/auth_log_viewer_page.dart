@@ -192,8 +192,9 @@ class _AuthLogViewerPageState extends State<AuthLogViewerPage> {
       );
     } catch (error, stackTrace) {
       AppLog.e('LogViewer', '复制日志失败', error: error, stackTrace: stackTrace);
-      if (mounted)
+      if (mounted) {
         messenger.showSnackBar(const SnackBar(content: Text('复制日志失败')));
+      }
     }
   }
 
