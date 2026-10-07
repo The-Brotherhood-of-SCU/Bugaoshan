@@ -398,8 +398,16 @@ void _configureAsyncDependencies() {
     final appConfig = getIt<AppConfigProvider>();
     final service = WidgetUpdateService();
     courseProvider.onCoursesChanged = () {
-      service.updateWidgetData().catchError((e) {
-        // Ignore widget update errors to prevent unhandled async errors
+      service.updateWidgetData().catchError((
+        Object error,
+        StackTrace stackTrace,
+      ) {
+        AppLog.e(
+          'WidgetUpdateService',
+          '课表变更后同步小组件失败',
+          error: error,
+          stackTrace: stackTrace,
+        );
       });
     };
 
@@ -415,8 +423,13 @@ void _configureAsyncDependencies() {
             density: appConfig.widgetDensity.value,
           );
         }
-      } catch (e) {
-        debugPrint('Failed to sync initial widget setting: $e');
+      } catch (error, stackTrace) {
+        AppLog.e(
+          'WidgetUpdateService',
+          '初始化小组件设置失败',
+          error: error,
+          stackTrace: stackTrace,
+        );
       }
     }
 
