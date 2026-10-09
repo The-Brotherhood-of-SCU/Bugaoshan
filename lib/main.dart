@@ -12,12 +12,16 @@ import 'package:bugaoshan/pages/startup_error_app.dart';
 import 'package:bugaoshan/services/window_state_service.dart';
 import 'package:system_theme/system_theme.dart';
 import 'package:bugaoshan/services/update_service.dart';
+import 'package:bugaoshan/utils/app_error_reporter.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 
 Future<void> main() async {
   try {
     await _initializeApp();
     runApp(MyApp());
   } catch (error, stackTrace) {
+    AppLog.e('Startup', formatExceptionForLog(error, stackTrace));
+    // release 包里 debugPrint 不输出，此处若不落盘则崩溃现场无处可查。
     debugPrint('Startup error: $error\n$stackTrace');
     runApp(StartupErrorApp(errorMessage: stackTrace.toString()));
   }
@@ -25,6 +29,10 @@ Future<void> main() async {
 
 Future<void> _initializeApp() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // 尽早接管全局异常：此后任何未捕获异常（含异步）都会进入日志。
+  // 放在 configureDependencies 之前是安全的——AppLog 在 GetIt 未注册
+  // AppLogger 时会退化为独立裸实例。
+  setupGlobalErrorHandlers();
   if (!kIsWeb) {
     DartPluginRegistrant.ensureInitialized();
     if (_isDesktopPlatform) {

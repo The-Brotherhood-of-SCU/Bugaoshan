@@ -491,9 +491,19 @@ L3 ScuAuth
 [`AppLogger`](../../lib/utils/app_logger.dart) 是 GetIt 注册的全局单例，是**全应用通用**日志器（认证模块只是最早的一批使用者，并非唯一使用者；业务模块经 `AppLog` 门面写入同一条流）。各模块使用类名作为 tag，把关键状态变化写入默认 1000 条的内存环形缓冲：
 
 - 每条消息先经过 `LogRedactor`，再进入内存、控制台或文件。
-- redactor 处理 token、密码、Bearer header、OAuth code 和用户标识。
+- redactor 处理 token、密码、Bearer header、OAuth code 和用户标识；
+  身份标识覆盖 camelCase、snake_case 与中文「学号」标签三种写法，
+  但**不**脱敏 `account` / `id` / `sid` 等语义模糊的键——过度脱敏会抹掉排障信息。
 - 仅 debug 构建同步输出控制台日志。
 - 文件 sink 默认关闭；开发者页面可查看、过滤、清空和导出脱敏日志。
+- 全局异常由 `lib/utils/app_error_reporter.dart` 的 `setupGlobalErrorHandlers()` 接管，
+  在 `main()` 中 binding 就绪后立即安装，覆盖 `FlutterError.onError`、
+  `PlatformDispatcher.instance.onError` 与 isolate 错误监听。
+  `PlatformDispatcher` 处理器返回 `true` 以免引擎直接杀进程——进程被杀则内存日志随之消失。
+  启动失败亦经 `AppLog.e('Startup', …)` 记录（此前仅 `debugPrint`，release 包不可见）。
+
+**已知局限**：文件 sink 默认关闭且控制台输出受 `kDebugMode` 限制，
+release 构建在进程退出后不保留任何日志。该项在 #367 中待定。
 
 新增日志时仍应避免主动拼入敏感值。脱敏器是最后一道保护，不是记录凭据的许可。
 
@@ -578,6 +588,7 @@ lib/
 │       └── ccyl_service.dart        # CCYL 底层 HTTP 与业务错误分类
 ├── utils/
 │   ├── app_logger.dart              # 脱敏应用日志（认证 + 业务共用）
+│   ├── app_error_reporter.dart      # 全局异常接管（框架/引擎/isolate）
 │   └── secure_storage.dart
 └── widgets/common/
     └── session_expired_listener.dart

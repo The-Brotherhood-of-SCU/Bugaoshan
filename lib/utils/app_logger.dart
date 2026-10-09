@@ -71,12 +71,30 @@ class LogRedactor {
     caseSensitive: false,
   );
   static final RegExp _principalLabel = RegExp(
-    r'\b(user(?:name|id)?|student(?:id|number)?|number)\s*=\s*([^\s,;]+)',
+    r'\b((?:user|student)(?:name|id|number)?|number)\s*=\s*([^\s,;]+)',
     caseSensitive: false,
   );
   static final RegExp _principalJson = RegExp(
     r'("(?:username|userId|studentId|studentNumber|number)"\s*:\s*)"[^"]*"',
     caseSensitive: false,
+  );
+
+  /// snake_case 变体（`student_id=` / `user_name=` / `student_number=`）。
+  ///
+  /// Dart 侧惯例是 camelCase，但 JSON 响应、日志约定与部分后端接口用 snake_case，
+  /// 故单独覆盖。
+  static final RegExp _principalSnakeLabel = RegExp(
+    r'\b((?:user|student)_(?:name|id|number)|number)\s*=\s*([^\s,;]+)',
+    caseSensitive: false,
+  );
+
+  /// 中文「学号」标签：项目代码与 l10n 文案中大量使用中文表述，
+  /// 这类裸值不带任何英文标签，只能靠中文字面识别。
+  ///
+  /// 值部要求含数字或英文字母：纯中文叙述（如「学号相关的缓存 key」）不是
+  /// 一个被记录的身份值，若照遮会把正常日志读成「学号[redacted]」而误导排障。
+  static final RegExp _principalChinese = RegExp(
+    r'(学号)\s*[:：=]?\s*([A-Za-z0-9][^\s,;，；、]*)',
   );
 
   /// 对输入文本做脱敏；返回新字符串。
@@ -102,8 +120,17 @@ class LogRedactor {
       (m) => '${m[1]}=<redacted>',
     );
     result = result.replaceAllMapped(
+      _principalSnakeLabel,
+      (m) => '${m[1]}=<redacted>',
+    );
+    result = result.replaceAllMapped(
       _principalJson,
       (m) => '${m[1]}"<redacted>"',
+    );
+    // 中文「学号」保留原文标签，仅遮蔽其后的值。
+    result = result.replaceAllMapped(
+      _principalChinese,
+      (m) => '${m[1]}<redacted>',
     );
     return result;
   }
@@ -137,12 +164,7 @@ class AppLogger extends ChangeNotifier {
   String? get fileSinkPath => _fileSinkPath;
 
   /// 写入一条日志。level 默认为 [LogLevel.info]。
-  void log(
-    LogLevel level,
-    String tag,
-    String message, {
-    DateTime? timestamp,
-  }) {
+  void log(LogLevel level, String tag, String message, {DateTime? timestamp}) {
     final entry = LogEntry(
       timestamp: timestamp ?? DateTime.now(),
       level: level,
