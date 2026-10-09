@@ -7,7 +7,7 @@ import 'package:bugaoshan/models/repair.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/zhhq_auth.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/zhhq_crypto.dart';
 import 'package:http/http.dart' as http;
@@ -35,8 +35,8 @@ import 'package:http/http.dart' as http;
 /// （4010/4013/4017 为 token 类错误，交给认证层重建会话）。
 class ZhhqApiService {
   final ZhhqAuth _auth;
-  final AuthLogger _log;
-  ZhhqApiService(this._auth) : _log = getIt<AuthLogger>();
+  final AppLogger _log;
+  ZhhqApiService(this._auth) : _log = getIt<AppLogger>();
 
   static const String _base = 'https://zhhq.scu.edu.cn/api';
 

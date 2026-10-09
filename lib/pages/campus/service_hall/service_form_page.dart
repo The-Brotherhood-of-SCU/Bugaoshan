@@ -15,7 +15,7 @@ import 'package:bugaoshan/services/api/service_plugin_models.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/service_auth.dart';
 import 'package:bugaoshan/utils/app_log.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/service_region_picker.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
@@ -37,7 +37,7 @@ import 'package:bugaoshan/pages/campus/service_hall/service_form_controller.dart
 ///
 /// 提交流程：校验（[ServiceFormController.validate]）→ 逐 File 字段上传
 /// 附件 → 组装 `form_data`（[ServiceFormController.buildFormData]，记入
-/// AuthLogger 便于诊断）→ `POST /site/apps/launch`。
+/// AppLogger 便于诊断）→ `POST /site/apps/launch`。
 class ServiceFormPage extends StatefulWidget {
   final ServiceAppInfo app;
 
@@ -174,7 +174,7 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
     }
     final fallback = widget.app.fallbackSchema;
     if (fallback != null) {
-      getIt<AuthLogger>().w(
+      getIt<AppLogger>().w(
         'SERVICE',
         'appId=$appId 实时表单定义不可用，使用硬编码 fallback schema',
       );
@@ -302,7 +302,7 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
 
       final formData = controller.buildFormData();
       // 记录完整 payload，337/356/357 首次提交后可通过 Dev 页导出诊断
-      getIt<AuthLogger>().i(
+      getIt<AppLogger>().i(
         'SERVICE',
         'submit appId=$appId payload=${jsonEncode(formData)}',
       );

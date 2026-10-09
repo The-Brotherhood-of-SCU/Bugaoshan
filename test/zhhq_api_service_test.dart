@@ -6,7 +6,7 @@ import 'package:bugaoshan/services/api/zhhq_api_service.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/zhhq_auth.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/zhhq_crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,7 +16,7 @@ import 'package:http/testing.dart';
 void main() {
   setUp(() async {
     await getIt.reset();
-    getIt.registerSingleton<AuthLogger>(AuthLogger());
+    getIt.registerSingleton<AppLogger>(AppLogger());
   });
 
   tearDown(() async {

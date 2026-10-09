@@ -991,29 +991,29 @@ abstract class AppLocalizations {
   /// **'Update to Latest (Include Preview)'**
   String get forceUpdate;
 
-  /// No description provided for @authLog.
+  /// No description provided for @appLogTitle.
   ///
   /// In en, this message translates to:
-  /// **'Auth Log'**
-  String get authLog;
+  /// **'App Log'**
+  String get appLogTitle;
 
-  /// No description provided for @viewAuthLog.
+  /// No description provided for @viewAppLog.
   ///
   /// In en, this message translates to:
-  /// **'View Auth Log'**
-  String get viewAuthLog;
+  /// **'View App Log'**
+  String get viewAppLog;
 
-  /// No description provided for @authLogEmpty.
+  /// No description provided for @logEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No auth log yet.'**
-  String get authLogEmpty;
+  /// **'No app log yet.'**
+  String get logEmpty;
 
-  /// No description provided for @authLogLastEntry.
+  /// No description provided for @logLastEntry.
   ///
   /// In en, this message translates to:
   /// **'{level} · {tag} · {time}'**
-  String authLogLastEntry(String time, String level, String tag);
+  String logLastEntry(Object level, Object tag, Object time);
 
   /// No description provided for @scheduleSetting.
   ///

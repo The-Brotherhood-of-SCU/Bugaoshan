@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/pages/dev/auth_log/auth_log_tile.dart';
+import 'package:bugaoshan/pages/dev/logs/log_tile.dart';
 import 'package:bugaoshan/pages/dev/changelog/changelog_tile.dart';
 import 'package:bugaoshan/pages/dev/environment_info_tile.dart';
 import 'package:bugaoshan/pages/dev/live_activity_probe_tile.dart';
@@ -139,7 +139,7 @@ class _DevPageState extends State<DevPage> {
           const Divider(),
           const WizardResetTile(),
           const Divider(),
-          const AuthLogTile(),
+          const LogTile(),
           const Divider(),
           const ReminderProbeTile(),
           const Divider(),

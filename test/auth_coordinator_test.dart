@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bugaoshan/services/auth/auth_coordinator.dart';
 import 'package:bugaoshan/services/auth/subsystem_auth.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 
 class _FakeModule implements SubsystemAuth {
   @override
@@ -42,7 +42,7 @@ AuthCoordinator _coordinator(
 }) {
   return AuthCoordinator(
     modules,
-    logger: AuthLogger(),
+    logger: AppLogger(),
     failedRetryDelay: retryDelay,
   );
 }

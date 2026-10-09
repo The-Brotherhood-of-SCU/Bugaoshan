@@ -16,7 +16,7 @@ import 'package:bugaoshan/services/auth/payapp_auth.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/wfw_auth.dart';
 import 'package:bugaoshan/services/database_service.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -234,7 +234,7 @@ Future<_ProviderHarness> _createProvider({
   final db = await openDatabase(inMemoryDatabasePath, version: 1);
   final dbService = DatabaseService.forTesting(db);
   await dbService.ensureBalanceRecordsTableForTesting();
-  getIt.registerSingleton<AuthLogger>(AuthLogger());
+  getIt.registerSingleton<AppLogger>(AppLogger());
   final scuAuth = ScuAuth(prefs);
   final wfwAuth = WfwAuth(scuAuth);
   final payAppAuth = PayAppAuth(scuAuth, wfwAuth);

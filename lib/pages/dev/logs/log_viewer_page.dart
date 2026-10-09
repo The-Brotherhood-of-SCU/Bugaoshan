@@ -6,41 +6,41 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/pages/campus/downloads/file_utils.dart';
-import 'package:bugaoshan/pages/dev/auth_log/auth_log_entry_tile.dart';
-import 'package:bugaoshan/pages/dev/auth_log/auth_log_filter_bar.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/pages/dev/logs/log_entry_tile.dart';
+import 'package:bugaoshan/pages/dev/logs/log_filter_bar.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/share_utils.dart';
 
 /// 全屏日志查看器（开发者调试用，文案不做 i18n）。
 ///
 /// - 顶栏：复制全部、保存分享、打开文件夹、清空
 /// - 内容：level 多选过滤 chip + tag 下拉 + 反时序列表 + 按 level 着色
-class AuthLogViewerPage extends StatefulWidget {
-  const AuthLogViewerPage({super.key});
+class LogViewerPage extends StatefulWidget {
+  const LogViewerPage({super.key});
 
   @override
-  State<AuthLogViewerPage> createState() => _AuthLogViewerPageState();
+  State<LogViewerPage> createState() => _LogViewerPageState();
 }
 
-class _AuthLogViewerPageState extends State<AuthLogViewerPage> {
-  static const String _appBarTitle = 'Auth Log';
+class _LogViewerPageState extends State<LogViewerPage> {
+  static const String _appBarTitle = 'App Log';
 
   // 跟 notice_downloaded_page 保持一致；debug 构建下打开文件夹可能失败但
   // 现有附件页也是这个行为，故沿用。
   static const String _androidPackageId =
       'io.github.the_brotherhood_of_scu.bugaoshan';
 
-  final _log = getIt<AuthLogger>();
+  final _log = getIt<AppLogger>();
   // null = 全部 level 启用（无筛选）；非空 = 仅显示集合中的 level。
-  Set<AuthLogLevel>? _filterLevels;
+  Set<LogLevel>? _filterLevels;
   String? _filterTag; // null = All
 
-  /// 解析到 auth log 落盘目录（必要时创建子目录）：
-  /// - Android = app 外部 cache 下的 `Bugaoshan/auth_logs/`（文件管理器可见，OS 可清理）
-  /// - 其他 = OS temp 下的 `Bugaoshan/auth_logs/`
-  Future<Directory> _authLogDir() async {
-    final base = await getAuthLogBaseDir();
-    final dir = Directory('${base.path}/Bugaoshan/$kAuthLogDir');
+  /// 解析到 app log 落盘目录（必要时创建子目录）：
+  /// - Android = app 外部 cache 下的 `Bugaoshan/logs/`（文件管理器可见，OS 可清理）
+  /// - 其他 = OS temp 下的 `Bugaoshan/logs/`
+  Future<Directory> _logDir() async {
+    final base = await getLogBaseDir();
+    final dir = Directory('${base.path}/Bugaoshan/$kLogDir');
     if (!await dir.exists()) await dir.create(recursive: true);
     return dir;
   }
@@ -75,7 +75,7 @@ class _AuthLogViewerPageState extends State<AuthLogViewerPage> {
       ),
       body: Column(
         children: [
-          AuthLogFilterBar(
+          LogFilterBar(
             entries: _log.entries,
             levels: _filterLevels,
             tag: _filterTag,
@@ -104,7 +104,7 @@ class _AuthLogViewerPageState extends State<AuthLogViewerPage> {
                 if (filtered.isEmpty) {
                   return Center(
                     child: Text(
-                      all.isEmpty ? 'No auth log yet.' : 'No matching entries.',
+                      all.isEmpty ? 'No app log yet.' : 'No matching entries.',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   );
@@ -117,7 +117,7 @@ class _AuthLogViewerPageState extends State<AuthLogViewerPage> {
                   itemCount: reversed.length,
                   separatorBuilder: (_, _) => const Divider(height: 1),
                   itemBuilder: (context, i) =>
-                      AuthLogEntryTile(entry: reversed[i]),
+                      LogEntryTile(entry: reversed[i]),
                 );
               },
             ),
@@ -127,7 +127,7 @@ class _AuthLogViewerPageState extends State<AuthLogViewerPage> {
     );
   }
 
-  void _toggleLevel(AuthLogLevel level, bool selected) {
+  void _toggleLevel(LogLevel level, bool selected) {
     setState(() {
       final current = _filterLevels;
       if (selected) {
@@ -137,12 +137,12 @@ class _AuthLogViewerPageState extends State<AuthLogViewerPage> {
         if (current == null) {
           // 当前是「全部启用」状态；取消勾选该 level ⇒ 改成「其他三个」。
           _filterLevels = {
-            for (final l in AuthLogLevel.values)
+            for (final l in LogLevel.values)
               if (l != level) l,
           };
         } else {
           current.remove(level);
-          if (current.isEmpty || current.length == AuthLogLevel.values.length) {
+          if (current.isEmpty || current.length == LogLevel.values.length) {
             // 全部取消 或 等价于全部勾上 ⇒ 视作「无筛选」
             _filterLevels = null;
           } else {
@@ -164,7 +164,7 @@ class _AuthLogViewerPageState extends State<AuthLogViewerPage> {
   Future<void> _save() async {
     final messenger = ScaffoldMessenger.of(context);
     try {
-      final dir = await _authLogDir();
+      final dir = await _logDir();
       final path = await _log.exportToFile(dir);
       try {
         if (!mounted) return;
@@ -178,15 +178,15 @@ class _AuthLogViewerPageState extends State<AuthLogViewerPage> {
     }
   }
 
-  /// 打开 auth log 所在目录：
+  /// 打开 app log 所在目录：
   /// - Android：通过 content URI 调起系统的文件管理器，定位到 app 外部 cache 子目录。
   /// - 其他平台：直接用文件 URI 调起系统文件管理器（macOS Finder / Windows Explorer / Linux xdg-open）。
   Future<void> _openFolder() async {
     final messenger = ScaffoldMessenger.of(context);
-    final dir = await _authLogDir();
+    final dir = await _logDir();
     try {
       if (Platform.isAndroid) {
-        final encoded = 'Bugaoshan/$kAuthLogDir'.replaceAll('/', '%2F');
+        final encoded = 'Bugaoshan/$kLogDir'.replaceAll('/', '%2F');
         final uri = Uri.parse(
           'content://com.android.externalstorage.documents/document/'
           'primary%3AAndroid%2Fdata%2F$_androidPackageId%2Fcache%2F$encoded',
@@ -204,7 +204,7 @@ class _AuthLogViewerPageState extends State<AuthLogViewerPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Clear auth log?'),
+        title: const Text('Clear app log?'),
         content: const Text(
           'This removes all log entries currently in memory. '
           'Saved files are not affected.',

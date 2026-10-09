@@ -1,6 +1,6 @@
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/services/auth/subsystem_auth.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 
 /// Coordinates subsystem authentication after SCU unified auth is ready.
 ///
@@ -12,7 +12,7 @@ class AuthCoordinator {
   static const Duration _defaultFailedRetryDelay = Duration(seconds: 10);
 
   final List<SubsystemAuth> _modules;
-  final AuthLogger _log;
+  final AppLogger _log;
 
   /// 失败模块补热前的退避时长（测试可注入缩短）。
   final Duration failedRetryDelay;
@@ -25,10 +25,10 @@ class AuthCoordinator {
 
   AuthCoordinator(
     Iterable<SubsystemAuth> modules, {
-    AuthLogger? logger,
+    AppLogger? logger,
     this.failedRetryDelay = _defaultFailedRetryDelay,
   }) : _modules = List.unmodifiable(modules),
-       _log = logger ?? getIt<AuthLogger>();
+       _log = logger ?? getIt<AppLogger>();
 
   Future<void> warmUpAll() {
     if (_warmUpFuture != null) return _warmUpFuture!;

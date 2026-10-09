@@ -4,7 +4,7 @@ import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/subsystem_auth.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 /// SSO 中继认证基类（第2层）
@@ -19,7 +19,7 @@ abstract class SsoRelayAuth extends ChangeNotifier implements SubsystemAuth {
   final ScuAuth _scuAuth;
   final String _ssoUrl;
   final List<SubsystemAuth> _dependencies;
-  final AuthLogger _log;
+  final AppLogger _log;
 
   String get _tag => moduleId.toUpperCase();
 
@@ -38,9 +38,9 @@ abstract class SsoRelayAuth extends ChangeNotifier implements SubsystemAuth {
     this._scuAuth,
     this._ssoUrl, {
     List<SubsystemAuth> dependencies = const [],
-    AuthLogger? logger,
+    AppLogger? logger,
   }) : _dependencies = List.unmodifiable(dependencies),
-       _log = logger ?? getIt<AuthLogger>() {
+       _log = logger ?? getIt<AppLogger>() {
     _scuAuth.addListener(_onScuAuthChanged);
   }
 

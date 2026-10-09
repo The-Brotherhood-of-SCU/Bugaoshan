@@ -58,7 +58,7 @@ flowchart TB
         SA["ScuAuth<br/>token / principal / id.scu.edu.cn session / refresh"]
     end
 
-    INFRA["基础设施<br/>CookieClient / FlutterSecureStorage / SharedPreferences / AuthLogger"]
+    INFRA["基础设施<br/>CookieClient / FlutterSecureStorage / SharedPreferences / AppLogger"]
 
     UI --> P
     P --> API
@@ -486,16 +486,16 @@ L3 ScuAuth
 - 账号相关缓存必须绑定已确认的 principal，不能仅以“当前处于登录态”作为身份依据。
 - 退出登录必须使飞行中的认证和持久化任务失效。
 
-### 12.1 认证日志
+### 12.1 应用日志
 
-[`AuthLogger`](../../lib/utils/auth_logger.dart) 是 GetIt 注册的全局单例。认证模块使用类名作为 tag，把关键状态变化写入默认 1000 条的内存环形缓冲：
+[`AppLogger`](../../lib/utils/app_logger.dart) 是 GetIt 注册的全局单例，是**全应用通用**日志器（认证模块只是最早的一批使用者，并非唯一使用者；业务模块经 `AppLog` 门面写入同一条流）。各模块使用类名作为 tag，把关键状态变化写入默认 1000 条的内存环形缓冲：
 
-- 每条消息先经过 `AuthLogRedactor`，再进入内存、控制台或文件。
+- 每条消息先经过 `LogRedactor`，再进入内存、控制台或文件。
 - redactor 处理 token、密码、Bearer header、OAuth code 和用户标识。
 - 仅 debug 构建同步输出控制台日志。
 - 文件 sink 默认关闭；开发者页面可查看、过滤、清空和导出脱敏日志。
 
-新增认证日志时仍应避免主动拼入敏感值。脱敏器是最后一道保护，不是记录凭据的许可。
+新增日志时仍应避免主动拼入敏感值。脱敏器是最后一道保护，不是记录凭据的许可。
 
 ## 13. 依赖注入与生命周期
 
@@ -577,7 +577,7 @@ lib/
 │   └── ccyl/
 │       └── ccyl_service.dart        # CCYL 底层 HTTP 与业务错误分类
 ├── utils/
-│   ├── auth_logger.dart             # 脱敏认证日志
+│   ├── app_logger.dart              # 脱敏应用日志（认证 + 业务共用）
 │   └── secure_storage.dart
 └── widgets/common/
     └── session_expired_listener.dart

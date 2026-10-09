@@ -200,9 +200,9 @@
   "environmentInfo": "Environment Info",
   "devPage": "Developer Page",
   "forceUpdate": "Update to Latest (Include Preview)",
-  "authLog": "Auth Log",
-  "viewAuthLog": "View Auth Log",
-  "authLogEmpty": "No auth log yet.",
+  "appLogTitle": "App Log",
+  "viewAppLog": "View App Log",
+  "logEmpty": "No app log yet.",
   "@authLogLastEntry": {
     "placeholders": {
       "time": {
@@ -216,7 +216,7 @@
       }
     }
   },
-  "authLogLastEntry": "{level} · {tag} · {time}",
+  "logLastEntry": "{level} · {tag} · {time}",
   "scheduleSetting": "Schedule Setting",
   "scheduleManagement": "Schedule Management",
   "globalSetting": "Global Setting",

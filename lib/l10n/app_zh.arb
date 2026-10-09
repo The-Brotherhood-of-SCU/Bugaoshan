@@ -179,9 +179,9 @@
   "environmentInfo": "环境信息",
   "devPage": "开发者页面",
   "forceUpdate": "更新到最新版本（含预览版）",
-  "authLog": "认证日志",
-  "viewAuthLog": "查看认证日志",
-  "authLogEmpty": "暂无认证日志。",
+  "appLogTitle": "运行日志",
+  "viewAppLog": "查看运行日志",
+  "logEmpty": "暂无运行日志。",
   "@authLogLastEntry": {
     "placeholders": {
       "time": {
@@ -195,7 +195,7 @@
       }
     }
   },
-  "authLogLastEntry": "{level} · {tag} · {time}",
+  "logLastEntry": "{level} · {tag} · {time}",
   "scheduleSetting": "课表设置",
   "scheduleManagement": "课表管理",
   "globalSetting": "全局设置",

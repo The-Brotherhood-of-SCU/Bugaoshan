@@ -6,7 +6,7 @@ import 'package:bugaoshan/services/api/api_request.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/new_service_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 /// 智慧线上服务平台（后勤 newservice）API Service（第1层）
@@ -33,8 +33,8 @@ import 'package:bugaoshan/utils/constants.dart';
 /// （0 成功，非 0 携带错误信息）。
 class NewServiceApiService {
   final NewServiceAuth _auth;
-  final AuthLogger _log;
-  NewServiceApiService(this._auth) : _log = getIt<AuthLogger>();
+  final AppLogger _log;
+  NewServiceApiService(this._auth) : _log = getIt<AppLogger>();
 
   static const String _base = 'https://service.scu.edu.cn';
   static const String _basePath = '/newservice';
@@ -88,7 +88,7 @@ class NewServiceApiService {
   /// newservice 的 passpoint 接口业务结果放在 `d.errorCode` / `d.errorMessage`，
   /// `errorCode == 0` 才表示成功。返回 `d`（便于继续读取 total/data）。
   ///
-  /// 非 0 时抛出 [ServiceException] 并记录到 [AuthLogger]（Dev 页可导出排查），
+  /// 非 0 时抛出 [ServiceException] 并记录到 [AppLogger]（Dev 页可导出排查），
   /// 这样用户/开发者能看到服务端返回的具体错误文案，而不是笼统的"操作失败"。
   Map<String, dynamic> _checkData(Map<String, dynamic> d) {
     final errorCode = d['errorCode'];

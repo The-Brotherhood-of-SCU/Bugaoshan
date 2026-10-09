@@ -1,16 +1,16 @@
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 class CcylOAuthService {
   static const String _tag = 'CcylOAuth';
   static const _idBase = 'https://id.scu.edu.cn';
   final ScuAuth _scuAuth;
-  final AuthLogger _log;
+  final AppLogger _log;
 
-  CcylOAuthService(this._scuAuth, {AuthLogger? logger})
-    : _log = logger ?? getIt<AuthLogger>();
+  CcylOAuthService(this._scuAuth, {AppLogger? logger})
+    : _log = logger ?? getIt<AppLogger>();
 
   Future<String?> getOAuthCode() async {
     final accessToken = _scuAuth.accessToken;

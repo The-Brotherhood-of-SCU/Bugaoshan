@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/pages/dev/auth_log/auth_log_viewer_page.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/pages/dev/logs/log_viewer_page.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
-/// TestPage 入口：认证日志。
+/// TestPage 入口：运行日志。
 /// 点击进入全屏日志查看器（保存 / 打开文件夹 / 清空由查看器 AppBar 提供）。
-class AuthLogTile extends StatelessWidget {
-  const AuthLogTile({super.key});
+class LogTile extends StatelessWidget {
+  const LogTile({super.key});
 
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    final log = getIt<AuthLogger>();
+    final log = getIt<AppLogger>();
 
     return ListenableBuilder(
       listenable: log,
@@ -22,15 +22,15 @@ class AuthLogTile extends StatelessWidget {
         final entries = log.entries;
         final last = entries.isEmpty ? null : entries.last;
         final subtitle = last == null
-            ? localizations.authLogEmpty
-            : localizations.authLogLastEntry(
+            ? localizations.logEmpty
+            : localizations.logLastEntry(
                 _formatTime(last.timestamp),
                 last.level.name.toUpperCase(),
                 last.tag,
               );
         return ListTile(
           leading: const Icon(Icons.key),
-          title: Text(localizations.viewAuthLog),
+          title: Text(localizations.viewAppLog),
           subtitle: Text(
             subtitle,
             maxLines: 1,
@@ -43,7 +43,7 @@ class AuthLogTile extends StatelessWidget {
           ),
           onTap: () => Navigator.of(
             logicRootContext,
-          ).push(MaterialPageRoute(builder: (_) => const AuthLogViewerPage())),
+          ).push(MaterialPageRoute(builder: (_) => const LogViewerPage())),
         );
       },
     );

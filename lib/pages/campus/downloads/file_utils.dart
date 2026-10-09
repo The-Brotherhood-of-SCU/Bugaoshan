@@ -18,8 +18,8 @@ const kPartyAttachmentDir = 'party_attachments';
 /// Subdirectory name under `Bugaoshan/` for tuanwei notice downloads.
 const kTuanweiAttachmentDir = 'tuanwei_attachments';
 
-/// Subdirectory name under `Bugaoshan/` for saved auth log exports.
-const kAuthLogDir = 'auth_logs';
+/// Subdirectory name under `Bugaoshan/` for saved app log exports.
+const kLogDir = 'logs';
 
 /// Persistent URL-to-file index for notice attachments.
 ///
@@ -196,7 +196,7 @@ Future<Directory> getNoticeBaseDir() async {
 ///
 /// 不走 `getDownloadsDirectory()` / `getExternalStorageDirectory()`，
 /// 因为 auth log 是调试用的瞬态产物，不是用户文件。
-Future<Directory> getAuthLogBaseDir() async {
+Future<Directory> getLogBaseDir() async {
   if (Platform.isAndroid) {
     final dirs = await getExternalCacheDirectories();
     if (dirs != null && dirs.isNotEmpty) return dirs.first;

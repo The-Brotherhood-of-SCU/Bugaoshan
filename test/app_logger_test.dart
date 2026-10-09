@@ -1,10 +1,10 @@
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('AuthLogRedactor', () {
+  group('LogRedactor', () {
     test('脱敏日志中的账号和用户标识', () {
-      final redacted = AuthLogRedactor.apply(
+      final redacted = LogRedactor.apply(
         'login user=202612345678 userId=ccyl-user-42 username=alice',
       );
 
@@ -17,7 +17,7 @@ void main() {
     });
 
     test('保留原有凭据脱敏行为', () {
-      final redacted = AuthLogRedactor.apply(
+      final redacted = LogRedactor.apply(
         'Authorization: Bearer secret.token "password":"plain"',
       );
 

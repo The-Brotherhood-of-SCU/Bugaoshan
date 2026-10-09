@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
 
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 
 /// 单条日志的行视图：时间 · level · tag · message，按 level 着色。
-/// 用于 [AuthLogViewerPage] 内的列表渲染。
-class AuthLogEntryTile extends StatelessWidget {
-  final AuthLogEntry entry;
-  const AuthLogEntryTile({super.key, required this.entry});
+/// 用于 [LogViewerPage] 内的列表渲染。
+class LogEntryTile extends StatelessWidget {
+  final LogEntry entry;
+  const LogEntryTile({super.key, required this.entry});
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final (Color bg, Color fg) = switch (entry.level) {
-      AuthLogLevel.debug => (
+      LogLevel.debug => (
         scheme.surfaceContainerLow,
         scheme.onSurfaceVariant,
       ),
-      AuthLogLevel.info => (scheme.primaryContainer, scheme.onPrimaryContainer),
-      AuthLogLevel.warn => (
+      LogLevel.info => (scheme.primaryContainer, scheme.onPrimaryContainer),
+      LogLevel.warn => (
         scheme.tertiaryContainer,
         scheme.onTertiaryContainer,
       ),
-      AuthLogLevel.error => (scheme.errorContainer, scheme.onErrorContainer),
+      LogLevel.error => (scheme.errorContainer, scheme.onErrorContainer),
     };
     return Container(
       color: bg,

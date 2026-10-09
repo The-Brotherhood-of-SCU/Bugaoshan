@@ -492,16 +492,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get forceUpdate => 'Update to Latest (Include Preview)';
 
   @override
-  String get authLog => 'Auth Log';
+  String get appLogTitle => 'App Log';
 
   @override
-  String get viewAuthLog => 'View Auth Log';
+  String get viewAppLog => 'View App Log';
 
   @override
-  String get authLogEmpty => 'No auth log yet.';
+  String get logEmpty => 'No app log yet.';
 
   @override
-  String authLogLastEntry(String time, String level, String tag) {
+  String logLastEntry(Object level, Object tag, Object time) {
     return '$level · $tag · $time';
   }
 

@@ -10,7 +10,7 @@ import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/service_auth.dart';
 import 'package:bugaoshan/utils/app_log.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 /// 网上办事大厅 API Service（第1层）
@@ -35,8 +35,8 @@ import 'package:bugaoshan/utils/constants.dart';
 /// `data={"app_id":"350","node_id":"","form_data":{"1419":{...}},"userview":1}&step=0&agent_uid=&starter_depart_id=395876`
 class ServiceApiService {
   final ServiceAuth _auth;
-  final AuthLogger _log;
-  ServiceApiService(this._auth) : _log = getIt<AuthLogger>();
+  final AppLogger _log;
+  ServiceApiService(this._auth) : _log = getIt<AppLogger>();
 
   static const String _base = 'https://service.scu.edu.cn';
 
@@ -121,7 +121,7 @@ class ServiceApiService {
     if (json['e']?.toString() == '10042') {
       throw const UnauthenticatedException('办事大厅会话已失效');
     }
-    // 业务错误记录到 AuthLogger，导出 auth log 可直接查看 e/m
+    // 业务错误记录到 AppLogger，导出 auth log 可直接查看 e/m
     if (json['e']?.toString() != '0') {
       final msg = '业务错误 e=${json['e']} m=${json['m']} status=$statusCode';
       _log.w('SERVICE', msg);

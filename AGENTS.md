@@ -234,34 +234,34 @@ The CCYL service is special: its token expires via an explicit business error co
 - **`ExitService`** — unified exit (windowManager.destroy on desktop, exit(0) on mobile).
 - **`WindowStateService`** — desktop window position/size persistence.
 
-### Auth Logging
+### App Logging
 
-All auth-layer modules (`ScuAuth`, `CookieClient`, `AuthCoordinator`, `ZhjwAuth` / `WfwAuth` / `PayAppAuth` / `FitnessAuth` via `SsoRelayAuth`, `CcylAuth`, `CcylOAuthService`, `ScuAuthProvider`) log key lifecycle events to a single in-memory ring buffer via `AuthLogger` (`lib/utils/auth_logger.dart`):
+All modules log through a single in-memory ring buffer via `AppLogger` (`lib/utils/app_logger.dart`). It is a **general-purpose** logger — auth-layer modules (`ScuAuth`, `CookieClient`, `AuthCoordinator`, `ZhjwAuth` / `WfwAuth` / `PayAppAuth` / `FitnessAuth` via `SsoRelayAuth`, `CcylAuth`, `CcylOAuthService`, `ScuAuthProvider`) are only the earliest adopters. Business modules log via the `AppLog` facade (see below); all entries share one buffer and are visible in the Dev page viewer.
 
 - Ring buffer caps at 1000 entries (oldest evicted).
-- Each entry has timestamp + `AuthLogLevel` (`debug` / `info` / `warn` / `error`) + `tag` (e.g. `ScuAuth`, `CookieClient`, `ZhjwAuth`) + redacted message.
-- `AuthLogRedactor.apply()` strips `"access_token":"…"`, `"password":"…"`, `Bearer <token>` and truncates `?code=` values before storage, so logs are safe to share via the Dev page "Save" button.
+- Each entry has timestamp + `LogLevel` (`debug` / `info` / `warn` / `error`) + `tag` (e.g. `ScuAuth`, `CookieClient`, `ReminderService`) + redacted message.
+- `LogRedactor.apply()` strips `"access_token":"…"`, `"password":"…"`, `Bearer <token>` and truncates `?code=` values before storage, so logs are safe to share via the Dev page "Save" button.
 - `tag` is a stable class/module identifier (for example `ScuAuth`, `CookieClient`, or `PAYAPP`) so the Viewer's dropdown groups events by source.
 - `debug` lines are only echoed to console in `kDebugMode`; production builds stay silent.
-- `AuthLogger` is a `ChangeNotifier` — Dev page's `AuthLogTile` and `AuthLogViewerPage` use `ListenableBuilder` for live updates.
-- Optional file sink (`enableFileSink`) writes to `getApplicationDocumentsDirectory()/auth.log`; default off to avoid disk I/O for normal users. The Dev page "Save" button is the recommended path for capturing a snapshot.
+- `AppLogger` is a `ChangeNotifier` — Dev page's `LogTile` and `LogViewerPage` use `ListenableBuilder` for live updates.
+- Optional file sink (`enableFileSink`) writes to `getApplicationDocumentsDirectory()/app.log`; default off to avoid disk I/O for normal users. The Dev page "Save" button is the recommended path for capturing a snapshot.
 
-Dev page (`lib/pages/dev/auth_log/`) gains:
-- `AuthLogTile` — entry showing last log line + count, plus a "Save" button that exports to `bugaoshan-auth-{timestamp}.log` in the temp dir and opens the system share sheet.
-- `AuthLogEntryTile` — individual log entry display with level color coding.
-- `AuthLogFilterBar` — filter chips for log level and tag selection.
-- `AuthLogViewerPage` — full-screen viewer with level filter chips + tag dropdown + clear + copy + save actions.
+Dev page (`lib/pages/dev/logs/`) contains:
+- `LogTile` — entry showing last log line + count, plus a "Save" button that exports to `bugaoshan-log-{timestamp}.log` in the temp dir and opens the system share sheet.
+- `LogEntryTile` — individual log entry display with level color coding.
+- `LogFilterBar` — filter chips for log level and tag selection.
+- `LogViewerPage` — full-screen viewer with level filter chips + tag dropdown + clear + copy + save actions.
 
 ### 业务日志（AppLog）
 
-`AppLog`（`lib/utils/app_log.dart`）是业务层日志门面：与 `AuthLogger` **共享同一个**内存环形缓冲、脱敏规则与文件落盘，Dev 页日志查看器能看到全部来源的日志。延迟从 GetIt 取 `AuthLogger` 单例；测试环境未注册时退化为独立裸实例，保证日志调用永不抛异常。
+`AppLog`（`lib/utils/app_log.dart`）是业务层日志门面：与 `AppLogger` **共享同一个**内存环形缓冲、脱敏规则与文件落盘，Dev 页日志查看器能看到全部来源的日志。延迟从 GetIt 取 `AppLogger` 单例；测试环境未注册时退化为独立裸实例，保证日志调用永不抛异常。
 
-约定（与 Auth Logging 一并遵守）：
+约定（与 App Logging 一并遵守）：
 
 - 错误路径（catch 分支、失败状态）→ `AppLog.e` / `AppLog.w`，**不要**在错误分支写 `debugPrint`。
 - 生命周期 / 关键里程碑 → `AppLog.i`。
 - 本地调试输出 → `AppLog.d`（生产静默）；`debugPrint` 仅限 kDebugMode 下的 DI 装配期 / 启动期调试。
-- 消息中的 access_token / password 等敏感字段由 `AuthLogRedactor` 自动脱敏，无需手动处理。
+- 消息中的 access_token / password 等敏感字段由 `LogRedactor` 自动脱敏，无需手动处理。
 
 ### Notice Pages
 
