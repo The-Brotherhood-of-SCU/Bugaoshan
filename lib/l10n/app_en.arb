@@ -155,15 +155,15 @@
   "checkForUpdates": "Check Updates",
   "newVersionAvailable": "New Version Available",
   "anotherVersionDownloading": "Another version is downloading...",
-  "stableVersionFormat": "Stable: {version}",
-  "@stableVersionFormat": {
+  "stableVersion": "Stable: {version}",
+  "@stableVersion": {
     "description": "Stable version label.",
     "placeholders": {
       "version": {"type": "String"}
     }
   },
-  "previewVersionFormat": "Preview: {version}",
-  "@previewVersionFormat": {
+  "previewVersion": "Preview: {version}",
+  "@previewVersion": {
     "description": "Preview version label.",
     "placeholders": {
       "version": {"type": "String"}

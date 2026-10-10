@@ -99,13 +99,15 @@ class UpdateCard extends StatelessWidget {
                             ),
                           ],
                           if (r.hasUpdate && r.downloadUrl != null) ...[
-                            const SizedBox(height: 8),
-                            Text(
-                              r.isPrerelease
-                                  ? localizations.previewVersion(r.version ?? '')
-                                  : localizations.stableVersion(r.version ?? ''),
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
+                            if (r.version != null) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                r.isPrerelease
+                                    ? localizations.previewVersion(r.version!)
+                                    : localizations.stableVersion(r.version!),
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ],
                             const SizedBox(height: 12),
                             Row(
                               children: [

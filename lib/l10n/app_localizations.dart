@@ -841,13 +841,13 @@ abstract class AppLocalizations {
   /// **'Another version is downloading...'**
   String get anotherVersionDownloading;
 
-  /// No description provided for @stableVersionFormat.
+  /// No description provided for @stableVersion.
   ///
   /// In en, this message translates to:
   /// **'Stable: {version}'**
   String stableVersion(String version);
 
-  /// No description provided for @previewVersionFormat.
+  /// No description provided for @previewVersion.
   ///
   /// In en, this message translates to:
   /// **'Preview: {version}'**

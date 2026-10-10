@@ -154,15 +154,15 @@
   "checkForUpdates": "检查更新",
   "newVersionAvailable": "发现新版本",
   "anotherVersionDownloading": "另一版本正在下载…",
-  "stableVersionFormat": "正式版：{version}",
-  "@stableVersionFormat": {
+  "stableVersion": "正式版：{version}",
+  "@stableVersion": {
     "description": "正式版版本号标签。",
     "placeholders": {
       "version": {"type": "String"}
     }
   },
-  "previewVersionFormat": "预览版：{version}",
-  "@previewVersionFormat": {
+  "previewVersion": "预览版：{version}",
+  "@previewVersion": {
     "description": "预览版版本号标签。",
     "placeholders": {
       "version": {"type": "String"}
