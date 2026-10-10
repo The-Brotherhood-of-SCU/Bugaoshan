@@ -31,13 +31,19 @@ class UpdateCard extends StatelessWidget {
       listenable: Listenable.merge([
         updateProvider.isDownloading,
         updateProvider.progressState,
+        updateProvider.downloadingVersion,
       ]),
       builder: (context, _) {
         final isDownloading = updateProvider.isDownloading.value;
+        final downloadingVersion = updateProvider.downloadingVersion.value;
         final percent = updateProvider.progressState.percent;
         return ValueListenableBuilder<UpdateCheckResult>(
           valueListenable: result,
           builder: (context, r, _) {
+            // 只有「正在下载的那个版本」对应的卡片展示进度；
+            // 其余卡片在全局下载期间保持独立状态，禁用入口并提示另一版本下载中。
+            final isThisDownloading =
+                isDownloading && downloadingVersion == r.version;
             return StyledCard(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -112,7 +118,7 @@ class UpdateCard extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                if (isDownloading) ...[
+                                if (isThisDownloading) ...[
                                   const SizedBox(width: 12),
                                   Text(
                                     '$percent%',
@@ -123,6 +129,23 @@ class UpdateCard extends StatelessWidget {
                                           ).colorScheme.primary,
                                           fontWeight: FontWeight.bold,
                                         ),
+                                  ),
+                                ] else if (isDownloading) ...[
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      'Another version is downloading...',
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
+                                    ),
                                   ),
                                 ],
                               ],
