@@ -25,14 +25,14 @@ flutter pub get
 dart run build_runner build --delete-conflicting-outputs
 flutter gen-l10n
 
-args=()
+args=(--release --config-only)
 if [ "$mode" = archive ]; then
   : "${MACOS_BUILD_NAME:?Set the App Store version, e.g. 2.5.3}"
   : "${MACOS_BUILD_NUMBER:?Set an unused, increasing App Store build number}"
 fi
 if [ -n "${MACOS_BUILD_NAME:-}" ]; then args+=(--build-name "$MACOS_BUILD_NAME"); fi
 if [ -n "${MACOS_BUILD_NUMBER:-}" ]; then args+=(--build-number "$MACOS_BUILD_NUMBER"); fi
-flutter build macos --release --config-only "${args[@]}" \
+flutter build macos "${args[@]}" \
   --dart-define="GIT_TAG=$(git describe --tags --always --dirty)" \
   --dart-define="GIT_COMMIT=$(git rev-parse HEAD)" \
   --dart-define="GIT_COMMIT_DATE=$(git log -1 --format=%ci)" \
