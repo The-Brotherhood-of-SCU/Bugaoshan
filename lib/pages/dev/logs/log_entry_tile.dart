@@ -62,6 +62,53 @@ class LogEntryTile extends StatelessWidget {
                     context,
                   ).textTheme.bodySmall?.copyWith(color: fg),
                 ),
+                // error 与堆栈作为独立字段渲染（移植自 PR #369，
+                // moranfanhua）：此前它们被拼进 message 字符串，UI 无法
+                // 分别处理。错误单独一行、堆栈默认折叠——堆栈往往十几行，
+                // 全部展开会把几十条日志挤出可视区。
+                if (entry.error != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    entry.error!,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: fg),
+                  ),
+                ],
+                if (entry.stackTrace != null)
+                  // 必须自带 Material：外层行是 ColoredBox，而 ExpansionTile
+                  // 继承 ListTile，其背景与墨迹绘制在最近的 Material 祖先上——
+                  // 没有这层 Material 会导致展开动画不可见并触发框架断言。
+                  Material(
+                    color: bg,
+                    child: Theme(
+                      data: Theme.of(
+                        context,
+                      ).copyWith(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        tilePadding: EdgeInsets.zero,
+                        childrenPadding: EdgeInsets.zero,
+                        visualDensity: VisualDensity.compact,
+                        title: Text(
+                          '错误堆栈',
+                          style: Theme.of(
+                            context,
+                          ).textTheme.labelSmall?.copyWith(color: fg),
+                        ),
+                        children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              entry.stackTrace!,
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodySmall?.copyWith(color: fg),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
