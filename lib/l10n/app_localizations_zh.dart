@@ -390,6 +390,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get newVersionAvailable => '发现新版本';
 
   @override
+  String get anotherVersionDownloading => '另一版本正在下载…';
+
+  @override
+  String stableVersion(String version) {
+    return '正式版：$version';
+  }
+
+  @override
+  String previewVersion(String version) {
+    return '预览版：$version';
+  }
+
+  @override
   String get noUpdateAvailable => '已是最新版本';
 
   @override

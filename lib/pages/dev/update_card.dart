@@ -102,8 +102,8 @@ class UpdateCard extends StatelessWidget {
                             const SizedBox(height: 8),
                             Text(
                               r.isPrerelease
-                                  ? 'Preview: ${r.version}'
-                                  : 'Stable: ${r.version}',
+                                  ? localizations.previewVersion(r.version ?? '')
+                                  : localizations.stableVersion(r.version ?? ''),
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                             const SizedBox(height: 12),
@@ -134,7 +134,7 @@ class UpdateCard extends StatelessWidget {
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
-                                      'Another version is downloading...',
+                                      localizations.anotherVersionDownloading,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                       style: Theme.of(context)

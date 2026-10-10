@@ -407,6 +407,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newVersionAvailable => 'New Version Available';
 
   @override
+  String get anotherVersionDownloading => 'Another version is downloading...';
+
+  @override
+  String stableVersion(String version) {
+    return 'Stable: $version';
+  }
+
+  @override
+  String previewVersion(String version) {
+    return 'Preview: $version';
+  }
+
+  @override
   String get noUpdateAvailable => 'Already on Latest Version';
 
   @override

@@ -154,6 +154,21 @@
   "projectRepository": "Repository",
   "checkForUpdates": "Check Updates",
   "newVersionAvailable": "New Version Available",
+  "anotherVersionDownloading": "Another version is downloading...",
+  "stableVersionFormat": "Stable: {version}",
+  "@stableVersionFormat": {
+    "description": "Stable version label.",
+    "placeholders": {
+      "version": {"type": "String"}
+    }
+  },
+  "previewVersionFormat": "Preview: {version}",
+  "@previewVersionFormat": {
+    "description": "Preview version label.",
+    "placeholders": {
+      "version": {"type": "String"}
+    }
+  },
   "noUpdateAvailable": "Already on Latest Version",
   "goToReleases": "Go to Releases",
   "startUpdate": "Start Update",
