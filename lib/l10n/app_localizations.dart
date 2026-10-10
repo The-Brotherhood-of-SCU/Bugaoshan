@@ -7110,6 +7110,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to load document'**
   String get docLoadFailed;
+
+  /// No description provided for @logPersistenceSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep diagnostic logs on device'**
+  String get logPersistenceSwitch;
+
+  /// No description provided for @logPersistenceSwitchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Save warnings and errors to local log files (about 6 MB, rotating). When off, logs are kept in memory only and are lost when the app closes.'**
+  String get logPersistenceSwitchHint;
 }
 
 class _AppLocalizationsDelegate

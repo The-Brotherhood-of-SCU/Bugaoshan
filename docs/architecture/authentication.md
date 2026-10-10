@@ -495,15 +495,17 @@ L3 ScuAuth
   身份标识覆盖 camelCase、snake_case 与中文「学号」标签三种写法，
   但**不**脱敏 `account` / `id` / `sid` 等语义模糊的键——过度脱敏会抹掉排障信息。
 - 仅 debug 构建同步输出控制台日志。
-- 文件 sink 默认关闭；开发者页面可查看、过滤、清空和导出脱敏日志。
+- **默认开启文件落盘**：warn / error 写入 `<getLogBaseDir()>/Bugaoshan/logs/`，
+  按 2 MB × 3 份自动轮转；debug / info 仅在内存。用户可在设置中关闭，
+  关闭时同时删除既有日志文件。开发者页面可查看、过滤、清空和导出脱敏日志，
+  自动落盘的文件与手动导出位于同一目录，「打开文件夹」可一次看全。
 - 全局异常由 `lib/utils/app_error_reporter.dart` 的 `setupGlobalErrorHandlers()` 接管，
   在 `main()` 中 binding 就绪后立即安装，覆盖 `FlutterError.onError`、
   `PlatformDispatcher.instance.onError` 与 isolate 错误监听。
   `PlatformDispatcher` 处理器返回 `true` 以免引擎直接杀进程——进程被杀则内存日志随之消失。
   启动失败亦经 `AppLog.e('Startup', …)` 记录（此前仅 `debugPrint`，release 包不可见）。
 
-**已知局限**：文件 sink 默认关闭且控制台输出受 `kDebugMode` 限制，
-release 构建在进程退出后不保留任何日志。该项在 #367 中待定。
+「清除所有数据」按钮会同时删除落盘日志文件，与隐私政策 / EULA 的说明一致。
 
 新增日志时仍应避免主动拼入敏感值。脱敏器是最后一道保护，不是记录凭据的许可。
 

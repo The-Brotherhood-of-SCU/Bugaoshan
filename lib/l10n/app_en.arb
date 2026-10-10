@@ -2064,5 +2064,7 @@
   "privacyPolicy": "Privacy Policy",
   "legalInfo": "Legal Information",
   "supportAndHelp": "Support & Help",
-  "docLoadFailed": "Failed to load document"
+  "docLoadFailed": "Failed to load document",
+  "logPersistenceSwitch": "Keep diagnostic logs on device",
+  "logPersistenceSwitchHint": "Save warnings and errors to local log files (about 6 MB, rotating). When off, logs are kept in memory only and are lost when the app closes."
 }

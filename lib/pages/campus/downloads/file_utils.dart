@@ -18,9 +18,6 @@ const kPartyAttachmentDir = 'party_attachments';
 /// Subdirectory name under `Bugaoshan/` for tuanwei notice downloads.
 const kTuanweiAttachmentDir = 'tuanwei_attachments';
 
-/// Subdirectory name under `Bugaoshan/` for saved app log exports.
-const kLogDir = 'logs';
-
 /// Persistent URL-to-file index for notice attachments.
 ///
 /// One metadata file is stored per URL so concurrent downloads do not overwrite
@@ -187,21 +184,6 @@ Future<Directory> getNoticeBaseDir() async {
     if (dir != null) return dir;
   }
   return getApplicationDocumentsDirectory();
-}
-
-/// Auth log 落盘策略：
-/// - Android：app 外部 cache (`Android/data/<package>/cache/`)，
-///   文件管理器可见，OS 会在低存储时清理。
-/// - 其他平台：OS temp 目录，由 OS 管理生命周期。
-///
-/// 不走 `getDownloadsDirectory()` / `getExternalStorageDirectory()`，
-/// 因为 auth log 是调试用的瞬态产物，不是用户文件。
-Future<Directory> getLogBaseDir() async {
-  if (Platform.isAndroid) {
-    final dirs = await getExternalCacheDirectories();
-    if (dirs != null && dirs.isNotEmpty) return dirs.first;
-  }
-  return getTemporaryDirectory();
 }
 
 /// Resolves a subdirectory under `Bugaoshan/{dirName}/` inside the app's

@@ -8,6 +8,41 @@ import 'package:path_provider/path_provider.dart';
 /// 日志级别。
 enum LogLevel { debug, info, warn, error }
 
+/// 日志目录名，位于 [getLogBaseDir]`/Bugaoshan/` 下。
+///
+/// 与通知附件目录同级，便于用户在 Android 文件管理器里定位。
+const String kLogDir = 'logs';
+
+/// 日志落盘基目录策略：
+/// - Android：app 外部 cache (`Android/data/<package>/cache/`)，
+///   文件管理器可见，OS 会在低存储时清理。
+/// - 其他平台：OS temp 目录，由 OS 管理生命周期。
+///
+/// 不走 `getDownloadsDirectory()` / `getExternalStorageDirectory()`，
+/// 因为日志是调试用的瞬态产物，不是用户文件。
+Future<Directory> getLogBaseDir() async {
+  if (Platform.isAndroid) {
+    final dirs = await getExternalCacheDirectories();
+    if (dirs != null && dirs.isNotEmpty) return dirs.first;
+  }
+  return getTemporaryDirectory();
+}
+
+/// 解析日志目录 `<base>/Bugaoshan/[kLogDir]/`，不存在则创建。
+///
+/// 自动落盘与 Dev 页手动导出共用此路径，两者产物在同一目录，
+/// 用户「打开文件夹」时能一次看全。
+Future<Directory> resolveLogDir({String? overrideBaseDir}) async {
+  final base = overrideBaseDir != null
+      ? Directory(overrideBaseDir)
+      : await getLogBaseDir();
+  final dir = Directory(p.join(base.path, 'Bugaoshan', kLogDir));
+  if (!await dir.exists()) {
+    await dir.create(recursive: true);
+  }
+  return dir;
+}
+
 /// 单条日志记录。
 class LogEntry {
   final DateTime timestamp;
@@ -141,18 +176,51 @@ class LogRedactor {
 /// 设计要点：
 /// - 内存中维护定长环形缓冲（默认 1000 条），UI 可通过 [entries] / [listenable] 订阅。
 /// - 每条日志在写入缓冲前先经 [LogRedactor] 脱敏，确保即便分享也不会泄露凭据。
-/// - 可选的「写入文件」模式由调用方按需开启（默认关闭），避免给生产用户带来磁盘 I/O 开销。
+/// - [LogLevel.warn] / [LogLevel.error] 落盘到按大小轮转的文件，默认开启，
+///   可由用户通过设置关闭（见 `AppConfigProvider.logPersistenceEnabled`）。
+///   落盘是崩溃现场唯一的后手——进程退出后内存缓冲必然丢失。
 /// - 模块通过 `getIt<AppLogger>()` 拿到实例，无需依赖注入额外参数。
 class AppLogger extends ChangeNotifier {
   static const int _defaultCapacity = 1000;
 
+  /// 落盘的最低级别：[LogLevel.warn] 及以上。
+  ///
+  /// 不落 debug/info：它们记的是生命周期里程碑（"download started" 等），
+  /// 对用户报障几乎无用，却会把文件迅速撑满。
+  static const LogLevel _minPersistedLevel = LogLevel.warn;
+
+  /// 单个日志文件的大小上限，超过则轮转。
+  static const int _defaultMaxBytesPerFile = 2 * 1024 * 1024;
+
+  /// 保留的历史文件份数（不含当前写入的 `app.log`），故总量上限约
+  /// `(_maxFileCount + 1) * _maxBytesPerFile`。
+  static const int _defaultMaxFileCount = 2;
+
+  static const String _logFileBaseName = 'app';
+  static const String _logFileExtension = '.log';
+
   final int capacity;
+
+  /// 单个文件大小上限，超过则轮转。作为实例字段而非编译期常量，
+  /// 便于测试用小阈值验证轮转行为而不必写 2 MB。
+  final int maxBytesPerFile;
+
+  /// 保留的历史份数（不含当前 `app.log`）。
+  final int maxFileCount;
+
   final List<LogEntry> _buffer = [];
   bool _fileSinkEnabled = false;
   IOSink? _fileSink;
   String? _fileSinkPath;
 
-  AppLogger({this.capacity = _defaultCapacity});
+  /// 自上次 [_rotateIfNeeded] 起已写入的字节数。避免每行都 `stat()` 系统调用。
+  int _bytesWritten = 0;
+
+  AppLogger({
+    this.capacity = _defaultCapacity,
+    this.maxBytesPerFile = _defaultMaxBytesPerFile,
+    this.maxFileCount = _defaultMaxFileCount,
+  });
 
   /// 当前日志列表（只读快照，顺序：旧 → 新）。
   List<LogEntry> get entries => List.unmodifiable(_buffer);
@@ -183,8 +251,8 @@ class AppLogger extends ChangeNotifier {
       debugPrint(entry.format());
     }
 
-    if (_fileSinkEnabled) {
-      _fileSink?.writeln(entry.format(includeDate: true));
+    if (_fileSinkEnabled && level.index >= _minPersistedLevel.index) {
+      _appendToFile(entry.format(includeDate: true));
     }
 
     notifyListeners();
@@ -218,22 +286,20 @@ class AppLogger extends ChangeNotifier {
     return buf.toString();
   }
 
-  /// 启用文件落盘（写入到 app 文档目录下的 app.log）。
+  /// 启用文件落盘。默认由应用启动时调用（仅 warn/error 实际写入）。
   ///
-  /// 重复调用会先关闭旧 sink。每次写入追加一行（含时间戳），不做自动 rotation。
-  /// 主要用于在测试/调试场景下保留更长时间窗口的日志供分享。
+  /// [overridePath] 为空时使用 [resolveLogDir] 的默认路径 —— 与 Dev 页
+  /// 导出路径一致，因此 Android 上用户可直接用文件管理器查看排障日志，
+  /// 且 OS 可在低存储时自动清理该目录。
+  ///
+  /// 重复调用会先关闭旧 sink。落盘失败不阻塞业务。
   Future<void> enableFileSink({String? overridePath}) async {
     if (_fileSinkEnabled) return;
     try {
       final dir = overridePath != null
           ? Directory(overridePath)
-          : await getApplicationDocumentsDirectory();
-      if (!await dir.exists()) {
-        await dir.create(recursive: true);
-      }
-      final file = File(p.join(dir.path, 'app.log'));
-      _fileSink = file.openWrite(mode: FileMode.append);
-      _fileSinkPath = file.path;
+          : await resolveLogDir();
+      await _openCurrentLogFile(dir);
       _fileSinkEnabled = true;
       notifyListeners();
     } catch (err) {
@@ -241,6 +307,126 @@ class AppLogger extends ChangeNotifier {
       if (kDebugMode) {
         // ignore: avoid_print
         print('AppLogger: enableFileSink failed: $err');
+      }
+    }
+  }
+
+  /// 打开（或重建）当前写入文件，并把计数归零。
+  Future<void> _openCurrentLogFile(Directory dir) async {
+    final file = File(p.join(dir.path, '$_logFileBaseName$_logFileExtension'));
+    // 追加模式：不截断既有内容，冷启动后新日志接在旧文件后面。
+    _fileSink = file.openWrite(mode: FileMode.append);
+    _fileSinkPath = file.path;
+    _bytesWritten = await file.exists() ? await file.length() : 0;
+  }
+
+  /// 追加一行到当前文件，必要时先轮转。
+  ///
+  /// 只在超过 [maxBytesPerFile] 后轮转，且检查以「累计字节数」为准，
+  /// 避免每行都做一次 `stat()` 系统调用。
+  void _appendToFile(String line) {
+    final sink = _fileSink;
+    if (sink == null) return;
+
+    // writeln 会补 '\n'，计入时保持一致。
+    final payload = '$line\n';
+    _bytesWritten += payload.length;
+    if (_bytesWritten >= maxBytesPerFile) {
+      // 轮转涉及文件 IO，不能在 log() 的同步路径里等，故异步执行。
+      // sink 已提前换走，后续日志直接进新文件，不会因等待而丢失。
+      unawaited(_rotate());
+      return;
+    }
+    sink.writeln(line);
+  }
+
+  /// 多文件轮转：`app.2.log` 删除、`app.1.log` → `app.2.log`、`app.log` → `app.1.log`，
+  /// 然后开一个新的空 `app.log`。
+  ///
+  /// 全程只用 rename/delete，不做「读取-重写」，故不会在慢速存储上卡顿；
+  /// 代价是文件边界处的日志可能被切断——但每行自带完整时间戳，可读性不受影响。
+  Future<void> _rotate() async {
+    final path = _fileSinkPath;
+    if (path == null) return;
+    final dir = Directory(p.dirname(path));
+    final current = File(path);
+
+    try {
+      await _fileSink?.flush();
+      await _fileSink?.close();
+      _fileSink = null;
+
+      final oldest = File(
+        p.join(dir.path, '$_logFileBaseName.$maxFileCount$_logFileExtension'),
+      );
+      if (await oldest.exists()) {
+        await oldest.delete();
+      }
+      for (var i = maxFileCount - 1; i >= 1; i--) {
+        final from = File(
+          p.join(dir.path, '$_logFileBaseName.$i$_logFileExtension'),
+        );
+        if (await from.exists()) {
+          await from.rename(
+            p.join(dir.path, '$_logFileBaseName.${i + 1}$_logFileExtension'),
+          );
+        }
+      }
+      if (await current.exists()) {
+        await current.rename(
+          p.join(dir.path, '$_logFileBaseName.1$_logFileExtension'),
+        );
+      }
+      await _openCurrentLogFile(dir);
+    } catch (err) {
+      // 轮转失败（如磁盘满、权限异常）不应让日志静默消失：
+      // 退回追加到原文件，下一次超限时再试。
+      if (kDebugMode) {
+        // ignore: avoid_print
+        print('AppLogger: rotate failed: $err');
+      }
+      if (_fileSink == null && await current.exists()) {
+        try {
+          _fileSink = current.openWrite(mode: FileMode.append);
+          _bytesWritten = await current.length();
+        } catch (_) {
+          // 实在打不开就放弃本次轮转，内存缓冲仍可正常工作。
+        }
+      }
+    }
+  }
+
+  /// 删除全部落盘日志文件（含历史轮转份），并停止写入。
+  ///
+  /// 供设置页「清除所有数据」与关闭落盘时调用。
+  ///
+  /// 不依赖 sink 曾否启用：关闭落盘后 `_fileSinkPath` 会变 null，但磁盘上
+  /// 仍留着历史文件，因此此时回落到默认目录继续清理。忽略单个文件删除失败，
+  /// 保证尽力清理。
+  Future<void> deletePersistedFiles({String? overridePath}) async {
+    final dir = overridePath != null
+        ? Directory(overridePath)
+        : _fileSinkPath != null
+        ? Directory(p.dirname(_fileSinkPath!))
+        : await resolveLogDir();
+    await disableFileSink();
+    try {
+      if (!await dir.exists()) return;
+      await for (final entity in dir.list()) {
+        if (entity is! File) continue;
+        final name = p.basename(entity.path);
+        if (!name.startsWith(_logFileBaseName)) continue;
+        if (!name.endsWith(_logFileExtension)) continue;
+        try {
+          await entity.delete();
+        } catch (_) {
+          // 单个文件删不掉（如被占用）不影响其余清理。
+        }
+      }
+    } catch (err) {
+      if (kDebugMode) {
+        // ignore: avoid_print
+        print('AppLogger: deletePersistedFiles failed: $err');
       }
     }
   }

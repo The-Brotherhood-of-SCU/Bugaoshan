@@ -52,6 +52,9 @@ const String _keyReminderLeadMinutes = 'reminder_lead_minutes';
 const String _keyReminderQuietStart = 'reminder_quiet_start';
 const String _keyReminderQuietEnd = 'reminder_quiet_end';
 const String _keyReminderWindowDays = 'reminder_window_days';
+
+/// 是否把 warn/error 级日志落盘到本机文件。
+const String _keyLogPersistenceEnabled = 'log_persistence_enabled';
 const Curve appCurve = Curves.easeOutQuart;
 
 enum ThemeColorMode { system, backgroundImage, custom }
@@ -136,6 +139,13 @@ class AppConfigProvider {
   // showTeacherName），这里只保存提醒自身的开关与时机。默认全部关闭：
   // 请求通知权限属于高打扰动作，不在用户未表达意愿时替他决定。
   final ValueNotifier<bool> reminderEnabled = ValueNotifier<bool>(false);
+
+  /// 是否把 warn/error 级日志落盘。**默认开启**。
+  ///
+  /// 落盘是崩溃现场唯一的后手：日志先经 [LogRedactor] 脱敏，且只保留最近
+  /// 若干份共约 6 MB（见 `AppLogger` 的轮转参数），不随运行时长无限增长。
+  /// 关闭后日志仅存在于内存环形缓冲，进程退出即丢失。
+  final ValueNotifier<bool> logPersistenceEnabled = ValueNotifier<bool>(true);
 
   /// 提前量（分钟），可多选。存为升序去重的列表。
   final ValueNotifier<List<int>> reminderLeadMinutes = ValueNotifier<List<int>>(
@@ -252,6 +262,8 @@ class AppConfigProvider {
 
     reminderEnabled.value =
         _sharedPreferences.getBool(_keyReminderEnabled) ?? false;
+    logPersistenceEnabled.value =
+        _sharedPreferences.getBool(_keyLogPersistenceEnabled) ?? true;
     reminderLeadMinutes.value =
         _decodeLeadMinutes(
           _sharedPreferences.getStringList(_keyReminderLeadMinutes),
@@ -442,6 +454,12 @@ class AppConfigProvider {
     });
     reminderEnabled.addListener(() {
       _sharedPreferences.setBool(_keyReminderEnabled, reminderEnabled.value);
+    });
+    logPersistenceEnabled.addListener(() {
+      _sharedPreferences.setBool(
+        _keyLogPersistenceEnabled,
+        logPersistenceEnabled.value,
+      );
     });
     reminderLeadMinutes.addListener(() {
       _sharedPreferences.setStringList(

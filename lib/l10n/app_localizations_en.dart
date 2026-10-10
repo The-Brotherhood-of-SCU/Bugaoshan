@@ -3830,4 +3830,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get docLoadFailed => 'Failed to load document';
+
+  @override
+  String get logPersistenceSwitch => 'Keep diagnostic logs on device';
+
+  @override
+  String get logPersistenceSwitchHint =>
+      'Save warnings and errors to local log files (about 6 MB, rotating). When off, logs are kept in memory only and are lost when the app closes.';
 }

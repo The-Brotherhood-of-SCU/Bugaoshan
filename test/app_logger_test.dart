@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bugaoshan/utils/app_error_reporter.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -151,6 +153,113 @@ void main() {
       expect(formatted.length, lessThan(400));
       expect(formatted, startsWith('Bad state: the-original-error'));
       expect(formatted, contains('more lines]'));
+    });
+  });
+
+  group('文件落盘与轮转', () {
+    late Directory tmp;
+
+    setUp(() async {
+      tmp = await Directory.systemTemp.createTemp('bugaoshan_log_test');
+    });
+
+    tearDown(() async {
+      if (await tmp.exists()) await tmp.delete(recursive: true);
+    });
+
+    Future<List<String>> names() async {
+      final list = await tmp.list().toList();
+      final paths =
+          list
+              .whereType<File>()
+              .map((f) => f.path.split(RegExp(r'[/\\]')).last)
+              .toList()
+            ..sort();
+      return paths;
+    }
+
+    test('只落盘 warn/error，debug/info 不写文件', () async {
+      final logger = AppLogger();
+      await logger.enableFileSink(overridePath: tmp.path);
+
+      logger.log(LogLevel.debug, 'T', 'debug message');
+      logger.log(LogLevel.info, 'T', 'info message');
+      logger.log(LogLevel.warn, 'T', 'warn message');
+      logger.log(LogLevel.error, 'T', 'error message');
+      await logger.disableFileSink();
+
+      final content = await File('${tmp.path}/app.log').readAsString();
+      expect(content, isNot(contains('debug message')));
+      expect(content, isNot(contains('info message')));
+      expect(content, contains('warn message'));
+      expect(content, contains('error message'));
+      // 内存缓冲不受落盘范围影响，Dev 页仍能看到全部级别。
+      expect(logger.entries, hasLength(4));
+    });
+
+    test('超过单份上限后轮转，最多保留 maxFileCount + 1 份', () async {
+      // 阈值取得很小，让几条日志就能触发轮转。
+      final logger = AppLogger(maxBytesPerFile: 120, maxFileCount: 2);
+      await logger.enableFileSink(overridePath: tmp.path);
+
+      for (var i = 0; i < 40; i++) {
+        logger.log(LogLevel.error, 'T', 'message-$i ${'x' * 30}');
+        // 让异步轮转有机会完成，避免用例只验证到第一次 rotate。
+        await Future<void>.delayed(const Duration(milliseconds: 2));
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await logger.disableFileSink();
+
+      final files = await names();
+      expect(files.length, lessThanOrEqualTo(3), reason: '实际：$files');
+      expect(files, contains('app.log'));
+      // 历史份不含 app.log，且编号连续。
+      final rotated = files.where((f) => f != 'app.log').toList();
+      expect(rotated.length, lessThanOrEqualTo(2));
+    });
+
+    test('冷启动时追加到既有文件，不截断历史日志', () async {
+      final first = AppLogger();
+      await first.enableFileSink(overridePath: tmp.path);
+      first.log(LogLevel.error, 'T', 'first run');
+      await first.disableFileSink();
+
+      final second = AppLogger();
+      await second.enableFileSink(overridePath: tmp.path);
+      second.log(LogLevel.error, 'T', 'second run');
+      await second.disableFileSink();
+
+      final content = await File('${tmp.path}/app.log').readAsString();
+      expect(content, contains('first run'));
+      expect(content, contains('second run'));
+    });
+
+    test('deletePersistedFiles 清理当前与历史文件', () async {
+      final logger = AppLogger(maxBytesPerFile: 120, maxFileCount: 2);
+      await logger.enableFileSink(overridePath: tmp.path);
+      for (var i = 0; i < 40; i++) {
+        logger.log(LogLevel.error, 'T', 'message-$i ${'x' * 30}');
+        await Future<void>.delayed(const Duration(milliseconds: 2));
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect((await names()).length, greaterThan(1), reason: '应已产生历史份');
+
+      await logger.deletePersistedFiles();
+
+      expect(await names(), isEmpty);
+    });
+
+    test('关闭 sink 后不再写入文件', () async {
+      final logger = AppLogger();
+      await logger.enableFileSink(overridePath: tmp.path);
+      await logger.disableFileSink();
+
+      logger.log(LogLevel.error, 'T', 'after disable');
+
+      final content = await File('${tmp.path}/app.log').readAsString();
+      expect(content, isNot(contains('after disable')));
+      // 内存缓冲仍照常记录，Dev 页不受影响。
+      expect(logger.entries, hasLength(1));
     });
   });
 }

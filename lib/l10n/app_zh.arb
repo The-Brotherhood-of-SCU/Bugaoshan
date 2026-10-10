@@ -1970,5 +1970,7 @@
   "privacyPolicy": "隐私政策",
   "legalInfo": "法律信息",
   "supportAndHelp": "支持与帮助",
-  "docLoadFailed": "文档加载失败"
+  "docLoadFailed": "文档加载失败",
+  "logPersistenceSwitch": "在本机保留诊断日志",
+  "logPersistenceSwitchHint": "将警告与错误保存为本机日志文件（约 6 MB，自动轮转）。关闭后日志仅存于内存，应用退出即丢失。"
 }

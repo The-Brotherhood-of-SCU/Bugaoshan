@@ -18,6 +18,7 @@ import 'package:bugaoshan/pages/settings/set_theme_mode_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/widgets/common/info_card.dart';
 import 'package:bugaoshan/widgets/common/section_title.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
@@ -121,6 +122,19 @@ class SoftwareSettingPage extends StatelessWidget {
                 label: localizations.setFont,
                 onTap: () => popupOrNavigate(context, const SetFontPage()),
               ),
+              ValueListenableBuilder<bool>(
+                valueListenable: appConfig.logPersistenceEnabled,
+                builder: (context, enabled, _) => SwitchListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+                  title: Text(localizations.logPersistenceSwitch),
+                  subtitle: Text(
+                    localizations.logPersistenceSwitchHint,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  value: enabled,
+                  onChanged: (v) => appConfig.logPersistenceEnabled.value = v,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 14),
@@ -144,6 +158,10 @@ class SoftwareSettingPage extends StatelessWidget {
                     await appConfig.clearAll();
                     final courseProvider = getIt<CourseProvider>();
                     await courseProvider.clearAllData();
+                    // 日志文件也清掉：用户点了「清除所有数据」就应真的全清，
+                    // 否则残留日志既不符预期，也与 privacy-policy / EULA 的
+                    // 「按数据类型另行删除」说明产生矛盾。
+                    await getIt<AppLogger>().deletePersistedFiles();
                   }
                 },
               ),

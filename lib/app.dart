@@ -14,6 +14,7 @@ import 'package:bugaoshan/services/background_cache_service.dart';
 import 'package:bugaoshan/services/reminder/live_activity_coordinator.dart';
 import 'package:bugaoshan/services/reminder/reminder_service.dart';
 import 'package:bugaoshan/theme.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/widgets/common/session_expired_listener.dart';
 import 'package:bugaoshan/widgets/eula_content.dart';
 import 'package:bugaoshan/widgets/route/mouse_back_handler.dart';
@@ -40,6 +41,31 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       if (!mounted) return;
       _bgCache.precache();
     });
+    _bindLogPersistence();
+  }
+
+  /// 按用户开关启停 warn/error 日志落盘。
+  ///
+  /// 默认开启（`AppConfigProvider.logPersistenceEnabled`），因为内存环形缓冲
+  /// 在进程退出后必然丢失——落盘是崩溃现场唯一的后手。用户关闭时同时删除
+  /// 已落盘的文件，避免「关了开关但磁盘上还留着日志」。
+  void _bindLogPersistence() {
+    final logger = getIt<AppLogger>();
+    final notifier = _appConfig.logPersistenceEnabled;
+    void apply(bool enabled) {
+      if (enabled) {
+        unawaited(logger.enableFileSink());
+      } else {
+        unawaited(
+          logger.disableFileSink().then((_) {
+            return logger.deletePersistedFiles();
+          }),
+        );
+      }
+    }
+
+    notifier.addListener(() => apply(notifier.value));
+    apply(notifier.value);
   }
 
   @override

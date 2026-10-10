@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/pages/campus/downloads/file_utils.dart';
 import 'package:bugaoshan/pages/dev/logs/log_entry_tile.dart';
 import 'package:bugaoshan/pages/dev/logs/log_filter_bar.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
@@ -35,15 +34,12 @@ class _LogViewerPageState extends State<LogViewerPage> {
   Set<LogLevel>? _filterLevels;
   String? _filterTag; // null = All
 
-  /// 解析到 app log 落盘目录（必要时创建子目录）：
+  /// 解析到日志落盘目录（必要时创建子目录）：
   /// - Android = app 外部 cache 下的 `Bugaoshan/logs/`（文件管理器可见，OS 可清理）
   /// - 其他 = OS temp 下的 `Bugaoshan/logs/`
-  Future<Directory> _logDir() async {
-    final base = await getLogBaseDir();
-    final dir = Directory('${base.path}/Bugaoshan/$kLogDir');
-    if (!await dir.exists()) await dir.create(recursive: true);
-    return dir;
-  }
+  ///
+  /// 与 [AppLogger] 自动落盘共用同一目录，故「打开文件夹」能看到全部日志文件。
+  Future<Directory> _logDir() => resolveLogDir();
 
   @override
   Widget build(BuildContext context) {
@@ -116,8 +112,7 @@ class _LogViewerPageState extends State<LogViewerPage> {
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   itemCount: reversed.length,
                   separatorBuilder: (_, _) => const Divider(height: 1),
-                  itemBuilder: (context, i) =>
-                      LogEntryTile(entry: reversed[i]),
+                  itemBuilder: (context, i) => LogEntryTile(entry: reversed[i]),
                 );
               },
             ),
