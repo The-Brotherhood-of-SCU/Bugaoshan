@@ -854,6 +854,33 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportScheduleAsCopy => '复制到剪切板';
 
   @override
+  String get exportScheduleAsImage => '导出为图片';
+
+  @override
+  String get generatingScheduleImage => '正在生成课表图片…';
+
+  @override
+  String get saveScheduleImageToGallery => '保存到系统相册';
+
+  @override
+  String get shareScheduleImage => '系统分享';
+
+  @override
+  String get exportScheduleAsImageFailed => '生成课表图片失败，请稍后再试';
+
+  @override
+  String get exportScheduleAsImageEmpty => '课表为空，无法导出图片';
+
+  @override
+  String get scheduleImageSavedToGallery => '已保存到系统相册';
+
+  @override
+  String get scheduleImageGalleryPermissionDenied => '未获得相册权限，无法保存';
+
+  @override
+  String get scheduleImageShareFailed => '分享失败，请稍后再试';
+
+  @override
   String get exportScheduleAsIcs => '导出为日历文件';
 
   @override

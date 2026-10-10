@@ -1723,6 +1723,60 @@ abstract class AppLocalizations {
   /// **'Copy to Clipboard'**
   String get exportScheduleAsCopy;
 
+  /// No description provided for @exportScheduleAsImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as Image'**
+  String get exportScheduleAsImage;
+
+  /// No description provided for @generatingScheduleImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating schedule image…'**
+  String get generatingScheduleImage;
+
+  /// No description provided for @saveScheduleImageToGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to System Gallery'**
+  String get saveScheduleImageToGallery;
+
+  /// No description provided for @shareScheduleImage.
+  ///
+  /// In en, this message translates to:
+  /// **'System Share'**
+  String get shareScheduleImage;
+
+  /// No description provided for @exportScheduleAsImageFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to generate schedule image, please try later'**
+  String get exportScheduleAsImageFailed;
+
+  /// No description provided for @exportScheduleAsImageEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No courses to export as image'**
+  String get exportScheduleAsImageEmpty;
+
+  /// No description provided for @scheduleImageSavedToGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to system gallery'**
+  String get scheduleImageSavedToGallery;
+
+  /// No description provided for @scheduleImageGalleryPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery permission denied, cannot save'**
+  String get scheduleImageGalleryPermissionDenied;
+
+  /// No description provided for @scheduleImageShareFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Share failed, please try later'**
+  String get scheduleImageShareFailed;
+
   /// No description provided for @exportScheduleAsIcs.
   ///
   /// In en, this message translates to:

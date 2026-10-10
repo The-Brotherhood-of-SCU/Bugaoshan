@@ -886,6 +886,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportScheduleAsCopy => 'Copy to Clipboard';
 
   @override
+  String get exportScheduleAsImage => 'Export as Image';
+
+  @override
+  String get generatingScheduleImage => 'Generating schedule image…';
+
+  @override
+  String get saveScheduleImageToGallery => 'Save to System Gallery';
+
+  @override
+  String get shareScheduleImage => 'System Share';
+
+  @override
+  String get exportScheduleAsImageFailed =>
+      'Failed to generate schedule image, please try later';
+
+  @override
+  String get exportScheduleAsImageEmpty => 'No courses to export as image';
+
+  @override
+  String get scheduleImageSavedToGallery => 'Saved to system gallery';
+
+  @override
+  String get scheduleImageGalleryPermissionDenied =>
+      'Gallery permission denied, cannot save';
+
+  @override
+  String get scheduleImageShareFailed => 'Share failed, please try later';
+
+  @override
   String get exportScheduleAsIcs => 'Export to Calendar File';
 
   @override

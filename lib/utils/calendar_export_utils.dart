@@ -17,8 +17,76 @@ export 'package:bugaoshan/utils/calendar_event_utils.dart'
 
 enum CalendarExportAction { copy, ics, addToCalendar }
 
+/// 导出弹层的一行条目（泛型值 + 图标 + 文案）。
+///
+/// 给「导出课表」等多动作弹层用：调用方先用纯函数组装
+/// `List<ExportSheetItem<T>>`（便于单元测试断言顺序/可见性），
+/// 再经 [CalendarExportUtils.showActionSheetItems] 展示。
+@immutable
+class ExportSheetItem<T> {
+  const ExportSheetItem({
+    required this.value,
+    required this.icon,
+    required this.label,
+  });
+
+  final T value;
+  final IconData icon;
+  final String label;
+}
+
 class CalendarExportUtils {
   const CalendarExportUtils._();
+
+  /// 通用导出动作弹层：外观与 [showActionSheet] 保持一致
+  /// （showModalBottomSheet + 顶部大圆角 + SafeArea + 粗体标题 +
+  /// Divider + ListTile 列表 + 底部留白）。
+  static Future<T?> showActionSheetItems<T>(
+    BuildContext context, {
+    required String title,
+    required List<ExportSheetItem<T>> items,
+  }) {
+    return showModalBottomSheet<T>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppShapes.extraLarge),
+        ),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
+                child: Text(
+                  title,
+                  style: Theme.of(
+                    sheetContext,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+              const Divider(),
+              for (final item in items)
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                  leading: Icon(item.icon),
+                  title: Text(item.label),
+                  onTap: () => Navigator.of(sheetContext).pop(item.value),
+                ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   static bool get nativeCalendarImportAvailable =>
       Platform.isAndroid ||

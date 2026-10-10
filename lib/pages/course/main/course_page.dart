@@ -373,7 +373,10 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   void _onImport() =>
       CoursePageActions.showImportSheet(context, courseProvider);
 
-  void _onExport() => CoursePageActions.showExportSheet(context);
+  void _onExport() => CoursePageActions.showExportSheet(
+    context,
+    visibleWeek: _controller?.visibleWeek,
+  );
 
   void _onAddCourse() {
     final cfg = courseProvider.scheduleConfig.value;

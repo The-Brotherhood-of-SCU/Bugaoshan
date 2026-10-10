@@ -23,8 +23,8 @@ class CoursePageActions {
     showScheduleImportSheet(context, courseProvider: courseProvider);
   }
 
-  static void showExportSheet(BuildContext context) {
-    showExportScheduleSheet(context);
+  static void showExportSheet(BuildContext context, {int? visibleWeek}) {
+    showExportScheduleSheet(context, visibleWeek: visibleWeek);
   }
 
   static void navigateToAddCourse(

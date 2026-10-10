@@ -128,7 +128,10 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │   ├── README.md                # engineering documentation index
 │   ├── architecture/           # current implementation architecture
 │   │   ├── authentication.md
+│   │   ├── ios-distribution.md
+│   │   ├── ios-liquid-glass.md
 │   │   ├── linux-distribution.md
+│   │   ├── local-reminder-android.md
 │   │   ├── notice-webview.md
 │   │   └── release-pipeline.md
 │   ├── legal/                  # 公开法律文档（随应用打包/外链）
@@ -140,7 +143,12 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │       ├── 0001-use-webview-and-js-injection-for-notices.md
 │       ├── 0002-separate-subsystem-authentication.md
 │       ├── 0003-make-course-display-settings-global.md
-│       └── 0004-use-distribution-wpe-on-linux.md
+│       ├── 0004-use-distribution-wpe-on-linux.md
+│       ├── 0005-remove-balance-history-account-isolation.md
+│       ├── 0006-sunday-first-course-week.md
+│       ├── 0007-global-student-type-switch.md
+│       ├── 0008-reminder-scheduling-in-dart.md
+│       └── 0009-export-schedule-as-image.md
 └── .github/
     ├── actions/setup/          # composite action: install Flutter 3.44, gen-l10n, git metadata
     ├── scripts/                # Python release automation

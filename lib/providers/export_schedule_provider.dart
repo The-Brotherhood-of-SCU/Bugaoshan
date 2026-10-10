@@ -37,6 +37,10 @@ class ExportScheduleProvider {
   List<Course> get _courses =>
       _overrideCourses ?? _courseProvider.courses.value;
 
+  /// 只读出口：供导出图片流程在点击时刻快照当前生效的课表配置与课程。
+  ScheduleConfig? get resolvedConfig => _config;
+  List<Course> get resolvedCourses => _courses;
+
   Future<ExportResult> copyToClipBoard() async {
     final cfg = _config;
     if (cfg == null) return ExportResult.failed;
