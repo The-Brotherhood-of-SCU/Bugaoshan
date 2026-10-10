@@ -66,7 +66,9 @@ body:
       description: 选择发生异常的功能分类，以便对口排查
       options:
         - 智慧后勤在线报修 (Repair)
-        - 课表与桌面小组件 (Course & Widget)
+        - 课表与日历导入导出 (Course & Calendar)
+        - 桌面小组件 (Widget)
+        - 提醒与实时活动 (Reminder & Live Activity)
         - 统一身份认证与登录 (SCU Auth / SSO)
         - 校园网无感认证 (Passpoint)
         - 成绩与绩点查询 (Grades)
@@ -76,6 +78,16 @@ body:
         - 空闲教室 / 考表查询 (Classroom & Exam)
         - 校园通知 / 附件下载 (Notices & Downloads)
         - 界面主题与基础设置 (Theme & Settings)
+        - 体测查询 (Fitness)
+        - 选课与教师评价 (Course Selection)
+        - 微服务与预约请假 (Campus Services)
+        - 志愿四川 (Volunteer Sichuan)
+        - 更新下载与安装 (Update & Installation)
+        - 日志与异常诊断 (Logging & Diagnostics)
+        - 构建与发布分发 (Build & Distribution)
+        - 本地存储 (Storage)
+        - 架构与代码质量 (Architecture & Code Quality)
+        - 安全与隐私 (Security & Privacy)
         - 其他 / 全局异常 (Others)
     validations:
       required: true

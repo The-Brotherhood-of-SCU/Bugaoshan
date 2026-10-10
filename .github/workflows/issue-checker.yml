@@ -1,0 +1,63 @@
+name: Issue Triage
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: issue-triage-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  triage:
+    name: Label Issue Platform, Module and Team
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      TEAM_READ_TOKEN: ${{ secrets.BUGAOSHAN_TEAM_READ_TOKEN }}
+    steps:
+      # Issue 事件只检出默认分支，不执行 Issue 中的代码。
+      - name: Checkout trusted classification rules
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Synchronize issue classification
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const { triageIssue } = require('./.github/scripts/issue_triage.cjs');
+            await triageIssue({ github, context, core });
+
+      - name: Verify Bugaoshan Team membership
+        id: team
+        if: env.TEAM_READ_TOKEN != '' && github.repository_owner == 'The-Brotherhood-of-SCU'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.BUGAOSHAN_TEAM_READ_TOKEN }}
+          script: |
+            const config = require('./.github/issue-checker.json');
+            const members = await github.paginate('GET /orgs/{org}/teams/{team_slug}/members', {
+              org: config.team.org, team_slug: config.team.slug, per_page: 100,
+            });
+            const author = context.payload.issue.user.login.toLowerCase();
+            core.setOutput('member', members.some(member => member.login.toLowerCase() === author));
+
+      # 写标签使用仓库 GITHUB_TOKEN，读取 Team 的凭据只用于上一项组织查询。
+      - name: Synchronize Bugaoshan Team label
+        if: steps.team.outcome == 'success'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          IS_TEAM_MEMBER: ${{ steps.team.outputs.member }}
+        with:
+          script: |
+            const { setTeamLabel } = require('./.github/scripts/issue_triage.cjs');
+            await setTeamLabel({ github, context, isMember: process.env.IS_TEAM_MEMBER === 'true' });
+
+      - name: Explain missing Team configuration
+        if: env.TEAM_READ_TOKEN == '' && github.repository_owner == 'The-Brotherhood-of-SCU'
+        run: echo '::warning::未配置 BUGAOSHAN_TEAM_READ_TOKEN（组织 Members 读取权限），已完成普通分类，保留现有 Bugaoshan Team 标签。'

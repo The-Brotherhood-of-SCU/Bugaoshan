@@ -22,9 +22,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Verify branch flow compliance
+        env:
+          PR_BASE_REF: ${{ github.base_ref }}
+          PR_HEAD_REF: ${{ github.head_ref }}
         run: |
-          BASE="${{ github.base_ref }}"
-          HEAD="${{ github.head_ref }}"
+          BASE="$PR_BASE_REF"
+          HEAD="$PR_HEAD_REF"
           echo "Base branch (target): $BASE"
           echo "Head branch (source): $HEAD"
 
