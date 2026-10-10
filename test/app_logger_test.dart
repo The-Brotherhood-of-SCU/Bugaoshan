@@ -98,6 +98,59 @@ void main() {
       expect(logger.entries.single.message, isNot(contains('secret-value')));
     });
 
+    // 以下三项保护 tagCounts 的增量维护——它是筛选条的数据源，
+    // 若与 entries 不一致，下拉里的条数会与实际不符。
+    test('tagCounts 按条数降序，同条数按字母序', () {
+      final logger = AppLogger();
+      // 用记录而非 [tag, count] 列表：后者会被推断为 List<Object>，取值时类型丢失。
+      const plan = [
+        (tag: 'A', count: 1),
+        (tag: 'B', count: 3),
+        (tag: 'C', count: 3),
+        (tag: 'D', count: 2),
+      ];
+      for (final e in plan) {
+        for (var i = 0; i < e.count; i++) {
+          logger.log(LogLevel.info, e.tag, 'msg');
+        }
+      }
+
+      expect(logger.tagCounts.map((e) => '${e.key}:${e.value}').toList(), [
+        'B:3',
+        'C:3',
+        'D:2',
+        'A:1',
+      ]);
+    });
+
+    test('tagCounts 随缓冲淘汰同步递减，不残留已淘汰的 tag', () {
+      final logger = AppLogger(capacity: 3);
+      // 写入顺序刻意让 tag 完全被淘汰：A 先占满缓冲，随后只写 B。
+      logger.log(LogLevel.info, 'A', '1');
+      logger.log(LogLevel.info, 'A', '2');
+      logger.log(LogLevel.info, 'A', '3');
+      logger.log(LogLevel.info, 'B', '4');
+      logger.log(LogLevel.info, 'B', '5');
+
+      expect(logger.entries, hasLength(3));
+      expect(
+        logger.tagCounts.map((e) => '${e.key}:${e.value}').toList(),
+        ['B:2', 'A:1'],
+        reason: 'A 只剩 1 条仍在缓冲内',
+      );
+    });
+
+    test('clear 同时清空 entries 与 tagCounts', () {
+      final logger = AppLogger();
+      logger.log(LogLevel.info, 'A', '1');
+      logger.log(LogLevel.info, 'B', '2');
+
+      logger.clear();
+
+      expect(logger.entries, isEmpty);
+      expect(logger.tagCounts, isEmpty);
+    });
+
     test('clear 清空缓冲但不影响已导出内容', () {
       final logger = AppLogger();
       logger.log(LogLevel.info, 'T', 'before clear');

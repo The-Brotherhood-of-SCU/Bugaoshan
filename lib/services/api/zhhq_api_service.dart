@@ -34,6 +34,8 @@ import 'package:http/http.dart' as http;
 /// 成功 `status == "success"`，业务数据在 `data`；错误在 `errorCode`/`message`
 /// （4010/4013/4017 为 token 类错误，交给认证层重建会话）。
 class ZhhqApiService {
+  static const String _tag = 'ZhhqApiService';
+
   final ZhhqAuth _auth;
   final AppLogger _log;
   ZhhqApiService(this._auth) : _log = getIt<AppLogger>();
@@ -92,7 +94,7 @@ class ZhhqApiService {
         return await fn(fastClient, fastTokenKey);
       } on UnauthenticatedException {
         // tokenKey 失效（4010-4017）：走完整认证重建
-        _log.w('ZHhq', 'fast path token invalid, re-authenticating');
+        _log.w(_tag, 'fast path token invalid, re-authenticating');
       }
     }
     // 完整路径：确保 SCU 会话 + zhhq tokenKey（必要时走 SSO）
@@ -146,7 +148,7 @@ class ZhhqApiService {
     if (json == null) {
       // 诊断：解密失败时记录响应片段，便于定位（可能为明文错误页 / 非标准加密）
       _log.w(
-        'ZHhq',
+        _tag,
         '响应解析失败，status=$statusCode body=${body.length > 100 ? body.substring(0, 100) : body}',
       );
       throw ServiceException('zhhq 响应解析失败');
@@ -155,13 +157,13 @@ class ZhhqApiService {
     // 4010-4017 均为 token 类错误（无效/超时/签名错误），触发重新认证
     final codeInt = int.tryParse(code);
     if (codeInt != null && codeInt >= 4010 && codeInt <= 4017) {
-      _log.w('ZHhq', 'token 错误 errorCode=$code: ${json['message']}');
+      _log.w(_tag, 'token 错误 errorCode=$code: ${json['message']}');
       throw const UnauthenticatedException('zhhq 会话已失效');
     }
     // 业务错误统一判定：status 明确非 success，或 errorCode 明确非 0。
     final message = _businessErrorMessage(json);
     if (message != null) {
-      _log.w('ZHhq', '业务错误 errorCode=$code: $message');
+      _log.w(_tag, '业务错误 errorCode=$code: $message');
       throw ServiceException(message);
     }
     return json;

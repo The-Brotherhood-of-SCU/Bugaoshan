@@ -71,54 +71,62 @@ class _LogViewerPageState extends State<LogViewerPage> {
       ),
       body: Column(
         children: [
-          LogFilterBar(
-            entries: _log.entries,
-            levels: _filterLevels,
-            tag: _filterTag,
-            onLevelToggled: _toggleLevel,
-            onTagChanged: (v) => setState(() => _filterTag = v),
-          ),
           const Divider(height: 1),
           Expanded(
+            // 筛选条与列表同处此监听器内：tag 下拉的条数依赖当前缓冲，
+            // 放在外面则只有 setState（切换筛选）时才刷新，新日志带来的
+            // tag 与条数变化不会反映到下拉上。
             child: ListenableBuilder(
               listenable: _log,
               builder: (context, _) {
-                final all = _log.entries;
-                final levels = _filterLevels;
-                final filtered = all
-                    .where((e) {
-                      if (levels != null && !levels.contains(e.level)) {
-                        return false;
-                      }
-                      if (_filterTag != null && e.tag != _filterTag) {
-                        return false;
-                      }
-                      return true;
-                    })
-                    .toList(growable: false);
-
-                if (filtered.isEmpty) {
-                  return Center(
-                    child: Text(
-                      all.isEmpty ? 'No app log yet.' : 'No matching entries.',
-                      style: Theme.of(context).textTheme.bodyMedium,
+                return Column(
+                  children: [
+                    LogFilterBar(
+                      tagCounts: _log.tagCounts,
+                      levels: _filterLevels,
+                      tag: _filterTag,
+                      onLevelToggled: _toggleLevel,
+                      onTagChanged: (v) => setState(() => _filterTag = v),
                     ),
-                  );
-                }
-
-                // 反时序：新条目在顶端。
-                final reversed = filtered.reversed.toList(growable: false);
-                return ListView.separated(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  itemCount: reversed.length,
-                  separatorBuilder: (_, _) => const Divider(height: 1),
-                  itemBuilder: (context, i) => LogEntryTile(entry: reversed[i]),
+                    const Divider(height: 1),
+                    Expanded(child: _buildList(context)),
+                  ],
                 );
               },
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildList(BuildContext context) {
+    final all = _log.entries;
+    final levels = _filterLevels;
+    final filtered = all
+        .where((e) {
+          if (levels != null && !levels.contains(e.level)) return false;
+          if (_filterTag != null && e.tag != _filterTag) return false;
+          return true;
+        })
+        .toList(growable: false);
+
+    if (filtered.isEmpty) {
+      return Center(
+        child: Text(
+          all.isEmpty ? 'No app log yet.' : 'No matching entries.',
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+      );
+    }
+
+    // 反时序：新条目在顶端。
+    final reversed = filtered.reversed.toList(growable: false);
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      itemCount: reversed.length,
+      separatorBuilder: (_, _) => const Divider(height: 1),
+      itemBuilder: (context, i) => LogEntryTile(entry: reversed[i]),
     );
   }
 

@@ -32,6 +32,8 @@ import 'package:bugaoshan/utils/constants.dart';
 /// `e == "OK"`；`d` 内的 `errorCode` / `errorMessage` 才是具体业务结果
 /// （0 成功，非 0 携带错误信息）。
 class NewServiceApiService {
+  static const String _tag = 'NewServiceApiService';
+
   final NewServiceAuth _auth;
   final AppLogger _log;
   NewServiceApiService(this._auth) : _log = getIt<AppLogger>();
@@ -94,7 +96,7 @@ class NewServiceApiService {
     final errorCode = d['errorCode'];
     if (errorCode != null && errorCode.toString() != '0') {
       final message = d['errorMessage']?.toString() ?? '操作失败';
-      _log.w('NEWSERVICE', 'passpoint 业务错误 errorCode=$errorCode: $message');
+      _log.w(_tag, 'passpoint 业务错误 errorCode=$errorCode: $message');
       throw ServiceException(message);
     }
     return d;

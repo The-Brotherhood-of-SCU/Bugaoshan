@@ -12,15 +12,9 @@ class LogEntryTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final (Color bg, Color fg) = switch (entry.level) {
-      LogLevel.debug => (
-        scheme.surfaceContainerLow,
-        scheme.onSurfaceVariant,
-      ),
+      LogLevel.debug => (scheme.surfaceContainerLow, scheme.onSurfaceVariant),
       LogLevel.info => (scheme.primaryContainer, scheme.onPrimaryContainer),
-      LogLevel.warn => (
-        scheme.tertiaryContainer,
-        scheme.onTertiaryContainer,
-      ),
+      LogLevel.warn => (scheme.tertiaryContainer, scheme.onTertiaryContainer),
       LogLevel.error => (scheme.errorContainer, scheme.onErrorContainer),
     };
     return Container(
@@ -59,7 +53,10 @@ class LogEntryTile extends StatelessWidget {
                   ).textTheme.labelSmall?.copyWith(color: fg),
                 ),
                 const SizedBox(height: 2),
-                SelectableText(
+                // 用 Text 而非 SelectableText：后者要装配可编辑区域，布局开销
+                // 明显更高，而本页列表会随每条日志重建。页面 AppBar 已提供
+                // 「复制全部」，单条复制可走系统长按菜单。
+                Text(
                   entry.message,
                   style: Theme.of(
                     context,

@@ -209,6 +209,10 @@ class AppLogger extends ChangeNotifier {
   final int maxFileCount;
 
   final List<LogEntry> _buffer = [];
+
+  /// tag → 当前缓冲中该 tag 的条数。与 [_buffer] 同步维护，供筛选条使用。
+  final Map<String, int> _tagCounts = {};
+
   bool _fileSinkEnabled = false;
   IOSink? _fileSink;
   String? _fileSinkPath;
@@ -225,6 +229,20 @@ class AppLogger extends ChangeNotifier {
   /// 当前日志列表（只读快照，顺序：旧 → 新）。
   List<LogEntry> get entries => List.unmodifiable(_buffer);
 
+  /// 各 tag 在当前缓冲中的条数，按条数降序。
+  ///
+  /// 增量维护而非每次从 [entries] 现算：查看器每收到一条日志就会重建，
+  /// 若每次都遍历整个缓冲（上限 1000 条）并排序，写满一轮就是 O(n²)。
+  List<MapEntry<String, int>> get tagCounts {
+    final list = _tagCounts.entries.toList()
+      ..sort((a, b) {
+        // 条数降序；同条数时按 tag 字母序，保证顺序稳定可预期。
+        final byCount = b.value.compareTo(a.value);
+        return byCount != 0 ? byCount : a.key.compareTo(b.key);
+      });
+    return list;
+  }
+
   /// 当前是否启用了文件写入。
   bool get fileSinkEnabled => _fileSinkEnabled;
 
@@ -240,8 +258,20 @@ class AppLogger extends ChangeNotifier {
       message: LogRedactor.apply(message),
     );
     _buffer.add(entry);
+    _tagCounts[tag] = (_tagCounts[tag] ?? 0) + 1;
     if (_buffer.length > capacity) {
-      _buffer.removeRange(0, _buffer.length - capacity);
+      // 逐条递减被淘汰条目的计数，保持与 [tagCounts] 一致。
+      final overflow = _buffer.length - capacity;
+      for (var i = 0; i < overflow; i++) {
+        final evicted = _buffer[i];
+        final left = (_tagCounts[evicted.tag] ?? 1) - 1;
+        if (left <= 0) {
+          _tagCounts.remove(evicted.tag);
+        } else {
+          _tagCounts[evicted.tag] = left;
+        }
+      }
+      _buffer.removeRange(0, overflow);
     }
 
     // 仅 debug 模式同时打到控制台，避免生产包日志噪声。
@@ -268,6 +298,7 @@ class AppLogger extends ChangeNotifier {
   void clear() {
     if (_buffer.isEmpty) return;
     _buffer.clear();
+    _tagCounts.clear();
     notifyListeners();
   }
 
