@@ -14,4 +14,7 @@
     <plurals name="reminder_notification_group_summary">
         <item quantity="other">%1$d 条课程提醒</item>
     </plurals>
+    <!-- 实时活动与状态栏胶囊通知 -->
+    <string name="live_activity_channel_name">课程实时动态</string>
+    <string name="live_activity_channel_desc">上课期间状态栏胶囊与锁屏实时卡片</string>
 </resources>

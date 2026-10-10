@@ -11,6 +11,8 @@
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
     <!-- Android 13+ (API 33+) 运行时权限:下载进度通知与课程提醒需要 -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Android 16+ (API 36+) 实时更新 (Live Updates) / 状态栏胶囊提升权限 -->
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS"/>
     <!-- Android 12+ (API 31+) 精确闹钟权限:课程提醒排期需要(Android 14+ 默认未授予,不可用时降级为不精确唤醒) -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <!-- 提醒通知震动 -->
@@ -142,6 +144,14 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
                 <action android:name="android.intent.action.TIME_SET" />
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
+        <!-- 课程实时动态 (Live Updates) 用户划掉回调接收器 -->
+        <receiver
+            android:name="io.github.the_brotherhood_of_scu.bugaoshan.liveactivity.LiveUpdateDismissReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="io.github.the_brotherhood_of_scu.bugaoshan.action.LIVE_UPDATE_DISMISS" />
             </intent-filter>
         </receiver>
     </application>
