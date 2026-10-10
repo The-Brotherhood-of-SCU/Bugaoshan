@@ -1,6 +1,15 @@
 name: Build macOS
 
 on:
+  pull_request:
+    branches: [main, preview]
+    paths:
+      - 'macos/**'
+      - 'lib/**'
+      - 'pubspec*'
+      - 'tool/macos_distribution.sh'
+      - 'tool/verify_macos_bundle.py'
+      - '.github/workflows/build-macos.yml'
   workflow_call:
     inputs:
       build_name:
