@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/dev/logs/log_tile.dart';
+import 'package:bugaoshan/pages/dev/logs/log_persistence_tile.dart';
 import 'package:bugaoshan/pages/dev/changelog/changelog_tile.dart';
 import 'package:bugaoshan/pages/dev/environment_info_tile.dart';
 import 'package:bugaoshan/pages/dev/live_activity_probe_tile.dart';
+import 'package:bugaoshan/pages/dev/log_stress_tile.dart';
 import 'package:bugaoshan/pages/dev/reminder_probe_tile.dart';
 import 'package:bugaoshan/pages/dev/update_card.dart';
 import 'package:bugaoshan/pages/dev/wizard_reset_tile.dart';
@@ -140,6 +142,10 @@ class _DevPageState extends State<DevPage> {
           const WizardResetTile(),
           const Divider(),
           const LogTile(),
+          const Divider(),
+          const LogPersistenceTile(),
+          const Divider(),
+          const LogStressTile(),
           const Divider(),
           const ReminderProbeTile(),
           const Divider(),

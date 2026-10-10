@@ -10,10 +10,13 @@ import 'package:bugaoshan/pages/dev/logs/log_filter_bar.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/share_utils.dart';
 
-/// 全屏日志查看器（开发者调试用，文案不做 i18n）。
+/// 全屏日志查看器（开发者调试用）。
 ///
-/// - 顶栏：复制全部、保存分享、打开文件夹、清空
+/// - 顶栏：复制全部、保存分享、复制目录路径、清空
 /// - 内容：level 多选过滤 chip + tag 下拉 + 反时序列表 + 按 level 着色
+///
+/// 文案直接写中文而非走 l10n：本页只在 Dev 页出现，不面向普通用户，
+/// 引入 arb 键反而增加翻译维护成本。
 class LogViewerPage extends StatefulWidget {
   const LogViewerPage({super.key});
 
@@ -22,12 +25,7 @@ class LogViewerPage extends StatefulWidget {
 }
 
 class _LogViewerPageState extends State<LogViewerPage> {
-  static const String _appBarTitle = 'App Log';
-
-  // 跟 notice_downloaded_page 保持一致；debug 构建下打开文件夹可能失败但
-  // 现有附件页也是这个行为，故沿用。
-  static const String _androidPackageId =
-      'io.github.the_brotherhood_of_scu.bugaoshan';
+  static const String _appBarTitle = '应用日志';
 
   final _log = getIt<AppLogger>();
   // null = 全部 level 启用（无筛选）；非空 = 仅显示集合中的 level。
@@ -48,22 +46,22 @@ class _LogViewerPageState extends State<LogViewerPage> {
         title: const Text(_appBarTitle),
         actions: [
           IconButton(
-            tooltip: 'Copy all',
+            tooltip: '复制全部',
             icon: const Icon(Icons.copy_all),
             onPressed: _copyAll,
           ),
           IconButton(
-            tooltip: 'Save',
+            tooltip: '保存并分享',
             icon: const Icon(Icons.save_alt),
             onPressed: _save,
           ),
           IconButton(
-            tooltip: 'Open folder',
+            tooltip: '复制日志目录路径',
             icon: const Icon(Icons.folder_open),
             onPressed: _openFolder,
           ),
           IconButton(
-            tooltip: 'Clear log',
+            tooltip: '清空内存日志',
             icon: const Icon(Icons.delete_sweep),
             onPressed: _confirmClear,
           ),
@@ -114,7 +112,7 @@ class _LogViewerPageState extends State<LogViewerPage> {
     if (filtered.isEmpty) {
       return Center(
         child: Text(
-          all.isEmpty ? 'No app log yet.' : 'No matching entries.',
+          all.isEmpty ? '暂无日志' : '没有符合条件的日志',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
       );
@@ -159,9 +157,7 @@ class _LogViewerPageState extends State<LogViewerPage> {
   Future<void> _copyAll() async {
     final messenger = ScaffoldMessenger.of(context);
     await Clipboard.setData(ClipboardData(text: _log.exportToText()));
-    messenger.showSnackBar(
-      const SnackBar(content: Text('Copied to clipboard')),
-    );
+    messenger.showSnackBar(const SnackBar(content: Text('已复制全部日志到剪贴板')));
   }
 
   Future<void> _save() async {
@@ -172,34 +168,40 @@ class _LogViewerPageState extends State<LogViewerPage> {
       try {
         if (!mounted) return;
         await shareSingleFile(path, context: context);
-        messenger.showSnackBar(const SnackBar(content: Text('Saved')));
+        messenger.showSnackBar(const SnackBar(content: Text('已导出，正在分享…')));
       } catch (e) {
-        messenger.showSnackBar(SnackBar(content: Text('Save failed: $e')));
+        messenger.showSnackBar(SnackBar(content: Text('导出失败：$e')));
       }
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Save failed: $e')));
+      messenger.showSnackBar(SnackBar(content: Text('导出失败：$e')));
     }
   }
 
-  /// 打开 app log 所在目录：
-  /// - Android：通过 content URI 调起系统的文件管理器，定位到 app 外部 cache 子目录。
-  /// - 其他平台：直接用文件 URI 调起系统文件管理器（macOS Finder / Windows Explorer / Linux xdg-open）。
+  /// 打开 app log 所在目录。
+  ///
+  /// Android 上**不能**直接调起文件管理器：
+  /// - 系统 DocumentsUI 只注册了 `ACTION_OPEN_DOCUMENT`，不接受 VIEW 一个目录
+  ///   document URI，故 `launchUrl` 必然抛
+  ///   `PlatformException(ACTIVITY_NOT_FOUND)`；
+  /// - 且 Android 11+ scoped storage 下文件管理器无权进入
+  ///   `Android/data/<package>/cache/`。
+  ///
+  /// 因此 Android 改为「复制绝对路径」——配合顶栏 Save（分享导出）才是把日志
+  /// 取出来的正确路径。其余平台 `Uri.file(dir)` 交给桌面文件管理器是有效的。
   Future<void> _openFolder() async {
     final messenger = ScaffoldMessenger.of(context);
     final dir = await _logDir();
+    if (Platform.isAndroid) {
+      await Clipboard.setData(ClipboardData(text: dir.path));
+      messenger.showSnackBar(
+        SnackBar(content: Text('已复制目录路径：${dir.path}\n点「保存并分享」可把日志发给自己。')),
+      );
+      return;
+    }
     try {
-      if (Platform.isAndroid) {
-        final encoded = 'Bugaoshan/$kLogDir'.replaceAll('/', '%2F');
-        final uri = Uri.parse(
-          'content://com.android.externalstorage.documents/document/'
-          'primary%3AAndroid%2Fdata%2F$_androidPackageId%2Fcache%2F$encoded',
-        );
-        await launchUrl(uri);
-      } else {
-        await launchUrl(Uri.file(dir.path));
-      }
+      await launchUrl(Uri.file(dir.path));
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Open folder failed: $e')));
+      messenger.showSnackBar(SnackBar(content: Text('打开目录失败：$e')));
     }
   }
 
@@ -207,19 +209,16 @@ class _LogViewerPageState extends State<LogViewerPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Clear app log?'),
-        content: const Text(
-          'This removes all log entries currently in memory. '
-          'Saved files are not affected.',
-        ),
+        title: const Text('清空内存中的日志？'),
+        content: const Text('仅清空当前内存中的日志，磁盘上已保存的文件不受影响。'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+            child: const Text('取消'),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Confirm'),
+            child: const Text('确定'),
           ),
         ],
       ),

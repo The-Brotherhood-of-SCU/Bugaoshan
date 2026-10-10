@@ -53,12 +53,12 @@ class LogFilterBar extends StatelessWidget {
           DropdownButton<String?>(
             value: tag,
             focusColor: Colors.transparent,
-            hint: const Text('All tags'),
+            hint: const Text('全部 tag'),
             onChanged: onTagChanged,
             items: <DropdownMenuItem<String?>>[
               const DropdownMenuItem<String?>(
                 value: null,
-                child: Text('All tags'),
+                child: Text('全部 tag'),
               ),
               for (final e in tagCounts)
                 DropdownMenuItem<String?>(

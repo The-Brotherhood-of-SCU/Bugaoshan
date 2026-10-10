@@ -1013,7 +1013,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{level} · {tag} · {time}'**
-  String logLastEntry(Object level, Object tag, Object time);
+  String logLastEntry(String time, String level, String tag);
 
   /// No description provided for @scheduleSetting.
   ///
@@ -7120,7 +7120,7 @@ abstract class AppLocalizations {
   /// No description provided for @logPersistenceSwitchHint.
   ///
   /// In en, this message translates to:
-  /// **'Save warnings and errors to local log files (about 6 MB, rotating). When off, logs are kept in memory only and are lost when the app closes.'**
+  /// **'Save warnings and errors to log files on this device (about 6 MB, rotating). On by default. When off, logs stay in memory only and are lost when the app closes.'**
   String get logPersistenceSwitchHint;
 }
 

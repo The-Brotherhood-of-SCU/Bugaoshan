@@ -501,7 +501,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logEmpty => 'No app log yet.';
 
   @override
-  String logLastEntry(Object level, Object tag, Object time) {
+  String logLastEntry(String time, String level, String tag) {
     return '$level · $tag · $time';
   }
 
@@ -3836,5 +3836,5 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logPersistenceSwitchHint =>
-      'Save warnings and errors to local log files (about 6 MB, rotating). When off, logs are kept in memory only and are lost when the app closes.';
+      'Save warnings and errors to log files on this device (about 6 MB, rotating). On by default. When off, logs stay in memory only and are lost when the app closes.';
 }

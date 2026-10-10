@@ -481,7 +481,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get logEmpty => '暂无运行日志。';
 
   @override
-  String logLastEntry(Object level, Object tag, Object time) {
+  String logLastEntry(String time, String level, String tag) {
     return '$level · $tag · $time';
   }
 
@@ -3706,7 +3706,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get logPersistenceSwitchHint =>
-      '将警告与错误保存为本机日志文件（约 6 MB，自动轮转）。关闭后日志仅存于内存，应用退出即丢失。';
+      '将警告与错误保存为本机日志文件（约 6 MB，自动轮转）。默认开启；关闭后日志仅存于内存，应用退出即丢失。';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

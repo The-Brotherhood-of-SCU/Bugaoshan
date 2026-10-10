@@ -32,6 +32,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   final AppConfigProvider _appConfig = getIt<AppConfigProvider>();
   late final BackgroundCacheService _bgCache = getIt<BackgroundCacheService>();
+  late final void Function() _logPersistenceListener;
 
   @override
   void initState() {
@@ -46,9 +47,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   /// 按用户开关启停 warn/error 日志落盘。
   ///
-  /// 默认开启（`AppConfigProvider.logPersistenceEnabled`），因为内存环形缓冲
-  /// 在进程退出后必然丢失——落盘是崩溃现场唯一的后手。用户关闭时同时删除
-  /// 已落盘的文件，避免「关了开关但磁盘上还留着日志」。
+  /// 默认开启（`AppConfigProvider.logPersistenceEnabled`）：落盘是崩溃现场的
+  /// 唯一后手，默认关闭等于要求用户在出问题前就去设置里翻开关。用户关闭时
+  /// 同时清理可能残留的旧文件。
   void _bindLogPersistence() {
     final logger = getIt<AppLogger>();
     final notifier = _appConfig.logPersistenceEnabled;
@@ -64,13 +65,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       }
     }
 
-    notifier.addListener(() => apply(notifier.value));
+    _logPersistenceListener = () => apply(notifier.value);
+    notifier.addListener(_logPersistenceListener);
     apply(notifier.value);
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _appConfig.logPersistenceEnabled.removeListener(_logPersistenceListener);
     _bgCache.dispose();
     super.dispose();
   }

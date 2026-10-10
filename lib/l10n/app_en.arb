@@ -203,7 +203,7 @@
   "appLogTitle": "App Log",
   "viewAppLog": "View App Log",
   "logEmpty": "No app log yet.",
-  "@authLogLastEntry": {
+  "@logLastEntry": {
     "placeholders": {
       "time": {
         "type": "String"
@@ -2066,5 +2066,5 @@
   "supportAndHelp": "Support & Help",
   "docLoadFailed": "Failed to load document",
   "logPersistenceSwitch": "Keep diagnostic logs on device",
-  "logPersistenceSwitchHint": "Save warnings and errors to local log files (about 6 MB, rotating). When off, logs are kept in memory only and are lost when the app closes."
+  "logPersistenceSwitchHint": "Save warnings and errors to log files on this device (about 6 MB, rotating). On by default. When off, logs stay in memory only and are lost when the app closes."
 }

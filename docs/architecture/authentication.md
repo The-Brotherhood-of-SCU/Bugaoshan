@@ -495,10 +495,14 @@ L3 ScuAuth
   身份标识覆盖 camelCase、snake_case 与中文「学号」标签三种写法，
   但**不**脱敏 `account` / `id` / `sid` 等语义模糊的键——过度脱敏会抹掉排障信息。
 - 仅 debug 构建同步输出控制台日志。
-- **默认开启文件落盘**：warn / error 写入 `<getLogBaseDir()>/Bugaoshan/logs/`，
-  按 2 MB × 3 份自动轮转；debug / info 仅在内存。用户可在设置中关闭，
-  关闭时同时删除既有日志文件。开发者页面可查看、过滤、清空和导出脱敏日志，
-  自动落盘的文件与手动导出位于同一目录，「打开文件夹」可一次看全。
+- **文件落盘为可选项，当前默认关闭**：开启后 warn / error 写入
+  `<getLogBaseDir()>/Bugaoshan/logs/`，按 2 MB × 3 份自动轮转；
+  debug / info 仅在内存。关闭时同时删除既有日志文件。
+  开发者页面可查看、过滤、清空和导出脱敏日志，自动落盘的文件与手动导出
+  位于同一目录，「打开文件夹」可一次看全。
+- **已知缺陷**：轮转在同步突发写入下会丢条目（`log()` 同步而 `_rotate()` 异步，
+  实测 400 条紧凑写入仅落盘 30 条），而崩溃现场正是日志最密集的时刻。
+  修法是改为单写入队列并经真机验证，故在此之前默认不开启。
 - 全局异常由 `lib/utils/app_error_reporter.dart` 的 `setupGlobalErrorHandlers()` 接管，
   在 `main()` 中 binding 就绪后立即安装，覆盖 `FlutterError.onError`、
   `PlatformDispatcher.instance.onError` 与 isolate 错误监听。
