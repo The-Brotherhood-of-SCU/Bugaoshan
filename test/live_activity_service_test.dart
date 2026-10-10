@@ -98,7 +98,7 @@ void main() {
               );
             });
 
-        expect(
+        await expectLater(
           () => service.start(
             courseName: '高等数学',
             location: 'C101',
@@ -122,7 +122,7 @@ void main() {
               );
             });
 
-        expect(
+        await expectLater(
           () => service.start(
             courseName: '高等数学',
             location: 'C101',
@@ -146,7 +146,7 @@ void main() {
               );
             });
 
-        expect(
+        await expectLater(
           () => service.start(
             courseName: '高等数学',
             location: 'C101',
@@ -181,7 +181,7 @@ void main() {
               );
             });
 
-        expect(
+        await expectLater(
           () => service.update(courseName: '线性代数'),
           throwsA(isA<LiveActivityNoActiveSessionException>()),
         );
@@ -193,11 +193,117 @@ void main() {
       expect(log.single.method, 'end');
     });
 
-    test('非 iOS 平台调用 isSupported 返回 false，start 抛出不支持异常', () async {
+    test('Android 平台调用 isSupported 正常转发到通道', () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
 
+      expect(await service.isSupported(), isTrue);
+      expect(log.single.method, 'isSupported');
+    });
+
+    test('Android 平台调用 start 正确传递参数并返回 activityId', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      final now = DateTime(2026, 10, 7, 10, 0);
+      final end = DateTime(2026, 10, 7, 11, 40);
+
+      final id = await service.start(
+        courseName: '操作系统',
+        location: '基教A101',
+        startAt: now,
+        endAt: end,
+        nextCourseName: '编译原理',
+        nextLocation: '基教B202',
+      );
+
+      expect(id, 'test-activity-id-123');
+      expect(log.single.method, 'start');
+      final args = log.single.arguments as Map<dynamic, dynamic>;
+      expect(args['courseName'], '操作系统');
+      expect(args['location'], '基教A101');
+      expect(args['startAtMillis'], now.millisecondsSinceEpoch);
+      expect(args['endAtMillis'], end.millisecondsSinceEpoch);
+      expect(args['nextCourseName'], '编译原理');
+      expect(args['nextLocation'], '基教B202');
+    });
+
+    test('Android 平台调用 update 与 end 正常转发到通道', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      final end = DateTime(2026, 10, 7, 12, 0);
+
+      await service.update(courseName: '计算机网络', endAt: end);
+      expect(log.first.method, 'update');
+      final args = log.first.arguments as Map<dynamic, dynamic>;
+      expect(args['courseName'], '计算机网络');
+      expect(args['endAtMillis'], end.millisecondsSinceEpoch);
+
+      await service.end();
+      expect(log.last.method, 'end');
+    });
+
+    test(
+      'Android 平台异常映射正常转换（NOT_AUTHORIZED, NO_ACTIVE_ACTIVITY, OPERATION_FAILED）',
+      () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+
+        // 1. NOT_AUTHORIZED
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(const MethodChannel(channelName), (
+              MethodCall call,
+            ) async {
+              throw PlatformException(
+                code: 'NOT_AUTHORIZED',
+                message: 'Notification permission denied',
+              );
+            });
+        await expectLater(
+          () => service.start(
+            courseName: '数据结构',
+            location: 'A101',
+            endAt: DateTime.now().add(const Duration(hours: 1)),
+          ),
+          throwsA(isA<LiveActivityNotAuthorizedException>()),
+        );
+
+        // 2. NO_ACTIVE_ACTIVITY
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(const MethodChannel(channelName), (
+              MethodCall call,
+            ) async {
+              throw PlatformException(
+                code: 'NO_ACTIVE_ACTIVITY',
+                message: 'No active session',
+              );
+            });
+        await expectLater(
+          () => service.update(courseName: '数据结构'),
+          throwsA(isA<LiveActivityNoActiveSessionException>()),
+        );
+
+        // 3. 通用错误码转换为 LiveActivityOperationException
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(const MethodChannel(channelName), (
+              MethodCall call,
+            ) async {
+              throw PlatformException(
+                code: 'OPERATION_FAILED',
+                message: 'Native failure',
+              );
+            });
+        await expectLater(
+          () => service.start(
+            courseName: '算法设计',
+            location: 'B101',
+            endAt: DateTime.now().add(const Duration(hours: 1)),
+          ),
+          throwsA(isA<LiveActivityOperationException>()),
+        );
+      },
+    );
+
+    test('非支持平台（如 Windows）调用 isSupported 返回 false，start 抛出不支持异常', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.windows;
+
       expect(await service.isSupported(), isFalse);
-      expect(
+      await expectLater(
         () => service.start(
           courseName: '英语',
           location: 'D201',
@@ -205,7 +311,7 @@ void main() {
         ),
         throwsA(isA<LiveActivityUnsupportedException>()),
       );
-      // 验证 end() 在非 iOS 平台执行安全静默回退
+      // 验证 end() 在非支持平台执行安全静默回退
       await service.end();
       expect(log, isEmpty);
     });

@@ -13,17 +13,17 @@ sealed class LiveActivityException implements Exception {
   String toString() => message;
 }
 
-/// 运行环境不支持实时活动异常（非 iOS 平台或系统版本低于 iOS 16.1）。
+/// 运行环境不支持实时活动异常（非 iOS/Android 支持环境或系统版本不满足要求）。
 class LiveActivityUnsupportedException extends LiveActivityException {
   const LiveActivityUnsupportedException([
-    super.message = '当前系统或设备不支持实时活动（需 iOS 16.1+）',
+    super.message = '当前系统或设备不支持实时活动/状态栏胶囊（需 iOS 16.1+ 或 Android 相应系统）',
   ]);
 }
 
-/// 用户未授予实时活动权限异常。
+/// 用户未授予实时活动或通知权限异常。
 class LiveActivityNotAuthorizedException extends LiveActivityException {
   const LiveActivityNotAuthorizedException([
-    super.message = '用户未在系统设置中开启实时活动权限',
+    super.message = '用户未在系统设置中开启实时活动或通知权限',
   ]);
 }
 
@@ -73,11 +73,14 @@ class LiveActivityService {
 
   final MethodChannel _channel;
 
-  bool get _isIos => !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+  bool get _isSupportedPlatform =>
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.iOS ||
+          defaultTargetPlatform == TargetPlatform.android);
 
-  /// 检查当前设备与系统是否支持且已启用实时活动（需要 iOS 16.1 及以上且系统设置权限已开启）。
+  /// 检查当前设备与系统是否支持且已启用实时活动/状态栏胶囊（需 iOS 16.1+ 或 Android 开启通知权限）。
   Future<bool> isSupported() async {
-    if (!_isIos) return false;
+    if (!_isSupportedPlatform) return false;
     try {
       final supported = await _channel.invokeMethod<bool>('isSupported');
       return supported ?? false;
@@ -112,8 +115,8 @@ class LiveActivityService {
     String? nextCourseName,
     String? nextLocation,
   }) async {
-    if (!_isIos) {
-      throw const LiveActivityUnsupportedException('实时活动仅在 iOS 平台受支持');
+    if (!_isSupportedPlatform) {
+      throw const LiveActivityUnsupportedException('当前平台不支持实时活动/状态栏胶囊');
     }
 
     try {
@@ -188,8 +191,8 @@ class LiveActivityService {
     String? nextCourseName,
     String? nextLocation,
   }) async {
-    if (!_isIos) {
-      throw const LiveActivityUnsupportedException('实时活动仅在 iOS 平台受支持');
+    if (!_isSupportedPlatform) {
+      throw const LiveActivityUnsupportedException('当前平台不支持实时活动/状态栏胶囊');
     }
 
     try {
@@ -225,7 +228,7 @@ class LiveActivityService {
   ///
   /// 若当前平台不支持，静默返回无操作。
   Future<void> end() async {
-    if (!_isIos) return;
+    if (!_isSupportedPlatform) return;
 
     try {
       await _channel.invokeMethod<void>('end');

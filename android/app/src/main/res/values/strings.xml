@@ -26,4 +26,7 @@
         <item quantity="one">%1$d course reminder</item>
         <item quantity="other">%1$d course reminders</item>
     </plurals>
+    <!-- 实时活动与状态栏胶囊通知 -->
+    <string name="live_activity_channel_name">Live Activities</string>
+    <string name="live_activity_channel_desc">Status bar capsules and lock screen live cards during classes</string>
 </resources>
