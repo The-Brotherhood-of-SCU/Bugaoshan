@@ -37,7 +37,7 @@ class HomeDockDestination {
   };
 }
 
-/// iOS 26+ 使用系统 UITabBarController；其余环境保留 Material 导航。
+/// Apple 26+ 使用原生导航；其余环境保留 Material 导航。
 /// 仅承载一个原生视图，避免为每个按钮创建平台视图和通信通道。
 class AdaptiveHomeDock extends StatefulWidget {
   const AdaptiveHomeDock({
@@ -46,6 +46,7 @@ class AdaptiveHomeDock extends StatefulWidget {
     required this.selectedIndex,
     required this.onDestinationSelected,
     this.reduceMotion = false,
+    this.axis = Axis.horizontal,
     this.onNativeModeChanged,
     this.moreLabel,
     this.cancelLabel,
@@ -56,6 +57,7 @@ class AdaptiveHomeDock extends StatefulWidget {
   final int selectedIndex;
   final ValueChanged<int> onDestinationSelected;
   final bool reduceMotion;
+  final Axis axis;
   final ValueChanged<bool>? onNativeModeChanged;
   final String? moreLabel;
   final String? cancelLabel;
@@ -76,7 +78,10 @@ class _AdaptiveHomeDockState extends State<AdaptiveHomeDock> {
   @override
   void initState() {
     super.initState();
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+    if (!kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.macOS ||
+            (defaultTargetPlatform == TargetPlatform.iOS &&
+                widget.axis == Axis.horizontal))) {
       unawaited(_checkSupport());
     }
   }
@@ -115,6 +120,7 @@ class _AdaptiveHomeDockState extends State<AdaptiveHomeDock> {
   Map<String, Object> _parameters() {
     final theme = Theme.of(context);
     return {
+      'axis': widget.axis.name,
       'items': widget.destinations.map((item) => item.toNative()).toList(),
       'selectedId': widget.destinations[widget.selectedIndex].id,
       'tint': theme.colorScheme.primary.toARGB32(),
@@ -158,6 +164,7 @@ class _AdaptiveHomeDockState extends State<AdaptiveHomeDock> {
       _updateScheduled = false;
       if (mounted && _supported) unawaited(_updateNative());
     });
+    WidgetsBinding.instance.ensureVisualUpdate();
   }
 
   Future<void> _updateNative() async {
@@ -187,6 +194,27 @@ class _AdaptiveHomeDockState extends State<AdaptiveHomeDock> {
   @override
   Widget build(BuildContext context) {
     if (!_supported) {
+      if (widget.axis == Axis.vertical) {
+        return NavigationRail(
+          selectedIndex: widget.selectedIndex,
+          onDestinationSelected: widget.onDestinationSelected,
+          labelType: NavigationRailLabelType.all,
+          destinations: [
+            for (final item in widget.destinations)
+              NavigationRailDestination(
+                icon: Badge(
+                  isLabelVisible: item.showBadge,
+                  child: Icon(item.icon),
+                ),
+                selectedIcon: Badge(
+                  isLabelVisible: item.showBadge,
+                  child: Icon(item.selectedIcon),
+                ),
+                label: Text(item.label),
+              ),
+          ],
+        );
+      }
       return NavigationBar(
         selectedIndex: widget.selectedIndex,
         onDestinationSelected: widget.onDestinationSelected,
@@ -206,6 +234,19 @@ class _AdaptiveHomeDockState extends State<AdaptiveHomeDock> {
             ),
         ],
       );
+    }
+
+    if (defaultTargetPlatform == TargetPlatform.macOS) {
+      final view = AppKitView(
+        viewType: _viewType,
+        layoutDirection: Directionality.of(context),
+        creationParams: _parameters(),
+        creationParamsCodec: const StandardMessageCodec(),
+        onPlatformViewCreated: _onPlatformViewCreated,
+      );
+      return widget.axis == Axis.vertical
+          ? SizedBox(width: 152 * _textScale, child: view)
+          : SizedBox(height: 88 * _textScale, child: view);
     }
 
     // 平台视图覆盖到底边，让 UIKit 自己处理浮动 TabBar 的边距与安全区。

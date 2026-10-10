@@ -15,7 +15,9 @@ class LiquidGlassCapabilities {
   static Future<bool>? _supported;
 
   static Future<bool> isSupported() {
-    if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) {
+    if (kIsWeb ||
+        (defaultTargetPlatform != TargetPlatform.iOS &&
+            defaultTargetPlatform != TargetPlatform.macOS)) {
       return SynchronousFuture(false);
     }
     return _supported ??= _checkSupport();
@@ -39,7 +41,7 @@ class LiquidGlassCapabilities {
   }
 }
 
-/// iOS 26+ 原生玻璃按钮，其余环境保留调用方提供的 Material 按钮。
+/// Apple 26+ 原生玻璃按钮，其余环境保留调用方提供的 Material 按钮。
 ///
 /// [fallback] 同时用于测量尺寸，调用方应为其提供相同的动作和禁用状态。
 class AdaptiveGlassButton extends StatelessWidget {
@@ -83,7 +85,7 @@ class AdaptiveGlassButton extends StatelessWidget {
   );
 }
 
-/// iOS 原生 UISwitch；选中值和回调始终由 Flutter 的当前状态提供。
+/// Apple 原生开关；选中值和回调始终由 Flutter 的当前状态提供。
 class AdaptiveGlassSwitch extends StatelessWidget {
   const AdaptiveGlassSwitch({
     super.key,
@@ -368,22 +370,30 @@ class _AdaptiveGlassControlState extends State<_AdaptiveGlassControl> {
   Widget build(BuildContext context) {
     if (!_supported) return widget.fallback;
 
-    final nativeView = UiKitView(
-      viewType: _viewType,
-      layoutDirection: Directionality.of(context),
-      creationParams: _parameters(),
-      creationParamsCodec: const StandardMessageCodec(),
-      onPlatformViewCreated: _onPlatformViewCreated,
-      // 控件区域内的点击交给 UIKit，避免父 ListTile 同时翻转开关。
-      // 纵向拖动仍参与外层 Flutter 列表的手势竞争。
-      gestureRecognizers: {
-        Factory<TapGestureRecognizer>(TapGestureRecognizer.new),
-        if (widget.kind == _GlassControlKind.toggle)
-          Factory<HorizontalDragGestureRecognizer>(
-            HorizontalDragGestureRecognizer.new,
-          ),
-      },
-    );
+    final nativeView = defaultTargetPlatform == TargetPlatform.macOS
+        ? AppKitView(
+            viewType: _viewType,
+            layoutDirection: Directionality.of(context),
+            creationParams: _parameters(),
+            creationParamsCodec: const StandardMessageCodec(),
+            onPlatformViewCreated: _onPlatformViewCreated,
+          )
+        : UiKitView(
+            viewType: _viewType,
+            layoutDirection: Directionality.of(context),
+            creationParams: _parameters(),
+            creationParamsCodec: const StandardMessageCodec(),
+            onPlatformViewCreated: _onPlatformViewCreated,
+            // 控件区域内的点击交给 UIKit，避免父 ListTile 同时翻转开关。
+            // 纵向拖动仍参与外层 Flutter 列表的手势竞争。
+            gestureRecognizers: {
+              Factory<TapGestureRecognizer>(TapGestureRecognizer.new),
+              if (widget.kind == _GlassControlKind.toggle)
+                Factory<HorizontalDragGestureRecognizer>(
+                  HorizontalDragGestureRecognizer.new,
+                ),
+            },
+          );
     final Widget control;
     if (widget.kind == _GlassControlKind.toggle) {
       control = SizedBox(width: 64, height: 44, child: nativeView);

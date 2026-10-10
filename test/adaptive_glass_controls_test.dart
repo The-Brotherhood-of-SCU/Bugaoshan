@@ -129,6 +129,68 @@ void main() {
     await getIt.reset();
   });
 
+  testWidgets(
+    'macOS controls use AppKit and retain controlled values and disabled guards',
+    (tester) async {
+      bridge.install();
+      var presses = 0;
+      final changes = <bool>[];
+      await tester.pumpWidget(
+        _host(
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _button(onPressed: () => presses++),
+              AdaptiveGlassSwitch(
+                value: false,
+                onChanged: changes.add,
+                semanticLabel: 'Reminders',
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(AppKitView), findsNWidgets(2));
+      expect(find.byType(UiKitView), findsNothing);
+      expect(bridge.supportChecks, 1);
+      final buttonId = bridge.creations.entries
+          .firstWhere((entry) => entry.value['kind'] == 'button')
+          .key;
+      final switchId = bridge.creations.entries
+          .firstWhere((entry) => entry.value['kind'] == 'switch')
+          .key;
+      await bridge.send(buttonId, 'activate');
+      await bridge.send(switchId, 'change', true);
+      await tester.pumpAndSettle();
+      expect(presses, 1);
+      expect(changes, [true]);
+      expect(bridge.updates[switchId]!.last['value'], false);
+      await tester.pumpWidget(
+        _host(
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _button(onPressed: null),
+              AdaptiveGlassSwitch(
+                value: false,
+                onChanged: null,
+                semanticLabel: 'Reminders',
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await bridge.send(buttonId, 'activate');
+      await bridge.send(switchId, 'change', true);
+      expect(presses, 1);
+      expect(changes, [true]);
+      expect(tester.takeException(), isNull);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.macOS),
+  );
+
   for (final platform in [TargetPlatform.android, TargetPlatform.linux]) {
     testWidgets(
       '$platform controls keep working without contacting native code',

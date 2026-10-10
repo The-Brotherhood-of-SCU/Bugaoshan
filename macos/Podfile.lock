@@ -96,7 +96,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   device_info_plus: 4fb280989f669696856f8b129e4a5e3cd6c48f76
-  file_picker_darwin: 4c2b9a50ea44cb3b071381ea0cf48591bdd80251
+  file_picker_darwin: 65c8ed1d70cc2ea0b81ae1840db93f8d9c051d19
   file_selector_macos: 9e9e068e90ebee155097d00e89ae91edb2374db7
   flutter_app_group_directory: 14eb7e7a2b0e30a6a68bb855197b4ed6f5063e55
   flutter_inappwebview_macos: e69b76dd5c46a6d9471f195f3d8d36f11b3ab7a4
@@ -113,6 +113,6 @@ SPEC CHECKSUMS:
   url_launcher_macos: f87a979182d112f911de6820aefddaf56ee9fbfd
   window_manager: b729e31d38fb04905235df9ea896128991cad99e
 
-PODFILE CHECKSUM: d1170a7b2fbf40d679effc00a6c13c148b69d384
+PODFILE CHECKSUM: 72a145d68bd940d5270f2b51d39e5183b43f0d31
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.17.0

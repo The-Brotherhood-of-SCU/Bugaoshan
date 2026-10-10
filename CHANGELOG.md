@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- macOS 26 及以上支持系统液态玻璃按钮和开关，桌面导航改为紧凑侧栏；Mac 版支持 Apple Silicon 与 Intel，旧系统保留兼容界面
 - iOS 26 及以上支持原生液态玻璃底部导航、开关和部分操作按钮；课表、校园与个人主页内容可在底栏后方滚动，旧系统与其他平台保留原有界面
 - 新增研究生课表导入：完成统一身份认证后可直接拉取研究生课表，相邻节次自动合并为连堂，支持单双周与周次区间；直连失败时可使用应急网页抓取
 - 新增「学生类型」切换（首次引导 / 软件设置 → 学生类型）：可在本科生与研究生身份间切换，校园页功能与课表导入入口按身份展示，切换不影响已保存的课表与自定义配置
@@ -393,4 +394,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 发布工作流重构
 - 训练计划列表底部增加间距
 - 非移动平台隐藏刷新按钮
-

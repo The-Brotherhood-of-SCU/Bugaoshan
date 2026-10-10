@@ -38,6 +38,7 @@ const _destinations = [
 Widget _host({
   List<HomeDockDestination> destinations = _destinations,
   int selectedIndex = 0,
+  Axis axis = Axis.horizontal,
   ValueChanged<int>? onSelected,
   ValueChanged<bool>? onNativeModeChanged,
   ThemeData? theme,
@@ -54,6 +55,7 @@ Widget _host({
         child: AdaptiveHomeDock(
           destinations: destinations,
           selectedIndex: selectedIndex,
+          axis: axis,
           onDestinationSelected: onSelected ?? (_) {},
           onNativeModeChanged: onNativeModeChanged,
         ),
@@ -144,6 +146,38 @@ void main() {
     bridge.uninstall();
     await getIt.reset();
   });
+
+  for (final axis in Axis.values) {
+    testWidgets(
+      'macOS native navigation preserves stable IDs with $axis layout',
+      (tester) async {
+        bridge.install();
+        final selected = <int>[];
+        await tester.pumpWidget(_host(axis: axis, onSelected: selected.add));
+        await tester.pumpAndSettle();
+        expect(find.byType(AppKitView), findsOneWidget);
+        expect(find.byType(UiKitView), findsNothing);
+        expect(bridge.creations.single['axis'], axis.name);
+        await bridge.send('select', 'profile');
+        await bridge.send('select', 'removed-destination');
+        expect(selected, [2]);
+        bridge.failUpdates = true;
+        await tester.pumpWidget(
+          _host(axis: axis, selectedIndex: 1, onSelected: selected.add),
+        );
+        await tester.pumpAndSettle();
+        expect(find.byType(AppKitView), findsNothing);
+        expect(
+          find.byType(axis == Axis.vertical ? NavigationRail : NavigationBar),
+          findsOneWidget,
+        );
+        await tester.tap(find.text('Profile'));
+        expect(selected, [2, 2]);
+        expect(tester.takeException(), isNull);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.macOS),
+    );
+  }
 
   testWidgets(
     'non-iOS navigation never contacts the native bridge',

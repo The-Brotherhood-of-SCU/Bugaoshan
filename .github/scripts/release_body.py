@@ -11,8 +11,8 @@ def main():
     body = f"""## ⬇️ 下载 (Downloads)
 - Android: [arm64-Apk]({repo}/releases/download/v{version}/bugaoshan_{version}_arm64-v8a.apk)
 - Windows: [x64 Zip]({repo}/releases/download/v{version}/bugaoshan_{version}_windows_x64.zip)
-- macOS (Apple Silicon): [dmg](https://github.com/Visio-Vanitas/Bugaoshan/releases/download/v{version}/bugaoshan_{version}_macos_arm64.dmg)
-- iOS: 未发布正式版，可安装testflight后点击链接进行邀测: https://testflight.apple.com/join/Vyenb6gC ；另提供 [ipa](https://github.com/Visio-Vanitas/Bugaoshan/releases/download/v{version}/bugaoshan_{version}_ios_unsigned.ipa)（ipa仅供理解有关技术的同学测试使用，非技术背景同学请勿下载）
+- macOS: 与 iOS 共用 [App Store 条目](https://apps.apple.com/app/id6813305962)，Mac 版可用状态与版本以商店为准（支持 Apple Silicon 与 Intel）。CI 未签名验证包不作为安装版发布。
+- iOS: [App Store](https://apps.apple.com/app/id6813305962) · [TestFlight](https://testflight.apple.com/join/Vyenb6gC)；另提供 [ipa](https://github.com/Visio-Vanitas/Bugaoshan/releases/download/v{version}/bugaoshan_{version}_ios_unsigned.ipa)（ipa仅供理解有关技术的同学测试使用，非技术背景同学请勿下载）
 
 > 💡 **Note**: 当前项目优先保障 Android 端的稳定与体验。 Windows 版本可能存在部分兼容性或体验问题。
 

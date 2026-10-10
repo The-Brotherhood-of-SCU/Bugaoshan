@@ -99,11 +99,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     return _buildMainScreen();
   }
 
-  Widget _buildUpdateBadge({required Widget child, required bool showBadge}) {
-    if (!showBadge) return child;
-    return Badge(child: child);
-  }
-
   Widget _buildMainScreen() {
     final appConfig = getIt<AppConfigProvider>();
     final authProvider = getIt<ScuAuthProvider>();
@@ -166,22 +161,32 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                           // Rail placeholder: always present, hidden via Offstage
                           Offstage(
                             offstage: !showRail,
-                            child: NavigationRail(
-                              selectedIndex: _currentIndex,
-                              onDestinationSelected: (index) {
-                                setState(() => _currentIndex = index);
-                              },
-                              labelType: NavigationRailLabelType.all,
-                              destinations: visibleIds
-                                  .map(
-                                    (id) => _buildRailDestination(
-                                      id,
-                                      hasUpdate,
-                                      l10n,
-                                    ),
+                            child: showRail
+                                ? ValueListenableBuilder<bool>(
+                                    valueListenable:
+                                        appConfig.enableDockSwitchAnimation,
+                                    builder: (context, enableAnimation, _) =>
+                                        AdaptiveHomeDock(
+                                          axis: Axis.vertical,
+                                          reduceMotion: !enableAnimation,
+                                          selectedIndex: _currentIndex,
+                                          onDestinationSelected: (index) {
+                                            setState(
+                                              () => _currentIndex = index,
+                                            );
+                                          },
+                                          destinations: visibleIds
+                                              .map(
+                                                (id) => _buildDockDestination(
+                                                  id,
+                                                  hasUpdate,
+                                                  l10n,
+                                                ),
+                                              )
+                                              .toList(),
+                                        ),
                                   )
-                                  .toList(),
-                            ),
+                                : const SizedBox.shrink(),
                           ),
                           Offstage(
                             offstage: !showRail,
@@ -261,27 +266,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     } else if (_currentIndex >= ids.length) {
       _currentIndex = ids.length - 1;
     }
-  }
-
-  NavigationRailDestination _buildRailDestination(
-    String id,
-    bool hasUpdate,
-    AppLocalizations l10n,
-  ) {
-    final config = campusItemConfigById(id);
-    final isProfile = id == dockIdProfile;
-    return NavigationRailDestination(
-      icon: isProfile
-          ? _buildUpdateBadge(showBadge: hasUpdate, child: Icon(config.icon))
-          : Icon(config.icon),
-      selectedIcon: isProfile
-          ? _buildUpdateBadge(
-              showBadge: hasUpdate,
-              child: Icon(config.selectedIcon),
-            )
-          : Icon(config.selectedIcon),
-      label: Text(config.dockLabel(l10n)),
-    );
   }
 
   HomeDockDestination _buildDockDestination(
