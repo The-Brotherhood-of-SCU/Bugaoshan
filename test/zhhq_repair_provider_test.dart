@@ -333,6 +333,36 @@ void main() {
     expect(provider.tickets.single.statusLabel, '已评价');
     provider.dispose();
   });
+
+  group('RepairProject', () {
+    test('fromJson filters out blank children and supports equality', () {
+      final json = {
+        'label': '水',
+        'value': '10',
+        'children': [
+          {'label': '水龙头类', 'value': '101'},
+          {'label': '', 'value': '102'},
+          {'label': '   ', 'value': '103'},
+          {'label': '水管类', 'value': ''},
+          {'label': '水管漏水', 'value': '   '},
+          {'label': '马桶类', 'value': '104'},
+        ],
+      };
+
+      final project = RepairProject.fromJson(json);
+      expect(project.label, '水');
+      expect(project.value, '10');
+      expect(project.children, hasLength(2));
+      expect(project.children.map((c) => c.label), ['水龙头类', '马桶类']);
+      expect(project.children.map((c) => c.value), ['101', '104']);
+
+      const sameProject = RepairProject(label: '水', value: '10');
+      const differentProject = RepairProject(label: '水', value: '20');
+      expect(project == sameProject, isTrue);
+      expect(project == differentProject, isFalse);
+      expect(project.hashCode, sameProject.hashCode);
+    });
+  });
 }
 
 class _FakeZhhqAuth extends ChangeNotifier implements ZhhqAuth {

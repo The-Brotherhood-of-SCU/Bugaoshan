@@ -67,7 +67,9 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
   Future<void> init() async {
     try {
       final secure = SecureStorageProvider.instance;
-      final raw = await secure.read(key: _keyCcylSession).catchError((_) => null);
+      final raw = await secure
+          .read(key: _keyCcylSession)
+          .catchError((_) => null);
       try {
         await secure.delete(key: _keyCcylToken).catchError((_) {});
         await secure.delete(key: _keyCcylUserId).catchError((_) {});

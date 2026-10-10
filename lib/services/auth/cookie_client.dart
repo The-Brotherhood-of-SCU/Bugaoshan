@@ -15,12 +15,23 @@ class CookieClient extends http.BaseClient {
 
   http.Client _inner;
 
-  CookieClient({http.Client? inner}) : _inner = inner ?? http.Client();
+  /// 异常重试时创建替换 client 的工厂（测试注入用）。
+  final http.Client Function() _innerFactory;
+
+  CookieClient({http.Client? inner, http.Client Function()? innerFactory})
+    : _inner = inner ?? http.Client(),
+      _innerFactory = innerFactory ?? http.Client.new;
 
   // 按域名存 cookie：host -> {name: value}
   final _jar = <String, Map<String, String>>{};
 
   bool reusable = false;
+
+  /// 因 ClientException 被换下、待在飞请求结束后再关闭的旧 client。
+  final List<http.Client> _retiredInners = [];
+
+  /// 当前经 [sendWithClientExceptionRetry] 发出、尚未结束的请求数。
+  int _inFlightRequests = 0;
 
   AuthLogger get _log => getIt<AuthLogger>();
 
@@ -195,23 +206,49 @@ class CookieClient extends http.BaseClient {
   Future<http.StreamedResponse> sendWithClientExceptionRetry(
     http.BaseRequest request,
   ) async {
+    _inFlightRequests++;
     try {
-      return await _inner.send(request).timeout(kHttpTimeout);
-    } on http.ClientException catch (e) {
-      _log.w(_tag, 'send: ClientException, retrying: $e');
-      _inner.close();
-      _inner = http.Client();
-      final retryRequest = http.Request(request.method, request.url)
-        ..followRedirects = request.followRedirects
-        ..maxRedirects = request.maxRedirects
-        ..persistentConnection = true
-        ..headers.addAll(request.headers);
-      if (request is http.Request) {
-        retryRequest.body = request.body;
+      try {
+        return await _inner.send(request).timeout(kHttpTimeout);
+      } on http.ClientException catch (e) {
+        _log.w(_tag, 'send: ClientException, retrying: $e');
+        _retireInner();
+        final retryRequest = http.Request(request.method, request.url)
+          ..followRedirects = request.followRedirects
+          ..maxRedirects = request.maxRedirects
+          ..persistentConnection = true
+          ..headers.addAll(request.headers);
+        if (request is http.Request) {
+          retryRequest.body = request.body;
+        }
+        final result = await _inner.send(retryRequest).timeout(kHttpTimeout);
+        _log.d(_tag, 'send: retry ok ${request.method} ${request.url}');
+        return result;
       }
-      final result = await _inner.send(retryRequest).timeout(kHttpTimeout);
-      _log.d(_tag, 'send: retry ok ${request.method} ${request.url}');
-      return result;
+    } finally {
+      _inFlightRequests--;
+      _closeRetiredInnersIfIdle();
+    }
+  }
+
+  /// 换掉出错的底层 client，但不立即 close。
+  ///
+  /// IOClient.close() 是强制关闭，会取消该 client 上所有在飞请求。登录后
+  /// AuthCoordinator 让各子系统共用本 client 并发跑 SSO 链，此时任何一个
+  /// 请求的 ClientException（例如占位域名的 DNS 失败）若立刻 close，会
+  /// 连坐取消其他子系统正在飞行中的请求，把单点抖动放大成整批认证失败。
+  /// 旧 client 先入队，等最后一个在飞请求结束后统一关闭。
+  void _retireInner() {
+    _retiredInners.add(_inner);
+    _inner = _innerFactory();
+  }
+
+  void _closeRetiredInnersIfIdle() {
+    if (_inFlightRequests > 0 || _retiredInners.isEmpty) return;
+    final retired = List.of(_retiredInners);
+    _retiredInners.clear();
+    for (final client in retired) {
+      client.close();
     }
   }
 
@@ -227,6 +264,10 @@ class CookieClient extends http.BaseClient {
 
   void _close({required bool force}) {
     if (reusable && !force) return;
+    for (final client in _retiredInners) {
+      client.close();
+    }
+    _retiredInners.clear();
     _inner.close();
     super.close();
   }

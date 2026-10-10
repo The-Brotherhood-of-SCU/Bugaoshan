@@ -40,10 +40,11 @@ class DatabaseService {
     debugPrint('BugaoShan Database: Initializing database...');
 
     Directory dir;
-    // iOS 使用 App Group 共享目录，让 Widget Extension 也能访问数据库。
-    // macOS 没有 Widget Extension，继续使用应用自己的 Support 目录。
-    if (!kIsWeb && Platform.isIOS) {
-      const appGroupId = 'group.io.github.thebrotherhoodofscu.bugaoshan';
+    // iOS 与 macOS 使用 App Group 共享目录，让 Widget Extension 也能访问数据库。
+    if (!kIsWeb && (Platform.isIOS || Platform.isMacOS)) {
+      final appGroupId = Platform.isIOS
+          ? 'group.io.github.thebrotherhoodofscu.bugaoshan.ios'
+          : 'group.io.github.thebrotherhoodofscu.bugaoshan';
       try {
         final appGroupDir = await FlutterAppGroupDirectory.getAppGroupDirectory(
           appGroupId,
@@ -69,8 +70,8 @@ class DatabaseService {
     final dbPath = p.join(dir.path, 'bugaoshan.db');
     debugPrint('BugaoShan Database: Database path: $dbPath');
 
-    // iOS 检查是否需要从旧位置迁移数据库到 App Group。
-    if (!kIsWeb && Platform.isIOS) {
+    // iOS 与 macOS 检查是否需要从旧位置迁移数据库到 App Group。
+    if (!kIsWeb && (Platform.isIOS || Platform.isMacOS)) {
       try {
         final oldDir = await getApplicationSupportDirectory();
         final oldDbPath = p.join(oldDir.path, 'bugaoshan.db');
@@ -101,13 +102,17 @@ class DatabaseService {
 
     _db = await openDatabase(
       dbPath,
-      version: 2,
+      version: 3,
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
           // v2: courses 增加 campus 列（教务处 campusName 字段）
           await db.execute(
             "ALTER TABLE courses ADD COLUMN campus TEXT NOT NULL DEFAULT ''",
           );
+        }
+        if (oldVersion < 3) {
+          // v3: courses 增加 custom_weeks 列（支持离散周次）
+          await db.execute('ALTER TABLE courses ADD COLUMN custom_weeks TEXT');
         }
       },
       onCreate: (db, version) async {
@@ -138,6 +143,7 @@ class DatabaseService {
             end_section INTEGER,
             color_value INTEGER,
             week_type INTEGER,
+            custom_weeks TEXT,
             FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE
           )
         ''');
@@ -147,6 +153,7 @@ class DatabaseService {
 
     // 老用户(db 已存在)通过此处确保新表创建
     await _ensureBalanceRecordsTable();
+    await _ensureCustomWeeksColumn();
 
     // Load current schedule ID from metadata
     final metaRows = await _db.query(
@@ -199,18 +206,26 @@ class DatabaseService {
     'end_section': course.endSection,
     'color_value': course.colorValue,
     'week_type': course.weekType.index,
+    'custom_weeks':
+        (course.customWeeks != null && course.customWeeks!.isNotEmpty)
+        ? (course.customWeeks!.where((w) => w >= 1).toSet().toList()..sort())
+              .join(',')
+        : null,
   };
 
   Course _rowToCourse(Map<String, dynamic> row) {
     final weekTypeIndex = row['week_type'] as int? ?? 0;
+    // 与 Course.fromJson 共用同一套解析与边界归一，避免两处口径漂移。
+    final customWeeks = Course.parseCustomWeeks(row['custom_weeks']);
     return Course(
       id: row['id'] as String,
       name: row['name'] as String? ?? '',
       teacher: row['teacher'] as String? ?? '',
       location: row['location'] as String? ?? '',
       campus: row['campus'] as String? ?? '',
-      startWeek: row['start_week'] as int,
-      endWeek: row['end_week'] as int,
+      // 离散周是权威：起止周收敛到其 min/max（见 Course.fromJson 注释）。
+      startWeek: customWeeks?.first ?? row['start_week'] as int,
+      endWeek: customWeeks?.last ?? row['end_week'] as int,
       dayOfWeek: row['day_of_week'] as int,
       startSection: row['start_section'] as int,
       endSection: row['end_section'] as int,
@@ -218,6 +233,7 @@ class DatabaseService {
       weekType: weekTypeIndex < WeekType.values.length
           ? WeekType.values[weekTypeIndex]
           : WeekType.every,
+      customWeeks: customWeeks,
     );
   }
 
@@ -420,6 +436,18 @@ class DatabaseService {
 
   Future<void> _ensureBalanceRecordsTable() async {
     await _createBalanceRecordsTable(_db);
+  }
+
+  Future<void> _ensureCustomWeeksColumn() async {
+    try {
+      final info = await _db.rawQuery('PRAGMA table_info(courses)');
+      final hasCol = info.any((col) => col['name'] == 'custom_weeks');
+      if (!hasCol) {
+        await _db.execute('ALTER TABLE courses ADD COLUMN custom_weeks TEXT');
+      }
+    } catch (e) {
+      AppLog.w('DatabaseService', 'Failed to ensure custom_weeks column: $e');
+    }
   }
 
   Future<int> insertBalanceRecord(BalanceRecord record) async {

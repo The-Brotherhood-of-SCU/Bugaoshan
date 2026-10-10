@@ -11,6 +11,7 @@ import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/utils/semester_week.dart';
 import 'package:bugaoshan/widgets/common/info_card.dart';
 import 'package:bugaoshan/widgets/common/section_title.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
@@ -193,8 +194,8 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final diff = today.difference(_startDate).inDays;
-    int currentWeek = diff >= 0 ? (diff ~/ 7) + 1 : 1;
+    // 与校历同口径（教学周以周日为首日成行）：周一起点的学期里，周日属于下一周。
+    int currentWeek = courseWeekOf(_startDate, today);
     if (currentWeek < 1) currentWeek = 1;
     if (currentWeek > _totalWeeks) currentWeek = _totalWeeks;
 

@@ -77,7 +77,6 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │   ├── icon.svg                # icon source vector
 │   ├── icon_old.png            # legacy icon
 │   ├── academic_calendar.json  # academic calendar data
-│   ├── eula.md                 # EULA text bundled into the app
 │   ├── js/                     # beautify scripts injected by WebView notice pages
 │   │   ├── dom_ready.js
 │   │   ├── jwc_notice_beautify.js
@@ -129,15 +128,27 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │   ├── README.md                # engineering documentation index
 │   ├── architecture/           # current implementation architecture
 │   │   ├── authentication.md
+│   │   ├── ios-distribution.md
+│   │   ├── ios-liquid-glass.md
 │   │   ├── linux-distribution.md
+│   │   ├── local-reminder-android.md
 │   │   ├── notice-webview.md
 │   │   └── release-pipeline.md
+│   ├── legal/                  # 公开法律文档（随应用打包/外链）
+│   │   ├── eula.md             # EULA text bundled into the app (pubspec.yaml assets)
+│   │   ├── privacy-policy.md
+│   │   └── support.md
 │   └── decisions/              # Architecture Decision Records (ADRs)
 │       ├── README.md
 │       ├── 0001-use-webview-and-js-injection-for-notices.md
 │       ├── 0002-separate-subsystem-authentication.md
 │       ├── 0003-make-course-display-settings-global.md
-│       └── 0004-use-distribution-wpe-on-linux.md
+│       ├── 0004-use-distribution-wpe-on-linux.md
+│       ├── 0005-remove-balance-history-account-isolation.md
+│       ├── 0006-sunday-first-course-week.md
+│       ├── 0007-global-student-type-switch.md
+│       ├── 0008-reminder-scheduling-in-dart.md
+│       └── 0009-export-schedule-as-image.md
 └── .github/
     ├── actions/setup/          # composite action: install Flutter 3.44, gen-l10n, git metadata
     ├── scripts/                # Python release automation
@@ -271,24 +282,24 @@ Shared downloads module lives in `lib/pages/campus/downloads/`:
 
 ### Providers
 
-| Provider | Role |
-|---|---|
-| `ScuAuthProvider` | 认证控制器；直接持有 `ScuAuth`、`CcylAuth` 和 `AuthCoordinator`. Manages SCU login / logout / auto-login（服务端返回 `invalid_captcha` 时最多 5 次）/ credential persistence，并在登录后后台预热子系统。 |
-| `UserInfoProvider` | 监听 `WfwAuth`，登录后自动 fetch 用户信息（realname/number）和标签（图书借阅 / 校园卡 / 网费），登出 clear. |
-| `GradesProvider` | Holds `ZhjwApiService`; fetches scheme & passing scores (session-expired retry handled by the API service layer). Caches grades to SharedPreferences. |
-| `CourseProvider` | 课表 CRUD via `DatabaseService`. |
-| `AppConfigProvider` | ~25 `ValueNotifier` fields: locale, themeColor, themeColorMode, colorOpacity, useGoogleFonts, course card font/row height, grid visibility, background image, dock items, EULA version, wizard completed, widget show-tomorrow, preview update source, privacy toggles (showTeacherName/showLocation/showWeekend…), … |
-| `SetThemeColorProvider` | 从背景图提取主题色（pixel sampling + `compute()` isolate），支持系统强调色预览. |
-| `AppInfoProvider` | App version + CI build metadata (git tag / commit / build time). |
-| `UpdateProvider` | 更新检查/下载状态管理（包裹 `UpdateService`）：isChecking / isDownloading / lastCheckResult / stableResult / previewResult + `UpdateProgressState`；供 about/home 页与 Dev 页使用。 |
-| `BalanceQueryProvider` | 电费 / 空调余额状态管理，支持多房间绑定切换. |
-| `CcylProvider` | 第二课堂登录状态管理。委托 `CcylAuth` 持久化 OAuth token (`FlutterSecureStorage`)，通过 `service` getter 暴露 `CcylApiService`. |
-| `TrainProgramProvider` | 培养方案查询；管理学院/年级/方案列表 + 详情加载状态. |
-| `PlanCompletionProvider` | 培养方案完成度；缓存到 SharedPreferences，处理 rate-limit 错误. |
-| `ZhhqRepairProvider` | 在线报修（智慧后勤）会话级状态：地址/项目/工单列表/提交状态；tokenKey 就绪即可请求（不依赖 SCU 会话），认证失败进入 error 态供重试，登出时 clear. |
-| `PasspointProvider` | 校园网无感认证状态管理（绑定设备 MAC 自动认证）. |
-| `ExportScheduleProvider` | 课表导出（剪贴板 JSON / .ics 文件 / 通过 .ics 间接导入系统日历）. |
-| `SecureStorageProvider` (`lib/utils/secure_storage.dart`) | `FlutterSecureStorage` 单例封装. |
+| Provider                                                  | Role                                                                                                                                                                                                                                                                                                                  |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ScuAuthProvider`                                         | 认证控制器；直接持有 `ScuAuth`、`CcylAuth` 和 `AuthCoordinator`. Manages SCU login / logout / auto-login（服务端返回 `invalid_captcha` 时最多 5 次）/ credential persistence，并在登录后后台预热子系统。                                                                                                              |
+| `UserInfoProvider`                                        | 监听 `WfwAuth`，登录后自动 fetch 用户信息（realname/number）和标签（图书借阅 / 校园卡 / 网费），登出 clear.                                                                                                                                                                                                           |
+| `GradesProvider`                                          | Holds `ZhjwApiService`; fetches scheme & passing scores (session-expired retry handled by the API service layer). Caches grades to SharedPreferences.                                                                                                                                                                 |
+| `CourseProvider`                                          | 课表 CRUD via `DatabaseService`.                                                                                                                                                                                                                                                                                      |
+| `AppConfigProvider`                                       | ~25 `ValueNotifier` fields: locale, themeColor, themeColorMode, colorOpacity, useGoogleFonts, course card font/row height, grid visibility, background image, dock items, EULA version, wizard completed, widget show-tomorrow, preview update source, privacy toggles (showTeacherName/showLocation/showWeekend…), … |
+| `SetThemeColorProvider`                                   | 从背景图提取主题色（pixel sampling + `compute()` isolate），支持系统强调色预览.                                                                                                                                                                                                                                       |
+| `AppInfoProvider`                                         | App version + CI build metadata (git tag / commit / build time).                                                                                                                                                                                                                                                      |
+| `UpdateProvider`                                          | 更新检查/下载状态管理（包裹 `UpdateService`）：isChecking / isDownloading / lastCheckResult / stableResult / previewResult + `UpdateProgressState`；供 about/home 页与 Dev 页使用。                                                                                                                                   |
+| `BalanceQueryProvider`                                    | 电费 / 空调余额状态管理，支持多房间绑定切换.                                                                                                                                                                                                                                                                          |
+| `CcylProvider`                                            | 第二课堂登录状态管理。委托 `CcylAuth` 持久化 OAuth token (`FlutterSecureStorage`)，通过 `service` getter 暴露 `CcylApiService`.                                                                                                                                                                                       |
+| `TrainProgramProvider`                                    | 培养方案查询；管理学院/年级/方案列表 + 详情加载状态.                                                                                                                                                                                                                                                                  |
+| `PlanCompletionProvider`                                  | 培养方案完成度；缓存到 SharedPreferences，处理 rate-limit 错误.                                                                                                                                                                                                                                                       |
+| `ZhhqRepairProvider`                                      | 在线报修（智慧后勤）会话级状态：地址/项目/工单列表/提交状态；tokenKey 就绪即可请求（不依赖 SCU 会话），认证失败进入 error 态供重试，登出时 clear.                                                                                                                                                                     |
+| `PasspointProvider`                                       | 校园网无感认证状态管理（绑定设备 MAC 自动认证）.                                                                                                                                                                                                                                                                      |
+| `ExportScheduleProvider`                                  | 课表导出（剪贴板 JSON / .ics 文件 / 通过 .ics 间接导入系统日历）.                                                                                                                                                                                                                                                     |
+| `SecureStorageProvider` (`lib/utils/secure_storage.dart`) | `FlutterSecureStorage` 单例封装.                                                                                                                                                                                                                                                                                      |
 
 ### Key Patterns
 
@@ -300,7 +311,7 @@ Shared downloads module lives in `lib/pages/campus/downloads/`:
 - **国密 (SM2)** — `dart_sm` encrypts the password before sending to SCU's auth API (`lib/utils/sm2_crypto.dart`).
 - **Dynamic navigation** — Home page uses a customizable dock system (`lib/models/campus_item_config.dart`). Users can enable/disable/reorder dock items. Pages are lazily built and cached in an `IndexedStack`.
 - **Theme system** — `lib/theme.dart` defines MD3 expressive overrides (PredictiveBack on Android, Cupertino on iOS, FadeForwards on desktop). Supports system accent color, custom color, or color derived from the background image (with opacity).
-- **EULA gate** — `app.dart` checks `AppConfigProvider.acceptedEulaVersion`; below `currentEulaVersion` shows `EulaGatePage` (EULA text is in `lib/widgets/eula_content.dart` and `assets/eula.md`).
+- **EULA gate** — `app.dart` checks `AppConfigProvider.acceptedEulaVersion`; below `currentEulaVersion` shows `EulaGatePage` (EULA text is in `lib/widgets/eula_content.dart` and `docs/legal/eula.md`). 应用内法律文档（协议 / 隐私政策 / 支持与帮助）统一由 `MarkdownViewer` / `MarkdownAssetPage`（`lib/widgets/common/markdown_viewer.dart`）渲染，asset 路径常量集中在 `lib/utils/constants.dart`（`kEulaAsset` / `kPrivacyPolicyAsset` / `kSupportAsset`）。
 - **First-launch wizard** — `WizardPage` shown if `firstLaunchWizardCompleted` is false.
 - **手写 JSON 解析** — 统一用 `lib/utils/json_utils.dart` 的 `safeDouble` / `safeInt` / `safeString` / `safeBool` 宽松取值，替代 `(json['x'] as num?)?.toDouble() ?? 0` 样板与裸强转（脏数据回退默认值而非崩溃）。**刻意不引入** json_serializable 全量迁移——现有手写规模不值得。
 - **大文件拆分约定** — 超大文件（600+ 行）拆分用两种模式，均保持外部 import 零改动：① `part` 文件（私有符号跨文件共享，如 `repair_page.dart` + `repair_submit_tab.dart`/`repair_widgets.dart`、`zhjw_api_service.dart` + `zhjw_html_parsers.dart`、`balance_query_provider.dart` + `balance_query_state.dart`）；② barrel re-export（如 `calendar_event_utils.dart`、`service_plugin_models.dart`、`course.dart`）。**有意不拆**的单文件（勿再起拆分之心）：`notice_downloaded_page.dart` / `classroom_page.dart` / `scu_auth.dart` 为单一内聚 State/状态机；`calendar_location_mapper.dart` 为纯静态数据表（有专项单测守着）。向 `zhjw` / `zhhq` 等仍在增长的主文件加解析逻辑时，新代码进对应 part 文件而非主文件。
@@ -405,7 +416,7 @@ The auto-changelog flow:
 - 凭据(access token、CCYL OAuth token、保存的账号密码)统一存到 `FlutterSecureStorage`,**不要**改用 SharedPreferences.
 - 用户敏感信息(学号、姓名等)在某些查询页默认隐藏,展示前请尊重 `set_privacy_*` 类的设置开关(详见 `CHANGELOG.md` 中 1.1.1 "部分查询页隐藏隐私信息").
 - `CHANGELOG.md` 1.1.0 中提到的"单一认证节点无法使用导致全部功能无法使用"已被修复 —— 新增节点时务必保留单点失败隔离(L2 Auth 间通过依赖图表达关系——同级无依赖的模块可并行互不阻塞；但 PayAppAuth 依赖 WfwAuth，若 WfwAuth 失败 PayAppAuth 也会失败).
-- EULA 文本位于 `assets/eula.md` 与 `lib/widgets/eula_content.dart`,版本号定义在两处 — 修改后请同步并通过 `AppConfigProvider.acceptedEulaVersion` 强制老用户重新接受.
+- EULA 文本位于 `docs/legal/eula.md` 与 `lib/widgets/eula_content.dart`,版本号定义在两处 — 修改后请同步并通过 `AppConfigProvider.acceptedEulaVersion` 强制老用户重新接受.
 - Android keystore 仅在 CI 从 `secrets.KEYSTORE_BASE64` 解码,本地仓库里的 `upload-keystore.jks` 文件**请勿提交真实生产凭据**.
 - 桌面端 `assets/scripts/update.{bat,sh}` 在更新流程中执行 — 修改时注意命令注入.
 

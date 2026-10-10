@@ -54,6 +54,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wizardImportHint => '登录后可自动获取课表';
 
   @override
+  String get wizardStudentTypeTitle => '选择你的身份';
+
+  @override
+  String get wizardStudentTypeDesc => '决定课表导入方式与校园页展示的功能，之后可在设置中更改';
+
+  @override
+  String get studentTypeSetting => '学生类型';
+
+  @override
+  String get studentTypeUndergraduate => '本科生';
+
+  @override
+  String get studentTypeGraduate => '研究生';
+
+  @override
+  String get studentTypeUndergraduateDesc => '展示本科教务功能：成绩统计、考试安排、教室查询、培养方案等';
+
+  @override
+  String get studentTypeGraduateDesc => '展示研究生功能：研究生成绩、培养进度、课表导入等';
+
+  @override
+  String get studentTypeHint => '切换后课表导入入口与校园页功能会随之调整，已保存的课表和自定义配置不受影响，可随时再切换。';
+
+  @override
   String get wizardFeatureTitle => '探索更多功能';
 
   @override
@@ -271,10 +295,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get animationDurationHint => '提示：调整滑块查看动画效果，点击确认后才会保存设置';
 
   @override
-  String get enablePageTransitionAnimation => 'Dock栏页面切换动画';
+  String get enableDockSwitchAnimation => 'Dock 栏切换动画';
 
   @override
-  String get enablePageTransitionAnimationHint => '切换Dock栏页面时启用滑动与淡入淡出动画';
+  String get enableDockSwitchAnimationHint => '点击 Dock 栏切换功能时启用滑动与淡入淡出动画';
 
   @override
   String get themeColor => '主题颜色';
@@ -307,6 +331,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get themeColorModeBackgroundImageNotSet => '请先设置背景图片';
 
   @override
+  String get darkMode => '深色模式';
+
+  @override
+  String get themeModeLight => '浅色';
+
+  @override
+  String get themeModeDark => '深色';
+
+  @override
   String get blockPicker => '色块';
 
   @override
@@ -317,9 +350,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get about => '关于';
-
-  @override
-  String get userManual => '用户手册';
 
   @override
   String get developmentTeam => '开发团队';
@@ -352,9 +382,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get projectRepository => '项目仓库';
-
-  @override
-  String get officialWebsite => '官方网站';
 
   @override
   String get checkForUpdates => '检查更新';
@@ -568,6 +595,20 @@ class AppLocalizationsZh extends AppLocalizations {
   String get evenWeek => '双周';
 
   @override
+  String get customWeeksHint => '自定义周次';
+
+  @override
+  String get selectAtLeastOneWeek => '请至少选择一个上课周次';
+
+  @override
+  String get activeWeeks => '上课周次';
+
+  @override
+  String weekSegments(String segments) {
+    return '$segments 周';
+  }
+
+  @override
   String get section => '节';
 
   @override
@@ -705,9 +746,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get showLocation => '显示教室';
 
   @override
-  String get showCourseWeeks => '显示课程周数';
-
-  @override
   String get showWeekend => '显示周末';
 
   @override
@@ -816,6 +854,33 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportScheduleAsCopy => '复制到剪切板';
 
   @override
+  String get exportScheduleAsImage => '导出为图片';
+
+  @override
+  String get generatingScheduleImage => '正在生成课表图片…';
+
+  @override
+  String get saveScheduleImageToGallery => '保存到系统相册';
+
+  @override
+  String get shareScheduleImage => '系统分享';
+
+  @override
+  String get exportScheduleAsImageFailed => '生成课表图片失败，请稍后再试';
+
+  @override
+  String get exportScheduleAsImageEmpty => '课表为空，无法导出图片';
+
+  @override
+  String get scheduleImageSavedToGallery => '已保存到系统相册';
+
+  @override
+  String get scheduleImageGalleryPermissionDenied => '未获得相册权限，无法保存';
+
+  @override
+  String get scheduleImageShareFailed => '分享失败，请稍后再试';
+
+  @override
   String get exportScheduleAsIcs => '导出为日历文件';
 
   @override
@@ -862,12 +927,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get copySuffix => ' (副本)';
-
-  @override
-  String get copyCourseTitle => '新建副本';
-
-  @override
-  String get copyCourseSave => '保存副本';
 
   @override
   String get notThisWeek => '[非本周]';
@@ -942,6 +1001,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get importFromJwxtOnlineHint => '将自动获取课表，需要先在「我的」页面完成统一身份认证登录';
 
   @override
+  String get importFromGraduate => '从研究生系统导入';
+
+  @override
   String get selectSemester => '选择学期';
 
   @override
@@ -996,75 +1058,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get captchaNotLoaded => '请先加载验证码';
-
-  @override
-  String get resetPassword => '重置密码';
-
-  @override
-  String get resetPasswordStepAccount => '确认账户';
-
-  @override
-  String get resetPasswordStepVerify => '安全验证';
-
-  @override
-  String get resetPasswordStepReset => '重置密码';
-
-  @override
-  String get resetPasswordNext => '下一步';
-
-  @override
-  String get resetPasswordChooseMethod => '您正在重置登录密码，请选择以下安全验证方式：';
-
-  @override
-  String get resetPasswordViaSms => '通过短信验证';
-
-  @override
-  String resetPasswordSmsTip(String phone) {
-    return '您的手机 $phone 将收到一条短信验证码';
-  }
-
-  @override
-  String get resetPasswordViaEmail => '通过邮件验证';
-
-  @override
-  String resetPasswordEmailTip(String email) {
-    return '您的邮箱 $email 将收到一条邮件验证码';
-  }
-
-  @override
-  String get resetPasswordSendCode => '发送验证码';
-
-  @override
-  String resetPasswordResendAfter(int seconds) {
-    return '${seconds}s后可重发';
-  }
-
-  @override
-  String get resetPasswordCodeRequired => '请输入6位数字验证码';
-
-  @override
-  String get resetPasswordNewPasswordLabel => '新密码';
-
-  @override
-  String get resetPasswordConfirmPasswordLabel => '确认新密码';
-
-  @override
-  String get resetPasswordPasswordMismatch => '两次输入的密码不一致';
-
-  @override
-  String get resetPasswordPolicyTip => '密码至少包含大小写字母+数字+特殊字符，长度至少 8 位';
-
-  @override
-  String get resetPasswordPolicyInvalid => '密码不符合要求';
-
-  @override
-  String get resetPasswordSubmit => '确定';
-
-  @override
-  String get resetPasswordSuccess => '密码重置成功，请使用新密码登录';
-
-  @override
-  String get resetPasswordBackToLogin => '返回登录';
 
   @override
   String get gradesStats => '成绩统计';
@@ -1179,6 +1172,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sessionExpired => '登录会话已过期';
+
+  @override
+  String get undergradDataOnly =>
+      '本科教务会话未建立。研究生账号请使用「校园 → 研究生」区功能；本科账号请重新登录后重试。';
 
   @override
   String get relogin => '重新登录';
@@ -1500,6 +1497,64 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get ccylOrganizer => '主办单位';
+
+  @override
+  String get ccylStatusEnrolling => '报名中';
+
+  @override
+  String get ccylStatusNotStarted => '未开始';
+
+  @override
+  String get ccylFilter => '筛选';
+
+  @override
+  String get ccylFilterStatus => '状态';
+
+  @override
+  String get ccylFilterClassHour => '学时';
+
+  @override
+  String get ccylFilterLevel => '活动等级';
+
+  @override
+  String get ccylFilterOrganizer => '主办方';
+
+  @override
+  String get ccylFilterUnlimited => '不限';
+
+  @override
+  String get ccylFilterReset => '重置';
+
+  @override
+  String get ccylFilterApply => '应用';
+
+  @override
+  String get ccylFilterClear => '清除筛选';
+
+  @override
+  String ccylFilterMinHoursValue(int hours) {
+    return '$hours 学时以上';
+  }
+
+  @override
+  String get ccylFilterNoMatch => '没有符合筛选条件的活动';
+
+  @override
+  String ccylFilterLocalHint(int count) {
+    return '状态与学时筛选基于已加载的 $count 条活动';
+  }
+
+  @override
+  String get ccylFilterChooseOrganizer => '选择主办方';
+
+  @override
+  String get ccylFilterSearchOrganizer => '搜索主办方';
+
+  @override
+  String get ccylFilterNoOrganizer => '未找到匹配的主办方';
+
+  @override
+  String get ccylLoadMore => '加载更多';
 
   @override
   String get noData => '暂无数据';
@@ -2055,7 +2110,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get eulaScrollToBottom => '请先阅读完协议内容';
 
   @override
-  String get eulaAgreeCheckbox => '我已阅读并同意《用户协议》';
+  String get eulaAgreeCheckbox => '我已阅读并同意《用户协议》与《隐私政策》';
 
   @override
   String get eulaAgree => '同意';
@@ -2326,48 +2381,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get classScheduleInquiryLoadMore => '加载更多';
-
-  @override
-  String get dockLabelCourseCurriculum => '课程课表';
-
-  @override
-  String get courseCurriculum => '课程课表';
-
-  @override
-  String get courseCurriculumDesc => '查询各课程教学班的课表信息';
-
-  @override
-  String get courseCurriculumNoData => '暂无课程数据';
-
-  @override
-  String get courseCurriculumNoSchedule => '暂无课表数据';
-
-  @override
-  String get courseCurriculumFilter => '查询条件';
-
-  @override
-  String get courseCurriculumSemester => '学年学期';
-
-  @override
-  String get courseCurriculumDepartment => '开课院系';
-
-  @override
-  String get courseCurriculumCategory => '课程类别';
-
-  @override
-  String get courseCurriculumCourseName => '课程名';
-
-  @override
-  String get courseCurriculumCourseCode => '课程号';
-
-  @override
-  String get courseCurriculumCourseSeq => '课序号';
-
-  @override
-  String get courseCurriculumSearch => '查询';
-
-  @override
-  String get courseCurriculumLoadMore => '加载更多';
 
   @override
   String holidayTotalDays(int days) {
@@ -3050,6 +3063,643 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get leaveStatusDone => '已完成';
+
+  @override
+  String get graduateGrades => '研究生成绩';
+
+  @override
+  String get graduateGradesDesc => '查看研究生课程成绩';
+
+  @override
+  String get graduateGradesEmpty => '暂无研究生成绩';
+
+  @override
+  String get graduateGradesStats => '成绩统计';
+
+  @override
+  String get graduateStatsCourseCount => '课程数';
+
+  @override
+  String get graduateStatsTotalCredit => '总学分';
+
+  @override
+  String get graduateStatsAverage => '加权均分';
+
+  @override
+  String get graduateStatsPassRate => '通过率';
+
+  @override
+  String get graduateTrainPlan => '培养进度';
+
+  @override
+  String get graduateTrainPlanDesc => '查看研究生培养进度';
+
+  @override
+  String get graduateScheduleImport => '课表导入';
+
+  @override
+  String get graduateScheduleImportDesc => '导入研究生课表';
+
+  @override
+  String get graduateScheduleImportName => '研究生课表';
+
+  @override
+  String get graduateScheduleImportFound => '已识别课程';
+
+  @override
+  String get graduateScheduleImportWaiting => '正在等待课表数据，请先在下方页面登录并打开课表';
+
+  @override
+  String get graduateScheduleImportEmpty => '已抓到数据但没解析出课程，试试在页面里切换周次';
+
+  @override
+  String get graduateScheduleImportAction => '导入到课表';
+
+  @override
+  String get graduateScheduleImportOverwriteTitle => '覆盖已有的课表？';
+
+  @override
+  String graduateScheduleImportOverwriteBody(String name) {
+    return '已存在名为「$name」的课表，继续导入会清空并替换它现有的全部课程。';
+  }
+
+  @override
+  String graduateScheduleImportDoneTo(String name) {
+    return '课表导入完成，已切换到「$name」';
+  }
+
+  @override
+  String get graduateScheduleImportFailed => '导入失败，请重试';
+
+  @override
+  String get graduateScheduleImportWebUnsupported =>
+      '识别网页需要在页面里注入脚本，浏览器会因跨域而拦截。请在 Android / iOS / Windows 客户端使用此功能。';
+
+  @override
+  String get graduateScheduleImportNoWebView =>
+      '直连获取研究生课表失败，且当前平台没有内置网页兜底。请检查网络后重试，或使用 Android / iOS / 桌面客户端导入。';
+
+  @override
+  String get graduateScheduleImportRetryDirect => '我已登录，重试';
+
+  @override
+  String get graduateScheduleImportSessionExpired =>
+      '研究生教务会话未建立或已过期，请先完成统一身份认证登录';
+
+  @override
+  String get graduateScheduleImportGoLogin => '前往登录';
+
+  @override
+  String get graduateScheduleImportEmergencyCapture => '应急网页抓取（直连不可用时）';
+
+  @override
+  String get graduateTrainPlanEmpty => '暂无培养进度数据';
+
+  @override
+  String get graduateTrainPlanProgress => '培养进度';
+
+  @override
+  String graduateTrainPlanCreditText(String completed, String requiredCredit) {
+    return '已修 $completed / 要求 $requiredCredit 学分';
+  }
+
+  @override
+  String graduateTrainPlanModuleCredit(
+    String completed,
+    String requiredCredit,
+  ) {
+    return '已修 $completed / 要求 $requiredCredit 学分';
+  }
+
+  @override
+  String get graduateTrainPlanNoCourses => '本模块暂无课程';
+
+  @override
+  String get labAttendance => '实验室考勤';
+
+  @override
+  String get labAttendanceDesc => '记录实验室出勤';
+
+  @override
+  String get labAttendanceMonthDay => '今日考勤';
+
+  @override
+  String get labAttendanceEmpty => '本月暂无考勤记录';
+
+  @override
+  String get labAttendanceDays => '出勤天数';
+
+  @override
+  String get labAttendanceHours => '出勤时长(小时)';
+
+  @override
+  String get labCheckIn => '签到';
+
+  @override
+  String get labCheckOut => '签退';
+
+  @override
+  String get thesisProgress => '论文进度';
+
+  @override
+  String get thesisProgressDesc => '跟踪课题论文进度';
+
+  @override
+  String get thesisProgressEmpty => '暂无论文阶段';
+
+  @override
+  String get thesisProgressOverview => '论文进度概览';
+
+  @override
+  String thesisProgressText(int completed, int total) {
+    return '已完成 $completed / $total 个阶段';
+  }
+
+  @override
+  String get thesisStageNotStarted => '未开始';
+
+  @override
+  String get thesisStageInProgress => '进行中';
+
+  @override
+  String get thesisStageCompleted => '已完成';
+
+  @override
+  String get thesisStageName => '阶段名称';
+
+  @override
+  String get thesisStageNameHint => '例如：开题、中期、预答辩';
+
+  @override
+  String get thesisStageNote => '备注';
+
+  @override
+  String get thesisStageNoPlanDate => '设置计划日期';
+
+  @override
+  String thesisStagePlanDate(String date) {
+    return '计划日期：$date';
+  }
+
+  @override
+  String get thesisStagePlan => '计划';
+
+  @override
+  String get addThesisStage => '添加阶段';
+
+  @override
+  String get editThesisStage => '编辑阶段';
+
+  @override
+  String get mentorTasks => '导师任务';
+
+  @override
+  String get mentorTasksDesc => '查看导师布置的任务';
+
+  @override
+  String get mentorTasksEmpty => '暂无导师任务';
+
+  @override
+  String get mentorTaskPending => '待完成';
+
+  @override
+  String get mentorTaskOverdue => '已逾期';
+
+  @override
+  String get mentorTaskDueSoon => '即将到期';
+
+  @override
+  String get mentorTaskPriorityLow => '低';
+
+  @override
+  String get mentorTaskPriorityMedium => '中';
+
+  @override
+  String get mentorTaskPriorityHigh => '高';
+
+  @override
+  String get mentorTaskNoDueDate => '无截止时间';
+
+  @override
+  String mentorTaskDueDate(String date) {
+    return '截止：$date';
+  }
+
+  @override
+  String mentorTaskDaysText(int days) {
+    return '剩余 $days 天';
+  }
+
+  @override
+  String get mentorTaskTitle => '任务标题';
+
+  @override
+  String get mentorTaskNote => '备注';
+
+  @override
+  String get addMentorTask => '添加任务';
+
+  @override
+  String get editMentorTask => '编辑任务';
+
+  @override
+  String get mentorTaskLoginRequired => '登录后查看导师任务';
+
+  @override
+  String get graduateLoginRequired => '请先在「我的」页面完成统一身份认证登录后再使用研究生功能';
+
+  @override
+  String get userManual => '用户手册';
+
+  @override
+  String get officialWebsite => '官方网站';
+
+  @override
+  String get showCourseWeeks => '显示课程周数';
+
+  @override
+  String get copyCourseTitle => '新建副本';
+
+  @override
+  String get copyCourseSave => '保存副本';
+
+  @override
+  String get resetPassword => '重置密码';
+
+  @override
+  String get resetPasswordStepAccount => '确认账户';
+
+  @override
+  String get resetPasswordStepVerify => '安全验证';
+
+  @override
+  String get resetPasswordStepReset => '重置密码';
+
+  @override
+  String get resetPasswordNext => '下一步';
+
+  @override
+  String get resetPasswordChooseMethod => '您正在重置登录密码，请选择以下安全验证方式：';
+
+  @override
+  String get resetPasswordViaSms => '通过短信验证';
+
+  @override
+  String resetPasswordSmsTip(String phone) {
+    return '您的手机 $phone 将收到一条短信验证码';
+  }
+
+  @override
+  String get resetPasswordViaEmail => '通过邮件验证';
+
+  @override
+  String resetPasswordEmailTip(String email) {
+    return '您的邮箱 $email 将收到一条邮件验证码';
+  }
+
+  @override
+  String get resetPasswordSendCode => '发送验证码';
+
+  @override
+  String resetPasswordResendAfter(int seconds) {
+    return '${seconds}s后可重发';
+  }
+
+  @override
+  String get resetPasswordCodeRequired => '请输入6位数字验证码';
+
+  @override
+  String get resetPasswordNewPasswordLabel => '新密码';
+
+  @override
+  String get resetPasswordConfirmPasswordLabel => '确认新密码';
+
+  @override
+  String get resetPasswordPasswordMismatch => '两次输入的密码不一致';
+
+  @override
+  String get resetPasswordPolicyTip => '密码至少包含大小写字母+数字+特殊字符，长度至少 8 位';
+
+  @override
+  String get resetPasswordPolicyInvalid => '密码不符合要求';
+
+  @override
+  String get resetPasswordSubmit => '确定';
+
+  @override
+  String get resetPasswordSuccess => '密码重置成功，请使用新密码登录';
+
+  @override
+  String get resetPasswordBackToLogin => '返回登录';
+
+  @override
+  String get dockLabelCourseCurriculum => '课程课表';
+
+  @override
+  String get courseCurriculum => '课程课表';
+
+  @override
+  String get courseCurriculumDesc => '查询各课程教学班的课表信息';
+
+  @override
+  String get courseCurriculumNoData => '暂无课程数据';
+
+  @override
+  String get courseCurriculumNoSchedule => '暂无课表数据';
+
+  @override
+  String get courseCurriculumFilter => '查询条件';
+
+  @override
+  String get courseCurriculumSemester => '学年学期';
+
+  @override
+  String get courseCurriculumDepartment => '开课院系';
+
+  @override
+  String get courseCurriculumCategory => '课程类别';
+
+  @override
+  String get courseCurriculumCourseName => '课程名';
+
+  @override
+  String get courseCurriculumCourseCode => '课程号';
+
+  @override
+  String get courseCurriculumCourseSeq => '课序号';
+
+  @override
+  String get courseCurriculumSearch => '查询';
+
+  @override
+  String get courseCurriculumLoadMore => '加载更多';
+
+  @override
+  String get reminderHostProbeTitle => '宿主通知探针';
+
+  @override
+  String get reminderHostProbeSubtitle => '走真实链路排一条 N 秒后的通知，用于验证宿主能否真的投递。';
+
+  @override
+  String get reminderHostProbeAction => '15 秒后触发';
+
+  @override
+  String get reminderHostProbeSent => '已排期。锁屏即可看到横幅。';
+
+  @override
+  String get reminderHostProbeDenied => '通知权限被拒绝，请先到系统设置中开启。';
+
+  @override
+  String get reminderHostProbeFailed => '排期失败';
+
+  @override
+  String get reminderHostProbePermissionTitle => '通知权限';
+
+  @override
+  String get reminderHostProbePermissionUnknown => '查询中…';
+
+  @override
+  String get reminderHostProbePermissionAuthorized => '已授权';
+
+  @override
+  String get reminderHostProbePermissionProvisional => '临时授权（安静投递）';
+
+  @override
+  String get reminderHostProbePermissionDeniedLabel => '已被系统设置拒绝';
+
+  @override
+  String get reminderHostProbePermissionNotDetermined => '尚未请求';
+
+  @override
+  String get reminderHostProbeRequestPermission => '请求授权';
+
+  @override
+  String get reminderHostProbeOpenSettings => '去系统设置';
+
+  @override
+  String get reminderHostProbeOpenSettingsFailed => '无法打开系统设置';
+
+  @override
+  String get reminderHostProbePermissionGranted => '已获得通知权限';
+
+  @override
+  String get reminderHostProbePermissionDenied => '权限被拒绝';
+
+  @override
+  String get reminderProbeTitle => '课表提醒探针';
+
+  @override
+  String get reminderProbeBody => '这是一条 15 秒后触发的测试提醒';
+
+  @override
+  String get reminderPlanTitle => '当前排期计划';
+
+  @override
+  String get reminderPlanEmpty => '尚未生成计划';
+
+  @override
+  String reminderPlanSummary(int count, String end) {
+    return '共 $count 条，窗口截止 $end';
+  }
+
+  @override
+  String reminderPlanDropped(int count) {
+    return '因平台待投递上限被裁掉 $count 条';
+  }
+
+  @override
+  String reminderPlanPending(int count) {
+    return '系统已登记 $count 条';
+  }
+
+  @override
+  String reminderStatusScheduled(Object count, Object end) {
+    return '已排期 $count 条，窗口截止 $end';
+  }
+
+  @override
+  String reminderStatusPending(Object count) {
+    return '系统已登记 $count 条';
+  }
+
+  @override
+  String reminderStatusDropped(Object count) {
+    return '因平台上限被裁掉 $count 条';
+  }
+
+  @override
+  String reminderStatusError(Object error) {
+    return '排期失败：$error';
+  }
+
+  @override
+  String reminderLeadMinutes(Object count) {
+    return '提前 $count 分钟';
+  }
+
+  @override
+  String get reminderSettingsTitle => '通知与提醒';
+
+  @override
+  String get reminderMasterSwitch => '提醒';
+
+  @override
+  String get reminderMasterSwitchHint => '关闭后将清空所有已排期的提醒';
+
+  @override
+  String get reminderCourseSection => '课前提醒';
+
+  @override
+  String get reminderLeadTime => '提前提醒时间';
+
+  @override
+  String get reminderLeadTimeHint => '在上课前多久提醒你';
+
+  @override
+  String get reminderLeadTimeMultiHint => '可多选，每选一项会产生一条独立的提醒。';
+
+  @override
+  String get reminderQuietSection => '免打扰';
+
+  @override
+  String get reminderQuietEnabled => '免打扰时段';
+
+  @override
+  String get reminderQuietHint => '落在该时段内的提醒会被丢弃，而不是延后';
+
+  @override
+  String get reminderQuietStart => '开始';
+
+  @override
+  String get reminderQuietEnd => '结束';
+
+  @override
+  String get reminderStatusSection => '排期状态';
+
+  @override
+  String get reminderStatusEmpty => '尚未生成排期计划';
+
+  @override
+  String get reminderStatusNoUpcoming => '当前窗口内没有待提醒的课程';
+
+  @override
+  String get reminderStatusRefresh => '立即重新排期';
+
+  @override
+  String get reminderPermissionTitle => '通知未开启';
+
+  @override
+  String get reminderPermissionDeniedHint => '之前已拒绝过授权，系统不会再弹窗，请到系统设置里开启。';
+
+  @override
+  String get reminderPermissionNotDeterminedHint => '需要授予通知权限，提醒才能送达。';
+
+  @override
+  String get reminderPermissionRequest => '去授权';
+
+  @override
+  String get reminderPermissionOpenSettings => '去系统设置';
+
+  @override
+  String get reminderPermissionOpenFailed => '无法打开系统设置';
+
+  @override
+  String get reminderPermissionGrantedToast => '已获得通知权限';
+
+  @override
+  String get reminderPermissionDeniedToast => '权限被拒绝';
+
+  @override
+  String get reminderPermissionFailed => '请求权限失败';
+
+  @override
+  String get reminderPrivacyHint => '提醒会显示在锁屏上，因此与隐私开关联动：关掉了「显示教师姓名」，锁屏上也不会出现。';
+
+  @override
+  String get reminderPlanCopy => '复制计划 JSON';
+
+  @override
+  String get reminderPlanCopied => '已复制';
+
+  @override
+  String get reminderPlanFailed => '计划序列化失败';
+
+  @override
+  String get liveActivityProbeTitle => '灵动岛探针';
+
+  @override
+  String liveActivityProbeSubtitle(Object minutes) {
+    return '为一条 $minutes 分钟后下课的示例课程启动实时活动。实时活动只能在应用处于前台时启动。';
+  }
+
+  @override
+  String get liveActivityProbeRunning => '启动中…';
+
+  @override
+  String get liveActivityProbeAction => '立即触发示例';
+
+  @override
+  String get liveActivityProbeStarted => '已启动。按 Home 键回主屏，灵动岛应当出现。';
+
+  @override
+  String get liveActivityProbeEnded => '示例实时活动已结束';
+
+  @override
+  String get liveActivityProbeEndAction => '结束示例';
+
+  @override
+  String get liveActivityProbeFailed => '启动失败';
+
+  @override
+  String get liveActivityProbeUnsupported => '当前设备或系统不支持实时活动（需 iOS 16.1+）。';
+
+  @override
+  String get liveActivityProbeNotAuthorized => '系统设置中未开启实时活动。';
+
+  @override
+  String get liveActivityProbeForegroundRequired => '实时活动只能在应用处于前台时启动。';
+
+  @override
+  String get liveActivityProbeSampleCourse => '示例课程';
+
+  @override
+  String get liveActivityProbeSampleLocation => '综C407';
+
+  @override
+  String get liveActivityProbeSampleNext => '线性代数';
+
+  @override
+  String get liveActivityProbeEndNowAction => '立即结束';
+
+  @override
+  String get liveActivityProbeStatusTitle => '实时活动状态';
+
+  @override
+  String get liveActivityProbeStatusSupported => '支持且已开启';
+
+  @override
+  String get liveActivityProbeStatusUnsupported => '不支持 / 未开启';
+
+  @override
+  String get liveActivityProbeActive => '示例会话进行中';
+
+  @override
+  String get liveActivityProbeSentEnded => '会话已结束';
+
+  @override
+  String get liveActivityProbeNoSession => '未能连上宿主（无进行中的会话）。';
+
+  @override
+  String get privacyPolicy => '隐私政策';
+
+  @override
+  String get legalInfo => '法律信息';
+
+  @override
+  String get supportAndHelp => '支持与帮助';
+
+  @override
+  String get docLoadFailed => '文档加载失败';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

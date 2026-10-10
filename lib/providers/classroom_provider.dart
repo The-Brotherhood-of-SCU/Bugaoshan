@@ -60,10 +60,10 @@ class ClassroomProvider extends ChangeNotifier {
       _campuses = result.campuses;
       _buildings = result.buildings;
       _indexState = ClassroomLoadState.loaded;
-    } on UnauthenticatedException {
+    } on UnauthenticatedException catch (e) {
       if (generation != _indexGeneration) return;
       _indexState = ClassroomLoadState.error;
-      _indexError = LoadErrorType.sessionExpired;
+      _indexError = zhjwAuthErrorType(e);
     } catch (error) {
       if (generation != _indexGeneration) return;
       AppLog.e('ClassroomProvider', 'Index load error: $error');
@@ -146,10 +146,10 @@ class ClassroomProvider extends ChangeNotifier {
       resource.result = result;
       resource.state = ClassroomLoadState.loaded;
       resource.error = null;
-    } on UnauthenticatedException {
+    } on UnauthenticatedException catch (e) {
       if (epoch != _queryEpoch) return;
       resource.state = ClassroomLoadState.error;
-      resource.error = LoadErrorType.sessionExpired;
+      resource.error = zhjwAuthErrorType(e);
     } catch (error) {
       if (epoch != _queryEpoch) return;
       AppLog.e('ClassroomProvider', 'Query error: $error');

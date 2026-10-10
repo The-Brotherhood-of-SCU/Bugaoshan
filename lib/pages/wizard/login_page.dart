@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/pages/course/import/import_schedule_page.dart';
+import 'package:bugaoshan/pages/graduate/schedule_import_page.dart';
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
@@ -18,6 +21,22 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _authProvider = getIt<ScuAuthProvider>();
   final _courseProvider = getIt<CourseProvider>();
+  final _appConfig = getIt<AppConfigProvider>();
+
+  /// 课表导入入口随学生身份切换：本科生走教务在线拉取，研究生走研究生系统。
+  void _openImportPage() {
+    if (_appConfig.studentType.value == StudentType.graduate) {
+      popupOrNavigate(context, const GraduateScheduleImportPage());
+      return;
+    }
+    popupOrNavigate(
+      context,
+      ImportSchedulePage(
+        courseProvider: _courseProvider,
+        mode: ImportMode.online,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,15 +122,7 @@ class _LoginPageState extends State<LoginPage> {
             title: l10n.wizardLoginStep2,
             subtitle: l10n.wizardImportHint,
             trailing: FilledButton.tonal(
-              onPressed: () {
-                popupOrNavigate(
-                  context,
-                  ImportSchedulePage(
-                    courseProvider: _courseProvider,
-                    mode: ImportMode.online,
-                  ),
-                );
-              },
+              onPressed: _openImportPage,
               child: ListenableBuilder(
                 listenable: _courseProvider.allSchedules,
                 builder: (context, _) {

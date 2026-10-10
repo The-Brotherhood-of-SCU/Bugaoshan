@@ -2,9 +2,11 @@ import Cocoa
 import FlutterMacOS
 import EventKit
 import CoreLocation
+import WidgetKit
 
 class MainFlutterWindow: NSWindow {
   private let channelName = "bugaoshan/update"
+  private let appGroupId = "group.io.github.thebrotherhoodofscu.bugaoshan"
   private let calendarEventIdentifierMapKey = "bugaoshan.calendarEventIdentifiers"
   private let eventStore = EKEventStore()
 
@@ -49,10 +51,85 @@ class MainFlutterWindow: NSWindow {
           calendarIdentifier: arguments["calendarIdentifier"] as? String,
           result: result
         )
+      case "updateWidget":
+        self?.updateWidget(result: result)
+      case "syncWidgetShowTomorrow":
+        guard
+          let arguments = call.arguments as? [String: Any],
+          let value = arguments["value"] as? Bool
+        else {
+          result(FlutterError(
+            code: "INVALID_ARGUMENT",
+            message: "Value is required",
+            details: nil
+          ))
+          return
+        }
+        self?.syncWidgetShowTomorrow(value: value, result: result)
+      case "syncWidgetAppearance":
+        guard
+          let arguments = call.arguments as? [String: Any],
+          let colorStyle = arguments["colorStyle"] as? Int,
+          let density = arguments["density"] as? Int
+        else {
+          result(FlutterError(
+            code: "INVALID_ARGUMENT",
+            message: "Color style and density are required",
+            details: nil
+          ))
+          return
+        }
+        self?.syncWidgetAppearance(
+          colorStyle: colorStyle,
+          density: density,
+          result: result
+        )
       default:
         result(FlutterMethodNotImplemented)
       }
     }
+  }
+
+  private func updateWidget(result: @escaping FlutterResult) {
+    WidgetCenter.shared.reloadAllTimelines()
+    result(nil)
+  }
+
+  private func syncWidgetShowTomorrow(value: Bool, result: @escaping FlutterResult) {
+    guard let sharedDefaults = UserDefaults(suiteName: appGroupId) else {
+      result(FlutterError(
+        code: "APP_GROUP_UNAVAILABLE",
+        message: "App Group not available",
+        details: nil
+      ))
+      return
+    }
+    sharedDefaults.set(value, forKey: "widget_show_tomorrow")
+    sharedDefaults.synchronize()
+
+    WidgetCenter.shared.reloadAllTimelines()
+    result(nil)
+  }
+
+  private func syncWidgetAppearance(
+    colorStyle: Int,
+    density: Int,
+    result: @escaping FlutterResult
+  ) {
+    guard let sharedDefaults = UserDefaults(suiteName: appGroupId) else {
+      result(FlutterError(
+        code: "APP_GROUP_UNAVAILABLE",
+        message: "App Group not available",
+        details: nil
+      ))
+      return
+    }
+    sharedDefaults.set(colorStyle, forKey: "widget_color_style")
+    sharedDefaults.set(density, forKey: "widget_density")
+    sharedDefaults.synchronize()
+
+    WidgetCenter.shared.reloadAllTimelines()
+    result(nil)
   }
 
   private func listWritableCalendars(result: @escaping FlutterResult) {

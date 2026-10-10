@@ -1,3 +1,5 @@
+import 'dart:async';
+
 // 这个库是为了在iOS上使用CupertinoPageTransitionsBuilder，flutter新版已经分离出来了，不要删
 // ignore: unnecessary_import
 import 'package:flutter/cupertino.dart';
@@ -9,6 +11,8 @@ import 'package:bugaoshan/pages/wizard/eula_gate_page.dart';
 import 'package:bugaoshan/pages/wizard/wizard_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/background_cache_service.dart';
+import 'package:bugaoshan/services/reminder/live_activity_coordinator.dart';
+import 'package:bugaoshan/services/reminder/reminder_service.dart';
 import 'package:bugaoshan/theme.dart';
 import 'package:bugaoshan/widgets/common/session_expired_listener.dart';
 import 'package:bugaoshan/widgets/eula_content.dart';
@@ -24,13 +28,14 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   final AppConfigProvider _appConfig = getIt<AppConfigProvider>();
   late final BackgroundCacheService _bgCache = getIt<BackgroundCacheService>();
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _bgCache.precache();
@@ -39,8 +44,25 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _bgCache.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // 应用恢复前台时重新触发排期：处理系统设置中的权限变更以及覆盖时间窗口滚动的更新场景。
+    if (state != AppLifecycleState.resumed) return;
+    // 校验异步单例就绪状态（isReadySync）：避免在冷启动或注册未完成的异步间隙中直接调用
+    // `getIt<ReminderService>()` 引发 StateError。
+    if (getIt.isReadySync<ReminderService>()) {
+      unawaited(getIt<ReminderService>().reschedule());
+    }
+    // 实时活动必须在前台启动，前台唤醒是核心触发节点；同时用于对齐课间与下一节课程的状态转换。
+    if (getIt.isReadySync<LiveActivityCoordinator>()) {
+      unawaited(getIt<LiveActivityCoordinator>().tick());
+    }
   }
 
   @override
@@ -50,6 +72,7 @@ class _MyAppState extends State<MyApp> {
         _appConfig.locale,
         _appConfig.themeColor,
         _appConfig.themeColorMode,
+        _appConfig.themeMode,
         _appConfig.useGoogleFonts,
         // 页面转场时长跟随设置变化，需要重建 MaterialApp 使新主题生效
         // （「页面切换动画」开关只控制 Dock 栏切换，不进全局主题）
@@ -63,7 +86,7 @@ class _MyAppState extends State<MyApp> {
         supportedLocales: AppLocalizations.supportedLocales,
         theme: _buildTheme(Brightness.light, context),
         darkTheme: _buildTheme(Brightness.dark, context),
-        themeMode: ThemeMode.system,
+        themeMode: _appConfig.themeMode.value,
         builder: (context, child) {
           final scale = MediaQuery.textScalerOf(context).scale(1.0);
           final clamped = scale.clamp(1.0, 2.0);

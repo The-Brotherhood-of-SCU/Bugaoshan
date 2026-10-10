@@ -19,4 +19,14 @@
     <string name="download_notification_channel_name">Bugaoshan downloads</string>
     <string name="download_notification_channel_desc">App update download progress</string>
     <string name="download_notification_cancel">Cancel</string>
+    <!-- 课程提醒通知 -->
+    <string name="reminder_notification_channel_name">Course Reminders</string>
+    <string name="reminder_notification_channel_desc">Reminders before class starts</string>
+    <plurals name="reminder_notification_group_summary">
+        <item quantity="one">%1$d course reminder</item>
+        <item quantity="other">%1$d course reminders</item>
+    </plurals>
+    <!-- 实时活动与状态栏胶囊通知 -->
+    <string name="live_activity_channel_name">Live Activities</string>
+    <string name="live_activity_channel_desc">Status bar capsules and lock screen live cards during classes</string>
 </resources>

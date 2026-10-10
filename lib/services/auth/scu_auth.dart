@@ -129,9 +129,9 @@ class ScuAuth extends ChangeNotifier {
   /// 从安全存储恢复 token（应用启动时调用）。
   Future<void> init() async {
     try {
-      _accessToken = await SecureStorageProvider.instance.read(
-        key: kScuAccessToken,
-      ).catchError((_) => null);
+      _accessToken = await SecureStorageProvider.instance
+          .read(key: kScuAccessToken)
+          .catchError((_) => null);
       _principal = await _restorePrincipal(_accessToken);
       _loginTimestamp = _prefs.getInt(kScuLoginTimestamp);
 

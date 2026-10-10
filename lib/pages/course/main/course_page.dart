@@ -248,7 +248,11 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
       );
     }
 
-    final controller = _controller!;
+    // 保险丝：非 demo 模式下网格只应在控制器就绪后构建。导入落库的瞬态
+    // 间隙里控制器可能尚未创建（scheduleConfig 尚未就位），空占位一帧即可，
+    // 不能让 _controller! 的空指针崩溃打断渲染。
+    final controller = _controller;
+    if (controller == null) return const SizedBox.shrink();
     final totalWeeks = controller.totalWeeks;
     // build 内每次重读 controller.pageController —— detach 期间可能被换实例，
     // 缓存到局部之外会导致 CourseSwipePageView 持有失效的旧控制器。
@@ -369,7 +373,10 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   void _onImport() =>
       CoursePageActions.showImportSheet(context, courseProvider);
 
-  void _onExport() => CoursePageActions.showExportSheet(context);
+  void _onExport() => CoursePageActions.showExportSheet(
+    context,
+    visibleWeek: _controller?.visibleWeek,
+  );
 
   void _onAddCourse() {
     final cfg = courseProvider.scheduleConfig.value;

@@ -1,7 +1,7 @@
 name: bugaoshan
 description: Explore everything, all on the Bugaoshan.
 publish_to: none
-version: 2.5.2+20502
+version: 2.5.3+20503
 environment:
   sdk: ^3.10.4
 dependencies:
@@ -80,11 +80,13 @@ flutter:
     - assets/js/
     - assets/scripts/
     - CHANGELOG.md
+    - docs/legal/
   config:
     enable-swift-package-manager: false
 flutter_launcher_icons:
   android: true
   ios: true
+  remove_alpha_ios: true
   adaptive_icon_foreground: "assets/icon-foreground.png"
   adaptive_icon_background: "#FFFFFF"
   web:

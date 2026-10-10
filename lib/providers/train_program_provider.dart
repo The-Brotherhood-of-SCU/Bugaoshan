@@ -92,11 +92,11 @@ class TrainProgramProvider extends ChangeNotifier {
       _grades = results[1] as List<Grade>;
       _collegesState = TrainProgramLoadState.loaded;
       _gradesState = TrainProgramLoadState.loaded;
-    } on UnauthenticatedException {
+    } on UnauthenticatedException catch (e) {
       _collegesState = TrainProgramLoadState.error;
       _gradesState = TrainProgramLoadState.error;
-      _collegesError = LoadErrorType.sessionExpired;
-      _gradesError = LoadErrorType.sessionExpired;
+      _collegesError = zhjwAuthErrorType(e);
+      _gradesError = zhjwAuthErrorType(e);
     } on ServiceException catch (_) {
       _collegesState = TrainProgramLoadState.error;
       _gradesState = TrainProgramLoadState.error;
@@ -123,9 +123,9 @@ class TrainProgramProvider extends ChangeNotifier {
         grade: _selectedGrade,
       );
       _programsState = TrainProgramLoadState.loaded;
-    } on UnauthenticatedException {
+    } on UnauthenticatedException catch (e) {
       _programsState = TrainProgramLoadState.error;
-      _programsError = LoadErrorType.sessionExpired;
+      _programsError = zhjwAuthErrorType(e);
     } on ServiceException catch (_) {
       _programsState = TrainProgramLoadState.error;
       _programsError = campusNetworkErrorType(LoadErrorType.loadFailed);
@@ -147,10 +147,10 @@ class TrainProgramProvider extends ChangeNotifier {
       if (generation != _detailGeneration) return;
       _currentDetail = detail;
       _detailState = TrainProgramLoadState.loaded;
-    } on UnauthenticatedException {
+    } on UnauthenticatedException catch (e) {
       if (generation != _detailGeneration) return;
       _detailState = TrainProgramLoadState.error;
-      _detailError = LoadErrorType.sessionExpired;
+      _detailError = zhjwAuthErrorType(e);
     } on ServiceException catch (_) {
       if (generation != _detailGeneration) return;
       _detailState = TrainProgramLoadState.error;
@@ -182,10 +182,10 @@ class TrainProgramProvider extends ChangeNotifier {
       if (generation != _courseDetailGeneration) return;
       _currentCourseDetail = detail;
       _courseDetailState = TrainProgramLoadState.loaded;
-    } on UnauthenticatedException {
+    } on UnauthenticatedException catch (e) {
       if (generation != _courseDetailGeneration) return;
       _courseDetailState = TrainProgramLoadState.error;
-      _courseDetailError = LoadErrorType.sessionExpired;
+      _courseDetailError = zhjwAuthErrorType(e);
     } on ServiceException catch (_) {
       if (generation != _courseDetailGeneration) return;
       _courseDetailState = TrainProgramLoadState.error;

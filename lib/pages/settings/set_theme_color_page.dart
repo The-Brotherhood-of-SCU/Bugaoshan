@@ -1,3 +1,4 @@
+import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -135,13 +136,21 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
               actions: [
                 Padding(
                   padding: const EdgeInsets.only(right: 16.0),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    ),
+                  child: AdaptiveGlassButton(
+                    label: l10n.confirmButton,
                     onPressed: _confirmChanges,
-                    child: Text(l10n.confirmButton),
+                    prominent: true,
+                    symbol: 'checkmark',
+                    fallback: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Theme.of(
+                          context,
+                        ).colorScheme.onPrimary,
+                      ),
+                      onPressed: _confirmChanges,
+                      child: Text(l10n.confirmButton),
+                    ),
                   ),
                 ),
               ],

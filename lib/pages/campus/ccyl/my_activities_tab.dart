@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
+import 'package:bugaoshan/pages/campus/ccyl/ccyl_activity_phase.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
+import 'package:bugaoshan/pages/campus/ccyl/widgets/ccyl_phase_chip.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activity_detail_page.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
@@ -220,39 +221,13 @@ class _MyActivityCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(activity.statusName),
-                    borderRadius: BorderRadius.circular(AppShapes.xs),
-                  ),
-                  child: Text(
-                    activity.statusName ?? activity.status,
-                    style: Theme.of(context).textTheme.labelSmall,
-                  ),
-                ),
+                const SizedBox(width: 8),
+                CcylPhaseChips(phases: resolveCcylActivityPhases(activity)),
               ],
             ),
           ],
         ),
       ),
     );
-  }
-
-  Color _getStatusColor(String? statusName) {
-    if (statusName == null) return Colors.grey.shade100;
-    switch (statusName) {
-      case '报名中':
-        return Colors.blue.shade100;
-      case '进行中':
-        return Colors.green.shade100;
-      case '已结束':
-        return Colors.grey.shade100;
-      default:
-        return Colors.grey.shade100;
-    }
   }
 }

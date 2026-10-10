@@ -82,7 +82,9 @@ void main() {
       (course) => course.id == harness.source.id,
     );
     expect(source.name, harness.source.name, reason: '源课程不应被改名');
-    final copy = courses.singleWhere((course) => course.id != harness.source.id);
+    final copy = courses.singleWhere(
+      (course) => course.id != harness.source.id,
+    );
     expect(copy.name, '${harness.source.name}${harness.l10n.copySuffix}');
     expect(copy.dayOfWeek, DateTime.tuesday);
     expect(copy.startSection, harness.source.startSection);
@@ -187,7 +189,8 @@ Future<_Harness> _openHarness() async {
       start_section INTEGER,
       end_section INTEGER,
       color_value INTEGER,
-      week_type INTEGER
+      week_type INTEGER,
+      custom_weeks TEXT
     )
   ''');
 

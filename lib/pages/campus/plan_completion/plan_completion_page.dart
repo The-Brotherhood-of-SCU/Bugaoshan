@@ -45,6 +45,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
       final message = switch (_provider.error!) {
         LoadErrorType.rateLimited => l10n.planCompletionRateLimited,
         LoadErrorType.sessionExpired => l10n.sessionExpired,
+        LoadErrorType.undergradOnly => l10n.undergradDataOnly,
         _ => l10n.gradesRefreshFailed,
       };
       ScaffoldMessenger.of(context).showSnackBar(

@@ -29,7 +29,9 @@ class ClassScheduleInquiryDetailPage extends StatefulWidget {
 class _ClassScheduleInquiryDetailPageState
     extends State<ClassScheduleInquiryDetailPage> {
   static const int _totalWeeks = kDefaultTotalWeeks;
-  static const Duration _pageTransitionDuration = Duration(milliseconds: 250);
+
+  Duration get _pageTransitionDuration =>
+      getIt<AppConfigProvider>().cardSizeAnimationDuration.value;
 
   late final ClassScheduleInquiryProvider _provider;
   late final PageController _pageController;

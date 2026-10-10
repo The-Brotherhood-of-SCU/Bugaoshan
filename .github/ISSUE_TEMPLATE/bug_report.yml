@@ -1,0 +1,128 @@
+name: 缺陷报告 / Bug Report
+description: 提交应用运行中的异常、崩溃、功能失效或界面错误
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢提交缺陷报告！完善的信息有助于维护者快速定位并修复问题。
+        **提 issue 前建议：**
+        1. 查阅 [不高山故障排查与使用文档](https://bugaoshan-docs.scubro.dev/manual/troubleshooting.html)，确认该问题非已知预期行为或常见网络故障；
+        2. 确认已在 [Releases](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases) 升级到最新版本；
+        3. 在 [Issues 列表](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/issues) 中检索是否已有相同或相关的报告。
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 前置核对 / Pre-submission Checklist
+      description: 请确认以下每一项
+      options:
+        - label: 我已阅读[不高山排查文档与常见问题](https://bugaoshan-docs.scubro.dev/manual/troubleshooting.html)，确认其中没有说明这个特性或预期行为
+          required: true
+        - label: 我已查阅现有 Issue，确认没有正在处理的相同或重复报告
+          required: true
+        - label: 我使用的是较新版本（或预发布预览版），且确认并非因校园网络本身断网引起
+          required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: 运行平台 / Operating System
+      description: 请选择问题发生的系统平台
+      options:
+        - Android
+        - iOS
+        - HarmonyOS (鸿蒙 / OpenHarmony)
+        - Windows
+        - macOS
+        - Linux
+      default: 0
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: 设备与系统版本 / Device & OS Version
+      description: 例如：`小米 13 (HyperOS 2.0 / Android 15)`、`华为 Mate 60 (HarmonyOS NEXT)`、`iPhone 15 Pro (iOS 18.2)`、`Windows 11 23H2`
+      placeholder: 请填写具体设备型号与系统版本号
+    validations:
+      required: true
+
+  - type: input
+    id: app_version
+    attributes:
+      label: 软件版本号 / App Version
+      description: 位于「关于」页面的版本信息（例如 `v2.5.2`、`v2.5.3-preview.3`，或带 commit 的内部构建号）
+      placeholder: 例如 v2.5.2 (commit 7fab588)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: 涉及功能模块 / Subsystem or Feature
+      description: 选择发生异常的功能分类，以便对口排查
+      options:
+        - 智慧后勤在线报修 (Repair)
+        - 课表与桌面小组件 (Course & Widget)
+        - 统一身份认证与登录 (SCU Auth / SSO)
+        - 校园网无感认证 (Passpoint)
+        - 成绩与绩点查询 (Grades)
+        - 培养方案与完成度 (Training Program)
+        - 电费 / 空调余额查询 (Balance Query)
+        - 第二课堂 (CCYL)
+        - 空闲教室 / 考表查询 (Classroom & Exam)
+        - 校园通知 / 附件下载 (Notices & Downloads)
+        - 界面主题与基础设置 (Theme & Settings)
+        - 其他 / 全局异常 (Others)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 缺陷简要描述 / Bug Description
+      description: 清楚、简明地描述发生了什么异常
+      placeholder: 发生了什么异常？期望的正常表现是什么？
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: 复现步骤 / Steps to Reproduce (可选)
+      description: 如能够复现，请给出从打开应用到触发 Bug 的具体操作序列
+      placeholder: |
+        1. 进入「...」页面
+        2. 点击「...」
+        3. 切换 / 选择「...」
+        4. 出现异常：...
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 截图或录屏 / Screenshots or Recordings
+      description: 建议拖拽上传异常截图、复现录屏或红屏/灰屏报错信息，这对定位 UI 和交互问题极其有效
+      placeholder: 直接将图片或视频拖拽至此处上传
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 运行日志 / App Logs (可选但强烈建议)
+      description: |
+        如果涉及认证失效、请求失败或异常崩溃：
+        可以在应用内进入 **我的 -> 关于 -> 开发者页面 -> 查看认证日志**，点击右上角的**保存**图标导出日志（日志已自动过滤密码及敏感 Token）。
+        可将导出的关键错误信息粘贴在下方代码块中：
+      placeholder: |
+        ```text
+        [粘贴相关的日志条目]
+        ```
+      render: shell
+
+  - type: textarea
+    id: extra_info
+    attributes:
+      label: 其他补充信息 / Additional Context
+      description: 是否连接了校园内网 / VPN、是否有特殊账号权限、特定课程数据等补充背景

@@ -1,2 +1,9 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
 #include "Generated.xcconfig"
+
+// 本机（Apple Silicon）iOS 模拟器构建用：
+// Xcode 27 传给 Flutter 的 IosArchs 为 "arm64 x86_64"，而本机 Flutter 3.44.2
+// 提供的模拟器 Flutter.framework 实际是 x86_64 fat slice，lipo 校验会失败：
+//   Target debug_unpack_ios failed: Binary .../Flutter does not contain architectures "arm64 x86_64"
+// 排除 x86_64 后仅构建 arm64，与模拟器宿主一致。
+EXCLUDED_ARCHS[sdk=iphonesimulator*] = x86_64

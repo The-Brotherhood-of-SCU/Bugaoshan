@@ -1,1693 +1,1974 @@
 {
-    "bugaoshan": "不高山上",
-    "selfLanguage": "中文",
-    "wizardWelcomeTitle": "欢迎使用不高山上",
-    "wizardWelcomeDesc": "你的校园生活助手，一站式查看课表、成绩与校园服务",
-    "wizard": "向导",
-    "@wizard": {
-        "description": "引导（向导）章节的标题，通常用于测试页面或设置中的引导相关标题。",
-        "type": "text"
-    },
-    "resetWizardTitle": "重置引导状态",
-    "@resetWizardTitle": {
-        "description": "重置引导状态的操作标题，用户点击后会重新显示首次引导流程。",
-        "type": "text"
-    },
-    "resetWizardSubtitle": "重置后将进入Wizard页面",
-    "wizardLoginTitle": "登录与导入课表",
-    "wizardLoginStep1": "完成统一身份认证登录",
-    "wizardLoginStep2": "从教务系统导入课表",
-    "wizardLoginDone": "已登录",
-    "wizardLoginButton": "去登录",
-    "wizardImportButton": "导入课表",
-    "wizardHasSchedule": "已有课表",
-    "wizardImportHint": "登录后可自动获取课表",
-    "wizardFeatureTitle": "探索更多功能",
-    "wizardFeatureCourse": "课表管理",
-    "wizardFeatureCourseDesc": "查看每周课程安排与多课表管理，支持从教务系统一键导入、分享与导出为日历文件",
-    "wizardFeatureCampus": "校园服务",
-    "wizardFeatureCampusDesc": "查询空闲教室与学业成绩，参与第二课堂活动，查询电费与空调余额，管理校园网设备",
-    "wizardFeatureProfile": "个人中心",
-    "wizardFeatureProfileDesc": "使用统一身份认证登录并绑定第二课堂，自定义主题颜色、深色模式与语言偏好",
-    "wizardFeatureWidget": "桌面小组件",
-    "wizardFeatureWidgetDesc": "将课表小组件添加到桌面，无需打开应用即可随时查看今日课程安排",
-    "widgetShowTomorrowAfterEnd": "当天课程结束后显示第二天课程",
-    "@widgetShowTomorrowAfterEnd": {
-        "description": "当天课程结束时，在桌面小组件中显示第二天的课程。"
-    },
-    "widgetAppearanceTitle": "小组件外观",
-    "widgetAppearanceDescription": "统一调整本设备上的所有不高山课表小组件。",
-    "widgetColorStyle": "配色",
-    "widgetColorful": "课程色彩",
-    "widgetMonochrome": "单色",
-    "widgetDensity": "信息密度",
-    "widgetDensityStandard": "标准",
-    "widgetDensityCompact": "紧凑",
-    "widgetSystemAppearanceHint": "在 iOS 26 及更高版本中，主屏幕的透明与着色外观会自动使用系统玻璃或着色效果。",
-    "onboardingSkip": "跳过",
-    "onboardingNext": "下一步",
-    "onboardingStart": "立即体验",
-    "course": "课程",
-    "profile": "我的",
-    "campus": "校园",
-    "classroomQuery": "教室查询",
-    "classroomQueryDesc": "查询教室空闲、借用和上课信息",
-    "utilitiesSection": "实用功能",
-    "academicSection": "学业",
-    "moreFeaturesTitle": "更多功能",
-    "moreFeaturesDesc": "更多功能请创建 Issue 交流",
-    "selectCampus": "选择校区",
-    "allBuildings": "全部教学楼",
-    "seats": "座",
-    "free": "空闲",
-    "currentlyFree": "当前空闲",
-    "inClass": "上课中",
-    "borrowed": "已借用",
-    "classroomPeriodExam": "考试中",
-    "classroomPeriodExperiment": "实验中",
-    "classroomTeachingWeek": "第 {week} 周",
-    "@classroomTeachingWeek": {
-        "placeholders": {
-            "week": {
-                "type": "int"
-            }
-        }
-    },
-    "classroomQueryDate": "查询日期: {date}",
-    "@classroomQueryDate": {
-        "placeholders": {
-            "date": {
-                "type": "String"
-            }
-        }
-    },
-    "classroomCanBorrow": "可借用",
-    "classroomCannotBorrow": "不可借用",
-    "classroomRemark": "备注",
-    "period": "节次",
-    "periodN": "第 {n} 节",
-    "@periodN": {
-        "description": "节次编号格式",
-        "placeholders": {
-            "n": {
-                "type": "int"
-            }
-        }
-    },
-    "periodStart": "起始",
-    "periodEnd": "结束",
-    "periodUnlimited": "不限",
-    "clear": "清除",
-    "loading": "加载中...",
-    "loadFailed": "加载失败",
-    "retry": "重试",
-    "campusNetworkRequired": "该功能仅限校园网访问，请连接校园网或使用学校 VPN 后重试",
-    "campusNetworkRequiredAtNight": "该时段（23:00-次日6:00）仅限校园网访问，请连接校园网或使用学校 VPN 后重试",
-    "appOnly": "仅 App 端可使用",
-    "softwareSetting": "软件设置",
-    "followSystem": "跟随系统",
-    "modifyLanguage": "修改语言",
-    "current": "当前",
-    "animationDuration": "动画时长",
-    "confirm": "确认",
-    "today": "今天",
-    "currentAnimationDuration": "当前动画时长: {value} ms",
-    "animationDurationUpdated": "动画时长已更新为 {value} ms",
-    "animationDurationHint": "提示：调整滑块查看动画效果，点击确认后才会保存设置",
-    "enablePageTransitionAnimation": "Dock栏页面切换动画",
-    "enablePageTransitionAnimationHint": "切换Dock栏页面时启用滑动与淡入淡出动画",
-    "themeColor": "主题颜色",
-    "changeThemeColor": "更改主题颜色",
-    "confirmButton": "确认",
-    "customizedColorHint": "自定义颜色由颜色种子生成",
-    "tips": "提示",
-    "resetToDefault": "重置为默认",
-    "themeColorModeSystem": "跟随系统",
-    "themeColorModeBackgroundImage": "背景图",
-    "themeColorModeCustom": "自定义",
-    "themeColorModeBackgroundImageNotSet": "请先设置背景图片",
-    "blockPicker": "色块",
-    "materialPicker": "材质",
-    "advancedPicker": "高级",
-    "about": "关于",
-    "userManual": "用户手册",
-    "developmentTeam": "开发团队",
-    "projectInfo": "项目信息",
-    "appName": "应用名称",
-    "version": "版本",
-    "gitTag": "Git 标签",
-    "appDescription": "探索一切，尽在不高山上",
-    "contactUs": "联系我们",
-    "developedBy": "由 {team} 倾情打造",
-    "externalResources": "外部资源",
-    "projectRepository": "项目仓库",
-    "officialWebsite": "官方网站",
-    "checkForUpdates": "检查更新",
-    "newVersionAvailable": "发现新版本",
-    "noUpdateAvailable": "已是最新版本",
-    "goToReleases": "前往 Releases",
-    "startUpdate": "开始更新",
-    "startUpdatePreview": "更新到预览版",
-    "updateToLatest": "升级到最新版本",
-    "updateToStable": "更新到最新稳定版",
-    "updateToPreview": "更新到最新版（包括预览版）",
-    "usePreviewUpdateSource": "软件更新使用预览版源",
-    "usePreviewUpdateSourceHint": "仅影响首页和关于页面的自动检查；测试页面始终同时检查两个渠道。",
-    "forceCaptchaForDownload": "强制下载验证码",
-    "forceCaptchaForDownloadHint": "开启后点击附件下载将直接弹出验证码弹窗，用于测试验证码流程。",
-    "captchaDialogTitle": "请输入验证码",
-    "captchaCancelled": "验证码已取消",
-    "downloading": "正在下载",
-    "updateFailed": "更新失败",
-    "notificationDownloading": "正在下载... {percent}%",
-    "notificationInstalling": "正在安装...",
-    "notificationUpdateFailed": "更新失败:{error}",
-    "preReleaseWarning": "这是预发布版本，使用时请注意。",
-    "releaseNotes": "更新日志",
-    "neverMind": "算了吧",
-    "clearAllData": "清除所有数据",
-    "confirmMessage": "真的要这样做吗？",
-    "environmentInfo": "环境信息",
-    "devPage": "开发者页面",
-    "forceUpdate": "更新到最新版本（含预览版）",
-    "authLog": "认证日志",
-    "viewAuthLog": "查看认证日志",
-    "authLogEmpty": "暂无认证日志。",
-    "@authLogLastEntry": {
-        "placeholders": {
-            "time": {
-                "type": "String"
-            },
-            "level": {
-                "type": "String"
-            },
-            "tag": {
-                "type": "String"
-            }
-        }
-    },
-    "authLogLastEntry": "{level} · {tag} · {time}",
-    "scheduleSetting": "课表设置",
-    "scheduleManagement": "课表管理",
-    "globalSetting": "全局设置",
-    "noSchedule": "暂无课表",
-    "noScheduleHint": "导入或新建一个课表开始使用",
-    "addSchedule": "新建课表",
-    "addCourse": "添加课程",
-    "editCourse": "编辑课程",
-    "deleteCourse": "删除课程",
-    "deleteCourseConfirm": "确定要删除这门课程吗？",
-    "courseName": "课程名称",
-    "teacher": "教师",
-    "location": "教室",
-    "courseColor": "课程颜色",
-    "week": "周",
-    "startWeek": "开始周",
-    "endWeek": "结束周",
-    "dayOfWeek": "星期",
-    "startSection": "开始节次",
-    "endSection": "结束节次",
-    "monday": "周一",
-    "tuesday": "周二",
-    "wednesday": "周三",
-    "thursday": "周四",
-    "friday": "周五",
-    "saturday": "周六",
-    "sunday": "周日",
-    "currentWeek": "第 {week} 周",
-    "notStarted": "未开学",
-    "thisWeek": "本周",
-    "weekRange": "{start}-{end} 周",
-    "@weekRange": {
-        "placeholders": {
-            "start": {
-                "type": "int"
-            },
-            "end": {
-                "type": "int"
-            }
-        }
-    },
-    "weekType": "周次类型",
-    "everyWeek": "每周",
-    "oddWeek": "单周",
-    "evenWeek": "双周",
-    "section": "节",
-    "sectionRange": "第{start}-{end}节",
-    "@sectionRange": {
-        "description": "Section range display, e.g. '第1-2节'",
-        "placeholders": {
-            "start": {
-                "type": "int"
-            },
-            "end": {
-                "type": "int"
-            }
-        }
-    },
-    "sectionCount": "每天节数",
-    "timeSlot": "时间段",
-    "startTime": "开始时间",
-    "endTime": "结束时间",
-    "semesterConfig": "学期配置",
-    "semesterName": "学期名称",
-    "semesterStartDate": "学期开始日期",
-    "setCurrentWeek": "设置当前周数",
-    "setCurrentWeekHint": "将根据当前周数自动推算学期开始日期",
-    "autoFetchCurrentWeek": "自动获取当前周数",
-    "autoFetchCurrentWeekHint": "从教务系统获取当前教学周",
-    "autoFetchCurrentWeekOnVacation": "假期中暂无教学周，未修改课表",
-    "fetchingCurrentWeek": "正在获取...",
-    "loginRequired": "请先在「我的」页面完成统一身份认证登录",
-    "goToLogin": "前往登录",
-    "semesterEndDate": "学期结束日期",
-    "displaySetting": "显示设置",
-    "courseCardSection": "课程卡片",
-    "courseGridSection": "课表网格",
-    "courseStyleSetting": "课程表样式",
-    "otherSection": "其他",
-    "settingsGeneral": "通用",
-    "settingsStyle": "样式",
-    "setFont": "字体",
-    "useGoogleFonts": "使用 Google 字体",
-    "fontHint": "如需调整字号和字重，请在系统设置中修改",
-    "settingsDanger": "危险操作",
-    "colorOpacity": "颜色不透明度",
-    "fontSize": "字体大小",
-    "showCourseGrid": "显示课表网格",
-    "courseRowHeight": "课表网格高度",
-    "backgroundImage": "背景图片",
-    "setBackgroundImage": "设置背景图片",
-    "extractColorFromBackgroundImage": "从背景图取色",
-    "themeColorAutoExtractedHint": "主题色已从背景图片提取，如需修改请前往软件设置->主题颜色",
-    "noBackgroundImageSet": "请先设置背景图片",
-    "removeBackgroundImage": "移除背景图片",
-    "editBackgroundArea": "调整显示区域",
-    "cropEditorHint": "拖动调整位置，双指或滚轮缩放",
-    "backgroundImageOpacity": "背景图片不透明度",
-    "backgroundImageSetHint": "背景图片已设置，您可以前往「主题颜色」修改主题色",
-    "showTeacher": "显示教师",
-    "showLocation": "显示教室",
-    "showCourseWeeks": "显示课程周数",
-    "showWeekend": "显示周末",
-    "showNonCurrentWeekCourses": "显示非本周课程",
-    "save": "保存",
-    "cancel": "取消",
-    "downloadInBackground": "后台下载",
-    "back": "上一步",
-    "next": "下一步",
-    "delete": "删除",
-    "customColor": "自定义颜色",
-    "noCourseThisWeek": "本周没有课程",
-    "timeConflict": "时间冲突",
-    "timeConflictMessage": "所选时间段与已有课程冲突。",
-    "fieldRequired": "此字段不能为空",
-    "invalidWeekRange": "结束周必须大于或等于开始周",
-    "duplicateScheduleName": "课表名称已存在",
-    "importNameConflictAction": "课表 \"{name}\" 已存在，请选择操作：",
-    "importNameConflictAddSuffix": "添加后缀导入",
-    "importNameConflictUpdate": "更新当前课表",
-    "importAllConflictAction": "部分课表名称与已有课表冲突，请选择操作方式：",
-    "importAllConflictAddSuffix": "全部添加后缀",
-    "importAllConflictUpdate": "全部更新",
-    "importSchedule": "导入课表",
-    "importFromShare": "从分享导入",
-    "importFromJwxt": "从教务系统抓包导入",
-    "importDataHint": "请在此处粘贴 JSON 数据...",
-    "importSuccess": "课表导入成功",
-    "importFailedTip": "导入失败，请检查数据格式或重新登录",
-    "importedScheduleDefaultName": "导入的课表",
-    "importNameConflictHint": "名称 \"{name}\" 已存在，请重命名：",
-    "importNameSuffix": "(导入)",
-    "defaultScheduleName": "默认课表",
-    "deleteScheduleConfirm": "确定要删除课表 \"{name}\" 吗？",
-    "exportSchedule": "导出课表",
-    "exportExamPlan": "导出考表",
-    "exportScheduleAsCopy": "复制到剪切板",
-    "exportScheduleAsIcs": "导出为日历文件",
-    "exportScheduleAsCopySuccess": "课表已复制到剪切板",
-    "exportExamPlanAsCopySuccess": "考表已复制到剪切板",
-    "exportScheduleAsCopyFailed": "复制失败，您可以稍后再试",
-    "exportScheduleAsIcsTo": "保存日历文件到...",
-    "exportScheduleAsIcsSuccess": "保存成功",
-    "exportScheduleAsIcsFailed": "保存失败",
-    "exportScheduleAsIcsCanceled": "取消保存",
-    "icsTeacherLabel": "教师",
-    "exportScheduleAddToCalendar": "一键导入到日历",
-    "exportScheduleAddToCalendarSuccess": "已导入到日历",
-    "exportScheduleAddToCalendarFailed": "导入失败",
-    "exportScheduleAddToCalendarEmpty": "课表为空，无法导入到日历",
-    "exportScheduleSelectCalendar": "选择目标日历",
-    "exportScheduleCalendarDefault": "默认日历",
-    "copySuffix": " (副本)",
-    "copyCourseTitle": "新建副本",
-    "copyCourseSave": "保存副本",
-    "notThisWeek": "[非本周]",
-    "actualCurrentWeek": "本周第 {week} 周",
-    "totalWeeksSubtitle": "共 {count} 周",
-    "invalidSectionRange": "结束节次必须大于开始节次",
-    "crossPeriodError": "跨时间段错误",
-    "crossPeriodErrorMessage": "一门课程不能跨越上午、下午或晚上。",
-    "totalWeeks": "总周数: {value}",
-    "morning": "上午",
-    "afternoon": "下午",
-    "evening": "晚上",
-    "courseDuration": "单节课程时长 (分钟)",
-    "breakDuration": "课间休息时长 (分钟)",
-    "autoSyncTime": "自动推算后续时间",
-    "scuLogin": "统一身份认证登录",
-    "loggedIn": "已登录",
-    "notLoggedIn": "未登录",
-    "loginSessionExpired": "登录状态已过期",
-    "loginSessionExpiredDesc": "登录会话过期，请重新登录",
-    "logout": "退出登录",
-    "logoutConfirm": "确定要退出登录吗？",
-    "importFromJwxtOnline": "从教务系统在线导入",
-    "importFromJwxtOnlineHint": "将自动获取课表，需要先在「我的」页面完成统一身份认证登录",
-    "selectSemester": "选择学期",
-    "importAll": "全部导入",
-    "importingProgress": "正在导入 {current}/{total}...",
-    "@importingProgress": {
-        "placeholders": {
-            "current": {
-                "type": "int"
-            },
-            "total": {
-                "type": "int"
-            }
-        }
-    },
-    "scuUnifiedAuth": "统一身份认证",
-    "studentId": "学号",
-    "studentIdHint": "请输入学号",
-    "studentIdRequired": "请输入学号",
-    "password": "密码",
-    "passwordHint": "请输入密码",
-    "passwordRequired": "请输入密码",
-    "captcha": "验证码",
-    "captchaHint": "验证码",
-    "captchaRequired": "请输入验证码",
-    "rememberPassword": "记住密码",
-    "autoLogin": "自动登录",
-    "autoLoggingIn": "正在登录中...",
-    "loginButton": "登录",
-    "captchaNotLoaded": "请先加载验证码",
-    "resetPassword": "重置密码",
-    "resetPasswordStepAccount": "确认账户",
-    "resetPasswordStepVerify": "安全验证",
-    "resetPasswordStepReset": "重置密码",
-    "resetPasswordNext": "下一步",
-    "resetPasswordChooseMethod": "您正在重置登录密码，请选择以下安全验证方式：",
-    "resetPasswordViaSms": "通过短信验证",
-    "resetPasswordSmsTip": "您的手机 {phone} 将收到一条短信验证码",
-    "@resetPasswordSmsTip": {
-        "placeholders": {
-            "phone": {
-                "type": "String"
-            }
-        }
-    },
-    "resetPasswordViaEmail": "通过邮件验证",
-    "resetPasswordEmailTip": "您的邮箱 {email} 将收到一条邮件验证码",
-    "@resetPasswordEmailTip": {
-        "placeholders": {
-            "email": {
-                "type": "String"
-            }
-        }
-    },
-    "resetPasswordSendCode": "发送验证码",
-    "resetPasswordResendAfter": "{seconds}s后可重发",
-    "@resetPasswordResendAfter": {
-        "placeholders": {
-            "seconds": {
-                "type": "int"
-            }
-        }
-    },
-    "resetPasswordCodeRequired": "请输入6位数字验证码",
-    "resetPasswordNewPasswordLabel": "新密码",
-    "resetPasswordConfirmPasswordLabel": "确认新密码",
-    "resetPasswordPasswordMismatch": "两次输入的密码不一致",
-    "resetPasswordPolicyTip": "密码至少包含大小写字母+数字+特殊字符，长度至少 8 位",
-    "resetPasswordPolicyInvalid": "密码不符合要求",
-    "resetPasswordSubmit": "确定",
-    "resetPasswordSuccess": "密码重置成功，请使用新密码登录",
-    "resetPasswordBackToLogin": "返回登录",
-    "gradesStats": "成绩统计",
-    "gradesStatsDesc": "查看和分析你的学业成绩",
-    "gradesStatsComingSoon": "功能即将上线",
-    "schemeScores": "方案成绩",
-    "passingScores": "及格成绩",
-    "gradesLoginRequired": "请先在「我的」页面完成统一身份认证登录",
-    "gradesNoData": "暂无成绩数据",
-    "gradesRefreshFailed": "刷新失败，显示的是缓存数据",
-    "gradesNoPassingData": "暂无及格成绩数据",
-    "gradesSearchHint": "搜索课程名称",
-    "gradesNoSearchResults": "未找到匹配的课程",
-    "customStats": "自定义统计",
-    "deselectAll": "取消全选",
-    "customStatsSelectHint": "选择课程以计算自定义统计",
-    "selectedCount": "已选 {count} 门",
-    "gradesGet": "获取成绩",
-    "gradesRetry": "重试",
-    "gpa": "GPA",
-    "overallGpa": "综合 GPA",
-    "earnedCredits": "已修学分",
-    "passedCount": "通过",
-    "failedCount": "未通过",
-    "avgScore": "平均成绩",
-    "requiredAvgScore": "必修均分",
-    "requiredCredits": "必修学分",
-    "electiveCredits": "选修学分",
-    "optionalCredits": "任选学分",
-    "requiredGpa": "必修 GPA",
-    "totalPassedCount": "通过门数",
-    "termCount": "学期数",
-    "accumulatedCredits": "累计学分",
-    "creditUnit": "{credit} 学分",
-    "termPassedSummary": "{count} 门 · {credits} 学分",
-    "sessionExpiredTitle": "会话已过期",
-    "sessionExpiredMessage": "登录会话已过期，请重新登录后继续使用该功能。",
-    "sessionExpired": "登录会话已过期",
-    "relogin": "重新登录",
-    "trainProgram": "培养方案",
-    "trainProgramDesc": "查询各学院各年级的培养方案",
-    "trainProgramCollege": "学院",
-    "trainProgramGrade": "年级",
-    "trainProgramAll": "全部",
-    "trainProgramSearch": "查询",
-    "trainProgramNoData": "暂无培养方案数据",
-    "trainProgramLoading": "加载中...",
-    "trainProgramLoadFailed": "加载失败",
-    "trainProgramName": "方案名称",
-    "trainProgramMajor": "专业",
-    "trainProgramEducationSystem": "学制",
-    "trainProgramDegreeType": "学位类型",
-    "trainProgramDetail": "培养方案详情",
-    "trainProgramCredits": "总学分",
-    "trainProgramHours": "总学时",
-    "trainProgramCourses": "课程数",
-    "trainProgramObjective": "培养目标",
-    "trainProgramCourseStructure": "课程结构",
-    "trainProgramCourseNumber": "课程号",
-    "trainProgramOpenCollege": "开课学院",
-    "trainProgramCourseType": "课程类别",
-    "trainProgramExamType": "考核方式",
-    "trainProgramTeachingMethod": "教学方式",
-    "trainProgramCourseHoursDetail": "内含学时",
-    "trainProgramWeekHours": "周学时",
-    "trainProgramActualHours": "实践学时",
-    "trainProgramOpenCourse": "开放课程",
-    "trainProgramCourseArrangement": "课程安排",
-    "trainProgramPlanName": "方案名称",
-    "trainProgramCourseAttribute": "课程属性",
-    "trainProgramAcademicYear": "学年",
-    "trainProgramSemester": "学期",
-    "trainProgramExperimentHours": "实验学时",
-    "trainProgramLoginRequired": "请先在「我的」页面完成统一身份认证登录",
-    "planCompletion": "方案修读情况",
-    "planCompletionDesc": "查看培养方案各模块的修读进度",
-    "planCompletionNoData": "暂无方案修读数据",
-    "planCompletionTotalEarned": "已获学分",
-    "planCompletionCompleted": "已完成模块",
-    "planCompletionCredits": "学分",
-    "planCompletionCreditsUnit": "学分",
-    "planCompletionCourses": "课程",
-    "planCompletionPlanFallback": "培养方案",
-    "planCompletionRateLimited": "请勿频繁刷新，请稍后再试",
-    "ccylTitle": "第二课堂",
-    "ccylDesc": "查看活动、参与活动、预约活动",
-    "ccylSearchActivities": "活动搜索",
-    "ccylMyActivities": "我参与的活动",
-    "ccylOrderedActivities": "预约的活动",
-    "ccylMyCredits": "成绩单",
-    "ccylSelect": "选择",
-    "ccylSelectAll": "全选",
-    "ccylExportEmail": "导出到邮箱",
-    "ccylEmailAddress": "QQ邮箱",
-    "ccylEmailHint": "请输入接收成绩单的QQ邮箱",
-    "ccylExportSuccess": "成绩单已发送至邮箱",
-    "ccylSearchHint": "搜索活动名称",
-    "ccylHours": "学时",
-    "ccylAvailable": "可预约",
-    "ccylInProgress": "进行中",
-    "ccylCompleted": "已结束",
-    "ccylSubscribed": "已预约",
-    "ccylSubscribe": "预约",
-    "ccylCancelSubscribe": "取消预约",
-    "ccylSubscribeSuccess": "预约成功",
-    "ccylCancelSuccess": "取消预约成功",
-    "ccylActionFailed": "操作失败",
-    "ccylSignUp": "报名",
-    "ccylCancelSignUp": "取消报名",
-    "ccylSelectScoreType": "选择希望提升的能力类型",
-    "ccylSignUpSuccess": "报名成功",
-    "ccylNoScoreType": "暂无能力类型",
-    "ccylCurrentValue": "当前值",
-    "ccylLoginRequired": "请先在「我的」页面完成统一身份认证登录",
-    "ccylBindRequired": "请先绑定第二课堂账号",
-    "ccylBindTitle": "绑定第二课堂",
-    "ccylBindDesc": "绑定第二课堂账号后即可查看活动信息",
-    "ccylOpenOAuth": "打开统一认证授权页",
-    "ccylDoBind": "绑定第二课堂",
-    "ccylBindHelp": "点击按钮自动完成绑定",
-    "ccylActivitySeries": "活动系列",
-    "ccylActivityDetail": "活动详情",
-    "ccylActivityInfo": "活动信息",
-    "ccylTimeInfo": "时间信息",
-    "ccylLocationInfo": "地点信息",
-    "ccylContactInfo": "联系信息",
-    "ccylStarLevel": "星级",
-    "ccylQuality": "性质",
-    "ccylScoreType": "积分类型",
-    "ccylLiablePerson": "负责人",
-    "ccylLiablePhone": "联系电话",
-    "ccylLiableTeacher": "指导老师",
-    "ccylActivities": "系列活动",
-    "ccylQuota": "名额",
-    "ccylActivityTarget": "活动对象",
-    "ccylActivityTime": "活动时间",
-    "ccylEnrollTime": "报名时间",
-    "ccylActivityAddress": "活动地点",
-    "ccylContactPhone": "联系电话",
-    "ccylSignIn": "签到",
-    "ccylSignOut": "签退",
-    "ccylEnabled": "开启",
-    "ccylDisabled": "关闭",
-    "ccylSeriesName": "系列名称",
-    "ccylOrganizer": "主办单位",
-    "noData": "暂无数据",
-    "noFreeClassrooms": "当前没有空闲教室",
-    "networkDeviceQuery": "校园网设备查询",
-    "networkDeviceQueryDesc": "查询校园网账户和在线设备",
-    "networkDeviceUserInfo": "用户信息",
-    "networkDeviceOnlineDevices": "在线设备",
-    "networkDeviceDeviceId": "设备ID",
-    "networkDeviceIp": "IP 地址",
-    "networkDeviceLogout": "下线",
-    "networkDeviceLogoutConfirm": "确定要下线所有设备吗？",
-    "networkDeviceForceOffline": "强制下线",
-    "networkDeviceConfirmOffline": "确定要下线该设备吗？",
-    "networkDeviceOfflineSuccess": "操作成功",
-    "networkDeviceAuthFailed": "认证失败",
-    "networkDeviceOperationSuccess": "操作成功",
-    "passpointTitle": "无感认证",
-    "passpointDesc": "绑定设备 MAC，接入校园网自动认证",
-    "passpointAddDevice": "添加无感设备",
-    "passpointUserInfo": "用户信息",
-    "passpointUserGroup": "用户组",
-    "passpointAccountState": "账户状态",
-    "passpointOnline": "在线",
-    "passpointOffline": "离线",
-    "passpointMyDevices": "我的设备",
-    "passpointExpireTime": "到期时间",
-    "passpointExpireLongest": "最长有效期6年",
-    "passpointExit": "无感设备出口",
-    "passpointMac": "MAC 地址",
-    "passpointCancelAuth": "取消无感认证",
-    "passpointCancelAuthConfirm": "确定要取消该设备的无感认证吗？",
-    "passpointOperationSuccess": "操作成功",
-    "operationFailed": "操作失败",
-    "passpointMacRequired": "请填写MAC",
-    "passpointMacInvalid": "MAC 格式无效，需 12 位十六进制",
-    "passpointExpireRequired": "请填写绑定有效期",
-    "passpointExpireInvalid": "有效期需在 0-365 之间",
-    "passpointExpireHint": "0-365 天，0 表示最长有效期 6 年",
-    "passpointAddWarning": "特别提醒：自助开通无感知设备（MAC）后设备将自动接入校园网，学生宿舍区域将自动计时，请谨慎选择！",
-    "captchaLoadFailed": "验证码加载失败",
-    "networkError": "网络错误",
-    "calendarRefreshSuccess": "校历已更新",
-    "invalidCaptcha": "验证码错误，请重试",
-    "loginFailedWillLock": "登录失败，再输错 {count} 次将锁定账户",
-    "@loginFailedWillLock": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "loginSuccess": "登录成功",
-    "ccylBindFailed": "绑定失败，请稍后重试",
-    "ccylActivityLoadFailed": "活动加载失败",
-    "networkOfflineFailed": "下线失败",
-    "importFailed": "导入失败",
-    "balanceQuery": "电费查询",
-    "balanceQueryDesc": "查询照明和空调电费余额",
-    "electricityFee": "照明电量",
-    "acFee": "空调电量",
-    "balance": "剩余电量",
-    "unitKwh": "度",
-    "bindRoom": "绑定房间",
-    "bindNewRoom": "绑定新房间",
-    "switchRoom": "切换房间",
-    "deleteRoom": "删除房间",
-    "selectBuilding": "选择楼栋",
-    "selectUnit": "选择单元",
-    "inputInfo": "输入信息",
-    "stepCampus": "校区",
-    "stepBuilding": "楼栋",
-    "stepUnit": "单元",
-    "stepInfo": "信息",
-    "inputBindingInfo": "输入绑定信息",
-    "cusName": "姓名",
-    "cusNameHint": "请输入姓名",
-    "roomNumber": "房间号",
-    "roomNumberHint": "请输入房间号，如 301C",
-    "pricePerUnit": "单价",
-    "balanceQueryLoginRequired": "请先在「我的」页面完成统一身份认证登录",
-    "balanceQueryNoBinding": "您还没有绑定房间，请先绑定",
-    "balanceTrend": "用电趋势",
-    "balanceTrendTitleElectric": "照明电量趋势",
-    "balanceTrendTitleAc": "空调电量趋势",
-    "balanceTrendDailyAvgCost": "日均电费",
-    "balanceTrendDailyAvgKwh": "日均消耗",
-    "balanceTrendTotalCost": "累计消耗金额",
-    "balanceTrendTotalKwh": "累计消耗度数",
-    "balanceTrendTotalDays": "统计天数",
-    "balanceTrendCurrentPrice": "当前单价",
-    "balanceTrendRecordCount": "原始记录条数",
-    "balanceTrendRecordRange": "记录时间范围",
-    "balanceTrendSkippedRecharge": "已识别充值段",
-    "balanceTrendNoData": "暂无历史数据，刷新页面后即可开始记录",
-    "balanceTrendTimeRange7": "近7天",
-    "balanceTrendTimeRange30": "近30天",
-    "balanceTrendTimeRange90": "近90天",
-    "balanceTrendTimeRangeCustom": "自定义",
-    "balanceTrendChangeRange": "修改区间",
-    "balanceTrendCustomStart": "开始日期",
-    "balanceTrendCustomEnd": "结束日期",
-    "balanceTrendRawRecords": "原始记录",
-    "balanceTrendYAxisBalance": "余额 (度)",
-    "balanceTrendTooltipPrice": "单价",
-    "balanceTrendUnitPerDay": "元/天",
-    "balanceTrendUnitYuanPerKwh": "元/度",
-    "balanceQuerySettings": "电费查询设置",
-    "autoSampleBalanceOnLogin": "登录后自动统计电费详情",
-    "autoSampleBalanceOnLoginDesc": "登录成功后若当日尚无记录，自动查询一次当前房间的电费与空调余额以完善统计信息",
-    "scuLoginDisclaimerPwd": "当使用记住密码功能时，密码通过系统级加密仅存储在本机",
-    "scuLoginDisclaimerOcr": "验证码使用本地OCR模型识别",
-    "scuLoginDisclaimerPrivacy": "我们不会收集任何信息",
-    "scuLoginPasswordHint": "密码为统一身份认证密码，非教务处密码",
-    "openSourceLicenseDesc": "本应用基于 AGPL-3.0 开源许可协议发布",
-    "openSourceLicenses": "开源许可",
-    "academicCalendar": "校历查看",
-    "academicCalendarDesc": "查看四川大学校历，了解学期安排",
-    "campusNotices": "教务处公告",
-    "campusNoticesDesc": "查看四川大学教务处通知公告",
-    "campusNoticesSearchHint": "搜索通知标题",
-    "campusNoticesAllDates": "全部时间",
-    "campusNoticesClearDate": "清除筛选",
-    "campusNoticesLoadFailed": "加载失败，请检查网络",
-    "campusNoticesOpenOriginal": "在浏览器中查看",
-    "campusNoticesExternalLink": "该链接为外部页面，请在浏览器中打开查看",
-    "campusNoticesOpenInBrowser": "在浏览器中打开",
-    "campusNoticesSearch": "搜索",
-    "campusNoticesSearchResults": "{count, plural, =0{无结果} other{共 {count} 条结果}}",
-    "@campusNoticesSearchResults": {
-        "placeholders": {
-            "count": {
-                "type": "int",
-                "format": "compact"
-            }
-        }
-    },
-    "campusNoticesConfirmOpenLink": "该链接将在外部浏览器中打开，是否继续？\n\n{url}",
-    "@campusNoticesConfirmOpenLink": {
-        "placeholders": {
-            "url": {
-                "type": "String"
-            }
-        }
-    },
-    "selectAcademicYear": "选择学年",
-    "userInfoLoading": "正在加载个人信息...",
-    "userInfoLoadFailed": "个人信息加载失败",
-    "userInfoRetry": "点击重试",
-    "loginToViewUserInfo": "登录后查看个人信息",
-    "labelBookBorrowCount": "图书借阅量",
-    "labelCampusCardBalance": "校园卡余额",
-    "labelNetworkFeeBalance": "网费余额",
-    "customDock": "自定义Dock栏",
-    "dockPreview": "Dock预览",
-    "resetDock": "恢复默认",
-    "dockResetConfirm": "确定恢复默认Dock栏配置？",
-    "cannotDeleteProfile": "不可删除",
-    "dockLabelCourse": "课表",
-    "dockLabelCampus": "校园",
-    "dockLabelProfile": "我的",
-    "dockLabelGrades": "成绩",
-    "dockLabelCcyl": "第二课堂",
-    "dockLabelPlanCompletion": "方案",
-    "dockLabelTrainProgram": "培养方案",
-    "dockLabelClassroom": "教室",
-    "dockLabelNetworkDevice": "校园网",
-    "dockLabelPasspoint": "无感",
-    "dockLabelBalanceQuery": "电费",
-    "dockLabelClassScheduleInquiry": "班级课表",
-    "dockLabelAcademicCalendar": "校历",
-    "fitnessTest": "体质测试",
-    "fitnessTestDesc": "查询体测成绩和查看通知公告",
-    "fitnessTestNotices": "通知公告",
-    "fitnessTestScores": "体测成绩",
-    "fitnessTestTotalScore": "总分",
-    "fitnessTestGrade": "等级",
-    "fitnessTestYear": "查询年份",
-    "fitnessTestNoScore": "该年份暂无体测成绩",
-    "fitnessTestStudentNum": "学号",
-    "fitnessTestStudentName": "姓名",
-    "fitnessTestSex": "性别",
-    "fitnessTestReportType": "报告类型",
-    "fitnessTestReportStatus": "报告状态",
-    "fitnessTestStudentYear": "年级",
-    "fitnessTestBmi": "身高/体重",
-    "fitnessTestVitalCapacity": "肺活量",
-    "fitnessTestStandingLongJump": "立定跳远",
-    "fitnessTestSitAndReach": "坐位体前屈",
-    "fitnessTestPullUp": "引体向上",
-    "fitnessTestSitUp": "仰卧起坐",
-    "fitnessTestFiftyMeters": "50米跑",
-    "fitnessTestRun": "800/1000米跑",
-    "fitnessTestReadCount": "次阅读",
-    "fitnessTestSticky": "置顶",
-    "fitnessTestNoticeDetail": "通知详情",
-    "dockLabelFitnessTest": "体测",
-    "dockLabelNotice": "通知",
-    "dockLabelNoticeParty": "学工部",
-    "dockLabelNoticeTuanwei": "团委",
-    "dockLabelDownloads": "附件",
-    "eulaTitle": "用户协议",
-    "eulaScrollToBottom": "请先阅读完协议内容",
-    "eulaAgreeCheckbox": "我已阅读并同意《用户协议》",
-    "eulaAgree": "同意",
-    "eulaDisagree": "不同意",
-    "revokeEula": "撤回用户协议同意",
-    "revokeEulaConfirm": "撤回后将需要重新同意用户协议才能继续使用，确定要撤回吗？",
-    "revokeEulaSuccess": "已撤回用户协议同意",
-    "eulaAgreedVersion": "已同意版本 v{version}",
-    "@eulaAgreedVersion": {
-        "placeholders": {
-            "version": {
-                "type": "String"
-            }
-        }
-    },
-    "addWidgetSection": "桌面小组件",
-    "addWidgetPageTitle": "小组件",
-    "addWidgetDesc": "将课表小组件添加到桌面，随时查看今日课程安排。",
-    "widgetSizeSmall": "小组件 (2×2)",
-    "widgetSizeSmallDesc": "显示今天接下来的 2 节课程",
-    "widgetSizeMedium": "中组件 (4×2)",
-    "widgetSizeMediumDesc": "显示标题栏和 2 张课程卡片",
-    "widgetSizeLarge": "大组件 (4×4)",
-    "widgetSizeLargeDesc": "显示标题栏和最多 4 张课程卡片",
-    "pinWidgetButton": "添加到桌面",
-    "pinWidgetSuccess": "小组件已添加到桌面",
-    "pinWidgetNotSupported": "此设备不支持固定小组件",
-    "pinWidgetRequested": "已发送添加请求，请在系统弹窗中确认添加",
-    "pinWidgetFailedTitle": "小组件未添加成功",
-    "pinWidgetFailedDesc": "没有出现系统确认弹窗，添加请求可能被系统权限拦截（部分系统需要授予「创建桌面快捷方式」权限）。请前往设置开启后重试，或长按桌面空白处手动添加小组件。",
-    "pinWidgetOpenSettings": "去设置",
-    "pinWidgetDismiss": "知道了",
-    "pinWidgetHint": "提示：部分系统（如 ColorOS、MIUI 等）可能会忽略自动添加请求。如果小组件未出现在桌面，请长按桌面空白处，选择「小组件」手动添加。某些系统需要授予「创建桌面快捷方式」权限。",
-    "batteryOptimizationTitle": "关闭省电优化",
-    "batteryOptimizationDesc": "为确保小组件可靠更新，请关闭本应用的省电优化。这可以防止系统延迟后台任务。",
-    "batteryOptimizationButton": "立即关闭",
-    "batteryOptimizationAlreadyDisabled": "省电优化已关闭",
-    "batteryOptimizationSuccess": "省电优化已关闭",
-    "autoSetCurrentWeekTitle": "自动设置当前教学周",
-    "autoSetCurrentWeekContent": "是否从教务系统获取当前教学周并自动设置？",
-    "autoSetCurrentWeekSuccess": "已自动设置当前教学周",
-    "share": "分享",
-    "saveImageToGallery": "保存到相册",
-    "imageSavedToGallery": "已保存到相册",
-    "imageSaveFailed": "图片保存失败",
-    "attachments": "附件",
-    "download": "下载",
-    "attachmentSaved": "附件已保存到：{path}",
-    "@attachmentSaved": {
-        "placeholders": {
-            "path": {
-                "type": "String"
-            }
-        }
-    },
-    "attachmentDownloadFailed": "附件下载失败",
-    "downloadedAttachments": "已下载附件",
-    "open": "打开",
-    "noDownloadedAttachments": "暂无已下载附件",
-    "fileDeleted": "文件已删除",
-    "attachmentSavedTapToOpen": "附件已保存，点击打开",
-    "confirmDelete": "确认删除",
-    "confirmDeleteFile": "确认删除此文件？",
-    "deleteSelected": "删除 ({count})",
-    "@deleteSelected": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "selectAll": "全选",
-    "confirmDeleteSelected": "确认删除选中的 {count} 个文件？",
-    "@confirmDeleteSelected": {
-        "placeholders": {
-            "count": {
-                "type": "int"
-            }
-        }
-    },
-    "sortByTime": "按时间",
-    "sortByName": "按名称",
-    "sortBySize": "按大小",
-    "searchAttachmentsHint": "搜索附件...",
-    "openFolder": "打开文件夹",
-    "openFolderFailed": "打开文件夹失败",
-    "noticeSection": "通知公告",
-    "partyNotice": "党委学工部通知",
-    "partyNoticeDesc": "查看四川大学党委学生工作部通知公告",
-    "tuanweiNotice": "青春川大通知",
-    "tuanweiNoticeDesc": "查看四川大学团委通知公告",
-    "downloadedAttachmentsDesc": "管理已下载的通知附件",
-    "jwcTabLabel": "教务处",
-    "xgbTabLabel": "党委学工部",
-    "tuanweiTabLabel": "青春川大",
-    "dateMonthDay": "{month}月{day}日",
-    "@dateMonthDay": {
-        "placeholders": {
-            "month": {
-                "type": "int"
-            },
-            "day": {
-                "type": "int"
-            }
-        }
-    },
-    "holidayLabel": "假",
-    "@holidayLabel": {
-        "description": "Short label for statutory holiday displayed in course grid date header"
-    },
-    "festivalLabel": "节",
-    "@festivalLabel": {
-        "description": "Short label for festival displayed in course grid date header"
-    },
-    "solarTermLabel": "气",
-    "@solarTermLabel": {
-        "description": "Short label for solar term displayed in course grid date header"
-    },
-    "holidayTypeLabel": "节假日",
-    "@holidayTypeLabel": {
-        "description": "Label for statutory holiday type shown in special day detail sheet"
-    },
-    "festivalTypeLabel": "节日",
-    "@festivalTypeLabel": {
-        "description": "Label for festival type shown in special day detail sheet"
-    },
-    "solarTermTypeLabel": "节气",
-    "@solarTermTypeLabel": {
-        "description": "Label for solar term type shown in special day detail sheet"
-    },
-    "classScheduleInquiry": "班级课表",
-    "classScheduleInquiryDesc": "查看各班级的课表信息",
-    "classScheduleInquiryNoData": "暂无班级数据",
-    "classScheduleInquiryNoSchedule": "暂无课表数据",
-    "classScheduleInquiryDetail": "课程详情",
-    "classScheduleInquiryFilter": "查询条件",
-    "classScheduleInquirySemester": "学年学期",
-    "classScheduleInquiryGrade": "年级",
-    "classScheduleInquiryDepartment": "院系",
-    "classScheduleInquirySubject": "专业",
-    "classScheduleInquiryClass": "班级",
-    "classScheduleInquirySearch": "查询",
-    "classScheduleInquiryLoadMore": "加载更多",
-    "dockLabelCourseCurriculum": "课程课表",
-    "courseCurriculum": "课程课表",
-    "courseCurriculumDesc": "查询各课程教学班的课表信息",
-    "courseCurriculumNoData": "暂无课程数据",
-    "courseCurriculumNoSchedule": "暂无课表数据",
-    "courseCurriculumFilter": "查询条件",
-    "courseCurriculumSemester": "学年学期",
-    "courseCurriculumDepartment": "开课院系",
-    "courseCurriculumCategory": "课程类别",
-    "courseCurriculumCourseName": "课程名",
-    "courseCurriculumCourseCode": "课程号",
-    "courseCurriculumCourseSeq": "课序号",
-    "courseCurriculumSearch": "查询",
-    "courseCurriculumLoadMore": "加载更多",
-    "holidayTotalDays": "共{days}天假",
-    "@holidayTotalDays": {
-        "description": "Shows total holiday days, e.g. '共3天假'",
-        "placeholders": {
-            "days": {
-                "type": "int"
-            }
-        }
-    },
-    "dockLabelExamPlan": "考表",
-    "examPlan": "考试安排",
-    "examPlanDesc": "查询本学期考试时间、地点和座位号",
-    "examPlanNoData": "暂无考试安排",
-    "campusGridView": "网格视图",
-    "campusGridViewDesc": "校园页面使用网格布局",
-    "campusSearchHint": "搜索功能",
-    "campusSearchResults": "搜索结果",
-    "campusNoSearchResults": "未找到相关功能",
-    "viewChangelog": "版本更新日志",
-    "viewChangelogSubtitle": "查看历史版本更新记录",
-    "changelog": "更新日志",
-    "unreleased": "未发布",
-    "dockLabelZysc": "志愿",
-    "zyscTitle": "志愿四川",
-    "zyscDesc": "查看志愿服务活动并参与报名",
-    "interactiveCalendar": "互动校历",
-    "originalCalendar": "官方图表",
-    "calendarLoadingData": "正在获取校历数据...",
-    "calendarImportSuccess": "已成功导入 {count} 个事件到系统日历",
-    "calendarImportFailed": "导入系统日历失败",
-    "calendarImportCalendarTitle": "四川大学校历",
-    "calendarDaysRemaining": "剩 {days} 天",
-    "calendarStartedNDaysAgo": "已过 {days} 天",
-    "calendarToday": "今天",
-    "calendarCurrentWeek": "当前第 {week} 周",
-    "calendarSemesterStart": "学期开始: {date}",
-    "calendarWeeksTotal": "共 {weeks} 周",
-    "calendarImportButton": "导入系统日历",
-    "calendarHolidayTag": "放假",
-    "calendarExamTag": "考试",
-    "calendarStartTag": "开学",
-    "calendarEventTag": "事件",
-    "calendarNoEventData": "暂无互动校历数据",
-    "calendarNextEvent": "下个重要事件",
-    "appIcon": "应用图标",
-    "defaultIcon": "默认图标",
-    "oldIcon": "旧版图标",
-    "switchAppIcon": "切换应用图标",
-    "switchAppIconConfirm": "切换至「{label}」后应用将重启，是否继续？",
-    "@switchAppIconConfirm": {
-        "placeholders": {
-            "label": {
-                "type": "String"
-            }
-        }
-    },
-    "defaultIconRestored": "已恢复默认图标",
-    "iconSwitched": "已切换到图标: {name}",
-    "@iconSwitched": {
-        "placeholders": {
-            "name": {
-                "type": "String"
-            }
-        }
-    },
-    "iconSwitchFailed": "切换失败: {error}",
-    "@iconSwitchFailed": {
-        "placeholders": {
-            "error": {
-                "type": "String"
-            }
-        }
-    },
-    "iconSwitchNotSupported": "当前平台不支持动态切换应用图标",
-    "featureNotSupported": "当前平台不支持此功能",
-    "newIconSubtitle": "Bugaoshan 新图标",
-    "oldIconSubtitle": "Bugaoshan 经典图标",
-    "close": "关闭",
-    "onVacation": "假期中",
-    "vacationBadge": "放假中",
-    "daysUntilVacation": "距离放假还有 {days} 天",
-    "@daysUntilVacation": {
-        "placeholders": {
-            "days": {
-                "type": "int"
-            }
-        }
-    },
-    "daysUntilNextSemester": "距离下学期上课还有 {days} 天",
-    "@daysUntilNextSemester": {
-        "placeholders": {
-            "days": {
-                "type": "int"
-            }
-        }
-    },
-    "nextSemester": "下学期",
-    "registrationDates": "{start} - {end} 报到",
-    "@registrationDates": {
-        "placeholders": {
-            "start": {
-                "type": "String"
-            },
-            "end": {
-                "type": "String"
-            }
-        }
-    },
-    "enjoyVacation": "享受假期～",
-    "viewNextSemesterSchedule": "查看下学期课表",
-    "noNextSemesterSchedule": "暂未导入下学期课表",
-    "promptSwitchSemester": "下学期即将开始，是否切换到下学期课表？",
-    "promptSwitchSemesterTitle": "切换课表",
-    "switchSchedule": "切换",
-    "teamIntroTitle": "团队介绍",
-    "teamIntroDesc": "The-Brotherhood-of-SCU 是一个非官方的四川大学开源组织，由一群热爱技术、关注校园生活的川大学生共同维护。我们的目标是通过开源协作，为川大同学打造实用的校园工具。",
-    "teamJoinUsTitle": "欢迎加入我们",
-    "teamContributeDesc": "我们欢迎任何形式的贡献，包括提交 Issue、反馈建议、发起 Pull Request 或改进文档。",
-    "teamContributeClosing": "项目的成长离不开每一位贡献者，期待你的参与。",
-    "quickSetting": "快速设置",
-    "@quickSetting": {
-        "description": "快速预设时间设置的章节标题",
-        "type": "text"
-    },
-    "presetJiangAn": "四川大学江安校区",
-    "@presetJiangAn": {
-        "description": "四川大学江安校区时间表预设名称",
-        "type": "text"
-    },
-    "presetWangJiangHuaXi": "四川大学望江/华西校区",
-    "@presetWangJiangHuaXi": {
-        "description": "四川大学望江/华西校区时间表预设名称",
-        "type": "text"
-    },
-    "presetScuHint": "自动设置 4-5-3 节数及对应时间点",
-    "@presetScuHint": {
-        "description": "SCU 预设时间配置的提示",
-        "type": "text"
-    },
-    "appliedPreset": "已应用{campus}时间表预设",
-    "@appliedPreset": {
-        "description": "应用时间表预设时的 SnackBar 消息",
-        "placeholders": {
-            "campus": {
-                "type": "String"
-            }
-        }
-    },
-    "presetLabel": "预设",
-    "@presetLabel": {
-        "description": "预设时间配置的标签",
-        "type": "text"
-    },
-    "roomCount": "{count} 间教室",
-    "@roomCount": {
-        "description": "教室数量，如「12 间教室」",
-        "placeholders": {
-            "count": {
-                "type": "int",
-                "format": "compact"
-            }
-        }
-    },
-    "totalHours": "总学时: {hours}",
-    "@totalHours": {
-        "description": "CCYL 学时列表的总学时标签",
-        "placeholders": {
-            "hours": {
-                "type": "String"
-            }
-        }
-    },
-    "sortBy": "排序方式",
-    "@sortBy": {
-        "description": "排序模式选择器标签",
-        "type": "text"
-    },
-    "reset": "重置",
-    "@reset": {
-        "description": "重置按钮标签",
-        "type": "text"
-    },
-    "fileType": "文件类型",
-    "@fileType": {
-        "description": "文件类型筛选标签",
-        "type": "text"
-    },
-    "all": "全部",
-    "@all": {
-        "description": "筛选中的「全部」选项",
-        "type": "text"
-    },
-    "manage": "管理",
-    "@manage": {
-        "description": "管理/选择模式切换的工具提示",
-        "type": "text"
-    },
-    "filter": "筛选",
-    "@filter": {
-        "description": "筛选按钮的工具提示",
-        "type": "text"
-    },
-    "courseAttrRequired": "必修",
-    "@courseAttrRequired": {
-        "description": "课程属性：必修课",
-        "type": "text"
-    },
-    "courseAttrElective": "选修",
-    "@courseAttrElective": {
-        "description": "课程属性：选修课",
-        "type": "text"
-    },
-    "courseAttrOptional": "任选",
-    "@courseAttrOptional": {
-        "description": "课程属性：任选课",
-        "type": "text"
-    },
-    "nameLabel": "姓名",
-    "@nameLabel": {
-        "description": "人名的通用标签",
-        "type": "text"
-    },
-    "sexLabel": "性别",
-    "@sexLabel": {
-        "description": "性别的通用标签",
-        "type": "text"
-    },
-    "studentIdLabel": "学号",
-    "@studentIdLabel": {
-        "description": "学号的通用标签",
-        "type": "text"
-    },
-    "identityLabel": "身份",
-    "@identityLabel": {
-        "description": "身份/角色的通用标签",
-        "type": "text"
-    },
-    "emailLabel": "邮箱",
-    "@emailLabel": {
-        "description": "邮箱的通用标签",
-        "type": "text"
-    },
-    "phoneLabel": "手机",
-    "@phoneLabel": {
-        "description": "手机号的通用标签",
-        "type": "text"
-    },
-    "collegeLabel": "学院",
-    "@collegeLabel": {
-        "description": "学院的通用标签",
-        "type": "text"
-    },
-    "refresh": "刷新",
-    "@refresh": {
-        "description": "刷新按钮的工具提示",
-        "type": "text"
-    },
-    "gradeSuffix": "{grade}级",
-    "@gradeSuffix": {
-        "description": "年级后缀格式，如「2024级」",
-        "placeholders": {
-            "grade": {
-                "type": "String"
-            }
-        }
-    },
-    "campusSuffix": "{campusName}校区",
-    "@campusSuffix": {
-        "description": "校区名称后缀，如「江安校区」",
-        "placeholders": {
-            "campusName": {
-                "type": "String"
-            }
-        }
-    },
-    "examEnded": "已结束",
-    "@examEnded": {
-        "description": "表示考试已结束的标签",
-        "type": "text"
-    },
-    "pricePerUnitValue": "{price} 元/度",
-    "@pricePerUnitValue": {
-        "description": "带单位的电价，如「0.50 元/度」",
-        "placeholders": {
-            "price": {
-                "type": "String"
-            }
-        }
-    },
-    "verifyFailedCheckInfo": "验证失败，请检查信息是否正确",
-    "@verifyFailedCheckInfo": {
-        "description": "房间绑定验证失败时的错误提示",
-        "type": "text"
-    },
-    "getAuthCodeFailed": "获取授权码失败",
-    "@getAuthCodeFailed": {
-        "description": "CCYL OAuth 授权码获取失败时的错误提示",
-        "type": "text"
-    },
-    "addWidgetIosHint": "在 iOS 主屏幕长按，选择「不高山上」的课表组件添加",
-    "@addWidgetIosHint": {
-        "description": "iOS 主屏幕添加小组件的提示",
-        "type": "text"
-    },
-    "addWidgetMacHint": "在 macOS 通知中心点击「编辑小组件」，添加「不高山上」的课表组件",
-    "@addWidgetMacHint": {
-        "description": "macOS 通知中心添加小组件的提示",
-        "type": "text"
-    },
-    "autoAdjustedToSunday": "已自动调整为该周周日",
-    "@autoAdjustedToSunday": {
-        "description": "周起始日期自动调整为周日时的 SnackBar 提示",
-        "type": "text"
-    },
-    "goForward": "前进",
-    "@goForward": {
-        "description": "WebView 前进导航按钮的工具提示",
-        "type": "text"
-    },
-    "goBack": "后退",
-    "@goBack": {
-        "description": "WebView 后退导航按钮的工具提示",
-        "type": "text"
-    },
-    "openInBrowser": "在浏览器中打开",
-    "@openInBrowser": {
-        "description": "在外部浏览器中打开当前页面的工具提示",
-        "type": "text"
-    },
-    "downloadComplete": "下载完成",
-    "@downloadComplete": {
-        "description": "文件下载完成时的 SnackBar 提示",
-        "type": "text"
-    },
-    "importedScheduleName": "JWXT 导入 {month}-{day}",
-    "@importedScheduleName": {
-        "description": "从教务系统导入课表时的默认名称",
-        "placeholders": {
-            "month": {
-                "type": "int",
-                "format": "compact"
-            },
-            "day": {
-                "type": "int",
-                "format": "compact"
-            }
-        }
-    },
-    "error": "错误",
-    "@error": {
-        "description": "通用错误标题",
-        "type": "text"
-    },
-    "dockLabelLeave": "办事大厅",
-    "@dockLabelLeave": {
-        "description": "办事大厅入口的短 dock 标签。",
-        "type": "text"
-    },
-    "dockLabelRepair": "报修",
-    "@dockLabelRepair": {
-        "description": "在线报修入口的短 dock 标签。",
-        "type": "text"
-    },
-    "repairTitle": "在线报修",
-    "@repairTitle": {
-        "description": "在线报修页面标题。",
-        "type": "text"
-    },
-    "repairDesc": "提交宿舍/教室设施报修并跟踪维修进度",
-    "@repairDesc": {
-        "description": "校园入口卡片上显示的在线报修功能描述。",
-        "type": "text"
-    },
-    "repairTabSubmit": "我要报修",
-    "@repairTabSubmit": {
-        "description": "在线报修页提交表单的 Tab 标签。",
-        "type": "text"
-    },
-    "repairTabMyTickets": "我的报修",
-    "@repairTabMyTickets": {
-        "description": "在线报修页我的报修列表的 Tab 标签。",
-        "type": "text"
-    },
-    "repairAddress": "故障地址",
-    "@repairAddress": {
-        "description": "在线报修表单中的故障地址字段标题。",
-        "type": "text"
-    },
-    "repairSelectAddress": "请选择故障地址",
-    "@repairSelectAddress": {
-        "description": "未选择故障地址时的提示。",
-        "type": "text"
-    },
-    "repairProject": "维修项目",
-    "@repairProject": {
-        "description": "在线报修表单中的维修项目字段标题。",
-        "type": "text"
-    },
-    "repairSelectProject": "请选择维修项目",
-    "@repairSelectProject": {
-        "description": "未选择维修项目时的提示。",
-        "type": "text"
-    },
-    "repairSelectCategory": "请先选择类别",
-    "@repairSelectCategory": {
-        "description": "维修大类下拉框的提示。",
-        "type": "text"
-    },
-    "repairNoProjectInCategory": "该类别下暂无维修项目",
-    "@repairNoProjectInCategory": {
-        "description": "类别下没有可维修项目时展示。",
-        "type": "text"
-    },
-    "repairSelectProjectHint": "请先选择故障地址以加载维修项目",
-    "@repairSelectProjectHint": {
-        "description": "维修项目加载前的提示。",
-        "type": "text"
-    },
-    "repairContent": "故障描述",
-    "@repairContent": {
-        "description": "在线报修表单中的故障描述字段标题。",
-        "type": "text"
-    },
-    "repairContentHint": "请描述故障详细情况，便于维修师傅携带工具",
-    "@repairContentHint": {
-        "description": "故障描述输入框的占位提示。",
-        "type": "text"
-    },
-    "repairContentRequired": "请填写故障描述",
-    "@repairContentRequired": {
-        "description": "故障描述为空时的提示。",
-        "type": "text"
-    },
-    "repairPhotos": "图片视频",
-    "@repairPhotos": {
-        "description": "在线报修表单中的图片上传字段标题。",
-        "type": "text"
-    },
-    "repairImageUploading": "上传中…",
-    "@repairImageUploading": {
-        "description": "提交时图片上传中的按钮文案。",
-        "type": "text"
-    },
-    "repairSchedule": "期望维修时间",    "@repairSchedule": {
-        "description": "在线报修表单中的期望维修时间字段标题。",
-        "type": "text"
-    },
-    "repairAllowNoOne": "允许无人时维修",
-    "@repairAllowNoOne": {
-        "description": "是否允许维修师傅无人时上门维修的开关。",
-        "type": "text"
-    },
-    "repairBookDate": "选择日期",
-    "@repairBookDate": {
-        "description": "期望维修日期选择项。",
-        "type": "text"
-    },
-    "repairBookTime": "选择时间段",
-    "@repairBookTime": {
-        "description": "期望维修时间段选择项。",
-        "type": "text"
-    },
-    "repairNotSelected": "未选择",
-    "@repairNotSelected": {
-        "description": "未选择日期/时间段的占位文本。",
-        "type": "text"
-    },
-    "repairNoBookDate": "暂无可用预约日期",
-    "@repairNoBookDate": {
-        "description": "无可预约日期时的提示。",
-        "type": "text"
-    },
-    "repairNoBookTime": "该日期暂无可用时间段",
-    "@repairNoBookTime": {
-        "description": "该日期无可预约时间段时的提示。",
-        "type": "text"
-    },
-    "repairSubmit": "提交报修",
-    "@repairSubmit": {
-        "description": "在线报修表单的提交按钮文案。",
-        "type": "text"
-    },
-    "repairSubmitSuccess": "报修提交成功",
-    "@repairSubmitSuccess": {
-        "description": "报修提交成功后的提示。",
-        "type": "text"
-    },
-    "repairSubmitFailed": "报修提交失败，请稍后重试",
-    "@repairSubmitFailed": {
-        "description": "报修提交失败后的提示。",
-        "type": "text"
-    },
-    "repairTicket": "报修工单",
-    "@repairTicket": {
-        "description": "报修工单的通用名称。",
-        "type": "text"
-    },
-    "repairArea": "故障地点",
-    "@repairArea": {
-        "description": "报修工单中的故障地点标签。",
-        "type": "text"
-    },
-    "repairAddAddress": "新增地址",
-    "@repairAddAddress": {
-        "description": "新增报修地址按钮文案。",
-        "type": "text"
-    },
-    "repairSelectArea": "请选择区域",
-    "@repairSelectArea": {
-        "description": "新增地址时选择区域的提示。",
-        "type": "text"
-    },
-    "repairAddressDetail": "详细地址",
-    "@repairAddressDetail": {
-        "description": "新增地址表单的详细地址字段。",
-        "type": "text"
-    },
-    "repairAddressDetailRequired": "请填写详细地址",
-    "@repairAddressDetailRequired": {
-        "description": "详细地址为空时的提示。",
-        "type": "text"
-    },
-    "repairPhoneRequired": "请填写手机号",
-    "@repairPhoneRequired": {
-        "description": "手机号为空时的提示。",
-        "type": "text"
-    },
-    "repairPhoneInvalid": "手机号格式不正确",
-    "@repairPhoneInvalid": {
-        "description": "手机号格式不正确时的提示。",
-        "type": "text"
-    },
-    "repairAddressSaved": "地址已保存",
-    "@repairAddressSaved": {
-        "description": "新增地址成功后的提示。",
-        "type": "text"
-    },
-    "repairImageTypeInvalid": "仅支持 JPG/PNG/HEIC 格式图片",
-    "@repairImageTypeInvalid": {
-        "description": "选择的图片格式不支持时提示。",
-        "type": "text"
-    },
-    "repairImageTooLarge": "图片不能超过 10MB",
-    "@repairImageTooLarge": {
-        "description": "选择的图片超过大小上限时提示。",
-        "type": "text"
-    },
-    "repairDetail": "报修详情",
-    "@repairDetail": {
-        "description": "报修工单详情页标题。",
-        "type": "text"
-    },
-    "repairServiceUnit": "服务单位",
-    "@repairServiceUnit": {
-        "description": "报修工单中的服务单位字段标签。",
-        "type": "text"
-    },
-    "repairPayType": "收费类型",
-    "@repairPayType": {
-        "description": "报修工单中的收费类型字段标签。",
-        "type": "text"
-    },
-    "repairProgress": "工单进度",
-    "@repairProgress": {
-        "description": "工单进度时间线标题。",
-        "type": "text"
-    },
-    "repairWithdraw": "撤回报修",
-    "@repairWithdraw": {
-        "description": "撤回报修按钮文案。",
-        "type": "text"
-    },
-    "repairWithdrawConfirm": "确定要撤回该报修工单吗？",
-    "@repairWithdrawConfirm": {
-        "description": "撤回报修前的确认提示。",
-        "type": "text"
-    },
-    "repairWithdrawSuccess": "报修已撤回",
-    "@repairWithdrawSuccess": {
-        "description": "撤回报修成功后的提示。",
-        "type": "text"
-    },
-    "repairWithdrawFailed": "撤回失败，请稍后重试",
-    "@repairWithdrawFailed": {
-        "description": "撤回报修失败后的提示。",
-        "type": "text"
-    },
-    "repairEvaluate": "评价工单",
-    "@repairEvaluate": {
-        "description": "评价报修工单按钮文案。",
-        "type": "text"
-    },
-    "repairEvaluateHint": "请填写评价内容（可选）",
-    "@repairEvaluateHint": {
-        "description": "评价内容输入框的占位提示。",
-        "type": "text"
-    },
-    "repairEvaluateSuccess": "评价成功",
-    "@repairEvaluateSuccess": {
-        "description": "评价成功后的提示。",
-        "type": "text"
-    },
-    "repairEvaluated": "已评价",
-    "@repairEvaluated": {
-        "description": "工单已评价状态文案。",
-        "type": "text"
-    },
-    "repairWithdrawn": "已撤回",
-    "@repairWithdrawn": {
-        "description": "工单已撤回状态文案。",
-        "type": "text"
-    },
-    "repairEvaluateFailed": "评价失败，请稍后重试",
-    "@repairEvaluateFailed": {
-        "description": "评价失败后的提示。",
-        "type": "text"
-    },
-    "serviceHallTitle": "办事大厅",
-    "@serviceHallTitle": {
-        "description": "办事大厅二级页面标题，列出可办理事项。",
-        "type": "text"
-    },
-    "serviceHallLeaveTitle": "离校请假",
-    "@serviceHallLeaveTitle": {
-        "description": "办事大厅中请假事项的名称。",
-        "type": "text"
-    },
-    "serviceHallLeaveDesc": "提交离校请假申请",
-    "@serviceHallLeaveDesc": {
-        "description": "办事大厅中请假事项的描述。",
-        "type": "text"
-    },
-    "serviceHallMyAppsTitle": "我的申请",
-    "@serviceHallMyAppsTitle": {
-        "description": "办事大厅中我的申请事项的名称。",
-        "type": "text"
-    },
-    "serviceHallMyAppsDesc": "查看请假、报备等申请记录",
-    "@serviceHallMyAppsDesc": {
-        "description": "办事大厅中我的申请事项的描述。",
-        "type": "text"
-    },
-    "serviceHallReturnTitle": "返校报备",
-    "@serviceHallReturnTitle": {
-        "description": "办事大厅中返校报备事项的名称。",
-        "type": "text"
-    },
-    "serviceHallReturnDesc": "提前报备返校行程",
-    "@serviceHallReturnDesc": {
-        "description": "办事大厅中返校报备事项的描述。",
-        "type": "text"
-    },
-    "serviceHallSummerLeaveTitle": "暑假离校",
-    "@serviceHallSummerLeaveTitle": {
-        "description": "办事大厅中暑假离校事项的名称。",
-        "type": "text"
-    },
-    "serviceHallSummerLeaveDesc": "报备暑假离校行程",
-    "@serviceHallSummerLeaveDesc": {
-        "description": "办事大厅中暑假离校事项的描述。",
-        "type": "text"
-    },
-    "serviceHallStayRegisterTitle": "留校登记",
-    "@serviceHallStayRegisterTitle": {
-        "description": "办事大厅中留校登记事项的名称。",
-        "type": "text"
-    },
-    "serviceHallStayRegisterDesc": "登记假期留校",
-    "@serviceHallStayRegisterDesc": {
-        "description": "办事大厅中留校登记事项的描述。",
-        "type": "text"
-    },
-    "serviceFormRequired": "请填写{label}",
-    "@serviceFormRequired": {
-        "description": "办事大厅表单必填字段为空时的校验提示。",
-        "type": "text",
-        "placeholders": {
-            "label": {
-                "type": "String",
-                "example": "校区"
-            }
-        }
-    },
-    "serviceFormSchemaFailed": "表单加载失败，请稍后重试",
-    "@serviceFormSchemaFailed": {
-        "description": "办事大厅表单定义加载失败时的错误提示。",
-        "type": "text"
-    },
-    "serviceFormSelectHint": "请选择",
-    "@serviceFormSelectHint": {
-        "description": "办事大厅表单下拉字段的提示文案。",
-        "type": "text"
-    },
-    "serviceFormOptional": "选填",
-    "@serviceFormOptional": {
-        "description": "办事大厅表单选填字段的标记。",
-        "type": "text"
-    },
-    "leaveTitle": "请假申请",
-    "@leaveTitle": {
-        "description": "请假申请页面标题。",
-        "type": "text"
-    },
-    "leaveDesc": "办事大厅内可在线办理请假、报备等事项",
-    "@leaveDesc": {
-        "description": "校园入口卡片上显示的办事大厅功能描述。",
-        "type": "text"
-    },
-    "leaveApply": "请假申请",
-    "@leaveApply": {
-        "description": "请假申请表单的 Tab 标签。",
-        "type": "text"
-    },
-    "leaveMyApplications": "我的申请",
-    "@leaveMyApplications": {
-        "description": "查看已提交请假记录的 Tab 标签。",
-        "type": "text"
-    },
-    "leaveSubmit": "提交申请",
-    "@leaveSubmit": {
-        "description": "提交请假申请的按钮文本。",
-        "type": "text"
-    },
-    "leaveReasonRequired": "请填写请假事由",
-    "leaveEndAfterStart": "结束时间需晚于开始时间",
-    "leaveSubmitSuccess": "请假申请已提交",
-    "leaveSubmitFailed": "提交失败，请稍后重试",
-    "leaveInfo": "学生信息",
-    "leaveTutor": "辅导员",
-    "leaveCampusRequired": "请选择离开校区",
-    "leaveDetail": "其他事由",
-    "leaveDetailHint": "请填写具体事由",
-    "leaveAttachment": "上传证明",
-    "leaveAttachmentHint": "可上传 1-3 张图片作为请假证明（非必填）",
-    "leaveAttachmentAdd": "添加图片",
-    "leaveDepartReturn": "离校/返校时间",
-    "leaveDepartTime": "离校时间",
-    "leaveReturnTime": "返校时间",
-    "leaveRegionRequired": "请选择去往地址",
-    "regionProvince": "省",
-    "regionCity": "市",
-    "regionArea": "区县",
-    "regionSelectHint": "请选择",
-    "regionDetailHint": "详细地址（街道、门牌号等）",
-    "regionPickProvince": "选择省份",
-    "regionPickCity": "选择城市",
-    "regionPickArea": "选择区县",
-    "leaveNoApplications": "暂无请假记录",
-    "leaveSubmitTime": "提交时间",
-    "leaveStatusProcessing": "审批中",
-    "leaveStatusDraft": "草稿",
-    "leaveStatusDone": "已完成",
-    "@leaveNoApplications": {
-        "description": "我的申请 Tab 的空状态提示。",
-        "type": "text"
+  "bugaoshan": "不高山上",
+  "selfLanguage": "中文",
+  "wizardWelcomeTitle": "欢迎使用不高山上",
+  "wizardWelcomeDesc": "你的校园生活助手，一站式查看课表、成绩与校园服务",
+  "wizard": "向导",
+  "@wizard": {
+    "description": "引导（向导）章节的标题，通常用于测试页面或设置中的引导相关标题。",
+    "type": "text"
+  },
+  "resetWizardTitle": "重置引导状态",
+  "@resetWizardTitle": {
+    "description": "重置引导状态的操作标题，用户点击后会重新显示首次引导流程。",
+    "type": "text"
+  },
+  "resetWizardSubtitle": "重置后将进入Wizard页面",
+  "wizardLoginTitle": "登录与导入课表",
+  "wizardLoginStep1": "完成统一身份认证登录",
+  "wizardLoginStep2": "从教务系统导入课表",
+  "wizardLoginDone": "已登录",
+  "wizardLoginButton": "去登录",
+  "wizardImportButton": "导入课表",
+  "wizardHasSchedule": "已有课表",
+  "wizardImportHint": "登录后可自动获取课表",
+  "wizardStudentTypeTitle": "选择你的身份",
+  "wizardStudentTypeDesc": "决定课表导入方式与校园页展示的功能，之后可在设置中更改",
+  "studentTypeSetting": "学生类型",
+  "studentTypeUndergraduate": "本科生",
+  "studentTypeGraduate": "研究生",
+  "studentTypeUndergraduateDesc": "展示本科教务功能：成绩统计、考试安排、教室查询、培养方案等",
+  "studentTypeGraduateDesc": "展示研究生功能：研究生成绩、培养进度、课表导入等",
+  "studentTypeHint": "切换后课表导入入口与校园页功能会随之调整，已保存的课表和自定义配置不受影响，可随时再切换。",
+  "wizardFeatureTitle": "探索更多功能",
+  "wizardFeatureCourse": "课表管理",
+  "wizardFeatureCourseDesc": "查看每周课程安排与多课表管理，支持从教务系统一键导入、分享与导出为日历文件",
+  "wizardFeatureCampus": "校园服务",
+  "wizardFeatureCampusDesc": "查询空闲教室与学业成绩，参与第二课堂活动，查询电费与空调余额，管理校园网设备",
+  "wizardFeatureProfile": "个人中心",
+  "wizardFeatureProfileDesc": "使用统一身份认证登录并绑定第二课堂，自定义主题颜色、深色模式与语言偏好",
+  "wizardFeatureWidget": "桌面小组件",
+  "wizardFeatureWidgetDesc": "将课表小组件添加到桌面，无需打开应用即可随时查看今日课程安排",
+  "widgetShowTomorrowAfterEnd": "当天课程结束后显示第二天课程",
+  "@widgetShowTomorrowAfterEnd": {
+    "description": "当天课程结束时，在桌面小组件中显示第二天的课程。"
+  },
+  "widgetAppearanceTitle": "小组件外观",
+  "widgetAppearanceDescription": "统一调整本设备上的所有不高山课表小组件。",
+  "widgetColorStyle": "配色",
+  "widgetColorful": "课程色彩",
+  "widgetMonochrome": "单色",
+  "widgetDensity": "信息密度",
+  "widgetDensityStandard": "标准",
+  "widgetDensityCompact": "紧凑",
+  "widgetSystemAppearanceHint": "在 iOS 26 及更高版本中，主屏幕的透明与着色外观会自动使用系统玻璃或着色效果。",
+  "onboardingSkip": "跳过",
+  "onboardingNext": "下一步",
+  "onboardingStart": "立即体验",
+  "course": "课程",
+  "profile": "我的",
+  "campus": "校园",
+  "classroomQuery": "教室查询",
+  "classroomQueryDesc": "查询教室空闲、借用和上课信息",
+  "utilitiesSection": "实用功能",
+  "academicSection": "学业",
+  "moreFeaturesTitle": "更多功能",
+  "moreFeaturesDesc": "更多功能请创建 Issue 交流",
+  "selectCampus": "选择校区",
+  "allBuildings": "全部教学楼",
+  "seats": "座",
+  "free": "空闲",
+  "currentlyFree": "当前空闲",
+  "inClass": "上课中",
+  "borrowed": "已借用",
+  "classroomPeriodExam": "考试中",
+  "classroomPeriodExperiment": "实验中",
+  "classroomTeachingWeek": "第 {week} 周",
+  "@classroomTeachingWeek": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
     }
+  },
+  "classroomQueryDate": "查询日期: {date}",
+  "@classroomQueryDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "classroomCanBorrow": "可借用",
+  "classroomCannotBorrow": "不可借用",
+  "classroomRemark": "备注",
+  "period": "节次",
+  "periodN": "第 {n} 节",
+  "@periodN": {
+    "description": "节次编号格式",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "periodStart": "起始",
+  "periodEnd": "结束",
+  "periodUnlimited": "不限",
+  "clear": "清除",
+  "loading": "加载中...",
+  "loadFailed": "加载失败",
+  "retry": "重试",
+  "campusNetworkRequired": "该功能仅限校园网访问，请连接校园网或使用学校 VPN 后重试",
+  "campusNetworkRequiredAtNight": "该时段（23:00-次日6:00）仅限校园网访问，请连接校园网或使用学校 VPN 后重试",
+  "appOnly": "仅 App 端可使用",
+  "softwareSetting": "软件设置",
+  "followSystem": "跟随系统",
+  "modifyLanguage": "修改语言",
+  "current": "当前",
+  "animationDuration": "动画时长",
+  "confirm": "确认",
+  "today": "今天",
+  "currentAnimationDuration": "当前动画时长: {value} ms",
+  "animationDurationUpdated": "动画时长已更新为 {value} ms",
+  "animationDurationHint": "提示：调整滑块查看动画效果，点击确认后才会保存设置",
+  "enableDockSwitchAnimation": "Dock 栏切换动画",
+  "enableDockSwitchAnimationHint": "点击 Dock 栏切换功能时启用滑动与淡入淡出动画",
+  "themeColor": "主题颜色",
+  "changeThemeColor": "更改主题颜色",
+  "confirmButton": "确认",
+  "customizedColorHint": "自定义颜色由颜色种子生成",
+  "tips": "提示",
+  "resetToDefault": "重置为默认",
+  "themeColorModeSystem": "跟随系统",
+  "themeColorModeBackgroundImage": "背景图",
+  "themeColorModeCustom": "自定义",
+  "themeColorModeBackgroundImageNotSet": "请先设置背景图片",
+  "darkMode": "深色模式",
+  "themeModeLight": "浅色",
+  "themeModeDark": "深色",
+  "blockPicker": "色块",
+  "materialPicker": "材质",
+  "advancedPicker": "高级",
+  "about": "关于",
+  "developmentTeam": "开发团队",
+  "projectInfo": "项目信息",
+  "appName": "应用名称",
+  "version": "版本",
+  "gitTag": "Git 标签",
+  "appDescription": "探索一切，尽在不高山上",
+  "contactUs": "联系我们",
+  "developedBy": "由 {team} 倾情打造",
+  "externalResources": "外部资源",
+  "projectRepository": "项目仓库",
+  "checkForUpdates": "检查更新",
+  "newVersionAvailable": "发现新版本",
+  "noUpdateAvailable": "已是最新版本",
+  "goToReleases": "前往 Releases",
+  "startUpdate": "开始更新",
+  "startUpdatePreview": "更新到预览版",
+  "updateToLatest": "升级到最新版本",
+  "updateToStable": "更新到最新稳定版",
+  "updateToPreview": "更新到最新版（包括预览版）",
+  "usePreviewUpdateSource": "软件更新使用预览版源",
+  "usePreviewUpdateSourceHint": "仅影响首页和关于页面的自动检查；测试页面始终同时检查两个渠道。",
+  "forceCaptchaForDownload": "强制下载验证码",
+  "forceCaptchaForDownloadHint": "开启后点击附件下载将直接弹出验证码弹窗，用于测试验证码流程。",
+  "captchaDialogTitle": "请输入验证码",
+  "captchaCancelled": "验证码已取消",
+  "downloading": "正在下载",
+  "updateFailed": "更新失败",
+  "notificationDownloading": "正在下载... {percent}%",
+  "notificationInstalling": "正在安装...",
+  "notificationUpdateFailed": "更新失败:{error}",
+  "preReleaseWarning": "这是预发布版本，使用时请注意。",
+  "releaseNotes": "更新日志",
+  "neverMind": "算了吧",
+  "clearAllData": "清除所有数据",
+  "confirmMessage": "真的要这样做吗？",
+  "environmentInfo": "环境信息",
+  "devPage": "开发者页面",
+  "forceUpdate": "更新到最新版本（含预览版）",
+  "authLog": "认证日志",
+  "viewAuthLog": "查看认证日志",
+  "authLogEmpty": "暂无认证日志。",
+  "@authLogLastEntry": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "level": {
+        "type": "String"
+      },
+      "tag": {
+        "type": "String"
+      }
+    }
+  },
+  "authLogLastEntry": "{level} · {tag} · {time}",
+  "scheduleSetting": "课表设置",
+  "scheduleManagement": "课表管理",
+  "globalSetting": "全局设置",
+  "noSchedule": "暂无课表",
+  "noScheduleHint": "导入或新建一个课表开始使用",
+  "addSchedule": "新建课表",
+  "addCourse": "添加课程",
+  "editCourse": "编辑课程",
+  "deleteCourse": "删除课程",
+  "deleteCourseConfirm": "确定要删除这门课程吗？",
+  "courseName": "课程名称",
+  "teacher": "教师",
+  "location": "教室",
+  "courseColor": "课程颜色",
+  "week": "周",
+  "startWeek": "开始周",
+  "endWeek": "结束周",
+  "dayOfWeek": "星期",
+  "startSection": "开始节次",
+  "endSection": "结束节次",
+  "monday": "周一",
+  "tuesday": "周二",
+  "wednesday": "周三",
+  "thursday": "周四",
+  "friday": "周五",
+  "saturday": "周六",
+  "sunday": "周日",
+  "currentWeek": "第 {week} 周",
+  "notStarted": "未开学",
+  "thisWeek": "本周",
+  "weekRange": "{start}-{end} 周",
+  "@weekRange": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "weekType": "周次类型",
+  "everyWeek": "每周",
+  "oddWeek": "单周",
+  "evenWeek": "双周",
+  "customWeeksHint": "自定义周次",
+  "selectAtLeastOneWeek": "请至少选择一个上课周次",
+  "activeWeeks": "上课周次",
+  "weekSegments": "{segments} 周",
+  "section": "节",
+  "sectionRange": "第{start}-{end}节",
+  "@sectionRange": {
+    "description": "Section range display, e.g. '第1-2节'",
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "sectionCount": "每天节数",
+  "timeSlot": "时间段",
+  "startTime": "开始时间",
+  "endTime": "结束时间",
+  "semesterConfig": "学期配置",
+  "semesterName": "学期名称",
+  "semesterStartDate": "学期开始日期",
+  "setCurrentWeek": "设置当前周数",
+  "setCurrentWeekHint": "将根据当前周数自动推算学期开始日期",
+  "autoFetchCurrentWeek": "自动获取当前周数",
+  "autoFetchCurrentWeekHint": "从教务系统获取当前教学周",
+  "autoFetchCurrentWeekOnVacation": "假期中暂无教学周，未修改课表",
+  "fetchingCurrentWeek": "正在获取...",
+  "loginRequired": "请先在「我的」页面完成统一身份认证登录",
+  "goToLogin": "前往登录",
+  "semesterEndDate": "学期结束日期",
+  "displaySetting": "显示设置",
+  "courseCardSection": "课程卡片",
+  "courseGridSection": "课表网格",
+  "courseStyleSetting": "课程表样式",
+  "otherSection": "其他",
+  "settingsGeneral": "通用",
+  "settingsStyle": "样式",
+  "setFont": "字体",
+  "useGoogleFonts": "使用 Google 字体",
+  "fontHint": "如需调整字号和字重，请在系统设置中修改",
+  "settingsDanger": "危险操作",
+  "colorOpacity": "颜色不透明度",
+  "fontSize": "字体大小",
+  "showCourseGrid": "显示课表网格",
+  "courseRowHeight": "课表网格高度",
+  "backgroundImage": "背景图片",
+  "setBackgroundImage": "设置背景图片",
+  "extractColorFromBackgroundImage": "从背景图取色",
+  "themeColorAutoExtractedHint": "主题色已从背景图片提取，如需修改请前往软件设置->主题颜色",
+  "noBackgroundImageSet": "请先设置背景图片",
+  "removeBackgroundImage": "移除背景图片",
+  "editBackgroundArea": "调整显示区域",
+  "cropEditorHint": "拖动调整位置，双指或滚轮缩放",
+  "backgroundImageOpacity": "背景图片不透明度",
+  "backgroundImageSetHint": "背景图片已设置，您可以前往「主题颜色」修改主题色",
+  "showTeacher": "显示教师",
+  "showLocation": "显示教室",
+  "showWeekend": "显示周末",
+  "showNonCurrentWeekCourses": "显示非本周课程",
+  "save": "保存",
+  "cancel": "取消",
+  "downloadInBackground": "后台下载",
+  "back": "上一步",
+  "next": "下一步",
+  "delete": "删除",
+  "customColor": "自定义颜色",
+  "noCourseThisWeek": "本周没有课程",
+  "timeConflict": "时间冲突",
+  "timeConflictMessage": "所选时间段与已有课程冲突。",
+  "fieldRequired": "此字段不能为空",
+  "invalidWeekRange": "结束周必须大于或等于开始周",
+  "duplicateScheduleName": "课表名称已存在",
+  "importNameConflictAction": "课表 \"{name}\" 已存在，请选择操作：",
+  "importNameConflictAddSuffix": "添加后缀导入",
+  "importNameConflictUpdate": "更新当前课表",
+  "importAllConflictAction": "部分课表名称与已有课表冲突，请选择操作方式：",
+  "importAllConflictAddSuffix": "全部添加后缀",
+  "importAllConflictUpdate": "全部更新",
+  "importSchedule": "导入课表",
+  "importFromShare": "从分享导入",
+  "importFromJwxt": "从教务系统抓包导入",
+  "importDataHint": "请在此处粘贴 JSON 数据...",
+  "importSuccess": "课表导入成功",
+  "importFailedTip": "导入失败，请检查数据格式或重新登录",
+  "importedScheduleDefaultName": "导入的课表",
+  "importNameConflictHint": "名称 \"{name}\" 已存在，请重命名：",
+  "importNameSuffix": "(导入)",
+  "defaultScheduleName": "默认课表",
+  "deleteScheduleConfirm": "确定要删除课表 \"{name}\" 吗？",
+  "exportSchedule": "导出课表",
+  "exportExamPlan": "导出考表",
+  "exportScheduleAsCopy": "复制到剪切板",
+  "exportScheduleAsImage": "导出为图片",
+  "generatingScheduleImage": "正在生成课表图片…",
+  "saveScheduleImageToGallery": "保存到系统相册",
+  "shareScheduleImage": "系统分享",
+  "exportScheduleAsImageFailed": "生成课表图片失败，请稍后再试",
+  "exportScheduleAsImageEmpty": "课表为空，无法导出图片",
+  "scheduleImageSavedToGallery": "已保存到系统相册",
+  "scheduleImageGalleryPermissionDenied": "未获得相册权限，无法保存",
+  "scheduleImageShareFailed": "分享失败，请稍后再试",
+  "exportScheduleAsIcs": "导出为日历文件",
+  "exportScheduleAsCopySuccess": "课表已复制到剪切板",
+  "exportExamPlanAsCopySuccess": "考表已复制到剪切板",
+  "exportScheduleAsCopyFailed": "复制失败，您可以稍后再试",
+  "exportScheduleAsIcsTo": "保存日历文件到...",
+  "exportScheduleAsIcsSuccess": "保存成功",
+  "exportScheduleAsIcsFailed": "保存失败",
+  "exportScheduleAsIcsCanceled": "取消保存",
+  "icsTeacherLabel": "教师",
+  "exportScheduleAddToCalendar": "一键导入到日历",
+  "exportScheduleAddToCalendarSuccess": "已导入到日历",
+  "exportScheduleAddToCalendarFailed": "导入失败",
+  "exportScheduleAddToCalendarEmpty": "课表为空，无法导入到日历",
+  "exportScheduleSelectCalendar": "选择目标日历",
+  "exportScheduleCalendarDefault": "默认日历",
+  "copySuffix": " (副本)",
+  "notThisWeek": "[非本周]",
+  "actualCurrentWeek": "本周第 {week} 周",
+  "totalWeeksSubtitle": "共 {count} 周",
+  "invalidSectionRange": "结束节次必须大于开始节次",
+  "crossPeriodError": "跨时间段错误",
+  "crossPeriodErrorMessage": "一门课程不能跨越上午、下午或晚上。",
+  "totalWeeks": "总周数: {value}",
+  "morning": "上午",
+  "afternoon": "下午",
+  "evening": "晚上",
+  "courseDuration": "单节课程时长 (分钟)",
+  "breakDuration": "课间休息时长 (分钟)",
+  "autoSyncTime": "自动推算后续时间",
+  "scuLogin": "统一身份认证登录",
+  "loggedIn": "已登录",
+  "notLoggedIn": "未登录",
+  "loginSessionExpired": "登录状态已过期",
+  "loginSessionExpiredDesc": "登录会话过期，请重新登录",
+  "logout": "退出登录",
+  "logoutConfirm": "确定要退出登录吗？",
+  "importFromJwxtOnline": "从教务系统在线导入",
+  "importFromJwxtOnlineHint": "将自动获取课表，需要先在「我的」页面完成统一身份认证登录",
+  "importFromGraduate": "从研究生系统导入",
+  "selectSemester": "选择学期",
+  "importAll": "全部导入",
+  "importingProgress": "正在导入 {current}/{total}...",
+  "@importingProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "scuUnifiedAuth": "统一身份认证",
+  "studentId": "学号",
+  "studentIdHint": "请输入学号",
+  "studentIdRequired": "请输入学号",
+  "password": "密码",
+  "passwordHint": "请输入密码",
+  "passwordRequired": "请输入密码",
+  "captcha": "验证码",
+  "captchaHint": "验证码",
+  "captchaRequired": "请输入验证码",
+  "rememberPassword": "记住密码",
+  "autoLogin": "自动登录",
+  "autoLoggingIn": "正在登录中...",
+  "loginButton": "登录",
+  "captchaNotLoaded": "请先加载验证码",
+  "gradesStats": "成绩统计",
+  "gradesStatsDesc": "查看和分析你的学业成绩",
+  "gradesStatsComingSoon": "功能即将上线",
+  "schemeScores": "方案成绩",
+  "passingScores": "及格成绩",
+  "gradesLoginRequired": "请先在「我的」页面完成统一身份认证登录",
+  "gradesNoData": "暂无成绩数据",
+  "gradesRefreshFailed": "刷新失败，显示的是缓存数据",
+  "gradesNoPassingData": "暂无及格成绩数据",
+  "gradesSearchHint": "搜索课程名称",
+  "gradesNoSearchResults": "未找到匹配的课程",
+  "customStats": "自定义统计",
+  "deselectAll": "取消全选",
+  "customStatsSelectHint": "选择课程以计算自定义统计",
+  "selectedCount": "已选 {count} 门",
+  "gradesGet": "获取成绩",
+  "gradesRetry": "重试",
+  "gpa": "GPA",
+  "overallGpa": "综合 GPA",
+  "earnedCredits": "已修学分",
+  "passedCount": "通过",
+  "failedCount": "未通过",
+  "avgScore": "平均成绩",
+  "requiredAvgScore": "必修均分",
+  "requiredCredits": "必修学分",
+  "electiveCredits": "选修学分",
+  "optionalCredits": "任选学分",
+  "requiredGpa": "必修 GPA",
+  "totalPassedCount": "通过门数",
+  "termCount": "学期数",
+  "accumulatedCredits": "累计学分",
+  "creditUnit": "{credit} 学分",
+  "termPassedSummary": "{count} 门 · {credits} 学分",
+  "sessionExpiredTitle": "会话已过期",
+  "sessionExpiredMessage": "登录会话已过期，请重新登录后继续使用该功能。",
+  "sessionExpired": "登录会话已过期",
+  "undergradDataOnly": "本科教务会话未建立。研究生账号请使用「校园 → 研究生」区功能；本科账号请重新登录后重试。",
+  "relogin": "重新登录",
+  "trainProgram": "培养方案",
+  "trainProgramDesc": "查询各学院各年级的培养方案",
+  "trainProgramCollege": "学院",
+  "trainProgramGrade": "年级",
+  "trainProgramAll": "全部",
+  "trainProgramSearch": "查询",
+  "trainProgramNoData": "暂无培养方案数据",
+  "trainProgramLoading": "加载中...",
+  "trainProgramLoadFailed": "加载失败",
+  "trainProgramName": "方案名称",
+  "trainProgramMajor": "专业",
+  "trainProgramEducationSystem": "学制",
+  "trainProgramDegreeType": "学位类型",
+  "trainProgramDetail": "培养方案详情",
+  "trainProgramCredits": "总学分",
+  "trainProgramHours": "总学时",
+  "trainProgramCourses": "课程数",
+  "trainProgramObjective": "培养目标",
+  "trainProgramCourseStructure": "课程结构",
+  "trainProgramCourseNumber": "课程号",
+  "trainProgramOpenCollege": "开课学院",
+  "trainProgramCourseType": "课程类别",
+  "trainProgramExamType": "考核方式",
+  "trainProgramTeachingMethod": "教学方式",
+  "trainProgramCourseHoursDetail": "内含学时",
+  "trainProgramWeekHours": "周学时",
+  "trainProgramActualHours": "实践学时",
+  "trainProgramOpenCourse": "开放课程",
+  "trainProgramCourseArrangement": "课程安排",
+  "trainProgramPlanName": "方案名称",
+  "trainProgramCourseAttribute": "课程属性",
+  "trainProgramAcademicYear": "学年",
+  "trainProgramSemester": "学期",
+  "trainProgramExperimentHours": "实验学时",
+  "trainProgramLoginRequired": "请先在「我的」页面完成统一身份认证登录",
+  "planCompletion": "方案修读情况",
+  "planCompletionDesc": "查看培养方案各模块的修读进度",
+  "planCompletionNoData": "暂无方案修读数据",
+  "planCompletionTotalEarned": "已获学分",
+  "planCompletionCompleted": "已完成模块",
+  "planCompletionCredits": "学分",
+  "planCompletionCreditsUnit": "学分",
+  "planCompletionCourses": "课程",
+  "planCompletionPlanFallback": "培养方案",
+  "planCompletionRateLimited": "请勿频繁刷新，请稍后再试",
+  "ccylTitle": "第二课堂",
+  "ccylDesc": "查看活动、参与活动、预约活动",
+  "ccylSearchActivities": "活动搜索",
+  "ccylMyActivities": "我参与的活动",
+  "ccylOrderedActivities": "预约的活动",
+  "ccylMyCredits": "成绩单",
+  "ccylSelect": "选择",
+  "ccylSelectAll": "全选",
+  "ccylExportEmail": "导出到邮箱",
+  "ccylEmailAddress": "QQ邮箱",
+  "ccylEmailHint": "请输入接收成绩单的QQ邮箱",
+  "ccylExportSuccess": "成绩单已发送至邮箱",
+  "ccylSearchHint": "搜索活动名称",
+  "ccylHours": "学时",
+  "ccylAvailable": "可预约",
+  "ccylInProgress": "进行中",
+  "ccylCompleted": "已结束",
+  "ccylSubscribed": "已预约",
+  "ccylSubscribe": "预约",
+  "ccylCancelSubscribe": "取消预约",
+  "ccylSubscribeSuccess": "预约成功",
+  "ccylCancelSuccess": "取消预约成功",
+  "ccylActionFailed": "操作失败",
+  "ccylSignUp": "报名",
+  "ccylCancelSignUp": "取消报名",
+  "ccylSelectScoreType": "选择希望提升的能力类型",
+  "ccylSignUpSuccess": "报名成功",
+  "ccylNoScoreType": "暂无能力类型",
+  "ccylCurrentValue": "当前值",
+  "ccylLoginRequired": "请先在「我的」页面完成统一身份认证登录",
+  "ccylBindRequired": "请先绑定第二课堂账号",
+  "ccylBindTitle": "绑定第二课堂",
+  "ccylBindDesc": "绑定第二课堂账号后即可查看活动信息",
+  "ccylOpenOAuth": "打开统一认证授权页",
+  "ccylDoBind": "绑定第二课堂",
+  "ccylBindHelp": "点击按钮自动完成绑定",
+  "ccylActivitySeries": "活动系列",
+  "ccylActivityDetail": "活动详情",
+  "ccylActivityInfo": "活动信息",
+  "ccylTimeInfo": "时间信息",
+  "ccylLocationInfo": "地点信息",
+  "ccylContactInfo": "联系信息",
+  "ccylStarLevel": "星级",
+  "ccylQuality": "性质",
+  "ccylScoreType": "积分类型",
+  "ccylLiablePerson": "负责人",
+  "ccylLiablePhone": "联系电话",
+  "ccylLiableTeacher": "指导老师",
+  "ccylActivities": "系列活动",
+  "ccylQuota": "名额",
+  "ccylActivityTarget": "活动对象",
+  "ccylActivityTime": "活动时间",
+  "ccylEnrollTime": "报名时间",
+  "ccylActivityAddress": "活动地点",
+  "ccylContactPhone": "联系电话",
+  "ccylSignIn": "签到",
+  "ccylSignOut": "签退",
+  "ccylEnabled": "开启",
+  "ccylDisabled": "关闭",
+  "ccylSeriesName": "系列名称",
+  "ccylOrganizer": "主办单位",
+  "ccylStatusEnrolling": "报名中",
+  "ccylStatusNotStarted": "未开始",
+  "ccylFilter": "筛选",
+  "ccylFilterStatus": "状态",
+  "ccylFilterClassHour": "学时",
+  "ccylFilterLevel": "活动等级",
+  "ccylFilterOrganizer": "主办方",
+  "ccylFilterUnlimited": "不限",
+  "ccylFilterReset": "重置",
+  "ccylFilterApply": "应用",
+  "ccylFilterClear": "清除筛选",
+  "ccylFilterMinHoursValue": "{hours} 学时以上",
+  "@ccylFilterMinHoursValue": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "ccylFilterNoMatch": "没有符合筛选条件的活动",
+  "ccylFilterLocalHint": "状态与学时筛选基于已加载的 {count} 条活动",
+  "@ccylFilterLocalHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ccylFilterChooseOrganizer": "选择主办方",
+  "ccylFilterSearchOrganizer": "搜索主办方",
+  "ccylFilterNoOrganizer": "未找到匹配的主办方",
+  "ccylLoadMore": "加载更多",
+  "noData": "暂无数据",
+  "noFreeClassrooms": "当前没有空闲教室",
+  "networkDeviceQuery": "校园网设备查询",
+  "networkDeviceQueryDesc": "查询校园网账户和在线设备",
+  "networkDeviceUserInfo": "用户信息",
+  "networkDeviceOnlineDevices": "在线设备",
+  "networkDeviceDeviceId": "设备ID",
+  "networkDeviceIp": "IP 地址",
+  "networkDeviceLogout": "下线",
+  "networkDeviceLogoutConfirm": "确定要下线所有设备吗？",
+  "networkDeviceForceOffline": "强制下线",
+  "networkDeviceConfirmOffline": "确定要下线该设备吗？",
+  "networkDeviceOfflineSuccess": "操作成功",
+  "networkDeviceAuthFailed": "认证失败",
+  "networkDeviceOperationSuccess": "操作成功",
+  "passpointTitle": "无感认证",
+  "passpointDesc": "绑定设备 MAC，接入校园网自动认证",
+  "passpointAddDevice": "添加无感设备",
+  "passpointUserInfo": "用户信息",
+  "passpointUserGroup": "用户组",
+  "passpointAccountState": "账户状态",
+  "passpointOnline": "在线",
+  "passpointOffline": "离线",
+  "passpointMyDevices": "我的设备",
+  "passpointExpireTime": "到期时间",
+  "passpointExpireLongest": "最长有效期6年",
+  "passpointExit": "无感设备出口",
+  "passpointMac": "MAC 地址",
+  "passpointCancelAuth": "取消无感认证",
+  "passpointCancelAuthConfirm": "确定要取消该设备的无感认证吗？",
+  "passpointOperationSuccess": "操作成功",
+  "operationFailed": "操作失败",
+  "passpointMacRequired": "请填写MAC",
+  "passpointMacInvalid": "MAC 格式无效，需 12 位十六进制",
+  "passpointExpireRequired": "请填写绑定有效期",
+  "passpointExpireInvalid": "有效期需在 0-365 之间",
+  "passpointExpireHint": "0-365 天，0 表示最长有效期 6 年",
+  "passpointAddWarning": "特别提醒：自助开通无感知设备（MAC）后设备将自动接入校园网，学生宿舍区域将自动计时，请谨慎选择！",
+  "captchaLoadFailed": "验证码加载失败",
+  "networkError": "网络错误",
+  "calendarRefreshSuccess": "校历已更新",
+  "invalidCaptcha": "验证码错误，请重试",
+  "loginFailedWillLock": "登录失败，再输错 {count} 次将锁定账户",
+  "@loginFailedWillLock": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "loginSuccess": "登录成功",
+  "ccylBindFailed": "绑定失败，请稍后重试",
+  "ccylActivityLoadFailed": "活动加载失败",
+  "networkOfflineFailed": "下线失败",
+  "importFailed": "导入失败",
+  "balanceQuery": "电费查询",
+  "balanceQueryDesc": "查询照明和空调电费余额",
+  "electricityFee": "照明电量",
+  "acFee": "空调电量",
+  "balance": "剩余电量",
+  "unitKwh": "度",
+  "bindRoom": "绑定房间",
+  "bindNewRoom": "绑定新房间",
+  "switchRoom": "切换房间",
+  "deleteRoom": "删除房间",
+  "selectBuilding": "选择楼栋",
+  "selectUnit": "选择单元",
+  "inputInfo": "输入信息",
+  "stepCampus": "校区",
+  "stepBuilding": "楼栋",
+  "stepUnit": "单元",
+  "stepInfo": "信息",
+  "inputBindingInfo": "输入绑定信息",
+  "cusName": "姓名",
+  "cusNameHint": "请输入姓名",
+  "roomNumber": "房间号",
+  "roomNumberHint": "请输入房间号，如 301C",
+  "pricePerUnit": "单价",
+  "balanceQueryLoginRequired": "请先在「我的」页面完成统一身份认证登录",
+  "balanceQueryNoBinding": "您还没有绑定房间，请先绑定",
+  "balanceTrend": "用电趋势",
+  "balanceTrendTitleElectric": "照明电量趋势",
+  "balanceTrendTitleAc": "空调电量趋势",
+  "balanceTrendDailyAvgCost": "日均电费",
+  "balanceTrendDailyAvgKwh": "日均消耗",
+  "balanceTrendTotalCost": "累计消耗金额",
+  "balanceTrendTotalKwh": "累计消耗度数",
+  "balanceTrendTotalDays": "统计天数",
+  "balanceTrendCurrentPrice": "当前单价",
+  "balanceTrendRecordCount": "原始记录条数",
+  "balanceTrendRecordRange": "记录时间范围",
+  "balanceTrendSkippedRecharge": "已识别充值段",
+  "balanceTrendNoData": "暂无历史数据，刷新页面后即可开始记录",
+  "balanceTrendTimeRange7": "近7天",
+  "balanceTrendTimeRange30": "近30天",
+  "balanceTrendTimeRange90": "近90天",
+  "balanceTrendTimeRangeCustom": "自定义",
+  "balanceTrendChangeRange": "修改区间",
+  "balanceTrendCustomStart": "开始日期",
+  "balanceTrendCustomEnd": "结束日期",
+  "balanceTrendRawRecords": "原始记录",
+  "balanceTrendYAxisBalance": "余额 (度)",
+  "balanceTrendTooltipPrice": "单价",
+  "balanceTrendUnitPerDay": "元/天",
+  "balanceTrendUnitYuanPerKwh": "元/度",
+  "balanceQuerySettings": "电费查询设置",
+  "autoSampleBalanceOnLogin": "登录后自动统计电费详情",
+  "autoSampleBalanceOnLoginDesc": "登录成功后若当日尚无记录，自动查询一次当前房间的电费与空调余额以完善统计信息",
+  "scuLoginDisclaimerPwd": "当使用记住密码功能时，密码通过系统级加密仅存储在本机",
+  "scuLoginDisclaimerOcr": "验证码使用本地OCR模型识别",
+  "scuLoginDisclaimerPrivacy": "我们不会收集任何信息",
+  "scuLoginPasswordHint": "密码为统一身份认证密码，非教务处密码",
+  "openSourceLicenseDesc": "本应用基于 AGPL-3.0 开源许可协议发布",
+  "openSourceLicenses": "开源许可",
+  "academicCalendar": "校历查看",
+  "academicCalendarDesc": "查看四川大学校历，了解学期安排",
+  "campusNotices": "教务处公告",
+  "campusNoticesDesc": "查看四川大学教务处通知公告",
+  "campusNoticesSearchHint": "搜索通知标题",
+  "campusNoticesAllDates": "全部时间",
+  "campusNoticesClearDate": "清除筛选",
+  "campusNoticesLoadFailed": "加载失败，请检查网络",
+  "campusNoticesOpenOriginal": "在浏览器中查看",
+  "campusNoticesExternalLink": "该链接为外部页面，请在浏览器中打开查看",
+  "campusNoticesOpenInBrowser": "在浏览器中打开",
+  "campusNoticesSearch": "搜索",
+  "campusNoticesSearchResults": "{count, plural, =0{无结果} other{共 {count} 条结果}}",
+  "@campusNoticesSearchResults": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "compact"
+      }
+    }
+  },
+  "campusNoticesConfirmOpenLink": "该链接将在外部浏览器中打开，是否继续？\n\n{url}",
+  "@campusNoticesConfirmOpenLink": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "selectAcademicYear": "选择学年",
+  "userInfoLoading": "正在加载个人信息...",
+  "userInfoLoadFailed": "个人信息加载失败",
+  "userInfoRetry": "点击重试",
+  "loginToViewUserInfo": "登录后查看个人信息",
+  "labelBookBorrowCount": "图书借阅量",
+  "labelCampusCardBalance": "校园卡余额",
+  "labelNetworkFeeBalance": "网费余额",
+  "customDock": "自定义Dock栏",
+  "dockPreview": "Dock预览",
+  "resetDock": "恢复默认",
+  "dockResetConfirm": "确定恢复默认Dock栏配置？",
+  "cannotDeleteProfile": "不可删除",
+  "dockLabelCourse": "课表",
+  "dockLabelCampus": "校园",
+  "dockLabelProfile": "我的",
+  "dockLabelGrades": "成绩",
+  "dockLabelCcyl": "第二课堂",
+  "dockLabelPlanCompletion": "方案",
+  "dockLabelTrainProgram": "培养方案",
+  "dockLabelClassroom": "教室",
+  "dockLabelNetworkDevice": "校园网",
+  "dockLabelPasspoint": "无感",
+  "dockLabelBalanceQuery": "电费",
+  "dockLabelClassScheduleInquiry": "班级课表",
+  "dockLabelAcademicCalendar": "校历",
+  "fitnessTest": "体质测试",
+  "fitnessTestDesc": "查询体测成绩和查看通知公告",
+  "fitnessTestNotices": "通知公告",
+  "fitnessTestScores": "体测成绩",
+  "fitnessTestTotalScore": "总分",
+  "fitnessTestGrade": "等级",
+  "fitnessTestYear": "查询年份",
+  "fitnessTestNoScore": "该年份暂无体测成绩",
+  "fitnessTestStudentNum": "学号",
+  "fitnessTestStudentName": "姓名",
+  "fitnessTestSex": "性别",
+  "fitnessTestReportType": "报告类型",
+  "fitnessTestReportStatus": "报告状态",
+  "fitnessTestStudentYear": "年级",
+  "fitnessTestBmi": "身高/体重",
+  "fitnessTestVitalCapacity": "肺活量",
+  "fitnessTestStandingLongJump": "立定跳远",
+  "fitnessTestSitAndReach": "坐位体前屈",
+  "fitnessTestPullUp": "引体向上",
+  "fitnessTestSitUp": "仰卧起坐",
+  "fitnessTestFiftyMeters": "50米跑",
+  "fitnessTestRun": "800/1000米跑",
+  "fitnessTestReadCount": "次阅读",
+  "fitnessTestSticky": "置顶",
+  "fitnessTestNoticeDetail": "通知详情",
+  "dockLabelFitnessTest": "体测",
+  "dockLabelNotice": "通知",
+  "dockLabelNoticeParty": "学工部",
+  "dockLabelNoticeTuanwei": "团委",
+  "dockLabelDownloads": "附件",
+  "eulaTitle": "用户协议",
+  "eulaScrollToBottom": "请先阅读完协议内容",
+  "eulaAgreeCheckbox": "我已阅读并同意《用户协议》与《隐私政策》",
+  "eulaAgree": "同意",
+  "eulaDisagree": "不同意",
+  "revokeEula": "撤回用户协议同意",
+  "revokeEulaConfirm": "撤回后将需要重新同意用户协议才能继续使用，确定要撤回吗？",
+  "revokeEulaSuccess": "已撤回用户协议同意",
+  "eulaAgreedVersion": "已同意版本 v{version}",
+  "@eulaAgreedVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "addWidgetSection": "桌面小组件",
+  "addWidgetPageTitle": "小组件",
+  "addWidgetDesc": "将课表小组件添加到桌面，随时查看今日课程安排。",
+  "widgetSizeSmall": "小组件 (2×2)",
+  "widgetSizeSmallDesc": "显示今天接下来的 2 节课程",
+  "widgetSizeMedium": "中组件 (4×2)",
+  "widgetSizeMediumDesc": "显示标题栏和 2 张课程卡片",
+  "widgetSizeLarge": "大组件 (4×4)",
+  "widgetSizeLargeDesc": "显示标题栏和最多 4 张课程卡片",
+  "pinWidgetButton": "添加到桌面",
+  "pinWidgetSuccess": "小组件已添加到桌面",
+  "pinWidgetNotSupported": "此设备不支持固定小组件",
+  "pinWidgetRequested": "已发送添加请求，请在系统弹窗中确认添加",
+  "pinWidgetFailedTitle": "小组件未添加成功",
+  "pinWidgetFailedDesc": "没有出现系统确认弹窗，添加请求可能被系统权限拦截（部分系统需要授予「创建桌面快捷方式」权限）。请前往设置开启后重试，或长按桌面空白处手动添加小组件。",
+  "pinWidgetOpenSettings": "去设置",
+  "pinWidgetDismiss": "知道了",
+  "pinWidgetHint": "提示：部分系统（如 ColorOS、MIUI 等）可能会忽略自动添加请求。如果小组件未出现在桌面，请长按桌面空白处，选择「小组件」手动添加。某些系统需要授予「创建桌面快捷方式」权限。",
+  "batteryOptimizationTitle": "关闭省电优化",
+  "batteryOptimizationDesc": "为确保小组件可靠更新，请关闭本应用的省电优化。这可以防止系统延迟后台任务。",
+  "batteryOptimizationButton": "立即关闭",
+  "batteryOptimizationAlreadyDisabled": "省电优化已关闭",
+  "batteryOptimizationSuccess": "省电优化已关闭",
+  "autoSetCurrentWeekTitle": "自动设置当前教学周",
+  "autoSetCurrentWeekContent": "是否从教务系统获取当前教学周并自动设置？",
+  "autoSetCurrentWeekSuccess": "已自动设置当前教学周",
+  "share": "分享",
+  "saveImageToGallery": "保存到相册",
+  "imageSavedToGallery": "已保存到相册",
+  "imageSaveFailed": "图片保存失败",
+  "attachments": "附件",
+  "download": "下载",
+  "attachmentSaved": "附件已保存到：{path}",
+  "@attachmentSaved": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "attachmentDownloadFailed": "附件下载失败",
+  "downloadedAttachments": "已下载附件",
+  "open": "打开",
+  "noDownloadedAttachments": "暂无已下载附件",
+  "fileDeleted": "文件已删除",
+  "attachmentSavedTapToOpen": "附件已保存，点击打开",
+  "confirmDelete": "确认删除",
+  "confirmDeleteFile": "确认删除此文件？",
+  "deleteSelected": "删除 ({count})",
+  "@deleteSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectAll": "全选",
+  "confirmDeleteSelected": "确认删除选中的 {count} 个文件？",
+  "@confirmDeleteSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sortByTime": "按时间",
+  "sortByName": "按名称",
+  "sortBySize": "按大小",
+  "searchAttachmentsHint": "搜索附件...",
+  "openFolder": "打开文件夹",
+  "openFolderFailed": "打开文件夹失败",
+  "noticeSection": "通知公告",
+  "partyNotice": "党委学工部通知",
+  "partyNoticeDesc": "查看四川大学党委学生工作部通知公告",
+  "tuanweiNotice": "青春川大通知",
+  "tuanweiNoticeDesc": "查看四川大学团委通知公告",
+  "downloadedAttachmentsDesc": "管理已下载的通知附件",
+  "jwcTabLabel": "教务处",
+  "xgbTabLabel": "党委学工部",
+  "tuanweiTabLabel": "青春川大",
+  "dateMonthDay": "{month}月{day}日",
+  "@dateMonthDay": {
+    "placeholders": {
+      "month": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "holidayLabel": "假",
+  "@holidayLabel": {
+    "description": "Short label for statutory holiday displayed in course grid date header"
+  },
+  "festivalLabel": "节",
+  "@festivalLabel": {
+    "description": "Short label for festival displayed in course grid date header"
+  },
+  "solarTermLabel": "气",
+  "@solarTermLabel": {
+    "description": "Short label for solar term displayed in course grid date header"
+  },
+  "holidayTypeLabel": "节假日",
+  "@holidayTypeLabel": {
+    "description": "Label for statutory holiday type shown in special day detail sheet"
+  },
+  "festivalTypeLabel": "节日",
+  "@festivalTypeLabel": {
+    "description": "Label for festival type shown in special day detail sheet"
+  },
+  "solarTermTypeLabel": "节气",
+  "@solarTermTypeLabel": {
+    "description": "Label for solar term type shown in special day detail sheet"
+  },
+  "classScheduleInquiry": "班级课表",
+  "classScheduleInquiryDesc": "查看各班级的课表信息",
+  "classScheduleInquiryNoData": "暂无班级数据",
+  "classScheduleInquiryNoSchedule": "暂无课表数据",
+  "classScheduleInquiryDetail": "课程详情",
+  "classScheduleInquiryFilter": "查询条件",
+  "classScheduleInquirySemester": "学年学期",
+  "classScheduleInquiryGrade": "年级",
+  "classScheduleInquiryDepartment": "院系",
+  "classScheduleInquirySubject": "专业",
+  "classScheduleInquiryClass": "班级",
+  "classScheduleInquirySearch": "查询",
+  "classScheduleInquiryLoadMore": "加载更多",
+  "holidayTotalDays": "共{days}天假",
+  "@holidayTotalDays": {
+    "description": "Shows total holiday days, e.g. '共3天假'",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "dockLabelExamPlan": "考表",
+  "examPlan": "考试安排",
+  "examPlanDesc": "查询本学期考试时间、地点和座位号",
+  "examPlanNoData": "暂无考试安排",
+  "campusGridView": "网格视图",
+  "campusGridViewDesc": "校园页面使用网格布局",
+  "campusSearchHint": "搜索功能",
+  "campusSearchResults": "搜索结果",
+  "campusNoSearchResults": "未找到相关功能",
+  "viewChangelog": "版本更新日志",
+  "viewChangelogSubtitle": "查看历史版本更新记录",
+  "changelog": "更新日志",
+  "unreleased": "未发布",
+  "dockLabelZysc": "志愿",
+  "zyscTitle": "志愿四川",
+  "zyscDesc": "查看志愿服务活动并参与报名",
+  "interactiveCalendar": "互动校历",
+  "originalCalendar": "官方图表",
+  "calendarLoadingData": "正在获取校历数据...",
+  "calendarImportSuccess": "已成功导入 {count} 个事件到系统日历",
+  "calendarImportFailed": "导入系统日历失败",
+  "calendarImportCalendarTitle": "四川大学校历",
+  "calendarDaysRemaining": "剩 {days} 天",
+  "calendarStartedNDaysAgo": "已过 {days} 天",
+  "calendarToday": "今天",
+  "calendarCurrentWeek": "当前第 {week} 周",
+  "calendarSemesterStart": "学期开始: {date}",
+  "calendarWeeksTotal": "共 {weeks} 周",
+  "calendarImportButton": "导入系统日历",
+  "calendarHolidayTag": "放假",
+  "calendarExamTag": "考试",
+  "calendarStartTag": "开学",
+  "calendarEventTag": "事件",
+  "calendarNoEventData": "暂无互动校历数据",
+  "calendarNextEvent": "下个重要事件",
+  "appIcon": "应用图标",
+  "defaultIcon": "默认图标",
+  "oldIcon": "旧版图标",
+  "switchAppIcon": "切换应用图标",
+  "switchAppIconConfirm": "切换至「{label}」后应用将重启，是否继续？",
+  "@switchAppIconConfirm": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "defaultIconRestored": "已恢复默认图标",
+  "iconSwitched": "已切换到图标: {name}",
+  "@iconSwitched": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "iconSwitchFailed": "切换失败: {error}",
+  "@iconSwitchFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "iconSwitchNotSupported": "当前平台不支持动态切换应用图标",
+  "featureNotSupported": "当前平台不支持此功能",
+  "newIconSubtitle": "Bugaoshan 新图标",
+  "oldIconSubtitle": "Bugaoshan 经典图标",
+  "close": "关闭",
+  "onVacation": "假期中",
+  "vacationBadge": "放假中",
+  "daysUntilVacation": "距离放假还有 {days} 天",
+  "@daysUntilVacation": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "daysUntilNextSemester": "距离下学期上课还有 {days} 天",
+  "@daysUntilNextSemester": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "nextSemester": "下学期",
+  "registrationDates": "{start} - {end} 报到",
+  "@registrationDates": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "enjoyVacation": "享受假期～",
+  "viewNextSemesterSchedule": "查看下学期课表",
+  "noNextSemesterSchedule": "暂未导入下学期课表",
+  "promptSwitchSemester": "下学期即将开始，是否切换到下学期课表？",
+  "promptSwitchSemesterTitle": "切换课表",
+  "switchSchedule": "切换",
+  "teamIntroTitle": "团队介绍",
+  "teamIntroDesc": "The-Brotherhood-of-SCU 是一个非官方的四川大学开源组织，由一群热爱技术、关注校园生活的川大学生共同维护。我们的目标是通过开源协作，为川大同学打造实用的校园工具。",
+  "teamJoinUsTitle": "欢迎加入我们",
+  "teamContributeDesc": "我们欢迎任何形式的贡献，包括提交 Issue、反馈建议、发起 Pull Request 或改进文档。",
+  "teamContributeClosing": "项目的成长离不开每一位贡献者，期待你的参与。",
+  "quickSetting": "快速设置",
+  "@quickSetting": {
+    "description": "快速预设时间设置的章节标题",
+    "type": "text"
+  },
+  "presetJiangAn": "四川大学江安校区",
+  "@presetJiangAn": {
+    "description": "四川大学江安校区时间表预设名称",
+    "type": "text"
+  },
+  "presetWangJiangHuaXi": "四川大学望江/华西校区",
+  "@presetWangJiangHuaXi": {
+    "description": "四川大学望江/华西校区时间表预设名称",
+    "type": "text"
+  },
+  "presetScuHint": "自动设置 4-5-3 节数及对应时间点",
+  "@presetScuHint": {
+    "description": "SCU 预设时间配置的提示",
+    "type": "text"
+  },
+  "appliedPreset": "已应用{campus}时间表预设",
+  "@appliedPreset": {
+    "description": "应用时间表预设时的 SnackBar 消息",
+    "placeholders": {
+      "campus": {
+        "type": "String"
+      }
+    }
+  },
+  "presetLabel": "预设",
+  "@presetLabel": {
+    "description": "预设时间配置的标签",
+    "type": "text"
+  },
+  "roomCount": "{count} 间教室",
+  "@roomCount": {
+    "description": "教室数量，如「12 间教室」",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "compact"
+      }
+    }
+  },
+  "totalHours": "总学时: {hours}",
+  "@totalHours": {
+    "description": "CCYL 学时列表的总学时标签",
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "sortBy": "排序方式",
+  "@sortBy": {
+    "description": "排序模式选择器标签",
+    "type": "text"
+  },
+  "reset": "重置",
+  "@reset": {
+    "description": "重置按钮标签",
+    "type": "text"
+  },
+  "fileType": "文件类型",
+  "@fileType": {
+    "description": "文件类型筛选标签",
+    "type": "text"
+  },
+  "all": "全部",
+  "@all": {
+    "description": "筛选中的「全部」选项",
+    "type": "text"
+  },
+  "manage": "管理",
+  "@manage": {
+    "description": "管理/选择模式切换的工具提示",
+    "type": "text"
+  },
+  "filter": "筛选",
+  "@filter": {
+    "description": "筛选按钮的工具提示",
+    "type": "text"
+  },
+  "courseAttrRequired": "必修",
+  "@courseAttrRequired": {
+    "description": "课程属性：必修课",
+    "type": "text"
+  },
+  "courseAttrElective": "选修",
+  "@courseAttrElective": {
+    "description": "课程属性：选修课",
+    "type": "text"
+  },
+  "courseAttrOptional": "任选",
+  "@courseAttrOptional": {
+    "description": "课程属性：任选课",
+    "type": "text"
+  },
+  "nameLabel": "姓名",
+  "@nameLabel": {
+    "description": "人名的通用标签",
+    "type": "text"
+  },
+  "sexLabel": "性别",
+  "@sexLabel": {
+    "description": "性别的通用标签",
+    "type": "text"
+  },
+  "studentIdLabel": "学号",
+  "@studentIdLabel": {
+    "description": "学号的通用标签",
+    "type": "text"
+  },
+  "identityLabel": "身份",
+  "@identityLabel": {
+    "description": "身份/角色的通用标签",
+    "type": "text"
+  },
+  "emailLabel": "邮箱",
+  "@emailLabel": {
+    "description": "邮箱的通用标签",
+    "type": "text"
+  },
+  "phoneLabel": "手机",
+  "@phoneLabel": {
+    "description": "手机号的通用标签",
+    "type": "text"
+  },
+  "collegeLabel": "学院",
+  "@collegeLabel": {
+    "description": "学院的通用标签",
+    "type": "text"
+  },
+  "refresh": "刷新",
+  "@refresh": {
+    "description": "刷新按钮的工具提示",
+    "type": "text"
+  },
+  "gradeSuffix": "{grade}级",
+  "@gradeSuffix": {
+    "description": "年级后缀格式，如「2024级」",
+    "placeholders": {
+      "grade": {
+        "type": "String"
+      }
+    }
+  },
+  "campusSuffix": "{campusName}校区",
+  "@campusSuffix": {
+    "description": "校区名称后缀，如「江安校区」",
+    "placeholders": {
+      "campusName": {
+        "type": "String"
+      }
+    }
+  },
+  "examEnded": "已结束",
+  "@examEnded": {
+    "description": "表示考试已结束的标签",
+    "type": "text"
+  },
+  "pricePerUnitValue": "{price} 元/度",
+  "@pricePerUnitValue": {
+    "description": "带单位的电价，如「0.50 元/度」",
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyFailedCheckInfo": "验证失败，请检查信息是否正确",
+  "@verifyFailedCheckInfo": {
+    "description": "房间绑定验证失败时的错误提示",
+    "type": "text"
+  },
+  "getAuthCodeFailed": "获取授权码失败",
+  "@getAuthCodeFailed": {
+    "description": "CCYL OAuth 授权码获取失败时的错误提示",
+    "type": "text"
+  },
+  "addWidgetIosHint": "在 iOS 主屏幕长按，选择「不高山上」的课表组件添加",
+  "@addWidgetIosHint": {
+    "description": "iOS 主屏幕添加小组件的提示",
+    "type": "text"
+  },
+  "addWidgetMacHint": "在 macOS 通知中心点击「编辑小组件」，添加「不高山上」的课表组件",
+  "@addWidgetMacHint": {
+    "description": "macOS 通知中心添加小组件的提示",
+    "type": "text"
+  },
+  "autoAdjustedToSunday": "已自动调整为该周周日",
+  "@autoAdjustedToSunday": {
+    "description": "周起始日期自动调整为周日时的 SnackBar 提示",
+    "type": "text"
+  },
+  "goForward": "前进",
+  "@goForward": {
+    "description": "WebView 前进导航按钮的工具提示",
+    "type": "text"
+  },
+  "goBack": "后退",
+  "@goBack": {
+    "description": "WebView 后退导航按钮的工具提示",
+    "type": "text"
+  },
+  "openInBrowser": "在浏览器中打开",
+  "@openInBrowser": {
+    "description": "在外部浏览器中打开当前页面的工具提示",
+    "type": "text"
+  },
+  "downloadComplete": "下载完成",
+  "@downloadComplete": {
+    "description": "文件下载完成时的 SnackBar 提示",
+    "type": "text"
+  },
+  "importedScheduleName": "JWXT 导入 {month}-{day}",
+  "@importedScheduleName": {
+    "description": "从教务系统导入课表时的默认名称",
+    "placeholders": {
+      "month": {
+        "type": "int",
+        "format": "compact"
+      },
+      "day": {
+        "type": "int",
+        "format": "compact"
+      }
+    }
+  },
+  "error": "错误",
+  "@error": {
+    "description": "通用错误标题",
+    "type": "text"
+  },
+  "dockLabelLeave": "办事大厅",
+  "@dockLabelLeave": {
+    "description": "办事大厅入口的短 dock 标签。",
+    "type": "text"
+  },
+  "dockLabelRepair": "报修",
+  "@dockLabelRepair": {
+    "description": "在线报修入口的短 dock 标签。",
+    "type": "text"
+  },
+  "repairTitle": "在线报修",
+  "@repairTitle": {
+    "description": "在线报修页面标题。",
+    "type": "text"
+  },
+  "repairDesc": "提交宿舍/教室设施报修并跟踪维修进度",
+  "@repairDesc": {
+    "description": "校园入口卡片上显示的在线报修功能描述。",
+    "type": "text"
+  },
+  "repairTabSubmit": "我要报修",
+  "@repairTabSubmit": {
+    "description": "在线报修页提交表单的 Tab 标签。",
+    "type": "text"
+  },
+  "repairTabMyTickets": "我的报修",
+  "@repairTabMyTickets": {
+    "description": "在线报修页我的报修列表的 Tab 标签。",
+    "type": "text"
+  },
+  "repairAddress": "故障地址",
+  "@repairAddress": {
+    "description": "在线报修表单中的故障地址字段标题。",
+    "type": "text"
+  },
+  "repairSelectAddress": "请选择故障地址",
+  "@repairSelectAddress": {
+    "description": "未选择故障地址时的提示。",
+    "type": "text"
+  },
+  "repairProject": "维修项目",
+  "@repairProject": {
+    "description": "在线报修表单中的维修项目字段标题。",
+    "type": "text"
+  },
+  "repairSelectProject": "请选择维修项目",
+  "@repairSelectProject": {
+    "description": "未选择维修项目时的提示。",
+    "type": "text"
+  },
+  "repairSelectCategory": "请先选择类别",
+  "@repairSelectCategory": {
+    "description": "维修大类下拉框的提示。",
+    "type": "text"
+  },
+  "repairNoProjectInCategory": "该类别下暂无维修项目",
+  "@repairNoProjectInCategory": {
+    "description": "类别下没有可维修项目时展示。",
+    "type": "text"
+  },
+  "repairSelectProjectHint": "请先选择故障地址以加载维修项目",
+  "@repairSelectProjectHint": {
+    "description": "维修项目加载前的提示。",
+    "type": "text"
+  },
+  "repairContent": "故障描述",
+  "@repairContent": {
+    "description": "在线报修表单中的故障描述字段标题。",
+    "type": "text"
+  },
+  "repairContentHint": "请描述故障详细情况，便于维修师傅携带工具",
+  "@repairContentHint": {
+    "description": "故障描述输入框的占位提示。",
+    "type": "text"
+  },
+  "repairContentRequired": "请填写故障描述",
+  "@repairContentRequired": {
+    "description": "故障描述为空时的提示。",
+    "type": "text"
+  },
+  "repairPhotos": "图片视频",
+  "@repairPhotos": {
+    "description": "在线报修表单中的图片上传字段标题。",
+    "type": "text"
+  },
+  "repairImageUploading": "上传中…",
+  "@repairImageUploading": {
+    "description": "提交时图片上传中的按钮文案。",
+    "type": "text"
+  },
+  "repairSchedule": "期望维修时间",
+  "@repairSchedule": {
+    "description": "在线报修表单中的期望维修时间字段标题。",
+    "type": "text"
+  },
+  "repairAllowNoOne": "允许无人时维修",
+  "@repairAllowNoOne": {
+    "description": "是否允许维修师傅无人时上门维修的开关。",
+    "type": "text"
+  },
+  "repairBookDate": "选择日期",
+  "@repairBookDate": {
+    "description": "期望维修日期选择项。",
+    "type": "text"
+  },
+  "repairBookTime": "选择时间段",
+  "@repairBookTime": {
+    "description": "期望维修时间段选择项。",
+    "type": "text"
+  },
+  "repairNotSelected": "未选择",
+  "@repairNotSelected": {
+    "description": "未选择日期/时间段的占位文本。",
+    "type": "text"
+  },
+  "repairNoBookDate": "暂无可用预约日期",
+  "@repairNoBookDate": {
+    "description": "无可预约日期时的提示。",
+    "type": "text"
+  },
+  "repairNoBookTime": "该日期暂无可用时间段",
+  "@repairNoBookTime": {
+    "description": "该日期无可预约时间段时的提示。",
+    "type": "text"
+  },
+  "repairSubmit": "提交报修",
+  "@repairSubmit": {
+    "description": "在线报修表单的提交按钮文案。",
+    "type": "text"
+  },
+  "repairSubmitSuccess": "报修提交成功",
+  "@repairSubmitSuccess": {
+    "description": "报修提交成功后的提示。",
+    "type": "text"
+  },
+  "repairSubmitFailed": "报修提交失败，请稍后重试",
+  "@repairSubmitFailed": {
+    "description": "报修提交失败后的提示。",
+    "type": "text"
+  },
+  "repairTicket": "报修工单",
+  "@repairTicket": {
+    "description": "报修工单的通用名称。",
+    "type": "text"
+  },
+  "repairArea": "故障地点",
+  "@repairArea": {
+    "description": "报修工单中的故障地点标签。",
+    "type": "text"
+  },
+  "repairAddAddress": "新增地址",
+  "@repairAddAddress": {
+    "description": "新增报修地址按钮文案。",
+    "type": "text"
+  },
+  "repairSelectArea": "请选择区域",
+  "@repairSelectArea": {
+    "description": "新增地址时选择区域的提示。",
+    "type": "text"
+  },
+  "repairAddressDetail": "详细地址",
+  "@repairAddressDetail": {
+    "description": "新增地址表单的详细地址字段。",
+    "type": "text"
+  },
+  "repairAddressDetailRequired": "请填写详细地址",
+  "@repairAddressDetailRequired": {
+    "description": "详细地址为空时的提示。",
+    "type": "text"
+  },
+  "repairPhoneRequired": "请填写手机号",
+  "@repairPhoneRequired": {
+    "description": "手机号为空时的提示。",
+    "type": "text"
+  },
+  "repairPhoneInvalid": "手机号格式不正确",
+  "@repairPhoneInvalid": {
+    "description": "手机号格式不正确时的提示。",
+    "type": "text"
+  },
+  "repairAddressSaved": "地址已保存",
+  "@repairAddressSaved": {
+    "description": "新增地址成功后的提示。",
+    "type": "text"
+  },
+  "repairImageTypeInvalid": "仅支持 JPG/PNG/HEIC 格式图片",
+  "@repairImageTypeInvalid": {
+    "description": "选择的图片格式不支持时提示。",
+    "type": "text"
+  },
+  "repairImageTooLarge": "图片不能超过 10MB",
+  "@repairImageTooLarge": {
+    "description": "选择的图片超过大小上限时提示。",
+    "type": "text"
+  },
+  "repairDetail": "报修详情",
+  "@repairDetail": {
+    "description": "报修工单详情页标题。",
+    "type": "text"
+  },
+  "repairServiceUnit": "服务单位",
+  "@repairServiceUnit": {
+    "description": "报修工单中的服务单位字段标签。",
+    "type": "text"
+  },
+  "repairPayType": "收费类型",
+  "@repairPayType": {
+    "description": "报修工单中的收费类型字段标签。",
+    "type": "text"
+  },
+  "repairProgress": "工单进度",
+  "@repairProgress": {
+    "description": "工单进度时间线标题。",
+    "type": "text"
+  },
+  "repairWithdraw": "撤回报修",
+  "@repairWithdraw": {
+    "description": "撤回报修按钮文案。",
+    "type": "text"
+  },
+  "repairWithdrawConfirm": "确定要撤回该报修工单吗？",
+  "@repairWithdrawConfirm": {
+    "description": "撤回报修前的确认提示。",
+    "type": "text"
+  },
+  "repairWithdrawSuccess": "报修已撤回",
+  "@repairWithdrawSuccess": {
+    "description": "撤回报修成功后的提示。",
+    "type": "text"
+  },
+  "repairWithdrawFailed": "撤回失败，请稍后重试",
+  "@repairWithdrawFailed": {
+    "description": "撤回报修失败后的提示。",
+    "type": "text"
+  },
+  "repairEvaluate": "评价工单",
+  "@repairEvaluate": {
+    "description": "评价报修工单按钮文案。",
+    "type": "text"
+  },
+  "repairEvaluateHint": "请填写评价内容（可选）",
+  "@repairEvaluateHint": {
+    "description": "评价内容输入框的占位提示。",
+    "type": "text"
+  },
+  "repairEvaluateSuccess": "评价成功",
+  "@repairEvaluateSuccess": {
+    "description": "评价成功后的提示。",
+    "type": "text"
+  },
+  "repairEvaluated": "已评价",
+  "@repairEvaluated": {
+    "description": "工单已评价状态文案。",
+    "type": "text"
+  },
+  "repairWithdrawn": "已撤回",
+  "@repairWithdrawn": {
+    "description": "工单已撤回状态文案。",
+    "type": "text"
+  },
+  "repairEvaluateFailed": "评价失败，请稍后重试",
+  "@repairEvaluateFailed": {
+    "description": "评价失败后的提示。",
+    "type": "text"
+  },
+  "serviceHallTitle": "办事大厅",
+  "@serviceHallTitle": {
+    "description": "办事大厅二级页面标题，列出可办理事项。",
+    "type": "text"
+  },
+  "serviceHallLeaveTitle": "离校请假",
+  "@serviceHallLeaveTitle": {
+    "description": "办事大厅中请假事项的名称。",
+    "type": "text"
+  },
+  "serviceHallLeaveDesc": "提交离校请假申请",
+  "@serviceHallLeaveDesc": {
+    "description": "办事大厅中请假事项的描述。",
+    "type": "text"
+  },
+  "serviceHallMyAppsTitle": "我的申请",
+  "@serviceHallMyAppsTitle": {
+    "description": "办事大厅中我的申请事项的名称。",
+    "type": "text"
+  },
+  "serviceHallMyAppsDesc": "查看请假、报备等申请记录",
+  "@serviceHallMyAppsDesc": {
+    "description": "办事大厅中我的申请事项的描述。",
+    "type": "text"
+  },
+  "serviceHallReturnTitle": "返校报备",
+  "@serviceHallReturnTitle": {
+    "description": "办事大厅中返校报备事项的名称。",
+    "type": "text"
+  },
+  "serviceHallReturnDesc": "提前报备返校行程",
+  "@serviceHallReturnDesc": {
+    "description": "办事大厅中返校报备事项的描述。",
+    "type": "text"
+  },
+  "serviceHallSummerLeaveTitle": "暑假离校",
+  "@serviceHallSummerLeaveTitle": {
+    "description": "办事大厅中暑假离校事项的名称。",
+    "type": "text"
+  },
+  "serviceHallSummerLeaveDesc": "报备暑假离校行程",
+  "@serviceHallSummerLeaveDesc": {
+    "description": "办事大厅中暑假离校事项的描述。",
+    "type": "text"
+  },
+  "serviceHallStayRegisterTitle": "留校登记",
+  "@serviceHallStayRegisterTitle": {
+    "description": "办事大厅中留校登记事项的名称。",
+    "type": "text"
+  },
+  "serviceHallStayRegisterDesc": "登记假期留校",
+  "@serviceHallStayRegisterDesc": {
+    "description": "办事大厅中留校登记事项的描述。",
+    "type": "text"
+  },
+  "serviceFormRequired": "请填写{label}",
+  "@serviceFormRequired": {
+    "description": "办事大厅表单必填字段为空时的校验提示。",
+    "type": "text",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "校区"
+      }
+    }
+  },
+  "serviceFormSchemaFailed": "表单加载失败，请稍后重试",
+  "@serviceFormSchemaFailed": {
+    "description": "办事大厅表单定义加载失败时的错误提示。",
+    "type": "text"
+  },
+  "serviceFormSelectHint": "请选择",
+  "@serviceFormSelectHint": {
+    "description": "办事大厅表单下拉字段的提示文案。",
+    "type": "text"
+  },
+  "serviceFormOptional": "选填",
+  "@serviceFormOptional": {
+    "description": "办事大厅表单选填字段的标记。",
+    "type": "text"
+  },
+  "leaveTitle": "请假申请",
+  "@leaveTitle": {
+    "description": "请假申请页面标题。",
+    "type": "text"
+  },
+  "leaveDesc": "办事大厅内可在线办理请假、报备等事项",
+  "@leaveDesc": {
+    "description": "校园入口卡片上显示的办事大厅功能描述。",
+    "type": "text"
+  },
+  "leaveApply": "请假申请",
+  "@leaveApply": {
+    "description": "请假申请表单的 Tab 标签。",
+    "type": "text"
+  },
+  "leaveMyApplications": "我的申请",
+  "@leaveMyApplications": {
+    "description": "查看已提交请假记录的 Tab 标签。",
+    "type": "text"
+  },
+  "leaveSubmit": "提交申请",
+  "@leaveSubmit": {
+    "description": "提交请假申请的按钮文本。",
+    "type": "text"
+  },
+  "leaveReasonRequired": "请填写请假事由",
+  "leaveEndAfterStart": "结束时间需晚于开始时间",
+  "leaveSubmitSuccess": "请假申请已提交",
+  "leaveSubmitFailed": "提交失败，请稍后重试",
+  "leaveInfo": "学生信息",
+  "leaveTutor": "辅导员",
+  "leaveCampusRequired": "请选择离开校区",
+  "leaveDetail": "其他事由",
+  "leaveDetailHint": "请填写具体事由",
+  "leaveAttachment": "上传证明",
+  "leaveAttachmentHint": "可上传 1-3 张图片作为请假证明（非必填）",
+  "leaveAttachmentAdd": "添加图片",
+  "leaveDepartReturn": "离校/返校时间",
+  "leaveDepartTime": "离校时间",
+  "leaveReturnTime": "返校时间",
+  "leaveRegionRequired": "请选择去往地址",
+  "regionProvince": "省",
+  "regionCity": "市",
+  "regionArea": "区县",
+  "regionSelectHint": "请选择",
+  "regionDetailHint": "详细地址（街道、门牌号等）",
+  "regionPickProvince": "选择省份",
+  "regionPickCity": "选择城市",
+  "regionPickArea": "选择区县",
+  "leaveNoApplications": "暂无请假记录",
+  "leaveSubmitTime": "提交时间",
+  "leaveStatusProcessing": "审批中",
+  "leaveStatusDraft": "草稿",
+  "leaveStatusDone": "已完成",
+  "@leaveNoApplications": {
+    "description": "我的申请 Tab 的空状态提示。",
+    "type": "text"
+  },
+  "graduateGrades": "研究生成绩",
+  "graduateGradesDesc": "查看研究生课程成绩",
+  "graduateGradesEmpty": "暂无研究生成绩",
+  "graduateGradesStats": "成绩统计",
+  "graduateStatsCourseCount": "课程数",
+  "graduateStatsTotalCredit": "总学分",
+  "graduateStatsAverage": "加权均分",
+  "graduateStatsPassRate": "通过率",
+  "graduateTrainPlan": "培养进度",
+  "graduateTrainPlanDesc": "查看研究生培养进度",
+  "graduateScheduleImport": "课表导入",
+  "graduateScheduleImportDesc": "导入研究生课表",
+  "graduateScheduleImportName": "研究生课表",
+  "graduateScheduleImportFound": "已识别课程",
+  "graduateScheduleImportWaiting": "正在等待课表数据，请先在下方页面登录并打开课表",
+  "graduateScheduleImportEmpty": "已抓到数据但没解析出课程，试试在页面里切换周次",
+  "graduateScheduleImportAction": "导入到课表",
+  "graduateScheduleImportOverwriteTitle": "覆盖已有的课表？",
+  "graduateScheduleImportOverwriteBody": "已存在名为「{name}」的课表，继续导入会清空并替换它现有的全部课程。",
+  "@graduateScheduleImportOverwriteBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "graduateScheduleImportDoneTo": "课表导入完成，已切换到「{name}」",
+  "@graduateScheduleImportDoneTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "graduateScheduleImportFailed": "导入失败，请重试",
+  "graduateScheduleImportWebUnsupported": "识别网页需要在页面里注入脚本，浏览器会因跨域而拦截。请在 Android / iOS / Windows 客户端使用此功能。",
+  "graduateScheduleImportNoWebView": "直连获取研究生课表失败，且当前平台没有内置网页兜底。请检查网络后重试，或使用 Android / iOS / 桌面客户端导入。",
+  "graduateScheduleImportRetryDirect": "我已登录，重试",
+  "graduateScheduleImportSessionExpired": "研究生教务会话未建立或已过期，请先完成统一身份认证登录",
+  "graduateScheduleImportGoLogin": "前往登录",
+  "graduateScheduleImportEmergencyCapture": "应急网页抓取（直连不可用时）",
+  "graduateTrainPlanEmpty": "暂无培养进度数据",
+  "graduateTrainPlanProgress": "培养进度",
+  "graduateTrainPlanCreditText": "已修 {completed} / 要求 {requiredCredit} 学分",
+  "@graduateTrainPlanCreditText": {
+    "placeholders": {
+      "completed": {
+        "type": "String"
+      },
+      "requiredCredit": {
+        "type": "String"
+      }
+    }
+  },
+  "graduateTrainPlanModuleCredit": "已修 {completed} / 要求 {requiredCredit} 学分",
+  "@graduateTrainPlanModuleCredit": {
+    "placeholders": {
+      "completed": {
+        "type": "String"
+      },
+      "requiredCredit": {
+        "type": "String"
+      }
+    }
+  },
+  "graduateTrainPlanNoCourses": "本模块暂无课程",
+  "labAttendance": "实验室考勤",
+  "labAttendanceDesc": "记录实验室出勤",
+  "labAttendanceMonthDay": "今日考勤",
+  "labAttendanceEmpty": "本月暂无考勤记录",
+  "labAttendanceDays": "出勤天数",
+  "labAttendanceHours": "出勤时长(小时)",
+  "labCheckIn": "签到",
+  "labCheckOut": "签退",
+  "thesisProgress": "论文进度",
+  "thesisProgressDesc": "跟踪课题论文进度",
+  "thesisProgressEmpty": "暂无论文阶段",
+  "thesisProgressOverview": "论文进度概览",
+  "thesisProgressText": "已完成 {completed} / {total} 个阶段",
+  "@thesisProgressText": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "thesisStageNotStarted": "未开始",
+  "thesisStageInProgress": "进行中",
+  "thesisStageCompleted": "已完成",
+  "thesisStageName": "阶段名称",
+  "thesisStageNameHint": "例如：开题、中期、预答辩",
+  "thesisStageNote": "备注",
+  "thesisStageNoPlanDate": "设置计划日期",
+  "thesisStagePlanDate": "计划日期：{date}",
+  "@thesisStagePlanDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "thesisStagePlan": "计划",
+  "addThesisStage": "添加阶段",
+  "editThesisStage": "编辑阶段",
+  "mentorTasks": "导师任务",
+  "mentorTasksDesc": "查看导师布置的任务",
+  "mentorTasksEmpty": "暂无导师任务",
+  "mentorTaskPending": "待完成",
+  "mentorTaskOverdue": "已逾期",
+  "mentorTaskDueSoon": "即将到期",
+  "mentorTaskPriorityLow": "低",
+  "mentorTaskPriorityMedium": "中",
+  "mentorTaskPriorityHigh": "高",
+  "mentorTaskNoDueDate": "无截止时间",
+  "mentorTaskDueDate": "截止：{date}",
+  "@mentorTaskDueDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "mentorTaskDaysText": "剩余 {days} 天",
+  "@mentorTaskDaysText": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "mentorTaskTitle": "任务标题",
+  "mentorTaskNote": "备注",
+  "addMentorTask": "添加任务",
+  "editMentorTask": "编辑任务",
+  "mentorTaskLoginRequired": "登录后查看导师任务",
+  "graduateLoginRequired": "请先在「我的」页面完成统一身份认证登录后再使用研究生功能",
+  "userManual": "用户手册",
+  "officialWebsite": "官方网站",
+  "showCourseWeeks": "显示课程周数",
+  "copyCourseTitle": "新建副本",
+  "copyCourseSave": "保存副本",
+  "resetPassword": "重置密码",
+  "resetPasswordStepAccount": "确认账户",
+  "resetPasswordStepVerify": "安全验证",
+  "resetPasswordStepReset": "重置密码",
+  "resetPasswordNext": "下一步",
+  "resetPasswordChooseMethod": "您正在重置登录密码，请选择以下安全验证方式：",
+  "resetPasswordViaSms": "通过短信验证",
+  "resetPasswordSmsTip": "您的手机 {phone} 将收到一条短信验证码",
+  "@resetPasswordSmsTip": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "resetPasswordViaEmail": "通过邮件验证",
+  "resetPasswordEmailTip": "您的邮箱 {email} 将收到一条邮件验证码",
+  "@resetPasswordEmailTip": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "resetPasswordSendCode": "发送验证码",
+  "resetPasswordResendAfter": "{seconds}s后可重发",
+  "@resetPasswordResendAfter": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "resetPasswordCodeRequired": "请输入6位数字验证码",
+  "resetPasswordNewPasswordLabel": "新密码",
+  "resetPasswordConfirmPasswordLabel": "确认新密码",
+  "resetPasswordPasswordMismatch": "两次输入的密码不一致",
+  "resetPasswordPolicyTip": "密码至少包含大小写字母+数字+特殊字符，长度至少 8 位",
+  "resetPasswordPolicyInvalid": "密码不符合要求",
+  "resetPasswordSubmit": "确定",
+  "resetPasswordSuccess": "密码重置成功，请使用新密码登录",
+  "resetPasswordBackToLogin": "返回登录",
+  "dockLabelCourseCurriculum": "课程课表",
+  "courseCurriculum": "课程课表",
+  "courseCurriculumDesc": "查询各课程教学班的课表信息",
+  "courseCurriculumNoData": "暂无课程数据",
+  "courseCurriculumNoSchedule": "暂无课表数据",
+  "courseCurriculumFilter": "查询条件",
+  "courseCurriculumSemester": "学年学期",
+  "courseCurriculumDepartment": "开课院系",
+  "courseCurriculumCategory": "课程类别",
+  "courseCurriculumCourseName": "课程名",
+  "courseCurriculumCourseCode": "课程号",
+  "courseCurriculumCourseSeq": "课序号",
+  "courseCurriculumSearch": "查询",
+  "courseCurriculumLoadMore": "加载更多",
+  "reminderHostProbeTitle": "宿主通知探针",
+  "reminderHostProbeSubtitle": "走真实链路排一条 N 秒后的通知，用于验证宿主能否真的投递。",
+  "reminderHostProbeAction": "15 秒后触发",
+  "reminderHostProbeSent": "已排期。锁屏即可看到横幅。",
+  "reminderHostProbeDenied": "通知权限被拒绝，请先到系统设置中开启。",
+  "reminderHostProbeFailed": "排期失败",
+  "reminderHostProbePermissionTitle": "通知权限",
+  "reminderHostProbePermissionUnknown": "查询中…",
+  "reminderHostProbePermissionAuthorized": "已授权",
+  "reminderHostProbePermissionProvisional": "临时授权（安静投递）",
+  "reminderHostProbePermissionDeniedLabel": "已被系统设置拒绝",
+  "reminderHostProbePermissionNotDetermined": "尚未请求",
+  "reminderHostProbeRequestPermission": "请求授权",
+  "reminderHostProbeOpenSettings": "去系统设置",
+  "reminderHostProbeOpenSettingsFailed": "无法打开系统设置",
+  "reminderHostProbePermissionGranted": "已获得通知权限",
+  "reminderHostProbePermissionDenied": "权限被拒绝",
+  "reminderProbeTitle": "课表提醒探针",
+  "reminderProbeBody": "这是一条 15 秒后触发的测试提醒",
+  "reminderPlanTitle": "当前排期计划",
+  "reminderPlanEmpty": "尚未生成计划",
+  "reminderPlanSummary": "共 {count} 条，窗口截止 {end}",
+  "reminderPlanDropped": "因平台待投递上限被裁掉 {count} 条",
+  "reminderPlanPending": "系统已登记 {count} 条",
+  "reminderStatusScheduled": "已排期 {count} 条，窗口截止 {end}",
+  "reminderStatusPending": "系统已登记 {count} 条",
+  "reminderStatusDropped": "因平台上限被裁掉 {count} 条",
+  "reminderStatusError": "排期失败：{error}",
+  "reminderLeadMinutes": "提前 {count} 分钟",
+  "reminderSettingsTitle": "通知与提醒",
+  "reminderMasterSwitch": "提醒",
+  "reminderMasterSwitchHint": "关闭后将清空所有已排期的提醒",
+  "reminderCourseSection": "课前提醒",
+  "reminderLeadTime": "提前提醒时间",
+  "reminderLeadTimeHint": "在上课前多久提醒你",
+  "reminderLeadTimeMultiHint": "可多选，每选一项会产生一条独立的提醒。",
+  "reminderQuietSection": "免打扰",
+  "reminderQuietEnabled": "免打扰时段",
+  "reminderQuietHint": "落在该时段内的提醒会被丢弃，而不是延后",
+  "reminderQuietStart": "开始",
+  "reminderQuietEnd": "结束",
+  "reminderStatusSection": "排期状态",
+  "reminderStatusEmpty": "尚未生成排期计划",
+  "reminderStatusNoUpcoming": "当前窗口内没有待提醒的课程",
+  "reminderStatusRefresh": "立即重新排期",
+  "reminderPermissionTitle": "通知未开启",
+  "reminderPermissionDeniedHint": "之前已拒绝过授权，系统不会再弹窗，请到系统设置里开启。",
+  "reminderPermissionNotDeterminedHint": "需要授予通知权限，提醒才能送达。",
+  "reminderPermissionRequest": "去授权",
+  "reminderPermissionOpenSettings": "去系统设置",
+  "reminderPermissionOpenFailed": "无法打开系统设置",
+  "reminderPermissionGrantedToast": "已获得通知权限",
+  "reminderPermissionDeniedToast": "权限被拒绝",
+  "reminderPermissionFailed": "请求权限失败",
+  "reminderPrivacyHint": "提醒会显示在锁屏上，因此与隐私开关联动：关掉了「显示教师姓名」，锁屏上也不会出现。",
+  "reminderPlanCopy": "复制计划 JSON",
+  "reminderPlanCopied": "已复制",
+  "reminderPlanFailed": "计划序列化失败",
+  "liveActivityProbeTitle": "灵动岛探针",
+  "liveActivityProbeSubtitle": "为一条 {minutes} 分钟后下课的示例课程启动实时活动。实时活动只能在应用处于前台时启动。",
+  "liveActivityProbeRunning": "启动中…",
+  "liveActivityProbeAction": "立即触发示例",
+  "liveActivityProbeStarted": "已启动。按 Home 键回主屏，灵动岛应当出现。",
+  "liveActivityProbeEnded": "示例实时活动已结束",
+  "liveActivityProbeEndAction": "结束示例",
+  "liveActivityProbeFailed": "启动失败",
+  "liveActivityProbeUnsupported": "当前设备或系统不支持实时活动（需 iOS 16.1+）。",
+  "liveActivityProbeNotAuthorized": "系统设置中未开启实时活动。",
+  "liveActivityProbeForegroundRequired": "实时活动只能在应用处于前台时启动。",
+  "liveActivityProbeSampleCourse": "示例课程",
+  "liveActivityProbeSampleLocation": "综C407",
+  "liveActivityProbeSampleNext": "线性代数",
+  "liveActivityProbeEndNowAction": "立即结束",
+  "liveActivityProbeStatusTitle": "实时活动状态",
+  "liveActivityProbeStatusSupported": "支持且已开启",
+  "liveActivityProbeStatusUnsupported": "不支持 / 未开启",
+  "liveActivityProbeActive": "示例会话进行中",
+  "liveActivityProbeSentEnded": "会话已结束",
+  "liveActivityProbeNoSession": "未能连上宿主（无进行中的会话）。",
+  "privacyPolicy": "隐私政策",
+  "legalInfo": "法律信息",
+  "supportAndHelp": "支持与帮助",
+  "docLoadFailed": "文档加载失败"
 }

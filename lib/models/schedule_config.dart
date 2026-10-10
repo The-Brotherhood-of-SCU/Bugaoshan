@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/utils/semester_week.dart';
 
 /// 单节课的时间段（起止时刻）。
 class TimeSlot {
@@ -53,15 +54,14 @@ class ScheduleConfig {
   int get sectionsPerDay =>
       morningSections + afternoonSections + eveningSections;
 
-  /// The last day of this semester (end of the last teaching week).
-  DateTime get semesterEndDate {
-    final start = DateTime(
-      semesterStartDate.year,
-      semesterStartDate.month,
-      semesterStartDate.day,
-    );
-    return start.add(Duration(days: totalWeeks * 7 - 1));
-  }
+  /// 本学期最后一天（最后一周的周六，即放假前一天）。
+  ///
+  /// 与周次同一口径（见 `utils/semester_week.dart`）：教学周以周日成行，故末周
+  /// 最后一天 = 块首日 + `totalWeeks * 7 - 1`。周一起点的学期里比「起点 +
+  /// totalWeeks*7 - 1」早一天（2026-08-31 起 20 周 → 2027-01-16(六)，校历寒假
+  /// 自 1/17 起）。
+  DateTime get semesterEndDate =>
+      courseSemesterEnd(semesterStartDate, totalWeeks);
 
   ScheduleConfig({
     this.id = 'default',
@@ -445,6 +445,11 @@ class ScheduleConfig {
     return slots;
   }
 
+  /// 今天的教学周（1-based，不按 [totalWeeks] 裁剪——假期判定依赖它超过总周数）。
+  ///
+  /// 与校历同口径（教学周以周日为首日成行，见 `utils/semester_week.dart`）：
+  /// 周一起点的学期里，周日的周次比「自起点起算的整 7 天块」多一周
+  /// （2026-08-31 起点 → 9/20(日) 是第 4 周）。
   int getCurrentWeek() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -454,29 +459,20 @@ class ScheduleConfig {
       semesterStartDate.day,
     );
     if (today.isBefore(start)) return 1;
-    final days = today.difference(start).inDays;
-    final week = (days / 7).floor() + 1;
-    return week;
+    return courseWeekOf(start, today);
   }
 
   /// 返回指定教学周、星期对应的自然日。
   ///
-  /// 课表允许将学期起点保存为周日；该周日属于第一教学周，随后一天
-  /// 才是第一周周一。因此不能直接用 [DateTimeExtension.toMonday]，否则
-  /// 周日起点会被归到前一周。
+  /// 教学周以周日为首日成行（口径见 `utils/semester_week.dart`）：第 W 周 =
+  /// `[块首日 + (W-1)*7, 块首日 + (W-1)*7 + 6]`，网格列序即「日、一、…、六」。
+  /// 块首日是学期起点所在周的周日，因此周一起点的学期里第 1 周的周日是起点前一天
+  /// （2026-08-31 → 8/30），第 3 周的周日是 9/20。
   DateTime dateForCourseDay(int week, int dayOfWeek) {
-    final start = DateTime(
-      semesterStartDate.year,
-      semesterStartDate.month,
-      semesterStartDate.day,
-    );
-    final mondayOffset = (DateTime.monday - start.weekday) % 7;
-    final daysFromMonday = dayOfWeek == DateTime.sunday
-        ? -1
-        : dayOfWeek - DateTime.monday;
-    return start.add(
-      Duration(days: (week - 1) * 7 + mondayOffset + daysFromMonday),
-    );
+    final anchor = courseWeekAnchor(semesterStartDate);
+    // 行内偏移：周日 0、周一 1 … 周六 6
+    final dayOffset = (dayOfWeek - DateTime.sunday) % 7;
+    return anchor.add(Duration(days: (week - 1) * 7 + dayOffset));
   }
 
   ScheduleConfig copyWith({

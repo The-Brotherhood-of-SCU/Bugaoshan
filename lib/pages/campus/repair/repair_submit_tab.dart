@@ -353,7 +353,7 @@ class _SubmitTabState extends State<_SubmitTab> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                SwitchListTile(
+                AdaptiveGlassSwitchListTile(
                   title: Text(l10n.repairAllowNoOne),
                   value: _allowNoOneRepair,
                   contentPadding: EdgeInsets.zero,

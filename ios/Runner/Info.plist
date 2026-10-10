@@ -26,6 +26,8 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>用于读取可写日历列表并将导出的课表和考表写入您选择的系统日历。</string>
 	<key>NSCalendarsUsageDescription</key>

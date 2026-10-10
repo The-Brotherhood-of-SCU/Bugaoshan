@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
@@ -123,7 +124,7 @@ class _AddWidgetContentState extends State<AddWidgetContent>
     AppLocalizations localizations,
   ) {
     final appConfig = getIt<AppConfigProvider>();
-    return SwitchListTile(
+    return AdaptiveGlassSwitchListTile(
       title: Text(localizations.widgetShowTomorrowAfterEnd),
       value: appConfig.widgetShowTomorrow.value,
       onChanged: (v) async {
@@ -416,7 +417,7 @@ class _AddWidgetContentState extends State<AddWidgetContent>
             // Consolidated single card with size choices (Android only)
             if (isAndroid) _WidgetPickerCard(onPin: _pinWidget),
             if (isAndroid) const SizedBox(height: 16),
-            if (_platform == TargetPlatform.iOS) ...[
+            if (isApple) ...[
               _buildAppearanceCard(context, localizations, appConfig),
               const SizedBox(height: 16),
             ],

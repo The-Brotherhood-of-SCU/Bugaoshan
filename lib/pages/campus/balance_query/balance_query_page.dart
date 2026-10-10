@@ -1,3 +1,4 @@
+import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -172,7 +173,7 @@ class BalanceQueryPage extends StatelessWidget {
             ),
             ListenableBuilder(
               listenable: appConfig.autoSampleBalanceOnLogin,
-              builder: (_, _) => SwitchListTile(
+              builder: (_, _) => AdaptiveGlassSwitchListTile(
                 title: Text(l10n.autoSampleBalanceOnLogin),
                 subtitle: Text(l10n.autoSampleBalanceOnLoginDesc),
                 value: appConfig.autoSampleBalanceOnLogin.value,

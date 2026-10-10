@@ -3,7 +3,10 @@ import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
+import 'package:bugaoshan/pages/campus/ccyl/ccyl_activity_phase.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
+import 'package:bugaoshan/pages/campus/ccyl/widgets/ccyl_level_chip.dart';
+import 'package:bugaoshan/pages/campus/ccyl/widgets/ccyl_phase_chip.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activity_detail_page.dart';
 import 'package:bugaoshan/widgets/common/icon_info_row.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
@@ -13,7 +16,17 @@ import 'package:bugaoshan/utils/app_log.dart';
 class ActivityLibDetailPage extends StatefulWidget {
   final String activityLibraryId;
 
-  const ActivityLibDetailPage({super.key, required this.activityLibraryId});
+  /// 场次列表加载完成后回调，携带由各场次状态归并出的系列状态。
+  ///
+  /// 系列条目在搜索列表里往往不携带各场次的时间段，状态只能乐观兜底；
+  /// 进入详情页拿到场次数据后回传，供列表修正展示（见 issue #339）。
+  final ValueChanged<List<CcylActivityPhase>>? onSubActivitiesResolved;
+
+  const ActivityLibDetailPage({
+    super.key,
+    required this.activityLibraryId,
+    this.onSubActivitiesResolved,
+  });
 
   @override
   State<ActivityLibDetailPage> createState() => _ActivityLibDetailPageState();
@@ -52,6 +65,11 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
         _subscribed = result.subscribed;
         _loading = false;
       });
+      if (_activities.isNotEmpty) {
+        widget.onSubActivitiesResolved?.call(
+          mergeCcylSeriesPhases(_activities),
+        );
+      }
     } catch (e) {
       AppLog.e('CcylActivityLibDetail', 'Detail load error: $e');
       if (!mounted) return;
@@ -230,21 +248,7 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                if (lib.levelName != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(AppShapes.xs),
-                    ),
-                    child: Text(
-                      lib.levelName!,
-                      style: Theme.of(context).textTheme.labelSmall,
-                    ),
-                  ),
+                if (lib.levelName != null) CcylLevelChip(label: lib.levelName!),
               ],
             ),
             if (lib.describe != null && lib.describe!.isNotEmpty) ...[
@@ -275,11 +279,6 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
-            IconInfoRow(
-              icon: Icons.star,
-              label: l10n.ccylStarLevel,
-              value: lib.starName ?? lib.star,
-            ),
             if (lib.qualityName != null)
               IconInfoRow(
                 icon: Icons.emoji_events,
@@ -297,11 +296,21 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
               label: l10n.ccylHours,
               value: '${lib.classHour}',
             ),
+            if (_libStarText(lib).isNotEmpty)
+              IconInfoRow(
+                icon: Icons.star,
+                label: l10n.ccylStarLevel,
+                value: _libStarText(lib),
+              ),
           ],
         ),
       ),
     );
   }
+
+  /// 星级展示文本；星级与星级名均为空时返回空串（隐藏该行）。
+  String _libStarText(CyclActivityLib lib) =>
+      lib.starName?.isNotEmpty == true ? lib.starName! : lib.star;
 
   Widget _buildContactSection(AppLocalizations l10n) {
     final lib = _activityLib!;
@@ -435,26 +444,7 @@ class _ActivityCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: activity.status == 'A03'
-                        ? Theme.of(context).colorScheme.primaryContainer
-                        : Theme.of(context).colorScheme.tertiaryContainer,
-                    borderRadius: BorderRadius.circular(AppShapes.xs),
-                  ),
-                  child: Text(
-                    activity.statusName ?? activity.status,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: activity.status == 'A03'
-                          ? Theme.of(context).colorScheme.onPrimaryContainer
-                          : Theme.of(context).colorScheme.onTertiaryContainer,
-                    ),
-                  ),
-                ),
+                CcylPhaseChips(phases: resolveCcylActivityPhases(activity)),
               ],
             ),
             const SizedBox(height: 8),

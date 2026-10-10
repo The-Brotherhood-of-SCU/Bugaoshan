@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
+import 'package:bugaoshan/pages/campus/ccyl/ccyl_activity_phase.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
+import 'package:bugaoshan/pages/campus/ccyl/widgets/ccyl_level_chip.dart';
+import 'package:bugaoshan/pages/campus/ccyl/widgets/ccyl_phase_chip.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activity_lib_detail_page.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
@@ -186,25 +188,32 @@ class _OrderedActivityCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                if (activity.levelName != null) ...[
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(AppShapes.xs),
-                    ),
-                    child: Text(
-                      activity.levelName!,
-                      style: Theme.of(context).textTheme.labelSmall,
-                    ),
-                  ),
-                ],
+                if (activity.levelName != null)
+                  CcylLevelChip(label: activity.levelName!),
               ],
             ),
             const SizedBox(height: 8),
+            if (activity.startTime != null) ...[
+              Row(
+                children: [
+                  Icon(
+                    Icons.schedule,
+                    size: 16,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      _timeRangeText(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+            ],
             Row(
               children: [
                 Icon(
@@ -217,28 +226,19 @@ class _OrderedActivityCard extends StatelessWidget {
                   '${activity.classHour} ${l10n.ccylHours}',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
-                if (activity.starName?.isNotEmpty == true) ...[
-                  const SizedBox(width: 16),
-                  Icon(
-                    Icons.star,
-                    size: 16,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      activity.starName!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ),
-                ],
+                const Spacer(),
+                CcylPhaseChips(phases: resolveCcylActivityPhases(activity)),
               ],
             ),
           ],
         ),
       ),
     );
+  }
+
+  String _timeRangeText() {
+    final start = activity.startTime ?? '';
+    final end = activity.endTime;
+    return end == null || end.isEmpty ? start : '$start ~ $end';
   }
 }

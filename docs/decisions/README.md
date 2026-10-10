@@ -9,6 +9,10 @@ ADR 保存已经影响代码边界、后续开发仍需遵守的设计决策。�
 | [0003](0003-make-course-display-settings-global.md) | 2026-07-05 | 已接受并实施 | 课表显示偏好归属全局设置域 |
 | [0004](0004-use-distribution-wpe-on-linux.md) | 2026-07-29 | 已接受并实施 | Linux WebView 保留插件，但由分发环境提供 WPE |
 | [0005](0005-remove-balance-history-account-isolation.md) | 2026-08-12 | 已接受并实施 | 撤销余额历史记录的账号隔离，余额数据按房间共享 |
+| [0006](0006-sunday-first-course-week.md) | 2026-09-19 | 已接受并实施 | 教学周按校历「周日~周六」成行，全端统一周次锚定口径 |
+| [0007](0007-global-student-type-switch.md) | 2026-09-21 | 已接受并实施 | 本科生 / 研究生身份为全局展示开关，功能入口按身份过滤 |
+| [0008](0008-reminder-scheduling-in-dart.md) | 2026-10-07 | 已接受并实施 | 提醒排期在 Dart 预计算，原生只按表投递 |
+| [0009](0009-export-schedule-as-image.md) | 2026-10-09 | 已接受并实施 | 课表导出为图片采用「离屏挂载 + RepaintBoundary 捕获」 |
 
 ## 状态定义
 

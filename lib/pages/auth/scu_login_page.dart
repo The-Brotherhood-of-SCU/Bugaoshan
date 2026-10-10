@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -18,7 +19,9 @@ import 'package:bugaoshan/services/ocr_service.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/third_center.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class ScuLoginPage extends StatefulWidget {
   const ScuLoginPage({super.key});
@@ -45,9 +48,12 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
   @override
   void initState() {
     super.initState();
-    OcrService.init().catchError((e) {
-      AppLog.e('ScuLoginPage', 'OCR Init error: $e');
-    });
+    // Web 端 scu_ocr_lite 依赖 dart:isolate，运行时不受支持，直接跳过初始化
+    if (OcrService.isSupported) {
+      OcrService.init().catchError((e) {
+        AppLog.e('ScuLoginPage', 'OCR Init error: $e');
+      });
+    }
     _loadSaved();
     _loadCaptcha();
   }
@@ -91,7 +97,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       }
 
       String? recognizedText;
-      if (imageBytes != null) {
+      if (imageBytes != null && OcrService.isSupported) {
         try {
           recognizedText = await OcrService.performOcr(imageBytes);
         } catch (e) {
@@ -170,11 +176,32 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       AppLog.e('ScuLoginPage', 'Login network error: $e');
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
-      setState(() => _errorMsg = l10n.networkError);
+      setState(() => _errorMsg = _describeNetworkError(e, l10n));
       unawaited(_loadCaptcha());
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  /// 兜底异常的展示文案。
+  ///
+  /// 传输层错误（超时 / 连接被拒 / DNS 失败）大概率是学校侧网络策略所致——
+  /// 尤其 23:00-次日6:00 教务相关系统仅限校园网——此时给出针对性提示；
+  /// 其余异常不吞细节、透传摘要，避免把非网络问题误标成「网络错误」
+  /// 导致真实原因无从定位。
+  String _describeNetworkError(Object error, AppLocalizations l10n) {
+    final isTransportError =
+        error is TimeoutException ||
+        error is http.ClientException ||
+        (!kIsWeb && error is SocketException);
+    if (!isTransportError) {
+      return error.toString();
+    }
+    final now = DateTime.now();
+    final inNightWindow = now.hour >= 23 || now.hour < 6;
+    return inNightWindow
+        ? l10n.campusNetworkRequiredAtNight
+        : l10n.networkError;
   }
 
   String _localizeLoginError(ScuLoginException e, AppLocalizations l10n) {

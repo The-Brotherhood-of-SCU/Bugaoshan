@@ -61,6 +61,25 @@ void main() {
       expect(coursesChangedCount, 1);
     },
   );
+
+  test('addSchedule 从空状态导入时不出现 hasSchedule=true 而 config 未就位的中间态', () async {
+    final database = _EmptyStartDatabaseService();
+    final provider = CourseProvider(database);
+    var sawInconsistentState = false;
+    provider.allSchedules.addListener(() {
+      if (provider.allSchedules.value.isNotEmpty &&
+          provider.scheduleConfig.value == null) {
+        sawInconsistentState = true;
+      }
+    });
+
+    await provider.addSchedule(_schedule(id: 'A', name: '首次导入', weeksAgo: 0));
+
+    expect(sawInconsistentState, isFalse);
+    expect(provider.hasSchedule, isTrue);
+    expect(provider.scheduleConfig.value?.id, 'A');
+    expect(provider.allSchedules.value.single.id, 'A');
+  });
 }
 
 ScheduleConfig _schedule({
@@ -111,5 +130,39 @@ class _FakeDatabaseService extends DatabaseService {
       for (final schedule in _schedules)
         if (schedule.id == config.id) config else schedule,
     ];
+  }
+}
+
+/// 模拟空库首次 addSchedule：初始无任何课表，落库与切换才有数据。
+class _EmptyStartDatabaseService extends DatabaseService {
+  List<ScheduleConfig> _schedules = [];
+  String _currentScheduleId = '';
+
+  @override
+  List<Course> getCourses({String? scheduleId}) => const [];
+
+  @override
+  List<ScheduleConfig> getAllSchedules() => List.unmodifiable(_schedules);
+
+  @override
+  ScheduleConfig? getScheduleConfig() {
+    if (_schedules.isEmpty) return null;
+    return _schedules.firstWhere(
+      (schedule) => schedule.id == _currentScheduleId,
+      orElse: () => _schedules.first,
+    );
+  }
+
+  @override
+  String getCurrentScheduleId() => _currentScheduleId;
+
+  @override
+  Future<void> addSchedule(ScheduleConfig config) async {
+    _schedules = [..._schedules, config];
+  }
+
+  @override
+  Future<void> switchSchedule(String scheduleId) async {
+    _currentScheduleId = scheduleId;
   }
 }

@@ -33,4 +33,5 @@ class AppCurves {
 
   /// 快速缓动
   static const Curve quick = Curves.easeOutQuart;
+  static const Curve ease = Curves.easeOutCubic;
 }

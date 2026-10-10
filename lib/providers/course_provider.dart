@@ -28,9 +28,12 @@ class CourseProvider {
     isLoading.value = true;
     try {
       courses.value = _db.getCourses();
-      allSchedules.value = _db.getAllSchedules();
+      // 顺序约束：scheduleConfig 必须先于 allSchedules 发布。课表页的
+      // 「无→有」监听要求两者同时就位才创建控制器；allSchedules 先行会让
+      // 监听在 config 仍为 null 时触发而错过创建时机。
       final config = _db.getScheduleConfig();
       scheduleConfig.value = config;
+      allSchedules.value = _db.getAllSchedules();
     } catch (e) {
       AppLog.e('CourseProvider', 'Failed to load data: $e');
     } finally {
@@ -50,8 +53,11 @@ class CourseProvider {
   }
 
   Future<void> addSchedule(ScheduleConfig config) async {
+    // 落库后直接 switchSchedule，由 _loadData 统一发布 scheduleConfig 与
+    // allSchedules。若这里先单独发布 allSchedules，switchSchedule 的异步
+    // 间隙里会出现「hasSchedule=true 而 scheduleConfig 未就位」的中间态，
+    // 空库首次导入时课表页网格会以未创建的控制器构建并抛空指针。
     await _db.addSchedule(config);
-    allSchedules.value = _db.getAllSchedules();
     await switchSchedule(config.id);
   }
 

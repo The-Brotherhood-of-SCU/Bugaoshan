@@ -60,7 +60,7 @@ class CourseCard extends StatelessWidget {
                 (text: course.teacher, preferredMaxLines: 1, renderMaxLines: 2),
               if (appConfig.showCourseWeeks.value)
                 (
-                  text: l10n.weekRange(course.startWeek, course.endWeek),
+                  text: course.formatWeeks(l10n),
                   preferredMaxLines: 1,
                   renderMaxLines: 4,
                 ),

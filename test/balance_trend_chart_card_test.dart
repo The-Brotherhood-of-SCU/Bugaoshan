@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/balance_record.dart';
 import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_trend_chart_card.dart';
 import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_trend_format.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/balance/balance_trend_calculator.dart';
 
 /// 构造余额趋势结果,数据范围 [minBalance]~[maxBalance](照明电量在 272.x 度
@@ -53,6 +56,15 @@ Future<void> _pumpChart(
   WidgetTester tester, {
   required TrendResult trend,
 }) async {
+  // 卡片内部会读 AppConfigProvider 的动画时长，这里按项目既有模式注入一份
+  // 真实实例（见 campus_page_search_test.dart），否则 getIt 未注册会抛错。
+  SharedPreferences.setMockInitialValues({});
+  final prefs = await SharedPreferences.getInstance();
+  final appConfig = AppConfigProvider(prefs);
+  await appConfig.init();
+  await getIt.reset();
+  getIt.registerSingleton<AppConfigProvider>(appConfig);
+
   await tester.pumpWidget(
     MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,

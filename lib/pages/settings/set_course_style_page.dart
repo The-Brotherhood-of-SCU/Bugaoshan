@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:bugaoshan/injection/injector.dart';
@@ -159,7 +160,7 @@ class SetCourseStylePage extends StatelessWidget {
         ),
       ),
       // Show course grid switch
-      SwitchListTile(
+      AdaptiveGlassSwitchListTile(
         title: Text(localizations.showCourseGrid),
         value: appConfig.showCourseGrid.value,
         onChanged: (v) => appConfig.showCourseGrid.value = v,
@@ -195,31 +196,31 @@ class SetCourseStylePage extends StatelessWidget {
           ),
         ),
       ),
-      SwitchListTile(
+      AdaptiveGlassSwitchListTile(
         title: Text(localizations.showTeacher),
         value: appConfig.showTeacherName.value,
         onChanged: (v) => appConfig.showTeacherName.value = v,
         contentPadding: EdgeInsets.zero,
       ),
-      SwitchListTile(
+      AdaptiveGlassSwitchListTile(
         title: Text(localizations.showLocation),
         value: appConfig.showLocation.value,
         onChanged: (v) => appConfig.showLocation.value = v,
         contentPadding: EdgeInsets.zero,
       ),
-      SwitchListTile(
+      AdaptiveGlassSwitchListTile(
         title: Text(localizations.showCourseWeeks),
         value: appConfig.showCourseWeeks.value,
         onChanged: (v) => appConfig.showCourseWeeks.value = v,
         contentPadding: EdgeInsets.zero,
       ),
-      SwitchListTile(
+      AdaptiveGlassSwitchListTile(
         title: Text(localizations.showWeekend),
         value: appConfig.showWeekend.value,
         onChanged: (v) => appConfig.showWeekend.value = v,
         contentPadding: EdgeInsets.zero,
       ),
-      SwitchListTile(
+      AdaptiveGlassSwitchListTile(
         title: Text(localizations.showNonCurrentWeekCourses),
         value: appConfig.showNonCurrentWeekCourses.value,
         onChanged: (v) => appConfig.showNonCurrentWeekCourses.value = v,
@@ -243,6 +244,8 @@ class SetCourseStylePage extends StatelessWidget {
           ButtonWithMaxWidth(
             onPressed: () => _pickBackgroundImage(context, appConfig),
             icon: const Icon(Icons.wallpaper),
+            label: localizations.setBackgroundImage,
+            symbol: 'photo',
             child: Text(localizations.setBackgroundImage),
           ),
           if (appConfig.backgroundImagePath.value != null) ...[
@@ -250,12 +253,16 @@ class SetCourseStylePage extends StatelessWidget {
             ButtonWithMaxWidth(
               onPressed: () => _editBackgroundCrop(context, appConfig),
               icon: const Icon(Icons.crop_free),
+              label: localizations.editBackgroundArea,
+              symbol: 'crop',
               child: Text(localizations.editBackgroundArea),
             ),
             const SizedBox(height: 8),
             ButtonWithMaxWidth(
               onPressed: () => _removeBackgroundImage(appConfig),
               icon: const Icon(Icons.delete_outline),
+              label: localizations.removeBackgroundImage,
+              symbol: 'trash',
               child: Text(localizations.removeBackgroundImage),
             ),
             const SizedBox(height: 8),

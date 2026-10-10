@@ -4,13 +4,11 @@ import 'package:bugaoshan/widgets/common/third_center.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import '../import/import_schedule_page.dart';
+import '../import/import_source_sheet.dart';
 import 'prompt_new_schedule.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
-import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/utils/export_schedule_utils.dart';
-import 'package:bugaoshan/theme_shape.dart';
 
 export 'prompt_new_schedule.dart';
 
@@ -18,86 +16,7 @@ class ScheduleManagementPage extends StatelessWidget {
   const ScheduleManagementPage({super.key});
 
   void _onImport(BuildContext context, CourseProvider courseProvider) {
-    final l10n = AppLocalizations.of(context)!;
-    final outerContext = context; // Capture the stable context
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppShapes.extraLarge),
-        ),
-      ),
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 8,
-                ),
-                child: Text(
-                  l10n.importSchedule,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                ),
-              ),
-              const Divider(),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-                leading: const Icon(Icons.share),
-                title: Text(l10n.importFromShare),
-                onTap: () {
-                  Navigator.pop(context);
-                  popupOrNavigate(
-                    outerContext,
-                    ImportSchedulePage(
-                      courseProvider: courseProvider,
-                      mode: ImportMode.share,
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-                leading: const Icon(Icons.school),
-                title: Text(l10n.importFromJwxt),
-                onTap: () {
-                  Navigator.pop(context);
-                  popupOrNavigate(
-                    outerContext,
-                    ImportSchedulePage(
-                      courseProvider: courseProvider,
-                      mode: ImportMode.jwxt,
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 24),
-                leading: const Icon(Icons.cloud_download_outlined),
-                title: Text(l10n.importFromJwxtOnline),
-                onTap: () {
-                  Navigator.pop(context);
-                  popupOrNavigate(
-                    outerContext,
-                    ImportSchedulePage(
-                      courseProvider: courseProvider,
-                      mode: ImportMode.online,
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 8),
-            ],
-          ),
-        ),
-      ),
-    );
+    showScheduleImportSheet(context, courseProvider: courseProvider);
   }
 
   @override

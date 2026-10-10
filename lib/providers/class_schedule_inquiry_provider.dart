@@ -145,10 +145,10 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
       _indexState = ClassScheduleInquiryLoadState.loaded;
       notifyListeners();
       await search();
-    } on UnauthenticatedException {
+    } on UnauthenticatedException catch (e) {
       if (generation != _indexGeneration) return;
       _indexState = ClassScheduleInquiryLoadState.error;
-      _indexError = LoadErrorType.sessionExpired;
+      _indexError = zhjwAuthErrorType(e);
       notifyListeners();
     } catch (error) {
       if (generation != _indexGeneration) return;
@@ -285,7 +285,7 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
       _classes = replace ? result.classes : [..._classes, ...result.classes];
       _totalCount = result.totalCount;
       _classesState = ClassScheduleInquiryLoadState.loaded;
-    } on UnauthenticatedException {
+    } on UnauthenticatedException catch (e) {
       if (!_isCurrentClassRequest(
         generation: generation,
         semester: semester,
@@ -297,7 +297,7 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
         return;
       }
       _classesState = ClassScheduleInquiryLoadState.error;
-      _classesError = LoadErrorType.sessionExpired;
+      _classesError = zhjwAuthErrorType(e);
     } catch (error) {
       if (!_isCurrentClassRequest(
         generation: generation,
@@ -374,12 +374,12 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
         courses: courses,
         state: ClassScheduleInquiryLoadState.loaded,
       );
-    } on UnauthenticatedException {
+    } on UnauthenticatedException catch (e) {
       if (_detailGenerations[key] != generation) return;
       _details[key] = ClassScheduleDetailState(
         courses: previous.courses,
         state: ClassScheduleInquiryLoadState.error,
-        error: LoadErrorType.sessionExpired,
+        error: zhjwAuthErrorType(e),
       );
     } catch (error) {
       if (_detailGenerations[key] != generation) return;

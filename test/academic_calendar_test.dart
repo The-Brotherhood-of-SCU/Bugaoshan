@@ -81,16 +81,20 @@ void main() {
         events: [],
       );
 
+      // 校历口径：教学周以周日为首日成行，第 1 周含学期起点那一周
+      // （周一起点 → 第 1 周为 9/6(日)~9/12(六)）。
       // Week 1 Mon
       expect(semester.getCurrentWeek(DateTime(2026, 9, 7)), 1);
-      // Week 1 Sun
-      expect(semester.getCurrentWeek(DateTime(2026, 9, 13)), 1);
+      // Week 1 Sat
+      expect(semester.getCurrentWeek(DateTime(2026, 9, 12)), 1);
+      // Week 2 Sun
+      expect(semester.getCurrentWeek(DateTime(2026, 9, 13)), 2);
       // Week 2 Mon
       expect(semester.getCurrentWeek(DateTime(2026, 9, 14)), 2);
-      // Week 20 Sun
+      // Week 20 Sat（块首日 9/6 + 20*7 - 1）
       expect(
         semester.getCurrentWeek(
-          DateTime(2026, 9, 7).add(const Duration(days: 20 * 7 - 1)),
+          DateTime(2026, 9, 6).add(const Duration(days: 20 * 7 - 1)),
         ),
         20,
       );

@@ -1,3 +1,4 @@
+import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -20,7 +21,7 @@ class SetFontPage extends StatelessWidget {
         builder: (context, _) => ListView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           children: [
-            SwitchListTile(
+            AdaptiveGlassSwitchListTile(
               title: Text(localizations.useGoogleFonts),
               subtitle: const Text('Noto Sans SC'),
               value: appConfig.useGoogleFonts.value,

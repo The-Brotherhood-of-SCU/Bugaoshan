@@ -9,19 +9,32 @@ import 'package:bugaoshan/utils/auth_logger.dart';
 /// are skipped.
 class AuthCoordinator {
   static const String _tag = 'AuthCoordinator';
+  static const Duration _defaultFailedRetryDelay = Duration(seconds: 10);
 
   final List<SubsystemAuth> _modules;
   final AuthLogger _log;
+
+  /// 失败模块补热前的退避时长（测试可注入缩短）。
+  final Duration failedRetryDelay;
+
   Future<void>? _warmUpFuture;
 
-  AuthCoordinator(Iterable<SubsystemAuth> modules, {AuthLogger? logger})
-    : _modules = List.unmodifiable(modules),
-      _log = logger ?? getIt<AuthLogger>();
+  /// 守卫延迟补热轮：warmUpAll 新一轮或 invalidateAll（登出）都会递增，
+  /// 过期的补热直接放弃。
+  int _epoch = 0;
+
+  AuthCoordinator(
+    Iterable<SubsystemAuth> modules, {
+    AuthLogger? logger,
+    this.failedRetryDelay = _defaultFailedRetryDelay,
+  }) : _modules = List.unmodifiable(modules),
+       _log = logger ?? getIt<AuthLogger>();
 
   Future<void> warmUpAll() {
     if (_warmUpFuture != null) return _warmUpFuture!;
+    _epoch++;
     _log.i(_tag, 'warmUpAll: starting for ${_modules.length} modules');
-    final future = _warmUpAll();
+    final future = _warmUpAll(_epoch);
     _warmUpFuture = future;
     future.whenComplete(() {
       _log.i(_tag, 'warmUpAll: completed');
@@ -32,7 +45,36 @@ class AuthCoordinator {
     return future;
   }
 
-  Future<void> _warmUpAll() async {
+  Future<void> _warmUpAll(int epoch) async {
+    final failed = await _ensureRound(_modules);
+    if (failed.isEmpty) return;
+
+    _log.w(
+      _tag,
+      'warmUpAll: ${failed.length} module(s) failed, retrying in '
+      '${failedRetryDelay.inSeconds}s: '
+      '${failed.map((m) => m.moduleId).join(', ')}',
+    );
+    await Future<void>.delayed(failedRetryDelay);
+    if (epoch != _epoch) {
+      _log.d(_tag, 'warmUpAll: stale retry skipped (new round or invalidated)');
+      return;
+    }
+    final stillFailed = await _ensureRound(failed);
+    if (stillFailed.isNotEmpty) {
+      _log.w(
+        _tag,
+        'warmUpAll: retry still failed: '
+        '${stillFailed.map((m) => m.moduleId).join(', ')}',
+      );
+    }
+  }
+
+  /// 跑一轮 ensure（可传入上一轮失败的模块做定向补热），返回失败的模块。
+  /// 依赖失败被跳过的模块同样计入失败，补热时会随依赖一起重试。
+  Future<List<SubsystemAuth>> _ensureRound(
+    Iterable<SubsystemAuth> targets,
+  ) async {
     final futures = <SubsystemAuth, Future<bool>>{};
 
     Future<bool> ensure(SubsystemAuth auth, Set<SubsystemAuth> path) {
@@ -70,11 +112,18 @@ class AuthCoordinator {
       return future;
     }
 
-    await Future.wait(_modules.map((auth) => ensure(auth, const {})));
+    await Future.wait(targets.map((auth) => ensure(auth, const {})));
+
+    final failed = <SubsystemAuth>[];
+    for (final entry in futures.entries) {
+      if (!await entry.value) failed.add(entry.key);
+    }
+    return failed;
   }
 
   void invalidateAll() {
     _warmUpFuture = null;
+    _epoch++;
     _log.d(_tag, 'invalidateAll');
     for (final module in _modules) {
       module.invalidate();

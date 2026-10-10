@@ -18,6 +18,8 @@ import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/exam_plan_provider.dart';
 import 'package:bugaoshan/providers/fitness_test_provider.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
+import 'package:bugaoshan/providers/graduate_grades_provider.dart';
+import 'package:bugaoshan/providers/graduate_train_plan_provider.dart';
 import 'package:bugaoshan/providers/network_device_provider.dart';
 import 'package:bugaoshan/providers/passpoint_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
@@ -27,6 +29,7 @@ import 'package:bugaoshan/providers/zhhq_repair_provider.dart';
 import 'package:bugaoshan/services/api/ccyl_api_service.dart';
 import 'package:bugaoshan/services/api/fitness_api_service.dart';
 import 'package:bugaoshan/services/api/forgot_password_service.dart';
+import 'package:bugaoshan/services/api/gs_api_service.dart';
 import 'package:bugaoshan/services/api/new_service_api_service.dart';
 import 'package:bugaoshan/services/api/payapp_api_service.dart';
 import 'package:bugaoshan/services/api/service_api_service.dart';
@@ -37,6 +40,7 @@ import 'package:bugaoshan/services/auth/auth_coordinator.dart';
 import 'package:bugaoshan/services/auth/auth_state.dart';
 import 'package:bugaoshan/services/auth/ccyl_auth.dart';
 import 'package:bugaoshan/services/auth/fitness_auth.dart';
+import 'package:bugaoshan/services/auth/gs_auth.dart';
 import 'package:bugaoshan/services/auth/new_service_auth.dart';
 import 'package:bugaoshan/services/auth/payapp_auth.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
@@ -49,6 +53,9 @@ import 'package:bugaoshan/services/background_cache_service.dart';
 import 'package:bugaoshan/services/database_service.dart';
 import 'package:bugaoshan/services/download_manager.dart';
 import 'package:bugaoshan/services/exit_service.dart';
+import 'package:bugaoshan/services/reminder/live_activity_coordinator.dart';
+import 'package:bugaoshan/services/reminder/reminder_service.dart';
+import 'package:bugaoshan/services/reminder/reminder_transport.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/services/api/academic_calendar_service.dart';
@@ -160,6 +167,7 @@ void _configureAsyncDependencies() {
     await getIt.isReady<ServiceAuth>();
     await getIt.isReady<ZhhqAuth>();
     await getIt.isReady<NewServiceAuth>();
+    await getIt.isReady<GsAuth>();
     return AuthCoordinator([
       getIt<ZhjwAuth>(),
       getIt<WfwAuth>(),
@@ -169,6 +177,7 @@ void _configureAsyncDependencies() {
       getIt<ServiceAuth>(),
       getIt<ZhhqAuth>(),
       getIt<NewServiceAuth>(),
+      getIt<GsAuth>(),
     ]);
   });
 
@@ -204,6 +213,26 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<NewServiceApiService>(() async {
     await getIt.isReady<NewServiceAuth>();
     return NewServiceApiService(getIt<NewServiceAuth>());
+  });
+
+  // ── 研教务（gsapp / ehall，研究生模块）──────────────────────────
+  getIt.registerSingletonAsync<GsAuth>(() async {
+    await getIt.isReady<ScuAuth>();
+    return GsAuth(getIt<ScuAuth>());
+  });
+  getIt.registerSingletonAsync<GsApiService>(() async {
+    await getIt.isReady<GsAuth>();
+    return GsApiService(getIt<GsAuth>());
+  });
+  // 研究生成绩：依赖 GsApiService（_postForm 自愈链）。
+  getIt.registerSingletonAsync<GraduateGradesProvider>(() async {
+    await getIt.isReady<GsApiService>();
+    return GraduateGradesProvider(getIt<GsApiService>());
+  });
+  // 研究生培养进度：依赖 GsApiService（wdpyjhapp 零信封 GET 自愈链）。
+  getIt.registerSingletonAsync<GraduateTrainPlanProvider>(() async {
+    await getIt.isReady<GsApiService>();
+    return GraduateTrainPlanProvider(getIt<GsApiService>());
   });
 
   // ── Provider ────────────────────────────────────────────────────
@@ -393,6 +422,30 @@ void _configureAsyncDependencies() {
     return service;
   });
 
+  // 本地提醒排期服务：依赖 CourseProvider 与 AppConfigProvider，负责排期计算与原生同步。
+  getIt.registerSingletonAsync<ReminderService>(() async {
+    await getIt.isReady<CourseProvider>();
+    await getIt.isReady<AppConfigProvider>();
+    final service = ReminderService(
+      courseProvider: getIt<CourseProvider>(),
+      appConfig: getIt<AppConfigProvider>(),
+      transport: createReminderTransport(),
+    );
+    await service.start();
+    return service;
+  });
+
+  // 实时活动（Live Activity）协调器：仅在 iOS 平台执行物理调度，其他平台完成能力探测后自动停用。
+  // 异步触发 start() 而不阻塞启动流程，其内部监听课表状态并在异步就绪后自动对齐。
+  getIt.registerSingletonAsync<LiveActivityCoordinator>(() async {
+    await getIt.isReady<CourseProvider>();
+    final coordinator = LiveActivityCoordinator(
+      courseProvider: getIt<CourseProvider>(),
+    );
+    unawaited(coordinator.start());
+    return coordinator;
+  });
+
   // ── Logout cleanup listener ──────────────────────────────────────
   // 当 ScuAuth 状态变为 unknown（logout）时，清理下游 Provider 缓存。
   // 用 listener 机制替代 ScuAuthProvider 直接 getIt 调用（PRR-05）。
@@ -400,6 +453,10 @@ void _configureAsyncDependencies() {
     getIt<ScuAuth>().addListener(() {
       final scu = getIt<ScuAuth>();
       if (scu.state == AuthState.unknown) {
+        // logout 发生，清理子系统会话缓存
+        if (getIt.isRegistered<GsAuth>()) {
+          getIt<GsAuth>().invalidate();
+        }
         // logout 发生，清理需要登录态的 Provider 缓存
         if (getIt.isRegistered<PlanCompletionProvider>()) {
           getIt<PlanCompletionProvider>().clearCache();
@@ -430,6 +487,12 @@ void _configureAsyncDependencies() {
         }
         if (getIt.isRegistered<ExamPlanProvider>()) {
           getIt<ExamPlanProvider>().clear();
+        }
+        if (getIt.isRegistered<GraduateGradesProvider>()) {
+          getIt<GraduateGradesProvider>().clear();
+        }
+        if (getIt.isRegistered<GraduateTrainPlanProvider>()) {
+          getIt<GraduateTrainPlanProvider>().clear();
         }
         if (getIt.isRegistered<ServiceApplicationsProvider>()) {
           getIt<ServiceApplicationsProvider>().clear();

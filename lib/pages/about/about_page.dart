@@ -237,7 +237,7 @@ class _AboutPageState extends State<AboutPage> {
                 UpdateTile(onTap: _checkForUpdates),
               IconTile(
                 icon: Icons.gavel,
-                label: localizations.eulaTitle,
+                label: localizations.legalInfo,
                 onTap: () => popupOrNavigate(context, const EulaStatusPage()),
               ),
               IconTile(

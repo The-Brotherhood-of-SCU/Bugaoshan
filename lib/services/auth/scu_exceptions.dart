@@ -14,7 +14,15 @@ sealed class ScuException implements Exception {
 /// 从第2/3层产生，穿透到第1层 API Service 的 `_request()` 重试一次后仍失败时，
 /// 抛到 Provider 层，UI 捕获后显示"前往登录"。
 class UnauthenticatedException extends ScuException {
-  const UnauthenticatedException([super.message = '未登录或登录已过期']);
+  /// 统一认证会话已建立、但子系统（本科教务）在重认证自愈后仍将请求踢回
+  /// 登录页——多半意味着该子系统没有此账号（如研究生账号），与「未登录」
+  /// 不同：重新登录统一认证也无法解决。Provider 层据此给出针对性指引。
+  final bool undergradOnly;
+
+  const UnauthenticatedException([
+    super.message = '未登录或登录已过期',
+    this.undergradOnly = false,
+  ]);
 }
 
 /// 业务错误（网络错误、解析错误、非 200 响应等）

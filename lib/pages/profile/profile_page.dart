@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+
+import 'package:bugaoshan/widgets/navigation/home_dock_insets.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/common/third_center.dart';
@@ -29,10 +32,13 @@ class ProfilePage extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        final bottomInset = HomeDockInsets.bottomOf(context);
         return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+          padding: EdgeInsets.fromLTRB(20, 0, 20, bottomInset),
           child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            constraints: BoxConstraints(
+              minHeight: math.max(0, constraints.maxHeight - bottomInset),
+            ),
             child: ThirdCenter(child: body),
           ),
         );

@@ -85,6 +85,7 @@ void main() {
           SizedBox(
             width: 200,
             child: ButtonWithMaxWidth(
+              label: '一个非常长的按钮文字内容示例',
               onPressed: () {},
               icon: const Icon(Icons.arrow_forward),
               child: const Text('一个非常长的按钮文字内容示例'),

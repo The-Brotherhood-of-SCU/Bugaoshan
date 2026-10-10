@@ -23,15 +23,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cache pub dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            %LOCALAPPDATA%\Pub\Cache
-          key: windows-pub-${{ runner.os }}-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            windows-pub-${{ runner.os }}-
-
       - name: Setup build environment
         id: setup
         uses: ./.github/actions/setup
@@ -95,12 +86,9 @@ jobs:
           }
           Get-Item (Join-Path $releaseDir "WebView2Loader.dll") | Select-Object FullName, Length
 
-      - name: Archive Windows Release
-        run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath
-          windows-release.zip
-
       - name: Upload Windows
         uses: actions/upload-artifact@v4
         with:
           name: windows-release
-          path: windows-release.zip
+          path: build\windows\x64\runner\Release\
+          if-no-files-found: error

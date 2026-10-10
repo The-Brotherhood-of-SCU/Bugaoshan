@@ -193,6 +193,54 @@ abstract class AppLocalizations {
   /// **'Auto-fetch schedule after login'**
   String get wizardImportHint;
 
+  /// No description provided for @wizardStudentTypeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Your Identity'**
+  String get wizardStudentTypeTitle;
+
+  /// No description provided for @wizardStudentTypeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'This decides how you import your schedule and which campus features are shown. You can change it later in Settings'**
+  String get wizardStudentTypeDesc;
+
+  /// No description provided for @studentTypeSetting.
+  ///
+  /// In en, this message translates to:
+  /// **'Student Type'**
+  String get studentTypeSetting;
+
+  /// No description provided for @studentTypeUndergraduate.
+  ///
+  /// In en, this message translates to:
+  /// **'Undergraduate'**
+  String get studentTypeUndergraduate;
+
+  /// No description provided for @studentTypeGraduate.
+  ///
+  /// In en, this message translates to:
+  /// **'Graduate'**
+  String get studentTypeGraduate;
+
+  /// No description provided for @studentTypeUndergraduateDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Show undergraduate features: grade statistics, exam plans, classroom availability, training programs, etc.'**
+  String get studentTypeUndergraduateDesc;
+
+  /// No description provided for @studentTypeGraduateDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Show graduate features: graduate grades, training progress, schedule import, etc.'**
+  String get studentTypeGraduateDesc;
+
+  /// No description provided for @studentTypeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'After switching, schedule import options and campus features adjust accordingly. Saved schedules and custom layouts are kept; you can switch back anytime.'**
+  String get studentTypeHint;
+
   /// No description provided for @wizardFeatureTitle.
   ///
   /// In en, this message translates to:
@@ -601,17 +649,17 @@ abstract class AppLocalizations {
   /// **'Hint: Adjust the slider to preview the animation, click Confirm to save the settings'**
   String get animationDurationHint;
 
-  /// No description provided for @enablePageTransitionAnimation.
+  /// No description provided for @enableDockSwitchAnimation.
   ///
   /// In en, this message translates to:
-  /// **'Dock Page Transition Animation'**
-  String get enablePageTransitionAnimation;
+  /// **'Dock Switch Animation'**
+  String get enableDockSwitchAnimation;
 
-  /// No description provided for @enablePageTransitionAnimationHint.
+  /// No description provided for @enableDockSwitchAnimationHint.
   ///
   /// In en, this message translates to:
-  /// **'Enable slide and fade animation when switching Dock pages'**
-  String get enablePageTransitionAnimationHint;
+  /// **'Enable slide and fade animation when switching between Dock items'**
+  String get enableDockSwitchAnimationHint;
 
   /// No description provided for @themeColor.
   ///
@@ -673,6 +721,24 @@ abstract class AppLocalizations {
   /// **'Please set a background image first'**
   String get themeColorModeBackgroundImageNotSet;
 
+  /// No description provided for @darkMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark Mode'**
+  String get darkMode;
+
+  /// No description provided for @themeModeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeModeLight;
+
+  /// No description provided for @themeModeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeModeDark;
+
   /// No description provided for @blockPicker.
   ///
   /// In en, this message translates to:
@@ -696,12 +762,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'About'**
   String get about;
-
-  /// No description provided for @userManual.
-  ///
-  /// In en, this message translates to:
-  /// **'User Manual'**
-  String get userManual;
 
   /// No description provided for @developmentTeam.
   ///
@@ -762,12 +822,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Repository'**
   String get projectRepository;
-
-  /// No description provided for @officialWebsite.
-  ///
-  /// In en, this message translates to:
-  /// **'Website'**
-  String get officialWebsite;
 
   /// No description provided for @checkForUpdates.
   ///
@@ -1171,6 +1225,30 @@ abstract class AppLocalizations {
   /// **'Even Week'**
   String get evenWeek;
 
+  /// No description provided for @customWeeksHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Weeks'**
+  String get customWeeksHint;
+
+  /// No description provided for @selectAtLeastOneWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select at least one week'**
+  String get selectAtLeastOneWeek;
+
+  /// No description provided for @activeWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Weeks'**
+  String get activeWeeks;
+
+  /// 自定义离散周次的展示文本，segments 形如 1-3, 5, 8-10
+  ///
+  /// In en, this message translates to:
+  /// **'Weeks {segments}'**
+  String weekSegments(String segments);
+
   /// No description provided for @section.
   ///
   /// In en, this message translates to:
@@ -1441,12 +1519,6 @@ abstract class AppLocalizations {
   /// **'Show Location'**
   String get showLocation;
 
-  /// No description provided for @showCourseWeeks.
-  ///
-  /// In en, this message translates to:
-  /// **'Show Course Weeks'**
-  String get showCourseWeeks;
-
   /// No description provided for @showWeekend.
   ///
   /// In en, this message translates to:
@@ -1651,6 +1723,60 @@ abstract class AppLocalizations {
   /// **'Copy to Clipboard'**
   String get exportScheduleAsCopy;
 
+  /// No description provided for @exportScheduleAsImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as Image'**
+  String get exportScheduleAsImage;
+
+  /// No description provided for @generatingScheduleImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating schedule image…'**
+  String get generatingScheduleImage;
+
+  /// No description provided for @saveScheduleImageToGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to System Gallery'**
+  String get saveScheduleImageToGallery;
+
+  /// No description provided for @shareScheduleImage.
+  ///
+  /// In en, this message translates to:
+  /// **'System Share'**
+  String get shareScheduleImage;
+
+  /// No description provided for @exportScheduleAsImageFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to generate schedule image, please try later'**
+  String get exportScheduleAsImageFailed;
+
+  /// No description provided for @exportScheduleAsImageEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No courses to export as image'**
+  String get exportScheduleAsImageEmpty;
+
+  /// No description provided for @scheduleImageSavedToGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to system gallery'**
+  String get scheduleImageSavedToGallery;
+
+  /// No description provided for @scheduleImageGalleryPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery permission denied, cannot save'**
+  String get scheduleImageGalleryPermissionDenied;
+
+  /// No description provided for @scheduleImageShareFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Share failed, please try later'**
+  String get scheduleImageShareFailed;
+
   /// No description provided for @exportScheduleAsIcs.
   ///
   /// In en, this message translates to:
@@ -1746,18 +1872,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **' (Copy)'**
   String get copySuffix;
-
-  /// No description provided for @copyCourseTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'New Copy'**
-  String get copyCourseTitle;
-
-  /// No description provided for @copyCourseSave.
-  ///
-  /// In en, this message translates to:
-  /// **'Save Copy'**
-  String get copyCourseSave;
 
   /// No description provided for @notThisWeek.
   ///
@@ -1891,6 +2005,12 @@ abstract class AppLocalizations {
   /// **'Automatically fetch schedule. Please login with SCU Unified Identity in the Profile page first.'**
   String get importFromJwxtOnlineHint;
 
+  /// No description provided for @importFromGraduate.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from Graduate System'**
+  String get importFromGraduate;
+
   /// No description provided for @selectSemester.
   ///
   /// In en, this message translates to:
@@ -1998,132 +2118,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please load the captcha first'**
   String get captchaNotLoaded;
-
-  /// No description provided for @resetPassword.
-  ///
-  /// In en, this message translates to:
-  /// **'Reset Password'**
-  String get resetPassword;
-
-  /// No description provided for @resetPasswordStepAccount.
-  ///
-  /// In en, this message translates to:
-  /// **'Account'**
-  String get resetPasswordStepAccount;
-
-  /// No description provided for @resetPasswordStepVerify.
-  ///
-  /// In en, this message translates to:
-  /// **'Verification'**
-  String get resetPasswordStepVerify;
-
-  /// No description provided for @resetPasswordStepReset.
-  ///
-  /// In en, this message translates to:
-  /// **'New Password'**
-  String get resetPasswordStepReset;
-
-  /// No description provided for @resetPasswordNext.
-  ///
-  /// In en, this message translates to:
-  /// **'Next'**
-  String get resetPasswordNext;
-
-  /// No description provided for @resetPasswordChooseMethod.
-  ///
-  /// In en, this message translates to:
-  /// **'You are resetting your login password. Choose a verification method:'**
-  String get resetPasswordChooseMethod;
-
-  /// No description provided for @resetPasswordViaSms.
-  ///
-  /// In en, this message translates to:
-  /// **'Via SMS'**
-  String get resetPasswordViaSms;
-
-  /// No description provided for @resetPasswordSmsTip.
-  ///
-  /// In en, this message translates to:
-  /// **'A verification code will be sent via SMS to your phone {phone}'**
-  String resetPasswordSmsTip(String phone);
-
-  /// No description provided for @resetPasswordViaEmail.
-  ///
-  /// In en, this message translates to:
-  /// **'Via Email'**
-  String get resetPasswordViaEmail;
-
-  /// No description provided for @resetPasswordEmailTip.
-  ///
-  /// In en, this message translates to:
-  /// **'A verification code will be sent via email to {email}'**
-  String resetPasswordEmailTip(String email);
-
-  /// No description provided for @resetPasswordSendCode.
-  ///
-  /// In en, this message translates to:
-  /// **'Send Code'**
-  String get resetPasswordSendCode;
-
-  /// No description provided for @resetPasswordResendAfter.
-  ///
-  /// In en, this message translates to:
-  /// **'Resend in {seconds}s'**
-  String resetPasswordResendAfter(int seconds);
-
-  /// No description provided for @resetPasswordCodeRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter the 6-digit verification code'**
-  String get resetPasswordCodeRequired;
-
-  /// No description provided for @resetPasswordNewPasswordLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'New Password'**
-  String get resetPasswordNewPasswordLabel;
-
-  /// No description provided for @resetPasswordConfirmPasswordLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm Password'**
-  String get resetPasswordConfirmPasswordLabel;
-
-  /// No description provided for @resetPasswordPasswordMismatch.
-  ///
-  /// In en, this message translates to:
-  /// **'Passwords do not match'**
-  String get resetPasswordPasswordMismatch;
-
-  /// No description provided for @resetPasswordPolicyTip.
-  ///
-  /// In en, this message translates to:
-  /// **'Password must be at least 8 characters and contain upper/lower case letters, digits and special characters'**
-  String get resetPasswordPolicyTip;
-
-  /// No description provided for @resetPasswordPolicyInvalid.
-  ///
-  /// In en, this message translates to:
-  /// **'Password does not meet the requirements'**
-  String get resetPasswordPolicyInvalid;
-
-  /// No description provided for @resetPasswordSubmit.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm'**
-  String get resetPasswordSubmit;
-
-  /// No description provided for @resetPasswordSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Password reset successfully. Please log in with your new password.'**
-  String get resetPasswordSuccess;
-
-  /// No description provided for @resetPasswordBackToLogin.
-  ///
-  /// In en, this message translates to:
-  /// **'Back to Login'**
-  String get resetPasswordBackToLogin;
 
   /// No description provided for @gradesStats.
   ///
@@ -2340,6 +2334,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Session expired'**
   String get sessionExpired;
+
+  /// No description provided for @undergradDataOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Undergraduate academic session unavailable. Graduate accounts: use the Graduate section under Campus. Undergraduate accounts: sign in again and retry.'**
+  String get undergradDataOnly;
 
   /// No description provided for @relogin.
   ///
@@ -2982,6 +2982,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Organizer'**
   String get ccylOrganizer;
+
+  /// No description provided for @ccylStatusEnrolling.
+  ///
+  /// In en, this message translates to:
+  /// **'Enrolling'**
+  String get ccylStatusEnrolling;
+
+  /// No description provided for @ccylStatusNotStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Started'**
+  String get ccylStatusNotStarted;
+
+  /// No description provided for @ccylFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter'**
+  String get ccylFilter;
+
+  /// No description provided for @ccylFilterStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get ccylFilterStatus;
+
+  /// No description provided for @ccylFilterClassHour.
+  ///
+  /// In en, this message translates to:
+  /// **'Class Hours'**
+  String get ccylFilterClassHour;
+
+  /// No description provided for @ccylFilterLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity Level'**
+  String get ccylFilterLevel;
+
+  /// No description provided for @ccylFilterOrganizer.
+  ///
+  /// In en, this message translates to:
+  /// **'Organizer'**
+  String get ccylFilterOrganizer;
+
+  /// No description provided for @ccylFilterUnlimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited'**
+  String get ccylFilterUnlimited;
+
+  /// No description provided for @ccylFilterReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get ccylFilterReset;
+
+  /// No description provided for @ccylFilterApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get ccylFilterApply;
+
+  /// No description provided for @ccylFilterClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Filters'**
+  String get ccylFilterClear;
+
+  /// No description provided for @ccylFilterMinHoursValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}+ class hours'**
+  String ccylFilterMinHoursValue(int hours);
+
+  /// No description provided for @ccylFilterNoMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No activities match the filters'**
+  String get ccylFilterNoMatch;
+
+  /// No description provided for @ccylFilterLocalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Status and class-hour filters apply to the {count} loaded activities'**
+  String ccylFilterLocalHint(int count);
+
+  /// No description provided for @ccylFilterChooseOrganizer.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Organizer'**
+  String get ccylFilterChooseOrganizer;
+
+  /// No description provided for @ccylFilterSearchOrganizer.
+  ///
+  /// In en, this message translates to:
+  /// **'Search organizer'**
+  String get ccylFilterSearchOrganizer;
+
+  /// No description provided for @ccylFilterNoOrganizer.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching organizer'**
+  String get ccylFilterNoOrganizer;
+
+  /// No description provided for @ccylLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load More'**
+  String get ccylLoadMore;
 
   /// No description provided for @noData.
   ///
@@ -4054,7 +4162,7 @@ abstract class AppLocalizations {
   /// No description provided for @eulaAgreeCheckbox.
   ///
   /// In en, this message translates to:
-  /// **'I have read and agree to the User Agreement'**
+  /// **'I have read and agree to the User Agreement and Privacy Policy'**
   String get eulaAgreeCheckbox;
 
   /// No description provided for @eulaAgree.
@@ -4572,90 +4680,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Load More'**
   String get classScheduleInquiryLoadMore;
-
-  /// No description provided for @dockLabelCourseCurriculum.
-  ///
-  /// In en, this message translates to:
-  /// **'Course Table'**
-  String get dockLabelCourseCurriculum;
-
-  /// No description provided for @courseCurriculum.
-  ///
-  /// In en, this message translates to:
-  /// **'Course Curriculum'**
-  String get courseCurriculum;
-
-  /// No description provided for @courseCurriculumDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'View schedules for each course section'**
-  String get courseCurriculumDesc;
-
-  /// No description provided for @courseCurriculumNoData.
-  ///
-  /// In en, this message translates to:
-  /// **'No course data'**
-  String get courseCurriculumNoData;
-
-  /// No description provided for @courseCurriculumNoSchedule.
-  ///
-  /// In en, this message translates to:
-  /// **'No schedule data'**
-  String get courseCurriculumNoSchedule;
-
-  /// No description provided for @courseCurriculumFilter.
-  ///
-  /// In en, this message translates to:
-  /// **'Filter'**
-  String get courseCurriculumFilter;
-
-  /// No description provided for @courseCurriculumSemester.
-  ///
-  /// In en, this message translates to:
-  /// **'Semester'**
-  String get courseCurriculumSemester;
-
-  /// No description provided for @courseCurriculumDepartment.
-  ///
-  /// In en, this message translates to:
-  /// **'Department'**
-  String get courseCurriculumDepartment;
-
-  /// No description provided for @courseCurriculumCategory.
-  ///
-  /// In en, this message translates to:
-  /// **'Course Category'**
-  String get courseCurriculumCategory;
-
-  /// No description provided for @courseCurriculumCourseName.
-  ///
-  /// In en, this message translates to:
-  /// **'Course Name'**
-  String get courseCurriculumCourseName;
-
-  /// No description provided for @courseCurriculumCourseCode.
-  ///
-  /// In en, this message translates to:
-  /// **'Course Code'**
-  String get courseCurriculumCourseCode;
-
-  /// No description provided for @courseCurriculumCourseSeq.
-  ///
-  /// In en, this message translates to:
-  /// **'Course Seq'**
-  String get courseCurriculumCourseSeq;
-
-  /// No description provided for @courseCurriculumSearch.
-  ///
-  /// In en, this message translates to:
-  /// **'Search'**
-  String get courseCurriculumSearch;
-
-  /// No description provided for @courseCurriculumLoadMore.
-  ///
-  /// In en, this message translates to:
-  /// **'Load More'**
-  String get courseCurriculumLoadMore;
 
   /// Shows total holiday days, e.g. '3-day holiday'
   ///
@@ -5904,6 +5928,1188 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Done'**
   String get leaveStatusDone;
+
+  /// No description provided for @graduateGrades.
+  ///
+  /// In en, this message translates to:
+  /// **'Graduate Grades'**
+  String get graduateGrades;
+
+  /// No description provided for @graduateGradesDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'View graduate course grades'**
+  String get graduateGradesDesc;
+
+  /// No description provided for @graduateGradesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No graduate grades yet'**
+  String get graduateGradesEmpty;
+
+  /// No description provided for @graduateGradesStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Grade Summary'**
+  String get graduateGradesStats;
+
+  /// No description provided for @graduateStatsCourseCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses'**
+  String get graduateStatsCourseCount;
+
+  /// No description provided for @graduateStatsTotalCredit.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Credits'**
+  String get graduateStatsTotalCredit;
+
+  /// No description provided for @graduateStatsAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Weighted Avg'**
+  String get graduateStatsAverage;
+
+  /// No description provided for @graduateStatsPassRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Pass Rate'**
+  String get graduateStatsPassRate;
+
+  /// No description provided for @graduateTrainPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Training Progress'**
+  String get graduateTrainPlan;
+
+  /// No description provided for @graduateTrainPlanDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'View your graduate training progress'**
+  String get graduateTrainPlanDesc;
+
+  /// No description provided for @graduateScheduleImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Schedule'**
+  String get graduateScheduleImport;
+
+  /// No description provided for @graduateScheduleImportDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Import the graduate schedule'**
+  String get graduateScheduleImportDesc;
+
+  /// No description provided for @graduateScheduleImportName.
+  ///
+  /// In en, this message translates to:
+  /// **'Graduate Timetable'**
+  String get graduateScheduleImportName;
+
+  /// No description provided for @graduateScheduleImportFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses detected'**
+  String get graduateScheduleImportFound;
+
+  /// No description provided for @graduateScheduleImportWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for timetable data — sign in below and open the timetable'**
+  String get graduateScheduleImportWaiting;
+
+  /// No description provided for @graduateScheduleImportEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Data captured but no courses recognised — try switching weeks on the page'**
+  String get graduateScheduleImportEmpty;
+
+  /// No description provided for @graduateScheduleImportAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Import to timetable'**
+  String get graduateScheduleImportAction;
+
+  /// No description provided for @graduateScheduleImportOverwriteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Overwrite the existing schedule?'**
+  String get graduateScheduleImportOverwriteTitle;
+
+  /// No description provided for @graduateScheduleImportOverwriteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A schedule named \"{name}\" already exists. Continuing will clear and replace all of its courses.'**
+  String graduateScheduleImportOverwriteBody(String name);
+
+  /// No description provided for @graduateScheduleImportDoneTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Timetable imported — switched to \"{name}\"'**
+  String graduateScheduleImportDoneTo(String name);
+
+  /// No description provided for @graduateScheduleImportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed, please try again'**
+  String get graduateScheduleImportFailed;
+
+  /// No description provided for @graduateScheduleImportWebUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Recognising the page requires script injection, which browsers block across origins. Please use this feature on Android, iOS or Windows.'**
+  String get graduateScheduleImportWebUnsupported;
+
+  /// No description provided for @graduateScheduleImportNoWebView.
+  ///
+  /// In en, this message translates to:
+  /// **'Direct connection failed and this platform has no in-app web fallback. Check your network and retry, or import on Android, iOS or desktop.'**
+  String get graduateScheduleImportNoWebView;
+
+  /// No description provided for @graduateScheduleImportRetryDirect.
+  ///
+  /// In en, this message translates to:
+  /// **'I have signed in, retry'**
+  String get graduateScheduleImportRetryDirect;
+
+  /// No description provided for @graduateScheduleImportSessionExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'The graduate system session is missing or expired — sign in with SCU Unified Identity first'**
+  String get graduateScheduleImportSessionExpired;
+
+  /// No description provided for @graduateScheduleImportGoLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to login'**
+  String get graduateScheduleImportGoLogin;
+
+  /// No description provided for @graduateScheduleImportEmergencyCapture.
+  ///
+  /// In en, this message translates to:
+  /// **'Emergency web capture (when direct connection is unavailable)'**
+  String get graduateScheduleImportEmergencyCapture;
+
+  /// No description provided for @graduateTrainPlanEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No training progress data'**
+  String get graduateTrainPlanEmpty;
+
+  /// No description provided for @graduateTrainPlanProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get graduateTrainPlanProgress;
+
+  /// No description provided for @graduateTrainPlanCreditText.
+  ///
+  /// In en, this message translates to:
+  /// **'{completed} / {requiredCredit} credits earned'**
+  String graduateTrainPlanCreditText(String completed, String requiredCredit);
+
+  /// No description provided for @graduateTrainPlanModuleCredit.
+  ///
+  /// In en, this message translates to:
+  /// **'{completed} / {requiredCredit} credits earned'**
+  String graduateTrainPlanModuleCredit(String completed, String requiredCredit);
+
+  /// No description provided for @graduateTrainPlanNoCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'No courses in this module'**
+  String get graduateTrainPlanNoCourses;
+
+  /// No description provided for @labAttendance.
+  ///
+  /// In en, this message translates to:
+  /// **'Lab Attendance'**
+  String get labAttendance;
+
+  /// No description provided for @labAttendanceDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Record lab attendance'**
+  String get labAttendanceDesc;
+
+  /// No description provided for @labAttendanceMonthDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get labAttendanceMonthDay;
+
+  /// No description provided for @labAttendanceEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No attendance records this month'**
+  String get labAttendanceEmpty;
+
+  /// No description provided for @labAttendanceDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Days'**
+  String get labAttendanceDays;
+
+  /// No description provided for @labAttendanceHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Hours'**
+  String get labAttendanceHours;
+
+  /// No description provided for @labCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Check in'**
+  String get labCheckIn;
+
+  /// No description provided for @labCheckOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Check out'**
+  String get labCheckOut;
+
+  /// No description provided for @thesisProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Thesis Progress'**
+  String get thesisProgress;
+
+  /// No description provided for @thesisProgressDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Track thesis progress'**
+  String get thesisProgressDesc;
+
+  /// No description provided for @thesisProgressEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No thesis stages'**
+  String get thesisProgressEmpty;
+
+  /// No description provided for @thesisProgressOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Thesis Overview'**
+  String get thesisProgressOverview;
+
+  /// No description provided for @thesisProgressText.
+  ///
+  /// In en, this message translates to:
+  /// **'{completed} / {total} stages done'**
+  String thesisProgressText(int completed, int total);
+
+  /// No description provided for @thesisStageNotStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not started'**
+  String get thesisStageNotStarted;
+
+  /// No description provided for @thesisStageInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get thesisStageInProgress;
+
+  /// No description provided for @thesisStageCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get thesisStageCompleted;
+
+  /// No description provided for @thesisStageName.
+  ///
+  /// In en, this message translates to:
+  /// **'Stage name'**
+  String get thesisStageName;
+
+  /// No description provided for @thesisStageNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Proposal, Mid-term, Defense'**
+  String get thesisStageNameHint;
+
+  /// No description provided for @thesisStageNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get thesisStageNote;
+
+  /// No description provided for @thesisStageNoPlanDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a plan date'**
+  String get thesisStageNoPlanDate;
+
+  /// No description provided for @thesisStagePlanDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan date: {date}'**
+  String thesisStagePlanDate(String date);
+
+  /// No description provided for @thesisStagePlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan'**
+  String get thesisStagePlan;
+
+  /// No description provided for @addThesisStage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Stage'**
+  String get addThesisStage;
+
+  /// No description provided for @editThesisStage.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Stage'**
+  String get editThesisStage;
+
+  /// No description provided for @mentorTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Mentor Tasks'**
+  String get mentorTasks;
+
+  /// No description provided for @mentorTasksDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'View tasks from your mentor'**
+  String get mentorTasksDesc;
+
+  /// No description provided for @mentorTasksEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No mentor tasks'**
+  String get mentorTasksEmpty;
+
+  /// No description provided for @mentorTaskPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get mentorTaskPending;
+
+  /// No description provided for @mentorTaskOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get mentorTaskOverdue;
+
+  /// No description provided for @mentorTaskDueSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Due soon'**
+  String get mentorTaskDueSoon;
+
+  /// No description provided for @mentorTaskPriorityLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get mentorTaskPriorityLow;
+
+  /// No description provided for @mentorTaskPriorityMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get mentorTaskPriorityMedium;
+
+  /// No description provided for @mentorTaskPriorityHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get mentorTaskPriorityHigh;
+
+  /// No description provided for @mentorTaskNoDueDate.
+  ///
+  /// In en, this message translates to:
+  /// **'No due date'**
+  String get mentorTaskNoDueDate;
+
+  /// No description provided for @mentorTaskDueDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Due: {date}'**
+  String mentorTaskDueDate(String date);
+
+  /// No description provided for @mentorTaskDaysText.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} day(s) left'**
+  String mentorTaskDaysText(int days);
+
+  /// No description provided for @mentorTaskTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Task title'**
+  String get mentorTaskTitle;
+
+  /// No description provided for @mentorTaskNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get mentorTaskNote;
+
+  /// No description provided for @addMentorTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Task'**
+  String get addMentorTask;
+
+  /// No description provided for @editMentorTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Task'**
+  String get editMentorTask;
+
+  /// No description provided for @mentorTaskLoginRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in to view mentor tasks'**
+  String get mentorTaskLoginRequired;
+
+  /// No description provided for @graduateLoginRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please log in via the unified identity on the Profile page to use graduate features'**
+  String get graduateLoginRequired;
+
+  /// No description provided for @userManual.
+  ///
+  /// In en, this message translates to:
+  /// **'User Manual'**
+  String get userManual;
+
+  /// No description provided for @officialWebsite.
+  ///
+  /// In en, this message translates to:
+  /// **'Website'**
+  String get officialWebsite;
+
+  /// No description provided for @showCourseWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Course Weeks'**
+  String get showCourseWeeks;
+
+  /// No description provided for @copyCourseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New Copy'**
+  String get copyCourseTitle;
+
+  /// No description provided for @copyCourseSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Copy'**
+  String get copyCourseSave;
+
+  /// No description provided for @resetPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Password'**
+  String get resetPassword;
+
+  /// No description provided for @resetPasswordStepAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get resetPasswordStepAccount;
+
+  /// No description provided for @resetPasswordStepVerify.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification'**
+  String get resetPasswordStepVerify;
+
+  /// No description provided for @resetPasswordStepReset.
+  ///
+  /// In en, this message translates to:
+  /// **'New Password'**
+  String get resetPasswordStepReset;
+
+  /// No description provided for @resetPasswordNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get resetPasswordNext;
+
+  /// No description provided for @resetPasswordChooseMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'You are resetting your login password. Choose a verification method:'**
+  String get resetPasswordChooseMethod;
+
+  /// No description provided for @resetPasswordViaSms.
+  ///
+  /// In en, this message translates to:
+  /// **'Via SMS'**
+  String get resetPasswordViaSms;
+
+  /// No description provided for @resetPasswordSmsTip.
+  ///
+  /// In en, this message translates to:
+  /// **'A verification code will be sent via SMS to your phone {phone}'**
+  String resetPasswordSmsTip(String phone);
+
+  /// No description provided for @resetPasswordViaEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Via Email'**
+  String get resetPasswordViaEmail;
+
+  /// No description provided for @resetPasswordEmailTip.
+  ///
+  /// In en, this message translates to:
+  /// **'A verification code will be sent via email to {email}'**
+  String resetPasswordEmailTip(String email);
+
+  /// No description provided for @resetPasswordSendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Code'**
+  String get resetPasswordSendCode;
+
+  /// No description provided for @resetPasswordResendAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend in {seconds}s'**
+  String resetPasswordResendAfter(int seconds);
+
+  /// No description provided for @resetPasswordCodeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the 6-digit verification code'**
+  String get resetPasswordCodeRequired;
+
+  /// No description provided for @resetPasswordNewPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New Password'**
+  String get resetPasswordNewPasswordLabel;
+
+  /// No description provided for @resetPasswordConfirmPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Password'**
+  String get resetPasswordConfirmPasswordLabel;
+
+  /// No description provided for @resetPasswordPasswordMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get resetPasswordPasswordMismatch;
+
+  /// No description provided for @resetPasswordPolicyTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters and contain upper/lower case letters, digits and special characters'**
+  String get resetPasswordPolicyTip;
+
+  /// No description provided for @resetPasswordPolicyInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Password does not meet the requirements'**
+  String get resetPasswordPolicyInvalid;
+
+  /// No description provided for @resetPasswordSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get resetPasswordSubmit;
+
+  /// No description provided for @resetPasswordSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset successfully. Please log in with your new password.'**
+  String get resetPasswordSuccess;
+
+  /// No description provided for @resetPasswordBackToLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Login'**
+  String get resetPasswordBackToLogin;
+
+  /// No description provided for @dockLabelCourseCurriculum.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Table'**
+  String get dockLabelCourseCurriculum;
+
+  /// No description provided for @courseCurriculum.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Curriculum'**
+  String get courseCurriculum;
+
+  /// No description provided for @courseCurriculumDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'View schedules for each course section'**
+  String get courseCurriculumDesc;
+
+  /// No description provided for @courseCurriculumNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'No course data'**
+  String get courseCurriculumNoData;
+
+  /// No description provided for @courseCurriculumNoSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'No schedule data'**
+  String get courseCurriculumNoSchedule;
+
+  /// No description provided for @courseCurriculumFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter'**
+  String get courseCurriculumFilter;
+
+  /// No description provided for @courseCurriculumSemester.
+  ///
+  /// In en, this message translates to:
+  /// **'Semester'**
+  String get courseCurriculumSemester;
+
+  /// No description provided for @courseCurriculumDepartment.
+  ///
+  /// In en, this message translates to:
+  /// **'Department'**
+  String get courseCurriculumDepartment;
+
+  /// No description provided for @courseCurriculumCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Category'**
+  String get courseCurriculumCategory;
+
+  /// No description provided for @courseCurriculumCourseName.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Name'**
+  String get courseCurriculumCourseName;
+
+  /// No description provided for @courseCurriculumCourseCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Code'**
+  String get courseCurriculumCourseCode;
+
+  /// No description provided for @courseCurriculumCourseSeq.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Seq'**
+  String get courseCurriculumCourseSeq;
+
+  /// No description provided for @courseCurriculumSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get courseCurriculumSearch;
+
+  /// No description provided for @courseCurriculumLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load More'**
+  String get courseCurriculumLoadMore;
+
+  /// No description provided for @reminderHostProbeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Host notification probe'**
+  String get reminderHostProbeTitle;
+
+  /// No description provided for @reminderHostProbeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedules one notification N seconds from now through the real pipeline, so you can verify the host actually delivers it.'**
+  String get reminderHostProbeSubtitle;
+
+  /// No description provided for @reminderHostProbeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Fire in 15s'**
+  String get reminderHostProbeAction;
+
+  /// No description provided for @reminderHostProbeSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled. Lock the screen to see the banner.'**
+  String get reminderHostProbeSent;
+
+  /// No description provided for @reminderHostProbeDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification permission denied — grant it in system settings first.'**
+  String get reminderHostProbeDenied;
+
+  /// No description provided for @reminderHostProbeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduling failed'**
+  String get reminderHostProbeFailed;
+
+  /// No description provided for @reminderHostProbePermissionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification permission'**
+  String get reminderHostProbePermissionTitle;
+
+  /// No description provided for @reminderHostProbePermissionUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking…'**
+  String get reminderHostProbePermissionUnknown;
+
+  /// No description provided for @reminderHostProbePermissionAuthorized.
+  ///
+  /// In en, this message translates to:
+  /// **'Authorized'**
+  String get reminderHostProbePermissionAuthorized;
+
+  /// No description provided for @reminderHostProbePermissionProvisional.
+  ///
+  /// In en, this message translates to:
+  /// **'Provisional (quiet delivery)'**
+  String get reminderHostProbePermissionProvisional;
+
+  /// No description provided for @reminderHostProbePermissionDeniedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Denied in system settings'**
+  String get reminderHostProbePermissionDeniedLabel;
+
+  /// No description provided for @reminderHostProbePermissionNotDetermined.
+  ///
+  /// In en, this message translates to:
+  /// **'Not requested yet'**
+  String get reminderHostProbePermissionNotDetermined;
+
+  /// No description provided for @reminderHostProbeRequestPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Request'**
+  String get reminderHostProbeRequestPermission;
+
+  /// No description provided for @reminderHostProbeOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get reminderHostProbeOpenSettings;
+
+  /// No description provided for @reminderHostProbeOpenSettingsFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open system settings'**
+  String get reminderHostProbeOpenSettingsFailed;
+
+  /// No description provided for @reminderHostProbePermissionGranted.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification permission granted'**
+  String get reminderHostProbePermissionGranted;
+
+  /// No description provided for @reminderHostProbePermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission denied'**
+  String get reminderHostProbePermissionDenied;
+
+  /// No description provided for @reminderProbeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'课表提醒探针'**
+  String get reminderProbeTitle;
+
+  /// No description provided for @reminderProbeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'这是一条 15 秒后触发的测试提醒'**
+  String get reminderProbeBody;
+
+  /// No description provided for @reminderPlanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled reminder plan'**
+  String get reminderPlanTitle;
+
+  /// No description provided for @reminderPlanEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No plan generated yet'**
+  String get reminderPlanEmpty;
+
+  /// No description provided for @reminderPlanSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} reminders, window ends {end}'**
+  String reminderPlanSummary(int count, String end);
+
+  /// No description provided for @reminderPlanDropped.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} dropped by the platform pending limit'**
+  String reminderPlanDropped(int count);
+
+  /// No description provided for @reminderPlanPending.
+  ///
+  /// In en, this message translates to:
+  /// **'System has {count} registered'**
+  String reminderPlanPending(int count);
+
+  /// No description provided for @reminderStatusScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} reminders scheduled, window ends {end}'**
+  String reminderStatusScheduled(Object count, Object end);
+
+  /// No description provided for @reminderStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'The system has {count} registered'**
+  String reminderStatusPending(Object count);
+
+  /// No description provided for @reminderStatusDropped.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} dropped by the platform limit'**
+  String reminderStatusDropped(Object count);
+
+  /// No description provided for @reminderStatusError.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduling failed: {error}'**
+  String reminderStatusError(Object error);
+
+  /// No description provided for @reminderLeadMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} min'**
+  String reminderLeadMinutes(Object count);
+
+  /// No description provided for @reminderSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications & Reminders'**
+  String get reminderSettingsTitle;
+
+  /// No description provided for @reminderMasterSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders'**
+  String get reminderMasterSwitch;
+
+  /// No description provided for @reminderMasterSwitchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off to cancel every scheduled reminder'**
+  String get reminderMasterSwitchHint;
+
+  /// No description provided for @reminderCourseSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Class reminders'**
+  String get reminderCourseSection;
+
+  /// No description provided for @reminderLeadTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Remind me before class'**
+  String get reminderLeadTime;
+
+  /// No description provided for @reminderLeadTimeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'How early should a class reminder fire?'**
+  String get reminderLeadTimeHint;
+
+  /// No description provided for @reminderLeadTimeMultiHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can pick more than one. Each adds a separate notification.'**
+  String get reminderLeadTimeMultiHint;
+
+  /// No description provided for @reminderQuietSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet hours'**
+  String get reminderQuietSection;
+
+  /// No description provided for @reminderQuietEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet hours'**
+  String get reminderQuietEnabled;
+
+  /// No description provided for @reminderQuietHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders inside this window are dropped, not delayed'**
+  String get reminderQuietHint;
+
+  /// No description provided for @reminderQuietStart.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get reminderQuietStart;
+
+  /// No description provided for @reminderQuietEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get reminderQuietEnd;
+
+  /// No description provided for @reminderStatusSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduling status'**
+  String get reminderStatusSection;
+
+  /// No description provided for @reminderStatusEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No plan generated yet'**
+  String get reminderStatusEmpty;
+
+  /// No description provided for @reminderStatusNoUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'No upcoming reminders in this window'**
+  String get reminderStatusNoUpcoming;
+
+  /// No description provided for @reminderStatusRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Reschedule now'**
+  String get reminderStatusRefresh;
+
+  /// No description provided for @reminderPermissionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are off'**
+  String get reminderPermissionTitle;
+
+  /// No description provided for @reminderPermissionDeniedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You denied the permission earlier, so iOS will not ask again. Enable it in system settings.'**
+  String get reminderPermissionDeniedHint;
+
+  /// No description provided for @reminderPermissionNotDeterminedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Grant the permission so reminders can reach you.'**
+  String get reminderPermissionNotDeterminedHint;
+
+  /// No description provided for @reminderPermissionRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow'**
+  String get reminderPermissionRequest;
+
+  /// No description provided for @reminderPermissionOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get reminderPermissionOpenSettings;
+
+  /// No description provided for @reminderPermissionOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open system settings'**
+  String get reminderPermissionOpenFailed;
+
+  /// No description provided for @reminderPermissionGrantedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification permission granted'**
+  String get reminderPermissionGrantedToast;
+
+  /// No description provided for @reminderPermissionDeniedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission denied'**
+  String get reminderPermissionDeniedToast;
+
+  /// No description provided for @reminderPermissionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission request failed'**
+  String get reminderPermissionFailed;
+
+  /// No description provided for @reminderPrivacyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders appear on the lock screen, so they follow your privacy switches: if you hide the teacher\'s name, it stays hidden here too.'**
+  String get reminderPrivacyHint;
+
+  /// No description provided for @reminderPlanCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy plan JSON'**
+  String get reminderPlanCopy;
+
+  /// No description provided for @reminderPlanCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied'**
+  String get reminderPlanCopied;
+
+  /// No description provided for @reminderPlanFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan serialization failed'**
+  String get reminderPlanFailed;
+
+  /// No description provided for @liveActivityProbeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Activity probe'**
+  String get liveActivityProbeTitle;
+
+  /// No description provided for @liveActivityProbeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts a Live Activity for a sample course that ends {minutes} minutes from now. Live Activities can only be started while the app is in the foreground.'**
+  String liveActivityProbeSubtitle(Object minutes);
+
+  /// No description provided for @liveActivityProbeRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting…'**
+  String get liveActivityProbeRunning;
+
+  /// No description provided for @liveActivityProbeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Start sample'**
+  String get liveActivityProbeAction;
+
+  /// No description provided for @liveActivityProbeStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Started. Press the Home button — the Dynamic Island should appear.'**
+  String get liveActivityProbeStarted;
+
+  /// No description provided for @liveActivityProbeEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample Live Activity ended'**
+  String get liveActivityProbeEnded;
+
+  /// No description provided for @liveActivityProbeEndAction.
+  ///
+  /// In en, this message translates to:
+  /// **'End sample'**
+  String get liveActivityProbeEndAction;
+
+  /// No description provided for @liveActivityProbeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to start'**
+  String get liveActivityProbeFailed;
+
+  /// No description provided for @liveActivityProbeUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This device or system does not support Live Activities (requires iOS 16.1+).'**
+  String get liveActivityProbeUnsupported;
+
+  /// No description provided for @liveActivityProbeNotAuthorized.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Activities are turned off in system settings.'**
+  String get liveActivityProbeNotAuthorized;
+
+  /// No description provided for @liveActivityProbeForegroundRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Activities can only be started while the app is in the foreground.'**
+  String get liveActivityProbeForegroundRequired;
+
+  /// No description provided for @liveActivityProbeSampleCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample Course'**
+  String get liveActivityProbeSampleCourse;
+
+  /// No description provided for @liveActivityProbeSampleLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Building C · Room 407'**
+  String get liveActivityProbeSampleLocation;
+
+  /// No description provided for @liveActivityProbeSampleNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Linear Algebra'**
+  String get liveActivityProbeSampleNext;
+
+  /// No description provided for @liveActivityProbeEndNowAction.
+  ///
+  /// In en, this message translates to:
+  /// **'End now'**
+  String get liveActivityProbeEndNowAction;
+
+  /// No description provided for @liveActivityProbeStatusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Activity status'**
+  String get liveActivityProbeStatusTitle;
+
+  /// No description provided for @liveActivityProbeStatusSupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Supported and enabled'**
+  String get liveActivityProbeStatusSupported;
+
+  /// No description provided for @liveActivityProbeStatusUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Not supported / disabled'**
+  String get liveActivityProbeStatusUnsupported;
+
+  /// No description provided for @liveActivityProbeActive.
+  ///
+  /// In en, this message translates to:
+  /// **'A sample session is running'**
+  String get liveActivityProbeActive;
+
+  /// No description provided for @liveActivityProbeSentEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Session ended'**
+  String get liveActivityProbeSentEnded;
+
+  /// No description provided for @liveActivityProbeNoSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the host (no active session).'**
+  String get liveActivityProbeNoSession;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacyPolicy;
+
+  /// No description provided for @legalInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal Information'**
+  String get legalInfo;
+
+  /// No description provided for @supportAndHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Support & Help'**
+  String get supportAndHelp;
+
+  /// No description provided for @docLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load document'**
+  String get docLoadFailed;
 }
 
 class _AppLocalizationsDelegate

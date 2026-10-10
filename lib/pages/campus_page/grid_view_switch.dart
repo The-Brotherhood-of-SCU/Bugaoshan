@@ -1,3 +1,4 @@
+import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
@@ -21,7 +22,8 @@ class GridViewSwitchListCard extends StatelessWidget {
           icon: Icons.grid_view,
           title: l10n.campusGridView,
           desc: l10n.campusGridViewDesc,
-          trailing: Switch(
+          trailing: AdaptiveGlassSwitch(
+            semanticLabel: l10n.campusGridView,
             value: isGridView,
             onChanged: (value) {
               appConfig.campusGridView.value = value;

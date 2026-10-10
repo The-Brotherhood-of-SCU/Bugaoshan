@@ -1,3 +1,4 @@
+import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:bugaoshan/pages/dev/ui/ui_tile.dart';
 import 'package:flutter/material.dart';
 
@@ -6,6 +7,8 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/dev/auth_log/auth_log_tile.dart';
 import 'package:bugaoshan/pages/dev/changelog/changelog_tile.dart';
 import 'package:bugaoshan/pages/dev/environment_info_tile.dart';
+import 'package:bugaoshan/pages/dev/live_activity_probe_tile.dart';
+import 'package:bugaoshan/pages/dev/reminder_probe_tile.dart';
 import 'package:bugaoshan/pages/dev/update_card.dart';
 import 'package:bugaoshan/pages/dev/wizard_reset_tile.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
@@ -86,8 +89,9 @@ class _DevPageState extends State<DevPage> {
       ),
       ListenableBuilder(
         listenable: _appConfig.usePreviewUpdateSource,
-        builder: (BuildContext context, _) => SwitchListTile(
-          contentPadding: EdgeInsets.zero,
+        builder: (BuildContext context, _) => AdaptiveGlassSwitchListTile(
+          // 不设 contentPadding：本页其余条目都是 ListTile 默认内边距，
+          // 归零会让这几行的图标与文字列整体向左错开。
           title: Text(localizations.usePreviewUpdateSource),
           subtitle: Text(
             localizations.usePreviewUpdateSourceHint,
@@ -137,13 +141,18 @@ class _DevPageState extends State<DevPage> {
           const Divider(),
           const AuthLogTile(),
           const Divider(),
+          const ReminderProbeTile(),
+          const Divider(),
+          const LiveActivityProbeTile(),
+          const Divider(),
           const UiTile(),
           const Divider(),
           const ChangelogTile(),
           const Divider(),
           ValueListenableBuilder<bool>(
             valueListenable: _appConfig.forceCaptchaForDownload,
-            builder: (context, value, _) => SwitchListTile(
+            builder: (context, value, _) => AdaptiveGlassSwitchListTile(
+              // 同上：与 EnvironmentInfoTile 等 ListTile 默认内边距对齐。
               secondary: const Icon(Icons.tab),
               title: Text(localizations.forceCaptchaForDownload),
               subtitle: Text(

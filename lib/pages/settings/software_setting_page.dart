@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/pages/settings/add_widget/add_widget_page.dart';
 import 'package:bugaoshan/pages/settings/set_dock_page.dart';
 import 'package:bugaoshan/pages/settings/set_duration_page.dart';
@@ -11,9 +11,13 @@ import 'package:bugaoshan/pages/settings/set_language_page.dart';
 import 'package:bugaoshan/pages/settings/set_app_icon_page.dart';
 import 'package:bugaoshan/pages/settings/set_course_style_page.dart';
 import 'package:bugaoshan/pages/settings/set_font_page.dart';
+import 'package:bugaoshan/pages/settings/set_student_type_page.dart';
 import 'package:bugaoshan/pages/settings/set_theme_color_page.dart';
+import 'package:bugaoshan/pages/settings/reminder_setting_page.dart';
+import 'package:bugaoshan/pages/settings/set_theme_mode_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/common/info_card.dart';
 import 'package:bugaoshan/widgets/common/section_title.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
@@ -41,6 +45,24 @@ class SoftwareSettingPage extends StatelessWidget {
                 label: localizations.modifyLanguage,
                 onTap: () => popupOrNavigate(context, SetLanguagePage()),
               ),
+              IconTile(
+                icon: Icons.notifications_active_outlined,
+                label: localizations.reminderSettingsTitle,
+                onTap: () =>
+                    popupOrNavigate(context, const ReminderSettingPage()),
+              ),
+              ValueListenableBuilder<StudentType>(
+                valueListenable: appConfig.studentType,
+                builder: (context, studentType, _) => IconTile(
+                  icon: Icons.badge_outlined,
+                  label: localizations.studentTypeSetting,
+                  value: studentType == StudentType.graduate
+                      ? localizations.studentTypeGraduate
+                      : localizations.studentTypeUndergraduate,
+                  onTap: () =>
+                      popupOrNavigate(context, const SetStudentTypePage()),
+                ),
+              ),
               if (Platform.isAndroid)
                 IconTile(
                   icon: Icons.photo_size_select_actual_outlined,
@@ -57,7 +79,7 @@ class SoftwareSettingPage extends StatelessWidget {
                 label: localizations.customDock,
                 onTap: () => popupOrNavigate(context, const SetDockPage()),
               ),
-              if (Platform.isAndroid)
+              if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS)
                 IconTile(
                   icon: Icons.widgets_outlined,
                   label: localizations.addWidgetPageTitle,
@@ -69,6 +91,20 @@ class SoftwareSettingPage extends StatelessWidget {
           SectionTitle(title: localizations.settingsStyle),
           InfoCard(
             children: [
+              ValueListenableBuilder<ThemeMode>(
+                valueListenable: appConfig.themeMode,
+                builder: (context, mode, _) => IconTile(
+                  icon: Icons.dark_mode_outlined,
+                  label: localizations.darkMode,
+                  value: switch (mode) {
+                    ThemeMode.system => localizations.followSystem,
+                    ThemeMode.light => localizations.themeModeLight,
+                    ThemeMode.dark => localizations.themeModeDark,
+                  },
+                  onTap: () =>
+                      popupOrNavigate(context, const SetThemeModePage()),
+                ),
+              ),
               IconTile(
                 icon: Icons.color_lens,
                 label: localizations.themeColor,

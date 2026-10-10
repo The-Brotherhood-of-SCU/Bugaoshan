@@ -131,14 +131,14 @@ class GradesProvider extends ChangeNotifier {
         );
         if (generation != _identityGeneration) return;
       }
-    } on UnauthenticatedException {
+    } on UnauthenticatedException catch (e) {
       if (generation != _identityGeneration) return;
       if (_schemes != null) {
         _schemeState = GradesLoadState.loaded;
-        _schemeError = LoadErrorType.sessionExpired;
+        _schemeError = zhjwAuthErrorType(e);
       } else {
         _schemeState = GradesLoadState.error;
-        _schemeError = LoadErrorType.sessionExpired;
+        _schemeError = zhjwAuthErrorType(e);
       }
     } catch (e) {
       if (generation != _identityGeneration) return;
@@ -186,14 +186,14 @@ class GradesProvider extends ChangeNotifier {
         );
         if (generation != _identityGeneration) return;
       }
-    } on UnauthenticatedException {
+    } on UnauthenticatedException catch (e) {
       if (generation != _identityGeneration) return;
       if (_passingScores != null) {
         _passingState = GradesLoadState.loaded;
-        _passingError = LoadErrorType.sessionExpired;
+        _passingError = zhjwAuthErrorType(e);
       } else {
         _passingState = GradesLoadState.error;
-        _passingError = LoadErrorType.sessionExpired;
+        _passingError = zhjwAuthErrorType(e);
       }
     } catch (e) {
       if (generation != _identityGeneration) return;

@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:json_annotation/json_annotation.dart';
 
+import 'package:bugaoshan/utils/semester_week.dart';
+
 import 'course.dart';
 
 part 'academic_calendar.g.dart';
@@ -106,12 +108,14 @@ class AcademicCalendarSemester {
 
   /// Calculate the teaching week of a target date.
   /// Returns null if date is before semester starts or after semester totalWeeks.
+  ///
+  /// 与校历同口径（教学周以周日为首日成行，见 `utils/semester_week.dart`）：
+  /// 周一起点的学期里，周日的周次比「自起点起算的整 7 天块」多一周。
   int? getCurrentWeek(DateTime target) {
     final today = DateTime(target.year, target.month, target.day);
     final start = DateTime(startDate.year, startDate.month, startDate.day);
     if (today.isBefore(start)) return null;
-    final days = today.difference(start).inDays;
-    final week = (days / 7).floor() + 1;
+    final week = courseWeekOf(start, today);
     if (week > totalWeeks) return null;
     return week;
   }
@@ -120,7 +124,8 @@ class AcademicCalendarSemester {
   bool isDateInSemester(DateTime target) {
     final today = DateTime(target.year, target.month, target.day);
     final start = DateTime(startDate.year, startDate.month, startDate.day);
-    final end = start.add(Duration(days: totalWeeks * 7 - 1));
+    // 与周次同一口径：末周最后一天 = 块首日 + totalWeeks*7 - 1
+    final end = courseSemesterEnd(start, totalWeeks);
     return (today.isAtSameMomentAs(start) || today.isAfter(start)) &&
         (today.isAtSameMomentAs(end) || today.isBefore(end));
   }

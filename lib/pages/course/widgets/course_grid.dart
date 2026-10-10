@@ -1,15 +1,16 @@
+import 'package:bugaoshan/widgets/navigation/home_dock_insets.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
-import 'grid_header.dart';
-import 'grid_section_column.dart';
-import 'grid_day_column.dart';
-import 'grid_logic.dart';
-import 'minimal_weekday_header.dart';
+import 'course_grid_body.dart';
 
 /// 显示周课程表的网格，包含时间槽和课程卡片。
+///
+/// 本组件只负责三件事：读 AppConfig、订阅视觉设置、提供滚动容器与底部留白。
+/// 表头选型在 [CourseGridHeader]，网格本体在 [CourseGridBody] —— 两者与导出
+/// 视图（`ScheduleExportView`）共用；导出时不要滚动容器与 viewport 裁剪。
 class CourseGrid extends StatefulWidget {
   final List<Course> courses;
   final ScheduleConfig config;
@@ -50,9 +51,6 @@ class CourseGrid extends StatefulWidget {
 }
 
 class _CourseGridState extends State<CourseGrid> {
-  // 存储当前选中的空白单元格（dayOfWeek, section）
-  int? _selectedEmptyDay;
-  int? _selectedEmptySection;
   final appConfig = getIt<AppConfigProvider>();
 
   /// build 里读到的所有 AppConfig 字段。提成字段避免每帧新建 merge 导致
@@ -67,121 +65,47 @@ class _CourseGridState extends State<CourseGrid> {
     appConfig.backgroundImagePath,
   ]);
 
-  static const double _sectionWidth = 35;
-
-  void _handleEmptyTap(int day, int section) {
-    if (_selectedEmptyDay == day && _selectedEmptySection == section) {
-      // 第二次点击：触发实际的添加操作
-      widget.onEmptyTap?.call(day, section);
-      setState(() {
-        _selectedEmptyDay = null;
-        _selectedEmptySection = null;
-      });
-    } else if (_selectedEmptyDay == null && _selectedEmptySection == null) {
-      // 第一次点击：选中单元格（之前没有选中任何内容）
-      setState(() {
-        _selectedEmptyDay = day;
-        _selectedEmptySection = section;
-      });
-    } else {
-      // 点击不同的单元格（之前已有选中）：取消选中
-      setState(() {
-        _selectedEmptyDay = null;
-        _selectedEmptySection = null;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final sections = widget.config.sectionsPerDay;
-
     return ListenableBuilder(
       listenable: _configListenable,
       builder: (context, _) {
         final showWeekend =
             widget.showWeekendOverride ?? appConfig.showWeekend.value;
-        final dayCount = showWeekend ? 7 : 5;
         final hasBackground = appConfig.backgroundImagePath.value != null;
         final rowHeight = appConfig.courseRowHeight.value;
         final showCourseGrid = appConfig.showCourseGrid.value;
 
         return Column(
           children: [
-            // 两条路径都认为日期无意义，统一走最小周几表头：
-            // showAllWeeks（聚合各周，无当前周）/ !showHeaderDates（历史学期）。
-            if (widget.showAllWeeks || !widget.showHeaderDates)
-              MinimalWeekdayHeader(
-                showWeekend: showWeekend,
-                sectionWidth: _sectionWidth,
-              )
-            else
-              GridHeaderRow(
-                config: widget.config,
-                displayWeek: widget.displayWeek,
-                hasBackground: hasBackground,
-                sectionWidth: _sectionWidth,
-                showWeekend: showWeekend,
-                onSpecialDayTap: widget.onSpecialDayTap,
-              ),
+            CourseGridHeader(
+              config: widget.config,
+              displayWeek: widget.displayWeek,
+              hasBackground: hasBackground,
+              showWeekend: showWeekend,
+              showAllWeeks: widget.showAllWeeks,
+              showHeaderDates: widget.showHeaderDates,
+              onSpecialDayTap: widget.onSpecialDayTap,
+            ),
             Expanded(
               child: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    GridSectionColumn(
-                      config: widget.config,
-                      rowHeight: rowHeight,
-                      width: _sectionWidth,
-                    ),
-                    Expanded(
-                      child: Row(
-                        children: List.generate(dayCount, (dayIndex) {
-                          final day = showWeekend
-                              ? (dayIndex == 0 ? 7 : dayIndex)
-                              : dayIndex + 1;
-                          List<Course> dayCourses;
-                          if (widget.showAllWeeks) {
-                            dayCourses = widget.courses
-                                .where((c) => c.dayOfWeek == day)
-                                .toList();
-                            dayCourses.sort(compareCoursesForLayout);
-                            dayCourses = mergeSameSlotCourses(dayCourses);
-                          } else {
-                            dayCourses = selectVisibleCoursesForDay(
-                              widget.courses
-                                  .where((c) => c.dayOfWeek == day)
-                                  .toList(),
-                              widget.displayWeek,
-                              showNonCurrentWeekCourses:
-                                  appConfig.showNonCurrentWeekCourses.value,
-                            );
-                          }
-
-                          final isSelectedDay = _selectedEmptyDay == day;
-
-                          return GridDayColumn(
-                            courses: dayCourses,
-                            config: widget.config,
-                            displayWeek: widget.displayWeek,
-                            showAllWeeks: widget.showAllWeeks,
-                            sections: sections,
-                            rowHeight: rowHeight,
-                            showCourseGrid: showCourseGrid,
-                            selectedEmptySection: isSelectedDay
-                                ? _selectedEmptySection
-                                : null,
-                            onCourseTap: widget.onCourseTap,
-                            onCourseLongPress: widget.onCourseLongPress,
-                            onEmptyCellTap: widget.onEmptyTap != null
-                                ? (section) => _handleEmptyTap(day, section)
-                                : null,
-                          );
-                        }),
-                      ),
-                    ),
-                  ],
+                padding: EdgeInsets.only(
+                  bottom: HomeDockInsets.bottomOf(context),
+                ),
+                child: CourseGridBody(
+                  courses: widget.courses,
+                  config: widget.config,
+                  displayWeek: widget.displayWeek,
+                  showWeekend: showWeekend,
+                  showNonCurrentWeekCourses:
+                      appConfig.showNonCurrentWeekCourses.value,
+                  rowHeight: rowHeight,
+                  showCourseGrid: showCourseGrid,
+                  showAllWeeks: widget.showAllWeeks,
+                  onCourseTap: widget.onCourseTap,
+                  onCourseLongPress: widget.onCourseLongPress,
+                  onEmptyTap: widget.onEmptyTap,
                 ),
               ),
             ),

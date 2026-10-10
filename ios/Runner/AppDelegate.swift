@@ -9,20 +9,41 @@ import WidgetKit
     private let channelName = "bugaoshan/update"
     private let calendarEventIdentifierMapKey = "bugaoshan.calendarEventIdentifiers"
     private let eventStore = EKEventStore()
-    private let appGroupId = "group.io.github.thebrotherhoodofscu.bugaoshan"
+    private let appGroupId = "group.io.github.thebrotherhoodofscu.bugaoshan.ios"
+    private let reminderChannel = ReminderChannel()
+    private let liveActivityChannel = LiveActivityChannel()
 
     override func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+        // 前台也要显示提醒：FlutterAppDelegate 已实现 UNUserNotificationCenterDelegate
+        // 并把回调分发给注册过生命周期代理的插件，但没有任何插件会为本地提醒调
+        // willPresent。没有这一步，用户正在用 App 时提醒会静默丢弃。
+        UNUserNotificationCenter.current().delegate = self
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    }
+
+    override func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        // 不调用 super：FlutterAppDelegate 的实现会在没有插件认领时自行调用
+        // completionHandler(UNNotificationPresentationOptionNone)，我们再调一次
+        // 就是重复调用（completion handler 只允许调用一次）。
+        // 本项目没有插件处理本地通知，故直接决定前台展示策略。
+        completionHandler([.banner, .list, .sound])
     }
 
     func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
         GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
-        registerBugaoshanMethodChannel(
-            messenger: engineBridge.applicationRegistrar.messenger()
-        )
+        LiquidGlassDockRegistration.register(with: engineBridge.applicationRegistrar)
+        LiquidGlassControlsRegistration.register(with: engineBridge.applicationRegistrar)
+        let messenger = engineBridge.applicationRegistrar.messenger()
+        registerBugaoshanMethodChannel(messenger: messenger)
+        reminderChannel.register(messenger: messenger)
+        liveActivityChannel.register(messenger: messenger)
     }
 
     private func registerBugaoshanMethodChannel(messenger: FlutterBinaryMessenger) {
