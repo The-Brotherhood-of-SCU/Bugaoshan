@@ -441,7 +441,11 @@ Provider 捕获最终异常并转换为页面状态，不实现 token、cookie �
 
 ### 10.3 全局过期提示
 
-根刷新最终失败时，`ScuAuth.getClient()` 调用 `onSessionExpired`。[`SessionExpiredListener`](../../lib/widgets/common/session_expired_listener.dart) 显示带“前往登录”操作的 SnackBar，并使用 5 秒冷却避免并发请求重复提示。
+根刷新最终失败时，`ScuAuth.getClient()` 调用 `onSessionExpired`。[`SessionExpiredListener`](../../lib/widgets/common/session_expired_listener.dart) 由 `MaterialApp.builder` 包裹在 `Localizations` 内层，在 `initState` 注册回调、在 `dispose`（仅当回调仍是自己）解绑，避免 `ScuAuth` 持有已卸载 State 的引用。
+
+回调从 `navigatorKey.currentContext` 取根导航树上下文，先 `clearSnackBars()` 再 `showSnackBar()`：正文为 `l10n.sessionExpired`，action 为“前往登录”（`l10n.goToLogin`，跳转 `ScuLoginPage`）。导航树不可用（`currentContext` 为 null 或已卸载）时直接返回并复位冷却标志，避免提示被永久静音；显示后进入 5 秒冷却，用可取消的 `Timer` 实现以避免并发请求重复提示。
+
+`Text` 与 `SnackBarAction.label` 在 `showSnackBar` 调用时即被求值，SnackBar 不会随 locale 重建，因此该监听器在 `didChangeDependencies` 比较 `Localizations.localeOf(context)`：locale 变化且当前显示的仍是自己那条提示时，在帧后关闭并按新语言重开一条，使正文与按钮文案同时跟随界面语言。回归测试见 [`test/session_expired_listener_test.dart`](../../test/session_expired_listener_test.dart)。
 
 ## 11. 异常边界
 
