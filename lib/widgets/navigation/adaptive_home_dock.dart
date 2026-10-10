@@ -245,7 +245,7 @@ class _AdaptiveHomeDockState extends State<AdaptiveHomeDock> {
         onPlatformViewCreated: _onPlatformViewCreated,
       );
       return widget.axis == Axis.vertical
-          ? SizedBox(width: 152 * _textScale, child: view)
+          ? SizedBox(width: 128 * _textScale, child: view)
           : SizedBox(height: 88 * _textScale, child: view);
     }
 

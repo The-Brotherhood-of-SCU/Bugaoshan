@@ -221,10 +221,10 @@ private struct GlassNavigation: View {
         )) {
           ForEach(items, id: \.selfID) { item in
             let selected = item.selfID == model.string("selectedId")
-            HStack(spacing: 9) {
+            HStack(spacing: 8 * model.scale) {
               Image(systemName: item[selected ? "selectedSymbol" : "symbol"] as? String ?? "circle")
-                .font(.system(size: 16 * model.scale))
-                .frame(width: 20 * model.scale)
+                .font(.system(size: 15 * model.scale))
+                .frame(width: 18 * model.scale)
               Text(item["label"] as? String ?? "")
                 .font(.system(size: 13 * model.scale, weight: selected ? .semibold : .regular))
                 .lineLimit(1)
@@ -233,14 +233,19 @@ private struct GlassNavigation: View {
                 Circle().fill(.red).frame(width: 6, height: 6).accessibilityHidden(true)
               }
             }
-            .frame(minHeight: 28 * model.scale)
+            .frame(minHeight: 24 * model.scale)
+            .listRowInsets(EdgeInsets(
+              top: 2 * model.scale, leading: 6 * model.scale,
+              bottom: 2 * model.scale, trailing: 6 * model.scale
+            ))
             .tag(item.selfID)
             .accessibilityValue(item["badge"] as? Bool == true ? item["badgeLabel"] as? String ?? "" : "")
           }
         }
         .listStyle(.sidebar)
+        .environment(\.defaultMinListRowHeight, 24 * model.scale)
         .scrollContentBackground(.hidden)
-        .padding(.top, 8)
+        .padding(.top, 4)
       } else {
         GlassEffectContainer(spacing: 12) {
           ScrollView(.horizontal) {
