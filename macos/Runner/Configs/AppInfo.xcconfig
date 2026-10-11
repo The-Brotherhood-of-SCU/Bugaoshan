@@ -8,7 +8,7 @@
 PRODUCT_NAME = Bugaoshan
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = io.github.thebrotherhoodofscu.bugaoshan
+PRODUCT_BUNDLE_IDENTIFIER = io.github.thebrotherhoodofscu.bugaoshan.ios
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2025 io.github.the_brotherhood_of_scu. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2025-2026 The Brotherhood of SCU. AGPL-3.0.

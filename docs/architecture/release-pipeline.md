@@ -49,7 +49,7 @@ branch-policy 只做一条硬校验：**`main` 只能接收来自 `preview` 的 
 3. **合并进 `preview`**：push 事件同时触发 pre-flight 重跑与 release.yml preview 通道——
    - 预览 tag 与 pubspec 解耦：脚本取「最新正式 tag」严格递增 Z 位（X、Y 不动），推导 `vX.Y.Z-preview`（首次）或递增序号 `vX.Y.Z-preview.N`（如上一正式版 v2.5.1 → v2.5.2-preview.2）；
    - workflow 自动打 tag（`resolve-metadata` job，需要 `contents: write`，推送失败立即终止本次发布）；
-   - `build-android.yml`（universal + split-per-ABI，混淆，JDK 21）与 `build-windows.yml`（zip）并行构建；
+   - `build-android.yml`（universal + split-per-ABI，混淆，JDK 21）、`build-windows.yml`（zip）与 `build-macos.yml`（未签名 universal 验证包）并行构建；Mac 商店包单独签名上传，验证包不进入 GitHub Release；
    - 发布走 **Draft → 上传产物 → Publish** 顺序，兼容仓库的不可变 Release 策略，标记为 prerelease；
    - 预览版的 release notes 取 `CHANGELOG.md` 第一个章节（约定为 `[Unreleased]`；该取法的已知问题见 §4.8），对比范围为上一个**正式** tag。tag 在构建开始前就已推送，构建/发布失败时 tag 会留存（见 §4.12）。
 4. **周期内迭代**：后续变更继续以 PR 合入 `preview`，预览版序号自动递增（`.2`、`.3`…）。周期内 `pubspec.yaml` 的版本号保持上一正式版不变，预览产物的 versionName 与 tag 不同名是设计使然。
@@ -147,8 +147,8 @@ preview 通道的并发组开启取消（cancel-in-progress）：短时间连续
 ### 4.18 setup 阶段的代码生成失败被吞
 setup action 里 `build_runner` 带 `|| true`，生成器配置坏了不会让 setup 显式失败，只能靠漂移检查与测试兜底。
 
-### 4.19 发布正文的外链硬编码 fork 地址
-`release_body.py` 中 macOS dmg / iOS ipa 的下载链接指向 `Visio-Vanitas/Bugaoshan`（#285 的 ipa mirror 决策），且这些产物不由流水线上传。仓库迁移、改名或镜像调整时需同步修改该脚本。
+### 4.19 Apple 平台下载与签名边界
+`release_body.py` 指向 iOS/macOS 共用的 App Store 条目，商店版本与 GitHub tag 独立，Mac 可下载状态以商店为准。Mac CI 制品只供构建验证，`release_prepare.py` 不整理或发布未签名 Mac 包。iOS 旧测试 IPA 外链仍指向 `Visio-Vanitas/Bugaoshan`（#285 的 mirror 决策），不是本流水线上传的产物。Mac 商店签名、导出及上传见 [macOS 分发](macos-distribution.md)。
 
 ### 4.20 Python 单测重复发现
 pre-flight 的 `unittest discover -s .github/scripts/` 会把 `tests/` 子目录的用例再发现并执行一遍，用例双跑属无害冗余，分析 CI 时长时勿据此误判。

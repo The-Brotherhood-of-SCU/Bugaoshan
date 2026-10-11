@@ -26,6 +26,9 @@ class ReleasePrepareTest(unittest.TestCase):
             for name, content in packages.items():
                 (android_dir / name).write_bytes(content)
             (windows_dir / "Bugaoshan.exe").write_bytes(b"dummy content")
+            validation_dir = root / "macos-validation-unsigned"
+            validation_dir.mkdir()
+            (validation_dir / "Bugaoshan-unsigned.zip").write_bytes(b"not distributable")
 
             release_prepare.prepare_release_files("v2.2.0", root=root)
 
@@ -40,6 +43,7 @@ class ReleasePrepareTest(unittest.TestCase):
             
             windows_zip = root / "bugaoshan_2.2.0_windows_x64.zip"
             self.assertTrue(windows_zip.exists(), "Windows zip file was not created")
+            self.assertEqual(list(root.glob("bugaoshan_*_macos*")), [])
             
             with zipfile.ZipFile(windows_zip, 'r') as zf:
                 self.assertIn("Bugaoshan.exe", zf.namelist())

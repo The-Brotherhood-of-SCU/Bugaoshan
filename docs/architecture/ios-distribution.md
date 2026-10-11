@@ -15,7 +15,7 @@
 
 使用 macOS、满足 Apple 当前上传要求的 Xcode 和 CocoaPods。在本机安全配置开发者账户、签名证书及对应私钥、描述文件；Apple 开发者后台的两个 App ID 都需要启用同一个 App Group。App Store Connect 应用记录必须关联主应用 Bundle ID。凭据、私钥和本机签名配置不进入仓库。
 
-发布分支合入最新 `preview` 后，应保留其新增的提醒与实时活动注册；`ReminderChannel` 的 App Group 必须与主应用一致。数据库共享目录按平台区分：iOS 使用 `.ios` 后缀的 App Group，macOS 保留原有 App Group，避免影响 Mac 小组件。iOS 构建版本通过参数独立覆盖，不修改其他平台的版本号。
+发布分支合入最新 `preview` 后，应保留其新增的提醒与实时活动注册；`ReminderChannel` 的 App Group 必须与主应用一致。iOS 与共用商店条目的 macOS 版使用相同 Bundle ID 和 App Group 名称，但各设备的数据独立保存；旧 Mac 包的迁移边界见 [macOS 分发](macos-distribution.md)。iOS 构建版本通过参数独立覆盖，不修改其他平台的版本号。
 
 正式更新上传后，在 App Store Connect 中关联对应构建、更新版本说明并提交审核；沿用手动发布，审核通过后再发布。不要把上传成功当作审核通过。
 

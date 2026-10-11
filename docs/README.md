@@ -15,6 +15,7 @@
 | [Linux 分发架构](architecture/linux-distribution.md) | 本地构建、WPE 边界、Flatpak、AUR 和 Debian 状态 | 当前实现 |
 | [iOS 液态玻璃适配](architecture/ios-liquid-glass.md) | UIKit 系统标签栏、原生按钮/开关、Flutter 内容延伸与平台回退 | 当前实现 |
 | [iOS TestFlight 分发](architecture/ios-distribution.md) | 本地归档、签名、上传、测试分发和加密问卷 | 当前实现 |
+| [macOS App Store 分发](architecture/macos-distribution.md) | 共用 iOS 条目、原生玻璃控件、双架构构建、Sandbox 和签名 | 当前实现 |
 | [发布流水线](architecture/release-pipeline.md) | 两级分支流、预览/正式双通道、版本号模型与边界情况 | 当前实现 |
 
 ## 设计决策

@@ -100,9 +100,18 @@ jobs:
       build_name: ${{ needs.resolve-metadata.outputs.build_version }}
       build_number: ${{ needs.resolve-metadata.outputs.build_number }}
 
+  build-macos:
+    name: macOS Build Validation
+    needs: resolve-metadata
+    if: needs.resolve-metadata.outputs.should_release == 'true' || needs.resolve-metadata.outputs.build_only == 'true'
+    uses: ./.github/workflows/build-macos.yml
+    with:
+      build_name: ${{ needs.resolve-metadata.outputs.build_version }}
+      build_number: ${{ needs.resolve-metadata.outputs.build_number }}
+
   publish-release:
     name: Publish Release
-    needs: [resolve-metadata, build-android, build-windows]
+    needs: [resolve-metadata, build-android, build-windows, build-macos]
     if: needs.resolve-metadata.outputs.should_release == 'true'
     runs-on: ubuntu-latest
     permissions:

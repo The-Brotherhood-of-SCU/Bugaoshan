@@ -32,7 +32,7 @@ struct ScheduleConfig {
     let timeSlots: [TimeSlot]
 }
 
-let appGroupId = "group.io.github.thebrotherhoodofscu.bugaoshan"
+let appGroupId = "group.io.github.thebrotherhoodofscu.bugaoshan.ios"
 
 func widgetLocalizedString(_ key: String) -> String {
     NSLocalizedString(key, bundle: .main, comment: "")

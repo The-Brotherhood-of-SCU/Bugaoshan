@@ -6,7 +6,7 @@ import WidgetKit
 
 class MainFlutterWindow: NSWindow {
   private let channelName = "bugaoshan/update"
-  private let appGroupId = "group.io.github.thebrotherhoodofscu.bugaoshan"
+  private let appGroupId = "group.io.github.thebrotherhoodofscu.bugaoshan.ios"
   private let calendarEventIdentifierMapKey = "bugaoshan.calendarEventIdentifiers"
   private let eventStore = EKEventStore()
 
@@ -17,6 +17,9 @@ class MainFlutterWindow: NSWindow {
     self.setFrame(windowFrame, display: true)
 
     RegisterGeneratedPlugins(registry: flutterViewController)
+    LiquidGlassRegistration.register(
+      with: flutterViewController.registrar(forPlugin: "BugaoshanLiquidGlass")
+    )
 
     // Register the method channel
     registerBugaoshanMethodChannel(messenger: flutterViewController.engine.binaryMessenger)
@@ -240,15 +243,25 @@ class MainFlutterWindow: NSWindow {
   private func requestCalendarWriteAccess(
     completion: @escaping (Bool, Error?) -> Void
   ) {
-    // For macOS compatibility, always use requestAccess(to:completion:)
-    eventStore.requestAccess(to: .event, completion: completion)
+    // Calendar import checks existing events to avoid creating duplicates.
+    // macOS 14+ therefore needs full access, including the default calendar path.
+    if #available(macOS 14.0, *) {
+      eventStore.requestFullAccessToEvents(completion: completion)
+    } else {
+      eventStore.requestAccess(to: .event, completion: completion)
+    }
   }
 
   private func requestCalendarFullAccess(
     completion: @escaping (Bool, Error?) -> Void
   ) {
-    // For macOS compatibility, always use requestAccess(to:completion:)
-    eventStore.requestAccess(to: .event, completion: completion)
+    // Calendar import checks existing events to avoid creating duplicates.
+    // macOS 14+ therefore needs full access, including the default calendar path.
+    if #available(macOS 14.0, *) {
+      eventStore.requestFullAccessToEvents(completion: completion)
+    } else {
+      eventStore.requestAccess(to: .event, completion: completion)
+    }
   }
 
   private func saveEvents(
