@@ -7,6 +7,13 @@ import 'popup_context.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+/// 根 Navigator 的 BuildContext；Navigator 尚未挂载时为 null。
+///
+/// 与 [logicRootContext] 的区别是**不做强制非空断言**。
+/// 供「允许降级运行」的路径使用（如纯单测环境、App 启动早期）：
+/// 拿不到 context 时应退回到默认文案，而不是抛 TypeError 中断业务流程。
+BuildContext? get maybeLogicRootContext => navigatorKey.currentContext;
+
 BuildContext get logicRootContext => navigatorKey.currentContext!;
 const bool _showCloseButton = false;
 

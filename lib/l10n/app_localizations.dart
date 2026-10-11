@@ -835,6 +835,24 @@ abstract class AppLocalizations {
   /// **'New Version Available'**
   String get newVersionAvailable;
 
+  /// No description provided for @anotherVersionDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Another version is downloading...'**
+  String get anotherVersionDownloading;
+
+  /// Stable version label.
+  ///
+  /// In en, this message translates to:
+  /// **'Stable: {version}'**
+  String stableVersion(String version);
+
+  /// Preview version label.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview: {version}'**
+  String previewVersion(String version);
+
   /// No description provided for @noUpdateAvailable.
   ///
   /// In en, this message translates to:
