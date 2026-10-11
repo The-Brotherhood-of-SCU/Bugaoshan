@@ -234,34 +234,44 @@ The CCYL service is special: its token expires via an explicit business error co
 - **`ExitService`** — unified exit (windowManager.destroy on desktop, exit(0) on mobile).
 - **`WindowStateService`** — desktop window position/size persistence.
 
-### Auth Logging
+### App Logging
 
-All auth-layer modules (`ScuAuth`, `CookieClient`, `AuthCoordinator`, `ZhjwAuth` / `WfwAuth` / `PayAppAuth` / `FitnessAuth` via `SsoRelayAuth`, `CcylAuth`, `CcylOAuthService`, `ScuAuthProvider`) log key lifecycle events to a single in-memory ring buffer via `AuthLogger` (`lib/utils/auth_logger.dart`):
+All modules log through a single in-memory ring buffer via `AppLogger` (`lib/utils/app_logger.dart`). It is a **general-purpose** logger — auth-layer modules (`ScuAuth`, `CookieClient`, `AuthCoordinator`, `ZhjwAuth` / `WfwAuth` / `PayAppAuth` / `FitnessAuth` via `SsoRelayAuth`, `CcylAuth`, `CcylOAuthService`, `ScuAuthProvider`) are only the earliest adopters. Business modules log via the `AppLog` facade (see below); all entries share one buffer and are visible in the Dev page viewer.
 
 - Ring buffer caps at 1000 entries (oldest evicted).
-- Each entry has timestamp + `AuthLogLevel` (`debug` / `info` / `warn` / `error`) + `tag` (e.g. `ScuAuth`, `CookieClient`, `ZhjwAuth`) + redacted message.
-- `AuthLogRedactor.apply()` strips `"access_token":"…"`, `"password":"…"`, `Bearer <token>` and truncates `?code=` values before storage, so logs are safe to share via the Dev page "Save" button.
-- `tag` is a stable class/module identifier (for example `ScuAuth`, `CookieClient`, or `PAYAPP`) so the Viewer's dropdown groups events by source.
+- Each entry has timestamp + `LogLevel` (`debug` / `info` / `warn` / `error`) + `tag` (e.g. `ScuAuth`, `CookieClient`, `ReminderService`) + redacted message.
+- `LogRedactor.apply()` strips `"access_token":"…"`, `"password":"…"`, `Bearer <token>` and truncates `?code=` values before storage, so logs are safe to share via the Dev page "Save" button.
+- `LogRedactor` also covers student identifiers in three shapes: camelCase (`studentId=`), snake_case (`student_id=`, `student_number=`), and the Chinese label (`学号202612345678`). The Chinese pattern requires the value to start with an alphanumeric so prose like `学号相关的缓存 key` is **not** redacted — over-redaction destroys diagnostic value, not just privacy. Do not add loosely-typed keys such as `account` / `id` / `sid` for the same reason.
+- `LogRedactor` covers **both** JSON (`"password":"x"`) and non-JSON (`password=x`, `token: x`) credential forms. The non-JSON form is the common one in exception stacks (`StateError('token=...')`) and was a real leak path until PR #369's review surfaced it. Key names are deliberately narrow — **no `id` / `account` / `key`**, and **no `authorization` / `cookie`**: the latter two are handled by `_bearerHeader`, and listing them here would consume the `Authorization: ` prefix first, silently breaking Bearer redaction.
+- `tag` is a stable class/module identifier (for example `ScuAuth`, `CookieClient`, or `ServiceApiService`) so the Viewer's dropdown groups events by source. **Convention**: PascalCase matching the owning class name, declared as `static const String _tag` next to the class — never a bare string literal. The Viewer's dropdown sorts tags by entry count (descending) so the noisiest module is visible first, and shows that count inline.
 - `debug` lines are only echoed to console in `kDebugMode`; production builds stay silent.
-- `AuthLogger` is a `ChangeNotifier` — Dev page's `AuthLogTile` and `AuthLogViewerPage` use `ListenableBuilder` for live updates.
-- Optional file sink (`enableFileSink`) writes to `getApplicationDocumentsDirectory()/auth.log`; default off to avoid disk I/O for normal users. The Dev page "Save" button is the recommended path for capturing a snapshot.
+- `AppLogger` is a `ChangeNotifier` — Dev page's `LogTile` and `LogViewerPage` use `ListenableBuilder` for live updates.
+- **Persistence (on by default)**: `warn` / `error` entries are written to `<getLogBaseDir()>/Bugaoshan/logs/bugaoshan.log` when `AppConfigProvider.logPersistenceEnabled` is on, which is the **default**. Default-off would mean a crash is only diagnosable if the user enabled the switch beforehand — and the users who report crashes are exactly the ones who never go looking for a diagnostics toggle. The switch is exposed in both Settings → Software Settings and the Dev page (`LogPersistenceTile`); they share one `ValueNotifier`, so there is no second source of truth. `debug` / `info` stay in memory only — they record lifecycle milestones that are near-useless for user bug reports but would fill the file quickly.
+- **Write path is a single-writer queue**: `log()` only appends the formatted line to an in-memory queue (never touching the file), and one serial async consumer (`_drainQueue`) does openWrite / writeln / flush / rotate. This is deliberate: `log()` is synchronous and may be called from any business path, while file IO is async — coupling them directly produced a race where entries written between "rotation scheduled" and "sink closed" were neither written nor drained. Queue is bounded (`_maxWriteQueue = 2000`); overflow increments `droppedWriteLines` rather than growing without limit, since logging must not become the failure. `disableFileSink()` drains the queue before closing.
+- **Rotation**: multi-file, threshold-driven — `bugaoshan.2.log` deleted, `bugaoshan.1.log` → `bugaoshan.2.log`, `bugaoshan.log` → `bugaoshan.1.log`, then a fresh `bugaoshan.log` opens. Totals ≈ 6 MB (2 MB × 3). Rotation uses only rename/delete (no read-rewrite) so it never stalls on slow storage; the cost is a possibly-truncated log line at the boundary, which is acceptable because every line carries a full timestamp.
+- **Verifying persistence**: entries beyond the size cap are *evicted by design*, so "lines on disk == lines written" only holds when the write volume is below capacity. Test both: (1) volume well under cap → nothing may be missing; (2) volume far over cap → on-disk size must sit at the cap. A burst test lives in `test/app_logger_test.dart`; `LogStressTile` (Dev page, **debug builds only**) does the same on-device so filesystem timing can be checked with `adb`, since `flutter test` is not representative here.
+- `AppLogger` is the only writer; the Dev page "Save" button uses `exportToFile()` for a shareable snapshot alongside the auto-rotated files in the same directory. Exports are named `bugaoshan-export-<timestamp>.log`, deliberately **not** matching the rotated-file pattern: `deletePersistedFiles()` matches rotation files by regex (`^bugaoshan(\.\d+)?\.log$`), not by prefix, so turning the switch off does not delete a snapshot the user already exported to share.
+- Global error handlers are installed by `setupGlobalErrorHandlers()` (`lib/utils/app_error_reporter.dart`), called from `main()` right after `WidgetsFlutterBinding.ensureInitialized()`. It covers `FlutterError.onError` (framework errors, red screen in debug), `PlatformDispatcher.instance.onError` (unhandled async — returns `true` so the engine does not kill the process and logs survive), and `Isolate.current` error listener. `formatExceptionForLog()` truncates over-long stack traces to 2000 chars while preserving the head, since the exception type and message are the highest-value part.
+- Startup failure in `main()` logs via `AppLog.e('Startup', …)` — note the previous `debugPrint`-only handling was invisible in release builds.
+- `resolveLogDir()` / `kLogDir` / `getLogBaseDir()` live in `app_logger.dart`, not in `pages/campus/downloads/file_utils.dart` — the log path is used by both auto-persistence and the Dev page, so defining it in the pages layer would invert the dependency direction. The Dev page's folder button now shows both auto-rotated logs and manual exports.
+- **Do not open app-private directories with an Android content URI.** `launchUrl` on a `content://com.android.externalstorage.documents/document/...` URI sends `ACTION_VIEW`, which DocumentsUI does not accept for a *directory* document — it always fails with `PlatformException(ACTIVITY_NOT_FOUND)`. Scoped storage (Android 11+) additionally bars file managers from `Android/data/<package>/{cache,files}/`. Both the Dev log viewer and the notice attachment page now **copy the absolute path to the clipboard on Android** and only use `Uri.file(dir)` on desktop. Getting logs off the device is the "Save" (share) action, not the folder button.
 
-Dev page (`lib/pages/dev/auth_log/`) gains:
-- `AuthLogTile` — entry showing last log line + count, plus a "Save" button that exports to `bugaoshan-auth-{timestamp}.log` in the temp dir and opens the system share sheet.
-- `AuthLogEntryTile` — individual log entry display with level color coding.
-- `AuthLogFilterBar` — filter chips for log level and tag selection.
-- `AuthLogViewerPage` — full-screen viewer with level filter chips + tag dropdown + clear + copy + save actions.
+Dev page (`lib/pages/dev/logs/`) contains:
+- `LogTile` — entry showing last log line + count, plus a "Save" button that exports to `bugaoshan-log-{timestamp}.log` in the temp dir and opens the system share sheet.
+- `LogEntryTile` — individual log entry display with level color coding.
+- `LogFilterBar` — filter chips for log level and tag selection.
+- `LogViewerPage` — full-screen viewer with level filter chips + tag dropdown + clear + copy + save actions.
 
 ### 业务日志（AppLog）
 
-`AppLog`（`lib/utils/app_log.dart`）是业务层日志门面：与 `AuthLogger` **共享同一个**内存环形缓冲、脱敏规则与文件落盘，Dev 页日志查看器能看到全部来源的日志。延迟从 GetIt 取 `AuthLogger` 单例；测试环境未注册时退化为独立裸实例，保证日志调用永不抛异常。
+`AppLog`（`lib/utils/app_log.dart`）是业务层日志门面：与 `AppLogger` **共享同一个**内存环形缓冲、脱敏规则与文件落盘，Dev 页日志查看器能看到全部来源的日志。延迟从 GetIt 取 `AppLogger` 单例；测试环境未注册时退化为独立裸实例，保证日志调用永不抛异常。
 
-约定（与 Auth Logging 一并遵守）：
+约定（与 App Logging 一并遵守）：
 
 - 错误路径（catch 分支、失败状态）→ `AppLog.e` / `AppLog.w`，**不要**在错误分支写 `debugPrint`。
 - 生命周期 / 关键里程碑 → `AppLog.i`。
 - 本地调试输出 → `AppLog.d`（生产静默）；`debugPrint` 仅限 kDebugMode 下的 DI 装配期 / 启动期调试。
-- 消息中的 access_token / password 等敏感字段由 `AuthLogRedactor` 自动脱敏，无需手动处理。
+- 消息中的 access_token / password 等敏感字段由 `LogRedactor` 自动脱敏，无需手动处理。
 
 ### Notice Pages
 

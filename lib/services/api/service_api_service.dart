@@ -10,7 +10,7 @@ import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/service_auth.dart';
 import 'package:bugaoshan/utils/app_log.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 /// 网上办事大厅 API Service（第1层）
@@ -34,9 +34,11 @@ import 'package:bugaoshan/utils/constants.dart';
 /// 提交体结构（来自真实抓包）：
 /// `data={"app_id":"350","node_id":"","form_data":{"1419":{...}},"userview":1}&step=0&agent_uid=&starter_depart_id=395876`
 class ServiceApiService {
+  static const String _tag = 'ServiceApiService';
+
   final ServiceAuth _auth;
-  final AuthLogger _log;
-  ServiceApiService(this._auth) : _log = getIt<AuthLogger>();
+  final AppLogger _log;
+  ServiceApiService(this._auth) : _log = getIt<AppLogger>();
 
   static const String _base = 'https://service.scu.edu.cn';
 
@@ -121,10 +123,10 @@ class ServiceApiService {
     if (json['e']?.toString() == '10042') {
       throw const UnauthenticatedException('办事大厅会话已失效');
     }
-    // 业务错误记录到 AuthLogger，导出 auth log 可直接查看 e/m
+    // 业务错误记录到 AppLogger，导出 auth log 可直接查看 e/m
     if (json['e']?.toString() != '0') {
       final msg = '业务错误 e=${json['e']} m=${json['m']} status=$statusCode';
-      _log.w('SERVICE', msg);
+      _log.w(_tag, msg);
     }
     return json;
   }
@@ -312,17 +314,11 @@ class ServiceApiService {
       return _decodeResponse(resp.body, resp.statusCode);
     });
     if (json['e'] != 0 || json['d'] == null) {
-      _log.w(
-        'SERVICE',
-        'fetchDataSourceValue 失败 e=${json['e']} m=${json['m']}',
-      );
+      _log.w(_tag, 'fetchDataSourceValue 失败 e=${json['e']} m=${json['m']}');
       return null;
     }
     final d = json['d'];
-    _log.i(
-      'SERVICE',
-      'fetchDataSourceValue(${ref.component}) -> ${jsonEncode(d)}',
-    );
+    _log.i(_tag, 'fetchDataSourceValue(${ref.component}) -> ${jsonEncode(d)}');
     if (d is Map<String, dynamic>) return d;
     if (d is Map) return Map<String, dynamic>.from(d);
     return null;
@@ -341,14 +337,14 @@ class ServiceApiService {
       return _decodeResponse(resp.body, resp.statusCode);
     });
     if (json['e'] != 0 || json['d'] == null) {
-      _log.w('SERVICE', 'fetchProvinces 失败 e=${json['e']} m=${json['m']}');
+      _log.w(_tag, 'fetchProvinces 失败 e=${json['e']} m=${json['m']}');
       return const [];
     }
     final d = json['d'];
     if (d is List) return d;
     if (d is Map && d['list'] is List) return d['list'] as List;
     if (d is Map && d['children'] is List) return d['children'] as List;
-    _log.w('SERVICE', 'fetchProvinces 未知结构: $d');
+    _log.w(_tag, 'fetchProvinces 未知结构: $d');
     return const [];
   }
 
@@ -401,13 +397,13 @@ class ServiceApiService {
         }
         json = decoded as Map<String, dynamic>;
       } catch (e) {
-        _log.w('SERVICE', 'uploadAttachment 响应非 JSON: $body');
+        _log.w(_tag, 'uploadAttachment 响应非 JSON: $body');
         throw ServiceException('上传失败');
       }
       final uploadOk =
           json['url'] != null || json['state']?.toString() == 'SUCCESS';
       if (!uploadOk || json['id'] == null) {
-        _log.w('SERVICE', 'uploadAttachment 失败: $json');
+        _log.w(_tag, 'uploadAttachment 失败: $json');
         throw ServiceException('上传失败');
       }
       final id = json['id']?.toString() ?? '';
@@ -422,7 +418,7 @@ class ServiceApiService {
         url: '$_base$downloadPath?file_id=$id',
         id: id,
       );
-      _log.i('SERVICE', 'uploadAttachment -> id=$id name=$original');
+      _log.i(_tag, 'uploadAttachment -> id=$id name=$original');
       return attachment;
     });
   }

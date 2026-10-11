@@ -11,7 +11,7 @@ import 'package:bugaoshan/services/auth/auth_state.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/ocr_service.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/json_utils.dart';
 import 'package:bugaoshan/utils/sm2_crypto.dart';
@@ -71,7 +71,7 @@ class ScuAuth extends ChangeNotifier {
   };
 
   final SharedPreferences _prefs;
-  final AuthLogger _log;
+  final AppLogger _log;
   final CookieClient Function() _cookieClientFactory;
 
   String? _accessToken;
@@ -95,9 +95,9 @@ class ScuAuth extends ChangeNotifier {
 
   ScuAuth(
     this._prefs, {
-    AuthLogger? logger,
+    AppLogger? logger,
     CookieClient Function()? cookieClientFactory,
-  }) : _log = logger ?? getIt<AuthLogger>(),
+  }) : _log = logger ?? getIt<AppLogger>(),
        _cookieClientFactory = cookieClientFactory ?? (() => CookieClient());
 
   // ─── 状态 ───────────────────────────────────────────────────────

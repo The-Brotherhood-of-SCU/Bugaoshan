@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/secure_storage.dart';
 import 'package:bugaoshan/services/auth/auth_coordinator.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
@@ -22,14 +22,14 @@ class ScuAuthProvider extends ChangeNotifier {
   final ScuAuth _scuAuth;
   final CcylAuth _ccylAuth;
   final AuthCoordinator _authCoordinator;
-  final AuthLogger _log;
+  final AppLogger _log;
 
   ScuAuthProvider(
     this._scuAuth,
     this._ccylAuth,
     this._authCoordinator, {
-    AuthLogger? logger,
-  }) : _log = logger ?? getIt<AuthLogger>() {
+    AppLogger? logger,
+  }) : _log = logger ?? getIt<AppLogger>() {
     _scuAuth.addListener(_onAuthChanged);
   }
 

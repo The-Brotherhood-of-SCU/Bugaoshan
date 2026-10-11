@@ -215,10 +215,10 @@
   "environmentInfo": "Environment Info",
   "devPage": "Developer Page",
   "forceUpdate": "Update to Latest (Include Preview)",
-  "authLog": "Auth Log",
-  "viewAuthLog": "View Auth Log",
-  "authLogEmpty": "No auth log yet.",
-  "@authLogLastEntry": {
+  "appLogTitle": "App Log",
+  "viewAppLog": "View App Log",
+  "logEmpty": "No app log yet.",
+  "@logLastEntry": {
     "placeholders": {
       "time": {
         "type": "String"
@@ -231,7 +231,7 @@
       }
     }
   },
-  "authLogLastEntry": "{level} · {tag} · {time}",
+  "logLastEntry": "{level} · {tag} · {time}",
   "scheduleSetting": "Schedule Setting",
   "scheduleManagement": "Schedule Management",
   "globalSetting": "Global Setting",
@@ -2079,5 +2079,7 @@
   "privacyPolicy": "Privacy Policy",
   "legalInfo": "Legal Information",
   "supportAndHelp": "Support & Help",
-  "docLoadFailed": "Failed to load document"
+  "docLoadFailed": "Failed to load document",
+  "logPersistenceSwitch": "Keep diagnostic logs on device",
+  "logPersistenceSwitchHint": "Save warnings and errors to log files on this device (about 6 MB, rotating). On by default. When off, logs stay in memory only and are lost when the app closes."
 }

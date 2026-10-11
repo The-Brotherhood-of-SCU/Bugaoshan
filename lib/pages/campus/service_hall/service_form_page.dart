@@ -15,7 +15,7 @@ import 'package:bugaoshan/services/api/service_plugin_models.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/service_auth.dart';
 import 'package:bugaoshan/utils/app_log.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/service_region_picker.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
@@ -37,8 +37,10 @@ import 'package:bugaoshan/pages/campus/service_hall/service_form_controller.dart
 ///
 /// 提交流程：校验（[ServiceFormController.validate]）→ 逐 File 字段上传
 /// 附件 → 组装 `form_data`（[ServiceFormController.buildFormData]，记入
-/// AuthLogger 便于诊断）→ `POST /site/apps/launch`。
+/// AppLogger 便于诊断）→ `POST /site/apps/launch`。
 class ServiceFormPage extends StatefulWidget {
+  static const String _tag = 'ServiceFormPage';
+
   final ServiceAppInfo app;
 
   const ServiceFormPage({super.key, required this.app});
@@ -48,6 +50,9 @@ class ServiceFormPage extends StatefulWidget {
 }
 
 class _ServiceFormPageState extends State<ServiceFormPage> {
+  /// 与外层Widget 同名常量，避免每处日志重复写字符串字面量。
+  static const String _tag = ServiceFormPage._tag;
+
   ServiceFormSchema? _schema;
   ServiceFormController? _controller;
   bool _schemaLoading = false;
@@ -174,8 +179,8 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
     }
     final fallback = widget.app.fallbackSchema;
     if (fallback != null) {
-      getIt<AuthLogger>().w(
-        'SERVICE',
+      getIt<AppLogger>().w(
+        _tag,
         'appId=$appId 实时表单定义不可用，使用硬编码 fallback schema',
       );
       return fallback(startData);
@@ -302,8 +307,8 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
 
       final formData = controller.buildFormData();
       // 记录完整 payload，337/356/357 首次提交后可通过 Dev 页导出诊断
-      getIt<AuthLogger>().i(
-        'SERVICE',
+      getIt<AppLogger>().i(
+        _tag,
         'submit appId=$appId payload=${jsonEncode(formData)}',
       );
       try {

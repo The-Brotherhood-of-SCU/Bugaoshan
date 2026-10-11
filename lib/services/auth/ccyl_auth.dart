@@ -10,7 +10,7 @@ import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/ccyl/ccyl_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/subsystem_auth.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 
 const _keyCcylToken = 'ccyl_token';
 const _keyCcylUserId = 'ccyl_user_id';
@@ -29,7 +29,7 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
   static const String _tag = 'CcylAuth';
 
   final ScuAuth _scuAuth;
-  final AuthLogger _log;
+  final AppLogger _log;
   final CcylLoginCallback _login;
   final CcylOAuthCodeProvider? _oauthCodeProvider;
   String? _token;
@@ -41,10 +41,10 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
 
   CcylAuth(
     this._scuAuth, {
-    AuthLogger? logger,
+    AppLogger? logger,
     CcylLoginCallback? login,
     CcylOAuthCodeProvider? oauthCodeProvider,
-  }) : _log = logger ?? getIt<AuthLogger>(),
+  }) : _log = logger ?? getIt<AppLogger>(),
        _login = login ?? CcylService.login,
        _oauthCodeProvider = oauthCodeProvider;
 

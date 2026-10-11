@@ -12,7 +12,7 @@ import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/service_auth.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 
 /// 可切换 CookieClient 的假 ScuAuth（与 wfw_auth_test 同模式）。
 class _FakeScuAuth extends ScuAuth {
@@ -48,12 +48,12 @@ class _FakeServiceAuth extends ServiceAuth {
 
 void main() {
   late SharedPreferences prefs;
-  late AuthLogger logger;
+  late AppLogger logger;
 
   setUp(() async {
     await getIt.reset();
-    logger = AuthLogger();
-    getIt.registerSingleton<AuthLogger>(logger);
+    logger = AppLogger();
+    getIt.registerSingleton<AppLogger>(logger);
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
   });

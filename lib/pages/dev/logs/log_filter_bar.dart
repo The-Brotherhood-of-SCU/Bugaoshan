@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 
 /// 顶部筛选条：level 多选 chip + tag 下拉。
-class AuthLogFilterBar extends StatelessWidget {
-  final List<AuthLogEntry> entries;
+class LogFilterBar extends StatelessWidget {
+  /// 各 tag 的当前条数，已按条数降序（见 [AppLogger.tagCounts]）。
+  final List<MapEntry<String, int>> tagCounts;
   // null = 无筛选（全部 level 启用）；非空 = 仅显示这些 level。
-  final Set<AuthLogLevel>? levels;
+  final Set<LogLevel>? levels;
   final String? tag;
-  final void Function(AuthLogLevel level, bool selected) onLevelToggled;
+  final void Function(LogLevel level, bool selected) onLevelToggled;
   final ValueChanged<String?> onTagChanged;
 
-  const AuthLogFilterBar({
+  const LogFilterBar({
     super.key,
-    required this.entries,
+    required this.tagCounts,
     required this.levels,
     required this.tag,
     required this.onLevelToggled,
@@ -22,7 +23,6 @@ class AuthLogFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tags = <String>{for (final e in entries) e.tag}.toList()..sort();
     final selectedLevels = levels; // null = 全部
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
@@ -33,8 +33,8 @@ class AuthLogFilterBar extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  for (final l in AuthLogLevel.values)
-                    AuthLogLevelChip(
+                  for (final l in LogLevel.values)
+                    LogLevelChip(
                       label: l.name.toUpperCase(),
                       // null = 全部启用 ⇒ 全部勾上
                       selected: selectedLevels == null
@@ -48,18 +48,23 @@ class AuthLogFilterBar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
+          // 按条数降序而非字母序：排查时第一眼就能看出哪个模块在刷屏，
+          // 而不必在字母序列表里逐个辨认。
           DropdownButton<String?>(
             value: tag,
             focusColor: Colors.transparent,
-            hint: const Text('All tags'),
+            hint: const Text('全部 tag'),
             onChanged: onTagChanged,
             items: <DropdownMenuItem<String?>>[
               const DropdownMenuItem<String?>(
                 value: null,
-                child: Text('All tags'),
+                child: Text('全部 tag'),
               ),
-              for (final t in tags)
-                DropdownMenuItem<String?>(value: t, child: Text(t)),
+              for (final e in tagCounts)
+                DropdownMenuItem<String?>(
+                  value: e.key,
+                  child: Text('${e.key}  ${e.value}'),
+                ),
             ],
           ),
         ],
@@ -69,13 +74,13 @@ class AuthLogFilterBar extends StatelessWidget {
 }
 
 /// 单个 level 筛选 chip（复选语义，带 ✓ 标记）。
-class AuthLogLevelChip extends StatelessWidget {
+class LogLevelChip extends StatelessWidget {
   final String label;
   final bool selected;
   final ValueChanged<bool> onSelected;
-  final AuthLogLevel level;
+  final LogLevel level;
 
-  const AuthLogLevelChip({
+  const LogLevelChip({
     super.key,
     required this.label,
     required this.selected,
@@ -87,10 +92,10 @@ class AuthLogLevelChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final Color bg = switch (level) {
-      AuthLogLevel.debug => scheme.surfaceContainerHighest,
-      AuthLogLevel.info => scheme.primaryContainer,
-      AuthLogLevel.warn => scheme.tertiaryContainer,
-      AuthLogLevel.error => scheme.errorContainer,
+      LogLevel.debug => scheme.surfaceContainerHighest,
+      LogLevel.info => scheme.primaryContainer,
+      LogLevel.warn => scheme.tertiaryContainer,
+      LogLevel.error => scheme.errorContainer,
     };
     return Padding(
       padding: const EdgeInsets.only(right: 6),

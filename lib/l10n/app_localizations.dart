@@ -1009,29 +1009,29 @@ abstract class AppLocalizations {
   /// **'Update to Latest (Include Preview)'**
   String get forceUpdate;
 
-  /// No description provided for @authLog.
+  /// No description provided for @appLogTitle.
   ///
   /// In en, this message translates to:
-  /// **'Auth Log'**
-  String get authLog;
+  /// **'App Log'**
+  String get appLogTitle;
 
-  /// No description provided for @viewAuthLog.
+  /// No description provided for @viewAppLog.
   ///
   /// In en, this message translates to:
-  /// **'View Auth Log'**
-  String get viewAuthLog;
+  /// **'View App Log'**
+  String get viewAppLog;
 
-  /// No description provided for @authLogEmpty.
+  /// No description provided for @logEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No auth log yet.'**
-  String get authLogEmpty;
+  /// **'No app log yet.'**
+  String get logEmpty;
 
-  /// No description provided for @authLogLastEntry.
+  /// No description provided for @logLastEntry.
   ///
   /// In en, this message translates to:
   /// **'{level} · {tag} · {time}'**
-  String authLogLastEntry(String time, String level, String tag);
+  String logLastEntry(String time, String level, String tag);
 
   /// No description provided for @scheduleSetting.
   ///
@@ -7128,6 +7128,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to load document'**
   String get docLoadFailed;
+
+  /// No description provided for @logPersistenceSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep diagnostic logs on device'**
+  String get logPersistenceSwitch;
+
+  /// No description provided for @logPersistenceSwitchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Save warnings and errors to log files on this device (about 6 MB, rotating). On by default. When off, logs stay in memory only and are lost when the app closes.'**
+  String get logPersistenceSwitchHint;
 }
 
 class _AppLocalizationsDelegate

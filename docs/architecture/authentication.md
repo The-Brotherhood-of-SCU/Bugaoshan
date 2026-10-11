@@ -58,7 +58,7 @@ flowchart TB
         SA["ScuAuth<br/>token / principal / id.scu.edu.cn session / refresh"]
     end
 
-    INFRA["基础设施<br/>CookieClient / FlutterSecureStorage / SharedPreferences / AuthLogger"]
+    INFRA["基础设施<br/>CookieClient / FlutterSecureStorage / SharedPreferences / AppLogger"]
 
     UI --> P
     P --> API
@@ -490,16 +490,32 @@ L3 ScuAuth
 - 账号相关缓存必须绑定已确认的 principal，不能仅以“当前处于登录态”作为身份依据。
 - 退出登录必须使飞行中的认证和持久化任务失效。
 
-### 12.1 认证日志
+### 12.1 应用日志
 
-[`AuthLogger`](../../lib/utils/auth_logger.dart) 是 GetIt 注册的全局单例。认证模块使用类名作为 tag，把关键状态变化写入默认 1000 条的内存环形缓冲：
+[`AppLogger`](../../lib/utils/app_logger.dart) 是 GetIt 注册的全局单例，是**全应用通用**日志器（认证模块只是最早的一批使用者，并非唯一使用者；业务模块经 `AppLog` 门面写入同一条流）。各模块使用类名作为 tag，把关键状态变化写入默认 1000 条的内存环形缓冲：
 
-- 每条消息先经过 `AuthLogRedactor`，再进入内存、控制台或文件。
-- redactor 处理 token、密码、Bearer header、OAuth code 和用户标识。
+- 每条消息先经过 `LogRedactor`，再进入内存、控制台或文件。
+- redactor 处理 token、密码、Bearer header、OAuth code 和用户标识；
+  身份标识覆盖 camelCase、snake_case 与中文「学号」标签三种写法，
+  但**不**脱敏 `account` / `id` / `sid` 等语义模糊的键——过度脱敏会抹掉排障信息。
 - 仅 debug 构建同步输出控制台日志。
-- 文件 sink 默认关闭；开发者页面可查看、过滤、清空和导出脱敏日志。
+- **文件落盘为可选项，当前默认关闭**：开启后 warn / error 写入
+  `<getLogBaseDir()>/Bugaoshan/logs/`，按 2 MB × 3 份自动轮转；
+  debug / info 仅在内存。关闭时同时删除既有日志文件。
+  开发者页面可查看、过滤、清空和导出脱敏日志，自动落盘的文件与手动导出
+  位于同一目录，「打开文件夹」可一次看全。
+- **已知缺陷**：轮转在同步突发写入下会丢条目（`log()` 同步而 `_rotate()` 异步，
+  实测 400 条紧凑写入仅落盘 30 条），而崩溃现场正是日志最密集的时刻。
+  修法是改为单写入队列并经真机验证，故在此之前默认不开启。
+- 全局异常由 `lib/utils/app_error_reporter.dart` 的 `setupGlobalErrorHandlers()` 接管，
+  在 `main()` 中 binding 就绪后立即安装，覆盖 `FlutterError.onError`、
+  `PlatformDispatcher.instance.onError` 与 isolate 错误监听。
+  `PlatformDispatcher` 处理器返回 `true` 以免引擎直接杀进程——进程被杀则内存日志随之消失。
+  启动失败亦经 `AppLog.e('Startup', …)` 记录（此前仅 `debugPrint`，release 包不可见）。
 
-新增认证日志时仍应避免主动拼入敏感值。脱敏器是最后一道保护，不是记录凭据的许可。
+「清除所有数据」按钮会同时删除落盘日志文件，与隐私政策 / EULA 的说明一致。
+
+新增日志时仍应避免主动拼入敏感值。脱敏器是最后一道保护，不是记录凭据的许可。
 
 ## 13. 依赖注入与生命周期
 
@@ -581,7 +597,8 @@ lib/
 │   └── ccyl/
 │       └── ccyl_service.dart        # CCYL 底层 HTTP 与业务错误分类
 ├── utils/
-│   ├── auth_logger.dart             # 脱敏认证日志
+│   ├── app_logger.dart              # 脱敏应用日志（认证 + 业务共用）
+│   ├── app_error_reporter.dart      # 全局异常接管（框架/引擎/isolate）
 │   └── secure_storage.dart
 └── widgets/common/
     └── session_expired_listener.dart

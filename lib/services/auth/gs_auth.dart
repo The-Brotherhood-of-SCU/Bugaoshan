@@ -4,7 +4,7 @@ import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/subsystem_auth.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:http/http.dart' as http;
 
@@ -21,14 +21,14 @@ class GsAuth extends ChangeNotifier implements SubsystemAuth {
   static const String _tag = 'GsAuth';
 
   final ScuAuth _scuAuth;
-  final AuthLogger _log;
+  final AppLogger _log;
   CookieClient? _cachedClient;
   CookieClient? _lastScuClient;
   Future<CookieClient>? _loginFuture;
   CookieClient? _webClient;
 
-  GsAuth(this._scuAuth, {AuthLogger? logger})
-    : _log = logger ?? getIt<AuthLogger>() {
+  GsAuth(this._scuAuth, {AppLogger? logger})
+    : _log = logger ?? getIt<AppLogger>() {
     _scuAuth.addListener(notifyListeners);
   }
 

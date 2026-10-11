@@ -8,14 +8,14 @@ import 'package:bugaoshan/services/auth/auth_state.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/zhhq_auth.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   setUp(() async {
     await getIt.reset();
-    getIt.registerSingleton<AuthLogger>(AuthLogger());
+    getIt.registerSingleton<AppLogger>(AppLogger());
   });
 
   tearDown(() async {

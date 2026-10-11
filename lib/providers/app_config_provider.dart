@@ -52,6 +52,9 @@ const String _keyReminderLeadMinutes = 'reminder_lead_minutes';
 const String _keyReminderQuietStart = 'reminder_quiet_start';
 const String _keyReminderQuietEnd = 'reminder_quiet_end';
 const String _keyReminderWindowDays = 'reminder_window_days';
+
+/// 是否把 warn/error 级日志落盘到本机文件。
+const String _keyLogPersistenceEnabled = 'log_persistence_enabled';
 const Curve appCurve = Curves.easeOutQuart;
 
 enum ThemeColorMode { system, backgroundImage, custom }
@@ -136,6 +139,21 @@ class AppConfigProvider {
   // showTeacherName），这里只保存提醒自身的开关与时机。默认全部关闭：
   // 请求通知权限属于高打扰动作，不在用户未表达意愿时替他决定。
   final ValueNotifier<bool> reminderEnabled = ValueNotifier<bool>(false);
+
+  /// 是否把 warn/error 级日志落盘。**默认开启**。
+  ///
+  /// 落盘是崩溃现场唯一的后手——内存缓冲在进程退出后必然丢失，而默认关闭
+  /// 的话，崩溃时用户没提前开开关 → 问题依旧无解；需要报障的用户恰恰不会
+  /// 去设置里翻诊断开关。留后路的开关等于没解决。
+  ///
+  /// 历史上曾默认关闭：`AppLogger` 的轮转在**同步突发写入**下会丢日志
+  /// （`log()` 同步而 `_rotate()` 异步，实测 400 条仅落盘 30 行）。
+  /// 已改为**单写入队列**（同步写只入队、由串行异步消费者串行落盘与轮转），
+  /// 并在真机压测验证：200 条 warn 全部落盘，序号 0–199 无缺失。
+  ///
+  /// 若发现该开关被默认关闭，先读这段历史再改回去——会丢日志的落盘比不落盘
+  /// 更糟，它给出「已经记录了」的假象。
+  final ValueNotifier<bool> logPersistenceEnabled = ValueNotifier<bool>(true);
 
   /// 提前量（分钟），可多选。存为升序去重的列表。
   final ValueNotifier<List<int>> reminderLeadMinutes = ValueNotifier<List<int>>(
@@ -252,6 +270,8 @@ class AppConfigProvider {
 
     reminderEnabled.value =
         _sharedPreferences.getBool(_keyReminderEnabled) ?? false;
+    logPersistenceEnabled.value =
+        _sharedPreferences.getBool(_keyLogPersistenceEnabled) ?? true;
     reminderLeadMinutes.value =
         _decodeLeadMinutes(
           _sharedPreferences.getStringList(_keyReminderLeadMinutes),
@@ -442,6 +462,12 @@ class AppConfigProvider {
     });
     reminderEnabled.addListener(() {
       _sharedPreferences.setBool(_keyReminderEnabled, reminderEnabled.value);
+    });
+    logPersistenceEnabled.addListener(() {
+      _sharedPreferences.setBool(
+        _keyLogPersistenceEnabled,
+        logPersistenceEnabled.value,
+      );
     });
     reminderLeadMinutes.addListener(() {
       _sharedPreferences.setStringList(

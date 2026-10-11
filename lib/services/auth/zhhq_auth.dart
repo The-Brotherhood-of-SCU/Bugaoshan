@@ -4,7 +4,7 @@ import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/subsystem_auth.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/secure_storage.dart';
 import 'package:bugaoshan/utils/storage_keys.dart';
@@ -40,15 +40,15 @@ class ZhhqAuth extends ChangeNotifier implements SubsystemAuth {
       'https://zhhq.scu.edu.cn/api/auth/login/auto';
 
   final ScuAuth _scuAuth;
-  final AuthLogger _log;
+  final AppLogger _log;
 
   bool _ready = false;
   bool _authFailed = false;
   String? _tokenKey;
   Future<void>? _warmUpFuture;
 
-  ZhhqAuth(this._scuAuth, {AuthLogger? logger})
-    : _log = logger ?? getIt<AuthLogger>() {
+  ZhhqAuth(this._scuAuth, {AppLogger? logger})
+    : _log = logger ?? getIt<AppLogger>() {
     _scuAuth.addListener(_onScuAuthChanged);
   }
 

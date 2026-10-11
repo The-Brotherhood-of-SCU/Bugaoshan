@@ -9,7 +9,7 @@ import 'package:bugaoshan/services/auth/auth_state.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/zhhq_auth.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 
 enum RepairLoadState { idle, loading, loaded, error }
@@ -21,8 +21,8 @@ enum RepairLoadState { idle, loading, loaded, error }
 class ZhhqRepairProvider extends ChangeNotifier {
   static const String _tag = 'ZhhqRepairProvider';
 
-  ZhhqRepairProvider(this._api, this._auth, this._scuAuth, {AuthLogger? logger})
-    : _log = logger ?? getIt<AuthLogger>() {
+  ZhhqRepairProvider(this._api, this._auth, this._scuAuth, {AppLogger? logger})
+    : _log = logger ?? getIt<AppLogger>() {
     _lastAuthReady = _auth.isReady;
     _lastScuAuthState = _scuAuth.state;
     _auth.addListener(_onAuthChanged);
@@ -40,7 +40,7 @@ class ZhhqRepairProvider extends ChangeNotifier {
   final ZhhqApiService _api;
   final ZhhqAuth _auth;
   final ScuAuth _scuAuth;
-  final AuthLogger _log;
+  final AppLogger _log;
 
   List<RepairAddress> _addresses = const [];
   List<RepairTicket> _tickets = const [];

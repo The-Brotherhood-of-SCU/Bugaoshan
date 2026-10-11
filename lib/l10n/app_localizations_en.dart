@@ -505,16 +505,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get forceUpdate => 'Update to Latest (Include Preview)';
 
   @override
-  String get authLog => 'Auth Log';
+  String get appLogTitle => 'App Log';
 
   @override
-  String get viewAuthLog => 'View Auth Log';
+  String get viewAppLog => 'View App Log';
 
   @override
-  String get authLogEmpty => 'No auth log yet.';
+  String get logEmpty => 'No app log yet.';
 
   @override
-  String authLogLastEntry(String time, String level, String tag) {
+  String logLastEntry(String time, String level, String tag) {
     return '$level · $tag · $time';
   }
 
@@ -3843,4 +3843,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get docLoadFailed => 'Failed to load document';
+
+  @override
+  String get logPersistenceSwitch => 'Keep diagnostic logs on device';
+
+  @override
+  String get logPersistenceSwitchHint =>
+      'Save warnings and errors to log files on this device (about 6 MB, rotating). On by default. When off, logs stay in memory only and are lost when the app closes.';
 }

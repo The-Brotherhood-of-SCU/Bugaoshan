@@ -7,7 +7,7 @@ import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/subsystem_auth.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 /// 微服务认证（第2层）
@@ -21,13 +21,13 @@ class WfwAuth extends ChangeNotifier implements SubsystemAuth {
   static const String _tag = 'WfwAuth';
 
   final ScuAuth _scuAuth;
-  final AuthLogger _log;
+  final AppLogger _log;
   bool _ready = false;
   CookieClient? _lastScuClient;
   Future<void>? _warmUpFuture;
 
-  WfwAuth(this._scuAuth, {AuthLogger? logger})
-    : _log = logger ?? getIt<AuthLogger>() {
+  WfwAuth(this._scuAuth, {AppLogger? logger})
+    : _log = logger ?? getIt<AppLogger>() {
     _scuAuth.addListener(_onScuAuthChanged);
   }
 

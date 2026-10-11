@@ -485,16 +485,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get forceUpdate => '更新到最新版本（含预览版）';
 
   @override
-  String get authLog => '认证日志';
+  String get appLogTitle => '运行日志';
 
   @override
-  String get viewAuthLog => '查看认证日志';
+  String get viewAppLog => '查看运行日志';
 
   @override
-  String get authLogEmpty => '暂无认证日志。';
+  String get logEmpty => '暂无运行日志。';
 
   @override
-  String authLogLastEntry(String time, String level, String tag) {
+  String logLastEntry(String time, String level, String tag) {
     return '$level · $tag · $time';
   }
 
@@ -3713,6 +3713,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get docLoadFailed => '文档加载失败';
+
+  @override
+  String get logPersistenceSwitch => '在本机保留诊断日志';
+
+  @override
+  String get logPersistenceSwitchHint =>
+      '将警告与错误保存为本机日志文件（约 6 MB，自动轮转）。默认开启；关闭后日志仅存于内存，应用退出即丢失。';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

@@ -6,6 +6,7 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/download_manager.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
 import 'package:url_launcher/url_launcher.dart';
@@ -123,6 +124,12 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
     return Directory('${base.path}/${_dirPath(dirName)}');
   }
 
+  /// 打开附件所在目录。
+  ///
+  /// Android 上不能靠 content URI 调起文件管理器：系统 DocumentsUI 不接受
+  /// VIEW 一个目录 document URI（抛 `PlatformException(ACTIVITY_NOT_FOUND)`），
+  /// 且 scoped storage 下也进不去 `Android/data/<package>/files/`。
+  /// 改为复制绝对路径，用户可自行到文件管理器/ADB 取。
   Future<void> _openFolder() async {
     final l10n = AppLocalizations.of(context)!;
     final dir = await _attachmentsDir(_currentDir);
@@ -130,17 +137,17 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
       await dir.create(recursive: true);
     }
 
+    if (Platform.isAndroid) {
+      await Clipboard.setData(ClipboardData(text: dir.path));
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(dir.path)));
+      return;
+    }
+
     try {
-      if (Platform.isAndroid) {
-        final encodedPath = _dirPath(_currentDir).replaceAll('/', '%2F');
-        await launchUrl(
-          Uri.parse(
-            'content://com.android.externalstorage.documents/document/primary%3AAndroid%2Fdata%2Fio.github.the_brotherhood_of_scu.bugaoshan%2Ffiles%2F$encodedPath',
-          ),
-        );
-      } else {
-        await launchUrl(Uri.file(dir.path));
-      }
+      await launchUrl(Uri.file(dir.path));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
