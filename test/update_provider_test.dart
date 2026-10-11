@@ -69,6 +69,11 @@ class _StubNotification extends DownloadNotificationService {
 
   @override
   Future<void> showError({required String content, String? title}) async {}
+
+  /// 下载成功/取消后的收尾通知。基类的实现会走 MethodChannel，
+  /// 在单测里抛 MissingPluginException——这是下载路径的必经步骤，必须覆盖。
+  @override
+  Future<void> cancel() async {}
 }
 
 /// AppInfo 替身：下载流程只读取 currentVersion，其余成员按需抛错。
@@ -112,11 +117,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
     service = _ControllableUpdateService(prefs);
-    provider = UpdateProvider(
-      service,
-      _StubAppInfo(),
-      _StubNotification(),
-    );
+    provider = UpdateProvider(service, _StubAppInfo(), _StubNotification());
   });
 
   tearDown(() {
@@ -124,7 +125,7 @@ void main() {
   });
 
   test('download writes downloadingVersion for the in-flight version, '
-    'then clears it on success', () async {
+      'then clears it on success', () async {
     final download = provider.downloadAndInstall(
       version: 'v2.5.3',
       downloadUrl: 'https://example.com/bugaoshan.apk',
@@ -143,7 +144,7 @@ void main() {
   });
 
   test('re-entrant download call reuses in-flight future and does not '
-    'overwrite downloadingVersion', () async {
+      'overwrite downloadingVersion', () async {
     final download = provider.downloadAndInstall(
       version: 'v2.5.3',
       downloadUrl: 'https://example.com/bugaoshan.apk',
@@ -184,11 +185,7 @@ void main() {
   });
 
   test('dispose releases downloadingVersion notifier', () {
-    final other = UpdateProvider(
-      service,
-      _StubAppInfo(),
-      _StubNotification(),
-    );
+    final other = UpdateProvider(service, _StubAppInfo(), _StubNotification());
     expect(() => other.dispose(), returnsNormally);
   });
 }
