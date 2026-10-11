@@ -44,6 +44,12 @@ class UpdateProvider {
   /// 下载安装中。可被 UI 用于禁用按钮等。
   final ValueNotifier<bool> isDownloading = ValueNotifier(false);
 
+  /// 当前正在下载的版本号（null 表示当前无下载任务）。
+  ///
+  /// 用于多入口 UI（开发者页的正式版/预览版卡片等）区分「正在下载的是哪个版本」，
+  /// 避免所有入口共用 [isDownloading] 导致非当前下载的入口也展示同一进度。
+  final ValueNotifier<String?> downloadingVersion = ValueNotifier(null);
+
   /// 下载进度状态(ChangeNotifier)。UI 通过 ListenableBuilder 监听。
   final UpdateProgressState progressState = UpdateProgressState();
 
@@ -149,6 +155,7 @@ class UpdateProvider {
     String? checksumSha256,
   }) async {
     isDownloading.value = true;
+    downloadingVersion.value = version;
     progressState.reset();
     final cancelToken = CancelToken();
     _activeCancelToken = cancelToken;
@@ -161,7 +168,12 @@ class UpdateProvider {
     // 通过 navigatorKey 拿到根 context,用于取 ARB 本地化文案。
     // Provider 是 DI 单例,不持有 BuildContext,这里在调用时取最新值。
     // 必须在任何 await 之前取,避免触发 use_build_context_synchronously。
-    final l10n = AppLocalizations.of(logicRootContext);
+    //
+    // 用可空版本:Navigator 尚未挂载时(纯单测环境、App 启动早期)退回到
+    // 下方各处的默认文案,而非抛 TypeError 中断整个下载流程。
+    final l10n = maybeLogicRootContext == null
+        ? null
+        : AppLocalizations.of(maybeLogicRootContext!);
 
     // 请求通知权限(失败不阻断下载,仅不显示通知)
     await _notification.requestPermission();
@@ -225,6 +237,7 @@ class UpdateProvider {
     } finally {
       await cancelSub.cancel();
       isDownloading.value = false;
+      downloadingVersion.value = null;
       _activeCancelToken = null;
       _downloadInFlight = null;
     }
@@ -241,6 +254,7 @@ class UpdateProvider {
     stableResult.dispose();
     previewResult.dispose();
     isDownloading.dispose();
+    downloadingVersion.dispose();
     progressState.dispose();
     _notification.dispose();
   }

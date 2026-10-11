@@ -10,6 +10,7 @@ import io.github.the_brotherhood_of_scu.bugaoshan.channels.DynamicIconHandler
 import io.github.the_brotherhood_of_scu.bugaoshan.channels.IcsImportHandler
 import io.github.the_brotherhood_of_scu.bugaoshan.channels.NotificationPermissionHandler
 import io.github.the_brotherhood_of_scu.bugaoshan.channels.WidgetPinHandler
+import io.github.the_brotherhood_of_scu.bugaoshan.liveactivity.LiveActivityChannel
 import io.github.the_brotherhood_of_scu.bugaoshan.reminder.ReminderChannel
 import io.github.the_brotherhood_of_scu.bugaoshan.update.DownloadNotificationService
 import io.github.the_brotherhood_of_scu.bugaoshan.update.DownloadNotificationServiceHolder
@@ -35,6 +36,7 @@ class MainActivity : FlutterActivity() {
     private lateinit var widgetPin: WidgetPinHandler
     private lateinit var reminderChannel: ReminderChannel
     private var downloadNotification: DownloadNotificationService? = null
+    private var liveActivityChannel: LiveActivityChannel? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -63,6 +65,11 @@ class MainActivity : FlutterActivity() {
         // Local reminder channel
         reminderChannel = ReminderChannel(this)
         reminderChannel.register(flutterEngine.dartExecutor.binaryMessenger)
+
+        // Live Activity / Live Updates channel
+        val liveActivity = LiveActivityChannel(this)
+        liveActivity.register(flutterEngine.dartExecutor.binaryMessenger)
+        liveActivityChannel = liveActivity
     }
 
     override fun onDestroy() {
@@ -71,6 +78,8 @@ class MainActivity : FlutterActivity() {
         // 权限弹窗未回调时 release()，切断 pendingAuthResult 对本 Activity 的引用，
         // 否则 Dart 侧 requestAuthorization 的 Future 会一直悬着。
         if (::reminderChannel.isInitialized) reminderChannel.release()
+        liveActivityChannel?.release()
+        liveActivityChannel = null
         downloadNotification?.cancel()
         downloadNotification = null
         DownloadNotificationServiceHolder.service = null
