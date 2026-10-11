@@ -1,4 +1,5 @@
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/services/dynamic_icon_service.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
@@ -34,7 +35,13 @@ class _SetAppIconPageState extends State<SetAppIconPage> {
         _currentIcon = current;
         _isLoading = false;
       });
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'SetAppIconPage',
+        '_loadData 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       if (!mounted) return;
       setState(() => _isLoading = false);
     }
@@ -77,7 +84,13 @@ class _SetAppIconPageState extends State<SetAppIconPage> {
           ),
         );
       }
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'SetAppIconPage',
+        '_confirmAndSwitch 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (mounted) {
         final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -169,18 +182,21 @@ class _IconOption extends StatelessWidget {
         width: size,
         height: size,
         fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(AppShapes.large),
-          ),
-          child: Icon(
-            Icons.broken_image,
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
+        errorBuilder: (context, error, stackTrace) {
+          AppLog.e('AppIcon', '图标图片加载失败', error: error, stackTrace: stackTrace);
+          return Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(AppShapes.large),
+            ),
+            child: Icon(
+              Icons.broken_image,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          );
+        },
       ),
     );
   }

@@ -108,10 +108,12 @@ class AcademicCalendarService {
     if (cached != null && cached.isNotEmpty) {
       try {
         return _parseCalendarJson(cached);
-      } catch (e) {
-        AppLog.w(
+      } catch (e, logStackTrace) {
+        AppLog.e(
           'AcademicCalendarService',
-          'Failed to parse cached calendar: $e',
+          '_loadLocalCalendar 失败',
+          error: e,
+          stackTrace: logStackTrace,
         );
       }
     }
@@ -121,8 +123,14 @@ class AcademicCalendarService {
         'assets/academic_calendar.json',
       );
       return _parseCalendarJson(assetContent);
-    } catch (e) {
-      AppLog.w('AcademicCalendarService', 'Failed to load bundled asset: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'AcademicCalendarService',
+        '_loadLocalCalendar 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       return null;
     }
   }
@@ -147,10 +155,12 @@ class AcademicCalendarService {
           return calendar;
         }
       }
-    } catch (e) {
-      AppLog.w(
+    } catch (e, logStackTrace) {
+      AppLog.e(
         'AcademicCalendarService',
-        'Failed to fetch remote calendar from $url: $e',
+        '_tryFetch 失败',
+        error: e,
+        stackTrace: logStackTrace,
       );
     }
     return null;
@@ -199,11 +209,14 @@ class AcademicCalendarService {
         }
       }
       return null;
-    } catch (e) {
-      AppLog.w(
+    } catch (e, logStackTrace) {
+      AppLog.e(
         'AcademicCalendarService',
-        'Failed to find matching semester: $e',
+        'findTotalWeeksFromCalendar 失败',
+        error: e,
+        stackTrace: logStackTrace,
       );
+
       return null;
     }
   }
@@ -231,11 +244,14 @@ class AcademicCalendarService {
         }
       }
       return null;
-    } catch (e) {
-      AppLog.w(
+    } catch (e, logStackTrace) {
+      AppLog.e(
         'AcademicCalendarService',
-        'Failed to find matching semester: $e',
+        'findMatchingSemester 失败',
+        error: e,
+        stackTrace: logStackTrace,
       );
+
       return null;
     }
   }

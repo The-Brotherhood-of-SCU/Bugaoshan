@@ -485,13 +485,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get forceUpdate => '更新到最新版本（含预览版）';
 
   @override
-  String get authLog => '认证日志';
+  String get authLog => '运行日志';
 
   @override
-  String get viewAuthLog => '查看认证日志';
+  String get viewAuthLog => '查看运行日志';
 
   @override
-  String get authLogEmpty => '暂无认证日志。';
+  String get authLogEmpty => '暂无运行日志。';
 
   @override
   String authLogLastEntry(String time, String level, String tag) {

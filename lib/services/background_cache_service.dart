@@ -23,10 +23,24 @@ class BackgroundCacheService {
       _bgImageStream = provider.resolve(ImageConfiguration.empty);
       _bgImageListener = ImageStreamListener(
         (_, _) => _cleanup(),
-        onError: (_, _) => _cleanup(),
+        onError: (error, stackTrace) {
+          AppLog.e(
+            'BackgroundCacheService',
+            '背景图片预加载失败',
+            error: error,
+            stackTrace: stackTrace,
+          );
+          _cleanup();
+        },
       );
       _bgImageStream?.addListener(_bgImageListener!);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'BackgroundCacheService',
+        'precache 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // ignore precache/resolve errors
     }
   }
@@ -34,8 +48,13 @@ class BackgroundCacheService {
   void _cleanup() {
     try {
       _bgImageStream?.removeListener(_bgImageListener!);
-    } catch (e) {
-      AppLog.w('BackgroundCacheService', 'Cleanup error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'BackgroundCacheService',
+        '_cleanup 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
     }
     _bgImageStream = null;
     _bgImageListener = null;

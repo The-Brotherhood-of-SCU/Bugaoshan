@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -120,7 +121,13 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
       });
 
       await _loadDetail(entries.first);
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'AcademicCalendarPage',
+        '_loadList 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (mounted) {
         setState(() {
           _loading = false;
@@ -167,7 +174,13 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
         _imageUrls = urls;
         _loading = false;
       });
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'AcademicCalendarPage',
+        '_loadDetail 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (!_isCurrentDetailRequest(requestGeneration, entry)) return;
       setState(() {
         _loading = false;
@@ -204,7 +217,13 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
           _interactiveLoading = false;
         });
       }
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'AcademicCalendarPage',
+        '_loadInteractiveData 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (mounted) {
         setState(() {
           _interactiveError = e.toString();

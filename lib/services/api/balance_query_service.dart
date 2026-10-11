@@ -1,3 +1,4 @@
+import 'package:bugaoshan/utils/app_log.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
@@ -145,7 +146,13 @@ class BalanceQueryService {
     try {
       final requestUrl = response.request?.url ?? Uri.parse(_base);
       return _isKnownAuthenticationTarget(requestUrl.resolve(location));
-    } on FormatException {
+    } on FormatException catch (error, stackTrace) {
+      AppLog.e(
+        'BalanceQuery',
+        '解析缴费平台重定向地址失败',
+        error: error,
+        stackTrace: stackTrace,
+      );
       return false;
     }
   }

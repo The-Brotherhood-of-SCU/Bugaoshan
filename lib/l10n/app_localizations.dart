@@ -1012,19 +1012,19 @@ abstract class AppLocalizations {
   /// No description provided for @authLog.
   ///
   /// In en, this message translates to:
-  /// **'Auth Log'**
+  /// **'Runtime Log'**
   String get authLog;
 
   /// No description provided for @viewAuthLog.
   ///
   /// In en, this message translates to:
-  /// **'View Auth Log'**
+  /// **'View Runtime Log'**
   String get viewAuthLog;
 
   /// No description provided for @authLogEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No auth log yet.'**
+  /// **'No runtime log yet.'**
   String get authLogEmpty;
 
   /// No description provided for @authLogLastEntry.

@@ -194,9 +194,9 @@
   "environmentInfo": "环境信息",
   "devPage": "开发者页面",
   "forceUpdate": "更新到最新版本（含预览版）",
-  "authLog": "认证日志",
-  "viewAuthLog": "查看认证日志",
-  "authLogEmpty": "暂无认证日志。",
+  "authLog": "运行日志",
+  "viewAuthLog": "查看运行日志",
+  "authLogEmpty": "暂无运行日志。",
   "@authLogLastEntry": {
     "placeholders": {
       "time": {

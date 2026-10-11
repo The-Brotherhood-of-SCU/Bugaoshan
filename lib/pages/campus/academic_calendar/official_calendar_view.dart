@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/widgets/common/image_viewer.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
@@ -118,6 +119,12 @@ class OfficialCalendarView extends StatelessWidget {
                       );
                     },
                     errorBuilder: (context, error, stackTrace) {
+                      AppLog.e(
+                        'OfficialCalendar',
+                        '校历图片加载失败',
+                        error: error,
+                        stackTrace: stackTrace,
+                      );
                       return Container(
                         height: 200,
                         alignment: Alignment.center,

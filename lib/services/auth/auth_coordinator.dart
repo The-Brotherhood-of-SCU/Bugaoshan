@@ -102,8 +102,14 @@ class AuthCoordinator {
           await auth.ensureAuthenticated();
           _log.i(_tag, 'ensure: ok module=$moduleId');
           return true;
-        } catch (e) {
-          _log.e(_tag, 'ensure: $moduleId auth failed: $e');
+        } catch (e, logStackTrace) {
+          _log.e(
+            'AuthCoordinator',
+            'ensure 失败',
+            error: e,
+            stackTrace: logStackTrace,
+          );
+
           return false;
         }
       }();

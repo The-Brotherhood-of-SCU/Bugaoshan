@@ -6,7 +6,7 @@ library;
 
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 
 /// 常用地址（`oneNetPublish/getCommonAddress` 返回）。
 class RepairAddress {
@@ -271,12 +271,10 @@ class RepairTicket {
     }
     // 超过上限仍是字符串：视为不可解析。理论不该发生（后端最多 2 层），
     // 留 trace 日志便于以后排查异常工单。
-    if (kDebugMode) {
-      debugPrint(
-        '[RepairTicket] content 超过 5 层转义上限，无法解析：'
-        '${current.toString().length} 字符',
-      );
-    }
+    AppLog.e(
+      'RepairTicket',
+      '报修内容超过 5 层转义上限，无法解析：${current.toString().length} 字符',
+    );
     return const {};
   }
 
@@ -289,12 +287,31 @@ class RepairTicket {
   static dynamic _tryJsonDecode(String input) {
     try {
       return jsonDecode(input);
-    } catch (_) {
+    } catch (error, stackTrace) {
       final repaired = _escapeRawControlChars(input);
-      if (repaired == null) return null;
+      if (repaired == null) {
+        // 纯文本描述是合法兼容格式；只有结构化内容解析失败才报错。
+        if (input.startsWith('{') ||
+            input.startsWith('[') ||
+            input.startsWith('"')) {
+          AppLog.e(
+            'RepairTicket',
+            '报修内容解析失败',
+            error: error,
+            stackTrace: stackTrace,
+          );
+        }
+        return null;
+      }
       try {
         return jsonDecode(repaired);
-      } catch (_) {
+      } catch (error, stackTrace) {
+        AppLog.e(
+          'RepairTicket',
+          '修复报修内容后仍无法解析',
+          error: error,
+          stackTrace: stackTrace,
+        );
         return null;
       }
     }

@@ -77,9 +77,14 @@ class _BalanceListState extends State<BalanceList> {
     for (final type in [kBalanceTypeElectric, kBalanceTypeAc]) {
       try {
         await widget.provider.refreshBalance(type);
-      } catch (e) {
+      } catch (e, logStackTrace) {
+        AppLog.e(
+          'BalanceList',
+          '_refreshAll 失败',
+          error: e,
+          stackTrace: logStackTrace,
+        );
         failed = true;
-        AppLog.e('BalanceList', 'Refresh error: $e');
       }
     }
     if (!failed || !context.mounted) return;

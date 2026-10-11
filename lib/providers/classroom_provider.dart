@@ -60,13 +60,25 @@ class ClassroomProvider extends ChangeNotifier {
       _campuses = result.campuses;
       _buildings = result.buildings;
       _indexState = ClassroomLoadState.loaded;
-    } on UnauthenticatedException catch (e) {
+    } on UnauthenticatedException catch (e, logStackTrace) {
+      AppLog.e(
+        'ClassroomProvider',
+        'loadIndex 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (generation != _indexGeneration) return;
       _indexState = ClassroomLoadState.error;
       _indexError = zhjwAuthErrorType(e);
-    } catch (error) {
+    } catch (error, logStackTrace) {
+      AppLog.e(
+        'ClassroomProvider',
+        'loadIndex 失败',
+        error: error,
+        stackTrace: logStackTrace,
+      );
       if (generation != _indexGeneration) return;
-      AppLog.e('ClassroomProvider', 'Index load error: $error');
+
       _indexState = ClassroomLoadState.error;
       _indexError = campusNetworkErrorType(LoadErrorType.loadFailed);
     }
@@ -146,13 +158,25 @@ class ClassroomProvider extends ChangeNotifier {
       resource.result = result;
       resource.state = ClassroomLoadState.loaded;
       resource.error = null;
-    } on UnauthenticatedException catch (e) {
+    } on UnauthenticatedException catch (e, logStackTrace) {
+      AppLog.e(
+        'ClassroomProvider',
+        '_loadAvailability 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (epoch != _queryEpoch) return;
       resource.state = ClassroomLoadState.error;
       resource.error = zhjwAuthErrorType(e);
-    } catch (error) {
+    } catch (error, logStackTrace) {
+      AppLog.e(
+        'ClassroomProvider',
+        '_loadAvailability 失败',
+        error: error,
+        stackTrace: logStackTrace,
+      );
       if (epoch != _queryEpoch) return;
-      AppLog.e('ClassroomProvider', 'Query error: $error');
+
       resource.state = ClassroomLoadState.error;
       resource.error = campusNetworkErrorType(LoadErrorType.loadFailed);
     } finally {

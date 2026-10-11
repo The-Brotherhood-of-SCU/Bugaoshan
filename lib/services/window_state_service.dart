@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'dart:ui';
 
 import 'package:screen_retriever/screen_retriever.dart';
@@ -111,7 +112,13 @@ class WindowStateService with WindowListener {
           ? pos.dy.clamp(screen.top, maxY)
           : screen.top;
       return Offset(clampedX, clampedY);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'WindowStateService',
+        '_clampToScreen 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // If screen_retriever fails, accept the saved position.
       return pos;
     }
@@ -139,7 +146,13 @@ class WindowStateService with WindowListener {
       await _prefs.setDouble(_keyY, pos.dy);
       await _prefs.setDouble(_keyW, size.width);
       await _prefs.setDouble(_keyH, size.height);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'WindowStateService',
+        '_saveNow 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // Best-effort save.
     }
   }

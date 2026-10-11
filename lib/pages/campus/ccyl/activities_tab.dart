@@ -123,8 +123,14 @@ class _ActivitiesTabState extends State<ActivitiesTab> {
         }
         _hasMore = results.length >= pageSize;
       });
-    } catch (e) {
-      AppLog.e('CcylActivitiesTab', 'Activities load error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'ActivitiesTab',
+        '_loadActivities 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (mounted) {
         setState(() {
           _error = campusNetworkErrorType(LoadErrorType.ccylActivityLoadFailed);
@@ -175,9 +181,14 @@ class _ActivitiesTabState extends State<ActivitiesTab> {
           if (phases.isNotEmpty) {
             setState(() => _phaseOverrides[id] = phases);
           }
-        } catch (e) {
+        } catch (e, logStackTrace) {
+          AppLog.e(
+            'ActivitiesTab',
+            '_resolveQueuedSeriesPhases 失败',
+            error: e,
+            stackTrace: logStackTrace,
+          );
           // 校准失败保留乐观兜底状态，本会话内不再重试。
-          AppLog.w('CcylActivitiesTab', 'Series phase resolve failed: $e');
         }
       }
     } finally {
@@ -218,8 +229,13 @@ class _ActivitiesTabState extends State<ActivitiesTab> {
     try {
       final orgs = await provider.service.getAllOrgs();
       if (mounted) setState(() => _orgOptions = orgs);
-    } catch (e) {
-      AppLog.w('CcylActivitiesTab', 'Organizer options load failed: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'ActivitiesTab',
+        '_ensureFilterOptions 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
     }
 
     try {
@@ -242,8 +258,13 @@ class _ActivitiesTabState extends State<ActivitiesTab> {
                 ..sort((a, b) => a.name.compareTo(b.name));
         });
       }
-    } catch (e) {
-      AppLog.w('CcylActivitiesTab', 'Level options load failed: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'ActivitiesTab',
+        '_ensureFilterOptions 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
     }
 
     if (mounted) {

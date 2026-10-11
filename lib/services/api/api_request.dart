@@ -1,4 +1,5 @@
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 
 /// 登录页强特征（对大小写不敏感，body 需先转小写后再匹配）。
 final RegExp _titlePattern = RegExp(r'<title[^>]*>([^<]*)</title>');
@@ -104,13 +105,17 @@ Future<T> retryOnUnauthenticated<T, C>(
   Future<C> Function() getClient,
   Future<T> Function(C client) fn, {
   void Function()? invalidate,
+  String logTag = 'ApiRequest',
 }) async {
-  try {
-    final client = await getClient();
-    return await fn(client);
-  } on UnauthenticatedException {
-    invalidate?.call();
-    final client = await getClient();
-    return await fn(client);
-  }
+  return AppLog.guard(logTag, 'API 请求', () async {
+    try {
+      final client = await getClient();
+      return await fn(client);
+    } on UnauthenticatedException catch (error, stackTrace) {
+      AppLog.w(logTag, '会话失效，重新认证后重试', error: error, stackTrace: stackTrace);
+      invalidate?.call();
+      final client = await getClient();
+      return await fn(client);
+    }
+  });
 }

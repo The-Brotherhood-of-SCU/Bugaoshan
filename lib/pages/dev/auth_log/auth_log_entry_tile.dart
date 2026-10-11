@@ -53,7 +53,7 @@ class AuthLogEntryTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  entry.tag,
+                  '${entry.category == AuthLogCategory.authentication ? '认证' : '业务'} · ${entry.tag}',
                   style: Theme.of(
                     context,
                   ).textTheme.labelSmall?.copyWith(color: fg),
@@ -65,6 +65,22 @@ class AuthLogEntryTile extends StatelessWidget {
                     context,
                   ).textTheme.bodySmall?.copyWith(color: fg),
                 ),
+                if (entry.error != null) ...[
+                  const SizedBox(height: 4),
+                  SelectableText(
+                    entry.error!,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+                if (entry.stackTrace != null)
+                  Material(
+                    color: bg,
+                    child: ExpansionTile(
+                      tilePadding: EdgeInsets.zero,
+                      title: const Text('错误堆栈'),
+                      children: [SelectableText(entry.stackTrace!)],
+                    ),
+                  ),
               ],
             ),
           ),

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:http/http.dart' as http;
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/utils/constants.dart';
@@ -373,9 +374,21 @@ class CcylService {
                 .toList();
           }
         }
-      } on CcylAuthExpiredException {
+      } on CcylAuthExpiredException catch (logError, logStackTrace) {
+        AppLog.e(
+          'CcylService',
+          'getDicts 失败',
+          error: logError,
+          stackTrace: logStackTrace,
+        );
         rethrow;
-      } on CcylException {
+      } on CcylException catch (logError, logStackTrace) {
+        AppLog.e(
+          'CcylService',
+          'getDicts 失败',
+          error: logError,
+          stackTrace: logStackTrace,
+        );
         // 忽略单个字典请求失败
       }
     }
@@ -401,10 +414,23 @@ class CcylService {
       }
       final json = parseJson(resp.body, api, (msg) => CcylException(msg));
       _throwOnAuthExpiry(json);
+      _logBusinessFailure(api, json);
       return json;
-    } on CcylException {
+    } on CcylException catch (logError, logStackTrace) {
+      AppLog.e(
+        'CcylService',
+        '_httpPost 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       rethrow;
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'CcylService',
+        '_httpPost 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       throw CcylException('[$api] 网络请求失败: $e');
     }
   }
@@ -421,11 +447,31 @@ class CcylService {
       }
       final json = parseJson(resp.body, api, (msg) => CcylException(msg));
       _throwOnAuthExpiry(json);
+      _logBusinessFailure(api, json);
       return json;
-    } on CcylException {
+    } on CcylException catch (logError, logStackTrace) {
+      AppLog.e(
+        'CcylService',
+        '_httpGet 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       rethrow;
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'CcylService',
+        '_httpGet 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       throw CcylException('[$api] 网络请求失败: $e');
+    }
+  }
+
+  static void _logBusinessFailure(String api, Map<String, dynamic> json) {
+    final code = json['code'];
+    if (code != null && code.toString() != '0') {
+      AppLog.e('CcylService', '[$api] 业务请求失败 code=$code', error: json['msg']);
     }
   }
 

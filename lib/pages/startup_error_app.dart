@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/services/storage_cleanup_service.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 
 /// 启动失败时的兜底界面：直接以 MaterialApp 作为根，展示错误堆栈，
 /// 并提供清理本地存储的恢复入口（DI 可能尚未装配完成，故不依赖 GetIt 之外的设施）。
@@ -28,8 +29,13 @@ class _StartupErrorAppState extends State<StartupErrorApp> {
     try {
       await action();
       _setStatus('$label: done');
-    } catch (error) {
-      debugPrint('Startup recovery [$label] failed: $error');
+    } catch (error, stackTrace) {
+      AppLog.e(
+        'StartupRecovery',
+        '$label 失败',
+        error: error,
+        stackTrace: stackTrace,
+      );
       _setStatus('$label: failed - $error');
     }
   }

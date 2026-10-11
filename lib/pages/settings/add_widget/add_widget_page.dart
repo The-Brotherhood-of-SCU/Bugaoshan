@@ -133,8 +133,12 @@ class _AddWidgetContentState extends State<AddWidgetContent>
         try {
           await service.syncWidgetShowTomorrow(v);
         } catch (e, st) {
-          AppLog.e('AddWidgetPage', 'WidgetUpdate toggle failed: $e');
-          debugPrint('$st');
+          AppLog.e(
+            'AddWidgetPage',
+            '_buildShowTomorrowSwitch 失败',
+            error: e,
+            stackTrace: st,
+          );
         }
       },
     );

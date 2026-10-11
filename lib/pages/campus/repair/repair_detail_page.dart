@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/repair.dart';
@@ -59,7 +60,13 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
       });
       // 状态为待撤回/处理中时查询是否可撤回
       await _maybeCheckWithdraw(detail);
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'RepairDetailPage',
+        '_load 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (!mounted) return;
       setState(() => _error = e);
     }
@@ -111,7 +118,13 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
       // 撤回按钮消失（_operatorVisible 按最新详情重算）。
       await _load();
       return true;
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'RepairDetailPage',
+        '_withdraw 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (!mounted) return false;
       ScaffoldMessenger.of(
         context,
@@ -552,7 +565,13 @@ class _EvaluateDialogState extends State<_EvaluateDialog> {
         _contentController.text.trim(),
       );
       if (mounted) Navigator.of(context).pop(ok);
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'RepairDetailPage',
+        '_submit 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       // 评价接口失败：不关闭对话框，提示后允许重试
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

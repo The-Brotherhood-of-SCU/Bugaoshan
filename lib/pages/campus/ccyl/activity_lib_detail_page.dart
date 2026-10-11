@@ -70,8 +70,14 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
           mergeCcylSeriesPhases(_activities),
         );
       }
-    } catch (e) {
-      AppLog.e('CcylActivityLibDetail', 'Detail load error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'ActivityLibDetailPage',
+        '_loadData 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (!mounted) return;
       setState(() {
         _error = LoadErrorType.ccylActivityLoadFailed;
@@ -105,8 +111,14 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
           ),
         ),
       );
-    } catch (e) {
-      AppLog.e('CcylActivityLibDetail', 'Subscription action error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'ActivityLibDetailPage',
+        '_toggleSubscription 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (!mounted) return;
       setState(() => _actionLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(

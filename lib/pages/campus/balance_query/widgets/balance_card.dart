@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/balance_query/balance_trend_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
@@ -37,7 +38,13 @@ class _BalanceCardState extends State<BalanceCard> {
   Future<void> _forceRefresh() async {
     try {
       await widget.provider.refreshBalance(widget.balanceType);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'BalanceCard',
+        '_forceRefresh 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // Provider 保存错误状态，卡片会随 ListenableBuilder 重建。
     }
   }

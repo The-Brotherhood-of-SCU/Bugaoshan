@@ -1,4 +1,5 @@
 import 'package:bugaoshan/theme_shape.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/beijing_time.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:flutter/material.dart';
@@ -98,7 +99,13 @@ class _BalanceTrendPageState extends State<BalanceTrendPage> {
         until: range.until,
         force: force,
       );
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'BalanceTrendPage',
+        '_loadHistory 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // 错误保留在 Provider 的趋势状态中。
     }
   }

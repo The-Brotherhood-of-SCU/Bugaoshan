@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:bugaoshan/utils/open_link.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/app_log.dart';
@@ -34,7 +34,7 @@ class MarkdownViewer extends StatelessWidget {
       padding: padding,
       onTapLink: (text, href, title) {
         if (href != null) {
-          launchUrl(Uri.parse(href));
+          openLink(href);
         }
       },
       styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(

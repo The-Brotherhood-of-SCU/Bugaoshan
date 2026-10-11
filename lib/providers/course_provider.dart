@@ -34,8 +34,13 @@ class CourseProvider {
       final config = _db.getScheduleConfig();
       scheduleConfig.value = config;
       allSchedules.value = _db.getAllSchedules();
-    } catch (e) {
-      AppLog.e('CourseProvider', 'Failed to load data: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'CourseProvider',
+        '_loadData 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
     } finally {
       isLoading.value = false;
       onCoursesChanged?.call();
@@ -43,32 +48,40 @@ class CourseProvider {
   }
 
   Future<void> switchSchedule(String scheduleId) async {
-    isLoading.value = true;
-    try {
-      await _db.switchSchedule(scheduleId);
-      await _loadData();
-    } finally {
-      isLoading.value = false;
-    }
+    return AppLog.guard('CourseProvider', '切换课表', () async {
+      isLoading.value = true;
+      try {
+        await _db.switchSchedule(scheduleId);
+        await _loadData();
+      } finally {
+        isLoading.value = false;
+      }
+    });
   }
 
   Future<void> addSchedule(ScheduleConfig config) async {
-    // 落库后直接 switchSchedule，由 _loadData 统一发布 scheduleConfig 与
-    // allSchedules。若这里先单独发布 allSchedules，switchSchedule 的异步
-    // 间隙里会出现「hasSchedule=true 而 scheduleConfig 未就位」的中间态，
-    // 空库首次导入时课表页网格会以未创建的控制器构建并抛空指针。
-    await _db.addSchedule(config);
-    await switchSchedule(config.id);
+    return AppLog.guard('CourseProvider', '新增课表', () async {
+      // 落库后直接 switchSchedule，由 _loadData 统一发布 scheduleConfig 与
+      // allSchedules。若这里先单独发布 allSchedules，switchSchedule 的异步
+      // 间隙里会出现「hasSchedule=true 而 scheduleConfig 未就位」的中间态，
+      // 空库首次导入时课表页网格会以未创建的控制器构建并抛空指针。
+      await _db.addSchedule(config);
+      await switchSchedule(config.id);
+    });
   }
 
   Future<void> deleteSchedule(String scheduleId) async {
-    await _db.deleteSchedule(scheduleId);
-    // Reload everything as current schedule might have changed
-    await _loadData();
+    return AppLog.guard('CourseProvider', '删除课表', () async {
+      await _db.deleteSchedule(scheduleId);
+      // Reload everything as current schedule might have changed
+      await _loadData();
+    });
   }
 
   Future<List<Course>> getCoursesForSchedule(String scheduleId) async {
-    return await _db.getCoursesAsync(scheduleId: scheduleId);
+    return AppLog.guard('CourseProvider', '读取课表课程', () async {
+      return await _db.getCoursesAsync(scheduleId: scheduleId);
+    });
   }
 
   bool isScheduleNameTaken(String name, {String? excludeId}) {
@@ -94,31 +107,39 @@ class CourseProvider {
   }
 
   Future<void> addCourse(Course course) async {
-    await _db.addCourse(course);
-    courses.value = _db.getCourses();
-    onCoursesChanged?.call();
+    return AppLog.guard('CourseProvider', '新增课程', () async {
+      await _db.addCourse(course);
+      courses.value = _db.getCourses();
+      onCoursesChanged?.call();
+    });
   }
 
   Future<void> updateCourse(Course course) async {
-    await _db.updateCourse(course);
-    courses.value = _db.getCourses();
-    onCoursesChanged?.call();
+    return AppLog.guard('CourseProvider', '修改课程', () async {
+      await _db.updateCourse(course);
+      courses.value = _db.getCourses();
+      onCoursesChanged?.call();
+    });
   }
 
   Future<void> deleteCourse(String courseId) async {
-    await _db.deleteCourse(courseId);
-    courses.value = _db.getCourses();
-    onCoursesChanged?.call();
+    return AppLog.guard('CourseProvider', '删除课程', () async {
+      await _db.deleteCourse(courseId);
+      courses.value = _db.getCourses();
+      onCoursesChanged?.call();
+    });
   }
 
   Future<void> updateScheduleConfig(ScheduleConfig config) async {
-    await _db.saveScheduleConfig(config);
-    allSchedules.value = _db.getAllSchedules();
-    if (config.id == _db.getCurrentScheduleId()) {
-      scheduleConfig.value = config;
-      // 非当前课表不影响当前课程展示，也无需刷新桌面组件。
-      onCoursesChanged?.call();
-    }
+    return AppLog.guard('CourseProvider', '保存课表设置', () async {
+      await _db.saveScheduleConfig(config);
+      allSchedules.value = _db.getAllSchedules();
+      if (config.id == _db.getCurrentScheduleId()) {
+        scheduleConfig.value = config;
+        // 非当前课表不影响当前课程展示，也无需刷新桌面组件。
+        onCoursesChanged?.call();
+      }
+    });
   }
 
   /// 替换指定课表的所有课程（先删后插）。用于「更新课表」场景。
@@ -126,11 +147,13 @@ class CourseProvider {
     String scheduleId,
     List<Course> newCourses,
   ) async {
-    await _db.replaceScheduleCourses(scheduleId, newCourses);
-    if (scheduleId == _db.getCurrentScheduleId()) {
-      courses.value = _db.getCourses();
-    }
-    onCoursesChanged?.call();
+    return AppLog.guard('CourseProvider', '替换课表课程', () async {
+      await _db.replaceScheduleCourses(scheduleId, newCourses);
+      if (scheduleId == _db.getCurrentScheduleId()) {
+        courses.value = _db.getCourses();
+      }
+      onCoursesChanged?.call();
+    });
   }
 
   /// 根据课表名查找已存在的课表 ID，用于冲突时更新。
@@ -142,7 +165,9 @@ class CourseProvider {
   }
 
   Future<void> clearAllData() async {
-    await _db.clearAllCourseData();
-    await _loadData();
+    return AppLog.guard('CourseProvider', '清空课表', () async {
+      await _db.clearAllCourseData();
+      await _loadData();
+    });
   }
 }

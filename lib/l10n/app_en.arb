@@ -215,9 +215,9 @@
   "environmentInfo": "Environment Info",
   "devPage": "Developer Page",
   "forceUpdate": "Update to Latest (Include Preview)",
-  "authLog": "Auth Log",
-  "viewAuthLog": "View Auth Log",
-  "authLogEmpty": "No auth log yet.",
+  "authLog": "Runtime Log",
+  "viewAuthLog": "View Runtime Log",
+  "authLogEmpty": "No runtime log yet.",
   "@authLogLastEntry": {
     "placeholders": {
       "time": {

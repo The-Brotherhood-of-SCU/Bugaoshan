@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/services/api/wfw_api_service.dart';
@@ -115,7 +116,13 @@ class NetworkDeviceProvider extends ChangeNotifier {
         if (!_isCurrent(generation)) return;
         _devices = List.unmodifiable(devices);
         _state = NetworkDeviceLoadState.loaded;
-      } catch (error) {
+      } catch (error, logStackTrace) {
+        AppLog.e(
+          'NetworkDeviceProvider',
+          'execute 失败',
+          error: error,
+          stackTrace: logStackTrace,
+        );
         if (!_isCurrent(generation)) return;
         _state = NetworkDeviceLoadState.error;
         _error = _mapError(error);
@@ -157,7 +164,13 @@ class NetworkDeviceProvider extends ChangeNotifier {
       if (!_isOperationCurrent(generation)) return false;
       await refresh();
       return _isOperationCurrent(generation);
-    } catch (error) {
+    } catch (error, logStackTrace) {
+      AppLog.e(
+        'NetworkDeviceProvider',
+        'forceOffline 失败',
+        error: error,
+        stackTrace: logStackTrace,
+      );
       if (_isOperationCurrent(generation)) {
         _offlineError = _mapError(error);
       }

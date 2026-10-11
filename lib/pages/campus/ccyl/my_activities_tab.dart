@@ -70,8 +70,14 @@ class _MyActivitiesTabState extends State<MyActivitiesTab> {
         }
         _hasMore = results.length >= 10;
       });
-    } catch (e) {
-      AppLog.e('CcylMyActivities', 'Load error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'MyActivitiesTab',
+        '_loadActivities 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (mounted) {
         setState(() {
           _error = campusNetworkErrorType(LoadErrorType.ccylActivityLoadFailed);

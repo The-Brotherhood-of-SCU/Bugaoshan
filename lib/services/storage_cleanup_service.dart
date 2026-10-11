@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
@@ -41,8 +42,13 @@ class StorageCleanupService {
     await for (final entity in dir.list()) {
       try {
         await entity.delete(recursive: true);
-      } catch (error) {
-        debugPrint('Failed to delete ${entity.path}: $error');
+      } catch (error, logStackTrace) {
+        AppLog.e(
+          'StorageCleanupService',
+          'clearDirectory 失败',
+          error: error,
+          stackTrace: logStackTrace,
+        );
       }
     }
   }

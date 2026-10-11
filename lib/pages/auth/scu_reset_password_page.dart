@@ -103,8 +103,13 @@ class _ScuResetPasswordPageState extends State<ScuResetPasswordPage> {
             ? captcha.captchaBase64.substring(comma + 1)
             : captcha.captchaBase64;
         imageBytes = base64.decode(raw);
-      } catch (e) {
-        AppLog.e('ScuResetPasswordPage', 'Captcha decode error: $e');
+      } catch (e, logStackTrace) {
+        AppLog.e(
+          'ScuResetPasswordPage',
+          '_loadCaptcha 失败',
+          error: e,
+          stackTrace: logStackTrace,
+        );
       }
       if (!mounted) return;
       setState(() {
@@ -112,8 +117,14 @@ class _ScuResetPasswordPageState extends State<ScuResetPasswordPage> {
         _captchaImageBytes = imageBytes;
         _captchaCtrl.clear();
       });
-    } catch (e) {
-      AppLog.e('ScuResetPasswordPage', 'Captcha load error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'ScuResetPasswordPage',
+        '_loadCaptcha 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (!mounted) return;
       setState(() {
         _captcha = null;
@@ -151,16 +162,28 @@ class _ScuResetPasswordPageState extends State<ScuResetPasswordPage> {
         _channel = info.hasPhone ? ResetChannel.sms : ResetChannel.email;
         _step = 2;
       });
-    } on ForgotPasswordException catch (e) {
-      AppLog.w('ScuResetPasswordPage', 'verifyUser failed: ${e.message}');
+    } on ForgotPasswordException catch (e, logStackTrace) {
+      AppLog.e(
+        'ScuResetPasswordPage',
+        '_submitAccount 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (!mounted) return;
       setState(() => _errorMsg = e.message);
       // 400 验证码错误 / 439 验证码过期：与官方一致刷新验证码重试
       if (e.businessCode == 400 || e.businessCode == 439) {
         unawaited(_loadCaptcha());
       }
-    } catch (e) {
-      AppLog.e('ScuResetPasswordPage', 'verifyUser error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'ScuResetPasswordPage',
+        '_submitAccount 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (!mounted) return;
       setState(() => _errorMsg = AppLocalizations.of(context)!.networkError);
       unawaited(_loadCaptcha());
@@ -199,12 +222,24 @@ class _ScuResetPasswordPageState extends State<ScuResetPasswordPage> {
           }
         });
       });
-    } on ForgotPasswordException catch (e) {
-      AppLog.w('ScuResetPasswordPage', 'obtainCode failed: ${e.message}');
+    } on ForgotPasswordException catch (e, logStackTrace) {
+      AppLog.e(
+        'ScuResetPasswordPage',
+        '_sendCode 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (!mounted) return;
       setState(() => _errorMsg = e.message);
-    } catch (e) {
-      AppLog.e('ScuResetPasswordPage', 'obtainCode error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'ScuResetPasswordPage',
+        '_sendCode 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (!mounted) return;
       setState(() => _errorMsg = AppLocalizations.of(context)!.networkError);
     } finally {
@@ -231,12 +266,24 @@ class _ScuResetPasswordPageState extends State<ScuResetPasswordPage> {
         _resetCountdown();
         _step = 3;
       });
-    } on ForgotPasswordException catch (e) {
-      AppLog.w('ScuResetPasswordPage', 'verifyCode failed: ${e.message}');
+    } on ForgotPasswordException catch (e, logStackTrace) {
+      AppLog.e(
+        'ScuResetPasswordPage',
+        '_submitCode 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (!mounted) return;
       setState(() => _errorMsg = e.message);
-    } catch (e) {
-      AppLog.e('ScuResetPasswordPage', 'verifyCode error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'ScuResetPasswordPage',
+        '_submitCode 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (!mounted) return;
       setState(() => _errorMsg = AppLocalizations.of(context)!.networkError);
     } finally {
@@ -264,12 +311,24 @@ class _ScuResetPasswordPageState extends State<ScuResetPasswordPage> {
         _resetCountdown();
         _step = 4;
       });
-    } on ForgotPasswordException catch (e) {
-      AppLog.w('ScuResetPasswordPage', 'submit failed: ${e.message}');
+    } on ForgotPasswordException catch (e, logStackTrace) {
+      AppLog.e(
+        'ScuResetPasswordPage',
+        '_submitNewPassword 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (!mounted) return;
       setState(() => _errorMsg = e.message);
-    } catch (e) {
-      AppLog.e('ScuResetPasswordPage', 'submit error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'ScuResetPasswordPage',
+        '_submitNewPassword 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (!mounted) return;
       setState(() => _errorMsg = AppLocalizations.of(context)!.networkError);
     } finally {

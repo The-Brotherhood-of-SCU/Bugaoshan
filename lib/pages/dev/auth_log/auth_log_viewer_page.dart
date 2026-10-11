@@ -9,6 +9,7 @@ import 'package:bugaoshan/pages/campus/downloads/file_utils.dart';
 import 'package:bugaoshan/pages/dev/auth_log/auth_log_entry_tile.dart';
 import 'package:bugaoshan/pages/dev/auth_log/auth_log_filter_bar.dart';
 import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/share_utils.dart';
 
 /// 全屏日志查看器（开发者调试用，文案不做 i18n）。
@@ -23,7 +24,7 @@ class AuthLogViewerPage extends StatefulWidget {
 }
 
 class _AuthLogViewerPageState extends State<AuthLogViewerPage> {
-  static const String _appBarTitle = 'Auth Log';
+  static const String _appBarTitle = '运行日志';
 
   // 跟 notice_downloaded_page 保持一致；debug 构建下打开文件夹可能失败但
   // 现有附件页也是这个行为，故沿用。
@@ -34,6 +35,7 @@ class _AuthLogViewerPageState extends State<AuthLogViewerPage> {
   // null = 全部 level 启用（无筛选）；非空 = 仅显示集合中的 level。
   Set<AuthLogLevel>? _filterLevels;
   String? _filterTag; // null = All
+  int _view = 0; // 全部 / 认证 / 业务错误
 
   /// 解析到 auth log 落盘目录（必要时创建子目录）：
   /// - Android = app 外部 cache 下的 `Bugaoshan/auth_logs/`（文件管理器可见，OS 可清理）
@@ -73,56 +75,83 @@ class _AuthLogViewerPageState extends State<AuthLogViewerPage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          AuthLogFilterBar(
-            entries: _log.entries,
-            levels: _filterLevels,
-            tag: _filterTag,
-            onLevelToggled: _toggleLevel,
-            onTagChanged: (v) => setState(() => _filterTag = v),
-          ),
-          const Divider(height: 1),
-          Expanded(
-            child: ListenableBuilder(
-              listenable: _log,
-              builder: (context, _) {
-                final all = _log.entries;
-                final levels = _filterLevels;
-                final filtered = all
-                    .where((e) {
-                      if (levels != null && !levels.contains(e.level)) {
-                        return false;
-                      }
-                      if (_filterTag != null && e.tag != _filterTag) {
-                        return false;
-                      }
-                      return true;
-                    })
-                    .toList(growable: false);
-
-                if (filtered.isEmpty) {
-                  return Center(
-                    child: Text(
-                      all.isEmpty ? 'No auth log yet.' : 'No matching entries.',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  );
-                }
-
-                // 反时序：新条目在顶端。
-                final reversed = filtered.reversed.toList(growable: false);
-                return ListView.separated(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  itemCount: reversed.length,
-                  separatorBuilder: (_, _) => const Divider(height: 1),
-                  itemBuilder: (context, i) =>
-                      AuthLogEntryTile(entry: reversed[i]),
-                );
-              },
+      body: ListenableBuilder(
+        listenable: _log,
+        builder: (context, _) => Column(
+          children: [
+            Wrap(
+              spacing: 8,
+              children: [
+                for (final (index, label) in ['全部', '认证日志', '业务错误'].indexed)
+                  ChoiceChip(
+                    label: Text(label),
+                    selected: _view == index,
+                    onSelected: (_) => setState(() {
+                      _view = index;
+                      _filterTag = null;
+                    }),
+                  ),
+              ],
             ),
-          ),
-        ],
+            AuthLogFilterBar(
+              entries: _log.entries,
+              levels: _filterLevels,
+              tag: _filterTag,
+              onLevelToggled: _toggleLevel,
+              onTagChanged: (v) => setState(() => _filterTag = v),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: ListenableBuilder(
+                listenable: _log,
+                builder: (context, _) {
+                  final all = _log.entries;
+                  final levels = _filterLevels;
+                  final filtered = all
+                      .where((e) {
+                        if (levels != null && !levels.contains(e.level)) {
+                          return false;
+                        }
+                        if (_view == 1 &&
+                            e.category != AuthLogCategory.authentication) {
+                          return false;
+                        }
+                        if (_view == 2 &&
+                            (e.category != AuthLogCategory.business ||
+                                (e.level != AuthLogLevel.warn &&
+                                    e.level != AuthLogLevel.error))) {
+                          return false;
+                        }
+                        if (_filterTag != null && e.tag != _filterTag) {
+                          return false;
+                        }
+                        return true;
+                      })
+                      .toList(growable: false);
+
+                  if (filtered.isEmpty) {
+                    return Center(
+                      child: Text(
+                        all.isEmpty ? '暂无运行日志。' : '没有匹配的日志。',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    );
+                  }
+
+                  // 反时序：新条目在顶端。
+                  final reversed = filtered.reversed.toList(growable: false);
+                  return ListView.separated(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    itemCount: reversed.length,
+                    separatorBuilder: (_, _) => const Divider(height: 1),
+                    itemBuilder: (context, i) =>
+                        AuthLogEntryTile(entry: reversed[i]),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -155,10 +184,18 @@ class _AuthLogViewerPageState extends State<AuthLogViewerPage> {
 
   Future<void> _copyAll() async {
     final messenger = ScaffoldMessenger.of(context);
-    await Clipboard.setData(ClipboardData(text: _log.exportToText()));
-    messenger.showSnackBar(
-      const SnackBar(content: Text('Copied to clipboard')),
-    );
+    try {
+      await Clipboard.setData(ClipboardData(text: _log.exportToText()));
+      if (!mounted) return;
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Copied to clipboard')),
+      );
+    } catch (error, stackTrace) {
+      AppLog.e('LogViewer', '复制日志失败', error: error, stackTrace: stackTrace);
+      if (mounted) {
+        messenger.showSnackBar(const SnackBar(content: Text('复制日志失败')));
+      }
+    }
   }
 
   Future<void> _save() async {
@@ -170,10 +207,12 @@ class _AuthLogViewerPageState extends State<AuthLogViewerPage> {
         if (!mounted) return;
         await shareSingleFile(path, context: context);
         messenger.showSnackBar(const SnackBar(content: Text('Saved')));
-      } catch (e) {
+      } catch (e, stackTrace) {
+        AppLog.e('LogViewer', '分享日志失败', error: e, stackTrace: stackTrace);
         messenger.showSnackBar(SnackBar(content: Text('Save failed: $e')));
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      AppLog.e('LogViewer', '保存日志失败', error: e, stackTrace: stackTrace);
       messenger.showSnackBar(SnackBar(content: Text('Save failed: $e')));
     }
   }
@@ -183,19 +222,20 @@ class _AuthLogViewerPageState extends State<AuthLogViewerPage> {
   /// - 其他平台：直接用文件 URI 调起系统文件管理器（macOS Finder / Windows Explorer / Linux xdg-open）。
   Future<void> _openFolder() async {
     final messenger = ScaffoldMessenger.of(context);
-    final dir = await _authLogDir();
     try {
+      final dir = await _authLogDir();
       if (Platform.isAndroid) {
         final encoded = 'Bugaoshan/$kAuthLogDir'.replaceAll('/', '%2F');
         final uri = Uri.parse(
           'content://com.android.externalstorage.documents/document/'
           'primary%3AAndroid%2Fdata%2F$_androidPackageId%2Fcache%2F$encoded',
         );
-        await launchUrl(uri);
+        if (!await launchUrl(uri)) throw StateError('文件管理器无法打开');
       } else {
-        await launchUrl(Uri.file(dir.path));
+        if (!await launchUrl(Uri.file(dir.path))) throw StateError('文件管理器无法打开');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      AppLog.e('LogViewer', '打开日志目录失败', error: e, stackTrace: stackTrace);
       messenger.showSnackBar(SnackBar(content: Text('Open folder failed: $e')));
     }
   }
@@ -204,7 +244,7 @@ class _AuthLogViewerPageState extends State<AuthLogViewerPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Clear auth log?'),
+        title: const Text('清空运行日志？'),
         content: const Text(
           'This removes all log entries currently in memory. '
           'Saved files are not affected.',

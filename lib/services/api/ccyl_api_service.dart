@@ -2,6 +2,7 @@ import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/services/auth/ccyl_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/ccyl/ccyl_service.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 
 /// 第二课堂 API Service（第1层）
 ///
@@ -14,7 +15,11 @@ class CcylApiService {
   /// CCYL token 过期时服务端返回业务错误码而非 [UnauthenticatedException]。
   /// 这里捕获 [CcylException] 后清除旧 token、重新鉴权、再试一次。
   Future<T> _retryOnCcylAuthError<T>(Future<T> Function() fn) async {
-    return retryOnCcylAuthError(_auth, fn);
+    return AppLog.guard(
+      'CcylApiService',
+      '第二课堂请求',
+      () => retryOnCcylAuthError(_auth, fn),
+    );
   }
 
   Future<List<CyclActivity>> searchActivities({

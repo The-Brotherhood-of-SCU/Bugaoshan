@@ -61,7 +61,7 @@ class ZhjwAuth extends ChangeNotifier implements SubsystemAuth {
     }
 
     _log.i(_tag, 'getClient: starting SSO login');
-    _loginFuture = _login(scuClient);
+    _loginFuture = _log.guard(_tag, '教务 SSO 登录', () => _login(scuClient));
     try {
       return await _loginFuture!;
     } finally {

@@ -60,8 +60,14 @@ class DatabaseService {
           );
           dir = await getApplicationSupportDirectory();
         }
-      } catch (e) {
-        AppLog.w('DatabaseService', 'Failed to get App Group directory: $e');
+      } catch (e, logStackTrace) {
+        AppLog.e(
+          'DatabaseService',
+          'init 失败',
+          error: e,
+          stackTrace: logStackTrace,
+        );
+
         dir = await getApplicationSupportDirectory();
       }
     } else {
@@ -95,8 +101,13 @@ class DatabaseService {
             'BugaoShan Database: Database already exists at App Group directory',
           );
         }
-      } catch (e) {
-        AppLog.w('DatabaseService', 'Error during database migration: $e');
+      } catch (e, logStackTrace) {
+        AppLog.e(
+          'DatabaseService',
+          'init 失败',
+          error: e,
+          stackTrace: logStackTrace,
+        );
       }
     }
 
@@ -244,7 +255,7 @@ class DatabaseService {
   Future<void> switchSchedule(String scheduleId) async {
     // 未知 id 早返回，避免把空 '' 写进 metadata 并触发 courses 缓存重载。
     if (_schedulesCache.indexWhere((s) => s.id == scheduleId) < 0) {
-      debugPrint('DatabaseService.switchSchedule: unknown id $scheduleId');
+      AppLog.e('DatabaseService', '切换课表失败：课表不存在 id=$scheduleId');
       return;
     }
     _currentScheduleId = scheduleId;
@@ -333,7 +344,7 @@ class DatabaseService {
 
   Future<void> addCourse(Course course) async {
     if (_currentScheduleId.isEmpty) {
-      debugPrint('DatabaseService.addCourse: no current schedule');
+      AppLog.e('DatabaseService', '新增课程失败：未选择课表');
       return;
     }
     await _db.insert('courses', _courseToRow(course, _currentScheduleId));
@@ -362,7 +373,7 @@ class DatabaseService {
 
   Future<void> updateCourse(Course course) async {
     if (_currentScheduleId.isEmpty) {
-      debugPrint('DatabaseService.updateCourse: no current schedule');
+      AppLog.e('DatabaseService', '修改课程失败：未选择课表');
       return;
     }
     await _db.update(
@@ -445,8 +456,13 @@ class DatabaseService {
       if (!hasCol) {
         await _db.execute('ALTER TABLE courses ADD COLUMN custom_weeks TEXT');
       }
-    } catch (e) {
-      AppLog.w('DatabaseService', 'Failed to ensure custom_weeks column: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'DatabaseService',
+        '_ensureCustomWeeksColumn 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
     }
   }
 

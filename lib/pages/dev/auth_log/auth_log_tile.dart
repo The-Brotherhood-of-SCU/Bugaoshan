@@ -6,7 +6,7 @@ import 'package:bugaoshan/pages/dev/auth_log/auth_log_viewer_page.dart';
 import 'package:bugaoshan/utils/auth_logger.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
-/// TestPage 入口：认证日志。
+/// TestPage 入口：运行日志（认证与业务共享缓冲）。
 /// 点击进入全屏日志查看器（保存 / 打开文件夹 / 清空由查看器 AppBar 提供）。
 class AuthLogTile extends StatelessWidget {
   const AuthLogTile({super.key});
@@ -29,7 +29,7 @@ class AuthLogTile extends StatelessWidget {
                 last.tag,
               );
         return ListTile(
-          leading: const Icon(Icons.key),
+          leading: const Icon(Icons.receipt_long),
           title: Text(localizations.viewAuthLog),
           subtitle: Text(
             subtitle,

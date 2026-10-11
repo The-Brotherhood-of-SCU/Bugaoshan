@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 
 enum UpdateAssetPlatform { android, windows, linux }
 
@@ -46,7 +47,13 @@ class AndroidArchProvider {
           return _cachedArch;
         }
       }
-    } catch (_) {
+    } catch (error, stackTrace) {
+      AppLog.e(
+        'UpdateAsset',
+        '检测设备架构失败，使用通用安装包',
+        error: error,
+        stackTrace: stackTrace,
+      );
       // 获取失败时返回 null，回退到 universal
     }
     return null;

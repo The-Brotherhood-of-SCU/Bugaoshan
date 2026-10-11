@@ -248,7 +248,13 @@ class _ProjectSelectorState extends State<_ProjectSelector> {
     try {
       final projects = await widget.provider.fetchProjects(areaId);
       if (mounted) setState(() => _categories = projects);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'RepairWidgets',
+        '_loadProjects 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       if (mounted) setState(() => _categories = const []);
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -435,7 +441,13 @@ class _AddAddressSheetState extends State<_AddAddressSheet> {
     try {
       final tree = await widget.provider.fetchAreaTree();
       if (mounted) setState(() => _areaTree = tree);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        'RepairWidgets',
+        '_loadAreaTree 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // 失败时保持空树
     } finally {
       if (mounted) setState(() => _loadingTree = false);

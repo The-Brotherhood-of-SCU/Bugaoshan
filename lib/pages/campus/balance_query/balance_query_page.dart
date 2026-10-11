@@ -1,5 +1,6 @@
 import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
@@ -140,7 +141,13 @@ class BalanceQueryPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     try {
       await provider.switchBinding(index);
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'BalanceQueryPage',
+        '_switchBinding 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

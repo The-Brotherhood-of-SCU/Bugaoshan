@@ -131,14 +131,26 @@ class CourseCurriculumProvider extends ChangeNotifier {
       _indexState = CourseCurriculumLoadState.loaded;
       notifyListeners();
       await search();
-    } on UnauthenticatedException catch (e) {
+    } on UnauthenticatedException catch (e, logStackTrace) {
+      AppLog.e(
+        'CourseCurriculumProvider',
+        'loadIndex 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (generation != _indexGeneration) return;
       _indexState = CourseCurriculumLoadState.error;
       _indexError = zhjwAuthErrorType(e);
       notifyListeners();
-    } catch (error) {
+    } catch (error, logStackTrace) {
+      AppLog.e(
+        'CourseCurriculumProvider',
+        'loadIndex 失败',
+        error: error,
+        stackTrace: logStackTrace,
+      );
       if (generation != _indexGeneration) return;
-      AppLog.e('CourseCurriculumProvider', 'Index load error: $error');
+
       _indexState = CourseCurriculumLoadState.error;
       _indexError = campusNetworkErrorType(LoadErrorType.loadFailed);
       notifyListeners();
@@ -197,7 +209,13 @@ class CourseCurriculumProvider extends ChangeNotifier {
       _courses = replace ? result.courses : [..._courses, ...result.courses];
       _totalCount = result.totalCount;
       _coursesState = CourseCurriculumLoadState.loaded;
-    } on UnauthenticatedException catch (e) {
+    } on UnauthenticatedException catch (e, logStackTrace) {
+      AppLog.e(
+        'CourseCurriculumProvider',
+        '_loadCourses 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (!_isCurrentCourseRequest(
         generation: generation,
         semester: semester,
@@ -211,7 +229,13 @@ class CourseCurriculumProvider extends ChangeNotifier {
       }
       _coursesState = CourseCurriculumLoadState.error;
       _coursesError = zhjwAuthErrorType(e);
-    } catch (error) {
+    } catch (error, logStackTrace) {
+      AppLog.e(
+        'CourseCurriculumProvider',
+        '_loadCourses 失败',
+        error: error,
+        stackTrace: logStackTrace,
+      );
       if (!_isCurrentCourseRequest(
         generation: generation,
         semester: semester,
@@ -223,7 +247,7 @@ class CourseCurriculumProvider extends ChangeNotifier {
       )) {
         return;
       }
-      AppLog.e('CourseCurriculumProvider', 'Courses load error: $error');
+
       _coursesState = CourseCurriculumLoadState.error;
       _coursesError = campusNetworkErrorType(LoadErrorType.loadFailed);
     }
@@ -291,16 +315,28 @@ class CourseCurriculumProvider extends ChangeNotifier {
         courses: courses,
         state: CourseCurriculumLoadState.loaded,
       );
-    } on UnauthenticatedException catch (e) {
+    } on UnauthenticatedException catch (e, logStackTrace) {
+      AppLog.e(
+        'CourseCurriculumProvider',
+        'loadSchedule 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (_detailGenerations[key] != generation) return;
       _details[key] = CourseScheduleDetailState(
         courses: previous.courses,
         state: CourseCurriculumLoadState.error,
         error: zhjwAuthErrorType(e),
       );
-    } catch (error) {
+    } catch (error, logStackTrace) {
+      AppLog.e(
+        'CourseCurriculumProvider',
+        'loadSchedule 失败',
+        error: error,
+        stackTrace: logStackTrace,
+      );
       if (_detailGenerations[key] != generation) return;
-      AppLog.e('CourseCurriculumProvider', 'Detail load error: $error');
+
       _details[key] = CourseScheduleDetailState(
         courses: previous.courses,
         state: CourseCurriculumLoadState.error,

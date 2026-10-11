@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/auth/scu_login_input_field.dart';
@@ -109,13 +110,21 @@ class ScuLoginCaptchaRow extends StatelessWidget {
                           captchaImageBytes!,
                           fit: BoxFit.contain,
                           gaplessPlayback: true,
-                          errorBuilder: (_, _, _) => Icon(
-                            Icons.broken_image_outlined,
-                            color: isDark
-                                ? Colors.white54
-                                : Colors.grey.shade600,
-                            size: 22,
-                          ),
+                          errorBuilder: (context, error, stackTrace) {
+                            AppLog.e(
+                              'ScuCaptcha',
+                              '验证码图片渲染失败',
+                              error: error,
+                              stackTrace: stackTrace,
+                            );
+                            return Icon(
+                              Icons.broken_image_outlined,
+                              color: isDark
+                                  ? Colors.white54
+                                  : Colors.grey.shade600,
+                              size: 22,
+                            );
+                          },
                         ),
                       )
                     : Icon(

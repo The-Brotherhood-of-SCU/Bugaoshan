@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -113,7 +114,13 @@ class FitnessTestProvider extends ChangeNotifier {
         if (!_isNoticesCurrent(epoch, generation)) return;
         _notices = notices;
         _noticesState = FitnessTestLoadState.loaded;
-      } catch (error) {
+      } catch (error, logStackTrace) {
+        AppLog.e(
+          'FitnessTestProvider',
+          '_loadNotices 失败',
+          error: error,
+          stackTrace: logStackTrace,
+        );
         if (!_isNoticesCurrent(epoch, generation)) return;
         _noticesState = FitnessTestLoadState.error;
         _noticesError = _noticeError(error);
@@ -150,7 +157,13 @@ class FitnessTestProvider extends ChangeNotifier {
         if (!_isScoreCurrent(epoch, generation, year)) return;
         _scoreData = score;
         _scoreState = FitnessTestLoadState.loaded;
-      } catch (error) {
+      } catch (error, logStackTrace) {
+        AppLog.e(
+          'FitnessTestProvider',
+          '_loadScore 失败',
+          error: error,
+          stackTrace: logStackTrace,
+        );
         if (!_isScoreCurrent(epoch, generation, year)) return;
         _scoreState = FitnessTestLoadState.error;
         _scoreError = _scoreLoadError(error);

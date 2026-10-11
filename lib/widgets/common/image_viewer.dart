@@ -44,6 +44,12 @@ class ImageViewerPage extends StatelessWidget {
                 maxScale: PhotoViewComputedScale.covered * 3,
                 backgroundDecoration: const BoxDecoration(color: Colors.black),
                 errorBuilder: (context, error, stackTrace) {
+                  AppLog.e(
+                    'ImageViewer',
+                    '图片加载失败',
+                    error: error,
+                    stackTrace: stackTrace,
+                  );
                   return const Center(
                     child: Icon(
                       Icons.broken_image,
@@ -121,8 +127,14 @@ class ImageViewerPage extends StatelessWidget {
           context,
         ).showSnackBar(SnackBar(content: Text(l10n.imageSavedToGallery)));
       }
-    } catch (e) {
-      AppLog.e('ImageViewer', 'Save image error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        'ImageViewer',
+        '_saveToGallery 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -145,8 +157,9 @@ class ImageViewerPage extends StatelessWidget {
       await file.writeAsBytes(response.bodyBytes);
       if (!context.mounted) return;
       await shareSingleFile(file.path, context: context);
-    } catch (e) {
-      AppLog.e('ImageViewer', 'Share image error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e('ImageViewer', '_share 失败', error: e, stackTrace: logStackTrace);
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
