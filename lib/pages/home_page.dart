@@ -245,10 +245,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     if (id == dockIdCourse || id == dockIdCampus || id == dockIdProfile) {
       return page;
     }
-    // 自定义业务入口各有表单/FAB/Scaffold，暂保留完整可操作区域。
-    // 已适配的三张主页把这段空间放到滚动内容末尾，而非裁短 viewport。
-    // 这些入口由外层整页避让；同时屏蔽被 extendBody 注入的底部 padding，
-    // 避免其自带底栏（如第二课堂的 NavigationBar）再消费一次而留出空白 (#376)。
+    // 其余自定义业务入口由外层整页抬起一块 Dock 高度的空间，保留表单与 FAB
+    // 的可操作区域，同时屏蔽被 extendBody 注入的底部 padding：页面自带底栏
+    // （如第二课堂的 NavigationBar）或内层滚动组件若再消费一次，就会多留出
+    // 一整个 Dock 高度的空白 (#376)。已适配的三张主页不走这里，它们把这段
+    // 空间放到滚动内容末尾，而非裁短 viewport。
     return Builder(
       builder: (context) => Padding(
         padding: EdgeInsets.only(bottom: HomeDockInsets.bottomOf(context)),
