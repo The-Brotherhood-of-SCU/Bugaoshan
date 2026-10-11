@@ -272,15 +272,10 @@ class _SetDockPageState extends State<SetDockPage> {
                 padding: const EdgeInsets.all(16),
                 child: SizedBox(
                   width: double.infinity,
-                  child: AdaptiveGlassButton(
-                    label: l10n.resetDock,
+                  child: OutlinedButton.icon(
                     onPressed: _resetToDefault,
-                    symbol: 'arrow.counterclockwise',
-                    fallback: OutlinedButton.icon(
-                      onPressed: _resetToDefault,
-                      icon: const Icon(Icons.refresh),
-                      label: Text(l10n.resetDock),
-                    ),
+                    icon: const Icon(Icons.refresh),
+                    label: Text(l10n.resetDock),
                   ),
                 ),
               ),

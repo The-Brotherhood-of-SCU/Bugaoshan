@@ -1,3 +1,4 @@
+import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'dart:async';
 
 import 'package:bugaoshan/injection/injector.dart';
@@ -251,7 +252,7 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
   Widget _buildMasterSwitch(AppLocalizations l10n) {
     return ValueListenableBuilder<bool>(
       valueListenable: _appConfig.reminderEnabled,
-      builder: (context, enabled, _) => SwitchListTile(
+      builder: (context, enabled, _) => AdaptiveGlassSwitchListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 4),
         title: Text(l10n.reminderMasterSwitch),
         subtitle: Text(
@@ -387,7 +388,7 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
                             final enabled = start != null && end != null;
                             return Column(
                               children: [
-                                SwitchListTile(
+                                AdaptiveGlassSwitchListTile(
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 4,
                                   ),

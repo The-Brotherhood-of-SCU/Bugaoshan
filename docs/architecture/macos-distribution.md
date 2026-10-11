@@ -6,11 +6,13 @@ macOS 与 iOS 共用 App Store Connect 应用记录 `6813305962`。主应用 Bun
 
 ## Liquid Glass
 
-`Runner/LiquidGlass.swift` 使用 `NSHostingView` 承载 SwiftUI 控件，通过 `AppKitView` 接入 Flutter。macOS 26+ 使用系统 `.glass` / `.glassProminent` 按钮与原生 Toggle，宽窗口使用系统 List 侧栏，图标与文案横排且只有当前入口高亮；窄窗口使用可横向滚动的导航，并用 `GlassEffectContainer` 管理玻璃按钮。课程、表单及列表内容继续由 Flutter 绘制。
+`Runner/LiquidGlass.swift` 使用 `NSHostingView` 承载 SwiftUI 控件，通过 `AppKitView` 接入 Flutter。macOS 26+ 只对导航、开关与滑块采用原生呈现：设置使用系统 Toggle / Slider，宽窗口使用系统 List 侧栏，图标与文案横排且只有当前入口高亮；窄窗口使用可横向滚动的导航，并用 `GlassEffectContainer` 管理玻璃按钮。课程、表单及列表内容继续由 Flutter 绘制。
 
-Flutter 维护选中入口与开关值，原生层仅回传稳定入口 ID、点击或值变化，避免入口重排与旧事件错选页面。主题、RTL、文字缩放、减少动态效果和高对比度参数通过现有桥接同步；系统减少透明度由原生控件处理。macOS 13–25、旧 SDK 或桥接失败时恢复 Material 导航和控件。按钮与开关复用 iOS 已接入的调用点，未接入的按钮保持原实现。
+Flutter 维护选中入口与开关值，原生层仅回传稳定入口 ID、开关值或滑块开始/变化/结束事件，避免入口重排与旧事件错选页面。主题、RTL、文字缩放、减少动态效果和高对比度参数通过现有桥接同步；系统减少透明度由原生控件处理。macOS 13–25、旧 SDK 或桥接失败时恢复 Material 导航和控件。开关与滑块复用 iOS 的调用点，登录/登出、重试、确认等操作按钮统一保留原有 Material 样式。原生绑定先更新自身值，再通知 Flutter；相同值的回传不重启动效，也不额外叠加玻璃或切换动画。
 
-桥接单测使用模拟通道，不能证明真实材质、鼠标或键盘行为。发布前在签名 release 应用中检查宽窄窗口、导航、设置值同步、滚动、弹窗及路由切换；旧 macOS 与 Intel 的实际运行需要相应设备验收。
+拖动期间保留系统滑块的当前位置，延迟的 Flutter 回传不能把滑块拉回旧值；范围或主题变更仍会同步，松手后恢复以 Flutter 业务值为准。普通控件配置与同值回传不额外启动 SwiftUI 动画。
+
+桥接单测使用模拟通道，不能证明真实材质、鼠标或键盘行为。`tool/test_macos_glass_state.py --framework-dir <FlutterMacOS.framework 的父目录>` 在 macOS 26+ 编译并执行实际 Swift 状态模型，覆盖开关同值回传、滑块拖动期间的旧值回传、开始/结束回调去重与中途禁用。发布前在签名 release 应用中检查宽窄窗口、导航、设置值同步、滚动、弹窗及路由切换；旧 macOS 与 Intel 的实际运行需要相应设备验收。
 
 ## 构建与签名
 

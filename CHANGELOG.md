@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Apple 平台的液态玻璃收敛到导航、开关和滑块：登录、登出、重试与确认等操作恢复普通按钮，设置滑块采用系统控件，并避免状态回传重复播放开关动效或拉回正在拖动的滑块
+
 ## [2.5.3] - 2026-10-09
 
 ### Added

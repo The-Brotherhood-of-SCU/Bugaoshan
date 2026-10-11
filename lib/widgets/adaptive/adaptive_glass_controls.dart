@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:flutter/foundation.dart';
@@ -39,50 +38,6 @@ class LiquidGlassCapabilities {
   static void resetForTesting() {
     _supported = null;
   }
-}
-
-/// Apple 26+ 原生玻璃按钮，其余环境保留调用方提供的 Material 按钮。
-///
-/// [fallback] 同时用于测量尺寸，调用方应为其提供相同的动作和禁用状态。
-class AdaptiveGlassButton extends StatelessWidget {
-  const AdaptiveGlassButton({
-    super.key,
-    required this.label,
-    required this.onPressed,
-    required this.fallback,
-    this.symbol,
-    this.prominent = false,
-    this.tint,
-    this.loading = false,
-  });
-
-  final String label;
-  final VoidCallback? onPressed;
-  final Widget fallback;
-  final String? symbol;
-  final bool prominent;
-  final Color? tint;
-  final bool loading;
-
-  @override
-  Widget build(BuildContext context) => _AdaptiveGlassControl(
-    kind: _GlassControlKind.button,
-    label: label,
-    symbol: symbol,
-    value: false,
-    enabled: onPressed != null,
-    loading: loading,
-    prominent: prominent,
-    tint: tint,
-    onActivate: onPressed,
-    fallback: ExcludeFocus(
-      excluding: onPressed == null || loading,
-      child: IgnorePointer(
-        ignoring: onPressed == null || loading,
-        child: fallback,
-      ),
-    ),
-  );
 }
 
 /// Apple 原生开关；选中值和回调始终由 Flutter 的当前状态提供。
@@ -197,7 +152,71 @@ class AdaptiveGlassSwitchListTile extends StatelessWidget {
   );
 }
 
-enum _GlassControlKind { button, toggle }
+/// 系统滑块自行处理玻璃拇指、刻度吸附与拖动动效；Flutter 管理业务值。
+class AdaptiveGlassSlider extends StatelessWidget {
+  const AdaptiveGlassSlider({
+    super.key,
+    required this.value,
+    required this.onChanged,
+    required this.semanticLabel,
+    this.min = 0,
+    this.max = 1,
+    this.divisions,
+    this.label,
+    this.onChangeStart,
+    this.onChangeEnd,
+    this.activeColor,
+    this.inactiveColor,
+  }) : assert(min <= max),
+       assert(value >= min && value <= max),
+       assert(divisions == null || divisions > 0);
+
+  final double value;
+  final double min;
+  final double max;
+  final int? divisions;
+  final String? label;
+  final String semanticLabel;
+  final ValueChanged<double>? onChanged;
+  final ValueChanged<double>? onChangeStart;
+  final ValueChanged<double>? onChangeEnd;
+  final Color? activeColor;
+  final Color? inactiveColor;
+
+  @override
+  Widget build(BuildContext context) => _AdaptiveGlassControl(
+    kind: _GlassControlKind.slider,
+    label: semanticLabel,
+    value: value,
+    min: min,
+    max: max,
+    divisions: divisions,
+    valueLabel: label,
+    enabled: onChanged != null && max > min,
+    tint: activeColor,
+    inactiveColor: inactiveColor,
+    onSliderChanged: onChanged,
+    onChangeStart: onChangeStart,
+    onChangeEnd: onChangeEnd,
+    fallback: Semantics(
+      label: semanticLabel,
+      child: Slider(
+        value: value,
+        min: min,
+        max: max,
+        divisions: divisions,
+        label: label,
+        onChanged: onChanged,
+        onChangeStart: onChangeStart,
+        onChangeEnd: onChangeEnd,
+        activeColor: activeColor,
+        inactiveColor: inactiveColor,
+      ),
+    ),
+  );
+}
+
+enum _GlassControlKind { toggle, slider }
 
 class _AdaptiveGlassControl extends StatefulWidget {
   const _AdaptiveGlassControl({
@@ -206,24 +225,32 @@ class _AdaptiveGlassControl extends StatefulWidget {
     required this.value,
     required this.enabled,
     required this.fallback,
-    this.symbol,
-    this.loading = false,
-    this.prominent = false,
+    this.min = 0,
+    this.max = 1,
+    this.divisions,
+    this.valueLabel,
+    this.inactiveColor,
+    this.onSliderChanged,
+    this.onChangeStart,
+    this.onChangeEnd,
     this.tint,
-    this.onActivate,
     this.onChanged,
     this.nativeBuilder,
   });
 
   final _GlassControlKind kind;
   final String label;
-  final String? symbol;
-  final bool value;
+  final Object value;
+  final double min;
+  final double max;
+  final int? divisions;
+  final String? valueLabel;
+  final Color? inactiveColor;
+  final ValueChanged<double>? onSliderChanged;
+  final ValueChanged<double>? onChangeStart;
+  final ValueChanged<double>? onChangeEnd;
   final bool enabled;
-  final bool loading;
-  final bool prominent;
   final Color? tint;
-  final VoidCallback? onActivate;
   final ValueChanged<bool>? onChanged;
   final Widget fallback;
   final Widget Function(BuildContext context, Widget control)? nativeBuilder;
@@ -236,6 +263,7 @@ class _AdaptiveGlassControlState extends State<_AdaptiveGlassControl> {
   static const _viewType = 'bugaoshan/liquid_glass_control';
   bool _supported = false;
   bool _updateScheduled = false;
+  bool _sliderEditing = false;
   MethodChannel? _viewChannel;
 
   @override
@@ -258,47 +286,30 @@ class _AdaptiveGlassControlState extends State<_AdaptiveGlassControl> {
   @override
   void didUpdateWidget(covariant _AdaptiveGlassControl oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (!widget.enabled || widget.kind != oldWidget.kind) {
+      _sliderEditing = false;
+    }
     _scheduleUpdate();
   }
 
   double get _textScale =>
       (MediaQuery.textScalerOf(context).scale(14) / 14).clamp(1.0, 2.0);
 
-  BoxConstraints _buttonConstraints() {
-    // UIKit 按钮使用 17pt semibold，不能只依赖 Material 的 14pt 度量。
-    // 这些最小值补齐原生内容空间，fallback 仍可要求更大的布局尺寸。
-    final labelPainter = TextPainter(
-      text: TextSpan(
-        text: widget.label,
-        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-      ),
-      textDirection: Directionality.of(context),
-      textScaler: TextScaler.linear(_textScale),
-      maxLines: 1,
-    )..layout();
-    final iconSpace = widget.symbol != null || widget.loading ? 32.0 : 0.0;
-    final constraints = BoxConstraints(
-      minWidth: math
-          .max(44, labelPainter.width + iconSpace + 24)
-          .ceilToDouble(),
-      minHeight: math
-          .max(44, math.max(17 * _textScale, labelPainter.height) + 16)
-          .ceilToDouble(),
-    );
-    labelPainter.dispose();
-    return constraints;
-  }
-
   Map<String, Object> _parameters() {
     final theme = Theme.of(context);
     return {
-      'kind': widget.kind == _GlassControlKind.button ? 'button' : 'switch',
+      'kind': widget.kind == _GlassControlKind.slider ? 'slider' : 'switch',
       'label': widget.label,
-      if (widget.symbol != null) 'symbol': widget.symbol!,
       'value': widget.value,
-      'enabled': widget.enabled && !widget.loading,
-      'loading': widget.loading,
-      'style': widget.prominent ? 'prominent' : 'regular',
+      'enabled': widget.enabled,
+      if (widget.kind == _GlassControlKind.slider) ...{
+        'min': widget.min,
+        'max': widget.max,
+        if (widget.divisions != null) 'divisions': widget.divisions!,
+        if (widget.valueLabel != null) 'valueLabel': widget.valueLabel!,
+        if (widget.inactiveColor != null)
+          'inactiveTint': widget.inactiveColor!.toARGB32(),
+      },
       'tint': (widget.tint ?? theme.colorScheme.primary).toARGB32(),
       'brightness': theme.brightness.name,
       'reduceMotion': MediaQuery.disableAnimationsOf(context),
@@ -318,18 +329,49 @@ class _AdaptiveGlassControlState extends State<_AdaptiveGlassControl> {
   }
 
   Future<void> _handleNativeCall(MethodCall call) async {
-    if (!mounted || !_supported || !widget.enabled || widget.loading) return;
-    if (widget.kind == _GlassControlKind.button &&
-        call.method == 'activate' &&
-        call.arguments == null) {
-      widget.onActivate?.call();
-    } else if (widget.kind == _GlassControlKind.toggle &&
+    if (!mounted || !_supported || !widget.enabled) return;
+    if (widget.kind == _GlassControlKind.toggle &&
         call.method == 'change' &&
         call.arguments is bool &&
         call.arguments != widget.value) {
       widget.onChanged?.call(call.arguments as bool);
-      // Flutter 是受控值的来源，回调未接受新值时也恢复原生开关状态。
       _scheduleUpdate();
+    } else if (widget.kind == _GlassControlKind.slider &&
+        call.arguments is num) {
+      final raw = (call.arguments as num).toDouble();
+      if (!raw.isFinite ||
+          raw < widget.min - 0.0001 ||
+          raw > widget.max + 0.0001) {
+        return;
+      }
+      var value = raw.clamp(widget.min, widget.max);
+      final divisions = widget.divisions;
+      if (divisions != null && widget.max > widget.min) {
+        value =
+            widget.min +
+            ((value - widget.min) / (widget.max - widget.min) * divisions)
+                    .round() *
+                (widget.max - widget.min) /
+                divisions;
+      }
+      switch (call.method) {
+        case 'changeStart':
+          if (!_sliderEditing) {
+            _sliderEditing = true;
+            widget.onChangeStart?.call(value);
+          }
+        case 'change':
+          if ((value - (widget.value as double)).abs() > 0.000001) {
+            widget.onSliderChanged?.call(value);
+          }
+          _scheduleUpdate();
+        case 'changeEnd':
+          if (_sliderEditing) {
+            _sliderEditing = false;
+            widget.onChangeEnd?.call(value);
+            _scheduleUpdate();
+          }
+      }
     }
   }
 
@@ -388,40 +430,21 @@ class _AdaptiveGlassControlState extends State<_AdaptiveGlassControl> {
             // 纵向拖动仍参与外层 Flutter 列表的手势竞争。
             gestureRecognizers: {
               Factory<TapGestureRecognizer>(TapGestureRecognizer.new),
-              if (widget.kind == _GlassControlKind.toggle)
-                Factory<HorizontalDragGestureRecognizer>(
-                  HorizontalDragGestureRecognizer.new,
-                ),
+              Factory<HorizontalDragGestureRecognizer>(
+                HorizontalDragGestureRecognizer.new,
+              ),
             },
           );
-    final Widget control;
-    if (widget.kind == _GlassControlKind.toggle) {
-      control = SizedBox(width: 64, height: 44, child: nativeView);
-    } else {
-      control = ConstrainedBox(
-        constraints: _buttonConstraints(),
-        child: Stack(
-          alignment: Alignment.center,
-          clipBehavior: Clip.none,
-          children: [
-            // 隐藏的 Flutter 按钮只负责尺寸；其 Opacity 与原生视图是兄弟。
-            // 不能把 Opacity、Clip 或重复语义节点放到原生材质的祖先上。
-            ExcludeFocus(
-              child: ExcludeSemantics(
-                child: Visibility(
-                  visible: false,
-                  maintainSize: true,
-                  maintainAnimation: true,
-                  maintainState: true,
-                  child: widget.fallback,
-                ),
-              ),
+    final control = widget.kind == _GlassControlKind.toggle
+        ? SizedBox(width: 64, height: 44, child: nativeView)
+        : SizedBox(
+            height: 48,
+            width: double.infinity,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: nativeView,
             ),
-            Positioned.fill(child: nativeView),
-          ],
-        ),
-      );
-    }
+          );
     return widget.nativeBuilder?.call(context, control) ?? control;
   }
 }

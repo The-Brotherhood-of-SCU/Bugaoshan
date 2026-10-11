@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/pages/auth/scu_login_button.dart';
 import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,21 +24,6 @@ Widget _host(
       textDirection: direction,
       child: Scaffold(body: Center(child: child)),
     ),
-  ),
-);
-
-Widget _button({
-  String label = 'Save',
-  VoidCallback? onPressed,
-  VoidCallback? fallbackCallback,
-  bool loading = false,
-}) => AdaptiveGlassButton(
-  label: label,
-  onPressed: onPressed,
-  loading: loading,
-  fallback: FilledButton(
-    onPressed: fallbackCallback ?? onPressed,
-    child: Text(label),
   ),
 );
 
@@ -128,308 +114,6 @@ void main() {
     LiquidGlassCapabilities.resetForTesting();
     await getIt.reset();
   });
-
-  testWidgets(
-    'macOS controls use AppKit and retain controlled values and disabled guards',
-    (tester) async {
-      bridge.install();
-      var presses = 0;
-      final changes = <bool>[];
-      await tester.pumpWidget(
-        _host(
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _button(onPressed: () => presses++),
-              AdaptiveGlassSwitch(
-                value: false,
-                onChanged: changes.add,
-                semanticLabel: 'Reminders',
-              ),
-            ],
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.byType(AppKitView), findsNWidgets(2));
-      expect(find.byType(UiKitView), findsNothing);
-      expect(bridge.supportChecks, 1);
-      final buttonId = bridge.creations.entries
-          .firstWhere((entry) => entry.value['kind'] == 'button')
-          .key;
-      final switchId = bridge.creations.entries
-          .firstWhere((entry) => entry.value['kind'] == 'switch')
-          .key;
-      await bridge.send(buttonId, 'activate');
-      await bridge.send(switchId, 'change', true);
-      await tester.pumpAndSettle();
-      expect(presses, 1);
-      expect(changes, [true]);
-      expect(bridge.updates[switchId]!.last['value'], false);
-      await tester.pumpWidget(
-        _host(
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _button(onPressed: null),
-              AdaptiveGlassSwitch(
-                value: false,
-                onChanged: null,
-                semanticLabel: 'Reminders',
-              ),
-            ],
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      await bridge.send(buttonId, 'activate');
-      await bridge.send(switchId, 'change', true);
-      expect(presses, 1);
-      expect(changes, [true]);
-      expect(tester.takeException(), isNull);
-    },
-    variant: TargetPlatformVariant.only(TargetPlatform.macOS),
-  );
-
-  for (final platform in [TargetPlatform.android, TargetPlatform.linux]) {
-    testWidgets(
-      '$platform controls keep working without contacting native code',
-      (tester) async {
-        bridge.install();
-        var presses = 0;
-        final changes = <bool>[];
-        await tester.pumpWidget(
-          _host(
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _button(onPressed: () => presses++),
-                AdaptiveGlassSwitchListTile(
-                  value: false,
-                  onChanged: changes.add,
-                  title: const Text('Notifications'),
-                ),
-              ],
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-        expect(bridge.supportChecks, 0);
-        expect(bridge.creations, isEmpty);
-        expect(find.byType(UiKitView), findsNothing);
-        expect(find.byType(SwitchListTile), findsOneWidget);
-        await tester.tap(find.text('Save'));
-        await tester.tap(find.text('Notifications'));
-        expect(presses, 1);
-        expect(changes, [true]);
-      },
-      variant: TargetPlatformVariant.only(platform),
-    );
-  }
-
-  for (final missing in [false, true]) {
-    testWidgets(
-      'iOS ${missing ? 'missing bridge' : 'old system'} shares fallback capability',
-      (tester) async {
-        bridge.install(supported: false, missing: missing);
-        var presses = 0;
-        final changes = <bool>[];
-        await tester.pumpWidget(
-          _host(
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _button(onPressed: () => presses++),
-                AdaptiveGlassSwitch(
-                  value: false,
-                  onChanged: changes.add,
-                  semanticLabel: 'Reminders',
-                ),
-              ],
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-        expect(bridge.supportChecks, 1);
-        expect(bridge.creations, isEmpty);
-        expect(find.byType(UiKitView), findsNothing);
-        await tester.tap(find.text('Save'));
-        await tester.tap(find.byType(Switch));
-        expect(presses, 1);
-        expect(changes, [true]);
-        expect(tester.takeException(), isNull);
-      },
-      variant: TargetPlatformVariant.only(TargetPlatform.iOS),
-    );
-  }
-
-  testWidgets(
-    'button sends native appearance and current callback without recreation',
-    (tester) async {
-      bridge.install();
-      var oldPresses = 0;
-      var newPresses = 0;
-      await tester.pumpWidget(_host(_button(onPressed: () => oldPresses++)));
-      await tester.pumpAndSettle();
-      final id = bridge.onlyId;
-      final theme = ThemeData.dark();
-      await tester.pumpWidget(
-        _host(
-          AdaptiveGlassButton(
-            label: 'Continue',
-            symbol: 'arrow.right',
-            prominent: true,
-            tint: Colors.orange,
-            onPressed: () => newPresses++,
-            fallback: FilledButton(
-              onPressed: () => newPresses++,
-              child: const Text('Continue'),
-            ),
-          ),
-          theme: theme,
-          direction: TextDirection.rtl,
-          media: const MediaQueryData(
-            size: Size(800, 600),
-            disableAnimations: true,
-            highContrast: true,
-            textScaler: TextScaler.linear(1.5),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(bridge.creations, hasLength(1));
-      expect(bridge.supportChecks, 1);
-      expect(bridge.updates[id]!.last, {
-        'kind': 'button',
-        'label': 'Continue',
-        'symbol': 'arrow.right',
-        'value': false,
-        'enabled': true,
-        'loading': false,
-        'style': 'prominent',
-        'tint': Colors.orange.toARGB32(),
-        'brightness': 'dark',
-        'reduceMotion': true,
-        'highContrast': true,
-        'textScale': 1.5,
-        'direction': 'rtl',
-      });
-      expect(
-        tester.getSize(find.byType(UiKitView)).height,
-        greaterThanOrEqualTo(44),
-      );
-      await bridge.send(id, 'activate');
-      await bridge.send(id, 'activate', true);
-      await bridge.send(id, 'change', true);
-      await bridge.send(id, 'unknown');
-      expect(oldPresses, 0);
-      expect(newPresses, 1);
-    },
-    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
-  );
-
-  testWidgets(
-    'large native button label and symbol outgrow the small Material fallback',
-    (tester) async {
-      bridge.install();
-      const label = 'Save settings';
-      const referenceLabelKey = Key('native-label-size-reference');
-      Future<void> showAtScale(double scale) async {
-        await tester.pumpWidget(
-          _host(
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Independently laid out reference for the native Swift font.
-                const Text(
-                  label,
-                  key: referenceLabelKey,
-                  style: TextStyle(
-                    inherit: false,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                AdaptiveGlassButton(
-                  label: label,
-                  symbol: 'checkmark',
-                  onPressed: () {},
-                  fallback: SizedBox(
-                    width: 120,
-                    height: 44,
-                    child: FilledButton(
-                      onPressed: () {},
-                      child: const Text(
-                        label,
-                        style: TextStyle(fontSize: 14),
-                        textScaler: TextScaler.noScaling,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            media: MediaQueryData(
-              size: const Size(800, 600),
-              textScaler: TextScaler.linear(scale),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-      }
-
-      await showAtScale(1);
-      final normalSize = tester.getSize(find.byType(UiKitView));
-      await showAtScale(2);
-      final largeSize = tester.getSize(find.byType(UiKitView));
-      final labelSize = tester.getSize(find.byKey(referenceLabelKey));
-
-      // UIKit needs 12pt at each side, plus a 24pt symbol and 8pt image gap.
-      expect(largeSize.width, greaterThanOrEqualTo(labelSize.width + 56));
-      expect(largeSize.height, greaterThanOrEqualTo(labelSize.height + 16));
-      expect(largeSize.height, greaterThan(44));
-      expect(largeSize.width, greaterThan(normalSize.width));
-      expect(largeSize.height, greaterThan(normalSize.height));
-      expect(bridge.creations, hasLength(1));
-      expect(bridge.updates[bridge.onlyId]!.last['textScale'], 2);
-      expect(tester.takeException(), isNull);
-    },
-    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
-  );
-
-  for (final native in [false, true]) {
-    testWidgets(
-      '${native ? 'native' : 'fallback'} button ignores disabled and loading input',
-      (tester) async {
-        bridge.install(supported: native);
-        var presses = 0;
-        for (final loading in [false, true]) {
-          await tester.pumpWidget(
-            _host(
-              _button(
-                onPressed: loading ? () => presses++ : null,
-                loading: loading,
-                // Deliberately active fallback proves wrapper blocks input.
-                fallbackCallback: () => presses++,
-              ),
-            ),
-          );
-          await tester.pumpAndSettle();
-          if (native) {
-            await bridge.send(bridge.onlyId, 'activate');
-            expect(bridge.updates[bridge.onlyId]!.last['enabled'], false);
-            expect(bridge.updates[bridge.onlyId]!.last['loading'], loading);
-          } else {
-            await tester.tap(find.text('Save'), warnIfMissed: false);
-          }
-        }
-        expect(presses, 0);
-      },
-      variant: TargetPlatformVariant.only(TargetPlatform.iOS),
-    );
-  }
 
   testWidgets(
     'switch uses current value and callback and restores rejected changes',
@@ -636,14 +320,22 @@ void main() {
     'disposed controls detach native callbacks',
     (tester) async {
       bridge.install();
-      var presses = 0;
-      await tester.pumpWidget(_host(_button(onPressed: () => presses++)));
+      final changes = <bool>[];
+      await tester.pumpWidget(
+        _host(
+          AdaptiveGlassSwitch(
+            value: false,
+            onChanged: changes.add,
+            semanticLabel: 'Switch',
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
       final id = bridge.onlyId;
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pumpAndSettle();
-      expect(await bridge.send(id, 'activate'), isNull);
-      expect(presses, 0);
+      expect(await bridge.send(id, 'change', true), isNull);
+      expect(changes, isEmpty);
       expect(bridge.disposed, [id]);
       expect(tester.takeException(), isNull);
     },
@@ -655,12 +347,289 @@ void main() {
     (tester) async {
       final support = Completer<bool>();
       bridge.install(delayedSupport: support);
-      await tester.pumpWidget(_host(_button(onPressed: () {})));
+      await tester.pumpWidget(
+        _host(
+          AdaptiveGlassSwitch(
+            value: false,
+            onChanged: (_) {},
+            semanticLabel: 'Switch',
+          ),
+        ),
+      );
       await tester.pumpWidget(const SizedBox.shrink());
       support.complete(true);
       await tester.pumpAndSettle();
       expect(bridge.creations, isEmpty);
       expect(tester.takeException(), isNull);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+  );
+  for (final platform in [TargetPlatform.iOS, TargetPlatform.macOS]) {
+    testWidgets(
+      'native slider preserves discrete values and gesture callbacks on $platform',
+      (tester) async {
+        bridge.install();
+        final changes = <double>[];
+        final starts = <double>[];
+        final ends = <double>[];
+        var value = 0.5;
+        await tester.pumpWidget(
+          _host(
+            StatefulBuilder(
+              builder: (context, setState) => AdaptiveGlassSlider(
+                value: value,
+                min: 0.3,
+                max: 1,
+                divisions: 14,
+                semanticLabel: 'Opacity',
+                onChanged: (v) {
+                  changes.add(v);
+                  setState(() => value = v);
+                },
+                onChangeStart: starts.add,
+                onChangeEnd: ends.add,
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final id = bridge.onlyId;
+        expect(bridge.creations[id]!['kind'], 'slider');
+        expect(bridge.creations[id]!['divisions'], 14);
+        expect(find.byType(Slider), findsNothing);
+        expect(
+          find.byType(platform == TargetPlatform.iOS ? UiKitView : AppKitView),
+          findsOneWidget,
+        );
+        await bridge.send(id, 'changeStart', 0.5);
+        await bridge.send(id, 'changeStart', 0.5);
+        await bridge.send(id, 'change', 0.699999988);
+        await tester.pumpAndSettle();
+        expect(changes, hasLength(1));
+        expect(value, closeTo(0.7, 0.000001));
+        await bridge.send(id, 'change', 0.699999988);
+        await bridge.send(id, 'changeEnd', 0.699999988);
+        await bridge.send(id, 'changeEnd', 0.699999988);
+        await tester.pumpAndSettle();
+        expect(
+          changes,
+          hasLength(1),
+          reason: 'Accepted echo must not replay callbacks',
+        );
+        expect(starts, [0.5]);
+        expect(ends.single, closeTo(0.7, 0.000001));
+        expect(bridge.creations, hasLength(1));
+        expect(bridge.updates[id]!.last['value'], closeTo(0.7, 0.000001));
+      },
+      variant: TargetPlatformVariant.only(platform),
+    );
+  }
+
+  testWidgets(
+    'slider rejects malformed events, restores declined values and ignores disabled input',
+    (tester) async {
+      bridge.install();
+      final changes = <double>[];
+      final starts = <double>[];
+      final ends = <double>[];
+      Future<void> show(bool enabled) async {
+        await tester.pumpWidget(
+          _host(
+            AdaptiveGlassSlider(
+              value: 12,
+              min: 8,
+              max: 20,
+              divisions: 12,
+              semanticLabel: 'Font size',
+              onChanged: enabled ? changes.add : null,
+              onChangeStart: starts.add,
+              onChangeEnd: ends.add,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      await show(true);
+      final id = bridge.onlyId;
+      for (final bad in <Object>[
+        double.nan,
+        double.infinity,
+        -1,
+        30,
+        true,
+        '14',
+      ]) {
+        await bridge.send(id, 'change', bad);
+      }
+      await bridge.send(id, 'activate', 14);
+      expect(changes, isEmpty);
+      await bridge.send(id, 'change', 14.0000001);
+      await tester.pumpAndSettle();
+      expect(changes, [14]);
+      expect(bridge.updates[id]!.last['value'], 12);
+      await show(false);
+      await bridge.send(id, 'changeStart', 12);
+      await bridge.send(id, 'change', 15);
+      await bridge.send(id, 'changeEnd', 15);
+      expect(changes, [14]);
+      expect(starts, isEmpty);
+      expect(ends, isEmpty);
+      expect(bridge.updates[id]!.last['enabled'], false);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+  );
+
+  for (final platform in [
+    TargetPlatform.android,
+    TargetPlatform.linux,
+    TargetPlatform.iOS,
+  ]) {
+    testWidgets(
+      'unavailable native controls keep Material behavior on $platform',
+      (tester) async {
+        bridge.install(supported: false);
+        final changes = <double>[];
+        final toggles = <bool>[];
+        await tester.pumpWidget(
+          _host(
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AdaptiveGlassSlider(
+                  value: 0.5,
+                  semanticLabel: 'Opacity',
+                  onChanged: changes.add,
+                ),
+                AdaptiveGlassSwitchListTile(
+                  value: false,
+                  onChanged: toggles.add,
+                  title: const Text('Reminders'),
+                ),
+              ],
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(bridge.creations, isEmpty);
+        expect(bridge.supportChecks, platform == TargetPlatform.iOS ? 1 : 0);
+        expect(find.byType(Slider), findsOneWidget);
+        await tester.tap(find.text('Reminders'));
+        await tester.drag(find.byType(Slider), const Offset(100, 0));
+        expect(toggles, [true]);
+        expect(changes, isNotEmpty);
+      },
+      variant: TargetPlatformVariant.only(platform),
+    );
+  }
+
+  testWidgets(
+    'slider update failure falls back with its latest controlled value',
+    (tester) async {
+      bridge.install();
+      final changes = <double>[];
+      Future<void> show(double value) async {
+        await tester.pumpWidget(
+          _host(
+            AdaptiveGlassSlider(
+              value: value,
+              semanticLabel: 'Opacity',
+              onChanged: changes.add,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      await show(0.3);
+      final id = bridge.onlyId;
+      bridge.failUpdates = true;
+      await show(0.8);
+      expect(tester.widget<Slider>(find.byType(Slider)).value, 0.8);
+      expect(await bridge.send(id, 'change', 0.2), isNull);
+      expect(changes, isEmpty);
+      expect(bridge.disposed, [id]);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+  );
+
+  testWidgets(
+    'vertical drag on slider scrolls the list without changing settings',
+    (tester) async {
+      bridge.install();
+      final controller = ScrollController();
+      addTearDown(controller.dispose);
+      final changes = <double>[];
+      await tester.pumpWidget(
+        _host(
+          ListView(
+            controller: controller,
+            children: [
+              const SizedBox(height: 240),
+              AdaptiveGlassSlider(
+                value: 0.5,
+                semanticLabel: 'Opacity',
+                onChanged: changes.add,
+              ),
+              const SizedBox(height: 1000),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.drag(find.byType(UiKitView), const Offset(0, -180));
+      await tester.pumpAndSettle();
+      expect(controller.offset, greaterThan(100));
+      expect(changes, isEmpty);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+  );
+
+  testWidgets(
+    'login action remains a normal full-width button even when glass is supported',
+    (tester) async {
+      bridge.install();
+      var presses = 0;
+      Future<void> show(bool loading) async {
+        await tester.pumpWidget(
+          _host(
+            ScuLoginButton(
+              loading: loading,
+              onPressed: () => presses++,
+              brandColor: Colors.blue,
+              label: 'Login',
+            ),
+          ),
+        );
+        await tester.pumpAndSettle(
+          const Duration(milliseconds: 100),
+          EnginePhase.sendSemanticsUpdate,
+          const Duration(seconds: 1),
+        );
+      }
+
+      await show(false);
+      expect(find.byType(FilledButton), findsOneWidget);
+      expect(bridge.creations, isEmpty);
+      expect(bridge.supportChecks, 0);
+      await tester.tap(find.text('Login'));
+      expect(presses, 1);
+      await tester.pumpWidget(
+        _host(
+          ScuLoginButton(
+            loading: true,
+            onPressed: () => presses++,
+            brandColor: Colors.blue,
+            label: 'Login',
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(
+        tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+        isNull,
+      );
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
     },
     variant: TargetPlatformVariant.only(TargetPlatform.iOS),
   );
