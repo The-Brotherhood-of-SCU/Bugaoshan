@@ -60,6 +60,7 @@ private final class GlassViewFactory: NSObject, FlutterPlatformViewFactory {
 private final class GlassModel: ObservableObject {
   @Published var configuration: [String: Any]
   let send: (String, Any?) -> Void
+  private var sliderEditing = false
 
   init(configuration: [String: Any], send: @escaping (String, Any?) -> Void) {
     self.configuration = configuration
@@ -68,6 +69,55 @@ private final class GlassModel: ObservableObject {
 
   func string(_ key: String) -> String { configuration[key] as? String ?? "" }
   func bool(_ key: String) -> Bool { configuration[key] as? Bool ?? false }
+  func number(_ key: String, fallback: Double) -> Double {
+    let value = (configuration[key] as? NSNumber)?.doubleValue ?? fallback
+    return value.isFinite ? value : fallback
+  }
+
+  func applyControlConfiguration(_ incoming: [String: Any]) {
+    var next = incoming
+    if sliderEditing && incoming["kind"] as? String == "slider"
+        && incoming["enabled"] as? Bool == true {
+      // A bridge acknowledgement may be behind the pointer. Keep the system
+      // slider's current position until editing ends; still accept theme/range updates.
+      let minimum = (incoming["min"] as? NSNumber)?.doubleValue ?? 0
+      let maximum = (incoming["max"] as? NSNumber)?.doubleValue ?? 1
+      if minimum.isFinite && maximum.isFinite && maximum >= minimum {
+        next["value"] = min(maximum, max(minimum, number("value", fallback: minimum)))
+      }
+    } else {
+      sliderEditing = false
+    }
+    guard !(configuration as NSDictionary).isEqual(to: next) else { return }
+    if let value = configuration["value"] as? NSObject, value.isEqual(next["value"]) {
+      var transaction = Transaction(animation: nil)
+      transaction.disablesAnimations = true
+      withTransaction(transaction) { configuration = next }
+    } else {
+      // External value changes (including a Flutter row tap) reach the system
+      // control once. There is no additional glass or SwiftUI value animation.
+      configuration = next
+    }
+  }
+
+  func setSwitchValue(_ value: Bool) {
+    guard enabled, value != bool("value") else { return }
+    configuration["value"] = value
+    send("change", value)
+  }
+
+  func setSliderValue(_ value: Double) {
+    guard enabled, value.isFinite, value != number("value", fallback: 0) else { return }
+    configuration["value"] = value
+    send("change", value)
+  }
+
+  func setSliderEditing(_ editing: Bool) {
+    guard enabled, editing != sliderEditing else { return }
+    sliderEditing = editing
+    send(editing ? "changeStart" : "changeEnd", number("value", fallback: 0))
+  }
+
   var enabled: Bool { bool("enabled") && !bool("loading") }
   var scale: CGFloat {
     let value = (configuration["textScale"] as? NSNumber)?.doubleValue ?? 1
@@ -121,7 +171,11 @@ private final class GlassPlatformView: NSView {
         result(FlutterError(code: "INVALID_ARGUMENT", message: "Expected configuration", details: nil))
         return
       }
-      self.model.configuration = configuration
+      if kind == "control" {
+        self.model.applyControlConfiguration(configuration)
+      } else {
+        self.model.configuration = configuration
+      }
       result(nil)
     }
   }
@@ -155,47 +209,40 @@ private struct GlassRoot: View {
 private struct GlassControl: View {
   @ObservedObject var model: GlassModel
 
+  private var sliderValue: Binding<Double> {
+    Binding(
+      get: { model.number("value", fallback: 0) },
+      set: { model.setSliderValue($0) }
+    )
+  }
+
   var body: some View {
     Group {
       if model.string("kind") == "switch" {
         Toggle(model.string("label"), isOn: Binding(
           get: { model.bool("value") },
-          set: { value in
-            if model.enabled && value != model.bool("value") { model.send("change", value) }
-          }
+          set: { model.setSwitchValue($0) }
         ))
         .labelsHidden()
         .toggleStyle(.switch)
         .controlSize(.regular)
-      } else if model.string("style") == "prominent" {
-        button.buttonStyle(.glassProminent)
-      } else {
-        button.buttonStyle(.glass)
+      } else if model.string("kind") == "slider" {
+        let minimum = model.number("min", fallback: 0)
+        let maximum = max(minimum, model.number("max", fallback: 1))
+        let divisions = model.number("divisions", fallback: 0)
+        if divisions > 0 && maximum > minimum {
+          Slider(value: sliderValue, in: minimum...maximum,
+                 step: (maximum - minimum) / divisions, onEditingChanged: model.setSliderEditing)
+        } else {
+          Slider(value: sliderValue, in: minimum...maximum, onEditingChanged: model.setSliderEditing)
+        }
       }
     }
     .disabled(!model.enabled)
-    .font(.system(size: 17 * model.scale, weight: .semibold))
     .accessibilityLabel(model.string("label"))
     .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
 
-  private var button: some View {
-    Button {
-      if model.enabled { model.send("activate", nil) }
-    } label: {
-      HStack(spacing: 8) {
-        if model.bool("loading") {
-          ProgressView().controlSize(.small)
-        } else if !model.string("symbol").isEmpty {
-          Image(systemName: model.string("symbol"))
-        }
-        Text(model.string("label")).lineLimit(1)
-      }
-      .padding(.horizontal, 8)
-      .frame(minHeight: 32 * model.scale)
-      .frame(maxWidth: .infinity)
-    }
-  }
 }
 
 @available(macOS 26.0, *)
