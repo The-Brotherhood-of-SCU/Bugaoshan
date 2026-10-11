@@ -39,6 +39,8 @@ iOS 侧的 [`LiquidGlassDock.swift`](../../ios/Runner/LiquidGlassDock.swift) 注
 
 非延伸模式使用原有 `SafeArea`，scope 的底部 inset 为 0；Home 以外的详情页没有此 scope 时也默认返回 0，避免改变共用组件的布局。
 
+外层整页避让的入口必须同时屏蔽掉被 `extendBody` 注入的 `padding.bottom`（`HomeDockInsets.consumed`）。这份 padding 等于整个平台视图的高度，是给 Home 自己铺内容用的；页面内部若还有自己的 `Scaffold` / `NavigationBar`，其内建 `SafeArea` 会把同一份 padding 再消费一次，把底栏抬高整整一个 Dock 高度，在底栏与浮动 Dock 之间留下一条空白（#376 第二课堂页）。已适配的三张主页通过 `HomeDockInsets.bottomOf` 自行读取该值，因此不受这次屏蔽影响。
+
 ## Flutter 桥接契约
 
 能力通道为 `bugaoshan/liquid_glass`：
@@ -111,7 +113,7 @@ Flutter 的滚动组件不是 `UIScrollView`，当前也没有把 Flutter 滚动
 
 ## 验证状态
 
-[`adaptive_home_dock_test.dart`](../../test/adaptive_home_dock_test.dart) 覆盖桥接回退、稳定 ID 选择、参数更新与释放、原生模式切换，以及全宽平台视图、延伸 viewport、末尾内容避让和旧模式安全区。Widget 测试使用模拟平台通道，不渲染 UIKit 材质；源码中的系统控件和这些通过的测试都不能证明玻璃已正确采样 Flutter 内容。
+[`adaptive_home_dock_test.dart`](../../test/adaptive_home_dock_test.dart) 覆盖桥接回退、稳定 ID 选择、参数更新与释放、原生模式切换，以及全宽平台视图、延伸 viewport、末尾内容避让、旧模式安全区，以及嵌套底栏不再重复消费注入 padding（#376 回归）。Widget 测试使用模拟平台通道，不渲染 UIKit 材质；源码中的系统控件和这些通过的测试都不能证明玻璃已正确采样 Flutter 内容。
 
 [`adaptive_glass_controls_test.dart`](../../test/adaptive_glass_controls_test.dart) 覆盖控件回退、事件与受控值同步、禁用/loading、配置更新、释放及列表手势等桥接行为。Widget 测试使用模拟平台通道，不渲染 UIKit 材质。
 

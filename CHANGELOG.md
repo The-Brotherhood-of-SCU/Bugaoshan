@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- 修复 iOS 26 及以上把「第二课堂」等自带底栏的功能加到底部导航后，其底栏与浮动底栏之间出现一条空白的问题
+
 ## [2.5.3] - 2026-10-09
 
 ### Added

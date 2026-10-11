@@ -10,6 +10,22 @@ class HomeDockInsets extends InheritedWidget {
   static double bottomOf(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<HomeDockInsets>()?.bottom ?? 0;
 
+  /// 屏蔽子树里被 `extendBody` 注入的底部 padding。
+  ///
+  /// Home 的 `extendBody` 会把整个浮动 Dock 的高度写进 body 的
+  /// `MediaQuery.padding.bottom`。未逐页适配的入口由 Home 在外层做整页避让，
+  /// 页面内部的嵌套 Scaffold / `NavigationBar` 不应再消费同一份 padding：
+  /// 否则会被各自的 `SafeArea` 撑高，在内层底栏与 Dock 之间留出空白
+  /// （见 #376：第二课堂页）。已适配的三张主页自行读取 [bottomOf]，不受影响。
+  static Widget consumed({
+    required BuildContext context,
+    required Widget child,
+  }) => MediaQuery.removePadding(
+    context: context,
+    removeBottom: true,
+    child: child,
+  );
+
   @override
   bool updateShouldNotify(HomeDockInsets oldWidget) =>
       bottom != oldWidget.bottom;

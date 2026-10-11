@@ -247,10 +247,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
     // 自定义业务入口各有表单/FAB/Scaffold，暂保留完整可操作区域。
     // 已适配的三张主页把这段空间放到滚动内容末尾，而非裁短 viewport。
+    // 这些入口由外层整页避让；同时屏蔽被 extendBody 注入的底部 padding，
+    // 避免其自带底栏（如第二课堂的 NavigationBar）再消费一次而留出空白 (#376)。
     return Builder(
       builder: (context) => Padding(
         padding: EdgeInsets.only(bottom: HomeDockInsets.bottomOf(context)),
-        child: page,
+        child: HomeDockInsets.consumed(context: context, child: page),
       ),
     );
   }
