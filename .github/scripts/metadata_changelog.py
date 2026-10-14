@@ -14,7 +14,7 @@ import argparse
 import os
 import re
 import sys
-import yaml
+from changelog_sections import find_version_section, has_changelog_content
 
 # 与 android/app/build.gradle.kts 的 ABI override 一致：
 # versionCode = base*10 + abiCode（v7a=1, v8a=2, x86_64=4）
@@ -41,49 +41,17 @@ def extract_changelog(version: str, changelog_path: str = "CHANGELOG.md") -> str
     with open(changelog_path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    lines = content.split("\n")
-    is_prerelease = "-" in version
-
-    if is_prerelease:
-        for i, line in enumerate(lines):
-            if re.match(r"^##\s", line.strip()):
-                start_idx = i
-                break
-        else:
-            return "*No changelog entry for this version.*"
-    else:
-        pattern = rf"^##\s*\[?{re.escape(version)}\]?(?:\s*-\s*\d{{4}}-\d{{2}}-\d{{2}})?\s*$"
-        start_idx = None
-        for i, line in enumerate(lines):
-            if re.match(pattern, line.strip(), re.IGNORECASE):
-                start_idx = i
-                break
-        if start_idx is None:
-            for i, line in enumerate(lines):
-                if re.match(r"^##\s*\[Unreleased\]", line.strip(), re.IGNORECASE):
-                    start_idx = i
-                    break
-            if start_idx is None:
-                print(f"::error::No changelog entry found for version {version}", file=sys.stderr)
-                return None
-
-    end_idx = len(lines)
-    for i in range(start_idx + 1, len(lines)):
-        if re.match(r"^##\s", lines[i].strip()):
-            end_idx = i
-            break
-
-    changelog_lines = lines[start_idx + 1:end_idx]
-    while changelog_lines and changelog_lines[0].strip() == "":
-        changelog_lines.pop(0)
-    while changelog_lines and changelog_lines[-1].strip() == "":
-        changelog_lines.pop()
-
-    if not changelog_lines:
+    try:
+        section = find_version_section(content, version)
+    except ValueError as error:
+        print(f"::error::{error}", file=sys.stderr)
+        return None
+    if section is None or not has_changelog_content(section.content):
+        print(f"::error::No changelog content found for version {version}", file=sys.stderr)
         return None
 
     result = []
-    for line in changelog_lines:
+    for line in section.content.splitlines():
         stripped = line.strip()
         if re.match(r"^###\s", stripped):
             continue
@@ -209,6 +177,8 @@ def write_changelogs(
 
 def get_version_from_pubspec(pubspec_path: str = "pubspec.yaml") -> str:
     """Extract the version name (without build number) from pubspec.yaml."""
+    import yaml
+
     with open(pubspec_path, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
     raw_version = str(data["version"])
