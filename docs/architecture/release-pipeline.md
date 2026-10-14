@@ -47,15 +47,15 @@ branch-policy 只做一条硬校验：**`main` 只能接收来自 `preview` 的 
    - 代码生成物干净树检查：setup 阶段已运行 `flutter pub get`、`build_runner`、`flutter gen-l10n`，之后 `git status --porcelain` 必须为空；
    - `flutter test` 全量测试；
    - Python 自动化脚本单测（`.github/scripts/tests/`）；
-   - `tool/pre_release_check.py --ci --prerelease`：版本格式、CHANGELOG 结构等**结构性 FAIL 会拦截**；发布时机类检查（版本递增 / tag 冲突 / Unreleased 空置）为 **WARN** 提示。
+   - `tool/pre_release_check.py --ci --prerelease --changelog-structure-only`：日常预览门禁检查版本格式、CHANGELOG 章节结构与重复版本，结构性 FAIL 会拦截；不猜测本次最终预览 tag，不要求日常改动附带新版本说明。
 3. **合并进 `preview`**：push 事件同时触发 pre-flight 重跑与 release.yml preview 通道——
    - 预览 tag 与 pubspec 解耦：脚本取「最新正式 tag」严格递增 Z 位（X、Y 不动），推导 `vX.Y.Z-preview`（首次）或递增序号 `vX.Y.Z-preview.N`（如上一正式版 v2.5.1 → v2.5.2-preview.2）；
-   - workflow 自动打 tag（`resolve-metadata` job，需要 `contents: write`，推送失败立即终止本次发布）；
+   - workflow 按解析出的目标版本检查 changelog，再自动打 tag（`resolve-metadata` job，需要 `contents: write`，推送失败立即终止本次发布）；正式版说明缺失、空置或章节重复时在打 tag 与构建前终止；
    - `build-android.yml`（universal + split-per-ABI，混淆，JDK 21）、`build-windows.yml`（zip）与 `build-macos.yml`（未签名 universal 验证包）并行构建；Mac 商店包单独签名上传，验证包不进入 GitHub Release；
    - 发布走 **Draft → 上传产物 → Publish** 顺序，兼容仓库的不可变 Release 策略，标记为 prerelease；
-   - 预览版的 release notes 取 `CHANGELOG.md` 第一个章节（约定为 `[Unreleased]`；该取法的已知问题见 §4.8），对比范围为上一个**正式** tag。tag 在构建开始前就已推送，构建/发布失败时 tag 会留存（见 §4.12）。
+   - 预览版的 release notes 按完整目标版本精确提取（例如 `[2.5.4-preview.2]` 或 `[2.5.4-rc]`），缺失或空置时显示占位说明（见 §4.8），对比范围为上一个**正式** tag。tag 在构建开始前就已推送，构建/发布失败时 tag 会留存（见 §4.12）。
 4. **周期内迭代**：后续变更继续以 PR 合入 `preview`，预览版序号自动递增（`.2`、`.3`…）。周期内 `pubspec.yaml` 的版本号保持上一正式版不变，预览产物的 versionName 与 tag 不同名是设计使然。
-5. **准备正式版（`/release X.Y.Z`）**：bump `pubspec.yaml` 版本（保留 `+buildNumber`）、将 `[Unreleased]` 重命名为 `[X.Y.Z] - 日期`、更新 F-Droid 元数据（`metadata/*.yml` 的 versionName/versionCode + `metadata_changelog.py` 生成多语言 changelogs）、本地跑严格模式 `pre_release_check.py X.Y.Z`，提交推送 `preview`——这会先触发一轮预览版发布（tag 按 §3 规则切换为 `vX.Y.Z-rc`，直接使用即将发布的版本号；若 RC 之后仍有合并进 preview，后续轮次为 `vX.Y.Z-rc1`、`-rc2`…；产物版本号与其余预览一致，构建时注入的是上一正式版的版本号，pubspec 的 bump 不影响预览构建；内容与正式版一致，性质等同发布候选）——随后创建 `preview → main` 的发布 PR，合并后才发正式版。
+5. **准备正式版（`/release X.Y.Z`）**：bump `pubspec.yaml` 版本并同步 `+buildNumber`，使用 changelog skill 合并同周期预览变化和最后增量，创建或更新 `[X.Y.Z] - 日期` 章节。更新 F-Droid 元数据（`metadata/*.yml` 的 versionName/versionCode + `metadata_changelog.py` 生成多语言 changelogs），本地跑严格模式 `pre_release_check.py X.Y.Z`，提交推送 `preview`——这会先触发一轮 RC 发布（首轮 `vX.Y.Z-rc`，后续为 `-rc1`、`-rc2`…；构建时仍注入上一正式版的包体版本）。若需要该 RC 的发布说明，另行整理完整 RC 版本章节，提取器不会借用正式版说明。随后创建 `preview → main` 的发布 PR，合并后才发正式版。
 6. **合并进 `main`**：release.yml formal 通道——
    - 基础版本读自 pubspec；远端不存在 `vX.Y.Z` → 打 tag、双端构建、发布正式 Release（`--latest`）；
    - F-Droid changelog 由 `metadata_changelog.py --skip-existing` 生成并兜底提交回 `main`；
@@ -95,21 +95,21 @@ preview 通道开启「只保留最新一轮」的取消语义后，短时间连
 CI 自己的 `git push`（自动 tag、F-Droid metadata 兜底提交）使用 `GITHUB_TOKEN`，GitHub 不会为 GITHUB_TOKEN 产生的事件新建 workflow run，因此发布流程不会自我连环触发。
 
 ### 4.8 CHANGELOG 的提取路径
-`release_changelog.py`：版本号含 `-`（预览/RC）→ 按**名称**匹配 `CHANGELOG.md` 的 `[Unreleased]` 章节；正式版 → 严格匹配 `[X.Y.Z]` 章节，缺失或为空直接报错终止。
+`changelog_sections.py` 为发布说明、F-Droid 元数据和预检提供共享的版本章节解析。`release_changelog.py` 对预览、RC 和正式版统一按完整目标版本精确匹配 `CHANGELOG.md`（标题为 `## [版本]`，日期可选）；正文内代码块的示例标题不会分割章节，重复版本会报错。
 
 预览/RC 路径的行为：
 
-- `[Unreleased]` 有内容 → 作为发布说明；
-- `[Unreleased]` 存在但为空、或整个缺失 → 发布占位文案 `*No changelog entry for this version.*` 并打 `::warning::` 注解，**绝不借用其他版本的章节**（早期实现按位置取第一个章节，章节缺失时会静默把上一个正式版的更新说明发进新预览版，已修复并有回归测试锁定）；
-- 预览阶段**不要**重命名 `[Unreleased]` 章节——重命名是 `/release` 的职责。
+- 目标预览/RC 章节有有效内容 → 作为发布说明；
+- 目标预览/RC 章节缺失或为空 → 发布占位文案 `*No changelog entry for this version.*` 并打 `::warning::` 注解，**绝不借用其他版本的章节**；
+- 正式版目标章节缺失或为空 → 报错终止；仅有分类标题也视为空内容。F-Droid 说明同样精确匹配正式版本，不使用其他章节兜底。
 
-相关守卫：正式版忘记把 `[Unreleased]` 重命名清空时，下周期预览会把已发布内容重复宣传——`pre_release_check` 稳定模式已有 WARN（「[Unreleased] 仍有 N 条未发布内容」）兜底；正式版 `[X.Y.Z]` 章节缺失/为空除 publish 阶段硬失败（构建跑完才报错）外，pre-flight 稳定模式会在发布 PR 阶段就 FAIL 提前拦截——但门禁不是 required check，需要人工看红叉。
+相关守卫：发布流程在打 tag 前以最终解析版本执行提取检查，publish 阶段仍会再次读取。日常预览 PR 只检查章节结构；指定完整预览版本的本地严格检查要求有对应内容，`--ci` 模式将其缺失降为 WARN。正式版在两种模式下都要求目标说明完整。门禁不是 required check 时，仍需人工关注其结果。
 
 ### 4.9 F-Droid 元数据需要先行
 `metadata/*.yml` 的 versionName/versionCode 不会由流水线自动生成，必须在 `preview → main` 发布 PR 之前手动补齐（`/release` 命令包含此步骤），否则 pre-flight 的结构性检查会 FAIL；`metadata/{lang}/changelogs/*.txt` 由 CI 在正式发布时兜底生成并提交回 `main`。
 
 ### 4.10 手动严格模式与 CI 门禁模式的分界
-`tool/pre_release_check.py` 手动运行（`/release` 流程）为严格模式：版本递增、tag 冲突、Unreleased 空置等一律 FAIL，用于发布前拦截。`--ci` 模式运行在任意 PR/push 上，代码库常处于「两个版本之间」的正常状态，上述时机类检查降级为 WARN，结构性检查（版本格式、pubspec 解析、CHANGELOG 结构、F-Droid 元数据）保持 FAIL。
+`tool/pre_release_check.py` 手动运行（`/release` 流程）为严格模式：版本递增、tag 冲突、目标说明缺失等 FAIL 用于发布前拦截。`--ci` 模式将版本递增、tag 冲突和预览版说明缺失降为 WARN，结构性检查和正式版说明缺失保持 FAIL。日常预览使用 `--ci --prerelease --changelog-structure-only`，只检查版本章节结构，并跳过尚未确定的预览 tag 冲突检查；明确准备预览版时须传入完整版本号，如 `2.5.4-preview.2` 或 `2.5.4-rc`。
 
 ### 4.11 fork PR 的推送方式
 外部贡献者的 PR 分支位于其 fork。维护者推送修正提交依赖 PR 的 `maintainer_can_modify`；仓库启用 git-lfs 时，直接推送需跳过 LFS pre-push 钩子（`git push --no-verify`，仅当变更不含 LFS 文件时安全）。
@@ -174,7 +174,7 @@ pre-flight 的 `unittest discover -s .github/scripts/` 会把 `tests/` 子目录
 | `.github/workflows/build-macos.yml` | macOS 未签名 universal 验证构建，支持 PR / 手动触发与发布流程复用 |
 | `.github/actions/setup/action.yml` | 公共环境：钉版 Flutter、镜像 pub get、代码生成、git 元数据 |
 | `.github/scripts/resolve_release_version.py` | 通道判定、tag 推导、幂等守卫 |
-| `.github/scripts/release_tags.py` / `release_changelog.py` / `release_body.py` / `release_prepare.py` | 发布说明与产物整理 |
+| `.github/scripts/changelog_sections.py` / `release_tags.py` / `release_changelog.py` / `release_body.py` / `release_prepare.py` | 版本章节解析、发布说明与产物整理 |
 | `.github/scripts/metadata_changelog.py` | F-Droid 多语言 changelogs 生成 |
 | `tool/pre_release_check.py` | 发布前静态检查（手动严格 / `--ci` 门禁两种模式） |
 | `.claude/commands/release.md` / `prerelease.md` | `/release` 与 `/prerelease` 操作流程 |
