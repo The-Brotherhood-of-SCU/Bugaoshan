@@ -48,7 +48,7 @@ The repo ships three small CMD wrappers at the project root that just chain the 
 
 ### Commit Convention
 
-Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `perf:`, `build:`, `ci:`, `test:`, `style:`. The release tooling in `.claude/commands/release.md` and `prerelease.md` classifies commits by prefix when generating changelogs.
+Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `perf:`, `build:`, `ci:`, `test:`, `style:`. Release notes are prepared separately using the Changelog Preparation workflow below.
 
 ## Project Layout
 
@@ -58,7 +58,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 ├── CLAUDE.md                   # pointer → "follow AGENTS.md"
 ├── README.md                   # public-facing intro
 ├── CONTRIBUTING.md             # dev environment + workflow
-├── CHANGELOG.md                # Keep-a-Changelog format (Chinese summaries)
+├── CHANGELOG.md                # Versioned release notes (Chinese summaries)
 ├── LICENSE                     # AGPL-3.0
 ├── pubspec.yaml                # package metadata, deps, flutter_launcher_icons config
 ├── analysis_options.yaml       # extends package:flutter_lints/flutter.yaml
@@ -383,7 +383,7 @@ Two labels drive automation / review routing on pull requests:
 - **`pre-flight.yml` (Quality Gate & Policy Enforcement)**:
   - Triggers on PRs to `main` / `preview`, pushes to `main` / `preview`, and `workflow_dispatch`.
   - Enforces branch flow policy: `main` must originate from `preview` (there is no `dev` branch; feature branches target `preview` directly).
-  - Runs `dart analyze --fatal-infos`, `flutter test`, codegen cleanliness check (`git status --porcelain` after codegen), Python CI unit tests (`.github/scripts/tests/`), and `tool/pre_release_check.py --ci` (release-timing checks are advisory WARNs in CI; structural checks still fail the gate).
+  - Runs `dart analyze --fatal-infos`, `flutter test`, codegen cleanliness check (`git status --porcelain` after codegen), Python CI unit tests (`.github/scripts/tests/`), and `tool/pre_release_check.py --ci`. Daily preview checks add `--prerelease --changelog-structure-only`; the release workflow validates notes against its resolved tag before tagging. Release-timing checks are advisory WARNs in CI; structural errors still fail the gate.
 - **`release.yml` (Release Pipeline)**:
   - Triggers on pushes to `main` / `preview`, tags matching `v*.*.*` (published only when the tag targets the main/preview head), and `workflow_dispatch` (build-only on other branches).
   - Version/tag rules via `.github/scripts/resolve_release_version.py` (formal: pubspec, idempotent; preview: anchored to the last formal tag with a patch increment `-preview[.N]`; the `/release` prep phase switches to `-rc` naming; preview builds inject the last formal versionName/versionCode).
@@ -398,13 +398,14 @@ Two labels drive automation / review routing on pull requests:
 
 These are project-specific Claude Code slash commands:
 
-- `release.md` (`/release <version>`) — prepares formal release: updates `pubspec.yaml` (e.g. `2.5.1+20501`), formats `CHANGELOG.md [X.Y.Z]`, generates F-Droid metadata changelogs, runs `tool/pre_release_check.py`, and opens/merges a PR from `preview` to `main`.
-- `prerelease.md` (`/prerelease [tag]`) — prepares preview release: updates `CHANGELOG.md [Unreleased]`, runs pre-flight checks, and merges into `preview` to trigger automated preview builds.
+- `release.md` (`/release <version>`) — prepares formal release: updates `pubspec.yaml` (e.g. `2.5.1+20501`), generates F-Droid metadata changelogs, runs `tool/pre_release_check.py`, and opens/merges a PR from `preview` to `main`.
+- `prerelease.md` (`/prerelease [tag]`) — prepares preview release, runs pre-flight checks, and publishes through `preview`.
 
-The auto-changelog flow:
-1. Find last stable tag: `git tag -l "v[0-9]*.[0-9]*.[0-9]*" --sort=-v:refname | grep -E "^v[0-9]+\.[0-9]+\.[0-9]+$" | head -n 1`.
-2. `git log <last>..HEAD --pretty=format:"%s" --no-merges`.
-3. Classify by Conventional Commits prefix into `### Added` / `### Changed` / `### Fixed` / `### Removed`. Drop `docs:` / `chore:` / `test:` / `style:`. Translate to Chinese bullet points (matching the style of existing entries).
+### Changelog Preparation
+
+- `CHANGELOG.md` is prepared centrally at release time for a specific target version. Do not add entries during ordinary development unless the user explicitly requests a changelog update.
+- To generate, supplement, or merge version notes, use [bugaoshan-changelog](.agents/skills/bugaoshan-changelog/SKILL.md). It defines version and commit boundaries, diff verification, net-change merging, and user-facing wording.
+- Release helpers follow that skill for changelog content. Version metadata, validation, PRs, and publication remain separate operations within the user's requested scope.
 
 ## Notable Implementation Details
 

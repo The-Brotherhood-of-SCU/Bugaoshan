@@ -115,7 +115,7 @@ lib/
 1. Fork 本仓库（组织成员可直接在仓库建分支）
 2. 从 **`preview`** 分支切出功能分支 (`git checkout -b feat/your-feature preview`)
 3. 提交更改 (`git commit -m 'feat: add some feature'`，pre-commit 会自动执行 `dart format`)
-4. 若变更包含用户可感知的行为，请在 `CHANGELOG.md` 的 `## [Unreleased]` 中补充条目
+4. 日常开发通过提交和 PR 说明改动；发版前按 [changelog skill](.agents/skills/bugaoshan-changelog/SKILL.md) 集中整理目标版本的更新说明
 5. 推送分支 (`git push origin feat/your-feature`)
 6. 向 **`preview` 分支**发起 Pull Request——门禁全绿且 review 通过后合并，合并会自动发布一轮预览版（无需手动操作）
 

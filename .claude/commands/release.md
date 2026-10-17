@@ -26,59 +26,15 @@
 
 编辑 `pubspec.yaml`：将 `version:` 的 `X.Y.Z` 部分改为目标版本，**保留 `+buildNumber` 后缀并按现有规则同步更新**（buildNumber = `major*10000 + minor*100 + patch`，如 `2.5.1+20501` -> `2.6.0+20600`）。若 `pubspec.yaml` 已经是目标版本（例如重复执行本命令），跳过本步。
 
-## Step 4: 更新 CHANGELOG.md
+## Step 4: 整理目标版本说明
 
-读取 `CHANGELOG.md`，查找 `## [Unreleased]` 条目。
+读取 `.agents/skills/bugaoshan-changelog/SKILL.md`，按用户确认的 `X.Y.Z`、上一正式版和本次目标代码整理 `CHANGELOG.md`。
 
-- **如果 `[Unreleased]` 存在且有内容**：直接进入下方的重命名步骤。
-- **如果 `[Unreleased]` 为空或不存在**：警告用户，然后提供两个选项：
-  1. **从 commit 自动生成**（推荐）— 启动子代理读取上一个稳定版本 tag 以来的 git log，生成 changelog 条目。
-  2. **跳过** — 使用空的 changelog 继续发布。
-
-### 自动生成 changelog（选项 1）
-
-启动一个 Agent（subagent_type: general-purpose），prompt 如下：
-
-> Read the git log from the last stable release tag to HEAD. Run:
-> ```
-> # Find last stable tag — must match vX.Y.Z exactly (no pre-release suffix like -beta, -rc1)
-> git tag -l "v[0-9]*.[0-9]*.[0-9]*" --sort=-v:refname | grep -E "^v[0-9]+\.[0-9]+\.[0-9]+$" | head -n 1
-> git log <last-tag>..HEAD --pretty=format:"%s" --no-merges
-> ```
->
-> Classify each commit message by its Conventional Commits prefix into these sections:
-> - `### Added` — for `feat:` commits
-> - `### Changed` — for `refactor:`, `perf:`, `build:`, `ci:` commits
-> - `### Fixed` — for `fix:` commits
-> - `### Removed` — for commits that remove functionality
-> - Drop `docs:`, `chore:`, `test:`, `style:` commits (internal-only).
->
-> For each commit, strip the prefix and convert to a bullet point in Chinese (matching the existing CHANGELOG.md style). If a commit message is already in Chinese, keep it as-is. Output ONLY the classified markdown sections, nothing else. Example output:
->
-> ```
-> ### Added
-> - 添加xxx功能
-> - 新增yyy页面
->
-> ### Changed
-> - 优化zzz性能
->
-> ### Fixed
-> - 修复aaa问题
-> ```
-
-将子代理的输出插入 `[Unreleased]` 条目。
-
-### 重命名并创建占位符
-
-条目有内容后（无论是原有的还是自动生成的）：
-1. 将 `## [Unreleased]` 替换为 `## [X.Y.Z] - YYYY-MM-DD`（当天日期，ISO 格式）。
-2. 在版本条目**上方**插入新的空 `## [Unreleased]` 占位符，用空行分隔：
-   ```
-   ## [Unreleased]
-
-   ## [X.Y.Z] - YYYY-MM-DD
-   ```
+- 同周期已确认的预览版说明先按功能合并去重，再补最后一个已覆盖预览之后的增量；核对 diff，描述正式用户最终获得的变化。
+- 创建或更新 `## [X.Y.Z] - YYYY-MM-DD` 章节，日期按实际发布计划填写。已有同版本章节直接合并，其他历史版本保留。
+- 正式版必须有对应版本的有效内容；筛选后确无可收录变化时说明情况，不发布空的正式版说明，也不借用上一版本。
+- 提交到 `preview` 会先触发 RC。若需为这轮 RC 提供说明，按版本解析器的完整 RC tag 另行整理对应章节；发布端不会自动借用正式版章节。
+- 这里只整理版本说明，后续版本元数据、检查和发布操作按以下步骤执行。
 
 ## Step 5: 更新 F-Droid 元数据
 
@@ -93,15 +49,15 @@ python tool/pre_release_check.py X.Y.Z
 
 - 该命令为**严格模式**：版本号递增、tag 冲突、CHANGELOG `[X.Y.Z]` 章节、F-Droid 元数据等任何 FAIL 都必须处理后重跑，通过前不要继续。
 - 若提示「已存在 tag vX.Y.Z」，说明该版本已发布过，停止并提示用户更换版本号。
-- WARN 项（如 CHANGELOG 日期、Unreleased 占位符残留）向用户展示并人工确认。
+- WARN 项（如 CHANGELOG 日期与发布计划不符）向用户展示并核实。
 
 ## Step 7: 提交并推送 preview
 
 推送前，向用户展示变更摘要以获取最终确认：
 
-- 展示 `git diff HEAD~1`（提交差异），让用户审查 pubspec.yaml、CHANGELOG.md 与 metadata 的改动。
+- 展示 `git diff -- pubspec.yaml CHANGELOG.md metadata/`，让用户审查本次准备的版本、说明与元数据改动。
 - 说明推送 `preview` 会自动触发预览版构建（tag 由流水线推导为 `vX.Y.Z-preview` 或下一序号）。
-- 询问用户确认：继续推送，还是中止（中止需 `git reset HEAD~1` 回退提交）。
+- 询问用户确认：继续推送，还是保留当前改动并中止发布。
 
 只有用户明确确认后才继续：
 
