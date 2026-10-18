@@ -2,7 +2,7 @@
 
 macOS 与 iOS 共用 App Store Connect 应用记录 `6813305962`。主应用 Bundle ID 为 `io.github.thebrotherhoodofscu.bugaoshan.ios`，Widget 为该 ID 加 `.CourseWidget`，两者使用 `group.io.github.thebrotherhoodofscu.bugaoshan.ios` 共享课表数据库与显示设置。共用商店条目不代表跨设备同步课表；iPhone 与 Mac 各自保存本地数据。
 
-最低系统为 macOS 13，课表小组件需要 macOS 14。应用、小组件及 Flutter 引擎以 universal binary 支持 Apple Silicon 和 Intel。签名团队与 iOS 一致；私钥和描述文件只存入本机受限目录及主仓库的 GitHub Secrets，不提交 Git。
+最低系统为 macOS 13，课表小组件需要 macOS 14。应用、小组件及 Flutter 引擎以 universal binary 支持 Apple Silicon 和 Intel。签名团队与 iOS 一致；私钥和描述文件只存入本机受限目录及主仓库 `macos-signing` Environment 的 GitHub Secrets，不提交 Git。
 
 安装后的主应用为 `不高山上.app`，`CFBundleName` 与 `CFBundleDisplayName` 均为「不高山上」，供 Finder、Dock、菜单栏、窗口标题和系统授权页面使用。内部可执行文件仍为 `Bugaoshan`；Bundle ID、签名身份和数据容器保持连续。商店导出包为 `不高山上.pkg`，CI 的 unsigned ZIP 与公开 DMG 文件名保留既有 ASCII 命名规则。
 
@@ -48,11 +48,13 @@ PR 与 build-only 调用 `build-macos.yml` 的无证书 universal 构建，验�
 
 Mac 商店归档与 DMG 共用 `.github/macos-signing.json` 的 `version` / `build`，与 Android 的预览版版本号规则独立。每次 Mac 商店更新前递增该文件；DMG tag / 源码仍与上游 Release 严格匹配，包内 Mac 版本以 manifest 为准。`MACOS_BUILD_NAME` / `MACOS_BUILD_NUMBER` 仅用于本地诊断覆盖，实际商店发布使用该文件的值。
 
-`build-macos.yml` 将无凭据编译与签名分为两个 job；仅签名 job 使用主仓库 Secrets。临时钥匙串导入证书，逐层签名 Mach-O、Framework、Widget 和主应用，启用 Hardened Runtime 与安全时间戳。分别公证并装订 app / DMG，执行签名、Gatekeeper 和 manifest 校验后，直接上传 `macos-release` 制品。旧签名仓库工作流仅保留手动入口，不再定时扫描。
+`build-macos.yml` 将无凭据编译与签名分为两个 job；两个 job 均声明 `environment: macos-signing`，仅签名 job 引用其中的 Secrets。临时钥匙串导入证书，逐层签名 Mach-O、Framework、Widget 和主应用，启用 Hardened Runtime 与安全时间戳。分别公证并装订 app / DMG，执行签名、Gatekeeper 和 manifest 校验后，直接上传 `macos-release` 制品。主仓库已删除旧的 `signed-macos-release.yml`；旧签名仓库的编排工作流保持禁用，文件本身也删除 cron，避免重新启用后重复构建。`stapler staple` 对 app / DMG 均最多尝试三次，间隔 10 / 20 秒；仍失败时停止发布。
 
 所需 Secrets：`MACOS_CERTIFICATE_P12_BASE64`、`MACOS_CERTIFICATE_PASSWORD`、`MACOS_APP_PROFILE_BASE64`、`MACOS_WIDGET_PROFILE_BASE64`、`NOTARY_KEY_P8`、`NOTARY_KEY_ID`、`NOTARY_ISSUER_ID`。公证使用独立的 App Store Connect **团队 API 密钥**（Developer 角色）；个人 API 密钥不能用于 notarytool。无需把 GitHub 个人 PAT 交给上游或签名仓库。
 
-主仓库变量 `MACOS_SIGNING_ENABLED=true` 启用签名发布，`release.yml` 显式继承主仓库 Secrets。缺凭据、签名或公证失败会直接阻止本次 Release，不再等待外部仓库 90 分钟，也不回退未签名包。PR 和 build-only 只执行无凭据构建验证。
+这 7 项凭据仅存于 `macos-signing` Environment，删除同名 repository secrets；不能在仓库级保留副本，否则任意可写分支的 workflow 仍能访问。Environment 的 required reviewer 仅为证书持有人 `wjlfish`，关闭管理员绕过审批；为允许唯一审批人手动发起发布后审批，不启用 prevent self-review。部署分支策略仅允许类型为 branch 的 `main` / `preview`，不允许 feature 分支或 tag。审批前需核对运行提交和签名代码，不能仅看工作流名称。Environment 管理权限仍属于仓库管理员，无法阻止管理员主动改动这些设置；若管理员本身不可信，需恢复独立权限域的签名仓库。
+
+主仓库变量 `MACOS_SIGNING_ENABLED=true` 启用签名发布；两个签名发布 job 的 `if` 同时限制仓库与 `refs/heads/main` / `refs/heads/preview`，`release.yml` 无需透传仓库 Secrets。tag 触发签名发布会在元数据阶段失败并提示从 `main` / `preview` 手动执行，避免后续缺制品才报错。缺凭据、签名或公证失败会直接阻止本次 Release，不再等待外部仓库 90 分钟，也不回退未签名包。PR 和 build-only 只执行无凭据构建验证。
 
 macOS 凭据统一使用 Data Protection Keychain，服务名独立于插件默认值，权限由签名和描述文件中的 access group 决定。旧实现 `usesDataProtectionKeychain: false` 使用登录钥匙串，其 ACL 绑定旧应用签名，更新后会对多个凭据反复弹授权。新版不自动读取、删除或迁移旧钥匙串项目；既有 Mac 用户需重新登录一次，本地课表和设置保留。iOS 的服务名和可访问性设置保持原样。
 

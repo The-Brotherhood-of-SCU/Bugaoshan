@@ -7,7 +7,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "tool"))
@@ -18,6 +18,30 @@ import release_prepare
 
 
 class MacDistributionTest(unittest.TestCase):
+    def test_stapler_recovers_from_transient_network_failures(self):
+        for path in [Path("test.app"), Path("test.dmg")]:
+            with self.subTest(path=path), patch.object(
+                macos_dmg, "run", side_effect=[RuntimeError("-1005"), RuntimeError("-1005"), "stapled"]
+            ) as run, patch.object(macos_dmg.time, "sleep") as sleep:
+                self.assertEqual(macos_dmg.staple(path), "stapled")
+                self.assertEqual(run.call_args_list, [call("xcrun", "stapler", "staple", path)] * 3)
+                self.assertEqual(sleep.call_args_list, [call(10), call(20)])
+
+    def test_stapler_stops_after_three_failures(self):
+        with patch.object(macos_dmg, "run", side_effect=RuntimeError("staple failed")) as run, \
+                patch.object(macos_dmg.time, "sleep") as sleep:
+            with self.assertRaisesRegex(RuntimeError, "staple failed"):
+                macos_dmg.staple(Path("test.dmg"))
+            self.assertEqual(run.call_count, 3)
+            self.assertEqual(sleep.call_count, 2)
+
+    def test_stapler_success_does_not_retry(self):
+        with patch.object(macos_dmg, "run", return_value="stapled") as run, \
+                patch.object(macos_dmg.time, "sleep") as sleep:
+            self.assertEqual(macos_dmg.staple(Path("test.app")), "stapled")
+            run.assert_called_once()
+            sleep.assert_not_called()
+
     def test_source_and_payload_integrity(self):
         with tempfile.TemporaryDirectory() as temporary:
             dmg = Path(temporary) / macos_dmg.asset_name("v2.5.4-preview.13")

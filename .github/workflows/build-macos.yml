@@ -10,6 +10,7 @@ on:
       - 'tool/macos_distribution.sh'
       - 'tool/verify_macos_bundle.py'
       - 'tool/macos_dmg.py'
+      - '.github/scripts/tests/test_macos_signing.py'
       - '.github/scripts/macos_signing.py'
       - '.github/workflows/build-macos.yml'
   workflow_call:
@@ -29,7 +30,7 @@ on:
   workflow_dispatch:
     inputs:
       signed_release:
-        description: 'Build and notarize a release using repository secrets'
+        description: 'Build and notarize from main/preview after macos-signing approval'
         type: boolean
         default: false
       release_tag:
@@ -43,7 +44,11 @@ permissions:
 jobs:
   compile-macos-release:
     name: Compile macOS release without credentials
-    if: inputs.signed_release == true
+    if: >-
+      inputs.signed_release == true &&
+      github.repository == 'The-Brotherhood-of-SCU/Bugaoshan' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/preview')
+    environment: macos-signing
     runs-on: macos-15
     timeout-minutes: 45
     env:
@@ -81,7 +86,11 @@ jobs:
   signed-macos:
     name: Sign and notarize macOS release
     needs: compile-macos-release
-    if: inputs.signed_release == true
+    if: >-
+      inputs.signed_release == true &&
+      github.repository == 'The-Brotherhood-of-SCU/Bugaoshan' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/preview')
+    environment: macos-signing
     runs-on: macos-15
     timeout-minutes: 120
     env:

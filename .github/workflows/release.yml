@@ -64,6 +64,19 @@ jobs:
           INPUT_VERSION_OVERRIDE: ${{ github.event.inputs.version_override || '' }}
         run: python3 .github/scripts/resolve_release_version.py
 
+      - name: Require main or preview for protected macOS signing
+        if: vars.MACOS_SIGNING_ENABLED == 'true' && steps.resolve.outputs.should_release == 'true'
+        env:
+          RELEASE_REF: ${{ github.ref }}
+        run: |
+          case "$RELEASE_REF" in
+            refs/heads/main|refs/heads/preview) ;;
+            *)
+              echo "::error::macOS signing requires main or preview. Run Release Pipeline on that branch with version_override set to the release tag."
+              exit 1
+              ;;
+          esac
+
       - name: Tag commit in repository (if new branch release)
         if: steps.resolve.outputs.should_release == 'true' && github.ref_type != 'tag'
         run: |
@@ -110,7 +123,6 @@ jobs:
       build_number: ${{ needs.resolve-metadata.outputs.build_number }}
       release_tag: ${{ needs.resolve-metadata.outputs.tag }}
       signed_release: ${{ vars.MACOS_SIGNING_ENABLED == 'true' && needs.resolve-metadata.outputs.should_release == 'true' }}
-    secrets: inherit
 
   publish-release:
     name: Publish Release
