@@ -78,5 +78,6 @@ jobs:
           if [ "${{ github.base_ref || github.ref_name }}" = "main" ]; then
             python3 tool/pre_release_check.py --ci
           else
-            python3 tool/pre_release_check.py --ci --prerelease
+            # 日常 PR 尚无最终预览 tag；这里只检查结构，发布流程核对实际版本内容。
+            python3 tool/pre_release_check.py --ci --prerelease --changelog-structure-only
           fi

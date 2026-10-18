@@ -23,67 +23,35 @@
   git fetch origin && git checkout preview && git pull origin preview
   ```
 
-- 校验 pubspec 与最新正式 tag 的一致性：取最新正式 tag（`git tag -l "v[0-9]*.[0-9]*.[0-9]*" --sort=-v:refname | head -n 1`）并与 `pubspec.yaml` 的 `version:` 比较——**一致**为常态，直接继续；pubspec **落后**则警告用户先对齐（否则下一次正式发布会被幂等守卫卡住）；pubspec **领先**说明处于 `/release` 准备期，告知用户本轮预览将使用 `-rc` 命名（若本意是发正式版，建议改走 `/release`）。
+- 使用版本解析器中的 `latest_formal()` 筛选严格的正式 tag，再与 `pubspec.yaml` 的 `version:` 比较——**一致**为常态；pubspec **落后**则提示先对齐；pubspec **领先**说明处于 `/release` 准备期，本轮预览将使用 `-rc` 命名。
 
-## Step 2: 检查 CHANGELOG.md
+## Step 2: 整理目标预览版本说明
 
-读取 `CHANGELOG.md`，检查 `## [Unreleased]` 条目是否存在且有内容。
+先从 `.github/scripts/resolve_release_version.py` 的 `resolve_release()` 以 `preview` 分支上下文只读解析目标 tag；使用当前远端 tag 集合，不执行打 tag 或推送。常态目标可能是 `vX.Y.Z-preview[.N]`，正式版准备期为 `vX.Y.Z-rc[N]`。
 
-- **如果有内容**：转到下一步。
-- **如果为空或不存在**：警告用户，然后提供两个选项：
-  1. **从 commit 自动生成**（推荐）— 启动子代理读取上一个稳定版本 tag 以来的 git log，生成 changelog 条目。
-  2. **跳过** — 该预览版将没有 changelog 条目，继续发布。
+若用户给出了目标 tag，核对它与本次发布上下文一致；自定义后缀通过 `workflow_dispatch` 的 `version_override` 发布。不要将 `pubspec.yaml` 中上一正式版的包体版本当作本次预览 tag。
 
-### 自动生成 changelog（选项 1）
+读取 `.agents/skills/bugaoshan-changelog/SKILL.md`，创建或更新 `## [完整目标版本]` 章节（标题不带 tag 的 `v` 前缀，发布日期确定后可补日期）。已有同版本说明按实际覆盖点增量补充，保留其他版本。
 
-启动一个 Agent（subagent_type: general-purpose），prompt 如下：
-
-> Read the git log from the last stable release tag to HEAD. Run:
-> ```
-> # Find last stable tag — must match vX.Y.Z exactly (no pre-release suffix like -beta, -rc1)
-> git tag -l "v[0-9]*.[0-9]*.[0-9]*" --sort=-v:refname | grep -E "^v[0-9]+\.[0-9]+\.[0-9]+$" | head -n 1
-> git log <last-tag>..HEAD --pretty=format:"%s" --no-merges
-> ```
->
-> Classify each commit message by its Conventional Commits prefix into these sections:
-> - `### Added` — for `feat:` commits
-> - `### Changed` — for `refactor:`, `perf:`, `build:`, `ci:` commits
-> - `### Fixed` — for `fix:` commits
-> - `### Removed` — for commits that remove functionality
-> - Drop `docs:`, `chore:`, `test:`, `style:` commits (internal-only).
->
-> For each commit, strip the prefix and convert to a bullet point in Chinese (matching the existing CHANGELOG.md style). If a commit message is already in Chinese, keep it as-is. Output ONLY the classified markdown sections, nothing else. Example output:
->
-> ```
-> ### Added
-> - 添加xxx功能
-> - 新增yyy页面
->
-> ### Changed
-> - 优化zzz性能
->
-> ### Fixed
-> - 修复aaa问题
-> ```
-
-将子代理的输出插入 `## [Unreleased]` 条目（若不存在则先创建）。
-
-**不要重命名 `[Unreleased]` 章节**：预览版的 release body 取 CHANGELOG 第一个章节的内容，`[Unreleased]` 留到正式版 `/release` 时才重命名为 `[X.Y.Z]`。
+如果筛选后没有用户可感知的变化，明确说明；用户选择不提供本次说明时允许继续，发布端会显示占位文案。不能借用其他预览、RC 或正式版的条目。
 
 ## Step 3: 本地预检
 
+以本次完整目标版本调用，不能只传基础版本：
+
 ```bash
-python tool/pre_release_check.py --ci --prerelease
+python tool/pre_release_check.py X.Y.Z-preview.2 --prerelease
 ```
 
-- 该命令为 CI 门禁模式：发布时机类检查（版本号递增、tag 冲突、`[Unreleased]` 空置）为 **WARN** 提示，向用户展示即可。
-- 版本号格式、CHANGELOG 结构等**结构性 FAIL** 必须处理后重跑，通过前不要继续。
+- 本地严格模式要求目标章节存在且有有效内容；结构错误、重复章节等 FAIL 必须先处理。
+- 用户明确选择本次无更新说明时，可用 `--ci` 运行同一明确版本的检查，将缺少预览说明作为 WARN 报告；其余结构性 FAIL 仍须处理。
+- 日常 PR 门禁使用 `--ci --prerelease --changelog-structure-only`，只检查版本章节结构，实际发布时再根据最终解析的 tag 提取内容。它不能代替本次明确目标版本的准备检查。
 
 ## Step 4: 提交并推送 preview
 
 推送前，向用户展示变更摘要以获取最终确认：
 
-- 本次预览版基于 `X.Y.Z`，最终 tag 由流水线自动推导，**不会修改 `pubspec.yaml`**。
+- 展示本次完整目标 tag 和相应章节的 diff；本命令不修改 `pubspec.yaml`。发布端会再次解析 tag，若已有新版本占用该序号，应先更新目标说明。
 - 询问用户确认：继续推送，还是中止。
 
 只有用户明确确认后才继续：

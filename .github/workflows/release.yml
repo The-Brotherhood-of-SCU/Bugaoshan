@@ -64,6 +64,12 @@ jobs:
           INPUT_VERSION_OVERRIDE: ${{ github.event.inputs.version_override || '' }}
         run: python3 .github/scripts/resolve_release_version.py
 
+      - name: Validate target changelog before tagging
+        if: steps.resolve.outputs.should_release == 'true'
+        env:
+          VERSION: ${{ steps.resolve.outputs.tag }}
+        run: python3 .github/scripts/release_changelog.py
+
       - name: Tag commit in repository (if new branch release)
         if: steps.resolve.outputs.should_release == 'true' && github.ref_type != 'tag'
         run: |

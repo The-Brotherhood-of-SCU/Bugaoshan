@@ -23,6 +23,10 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS_DIR = ROOT / ".github" / "scripts"
+sys.path.insert(0, str(SCRIPTS_DIR))
+
+from changelog_sections import has_changelog_content, normalize_version, parse_changelog
 
 # 与 android/app/build.gradle.kts 的 ABI override / F-Droid VercodeOperation 一致
 ABI_CODES = (1, 2, 4)
@@ -52,17 +56,18 @@ def _try_reconfigure_encoding():
 
 
 class Checker:
-    def __init__(self, version, ci=False):
+    def __init__(self, version, ci=False, changelog_structure_only=False):
         self.version = version
         self.base_version = version.split("-", 1)[0]
         self.is_prerelease = "-" in version
         self.ci = ci
+        self.changelog_structure_only = changelog_structure_only
         self.results = []  # (status, name, message)
         self.tag = f"v{self.version}"
         self.base_tag = f"v{self.base_version}"
 
     def _release_timing_status(self):
-        """发布时机类检查（版本递增 / tag 冲突 / Unreleased 空置）的状态。
+        """发布时机类检查（版本递增 / tag 冲突 / 预览版说明缺失）的状态。
 
         CI 门禁（--ci）跑在任意 PR/push 上，代码库经常处于「两个版本之间」
         的正常状态（刚发完 X.Y.Z、pubspec 还未 bump），此时这些检查必然
@@ -180,6 +185,9 @@ class Checker:
 
     def check_tag_not_exists(self):
         name = "本地/远端 tag 冲突"
+        if self.changelog_structure_only:
+            self.record(OK, name, "日常预览门禁未指定发布 tag，实际冲突由发布流程检查")
+            return
         timing = self._release_timing_status()
         if not self.is_prerelease:
             code, out, err = self.run("git", "tag", "--list", self.tag)
@@ -270,76 +278,40 @@ class Checker:
             return
         text = path.read_text(encoding="utf-8")
 
-        heading_re = re.compile(r"^##\s+(.+?)\s*$")
-        sections = []
-        for i, line in enumerate(text.splitlines()):
-            m = heading_re.match(line)
-            if m:
-                sections.append((m.group(1), i))
-
-        def section_content(idx):
-            lines = text.splitlines()
-            start = sections[idx][1] + 1
-            end = sections[idx + 1][1] if idx + 1 < len(sections) else len(lines)
-            return [ln for ln in lines[start:end] if ln.strip()]
-
-        def count_bullets(content):
-            return sum(1 for ln in content if ln.lstrip().startswith(("- ", "* ")))
-
-        if self.is_prerelease:
-            timing = self._release_timing_status()
-            unreleased = next((i for i, (h, _) in enumerate(sections) if h.strip().lower() in ("[unreleased]", "unreleased")), None)
-            if unreleased is None:
-                self.record(timing, name, "预览版需要 ## [Unreleased] 章节，未找到")
-                return
-            bullets = count_bullets(section_content(unreleased))
-            if bullets > 0:
-                self.record(OK, name, f"[Unreleased] 有 {bullets} 条内容")
-            else:
-                self.record(timing, name, "[Unreleased] 为空，预览版没有更新说明")
+        try:
+            sections = parse_changelog(text)
+        except ValueError as error:
+            self.record(FAIL, name, str(error))
+            return
+        if not sections:
+            self.record(FAIL, name, "未找到 ## [版本号] 章节")
+            return
+        for section in sections:
+            if section.date:
+                try:
+                    datetime.date.fromisoformat(section.date)
+                except ValueError:
+                    self.record(FAIL, name, f"[{section.version}] 日期非法: {section.date}")
+                    return
+        if self.changelog_structure_only:
+            self.record(OK, name, f"{len(sections)} 个版本章节结构正确；发布时按实际目标版本检查内容")
             return
 
-        # 稳定版：找到 [X.Y.Z] 章节
-        target = None
-        for i, (h, _) in enumerate(sections):
-            stripped = h.strip()
-            m = re.match(r"^\[?" + re.escape(self.version) + r"\]?(?:\s*-\s*\d{4}-\d{2}-\d{2})?$", stripped)
-            if m:
-                target = i
-                break
+        target = next((section for section in sections if section.version == self.version), None)
+        status = self._release_timing_status() if self.is_prerelease else FAIL
         if target is None:
-            self.record(FAIL, name, f"未找到 ## [{self.version}] 章节")
+            self.record(status, name, f"未找到 ## [{self.version}] 章节")
             return
-
-        header = sections[target][0]
-        date_m = re.search(r"(\d{4})-(\d{2})-(\d{2})\s*$", header)
-        if date_m:
-            try:
-                date = datetime.date(*map(int, date_m.groups()))
-                today = datetime.date.today()
-                if date != today:
-                    self.record(WARN, "CHANGELOG 日期", f"发布日期 {date} 不是今天 {today}，确认是否正确")
-            except ValueError:
-                self.record(FAIL, "CHANGELOG 日期", f"日期非法: {date_m.group(0)}")
-        else:
-            self.record(WARN, "CHANGELOG 日期", f"章节 {header} 缺少 YYYY-MM-DD 日期")
-
-        bullets = count_bullets(section_content(target))
-        if bullets > 0:
-            self.record(OK, name, f"[{self.version}] 有 {bullets} 条内容")
-        else:
-            self.record(FAIL, name, f"[{self.version}] 章节为空")
-
-        # Unreleased 占位符应存在且为空（稳定版）
-        unreleased = next((i for i, (h, _) in enumerate(sections) if h.strip().lower() in ("[unreleased]", "unreleased")), None)
-        if unreleased is None:
-            self.record(WARN, "Unreleased 占位符", "缺少 ## [Unreleased] 占位符，建议补一个空章节")
-        else:
-            ubullets = count_bullets(section_content(unreleased))
-            if ubullets > 0:
-                self.record(WARN, "Unreleased 占位符", f"[Unreleased] 仍有 {ubullets} 条未发布内容，可能没移动到 [{self.version}]")
-            else:
-                self.record(OK, "Unreleased 占位符", "已清空")
+        if not has_changelog_content(target.content):
+            self.record(status, name, f"[{self.version}] 章节为空")
+            return
+        if target.date:
+            date = datetime.date.fromisoformat(target.date)
+            if date != datetime.date.today():
+                self.record(WARN, "CHANGELOG 日期", f"发布日期 {date} 不是今天，确认是否正确")
+        elif not self.is_prerelease:
+            self.record(WARN, "CHANGELOG 日期", f"[{self.version}] 缺少 YYYY-MM-DD 日期")
+        self.record(OK, name, f"[{self.version}] 有更新说明")
 
     def check_metadata_yml(self):
         name = "F-Droid metadata/*.yml"
@@ -453,15 +425,25 @@ def main(argv=None):
     parser.add_argument(
         "--prerelease",
         action="store_true",
-        help="按预览版检查（等价于版本号里含 '-'）",
+        help="按预览版检查；精确检查时需提供完整预览/RC 版本号",
     )
     parser.add_argument(
         "--ci",
         action="store_true",
         help="CI 门禁模式：自动从 pubspec.yaml 读取版本号，发布时机类检查"
-             "（版本递增 / tag 冲突 / Unreleased 空置）降级为 WARN，其余检查未通过时退出码为 1",
+             "（版本递增 / tag 冲突 / 预览版说明缺失）降级为 WARN，其余检查未通过时退出码为 1",
+    )
+    parser.add_argument(
+        "--changelog-structure-only",
+        action="store_true",
+        help="日常预览 CI 仅检查版本章节结构，目标内容由发布流程按实际 tag 检查",
     )
     args = parser.parse_args(argv)
+
+    if args.changelog_structure_only and (not args.ci or not args.prerelease or args.version):
+        parser.error("--changelog-structure-only 仅用于未指定目标版本的 --ci --prerelease 门禁")
+    if args.prerelease and not args.version and not args.changelog_structure_only:
+        parser.error("请提供完整预览/RC 版本号；日常 CI 可使用 --changelog-structure-only")
 
     version = args.version
     if not version and args.ci:
@@ -478,14 +460,18 @@ def main(argv=None):
         print("错误: 未指定版本号，且无法从 pubspec.yaml 解析", file=sys.stderr)
         return 2
 
-    if args.prerelease and "-" not in version:
+    if args.changelog_structure_only:
         version = f"{version}-prerelease"
+    elif args.prerelease and "-" not in version:
+        parser.error("预览版检查需要完整目标版本号，如 2.3.0-preview.2 或 2.3.0-rc")
 
-    if not SEMVER_RE.match(version.split("-", 1)[0]):
-        print(f"错误: 非法版本号 '{args.version}'，应为 X.Y.Z 或 X.Y.Z-suffix", file=sys.stderr)
+    try:
+        version = normalize_version(version)
+    except ValueError as error:
+        print(f"错误: {error}", file=sys.stderr)
         return 2
 
-    return Checker(version, ci=args.ci).run_all()
+    return Checker(version, ci=args.ci, changelog_structure_only=args.changelog_structure_only).run_all()
 
 
 if __name__ == "__main__":
