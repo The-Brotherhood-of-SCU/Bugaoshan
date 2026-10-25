@@ -24,6 +24,7 @@ import 'package:bugaoshan/widgets/common/swipe_page_view.dart';
 part 'cloud_print_upload_tab.dart';
 part 'cloud_print_scans_tab.dart';
 part 'cloud_print_options_sheet.dart';
+part 'cloud_print_preview_dialog.dart';
 
 /// 批量打印、待打印任务和扫描文档共用原生会话与响应式页面。
 class CloudPrintPage extends StatefulWidget {
@@ -181,8 +182,12 @@ class _CloudPrintPageState extends State<CloudPrintPage>
       isScrollControlled: true,
       useSafeArea: true,
       constraints: const BoxConstraints(maxWidth: 680),
-      builder: (_) =>
-          _CloudPrintOptionsSheet(initial: item?.options ?? _provider.defaults),
+      builder: (_) => _CloudPrintOptionsSheet(
+        initial: item?.options ?? _provider.defaults,
+        title: item == null
+            ? l10n.cloudPrintSharedSettings
+            : l10n.cloudPrintFileSettings,
+      ),
     );
     if (options == null ||
         !mounted ||
@@ -256,6 +261,56 @@ class _CloudPrintPageState extends State<CloudPrintPage>
     }
   }
 
+  String _paperLabel(Set<int> ids, AppLocalizations l10n) {
+    if (ids.length > 1) return 'A4/A3';
+    return switch (ids.first) {
+      9 => 'A4',
+      8 => 'A3',
+      _ => l10n.cloudPrintOriginal,
+    };
+  }
+
+  /// 与服务端列表模板一致：纸型 · 颜色 · 单双面 · 页数份数。状态码不展示给用户。
+  String _jobSummary(CloudPrintJob job, AppLocalizations l10n) => [
+    if (job.paperIds.isNotEmpty) _paperLabel(job.paperIds, l10n),
+    job.colored ? l10n.cloudPrintFullColor : l10n.cloudPrintMono,
+    switch (job.duplex) {
+      CloudPrintDuplex.longEdge => l10n.cloudPrintLongEdge,
+      CloudPrintDuplex.shortEdge => l10n.cloudPrintShortEdge,
+      CloudPrintDuplex.simplex => l10n.cloudPrintSimplex,
+    },
+    l10n.cloudPrintJobInfo(job.pages, job.copies),
+  ].join(' · ');
+
+  Future<void> _previewJob(CloudPrintJob job) => showDialog<void>(
+    context: context,
+    builder: (_) => _CloudPrintPreviewDialog(provider: _provider, job: job),
+  );
+
+  Future<void> _deleteJob(CloudPrintJob job, AppLocalizations l10n) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.cloudPrintDelete),
+        content: Text(l10n.cloudPrintDeleteConfirm(job.name)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.delete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final deleted = await _provider.deleteJob(job);
+    if (!mounted) return;
+    _snack(deleted ? l10n.cloudPrintDeleted : l10n.cloudPrintDeleteFailed);
+  }
+
   Widget _jobsTab(AppLocalizations l10n) => RefreshIndicator(
     onRefresh: _provider.refreshJobs,
     child: ListView(
@@ -287,10 +342,28 @@ class _CloudPrintPageState extends State<CloudPrintPage>
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              subtitle: Text(
-                l10n.cloudPrintJobInfo(job.pages, job.copies, job.status),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(_jobSummary(job, l10n)),
+                  if (job.createDate.isNotEmpty)
+                    Text(
+                      '${l10n.cloudPrintJobCreated(job.createdDateLabel, job.createdTimeLabel)} · #${job.id}',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                ],
               ),
-              trailing: Text('#${job.id}'),
+              onTap: () => _previewJob(job),
+              trailing: PopupMenuButton<String>(
+                tooltip: l10n.cloudPrintDelete,
+                onSelected: (_) => _deleteJob(job, l10n),
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Text(l10n.cloudPrintDelete),
+                  ),
+                ],
+              ),
             ),
           ),
       ],

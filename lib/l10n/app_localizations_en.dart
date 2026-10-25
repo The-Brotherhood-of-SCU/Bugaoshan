@@ -4028,6 +4028,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cloudPrintSettings => 'Apply settings to pending files';
 
   @override
+  String get cloudPrintSharedSettings => 'Shared print settings';
+
+  @override
   String get cloudPrintFileSettings => 'File print settings';
 
   @override
@@ -4177,9 +4180,39 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String cloudPrintJobInfo(int pages, int copies, int status) {
-    return '$pages pages · $copies copies · status $status';
+  String cloudPrintJobInfo(int pages, int copies) {
+    return '$pages pages · $copies copies';
   }
+
+  @override
+  String cloudPrintJobCreated(String date, String time) {
+    return '$date $time';
+  }
+
+  @override
+  String get cloudPrintPreview => 'Preview';
+
+  @override
+  String cloudPrintPreviewPage(int page, int total) {
+    return 'Page $page of $total';
+  }
+
+  @override
+  String get cloudPrintPreviewFailed => 'Preview failed. Please try again.';
+
+  @override
+  String get cloudPrintDelete => 'Delete job';
+
+  @override
+  String cloudPrintDeleteConfirm(String name) {
+    return 'Delete \"$name\"? You will need to upload it again to print.';
+  }
+
+  @override
+  String get cloudPrintDeleted => 'Print job deleted';
+
+  @override
+  String get cloudPrintDeleteFailed => 'Delete failed. Refresh and try again.';
 
   @override
   String get cloudPrintSelectAll => 'Select all available';

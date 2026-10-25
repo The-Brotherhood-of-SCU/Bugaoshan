@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 import 'package:bugaoshan/models/cloud_print.dart';
@@ -184,6 +186,68 @@ class CloudPrintApiService {
       );
       return CloudPrintUploadResult(feeRaw: fee);
     }
+  }
+
+  /// 删除待打印任务。网页端同样用 POST `PrintJob/Del` 携带 `{dwJobId,dwOldJobId}`；
+  /// 删除只影响待打印队列，不涉及已打印记录，也不产生费用。
+  Future<void> deleteJob(CloudPrintJob job) => retryOnUnauthenticated(
+    auth.getClient,
+    (client) async {
+      final request =
+          http.Request('POST', base.resolve('/api/client/PrintJob/Del'))
+            ..headers.addAll({
+              'User-Agent': kDefaultUserAgent,
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Origin': base.origin,
+              'Referer': base.resolve(cloudPrintJobsPath).toString(),
+            })
+            ..body = jsonEncode({'dwJobId': job.id, 'dwOldJobId': job.id});
+      final response = await http.Response.fromStream(
+        await client.sendOnce(request),
+      ).timeout(kHttpTimeout);
+      if ([401, 403].contains(response.statusCode)) {
+        throw const UnauthenticatedException();
+      }
+      checkCloudPrintResponse(response);
+    },
+    invalidate: auth.invalidate,
+    logTag: _tag,
+  );
+
+  /// 预览第 [pageNo] 页（从 1 开始）。服务端按 `dwJobId + dwCreateTime` 定位任务，
+  /// `result` 是 PNG 的 base64 文本；每次只取一页，避免一次性拉整份文档。
+  Future<Uint8List> previewPage(CloudPrintJob job, int pageNo) async {
+    final bytes = await retryOnUnauthenticated(
+      auth.getClient,
+      (client) async {
+        final uri = base
+            .resolve('/api/client/PrintJob/PreviewPage')
+            .replace(
+              queryParameters: {
+                'dwJobId': '${job.id}',
+                'dwCreateTime': job.createTime,
+                'pageNo': '$pageNo',
+                'timestamp': '${DateTime.now().millisecondsSinceEpoch}',
+              },
+            );
+        final body = checkCloudPrintResponse(
+          await auth.read(client, 'GET', uri),
+        );
+        final result = body['result'];
+        if (result is! String || result.isEmpty) {
+          throw const ServiceException('预览内容为空');
+        }
+        try {
+          return base64Decode(result);
+        } catch (_) {
+          throw const ServiceException('预览内容格式错误');
+        }
+      },
+      invalidate: auth.invalidate,
+      logTag: _tag,
+    );
+    return bytes;
   }
 
   /// 仅下载设备已产生的扫描文件；路径由调用方生成，不信任服务端文件名。

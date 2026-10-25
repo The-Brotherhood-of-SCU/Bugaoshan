@@ -136,6 +136,10 @@ class CloudPrintFile {
 }
 
 /// 只提取打印所需字段，不持有账号、姓名、卡号和服务器文件路径。
+///
+/// `dwStatus` 是服务端内部状态码，界面不直接展示；任务卡片用属性、份数和提交时间
+/// 描述任务，与图书馆网页保持一致。`szAttribe` 形如 `vdup,color,`，
+/// `szPaperDetail` 是 JSON 字符串，需要二次解析。
 class CloudPrintJob {
   CloudPrintJob.fromJson(Map<String, dynamic> json)
     : id = safeInt(json['dwJobId']),
@@ -143,9 +147,49 @@ class CloudPrintJob {
       pages = safeInt(json['dwPages']),
       copies = safeInt(json['dwCopies']),
       status = safeInt(json['dwStatus']),
-      attributes = safeString(json['szAttribe']);
+      attributes = safeString(json['szAttribe']),
+      createDate = safeString(json['dwCreateDate']),
+      createTime = safeString(json['dwCreateTime']),
+      paperIds = _jobPaperIds(json['szPaperDetail']);
   final int id, pages, copies, status;
-  final String name, attributes;
+  final String name, attributes, createDate, createTime;
+
+  /// 任务涉及的纸型 ID（9=A4、8=A3），解析失败时为空。
+  final Set<int> paperIds;
+
+  bool get colored => attributes.contains('color');
+
+  /// 与打印列表模板一致的判定顺序：vdup → single → 其余按短边双面。
+  CloudPrintDuplex get duplex => attributes.contains('vdup')
+      ? CloudPrintDuplex.longEdge
+      : attributes.contains('single')
+      ? CloudPrintDuplex.simplex
+      : CloudPrintDuplex.shortEdge;
+
+  String get createdDateLabel => createDate.length == 8
+      ? '${createDate.substring(0, 4)}-${createDate.substring(4, 6)}-${createDate.substring(6)}'
+      : createDate;
+
+  String get createdTimeLabel {
+    final clock = createTime.padLeft(6, '0');
+    return clock.length >= 4
+        ? '${clock.substring(0, 2)}:${clock.substring(2, 4)}'
+        : clock;
+  }
+}
+
+Set<int> _jobPaperIds(Object? value) {
+  if (value is! String || value.isEmpty) return const {};
+  try {
+    final decoded = jsonDecode(value);
+    if (decoded is! List) return const {};
+    return {
+      for (final entry in decoded)
+        if (entry is Map) safeInt(entry['dwPaperID']),
+    }..remove(0);
+  } catch (_) {
+    return const {};
+  }
 }
 
 class CloudScanJob {

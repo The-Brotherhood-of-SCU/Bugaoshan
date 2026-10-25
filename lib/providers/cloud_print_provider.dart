@@ -271,6 +271,25 @@ class CloudPrintProvider extends ChangeNotifier {
     return _jobsFuture = load();
   }
 
+  Future<Uint8List> previewPage(CloudPrintJob job, int pageNo) =>
+      _api.previewPage(job, pageNo);
+
+  /// 删除只影响待打印任务；先从列表移除再回查，失败时保留原列表等用户重试。
+  Future<bool> deleteJob(CloudPrintJob job) async {
+    final generation = _generation;
+    try {
+      await _api.deleteJob(job);
+    } catch (error, stack) {
+      AppLog.e(_tag, '删除打印任务失败', error: error, stackTrace: stack);
+      return false;
+    }
+    if (!_current(generation)) return false;
+    jobs = jobs.where((item) => item.id != job.id).toList();
+    _notify();
+    await refreshJobs();
+    return _current(generation);
+  }
+
   Future<void> refreshScans() {
     if (_scansFuture case final existing?) return existing;
     final generation = _generation;

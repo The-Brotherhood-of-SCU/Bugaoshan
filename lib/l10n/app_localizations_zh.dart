@@ -3888,6 +3888,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cloudPrintSettings => '统一设置待上传文件';
 
   @override
+  String get cloudPrintSharedSettings => '统一打印设置';
+
+  @override
   String get cloudPrintFileSettings => '本文件打印设置';
 
   @override
@@ -4028,9 +4031,39 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String cloudPrintJobInfo(int pages, int copies, int status) {
-    return '$pages 页 · $copies 份 · 状态 $status';
+  String cloudPrintJobInfo(int pages, int copies) {
+    return '$pages 页 · $copies 份';
   }
+
+  @override
+  String cloudPrintJobCreated(String date, String time) {
+    return '$date $time';
+  }
+
+  @override
+  String get cloudPrintPreview => '预览';
+
+  @override
+  String cloudPrintPreviewPage(int page, int total) {
+    return '第 $page / $total 页';
+  }
+
+  @override
+  String get cloudPrintPreviewFailed => '预览加载失败，请稍后重试。';
+
+  @override
+  String get cloudPrintDelete => '删除任务';
+
+  @override
+  String cloudPrintDeleteConfirm(String name) {
+    return '删除「$name」后需要重新上传才能打印，确认删除？';
+  }
+
+  @override
+  String get cloudPrintDeleted => '已删除该打印任务';
+
+  @override
+  String get cloudPrintDeleteFailed => '删除失败，请刷新后重试。';
 
   @override
   String get cloudPrintSelectAll => '全选可下载文档';

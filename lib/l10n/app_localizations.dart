@@ -7447,6 +7447,12 @@ abstract class AppLocalizations {
   /// **'Apply settings to pending files'**
   String get cloudPrintSettings;
 
+  /// No description provided for @cloudPrintSharedSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared print settings'**
+  String get cloudPrintSharedSettings;
+
   /// No description provided for @cloudPrintFileSettings.
   ///
   /// In en, this message translates to:
@@ -7714,8 +7720,56 @@ abstract class AppLocalizations {
   /// No description provided for @cloudPrintJobInfo.
   ///
   /// In en, this message translates to:
-  /// **'{pages} pages · {copies} copies · status {status}'**
-  String cloudPrintJobInfo(int pages, int copies, int status);
+  /// **'{pages} pages · {copies} copies'**
+  String cloudPrintJobInfo(int pages, int copies);
+
+  /// No description provided for @cloudPrintJobCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'{date} {time}'**
+  String cloudPrintJobCreated(String date, String time);
+
+  /// No description provided for @cloudPrintPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get cloudPrintPreview;
+
+  /// No description provided for @cloudPrintPreviewPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page} of {total}'**
+  String cloudPrintPreviewPage(int page, int total);
+
+  /// No description provided for @cloudPrintPreviewFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview failed. Please try again.'**
+  String get cloudPrintPreviewFailed;
+
+  /// No description provided for @cloudPrintDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete job'**
+  String get cloudPrintDelete;
+
+  /// No description provided for @cloudPrintDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\"? You will need to upload it again to print.'**
+  String cloudPrintDeleteConfirm(String name);
+
+  /// No description provided for @cloudPrintDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Print job deleted'**
+  String get cloudPrintDeleted;
+
+  /// No description provided for @cloudPrintDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete failed. Refresh and try again.'**
+  String get cloudPrintDeleteFailed;
 
   /// No description provided for @cloudPrintSelectAll.
   ///

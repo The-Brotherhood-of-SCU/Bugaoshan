@@ -606,4 +606,91 @@ void main() {
     expect(auth.isCurrent(oldClient), isFalse);
     expect(auth.isCurrent(newClient), isTrue);
   });
+
+  test('打印任务用纸型、颜色、单双面和创建时间描述，界面不读状态码', () {
+    final job = CloudPrintJob.fromJson({
+      'dwJobId': 142116,
+      'szJobName': 'a.pdf',
+      'dwPages': 4,
+      'dwCopies': 1,
+      'dwStatus': 1,
+      'szAttribe': 'single,',
+      'dwCreateDate': 20261025,
+      'dwCreateTime': 173804,
+      'szPaperDetail':
+          '[{"dwPaperID":9,"dwBWPages":4,"dwColorPages":0,"dwPaperNum":4}]',
+    });
+    expect(job.colored, isFalse);
+    expect(job.duplex, CloudPrintDuplex.simplex);
+    expect(job.paperIds, {9});
+    expect(job.createdDateLabel, '2026-10-25');
+    expect(job.createdTimeLabel, '17:38');
+    expect(
+      CloudPrintJob.fromJson({'szAttribe': 'vdup,color,'}).duplex,
+      CloudPrintDuplex.longEdge,
+    );
+    expect(CloudPrintJob.fromJson({'szAttribe': 'vdup,color,'}).colored, isTrue);
+    // 属性缺失时按列表模板的兜底分支判为短边双面，纸型解析失败不抛异常。
+    expect(
+      CloudPrintJob.fromJson({'szPaperDetail': 'not-json'}).paperIds,
+      isEmpty,
+    );
+  });
+
+  test('删除任务只发一次 POST Del，新旧任务 ID 相同', () async {
+    late http.Request captured;
+    final client = CookieClient(
+      inner: MockClient((request) async {
+        captured = request;
+        return http.Response(
+          '{"code":0,"message":"ok"}',
+          200,
+          headers: {'content-type': 'application/json; charset=utf-8'},
+        );
+      }),
+    );
+    final auth = _Auth(client);
+    final api = CloudPrintApiService(auth);
+    await api.deleteJob(
+      CloudPrintJob.fromJson({'dwJobId': 139077, 'szJobName': 'a.pdf'}),
+    );
+    expect(captured.method, 'POST');
+    expect(captured.url.path, '/api/client/PrintJob/Del');
+    expect(captured.headers['content-type'], contains('application/json'));
+    expect(jsonDecode(captured.body), {
+      'dwJobId': 139077,
+      'dwOldJobId': 139077,
+    });
+    expect(auth.invalidations, 0);
+    auth.dispose();
+    client.close();
+  });
+
+  test('预览按任务与创建时间取单页，base64 PNG 解码后返回原始字节', () async {
+    final png = Uint8List.fromList([137, 80, 78, 71, 13, 10, 26, 10]);
+    late Uri requested;
+    final client = CookieClient(
+      inner: MockClient((request) async {
+        requested = request.url;
+        return http.Response(
+          jsonEncode({'code': 0, 'result': base64Encode(png)}),
+          200,
+          headers: {'content-type': 'application/json; charset=utf-8'},
+        );
+      }),
+    );
+    final auth = _Auth(client);
+    final api = CloudPrintApiService(auth);
+    final job = CloudPrintJob.fromJson({
+      'dwJobId': 139077,
+      'dwCreateTime': 173804,
+    });
+    expect(await api.previewPage(job, 2), png);
+    expect(requested.path, '/api/client/PrintJob/PreviewPage');
+    expect(requested.queryParameters['dwJobId'], '139077');
+    expect(requested.queryParameters['dwCreateTime'], '173804');
+    expect(requested.queryParameters['pageNo'], '2');
+    auth.dispose();
+    client.close();
+  });
 }

@@ -1,8 +1,11 @@
 part of 'cloud_print_page.dart';
 
 class _CloudPrintOptionsSheet extends StatefulWidget {
-  const _CloudPrintOptionsSheet({required this.initial});
+  const _CloudPrintOptionsSheet({required this.initial, required this.title});
   final CloudPrintOptions initial;
+
+  /// 同一张表单既用于逐文件设置，也用于统一设置；标题由调用方区分。
+  final String title;
   @override
   State<_CloudPrintOptionsSheet> createState() =>
       _CloudPrintOptionsSheetState();
@@ -55,7 +58,7 @@ class _CloudPrintOptionsSheetState extends State<_CloudPrintOptionsSheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              l10n.cloudPrintFileSettings,
+              widget.title,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 20),
