@@ -96,9 +96,24 @@ class CloudPrintAuth extends ChangeNotifier implements SubsystemAuth {
   ) async {
     try {
       final stream = await client.sendOnce(
-        http.Request(method, uri)..headers['Accept'] = 'application/json',
+        http.Request(method, uri)
+          ..headers.addAll({
+            'User-Agent': kDefaultUserAgent,
+            // SSO 跳转按网页导航协商响应，打印站 API 才请求 JSON。
+            'Accept': uri.origin == base.origin && uri.path.startsWith('/api/')
+                ? 'application/json'
+                : 'text/html,application/xhtml+xml,*/*',
+          }),
       );
-      return await http.Response.fromStream(stream).timeout(kHttpTimeout);
+      final response = await http.Response.fromStream(
+        stream,
+      ).timeout(kHttpTimeout);
+      // 仅记录源站、路径和状态码；SSO 查询参数可能包含 CAS 票据。
+      AppLog.d(
+        _tag,
+        '$method ${uri.host}${uri.path} -> ${response.statusCode}',
+      );
+      return response;
     } catch (_, stack) {
       AppLog.e(
         _tag,

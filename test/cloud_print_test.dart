@@ -18,6 +18,7 @@ import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
+import 'package:bugaoshan/utils/constants.dart';
 
 class _Root extends ChangeNotifier implements ScuAuth {
   _Root(this.client);
@@ -225,6 +226,13 @@ void main() {
     final client = CookieClient(
       inner: MockClient((request) async {
         expect(request.headers['authorization'], isNull);
+        expect(request.headers['user-agent'], kDefaultUserAgent);
+        expect(
+          request.headers['accept'],
+          request.url.path.startsWith('/api/')
+              ? 'application/json'
+              : 'text/html,application/xhtml+xml,*/*',
+        );
         switch (request.url.path) {
           case '/api/client/Auth/Check':
             return http.Response(
