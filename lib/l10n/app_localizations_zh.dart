@@ -3862,6 +3862,211 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get logShare => '分享日志';
+
+  @override
+  String get cloudPrintTitle => '图书馆打印与扫描';
+
+  @override
+  String get cloudPrintDock => '云打印';
+
+  @override
+  String get cloudPrintDesc => '批量上传打印文档，查看任务、下载和分享扫描件';
+
+  @override
+  String get cloudPrintQueue => '上传队列';
+
+  @override
+  String get cloudPrintJobs => '打印任务';
+
+  @override
+  String get cloudPrintScans => '扫描文档';
+
+  @override
+  String get cloudPrintChoose => '添加文件';
+
+  @override
+  String get cloudPrintSettings => '统一设置待上传文件';
+
+  @override
+  String get cloudPrintFileSettings => '本文件打印设置';
+
+  @override
+  String get cloudPrintEmptyQueue => '选择一个或多个文档开始上传';
+
+  @override
+  String get cloudPrintHint => '上传后生成待打印任务，到图书馆终端刷校园卡确认打印。';
+
+  @override
+  String get cloudPrintScanHint => '请先在图书馆机器上完成扫描，扫描件会出现在这里，可下载或分享。';
+
+  @override
+  String get cloudPrintScanEmpty => '暂无扫描文档';
+
+  @override
+  String get cloudPrintJobsEmpty => '暂无打印任务';
+
+  @override
+  String get cloudPrintLoadFailed => '列表加载失败，请刷新重试。';
+
+  @override
+  String cloudPrintSelection(int added, int duplicates, int invalid) {
+    return '已添加 $added 个，跳过重复 $duplicates 个，不可读取或格式不支持 $invalid 个';
+  }
+
+  @override
+  String cloudPrintStart(int count) {
+    return '上传待处理文件（$count）';
+  }
+
+  @override
+  String get cloudPrintStop => '停止后续上传';
+
+  @override
+  String get cloudPrintStopping => '当前文件结束后停止';
+
+  @override
+  String get cloudPrintRetryFailed => '失败文件重新排队';
+
+  @override
+  String get cloudPrintClearFinished => '清理已完成';
+
+  @override
+  String get cloudPrintPending => '等待上传';
+
+  @override
+  String cloudPrintUploading(int percent) {
+    return '上传中 $percent%';
+  }
+
+  @override
+  String get cloudPrintProcessing => '文档处理中…';
+
+  @override
+  String get cloudPrintUploaded => '已上传';
+
+  @override
+  String get cloudPrintFailed => '上传失败';
+
+  @override
+  String get cloudPrintUncertain => '上传结果待核对';
+
+  @override
+  String get cloudPrintVerify => '核对打印任务';
+
+  @override
+  String get cloudPrintVerificationPending => '服务器已接受上传；请先在「打印任务」核对，勿重复上传。';
+
+  @override
+  String get cloudPrintRequeue => '本文件重新排队';
+
+  @override
+  String get cloudPrintMissingConfirm => '已核对，确认未生成任务';
+
+  @override
+  String get cloudPrintMissingHint => '请先查看打印任务，确认没有此文档后再重新排队。再次上传可能生成重复任务。';
+
+  @override
+  String get cloudPrintFailureAuth => '文件提交前会话已失效，请重新登录后重试。';
+
+  @override
+  String get cloudPrintFailureSize => '文件过大，打印服务器已拒绝此文件。';
+
+  @override
+  String get cloudPrintFailureRequest => '请检查文件和网络，再单独重试此文件。';
+
+  @override
+  String get cloudPrintRemove => '从上传队列移除';
+
+  @override
+  String get cloudPrintColor => '颜色';
+
+  @override
+  String get cloudPrintMono => '黑白';
+
+  @override
+  String get cloudPrintFullColor => '彩色';
+
+  @override
+  String get cloudPrintPaper => '纸型';
+
+  @override
+  String get cloudPrintOriginal => '原文档纸型';
+
+  @override
+  String get cloudPrintDuplex => '单双面';
+
+  @override
+  String get cloudPrintLongEdge => '长边双面';
+
+  @override
+  String get cloudPrintShortEdge => '短边双面';
+
+  @override
+  String get cloudPrintSimplex => '单面';
+
+  @override
+  String get cloudPrintCopies => '份数';
+
+  @override
+  String get cloudPrintPages => '页范围';
+
+  @override
+  String get cloudPrintPagesHint => '留空打印全部；或填 2、2-5';
+
+  @override
+  String get cloudPrintAllPages => '全部页';
+
+  @override
+  String get cloudPrintInvalidCopies => '请输入正整数份数';
+
+  @override
+  String get cloudPrintInvalidPages => '请输入单页或连续范围，例如 2-5';
+
+  @override
+  String cloudPrintSummary(int copies, String pages) {
+    return '$copies 份 · $pages';
+  }
+
+  @override
+  String cloudPrintJobInfo(int pages, int copies, int status) {
+    return '$pages 页 · $copies 份 · 状态 $status';
+  }
+
+  @override
+  String get cloudPrintSelectAll => '全选可下载文档';
+
+  @override
+  String get cloudPrintDownloadSelected => '下载选中';
+
+  @override
+  String get cloudPrintShareSelected => '分享选中';
+
+  @override
+  String get cloudPrintDownload => '下载';
+
+  @override
+  String get cloudPrintOpen => '打开';
+
+  @override
+  String get cloudPrintShare => '分享';
+
+  @override
+  String get cloudPrintScanExpired => '已过期';
+
+  @override
+  String get cloudPrintDownloadFailed => '部分文档下载失败，可单独重试失败项。';
+
+  @override
+  String get cloudPrintDownloadDone => '下载完成，可打开或分享已下载文档。';
+
+  @override
+  String get cloudPrintOpenFailed => '无法打开此文件，可尝试分享至其他应用。';
+
+  @override
+  String get cloudPrintShareFailed => '分享失败，已下载的文件仍然保留。';
+
+  @override
+  String get cloudPrintPickFailed => '文件选择失败，请重试。';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

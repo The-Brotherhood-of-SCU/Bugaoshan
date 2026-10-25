@@ -202,6 +202,7 @@ Authoritative reference: `docs/architecture/authentication.md`.
 - **`CcylAuth`** — second-classroom OAuth token management via `CcylOAuthService` (SCU → CCYL bridge); binds the persisted token to the current SCU principal and rejects stale async login results.
 - **`ZhhqAuth`** (`zhhq_auth.dart`) — 智慧后勤（zhhq，在线报修）认证. Shares SCU's `CookieClient`, follows SSO (scdxplugin_jwt31) → `login/auto` to exchange **tokenKey**; persists tokenKey to `FlutterSecureStorage` (`kZhhqTokenKey`), `init()` unconditionally restores it for a fast path (业务请求只依赖 Token/TokenKey 头，不依赖 SCU 会话), and `getClientFast()` returns an isolated `CookieClient`. On 4010-4017 token errors → `invalidate()` + full re-auth.
 - **`NewServiceAuth`** (`new_service_auth.dart`) — 校园网无感认证（Passpoint）子系统认证，绑定设备 MAC 自动认证.
+- **`CloudPrintAuth`** (`cloud_print_auth.dart`) — 图书馆打印与扫描子系统认证；复用根 CookieClient，SSoPage JSON → libic/CAS → Auth/Check，按根账号与 client 隔离缓存。仅业务请求时登录，不加入 AuthCoordinator 预热。详见 `docs/architecture/cloud-print.md`.
 - **`CookieClient`** (`cookie_client.dart`) — domain-isolated cookie jar + manual `followRedirects()` collecting `Set-Cookie` per hop + `http.ClientException` retry with fresh `http.Client`.
 
 **Layer 1 — API Services (stateless HTTP tools):**
@@ -213,6 +214,7 @@ Authoritative reference: `docs/architecture/authentication.md`.
 - **`BalanceQueryService`** (`lib/services/api/balance_query_service.dart`) — dorm balance data service (HTTP query methods + model classes; called inside `PayAppApiService._request()` so retry is handled by the parent, not by this service itself).
 - **`ZhhqApiService`** (`zhhq_api_service.dart`) — 智慧后勤 API（在线报修）：地址 / 区域树 / 项目 / 预约日期时段 / 工单列表（`activeTemplateData/list`）/ 提交工单（`publish`）/ 图片上传（multipart 明文 JSON）. 业务请求用独立 token（AES 加密 `{tokenKey, clientId, timestamp, GUID}`），4010-4017 错误码触发认证层重建.
 - **`NewServiceApiService`** (`new_service_api_service.dart`) — 校园网无感认证（Passpoint）API.
+- **`CloudPrintApiService`** (`cloud_print_api_service.dart`) — 图书馆打印任务、流式上传和扫描件下载。文件 POST 必须用 `CookieClient.sendOnce`，提交后认证错误/超时统一视为 `CloudPrintUploadUncertainException`，严禁走自动重试；列表和扫描下载 GET 可以恢复认证一次。`CloudPrintProvider` 管理串行批量队列与逐项状态，换号/登出清空会话数据并屏蔽旧回调。
 
 ZHJW, WFW, and PayApp API services follow the **`_request()` template** (internally calls `retryOnUnauthenticated` from `lib/services/api/api_request.dart`):
 1. `getClient()` → 2. business HTTP → 3. on `UnauthenticatedException` → 4. `invalidate?.call()` + retry once → 5. still failing → propagate to the Provider (which converts to UI state).
