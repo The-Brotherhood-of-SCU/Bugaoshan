@@ -217,6 +217,32 @@ class CloudPrintApiService {
     logTag: _tag,
   );
 
+  /// 删除扫描记录。网页端用 POST `Scan/Del` 携带 `{dwJobId}`；只删服务器记录，
+  /// 已下载到本地目录的文件不受影响。
+  Future<void> deleteScan(CloudScanJob scan) => retryOnUnauthenticated(
+    auth.getClient,
+    (client) async {
+      final request = http.Request('POST', base.resolve('/api/client/Scan/Del'))
+        ..headers.addAll({
+          'User-Agent': kDefaultUserAgent,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Origin': base.origin,
+          'Referer': base.resolve(cloudPrintJobsPath).toString(),
+        })
+        ..body = jsonEncode({'dwJobId': scan.id});
+      final response = await http.Response.fromStream(
+        await client.sendOnce(request),
+      ).timeout(kHttpTimeout);
+      if ([401, 403].contains(response.statusCode)) {
+        throw const UnauthenticatedException();
+      }
+      checkCloudPrintResponse(response);
+    },
+    invalidate: auth.invalidate,
+    logTag: _tag,
+  );
+
   /// 预览第 [pageNo] 页（从 1 开始）。服务端按 `dwJobId + dwCreateTime` 定位任务，
   /// `result` 是 PNG 的 base64 文本；每次只取一页，避免一次性拉整份文档。
   Future<Uint8List> previewPage(CloudPrintJob job, int pageNo) async {

@@ -42,6 +42,7 @@ class _CloudPrintPageState extends State<CloudPrintPage>
   final _pages = PageController();
   late bool _wasLoggedIn;
   final Set<int> _selectedScans = {};
+  final Set<int> _selectedJobs = {};
   @override
   void initState() {
     super.initState();
@@ -55,6 +56,7 @@ class _CloudPrintPageState extends State<CloudPrintPage>
     if (_wasLoggedIn == _auth.isLoggedIn) return;
     _wasLoggedIn = _auth.isLoggedIn;
     _selectedScans.clear();
+    _selectedJobs.clear();
     _onTabChanged();
     if (_auth.isLoggedIn) {
       // 登录门禁卸载了 PageView，重新挂载时恢复当前标签对应的页面。
@@ -288,11 +290,46 @@ class _CloudPrintPageState extends State<CloudPrintPage>
   );
 
   Future<void> _deleteJob(CloudPrintJob job, AppLocalizations l10n) async {
+    final confirmed = await _confirmDelete(
+      l10n.cloudPrintDelete,
+      l10n.cloudPrintDeleteConfirm(job.name),
+      l10n,
+    );
+    if (!confirmed) return;
+    final result = await _provider.deleteJobs([job]);
+    if (!mounted) return;
+    _snackDeleteResult(result.deleted, result.failed, l10n);
+  }
+
+  Future<void> _deleteSelectedJobs(AppLocalizations l10n) async {
+    final targets = _provider.jobs
+        .where((job) => _selectedJobs.contains(job.id))
+        .toList();
+    if (targets.isEmpty) return;
+    final confirmed = await _confirmDelete(
+      l10n.cloudPrintDelete,
+      l10n.cloudPrintDeleteSelectedConfirm(targets.length),
+      l10n,
+    );
+    if (!confirmed) return;
+    final result = await _provider.deleteJobs(targets);
+    if (!mounted) return;
+    _selectedJobs.removeWhere(
+      (id) => !_provider.jobs.any((job) => job.id == id),
+    );
+    _snackDeleteResult(result.deleted, result.failed, l10n);
+  }
+
+  Future<bool> _confirmDelete(
+    String title,
+    String message,
+    AppLocalizations l10n,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n.cloudPrintDelete),
-        content: Text(l10n.cloudPrintDeleteConfirm(job.name)),
+        title: Text(title),
+        content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -305,10 +342,15 @@ class _CloudPrintPageState extends State<CloudPrintPage>
         ],
       ),
     );
-    if (confirmed != true || !mounted) return;
-    final deleted = await _provider.deleteJob(job);
-    if (!mounted) return;
-    _snack(deleted ? l10n.cloudPrintDeleted : l10n.cloudPrintDeleteFailed);
+    return confirmed == true && mounted;
+  }
+
+  void _snackDeleteResult(int deleted, int failed, AppLocalizations l10n) {
+    if (failed == 0) {
+      _snack(l10n.cloudPrintDeletedCount(deleted));
+    } else {
+      _snack(l10n.cloudPrintDeletePartial(deleted, failed));
+    }
   }
 
   Widget _jobsTab(AppLocalizations l10n) => RefreshIndicator(
@@ -317,14 +359,41 @@ class _CloudPrintPageState extends State<CloudPrintPage>
       physics: const AlwaysScrollableScrollPhysics(),
       padding: withSystemBottomInset(context, const EdgeInsets.all(16)),
       children: [
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton.icon(
-            onPressed: _provider.loadingJobs ? null : _provider.refreshJobs,
-            icon: const Icon(Icons.refresh),
-            label: Text(l10n.refresh),
-          ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          alignment: WrapAlignment.end,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            TextButton.icon(
+              onPressed: _provider.loadingJobs ? null : _provider.refreshJobs,
+              icon: const Icon(Icons.refresh),
+              label: Text(l10n.refresh),
+            ),
+            if (_provider.jobs.isNotEmpty)
+              OutlinedButton.icon(
+                onPressed: _selectedJobs.isEmpty
+                    ? null
+                    : () => _deleteSelectedJobs(l10n),
+                icon: const Icon(Icons.delete_outline),
+                label: Text(
+                  l10n.cloudPrintDeleteSelected(_selectedJobs.length),
+                ),
+              ),
+          ],
         ),
+        if (_provider.jobs.isNotEmpty)
+          CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(l10n.cloudPrintSelectAll),
+            value: _selectedJobs.length == _provider.jobs.length,
+            onChanged: (value) => _update(() {
+              _selectedJobs.clear();
+              if (value == true) {
+                _selectedJobs.addAll(_provider.jobs.map((job) => job.id));
+              }
+            }),
+          ),
         _hint(l10n.cloudPrintHint),
         if (_provider.loadingJobs) const LinearProgressIndicator(),
         if (_provider.jobsFailed) _hint(l10n.cloudPrintLoadFailed),
@@ -336,7 +405,16 @@ class _CloudPrintPageState extends State<CloudPrintPage>
           StyledCard(
             margin: const EdgeInsets.only(bottom: 10),
             child: ListTile(
-              leading: const Icon(Icons.print_outlined),
+              leading: Checkbox(
+                value: _selectedJobs.contains(job.id),
+                onChanged: (value) => _update(() {
+                  if (value == true) {
+                    _selectedJobs.add(job.id);
+                  } else {
+                    _selectedJobs.remove(job.id);
+                  }
+                }),
+              ),
               title: Text(
                 job.name,
                 maxLines: 2,

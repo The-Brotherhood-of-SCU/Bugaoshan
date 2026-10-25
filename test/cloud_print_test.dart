@@ -79,14 +79,17 @@ class _QueueApi implements CloudPrintApiService {
   final Set<int> failDownloadOnce = {};
   Completer<void>? hold;
   int inFlight = 0, maxInFlight = 0, jobCalls = 0;
+  List<CloudPrintJob> jobs = [];
+  List<CloudScanJob> scans = [];
+  final Set<int> failDeleteOnce = {};
   @override
   Future<List<CloudPrintJob>> fetchJobs() async {
     jobCalls++;
-    return [];
+    return jobs;
   }
 
   @override
-  Future<List<CloudScanJob>> fetchScans() async => [];
+  Future<List<CloudScanJob>> fetchScans() async => scans;
   @override
   Future<CloudPrintUploadResult> upload(
     CloudPrintFile file,
@@ -106,6 +109,26 @@ class _QueueApi implements CloudPrintApiService {
     } finally {
       inFlight--;
     }
+  }
+
+  final List<int> deletedJobs = [];
+  final List<int> deletedScans = [];
+  @override
+  Future<void> deleteJob(CloudPrintJob job) async {
+    if (failDeleteOnce.remove(job.id)) {
+      throw const ServiceException('delete failed');
+    }
+    deletedJobs.add(job.id);
+    jobs = jobs.where((item) => item.id != job.id).toList();
+  }
+
+  @override
+  Future<void> deleteScan(CloudScanJob scan) async {
+    if (failDeleteOnce.remove(scan.id)) {
+      throw const ServiceException('delete failed');
+    }
+    deletedScans.add(scan.id);
+    scans = scans.where((item) => item.id != scan.id).toList();
   }
 
   @override
@@ -695,23 +718,23 @@ void main() {
     client.close();
   });
 
-  test('默认 3 路并发上传，停止只影响尚未派发的文件', () async {
+  test('默认 5 路并发上传，停止只影响尚未派发的文件', () async {
     final api = _QueueApi()..hold = Completer<void>();
     final provider = CloudPrintProvider(api);
     addTearDown(provider.dispose);
     await provider.addPaths([
-      for (final name in ['a.pdf', 'b.pdf', 'c.pdf', 'd.pdf'])
+      for (final name in ['a.pdf', 'b.pdf', 'c.pdf', 'd.pdf', 'e.pdf', 'f.pdf'])
         await fixture(name),
     ]);
     final run = provider.uploadPending();
     await Future<void>.delayed(const Duration(milliseconds: 20));
-    // 批次基线只查一次，前 3 个文件同时在传。
+    // 批次基线只查一次，前 5 个文件同时在传。
     expect(api.jobCalls, 1);
-    expect(api.maxInFlight, 3);
+    expect(api.maxInFlight, 5);
     provider.stopAfterCurrent();
     api.hold!.complete();
     await run;
-    expect(api.uploads, hasLength(3));
+    expect(api.uploads, hasLength(5));
     expect(
       provider.queue.where(
         (item) => item.status == CloudPrintQueueStatus.pending,
@@ -719,5 +742,51 @@ void main() {
       hasLength(1),
     );
     expect(provider.uploading, isFalse);
+  });
+
+  test('批量删除打印任务与扫描记录逐项隔离失败', () async {
+    final api = _QueueApi();
+    final provider = CloudPrintProvider(api, uploadConcurrency: 1);
+    addTearDown(provider.dispose);
+    api.jobs = [
+      CloudPrintJob.fromJson({'dwJobId': 1, 'szJobName': 'a.pdf'}),
+      CloudPrintJob.fromJson({'dwJobId': 2, 'szJobName': 'b.pdf'}),
+      CloudPrintJob.fromJson({'dwJobId': 3, 'szJobName': 'c.pdf'}),
+    ];
+    await provider.refreshJobs();
+    final jobsResult = await provider.deleteJobs(provider.jobs.take(2));
+    expect(jobsResult.deleted, 2);
+    expect(jobsResult.failed, 0);
+    expect(api.deletedJobs, [1, 2]);
+    expect(provider.jobs.map((job) => job.id), [3]);
+
+    api.scans = [
+      CloudScanJob.fromJson({'dwJobId': 11, 'szDisplayName': 's1.pdf'}),
+      CloudScanJob.fromJson({
+        'dwJobId': 12,
+        'szDisplayName': 's2.pdf',
+        'dwStatus': 256,
+      }),
+    ];
+    await provider.refreshScans();
+    final scansResult = await provider.deleteScans(provider.scans);
+    expect(scansResult.deleted, 2);
+    expect(api.deletedScans, [11, 12]);
+    expect(provider.scans, isEmpty);
+  });
+
+  test('删除失败时保留列表项并返回失败数', () async {
+    final api = _QueueApi()..failDeleteOnce.add(1);
+    final provider = CloudPrintProvider(api, uploadConcurrency: 1);
+    addTearDown(provider.dispose);
+    api.jobs = [
+      CloudPrintJob.fromJson({'dwJobId': 1, 'szJobName': 'a.pdf'}),
+      CloudPrintJob.fromJson({'dwJobId': 2, 'szJobName': 'b.pdf'}),
+    ];
+    await provider.refreshJobs();
+    final result = await provider.deleteJobs(provider.jobs);
+    expect(result.deleted, 1);
+    expect(result.failed, 1);
+    expect(provider.jobs.map((job) => job.id), [1]);
   });
 }

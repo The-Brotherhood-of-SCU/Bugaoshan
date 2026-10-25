@@ -4215,7 +4215,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cloudPrintDeleteFailed => 'Delete failed. Refresh and try again.';
 
   @override
-  String get cloudPrintSelectAll => 'Select all available';
+  String get cloudPrintSelectAll => 'Select all';
+
+  @override
+  String cloudPrintDeleteSelected(int count) {
+    return 'Delete selected ($count)';
+  }
+
+  @override
+  String cloudPrintDeleteSelectedConfirm(int count) {
+    return 'Delete $count selected item(s)? You will need to upload them again to print.';
+  }
+
+  @override
+  String cloudPrintDeletedCount(int count) {
+    return 'Deleted $count item(s)';
+  }
+
+  @override
+  String cloudPrintDeletePartial(int deleted, int failed) {
+    return 'Deleted $deleted, $failed failed. Please retry.';
+  }
+
+  @override
+  String get cloudPrintCleanExpired => 'Clean up expired';
+
+  @override
+  String cloudPrintCleanExpiredConfirm(int count) {
+    return 'Delete $count expired scan record(s)?';
+  }
 
   @override
   String get cloudPrintDownloadSelected => 'Download selected';

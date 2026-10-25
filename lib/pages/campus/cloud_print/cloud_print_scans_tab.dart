@@ -1,12 +1,18 @@
 part of 'cloud_print_page.dart';
 
 extension _CloudPrintScansTab on _CloudPrintPageState {
+  /// 选中集包含过期项：下载/分享只取未过期的，删除与清理按选中记录执行。
+  List<CloudScanJob> get _selectedScanJobs => _provider.scans
+      .where((scan) => _selectedScans.contains(scan.id))
+      .toList();
+
+  List<CloudScanJob> get _downloadableScans =>
+      _selectedScanJobs.where((scan) => !scan.expired).toList();
+
   Widget _scansTab(AppLocalizations l10n) {
-    final available = _provider.scans
-        .where((scan) => !scan.expired)
-        .map((scan) => scan.id)
-        .toSet();
-    _selectedScans.removeWhere((id) => !available.contains(id));
+    final expired = _provider.scans.where((scan) => scan.expired).toList();
+    final all = _provider.scans.map((scan) => scan.id).toSet();
+    _selectedScans.removeWhere((id) => !all.contains(id));
     return RefreshIndicator(
       onRefresh: _provider.refreshScans,
       child: ListView(
@@ -27,32 +33,45 @@ extension _CloudPrintScansTab on _CloudPrintPageState {
                 label: Text(l10n.refresh),
               ),
               FilledButton.tonalIcon(
-                onPressed: _selectedScans.isEmpty || _provider.downloading
+                onPressed: _downloadableScans.isEmpty || _provider.downloading
                     ? null
                     : () => _downloadScans(l10n),
                 icon: const Icon(Icons.download),
                 label: Text(l10n.cloudPrintDownloadSelected),
               ),
               OutlinedButton.icon(
-                onPressed: _selectedScans.isEmpty || _provider.downloading
+                onPressed: _downloadableScans.isEmpty || _provider.downloading
                     ? null
                     : () => _downloadScans(l10n, share: true),
                 icon: const Icon(Icons.share_outlined),
                 label: Text(l10n.cloudPrintShareSelected),
               ),
+              OutlinedButton.icon(
+                onPressed: _selectedScans.isEmpty
+                    ? null
+                    : () => _deleteScans(l10n, _selectedScanJobs),
+                icon: const Icon(Icons.delete_outline),
+                label: Text(
+                  l10n.cloudPrintDeleteSelected(_selectedScans.length),
+                ),
+              ),
+              if (expired.isNotEmpty)
+                TextButton.icon(
+                  onPressed: () =>
+                      _deleteScans(l10n, expired, cleanExpired: true),
+                  icon: const Icon(Icons.cleaning_services_outlined),
+                  label: Text(l10n.cloudPrintCleanExpired),
+                ),
             ],
           ),
-          if (available.isNotEmpty)
+          if (all.isNotEmpty)
             CheckboxListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(l10n.cloudPrintSelectAll),
-              value: _selectedScans.length == available.length,
+              value: _selectedScans.length == all.length,
               onChanged: (value) => _update(() {
-                if (value == true) {
-                  _selectedScans.addAll(available);
-                } else {
-                  _selectedScans.clear();
-                }
+                _selectedScans.clear();
+                if (value == true) _selectedScans.addAll(all);
               }),
             ),
           if (_provider.loadingScans) const LinearProgressIndicator(),
@@ -69,15 +88,13 @@ extension _CloudPrintScansTab on _CloudPrintPageState {
                 children: [
                   CheckboxListTile(
                     value: _selectedScans.contains(scan.id),
-                    onChanged: scan.expired
-                        ? null
-                        : (value) => _update(() {
-                            if (value == true) {
-                              _selectedScans.add(scan.id);
-                            } else {
-                              _selectedScans.remove(scan.id);
-                            }
-                          }),
+                    onChanged: (value) => _update(() {
+                      if (value == true) {
+                        _selectedScans.add(scan.id);
+                      } else {
+                        _selectedScans.remove(scan.id);
+                      }
+                    }),
                     title: Text(
                       scan.name,
                       maxLines: 2,
@@ -96,10 +113,18 @@ extension _CloudPrintScansTab on _CloudPrintPageState {
                         color: Theme.of(context).colorScheme.error,
                       ),
                     ),
-                  if (!scan.expired)
-                    Wrap(
-                      spacing: 8,
-                      children: [
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      // 服务端没有扫描件预览接口：先下载到应用目录，再交给系统打开。
+                      TextButton.icon(
+                        onPressed: _provider.downloading
+                            ? null
+                            : () => _previewScan(scan, l10n),
+                        icon: const Icon(Icons.visibility_outlined),
+                        label: Text(l10n.cloudPrintPreview),
+                      ),
+                      if (!scan.expired)
                         TextButton.icon(
                           onPressed: _provider.downloading
                               ? null
@@ -107,25 +132,17 @@ extension _CloudPrintScansTab on _CloudPrintPageState {
                           icon: const Icon(Icons.download),
                           label: Text(l10n.cloudPrintDownload),
                         ),
-                        if (_provider.scanFiles.containsKey(scan.id))
-                          TextButton.icon(
-                            onPressed: () => _openScan(scan, l10n),
-                            icon: const Icon(Icons.open_in_new),
-                            label: Text(l10n.cloudPrintOpen),
-                          ),
+                      if (!scan.expired)
                         TextButton.icon(
                           onPressed: _provider.downloading
                               ? null
-                              : () => _downloadScans(
-                                  l10n,
-                                  only: scan,
-                                  share: true,
-                                ),
+                              : () =>
+                                    _downloadScans(l10n, only: scan, share: true),
                           icon: const Icon(Icons.share_outlined),
                           label: Text(l10n.cloudPrintShare),
                         ),
-                      ],
-                    ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -185,6 +202,45 @@ extension _CloudPrintScansTab on _CloudPrintPageState {
         share ? l10n.cloudPrintShareFailed : l10n.cloudPrintDownloadFailed,
       );
     }
+  }
+
+  /// 预览 = 先下载到应用目录，再交给系统程序打开；已下载过的直接打开。
+  Future<void> _previewScan(CloudScanJob scan, AppLocalizations l10n) async {
+    if (scan.expired) {
+      _snack(l10n.cloudPrintScanExpired);
+      return;
+    }
+    final cached = _provider.scanFiles[scan.id];
+    if (cached == null || !await File(cached).exists()) {
+      await _downloadScans(l10n, only: scan);
+      if (!mounted) return;
+    }
+    if (_provider.scanFiles[scan.id] == null) return;
+    await _openScan(scan, l10n);
+  }
+
+  Future<void> _deleteScans(
+    AppLocalizations l10n,
+    List<CloudScanJob> targets, {
+    bool cleanExpired = false,
+  }) async {
+    if (targets.isEmpty) return;
+    final confirmed = await _confirmDelete(
+      l10n.cloudPrintDelete,
+      cleanExpired
+          ? l10n.cloudPrintCleanExpiredConfirm(targets.length)
+          : l10n.cloudPrintDeleteSelectedConfirm(targets.length),
+      l10n,
+    );
+    if (!confirmed) return;
+    final result = await _provider.deleteScans(targets);
+    if (!mounted) return;
+    _update(() {
+      _selectedScans.removeWhere(
+        (id) => !_provider.scans.any((scan) => scan.id == id),
+      );
+    });
+    _snackDeleteResult(result.deleted, result.failed, l10n);
   }
 
   Future<void> _openScan(CloudScanJob scan, AppLocalizations l10n) async {

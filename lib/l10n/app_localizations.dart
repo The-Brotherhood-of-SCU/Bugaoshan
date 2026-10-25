@@ -7774,8 +7774,44 @@ abstract class AppLocalizations {
   /// No description provided for @cloudPrintSelectAll.
   ///
   /// In en, this message translates to:
-  /// **'Select all available'**
+  /// **'Select all'**
   String get cloudPrintSelectAll;
+
+  /// No description provided for @cloudPrintDeleteSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete selected ({count})'**
+  String cloudPrintDeleteSelected(int count);
+
+  /// No description provided for @cloudPrintDeleteSelectedConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {count} selected item(s)? You will need to upload them again to print.'**
+  String cloudPrintDeleteSelectedConfirm(int count);
+
+  /// No description provided for @cloudPrintDeletedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted {count} item(s)'**
+  String cloudPrintDeletedCount(int count);
+
+  /// No description provided for @cloudPrintDeletePartial.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted {deleted}, {failed} failed. Please retry.'**
+  String cloudPrintDeletePartial(int deleted, int failed);
+
+  /// No description provided for @cloudPrintCleanExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Clean up expired'**
+  String get cloudPrintCleanExpired;
+
+  /// No description provided for @cloudPrintCleanExpiredConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {count} expired scan record(s)?'**
+  String cloudPrintCleanExpiredConfirm(int count);
 
   /// No description provided for @cloudPrintDownloadSelected.
   ///

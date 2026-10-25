@@ -27,7 +27,7 @@ class CloudPrintQueueItem {
 
 /// 会话内保留批量队列；有限并发提交、成功项不重放，登出/换号丢弃旧账号结果。
 class CloudPrintProvider extends ChangeNotifier {
-  CloudPrintProvider(this._api, {ScuAuth? scuAuth, this.uploadConcurrency = 3})
+  CloudPrintProvider(this._api, {ScuAuth? scuAuth, this.uploadConcurrency = 5})
     : _scu = scuAuth {
     _principal = _scu?.principal;
     _scu?.addListener(_onAuthChanged);
@@ -85,7 +85,8 @@ class CloudPrintProvider extends ChangeNotifier {
   Future<({int added, int duplicates, int invalid})> addPaths(
     Iterable<String> paths,
   ) async {
-    if (uploading || selecting) return (added: 0, duplicates: 0, invalid: 0);
+    // 上传进行中也允许继续加文件：新项进入队列后由空闲 worker 接着取走。
+    if (selecting) return (added: 0, duplicates: 0, invalid: 0);
     final generation = _generation;
     selecting = true;
     _notify();
@@ -193,6 +194,18 @@ class CloudPrintProvider extends ChangeNotifier {
     _notify();
   }
 
+  /// 领取下一个待上传项。领取、改状态与清进度是同步的，多个 worker 不会拿到同一项。
+  CloudPrintQueueItem? _claimPending() {
+    for (final item in _queue) {
+      if (item.status != CloudPrintQueueStatus.pending) continue;
+      item.status = CloudPrintQueueStatus.uploading;
+      item.progress = 0;
+      item.failure = null;
+      return item;
+    }
+    return null;
+  }
+
   Future<void> uploadPending() async {
     if (uploading || selecting || pendingCount == 0) return;
     final generation = _generation;
@@ -213,23 +226,12 @@ class CloudPrintProvider extends ChangeNotifier {
     }
     if (!_current(generation)) return;
     try {
-      final items = _queue
-          .where((item) => item.status == CloudPrintQueueStatus.pending)
-          .toList();
-      var next = 0;
-      // 单线程事件循环里 next 的取出与自增之间没有 await，多个 worker 不会抢到同一项。
+      // 队列在批次进行中仍可能增长，worker 每次循环重新领取一项。
       Future<void> worker() async {
         while (true) {
-          if (!_current(generation) ||
-              _stopRequested ||
-              next >= items.length) {
-            return;
-          }
-          final item = items[next++];
-          if (item.status != CloudPrintQueueStatus.pending) continue;
-          item.status = CloudPrintQueueStatus.uploading;
-          item.progress = 0;
-          item.failure = null;
+          if (!_current(generation) || _stopRequested) return;
+          final item = _claimPending();
+          if (item == null) return;
           _notify();
           try {
             final result = await _api.upload(
@@ -270,8 +272,7 @@ class CloudPrintProvider extends ChangeNotifier {
       }
 
       final workers = <Future<void>>[
-        for (var i = 0; i < uploadConcurrency && i < items.length; i++)
-          worker(),
+        for (var i = 0; i < uploadConcurrency; i++) worker(),
       ];
       await Future.wait(workers);
     } finally {
@@ -311,20 +312,56 @@ class CloudPrintProvider extends ChangeNotifier {
   Future<Uint8List> previewPage(CloudPrintJob job, int pageNo) =>
       _api.previewPage(job, pageNo);
 
-  /// 删除只影响待打印任务；先从列表移除再回查，失败时保留原列表等用户重试。
-  Future<bool> deleteJob(CloudPrintJob job) async {
+  /// 批量删除待打印任务：逐项隔离失败，成功后回查一次列表。
+  Future<({int deleted, int failed})> deleteJobs(
+    Iterable<CloudPrintJob> targets,
+  ) async {
     final generation = _generation;
-    try {
-      await _api.deleteJob(job);
-    } catch (error, stack) {
-      AppLog.e(_tag, '删除打印任务失败', error: error, stackTrace: stack);
-      return false;
+    var deleted = 0, failed = 0;
+    for (final job in targets) {
+      if (!_current(generation)) break;
+      try {
+        await _api.deleteJob(job);
+        if (!_current(generation)) break;
+        jobs = jobs.where((item) => item.id != job.id).toList();
+        _notify();
+        deleted++;
+      } catch (error, stack) {
+        failed++;
+        AppLog.e(_tag, '删除打印任务失败', error: error, stackTrace: stack);
+      }
     }
-    if (!_current(generation)) return false;
-    jobs = jobs.where((item) => item.id != job.id).toList();
-    _notify();
-    await refreshJobs();
-    return _current(generation);
+    if (_current(generation) && deleted > 0) await refreshJobs();
+    return (deleted: deleted, failed: failed);
+  }
+
+  Future<bool> deleteJob(CloudPrintJob job) async =>
+      (await deleteJobs([job])).deleted == 1;
+
+  /// 批量删除扫描记录。只删服务器记录，已下载到本地的扫描件保留。
+  Future<({int deleted, int failed})> deleteScans(
+    Iterable<CloudScanJob> targets,
+  ) async {
+    final generation = _generation;
+    var deleted = 0, failed = 0;
+    for (final scan in targets) {
+      if (!_current(generation)) break;
+      try {
+        await _api.deleteScan(scan);
+        if (!_current(generation)) break;
+        scans = scans.where((item) => item.id != scan.id).toList();
+        _scanFiles.remove(scan.id);
+        _scanProgress.remove(scan.id);
+        _scanFailures.remove(scan.id);
+        _notify();
+        deleted++;
+      } catch (error, stack) {
+        failed++;
+        AppLog.e(_tag, '删除扫描记录失败', error: error, stackTrace: stack);
+      }
+    }
+    if (_current(generation) && deleted > 0) await refreshScans();
+    return (deleted: deleted, failed: failed);
   }
 
   Future<void> refreshScans() {

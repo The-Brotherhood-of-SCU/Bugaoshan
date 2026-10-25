@@ -4066,7 +4066,35 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cloudPrintDeleteFailed => '删除失败，请刷新后重试。';
 
   @override
-  String get cloudPrintSelectAll => '全选可下载文档';
+  String get cloudPrintSelectAll => '全选';
+
+  @override
+  String cloudPrintDeleteSelected(int count) {
+    return '删除选中（$count）';
+  }
+
+  @override
+  String cloudPrintDeleteSelectedConfirm(int count) {
+    return '删除选中的 $count 项？删除后需重新上传才能打印。';
+  }
+
+  @override
+  String cloudPrintDeletedCount(int count) {
+    return '已删除 $count 项';
+  }
+
+  @override
+  String cloudPrintDeletePartial(int deleted, int failed) {
+    return '已删除 $deleted 项，$failed 项失败，请重试。';
+  }
+
+  @override
+  String get cloudPrintCleanExpired => '清理过期文件';
+
+  @override
+  String cloudPrintCleanExpiredConfirm(int count) {
+    return '将删除 $count 个已过期的扫描记录，确认？';
+  }
 
   @override
   String get cloudPrintDownloadSelected => '下载选中';

@@ -6,29 +6,63 @@ extension _CloudPrintUploadTab on _CloudPrintPageState {
     return ListView(
       padding: withSystemBottomInset(context, const EdgeInsets.all(16)),
       children: [
+        // 上传按钮与「添加文件」同一行右对齐；窄屏时自动换行，不溢出。
         Wrap(
           spacing: 8,
           runSpacing: 8,
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             FilledButton.icon(
-              onPressed: busy ? null : () => _pickFiles(l10n),
+              // 上传中仍可继续加文件：空闲 worker 会接着领取新项。
+              onPressed: _provider.selecting ? null : () => _pickFiles(l10n),
               icon: const Icon(Icons.add),
               label: Text(l10n.cloudPrintChoose),
             ),
-            if (_provider.failedCount > 0)
-              OutlinedButton(
-                onPressed: busy ? null : _provider.retryFailed,
-                child: Text(l10n.cloudPrintRetryFailed),
-              ),
-            if (_provider.queue.any(
-              (item) => item.status == CloudPrintQueueStatus.uploaded,
-            ))
-              TextButton(
-                onPressed: busy ? null : _provider.clearFinished,
-                child: Text(l10n.cloudPrintClearFinished),
+            if (_provider.uploading)
+              OutlinedButton.icon(
+                onPressed: _provider.stopRequested
+                    ? null
+                    : _provider.stopAfterCurrent,
+                icon: const Icon(Icons.stop_circle_outlined),
+                label: Text(
+                  _provider.stopRequested
+                      ? l10n.cloudPrintStopping
+                      : l10n.cloudPrintStop,
+                ),
+              )
+            else
+              FilledButton.tonalIcon(
+                onPressed: _provider.pendingCount == 0 || _provider.selecting
+                    ? null
+                    : _provider.uploadPending,
+                icon: const Icon(Icons.cloud_upload_outlined),
+                label: Text(l10n.cloudPrintStart(_provider.pendingCount)),
               ),
           ],
         ),
+        if (_provider.failedCount > 0 ||
+            _provider.queue.any(
+              (item) => item.status == CloudPrintQueueStatus.uploaded,
+            ))
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              if (_provider.failedCount > 0)
+                OutlinedButton(
+                  onPressed: busy ? null : _provider.retryFailed,
+                  child: Text(l10n.cloudPrintRetryFailed),
+                ),
+              if (_provider.queue.any(
+                (item) => item.status == CloudPrintQueueStatus.uploaded,
+              ))
+                TextButton(
+                  onPressed: busy ? null : _provider.clearFinished,
+                  child: Text(l10n.cloudPrintClearFinished),
+                ),
+            ],
+          ),
         const SizedBox(height: 12),
         StyledCard(
           child: ListTile(
@@ -57,30 +91,6 @@ extension _CloudPrintUploadTab on _CloudPrintPageState {
             ),
           ),
         for (final item in _provider.queue) _queueCard(item, l10n),
-        if (_provider.queue.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: _provider.uploading
-                ? OutlinedButton.icon(
-                    onPressed: _provider.stopRequested
-                        ? null
-                        : _provider.stopAfterCurrent,
-                    icon: const Icon(Icons.stop_circle_outlined),
-                    label: Text(
-                      _provider.stopRequested
-                          ? l10n.cloudPrintStopping
-                          : l10n.cloudPrintStop,
-                    ),
-                  )
-                : FilledButton.icon(
-                    onPressed:
-                        _provider.pendingCount == 0 || _provider.selecting
-                        ? null
-                        : _provider.uploadPending,
-                    icon: const Icon(Icons.cloud_upload_outlined),
-                    label: Text(l10n.cloudPrintStart(_provider.pendingCount)),
-                  ),
-          ),
       ],
     );
   }

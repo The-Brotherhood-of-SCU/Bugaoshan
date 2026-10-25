@@ -253,7 +253,7 @@ void main() {
     });
   }
 
-  testWidgets('扫描件全选跳过过期项，批量按钮随选择启用', (tester) async {
+  testWidgets('扫描件可全选，下载只作用于未过期项，过期项可清理', (tester) async {
     await pump(tester, width: 360);
     await tester.tap(find.text('Scans'));
     await tester.pumpAndSettle();
@@ -267,7 +267,7 @@ void main() {
           .onPressed,
       isNull,
     );
-    await tester.tap(find.text('Select all available'));
+    await tester.tap(find.text('Select all'));
     await tester.pumpAndSettle();
     expect(
       tester
@@ -280,8 +280,10 @@ void main() {
     final checkboxes = tester
         .widgetList<CheckboxListTile>(find.byType(CheckboxListTile))
         .toList();
-    expect(checkboxes.where((box) => box.value == true).length, 2);
-    expect(checkboxes.last.onChanged, isNull);
+    // 全选行 + 两条扫描件（含过期项）都已选中；过期项现在也能选中用于删除。
+    expect(checkboxes.where((box) => box.value == true).length, 3);
+    expect(checkboxes.last.onChanged, isNotNull);
+    expect(find.text('Clean up expired'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await screenshot(tester, 'scans');
     // 在扫描页登出再登录，会再次加载列表。
