@@ -4025,10 +4025,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cloudPrintChoose => 'Add files';
 
   @override
-  String get cloudPrintSettings => 'Apply settings to pending files';
+  String get cloudPrintSettings => 'Default print settings';
 
   @override
-  String get cloudPrintSharedSettings => 'Shared print settings';
+  String get cloudPrintSharedSettings => 'Default print settings';
 
   @override
   String get cloudPrintFileSettings => 'File print settings';

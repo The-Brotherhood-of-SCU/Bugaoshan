@@ -92,6 +92,7 @@ class _QueueApi implements CloudPrintApiService {
     CloudPrintFile file,
     CloudPrintOptions options, {
     void Function(double)? onProgress,
+    Set<int>? knownJobIds,
   }) async {
     uploads.add(file.name);
     inFlight++;
@@ -414,7 +415,7 @@ void main() {
   test('批量逐文件隔离失败，重试不重复提交成功项', () async {
     final api = _QueueApi()
       ..failOnce['b.pdf'] = const ServiceException('rejected');
-    final provider = CloudPrintProvider(api);
+    final provider = CloudPrintProvider(api, uploadConcurrency: 1);
     addTearDown(provider.dispose);
     final paths = [
       await fixture('a.pdf'),
@@ -441,7 +442,7 @@ void main() {
   test('待核对项阻止队列继续，不进入失败重试；只有显式核对后可排队', () async {
     final api = _QueueApi()
       ..failOnce['a.pdf'] = const CloudPrintUploadUncertainException();
-    final provider = CloudPrintProvider(api);
+    final provider = CloudPrintProvider(api, uploadConcurrency: 1);
     addTearDown(provider.dispose);
     await provider.addPaths([await fixture('a.pdf'), await fixture('b.pdf')]);
     await provider.uploadPending();
@@ -458,7 +459,7 @@ void main() {
 
   test('重复启动不并发，停止保留后续文件，登出后旧回调不能污染队列', () async {
     final api = _QueueApi()..hold = Completer<void>();
-    final provider = CloudPrintProvider(api);
+    final provider = CloudPrintProvider(api, uploadConcurrency: 1);
     addTearDown(provider.dispose);
     await provider.addPaths([await fixture('a.pdf'), await fixture('b.pdf')]);
     final run = provider.uploadPending();
@@ -482,7 +483,7 @@ void main() {
 
   test('扫描下载失败隔离、过期项跳过，文件名不允许路径穿越', () async {
     final api = _QueueApi()..failDownloadOnce.add(1);
-    final provider = CloudPrintProvider(api);
+    final provider = CloudPrintProvider(api, uploadConcurrency: 1);
     addTearDown(provider.dispose);
     final scans = [
       CloudScanJob.fromJson({'dwJobId': 1, 'szDisplayName': 'a.pdf'}),
@@ -692,5 +693,31 @@ void main() {
     expect(requested.queryParameters['pageNo'], '2');
     auth.dispose();
     client.close();
+  });
+
+  test('默认 3 路并发上传，停止只影响尚未派发的文件', () async {
+    final api = _QueueApi()..hold = Completer<void>();
+    final provider = CloudPrintProvider(api);
+    addTearDown(provider.dispose);
+    await provider.addPaths([
+      for (final name in ['a.pdf', 'b.pdf', 'c.pdf', 'd.pdf'])
+        await fixture(name),
+    ]);
+    final run = provider.uploadPending();
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    // 批次基线只查一次，前 3 个文件同时在传。
+    expect(api.jobCalls, 1);
+    expect(api.maxInFlight, 3);
+    provider.stopAfterCurrent();
+    api.hold!.complete();
+    await run;
+    expect(api.uploads, hasLength(3));
+    expect(
+      provider.queue.where(
+        (item) => item.status == CloudPrintQueueStatus.pending,
+      ),
+      hasLength(1),
+    );
+    expect(provider.uploading, isFalse);
   });
 }

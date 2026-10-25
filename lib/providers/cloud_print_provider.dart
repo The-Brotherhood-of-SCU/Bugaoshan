@@ -25,14 +25,19 @@ class CloudPrintQueueItem {
   bool verificationPending = false;
 }
 
-/// 会话内保留批量队列；串行提交、成功项不重放，登出/换号丢弃旧账号结果。
+/// 会话内保留批量队列；有限并发提交、成功项不重放，登出/换号丢弃旧账号结果。
 class CloudPrintProvider extends ChangeNotifier {
-  CloudPrintProvider(this._api, {ScuAuth? scuAuth}) : _scu = scuAuth {
+  CloudPrintProvider(this._api, {ScuAuth? scuAuth, this.uploadConcurrency = 3})
+    : _scu = scuAuth {
     _principal = _scu?.principal;
     _scu?.addListener(_onAuthChanged);
   }
   static const _tag = 'CloudPrintProvider';
   final CloudPrintApiService _api;
+
+  /// 同时在传的文件数。上传是非幂等写，结果不确定时立即停止派发新文件，
+  /// 已发出的请求各自等待结果，避免同一个文件被并发重传。
+  final int uploadConcurrency;
   final ScuAuth? _scu;
   String? _principal;
   int _generation = 0;
@@ -194,49 +199,81 @@ class CloudPrintProvider extends ChangeNotifier {
     uploading = true;
     _stopRequested = false;
     _notify();
+    // 批次开始时取一次任务基线，并发上传期间不再逐文件前后对列表做两次查询。
+    Set<int>? baseline;
     try {
-      for (final item in List.of(_queue)) {
-        if (!_current(generation) || _stopRequested) break;
-        if (item.status != CloudPrintQueueStatus.pending) continue;
-        item.status = CloudPrintQueueStatus.uploading;
-        item.progress = 0;
-        item.failure = null;
-        _notify();
-        try {
-          final result = await _api.upload(
-            item.file,
-            item.options,
-            onProgress: (progress) {
-              if (_current(generation)) {
-                item.progress = progress;
-                _notify();
-              }
-            },
-          );
-          if (!_current(generation)) return;
-          item.status = CloudPrintQueueStatus.uploaded;
-          item.progress = 1;
-          item.verificationPending = !result.verified;
-        } catch (error, stack) {
-          if (!_current(generation)) return;
-          AppLog.e(_tag, '批量队列中的文件上传失败', error: error, stackTrace: stack);
-          if (error is CloudPrintUploadUncertainException) {
-            item.status = CloudPrintQueueStatus.uncertain;
-            item.failure = CloudPrintFailure.uncertain;
-            // 会话可能已失效；先核对本项，不继续向同一会话提交其余文档。
-            _stopRequested = true;
-          } else {
-            item.status = CloudPrintQueueStatus.failed;
-            item.failure = error is UnauthenticatedException
-                ? CloudPrintFailure.authentication
-                : error is ServiceException && error.statusCode == 413
-                ? CloudPrintFailure.tooLarge
-                : CloudPrintFailure.request;
-            if (error is UnauthenticatedException) _stopRequested = true;
+      baseline = (await _api.fetchJobs()).map((job) => job.id).toSet();
+    } catch (_, stack) {
+      AppLog.w(
+        _tag,
+        '上传前任务基线读取失败',
+        error: const ServiceException('待查询任务列表'),
+        stackTrace: stack,
+      );
+    }
+    if (!_current(generation)) return;
+    try {
+      final items = _queue
+          .where((item) => item.status == CloudPrintQueueStatus.pending)
+          .toList();
+      var next = 0;
+      // 单线程事件循环里 next 的取出与自增之间没有 await，多个 worker 不会抢到同一项。
+      Future<void> worker() async {
+        while (true) {
+          if (!_current(generation) ||
+              _stopRequested ||
+              next >= items.length) {
+            return;
           }
+          final item = items[next++];
+          if (item.status != CloudPrintQueueStatus.pending) continue;
+          item.status = CloudPrintQueueStatus.uploading;
+          item.progress = 0;
+          item.failure = null;
+          _notify();
+          try {
+            final result = await _api.upload(
+              item.file,
+              item.options,
+              knownJobIds: baseline,
+              onProgress: (progress) {
+                if (_current(generation)) {
+                  item.progress = progress;
+                  _notify();
+                }
+              },
+            );
+            if (!_current(generation)) return;
+            item.status = CloudPrintQueueStatus.uploaded;
+            item.progress = 1;
+            item.verificationPending = !result.verified;
+          } catch (error, stack) {
+            if (!_current(generation)) return;
+            AppLog.e(_tag, '批量队列中的文件上传失败', error: error, stackTrace: stack);
+            if (error is CloudPrintUploadUncertainException) {
+              item.status = CloudPrintQueueStatus.uncertain;
+              item.failure = CloudPrintFailure.uncertain;
+              // 会话可能已失效；停止派发新文件，已在传的各自等待结果。
+              _stopRequested = true;
+            } else {
+              item.status = CloudPrintQueueStatus.failed;
+              item.failure = error is UnauthenticatedException
+                  ? CloudPrintFailure.authentication
+                  : error is ServiceException && error.statusCode == 413
+                  ? CloudPrintFailure.tooLarge
+                  : CloudPrintFailure.request;
+              if (error is UnauthenticatedException) _stopRequested = true;
+            }
+          }
+          _notify();
         }
-        _notify();
       }
+
+      final workers = <Future<void>>[
+        for (var i = 0; i < uploadConcurrency && i < items.length; i++)
+          worker(),
+      ];
+      await Future.wait(workers);
     } finally {
       if (_current(generation)) {
         uploading = false;

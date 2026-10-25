@@ -7444,13 +7444,13 @@ abstract class AppLocalizations {
   /// No description provided for @cloudPrintSettings.
   ///
   /// In en, this message translates to:
-  /// **'Apply settings to pending files'**
+  /// **'Default print settings'**
   String get cloudPrintSettings;
 
   /// No description provided for @cloudPrintSharedSettings.
   ///
   /// In en, this message translates to:
-  /// **'Shared print settings'**
+  /// **'Default print settings'**
   String get cloudPrintSharedSettings;
 
   /// No description provided for @cloudPrintFileSettings.

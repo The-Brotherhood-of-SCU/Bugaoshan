@@ -3885,10 +3885,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cloudPrintChoose => '添加文件';
 
   @override
-  String get cloudPrintSettings => '统一设置待上传文件';
+  String get cloudPrintSettings => '默认打印设置';
 
   @override
-  String get cloudPrintSharedSettings => '统一打印设置';
+  String get cloudPrintSharedSettings => '默认打印设置';
 
   @override
   String get cloudPrintFileSettings => '本文件打印设置';

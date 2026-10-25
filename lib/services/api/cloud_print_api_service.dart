@@ -71,6 +71,7 @@ class CloudPrintApiService {
     CloudPrintFile file,
     CloudPrintOptions options, {
     void Function(double progress)? onProgress,
+    Set<int>? knownJobIds,
   }) async {
     final fields = options.toFields();
     // 在发送前发现文件失效可安全报错；文件字节从 openRead 流式读取。
@@ -78,7 +79,8 @@ class CloudPrintApiService {
     if (!await source.exists() || await source.length() != file.size) {
       throw const ServiceException('待上传文件已变化，请重新选择');
     }
-    final before = await fetchJobs();
+    // 批量并发上传时由调用方在批次开始时取一次基线，避免每个文件前后各查一次列表。
+    final before = knownJobIds ?? (await fetchJobs()).map((job) => job.id).toSet();
     final client = await auth.getClient();
     await auth.check(client);
     if (!auth.isCurrent(client)) throw const UnauthenticatedException();
@@ -167,7 +169,7 @@ class CloudPrintApiService {
       throw const CloudPrintUploadUncertainException();
     }
     // code=0 已确认接收；列表暂不可读不能把已成功上传误标成可重试的失败。
-    final known = before.map((job) => job.id).toSet();
+    final known = before;
     try {
       final added = (await fetchJobs())
           .where((job) => !known.contains(job.id) && job.name == file.name)
