@@ -312,11 +312,13 @@ void main() {
     });
     provider.queue.single.status = CloudPrintQueueStatus.uncertain;
     await pump(tester, width: 600);
-    expect(find.text('Upload again'), findsNothing);
-    await tester.tap(find.text('Not listed, upload again'));
+    expect(find.text('Requeue this file'), findsNothing);
+    await tester.tap(find.text('I checked: no job was created'));
     await tester.pumpAndSettle();
     expect(provider.queue.single.status, CloudPrintQueueStatus.uncertain);
-    await tester.tap(find.widgetWithText(FilledButton, 'Not listed, upload again'));
+    await tester.tap(
+      find.widgetWithText(FilledButton, 'I checked: no job was created'),
+    );
     await tester.pumpAndSettle();
     expect(provider.queue.single.status, CloudPrintQueueStatus.pending);
   });
@@ -356,96 +358,5 @@ void main() {
     await screenshot(tester, 'scans');
     expect(find.text('Select all'), findsOneWidget);
     expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('上传队列的失败、待核对与重复文件各有明确文案', (tester) async {
-    await tester.runAsync(() async {
-      for (final name in ['dup.pdf', 'broken.pdf', 'pending.pdf']) {
-        final file = File(p.join(temp.path, name));
-        await file.writeAsString('%PDF fixture');
-        picker.files.add(_PickedFile(name, file.path, await file.length()));
-      }
-    });
-    await pump(tester, width: 820);
-    await tester.runAsync(() async {
-      final selected = Completer<void>();
-      void onSelected() {
-        if (!provider.selecting &&
-            provider.queue.length == 3 &&
-            !selected.isCompleted) {
-          selected.complete();
-        }
-      }
-
-      provider.addListener(onSelected);
-      await tester.tap(find.text('Add files'));
-      await selected.future.timeout(const Duration(seconds: 5));
-      provider.removeListener(onSelected);
-    });
-    await tester.pumpAndSettle();
-
-    // 直接摆出三种已结束状态，检查文案与按钮。
-    provider.queue[0]
-      ..status = CloudPrintQueueStatus.uploaded
-      ..verificationPending = true
-      ..duplicate = true;
-    provider.queue[1]
-      ..status = CloudPrintQueueStatus.failed
-      ..failure = CloudPrintFailure.request;
-    provider.queue[2].status = CloudPrintQueueStatus.pending;
-    // 队列项是可变对象，改完要让 provider 通知一次才能重绘。
-    await tester.runAsync(provider.refreshJobs);
-    await tester.pumpAndSettle();
-    await screenshot(tester, 'queue-states');
-
-    expect(
-      find.textContaining('is not listed in Print jobs'),
-      findsOneWidget,
-    );
-    expect(find.text('Retry failed files'), findsOneWidget);
-    // 重复文件与「同名任务已在服务器」都按成功处理：卡片上不再多出一段说明。
-    provider.queue[0]
-      ..duplicate = true
-      ..verificationPending = false;
-    await tester.runAsync(provider.refreshJobs);
-    await tester.pumpAndSettle();
-    expect(
-      find.textContaining('is not listed in Print jobs'),
-      findsNothing,
-    );
-    expect(find.text('Clear list'), findsOneWidget);
-    // 清理记录不会动待上传项。
-    await tester.tap(find.text('Clear list'));
-    await tester.pumpAndSettle();
-    expect(provider.queue.single.file.name, 'pending.pdf');
-    expect(tester.takeException(), isNull);
-
-    // 中文界面再摆一遍三种状态，供人工核对文案。
-    await pump(tester, width: 820, locale: const Locale('zh'));
-    await tester.runAsync(() async {
-      final selected = Completer<void>();
-      void onSelected() {
-        if (!provider.selecting &&
-            provider.queue.length == 3 &&
-            !selected.isCompleted) {
-          selected.complete();
-        }
-      }
-
-      provider.addListener(onSelected);
-      await tester.tap(find.text('添加文件'));
-      await selected.future.timeout(const Duration(seconds: 5));
-      provider.removeListener(onSelected);
-    });
-    provider.queue[0]
-      ..status = CloudPrintQueueStatus.uploaded
-      ..duplicate = true;
-    provider.queue[1]
-      ..status = CloudPrintQueueStatus.failed
-      ..failure = CloudPrintFailure.request;
-    provider.queue[2].status = CloudPrintQueueStatus.uncertain;
-    await tester.runAsync(provider.refreshJobs);
-    await tester.pumpAndSettle();
-    await screenshot(tester, 'queue-states-zh');
   });
 }

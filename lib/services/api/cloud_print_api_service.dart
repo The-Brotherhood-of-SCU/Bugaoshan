@@ -27,9 +27,8 @@ class CloudPrintUploadResult {
   final String? feeRaw;
   final bool verified;
 
-  /// 上传被接受但服务器已有同名任务，本次没有生成新任务：多半是重复文件。
+  /// 上传被接受，但服务器上已有同名任务、本次没生成新任务。
   final bool duplicate;
-
 }
 
 /// 读取允许恢复认证；文件提交之后不使用认证重试模板。
@@ -176,17 +175,7 @@ class CloudPrintApiService {
     // code=0 已确认接收；列表暂不可读不能把已成功上传误标成可重试的失败。
     final known = before;
     try {
-      final jobs = await fetchJobs();
-      final sameName = jobs.where((job) => job.name == file.name).toList();
-      final added = sameName
-          .where((job) => !known.contains(job.id))
-          .toList();
-      return CloudPrintUploadResult(
-        jobs: added,
-        feeRaw: fee,
-        verified: added.length == 1,
-        duplicate: added.isEmpty && sameName.isNotEmpty,
-      );
+      return await _verifyUploaded(file.name, known, fee);
     } catch (_, stack) {
       AppLog.w(
         _tag,
@@ -196,6 +185,35 @@ class CloudPrintApiService {
       );
       return CloudPrintUploadResult(feeRaw: fee);
     }
+  }
+
+  /// 上传后核对：服务端任务列表有延迟，短间隔重试几次再下结论，
+  /// 避免刚传完列表还没刷新就误判成「没找到」。
+  Future<CloudPrintUploadResult> _verifyUploaded(
+    String name,
+    Set<int> known,
+    String? fee,
+  ) async {
+    var sameNameExists = false;
+    for (var attempt = 0; attempt < 3; attempt++) {
+      if (attempt > 0) {
+        await Future<void>.delayed(Duration(milliseconds: 300 * attempt));
+      }
+      final jobs = await fetchJobs();
+      final matched = jobs.where((job) => job.name == name).toList();
+      final added = matched
+          .where((job) => !known.contains(job.id))
+          .toList();
+      if (added.isNotEmpty) {
+        return CloudPrintUploadResult(
+          jobs: added,
+          feeRaw: fee,
+          verified: added.length == 1,
+        );
+      }
+      sameNameExists = sameNameExists || matched.isNotEmpty;
+    }
+    return CloudPrintUploadResult(feeRaw: fee, duplicate: sameNameExists);
   }
 
   /// 删除待打印任务。网页端同样用 POST `PrintJob/Del` 携带 `{dwJobId,dwOldJobId}`；

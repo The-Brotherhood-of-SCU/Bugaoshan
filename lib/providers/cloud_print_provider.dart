@@ -24,7 +24,6 @@ class CloudPrintQueueItem {
   double progress = 0;
   bool verificationPending = false;
   bool duplicate = false;
-
 }
 
 /// 会话内保留批量队列；有限并发提交、成功项不重放，登出/换号丢弃旧账号结果。
@@ -99,14 +98,8 @@ class CloudPrintProvider extends ChangeNotifier {
         try {
           final file = await CloudPrintFile.fromPath(path);
           if (!_current(generation)) break;
-          // 同一路径，或同名同大小（多半是同一份文档的另一个副本）都按重复处理，
-          // 需要多份请改份数，避免同名任务在服务器上堆成多条难以对应。
-          if (_queue.any(
-            (item) =>
-                p.equals(item.file.path, file.path) ||
-                (item.file.name == file.name &&
-                    item.file.size == file.size),
-          )) {
+          // 只按实际路径去重；不同目录的同名文档仍可分别上传。
+          if (_queue.any((item) => p.equals(item.file.path, file.path))) {
             duplicates++;
             continue;
           }
@@ -164,25 +157,13 @@ class CloudPrintProvider extends ChangeNotifier {
     }
   }
 
-  /// 已结束的记录（成功、失败、待核对）；「清理记录」只动这些，不碰待上传与上传中。
-  int get finishedCount => _queue
-      .where(
-        (item) =>
-            item.status == CloudPrintQueueStatus.uploaded ||
-            item.status == CloudPrintQueueStatus.failed ||
-            item.status == CloudPrintQueueStatus.uncertain,
-      )
-      .length;
-
   void clearFinished() {
-    if (uploading) return;
-    _queue.removeWhere(
-      (item) =>
-          item.status == CloudPrintQueueStatus.uploaded ||
-          item.status == CloudPrintQueueStatus.failed ||
-          item.status == CloudPrintQueueStatus.uncertain,
-    );
-    _notify();
+    if (!uploading) {
+      _queue.removeWhere(
+        (item) => item.status == CloudPrintQueueStatus.uploaded,
+      );
+      _notify();
+    }
   }
 
   void stopAfterCurrent() {
@@ -190,7 +171,7 @@ class CloudPrintProvider extends ChangeNotifier {
     _notify();
   }
 
-  /// 失败项重新排队并立刻开始上传，不必再点一次上传按钮。
+  /// 失败项重新排队后立刻开始上传，不必再点一次上传按钮。
   Future<void> retryFailed() async {
     if (uploading) return;
     var requeued = false;
@@ -199,7 +180,6 @@ class CloudPrintProvider extends ChangeNotifier {
       item.status = CloudPrintQueueStatus.pending;
       item.failure = null;
       item.progress = 0;
-      item.duplicate = false;
       requeued = true;
     }
     if (!requeued) return;
@@ -275,9 +255,8 @@ class CloudPrintProvider extends ChangeNotifier {
             if (!_current(generation)) return;
             item.status = CloudPrintQueueStatus.uploaded;
             item.progress = 1;
+            item.verificationPending = !result.verified;
             item.duplicate = result.duplicate;
-            // 同名任务已在服务器上：按成功处理，不再打扰用户。
-            item.verificationPending = !result.verified && !result.duplicate;
           } catch (error, stack) {
             if (!_current(generation)) return;
             AppLog.e(_tag, '批量队列中的文件上传失败', error: error, stackTrace: stack);

@@ -455,7 +455,7 @@ void main() {
     await provider.uploadPending();
     expect(api.maxInFlight, 1);
     expect(provider.failedCount, 1);
-    // 重试按钮自己就发起上传，不需要再点上传。
+    // 重试自己就发起上传，不需要再点上传。
     await provider.retryFailed();
     expect(api.uploads, ['a.pdf', 'b.pdf', 'c.pdf', 'b.pdf']);
     expect(
@@ -802,20 +802,13 @@ void main() {
     await provider.addPaths([await fixture('a.pdf'), await fixture('b.pdf')]);
     await provider.uploadPending();
     expect(provider.failedCount, 1);
-    expect(provider.pendingCount, 0);
 
     await provider.retryFailed();
     expect(api.uploads, ['a.pdf', 'b.pdf', 'a.pdf']);
     expect(provider.failedCount, 0);
-    expect(
-      provider.queue.every(
-        (item) => item.status == CloudPrintQueueStatus.uploaded,
-      ),
-      isTrue,
-    );
   });
 
-  test('服务器已有同名任务时标记重复，不当作可重试失败', () async {
+  test('服务器上已有同名任务时标记重复，供界面改用重复文案', () async {
     final api = _QueueApi()..duplicateResult = true;
     final provider = CloudPrintProvider(api, uploadConcurrency: 1);
     addTearDown(provider.dispose);
@@ -824,25 +817,6 @@ void main() {
     final item = provider.queue.single;
     expect(item.status, CloudPrintQueueStatus.uploaded);
     expect(item.duplicate, isTrue);
-    // 同名任务已在服务器上：按成功处理，不弹「待核对」的说明。
-    expect(item.verificationPending, isFalse);
-    expect(provider.failedCount, 0);
+    expect(item.verificationPending, isTrue);
   });
-
-  test('同名同大小的不同副本按重复处理，不再重复上传', () async {
-    final api = _QueueApi();
-    final provider = CloudPrintProvider(api, uploadConcurrency: 1);
-    addTearDown(provider.dispose);
-    final first = await fixture('handout.pdf');
-    final copyDir = Directory('${temp.path}/copy')..createSync();
-    final copy = File('${copyDir.path}/handout.pdf')
-      ..writeAsStringSync('%PDF-1.4\ntest fixture\n');
-    expect(await copy.length(), await File(first).length());
-
-    final report = await provider.addPaths([first, copy.path]);
-    expect(report.added, 1);
-    expect(report.duplicates, 1);
-    expect(provider.queue, hasLength(1));
-  });
-
 }

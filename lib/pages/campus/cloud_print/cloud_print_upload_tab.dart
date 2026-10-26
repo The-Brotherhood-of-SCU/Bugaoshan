@@ -41,7 +41,10 @@ extension _CloudPrintUploadTab on _CloudPrintPageState {
               ),
           ],
         ),
-        if (_provider.finishedCount > 0)
+        if (_provider.failedCount > 0 ||
+            _provider.queue.any(
+              (item) => item.status == CloudPrintQueueStatus.uploaded,
+            ))
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -51,11 +54,13 @@ extension _CloudPrintUploadTab on _CloudPrintPageState {
                   onPressed: busy ? null : _provider.retryFailed,
                   child: Text(l10n.cloudPrintRetryFailed),
                 ),
-              TextButton.icon(
-                onPressed: busy ? null : _provider.clearFinished,
-                icon: const Icon(Icons.cleaning_services_outlined, size: 18),
-                label: Text(l10n.cloudPrintClearFinished),
-              ),
+              if (_provider.queue.any(
+                (item) => item.status == CloudPrintQueueStatus.uploaded,
+              ))
+                TextButton(
+                  onPressed: busy ? null : _provider.clearFinished,
+                  child: Text(l10n.cloudPrintClearFinished),
+                ),
             ],
           ),
         const SizedBox(height: 12),
@@ -157,11 +162,6 @@ extension _CloudPrintUploadTab on _CloudPrintPageState {
               value: item.progress < 1 ? item.progress : null,
             ),
           ],
-          if (status == CloudPrintQueueStatus.uncertain)
-            Text(
-              l10n.cloudPrintUncertainHint,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
           if (status == CloudPrintQueueStatus.failed)
             Text(switch (item.failure) {
               CloudPrintFailure.authentication => l10n.cloudPrintFailureAuth,
@@ -171,8 +171,9 @@ extension _CloudPrintUploadTab on _CloudPrintPageState {
           if (item.verificationPending &&
               status == CloudPrintQueueStatus.uploaded)
             Text(
-              l10n.cloudPrintVerificationPending,
-              style: Theme.of(context).textTheme.bodySmall,
+              item.duplicate
+                  ? l10n.cloudPrintDuplicatePending
+                  : l10n.cloudPrintVerificationPending,
             ),
           Wrap(
             spacing: 8,

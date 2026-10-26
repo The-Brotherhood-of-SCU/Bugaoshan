@@ -3925,10 +3925,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cloudPrintStop => '停止上传';
 
   @override
-  String get cloudPrintStopping => '停止中…';
+  String get cloudPrintStopping => '当前文件结束后停止';
 
   @override
-  String get cloudPrintRetryFailed => '重试失败文件';
+  String get cloudPrintRetryFailed => '失败文件重新排队';
 
   @override
   String get cloudPrintClearFinished => '清理记录';
@@ -3951,34 +3951,34 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cloudPrintFailed => '上传失败';
 
   @override
-  String get cloudPrintUncertain => '网络不稳，没拿到结果';
+  String get cloudPrintUncertain => '上传结果待核对';
 
   @override
-  String get cloudPrintUncertainHint => '到「打印任务」确认一下；没有这份文件就重新上传。';
+  String get cloudPrintVerify => '核对打印任务';
 
   @override
-  String get cloudPrintVerify => '查看打印任务';
+  String get cloudPrintVerificationPending => '服务器已接受上传；请先在「打印任务」核对，勿重复上传。';
 
   @override
-  String get cloudPrintVerificationPending => '若「打印任务」里没有这份文件，可以再传一次。';
+  String get cloudPrintDuplicatePending => '已识别到重复文件，请到「打印任务」核对。';
 
   @override
-  String get cloudPrintRequeue => '重新上传';
+  String get cloudPrintRequeue => '本文件重新排队';
 
   @override
-  String get cloudPrintMissingConfirm => '列表里没有，重新上传';
+  String get cloudPrintMissingConfirm => '已核对，确认未生成任务';
 
   @override
   String get cloudPrintMissingHint => '请先查看打印任务，确认没有此文档后再重新排队。再次上传可能生成重复任务。';
 
   @override
-  String get cloudPrintFailureAuth => '登录已过期，重新登录后再传一次。';
+  String get cloudPrintFailureAuth => '文件提交前会话已失效，请重新登录后重试。';
 
   @override
-  String get cloudPrintFailureSize => '文件超过打印机的大小上限。';
+  String get cloudPrintFailureSize => '文件过大，打印服务器已拒绝此文件。';
 
   @override
-  String get cloudPrintFailureRequest => '网络或文件有问题，可以重新上传试试。';
+  String get cloudPrintFailureRequest => '请检查文件和网络，再单独重试此文件。';
 
   @override
   String get cloudPrintRemove => '从上传队列移除';

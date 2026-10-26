@@ -7516,13 +7516,13 @@ abstract class AppLocalizations {
   /// No description provided for @cloudPrintStopping.
   ///
   /// In en, this message translates to:
-  /// **'Stopping…'**
+  /// **'Stopping after this file'**
   String get cloudPrintStopping;
 
   /// No description provided for @cloudPrintRetryFailed.
   ///
   /// In en, this message translates to:
-  /// **'Retry failed files'**
+  /// **'Requeue failed files'**
   String get cloudPrintRetryFailed;
 
   /// No description provided for @cloudPrintClearFinished.
@@ -7564,37 +7564,37 @@ abstract class AppLocalizations {
   /// No description provided for @cloudPrintUncertain.
   ///
   /// In en, this message translates to:
-  /// **'Connection dropped, no confirmation'**
+  /// **'Check whether a job was created'**
   String get cloudPrintUncertain;
-
-  /// No description provided for @cloudPrintUncertainHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Check Print jobs; if the file is not there, upload it again.'**
-  String get cloudPrintUncertainHint;
 
   /// No description provided for @cloudPrintVerify.
   ///
   /// In en, this message translates to:
-  /// **'View print jobs'**
+  /// **'Check print jobs'**
   String get cloudPrintVerify;
 
   /// No description provided for @cloudPrintVerificationPending.
   ///
   /// In en, this message translates to:
-  /// **'If this file is not listed in Print jobs, you can upload it again.'**
+  /// **'Upload accepted; verify the job in Print jobs before uploading again.'**
   String get cloudPrintVerificationPending;
+
+  /// No description provided for @cloudPrintDuplicatePending.
+  ///
+  /// In en, this message translates to:
+  /// **'A duplicate file was detected. Check it in Print jobs.'**
+  String get cloudPrintDuplicatePending;
 
   /// No description provided for @cloudPrintRequeue.
   ///
   /// In en, this message translates to:
-  /// **'Upload again'**
+  /// **'Requeue this file'**
   String get cloudPrintRequeue;
 
   /// No description provided for @cloudPrintMissingConfirm.
   ///
   /// In en, this message translates to:
-  /// **'Not listed, upload again'**
+  /// **'I checked: no job was created'**
   String get cloudPrintMissingConfirm;
 
   /// No description provided for @cloudPrintMissingHint.
@@ -7606,19 +7606,19 @@ abstract class AppLocalizations {
   /// No description provided for @cloudPrintFailureAuth.
   ///
   /// In en, this message translates to:
-  /// **'Your sign-in expired. Sign in again, then upload it once more.'**
+  /// **'The session expired before submission. Sign in again before retrying.'**
   String get cloudPrintFailureAuth;
 
   /// No description provided for @cloudPrintFailureSize.
   ///
   /// In en, this message translates to:
-  /// **'This file is larger than the printer allows.'**
+  /// **'The server rejected this file because it is too large.'**
   String get cloudPrintFailureSize;
 
   /// No description provided for @cloudPrintFailureRequest.
   ///
   /// In en, this message translates to:
-  /// **'Network or file problem. Upload it again to retry.'**
+  /// **'Check the file and network, then retry this file.'**
   String get cloudPrintFailureRequest;
 
   /// No description provided for @cloudPrintRemove.
