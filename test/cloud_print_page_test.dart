@@ -36,10 +36,18 @@ class _Login extends ChangeNotifier implements ScuAuthProvider {
 
 class _Api implements CloudPrintApiService {
   int reads = 0;
+  List<CloudPrintJob> jobs = [];
+  final List<int> deleted = [];
   @override
   Future<List<CloudPrintJob>> fetchJobs() async {
     reads++;
-    return [];
+    return jobs;
+  }
+
+  @override
+  Future<void> deleteJob(CloudPrintJob job) async {
+    deleted.add(job.id);
+    jobs = jobs.where((item) => item.id != job.id).toList();
   }
 
   @override
@@ -313,5 +321,42 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(provider.queue.single.status, CloudPrintQueueStatus.pending);
+  });
+
+  testWidgets('打印任务与扫描文档使用同一套选择布局', (tester) async {
+    api.jobs = [
+      for (final (id, name) in [
+        (101, 'Data structures handout.pdf'),
+        (102, 'Linear algebra notes.pdf'),
+        (103, 'Lab report final.pdf'),
+      ])
+        CloudPrintJob.fromJson({
+          'dwJobId': id,
+          'szJobName': name,
+          'szAttribe': 'vdup,color,',
+          'szPaperDetail': '[{"dwPaperId":9,"szPaperName":"A4"}]',
+          'dwPageCount': 4,
+          'dwCopyCount': 1,
+          'dwCreateDate': 20261025,
+          'dwCreateTime': 232000,
+        }),
+    ];
+    await pump(tester, width: 820);
+    await tester.tap(find.text('Print jobs'));
+    await tester.pumpAndSettle();
+    await screenshot(tester, 'jobs');
+    expect(find.text('Select all'), findsOneWidget);
+    expect(find.text('Delete selected (0)'), findsOneWidget);
+    expect(find.byType(CheckboxListTile), findsNWidgets(4));
+    await tester.tap(find.text('Select all'));
+    await tester.pumpAndSettle();
+    expect(find.text('Delete selected (3)'), findsOneWidget);
+
+    // 顶栏顺序与扫描页一致：提示 → 操作按钮 → 全选 → 列表。
+    await tester.tap(find.text('Scans'));
+    await tester.pumpAndSettle();
+    await screenshot(tester, 'scans');
+    expect(find.text('Select all'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

@@ -359,10 +359,10 @@ class _CloudPrintPageState extends State<CloudPrintPage>
       physics: const AlwaysScrollableScrollPhysics(),
       padding: withSystemBottomInset(context, const EdgeInsets.all(16)),
       children: [
+        _hint(l10n.cloudPrintHint),
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          alignment: WrapAlignment.end,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             TextButton.icon(
@@ -370,16 +370,13 @@ class _CloudPrintPageState extends State<CloudPrintPage>
               icon: const Icon(Icons.refresh),
               label: Text(l10n.refresh),
             ),
-            if (_provider.jobs.isNotEmpty)
-              OutlinedButton.icon(
-                onPressed: _selectedJobs.isEmpty
-                    ? null
-                    : () => _deleteSelectedJobs(l10n),
-                icon: const Icon(Icons.delete_outline),
-                label: Text(
-                  l10n.cloudPrintDeleteSelected(_selectedJobs.length),
-                ),
-              ),
+            OutlinedButton.icon(
+              onPressed: _selectedJobs.isEmpty
+                  ? null
+                  : () => _deleteSelectedJobs(l10n),
+              icon: const Icon(Icons.delete_outline),
+              label: Text(l10n.cloudPrintDeleteSelected(_selectedJobs.length)),
+            ),
           ],
         ),
         if (_provider.jobs.isNotEmpty)
@@ -394,7 +391,6 @@ class _CloudPrintPageState extends State<CloudPrintPage>
               }
             }),
           ),
-        _hint(l10n.cloudPrintHint),
         if (_provider.loadingJobs) const LinearProgressIndicator(),
         if (_provider.jobsFailed) _hint(l10n.cloudPrintLoadFailed),
         if (!_provider.loadingJobs &&
@@ -403,45 +399,46 @@ class _CloudPrintPageState extends State<CloudPrintPage>
           _hint(l10n.cloudPrintJobsEmpty),
         for (final job in _provider.jobs)
           StyledCard(
-            margin: const EdgeInsets.only(bottom: 10),
-            child: ListTile(
-              leading: Checkbox(
-                value: _selectedJobs.contains(job.id),
-                onChanged: (value) => _update(() {
-                  if (value == true) {
-                    _selectedJobs.add(job.id);
-                  } else {
-                    _selectedJobs.remove(job.id);
-                  }
-                }),
-              ),
-              title: Text(
-                job.name,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(_jobSummary(job, l10n)),
-                  if (job.createDate.isNotEmpty)
-                    Text(
-                      '${l10n.cloudPrintJobCreated(job.createdDateLabel, job.createdTimeLabel)} · #${job.id}',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                ],
-              ),
-              onTap: () => _previewJob(job),
-              trailing: PopupMenuButton<String>(
-                tooltip: l10n.cloudPrintDelete,
-                onSelected: (_) => _deleteJob(job, l10n),
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Text(l10n.cloudPrintDelete),
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              children: [
+                CheckboxListTile(
+                  value: _selectedJobs.contains(job.id),
+                  onChanged: (value) => _update(() {
+                    if (value == true) {
+                      _selectedJobs.add(job.id);
+                    } else {
+                      _selectedJobs.remove(job.id);
+                    }
+                  }),
+                  title: Text(
+                    job.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ],
-              ),
+                  subtitle: Text(
+                    '${_jobSummary(job, l10n)}\n'
+                    '${l10n.cloudPrintJobCreated(job.createdDateLabel, job.createdTimeLabel)} · #${job.id}',
+                  ),
+                  isThreeLine: true,
+                ),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    TextButton.icon(
+                      onPressed: () => _previewJob(job),
+                      icon: const Icon(Icons.visibility_outlined),
+                      label: Text(l10n.cloudPrintPreview),
+                    ),
+                    TextButton.icon(
+                      onPressed: () => _deleteJob(job, l10n),
+                      icon: const Icon(Icons.delete_outline),
+                      label: Text(l10n.cloudPrintDelete),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
       ],
