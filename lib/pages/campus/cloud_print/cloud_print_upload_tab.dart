@@ -50,14 +50,15 @@ extension _CloudPrintUploadTab on _CloudPrintPageState {
             runSpacing: 8,
             children: [
               if (_provider.failedCount > 0)
-                OutlinedButton(
+                OutlinedButton.icon(
                   onPressed: busy ? null : _provider.retryFailed,
-                  child: Text(l10n.cloudPrintRetryFailed),
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: Text(l10n.cloudPrintRetryFailed),
                 ),
               if (_provider.queue.any(
                 (item) => item.status == CloudPrintQueueStatus.uploaded,
               ))
-                TextButton.icon(
+                OutlinedButton.icon(
                   onPressed: busy ? null : _provider.clearFinished,
                   icon: const Icon(Icons.cleaning_services_outlined, size: 18),
                   label: Text(l10n.cloudPrintClearFinished),

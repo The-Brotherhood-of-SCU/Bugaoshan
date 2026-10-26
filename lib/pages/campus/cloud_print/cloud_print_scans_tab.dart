@@ -56,10 +56,10 @@ extension _CloudPrintScansTab on _CloudPrintPageState {
                 ),
               ),
               if (expired.isNotEmpty)
-                TextButton.icon(
+                OutlinedButton.icon(
                   onPressed: () =>
                       _deleteScans(l10n, expired, cleanExpired: true),
-                  icon: const Icon(Icons.cleaning_services_outlined),
+                  icon: const Icon(Icons.cleaning_services_outlined, size: 18),
                   label: Text(l10n.cloudPrintCleanExpired),
                 ),
             ],
@@ -141,6 +141,11 @@ extension _CloudPrintScansTab on _CloudPrintPageState {
                           icon: const Icon(Icons.share_outlined),
                           label: Text(l10n.cloudPrintShare),
                         ),
+                      TextButton.icon(
+                        onPressed: () => _deleteScans(l10n, [scan]),
+                        icon: const Icon(Icons.delete_outline, size: 18),
+                        label: Text(l10n.cloudPrintDelete),
+                      ),
                     ],
                   ),
                 ],
@@ -229,7 +234,9 @@ extension _CloudPrintScansTab on _CloudPrintPageState {
       l10n.cloudPrintDelete,
       cleanExpired
           ? l10n.cloudPrintCleanExpiredConfirm(targets.length)
-          : l10n.cloudPrintDeleteSelectedConfirm(targets.length),
+          : targets.length == 1
+          ? l10n.cloudPrintScanDeleteConfirm(targets.single.name)
+          : l10n.cloudPrintScanDeleteSelectedConfirm(targets.length),
       l10n,
     );
     if (!confirmed) return;

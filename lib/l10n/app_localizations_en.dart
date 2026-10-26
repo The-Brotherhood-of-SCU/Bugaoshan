@@ -4108,7 +4108,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'A duplicate file was detected. Check it in Print jobs.';
 
   @override
-  String get cloudPrintRequeue => 'Requeue this file';
+  String get cloudPrintRequeue => 'Upload again';
 
   @override
   String get cloudPrintMissingConfirm => 'I checked: no job was created';
@@ -4127,7 +4127,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cloudPrintFailureRequest =>
-      'Check the file and network, then retry this file.';
+      'Check the file and network, then upload it again.';
 
   @override
   String get cloudPrintRemove => 'Remove from upload queue';
@@ -4229,6 +4229,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String cloudPrintDeleteSelectedConfirm(int count) {
     return 'Delete $count selected item(s)? You will need to upload them again to print.';
+  }
+
+  @override
+  String cloudPrintScanDeleteConfirm(String name) {
+    return 'Delete the scan record for “$name”? Files already downloaded are not affected.';
+  }
+
+  @override
+  String cloudPrintScanDeleteSelectedConfirm(int count) {
+    return 'Delete $count selected scan record(s)? Files already downloaded are not affected.';
   }
 
   @override

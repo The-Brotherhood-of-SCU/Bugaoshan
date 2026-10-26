@@ -7588,7 +7588,7 @@ abstract class AppLocalizations {
   /// No description provided for @cloudPrintRequeue.
   ///
   /// In en, this message translates to:
-  /// **'Requeue this file'**
+  /// **'Upload again'**
   String get cloudPrintRequeue;
 
   /// No description provided for @cloudPrintMissingConfirm.
@@ -7618,7 +7618,7 @@ abstract class AppLocalizations {
   /// No description provided for @cloudPrintFailureRequest.
   ///
   /// In en, this message translates to:
-  /// **'Check the file and network, then retry this file.'**
+  /// **'Check the file and network, then upload it again.'**
   String get cloudPrintFailureRequest;
 
   /// No description provided for @cloudPrintRemove.
@@ -7794,6 +7794,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete {count} selected item(s)? You will need to upload them again to print.'**
   String cloudPrintDeleteSelectedConfirm(int count);
+
+  /// No description provided for @cloudPrintScanDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete the scan record for “{name}”? Files already downloaded are not affected.'**
+  String cloudPrintScanDeleteConfirm(String name);
+
+  /// No description provided for @cloudPrintScanDeleteSelectedConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {count} selected scan record(s)? Files already downloaded are not affected.'**
+  String cloudPrintScanDeleteSelectedConfirm(int count);
 
   /// No description provided for @cloudPrintDeletedCount.
   ///

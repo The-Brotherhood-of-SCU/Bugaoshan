@@ -312,7 +312,7 @@ void main() {
     });
     provider.queue.single.status = CloudPrintQueueStatus.uncertain;
     await pump(tester, width: 600);
-    expect(find.text('Requeue this file'), findsNothing);
+    expect(find.text('Upload again'), findsNothing);
     await tester.tap(find.text('I checked: no job was created'));
     await tester.pumpAndSettle();
     expect(provider.queue.single.status, CloudPrintQueueStatus.uncertain);

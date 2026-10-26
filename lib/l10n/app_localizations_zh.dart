@@ -3963,7 +3963,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cloudPrintDuplicatePending => '已识别到重复文件，请到「打印任务」核对。';
 
   @override
-  String get cloudPrintRequeue => '本文件重新排队';
+  String get cloudPrintRequeue => '重新上传';
 
   @override
   String get cloudPrintMissingConfirm => '已核对，确认未生成任务';
@@ -3978,7 +3978,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cloudPrintFailureSize => '文件过大，打印服务器已拒绝此文件。';
 
   @override
-  String get cloudPrintFailureRequest => '请检查文件和网络，再单独重试此文件。';
+  String get cloudPrintFailureRequest => '请检查文件和网络后重新上传。';
 
   @override
   String get cloudPrintRemove => '从上传队列移除';
@@ -4079,6 +4079,16 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String cloudPrintDeleteSelectedConfirm(int count) {
     return '删除选中的 $count 项？删除后需重新上传才能打印。';
+  }
+
+  @override
+  String cloudPrintScanDeleteConfirm(String name) {
+    return '删除扫描记录「$name」？本地已下载的文件不受影响。';
+  }
+
+  @override
+  String cloudPrintScanDeleteSelectedConfirm(int count) {
+    return '删除选中的 $count 条扫描记录？本地已下载的文件不受影响。';
   }
 
   @override
