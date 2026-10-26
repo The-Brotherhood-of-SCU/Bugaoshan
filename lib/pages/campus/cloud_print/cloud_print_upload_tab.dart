@@ -57,9 +57,10 @@ extension _CloudPrintUploadTab on _CloudPrintPageState {
               if (_provider.queue.any(
                 (item) => item.status == CloudPrintQueueStatus.uploaded,
               ))
-                TextButton(
+                TextButton.icon(
                   onPressed: busy ? null : _provider.clearFinished,
-                  child: Text(l10n.cloudPrintClearFinished),
+                  icon: const Icon(Icons.cleaning_services_outlined, size: 18),
+                  label: Text(l10n.cloudPrintClearFinished),
                 ),
             ],
           ),
