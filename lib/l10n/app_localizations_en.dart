@@ -2437,7 +2437,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dateFormatHint =>
-      'The top bar shows the full date; the schedule header shows only month and day. Weekday and holiday names are not affected.';
+      'The top bar shows the full date; the schedule header shows only month and day.';
 
   @override
   String get holidayLabel => 'Hol';

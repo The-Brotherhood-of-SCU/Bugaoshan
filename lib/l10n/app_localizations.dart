@@ -4624,7 +4624,7 @@ abstract class AppLocalizations {
   /// No description provided for @dateFormatHint.
   ///
   /// In en, this message translates to:
-  /// **'The top bar shows the full date; the schedule header shows only month and day. Weekday and holiday names are not affected.'**
+  /// **'The top bar shows the full date; the schedule header shows only month and day.'**
   String get dateFormatHint;
 
   /// Short label for statutory holiday displayed in course grid date header

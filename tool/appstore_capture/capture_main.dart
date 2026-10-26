@@ -1,6 +1,7 @@
 // Screenshot-only entry point. Never use this target for a distributed build.
 import 'package:bugaoshan/main.dart' as production;
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/models/date_display_format.dart';
 import 'package:bugaoshan/services/database_service.dart';
 import 'package:bugaoshan/widgets/eula_content.dart';
 import 'package:flutter/widgets.dart';
@@ -21,6 +22,10 @@ Future<void> main() async {
   await preferences.setBool('showWeekend', false);
   await preferences.setInt('themeColorMode', 2);
   await preferences.setInt('themeColor', 0xFF3B82F6);
+  await preferences.setInt(
+    'dateDisplayFormat',
+    DateDisplayFormat.monthDayYearSlash.index,
+  );
 
   final database = DatabaseService();
   await database.init();

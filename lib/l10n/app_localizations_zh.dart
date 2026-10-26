@@ -2360,7 +2360,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get dateFormatHint => '顶栏显示完整日期，课表表头只显示月与日。周几与节假日名称不随此设置变化。';
+  String get dateFormatHint => '顶栏显示完整日期，课表表头只显示月与日。';
 
   @override
   String get holidayLabel => '假';
