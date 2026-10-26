@@ -2349,14 +2349,18 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String dateMonthDayCompact(int month, int day) {
-    return '$month/$day';
+  String get dateFormatSetting => '日期格式';
+
+  @override
+  String get dateFormatLabel => '格式';
+
+  @override
+  String dateFormatSamples(String fullDate, String monthDay) {
+    return '顶栏显示 $fullDate，课表表头显示 $monthDay';
   }
 
   @override
-  String dateYearMonthDay(int year, int month, int day) {
-    return '$year/$month/$day';
-  }
+  String get dateFormatHint => '顶栏显示完整日期，课表表头只显示月与日。周几与节假日名称不随此设置变化。';
 
   @override
   String get holidayLabel => '假';

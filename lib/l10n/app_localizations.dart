@@ -4603,17 +4603,29 @@ abstract class AppLocalizations {
   /// **'{month}/{day}'**
   String dateMonthDay(int month, int day);
 
-  /// Compact numeric month/day for narrow spaces such as the course grid header
+  /// No description provided for @dateFormatSetting.
   ///
   /// In en, this message translates to:
-  /// **'{month}/{day}'**
-  String dateMonthDayCompact(int month, int day);
+  /// **'Date format'**
+  String get dateFormatSetting;
 
-  /// Full numeric date shown in the course page header when there is room for the year
+  /// No description provided for @dateFormatLabel.
   ///
   /// In en, this message translates to:
-  /// **'{month}/{day}/{year}'**
-  String dateYearMonthDay(int year, int month, int day);
+  /// **'Format'**
+  String get dateFormatLabel;
+
+  /// Live example on the date format settings page: the full date and the month/day fragment
+  ///
+  /// In en, this message translates to:
+  /// **'Top bar: {fullDate} · schedule header: {monthDay}'**
+  String dateFormatSamples(String fullDate, String monthDay);
+
+  /// No description provided for @dateFormatHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The top bar shows the full date; the schedule header shows only month and day. Weekday and holiday names are not affected.'**
+  String get dateFormatHint;
 
   /// Short label for statutory holiday displayed in course grid date header
   ///

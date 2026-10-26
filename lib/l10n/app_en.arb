@@ -946,33 +946,21 @@
       }
     }
   },
-  "dateMonthDayCompact": "{month}/{day}",
-  "@dateMonthDayCompact": {
-    "description": "Compact numeric month/day for narrow spaces such as the course grid header",
+  "dateFormatSetting": "Date format",
+  "dateFormatLabel": "Format",
+  "dateFormatSamples": "Top bar: {fullDate} · schedule header: {monthDay}",
+  "@dateFormatSamples": {
+    "description": "Live example on the date format settings page: the full date and the month/day fragment",
     "placeholders": {
-      "month": {
-        "type": "int"
+      "fullDate": {
+        "type": "String"
       },
-      "day": {
-        "type": "int"
+      "monthDay": {
+        "type": "String"
       }
     }
   },
-  "dateYearMonthDay": "{month}/{day}/{year}",
-  "@dateYearMonthDay": {
-    "description": "Full numeric date shown in the course page header when there is room for the year",
-    "placeholders": {
-      "year": {
-        "type": "int"
-      },
-      "month": {
-        "type": "int"
-      },
-      "day": {
-        "type": "int"
-      }
-    }
-  },
+  "dateFormatHint": "The top bar shows the full date; the schedule header shows only month and day.",
   "holidayLabel": "Hol",
   "@holidayLabel": {
     "description": "Short label for statutory holiday displayed in course grid date header"

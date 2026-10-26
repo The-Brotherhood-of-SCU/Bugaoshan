@@ -157,6 +157,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
               _controller!,
               courseProvider.allSchedules,
               courseProvider.scheduleConfig,
+              appConfig.dateDisplayFormat,
             ]),
             builder: (context, _) => CoursePageTopBar(
               visibleWeek: _controller!.visibleWeek,
@@ -179,6 +180,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
               onSwitchSchedule: (id) => courseProvider.switchSchedule(id),
               onOpenScheduleManagement: () =>
                   _openScheduleManagement(logicRootContext),
+              dateFormat: appConfig.dateDisplayFormat.value,
             ),
           ),
         Expanded(
@@ -404,5 +406,10 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   }
 
   void _onSpecialDayTap(DateTime date, SpecialDayInfo info) =>
-      CoursePageActions.handleSpecialDayTap(context, date, info);
+      CoursePageActions.handleSpecialDayTap(
+        context,
+        date,
+        info,
+        appConfig.dateDisplayFormat.value,
+      );
 }

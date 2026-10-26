@@ -2425,14 +2425,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String dateMonthDayCompact(int month, int day) {
-    return '$month/$day';
+  String get dateFormatSetting => 'Date format';
+
+  @override
+  String get dateFormatLabel => 'Format';
+
+  @override
+  String dateFormatSamples(String fullDate, String monthDay) {
+    return 'Top bar: $fullDate · schedule header: $monthDay';
   }
 
   @override
-  String dateYearMonthDay(int year, int month, int day) {
-    return '$month/$day/$year';
-  }
+  String get dateFormatHint =>
+      'The top bar shows the full date; the schedule header shows only month and day. Weekday and holiday names are not affected.';
 
   @override
   String get holidayLabel => 'Hol';

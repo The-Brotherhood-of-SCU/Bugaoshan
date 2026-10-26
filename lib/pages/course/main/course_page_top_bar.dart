@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/models/date_display_format.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/theme_shape.dart';
 
@@ -44,6 +45,9 @@ class CoursePageTopBar extends StatelessWidget {
   final ValueChanged<String> onSwitchSchedule;
   final VoidCallback onOpenScheduleManagement;
 
+  /// 左上角日期的排列与分隔符，由调用方从全局设置解析后传入。
+  final DateDisplayFormat dateFormat;
+
   const CoursePageTopBar({
     super.key,
     required this.visibleWeek,
@@ -65,6 +69,7 @@ class CoursePageTopBar extends StatelessWidget {
     this.currentScheduleId,
     required this.onSwitchSchedule,
     required this.onOpenScheduleManagement,
+    this.dateFormat = DateDisplayFormat.monthDayYearSlash,
   });
 
   @override
@@ -82,8 +87,7 @@ class CoursePageTopBar extends StatelessWidget {
         builder: (context, constraints) {
           // 窄屏：日期与操作按钮同行，周次导航独占一行。
           final narrow = constraints.maxWidth < _kSingleRowMinWidth * textScale;
-          // 日期长度跟着宽度走：窄屏省掉年份只留「10/18」，宽屏保留「2026/10/18」。
-          final date = _buildDate(context, l10n, compact: narrow);
+          final date = _buildDate(context);
           if (narrow) {
             return Column(
               mainAxisSize: MainAxisSize.min,
@@ -138,17 +142,11 @@ class CoursePageTopBar extends StatelessWidget {
     );
   }
 
-  /// 左上角日期：窄屏 `10/18`，宽屏 `2026/10/18`（年份不值得占用窄屏那点宽度）。
-  Widget _buildDate(
-    BuildContext context,
-    AppLocalizations l10n, {
-    required bool compact,
-  }) {
+  /// 左上角日期：完整日期（如 `2026/10/18`），排列与分隔符由全局设置决定。
+  Widget _buildDate(BuildContext context) {
     final now = DateTime.now();
     return Text(
-      compact
-          ? l10n.dateMonthDayCompact(now.month, now.day)
-          : l10n.dateYearMonthDay(now.year, now.month, now.day),
+      dateFormat.formatFull(now),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       style: Theme.of(

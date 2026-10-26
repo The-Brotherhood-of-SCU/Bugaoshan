@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/models/date_display_format.dart';
 import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/pages/settings/add_widget/add_widget_page.dart';
 import 'package:bugaoshan/pages/settings/set_dock_page.dart';
@@ -10,6 +11,7 @@ import 'package:bugaoshan/pages/settings/set_duration_page.dart';
 import 'package:bugaoshan/pages/settings/set_language_page.dart';
 import 'package:bugaoshan/pages/settings/set_app_icon_page.dart';
 import 'package:bugaoshan/pages/settings/set_course_style_page.dart';
+import 'package:bugaoshan/pages/settings/set_date_display_format_page.dart';
 import 'package:bugaoshan/pages/settings/set_font_page.dart';
 import 'package:bugaoshan/pages/settings/set_proxy_page.dart';
 import 'package:bugaoshan/pages/settings/set_student_type_page.dart';
@@ -126,6 +128,18 @@ class SoftwareSettingPage extends StatelessWidget {
                 label: localizations.courseStyleSetting,
                 onTap: () =>
                     popupOrNavigate(context, const SetCourseStylePage()),
+              ),
+              ValueListenableBuilder<DateDisplayFormat>(
+                valueListenable: appConfig.dateDisplayFormat,
+                builder: (context, format, _) => IconTile(
+                  icon: Icons.event_outlined,
+                  label: localizations.dateFormatSetting,
+                  value: format.formatFull(DateTime.now()),
+                  onTap: () => popupOrNavigate(
+                    context,
+                    const SetDateDisplayFormatPage(),
+                  ),
+                ),
               ),
               IconTile(
                 icon: Icons.font_download,

@@ -912,33 +912,21 @@
       }
     }
   },
-  "dateMonthDayCompact": "{month}/{day}",
-  "@dateMonthDayCompact": {
-    "description": "紧凑数字月/日：课表表头等窄空间使用，避免「10月19日」在低分辨率屏上挤成一团",
+  "dateFormatSetting": "日期格式",
+  "dateFormatLabel": "格式",
+  "dateFormatSamples": "顶栏显示 {fullDate}，课表表头显示 {monthDay}",
+  "@dateFormatSamples": {
+    "description": "日期格式设置页的实时示例：完整日期与只含月日的片段",
     "placeholders": {
-      "month": {
-        "type": "int"
+      "fullDate": {
+        "type": "String"
       },
-      "day": {
-        "type": "int"
+      "monthDay": {
+        "type": "String"
       }
     }
   },
-  "dateYearMonthDay": "{year}/{month}/{day}",
-  "@dateYearMonthDay": {
-    "description": "带年份的数字日期：宽屏顶栏日期用，窄屏省掉年份只留月/日",
-    "placeholders": {
-      "year": {
-        "type": "int"
-      },
-      "month": {
-        "type": "int"
-      },
-      "day": {
-        "type": "int"
-      }
-    }
-  },
+  "dateFormatHint": "顶栏显示完整日期，课表表头只显示月与日。",
   "holidayLabel": "假",
   "@holidayLabel": {
     "description": "Short label for statutory holiday displayed in course grid date header"

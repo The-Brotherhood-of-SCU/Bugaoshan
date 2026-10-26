@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart'
     show Colors, Curve, Curves, ThemeMode, TimeOfDay;
 import 'package:bugaoshan/models/background_crop.dart';
+import 'package:bugaoshan/models/date_display_format.dart';
 import 'package:bugaoshan/models/reminder_plan.dart';
 import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/models/widget_appearance.dart';
@@ -46,6 +47,7 @@ const String _keyForceCaptchaForDownload = 'forceCaptchaForDownload';
 const String _keyEnablePageTransitionAnimation =
     'enablePageTransitionAnimation';
 const String _keyStudentType = 'studentType';
+const String _keyDateDisplayFormat = 'dateDisplayFormat';
 // ── 本地提醒（见 docs/decisions 与 issue #358）───────────────────────
 const String _keyReminderEnabled = 'reminder_enabled';
 const String _keyReminderLeadMinutes = 'reminder_lead_minutes';
@@ -145,6 +147,14 @@ class AppConfigProvider {
   final ValueNotifier<StudentType> studentType = ValueNotifier<StudentType>(
     StudentType.undergraduate,
   );
+
+  /// 课表内日期的显示格式（顶栏完整日期，表头只取月/日）。
+  ///
+  /// 课表表头每列在低分辨率屏上只有 60px 上下，原先中文的「10月19日」会被
+  /// 压缩成难以辨认的一团；统一为定宽数字后，窄列与顶栏都不再依赖语言的
+  /// 文案长度。默认沿用英文习惯的 `8/19/2026`。
+  final ValueNotifier<DateDisplayFormat> dateDisplayFormat =
+      ValueNotifier<DateDisplayFormat>(DateDisplayFormat.monthDayYearSlash);
 
   // ── 本地提醒 ──────────────────────────────────────────────────────
   //
@@ -282,6 +292,13 @@ class AppConfigProvider {
     studentType.value = studentTypeIndex < StudentType.values.length
         ? StudentType.values[studentTypeIndex]
         : StudentType.undergraduate;
+    final dateDisplayFormatIndex =
+        _sharedPreferences.getInt(_keyDateDisplayFormat) ??
+        DateDisplayFormat.monthDayYearSlash.index;
+    dateDisplayFormat.value =
+        dateDisplayFormatIndex < DateDisplayFormat.values.length
+        ? DateDisplayFormat.values[dateDisplayFormatIndex]
+        : DateDisplayFormat.monthDayYearSlash;
 
     reminderEnabled.value =
         _sharedPreferences.getBool(_keyReminderEnabled) ?? false;
@@ -476,6 +493,12 @@ class AppConfigProvider {
     });
     studentType.addListener(() {
       _sharedPreferences.setInt(_keyStudentType, studentType.value.index);
+    });
+    dateDisplayFormat.addListener(() {
+      _sharedPreferences.setInt(
+        _keyDateDisplayFormat,
+        dateDisplayFormat.value.index,
+      );
     });
     reminderEnabled.addListener(() {
       _sharedPreferences.setBool(_keyReminderEnabled, reminderEnabled.value);

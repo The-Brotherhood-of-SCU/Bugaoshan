@@ -1,5 +1,6 @@
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/models/date_display_format.dart';
 import 'package:bugaoshan/widgets/common/info_row.dart';
 import 'package:bugaoshan/widgets/common/status_chip.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
@@ -111,6 +112,7 @@ void main() {
               hasBackground: false,
               showWeekend: true,
               sectionWidth: 24,
+              dateFormat: DateDisplayFormat.monthDayYearSlash,
             ),
           ),
         ),
