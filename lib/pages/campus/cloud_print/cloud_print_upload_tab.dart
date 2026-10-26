@@ -157,6 +157,11 @@ extension _CloudPrintUploadTab on _CloudPrintPageState {
               value: item.progress < 1 ? item.progress : null,
             ),
           ],
+          if (status == CloudPrintQueueStatus.uncertain)
+            Text(
+              l10n.cloudPrintUncertainHint,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           if (status == CloudPrintQueueStatus.failed)
             Text(switch (item.failure) {
               CloudPrintFailure.authentication => l10n.cloudPrintFailureAuth,
@@ -166,11 +171,8 @@ extension _CloudPrintUploadTab on _CloudPrintPageState {
           if (item.verificationPending &&
               status == CloudPrintQueueStatus.uploaded)
             Text(
-              item.duplicate
-                  ? l10n.cloudPrintDuplicatePending
-                  : item.sameNameCount > 1
-                  ? l10n.cloudPrintAmbiguousPending(item.sameNameCount)
-                  : l10n.cloudPrintVerificationPending,
+              l10n.cloudPrintVerificationPending,
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           Wrap(
             spacing: 8,

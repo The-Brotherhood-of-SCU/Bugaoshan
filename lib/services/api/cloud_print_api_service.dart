@@ -22,7 +22,6 @@ class CloudPrintUploadResult {
     this.feeRaw,
     this.verified = false,
     this.duplicate = false,
-    this.sameNameCount = 0,
   });
   final List<CloudPrintJob> jobs;
   final String? feeRaw;
@@ -31,8 +30,6 @@ class CloudPrintUploadResult {
   /// 上传被接受但服务器已有同名任务，本次没有生成新任务：多半是重复文件。
   final bool duplicate;
 
-  /// 服务器上与该文件同名的任务总数（含本次新增）。多于 1 条时无法判定哪条属于本次上传。
-  final int sameNameCount;
 }
 
 /// 读取允许恢复认证；文件提交之后不使用认证重试模板。
@@ -189,7 +186,6 @@ class CloudPrintApiService {
         feeRaw: fee,
         verified: added.length == 1,
         duplicate: added.isEmpty && sameName.isNotEmpty,
-        sameNameCount: sameName.length,
       );
     } catch (_, stack) {
       AppLog.w(

@@ -312,13 +312,11 @@ void main() {
     });
     provider.queue.single.status = CloudPrintQueueStatus.uncertain;
     await pump(tester, width: 600);
-    expect(find.text('Requeue this file'), findsNothing);
-    await tester.tap(find.text('I checked: no job was created'));
+    expect(find.text('Upload again'), findsNothing);
+    await tester.tap(find.text('Not listed, upload again'));
     await tester.pumpAndSettle();
     expect(provider.queue.single.status, CloudPrintQueueStatus.uncertain);
-    await tester.tap(
-      find.widgetWithText(FilledButton, 'I checked: no job was created'),
-    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Not listed, upload again'));
     await tester.pumpAndSettle();
     expect(provider.queue.single.status, CloudPrintQueueStatus.pending);
   });
@@ -400,17 +398,20 @@ void main() {
     await tester.pumpAndSettle();
     await screenshot(tester, 'queue-states');
 
-    expect(find.textContaining('same name is already on the server'), findsOneWidget);
+    expect(
+      find.textContaining('is not listed in Print jobs'),
+      findsOneWidget,
+    );
     expect(find.text('Retry failed files'), findsOneWidget);
-    // 同名任务多于一条时换成「无法确认哪条是这次上传」的说明。
+    // 重复文件与「同名任务已在服务器」都按成功处理：卡片上不再多出一段说明。
     provider.queue[0]
-      ..duplicate = false
-      ..sameNameCount = 3;
+      ..duplicate = true
+      ..verificationPending = false;
     await tester.runAsync(provider.refreshJobs);
     await tester.pumpAndSettle();
     expect(
-      find.textContaining('jobs with this name already exist'),
-      findsOneWidget,
+      find.textContaining('is not listed in Print jobs'),
+      findsNothing,
     );
     expect(find.text('Clear list'), findsOneWidget);
     // 清理记录不会动待上传项。
@@ -418,5 +419,33 @@ void main() {
     await tester.pumpAndSettle();
     expect(provider.queue.single.file.name, 'pending.pdf');
     expect(tester.takeException(), isNull);
+
+    // 中文界面再摆一遍三种状态，供人工核对文案。
+    await pump(tester, width: 820, locale: const Locale('zh'));
+    await tester.runAsync(() async {
+      final selected = Completer<void>();
+      void onSelected() {
+        if (!provider.selecting &&
+            provider.queue.length == 3 &&
+            !selected.isCompleted) {
+          selected.complete();
+        }
+      }
+
+      provider.addListener(onSelected);
+      await tester.tap(find.text('添加文件'));
+      await selected.future.timeout(const Duration(seconds: 5));
+      provider.removeListener(onSelected);
+    });
+    provider.queue[0]
+      ..status = CloudPrintQueueStatus.uploaded
+      ..duplicate = true;
+    provider.queue[1]
+      ..status = CloudPrintQueueStatus.failed
+      ..failure = CloudPrintFailure.request;
+    provider.queue[2].status = CloudPrintQueueStatus.uncertain;
+    await tester.runAsync(provider.refreshJobs);
+    await tester.pumpAndSettle();
+    await screenshot(tester, 'queue-states-zh');
   });
 }

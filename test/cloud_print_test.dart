@@ -77,7 +77,6 @@ class _QueueApi implements CloudPrintApiService {
   final List<String> uploads = [];
   final Map<String, Exception> failOnce = {};
   bool duplicateResult = false;
-  int duplicateSameNameCount = 0;
   final Set<int> failDownloadOnce = {};
   Completer<void>? hold;
   int inFlight = 0, maxInFlight = 0, jobCalls = 0;
@@ -108,15 +107,7 @@ class _QueueApi implements CloudPrintApiService {
       final error = failOnce.remove(file.name);
       if (error != null) throw error;
       if (duplicateResult) {
-        return CloudPrintUploadResult(
-          duplicate: true,
-          sameNameCount: duplicateSameNameCount,
-        );
-      }
-      if (duplicateSameNameCount > 1) {
-        return CloudPrintUploadResult(
-          sameNameCount: duplicateSameNameCount,
-        );
+        return const CloudPrintUploadResult(duplicate: true);
       }
       return const CloudPrintUploadResult(verified: true);
     } finally {
@@ -833,7 +824,8 @@ void main() {
     final item = provider.queue.single;
     expect(item.status, CloudPrintQueueStatus.uploaded);
     expect(item.duplicate, isTrue);
-    expect(item.verificationPending, isTrue);
+    // 同名任务已在服务器上：按成功处理，不弹「待核对」的说明。
+    expect(item.verificationPending, isFalse);
     expect(provider.failedCount, 0);
   });
 
@@ -853,16 +845,4 @@ void main() {
     expect(provider.queue, hasLength(1));
   });
 
-  test('服务器同名任务多于一条时标记为无法对应', () async {
-    final api = _QueueApi()..duplicateSameNameCount = 3;
-    final provider = CloudPrintProvider(api, uploadConcurrency: 1);
-    addTearDown(provider.dispose);
-    await provider.addPaths([await fixture('a.pdf')]);
-    await provider.uploadPending();
-    final item = provider.queue.single;
-    expect(item.status, CloudPrintQueueStatus.uploaded);
-    expect(item.sameNameCount, 3);
-    expect(item.verificationPending, isTrue);
-    expect(item.duplicate, isFalse);
-  });
 }

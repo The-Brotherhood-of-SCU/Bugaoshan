@@ -4094,29 +4094,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cloudPrintFailed => 'Upload failed';
 
   @override
-  String get cloudPrintUncertain => 'Check whether a job was created';
+  String get cloudPrintUncertain => 'Connection dropped, no confirmation';
 
   @override
-  String get cloudPrintVerify => 'Check print jobs';
+  String get cloudPrintUncertainHint =>
+      'Check Print jobs; if the file is not there, upload it again.';
+
+  @override
+  String get cloudPrintVerify => 'View print jobs';
 
   @override
   String get cloudPrintVerificationPending =>
-      'Submitted, but it is not in Print jobs yet. Check there before uploading again.';
+      'If this file is not listed in Print jobs, you can upload it again.';
 
   @override
-  String cloudPrintAmbiguousPending(int count) {
-    return '$count jobs with this name already exist, so it is unclear which one came from this upload. Check Print jobs before uploading again.';
-  }
+  String get cloudPrintRequeue => 'Upload again';
 
   @override
-  String get cloudPrintDuplicatePending =>
-      'A job with the same name is already on the server, so no new job was created. It may be a duplicate file: check Print jobs, and upload again with different settings if you really need a second copy.';
-
-  @override
-  String get cloudPrintRequeue => 'Requeue this file';
-
-  @override
-  String get cloudPrintMissingConfirm => 'I checked: no job was created';
+  String get cloudPrintMissingConfirm => 'Not listed, upload again';
 
   @override
   String get cloudPrintMissingHint =>
@@ -4124,15 +4119,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cloudPrintFailureAuth =>
-      'The session expired before submission. Sign in again before retrying.';
+      'Your sign-in expired. Sign in again, then upload it once more.';
 
   @override
   String get cloudPrintFailureSize =>
-      'The server rejected this file because it is too large.';
+      'This file is larger than the printer allows.';
 
   @override
   String get cloudPrintFailureRequest =>
-      'Check the file and network, then retry this file.';
+      'Network or file problem. Upload it again to retry.';
 
   @override
   String get cloudPrintRemove => 'Remove from upload queue';

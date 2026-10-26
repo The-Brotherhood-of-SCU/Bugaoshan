@@ -25,8 +25,6 @@ class CloudPrintQueueItem {
   bool verificationPending = false;
   bool duplicate = false;
 
-  /// 服务器上同名任务条数；>1 时无法判断哪条是本次上传。
-  int sameNameCount = 0;
 }
 
 /// 会话内保留批量队列；有限并发提交、成功项不重放，登出/换号丢弃旧账号结果。
@@ -202,7 +200,6 @@ class CloudPrintProvider extends ChangeNotifier {
       item.failure = null;
       item.progress = 0;
       item.duplicate = false;
-      item.sameNameCount = 0;
       requeued = true;
     }
     if (!requeued) return;
@@ -231,7 +228,6 @@ class CloudPrintProvider extends ChangeNotifier {
       item.progress = 0;
       item.failure = null;
       item.duplicate = false;
-      item.sameNameCount = 0;
       return item;
     }
     return null;
@@ -279,9 +275,9 @@ class CloudPrintProvider extends ChangeNotifier {
             if (!_current(generation)) return;
             item.status = CloudPrintQueueStatus.uploaded;
             item.progress = 1;
-            item.verificationPending = !result.verified;
             item.duplicate = result.duplicate;
-            item.sameNameCount = result.sameNameCount;
+            // 同名任务已在服务器上：按成功处理，不再打扰用户。
+            item.verificationPending = !result.verified && !result.duplicate;
           } catch (error, stack) {
             if (!_current(generation)) return;
             AppLog.e(_tag, '批量队列中的文件上传失败', error: error, stackTrace: stack);
