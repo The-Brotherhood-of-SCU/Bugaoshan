@@ -947,20 +947,6 @@
     }
   },
   "dateFormatSetting": "Date format",
-  "dateFormatLabel": "Format",
-  "dateFormatSamples": "Top bar: {fullDate} · schedule header: {monthDay}",
-  "@dateFormatSamples": {
-    "description": "Live example on the date format settings page: the full date and the month/day fragment",
-    "placeholders": {
-      "fullDate": {
-        "type": "String"
-      },
-      "monthDay": {
-        "type": "String"
-      }
-    }
-  },
-  "dateFormatHint": "The top bar shows the full date; the schedule header shows only month and day.",
   "holidayLabel": "Hol",
   "@holidayLabel": {
     "description": "Short label for statutory holiday displayed in course grid date header"

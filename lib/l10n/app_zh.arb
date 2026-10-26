@@ -913,20 +913,6 @@
     }
   },
   "dateFormatSetting": "日期格式",
-  "dateFormatLabel": "格式",
-  "dateFormatSamples": "顶栏显示 {fullDate}，课表表头显示 {monthDay}",
-  "@dateFormatSamples": {
-    "description": "日期格式设置页的实时示例：完整日期与只含月日的片段",
-    "placeholders": {
-      "fullDate": {
-        "type": "String"
-      },
-      "monthDay": {
-        "type": "String"
-      }
-    }
-  },
-  "dateFormatHint": "顶栏显示完整日期，课表表头只显示月与日。",
   "holidayLabel": "假",
   "@holidayLabel": {
     "description": "Short label for statutory holiday displayed in course grid date header"

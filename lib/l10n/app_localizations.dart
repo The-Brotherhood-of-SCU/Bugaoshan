@@ -4609,24 +4609,6 @@ abstract class AppLocalizations {
   /// **'Date format'**
   String get dateFormatSetting;
 
-  /// No description provided for @dateFormatLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Format'**
-  String get dateFormatLabel;
-
-  /// Live example on the date format settings page: the full date and the month/day fragment
-  ///
-  /// In en, this message translates to:
-  /// **'Top bar: {fullDate} · schedule header: {monthDay}'**
-  String dateFormatSamples(String fullDate, String monthDay);
-
-  /// No description provided for @dateFormatHint.
-  ///
-  /// In en, this message translates to:
-  /// **'The top bar shows the full date; the schedule header shows only month and day.'**
-  String get dateFormatHint;
-
   /// Short label for statutory holiday displayed in course grid date header
   ///
   /// In en, this message translates to:

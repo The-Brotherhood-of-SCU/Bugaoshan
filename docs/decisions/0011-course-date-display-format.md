@@ -16,7 +16,9 @@
 新增全局偏好 `DateDisplayFormat`（`lib/models/date_display_format.dart`），
 持久化在 `AppConfigProvider.dateDisplayFormat`（SharedPreferences key
 `dateDisplayFormat`，存 enum index，默认 `monthDayYearSlash`）。
-入口为「软件设置 → 样式 → 日期格式」，下拉九种完整日期写法，即时生效。
+入口为「软件设置 → 课程表样式」页显示设置区内的下拉框，九种完整日期写法，
+即时生效。不单设独立页面：该页已有课表实时预览，改完立刻能看到顶栏与表头的
+实际效果，多开一页只会让用户在两处之间来回跳。
 
 同一个格式有两种消费方式，共用排列与分隔符：
 

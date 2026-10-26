@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/models/date_display_format.dart';
 import 'package:bugaoshan/pages/course/main/course_page.dart';
 import 'package:bugaoshan/pages/settings/background_crop_editor_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
@@ -39,6 +40,7 @@ class SetCourseStylePage extends StatelessWidget {
         appConfig.showCourseWeeks,
         appConfig.showWeekend,
         appConfig.showNonCurrentWeekCourses,
+        appConfig.dateDisplayFormat,
       ]),
       builder: (context, _) {
         return Scaffold(
@@ -229,6 +231,26 @@ class SetCourseStylePage extends StatelessWidget {
         value: appConfig.showNonCurrentWeekCourses.value,
         onChanged: (v) => appConfig.showNonCurrentWeekCourses.value = v,
         contentPadding: EdgeInsets.zero,
+      ),
+      // 日期格式：顶栏显示完整日期，表头只取月与日。
+      DropdownButtonFormField<DateDisplayFormat>(
+        initialValue: appConfig.dateDisplayFormat.value,
+        isExpanded: true,
+        decoration: InputDecoration(
+          labelText: localizations.dateFormatSetting,
+          border: const OutlineInputBorder(),
+        ),
+        // 选项按「今天」渲染，用户不必回课表页就能看出顺序与分隔符差异。
+        items: [
+          for (final format in DateDisplayFormat.values)
+            DropdownMenuItem(
+              value: format,
+              child: Text(format.formatFull(DateTime.now())),
+            ),
+        ],
+        onChanged: (value) {
+          if (value != null) appConfig.dateDisplayFormat.value = value;
+        },
       ),
       const Divider(),
       // Background image settings

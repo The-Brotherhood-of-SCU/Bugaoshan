@@ -2428,18 +2428,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dateFormatSetting => 'Date format';
 
   @override
-  String get dateFormatLabel => 'Format';
-
-  @override
-  String dateFormatSamples(String fullDate, String monthDay) {
-    return 'Top bar: $fullDate · schedule header: $monthDay';
-  }
-
-  @override
-  String get dateFormatHint =>
-      'The top bar shows the full date; the schedule header shows only month and day.';
-
-  @override
   String get holidayLabel => 'Hol';
 
   @override
