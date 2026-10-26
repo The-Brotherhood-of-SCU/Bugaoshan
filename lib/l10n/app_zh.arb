@@ -2247,6 +2247,7 @@
   "cloudPrintUncertain": "上传结果待核对",
   "cloudPrintVerify": "核对打印任务",
   "cloudPrintVerificationPending": "已提交，但任务列表里还没出现这条任务；请到「打印任务」核对后再决定是否重传。",
+  "cloudPrintAmbiguousPending": "服务器上已有 {count} 条同名任务，无法确认哪条是这次上传的；请到「打印任务」核对，勿重复上传。",
   "cloudPrintDuplicatePending": "服务器上已有同名任务，这次没有生成新任务。可能是重复文件，请到「打印任务」核对；确认要再打一份就调整设置后重新上传。",
   "cloudPrintRequeue": "本文件重新排队",
   "cloudPrintMissingConfirm": "已核对，确认未生成任务",

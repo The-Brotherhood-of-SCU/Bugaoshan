@@ -2354,6 +2354,8 @@
   "cloudPrintUncertain": "Check whether a job was created",
   "cloudPrintVerify": "Check print jobs",
   "cloudPrintVerificationPending": "Submitted, but it is not in Print jobs yet. Check there before uploading again.",
+  "cloudPrintAmbiguousPending": "{count} jobs with this name already exist, so it is unclear which one came from this upload. Check Print jobs before uploading again.",
+  "@cloudPrintAmbiguousPending": {"placeholders":{"count":{"type":"int"}}},
   "cloudPrintDuplicatePending": "A job with the same name is already on the server, so no new job was created. It may be a duplicate file: check Print jobs, and upload again with different settings if you really need a second copy.",
   "cloudPrintRequeue": "Requeue this file",
   "cloudPrintMissingConfirm": "I checked: no job was created",

@@ -24,6 +24,9 @@ class CloudPrintQueueItem {
   double progress = 0;
   bool verificationPending = false;
   bool duplicate = false;
+
+  /// 服务器上同名任务条数；>1 时无法判断哪条是本次上传。
+  int sameNameCount = 0;
 }
 
 /// 会话内保留批量队列；有限并发提交、成功项不重放，登出/换号丢弃旧账号结果。
@@ -98,8 +101,14 @@ class CloudPrintProvider extends ChangeNotifier {
         try {
           final file = await CloudPrintFile.fromPath(path);
           if (!_current(generation)) break;
-          // 只按实际路径去重；不同目录的同名文档仍可分别上传。
-          if (_queue.any((item) => p.equals(item.file.path, file.path))) {
+          // 同一路径，或同名同大小（多半是同一份文档的另一个副本）都按重复处理，
+          // 需要多份请改份数，避免同名任务在服务器上堆成多条难以对应。
+          if (_queue.any(
+            (item) =>
+                p.equals(item.file.path, file.path) ||
+                (item.file.name == file.name &&
+                    item.file.size == file.size),
+          )) {
             duplicates++;
             continue;
           }
@@ -193,6 +202,7 @@ class CloudPrintProvider extends ChangeNotifier {
       item.failure = null;
       item.progress = 0;
       item.duplicate = false;
+      item.sameNameCount = 0;
       requeued = true;
     }
     if (!requeued) return;
@@ -221,6 +231,7 @@ class CloudPrintProvider extends ChangeNotifier {
       item.progress = 0;
       item.failure = null;
       item.duplicate = false;
+      item.sameNameCount = 0;
       return item;
     }
     return null;
@@ -270,6 +281,7 @@ class CloudPrintProvider extends ChangeNotifier {
             item.progress = 1;
             item.verificationPending = !result.verified;
             item.duplicate = result.duplicate;
+            item.sameNameCount = result.sameNameCount;
           } catch (error, stack) {
             if (!_current(generation)) return;
             AppLog.e(_tag, '批量队列中的文件上传失败', error: error, stackTrace: stack);

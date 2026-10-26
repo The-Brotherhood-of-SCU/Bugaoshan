@@ -7579,6 +7579,12 @@ abstract class AppLocalizations {
   /// **'Submitted, but it is not in Print jobs yet. Check there before uploading again.'**
   String get cloudPrintVerificationPending;
 
+  /// No description provided for @cloudPrintAmbiguousPending.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} jobs with this name already exist, so it is unclear which one came from this upload. Check Print jobs before uploading again.'**
+  String cloudPrintAmbiguousPending(int count);
+
   /// No description provided for @cloudPrintDuplicatePending.
   ///
   /// In en, this message translates to:

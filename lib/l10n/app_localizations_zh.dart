@@ -3961,6 +3961,11 @@ class AppLocalizationsZh extends AppLocalizations {
       '已提交，但任务列表里还没出现这条任务；请到「打印任务」核对后再决定是否重传。';
 
   @override
+  String cloudPrintAmbiguousPending(int count) {
+    return '服务器上已有 $count 条同名任务，无法确认哪条是这次上传的；请到「打印任务」核对，勿重复上传。';
+  }
+
+  @override
   String get cloudPrintDuplicatePending =>
       '服务器上已有同名任务，这次没有生成新任务。可能是重复文件，请到「打印任务」核对；确认要再打一份就调整设置后重新上传。';
 

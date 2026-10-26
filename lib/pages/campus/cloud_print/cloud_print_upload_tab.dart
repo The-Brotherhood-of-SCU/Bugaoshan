@@ -51,11 +51,11 @@ extension _CloudPrintUploadTab on _CloudPrintPageState {
                   onPressed: busy ? null : _provider.retryFailed,
                   child: Text(l10n.cloudPrintRetryFailed),
                 ),
-              if (_provider.finishedCount > 0)
-                TextButton(
-                  onPressed: busy ? null : _provider.clearFinished,
-                  child: Text(l10n.cloudPrintClearFinished),
-                ),
+              TextButton.icon(
+                onPressed: busy ? null : _provider.clearFinished,
+                icon: const Icon(Icons.cleaning_services_outlined, size: 18),
+                label: Text(l10n.cloudPrintClearFinished),
+              ),
             ],
           ),
         const SizedBox(height: 12),
@@ -168,6 +168,8 @@ extension _CloudPrintUploadTab on _CloudPrintPageState {
             Text(
               item.duplicate
                   ? l10n.cloudPrintDuplicatePending
+                  : item.sameNameCount > 1
+                  ? l10n.cloudPrintAmbiguousPending(item.sameNameCount)
                   : l10n.cloudPrintVerificationPending,
             ),
           Wrap(

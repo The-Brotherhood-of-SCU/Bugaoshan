@@ -4104,6 +4104,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Submitted, but it is not in Print jobs yet. Check there before uploading again.';
 
   @override
+  String cloudPrintAmbiguousPending(int count) {
+    return '$count jobs with this name already exist, so it is unclear which one came from this upload. Check Print jobs before uploading again.';
+  }
+
+  @override
   String get cloudPrintDuplicatePending =>
       'A job with the same name is already on the server, so no new job was created. It may be a duplicate file: check Print jobs, and upload again with different settings if you really need a second copy.';
 

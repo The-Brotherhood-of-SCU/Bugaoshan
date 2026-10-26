@@ -402,6 +402,16 @@ void main() {
 
     expect(find.textContaining('same name is already on the server'), findsOneWidget);
     expect(find.text('Retry failed files'), findsOneWidget);
+    // 同名任务多于一条时换成「无法确认哪条是这次上传」的说明。
+    provider.queue[0]
+      ..duplicate = false
+      ..sameNameCount = 3;
+    await tester.runAsync(provider.refreshJobs);
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('jobs with this name already exist'),
+      findsOneWidget,
+    );
     expect(find.text('Clear list'), findsOneWidget);
     // 清理记录不会动待上传项。
     await tester.tap(find.text('Clear list'));
