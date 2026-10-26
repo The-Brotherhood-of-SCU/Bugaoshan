@@ -21,10 +21,14 @@ class CloudPrintUploadResult {
     this.jobs = const [],
     this.feeRaw,
     this.verified = false,
+    this.duplicate = false,
   });
   final List<CloudPrintJob> jobs;
   final String? feeRaw;
   final bool verified;
+
+  /// 上传被接受但服务器已有同名任务，本次没有生成新任务：多半是重复文件。
+  final bool duplicate;
 }
 
 /// 读取允许恢复认证；文件提交之后不使用认证重试模板。
@@ -171,13 +175,16 @@ class CloudPrintApiService {
     // code=0 已确认接收；列表暂不可读不能把已成功上传误标成可重试的失败。
     final known = before;
     try {
-      final added = (await fetchJobs())
+      final jobs = await fetchJobs();
+      final added = jobs
           .where((job) => !known.contains(job.id) && job.name == file.name)
           .toList();
       return CloudPrintUploadResult(
         jobs: added,
         feeRaw: fee,
         verified: added.length == 1,
+        duplicate:
+            added.isEmpty && jobs.any((job) => job.name == file.name),
       );
     } catch (_, stack) {
       AppLog.w(

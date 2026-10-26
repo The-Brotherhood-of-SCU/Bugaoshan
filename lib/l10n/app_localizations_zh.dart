@@ -3922,16 +3922,16 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get cloudPrintStop => '停止后续上传';
+  String get cloudPrintStop => '停止上传';
 
   @override
-  String get cloudPrintStopping => '当前文件结束后停止';
+  String get cloudPrintStopping => '停止中…';
 
   @override
-  String get cloudPrintRetryFailed => '失败文件重新排队';
+  String get cloudPrintRetryFailed => '重试失败文件';
 
   @override
-  String get cloudPrintClearFinished => '清理已完成';
+  String get cloudPrintClearFinished => '清理记录';
 
   @override
   String get cloudPrintPending => '等待上传';
@@ -3957,7 +3957,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cloudPrintVerify => '核对打印任务';
 
   @override
-  String get cloudPrintVerificationPending => '服务器已接受上传；请先在「打印任务」核对，勿重复上传。';
+  String get cloudPrintVerificationPending =>
+      '已提交，但任务列表里还没出现这条任务；请到「打印任务」核对后再决定是否重传。';
+
+  @override
+  String get cloudPrintDuplicatePending =>
+      '服务器上已有同名任务，这次没有生成新任务。可能是重复文件，请到「打印任务」核对；确认要再打一份就调整设置后重新上传。';
 
   @override
   String get cloudPrintRequeue => '本文件重新排队';

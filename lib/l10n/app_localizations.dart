@@ -7510,25 +7510,25 @@ abstract class AppLocalizations {
   /// No description provided for @cloudPrintStop.
   ///
   /// In en, this message translates to:
-  /// **'Stop after this file'**
+  /// **'Stop uploading'**
   String get cloudPrintStop;
 
   /// No description provided for @cloudPrintStopping.
   ///
   /// In en, this message translates to:
-  /// **'Stopping after this file'**
+  /// **'Stopping…'**
   String get cloudPrintStopping;
 
   /// No description provided for @cloudPrintRetryFailed.
   ///
   /// In en, this message translates to:
-  /// **'Requeue failed files'**
+  /// **'Retry failed files'**
   String get cloudPrintRetryFailed;
 
   /// No description provided for @cloudPrintClearFinished.
   ///
   /// In en, this message translates to:
-  /// **'Clear completed'**
+  /// **'Clear list'**
   String get cloudPrintClearFinished;
 
   /// No description provided for @cloudPrintPending.
@@ -7576,8 +7576,14 @@ abstract class AppLocalizations {
   /// No description provided for @cloudPrintVerificationPending.
   ///
   /// In en, this message translates to:
-  /// **'Upload accepted; verify the job in Print jobs before uploading again.'**
+  /// **'Submitted, but it is not in Print jobs yet. Check there before uploading again.'**
   String get cloudPrintVerificationPending;
+
+  /// No description provided for @cloudPrintDuplicatePending.
+  ///
+  /// In en, this message translates to:
+  /// **'A job with the same name is already on the server, so no new job was created. It may be a duplicate file: check Print jobs, and upload again with different settings if you really need a second copy.'**
+  String get cloudPrintDuplicatePending;
 
   /// No description provided for @cloudPrintRequeue.
   ///

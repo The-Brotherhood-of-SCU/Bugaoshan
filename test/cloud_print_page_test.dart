@@ -359,4 +359,54 @@ void main() {
     expect(find.text('Select all'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('上传队列的失败、待核对与重复文件各有明确文案', (tester) async {
+    await tester.runAsync(() async {
+      for (final name in ['dup.pdf', 'broken.pdf', 'pending.pdf']) {
+        final file = File(p.join(temp.path, name));
+        await file.writeAsString('%PDF fixture');
+        picker.files.add(_PickedFile(name, file.path, await file.length()));
+      }
+    });
+    await pump(tester, width: 820);
+    await tester.runAsync(() async {
+      final selected = Completer<void>();
+      void onSelected() {
+        if (!provider.selecting &&
+            provider.queue.length == 3 &&
+            !selected.isCompleted) {
+          selected.complete();
+        }
+      }
+
+      provider.addListener(onSelected);
+      await tester.tap(find.text('Add files'));
+      await selected.future.timeout(const Duration(seconds: 5));
+      provider.removeListener(onSelected);
+    });
+    await tester.pumpAndSettle();
+
+    // 直接摆出三种已结束状态，检查文案与按钮。
+    provider.queue[0]
+      ..status = CloudPrintQueueStatus.uploaded
+      ..verificationPending = true
+      ..duplicate = true;
+    provider.queue[1]
+      ..status = CloudPrintQueueStatus.failed
+      ..failure = CloudPrintFailure.request;
+    provider.queue[2].status = CloudPrintQueueStatus.pending;
+    // 队列项是可变对象，改完要让 provider 通知一次才能重绘。
+    await tester.runAsync(provider.refreshJobs);
+    await tester.pumpAndSettle();
+    await screenshot(tester, 'queue-states');
+
+    expect(find.textContaining('same name is already on the server'), findsOneWidget);
+    expect(find.text('Retry failed files'), findsOneWidget);
+    expect(find.text('Clear list'), findsOneWidget);
+    // 清理记录不会动待上传项。
+    await tester.tap(find.text('Clear list'));
+    await tester.pumpAndSettle();
+    expect(provider.queue.single.file.name, 'pending.pdf');
+    expect(tester.takeException(), isNull);
+  });
 }

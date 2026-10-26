@@ -41,10 +41,7 @@ extension _CloudPrintUploadTab on _CloudPrintPageState {
               ),
           ],
         ),
-        if (_provider.failedCount > 0 ||
-            _provider.queue.any(
-              (item) => item.status == CloudPrintQueueStatus.uploaded,
-            ))
+        if (_provider.finishedCount > 0)
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -54,9 +51,7 @@ extension _CloudPrintUploadTab on _CloudPrintPageState {
                   onPressed: busy ? null : _provider.retryFailed,
                   child: Text(l10n.cloudPrintRetryFailed),
                 ),
-              if (_provider.queue.any(
-                (item) => item.status == CloudPrintQueueStatus.uploaded,
-              ))
+              if (_provider.finishedCount > 0)
                 TextButton(
                   onPressed: busy ? null : _provider.clearFinished,
                   child: Text(l10n.cloudPrintClearFinished),
@@ -170,7 +165,11 @@ extension _CloudPrintUploadTab on _CloudPrintPageState {
             }),
           if (item.verificationPending &&
               status == CloudPrintQueueStatus.uploaded)
-            Text(l10n.cloudPrintVerificationPending),
+            Text(
+              item.duplicate
+                  ? l10n.cloudPrintDuplicatePending
+                  : l10n.cloudPrintVerificationPending,
+            ),
           Wrap(
             spacing: 8,
             children: [

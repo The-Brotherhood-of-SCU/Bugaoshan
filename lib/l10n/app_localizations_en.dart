@@ -4065,16 +4065,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get cloudPrintStop => 'Stop after this file';
+  String get cloudPrintStop => 'Stop uploading';
 
   @override
-  String get cloudPrintStopping => 'Stopping after this file';
+  String get cloudPrintStopping => 'Stopping…';
 
   @override
-  String get cloudPrintRetryFailed => 'Requeue failed files';
+  String get cloudPrintRetryFailed => 'Retry failed files';
 
   @override
-  String get cloudPrintClearFinished => 'Clear completed';
+  String get cloudPrintClearFinished => 'Clear list';
 
   @override
   String get cloudPrintPending => 'Ready to upload';
@@ -4101,7 +4101,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cloudPrintVerificationPending =>
-      'Upload accepted; verify the job in Print jobs before uploading again.';
+      'Submitted, but it is not in Print jobs yet. Check there before uploading again.';
+
+  @override
+  String get cloudPrintDuplicatePending =>
+      'A job with the same name is already on the server, so no new job was created. It may be a duplicate file: check Print jobs, and upload again with different settings if you really need a second copy.';
 
   @override
   String get cloudPrintRequeue => 'Requeue this file';

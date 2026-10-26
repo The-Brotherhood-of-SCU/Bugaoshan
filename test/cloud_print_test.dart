@@ -76,6 +76,7 @@ class _Auth extends ChangeNotifier implements CloudPrintAuth {
 class _QueueApi implements CloudPrintApiService {
   final List<String> uploads = [];
   final Map<String, Exception> failOnce = {};
+  bool duplicateResult = false;
   final Set<int> failDownloadOnce = {};
   Completer<void>? hold;
   int inFlight = 0, maxInFlight = 0, jobCalls = 0;
@@ -105,6 +106,9 @@ class _QueueApi implements CloudPrintApiService {
       if (hold case final block?) await block.future;
       final error = failOnce.remove(file.name);
       if (error != null) throw error;
+      if (duplicateResult) {
+        return const CloudPrintUploadResult(duplicate: true);
+      }
       return const CloudPrintUploadResult(verified: true);
     } finally {
       inFlight--;
@@ -451,8 +455,8 @@ void main() {
     await provider.uploadPending();
     expect(api.maxInFlight, 1);
     expect(provider.failedCount, 1);
-    provider.retryFailed();
-    await provider.uploadPending();
+    // 重试按钮自己就发起上传，不需要再点上传。
+    await provider.retryFailed();
     expect(api.uploads, ['a.pdf', 'b.pdf', 'c.pdf', 'b.pdf']);
     expect(
       provider.queue.every(
@@ -472,7 +476,7 @@ void main() {
     final uncertain = provider.queue.first;
     expect(uncertain.status, CloudPrintQueueStatus.uncertain);
     expect(api.uploads, ['a.pdf']);
-    provider.retryFailed();
+    await provider.retryFailed();
     provider.requeue(uncertain);
     expect(uncertain.status, CloudPrintQueueStatus.uncertain);
     provider.requeue(uncertain, confirmedMissing: true);
@@ -788,5 +792,39 @@ void main() {
     expect(result.deleted, 1);
     expect(result.failed, 1);
     expect(provider.jobs.map((job) => job.id), [1]);
+  });
+
+  test('重试失败文件立即开始上传，无需再点上传按钮', () async {
+    final api = _QueueApi()
+      ..failOnce['a.pdf'] = const ServiceException('rejected');
+    final provider = CloudPrintProvider(api, uploadConcurrency: 2);
+    addTearDown(provider.dispose);
+    await provider.addPaths([await fixture('a.pdf'), await fixture('b.pdf')]);
+    await provider.uploadPending();
+    expect(provider.failedCount, 1);
+    expect(provider.pendingCount, 0);
+
+    await provider.retryFailed();
+    expect(api.uploads, ['a.pdf', 'b.pdf', 'a.pdf']);
+    expect(provider.failedCount, 0);
+    expect(
+      provider.queue.every(
+        (item) => item.status == CloudPrintQueueStatus.uploaded,
+      ),
+      isTrue,
+    );
+  });
+
+  test('服务器已有同名任务时标记重复，不当作可重试失败', () async {
+    final api = _QueueApi()..duplicateResult = true;
+    final provider = CloudPrintProvider(api, uploadConcurrency: 1);
+    addTearDown(provider.dispose);
+    await provider.addPaths([await fixture('a.pdf')]);
+    await provider.uploadPending();
+    final item = provider.queue.single;
+    expect(item.status, CloudPrintQueueStatus.uploaded);
+    expect(item.duplicate, isTrue);
+    expect(item.verificationPending, isTrue);
+    expect(provider.failedCount, 0);
   });
 }
