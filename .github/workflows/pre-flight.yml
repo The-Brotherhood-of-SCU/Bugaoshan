@@ -66,7 +66,8 @@ jobs:
           fi
 
       - name: Run Flutter Tests
-        run: flutter test
+        # 复用 setup 已解析并完成静态检查的依赖，避免切换 Pub 源后二次解析。
+        run: flutter test --no-pub
 
       - name: Run Python CI Automation Tests
         run: |

@@ -22,6 +22,9 @@ import 'package:bugaoshan/providers/graduate_grades_provider.dart';
 import 'package:bugaoshan/providers/graduate_train_plan_provider.dart';
 import 'package:bugaoshan/providers/network_device_provider.dart';
 import 'package:bugaoshan/providers/passpoint_provider.dart';
+import 'package:bugaoshan/providers/cloud_print_provider.dart';
+import 'package:bugaoshan/services/api/cloud_print_api_service.dart';
+import 'package:bugaoshan/services/auth/cloud_print_auth.dart';
 import 'package:bugaoshan/providers/reservation_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/providers/service_applications_provider.dart';
@@ -258,6 +261,24 @@ void _configureAsyncDependencies() {
     await getIt.isReady<GsApiService>();
     return GraduateTrainPlanProvider(getIt<GsApiService>());
   });
+
+  // ── 图书馆打印与扫描（按需认证，不加入全站预热）────────────────
+  getIt.registerSingletonAsync<CloudPrintAuth>(() async {
+    await getIt.isReady<ScuAuth>();
+    return CloudPrintAuth(getIt<ScuAuth>());
+  }, dispose: (auth) => auth.dispose());
+  getIt.registerSingletonAsync<CloudPrintApiService>(() async {
+    await getIt.isReady<CloudPrintAuth>();
+    return CloudPrintApiService(getIt<CloudPrintAuth>());
+  });
+  getIt.registerSingletonAsync<CloudPrintProvider>(() async {
+    await getIt.isReady<CloudPrintApiService>();
+    await getIt.isReady<ScuAuth>();
+    return CloudPrintProvider(
+      getIt<CloudPrintApiService>(),
+      scuAuth: getIt<ScuAuth>(),
+    );
+  }, dispose: (provider) => provider.dispose());
 
   // ── 预约系统（service.scu.edu.cn/reservation，活动室预约）────────
   getIt.registerSingletonAsync<ReservationAuth>(() async {
@@ -522,6 +543,9 @@ void _configureAsyncDependencies() {
         }
         if (getIt.isRegistered<PasspointProvider>()) {
           getIt<PasspointProvider>().clear();
+        }
+        if (getIt.isRegistered<CloudPrintProvider>()) {
+          getIt<CloudPrintProvider>().clear();
         }
         if (getIt.isRegistered<ClassroomProvider>()) {
           getIt<ClassroomProvider>().clear();

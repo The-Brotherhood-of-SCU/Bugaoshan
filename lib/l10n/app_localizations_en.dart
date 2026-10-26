@@ -4001,4 +4001,299 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logShare => 'Share logs';
+
+  @override
+  String get cloudPrintTitle => 'Library print & scan';
+
+  @override
+  String get cloudPrintDock => 'Cloud print';
+
+  @override
+  String get cloudPrintDesc =>
+      'Batch upload documents, manage print jobs and download scans';
+
+  @override
+  String get cloudPrintQueue => 'Upload queue';
+
+  @override
+  String get cloudPrintJobs => 'Print jobs';
+
+  @override
+  String get cloudPrintScans => 'Scans';
+
+  @override
+  String get cloudPrintChoose => 'Add files';
+
+  @override
+  String get cloudPrintSettings => 'Default print settings';
+
+  @override
+  String get cloudPrintSharedSettings => 'Default print settings';
+
+  @override
+  String get cloudPrintFileSettings => 'File print settings';
+
+  @override
+  String get cloudPrintEmptyQueue => 'Choose one or more documents to start';
+
+  @override
+  String get cloudPrintHint =>
+      'Uploads create print jobs. Confirm printing with your campus card at a library terminal.';
+
+  @override
+  String get cloudPrintScanHint =>
+      'Scan at a library machine first. Your scanned files will appear here for download and sharing.';
+
+  @override
+  String get cloudPrintScanEmpty => 'No scanned documents';
+
+  @override
+  String get cloudPrintJobsEmpty => 'No print jobs';
+
+  @override
+  String get cloudPrintLoadFailed =>
+      'Could not load the list. Refresh to try again.';
+
+  @override
+  String cloudPrintSelection(int added, int duplicates, int invalid) {
+    return 'Added $added; duplicates skipped: $duplicates; unreadable or unsupported: $invalid';
+  }
+
+  @override
+  String cloudPrintStart(int count) {
+    return 'Upload pending ($count)';
+  }
+
+  @override
+  String get cloudPrintStop => 'Stop uploading';
+
+  @override
+  String get cloudPrintStopping => 'Stopping after this file';
+
+  @override
+  String get cloudPrintRetryFailed => 'Requeue failed files';
+
+  @override
+  String get cloudPrintClearFinished => 'Clear list';
+
+  @override
+  String get cloudPrintPending => 'Ready to upload';
+
+  @override
+  String cloudPrintUploading(int percent) {
+    return 'Uploading $percent%';
+  }
+
+  @override
+  String get cloudPrintProcessing => 'Processing document…';
+
+  @override
+  String get cloudPrintUploaded => 'Uploaded';
+
+  @override
+  String get cloudPrintFailed => 'Upload failed';
+
+  @override
+  String get cloudPrintUncertain => 'Check whether a job was created';
+
+  @override
+  String get cloudPrintVerify => 'Check print jobs';
+
+  @override
+  String get cloudPrintVerificationPending =>
+      'Upload accepted; verify the job in Print jobs before uploading again.';
+
+  @override
+  String get cloudPrintDuplicatePending =>
+      'A duplicate file was detected. Check it in Print jobs.';
+
+  @override
+  String get cloudPrintRequeue => 'Upload again';
+
+  @override
+  String get cloudPrintMissingConfirm => 'I checked: no job was created';
+
+  @override
+  String get cloudPrintMissingHint =>
+      'Only requeue after checking Print jobs and confirming this document is missing. Uploading again may create a duplicate job.';
+
+  @override
+  String get cloudPrintFailureAuth =>
+      'The session expired before submission. Sign in again before retrying.';
+
+  @override
+  String get cloudPrintFailureSize =>
+      'The server rejected this file because it is too large.';
+
+  @override
+  String get cloudPrintFailureRequest =>
+      'Check the file and network, then upload it again.';
+
+  @override
+  String get cloudPrintRemove => 'Remove from upload queue';
+
+  @override
+  String get cloudPrintColor => 'Color';
+
+  @override
+  String get cloudPrintMono => 'Black & white';
+
+  @override
+  String get cloudPrintFullColor => 'Color';
+
+  @override
+  String get cloudPrintPaper => 'Paper';
+
+  @override
+  String get cloudPrintOriginal => 'Original size';
+
+  @override
+  String get cloudPrintDuplex => 'Sides';
+
+  @override
+  String get cloudPrintLongEdge => 'Duplex, long edge';
+
+  @override
+  String get cloudPrintShortEdge => 'Duplex, short edge';
+
+  @override
+  String get cloudPrintSimplex => 'Single-sided';
+
+  @override
+  String get cloudPrintCopies => 'Copies';
+
+  @override
+  String get cloudPrintPages => 'Pages';
+
+  @override
+  String get cloudPrintPagesHint => 'Blank: all pages; or 2, 2-5';
+
+  @override
+  String get cloudPrintAllPages => 'All pages';
+
+  @override
+  String get cloudPrintInvalidCopies => 'Enter a positive number of copies';
+
+  @override
+  String get cloudPrintInvalidPages =>
+      'Enter one page or a continuous range such as 2-5';
+
+  @override
+  String cloudPrintSummary(int copies, String pages) {
+    return '$copies copies · $pages';
+  }
+
+  @override
+  String cloudPrintJobInfo(int pages, int copies) {
+    return '$pages pages · $copies copies';
+  }
+
+  @override
+  String cloudPrintJobCreated(String date, String time) {
+    return '$date $time';
+  }
+
+  @override
+  String get cloudPrintPreview => 'Preview';
+
+  @override
+  String cloudPrintPreviewPage(int page, int total) {
+    return 'Page $page of $total';
+  }
+
+  @override
+  String get cloudPrintPreviewFailed => 'Preview failed. Please try again.';
+
+  @override
+  String get cloudPrintDelete => 'Delete job';
+
+  @override
+  String cloudPrintDeleteConfirm(String name) {
+    return 'Delete \"$name\"? You will need to upload it again to print.';
+  }
+
+  @override
+  String get cloudPrintDeleted => 'Print job deleted';
+
+  @override
+  String get cloudPrintDeleteFailed => 'Delete failed. Refresh and try again.';
+
+  @override
+  String get cloudPrintSelectAll => 'Select all';
+
+  @override
+  String cloudPrintDeleteSelected(int count) {
+    return 'Delete selected ($count)';
+  }
+
+  @override
+  String cloudPrintDeleteSelectedConfirm(int count) {
+    return 'Delete $count selected item(s)? You will need to upload them again to print.';
+  }
+
+  @override
+  String cloudPrintScanDeleteConfirm(String name) {
+    return 'Delete the scan record for “$name”? Files already downloaded are not affected.';
+  }
+
+  @override
+  String cloudPrintScanDeleteSelectedConfirm(int count) {
+    return 'Delete $count selected scan record(s)? Files already downloaded are not affected.';
+  }
+
+  @override
+  String cloudPrintDeletedCount(int count) {
+    return 'Deleted $count item(s)';
+  }
+
+  @override
+  String cloudPrintDeletePartial(int deleted, int failed) {
+    return 'Deleted $deleted, $failed failed. Please retry.';
+  }
+
+  @override
+  String get cloudPrintCleanExpired => 'Clean up expired';
+
+  @override
+  String cloudPrintCleanExpiredConfirm(int count) {
+    return 'Delete $count expired scan record(s)?';
+  }
+
+  @override
+  String get cloudPrintDownloadSelected => 'Download selected';
+
+  @override
+  String get cloudPrintShareSelected => 'Share selected';
+
+  @override
+  String get cloudPrintDownload => 'Download';
+
+  @override
+  String get cloudPrintOpen => 'Open';
+
+  @override
+  String get cloudPrintShare => 'Share';
+
+  @override
+  String get cloudPrintScanExpired => 'Expired';
+
+  @override
+  String get cloudPrintDownloadFailed =>
+      'Download failed. You can retry the failed files.';
+
+  @override
+  String get cloudPrintDownloadDone =>
+      'Download finished. Completed files can be opened or shared.';
+
+  @override
+  String get cloudPrintOpenFailed =>
+      'Could not open the file. Try sharing it to another app.';
+
+  @override
+  String get cloudPrintShareFailed =>
+      'Could not share the files. Downloaded copies are kept.';
+
+  @override
+  String get cloudPrintPickFailed =>
+      'Could not select files. Please try again.';
 }
