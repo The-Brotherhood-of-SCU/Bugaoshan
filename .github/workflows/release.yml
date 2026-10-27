@@ -131,7 +131,14 @@ jobs:
       build_number: ${{ needs.resolve-metadata.outputs.build_number }}
       release_tag: ${{ needs.resolve-metadata.outputs.tag }}
       signed_release: ${{ vars.MACOS_SIGNING_ENABLED == 'true' && needs.resolve-metadata.outputs.should_release == 'true' }}
-    secrets: inherit
+    secrets:
+      MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
+      MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+      MACOS_APP_PROFILE_BASE64: ${{ secrets.MACOS_APP_PROFILE_BASE64 }}
+      MACOS_WIDGET_PROFILE_BASE64: ${{ secrets.MACOS_WIDGET_PROFILE_BASE64 }}
+      NOTARY_KEY_P8: ${{ secrets.NOTARY_KEY_P8 }}
+      NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+      NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
 
   publish-release:
     name: Publish Release
