@@ -131,6 +131,7 @@ jobs:
       build_number: ${{ needs.resolve-metadata.outputs.build_number }}
       release_tag: ${{ needs.resolve-metadata.outputs.tag }}
       signed_release: ${{ vars.MACOS_SIGNING_ENABLED == 'true' && needs.resolve-metadata.outputs.should_release == 'true' }}
+    secrets: inherit
 
   publish-release:
     name: Publish Release
