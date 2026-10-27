@@ -81,32 +81,39 @@ jobs:
             python3 tool/pre_release_check.py --ci --prerelease
           fi
 
-  gitleaks:
-    name: Gitleaks Secret Scan
-    # 只在 PR 上运行，且仅扫描 PR 引入的提交，避免全历史扫描
+  security:
+    name: Security Scans (PR diff)
+    # 三个扫描合并到同一个 runner：避免重复启动和多次全量 checkout
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    env:
+      REPORTS: ${{ github.workspace }}/security-reports
+      PUB_HOSTED_URL: https://pub.flutter-io.cn
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Scan PR commits for secrets
-        id: scan
+      - name: Prepare report directory
+        run: mkdir -p "$REPORTS"
+
+      - name: Gitleaks secret scan
+        continue-on-error: true
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/gitleaks"
           curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz" \
-            | tar -xz -C "$RUNNER_TEMP" gitleaks
+            | tar -xz -C "$RUNNER_TEMP/gitleaks" gitleaks
           set +e
-          "$RUNNER_TEMP/gitleaks" git . \
+          "$RUNNER_TEMP/gitleaks/gitleaks" git . \
             --log-opts="$BASE_SHA..$HEAD_SHA" \
             --redact --no-color --verbose \
-            --report-format json --report-path "$RUNNER_TEMP/gitleaks.json" \
-            > "$RUNNER_TEMP/gitleaks.log" 2>&1
+            --report-format json --report-path "$RUNNER_TEMP/gitleaks/report.json" \
+            > "$RUNNER_TEMP/gitleaks/scan.log" 2>&1
           STATUS=$?
           set -e
           {
@@ -124,39 +131,20 @@ jobs:
             else
               echo "❌ 发现疑似密钥（仅显示位置，不显示密钥内容）："
               echo
-              if [ -s "$RUNNER_TEMP/gitleaks.json" ]; then
+              if [ -s "$RUNNER_TEMP/gitleaks/report.json" ]; then
                 echo "| 文件 | 行 | 规则 | 提交 |"
                 echo "| --- | --- | --- | --- |"
                 jq -r '.[] | "| `\(.File | gsub("`"; "") | gsub("\\|"; "\\|"))` | \(.StartLine) | \(.RuleID) | \((.Commit // "")[0:8]) |"' \
-                  "$RUNNER_TEMP/gitleaks.json" || echo "| - | - | - | - |"
+                  "$RUNNER_TEMP/gitleaks/report.json" || echo "| - | - | - | - |"
               else
-                echo "无法解析扫描结果，请查看下方运行链接。"
+                echo "无法解析扫描结果，请查看运行日志。"
               fi
               echo
               echo "[查看 Actions 运行日志](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
             fi
-          } > "$RUNNER_TEMP/gitleaks.md"
-          cat "$RUNNER_TEMP/gitleaks.md"
+          } > "$REPORTS/gitleaks.md"
+          cat "$REPORTS/gitleaks.md"
           exit "$STATUS"
-
-      - name: Upload gitleaks report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: security-report-gitleaks
-          path: ${{ runner.temp }}/gitleaks.md
-          if-no-files-found: ignore
-          retention-days: 3
-
-  semgrep:
-    name: Semgrep Code Scan
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Python 3
         uses: actions/setup-python@v6
@@ -166,13 +154,14 @@ jobs:
       - name: Install Semgrep
         run: python3 -m pip install --disable-pip-version-check semgrep==1.182.1
 
-      - name: Scan files changed by the PR
-        id: scan
+      - name: Semgrep code scan
+        continue-on-error: true
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/semgrep"
           MERGE_BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
           mapfile -t FILES < <(
             git diff --name-only --diff-filter=ACMR "$MERGE_BASE" "$HEAD_SHA" \
@@ -186,8 +175,8 @@ jobs:
               echo "### Semgrep"
               echo
               echo "⏭️ PR 未修改可扫描文件，已跳过。"
-            } > "$RUNNER_TEMP/semgrep.md"
-            cat "$RUNNER_TEMP/semgrep.md"
+            } > "$REPORTS/semgrep.md"
+            cat "$REPORTS/semgrep.md"
             exit 0
           fi
           set +e
@@ -199,7 +188,7 @@ jobs:
             --metrics=off \
             --disable-version-check \
             --json \
-            "${FILES[@]}" > "$RUNNER_TEMP/semgrep.json" 2> "$RUNNER_TEMP/semgrep.log"
+            "${FILES[@]}" > "$RUNNER_TEMP/semgrep/report.json" 2> "$RUNNER_TEMP/semgrep/scan.log"
           STATUS=$?
           set -e
           {
@@ -220,36 +209,15 @@ jobs:
               echo "| 文件 | 行 | 规则 | 级别 |"
               echo "| --- | --- | --- | --- |"
               jq -r '.results[] | "| `\(.path | gsub("`"; "") | gsub("\\|"; "\\|"))` | \(.start.line) | \(.check_id) | \(.extra.severity) |"' \
-                "$RUNNER_TEMP/semgrep.json" || echo "| - | - | - | - |"
+                "$RUNNER_TEMP/semgrep/report.json" || echo "| - | - | - | - |"
             else
-              echo "⚠️ 扫描执行失败（退出码 $STATUS），请查看下方运行链接。"
+              echo "⚠️ 扫描执行失败（退出码 $STATUS），请查看运行日志。"
             fi
             echo
             echo "[查看 Actions 运行日志](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
-          } > "$RUNNER_TEMP/semgrep.md"
-          cat "$RUNNER_TEMP/semgrep.md"
+          } > "$REPORTS/semgrep.md"
+          cat "$REPORTS/semgrep.md"
           exit "$STATUS"
-
-      - name: Upload semgrep report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: security-report-semgrep
-          path: ${{ runner.temp }}/semgrep.md
-          if-no-files-found: ignore
-          retention-days: 3
-
-  dart-audit:
-    name: Dart Dependency Audit
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    env:
-      PUB_HOSTED_URL: https://pub.flutter-io.cn
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Detect dependency changes
         id: deps
@@ -274,8 +242,8 @@ jobs:
           channel: "stable"
           cache: true
 
-      - name: Audit dependencies against OSV.dev
-        id: scan
+      - name: Dart dependency audit
+        continue-on-error: true
         if: steps.deps.outputs.changed == 'true'
         run: |
           set +e
@@ -302,25 +270,47 @@ jobs:
             echo '````'
             tail -n 80 "$RUNNER_TEMP/dart-audit.log"
             echo '````'
-          } > "$RUNNER_TEMP/dart-audit.md"
-          cat "$RUNNER_TEMP/dart-audit.md"
+          } > "$REPORTS/dart-audit.md"
+          cat "$REPORTS/dart-audit.md"
           exit "$STATUS"
 
-      - name: Write skipped report
-        if: steps.deps.outputs.changed != 'true'
+      - name: Write skipped dart_audit report
+        if: steps.deps.outcome == 'success' && steps.deps.outputs.changed != 'true'
         run: |
           {
             echo "<!-- security-status: pass -->"
             echo "### Dart Dependency Audit (OSV)"
             echo
             echo "⏭️ PR 未修改 pubspec.yaml / pubspec.lock，已跳过。"
-          } > "$RUNNER_TEMP/dart-audit.md"
+          } > "$REPORTS/dart-audit.md"
 
-      - name: Upload dart_audit report
+      - name: Fail if any scan did not pass
+        if: always()
+        run: |
+          set -u
+          STATUS=0
+          for tool in gitleaks semgrep dart-audit; do
+            if [ ! -f "$REPORTS/$tool.md" ]; then
+              {
+                echo "<!-- security-status: fail -->"
+                echo "### $tool"
+                echo
+                echo "⚠️ 扫描未完成，请查看运行日志。"
+              } > "$REPORTS/$tool.md"
+              echo "::error::$tool report missing"
+              STATUS=1
+            elif grep -q 'security-status: fail' "$REPORTS/$tool.md"; then
+              echo "::error::$tool reported a problem"
+              STATUS=1
+            fi
+          done
+          exit "$STATUS"
+
+      - name: Upload security reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: security-report-dart-audit
-          path: ${{ runner.temp }}/dart-audit.md
-          if-no-files-found: ignore
+          name: security-report
+          path: security-reports/
+          if-no-files-found: error
           retention-days: 3

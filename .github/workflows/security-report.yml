@@ -28,8 +28,7 @@ jobs:
         with:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          pattern: security-report-*
-          merge-multiple: true
+          name: security-report
           path: reports
 
       - name: Resolve pull request number
