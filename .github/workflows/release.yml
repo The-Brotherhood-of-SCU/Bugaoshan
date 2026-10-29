@@ -143,11 +143,15 @@ jobs:
         with:
           python-version: "3.12"
 
+      # 翻译依赖仅 metadata_changelog.py（formal only）使用；preview 跳过，
+      # 避免每轮预览都安装 argostranslate 重依赖并恢复 50MB 模型缓存。
       - name: Install Python dependencies
+        if: needs.resolve-metadata.outputs.is_prerelease != 'true'
         run: |
           pip install pyyaml deep-translator argostranslate
 
       - name: Cache Argos Translate model
+        if: needs.resolve-metadata.outputs.is_prerelease != 'true'
         uses: actions/cache@v4
         id: cache-argos
         with:
@@ -155,7 +159,7 @@ jobs:
           key: argos-translate-zh-en-v1
 
       - name: Download Argos Translate zh->en model
-        if: steps.cache-argos.outputs.cache-hit != 'true'
+        if: needs.resolve-metadata.outputs.is_prerelease != 'true' && steps.cache-argos.outputs.cache-hit != 'true'
         run: |
           python -c "
           import argostranslate.package
