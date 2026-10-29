@@ -7,203 +7,23 @@ on:
       - 'macos/**'
       - 'lib/**'
       - 'pubspec*'
-      - 'tool/macos_distribution.sh'
+      - 'tool/validate_macos.sh'
       - 'tool/verify_macos_bundle.py'
-      - 'tool/macos_dmg.py'
-      - '.github/scripts/tests/test_macos_signing.py'
-      - '.github/scripts/macos_signing.py'
       - '.github/workflows/build-macos.yml'
-  workflow_call:
-    inputs:
-      build_name:
-        type: string
-        required: false
-      build_number:
-        type: string
-        required: false
-      release_tag:
-        type: string
-        required: false
-      signed_release:
-        type: boolean
-        default: false
-    # 调用方必须显式传入签名凭据；Environment Secret 不会自动进入 reusable workflow
-    secrets:
-      MACOS_CERTIFICATE_P12_BASE64:
-        required: true
-      MACOS_CERTIFICATE_PASSWORD:
-        required: true
-      MACOS_APP_PROFILE_BASE64:
-        required: true
-      MACOS_WIDGET_PROFILE_BASE64:
-        required: true
-      NOTARY_KEY_P8:
-        required: true
-      NOTARY_KEY_ID:
-        required: true
-      NOTARY_ISSUER_ID:
-        required: true
   workflow_dispatch:
-    inputs:
-      signed_release:
-        description: 'Build and notarize from trusted main/preview code'
-        type: boolean
-        default: false
-      release_tag:
-        description: 'Release tag matching this workflow commit'
-        type: string
-        required: false
 
 permissions:
   contents: read
 
 jobs:
-  compile-macos-release:
-    name: Compile macOS release without credentials
-    if: >-
-      inputs.signed_release == true &&
-      github.repository == 'The-Brotherhood-of-SCU/Bugaoshan' &&
-      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/preview')
-    environment: macos-signing
-    runs-on: macos-15
-    timeout-minutes: 45
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
-      PUB_HOSTED_URL: https://pub.flutter-io.cn
-      COCOAPODS_DISABLE_STATS: 'true'
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: subosito/flutter-action@v2.18.0
-        with:
-          flutter-version: '3.44.9'
-          channel: stable
-          cache: true
-      - name: Read Mac distribution version
-        run: |
-          python3 - <<'PYTHON'
-          import json, os, sys
-          sys.path.insert(0, "tool")
-          from macos_dmg import distribution_version
-          version, build = distribution_version(json.load(open('.github/macos-signing.json')))
-          with open(os.environ['GITHUB_ENV'], 'a') as stream:
-              stream.write(f'BUILD_NAME={version}\nBUILD_NUMBER={build}\nMACOS_BUILD_NAME={version}\nMACOS_BUILD_NUMBER={build}\n')
-          PYTHON
-      - run: bash tool/macos_distribution.sh unsigned
-      - uses: actions/upload-artifact@v4
-        with:
-          name: macos-for-signing
-          path: build/macos/validation/Bugaoshan-unsigned.zip
-          if-no-files-found: error
-          retention-days: 2
-
-  signed-macos:
-    name: Sign and notarize macOS release
-    needs: compile-macos-release
-    if: >-
-      inputs.signed_release == true &&
-      github.repository == 'The-Brotherhood-of-SCU/Bugaoshan' &&
-      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/preview')
-    environment: macos-signing
-    runs-on: macos-15
-    timeout-minutes: 120
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
-      SOURCE_TAG: ${{ inputs.release_tag }}
-      SOURCE_SHA: ${{ github.sha }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - name: Read Mac distribution version
-        run: |
-          python3 - <<'PYTHON'
-          import json, os, sys
-          sys.path.insert(0, "tool")
-          from macos_dmg import distribution_version
-          version, build = distribution_version(json.load(open('.github/macos-signing.json')))
-          with open(os.environ['GITHUB_ENV'], 'a') as stream:
-              stream.write(f'BUILD_NAME={version}\nBUILD_NUMBER={build}\nMACOS_BUILD_NAME={version}\nMACOS_BUILD_NUMBER={build}\n')
-          PYTHON
-      - uses: actions/download-artifact@v4
-        with:
-          name: macos-for-signing
-          path: unsigned
-      - name: Import signing identity into a temporary keychain
-        env:
-          CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
-          CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
-          APP_PROFILE: ${{ secrets.MACOS_APP_PROFILE_BASE64 }}
-          WIDGET_PROFILE: ${{ secrets.MACOS_WIDGET_PROFILE_BASE64 }}
-          NOTARY_KEY: ${{ secrets.NOTARY_KEY_P8 }}
-          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
-          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
-        run: |
-          set -euo pipefail
-          for credential in CERTIFICATE CERTIFICATE_PASSWORD APP_PROFILE WIDGET_PROFILE NOTARY_KEY NOTARY_KEY_ID NOTARY_ISSUER_ID; do
-            if [ -z "${!credential}" ]; then
-              echo "::error::Missing signing credential: $credential"
-              exit 1
-            fi
-          done
-          umask 077
-          mkdir -p "$RUNNER_TEMP/signing"
-          python3 - <<'PY'
-          import base64, os, pathlib
-          p = pathlib.Path(os.environ['RUNNER_TEMP']) / 'signing'
-          for env, name in [('CERTIFICATE', 'identity.p12'), ('APP_PROFILE', 'app.provisionprofile'), ('WIDGET_PROFILE', 'widget.provisionprofile')]:
-              if not os.environ[env]:
-                  raise ValueError(f'Missing signing credential: {env}')
-              (p / name).write_bytes(base64.b64decode(os.environ[env], validate=True))
-          if not os.environ['NOTARY_KEY']:
-              raise ValueError('Missing notarization key')
-          (p / 'AuthKey.p8').write_text(os.environ['NOTARY_KEY'])
-          PY
-          keychain_password=$(openssl rand -hex 32)
-          echo "::add-mask::$keychain_password"
-          security create-keychain -p "$keychain_password" "$RUNNER_TEMP/signing/release.keychain-db"
-          security set-keychain-settings -lut 7200 "$RUNNER_TEMP/signing/release.keychain-db"
-          security unlock-keychain -p "$keychain_password" "$RUNNER_TEMP/signing/release.keychain-db"
-          security import "$RUNNER_TEMP/signing/identity.p12" -P "$CERTIFICATE_PASSWORD" -k "$RUNNER_TEMP/signing/release.keychain-db" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$keychain_password" "$RUNNER_TEMP/signing/release.keychain-db" >/dev/null
-          security list-keychains -d user -s "$RUNNER_TEMP/signing/release.keychain-db"
-          ditto -x -k unsigned/Bugaoshan-unsigned.zip unsigned
-      - name: Sign, notarize, staple and assess app and DMG
-        env:
-          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
-          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
-        run: |
-          python3 tool/macos_dmg.py sign --bundle unsigned/不高山上.app --source . \
-            --tag "$SOURCE_TAG" --sha "$SOURCE_SHA" --version "$BUILD_NAME" --build "$BUILD_NUMBER" \
-            --keychain "$RUNNER_TEMP/signing/release.keychain-db" \
-            --app-profile "$RUNNER_TEMP/signing/app.provisionprofile" \
-            --widget-profile "$RUNNER_TEMP/signing/widget.provisionprofile" \
-            --notary-key "$RUNNER_TEMP/signing/AuthKey.p8" --output macos-release
-      - name: Upload verified notarized release
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-release
-          path: macos-release/*
-          if-no-files-found: error
-      - name: Remove temporary private keys
-        if: always()
-        run: |
-          security delete-keychain "$RUNNER_TEMP/signing/release.keychain-db" || true
-          rm -rf "$RUNNER_TEMP/signing"
-
   validate-macos:
     name: macOS universal build validation
-    if: inputs.signed_release != true
     runs-on: macos-15
     timeout-minutes: 45
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
       PUB_HOSTED_URL: https://pub.flutter-io.cn
       COCOAPODS_DISABLE_STATS: 'true'
-      MACOS_BUILD_NAME: ${{ inputs.build_name }}
-      MACOS_BUILD_NUMBER: ${{ inputs.build_number }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -214,7 +34,7 @@ jobs:
           channel: stable
           cache: true
       - name: Compile and verify app and widget for arm64 and x86_64
-        run: bash tool/macos_distribution.sh unsigned
+        run: bash tool/validate_macos.sh unsigned
       - name: Upload unsigned validation bundle (not a public release)
         uses: actions/upload-artifact@v4
         with:

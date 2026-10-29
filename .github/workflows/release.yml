@@ -64,19 +64,6 @@ jobs:
           INPUT_VERSION_OVERRIDE: ${{ github.event.inputs.version_override || '' }}
         run: python3 .github/scripts/resolve_release_version.py
 
-      - name: Require main or preview for protected macOS signing
-        if: vars.MACOS_SIGNING_ENABLED == 'true' && steps.resolve.outputs.should_release == 'true'
-        env:
-          RELEASE_REF: ${{ github.ref }}
-        run: |
-          case "$RELEASE_REF" in
-            refs/heads/main|refs/heads/preview) ;;
-            *)
-              echo "::error::macOS signing requires main or preview. Run Release Pipeline on that branch to create the next release."
-              exit 1
-              ;;
-          esac
-
       - name: Tag commit in repository (if new branch release)
         if: steps.resolve.outputs.should_release == 'true' && github.ref_type != 'tag'
         run: |
@@ -121,28 +108,9 @@ jobs:
     with:
       version: ${{ needs.resolve-metadata.outputs.tag }}
 
-  build-macos:
-    name: macOS Build
-    needs: resolve-metadata
-    if: needs.resolve-metadata.outputs.should_release == 'true' || needs.resolve-metadata.outputs.build_only == 'true'
-    uses: ./.github/workflows/build-macos.yml
-    with:
-      build_name: ${{ needs.resolve-metadata.outputs.build_version }}
-      build_number: ${{ needs.resolve-metadata.outputs.build_number }}
-      release_tag: ${{ needs.resolve-metadata.outputs.tag }}
-      signed_release: ${{ vars.MACOS_SIGNING_ENABLED == 'true' && needs.resolve-metadata.outputs.should_release == 'true' }}
-    secrets:
-      MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
-      MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
-      MACOS_APP_PROFILE_BASE64: ${{ secrets.MACOS_APP_PROFILE_BASE64 }}
-      MACOS_WIDGET_PROFILE_BASE64: ${{ secrets.MACOS_WIDGET_PROFILE_BASE64 }}
-      NOTARY_KEY_P8: ${{ secrets.NOTARY_KEY_P8 }}
-      NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
-      NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
-
   publish-release:
     name: Publish Release
-    needs: [resolve-metadata, build-android, build-windows, build-linux, build-macos]
+    needs: [resolve-metadata, build-android, build-windows, build-linux]
     if: needs.resolve-metadata.outputs.should_release == 'true'
     runs-on: ubuntu-latest
     permissions:
@@ -169,13 +137,6 @@ jobs:
         with:
           name: linux-release
           path: linux-release
-
-      - name: Download verified notarized macOS DMG
-        if: vars.MACOS_SIGNING_ENABLED == 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: macos-release
-          path: macos-release
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -243,13 +204,11 @@ jobs:
           REPO: ${{ github.server_url }}/${{ github.repository }}
           CHANGELOG: ${{ steps.changelog.outputs.changelog }}
           PREV: ${{ steps.vars.outputs.prev }}
-          MACOS_SIGNED: ${{ vars.MACOS_SIGNING_ENABLED }}
 
       - name: Prepare release files
         run: python .github/scripts/release_prepare.py
         env:
           VERSION: ${{ steps.vars.outputs.tag }}
-          MACOS_SIGNED: ${{ vars.MACOS_SIGNING_ENABLED }}
 
       - name: Create Release and Upload Assets
         run: |
@@ -274,9 +233,6 @@ jobs:
             "${GOPTS[@]}"
 
           assets=(bugaoshan_*.apk bugaoshan_*.zip bugaoshan_*.tar.gz)
-          if [ "$MACOS_SIGNED" = true ]; then
-            assets+=(bugaoshan_*.dmg macos-manifest.json)
-          fi
           gh release upload "$TAG" "${assets[@]}"
 
           if [ "$IS_PRERELEASE" = "true" ]; then
@@ -287,4 +243,3 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BODY: ${{ steps.release_body.outputs.body }}
-          MACOS_SIGNED: ${{ vars.MACOS_SIGNING_ENABLED }}
