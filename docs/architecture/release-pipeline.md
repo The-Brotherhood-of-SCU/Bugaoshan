@@ -51,7 +51,7 @@ branch-policy 只做一条硬校验：**`main` 只能接收来自 `preview` 的 
 3. **合并进 `preview`**：push 事件同时触发 pre-flight 重跑与 release.yml preview 通道——
    - 预览 tag 与 pubspec 解耦：脚本取「最新正式 tag」严格递增 Z 位（X、Y 不动），推导 `vX.Y.Z-preview`（首次）或递增序号 `vX.Y.Z-preview.N`（如上一正式版 v2.5.1 → v2.5.2-preview.2）；
    - workflow 自动打 tag（`resolve-metadata` job，需要 `contents: write`，推送失败立即终止本次发布）；
-   - `build-android.yml`（universal + split-per-ABI，混淆，JDK 21）、`build-windows.yml`（zip）、`build-linux.yml`（Linux x64 tar.gz，`debian:13` 容器）与 `build-macos.yml`（未签名 universal 验证包）并行构建；Mac 商店包单独签名上传，验证包不进入 GitHub Release；
+   - `build-android.yml`（universal + split-per-ABI，混淆，JDK 21）、`build-windows.yml`（zip）、`build-linux.yml`（Linux x64 tar.gz，`debian:13` 容器）并行构建；macOS 发布完全在个人 fork 运行，不属于主仓库发布依赖；
    - 发布走 **Draft → 上传产物 → Publish** 顺序，兼容仓库的不可变 Release 策略，标记为 prerelease；
    - 预览版的 release notes 取 `CHANGELOG.md` 第一个章节（约定为 `[Unreleased]`；该取法的已知问题见 §4.8），对比范围为上一个**正式** tag。tag 在构建开始前就已推送，构建/发布失败时 tag 会留存（见 §4.12）。
 4. **周期内迭代**：后续变更继续以 PR 合入 `preview`，预览版序号自动递增（`.2`、`.3`…）。周期内 `pubspec.yaml` 的版本号保持上一正式版不变，预览产物的 versionName 与 tag 不同名是设计使然。
@@ -172,7 +172,7 @@ pre-flight 的 `unittest discover -s .github/scripts/` 会把 `tests/` 子目录
 | `.github/workflows/build-android.yml` | Android 的 PR 编译验证、手动构建与发布构建复用；PR 触发构建为未签名 release APK，不依赖发布 keystore |
 | `.github/workflows/build-windows.yml` | Windows 的 PR 编译验证、手动构建与发布构建复用 |
 | `.github/workflows/build-linux.yml` | Linux x64 tar.gz 的发布构建复用；在 `debian:13` 容器内构建，无 PR 触发 |
-| `.github/workflows/build-macos.yml` | macOS 未签名 universal 验证构建，支持 PR / 手动触发与发布流程复用 |
+| `.github/workflows/build-macos.yml` | macOS 未签名 universal 验证构建，仅支持 PR / 手动触发，不参与发布流程 |
 | `.github/actions/setup/action.yml` | 公共环境：钉版 Flutter、镜像 pub get、代码生成、git 元数据 |
 | `.github/scripts/resolve_release_version.py` | 通道判定、tag 推导、幂等守卫 |
 | `.github/scripts/release_tags.py` / `release_changelog.py` / `release_body.py` / `release_prepare.py` | 发布说明与产物整理 |
