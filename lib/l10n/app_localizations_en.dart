@@ -268,7 +268,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get followSystem => 'Follow System';
 
   @override
-  String get modifyLanguage => 'Modify Language';
+  String get modifyLanguage => 'Language';
 
   @override
   String get current => 'Current';
@@ -402,7 +402,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Affects only the automatic checks on the home and about pages. The test page always checks both channels.';
 
   @override
-  String get networkProxy => 'Network Proxy';
+  String get networkProxy => 'Network Acceleration';
 
   @override
   String get ghProxyMirror => 'GitHub Mirror';
@@ -2389,12 +2389,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'This feature is not supported on this platform';
 
   @override
-  String get newIconSubtitle => 'Bugaoshan New Icon';
-
-  @override
-  String get oldIconSubtitle => 'Bugaoshan Classic Icon';
-
-  @override
   String get close => 'Close';
 
   @override
@@ -3448,9 +3442,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reminderQuietEnabled => 'Quiet hours';
-
-  @override
-  String get reminderQuietHint => 'Reminders inside this window are dropped';
 
   @override
   String get reminderQuietStart => 'From';

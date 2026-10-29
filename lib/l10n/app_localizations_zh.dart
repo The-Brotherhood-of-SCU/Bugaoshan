@@ -255,7 +255,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get followSystem => '跟随系统';
 
   @override
-  String get modifyLanguage => '修改语言';
+  String get modifyLanguage => '语言';
 
   @override
   String get current => '当前';
@@ -384,7 +384,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get usePreviewUpdateSourceHint => '仅影响首页和关于页面的自动检查；测试页面始终同时检查两个渠道。';
 
   @override
-  String get networkProxy => '网络代理';
+  String get networkProxy => '网络加速';
 
   @override
   String get ghProxyMirror => 'GitHub 加速';
@@ -2323,12 +2323,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get featureNotSupported => '当前平台不支持此功能';
 
   @override
-  String get newIconSubtitle => 'Bugaoshan 新图标';
-
-  @override
-  String get oldIconSubtitle => 'Bugaoshan 经典图标';
-
-  @override
   String get close => '关闭';
 
   @override
@@ -3332,9 +3326,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reminderQuietEnabled => '免打扰时段';
-
-  @override
-  String get reminderQuietHint => '落在该时段内的提醒会被丢弃';
 
   @override
   String get reminderQuietStart => '开始';

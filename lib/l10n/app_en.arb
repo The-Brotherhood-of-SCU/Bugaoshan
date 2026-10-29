@@ -107,7 +107,7 @@
   "campusNetworkRequiredAtNight": "Access is restricted to campus network during 23:00-6:00. Please connect to campus Wi-Fi or use the school VPN.",
   "softwareSetting": "Software Setting",
   "followSystem": "Follow System",
-  "modifyLanguage": "Modify Language",
+  "modifyLanguage": "Language",
   "current": "Current",
   "animationDuration": "Duration",
   "confirm": "Confirm",
@@ -163,7 +163,7 @@
     "description": "Toggle in the test page that makes the home/about update checks target the preview release channel."
   },
   "usePreviewUpdateSourceHint": "Affects only the automatic checks on the home and about pages. The test page always checks both channels.",
-  "networkProxy": "Network Proxy",
+  "networkProxy": "Network Acceleration",
   "@networkProxy": {
     "description": "Settings entry title for GitHub mirror / proxy configuration."
   },
@@ -1025,8 +1025,6 @@
   },
   "iconSwitchNotSupported": "Dynamic icon switching is not supported on this platform",
   "featureNotSupported": "This feature is not supported on this platform",
-  "newIconSubtitle": "Bugaoshan New Icon",
-  "oldIconSubtitle": "Bugaoshan Classic Icon",
   "close": "Close",
   "onVacation": "On Vacation",
   "vacationBadge": "Vacation",
@@ -2124,7 +2122,6 @@
   "reminderLeadTimeMultiHint": "You can pick more than one. Each adds a separate notification.",
   "reminderQuietSection": "Quiet hours",
   "reminderQuietEnabled": "Quiet hours",
-  "reminderQuietHint": "Reminders inside this window are dropped",
   "reminderQuietStart": "From",
   "reminderQuietEnd": "To",
   "reminderStatusSection": "Scheduling status",

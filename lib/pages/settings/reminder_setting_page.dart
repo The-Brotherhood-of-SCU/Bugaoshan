@@ -418,12 +418,6 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
                                     horizontal: 20,
                                   ),
                                   title: Text(l10n.reminderQuietEnabled),
-                                  subtitle: Text(
-                                    l10n.reminderQuietHint,
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodySmall,
-                                  ),
                                   value: enabled,
                                   onChanged: (on) {
                                     if (on) {

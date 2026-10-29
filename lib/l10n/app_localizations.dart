@@ -580,7 +580,7 @@ abstract class AppLocalizations {
   /// No description provided for @modifyLanguage.
   ///
   /// In en, this message translates to:
-  /// **'Modify Language'**
+  /// **'Language'**
   String get modifyLanguage;
 
   /// No description provided for @current.
@@ -826,7 +826,7 @@ abstract class AppLocalizations {
   /// Settings entry title for GitHub mirror / proxy configuration.
   ///
   /// In en, this message translates to:
-  /// **'Network Proxy'**
+  /// **'Network Acceleration'**
   String get networkProxy;
 
   /// Toggle that routes GitHub resource downloads through the gh-proxy mirror.
@@ -4549,18 +4549,6 @@ abstract class AppLocalizations {
   /// **'This feature is not supported on this platform'**
   String get featureNotSupported;
 
-  /// No description provided for @newIconSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Bugaoshan New Icon'**
-  String get newIconSubtitle;
-
-  /// No description provided for @oldIconSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Bugaoshan Classic Icon'**
-  String get oldIconSubtitle;
-
   /// No description provided for @close.
   ///
   /// In en, this message translates to:
@@ -6408,12 +6396,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Quiet hours'**
   String get reminderQuietEnabled;
-
-  /// No description provided for @reminderQuietHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Reminders inside this window are dropped'**
-  String get reminderQuietHint;
 
   /// No description provided for @reminderQuietStart.
   ///
