@@ -201,7 +201,7 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
   @override
   Widget build(BuildContext context) {
     if (hasNoWebViewBackend) {
-      return WebViewUnsupportedPage(title: widget.title);
+      return WebViewUnsupportedPage(title: widget.title, url: widget.url);
     }
     return _buildWebViewPage(context);
   }

@@ -54,7 +54,7 @@ Linux 端不再提供原生 WebView（见 [ADR-0010](../decisions/0010-remove-li
 - [`linux/CMakeLists.txt`](../../linux/CMakeLists.txt) 不再需要从 `PLUGIN_BUNDLED_LIBRARIES` 过滤 WPE 库（ADR-0004 的过滤块已删除）；
 - 构建系统不再需要 WPE WebKit 2.0、WPEBackend-fdo、libwpe 开发包。
 
-依赖 WebView 的功能在 Linux 上显示 [`WebViewUnsupportedPage`](../../lib/widgets/webview/webview_unsupported_page.dart)：三个通知来源（教务处 / 学工部 / 团委）、志愿四川、研究生课表导入的「应急网页抓取」。平台判据是 `hasNoWebViewBackend`；研究生课表导入因此只保留直连路径。
+依赖 WebView 的功能在 Linux 上显示 [`WebViewUnsupportedPage`](../../lib/widgets/webview/webview_unsupported_page.dart) 的浏览器交接页：三个通知来源（教务处 / 学工部 / 团委）和志愿四川会把目标地址交给系统默认浏览器打开，页面同时提供复制链接作为兜底；登录与附件下载都在浏览器中完成。平台判据是 `hasNoWebViewBackend`；研究生课表导入因此只保留直连路径。
 
 源码构建所需的主要开发组件列在 [`CONTRIBUTING.md`](../../CONTRIBUTING.md)：GTK 3、libsecret、libepoxy 和 Wayland。
 
@@ -120,7 +120,7 @@ debian/changelog
 1. 根据最终 ELF `DT_NEEDED` 声明准确的运行依赖，不能直接照抄 sid 开发包名。
 2. 把 bundle 安装到固定的 `/usr/lib` 或 `/opt` 位置，并提供 `/usr/bin/bugaoshan`。
 3. 安装 `packaging/linux/` 的 desktop、metainfo 和图标。
-4. 确认 bundle 中不存在网页视图原生库残留，且依赖 WebView 的页面在 Linux 上显示不支持提示。
+4. 确认 bundle 中不存在网页视图原生库残留，且依赖 WebView 的页面在 Linux 上显示系统浏览器交接页。
 5. 定义升级、卸载及 desktop/icon cache 刷新行为。
 
 ## 8. 发布职责矩阵
@@ -153,4 +153,4 @@ debian/changelog
 3. 在不含构建开发包的干净目标环境验证运行时依赖。
 4. 同步 source/generated Flatpak manifest、应用 commit、Flutter 版本和 AppStream release。
 5. 若新增正式 AUR 或 Debian 渠道，同时更新 release workflow、产物命名、下载正文和本文职责矩阵。
-6. 在 Linux 上打开通知页面，确认显示「当前平台不支持此功能」而不是空白页或异常。
+6. 在 Linux 上打开通知页面，确认显示「用浏览器打开此页面」交接页，且主按钮能拉起系统默认浏览器、复制链接可用。

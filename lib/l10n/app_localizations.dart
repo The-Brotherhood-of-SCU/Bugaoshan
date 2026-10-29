@@ -127,12 +127,6 @@ abstract class AppLocalizations {
   /// **'Your campus assistant: schedules, grades and campus services in one place'**
   String get wizardWelcomeDesc;
 
-  /// Section title for the onboarding wizard (short). Shown in the Test page and headings.
-  ///
-  /// In en, this message translates to:
-  /// **'Wizard'**
-  String get wizard;
-
   /// Title for the action that resets the onboarding/wizard status so the wizard runs again.
   ///
   /// In en, this message translates to:
@@ -439,12 +433,6 @@ abstract class AppLocalizations {
   /// **'Select Building'**
   String get selectBuilding;
 
-  /// No description provided for @allBuildings.
-  ///
-  /// In en, this message translates to:
-  /// **'All Buildings'**
-  String get allBuildings;
-
   /// No description provided for @seats.
   ///
   /// In en, this message translates to:
@@ -504,12 +492,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Borrowable'**
   String get classroomCanBorrow;
-
-  /// No description provided for @classroomCannotBorrow.
-  ///
-  /// In en, this message translates to:
-  /// **'Not Borrowable'**
-  String get classroomCannotBorrow;
 
   /// No description provided for @classroomRemark.
   ///
@@ -583,12 +565,6 @@ abstract class AppLocalizations {
   /// **'Access is restricted to campus network during 23:00-6:00. Please connect to campus Wi-Fi or use the school VPN.'**
   String get campusNetworkRequiredAtNight;
 
-  /// No description provided for @appOnly.
-  ///
-  /// In en, this message translates to:
-  /// **'Available on App only'**
-  String get appOnly;
-
   /// No description provided for @softwareSetting.
   ///
   /// In en, this message translates to:
@@ -604,7 +580,7 @@ abstract class AppLocalizations {
   /// No description provided for @modifyLanguage.
   ///
   /// In en, this message translates to:
-  /// **'Modify Language'**
+  /// **'Language'**
   String get modifyLanguage;
 
   /// No description provided for @current.
@@ -637,12 +613,6 @@ abstract class AppLocalizations {
   /// **'Current Animation Duration: {value} ms'**
   String currentAnimationDuration(Object value);
 
-  /// No description provided for @animationDurationUpdated.
-  ///
-  /// In en, this message translates to:
-  /// **'Animation Duration updated to {value} ms'**
-  String animationDurationUpdated(Object value);
-
   /// No description provided for @animationDurationHint.
   ///
   /// In en, this message translates to:
@@ -666,12 +636,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Theme Color'**
   String get themeColor;
-
-  /// No description provided for @changeThemeColor.
-  ///
-  /// In en, this message translates to:
-  /// **'Change Theme Color'**
-  String get changeThemeColor;
 
   /// No description provided for @confirmButton.
   ///
@@ -739,24 +703,6 @@ abstract class AppLocalizations {
   /// **'Dark'**
   String get themeModeDark;
 
-  /// No description provided for @blockPicker.
-  ///
-  /// In en, this message translates to:
-  /// **'Block'**
-  String get blockPicker;
-
-  /// No description provided for @materialPicker.
-  ///
-  /// In en, this message translates to:
-  /// **'Material'**
-  String get materialPicker;
-
-  /// No description provided for @advancedPicker.
-  ///
-  /// In en, this message translates to:
-  /// **'Advanced'**
-  String get advancedPicker;
-
   /// No description provided for @about.
   ///
   /// In en, this message translates to:
@@ -768,12 +714,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dev Team'**
   String get developmentTeam;
-
-  /// No description provided for @projectInfo.
-  ///
-  /// In en, this message translates to:
-  /// **'Project Info'**
-  String get projectInfo;
 
   /// No description provided for @appName.
   ///
@@ -798,24 +738,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Explore everything, all on the Bugaoshan'**
   String get appDescription;
-
-  /// No description provided for @contactUs.
-  ///
-  /// In en, this message translates to:
-  /// **'Contact Us'**
-  String get contactUs;
-
-  /// No description provided for @developedBy.
-  ///
-  /// In en, this message translates to:
-  /// **'Developed by {team}'**
-  String developedBy(Object team);
-
-  /// No description provided for @externalResources.
-  ///
-  /// In en, this message translates to:
-  /// **'External Resources'**
-  String get externalResources;
 
   /// No description provided for @projectRepository.
   ///
@@ -858,12 +780,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Already on Latest Version'**
   String get noUpdateAvailable;
-
-  /// No description provided for @goToReleases.
-  ///
-  /// In en, this message translates to:
-  /// **'Go to Releases'**
-  String get goToReleases;
 
   /// No description provided for @startUpdate.
   ///
@@ -910,7 +826,7 @@ abstract class AppLocalizations {
   /// Settings entry title for GitHub mirror / proxy configuration.
   ///
   /// In en, this message translates to:
-  /// **'Network Proxy'**
+  /// **'Network Acceleration'**
   String get networkProxy;
 
   /// Toggle that routes GitHub resource downloads through the gh-proxy mirror.
@@ -967,12 +883,6 @@ abstract class AppLocalizations {
   /// **'Downloading... {percent}%'**
   String notificationDownloading(int percent);
 
-  /// No description provided for @notificationInstalling.
-  ///
-  /// In en, this message translates to:
-  /// **'Installing...'**
-  String get notificationInstalling;
-
   /// No description provided for @notificationUpdateFailed.
   ///
   /// In en, this message translates to:
@@ -1021,18 +931,6 @@ abstract class AppLocalizations {
   /// **'Developer Page'**
   String get devPage;
 
-  /// No description provided for @forceUpdate.
-  ///
-  /// In en, this message translates to:
-  /// **'Update to Latest (Include Preview)'**
-  String get forceUpdate;
-
-  /// No description provided for @appLogTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Runtime Log'**
-  String get appLogTitle;
-
   /// No description provided for @viewAppLog.
   ///
   /// In en, this message translates to:
@@ -1062,12 +960,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Schedule Management'**
   String get scheduleManagement;
-
-  /// No description provided for @globalSetting.
-  ///
-  /// In en, this message translates to:
-  /// **'Global Setting'**
-  String get globalSetting;
 
   /// No description provided for @noSchedule.
   ///
@@ -1369,12 +1261,6 @@ abstract class AppLocalizations {
   /// **'No teaching week is available during vacation. Schedule unchanged.'**
   String get autoFetchCurrentWeekOnVacation;
 
-  /// No description provided for @fetchingCurrentWeek.
-  ///
-  /// In en, this message translates to:
-  /// **'Fetching...'**
-  String get fetchingCurrentWeek;
-
   /// No description provided for @loginRequired.
   ///
   /// In en, this message translates to:
@@ -1501,18 +1387,6 @@ abstract class AppLocalizations {
   /// **'Extract Color from Background'**
   String get extractColorFromBackgroundImage;
 
-  /// No description provided for @themeColorAutoExtractedHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Theme color extracted from background image. Go to Software Setting -> Theme Color to modify.'**
-  String get themeColorAutoExtractedHint;
-
-  /// No description provided for @noBackgroundImageSet.
-  ///
-  /// In en, this message translates to:
-  /// **'Please set a background image first'**
-  String get noBackgroundImageSet;
-
   /// No description provided for @removeBackgroundImage.
   ///
   /// In en, this message translates to:
@@ -1603,12 +1477,6 @@ abstract class AppLocalizations {
   /// **'Custom Color'**
   String get customColor;
 
-  /// No description provided for @noCourseThisWeek.
-  ///
-  /// In en, this message translates to:
-  /// **'No courses this week'**
-  String get noCourseThisWeek;
-
   /// No description provided for @timeConflict.
   ///
   /// In en, this message translates to:
@@ -1626,12 +1494,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This field is required'**
   String get fieldRequired;
-
-  /// No description provided for @invalidWeekRange.
-  ///
-  /// In en, this message translates to:
-  /// **'End week must be greater than or equal to start week'**
-  String get invalidWeekRange;
 
   /// No description provided for @duplicateScheduleName.
   ///
@@ -1716,12 +1578,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Imported Schedule'**
   String get importedScheduleDefaultName;
-
-  /// No description provided for @importNameConflictHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Name \"{name}\" already exists, please rename:'**
-  String importNameConflictHint(Object name);
 
   /// No description provided for @importNameSuffix.
   ///
@@ -1926,12 +1782,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} weeks'**
   String totalWeeksSubtitle(Object count);
-
-  /// No description provided for @invalidSectionRange.
-  ///
-  /// In en, this message translates to:
-  /// **'End section must be greater than start section'**
-  String get invalidSectionRange;
 
   /// No description provided for @crossPeriodError.
   ///
@@ -2167,12 +2017,6 @@ abstract class AppLocalizations {
   /// **'View and analyze your academic performance'**
   String get gradesStatsDesc;
 
-  /// No description provided for @gradesStatsComingSoon.
-  ///
-  /// In en, this message translates to:
-  /// **'Coming soon'**
-  String get gradesStatsComingSoon;
-
   /// No description provided for @schemeScores.
   ///
   /// In en, this message translates to:
@@ -2184,12 +2028,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Passing Scores'**
   String get passingScores;
-
-  /// No description provided for @gradesLoginRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Please complete SCU Unified Identity login in the Profile page first'**
-  String get gradesLoginRequired;
 
   /// No description provided for @gradesNoData.
   ///
@@ -2250,12 +2088,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Fetch Grades'**
   String get gradesGet;
-
-  /// No description provided for @gradesRetry.
-  ///
-  /// In en, this message translates to:
-  /// **'Retry'**
-  String get gradesRetry;
 
   /// No description provided for @gpa.
   ///
@@ -2353,18 +2185,6 @@ abstract class AppLocalizations {
   /// **'{count} courses · {credits} cr.'**
   String termPassedSummary(Object count, Object credits);
 
-  /// No description provided for @sessionExpiredTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Session Expired'**
-  String get sessionExpiredTitle;
-
-  /// No description provided for @sessionExpiredMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Your login session has expired. Please login again to continue using this feature.'**
-  String get sessionExpiredMessage;
-
   /// No description provided for @sessionExpired.
   ///
   /// In en, this message translates to:
@@ -2376,12 +2196,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Undergraduate academic session unavailable. Graduate accounts: use the Graduate section under Campus. Undergraduate accounts: sign in again and retry.'**
   String get undergradDataOnly;
-
-  /// No description provided for @relogin.
-  ///
-  /// In en, this message translates to:
-  /// **'Login Again'**
-  String get relogin;
 
   /// No description provided for @trainProgram.
   ///
@@ -2424,24 +2238,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No training program data'**
   String get trainProgramNoData;
-
-  /// No description provided for @trainProgramLoading.
-  ///
-  /// In en, this message translates to:
-  /// **'Loading...'**
-  String get trainProgramLoading;
-
-  /// No description provided for @trainProgramLoadFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Load failed'**
-  String get trainProgramLoadFailed;
-
-  /// No description provided for @trainProgramName.
-  ///
-  /// In en, this message translates to:
-  /// **'Program Name'**
-  String get trainProgramName;
 
   /// No description provided for @trainProgramMajor.
   ///
@@ -2587,12 +2383,6 @@ abstract class AppLocalizations {
   /// **'Experiment Hours'**
   String get trainProgramExperimentHours;
 
-  /// No description provided for @trainProgramLoginRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Please complete SCU Unified Identity login in the Profile page first'**
-  String get trainProgramLoginRequired;
-
   /// No description provided for @planCompletion.
   ///
   /// In en, this message translates to:
@@ -2719,12 +2509,6 @@ abstract class AppLocalizations {
   /// **'Enter QQ email to receive the report'**
   String get ccylEmailHint;
 
-  /// No description provided for @ccylExportSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Report sent to email'**
-  String get ccylExportSuccess;
-
   /// No description provided for @ccylSearchHint.
   ///
   /// In en, this message translates to:
@@ -2827,12 +2611,6 @@ abstract class AppLocalizations {
   /// **'Current value'**
   String get ccylCurrentValue;
 
-  /// No description provided for @ccylLoginRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Please complete SCU Unified Identity login in the Profile page first'**
-  String get ccylLoginRequired;
-
   /// No description provided for @ccylBindRequired.
   ///
   /// In en, this message translates to:
@@ -2850,12 +2628,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Bind your Second Classroom account to view activities'**
   String get ccylBindDesc;
-
-  /// No description provided for @ccylOpenOAuth.
-  ///
-  /// In en, this message translates to:
-  /// **'Open OAuth Authorization'**
-  String get ccylOpenOAuth;
 
   /// No description provided for @ccylDoBind.
   ///
@@ -3175,18 +2947,6 @@ abstract class AppLocalizations {
   /// **'IP Address'**
   String get networkDeviceIp;
 
-  /// No description provided for @networkDeviceLogout.
-  ///
-  /// In en, this message translates to:
-  /// **'Logout'**
-  String get networkDeviceLogout;
-
-  /// No description provided for @networkDeviceLogoutConfirm.
-  ///
-  /// In en, this message translates to:
-  /// **'Are you sure you want to logout all devices?'**
-  String get networkDeviceLogoutConfirm;
-
   /// No description provided for @networkDeviceForceOffline.
   ///
   /// In en, this message translates to:
@@ -3198,18 +2958,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure you want to offline this device?'**
   String get networkDeviceConfirmOffline;
-
-  /// No description provided for @networkDeviceOfflineSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Operation successful'**
-  String get networkDeviceOfflineSuccess;
-
-  /// No description provided for @networkDeviceAuthFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Authentication failed'**
-  String get networkDeviceAuthFailed;
 
   /// No description provided for @networkDeviceOperationSuccess.
   ///
@@ -3481,12 +3229,6 @@ abstract class AppLocalizations {
   /// **'Select Unit'**
   String get selectUnit;
 
-  /// No description provided for @inputInfo.
-  ///
-  /// In en, this message translates to:
-  /// **'Input Info'**
-  String get inputInfo;
-
   /// No description provided for @stepCampus.
   ///
   /// In en, this message translates to:
@@ -3523,12 +3265,6 @@ abstract class AppLocalizations {
   /// **'Name'**
   String get cusName;
 
-  /// No description provided for @cusNameHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter name'**
-  String get cusNameHint;
-
   /// No description provided for @roomNumber.
   ///
   /// In en, this message translates to:
@@ -3547,12 +3283,6 @@ abstract class AppLocalizations {
   /// **'Price per unit'**
   String get pricePerUnit;
 
-  /// No description provided for @balanceQueryLoginRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Please complete SCU Unified Identity login in the Profile page first'**
-  String get balanceQueryLoginRequired;
-
   /// No description provided for @balanceQueryNoBinding.
   ///
   /// In en, this message translates to:
@@ -3565,29 +3295,11 @@ abstract class AppLocalizations {
   /// **'Usage Trend'**
   String get balanceTrend;
 
-  /// No description provided for @balanceTrendTitleElectric.
-  ///
-  /// In en, this message translates to:
-  /// **'Lighting Electricity Trend'**
-  String get balanceTrendTitleElectric;
-
-  /// No description provided for @balanceTrendTitleAc.
-  ///
-  /// In en, this message translates to:
-  /// **'AC Electricity Trend'**
-  String get balanceTrendTitleAc;
-
   /// No description provided for @balanceTrendDailyAvgCost.
   ///
   /// In en, this message translates to:
   /// **'Daily Avg Cost'**
   String get balanceTrendDailyAvgCost;
-
-  /// No description provided for @balanceTrendDailyAvgKwh.
-  ///
-  /// In en, this message translates to:
-  /// **'Daily Avg Consumption'**
-  String get balanceTrendDailyAvgKwh;
 
   /// No description provided for @balanceTrendTotalCost.
   ///
@@ -3660,12 +3372,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Custom'**
   String get balanceTrendTimeRangeCustom;
-
-  /// No description provided for @balanceTrendChangeRange.
-  ///
-  /// In en, this message translates to:
-  /// **'Change Range'**
-  String get balanceTrendChangeRange;
 
   /// No description provided for @balanceTrendCustomStart.
   ///
@@ -3787,36 +3493,6 @@ abstract class AppLocalizations {
   /// **'View SCU Academic Affairs notices'**
   String get campusNoticesDesc;
 
-  /// No description provided for @campusNoticesSearchHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Search notice title'**
-  String get campusNoticesSearchHint;
-
-  /// No description provided for @campusNoticesAllDates.
-  ///
-  /// In en, this message translates to:
-  /// **'All dates'**
-  String get campusNoticesAllDates;
-
-  /// No description provided for @campusNoticesClearDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear filter'**
-  String get campusNoticesClearDate;
-
-  /// No description provided for @campusNoticesLoadFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Load failed, please check network'**
-  String get campusNoticesLoadFailed;
-
-  /// No description provided for @campusNoticesOpenOriginal.
-  ///
-  /// In en, this message translates to:
-  /// **'View in browser'**
-  String get campusNoticesOpenOriginal;
-
   /// No description provided for @campusNoticesExternalLink.
   ///
   /// In en, this message translates to:
@@ -3828,18 +3504,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open in browser'**
   String get campusNoticesOpenInBrowser;
-
-  /// No description provided for @campusNoticesSearch.
-  ///
-  /// In en, this message translates to:
-  /// **'Search'**
-  String get campusNoticesSearch;
-
-  /// No description provided for @campusNoticesSearchResults.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =0{No results} other{{count} results}}'**
-  String campusNoticesSearchResults(int count);
 
   /// No description provided for @campusNoticesConfirmOpenLink.
   ///
@@ -3870,12 +3534,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap to retry'**
   String get userInfoRetry;
-
-  /// No description provided for @loginToViewUserInfo.
-  ///
-  /// In en, this message translates to:
-  /// **'Login to view user info'**
-  String get loginToViewUserInfo;
 
   /// No description provided for @labelBookBorrowCount.
   ///
@@ -3918,12 +3576,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reset dock bar to default configuration?'**
   String get dockResetConfirm;
-
-  /// No description provided for @cannotDeleteProfile.
-  ///
-  /// In en, this message translates to:
-  /// **'Cannot be deleted'**
-  String get cannotDeleteProfile;
 
   /// No description provided for @dockLabelCourse.
   ///
@@ -4033,12 +3685,6 @@ abstract class AppLocalizations {
   /// **'Total Score'**
   String get fitnessTestTotalScore;
 
-  /// No description provided for @fitnessTestGrade.
-  ///
-  /// In en, this message translates to:
-  /// **'Grade'**
-  String get fitnessTestGrade;
-
   /// No description provided for @fitnessTestYear.
   ///
   /// In en, this message translates to:
@@ -4147,12 +3793,6 @@ abstract class AppLocalizations {
   /// **'Pinned'**
   String get fitnessTestSticky;
 
-  /// No description provided for @fitnessTestNoticeDetail.
-  ///
-  /// In en, this message translates to:
-  /// **'Notice Detail'**
-  String get fitnessTestNoticeDetail;
-
   /// No description provided for @dockLabelFitnessTest.
   ///
   /// In en, this message translates to:
@@ -4165,18 +3805,6 @@ abstract class AppLocalizations {
   /// **'Notice'**
   String get dockLabelNotice;
 
-  /// No description provided for @dockLabelNoticeParty.
-  ///
-  /// In en, this message translates to:
-  /// **'XGB'**
-  String get dockLabelNoticeParty;
-
-  /// No description provided for @dockLabelNoticeTuanwei.
-  ///
-  /// In en, this message translates to:
-  /// **'Youth'**
-  String get dockLabelNoticeTuanwei;
-
   /// No description provided for @dockLabelDownloads.
   ///
   /// In en, this message translates to:
@@ -4188,12 +3816,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'User Agreement'**
   String get eulaTitle;
-
-  /// No description provided for @eulaScrollToBottom.
-  ///
-  /// In en, this message translates to:
-  /// **'Please read the entire agreement first'**
-  String get eulaScrollToBottom;
 
   /// No description provided for @eulaAgreeCheckbox.
   ///
@@ -4225,23 +3847,11 @@ abstract class AppLocalizations {
   /// **'After revoking, you will need to agree to the user agreement again to continue using. Are you sure?'**
   String get revokeEulaConfirm;
 
-  /// No description provided for @revokeEulaSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'User agreement revoked'**
-  String get revokeEulaSuccess;
-
   /// No description provided for @eulaAgreedVersion.
   ///
   /// In en, this message translates to:
   /// **'Agreed version v{version}'**
   String eulaAgreedVersion(String version);
-
-  /// No description provided for @addWidgetSection.
-  ///
-  /// In en, this message translates to:
-  /// **'Desktop Widget'**
-  String get addWidgetSection;
 
   /// No description provided for @addWidgetPageTitle.
   ///
@@ -4369,30 +3979,6 @@ abstract class AppLocalizations {
   /// **'Battery optimization is already disabled'**
   String get batteryOptimizationAlreadyDisabled;
 
-  /// No description provided for @batteryOptimizationSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Battery optimization disabled successfully'**
-  String get batteryOptimizationSuccess;
-
-  /// No description provided for @autoSetCurrentWeekTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Auto-set Current Teaching Week'**
-  String get autoSetCurrentWeekTitle;
-
-  /// No description provided for @autoSetCurrentWeekContent.
-  ///
-  /// In en, this message translates to:
-  /// **'Fetch the current teaching week from the academic system and set it automatically?'**
-  String get autoSetCurrentWeekContent;
-
-  /// No description provided for @autoSetCurrentWeekSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Current teaching week set automatically'**
-  String get autoSetCurrentWeekSuccess;
-
   /// No description provided for @share.
   ///
   /// In en, this message translates to:
@@ -4429,18 +4015,6 @@ abstract class AppLocalizations {
   /// **'Download'**
   String get download;
 
-  /// No description provided for @attachmentSaved.
-  ///
-  /// In en, this message translates to:
-  /// **'Attachment saved to: {path}'**
-  String attachmentSaved(String path);
-
-  /// No description provided for @attachmentDownloadFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to download attachment'**
-  String get attachmentDownloadFailed;
-
   /// No description provided for @downloadedAttachments.
   ///
   /// In en, this message translates to:
@@ -4470,12 +4044,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'File deleted'**
   String get fileDeleted;
-
-  /// No description provided for @attachmentSavedTapToOpen.
-  ///
-  /// In en, this message translates to:
-  /// **'Attachment saved, tap to open'**
-  String get attachmentSavedTapToOpen;
 
   /// No description provided for @confirmDelete.
   ///
@@ -4675,12 +4243,6 @@ abstract class AppLocalizations {
   /// **'No schedule data'**
   String get classScheduleInquiryNoSchedule;
 
-  /// No description provided for @classScheduleInquiryDetail.
-  ///
-  /// In en, this message translates to:
-  /// **'Course Details'**
-  String get classScheduleInquiryDetail;
-
   /// No description provided for @classScheduleInquiryFilter.
   ///
   /// In en, this message translates to:
@@ -4843,24 +4405,6 @@ abstract class AppLocalizations {
   /// **'Official Charts'**
   String get originalCalendar;
 
-  /// No description provided for @calendarLoadingData.
-  ///
-  /// In en, this message translates to:
-  /// **'Loading calendar data...'**
-  String get calendarLoadingData;
-
-  /// No description provided for @calendarImportSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Successfully imported {count} events to system calendar'**
-  String calendarImportSuccess(int count);
-
-  /// No description provided for @calendarImportFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to import to system calendar'**
-  String get calendarImportFailed;
-
   /// No description provided for @calendarImportCalendarTitle.
   ///
   /// In en, this message translates to:
@@ -5005,18 +4549,6 @@ abstract class AppLocalizations {
   /// **'This feature is not supported on this platform'**
   String get featureNotSupported;
 
-  /// No description provided for @newIconSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Bugaoshan New Icon'**
-  String get newIconSubtitle;
-
-  /// No description provided for @oldIconSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Bugaoshan Classic Icon'**
-  String get oldIconSubtitle;
-
   /// No description provided for @close.
   ///
   /// In en, this message translates to:
@@ -5154,12 +4686,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Applied {campus} time slot preset'**
   String appliedPreset(String campus);
-
-  /// Label for preset time slot configuration
-  ///
-  /// In en, this message translates to:
-  /// **'Preset'**
-  String get presetLabel;
 
   /// Number of classrooms found, e.g. '12 rooms'
   ///
@@ -5346,6 +4872,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open in browser'**
   String get openInBrowser;
+
+  /// Heading on the desktop fallback page shown when an in-app web view is unavailable
+  ///
+  /// In en, this message translates to:
+  /// **'Open this page in your browser'**
+  String get webViewFallbackTitle;
+
+  /// Explanation on the desktop fallback page shown when an in-app web view is unavailable
+  ///
+  /// In en, this message translates to:
+  /// **'This platform doesn\'t support an in-app web view. Please continue in your system browser.'**
+  String get webViewFallbackBody;
+
+  /// Primary action on the desktop fallback page
+  ///
+  /// In en, this message translates to:
+  /// **'Open in default browser'**
+  String get webViewFallbackOpen;
+
+  /// Tooltip for copying the target URL on the desktop fallback page
+  ///
+  /// In en, this message translates to:
+  /// **'Copy link'**
+  String get webViewFallbackCopyLink;
+
+  /// SnackBar message after copying the URL on the desktop fallback page
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied'**
+  String get webViewFallbackLinkCopied;
+
+  /// SnackBar message when the external browser cannot be launched
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open a browser. Copy the link and open it manually.'**
+  String get webViewFallbackOpenFailed;
+
+  /// SnackBar message when copying the URL fails
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t copy the link. Please try again.'**
+  String get webViewFallbackCopyFailed;
 
   /// SnackBar message when a file download is complete
   ///
@@ -5773,18 +5341,6 @@ abstract class AppLocalizations {
   /// **'Please select'**
   String get serviceFormSelectHint;
 
-  /// Suffix marking optional fields in service-hall forms.
-  ///
-  /// In en, this message translates to:
-  /// **'Optional'**
-  String get serviceFormOptional;
-
-  /// Page title for leave application.
-  ///
-  /// In en, this message translates to:
-  /// **'Leave Application'**
-  String get leaveTitle;
-
   /// Description shown on the campus entry card for the service hall.
   ///
   /// In en, this message translates to:
@@ -6055,12 +5611,6 @@ abstract class AppLocalizations {
   /// **'Cancelled'**
   String get reservationCancelSuccess;
 
-  /// Tab label for the leave application form.
-  ///
-  /// In en, this message translates to:
-  /// **'Apply'**
-  String get leaveApply;
-
   /// Tab label for viewing my submitted leave requests.
   ///
   /// In en, this message translates to:
@@ -6072,12 +5622,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Submit'**
   String get leaveSubmit;
-
-  /// No description provided for @leaveReasonRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter the leave reason'**
-  String get leaveReasonRequired;
 
   /// No description provided for @leaveEndAfterStart.
   ///
@@ -6103,36 +5647,6 @@ abstract class AppLocalizations {
   /// **'Student Info'**
   String get leaveInfo;
 
-  /// No description provided for @leaveTutor.
-  ///
-  /// In en, this message translates to:
-  /// **'Tutor'**
-  String get leaveTutor;
-
-  /// No description provided for @leaveCampusRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Please select the campus you are leaving'**
-  String get leaveCampusRequired;
-
-  /// No description provided for @leaveDetail.
-  ///
-  /// In en, this message translates to:
-  /// **'Other Reason'**
-  String get leaveDetail;
-
-  /// No description provided for @leaveDetailHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Please specify the reason'**
-  String get leaveDetailHint;
-
-  /// No description provided for @leaveAttachment.
-  ///
-  /// In en, this message translates to:
-  /// **'Upload Proof'**
-  String get leaveAttachment;
-
   /// No description provided for @leaveAttachmentHint.
   ///
   /// In en, this message translates to:
@@ -6144,30 +5658,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add Image'**
   String get leaveAttachmentAdd;
-
-  /// No description provided for @leaveDepartReturn.
-  ///
-  /// In en, this message translates to:
-  /// **'Leave & Return'**
-  String get leaveDepartReturn;
-
-  /// No description provided for @leaveDepartTime.
-  ///
-  /// In en, this message translates to:
-  /// **'Depart Time'**
-  String get leaveDepartTime;
-
-  /// No description provided for @leaveReturnTime.
-  ///
-  /// In en, this message translates to:
-  /// **'Return Time'**
-  String get leaveReturnTime;
-
-  /// No description provided for @leaveRegionRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Please select your destination address'**
-  String get leaveRegionRequired;
 
   /// No description provided for @regionProvince.
   ///
@@ -6799,12 +6289,6 @@ abstract class AppLocalizations {
   /// **'这是一条 15 秒后触发的测试提醒'**
   String get reminderProbeBody;
 
-  /// No description provided for @reminderPlanTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Scheduled reminder plan'**
-  String get reminderPlanTitle;
-
   /// No description provided for @reminderPlanEmpty.
   ///
   /// In en, this message translates to:
@@ -6912,12 +6396,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Quiet hours'**
   String get reminderQuietEnabled;
-
-  /// No description provided for @reminderQuietHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Reminders inside this window are dropped'**
-  String get reminderQuietHint;
 
   /// No description provided for @reminderQuietStart.
   ///
@@ -7147,24 +6625,6 @@ abstract class AppLocalizations {
   /// **'Not supported / disabled'**
   String get liveActivityProbeStatusUnsupported;
 
-  /// No description provided for @liveActivityProbeActive.
-  ///
-  /// In en, this message translates to:
-  /// **'A sample session is running'**
-  String get liveActivityProbeActive;
-
-  /// No description provided for @liveActivityProbeSentEnded.
-  ///
-  /// In en, this message translates to:
-  /// **'Session ended'**
-  String get liveActivityProbeSentEnded;
-
-  /// No description provided for @liveActivityProbeNoSession.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not reach the host (no active session).'**
-  String get liveActivityProbeNoSession;
-
   /// No description provided for @privacyPolicy.
   ///
   /// In en, this message translates to:
@@ -7194,12 +6654,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Keep diagnostic logs on device'**
   String get logPersistenceSwitch;
-
-  /// No description provided for @logPersistenceSwitchHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Save warnings and errors to log files on this device (about 6 MB, rotating). On by default. When off, logs stay in memory only and are lost when the app closes.'**
-  String get logPersistenceSwitchHint;
 
   /// No description provided for @runtimeLogs.
   ///
@@ -7765,18 +7219,6 @@ abstract class AppLocalizations {
   /// **'Delete \"{name}\"? You will need to upload it again to print.'**
   String cloudPrintDeleteConfirm(String name);
 
-  /// No description provided for @cloudPrintDeleted.
-  ///
-  /// In en, this message translates to:
-  /// **'Print job deleted'**
-  String get cloudPrintDeleted;
-
-  /// No description provided for @cloudPrintDeleteFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete failed. Refresh and try again.'**
-  String get cloudPrintDeleteFailed;
-
   /// No description provided for @cloudPrintSelectAll.
   ///
   /// In en, this message translates to:
@@ -7848,12 +7290,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Download'**
   String get cloudPrintDownload;
-
-  /// No description provided for @cloudPrintOpen.
-  ///
-  /// In en, this message translates to:
-  /// **'Open'**
-  String get cloudPrintOpen;
 
   /// No description provided for @cloudPrintShare.
   ///
