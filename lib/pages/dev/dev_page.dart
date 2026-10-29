@@ -1,6 +1,7 @@
 import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:bugaoshan/pages/dev/ui/ui_tile.dart';
 import 'package:bugaoshan/utils/app_log.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:bugaoshan/injection/injector.dart';
@@ -141,41 +142,40 @@ class _DevPageState extends State<DevPage> {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
 
+    final entries = <Widget>[
+      const EnvironmentInfoTile(),
+      const WizardResetTile(),
+      const LogTile(),
+      const LogPersistenceTile(),
+      if (kDebugMode) const LogStressTile(),
+      const ProbeTile(),
+      const UiTile(),
+      const ChangelogTile(),
+      ValueListenableBuilder<bool>(
+        valueListenable: _appConfig.forceCaptchaForDownload,
+        builder: (context, value, _) => AdaptiveGlassSwitchListTile(
+          // 同上：与 EnvironmentInfoTile 等 ListTile 默认内边距对齐。
+          secondary: const Icon(Icons.tab),
+          title: Text(localizations.forceCaptchaForDownload),
+          subtitle: Text(
+            localizations.forceCaptchaForDownloadHint,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          value: value,
+          onChanged: (v) => _appConfig.forceCaptchaForDownload.value = v,
+        ),
+      ),
+    ];
+
     return Scaffold(
       appBar: AppBar(title: Text(localizations.devPage)),
       body: ListView(
         padding: withSystemBottomInset(context, const EdgeInsets.all(24)),
         children: [
-          const EnvironmentInfoTile(),
-          const Divider(),
-          const WizardResetTile(),
-          const Divider(),
-          const LogTile(),
-          const Divider(),
-          const LogPersistenceTile(),
-          const Divider(),
-          const LogStressTile(),
-          const Divider(),
-          const ProbeTile(),
-          const Divider(),
-          const UiTile(),
-          const Divider(),
-          const ChangelogTile(),
-          const Divider(),
-          ValueListenableBuilder<bool>(
-            valueListenable: _appConfig.forceCaptchaForDownload,
-            builder: (context, value, _) => AdaptiveGlassSwitchListTile(
-              // 同上：与 EnvironmentInfoTile 等 ListTile 默认内边距对齐。
-              secondary: const Icon(Icons.tab),
-              title: Text(localizations.forceCaptchaForDownload),
-              subtitle: Text(
-                localizations.forceCaptchaForDownloadHint,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              value: value,
-              onChanged: (v) => _appConfig.forceCaptchaForDownload.value = v,
-            ),
-          ),
+          for (var i = 0; i < entries.length; i++) ...[
+            if (i > 0) const Divider(),
+            entries[i],
+          ],
           if (_supportsUpdate) ..._buildUpdateSection(context, localizations),
         ],
       ),
