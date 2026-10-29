@@ -16,6 +16,7 @@ import 'package:bugaoshan/pages/campus/fitness_test/fitness_test_page.dart';
 import 'package:bugaoshan/pages/campus/grades/grades_page.dart';
 import 'package:bugaoshan/pages/campus/network_device/network_device_page.dart';
 import 'package:bugaoshan/pages/campus/passpoint/passpoint_page.dart';
+import 'package:bugaoshan/pages/campus/cloud_print/cloud_print_page.dart';
 import 'package:bugaoshan/pages/campus/notice/notice_page.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/plan_completion_page.dart';
 import 'package:bugaoshan/pages/campus/repair/repair_page.dart';
@@ -208,6 +209,16 @@ final campusItemBalanceQuery = CampusItemConfig(
   page: () => const BalanceQueryPage(),
 );
 
+final campusItemCloudPrint = CampusItemConfig(
+  id: dockIdCloudPrint,
+  icon: Icons.print_outlined,
+  selectedIcon: Icons.print,
+  dockLabel: (l10n) => l10n.cloudPrintDock,
+  dockFullLabel: (l10n) => l10n.cloudPrintTitle,
+  desc: (l10n) => l10n.cloudPrintDesc,
+  page: () => const CloudPrintPage(),
+);
+
 final campusItemAcademicCalendar = CampusItemConfig(
   id: dockIdAcademicCalendar,
   icon: Icons.calendar_month_outlined,
@@ -352,6 +363,7 @@ final campusSections = [
       campusItemClassroom,
       campusItemNetworkDevice,
       campusItemPasspoint,
+      campusItemCloudPrint,
       campusItemBalanceQuery,
       campusItemRepair,
       campusItemReservation,

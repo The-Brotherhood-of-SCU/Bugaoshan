@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- 新增「图书馆打印与扫描」，支持批量上传、打印设置、任务预览及扫描件下载与分享
 - macOS 增加专用签名仓库自动同步、Developer ID 签名与 Apple 公证流程；通过源码、签名和公证校验的 universal DMG 可随 GitHub Release 一起分发
 - 诊断日志新增本机保留：警告与错误会写入 `bugaoshan.log`（自动轮转，总量约 6 MB），默认开启；可在「设置 → 软件设置」或开发者页面中关闭，关闭时同时删除已保存的日志文件
 - 开发者页面新增落盘开关与日志压测入口（压测仅 debug 构建可见）

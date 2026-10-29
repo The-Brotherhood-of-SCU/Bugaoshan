@@ -7398,6 +7398,504 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Share logs'**
   String get logShare;
+
+  /// No description provided for @cloudPrintTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Library print & scan'**
+  String get cloudPrintTitle;
+
+  /// No description provided for @cloudPrintDock.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud print'**
+  String get cloudPrintDock;
+
+  /// No description provided for @cloudPrintDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Batch upload documents, manage print jobs and download scans'**
+  String get cloudPrintDesc;
+
+  /// No description provided for @cloudPrintQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload queue'**
+  String get cloudPrintQueue;
+
+  /// No description provided for @cloudPrintJobs.
+  ///
+  /// In en, this message translates to:
+  /// **'Print jobs'**
+  String get cloudPrintJobs;
+
+  /// No description provided for @cloudPrintScans.
+  ///
+  /// In en, this message translates to:
+  /// **'Scans'**
+  String get cloudPrintScans;
+
+  /// No description provided for @cloudPrintChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Add files'**
+  String get cloudPrintChoose;
+
+  /// No description provided for @cloudPrintSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Default print settings'**
+  String get cloudPrintSettings;
+
+  /// No description provided for @cloudPrintSharedSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Default print settings'**
+  String get cloudPrintSharedSettings;
+
+  /// No description provided for @cloudPrintFileSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'File print settings'**
+  String get cloudPrintFileSettings;
+
+  /// No description provided for @cloudPrintEmptyQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose one or more documents to start'**
+  String get cloudPrintEmptyQueue;
+
+  /// No description provided for @cloudPrintHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploads create print jobs. Confirm printing with your campus card at a library terminal.'**
+  String get cloudPrintHint;
+
+  /// No description provided for @cloudPrintScanHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan at a library machine first. Your scanned files will appear here for download and sharing.'**
+  String get cloudPrintScanHint;
+
+  /// No description provided for @cloudPrintScanEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No scanned documents'**
+  String get cloudPrintScanEmpty;
+
+  /// No description provided for @cloudPrintJobsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No print jobs'**
+  String get cloudPrintJobsEmpty;
+
+  /// No description provided for @cloudPrintLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the list. Refresh to try again.'**
+  String get cloudPrintLoadFailed;
+
+  /// No description provided for @cloudPrintSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Added {added}; duplicates skipped: {duplicates}; unreadable or unsupported: {invalid}'**
+  String cloudPrintSelection(int added, int duplicates, int invalid);
+
+  /// No description provided for @cloudPrintStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload pending ({count})'**
+  String cloudPrintStart(int count);
+
+  /// No description provided for @cloudPrintStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop uploading'**
+  String get cloudPrintStop;
+
+  /// No description provided for @cloudPrintStopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopping after this file'**
+  String get cloudPrintStopping;
+
+  /// No description provided for @cloudPrintRetryFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Requeue failed files'**
+  String get cloudPrintRetryFailed;
+
+  /// No description provided for @cloudPrintClearFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear list'**
+  String get cloudPrintClearFinished;
+
+  /// No description provided for @cloudPrintPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to upload'**
+  String get cloudPrintPending;
+
+  /// No description provided for @cloudPrintUploading.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading {percent}%'**
+  String cloudPrintUploading(int percent);
+
+  /// No description provided for @cloudPrintProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing document…'**
+  String get cloudPrintProcessing;
+
+  /// No description provided for @cloudPrintUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded'**
+  String get cloudPrintUploaded;
+
+  /// No description provided for @cloudPrintFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload failed'**
+  String get cloudPrintFailed;
+
+  /// No description provided for @cloudPrintUncertain.
+  ///
+  /// In en, this message translates to:
+  /// **'Check whether a job was created'**
+  String get cloudPrintUncertain;
+
+  /// No description provided for @cloudPrintVerify.
+  ///
+  /// In en, this message translates to:
+  /// **'Check print jobs'**
+  String get cloudPrintVerify;
+
+  /// No description provided for @cloudPrintVerificationPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload accepted; verify the job in Print jobs before uploading again.'**
+  String get cloudPrintVerificationPending;
+
+  /// No description provided for @cloudPrintDuplicatePending.
+  ///
+  /// In en, this message translates to:
+  /// **'A duplicate file was detected. Check it in Print jobs.'**
+  String get cloudPrintDuplicatePending;
+
+  /// No description provided for @cloudPrintRequeue.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload again'**
+  String get cloudPrintRequeue;
+
+  /// No description provided for @cloudPrintMissingConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'I checked: no job was created'**
+  String get cloudPrintMissingConfirm;
+
+  /// No description provided for @cloudPrintMissingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only requeue after checking Print jobs and confirming this document is missing. Uploading again may create a duplicate job.'**
+  String get cloudPrintMissingHint;
+
+  /// No description provided for @cloudPrintFailureAuth.
+  ///
+  /// In en, this message translates to:
+  /// **'The session expired before submission. Sign in again before retrying.'**
+  String get cloudPrintFailureAuth;
+
+  /// No description provided for @cloudPrintFailureSize.
+  ///
+  /// In en, this message translates to:
+  /// **'The server rejected this file because it is too large.'**
+  String get cloudPrintFailureSize;
+
+  /// No description provided for @cloudPrintFailureRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the file and network, then upload it again.'**
+  String get cloudPrintFailureRequest;
+
+  /// No description provided for @cloudPrintRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from upload queue'**
+  String get cloudPrintRemove;
+
+  /// No description provided for @cloudPrintColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get cloudPrintColor;
+
+  /// No description provided for @cloudPrintMono.
+  ///
+  /// In en, this message translates to:
+  /// **'Black & white'**
+  String get cloudPrintMono;
+
+  /// No description provided for @cloudPrintFullColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get cloudPrintFullColor;
+
+  /// No description provided for @cloudPrintPaper.
+  ///
+  /// In en, this message translates to:
+  /// **'Paper'**
+  String get cloudPrintPaper;
+
+  /// No description provided for @cloudPrintOriginal.
+  ///
+  /// In en, this message translates to:
+  /// **'Original size'**
+  String get cloudPrintOriginal;
+
+  /// No description provided for @cloudPrintDuplex.
+  ///
+  /// In en, this message translates to:
+  /// **'Sides'**
+  String get cloudPrintDuplex;
+
+  /// No description provided for @cloudPrintLongEdge.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplex, long edge'**
+  String get cloudPrintLongEdge;
+
+  /// No description provided for @cloudPrintShortEdge.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplex, short edge'**
+  String get cloudPrintShortEdge;
+
+  /// No description provided for @cloudPrintSimplex.
+  ///
+  /// In en, this message translates to:
+  /// **'Single-sided'**
+  String get cloudPrintSimplex;
+
+  /// No description provided for @cloudPrintCopies.
+  ///
+  /// In en, this message translates to:
+  /// **'Copies'**
+  String get cloudPrintCopies;
+
+  /// No description provided for @cloudPrintPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages'**
+  String get cloudPrintPages;
+
+  /// No description provided for @cloudPrintPagesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Blank: all pages; or 2, 2-5'**
+  String get cloudPrintPagesHint;
+
+  /// No description provided for @cloudPrintAllPages.
+  ///
+  /// In en, this message translates to:
+  /// **'All pages'**
+  String get cloudPrintAllPages;
+
+  /// No description provided for @cloudPrintInvalidCopies.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a positive number of copies'**
+  String get cloudPrintInvalidCopies;
+
+  /// No description provided for @cloudPrintInvalidPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter one page or a continuous range such as 2-5'**
+  String get cloudPrintInvalidPages;
+
+  /// No description provided for @cloudPrintSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{copies} copies · {pages}'**
+  String cloudPrintSummary(int copies, String pages);
+
+  /// No description provided for @cloudPrintJobInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'{pages} pages · {copies} copies'**
+  String cloudPrintJobInfo(int pages, int copies);
+
+  /// No description provided for @cloudPrintJobCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'{date} {time}'**
+  String cloudPrintJobCreated(String date, String time);
+
+  /// No description provided for @cloudPrintPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get cloudPrintPreview;
+
+  /// No description provided for @cloudPrintPreviewPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page} of {total}'**
+  String cloudPrintPreviewPage(int page, int total);
+
+  /// No description provided for @cloudPrintPreviewFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview failed. Please try again.'**
+  String get cloudPrintPreviewFailed;
+
+  /// No description provided for @cloudPrintDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete job'**
+  String get cloudPrintDelete;
+
+  /// No description provided for @cloudPrintDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\"? You will need to upload it again to print.'**
+  String cloudPrintDeleteConfirm(String name);
+
+  /// No description provided for @cloudPrintDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Print job deleted'**
+  String get cloudPrintDeleted;
+
+  /// No description provided for @cloudPrintDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete failed. Refresh and try again.'**
+  String get cloudPrintDeleteFailed;
+
+  /// No description provided for @cloudPrintSelectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get cloudPrintSelectAll;
+
+  /// No description provided for @cloudPrintDeleteSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete selected ({count})'**
+  String cloudPrintDeleteSelected(int count);
+
+  /// No description provided for @cloudPrintDeleteSelectedConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {count} selected item(s)? You will need to upload them again to print.'**
+  String cloudPrintDeleteSelectedConfirm(int count);
+
+  /// No description provided for @cloudPrintScanDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete the scan record for “{name}”? Files already downloaded are not affected.'**
+  String cloudPrintScanDeleteConfirm(String name);
+
+  /// No description provided for @cloudPrintScanDeleteSelectedConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {count} selected scan record(s)? Files already downloaded are not affected.'**
+  String cloudPrintScanDeleteSelectedConfirm(int count);
+
+  /// No description provided for @cloudPrintDeletedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted {count} item(s)'**
+  String cloudPrintDeletedCount(int count);
+
+  /// No description provided for @cloudPrintDeletePartial.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted {deleted}, {failed} failed. Please retry.'**
+  String cloudPrintDeletePartial(int deleted, int failed);
+
+  /// No description provided for @cloudPrintCleanExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Clean up expired'**
+  String get cloudPrintCleanExpired;
+
+  /// No description provided for @cloudPrintCleanExpiredConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {count} expired scan record(s)?'**
+  String cloudPrintCleanExpiredConfirm(int count);
+
+  /// No description provided for @cloudPrintDownloadSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Download selected'**
+  String get cloudPrintDownloadSelected;
+
+  /// No description provided for @cloudPrintShareSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Share selected'**
+  String get cloudPrintShareSelected;
+
+  /// No description provided for @cloudPrintDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get cloudPrintDownload;
+
+  /// No description provided for @cloudPrintOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get cloudPrintOpen;
+
+  /// No description provided for @cloudPrintShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get cloudPrintShare;
+
+  /// No description provided for @cloudPrintScanExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get cloudPrintScanExpired;
+
+  /// No description provided for @cloudPrintDownloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed. You can retry the failed files.'**
+  String get cloudPrintDownloadFailed;
+
+  /// No description provided for @cloudPrintDownloadDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Download finished. Completed files can be opened or shared.'**
+  String get cloudPrintDownloadDone;
+
+  /// No description provided for @cloudPrintOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the file. Try sharing it to another app.'**
+  String get cloudPrintOpenFailed;
+
+  /// No description provided for @cloudPrintShareFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not share the files. Downloaded copies are kept.'**
+  String get cloudPrintShareFailed;
+
+  /// No description provided for @cloudPrintPickFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not select files. Please try again.'**
+  String get cloudPrintPickFailed;
 }
 
 class _AppLocalizationsDelegate
