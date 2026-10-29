@@ -115,6 +115,10 @@ class UpdateService {
     return null;
   }
 
+  /// 从 GitHub /releases/latest API 获取最新正式版的更新信息。
+  ///
+  /// 渠道按 tag 语义判断，不将误标为正式版的预发布标签作为正式版更新。
+  /// 如果没有有效的正式版或当前平台可用的安装包，返回 `null`。
   Future<ReleaseInfo?> getLatestReleaseFromGitHub() async {
     final response = await http.get(
       Uri.parse('https://api.github.com/repos/$kGithubRepo/releases/latest'),
@@ -125,85 +129,73 @@ class UpdateService {
     }
     if (response.body.isEmpty) return null;
     final data = jsonDecode(response.body);
-    final asset = await _selectAsset(data['assets'] as List<dynamic>);
-    if (asset == null) return null;
+    final release = selectLatestGithubRelease([data], prerelease: false);
+    if (release == null) return null;
+    return _releaseInfo(release);
+  }
+
+  /// 从 GitHub 获取候选范围内最新的预发布版更新信息。
+  ///
+  /// 在第一页最多 100 条记录中按完整版本号选择，并匹配当前平台的安装包。
+  /// 如果没有有效的预发布版或当前平台可用的安装包，返回空的 [ReleaseInfo]。
+  Future<ReleaseInfo> getLatestPrereleaseFromGitHub() async {
+    final releases = await fetchRecentGithubReleases();
+    final release = selectLatestGithubRelease(releases, prerelease: true);
+    final info = release == null ? null : await _releaseInfo(release);
+    return info ?? const ReleaseInfo();
+  }
+
+  /// 将 [release] 转换为当前平台的更新信息。
+  ///
+  /// 保留版本标签、更新说明和匹配安装包的下载地址及校验值。
+  /// 如果没有匹配的安装包或有效下载地址，记录警告并返回 `null`。
+  /// 最新候选缺包表示当前平台暂无可安装更新，不继续选择同渠道的旧版本。
+  Future<ReleaseInfo?> _releaseInfo(Map<String, dynamic> release) async {
+    final asset = await _selectAsset(release['assets'] as List<dynamic>);
+    if (asset == null) {
+      AppLog.w(
+        _tag,
+        'Release 没有当前平台可用的安装包，已跳过更新：'
+        'tag=${release['tag_name']} platform=${Platform.operatingSystem}',
+      );
+      return null;
+    }
+    final downloadUrl = asset['browser_download_url'];
+    if (downloadUrl is! String || downloadUrl.isEmpty) {
+      AppLog.w(
+        _tag,
+        'Release 安装包没有有效下载地址，已跳过更新：'
+        'tag=${release['tag_name']} asset=${asset['name']}',
+      );
+      return null;
+    }
     return ReleaseInfo(
-      tagName: data['tag_name'] as String,
-      downloadUrl: asset['browser_download_url'] as String,
+      tagName: release['tag_name'] as String,
+      downloadUrl: downloadUrl,
       filename: asset['name'] as String?,
       checksumSha256: _parseDigest(asset),
-      isPrerelease: data['prerelease'] == true,
-      body: data['body'] as String?,
+      isPrerelease: release['prerelease'] == true,
+      body: release['body'] as String?,
     );
   }
 
-  Future<ReleaseInfo> getLatestPrereleaseFromGitHub() async {
-    final response = await http.get(
-      Uri.parse('https://api.github.com/repos/$kGithubRepo/releases'),
-      headers: {'Accept': 'application/vnd.github+json'},
-    );
-    if (response.statusCode == 200) {
-      if (response.body.isEmpty) return const ReleaseInfo();
-      final List<dynamic> releases = jsonDecode(response.body);
-      // /releases 按创建时间倒序返回，需找到第一个真正的 prerelease，
-      // 而不是直接取 releases[0]（它可能是后发布的正式版）。
-      for (final release in releases) {
-        if (release['prerelease'] != true || release['tag_name'] == null) {
-          continue;
-        }
-        final assets = release['assets'] as List<dynamic>;
-        final asset = await _selectAsset(assets);
-        return ReleaseInfo(
-          tagName: release['tag_name'] as String,
-          downloadUrl: asset?['browser_download_url'] as String?,
-          filename: asset?['name'] as String?,
-          checksumSha256: asset == null ? null : _parseDigest(asset),
-          isPrerelease: true,
-          body: release['body'] as String?,
-        );
-      }
-      return const ReleaseInfo();
-    }
-    throw Exception('GitHub API error: ${response.statusCode}');
-  }
-
+  /// 获取候选范围内最新的正式版和预发布版更新信息。
+  ///
+  /// 在第一页最多 100 条记录中分别按完整版本号选择两个渠道的候选。
+  /// 如果第一页没有有效的正式版，则通过 /releases/latest 单独获取。
+  /// 如果没有有效候选或当前平台可用的安装包，对应渠道的结果为 `null`。
+  ///
+  /// 最新候选缺包不触发 /latest 回退，也不改选同渠道的旧版本，
+  /// 以免将已过时的安装包作为“最新版”推荐给用户。
   Future<(ReleaseInfo? latestStable, ReleaseInfo? latestPreview)>
   getAllLatestReleases() async {
-    final response = await http.get(
-      Uri.parse('https://api.github.com/repos/$kGithubRepo/releases'),
-      headers: {'Accept': 'application/vnd.github+json'},
-    );
-    if (response.statusCode != 200) {
-      throw Exception('GitHub API error: ${response.statusCode}');
-    }
-    if (response.body.isEmpty) return (null, null);
-
-    final List<dynamic> releases = jsonDecode(response.body);
-    ReleaseInfo? latestStable;
-    ReleaseInfo? latestPreview;
-
-    for (final release in releases) {
-      if (release['tag_name'] == null) continue;
-      final isPrerelease = release['prerelease'] == true;
-      final assets = release['assets'] as List<dynamic>;
-      final asset = await _selectAsset(assets);
-      final info = ReleaseInfo(
-        tagName: release['tag_name'] as String,
-        downloadUrl: asset?['browser_download_url'] as String?,
-        filename: asset?['name'] as String?,
-        checksumSha256: asset == null ? null : _parseDigest(asset),
-        isPrerelease: isPrerelease,
-        body: release['body'] as String?,
-      );
-      if (isPrerelease && latestPreview == null) {
-        latestPreview = info;
-      } else if (!isPrerelease && latestStable == null) {
-        latestStable = info;
-      }
-      if (latestStable != null && latestPreview != null) break;
-    }
-    // Fallback: 列表中全是 prerelease，用 /releases/latest 单独取 stable
-    latestStable ??= await getLatestReleaseFromGitHub();
+    final releases = await fetchRecentGithubReleases();
+    final stable = selectLatestGithubRelease(releases, prerelease: false);
+    final preview = selectLatestGithubRelease(releases, prerelease: true);
+    final latestStable = stable == null
+        ? await getLatestReleaseFromGitHub()
+        : await _releaseInfo(stable);
+    final latestPreview = preview == null ? null : await _releaseInfo(preview);
     return (latestStable, latestPreview);
   }
 
