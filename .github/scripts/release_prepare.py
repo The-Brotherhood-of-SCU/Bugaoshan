@@ -1,8 +1,6 @@
 """Prepare release files for upload."""
 
 import os
-import json
-import hashlib
 import shutil
 import zipfile
 from pathlib import Path
@@ -18,7 +16,7 @@ def _android_asset_suffix(filename):
     return None
 
 
-def prepare_release_files(version, root=Path("."), macos_signed=False):
+def prepare_release_files(version, root=Path(".")):
     root = Path(root)
     version = version.lstrip("v")
     android_dir = root / "android-apk"
@@ -66,24 +64,10 @@ def prepare_release_files(version, root=Path("."), macos_signed=False):
     shutil.copy2(linux_src, root / f"bugaoshan_{version}_linux_x64.tar.gz")
     print(f"Copied linux artifact -> bugaoshan_{version}_linux_x64.tar.gz")
 
-    if macos_signed:
-        # This directory is produced only by the macOS job after Gatekeeper,
-        # stapler, Developer ID identity and source-commit verification.
-        source = root / "macos-release"
-        name = f"bugaoshan_{version}_macos_universal.dmg"
-        dmg = source / name
-        manifest = json.loads((source / "macos-manifest.json").read_text())
-        if (manifest.get("source_tag") != f"v{version}" or manifest.get("asset") != name
-                or manifest.get("notarization_status") != "Accepted"
-                or hashlib.sha256(dmg.read_bytes()).hexdigest() != manifest.get("sha256")):
-            raise ValueError("Invalid verified macOS release artifact")
-        shutil.copy2(dmg, root / name)
-        shutil.copy2(source / "macos-manifest.json", root / "macos-manifest.json")
-
 
 def main():
     version = os.environ.get("VERSION", "")
-    prepare_release_files(version, macos_signed=os.environ.get("MACOS_SIGNED") == "true")
+    prepare_release_files(version)
 
 
 if __name__ == "__main__":

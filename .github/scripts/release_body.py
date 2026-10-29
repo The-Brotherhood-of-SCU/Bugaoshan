@@ -8,8 +8,7 @@ def main():
     changelog = os.environ.get("CHANGELOG", "")
     prev = os.environ.get("PREV", "").lstrip("v")
     macos = "与 iOS 共用 [App Store 条目](https://apps.apple.com/app/id6813305962)，商店可用状态与版本以商店为准。"
-    if os.environ.get("MACOS_SIGNED") == "true":
-        macos = f"[签名并经 Apple 公证的 DMG]({repo}/releases/download/v{version}/bugaoshan_{version}_macos_universal.dmg)（Apple Silicon / Intel） · " + macos
+    macos = "[个人仓库独立发布的 DMG](https://github.com/wjlfish/Bugaoshan-macos/releases)（版本与可用状态以该仓库为准） · " + macos
 
     body = f"""## ⬇️ 下载 (Downloads)
 - Android: [arm64-Apk]({repo}/releases/download/v{version}/bugaoshan_{version}_arm64-v8a.apk)
