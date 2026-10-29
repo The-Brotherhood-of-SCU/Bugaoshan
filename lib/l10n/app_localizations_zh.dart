@@ -2770,6 +2770,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get openInBrowser => '在浏览器中打开';
 
   @override
+  String get webViewFallbackTitle => '用浏览器打开此页面';
+
+  @override
+  String get webViewFallbackBody => '当前平台不支持应用内网页视图，请在系统浏览器中继续浏览。';
+
+  @override
+  String get webViewFallbackOpen => '在默认浏览器中打开';
+
+  @override
+  String get webViewFallbackCopyLink => '复制链接';
+
+  @override
+  String get webViewFallbackLinkCopied => '链接已复制';
+
+  @override
+  String get webViewFallbackOpenFailed => '无法打开浏览器，请复制链接后手动打开';
+
+  @override
+  String get webViewFallbackCopyFailed => '无法复制链接，请稍后重试';
+
+  @override
   String get downloadComplete => '下载完成';
 
   @override

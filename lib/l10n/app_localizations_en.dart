@@ -2861,6 +2861,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openInBrowser => 'Open in browser';
 
   @override
+  String get webViewFallbackTitle => 'Open this page in your browser';
+
+  @override
+  String get webViewFallbackBody =>
+      'This platform doesn\'t support an in-app web view. Please continue in your system browser.';
+
+  @override
+  String get webViewFallbackOpen => 'Open in default browser';
+
+  @override
+  String get webViewFallbackCopyLink => 'Copy link';
+
+  @override
+  String get webViewFallbackLinkCopied => 'Link copied';
+
+  @override
+  String get webViewFallbackOpenFailed =>
+      'Couldn\'t open a browser. Copy the link and open it manually.';
+
+  @override
+  String get webViewFallbackCopyFailed =>
+      'Couldn\'t copy the link. Please try again.';
+
+  @override
   String get downloadComplete => 'Download complete';
 
   @override

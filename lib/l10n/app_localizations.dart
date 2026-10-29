@@ -5347,6 +5347,48 @@ abstract class AppLocalizations {
   /// **'Open in browser'**
   String get openInBrowser;
 
+  /// Heading on the desktop fallback page shown when an in-app web view is unavailable
+  ///
+  /// In en, this message translates to:
+  /// **'Open this page in your browser'**
+  String get webViewFallbackTitle;
+
+  /// Explanation on the desktop fallback page shown when an in-app web view is unavailable
+  ///
+  /// In en, this message translates to:
+  /// **'This platform doesn\'t support an in-app web view. Please continue in your system browser.'**
+  String get webViewFallbackBody;
+
+  /// Primary action on the desktop fallback page
+  ///
+  /// In en, this message translates to:
+  /// **'Open in default browser'**
+  String get webViewFallbackOpen;
+
+  /// Tooltip for copying the target URL on the desktop fallback page
+  ///
+  /// In en, this message translates to:
+  /// **'Copy link'**
+  String get webViewFallbackCopyLink;
+
+  /// SnackBar message after copying the URL on the desktop fallback page
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied'**
+  String get webViewFallbackLinkCopied;
+
+  /// SnackBar message when the external browser cannot be launched
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open a browser. Copy the link and open it manually.'**
+  String get webViewFallbackOpenFailed;
+
+  /// SnackBar message when copying the URL fails
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t copy the link. Please try again.'**
+  String get webViewFallbackCopyFailed;
+
   /// SnackBar message when a file download is complete
   ///
   /// In en, this message translates to:

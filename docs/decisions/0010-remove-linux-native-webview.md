@@ -49,7 +49,7 @@ Linux 的 `flutter_inappwebview` 后端是原生实现，动态依赖 WPE WebKit
 
 代价与约束：
 
-- Linux 上依赖 WebView 的功能不可用，页面直接显示 `WebViewUnsupportedPage`：三个通知来源（教务处 / 学工部 / 团委）、志愿四川、研究生课表导入的「应急网页抓取」。研究生课表导入因此只保留直连路径。
+- Linux 上依赖 WebView 的功能不可用：三个通知来源（教务处 / 学工部 / 团委）和志愿四川显示 `WebViewUnsupportedPage` 的浏览器交接页，由系统默认浏览器继续浏览（页面提供复制链接兜底）；研究生课表导入的「应急网页抓取」不提供交接页，因此只保留直连路径。
 - 与 ADR-0004 的「插件保留、WPE 不进入私有 bundle」边界正式作废。
 - `hasNoWebViewBackend` 是新增 WebView 功能必须检查的平台判据；漏检的入口会在 Linux 上抛 `UnimplementedError`，而不是优雅降级。
 - 若将来要恢复 Linux 应用内网页能力，需要重新引入原生插件（或更换后端）并重跑跨发行版 ABI 验证，恢复成本与本次决策前相同。

@@ -1381,6 +1381,41 @@
     "description": "Tooltip to open current page in external browser",
     "type": "text"
   },
+  "webViewFallbackTitle": "Open this page in your browser",
+  "@webViewFallbackTitle": {
+    "description": "Heading on the desktop fallback page shown when an in-app web view is unavailable",
+    "type": "text"
+  },
+  "webViewFallbackBody": "This platform doesn't support an in-app web view. Please continue in your system browser.",
+  "@webViewFallbackBody": {
+    "description": "Explanation on the desktop fallback page shown when an in-app web view is unavailable",
+    "type": "text"
+  },
+  "webViewFallbackOpen": "Open in default browser",
+  "@webViewFallbackOpen": {
+    "description": "Primary action on the desktop fallback page",
+    "type": "text"
+  },
+  "webViewFallbackCopyLink": "Copy link",
+  "@webViewFallbackCopyLink": {
+    "description": "Tooltip for copying the target URL on the desktop fallback page",
+    "type": "text"
+  },
+  "webViewFallbackLinkCopied": "Link copied",
+  "@webViewFallbackLinkCopied": {
+    "description": "SnackBar message after copying the URL on the desktop fallback page",
+    "type": "text"
+  },
+  "webViewFallbackOpenFailed": "Couldn't open a browser. Copy the link and open it manually.",
+  "@webViewFallbackOpenFailed": {
+    "description": "SnackBar message when the external browser cannot be launched",
+    "type": "text"
+  },
+  "webViewFallbackCopyFailed": "Couldn't copy the link. Please try again.",
+  "@webViewFallbackCopyFailed": {
+    "description": "SnackBar message when copying the URL fails",
+    "type": "text"
+  },
   "downloadComplete": "Download complete",
   "@downloadComplete": {
     "description": "SnackBar message when a file download is complete",

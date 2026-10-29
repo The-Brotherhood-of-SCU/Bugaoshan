@@ -1305,6 +1305,41 @@
     "description": "在外部浏览器中打开当前页面的工具提示",
     "type": "text"
   },
+  "webViewFallbackTitle": "用浏览器打开此页面",
+  "@webViewFallbackTitle": {
+    "description": "桌面端无应用内网页视图时的交接页标题",
+    "type": "text"
+  },
+  "webViewFallbackBody": "当前平台不支持应用内网页视图，请在系统浏览器中继续浏览。",
+  "@webViewFallbackBody": {
+    "description": "桌面端无应用内网页视图时的交接页说明",
+    "type": "text"
+  },
+  "webViewFallbackOpen": "在默认浏览器中打开",
+  "@webViewFallbackOpen": {
+    "description": "桌面端交接页的主操作",
+    "type": "text"
+  },
+  "webViewFallbackCopyLink": "复制链接",
+  "@webViewFallbackCopyLink": {
+    "description": "复制目标链接的工具提示",
+    "type": "text"
+  },
+  "webViewFallbackLinkCopied": "链接已复制",
+  "@webViewFallbackLinkCopied": {
+    "description": "复制链接成功后的 SnackBar 提示",
+    "type": "text"
+  },
+  "webViewFallbackOpenFailed": "无法打开浏览器，请复制链接后手动打开",
+  "@webViewFallbackOpenFailed": {
+    "description": "外部浏览器启动失败时的 SnackBar 提示",
+    "type": "text"
+  },
+  "webViewFallbackCopyFailed": "无法复制链接，请稍后重试",
+  "@webViewFallbackCopyFailed": {
+    "description": "复制链接失败时的 SnackBar 提示",
+    "type": "text"
+  },
   "downloadComplete": "下载完成",
   "@downloadComplete": {
     "description": "文件下载完成时的 SnackBar 提示",
