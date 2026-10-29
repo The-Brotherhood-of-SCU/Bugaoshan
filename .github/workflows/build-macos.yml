@@ -27,6 +27,22 @@ on:
       signed_release:
         type: boolean
         default: false
+    # 调用方必须显式传入签名凭据；Environment Secret 不会自动进入 reusable workflow
+    secrets:
+      MACOS_CERTIFICATE_P12_BASE64:
+        required: true
+      MACOS_CERTIFICATE_PASSWORD:
+        required: true
+      MACOS_APP_PROFILE_BASE64:
+        required: true
+      MACOS_WIDGET_PROFILE_BASE64:
+        required: true
+      NOTARY_KEY_P8:
+        required: true
+      NOTARY_KEY_ID:
+        required: true
+      NOTARY_ISSUER_ID:
+        required: true
   workflow_dispatch:
     inputs:
       signed_release:
