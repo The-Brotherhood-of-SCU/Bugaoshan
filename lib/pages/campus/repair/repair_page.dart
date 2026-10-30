@@ -3,12 +3,14 @@ import 'dart:io';
 
 import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/repair.dart';
 import 'package:bugaoshan/pages/campus/repair/repair_detail_page.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/campus/repair_pods.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/providers/zhhq_repair_provider.dart';
 import 'package:bugaoshan/theme_shape.dart';
@@ -32,14 +34,14 @@ part 'repair_widgets.dart';
 ///
 /// 结构：本文件仅含主页面（Tab 容器 + 登录/加载/错误门）；表单与列表等
 /// 子 widget 拆到 `repair_submit_tab.dart` / `repair_widgets.dart`。
-class RepairPage extends StatefulWidget {
+class RepairPage extends ConsumerStatefulWidget {
   const RepairPage({super.key});
 
   @override
-  State<RepairPage> createState() => _RepairPageState();
+  ConsumerState<RepairPage> createState() => _RepairPageState();
 }
 
-class _RepairPageState extends State<RepairPage>
+class _RepairPageState extends ConsumerState<RepairPage>
     with SingleTickerProviderStateMixin {
   /// 用于让 AppBar 刷新按钮直接调用工单列表的统一刷新（force 拉取 + 滚回顶端）。
   final _myTicketsKey = GlobalKey<_MyTicketsTabState>();
@@ -60,41 +62,36 @@ class _RepairPageState extends State<RepairPage>
 
   @override
   Widget build(BuildContext context) {
-    final auth = getIt<ScuAuthProvider>();
-    final provider = getIt<ZhhqRepairProvider>();
+    final auth = ref.watch(scuAuthProviderBridge);
+    final provider = ref.watch(repairProvider);
+    final l10n = AppLocalizations.of(context)!;
 
-    return ListenableBuilder(
-      listenable: Listenable.merge([auth, provider]),
-      builder: (context, _) {
-        final l10n = AppLocalizations.of(context)!;
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(l10n.repairTitle),
-            bottom: TabBar(
-              controller: _tabController,
-              tabs: [
-                Tab(text: l10n.repairTabSubmit),
-                Tab(text: l10n.repairTabMyTickets),
-              ],
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                // 手动刷新：地址与工单列表都刷新。
-                // 列表走统一 _refresh()（force 拉取 + 滚回顶端）。
-                onPressed: provider.state == RepairLoadState.loading
-                    ? null
-                    : () {
-                        provider.refresh();
-                        _myTicketsKey.currentState?._refresh();
-                      },
-                tooltip: l10n.refresh,
-              ),
-            ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.repairTitle),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: [
+            Tab(text: l10n.repairTabSubmit),
+            Tab(text: l10n.repairTabMyTickets),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            // 手动刷新：地址与工单列表都刷新。
+            // 列表走统一 _refresh()（force 拉取 + 滚回顶端）。
+            onPressed: provider.state == RepairLoadState.loading
+                ? null
+                : () {
+                    provider.refresh();
+                    _myTicketsKey.currentState?._refresh();
+                  },
+            tooltip: l10n.refresh,
           ),
-          body: _buildBody(l10n, auth, provider),
-        );
-      },
+        ],
+      ),
+      body: _buildBody(l10n, auth, provider),
     );
   }
 

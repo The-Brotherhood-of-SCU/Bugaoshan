@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/theme_shape.dart';
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program.dart';
+import 'package:bugaoshan/providers/riverpod/academic/train_program_pods.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/train_program_provider.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
@@ -14,56 +15,49 @@ import 'package:bugaoshan/utils/system_insets.dart';
 
 part 'train_program_detail_page.dart';
 
-class TrainProgramPage extends StatefulWidget {
+class TrainProgramPage extends ConsumerStatefulWidget {
   const TrainProgramPage({super.key});
 
   @override
-  State<TrainProgramPage> createState() => _TrainProgramPageState();
+  ConsumerState<TrainProgramPage> createState() => _TrainProgramPageState();
 }
 
-class _TrainProgramPageState extends State<TrainProgramPage> {
-  late final TrainProgramProvider _provider;
-
+class _TrainProgramPageState extends ConsumerState<TrainProgramPage> {
   @override
   void initState() {
     super.initState();
-    _provider = getIt<TrainProgramProvider>();
-    _provider.fetchCollegesAndGrades();
+    Future.microtask(() {
+      ref.read(trainProgramProvider).fetchCollegesAndGrades();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final auth = ref.watch(scuAuthProviderBridge);
+    final provider = ref.watch(trainProgramProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.trainProgram)),
-      body: ListenableBuilder(
-        listenable: Listenable.merge([getIt<ScuAuthProvider>(), _provider]),
-        builder: (context, _) {
-          final auth = getIt<ScuAuthProvider>();
-          if (!auth.isLoggedIn) {
-            if (auth.isAutoLoggingIn) {
-              return const AutoLoginLoadingWidget();
-            }
-            return const LoginRequiredWidget();
-          }
-          return _buildContent(context);
-        },
-      ),
+      body: !auth.isLoggedIn
+          ? auth.isAutoLoggingIn
+              ? const AutoLoginLoadingWidget()
+              : const LoginRequiredWidget()
+          : _buildContent(context, provider),
     );
   }
 
-  Widget _buildContent(BuildContext context) {
+  Widget _buildContent(BuildContext context, TrainProgramProvider provider) {
     return Column(
       children: [
-        _buildFilters(context),
-        Expanded(child: _buildProgramsList(context)),
+        _buildFilters(context, provider),
+        Expanded(child: _buildProgramsList(context, provider)),
         const SizedBox(height: 16),
       ],
     );
   }
 
-  Widget _buildFilters(BuildContext context) {
+  Widget _buildFilters(BuildContext context, TrainProgramProvider provider) {
     final l10n = AppLocalizations.of(context)!;
 
     return StyledCard(
@@ -75,9 +69,9 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
           children: [
             Row(
               children: [
-                Expanded(child: _buildCollegeDropdown(context, l10n)),
+                Expanded(child: _buildCollegeDropdown(context, l10n, provider)),
                 const SizedBox(width: 16),
-                Expanded(child: _buildGradeDropdown(context, l10n)),
+                Expanded(child: _buildGradeDropdown(context, l10n, provider)),
               ],
             ),
             const SizedBox(height: 16),
@@ -85,11 +79,11 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
               width: double.infinity,
               child: FilledButton.icon(
                 onPressed:
-                    _provider.collegesState == TrainProgramLoadState.loaded &&
-                        _provider.gradesState == TrainProgramLoadState.loaded &&
-                        _provider.selectedCollege != null &&
-                        _provider.selectedGrade != null
-                    ? () => _provider.searchPrograms()
+                    provider.collegesState == TrainProgramLoadState.loaded &&
+                        provider.gradesState == TrainProgramLoadState.loaded &&
+                        provider.selectedCollege != null &&
+                        provider.selectedGrade != null
+                    ? () => provider.searchPrograms()
                     : null,
                 icon: const Icon(Icons.search),
                 label: Text(l10n.trainProgramSearch),
@@ -101,7 +95,11 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
     );
   }
 
-  Widget _buildCollegeDropdown(BuildContext context, AppLocalizations l10n) {
+  Widget _buildCollegeDropdown(
+    BuildContext context,
+    AppLocalizations l10n,
+    TrainProgramProvider provider,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -110,15 +108,15 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const SizedBox(height: 4),
-        _provider.collegesState == TrainProgramLoadState.loading
+        provider.collegesState == TrainProgramLoadState.loading
             ? const SizedBox(
                 height: 48,
                 child: Center(child: CircularProgressIndicator()),
               )
-            : _provider.collegesState == TrainProgramLoadState.error
+            : provider.collegesState == TrainProgramLoadState.error
             ? Text(l10n.loadFailed)
             : DropdownButtonFormField<String>(
-                initialValue: _provider.selectedCollege,
+                initialValue: provider.selectedCollege,
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -133,7 +131,7 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
                     value: null,
                     child: Text(l10n.trainProgramAll),
                   ),
-                  ..._provider.colleges.map(
+                  ...provider.colleges.map(
                     (c) => DropdownMenuItem(
                       value: c.value,
                       child: Text(c.name, overflow: TextOverflow.ellipsis),
@@ -141,14 +139,18 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
                   ),
                 ],
                 onChanged: (value) {
-                  _provider.setSelectedCollege(value);
+                  provider.setSelectedCollege(value);
                 },
               ),
       ],
     );
   }
 
-  Widget _buildGradeDropdown(BuildContext context, AppLocalizations l10n) {
+  Widget _buildGradeDropdown(
+    BuildContext context,
+    AppLocalizations l10n,
+    TrainProgramProvider provider,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -157,15 +159,15 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const SizedBox(height: 4),
-        _provider.gradesState == TrainProgramLoadState.loading
+        provider.gradesState == TrainProgramLoadState.loading
             ? const SizedBox(
                 height: 48,
                 child: Center(child: CircularProgressIndicator()),
               )
-            : _provider.gradesState == TrainProgramLoadState.error
+            : provider.gradesState == TrainProgramLoadState.error
             ? Text(l10n.loadFailed)
             : DropdownButtonFormField<String>(
-                initialValue: _provider.selectedGrade,
+                initialValue: provider.selectedGrade,
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -180,23 +182,26 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
                     value: null,
                     child: Text(l10n.trainProgramAll),
                   ),
-                  ..._provider.grades.map(
+                  ...provider.grades.map(
                     (g) =>
                         DropdownMenuItem(value: g.value, child: Text(g.label)),
                   ),
                 ],
                 onChanged: (value) {
-                  _provider.setSelectedGrade(value);
+                  provider.setSelectedGrade(value);
                 },
               ),
       ],
     );
   }
 
-  Widget _buildProgramsList(BuildContext context) {
+  Widget _buildProgramsList(
+    BuildContext context,
+    TrainProgramProvider provider,
+  ) {
     final l10n = AppLocalizations.of(context)!;
 
-    return switch (_provider.programsState) {
+    return switch (provider.programsState) {
       TrainProgramLoadState.idle => Center(
         child: Text(
           l10n.trainProgramNoData,
@@ -209,12 +214,12 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
         child: CircularProgressIndicator(),
       ),
       TrainProgramLoadState.error => RetryableErrorWidget(
-        errorType: _provider.programsError!,
-        onRetry: () => _provider.searchPrograms(),
+        errorType: provider.programsError!,
+        onRetry: () => provider.searchPrograms(),
         iconSize: 56,
       ),
       TrainProgramLoadState.loaded =>
-        _provider.programs.isEmpty
+        provider.programs.isEmpty
             ? Center(
                 child: Text(
                   l10n.trainProgramNoData,
@@ -228,9 +233,9 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
                   context,
                   EdgeInsets.symmetric(horizontal: 16),
                 ),
-                itemCount: _provider.programs.length,
+                itemCount: provider.programs.length,
                 itemBuilder: (context, index) {
-                  final program = _provider.programs[index];
+                  final program = provider.programs[index];
                   return StyledCard(
                     margin: const EdgeInsets.only(bottom: 8),
                     child: ListTile(

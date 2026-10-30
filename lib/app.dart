@@ -7,11 +7,13 @@ import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/pages/home_page.dart';
 import 'package:bugaoshan/pages/wizard/eula_gate_page.dart';
 import 'package:bugaoshan/pages/wizard/wizard_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/services/background_cache_service.dart';
 import 'package:bugaoshan/services/reminder/live_activity_coordinator.dart';
 import 'package:bugaoshan/services/reminder/reminder_service.dart';
@@ -24,17 +26,15 @@ import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:system_theme/system_theme.dart';
 import 'l10n/app_localizations.dart';
 
-class MyApp extends StatefulWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  ConsumerState<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
-  final AppConfigProvider _appConfig = getIt<AppConfigProvider>();
+class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   late final BackgroundCacheService _bgCache = getIt<BackgroundCacheService>();
-  late final void Function() _logPersistenceListener;
 
   @override
   void initState() {
@@ -44,35 +44,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       if (!mounted) return;
       _bgCache.precache();
     });
-    _bindLogPersistence();
-  }
-
-  /// 按用户开关启停 warn/error 日志落盘。
-  ///
-  /// 默认开启（`AppConfigProvider.logPersistenceEnabled`）：落盘是崩溃现场的
-  /// 唯一后手，默认关闭等于要求用户在出问题前就去设置里翻开关。用户关闭时
-  /// 同时清理可能残留的旧文件。
-  void _bindLogPersistence() {
-    final logger = getIt<AppLogger>();
-    final notifier = _appConfig.logPersistenceEnabled;
-    void apply(bool enabled) {
-      if (kIsWeb) return;
-      if (enabled) {
-        unawaited(logger.enableFileSink());
-      } else {
-        unawaited(logger.deletePersistedFiles());
-      }
+    if (!kIsWeb && ref.read(logPersistenceEnabledSettingProvider)) {
+      unawaited(getIt<AppLogger>().enableFileSink());
     }
-
-    _logPersistenceListener = () => apply(notifier.value);
-    notifier.addListener(_logPersistenceListener);
-    apply(notifier.value);
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _appConfig.logPersistenceEnabled.removeListener(_logPersistenceListener);
     _bgCache.dispose();
     super.dispose();
   }
@@ -95,67 +74,87 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: Listenable.merge([
-        _appConfig.locale,
-        _appConfig.themeColor,
-        _appConfig.themeColorMode,
-        _appConfig.themeMode,
-        _appConfig.useGoogleFonts,
-        // 页面转场时长跟随设置变化，需要重建 MaterialApp 使新主题生效
-        // （「页面切换动画」开关只控制 Dock 栏切换，不进全局主题）
-        _appConfig.cardSizeAnimationDuration,
-      ]),
-      builder: (context, _) => MaterialApp(
-        navigatorKey: navigatorKey,
-        locale: _appConfig.locale.value,
-        onGenerateTitle: (ctx) => AppLocalizations.of(ctx)!.bugaoshan,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        scrollBehavior: const AppScrollBehavior(),
-        theme: _buildTheme(Brightness.light, context),
-        darkTheme: _buildTheme(Brightness.dark, context),
-        themeMode: _appConfig.themeMode.value,
-        builder: (context, child) {
-          final scale = MediaQuery.textScalerOf(context).scale(1.0);
-          final clamped = scale.clamp(1.0, 2.0);
-          return MediaQuery(
-            data: MediaQuery.of(
-              context,
-            ).copyWith(textScaler: TextScaler.linear(clamped)),
-            child: MouseBackHandler(
-              child: SessionExpiredListener(child: child ?? const SizedBox()),
-            ),
-          );
-        },
-        home: ValueListenableBuilder<int>(
-          valueListenable: _appConfig.acceptedEulaVersion,
-          builder: (_, eulaVersion, _) {
-            if (eulaVersion < currentEulaVersion) {
-              return const EulaGatePage();
-            }
-            return ValueListenableBuilder<bool>(
-              valueListenable: _appConfig.firstLaunchWizardCompleted,
-              builder: (_, completed, _) =>
-                  completed ? const HomePage() : const WizardPage(),
-            );
-          },
-        ),
+    ref.listen(logPersistenceEnabledSettingProvider, (previous, next) {
+      if (kIsWeb) return;
+      final logger = getIt<AppLogger>();
+      if (next) {
+        unawaited(logger.enableFileSink());
+      } else {
+        unawaited(logger.deletePersistedFiles());
+      }
+    });
+
+    final locale = ref.watch(localeSettingProvider);
+    final themeColor = ref.watch(themeColorSettingProvider);
+    final themeColorMode = ref.watch(themeColorModeSettingProvider);
+    final themeMode = ref.watch(themeModeSettingProvider);
+    final useGoogleFonts = ref.watch(useGoogleFontsSettingProvider);
+    final cardAnimDuration =
+        ref.watch(cardSizeAnimationDurationSettingProvider);
+    final eulaVersion = ref.watch(acceptedEulaVersionSettingProvider);
+    final wizardCompleted =
+        ref.watch(firstLaunchWizardCompletedSettingProvider);
+
+    return MaterialApp(
+      navigatorKey: navigatorKey,
+      locale: locale,
+      onGenerateTitle: (ctx) => AppLocalizations.of(ctx)!.bugaoshan,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      scrollBehavior: const AppScrollBehavior(),
+      theme: _buildTheme(
+        Brightness.light,
+        context,
+        themeColor: themeColor,
+        themeColorMode: themeColorMode,
+        useGoogleFonts: useGoogleFonts,
+        cardAnimDuration: cardAnimDuration,
       ),
+      darkTheme: _buildTheme(
+        Brightness.dark,
+        context,
+        themeColor: themeColor,
+        themeColorMode: themeColorMode,
+        useGoogleFonts: useGoogleFonts,
+        cardAnimDuration: cardAnimDuration,
+      ),
+      themeMode: themeMode,
+      builder: (context, child) {
+        final scale = MediaQuery.textScalerOf(context).scale(1.0);
+        final clamped = scale.clamp(1.0, 2.0);
+        return MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(clamped)),
+          child: MouseBackHandler(
+            child: SessionExpiredListener(child: child ?? const SizedBox()),
+          ),
+        );
+      },
+      home: eulaVersion < currentEulaVersion
+          ? const EulaGatePage()
+          : (wizardCompleted ? const HomePage() : const WizardPage()),
     );
   }
 
-  ThemeData _buildTheme(Brightness brightness, BuildContext context) {
-    final seedColor = _appConfig.themeColorMode.value == ThemeColorMode.system
+  ThemeData _buildTheme(
+    Brightness brightness,
+    BuildContext context, {
+    required Color themeColor,
+    required ThemeColorMode themeColorMode,
+    required bool useGoogleFonts,
+    required Duration cardAnimDuration,
+  }) {
+    final seedColor = themeColorMode == ThemeColorMode.system
         ? SystemTheme.accentColor.accent
-        : _appConfig.themeColor.value;
+        : themeColor;
     final textScale = MediaQuery.textScalerOf(context).scale(1.0);
     return buildTheme(
       brightness: brightness,
       seedColor: seedColor,
-      useGoogleFonts: _appConfig.useGoogleFonts.value,
+      useGoogleFonts: useGoogleFonts,
       textScale: textScale,
-      pageTransitionDuration: _appConfig.cardSizeAnimationDuration.value,
+      pageTransitionDuration: cardAnimDuration,
     );
   }
 }

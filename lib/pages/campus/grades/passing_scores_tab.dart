@@ -1,58 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/scheme_score.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
+import 'package:bugaoshan/providers/riverpod/academic/grades_pods.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/stat_item.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'scheme_scores_tab.dart' show ScoreCardWidget;
 
-class PassingScoresTab extends StatefulWidget {
+class PassingScoresTab extends ConsumerStatefulWidget {
   const PassingScoresTab({super.key, this.searchQuery = ''});
 
   final String searchQuery;
 
   @override
-  State<PassingScoresTab> createState() => _PassingScoresTabState();
+  ConsumerState<PassingScoresTab> createState() => _PassingScoresTabState();
 }
 
-class _PassingScoresTabState extends State<PassingScoresTab> {
+class _PassingScoresTabState extends ConsumerState<PassingScoresTab> {
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: getIt<GradesProvider>(),
-      builder: (context, _) {
-        final provider = getIt<GradesProvider>();
-        final errorKey = provider.passingError;
-        // 判空收进同一个 if：errorKey 是 final 局部变量，判空后 flow
-        // analysis 在闭包内保持提升，无需 errorKey! 断言。
-        if (provider.passingState == GradesLoadState.loaded &&
-            errorKey != null) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            provider.clearPassingError();
-            if (!mounted) return;
-            final l10n = AppLocalizations.of(context)!;
-            final message = refreshFailureMessage(
-              errorKey,
-              l10n,
-              fallback: l10n.gradesRefreshFailed,
-            );
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(message)));
-          });
-        }
-        return switch (provider.passingState) {
-          GradesLoadState.idle => _buildEmpty(context, provider),
-          GradesLoadState.loading => const Center(
-            child: CircularProgressIndicator(),
-          ),
-          GradesLoadState.error => _buildError(context, provider),
-          GradesLoadState.loaded => _buildContent(context, provider),
-        };
-      },
-    );
+    final provider = ref.watch(gradesProvider);
+    final errorKey = provider.passingError;
+    // 判空收进同一个 if：errorKey 是 final 局部变量，判空后 flow
+    // analysis 在闭包内保持提升，无需 errorKey! 断言。
+    if (provider.passingState == GradesLoadState.loaded &&
+        errorKey != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        provider.clearPassingError();
+        if (!mounted) return;
+        final l10n = AppLocalizations.of(context)!;
+        final message = refreshFailureMessage(
+          errorKey,
+          l10n,
+          fallback: l10n.gradesRefreshFailed,
+        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
+      });
+    }
+    return switch (provider.passingState) {
+      GradesLoadState.idle => _buildEmpty(context, provider),
+      GradesLoadState.loading => const Center(
+        child: CircularProgressIndicator(),
+      ),
+      GradesLoadState.error => _buildError(context, provider),
+      GradesLoadState.loaded => _buildContent(context, provider),
+    };
   }
 
   Widget _buildEmpty(BuildContext context, GradesProvider provider) {

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/riverpod/campus/network_device_pods.dart';
+import 'package:bugaoshan/providers/riverpod/campus/user_info_pods.dart';
 import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
-import 'package:bugaoshan/providers/user_info_provider.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/info_row.dart';
@@ -177,47 +176,42 @@ class _NetworkDevicePageState extends ConsumerState<NetworkDevicePage> {
   }
 
   Widget _buildUserInfoCard(AppLocalizations l10n) {
-    final userInfoProvider = getIt<UserInfoProvider>();
-    return ListenableBuilder(
-      listenable: userInfoProvider,
-      builder: (context, _) {
-        final user = userInfoProvider.profile;
-        final role = user?['role'] as Map<String, dynamic>?;
-        final departs = user?['departs'] as Map<String, dynamic>?;
+    final userInfo = ref.watch(userInfoProvider);
+    final user = userInfo.profile;
+    final role = user?['role'] as Map<String, dynamic>?;
+    final departs = user?['departs'] as Map<String, dynamic>?;
 
-        return CardWithTitle(
-          title: l10n.networkDeviceUserInfo,
-          icon: const Icon(Icons.person_outline),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildPrivacyRow(l10n.nameLabel, _valueOf(user?['realname'])),
-                _infoRow(l10n.sexLabel, _valueOf(user?['sex'])),
-                _buildPrivacyRow(
-                  l10n.studentIdLabel,
-                  _valueOf(role?['number']),
-                  visibleStart: 2,
-                  visibleEnd: 2,
-                ),
-                _infoRow(l10n.identityLabel, _valueOf(role?['identity'])),
-                _buildPrivacyRow(l10n.emailLabel, _valueOf(user?['email'])),
-                _buildPrivacyRow(
-                  l10n.phoneLabel,
-                  _valueOf(user?['mobile']),
-                  visibleStart: 3,
-                  visibleEnd: 2,
-                ),
-                _infoRow(
-                  l10n.collegeLabel,
-                  departs == null ? '-' : departs.values.join(', '),
-                ),
-              ],
+    return CardWithTitle(
+      title: l10n.networkDeviceUserInfo,
+      icon: const Icon(Icons.person_outline),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildPrivacyRow(l10n.nameLabel, _valueOf(user?['realname'])),
+            _infoRow(l10n.sexLabel, _valueOf(user?['sex'])),
+            _buildPrivacyRow(
+              l10n.studentIdLabel,
+              _valueOf(role?['number']),
+              visibleStart: 2,
+              visibleEnd: 2,
             ),
-          ),
-        );
-      },
+            _infoRow(l10n.identityLabel, _valueOf(role?['identity'])),
+            _buildPrivacyRow(l10n.emailLabel, _valueOf(user?['email'])),
+            _buildPrivacyRow(
+              l10n.phoneLabel,
+              _valueOf(user?['mobile']),
+              visibleStart: 3,
+              visibleEnd: 2,
+            ),
+            _infoRow(
+              l10n.collegeLabel,
+              departs == null ? '-' : departs.values.join(', '),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

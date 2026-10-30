@@ -9,6 +9,7 @@ import 'package:bugaoshan/services/api/reservation_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -530,12 +531,14 @@ Finder _arrowFinder(String tooltip) => find.byWidgetPredicate(
 IconButton _arrow(WidgetTester tester, String tooltip) =>
     tester.widget<IconButton>(_arrowFinder(tooltip));
 
-Widget _wrap() => MaterialApp(
-  scrollBehavior: const AppScrollBehavior(),
-  localizationsDelegates: AppLocalizations.localizationsDelegates,
-  supportedLocales: AppLocalizations.supportedLocales,
-  home: const ReservationPage(),
-);
+Widget _wrap() => ProviderScope(
+      child: MaterialApp(
+        scrollBehavior: const AppScrollBehavior(),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const ReservationPage(),
+      ),
+    );
 
 class _LoggedInAuth extends ChangeNotifier implements ScuAuthProvider {
   @override

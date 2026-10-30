@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/utils/app_log.dart';
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/repair.dart';
+import 'package:bugaoshan/providers/riverpod/campus/repair_pods.dart';
 import 'package:bugaoshan/providers/zhhq_repair_provider.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
@@ -15,7 +16,7 @@ import 'package:bugaoshan/utils/system_insets.dart';
 /// 期望时间/工单进度时间线），并根据工单状态提供「撤回」或「评价」操作：
 /// - 撤回：调用 `myRepair/withdrawMyRepair`（需先查 `ifAllowWithdrawMyRepair`）
 /// - 评价：调用 `visitEvaluateUser/save`（待评价且未评价的工单）
-class RepairDetailPage extends StatefulWidget {
+class RepairDetailPage extends ConsumerStatefulWidget {
   /// 工单 id（列表的 `activeId`）。
   final String ticketId;
 
@@ -33,13 +34,13 @@ class RepairDetailPage extends StatefulWidget {
   });
 
   @override
-  State<RepairDetailPage> createState() => _RepairDetailPageState();
+  ConsumerState<RepairDetailPage> createState() => _RepairDetailPageState();
 }
 
-class _RepairDetailPageState extends State<RepairDetailPage> {
+class _RepairDetailPageState extends ConsumerState<RepairDetailPage> {
   static const String _tag = 'RepairDetailPageState';
 
-  late final ZhhqRepairProvider _provider;
+  ZhhqRepairProvider get _provider => ref.read(repairProvider);
   RepairTicketDetail? _detail;
   Object? _error;
   bool _allowWithdraw = false;
@@ -49,7 +50,6 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
   @override
   void initState() {
     super.initState();
-    _provider = getIt<ZhhqRepairProvider>();
     _load();
   }
 

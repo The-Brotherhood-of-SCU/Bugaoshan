@@ -1,87 +1,79 @@
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/campus/service_applications_pods.dart';
 import 'package:bugaoshan/providers/service_applications_provider.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
-import 'package:flutter/material.dart';
 
 /// 办事大厅 · 我的申请。
 ///
 /// 展示当前用户的所有已提交事项（`/site/process/inst-list`，status=0 查全部）。
 /// 列表项字段来自真实抓包：`app_name`（事项名）、`created`（提交时间）、
 /// `inst_status`（中文状态，如"已完成"）。
-class MyApplicationsPage extends StatefulWidget {
+class MyApplicationsPage extends ConsumerStatefulWidget {
   const MyApplicationsPage({super.key});
 
   @override
-  State<MyApplicationsPage> createState() => _MyApplicationsPageState();
+  ConsumerState<MyApplicationsPage> createState() => _MyApplicationsPageState();
 }
 
-class _MyApplicationsPageState extends State<MyApplicationsPage> {
-  late final ServiceApplicationsProvider _provider;
-
+class _MyApplicationsPageState extends ConsumerState<MyApplicationsPage> {
   @override
   void initState() {
     super.initState();
-    _provider = getIt<ServiceApplicationsProvider>();
-    getIt<ScuAuthProvider>().addListener(_onAuthChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _onAuthChanged();
+      if (mounted && ref.read(scuAuthProviderBridge).isLoggedIn) {
+        ref.read(serviceApplicationsProvider.notifier).ensureLoaded();
+      }
     });
-  }
-
-  @override
-  void dispose() {
-    getIt<ScuAuthProvider>().removeListener(_onAuthChanged);
-    super.dispose();
-  }
-
-  /// 登录时确保已加载；登出时 Provider 已被 injector 清理为 idle，
-  /// 重新登录后若不补拉会一直停留在加载动画。
-  void _onAuthChanged() {
-    final auth = getIt<ScuAuthProvider>();
-    if (auth.isLoggedIn) _provider.ensureLoaded();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    ref.listen(scuAuthProviderBridge, (previous, next) {
+      if (next.isLoggedIn) {
+        ref.read(serviceApplicationsProvider.notifier).ensureLoaded();
+      }
+    });
+
+    final auth = ref.watch(scuAuthProviderBridge);
+    final appsState = ref.watch(serviceApplicationsProvider);
+
     return Scaffold(
       appBar: AppBar(title: Text(l10n.leaveMyApplications)),
-      body: ListenableBuilder(
-        listenable: Listenable.merge([getIt<ScuAuthProvider>(), _provider]),
-        builder: (context, _) => !getIt<ScuAuthProvider>().isLoggedIn
-            ? const LoginRequiredWidget()
-            : _buildBody(l10n),
-      ),
+      body: !auth.isLoggedIn
+          ? const LoginRequiredWidget()
+          : _buildBody(l10n, appsState),
     );
   }
 
-  Widget _buildBody(AppLocalizations l10n) {
-    if (_provider.state == ServiceApplicationsLoadState.idle ||
-        _provider.state == ServiceApplicationsLoadState.loading) {
+  Widget _buildBody(AppLocalizations l10n, ServiceApplicationsState appsState) {
+    if (appsState.loadState == ServiceApplicationsLoadState.idle ||
+        appsState.loadState == ServiceApplicationsLoadState.loading) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_provider.state == ServiceApplicationsLoadState.error) {
+    if (appsState.loadState == ServiceApplicationsLoadState.error) {
       return RetryableErrorWidget(
-        errorType: _provider.error!,
-        onRetry: _provider.refresh,
+        errorType: appsState.error!,
+        onRetry: () => ref.read(serviceApplicationsProvider.notifier).refresh(),
       );
     }
-    if (_provider.items.isEmpty) {
+    if (appsState.items.isEmpty) {
       return _emptyState(l10n);
     }
     return RefreshIndicator(
-      onRefresh: _provider.refresh,
+      onRefresh: () => ref.read(serviceApplicationsProvider.notifier).refresh(),
       child: ListView.separated(
         padding: withSystemBottomInset(context, EdgeInsets.all(16)),
-        itemCount: _provider.items.length,
+        itemCount: appsState.items.length,
         separatorBuilder: (_, _) => const SizedBox(height: 8),
-        itemBuilder: (context, i) => _itemCard(_provider.items[i], l10n),
+        itemBuilder: (context, i) => _itemCard(appsState.items[i], l10n),
       ),
     );
   }

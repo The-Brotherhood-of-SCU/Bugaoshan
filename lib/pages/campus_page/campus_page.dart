@@ -1,10 +1,10 @@
 import 'package:bugaoshan/widgets/navigation/home_dock_insets.dart';
 import 'package:bugaoshan/utils/open_link.dart';
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
@@ -16,14 +16,14 @@ import 'grid_view_switch.dart';
 import 'item_accent.dart';
 import 'package:bugaoshan/theme_shape.dart';
 
-class CampusPage extends StatefulWidget {
+class CampusPage extends ConsumerStatefulWidget {
   const CampusPage({super.key});
 
   @override
-  State<CampusPage> createState() => _CampusPageState();
+  ConsumerState<CampusPage> createState() => _CampusPageState();
 }
 
-class _CampusPageState extends State<CampusPage>
+class _CampusPageState extends ConsumerState<CampusPage>
     with SingleTickerProviderStateMixin {
   late final AnimationController _arrowController;
   late final Animation<double> _arrowAnimation;
@@ -33,7 +33,6 @@ class _CampusPageState extends State<CampusPage>
   String _searchQuery = '';
   final _searchTextController = TextEditingController();
   final _searchFocusNode = FocusNode();
-  late final AppConfigProvider _appConfig = getIt<AppConfigProvider>();
 
   @override
   void initState() {
@@ -111,114 +110,109 @@ class _CampusPageState extends State<CampusPage>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final bgColor = Theme.of(context).scaffoldBackgroundColor;
+    final studentType = ref.watch(studentTypeSettingProvider);
+    final isGridView = ref.watch(campusGridViewSettingProvider);
+    final cardAnimDuration = ref.watch(cardSizeAnimationDurationSettingProvider);
+    final sections = campusSectionsForStudentType(studentType);
 
-    final mergedListenVariables = Listenable.merge([
-      _appConfig.studentType,
-      _appConfig.campusGridView,
-    ]);
-    return ListenableBuilder(
-      listenable: mergedListenVariables,
-      builder: (context, _) {
-        final sections = campusSectionsForStudentType(
-          _appConfig.studentType.value,
-        );
-        final isGridView = _appConfig.campusGridView.value;
-        return Stack(
-          children: [
-            NotificationListener<ScrollNotification>(
-              onNotification: (notification) {
-                _onScroll(notification);
-                return false;
-              },
-              child: AnimatedSwitcher(
-                duration: _appConfig.cardSizeAnimationDuration.value,
-                switchInCurve: Curves.easeInOut,
-                switchOutCurve: Curves.easeInOut,
-                transitionBuilder: (child, animation) {
-                  return FadeTransition(opacity: animation, child: child);
-                },
-                child: CustomScrollView(
-                  key: ValueKey(isGridView),
-                  slivers: [
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppShapes.medium,
-                        AppShapes.medium,
-                        AppShapes.medium,
-                        0,
-                      ),
-                      sliver: SliverToBoxAdapter(
-                        child: _buildSearchArea(l10n, sections),
-                      ),
-                    ),
-                    if (_searchExpanded && _searchQuery.trim().isNotEmpty)
-                      SliverPadding(
-                        padding: const EdgeInsets.all(AppShapes.medium),
-                        sliver: _buildSearchResults(l10n, sections, isGridView),
-                      )
-                    else
-                      SliverPadding(
-                        padding: const EdgeInsets.all(AppShapes.medium),
-                        sliver: isGridView
-                            ? _buildGridView(l10n, sections)
-                            : _buildListView(l10n, sections),
-                      ),
-                    SliverToBoxAdapter(
-                      child: SizedBox(height: HomeDockInsets.bottomOf(context)),
-                    ),
-                  ],
+    return Stack(
+      children: [
+        NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            _onScroll(notification);
+            return false;
+          },
+          child: AnimatedSwitcher(
+            duration: cardAnimDuration,
+            switchInCurve: Curves.easeInOut,
+            switchOutCurve: Curves.easeInOut,
+            transitionBuilder: (child, animation) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            child: CustomScrollView(
+              key: ValueKey(isGridView),
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppShapes.medium,
+                    AppShapes.medium,
+                    AppShapes.medium,
+                    0,
+                  ),
+                  sliver: SliverToBoxAdapter(
+                    child: _buildSearchArea(l10n, sections, cardAnimDuration),
+                  ),
                 ),
-              ),
+                if (_searchExpanded && _searchQuery.trim().isNotEmpty)
+                  SliverPadding(
+                    padding: const EdgeInsets.all(AppShapes.medium),
+                    sliver: _buildSearchResults(l10n, sections, isGridView),
+                  )
+                else
+                  SliverPadding(
+                    padding: const EdgeInsets.all(AppShapes.medium),
+                    sliver: isGridView
+                        ? _buildGridView(l10n, sections)
+                        : _buildListView(l10n, sections),
+                  ),
+                SliverToBoxAdapter(
+                  child: SizedBox(height: HomeDockInsets.bottomOf(context)),
+                ),
+              ],
             ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: HomeDockInsets.bottomOf(context),
-              child: IgnorePointer(
-                child: AnimatedOpacity(
-                  opacity: _showHint ? 1.0 : 0.0,
-                  duration: _appConfig.cardSizeAnimationDuration.value,
-                  child: Container(
-                    height: 64,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          bgColor.withValues(alpha: 0),
-                          bgColor.withValues(alpha: 0.95),
-                        ],
-                      ),
-                    ),
-                    alignment: Alignment.center,
-                    child: AnimatedBuilder(
-                      animation: _arrowAnimation,
-                      builder: (context, child) => Transform.translate(
-                        offset: Offset(0, _arrowAnimation.value),
-                        child: child,
-                      ),
-                      child: Icon(
-                        Icons.keyboard_arrow_down,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                        size: AppShapes.extraLarge,
-                      ),
-                    ),
+          ),
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: HomeDockInsets.bottomOf(context),
+          child: IgnorePointer(
+            child: AnimatedOpacity(
+              opacity: _showHint ? 1.0 : 0.0,
+              duration: cardAnimDuration,
+              child: Container(
+                height: 64,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      bgColor.withValues(alpha: 0),
+                      bgColor.withValues(alpha: 0.95),
+                    ],
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: AnimatedBuilder(
+                  animation: _arrowAnimation,
+                  builder: (context, child) => Transform.translate(
+                    offset: Offset(0, _arrowAnimation.value),
+                    child: child,
+                  ),
+                  child: Icon(
+                    Icons.keyboard_arrow_down,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                    size: AppShapes.extraLarge,
                   ),
                 ),
               ),
             ),
-          ],
-        );
-      },
+          ),
+        ),
+      ],
     );
   }
 
   /// 顶部搜索区：收起时与第一个分区标题同行显示右侧圆形角标，点击后展开为搜索框。
-  Widget _buildSearchArea(AppLocalizations l10n, List<CampusSection> sections) {
+  Widget _buildSearchArea(
+    AppLocalizations l10n,
+    List<CampusSection> sections,
+    Duration cardAnimDuration,
+  ) {
     return AnimatedSize(
-      duration: _appConfig.cardSizeAnimationDuration.value,
+      duration: cardAnimDuration,
       curve: AppCurves.ease,
       alignment: Alignment.topCenter,
       child: _searchExpanded

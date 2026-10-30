@@ -1,12 +1,13 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/grades/custom_stats_tab.dart';
 import 'package:bugaoshan/pages/campus/grades/scheme_scores_tab.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -69,11 +70,13 @@ void main() {
   });
 }
 
-Widget _testApp(Widget home) => MaterialApp(
-  localizationsDelegates: AppLocalizations.localizationsDelegates,
-  supportedLocales: AppLocalizations.supportedLocales,
-  locale: const Locale('zh'),
-  home: Scaffold(body: home),
+Widget _testApp(Widget home) => ProviderScope(
+  child: MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    locale: const Locale('zh'),
+    home: Scaffold(body: home),
+  ),
 );
 
 Future<GradesProvider> _createProvider({

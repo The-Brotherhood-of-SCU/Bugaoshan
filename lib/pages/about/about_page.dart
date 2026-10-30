@@ -2,10 +2,12 @@ import 'dart:async';
 import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/providers/app_info_provider.dart';
+import 'package:bugaoshan/providers/riverpod/common/app_info_pods.dart';
+import 'package:bugaoshan/providers/riverpod/common/update_pods.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/theme_shape.dart';
@@ -24,19 +26,16 @@ import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/services/dynamic_icon_service.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
-class AboutPage extends StatefulWidget {
+class AboutPage extends ConsumerStatefulWidget {
   const AboutPage({super.key});
 
   @override
-  State<AboutPage> createState() => _AboutPageState();
+  ConsumerState<AboutPage> createState() => _AboutPageState();
 }
 
-class _AboutPageState extends State<AboutPage> {
+class _AboutPageState extends ConsumerState<AboutPage> {
   static const String _tag = 'AboutPageState';
 
-  final versionProvider = getIt<AppInfoProvider>();
-  final updateProvider = getIt<UpdateProvider>();
-  final appConfig = getIt<AppConfigProvider>();
   String _iconAsset = 'assets/icon.png';
 
   @override
@@ -67,9 +66,9 @@ class _AboutPageState extends State<AboutPage> {
   Future<void> _checkForUpdates() async {
     final localizations = AppLocalizations.of(context)!;
 
-    appConfig.hasUpdateNotification.value = false;
+    ref.read(hasUpdateNotificationSettingProvider.notifier).update(false);
     try {
-      final result = await updateProvider.checkForUpdate();
+      final result = await ref.read(updateProvider.notifier).checkForUpdate();
       if (!mounted) return;
 
       if (result.hasUpdate && result.release != null) {
@@ -127,14 +126,19 @@ class _AboutPageState extends State<AboutPage> {
     required String filename,
     String? checksumSha256,
   }) async {
-    await showDownloadProgressDialog(
-      context: context,
-      version: latestVersion,
-      downloadUrl: downloadUrl,
-      filename: filename,
-      checksumSha256: checksumSha256,
-      updateProvider: updateProvider,
-    );
+    final legacyProvider = getIt.isRegistered<UpdateProvider>()
+        ? getIt<UpdateProvider>()
+        : null;
+    if (legacyProvider != null) {
+      await showDownloadProgressDialog(
+        context: context,
+        version: latestVersion,
+        downloadUrl: downloadUrl,
+        filename: filename,
+        checksumSha256: checksumSha256,
+        updateProvider: legacyProvider,
+      );
+    }
   }
 
   Widget _buildHeader(
@@ -213,13 +217,13 @@ class _AboutPageState extends State<AboutPage> {
               IconTile(
                 icon: Icons.info_outline_rounded,
                 label: localizations.version,
-                value: versionProvider.currentVersion,
+                value: ref.watch(appInfoProvider).currentVersion,
               ),
-              if (versionProvider.gitTag != 'null')
+              if (ref.watch(appInfoProvider).gitTag != 'null')
                 IconTile(
                   icon: Icons.local_offer_outlined,
                   label: localizations.gitTag,
-                  value: versionProvider.gitTag,
+                  value: ref.watch(appInfoProvider).gitTag,
                 ),
             ],
           ),
@@ -246,7 +250,7 @@ class _AboutPageState extends State<AboutPage> {
                 value: "The Brotherhood of SCU",
                 onTap: () => popupOrNavigate(context, const TeamPage()),
               ),
-              if (updateProvider.supportsInAppUpdate)
+              if (ref.read(updateProvider.notifier).supportsInAppUpdate)
                 UpdateTile(onTap: _checkForUpdates),
               IconTile(
                 icon: Icons.gavel,
@@ -259,7 +263,7 @@ class _AboutPageState extends State<AboutPage> {
                 onTap: () => showLicensePage(
                   context: context,
                   applicationName: localizations.bugaoshan,
-                  applicationVersion: versionProvider.currentVersion,
+                  applicationVersion: ref.read(appInfoProvider).currentVersion,
                 ),
               ),
               IconTile(

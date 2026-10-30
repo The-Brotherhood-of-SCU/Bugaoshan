@@ -8,6 +8,7 @@ import 'package:bugaoshan/providers/plan_completion_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -45,10 +46,12 @@ void main() {
     getIt.registerSingleton<ScuAuthProvider>(_FakeScuAuthProvider());
 
     await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const PlanCompletionPage(),
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: PlanCompletionPage(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -88,10 +91,12 @@ void main() {
     getIt.registerSingleton<ScuAuthProvider>(_FakeScuAuthProvider());
 
     await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const PlanCompletionPage(),
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: PlanCompletionPage(),
+        ),
       ),
     );
     await tester.pumpAndSettle();

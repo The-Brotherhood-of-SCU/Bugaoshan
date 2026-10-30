@@ -1,47 +1,48 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/providers/user_info_provider.dart';
+import 'package:bugaoshan/providers/riverpod/campus/user_info_pods.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 
-class UserInfoCard extends StatelessWidget {
+class UserInfoCard extends ConsumerWidget {
   const UserInfoCard({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final provider = getIt<UserInfoProvider>();
-    return ListenableBuilder(
-      listenable: provider,
-      builder: (context, _) => _buildContent(context, provider),
-    );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userInfo = ref.watch(userInfoProvider);
+    return _buildContent(context, ref, userInfo);
   }
 
-  Widget _buildContent(BuildContext context, UserInfoProvider provider) {
+  Widget _buildContent(
+    BuildContext context,
+    WidgetRef ref,
+    UserInfoState userInfo,
+  ) {
     final theme = Theme.of(context);
     final localizations = AppLocalizations.of(context)!;
     final primaryColor = theme.colorScheme.primary;
 
     // 未登录或尚未获取，不显示
-    if (!provider.hasData && !provider.loading && !provider.error) {
+    if (!userInfo.hasData && !userInfo.loading && !userInfo.error) {
       return const SizedBox.shrink();
     }
 
     Widget child;
     VoidCallback? onTap;
 
-    if (provider.loading) {
+    if (userInfo.loading) {
       child = _buildLoadingContent(theme, localizations);
       onTap = null;
-    } else if (provider.error) {
+    } else if (userInfo.error) {
       child = _buildErrorContent(theme, localizations, primaryColor);
-      onTap = provider.retry;
+      onTap = () => ref.read(userInfoProvider.notifier).retry();
     } else {
-      final labels = provider.labels;
+      final labels = userInfo.labels;
       if (labels == null || labels.isEmpty) {
         return const SizedBox.shrink();
       }
       child = _buildLabelsContent(theme, primaryColor, localizations, labels);
-      onTap = provider.retry;
+      onTap = () => ref.read(userInfoProvider.notifier).retry();
     }
 
     return StyledCard(

@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/graduate_grades.dart';
@@ -8,8 +11,6 @@ import 'package:bugaoshan/providers/graduate_grades_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/gs_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   setUp(() async {
@@ -161,10 +162,12 @@ void main() {
     getIt.registerSingleton<ScuAuthProvider>(_FakeScuAuthProvider());
 
     await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const GraduateGradesPage(),
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: GraduateGradesPage(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -182,10 +185,12 @@ void main() {
     getIt.registerSingleton<ScuAuthProvider>(_FakeScuAuthProvider());
 
     await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const GraduateGradesPage(),
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: GraduateGradesPage(),
+        ),
       ),
     );
     provider.debugSeedStats(
@@ -246,10 +251,12 @@ void main() {
     getIt.registerSingleton<ScuAuthProvider>(_FakeScuAuthProvider());
 
     await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const GraduateGradesPage(),
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: GraduateGradesPage(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -288,10 +295,12 @@ void main() {
     getIt.registerSingleton<ScuAuthProvider>(_FakeScuAuthProvider());
 
     await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const GraduateGradesPage(),
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: GraduateGradesPage(),
+        ),
       ),
     );
     await tester.pumpAndSettle();

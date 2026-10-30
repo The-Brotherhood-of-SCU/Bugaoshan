@@ -1,10 +1,11 @@
 import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/utils/app_log.dart';
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/campus/balance_pods.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/balance_query_service.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
@@ -16,42 +17,37 @@ import 'widgets/bind_room_dialog.dart';
 ///
 /// 页面只负责渲染认证和 [BalanceQueryProvider] 的当前快照；余额、绑定选项
 /// 的缓存、加载和错误状态均由 Provider 管理。
-class BalanceQueryPage extends StatelessWidget {
+class BalanceQueryPage extends ConsumerWidget {
   static const String _tag = 'BalanceQueryPage';
 
   const BalanceQueryPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final provider = getIt<BalanceQueryProvider>();
-    final auth = getIt<ScuAuthProvider>();
-    return ListenableBuilder(
-      listenable: Listenable.merge([provider, auth]),
-      builder: (context, _) {
-        final l10n = AppLocalizations.of(context)!;
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(l10n.balanceQuery),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.settings_outlined),
-                tooltip: l10n.balanceQuerySettings,
-                onPressed: () => _showSettingsSheet(context),
-              ),
-              if (provider.bindings.isNotEmpty)
-                PopupMenuButton<int>(
-                  icon: const Icon(Icons.swap_horiz),
-                  tooltip: l10n.switchRoom,
-                  onSelected: (index) =>
-                      _onRoomSelected(context, provider, auth, index),
-                  itemBuilder: (context) =>
-                      _roomMenuItems(context, provider, l10n),
-                ),
-            ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final provider = ref.watch(balanceQueryProvider);
+    final auth = ref.watch(scuAuthProviderBridge);
+    final l10n = AppLocalizations.of(context)!;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.balanceQuery),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: l10n.balanceQuerySettings,
+            onPressed: () => _showSettingsSheet(context, ref),
           ),
-          body: _buildBody(context, provider, auth, l10n),
-        );
-      },
+          if (provider.bindings.isNotEmpty)
+            PopupMenuButton<int>(
+              icon: const Icon(Icons.swap_horiz),
+              tooltip: l10n.switchRoom,
+              onSelected: (index) =>
+                  _onRoomSelected(context, provider, auth, index),
+              itemBuilder: (context) =>
+                  _roomMenuItems(context, provider, l10n),
+            ),
+        ],
+      ),
+      body: _buildBody(context, provider, auth, l10n),
     );
   }
 
@@ -156,8 +152,8 @@ class BalanceQueryPage extends StatelessWidget {
     }
   }
 
-  void _showSettingsSheet(BuildContext context) {
-    final appConfig = getIt<AppConfigProvider>();
+  void _showSettingsSheet(BuildContext context, WidgetRef ref) {
+    final appConfig = ref.read(appConfigProviderBridge);
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,

@@ -2,17 +2,18 @@ import 'dart:async';
 
 import 'package:bugaoshan/widgets/common/third_center.dart';
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import '../import/import_source_sheet.dart';
 import 'prompt_new_schedule.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/providers/riverpod/course/course_pods.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/utils/export_schedule_utils.dart';
 
 export 'prompt_new_schedule.dart';
 
-class ScheduleManagementPage extends StatelessWidget {
+class ScheduleManagementPage extends ConsumerWidget {
   const ScheduleManagementPage({super.key});
 
   void _onImport(BuildContext context, CourseProvider courseProvider) {
@@ -20,9 +21,11 @@ class ScheduleManagementPage extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final courseProvider = getIt<CourseProvider>();
+    final courseProv = ref.watch(courseProvider);
+    final allSchedules = ref.watch(allSchedulesProvider);
+    final currentId = ref.watch(currentScheduleConfigProvider)?.id;
 
     return ScaffoldMessenger(
       child: Scaffold(
@@ -31,27 +34,17 @@ class ScheduleManagementPage extends StatelessWidget {
           actions: [
             IconButton(
               icon: const Icon(Icons.download),
-              onPressed: () => _onImport(context, courseProvider),
+              onPressed: () => _onImport(context, courseProv),
             ),
             IconButton(
               icon: const Icon(Icons.add),
               onPressed: () =>
-                  promptForNewScheduleConfig(context, courseProvider),
+                  promptForNewScheduleConfig(context, courseProv),
             ),
           ],
         ),
-        body: ListenableBuilder(
-          listenable: Listenable.merge([
-            courseProvider.allSchedules,
-            courseProvider.scheduleConfig,
-          ]),
-          builder: (context, _) {
-            final allSchedules = courseProvider.allSchedules.value;
-            final currentId = courseProvider.scheduleConfig.value?.id;
-            // currentId 可空：无课表时为 null，此时所有 isCurrent 均为 false，符合预期。
-
-            if (allSchedules.isEmpty) {
-              return ThirdCenter(
+        body: allSchedules.isEmpty
+            ? ThirdCenter(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -69,10 +62,8 @@ class ScheduleManagementPage extends StatelessWidget {
                     ),
                   ],
                 ),
-              );
-            }
-
-            return ListView.builder(
+              )
+            : ListView.builder(
               itemCount: allSchedules.length,
               itemBuilder: (context, index) {
                 final schedule = allSchedules[index];
@@ -98,7 +89,7 @@ class ScheduleManagementPage extends StatelessWidget {
                   ),
                   onTap: () async {
                     final navigator = Navigator.of(context);
-                    await courseProvider.switchSchedule(schedule.id);
+                    await courseProv.switchSchedule(schedule.id);
                     if (navigator.canPop()) {
                       navigator.pop();
                     }
@@ -147,7 +138,7 @@ class ScheduleManagementPage extends StatelessWidget {
                           );
 
                           if (newName != null && newName.isNotEmpty) {
-                            if (courseProvider.isScheduleNameTaken(
+                            if (courseProv.isScheduleNameTaken(
                               newName,
                               excludeId: schedule.id,
                             )) {
@@ -164,7 +155,7 @@ class ScheduleManagementPage extends StatelessWidget {
                             final updatedConfig = schedule.copyWith(
                               semesterName: newName,
                             );
-                            await courseProvider.updateScheduleConfig(
+                            await courseProv.updateScheduleConfig(
                               updatedConfig,
                             );
                           }
@@ -180,7 +171,7 @@ class ScheduleManagementPage extends StatelessWidget {
                             ),
                           );
                           if (confirm == true) {
-                            await courseProvider.deleteSchedule(schedule.id);
+                            await courseProv.deleteSchedule(schedule.id);
                           }
                         },
                       ),
@@ -188,9 +179,7 @@ class ScheduleManagementPage extends StatelessWidget {
                   ),
                 );
               },
-            );
-          },
-        ),
+            ),
       ),
     );
   }

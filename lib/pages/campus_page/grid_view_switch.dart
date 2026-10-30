@@ -1,62 +1,52 @@
 import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus_page/list_card.dart';
 import 'package:bugaoshan/pages/campus_page/grid_card.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 
 /// Grid view switch in list style.
-class GridViewSwitchListCard extends StatelessWidget {
+class GridViewSwitchListCard extends ConsumerWidget {
   const GridViewSwitchListCard({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final appConfig = GetIt.instance<AppConfigProvider>();
+    final isGridView = ref.watch(campusGridViewSettingProvider);
 
-    return ValueListenableBuilder<bool>(
-      valueListenable: appConfig.campusGridView,
-      builder: (context, isGridView, _) {
-        return CampusListCard(
-          icon: Icons.grid_view,
-          title: l10n.campusGridView,
-          desc: l10n.campusGridViewDesc,
-          trailing: AdaptiveGlassSwitch(
-            semanticLabel: l10n.campusGridView,
-            value: isGridView,
-            onChanged: (value) {
-              appConfig.campusGridView.value = value;
-            },
-          ),
-          onTap: () {
-            appConfig.campusGridView.value = !isGridView;
-          },
-        );
+    return CampusListCard(
+      icon: Icons.grid_view,
+      title: l10n.campusGridView,
+      desc: l10n.campusGridViewDesc,
+      trailing: AdaptiveGlassSwitch(
+        semanticLabel: l10n.campusGridView,
+        value: isGridView,
+        onChanged: (value) {
+          ref.read(campusGridViewSettingProvider.notifier).update(value);
+        },
+      ),
+      onTap: () {
+        ref.read(campusGridViewSettingProvider.notifier).update(!isGridView);
       },
     );
   }
 }
 
 /// Grid view switch in grid style - looks like a regular grid card.
-class GridViewSwitchGridCard extends StatelessWidget {
+class GridViewSwitchGridCard extends ConsumerWidget {
   const GridViewSwitchGridCard({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final appConfig = GetIt.instance<AppConfigProvider>();
+    final isGridView = ref.watch(campusGridViewSettingProvider);
 
-    return ValueListenableBuilder<bool>(
-      valueListenable: appConfig.campusGridView,
-      builder: (context, isGridView, _) {
-        return CampusGridCard(
-          icon: isGridView ? Icons.view_list : Icons.grid_view,
-          title: l10n.campusGridView,
-          onTap: () {
-            appConfig.campusGridView.value = !isGridView;
-          },
-        );
+    return CampusGridCard(
+      icon: isGridView ? Icons.view_list : Icons.grid_view,
+      title: l10n.campusGridView,
+      onTap: () {
+        ref.read(campusGridViewSettingProvider.notifier).update(!isGridView);
       },
     );
   }

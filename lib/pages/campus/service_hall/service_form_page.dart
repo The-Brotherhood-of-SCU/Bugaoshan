@@ -6,14 +6,13 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/services/api/service_api_service.dart';
 import 'package:bugaoshan/services/api/service_form_models.dart';
 import 'package:bugaoshan/services/api/service_plugin_models.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
-import 'package:bugaoshan/services/auth/service_auth.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/service_region_picker.dart';
@@ -38,7 +37,7 @@ import 'package:bugaoshan/utils/system_insets.dart';
 /// 提交流程：校验（[ServiceFormController.validate]）→ 逐 File 字段上传
 /// 附件 → 组装 `form_data`（[ServiceFormController.buildFormData]，日志仅记录
 /// 字段数量）→ `POST /site/apps/launch`。
-class ServiceFormPage extends StatefulWidget {
+class ServiceFormPage extends ConsumerStatefulWidget {
   static const String _tag = 'ServiceFormPage';
 
   final ServiceAppInfo app;
@@ -46,10 +45,10 @@ class ServiceFormPage extends StatefulWidget {
   const ServiceFormPage({super.key, required this.app});
 
   @override
-  State<ServiceFormPage> createState() => _ServiceFormPageState();
+  ConsumerState<ServiceFormPage> createState() => _ServiceFormPageState();
 }
 
-class _ServiceFormPageState extends State<ServiceFormPage> {
+class _ServiceFormPageState extends ConsumerState<ServiceFormPage> {
   /// 与外层Widget 同名常量，避免每处日志重复写字符串字面量。
   static const String _tag = ServiceFormPage._tag;
 
@@ -72,32 +71,22 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
   @override
   void initState() {
     super.initState();
-    getIt<ScuAuthProvider>().addListener(_onAuthChanged);
-    getIt<ServiceAuth>().addListener(_onServiceAuthChanged);
+    ref.read(serviceAuthBridge).addListener(_onServiceAuthChanged);
     // 省市区数据有本地 asset 兜底，无需登录即可加载。
     unawaited(_loadRegions());
-    if (getIt<ScuAuthProvider>().isLoggedIn) {
+    if (ref.read(scuAuthProviderBridge).isLoggedIn) {
       unawaited(_loadSchema());
     }
   }
 
   @override
   void dispose() {
-    getIt<ScuAuthProvider>().removeListener(_onAuthChanged);
-    getIt<ServiceAuth>().removeListener(_onServiceAuthChanged);
+    ref.read(serviceAuthBridge).removeListener(_onServiceAuthChanged);
     super.dispose();
   }
 
-  void _onAuthChanged() {
-    // 已加载过 schema 就不重复加载——重建 controller 会清空用户已填内容
-    if (getIt<ScuAuthProvider>().isLoggedIn && _schema == null) {
-      unawaited(_loadSchema());
-    }
-    if (mounted) setState(() {});
-  }
-
   void _onServiceAuthChanged() {
-    if (getIt<ServiceAuth>().isReady && _schema == null) {
+    if (ref.read(serviceAuthBridge).isReady && _schema == null) {
       // SSO 就绪后加载表单（initState 时可能还没就绪，导致信息空白）
       unawaited(_loadSchema());
     }
@@ -106,7 +95,7 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
 
   /// 加载表单 schema（start-data + start-info → build → fallback 链）。
   Future<void> _loadSchema() async {
-    if (!getIt<ScuAuthProvider>().isLoggedIn) return;
+    if (!ref.read(scuAuthProviderBridge).isLoggedIn) return;
     if (_schemaLoading) return;
     setState(() => _schemaLoading = true);
     try {
@@ -135,7 +124,7 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
   /// start-data 与 start-info 都只依赖 appId、互不输出了对方需要的值，
   /// 并行发起省一次串行 RTT；仅 get-formv 必须等两者结果（currform + bpmn_id）。
   Future<ServiceFormSchema> _fetchSchema() async {
-    final api = getIt<ServiceApiService>();
+    final api = ref.read(serviceApiServiceBridge);
     final appId = widget.app.appId;
     final startDataFuture = api.fetchFormSchema(appId);
     final startInfoFuture = api.fetchStartInfo(appId);
@@ -188,7 +177,7 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
 
   Future<void> _loadStarterDepartId() async {
     try {
-      final id = await getIt<ServiceApiService>().fetchStarterDepartId(
+      final id = await ref.read(serviceApiServiceBridge).fetchStarterDepartId(
         widget.app.appId,
       );
       if (!mounted || id == null) return;
@@ -213,7 +202,7 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
     if (schema == null || controller == null) return;
     for (final p in schema.dataSourcePlugins) {
       try {
-        final d = await getIt<ServiceApiService>().fetchDataSourceValue(
+        final d = await ref.read(serviceApiServiceBridge).fetchDataSourceValue(
           appId: widget.app.appId,
           ref: p.dataSource!,
           starterDepartId:
@@ -240,10 +229,10 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
     try {
       List<dynamic> data;
       try {
-        if (!getIt<ScuAuthProvider>().isLoggedIn) {
+        if (!ref.read(scuAuthProviderBridge).isLoggedIn) {
           throw StateError('not logged in');
         }
-        data = await getIt<ServiceApiService>().fetchProvinces();
+        data = await ref.read(serviceApiServiceBridge).fetchProvinces();
         if (data.isEmpty) throw StateError('empty provinces');
       } catch (e) {
         AppLog.w(_tag, '在线地区数据不可用，使用本地数据', error: e);
@@ -291,7 +280,7 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
 
     setState(() => _submitting = true);
     try {
-      final api = getIt<ServiceApiService>();
+      final api = ref.read(serviceApiServiceBridge);
       final appId = widget.app.appId;
 
       // 逐 File 字段上传附件，本地 File 列表临时替换为已上传附件列表；
@@ -374,10 +363,18 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(scuAuthProviderBridge, (previous, next) {
+      if (next.isLoggedIn && _schema == null) {
+        unawaited(_loadSchema());
+      }
+      if (mounted) setState(() {});
+    });
+
+    final auth = ref.watch(scuAuthProviderBridge);
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(title: Text(widget.app.title(l10n))),
-      body: !getIt<ScuAuthProvider>().isLoggedIn
+      body: !auth.isLoggedIn
           ? const LoginRequiredWidget()
           : _buildBody(l10n),
     );

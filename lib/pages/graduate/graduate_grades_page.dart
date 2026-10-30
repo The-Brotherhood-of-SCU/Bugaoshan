@@ -1,10 +1,10 @@
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/graduate_grades.dart';
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
 import 'package:bugaoshan/providers/graduate_grades_provider.dart';
+import 'package:bugaoshan/providers/riverpod/academic/grades_pods.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
@@ -15,25 +15,21 @@ import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// 研究生成绩页（仿本科「方案成绩」：统计汇总卡 + 按学期分组的课程明细）。
 ///
 /// 数据链：[GsApiService.fetchGrades]（`_postForm` 自愈链）→
 /// [graduateGradeRowsFromJson] → [graduateGradesStatsFromRows]。
-class GraduateGradesPage extends StatefulWidget {
+class GraduateGradesPage extends ConsumerStatefulWidget {
   const GraduateGradesPage({super.key});
 
   @override
-  State<GraduateGradesPage> createState() => _GraduateGradesPageState();
+  ConsumerState<GraduateGradesPage> createState() => _GraduateGradesPageState();
 }
 
-class _GraduateGradesPageState extends State<GraduateGradesPage> {
+class _GraduateGradesPageState extends ConsumerState<GraduateGradesPage> {
   static const String _tag = 'GraduateGradesPage';
-
-  late final GraduateGradesProvider _provider;
-
-  /// 缓存实例：dispose 时 getIt 可能已被 reset，重新取会抛异常。
-  late final ScuAuthProvider _auth;
 
   /// 统一认证会话过期（token 还在）时的自愈刷新进行中。
   bool _recoveringSession = false;
@@ -41,24 +37,15 @@ class _GraduateGradesPageState extends State<GraduateGradesPage> {
   @override
   void initState() {
     super.initState();
-    _provider = getIt<GraduateGradesProvider>();
-    _auth = getIt<ScuAuthProvider>();
-    _auth.addListener(_onAuthChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _onAuthChanged();
+      if (mounted) _checkAuthAndLoad();
     });
   }
 
-  @override
-  void dispose() {
-    _auth.removeListener(_onAuthChanged);
-    super.dispose();
-  }
-
-  void _onAuthChanged() {
-    final auth = _auth;
+  void _checkAuthAndLoad() {
+    final auth = ref.read(scuAuthProviderBridge);
     if (auth.isLoggedIn) {
-      _provider.ensureLoaded();
+      ref.read(graduateGradesProvider).ensureLoaded();
     } else if (!auth.isAutoLoggingIn &&
         !_recoveringSession &&
         auth.accessToken != null) {
@@ -71,7 +58,7 @@ class _GraduateGradesPageState extends State<GraduateGradesPage> {
   Future<void> _recoverSession() async {
     setState(() => _recoveringSession = true);
     try {
-      await getIt<ScuAuth>().refresh();
+      await ref.read(scuAuthBridge).refresh();
     } catch (e, logStackTrace) {
       // 这个 Future 由 listener 回调 fire-and-forget 触发、没人接，不 catch
       // 会变成 unhandled async error。留在未登录分支，由 _buildBody 的
@@ -90,36 +77,47 @@ class _GraduateGradesPageState extends State<GraduateGradesPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final auth = ref.watch(scuAuthProviderBridge);
+    final provider = ref.watch(graduateGradesProvider);
 
-    return ListenableBuilder(
-      listenable: Listenable.merge([_provider, _auth]),
-      builder: (context, _) => Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text(l10n.graduateGrades),
-          leading: IconButton(
-            icon: const Icon(Icons.close),
-            tooltip: l10n.close,
-            onPressed: () => popDialog(context: context),
-          ),
-          actions: [
-            if (_auth.isLoggedIn &&
-                _provider.state != GraduateGradesLoadState.loading)
-              IconButton(
-                tooltip: l10n.refresh,
-                onPressed: _provider.refresh,
-                icon: const Icon(Icons.refresh),
-              ),
-          ],
+    ref.listen(scuAuthProviderBridge, (prev, next) {
+      if (next.isLoggedIn) {
+        ref.read(graduateGradesProvider).ensureLoaded();
+      } else if (!next.isAutoLoggingIn &&
+          !_recoveringSession &&
+          next.accessToken != null) {
+        _recoverSession();
+      }
+    });
+
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(l10n.graduateGrades),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          tooltip: l10n.close,
+          onPressed: () => popDialog(context: context),
         ),
-        body: _buildBody(l10n),
+        actions: [
+          if (auth.isLoggedIn &&
+              provider.state != GraduateGradesLoadState.loading)
+            IconButton(
+              tooltip: l10n.refresh,
+              onPressed: provider.refresh,
+              icon: const Icon(Icons.refresh),
+            ),
+        ],
       ),
+      body: _buildBody(l10n, auth, provider),
     );
   }
 
-  Widget _buildBody(AppLocalizations l10n) {
-    final auth = _auth;
-
+  Widget _buildBody(
+    AppLocalizations l10n,
+    ScuAuthProvider auth,
+    GraduateGradesProvider provider,
+  ) {
     // 统一认证未登录：自动登录或会话自愈中给加载态，
     // 否则给「请先登录」引导。研教务会话过期的错误态走下方 unauthenticated。
     if (!auth.isLoggedIn) {
@@ -128,11 +126,11 @@ class _GraduateGradesPageState extends State<GraduateGradesPage> {
           : const LoginRequiredWidget();
     }
 
-    if (_provider.state == GraduateGradesLoadState.loading) {
+    if (provider.state == GraduateGradesLoadState.loading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_provider.errorKind == GraduateGradesErrorKind.unauthenticated) {
+    if (provider.errorKind == GraduateGradesErrorKind.unauthenticated) {
       // 自愈重试后仍失败：给「会话过期」+ 前往登录 + 重试（与课表导入页
       // 失败态同语义），不用死胡同的「请先登录」——用户往往明明已登录。
       return Center(
@@ -160,7 +158,7 @@ class _GraduateGradesPageState extends State<GraduateGradesPage> {
               ),
               const SizedBox(height: 8),
               OutlinedButton.icon(
-                onPressed: _provider.refresh,
+                onPressed: provider.refresh,
                 icon: const Icon(Icons.refresh),
                 label: Text(l10n.retry),
               ),
@@ -170,14 +168,14 @@ class _GraduateGradesPageState extends State<GraduateGradesPage> {
       );
     }
 
-    if (_provider.errorKind != null) {
+    if (provider.errorKind != null) {
       return RetryableErrorWidget.message(
-        message: _provider.errorMessage ?? l10n.loadFailed,
-        onRetry: _provider.refresh,
+        message: provider.errorMessage ?? l10n.loadFailed,
+        onRetry: provider.refresh,
       );
     }
 
-    final stats = _provider.stats;
+    final stats = provider.stats;
     if (stats == null) {
       return Center(
         child: Text(
@@ -190,11 +188,11 @@ class _GraduateGradesPageState extends State<GraduateGradesPage> {
     }
 
     return RefreshIndicator(
-      onRefresh: _provider.refresh,
+      onRefresh: provider.refresh,
       child: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(child: _buildSummaryCard(stats)),
-          for (final group in _groupRowsByTerm(_provider.rows)) ...[
+          for (final group in _groupRowsByTerm(provider.rows)) ...[
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),

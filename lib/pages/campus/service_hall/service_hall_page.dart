@@ -1,10 +1,10 @@
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/service_hall/my_applications_page.dart';
 import 'package:bugaoshan/pages/campus/service_hall/service_app_catalog.dart';
 import 'package:bugaoshan/pages/campus/service_hall/service_form_page.dart';
 import 'package:bugaoshan/pages/campus_page/list_card.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +16,7 @@ import 'package:flutter/material.dart';
 /// 底部为「我的申请」（[MyApplicationsPage]）。
 ///
 /// 入口卡片复用 [CampusListCard]，与校园页各功能入口保持一致的外观与尺寸。
-class ServiceHallPage extends StatelessWidget {
+class ServiceHallPage extends ConsumerWidget {
   const ServiceHallPage({super.key});
 
   void _openMatter(BuildContext context, ServiceAppInfo app) {
@@ -32,11 +32,12 @@ class ServiceHallPage extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final auth = ref.watch(scuAuthProviderBridge);
     return Scaffold(
       appBar: AppBar(title: Text(l10n.serviceHallTitle)),
-      body: getIt<ScuAuthProvider>().isLoggedIn
+      body: auth.isLoggedIn
           ? ListView(
               padding: withSystemBottomInset(context, EdgeInsets.all(16)),
               children: [

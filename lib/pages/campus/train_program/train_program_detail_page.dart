@@ -4,52 +4,51 @@
 // 与列表页共享主 library 的 import（material / models / provider / widgets）。
 part of 'train_program_page.dart';
 
-class TrainProgramDetailPage extends StatefulWidget {
+class TrainProgramDetailPage extends ConsumerStatefulWidget {
   final String fajhh;
 
   const TrainProgramDetailPage({super.key, required this.fajhh});
 
   @override
-  State<TrainProgramDetailPage> createState() => _TrainProgramDetailPageState();
+  ConsumerState<TrainProgramDetailPage> createState() =>
+      _TrainProgramDetailPageState();
 }
 
-class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
-  late final TrainProgramProvider _provider;
+class _TrainProgramDetailPageState
+    extends ConsumerState<TrainProgramDetailPage> {
+  TrainProgramProvider get _provider => ref.read(trainProgramProvider);
 
   @override
   void initState() {
     super.initState();
-    _provider = getIt<TrainProgramProvider>();
-    _provider.fetchProgramDetail(widget.fajhh);
+    Future.microtask(() {
+      ref.read(trainProgramProvider).fetchProgramDetail(widget.fajhh);
+    });
   }
 
   @override
   void dispose() {
-    _provider.clearDetail();
+    ref.read(trainProgramProvider).clearDetail();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final provider = ref.watch(trainProgramProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.trainProgramDetail)),
-      body: ListenableBuilder(
-        listenable: _provider,
-        builder: (context, _) {
-          return switch (_provider.detailState) {
-            TrainProgramLoadState.idle || TrainProgramLoadState.loading =>
-              const Center(child: CircularProgressIndicator()),
-            TrainProgramLoadState.error => RetryableErrorWidget(
-              errorType: _provider.detailError!,
-              onRetry: () => _provider.fetchProgramDetail(widget.fajhh),
-              iconSize: 56,
-            ),
-            TrainProgramLoadState.loaded => _buildDetailContent(context),
-          };
-        },
-      ),
+      body: switch (provider.detailState) {
+        TrainProgramLoadState.idle || TrainProgramLoadState.loading =>
+          const Center(child: CircularProgressIndicator()),
+        TrainProgramLoadState.error => RetryableErrorWidget(
+          errorType: provider.detailError!,
+          onRetry: () => provider.fetchProgramDetail(widget.fajhh),
+          iconSize: 56,
+        ),
+        TrainProgramLoadState.loaded => _buildDetailContent(context),
+      },
     );
   }
 
@@ -253,9 +252,9 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
         maxChildSize: 0.95,
         expand: false,
         builder: (context, scrollController) {
-          return ListenableBuilder(
-            listenable: _provider,
-            builder: (context, _) {
+          return Consumer(
+            builder: (context, ref, _) {
+              ref.watch(trainProgramProvider);
               return Container(
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,

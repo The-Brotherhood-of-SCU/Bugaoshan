@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
@@ -13,8 +16,6 @@ import 'package:bugaoshan/services/api/gs_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 
 /// #331：宽屏 / 横屏下 [popupOrNavigate] 用 `Dialog` + 内层 `Navigator` 承载
 /// 页面，页面里的关闭按钮必须关闭整个弹窗，而不是只弹掉内层路由留下遮罩。
@@ -38,16 +39,18 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
-      MaterialApp(
-        navigatorKey: navigatorKey,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Builder(
-          builder: (context) => Scaffold(
-            body: Center(
-              child: TextButton(
-                onPressed: () => popupOrNavigate(context, page),
-                child: const Text('open'),
+      ProviderScope(
+        child: MaterialApp(
+          navigatorKey: navigatorKey,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: Center(
+                child: TextButton(
+                  onPressed: () => popupOrNavigate(context, page),
+                  child: const Text('open'),
+                ),
               ),
             ),
           ),
@@ -115,17 +118,19 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
-      MaterialApp(
-        navigatorKey: navigatorKey,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Builder(
-          builder: (context) => Scaffold(
-            body: Center(
-              child: TextButton(
-                onPressed: () =>
-                    popupOrNavigate(context, const GraduateGradesPage()),
-                child: const Text('open'),
+      ProviderScope(
+        child: MaterialApp(
+          navigatorKey: navigatorKey,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: Center(
+                child: TextButton(
+                  onPressed: () =>
+                      popupOrNavigate(context, const GraduateGradesPage()),
+                  child: const Text('open'),
+                ),
               ),
             ),
           ),
@@ -160,31 +165,33 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
-      MaterialApp(
-        navigatorKey: navigatorKey,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Builder(
-          builder: (context) => Scaffold(
-            body: Center(
-              child: TextButton(
-                onPressed: () => popupOrNavigate(
-                  context,
-                  Builder(
-                    builder: (inner) => Scaffold(
-                      body: Center(
-                        child: TextButton(
-                          onPressed: () => popupOrNavigate(
-                            inner,
-                            const GraduateGradesPage(),
+      ProviderScope(
+        child: MaterialApp(
+          navigatorKey: navigatorKey,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: Center(
+                child: TextButton(
+                  onPressed: () => popupOrNavigate(
+                    context,
+                    Builder(
+                      builder: (inner) => Scaffold(
+                        body: Center(
+                          child: TextButton(
+                            onPressed: () => popupOrNavigate(
+                              inner,
+                              const GraduateGradesPage(),
+                            ),
+                            child: const Text('open-graduate'),
                           ),
-                          child: const Text('open-graduate'),
                         ),
                       ),
                     ),
                   ),
+                  child: const Text('open'),
                 ),
-                child: const Text('open'),
               ),
             ),
           ),

@@ -11,16 +11,16 @@ part of 'repair_page.dart';
 ///
 /// 持有 [ScrollController]：每次刷新（下拉/操作返回/点击刷新按钮）后
 /// 列表都滚回顶端，确保用户能看到最新的工单状态。
-class _MyTicketsTab extends StatefulWidget {
-  const _MyTicketsTab({super.key, required this.provider});
+class _MyTicketsTab extends ConsumerStatefulWidget {
+  const _MyTicketsTab({super.key, this.provider});
 
-  final ZhhqRepairProvider provider;
+  final ZhhqRepairProvider? provider;
 
   @override
-  State<_MyTicketsTab> createState() => _MyTicketsTabState();
+  ConsumerState<_MyTicketsTab> createState() => _MyTicketsTabState();
 }
 
-class _MyTicketsTabState extends State<_MyTicketsTab> {
+class _MyTicketsTabState extends ConsumerState<_MyTicketsTab> {
   final _scrollController = ScrollController();
 
   @override
@@ -29,7 +29,8 @@ class _MyTicketsTabState extends State<_MyTicketsTab> {
     super.dispose();
   }
 
-  ZhhqRepairProvider get provider => widget.provider;
+  ZhhqRepairProvider get provider =>
+      widget.provider ?? ref.read(repairProvider);
 
   /// 刷新列表并滚回顶端。
   Future<void> _refresh() async {
@@ -48,9 +49,11 @@ class _MyTicketsTabState extends State<_MyTicketsTab> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final tickets = provider.tickets;
+    final ZhhqRepairProvider activeProvider =
+        widget.provider ?? ref.watch(repairProvider);
+    final tickets = activeProvider.tickets;
     // 首次加载中（列表为空且正在拉取）：显示加载指示，避免白屏
-    if (tickets.isEmpty && provider.isLoadingTickets) {
+    if (tickets.isEmpty && activeProvider.isLoadingTickets) {
       return const Center(child: CircularProgressIndicator());
     }
     if (tickets.isEmpty) {
@@ -195,26 +198,26 @@ class _MyTicketsTabState extends State<_MyTicketsTab> {
 }
 
 /// 维修项目选择器（按区域加载，两级：大类 → 具体项目）。
-class _ProjectSelector extends StatefulWidget {
+class _ProjectSelector extends ConsumerStatefulWidget {
   const _ProjectSelector({
-    required this.provider,
+    this.provider,
     required this.areaId,
     required this.value,
     required this.label,
     required this.onChanged,
   });
 
-  final ZhhqRepairProvider provider;
+  final ZhhqRepairProvider? provider;
   final String? areaId;
   final String? value;
   final String label;
   final void Function(String value, String label) onChanged;
 
   @override
-  State<_ProjectSelector> createState() => _ProjectSelectorState();
+  ConsumerState<_ProjectSelector> createState() => _ProjectSelectorState();
 }
 
-class _ProjectSelectorState extends State<_ProjectSelector> {
+class _ProjectSelectorState extends ConsumerState<_ProjectSelector> {
   static const String _tag = 'ProjectSelectorState';
 
   List<RepairProject> _categories = const [];
@@ -248,7 +251,9 @@ class _ProjectSelectorState extends State<_ProjectSelector> {
     if (areaId == null || areaId.isEmpty) return;
     setState(() => _loading = true);
     try {
-      final projects = await widget.provider.fetchProjects(areaId);
+      final ZhhqRepairProvider activeProvider =
+          widget.provider ?? ref.read(repairProvider);
+      final projects = await activeProvider.fetchProjects(areaId);
       if (mounted) setState(() => _categories = projects);
     } catch (logError, logStackTrace) {
       AppLog.e(
@@ -377,26 +382,28 @@ class _ProjectSelectorState extends State<_ProjectSelector> {
 }
 
 /// 「新增地址」入口按钮 + 弹窗。
-class _AddAddressButton extends StatelessWidget {
-  const _AddAddressButton({required this.provider, required this.onSaved});
+class _AddAddressButton extends ConsumerWidget {
+  const _AddAddressButton({this.provider, required this.onSaved});
 
-  final ZhhqRepairProvider provider;
+  final ZhhqRepairProvider? provider;
   final VoidCallback onSaved;
 
-  Future<void> _showAddDialog(BuildContext context) async {
+  Future<void> _showAddDialog(BuildContext context, WidgetRef ref) async {
     final saved = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      builder: (sheetContext) => _AddAddressSheet(provider: provider),
+      builder: (sheetContext) => _AddAddressSheet(
+        provider: provider ?? ref.read(repairProvider),
+      ),
     );
     if (saved == true) onSaved();
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     return TextButton.icon(
-      onPressed: () => _showAddDialog(context),
+      onPressed: () => _showAddDialog(context, ref),
       icon: const Icon(Icons.add_location_alt_outlined, size: 18),
       label: Text(l10n.repairAddAddress),
     );
@@ -404,17 +411,20 @@ class _AddAddressButton extends StatelessWidget {
 }
 
 /// 新增地址弹窗：区域树选择 + 详细地址 + 手机号。
-class _AddAddressSheet extends StatefulWidget {
-  const _AddAddressSheet({required this.provider});
+class _AddAddressSheet extends ConsumerStatefulWidget {
+  const _AddAddressSheet({this.provider});
 
-  final ZhhqRepairProvider provider;
+  final ZhhqRepairProvider? provider;
 
   @override
-  State<_AddAddressSheet> createState() => _AddAddressSheetState();
+  ConsumerState<_AddAddressSheet> createState() => _AddAddressSheetState();
 }
 
-class _AddAddressSheetState extends State<_AddAddressSheet> {
+class _AddAddressSheetState extends ConsumerState<_AddAddressSheet> {
   static const String _tag = 'AddAddressSheetState';
+
+  ZhhqRepairProvider get _provider =>
+      widget.provider ?? ref.read(repairProvider);
 
   final _formKey = GlobalKey<FormState>();
   final _detailController = TextEditingController();
@@ -443,7 +453,7 @@ class _AddAddressSheetState extends State<_AddAddressSheet> {
 
   Future<void> _loadAreaTree() async {
     try {
-      final tree = await widget.provider.fetchAreaTree();
+      final tree = await _provider.fetchAreaTree();
       if (mounted) setState(() => _areaTree = tree);
     } catch (logError, logStackTrace) {
       AppLog.e(
@@ -470,7 +480,7 @@ class _AddAddressSheetState extends State<_AddAddressSheet> {
       return;
     }
     setState(() => _saving = true);
-    final success = await widget.provider.addAddress(
+    final success = await _provider.addAddress(
       areaId: _selectedAreaId!,
       areaName: _selectedAreaName,
       addressDetail: _detailController.text.trim(),
@@ -490,7 +500,7 @@ class _AddAddressSheetState extends State<_AddAddressSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            widget.provider.submitError ??
+            _provider.submitError ??
                 AppLocalizations.of(context)!.repairSubmitFailed,
           ),
           backgroundColor: Theme.of(context).colorScheme.error,

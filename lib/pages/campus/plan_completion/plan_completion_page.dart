@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/models/plan_completion.dart';
 import 'package:bugaoshan/providers/plan_completion_provider.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/providers/riverpod/academic/plan_completion_pods.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
@@ -11,119 +12,97 @@ import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
-class PlanCompletionPage extends StatefulWidget {
+class PlanCompletionPage extends ConsumerStatefulWidget {
   const PlanCompletionPage({super.key});
 
   @override
-  State<PlanCompletionPage> createState() => _PlanCompletionPageState();
+  ConsumerState<PlanCompletionPage> createState() => _PlanCompletionPageState();
 }
 
-class _PlanCompletionPageState extends State<PlanCompletionPage> {
-  late final PlanCompletionProvider _provider;
-
+class _PlanCompletionPageState extends ConsumerState<PlanCompletionPage> {
   @override
   void initState() {
     super.initState();
-    _provider = getIt<PlanCompletionProvider>();
-    _provider.addListener(_onProviderUpdate);
-    _provider.fetchPlanCompletion();
-  }
-
-  @override
-  void dispose() {
-    _provider.removeListener(_onProviderUpdate);
-    super.dispose();
-  }
-
-  void _onProviderUpdate() {
-    if (!mounted) return;
-    final l10n = AppLocalizations.of(context)!;
-
-    // 有缓存时刷新失败，provider 保留旧数据并置 state=loaded、error≠null；
-    // 若不提示，用户无法得知看到的是过期缓存（与成绩页保持一致）。
-    if (_provider.state == PlanCompletionLoadState.loaded &&
-        _provider.error != null) {
-      final message = switch (_provider.error!) {
-        LoadErrorType.rateLimited => l10n.planCompletionRateLimited,
-        LoadErrorType.sessionExpired => l10n.sessionExpired,
-        LoadErrorType.undergradOnly => l10n.undergradDataOnly,
-        _ => l10n.gradesRefreshFailed,
-      };
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message), duration: const Duration(seconds: 3)),
-      );
-      return;
-    }
-
-    if (_provider.error == LoadErrorType.rateLimited) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.planCompletionRateLimited),
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    }
+    Future.microtask(() {
+      ref.read(planCompletionProvider).fetchPlanCompletion();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final auth = ref.watch(scuAuthProviderBridge);
+    final provider = ref.watch(planCompletionProvider);
+
+    ref.listen(planCompletionProvider, (prev, next) {
+      if (!mounted) return;
+      // 有缓存时刷新失败，provider 保留旧数据并置 state=loaded、error≠null；
+      // 若不提示，用户无法得知看到的是过期缓存（与成绩页保持一致）。
+      if (next.state == PlanCompletionLoadState.loaded && next.error != null) {
+        final message = switch (next.error!) {
+          LoadErrorType.rateLimited => l10n.planCompletionRateLimited,
+          LoadErrorType.sessionExpired => l10n.sessionExpired,
+          LoadErrorType.undergradOnly => l10n.undergradDataOnly,
+          _ => l10n.gradesRefreshFailed,
+        };
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message), duration: const Duration(seconds: 3)),
+        );
+        return;
+      }
+
+      if (next.error == LoadErrorType.rateLimited) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.planCompletionRateLimited),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.planCompletion),
         actions: [
-          ListenableBuilder(
-            listenable: _provider,
-            builder: (context, _) {
-              return IconButton(
-                icon: _provider.state == PlanCompletionLoadState.loading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.refresh),
-                onPressed: _provider.state == PlanCompletionLoadState.loading
-                    ? null
-                    : () => _provider.fetchPlanCompletion(forceRefresh: true),
-              );
-            },
+          IconButton(
+            icon: provider.state == PlanCompletionLoadState.loading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.refresh),
+            onPressed: provider.state == PlanCompletionLoadState.loading
+                ? null
+                : () => provider.fetchPlanCompletion(forceRefresh: true),
           ),
         ],
       ),
-      body: ListenableBuilder(
-        listenable: Listenable.merge([getIt<ScuAuthProvider>(), _provider]),
-        builder: (context, _) {
-          final auth = getIt<ScuAuthProvider>();
-          if (!auth.isLoggedIn) {
-            if (auth.isAutoLoggingIn) {
-              return const AutoLoginLoadingWidget();
-            }
-            return const LoginRequiredWidget();
-          }
-          return _buildContent(context);
-        },
-      ),
+      body: !auth.isLoggedIn
+          ? auth.isAutoLoggingIn
+              ? const AutoLoginLoadingWidget()
+              : const LoginRequiredWidget()
+          : _buildContent(context, provider),
     );
   }
 
-  Widget _buildContent(BuildContext context) {
-    return switch (_provider.state) {
+  Widget _buildContent(BuildContext context, PlanCompletionProvider provider) {
+    return switch (provider.state) {
       PlanCompletionLoadState.idle || PlanCompletionLoadState.loading =>
         const Center(child: CircularProgressIndicator()),
       PlanCompletionLoadState.error => RetryableErrorWidget(
-        errorType: _provider.error!,
-        onRetry: () => _provider.fetchPlanCompletion(),
+        errorType: provider.error!,
+        onRetry: () => provider.fetchPlanCompletion(),
         iconSize: 56,
       ),
-      PlanCompletionLoadState.loaded => _buildTree(context),
+      PlanCompletionLoadState.loaded => _buildTree(context, provider),
     };
   }
 
-  Widget _buildTree(BuildContext context) {
+  Widget _buildTree(BuildContext context, PlanCompletionProvider provider) {
     final l10n = AppLocalizations.of(context)!;
-    final plans = _provider.plans;
+    final plans = provider.plans;
 
     if (plans.isEmpty) {
       return Center(
@@ -136,52 +115,48 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
       );
     }
 
+    final index = provider.currentPlanIndex;
+    final name = plans[index].name;
+    final showCount = plans.length > 1;
+
     // 顶部方案名指示栏 + PageView 承载各方案内容：
     // - 单方案：只有一页，无法左右滑动（滑动不反应）；
     // - 多方案：左右滑动切换，顶部指示栏跟随更新。
     return Column(
       children: [
-        ListenableBuilder(
-          listenable: _provider,
-          builder: (context, _) {
-            final index = _provider.currentPlanIndex;
-            final name = plans[index].name;
-            final showCount = plans.length > 1;
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // 多方案时才提示可滑动，单方案不误导。
-                  if (showCount) ...[
-                    Icon(
-                      Icons.swipe,
-                      size: 16,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 6),
-                  ],
-                  Flexible(
-                    child: Text(
-                      name.isNotEmpty ? name : l10n.planCompletionPlanFallback,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                  ),
-                  if (showCount) ...[
-                    const SizedBox(width: 6),
-                    Text(
-                      '${index + 1}/${plans.length}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ],
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 多方案时才提示可滑动，单方案不误导。
+              if (showCount) ...[
+                Icon(
+                  Icons.swipe,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 6),
+              ],
+              Flexible(
+                child: Text(
+                  name.isNotEmpty ? name : l10n.planCompletionPlanFallback,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
               ),
-            );
-          },
+              if (showCount) ...[
+                const SizedBox(width: 6),
+                Text(
+                  '${index + 1}/${plans.length}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
         Expanded(
           child: PageView.builder(
@@ -191,9 +166,9 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
             key: ValueKey(plans.length),
             itemCount: plans.length,
             // 跟随内容而非跳页动画，左右滑动切换方案。
-            onPageChanged: (index) => _provider.selectPlan(index),
-            itemBuilder: (context, index) =>
-                _buildPlanPage(context, plans[index]),
+            onPageChanged: (idx) => provider.selectPlan(idx),
+            itemBuilder: (context, idx) =>
+                _buildPlanPage(context, plans[idx]),
           ),
         ),
       ],

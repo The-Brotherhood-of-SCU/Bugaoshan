@@ -9,6 +9,7 @@ import 'package:bugaoshan/services/api/reservation_api_service.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// 预约页指针交互回归：在真实桌面尺寸（2560×1440 @dpr1.5）下，验证
@@ -88,12 +89,14 @@ void main() {
     return null;
   }
 
-  Widget host(Widget Function(BuildContext) body) => MaterialApp(
-        navigatorKey: navigatorKey,
-        scrollBehavior: const AppScrollBehavior(),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Builder(builder: (context) => Scaffold(body: body(context))),
+  Widget host(Widget Function(BuildContext) body) => ProviderScope(
+        child: MaterialApp(
+          navigatorKey: navigatorKey,
+          scrollBehavior: AppScrollBehavior(),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Builder(builder: (context) => Scaffold(body: body(context))),
+        ),
       );
 
   void registerFakes() {
@@ -108,11 +111,13 @@ void main() {
     registerFakes();
     await useRealDesktopSize(tester);
 
-    await tester.pumpWidget(MaterialApp(
-      scrollBehavior: const AppScrollBehavior(),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: const ReservationPage(),
+    await tester.pumpWidget(const ProviderScope(
+      child: MaterialApp(
+        scrollBehavior: AppScrollBehavior(),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: ReservationPage(),
+      ),
     ));
     await tester.pumpAndSettle();
 

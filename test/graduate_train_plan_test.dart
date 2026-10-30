@@ -13,6 +13,7 @@ import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/utils/graduate_train_plan_progress.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -246,10 +247,12 @@ void main() {
     getIt.registerSingleton<ScuAuthProvider>(_FakeScuAuthProvider());
 
     await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const GraduateTrainPlanPage(),
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: GraduateTrainPlanPage(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -294,10 +297,12 @@ void main() {
     getIt.registerSingleton<ScuAuth>(_FailingRefreshScuAuth());
 
     await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const GraduateTrainPlanPage(),
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: GraduateTrainPlanPage(),
+        ),
       ),
     );
     await tester.pump();

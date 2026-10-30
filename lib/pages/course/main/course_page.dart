@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/academic_calendar.dart';
@@ -16,21 +17,23 @@ import '../management/schedule_management_page.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
+import 'package:bugaoshan/providers/riverpod/course/course_pods.dart';
 import 'package:bugaoshan/pages/course/widgets/course_grid.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
 import 'package:bugaoshan/widgets/common/background_image_view.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
-class CoursePage extends StatefulWidget {
+class CoursePage extends ConsumerStatefulWidget {
   const CoursePage({super.key, this.demoMode = false});
 
   final bool demoMode;
 
   @override
-  State<CoursePage> createState() => _CoursePageState();
+  ConsumerState<CoursePage> createState() => _CoursePageState();
 }
 
-class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
+class _CoursePageState extends ConsumerState<CoursePage> with WidgetsBindingObserver {
   static const String _tag = 'CoursePageState';
 
   final courseProvider = getIt<CourseProvider>();
@@ -41,41 +44,20 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   CoursePageController? _controller;
 
   bool _promptedNextSemester = false;
-
-  /// 课表网格的 listenable。demo 模式下只需 scheduleConfig；非 demo 模式下
-  /// 还需 courses、allSchedules 和 controller.showVacationPage（pageCount 变化时
-  /// PageView 需重建）。grid 不监听 controller 本身 —— 翻页由 PageController
-  /// 直接驱动，不需要整 PageView 重建。
-  late Listenable _gridListenable;
-
-  late final Listenable _bgImageListenable = Listenable.merge([
-    appConfig.backgroundImagePath,
-    appConfig.backgroundImageOpacity,
-    appConfig.backgroundImageCrop,
-  ]);
-
   bool _hasScheduleListenerAdded = false;
 
   @override
   void initState() {
     super.initState();
 
-    if (widget.demoMode) {
-      // 预览模式：固定第 1 周，不建控制器、不挂监听、不注册 observer、不弹提示
-      // —— 修 demoMode 干扰真实课表页的 bug（以前 postFrame 写全局 currentWeek
-      // 把 IndexedStack 里的真实页顶回当前周，甚至弹「切换学期」对话框）。
-      _gridListenable = courseProvider.scheduleConfig;
-    } else {
+    if (!widget.demoMode) {
       // 非 demo 模式：始终监听 hasSchedule 空↔非空翻转，覆盖「无→有」与「有→无」两个方向。
       // 这样初始有课表时也能在删除最后一条课表时及时回到空状态，避免只在空状态才监听导致的失联。
       courseProvider.allSchedules.addListener(_onHasScheduleChanged);
       courseProvider.scheduleConfig.addListener(_onHasScheduleChanged);
       _hasScheduleListenerAdded = true;
 
-      if (!courseProvider.hasSchedule) {
-        // 无课表：不建控制器，不注册 observer，等待首条课表创建
-        _gridListenable = courseProvider.allSchedules;
-      } else {
+      if (courseProvider.hasSchedule) {
         _createController();
       }
     }
@@ -88,12 +70,6 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
       allSchedules: courseProvider.allSchedules,
       animationDuration: appConfig.cardSizeAnimationDuration,
     );
-    _gridListenable = Listenable.merge([
-      courseProvider.courses,
-      courseProvider.scheduleConfig,
-      courseProvider.allSchedules,
-      _controller!.showVacationPage,
-    ]);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _checkAndPromptNextSemester();
@@ -114,7 +90,6 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
       WidgetsBinding.instance.removeObserver(this);
       _controller?.dispose();
       _controller = null;
-      _gridListenable = courseProvider.allSchedules;
       if (!mounted) return;
       setState(() {});
     }
@@ -149,15 +124,18 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final hasSchedule = ref.watch(hasScheduleProvider);
+    final isLoading = ref.watch(courseIsLoadingProvider);
+    final schedules = ref.watch(allSchedulesProvider);
+    final currentConfig = ref.watch(currentScheduleConfigProvider);
+    final animDuration =
+        ref.watch(cardSizeAnimationDurationSettingProvider);
+
     return Column(
       children: [
         if (!widget.demoMode && _controller != null)
           ListenableBuilder(
-            listenable: Listenable.merge([
-              _controller!,
-              courseProvider.allSchedules,
-              courseProvider.scheduleConfig,
-            ]),
+            listenable: _controller!,
             builder: (context, _) => CoursePageTopBar(
               visibleWeek: _controller!.visibleWeek,
               totalWeeks: _controller!.totalWeeks,
@@ -167,15 +145,15 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
               isNotStarted: _controller!.isNotStarted,
               canGoPrevious: _controller!.canGoPrevious,
               canGoNext: _controller!.canGoNext,
-              animationDuration: appConfig.cardSizeAnimationDuration.value,
+              animationDuration: animDuration,
               onPreviousWeek: _controller!.goToPreviousPage,
               onNextWeek: _controller!.goToNextPage,
               onGoToCurrentWeek: _controller!.goToToday,
               onImport: _onImport,
               onExport: _onExport,
               onAddCourse: _onAddCourse,
-              schedules: courseProvider.allSchedules.value,
-              currentScheduleId: courseProvider.scheduleConfig.value?.id,
+              schedules: schedules,
+              currentScheduleId: currentConfig?.id,
               onSwitchSchedule: (id) => courseProvider.switchSchedule(id),
               onOpenScheduleManagement: () =>
                   _openScheduleManagement(logicRootContext),
@@ -184,21 +162,12 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
         Expanded(
           child: Stack(
             children: [
-              ListenableBuilder(
-                listenable: _bgImageListenable,
-                builder: _buildBackgroundImage,
-              ),
-              ListenableBuilder(
-                listenable: _gridListenable,
-                builder: (context, _) =>
-                    widget.demoMode || courseProvider.hasSchedule
-                    ? _buildCourseGrid(context, null)
-                    : _buildNoScheduleView(context, null),
-              ),
-              ValueListenableBuilder<bool>(
-                valueListenable: courseProvider.isLoading,
-                builder: _buildLoadingIndicator,
-              ),
+              _buildBackgroundImage(context),
+              widget.demoMode || hasSchedule
+                  ? _buildCourseGrid(context, null)
+                  : _buildNoScheduleView(context, null),
+              if (isLoading)
+                const Center(child: CircularProgressIndicator()),
             ],
           ),
         ),
@@ -214,16 +183,16 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
     promptForNewScheduleConfig(context, courseProvider);
   }
 
-  Widget _buildBackgroundImage(BuildContext context, Widget? _) {
-    final path = appConfig.backgroundImagePath.value;
+  Widget _buildBackgroundImage(BuildContext context) {
+    final path = ref.watch(backgroundImagePathSettingProvider);
     if (path == null) return const SizedBox.shrink();
-    // 裁剪参数为 null 时 BackgroundImageView 内部走 BoxFit.cover 分支，
-    // 与旧版渲染一致；有参数时按归一化焦点/缩放摆放，超出部分裁掉。
+    final crop = ref.watch(backgroundImageCropSettingProvider);
+    final opacity = ref.watch(backgroundImageOpacitySettingProvider);
     return Positioned.fill(
       child: BackgroundImageView(
         path: path,
-        crop: appConfig.backgroundImageCrop.value,
-        overlayOpacity: appConfig.backgroundImageOpacity.value,
+        crop: crop,
+        overlayOpacity: opacity,
       ),
     );
   }
@@ -231,14 +200,14 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   Widget _buildCourseGrid(BuildContext context, Widget? _) {
     // demo 模式：若 provider 暂无 schedule，用本地占位 config 保证预览可渲染
     final config =
-        courseProvider.scheduleConfig.value ??
+        ref.watch(currentScheduleConfigProvider) ??
         ScheduleConfig(
           semesterStartDate: DateTime.now().toMonday(),
           totalWeeks: kDefaultTotalWeeks,
         );
     final allCourses = widget.demoMode
         ? kDemoCourses
-        : courseProvider.courses.value;
+        : ref.watch(coursesListProvider);
 
     if (widget.demoMode) {
       // 预览模式：固定显示第 1 周，不滑动、不跟随当前课表周数
@@ -256,13 +225,17 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
     final controller = _controller;
     if (controller == null) return const SizedBox.shrink();
     final totalWeeks = controller.totalWeeks;
+    final animDuration =
+        ref.watch(cardSizeAnimationDurationSettingProvider);
     // build 内每次重读 controller.pageController —— detach 期间可能被换实例，
     // 缓存到局部之外会导致 CourseSwipePageView 持有失效的旧控制器。
-    return CourseSwipePageView(
-      controller: controller.pageController,
-      itemCount: controller.pageCount,
-      animationDuration: appConfig.cardSizeAnimationDuration.value,
-      onPageChanged: controller.onPageSettled,
+    return ListenableBuilder(
+      listenable: controller.showVacationPage,
+      builder: (context, _) => CourseSwipePageView(
+        controller: controller.pageController,
+        itemCount: controller.pageCount,
+        animationDuration: animDuration,
+        onPageChanged: controller.onPageSettled,
       itemBuilder: (context, index) {
         if (controller.showVacationPage.value && index >= totalWeeks) {
           return VacationView(
@@ -281,8 +254,9 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
           onSpecialDayTap: widget.demoMode ? null : _onSpecialDayTap,
         );
       },
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildNoScheduleView(BuildContext context, Widget? _) {
     return NoScheduleView(
@@ -290,15 +264,6 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
       onImport: _onImport,
       onAddSchedule: () => _openAddScheduleDialog(context),
     );
-  }
-
-  Widget _buildLoadingIndicator(
-    BuildContext context,
-    bool isLoading,
-    Widget? _,
-  ) {
-    if (!isLoading) return const SizedBox.shrink();
-    return const Center(child: CircularProgressIndicator());
   }
 
   Future<void> _checkAndPromptNextSemester() async {

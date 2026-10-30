@@ -86,7 +86,7 @@ final class PasspointNotifierProvider
   PasspointNotifier create() => PasspointNotifier();
 }
 
-String _$passpointNotifierHash() => r'd0c193cec53020db2877db187bbfd1062b19d741';
+String _$passpointNotifierHash() => r'41d7d6b3edc6a483f9699d62040cb13a84ad43b5';
 
 abstract class _$PasspointNotifier extends $AsyncNotifier<PasspointData> {
   FutureOr<PasspointData> build();

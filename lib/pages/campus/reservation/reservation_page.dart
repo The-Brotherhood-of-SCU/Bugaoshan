@@ -1,12 +1,14 @@
 import 'dart:async';
 
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/reservation/models/reservation_models.dart';
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
 import 'package:bugaoshan/providers/reservation_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/campus/reservation_pods.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/app_log.dart';
@@ -19,7 +21,6 @@ import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
-import 'package:flutter/material.dart';
 
 /// 望江校区研究生活动室预约。
 ///
@@ -30,19 +31,18 @@ import 'package:flutter/material.dart';
 /// 表等，30 分钟内），提交成功且返回流程地址时本页会引导跳转；若资源开启
 /// 短信/滑块验证（`anti_bot`），应用内的直约会被服务端拒绝，届时以服务端
 /// 返回的原文提示，仍可走底部「去官方页面预约」。
-class ReservationPage extends StatefulWidget {
+class ReservationPage extends ConsumerStatefulWidget {
   const ReservationPage({super.key});
 
   @override
-  State<ReservationPage> createState() => _ReservationPageState();
+  ConsumerState<ReservationPage> createState() => _ReservationPageState();
 }
 
-class _ReservationPageState extends State<ReservationPage>
+class _ReservationPageState extends ConsumerState<ReservationPage>
     with WidgetsBindingObserver {
   static const String _tag = 'ReservationPage';
 
-  late final ReservationProvider _provider;
-  late final ScuAuthProvider _auth;
+  ReservationProvider get _provider => ref.read(reservationProvider);
   final ScrollController _resourceScrollController = ScrollController();
 
   /// 活动室标签条当前能否继续向左右滚动（用于箭头置灰）。
@@ -72,9 +72,6 @@ class _ReservationPageState extends State<ReservationPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _provider = getIt<ReservationProvider>();
-    _auth = getIt<ScuAuthProvider>();
-    _auth.addListener(_onAuthChanged);
     _resourceScrollController.addListener(_updateResourceScrollState);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _onAuthChanged();
@@ -85,7 +82,6 @@ class _ReservationPageState extends State<ReservationPage>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _auth.removeListener(_onAuthChanged);
     _resourceScrollController.removeListener(_updateResourceScrollState);
     _resourceScrollController.dispose();
     super.dispose();
@@ -129,7 +125,7 @@ class _ReservationPageState extends State<ReservationPage>
   }
 
   void _onAuthChanged() {
-    final auth = getIt<ScuAuthProvider>();
+    final auth = ref.read(scuAuthProviderBridge);
     if (auth.isLoggedIn) {
       _provider.ensureLoaded();
     } else if (!auth.isAutoLoggingIn &&
@@ -142,7 +138,7 @@ class _ReservationPageState extends State<ReservationPage>
   Future<void> _recoverSession() async {
     setState(() => _recoveringSession = true);
     try {
-      await getIt<ScuAuth>().refresh();
+      await ref.read(scuAuthBridge).refresh();
     } catch (e, logStackTrace) {
       AppLog.e(_tag, '_recoverSession 失败', error: e, stackTrace: logStackTrace);
     } finally {
@@ -380,58 +376,59 @@ class _ReservationPageState extends State<ReservationPage>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final auth = ref.watch(scuAuthProviderBridge);
+    final provider = ref.watch(reservationProvider);
 
-    return ListenableBuilder(
-      listenable: Listenable.merge([_provider, getIt<ScuAuthProvider>()]),
-      builder: (context, _) => Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text(l10n.reservationTitle),
-          leading: IconButton(
-            icon: const Icon(Icons.close),
-            tooltip: l10n.close,
-            onPressed: () => popDialog(),
-          ),
-          actions: [
-            if (getIt<ScuAuthProvider>().isLoggedIn &&
-                _provider.state != ReservationLoadState.loading) ...[
-              IconButton(
-                tooltip: l10n.reservationMyAppointments,
-                onPressed: _openMyAppointments,
-                icon: const Icon(Icons.event_note_outlined),
-              ),
-              IconButton(
-                tooltip: l10n.refresh,
-                onPressed: () {
-                  _clearSelection();
-                  _provider.refresh();
-                },
-                icon: const Icon(Icons.refresh),
-              ),
-            ],
-          ],
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(l10n.reservationTitle),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          tooltip: l10n.close,
+          onPressed: () => popDialog(),
         ),
-        body: _buildBody(l10n),
-        bottomNavigationBar: _buildBottomBar(l10n),
+        actions: [
+          if (auth.isLoggedIn &&
+              provider.state != ReservationLoadState.loading) ...[
+            IconButton(
+              tooltip: l10n.reservationMyAppointments,
+              onPressed: _openMyAppointments,
+              icon: const Icon(Icons.event_note_outlined),
+            ),
+            IconButton(
+              tooltip: l10n.refresh,
+              onPressed: () {
+                _clearSelection();
+                provider.refresh();
+              },
+              icon: const Icon(Icons.refresh),
+            ),
+          ],
+        ],
       ),
+      body: _buildBody(l10n, auth, provider),
+      bottomNavigationBar: _buildBottomBar(l10n, auth),
     );
   }
 
-  Widget _buildBody(AppLocalizations l10n) {
-    final auth = getIt<ScuAuthProvider>();
-
+  Widget _buildBody(
+    AppLocalizations l10n,
+    ScuAuthProvider auth,
+    ReservationProvider provider,
+  ) {
     if (!auth.isLoggedIn) {
       return auth.isAutoLoggingIn || _recoveringSession
           ? const AutoLoginLoadingWidget()
           : const LoginRequiredWidget();
     }
 
-    if (_provider.state == ReservationLoadState.loading &&
-        _provider.calendar == null) {
+    if (provider.state == ReservationLoadState.loading &&
+        provider.calendar == null) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_provider.errorKind == ReservationErrorKind.unauthenticated) {
+    if (provider.errorKind == ReservationErrorKind.unauthenticated) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -871,8 +868,8 @@ class _ReservationPageState extends State<ReservationPage>
     );
   }
 
-  Widget _buildBottomBar(AppLocalizations l10n) {
-    if (!getIt<ScuAuthProvider>().isLoggedIn) return const SizedBox.shrink();
+  Widget _buildBottomBar(AppLocalizations l10n, ScuAuthProvider auth) {
+    if (!auth.isLoggedIn) return const SizedBox.shrink();
 
     final selectedCount = _selectedCount;
     if (selectedCount > 0) {
@@ -1070,15 +1067,17 @@ class _InfoChip extends StatelessWidget {
 
 /// 「我的预约」弹窗：列出全部预约单（资源、状态、时段明细），可取消
 /// `is_cancel == 1` 的单（整单取消，传全部明细 id）。
-class _MyAppointmentsDialog extends StatelessWidget {
-  const _MyAppointmentsDialog({required this.provider});
+class _MyAppointmentsDialog extends ConsumerWidget {
+  const _MyAppointmentsDialog({this.provider});
 
-  final ReservationProvider provider;
+  final ReservationProvider? provider;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
+    final ReservationProvider activeProvider =
+        provider ?? ref.watch(reservationProvider);
 
     return AlertDialog(
       title: Row(
@@ -1086,9 +1085,9 @@ class _MyAppointmentsDialog extends StatelessWidget {
           Expanded(child: Text(l10n.reservationMyAppointments)),
           IconButton(
             tooltip: l10n.refresh,
-            onPressed: provider.appointmentsLoading
+            onPressed: activeProvider.appointmentsLoading
                 ? null
-                : () => provider.loadAppointments(),
+                : () => activeProvider.loadAppointments(),
             icon: const Icon(Icons.refresh),
           ),
         ],
@@ -1099,15 +1098,14 @@ class _MyAppointmentsDialog extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: 420),
         child: SizedBox(
           width: double.maxFinite,
-          child: ListenableBuilder(
-            listenable: provider,
-            builder: (context, _) {
-              if (provider.appointmentsLoading &&
-                  provider.appointments.isEmpty) {
+          child: Builder(
+            builder: (context) {
+              if (activeProvider.appointmentsLoading &&
+                  activeProvider.appointments.isEmpty) {
                 return const Center(child: CircularProgressIndicator());
               }
-              final error = provider.appointmentsError;
-              if (error != null && provider.appointments.isEmpty) {
+              final error = activeProvider.appointmentsError;
+              if (error != null && activeProvider.appointments.isEmpty) {
                 // 拉取失败 ≠ 没有预约：明确给出错误文案，标题行的刷新即重试。
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 24),
@@ -1122,7 +1120,7 @@ class _MyAppointmentsDialog extends StatelessWidget {
                   ),
                 );
               }
-              final items = provider.appointments;
+              final items = activeProvider.appointments;
               if (items.isEmpty) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 24),
@@ -1146,7 +1144,7 @@ class _MyAppointmentsDialog extends StatelessWidget {
                     final appointment = items[index];
                     return _AppointmentTile(
                       appointment: appointment,
-                      provider: provider,
+                      provider: activeProvider,
                     );
                   },
                 ),

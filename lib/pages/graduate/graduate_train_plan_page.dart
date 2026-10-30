@@ -1,11 +1,11 @@
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/graduate_grades.dart';
 import 'package:bugaoshan/models/graduate_train_plan.dart';
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
 import 'package:bugaoshan/providers/graduate_train_plan_provider.dart';
+import 'package:bugaoshan/providers/riverpod/academic/train_program_pods.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/graduate_train_plan_progress.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
@@ -15,6 +15,7 @@ import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// 研究生培养进度页。
 ///
@@ -23,20 +24,17 @@ import 'package:flutter/material.dart';
 /// 重），归并逻辑见 graduate_train_plan_progress.dart。
 /// 结构：总进度卡「已修 X / 要求 Y 学分」+ 方案信息卡 + 各课程类别
 /// （该类已修/要求 + 已修课程列表）。
-class GraduateTrainPlanPage extends StatefulWidget {
+class GraduateTrainPlanPage extends ConsumerStatefulWidget {
   const GraduateTrainPlanPage({super.key});
 
   @override
-  State<GraduateTrainPlanPage> createState() => _GraduateTrainPlanPageState();
+  ConsumerState<GraduateTrainPlanPage> createState() =>
+      _GraduateTrainPlanPageState();
 }
 
-class _GraduateTrainPlanPageState extends State<GraduateTrainPlanPage> {
+class _GraduateTrainPlanPageState
+    extends ConsumerState<GraduateTrainPlanPage> {
   static const String _tag = 'GraduateTrainPlanPage';
-
-  late final GraduateTrainPlanProvider _provider;
-
-  /// 缓存实例：dispose 时 getIt 可能已被 reset，重新取会抛异常。
-  late final ScuAuthProvider _auth;
 
   /// 统一认证会话过期（token 还在）时的自愈刷新进行中。
   bool _recoveringSession = false;
@@ -44,24 +42,15 @@ class _GraduateTrainPlanPageState extends State<GraduateTrainPlanPage> {
   @override
   void initState() {
     super.initState();
-    _provider = getIt<GraduateTrainPlanProvider>();
-    _auth = getIt<ScuAuthProvider>();
-    _auth.addListener(_onAuthChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _onAuthChanged();
+      if (mounted) _checkAuthAndLoad();
     });
   }
 
-  @override
-  void dispose() {
-    _auth.removeListener(_onAuthChanged);
-    super.dispose();
-  }
-
-  void _onAuthChanged() {
-    final auth = _auth;
+  void _checkAuthAndLoad() {
+    final auth = ref.read(scuAuthProviderBridge);
     if (auth.isLoggedIn) {
-      _provider.ensureLoaded();
+      ref.read(graduateTrainPlanProvider).ensureLoaded();
     } else if (!auth.isAutoLoggingIn &&
         !_recoveringSession &&
         auth.accessToken != null) {
@@ -74,7 +63,7 @@ class _GraduateTrainPlanPageState extends State<GraduateTrainPlanPage> {
   Future<void> _recoverSession() async {
     setState(() => _recoveringSession = true);
     try {
-      await getIt<ScuAuth>().refresh();
+      await ref.read(scuAuthBridge).refresh();
     } catch (e, logStackTrace) {
       AppLog.e(_tag, '_recoverSession 失败', error: e, stackTrace: logStackTrace);
       // 自愈失败：这个 Future 由 listener 回调 fire-and-forget 触发、没人接，
@@ -93,36 +82,47 @@ class _GraduateTrainPlanPageState extends State<GraduateTrainPlanPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final auth = ref.watch(scuAuthProviderBridge);
+    final provider = ref.watch(graduateTrainPlanProvider);
 
-    return ListenableBuilder(
-      listenable: Listenable.merge([_provider, _auth]),
-      builder: (context, _) => Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text(l10n.graduateTrainPlan),
-          leading: IconButton(
-            icon: const Icon(Icons.close),
-            tooltip: l10n.close,
-            onPressed: () => popDialog(context: context),
-          ),
-          actions: [
-            if (_auth.isLoggedIn &&
-                _provider.state != GraduateTrainPlanLoadState.loading)
-              IconButton(
-                tooltip: l10n.refresh,
-                onPressed: _provider.refresh,
-                icon: const Icon(Icons.refresh),
-              ),
-          ],
+    ref.listen(scuAuthProviderBridge, (prev, next) {
+      if (next.isLoggedIn) {
+        ref.read(graduateTrainPlanProvider).ensureLoaded();
+      } else if (!next.isAutoLoggingIn &&
+          !_recoveringSession &&
+          next.accessToken != null) {
+        _recoverSession();
+      }
+    });
+
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(l10n.graduateTrainPlan),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          tooltip: l10n.close,
+          onPressed: () => popDialog(context: context),
         ),
-        body: _buildBody(l10n),
+        actions: [
+          if (auth.isLoggedIn &&
+              provider.state != GraduateTrainPlanLoadState.loading)
+            IconButton(
+              tooltip: l10n.refresh,
+              onPressed: provider.refresh,
+              icon: const Icon(Icons.refresh),
+            ),
+        ],
       ),
+      body: _buildBody(l10n, auth, provider),
     );
   }
 
-  Widget _buildBody(AppLocalizations l10n) {
-    final auth = _auth;
-
+  Widget _buildBody(
+    AppLocalizations l10n,
+    ScuAuthProvider auth,
+    GraduateTrainPlanProvider provider,
+  ) {
     // 统一认证未登录：自动登录或会话自愈中给加载态，否则给「请先登录」
     // 引导。研教务会话过期的错误态走下方 unauthenticated。
     if (!auth.isLoggedIn) {
@@ -131,11 +131,11 @@ class _GraduateTrainPlanPageState extends State<GraduateTrainPlanPage> {
           : const LoginRequiredWidget();
     }
 
-    if (_provider.state == GraduateTrainPlanLoadState.loading) {
+    if (provider.state == GraduateTrainPlanLoadState.loading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_provider.errorKind == GraduateTrainPlanErrorKind.unauthenticated) {
+    if (provider.errorKind == GraduateTrainPlanErrorKind.unauthenticated) {
       // 自愈重试后仍失败：给「会话过期」+ 前往登录 + 重试（与成绩页/
       // 课表导入页失败态同语义），不用死胡同的「请先登录」。
       return Center(
@@ -163,7 +163,7 @@ class _GraduateTrainPlanPageState extends State<GraduateTrainPlanPage> {
               ),
               const SizedBox(height: 8),
               OutlinedButton.icon(
-                onPressed: _provider.refresh,
+                onPressed: provider.refresh,
                 icon: const Icon(Icons.refresh),
                 label: Text(l10n.retry),
               ),
@@ -173,15 +173,15 @@ class _GraduateTrainPlanPageState extends State<GraduateTrainPlanPage> {
       );
     }
 
-    if (_provider.errorKind != null) {
+    if (provider.errorKind != null) {
       return RetryableErrorWidget.message(
-        message: _provider.errorMessage ?? l10n.loadFailed,
-        onRetry: _provider.refresh,
+        message: provider.errorMessage ?? l10n.loadFailed,
+        onRetry: provider.refresh,
       );
     }
 
-    final info = _provider.info;
-    final stats = _provider.creditStats;
+    final info = provider.info;
+    final stats = provider.creditStats;
     if (info == null || stats == null) {
       return Center(
         child: Text(
@@ -195,8 +195,8 @@ class _GraduateTrainPlanPageState extends State<GraduateTrainPlanPage> {
     return TrainPlanContentView(
       info: info,
       requiredCredits: stats.requiredCredits,
-      sections: _provider.sections,
-      earnedInPlan: _provider.earnedInPlan,
+      sections: provider.sections,
+      earnedInPlan: provider.earnedInPlan,
     );
   }
 }

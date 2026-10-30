@@ -90,7 +90,7 @@ final class NetworkDevicesNotifierProvider
 }
 
 String _$networkDevicesNotifierHash() =>
-    r'35b137bfed5478b0eea15f1d5e2c56f7acaa5307';
+    r'c1ad27c0fd46377d054a7c4c737eb05b0f3e6cce';
 
 abstract class _$NetworkDevicesNotifier
     extends $AsyncNotifier<List<Map<String, dynamic>>> {

@@ -5,17 +5,22 @@
 part of 'repair_page.dart';
 
 /// 提交报修表单。
-class _SubmitTab extends StatefulWidget {
-  const _SubmitTab({required this.provider});
+class _SubmitTab extends ConsumerStatefulWidget {
+  const _SubmitTab({this.provider});
 
-  final ZhhqRepairProvider provider;
+  final ZhhqRepairProvider? provider;
 
   @override
-  State<_SubmitTab> createState() => _SubmitTabState();
+  ConsumerState<_SubmitTab> createState() => _SubmitTabState();
 }
 
-class _SubmitTabState extends State<_SubmitTab> {
+class _SubmitTabState extends ConsumerState<_SubmitTab> {
   static const String _tag = 'SubmitTabState';
+
+  ZhhqRepairProvider get _provider =>
+      widget.provider ?? ref.read(repairProvider);
+  ZhhqRepairProvider get _activeProvider =>
+      widget.provider ?? ref.watch(repairProvider);
 
   RepairAddress? _selectedAddress;
   String? _projectValue;
@@ -42,7 +47,7 @@ class _SubmitTabState extends State<_SubmitTab> {
   /// （`DropdownButtonFormField` 在 `initialValue` 引用变化时才会 `setValue` 同步
   /// 内部值，所以即使 id 相同也要换用列表中的新实例，不能保留旧引用。）
   void _ensureDefaultAddress() {
-    final addresses = widget.provider.addresses;
+    final addresses = _activeProvider.addresses;
     if (addresses.isEmpty) {
       if (_selectedAddress != null) _selectedAddress = null;
       return;
@@ -117,7 +122,7 @@ class _SubmitTabState extends State<_SubmitTab> {
     final resources = <Map<String, String>>[];
     try {
       for (final file in _images) {
-        final path = await widget.provider.uploadImage(file: file);
+        final path = await _provider.uploadImage(file: file);
         resources.add({'fileUrl': path, 'fileType': '1', 'statusType': '1'});
       }
     } catch (e, logStackTrace) {
@@ -130,7 +135,7 @@ class _SubmitTabState extends State<_SubmitTab> {
     if (!mounted) return;
 
     // 预取维修负责部门（acceptDeptId/acceptDeptName/payName 来源）
-    final dept = await widget.provider.fetchAcceptDept(
+    final dept = await _provider.fetchAcceptDept(
       areaId: _selectedAddress!.areaId,
       projectId: _projectValue!,
     );
@@ -146,7 +151,7 @@ class _SubmitTabState extends State<_SubmitTab> {
       'projectName': _projectLabel,
       'bookDate': _bookDate ?? '',
       'bookTime': _bookTime ?? '',
-      'repairUserName': getIt<ScuAuthProvider>().userRealname ?? '',
+      'repairUserName': ref.read(scuAuthProviderBridge).userRealname ?? '',
       'repairUserMobile': _selectedAddress!.phone,
       'repairDeptName': '',
       'ifOnduty': _allowNoOneRepair ? '1' : '0',
@@ -167,7 +172,7 @@ class _SubmitTabState extends State<_SubmitTab> {
       'ifRecord': 0,
     };
 
-    final success = await widget.provider.submitTicket(payload);
+    final success = await _provider.submitTicket(payload);
     if (!mounted) return;
     if (success) {
       _contentController.clear();
@@ -180,7 +185,7 @@ class _SubmitTabState extends State<_SubmitTab> {
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.repairSubmitSuccess)));
     } else {
-      _showError(widget.provider.submitError ?? l10n.repairSubmitFailed);
+      _showError(_provider.submitError ?? l10n.repairSubmitFailed);
     }
   }
 
@@ -198,6 +203,7 @@ class _SubmitTabState extends State<_SubmitTab> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     _ensureDefaultAddress();
+    final provider = _activeProvider;
     // 缓存 messenger 与错误色，供异步操作后展示 SnackBar（避免 async gap 访问 context）。
     _messenger = ScaffoldMessenger.of(context);
     _errorColor = Theme.of(context).colorScheme.error;
@@ -209,7 +215,7 @@ class _SubmitTabState extends State<_SubmitTab> {
           icon: const Icon(Icons.location_on_outlined),
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: widget.provider.addresses.isEmpty
+            child: provider.addresses.isEmpty
                 ? Column(
                     children: [
                       Text(
@@ -218,7 +224,7 @@ class _SubmitTabState extends State<_SubmitTab> {
                       ),
                       const SizedBox(height: 8),
                       _AddAddressButton(
-                        provider: widget.provider,
+                        provider: provider,
                         onSaved: () {
                           // 保存成功后默认选中第一个地址
                           setState(() => _selectedAddress = null);
@@ -239,7 +245,7 @@ class _SubmitTabState extends State<_SubmitTab> {
                             vertical: 8,
                           ),
                         ),
-                        items: widget.provider.addresses
+                        items: provider.addresses
                             .map(
                               (a) => DropdownMenuItem(
                                 value: a,
@@ -257,7 +263,7 @@ class _SubmitTabState extends State<_SubmitTab> {
                       Align(
                         alignment: Alignment.centerRight,
                         child: _AddAddressButton(
-                          provider: widget.provider,
+                          provider: provider,
                           onSaved: () {
                             // 保存成功后重置选中，让默认地址逻辑重新生效
                             setState(() => _selectedAddress = null);
@@ -275,7 +281,7 @@ class _SubmitTabState extends State<_SubmitTab> {
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: _ProjectSelector(
-              provider: widget.provider,
+              provider: provider,
               areaId: _selectedAddress?.areaId,
               value: _projectValue,
               label: _projectLabel,
@@ -384,10 +390,10 @@ class _SubmitTabState extends State<_SubmitTab> {
         SizedBox(
           width: double.infinity,
           child: FilledButton.icon(
-            onPressed: widget.provider.isSubmitting || _uploadingImages
+            onPressed: provider.isSubmitting || _uploadingImages
                 ? null
                 : _submit,
-            icon: widget.provider.isSubmitting || _uploadingImages
+            icon: provider.isSubmitting || _uploadingImages
                 ? const SizedBox(
                     width: 18,
                     height: 18,
@@ -436,7 +442,7 @@ class _SubmitTabState extends State<_SubmitTab> {
 
   Future<void> _showBookDatePicker() async {
     final l10n = AppLocalizations.of(context)!;
-    final dates = await widget.provider.fetchBookDates();
+    final dates = await _provider.fetchBookDates();
     if (!mounted) return;
     if (dates.isEmpty) {
       _showError(l10n.repairNoBookDate);
@@ -467,7 +473,7 @@ class _SubmitTabState extends State<_SubmitTab> {
   Future<void> _showBookTimePicker() async {
     final l10n = AppLocalizations.of(context)!;
     if (_bookDate == null) return;
-    final times = await widget.provider.fetchBookTimes(_bookDate!);
+    final times = await _provider.fetchBookTimes(_bookDate!);
     if (!mounted) return;
     if (times.isEmpty) {
       _showError(l10n.repairNoBookTime);
