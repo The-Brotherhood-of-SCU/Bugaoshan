@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/providers/update_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 
-class UpdateCard extends StatelessWidget {
+class UpdateCard extends ConsumerWidget {
   final IconData icon;
   final String title;
   final ValueNotifier<UpdateCheckResult> result;
@@ -21,9 +21,9 @@ class UpdateCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final localizations = AppLocalizations.of(context)!;
-    final updateProvider = getIt<UpdateProvider>();
+    final updateProvider = ref.watch(updateProviderBridge);
 
     // 与 About 页的 UpdateTile 一致:同时监听下载状态,
     // 在下载中展示进度百分比并禁用按钮,避免重入。

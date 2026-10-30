@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/services/exit_service.dart';
 import 'package:bugaoshan/widgets/eula_content.dart';
 
-class EulaGatePage extends StatefulWidget {
+class EulaGatePage extends ConsumerStatefulWidget {
   const EulaGatePage({super.key});
 
   @override
-  State<EulaGatePage> createState() => _EulaGatePageState();
+  ConsumerState<EulaGatePage> createState() => _EulaGatePageState();
 }
 
-class _EulaGatePageState extends State<EulaGatePage> {
+class _EulaGatePageState extends ConsumerState<EulaGatePage> {
   bool _agreed = false;
 
   void _onAgree() {
-    getIt<AppConfigProvider>().acceptedEulaVersion.value = currentEulaVersion;
+    ref
+        .read(acceptedEulaVersionSettingProvider.notifier)
+        .update(currentEulaVersion);
   }
 
   Future<void> _onDisagree() async {
@@ -54,7 +57,7 @@ class _EulaGatePageState extends State<EulaGatePage> {
                         child: Text(l10n.eulaDisagree),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: FilledButton(
                         onPressed: _agreed ? _onAgree : null,

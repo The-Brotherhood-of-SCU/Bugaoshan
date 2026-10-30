@@ -10,6 +10,7 @@ import 'package:bugaoshan/pages/course/widgets/grid_section_column.dart';
 import 'package:bugaoshan/pages/course/widgets/minimal_weekday_header.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -69,10 +70,12 @@ Course _mergeableCourse({
   colorValue: 0xFF2196F3,
 );
 
-Widget _app(Widget child) => MaterialApp(
-  localizationsDelegates: AppLocalizations.localizationsDelegates,
-  supportedLocales: AppLocalizations.supportedLocales,
-  home: Scaffold(body: child),
+Widget _app(Widget child) => ProviderScope(
+  child: MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: Scaffold(body: child),
+  ),
 );
 
 /// 无界高度 + 撑满宽度：复刻 CourseGrid 在 SingleChildScrollView 内的真实约束，

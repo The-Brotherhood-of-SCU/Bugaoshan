@@ -6,6 +6,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/riverpod/campus/balance_pods.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/balance_query_service.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
@@ -153,7 +154,6 @@ class BalanceQueryPage extends ConsumerWidget {
   }
 
   void _showSettingsSheet(BuildContext context, WidgetRef ref) {
-    final appConfig = ref.read(appConfigProviderBridge);
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
@@ -171,13 +171,14 @@ class BalanceQueryPage extends ConsumerWidget {
                 style: Theme.of(sheetContext).textTheme.titleMedium,
               ),
             ),
-            ListenableBuilder(
-              listenable: appConfig.autoSampleBalanceOnLogin,
-              builder: (_, _) => AdaptiveGlassSwitchListTile(
+            Consumer(
+              builder: (context, ref, _) => AdaptiveGlassSwitchListTile(
                 title: Text(l10n.autoSampleBalanceOnLogin),
                 subtitle: Text(l10n.autoSampleBalanceOnLoginDesc),
-                value: appConfig.autoSampleBalanceOnLogin.value,
-                onChanged: (v) => appConfig.autoSampleBalanceOnLogin.value = v,
+                value: ref.watch(autoSampleBalanceOnLoginSettingProvider),
+                onChanged: (v) => ref
+                    .read(autoSampleBalanceOnLoginSettingProvider.notifier)
+                    .update(v),
               ),
             ),
           ],

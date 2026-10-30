@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/auth/scu_login_button.dart';
 import 'package:bugaoshan/pages/auth/scu_login_captcha_row.dart';
@@ -11,7 +11,7 @@ import 'package:bugaoshan/pages/auth/scu_login_disclaimer.dart';
 import 'package:bugaoshan/pages/auth/scu_login_header_image.dart';
 import 'package:bugaoshan/pages/auth/scu_login_input_field.dart';
 import 'package:bugaoshan/pages/auth/scu_reset_password_page.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart' show CaptchaResult;
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
@@ -23,14 +23,14 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-class ScuLoginPage extends StatefulWidget {
+class ScuLoginPage extends ConsumerStatefulWidget {
   const ScuLoginPage({super.key});
 
   @override
-  State<ScuLoginPage> createState() => _ScuLoginPageState();
+  ConsumerState<ScuLoginPage> createState() => _ScuLoginPageState();
 }
 
-class _ScuLoginPageState extends State<ScuLoginPage> {
+class _ScuLoginPageState extends ConsumerState<ScuLoginPage> {
   static const String _tag = 'ScuLoginPageState';
 
   final _formKey = GlobalKey<FormState>();
@@ -69,7 +69,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
   }
 
   Future<void> _loadSaved() async {
-    final authProvider = getIt<ScuAuthProvider>();
+    final authProvider = ref.read(scuAuthProviderBridge);
     final credentials = await authProvider.getSavedCredentials();
     final autoLoginEnabled = await authProvider.isAutoLoginEnabled();
     if (!mounted) return;
@@ -88,7 +88,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
   Future<void> _loadCaptcha() async {
     setState(() => _captchaLoading = true);
     try {
-      final captcha = await getIt<ScuAuthProvider>().fetchCaptcha();
+      final captcha = await ref.read(scuAuthProviderBridge).fetchCaptcha();
 
       // 提前解码，避免在 build 中解码失败导致整页崩溃
       Uint8List? imageBytes;
@@ -156,7 +156,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
     final password = _passwordCtrl.text;
 
     try {
-      final authProvider = getIt<ScuAuthProvider>();
+      final authProvider = ref.read(scuAuthProviderBridge);
       await authProvider.login(
         username: username,
         password: password,

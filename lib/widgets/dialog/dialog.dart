@@ -7,7 +7,11 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
-final appConfigService = getIt<AppConfigProvider>();
+AppConfigProvider get appConfigService => getIt<AppConfigProvider>();
+
+Duration get _animationDuration => getIt.isRegistered<AppConfigProvider>()
+    ? getIt<AppConfigProvider>().cardSizeAnimationDuration.value
+    : const Duration(milliseconds: 300);
 
 Future showInfoDialog({
   BuildContext? context, //this is no need anymore
@@ -170,7 +174,7 @@ Future showLoadingDialogWithErrorString({
           isError ? (onErrorTitle ?? l10n.error) : (title ?? l10n.loading),
         ),
         content: AnimatedSize(
-          duration: appConfigService.cardSizeAnimationDuration.value,
+          duration: _animationDuration,
           curve: Curves.easeOutQuart,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),

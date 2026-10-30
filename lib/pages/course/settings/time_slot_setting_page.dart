@@ -1,13 +1,14 @@
 import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
-class TimeSlotSettingPage extends StatefulWidget {
+class TimeSlotSettingPage extends ConsumerStatefulWidget {
   final int morningSections;
   final int afternoonSections;
   final int eveningSections;
@@ -28,11 +29,12 @@ class TimeSlotSettingPage extends StatefulWidget {
   });
 
   @override
-  State<TimeSlotSettingPage> createState() => _TimeSlotSettingPageState();
+  ConsumerState<TimeSlotSettingPage> createState() =>
+      _TimeSlotSettingPageState();
 }
 
-class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
-  final courseProvider = getIt<CourseProvider>();
+class _TimeSlotSettingPageState extends ConsumerState<TimeSlotSettingPage> {
+  CourseProvider get courseProvider => ref.read(courseProviderBridge);
   late int _morningSections;
   late int _afternoonSections;
   late int _eveningSections;

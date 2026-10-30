@@ -3,14 +3,14 @@ import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'time_slot_setting_page.dart';
 import 'package:bugaoshan/pages/settings/set_course_style_page.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/utils/semester_week.dart';
 import 'package:bugaoshan/widgets/common/info_card.dart';
@@ -21,18 +21,19 @@ import '../widgets/empty_schedule_placeholder.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
-class CourseScheduleSetting extends StatefulWidget {
+class CourseScheduleSetting extends ConsumerStatefulWidget {
   const CourseScheduleSetting({super.key});
 
   @override
-  State<CourseScheduleSetting> createState() => _CourseScheduleSettingState();
+  ConsumerState<CourseScheduleSetting> createState() =>
+      _CourseScheduleSettingState();
 }
 
-class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
+class _CourseScheduleSettingState extends ConsumerState<CourseScheduleSetting> {
   static const String _tag = 'CourseScheduleSettingState';
 
-  final courseProvider = getIt<CourseProvider>();
-  final authProvider = getIt<ScuAuthProvider>();
+  CourseProvider get courseProvider => ref.read(courseProviderBridge);
+  ScuAuthProvider get authProvider => ref.read(scuAuthProviderBridge);
 
   late DateTime _startDate;
   late int _totalWeeks;
@@ -85,7 +86,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
     if (!authProvider.isLoggedIn) return;
     setState(() => _fetchingCurrentWeek = true);
     try {
-      final week = await getIt<ZhjwApiService>().fetchCurrentWeek();
+      final week = await ref.read(zhjwApiServiceBridge).fetchCurrentWeek();
       if (!mounted) return;
       if (week == null) {
         final l10n = AppLocalizations.of(context)!;
@@ -218,7 +219,7 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
     if (currentWeek < 1) currentWeek = 1;
     if (currentWeek > _totalWeeks) currentWeek = _totalWeeks;
 
-    final isLoggedIn = authProvider.isLoggedIn;
+    final isLoggedIn = ref.watch(scuAuthProviderBridge).isLoggedIn;
     final totalWeeksTitle = l10n.totalWeeks(20).split(':')[0];
     return InfoCard(
       indent: 0,

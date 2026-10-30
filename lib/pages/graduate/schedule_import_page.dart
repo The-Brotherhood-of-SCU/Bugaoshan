@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
 import 'package:bugaoshan/services/api/gs_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
@@ -15,9 +18,6 @@ import 'package:bugaoshan/utils/graduate_schedule_parser.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/widgets/webview/webview_unsupported_page.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 /// 直连失败的原因分类，决定失败态的文案与可用动作。
 enum _DirectFailureKind {
@@ -44,16 +44,16 @@ enum _DirectFailureKind {
 /// 由页面自己去取课表数据时顺手把响应体记下来；Dart 侧轮询取走，用
 /// [graduateCoursesFromCapturedJson] 识别出课程，再写进课表。应急方案需
 /// 用户在页面内登录一次 ehall，信息也不如直连全面，仅直连不可用时使用。
-class GraduateScheduleImportPage extends StatefulWidget {
+class GraduateScheduleImportPage extends ConsumerStatefulWidget {
   const GraduateScheduleImportPage({super.key});
 
   @override
-  State<GraduateScheduleImportPage> createState() =>
+  ConsumerState<GraduateScheduleImportPage> createState() =>
       _GraduateScheduleImportPageState();
 }
 
 class _GraduateScheduleImportPageState
-    extends State<GraduateScheduleImportPage> {
+    extends ConsumerState<GraduateScheduleImportPage> {
   static const String _tag = 'GraduateScheduleImportPage';
 
   /// 轮询间隔：够快能及时反馈，又不会把 WebView 打满。
@@ -105,7 +105,7 @@ class _GraduateScheduleImportPageState
       _manualWebView = false;
     });
     try {
-      final api = getIt<GsApiService>();
+      final api = ref.read(gsApiServiceBridge);
       final data = await api.fetchSchedule();
       if (!mounted) return;
       if (data.courses.isEmpty) {
@@ -249,7 +249,7 @@ class _GraduateScheduleImportPageState
     if (_courses.isEmpty || _importing) return;
 
     final l10n = AppLocalizations.of(context)!;
-    final provider = getIt<CourseProvider>();
+    final provider = ref.read(courseProviderBridge);
     final scheduleName = l10n.graduateScheduleImportName;
     setState(() => _importing = true);
 

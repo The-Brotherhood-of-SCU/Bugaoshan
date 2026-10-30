@@ -1,8 +1,8 @@
 import 'package:bugaoshan/widgets/navigation/home_dock_insets.dart';
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
 import 'course_grid_body.dart';
 
@@ -11,7 +11,7 @@ import 'course_grid_body.dart';
 /// 本组件只负责三件事：读 AppConfig、订阅视觉设置、提供滚动容器与底部留白。
 /// 表头选型在 [CourseGridHeader]，网格本体在 [CourseGridBody] —— 两者与导出
 /// 视图（`ScheduleExportView`）共用；导出时不要滚动容器与 viewport 裁剪。
-class CourseGrid extends StatefulWidget {
+class CourseGrid extends ConsumerWidget {
   final List<Course> courses;
   final ScheduleConfig config;
   final int displayWeek;
@@ -47,71 +47,49 @@ class CourseGrid extends StatefulWidget {
   });
 
   @override
-  State<CourseGrid> createState() => _CourseGridState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final showWeekendVal = ref.watch(showWeekendSettingProvider);
+    final showWeekend = showWeekendOverride ?? showWeekendVal;
+    final backgroundImagePath = ref.watch(backgroundImagePathSettingProvider);
+    final hasBackground = backgroundImagePath != null;
+    final rowHeight = ref.watch(courseRowHeightSettingProvider);
+    final showCourseGrid = ref.watch(showCourseGridSettingProvider);
+    final showNonCurrentWeekCourses =
+        ref.watch(showNonCurrentWeekCoursesSettingProvider);
 
-class _CourseGridState extends State<CourseGrid> {
-  final appConfig = getIt<AppConfigProvider>();
-
-  /// build 里读到的所有 AppConfig 字段。提成字段避免每帧新建 merge 导致
-  /// ListenableBuilder 反复解绑重绑订阅。
-  late final Listenable _configListenable = Listenable.merge([
-    appConfig.showCourseGrid,
-    appConfig.courseRowHeight,
-    appConfig.showWeekend,
-    appConfig.showNonCurrentWeekCourses,
-    // build 里读了 backgroundImagePath（hasBackground），必须一并订阅，
-    // 否则设置/清除背景图后网格样式不会刷新。
-    appConfig.backgroundImagePath,
-  ]);
-
-  @override
-  Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: _configListenable,
-      builder: (context, _) {
-        final showWeekend =
-            widget.showWeekendOverride ?? appConfig.showWeekend.value;
-        final hasBackground = appConfig.backgroundImagePath.value != null;
-        final rowHeight = appConfig.courseRowHeight.value;
-        final showCourseGrid = appConfig.showCourseGrid.value;
-
-        return Column(
-          children: [
-            CourseGridHeader(
-              config: widget.config,
-              displayWeek: widget.displayWeek,
-              hasBackground: hasBackground,
+    return Column(
+      children: [
+        CourseGridHeader(
+          config: config,
+          displayWeek: displayWeek,
+          hasBackground: hasBackground,
+          showWeekend: showWeekend,
+          showAllWeeks: showAllWeeks,
+          showHeaderDates: showHeaderDates,
+          onSpecialDayTap: onSpecialDayTap,
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            padding: EdgeInsets.only(
+              bottom: HomeDockInsets.bottomOf(context),
+            ),
+            child: CourseGridBody(
+              courses: courses,
+              config: config,
+              displayWeek: displayWeek,
               showWeekend: showWeekend,
-              showAllWeeks: widget.showAllWeeks,
-              showHeaderDates: widget.showHeaderDates,
-              onSpecialDayTap: widget.onSpecialDayTap,
+              showNonCurrentWeekCourses: showNonCurrentWeekCourses,
+              rowHeight: rowHeight,
+              showCourseGrid: showCourseGrid,
+              showAllWeeks: showAllWeeks,
+              onCourseTap: onCourseTap,
+              onCourseLongPress: onCourseLongPress,
+              onEmptyTap: onEmptyTap,
             ),
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                padding: EdgeInsets.only(
-                  bottom: HomeDockInsets.bottomOf(context),
-                ),
-                child: CourseGridBody(
-                  courses: widget.courses,
-                  config: widget.config,
-                  displayWeek: widget.displayWeek,
-                  showWeekend: showWeekend,
-                  showNonCurrentWeekCourses:
-                      appConfig.showNonCurrentWeekCourses.value,
-                  rowHeight: rowHeight,
-                  showCourseGrid: showCourseGrid,
-                  showAllWeeks: widget.showAllWeeks,
-                  onCourseTap: widget.onCourseTap,
-                  onCourseLongPress: widget.onCourseLongPress,
-                  onEmptyTap: widget.onEmptyTap,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,9 +1,9 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_trend_format.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/services/balance/balance_trend_calculator.dart';
 import 'package:bugaoshan/utils/beijing_time.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
@@ -14,7 +14,7 @@ import 'package:bugaoshan/widgets/common/styled_card.dart';
 /// - 加载中:保留卡片骨架,图表区域显示 `—` 占位避免闪烁
 /// - 无数据:显示空态图标 + 文案
 /// - 正常:fl_chart 折线图
-class BalanceTrendChartCard extends StatelessWidget {
+class BalanceTrendChartCard extends ConsumerWidget {
   final TrendResult trend;
   final bool isLoading;
   final Color themeColor;
@@ -27,9 +27,10 @@ class BalanceTrendChartCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+    final animDuration = ref.watch(cardSizeAnimationDurationSettingProvider);
 
     if (isLoading) {
       return StyledCard(
@@ -255,8 +256,7 @@ class BalanceTrendChartCard extends StatelessWidget {
                   clipData: const FlClipData.all(),
                   extraLinesData: const ExtraLinesData(),
                 ),
-                duration:
-                    getIt<AppConfigProvider>().cardSizeAnimationDuration.value,
+                duration: animDuration,
               ),
             ),
           ],

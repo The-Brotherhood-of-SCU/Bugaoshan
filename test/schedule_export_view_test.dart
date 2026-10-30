@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
@@ -11,22 +12,24 @@ import 'package:bugaoshan/pages/course/export/schedule_export_view.dart';
 import 'package:bugaoshan/pages/course/widgets/grid_day_column.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 
-Widget _wrapHost(Widget child, {ThemeData? theme}) => MaterialApp(
-  key: ValueKey(theme?.brightness),
-  localizationsDelegates: AppLocalizations.localizationsDelegates,
-  supportedLocales: AppLocalizations.supportedLocales,
-  theme: theme ?? ThemeData.light(),
-  home: Scaffold(
-    body: Stack(
-      alignment: Alignment.topLeft,
-      children: [
-        Positioned(
-          left: 0,
-          top: 0,
-          width: kScheduleImageLogicalWidth,
-          child: child,
-        ),
-      ],
+Widget _wrapHost(Widget child, {ThemeData? theme}) => ProviderScope(
+  child: MaterialApp(
+    key: ValueKey(theme?.brightness),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    theme: theme ?? ThemeData.light(),
+    home: Scaffold(
+      body: Stack(
+        alignment: Alignment.topLeft,
+        children: [
+          Positioned(
+            left: 0,
+            top: 0,
+            width: kScheduleImageLogicalWidth,
+            child: child,
+          ),
+        ],
+      ),
     ),
   ),
 );
@@ -328,14 +331,16 @@ void main() {
 
     // 高度仅 200，而 View 内部 Column 至少 40 + 60*12 = 760
     await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: SizedBox(
-            width: 420,
-            height: 200,
-            child: ScheduleExportView(data: data),
+      ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SizedBox(
+              width: 420,
+              height: 200,
+              child: ScheduleExportView(data: data),
+            ),
           ),
         ),
       ),

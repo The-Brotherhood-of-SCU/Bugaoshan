@@ -3,12 +3,11 @@ import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/riverpod/common/app_info_pods.dart';
 import 'package:bugaoshan/providers/riverpod/common/update_pods.dart';
 import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
-import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/open_link.dart'
@@ -126,19 +125,15 @@ class _AboutPageState extends ConsumerState<AboutPage> {
     required String filename,
     String? checksumSha256,
   }) async {
-    final legacyProvider = getIt.isRegistered<UpdateProvider>()
-        ? getIt<UpdateProvider>()
-        : null;
-    if (legacyProvider != null) {
-      await showDownloadProgressDialog(
-        context: context,
-        version: latestVersion,
-        downloadUrl: downloadUrl,
-        filename: filename,
-        checksumSha256: checksumSha256,
-        updateProvider: legacyProvider,
-      );
-    }
+    final provider = ref.read(updateProviderBridge);
+    await showDownloadProgressDialog(
+      context: context,
+      version: latestVersion,
+      downloadUrl: downloadUrl,
+      filename: filename,
+      checksumSha256: checksumSha256,
+      updateProvider: provider,
+    );
   }
 
   Widget _buildHeader(

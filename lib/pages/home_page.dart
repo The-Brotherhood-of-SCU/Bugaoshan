@@ -7,13 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/providers/app_info_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/utils/app_log.dart';
-import 'package:bugaoshan/services/auth/auth_coordinator.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/common/auth_scoped_indexed_stack.dart';
@@ -44,10 +40,9 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
 
   Future<void> _attemptAutoLogin() async {
     try {
-      await getIt.isReady<ScuAuthProvider>();
-      final authProvider = getIt<ScuAuthProvider>();
+      final authProvider = ref.read(scuAuthProviderBridge);
       if (authProvider.isLoggedIn) {
-        unawaited(getIt<AuthCoordinator>().warmUpAll());
+        unawaited(ref.read(authCoordinatorBridge).warmUpAll());
         return;
       }
       await authProvider.autoLogin();
@@ -63,16 +58,10 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
 
   Future<void> _checkForUpdateInBackground() async {
     try {
-      await Future.wait([
-        getIt.isReady<AppInfoProvider>(),
-        getIt.isReady<UpdateProvider>(),
-        getIt.isReady<AppConfigProvider>(),
-      ]);
-      final updateProvider = getIt<UpdateProvider>();
-      final appConfig = getIt<AppConfigProvider>();
+      final updateProvider = ref.read(updateProviderBridge);
       final result = await updateProvider.checkForUpdate();
       if (result.hasUpdate) {
-        appConfig.hasUpdateNotification.value = true;
+        ref.read(hasUpdateNotificationSettingProvider.notifier).update(true);
       }
     } catch (e, logStackTrace) {
       AppLog.e(
@@ -113,7 +102,7 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
   }
 
   Widget _buildMainScreen() {
-    final authProvider = getIt<ScuAuthProvider>();
+    final authProvider = ref.watch(scuAuthProviderBridge);
     final l10n = AppLocalizations.of(context)!;
 
     final savedIds = ref.watch(visibleDockIdsSettingProvider);

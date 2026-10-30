@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/theme_shape.dart';
 
-class CourseCard extends StatelessWidget {
+class CourseCard extends ConsumerWidget {
   final Course course;
   final ScheduleConfig config;
   final int displayWeek;
@@ -24,134 +24,126 @@ class CourseCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final appConfig = getIt<AppConfigProvider>();
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final colorOpacity = ref.watch(colorOpacitySettingProvider);
+    final fontSize = ref.watch(courseCardFontSizeSettingProvider);
+    final showLocation = ref.watch(showLocationSettingProvider);
+    final showTeacherName = ref.watch(showTeacherNameSettingProvider);
+    final showCourseWeeks = ref.watch(showCourseWeeksSettingProvider);
 
-    return ListenableBuilder(
-      listenable: Listenable.merge([
-        appConfig.colorOpacity,
-        appConfig.courseCardFontSize,
-        appConfig.showLocation,
-        appConfig.showTeacherName,
-        appConfig.showCourseWeeks,
-      ]),
-      builder: (context, _) {
-        final isActive = showAllWeeks || course.isActiveInWeek(displayWeek);
-        final color = isActive
-            ? course.color.withValues(alpha: appConfig.colorOpacity.value)
-            : _greyscale(course.color).withValues(alpha: 0.12);
-        final scaffoldBg = Theme.of(context).scaffoldBackgroundColor;
-        final effectiveBg = Color.alphaBlend(color, scaffoldBg);
-        final textColor = effectiveBg.computeLuminance() > 0.45
-            ? Colors.black87
-            : Colors.white;
-        final fontSize = appConfig.courseCardFontSize.value;
-        final smallFontSize = (fontSize * 0.85).clamp(8.0, 16.0);
-        final details =
-            <({String text, int preferredMaxLines, int renderMaxLines})>[
-              if (appConfig.showLocation.value && course.location.isNotEmpty)
-                (
-                  text: course.location,
-                  preferredMaxLines: 1,
-                  renderMaxLines: 4,
-                ),
-              if (appConfig.showTeacherName.value && course.teacher.isNotEmpty)
-                (text: course.teacher, preferredMaxLines: 1, renderMaxLines: 2),
-              if (appConfig.showCourseWeeks.value)
-                (
-                  text: course.formatWeeks(l10n),
-                  preferredMaxLines: 1,
-                  renderMaxLines: 4,
-                ),
-            ];
+    final isActive = showAllWeeks || course.isActiveInWeek(displayWeek);
+    final color = isActive
+        ? course.color.withValues(alpha: colorOpacity)
+        : _greyscale(course.color).withValues(alpha: 0.12);
+    final scaffoldBg = Theme.of(context).scaffoldBackgroundColor;
+    final effectiveBg = Color.alphaBlend(color, scaffoldBg);
+    final textColor = effectiveBg.computeLuminance() > 0.45
+        ? Colors.black87
+        : Colors.white;
+    final smallFontSize = (fontSize * 0.85).clamp(8.0, 16.0);
+    final details =
+        <({String text, int preferredMaxLines, int renderMaxLines})>[
+          if (showLocation && course.location.isNotEmpty)
+            (
+              text: course.location,
+              preferredMaxLines: 1,
+              renderMaxLines: 4,
+            ),
+          if (showTeacherName && course.teacher.isNotEmpty)
+            (text: course.teacher, preferredMaxLines: 1, renderMaxLines: 2),
+          if (showCourseWeeks)
+            (
+              text: course.formatWeeks(l10n),
+              preferredMaxLines: 1,
+              renderMaxLines: 4,
+            ),
+        ];
 
-        return GestureDetector(
-          onTap: onTap,
-          onLongPress: onLongPress,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final height = constraints.maxHeight;
-              final detailLineBudget = switch (height) {
-                < 56 => 0,
-                < 100 => 3,
-                _ => 5,
-              };
-              final visibleDetails =
-                  <
-                    ({String text, int preferredMaxLines, int renderMaxLines})
-                  >[];
-              var usedDetailLines = 0;
-              for (final detail in details) {
-                final nextUsedLines =
-                    usedDetailLines + detail.preferredMaxLines;
-                if (nextUsedLines > detailLineBudget) {
-                  continue;
-                }
-                visibleDetails.add(detail);
-                usedDetailLines = nextUsedLines;
-              }
-              final titleMaxLines = 6;
+    return GestureDetector(
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final height = constraints.maxHeight;
+          final detailLineBudget = switch (height) {
+            < 56 => 0,
+            < 100 => 3,
+            _ => 5,
+          };
+          final visibleDetails =
+              <
+                ({String text, int preferredMaxLines, int renderMaxLines})
+              >[];
+          var usedDetailLines = 0;
+          for (final detail in details) {
+            final nextUsedLines =
+                usedDetailLines + detail.preferredMaxLines;
+            if (nextUsedLines > detailLineBudget) {
+              continue;
+            }
+            visibleDetails.add(detail);
+            usedDetailLines = nextUsedLines;
+          }
+          final titleMaxLines = 6;
 
-              return ClipRRect(
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(AppShapes.small),
+            child: Container(
+              decoration: BoxDecoration(
+                color: color,
                 borderRadius: BorderRadius.circular(AppShapes.small),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(AppShapes.small),
-                    border: isActive
-                        ? null
-                        : Border.all(
-                            color: textColor.withAlpha(50),
-                            width: 0.5,
-                          ),
-                  ),
-                  padding: const EdgeInsets.all(4),
-                  child: SizedBox.expand(
-                    child: ScrollConfiguration(
-                      behavior: ScrollConfiguration.of(
-                        context,
-                      ).copyWith(scrollbars: false),
-                      child: SingleChildScrollView(
-                        physics: const NeverScrollableScrollPhysics(),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              isActive
-                                  ? course.name
-                                  : '${l10n.notThisWeek} ${course.name}',
-                              maxLines: titleMaxLines,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    fontSize: fontSize,
-                                    color: textColor,
-                                    height: 1.1,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                            if (visibleDetails.isNotEmpty)
-                              const SizedBox(height: 2),
-                            ...visibleDetails.map(
-                              (detail) => _buildIconText(
-                                detail.text,
-                                smallFontSize,
-                                textColor,
-                                maxLines: detail.renderMaxLines,
-                              ),
-                            ),
-                          ],
-                        ),
+                border: isActive
+                    ? null
+                    : Border.all(
+                        color: textColor.withAlpha(50),
+                        width: 0.5,
                       ),
+              ),
+              padding: const EdgeInsets.all(4),
+              child: SizedBox.expand(
+                child: ScrollConfiguration(
+                  behavior: ScrollConfiguration.of(
+                    context,
+                  ).copyWith(scrollbars: false),
+                  child: SingleChildScrollView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isActive
+                              ? course.name
+                              : '${l10n.notThisWeek} ${course.name}',
+                          maxLines: titleMaxLines,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                fontSize: fontSize,
+                                color: textColor,
+                                height: 1.1,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        if (visibleDetails.isNotEmpty)
+                          const SizedBox(height: 2),
+                        ...visibleDetails.map(
+                          (detail) => _buildIconText(
+                            detail.text,
+                            smallFontSize,
+                            textColor,
+                            maxLines: detail.renderMaxLines,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              );
-            },
-          ),
-        );
-      },
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 

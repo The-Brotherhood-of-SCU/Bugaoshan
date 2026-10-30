@@ -6,6 +6,7 @@ import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/services/database_service.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -123,12 +124,14 @@ void main() {
   });
 }
 
-Widget _wrap(Widget child, AppLocalizations l10n) => MaterialApp(
-  navigatorKey: navigatorKey,
-  locale: const Locale('zh'),
-  localizationsDelegates: AppLocalizations.localizationsDelegates,
-  supportedLocales: AppLocalizations.supportedLocales,
-  home: child,
+Widget _wrap(Widget child, AppLocalizations l10n) => ProviderScope(
+  child: MaterialApp(
+    navigatorKey: navigatorKey,
+    locale: const Locale('zh'),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: child,
+  ),
 );
 
 CourseEditPage _copyPage(_Harness harness) => CourseEditPage.createCopy(

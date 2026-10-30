@@ -1,30 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/utils/app_logger.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 
 /// Dev 页的「落盘开关」入口。
 ///
-/// 通过 [AppConfigProvider.logPersistenceEnabled] 控制文件输出并保存开关状态。
+/// 通过 [logPersistenceEnabledSettingProvider] 控制文件输出并保存开关状态。
 /// 放在压测入口旁边，便于开启落盘后复现问题并导出日志。
-class LogPersistenceTile extends StatelessWidget {
+class LogPersistenceTile extends ConsumerWidget {
   const LogPersistenceTile({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final appConfig = getIt<AppConfigProvider>();
-    final logger = getIt<AppLogger>();
+    final enabled = ref.watch(logPersistenceEnabledSettingProvider);
+    final logger = ref.watch(appLoggerBridge);
 
-    // 开关状态与「落盘实际是否可用」是两件事：前者是用户意图（ValueNotifier），
+    // 开关状态与「落盘实际是否可用」是两件事：前者是用户意图（ValueNotifier/Pod），
     // 后者由 sink 健康状况决定（AppLogger 自身也是 ChangeNotifier）。
     // 两个都监听，否则故障期间 UI 不会更新——而这正是最需要它更新的时刻。
     return ListenableBuilder(
-      listenable: Listenable.merge([appConfig.logPersistenceEnabled, logger]),
+      listenable: logger,
       builder: (context, _) {
-        final enabled = appConfig.logPersistenceEnabled.value;
         final unavailable = logger.fileSinkUnavailable;
         final dropped = logger.droppedWriteLines;
         return SwitchListTile(
@@ -43,7 +42,8 @@ class LogPersistenceTile extends StatelessWidget {
             ),
           ),
           value: enabled,
-          onChanged: (v) => appConfig.logPersistenceEnabled.value = v,
+          onChanged: (v) =>
+              ref.read(logPersistenceEnabledSettingProvider.notifier).update(v),
         );
       },
     );

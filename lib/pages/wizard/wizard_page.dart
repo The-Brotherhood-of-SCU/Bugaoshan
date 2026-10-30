@@ -1,9 +1,10 @@
-import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/pages/wizard/welcome_page.dart';
 import 'package:bugaoshan/pages/wizard/student_type_page.dart';
@@ -11,16 +12,15 @@ import 'package:bugaoshan/pages/wizard/login_page.dart';
 import 'package:bugaoshan/pages/wizard/features_page.dart';
 import 'package:bugaoshan/pages/wizard/widget_page.dart';
 
-class WizardPage extends StatefulWidget {
+class WizardPage extends ConsumerStatefulWidget {
   const WizardPage({super.key});
 
   @override
-  State<WizardPage> createState() => _WizardPageState();
+  ConsumerState<WizardPage> createState() => _WizardPageState();
 }
 
-class _WizardPageState extends State<WizardPage> {
+class _WizardPageState extends ConsumerState<WizardPage> {
   late final PageController _pageController;
-  late final AppConfigProvider _appConfig;
   int _currentPage = 0;
   late final int _totalPages;
   late final List<Widget> _pages;
@@ -28,7 +28,6 @@ class _WizardPageState extends State<WizardPage> {
   @override
   void initState() {
     super.initState();
-    _appConfig = getIt<AppConfigProvider>();
     _pageController = PageController();
 
     _pages = [
@@ -56,19 +55,21 @@ class _WizardPageState extends State<WizardPage> {
   }
 
   void _onCompleted() {
-    _appConfig.firstLaunchWizardCompleted.value = true;
+    ref.read(firstLaunchWizardCompletedSettingProvider.notifier).update(true);
   }
 
   void _goNext() {
+    final animDuration = ref.read(cardSizeAnimationDurationSettingProvider);
     _pageController.nextPage(
-      duration: _appConfig.cardSizeAnimationDuration.value,
+      duration: animDuration,
       curve: Curves.easeInOutQuart,
     );
   }
 
   void _goBack() {
+    final animDuration = ref.read(cardSizeAnimationDurationSettingProvider);
     _pageController.previousPage(
-      duration: _appConfig.cardSizeAnimationDuration.value,
+      duration: animDuration,
       curve: Curves.easeInOutQuart,
     );
   }
@@ -77,6 +78,7 @@ class _WizardPageState extends State<WizardPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
+    final animDuration = ref.watch(cardSizeAnimationDurationSettingProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -94,7 +96,7 @@ class _WizardPageState extends State<WizardPage> {
                         children: _pages,
                       ),
                     ),
-                    _buildBottomSection(l10n, colorScheme),
+                    _buildBottomSection(l10n, colorScheme, animDuration),
                   ],
                 ),
               ),
@@ -105,7 +107,11 @@ class _WizardPageState extends State<WizardPage> {
     );
   }
 
-  Widget _buildBottomSection(AppLocalizations l10n, ColorScheme colorScheme) {
+  Widget _buildBottomSection(
+    AppLocalizations l10n,
+    ColorScheme colorScheme,
+    Duration animDuration,
+  ) {
     final isLastPage = _currentPage == _totalPages - 1;
     final isFirstPage = _currentPage == 0;
 
@@ -119,7 +125,7 @@ class _WizardPageState extends State<WizardPage> {
             children: List.generate(_totalPages, (index) {
               final isActive = _currentPage == index;
               return AnimatedContainer(
-                duration: _appConfig.cardSizeAnimationDuration.value,
+                duration: animDuration,
                 curve: appCurve,
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 width: isActive ? 24 : 8,
@@ -145,12 +151,12 @@ class _WizardPageState extends State<WizardPage> {
               AnimatedOpacity(
                 opacity: !isFirstPage ? 1 : 0,
                 curve: appCurve,
-                duration: _appConfig.cardSizeAnimationDuration.value,
+                duration: animDuration,
                 child: TextButton(onPressed: _goBack, child: Text(l10n.back)),
               ),
               const SizedBox(width: 8),
               AnimatedSize(
-                duration: _appConfig.cardSizeAnimationDuration.value,
+                duration: animDuration,
                 curve: appCurve,
                 child: FilledButton(
                   onPressed: isLastPage ? _onCompleted : _goNext,

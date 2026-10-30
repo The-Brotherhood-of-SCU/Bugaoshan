@@ -4,16 +4,17 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/course/widgets/week_selector_grid.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
-class CourseEditPage extends StatefulWidget {
+class CourseEditPage extends ConsumerStatefulWidget {
   final ScheduleConfig scheduleConfig;
   final Course? course;
   final int? prefillDayOfWeek;
@@ -47,11 +48,11 @@ class CourseEditPage extends StatefulWidget {
        _isCopy = true;
 
   @override
-  State<CourseEditPage> createState() => _CourseEditPageState();
+  ConsumerState<CourseEditPage> createState() => _CourseEditPageState();
 }
 
-class _CourseEditPageState extends State<CourseEditPage> {
-  final courseProvider = getIt<CourseProvider>();
+class _CourseEditPageState extends ConsumerState<CourseEditPage> {
+  CourseProvider get courseProvider => ref.read(courseProviderBridge);
   final _formKey = GlobalKey<FormState>();
 
   late TextEditingController _nameController;

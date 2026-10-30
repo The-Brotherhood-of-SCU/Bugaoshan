@@ -7,6 +7,7 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/services/database_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -43,25 +44,27 @@ void main() {
     final provider = CourseProvider(_FakeDatabaseService());
     late AppLocalizations l10n;
     await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('zh'),
-        home: Builder(
-          builder: (context) {
-            l10n = AppLocalizations.of(context)!;
-            return Scaffold(
-              body: Center(
-                child: TextButton(
-                  onPressed: () => showScheduleImportSheet(
-                    context,
-                    courseProvider: provider,
+      ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('zh'),
+          home: Builder(
+            builder: (context) {
+              l10n = AppLocalizations.of(context)!;
+              return Scaffold(
+                body: Center(
+                  child: TextButton(
+                    onPressed: () => showScheduleImportSheet(
+                      context,
+                      courseProvider: provider,
+                    ),
+                    child: const Text('open'),
                   ),
-                  child: const Text('open'),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

@@ -1,15 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/course/import/jwxt_parser.dart' as jwxt_parser;
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/services/api/academic_calendar_service.dart';
-import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
@@ -43,7 +42,7 @@ class _NameConflictResult {
 /// 批量导入时的统一操作方式。
 enum _BatchAction { addSuffix, update }
 
-class ImportSchedulePage extends StatefulWidget {
+class ImportSchedulePage extends ConsumerStatefulWidget {
   final CourseProvider courseProvider;
   final ImportMode mode;
 
@@ -54,10 +53,10 @@ class ImportSchedulePage extends StatefulWidget {
   });
 
   @override
-  State<ImportSchedulePage> createState() => _ImportSchedulePageState();
+  ConsumerState<ImportSchedulePage> createState() => _ImportSchedulePageState();
 }
 
-class _ImportSchedulePageState extends State<ImportSchedulePage> {
+class _ImportSchedulePageState extends ConsumerState<ImportSchedulePage> {
   static const String _tag = 'ImportSchedulePageState';
 
   final _controller = TextEditingController();
@@ -212,7 +211,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
 
   Future<void> _importOnline() async {
     final l10n = AppLocalizations.of(context)!;
-    final authProvider = getIt<ScuAuthProvider>();
+    final authProvider = ref.read(scuAuthProviderBridge);
 
     if (!authProvider.isLoggedIn) {
       if (mounted) {
@@ -231,7 +230,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
     // 1. 获取学期列表
     List<({String value, String label})> semesters;
     try {
-      semesters = await getIt<ZhjwApiService>().fetchSemesters();
+      semesters = await ref.read(zhjwApiServiceBridge).fetchSemesters();
 
       for (final s in semesters) {
         if (s.label.contains('（当前）') || s.label.contains('(当前)')) {
@@ -352,7 +351,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
       final importedSchedules = <({String id, String name})>[];
       for (final semester in toImport) {
         setState(() => _currentProgress++);
-        final data = await getIt<ZhjwApiService>().fetchJwxtSchedule(
+        final data = await ref.read(zhjwApiServiceBridge).fetchJwxtSchedule(
           planCode: semester.value,
         );
         if (!mounted) return;
@@ -538,7 +537,7 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
       DateTime.now().day,
     );
     final result = jwxt_parser.parseJwxtData(data, defaultName);
-    getIt<AppConfigProvider>().showWeekend.value = result.hasWeekend;
+    ref.read(showWeekendSettingProvider.notifier).update(result.hasWeekend);
     return (config: result.config, courses: result.courses);
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
@@ -66,14 +67,16 @@ Future<void> _pumpChart(
   getIt.registerSingleton<AppConfigProvider>(appConfig);
 
   await tester.pumpWidget(
-    MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: BalanceTrendChartCard(
-          trend: trend,
-          isLoading: false,
-          themeColor: Colors.blue,
+    ProviderScope(
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: BalanceTrendChartCard(
+            trend: trend,
+            isLoading: false,
+            themeColor: Colors.blue,
+          ),
         ),
       ),
     ),

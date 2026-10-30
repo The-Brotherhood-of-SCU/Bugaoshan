@@ -1,38 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/theme_shape.dart';
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/pages/course/import/import_schedule_page.dart';
 import 'package:bugaoshan/pages/graduate/schedule_import_page.dart';
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/providers/course_provider.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/course/course_pods.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  final _authProvider = getIt<ScuAuthProvider>();
-  final _courseProvider = getIt<CourseProvider>();
-  final _appConfig = getIt<AppConfigProvider>();
-
+class _LoginPageState extends ConsumerState<LoginPage> {
   /// 课表导入入口随学生身份切换：本科生走教务在线拉取，研究生走研究生系统。
   void _openImportPage() {
-    if (_appConfig.studentType.value == StudentType.graduate) {
+    final studentType = ref.read(studentTypeSettingProvider);
+    if (studentType == StudentType.graduate) {
       popupOrNavigate(context, const GraduateScheduleImportPage());
       return;
     }
     popupOrNavigate(
       context,
       ImportSchedulePage(
-        courseProvider: _courseProvider,
+        courseProvider: ref.read(courseProviderBridge),
         mode: ImportMode.online,
       ),
     );
@@ -43,6 +40,8 @@ class _LoginPageState extends State<LoginPage> {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final authProvider = ref.watch(scuAuthProviderBridge);
+    final hasSchedule = ref.watch(hasScheduleProvider);
 
     final checkedIcon = Icon(
       Icons.check_circle,
@@ -82,11 +81,8 @@ class _LoginPageState extends State<LoginPage> {
             step: '1',
             icon: Icons.login_rounded,
             title: l10n.wizardLoginStep1,
-            trailing: ListenableBuilder(
-              listenable: _authProvider,
-              builder: (context, _) {
-                if (_authProvider.isLoggedIn) {
-                  return Row(
+            trailing: authProvider.isLoggedIn
+                ? Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       checkedIcon,
@@ -98,22 +94,16 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ],
-                  );
-                }
-                return FilledButton.tonal(
-                  onPressed: () async {
-                    final result = await popupOrNavigate(
-                      context,
-                      const ScuLoginPage(),
-                    );
-                    if (result == true && mounted) {
-                      setState(() {});
-                    }
-                  },
-                  child: Text(l10n.wizardLoginButton),
-                );
-              },
-            ),
+                  )
+                : FilledButton.tonal(
+                    onPressed: () async {
+                      await popupOrNavigate(
+                        context,
+                        const ScuLoginPage(),
+                      );
+                    },
+                    child: Text(l10n.wizardLoginButton),
+                  ),
           ),
           const SizedBox(height: 12),
           _StepCard(
@@ -123,22 +113,15 @@ class _LoginPageState extends State<LoginPage> {
             subtitle: l10n.wizardImportHint,
             trailing: FilledButton.tonal(
               onPressed: _openImportPage,
-              child: ListenableBuilder(
-                listenable: _courseProvider.allSchedules,
-                builder: (context, _) {
-                  final hasSchedule = _courseProvider.hasSchedule;
-                  if (hasSchedule) {
-                    return Row(
+              child: hasSchedule
+                  ? Row(
                       children: [
                         checkedIcon,
                         const SizedBox(width: 4),
                         Text(l10n.wizardHasSchedule),
                       ],
-                    );
-                  }
-                  return Text(l10n.wizardImportButton);
-                },
-              ),
+                    )
+                  : Text(l10n.wizardImportButton),
             ),
           ),
           const Spacer(flex: 2),

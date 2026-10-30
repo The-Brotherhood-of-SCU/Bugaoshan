@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/academic_calendar.dart';
 import 'package:bugaoshan/models/course.dart';
@@ -17,6 +16,7 @@ import '../management/schedule_management_page.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/providers/riverpod/course/course_pods.dart';
 import 'package:bugaoshan/pages/course/widgets/course_grid.dart';
@@ -36,8 +36,11 @@ class CoursePage extends ConsumerStatefulWidget {
 class _CoursePageState extends ConsumerState<CoursePage> with WidgetsBindingObserver {
   static const String _tag = 'CoursePageState';
 
-  final courseProvider = getIt<CourseProvider>();
-  final appConfig = getIt<AppConfigProvider>();
+  late final CourseProvider _courseProvider;
+  late final AppConfigProvider _appConfig;
+
+  CourseProvider get courseProvider => _courseProvider;
+  AppConfigProvider get appConfig => _appConfig;
 
   /// 页面级控制器（demo 模式或无课表时为 null）。
   /// 不进 GetIt —— demo/真实两个 CoursePage 实例共存时单例语义错误。
@@ -49,15 +52,17 @@ class _CoursePageState extends ConsumerState<CoursePage> with WidgetsBindingObse
   @override
   void initState() {
     super.initState();
+    _courseProvider = ref.read(courseProviderBridge);
+    _appConfig = ref.read(appConfigProviderBridge);
 
     if (!widget.demoMode) {
       // 非 demo 模式：始终监听 hasSchedule 空↔非空翻转，覆盖「无→有」与「有→无」两个方向。
       // 这样初始有课表时也能在删除最后一条课表时及时回到空状态，避免只在空状态才监听导致的失联。
-      courseProvider.allSchedules.addListener(_onHasScheduleChanged);
-      courseProvider.scheduleConfig.addListener(_onHasScheduleChanged);
+      _courseProvider.allSchedules.addListener(_onHasScheduleChanged);
+      _courseProvider.scheduleConfig.addListener(_onHasScheduleChanged);
       _hasScheduleListenerAdded = true;
 
-      if (courseProvider.hasSchedule) {
+      if (_courseProvider.hasSchedule) {
         _createController();
       }
     }
@@ -66,9 +71,9 @@ class _CoursePageState extends ConsumerState<CoursePage> with WidgetsBindingObse
   void _createController() {
     WidgetsBinding.instance.addObserver(this);
     _controller = CoursePageController(
-      scheduleConfig: courseProvider.scheduleConfig,
-      allSchedules: courseProvider.allSchedules,
-      animationDuration: appConfig.cardSizeAnimationDuration,
+      scheduleConfig: _courseProvider.scheduleConfig,
+      allSchedules: _courseProvider.allSchedules,
+      animationDuration: _appConfig.cardSizeAnimationDuration,
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -77,8 +82,8 @@ class _CoursePageState extends ConsumerState<CoursePage> with WidgetsBindingObse
   }
 
   void _onHasScheduleChanged() {
-    final hasSchedule = courseProvider.hasSchedule;
-    final hasConfig = courseProvider.scheduleConfig.value != null;
+    final hasSchedule = _courseProvider.hasSchedule;
+    final hasConfig = _courseProvider.scheduleConfig.value != null;
     if (hasSchedule && hasConfig && _controller == null && !widget.demoMode) {
       // 无→有：创建控制器并重建。保持监听以便后续还能感知「有→无」。
       if (!mounted) return;
@@ -99,8 +104,8 @@ class _CoursePageState extends ConsumerState<CoursePage> with WidgetsBindingObse
   void dispose() {
     if (!widget.demoMode) {
       if (_hasScheduleListenerAdded) {
-        courseProvider.allSchedules.removeListener(_onHasScheduleChanged);
-        courseProvider.scheduleConfig.removeListener(_onHasScheduleChanged);
+        _courseProvider.allSchedules.removeListener(_onHasScheduleChanged);
+        _courseProvider.scheduleConfig.removeListener(_onHasScheduleChanged);
       }
       if (_controller != null) {
         WidgetsBinding.instance.removeObserver(this);

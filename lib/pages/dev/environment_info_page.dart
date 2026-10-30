@@ -4,24 +4,26 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/models/version_info.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
-class EnvironmentInfoPage extends StatefulWidget {
+class EnvironmentInfoPage extends ConsumerStatefulWidget {
   const EnvironmentInfoPage({super.key});
 
   @override
-  State<EnvironmentInfoPage> createState() => _EnvironmentInfoPageState();
+  ConsumerState<EnvironmentInfoPage> createState() =>
+      _EnvironmentInfoPageState();
 }
 
-class _EnvironmentInfoPageState extends State<EnvironmentInfoPage> {
+class _EnvironmentInfoPageState extends ConsumerState<EnvironmentInfoPage> {
   static const String _tag = 'EnvironmentInfoPageState';
 
-  final _provider = getIt<AppInfoProvider>();
+  AppInfoProvider get _provider => ref.read(appInfoProviderBridge);
   late Future<VersionInfo> _future;
   late Future<Map<String, dynamic>> _deviceInfoFuture;
   VersionInfo? _info;

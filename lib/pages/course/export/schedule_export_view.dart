@@ -1,10 +1,10 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/course/widgets/course_grid_body.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/widgets/common/background_image_view.dart';
 
 /// 课表导出图片的逻辑宽度。
@@ -42,13 +42,13 @@ int resolveExportTargetWeek(ScheduleConfig config, {int? visibleWeek}) {
   return config.getCurrentWeek().clamp(1, maxWeeks);
 }
 
-/// 课表导出专用的离屏渲染视图。
+/// 专用于离屏绘制导出的课表纯静态视图。
 ///
-/// 严格满足冻结契约 A：
-/// 1) 无外部滚动容器（由 non-positioned 的 Column 自然撑开）；
-/// 2) 子节点顺序固定：Scaffold 底色 -> 可选背景图 -> 网格内容；
+/// 特性：
+/// 1) 无 SingleChildScrollView / 滚动条 / viewport 裁剪，完全自适应内容高度；
+/// 2) 显式固定逻辑宽度为 [kScheduleImageLogicalWidth]；
 /// 3) 交互回调全部不传，保持只读静态视图。
-class ScheduleExportView extends StatelessWidget {
+class ScheduleExportView extends ConsumerWidget {
   const ScheduleExportView({
     super.key,
     required this.data,
@@ -59,8 +59,14 @@ class ScheduleExportView extends StatelessWidget {
   final String? backgroundImagePath;
 
   @override
-  Widget build(BuildContext context) {
-    final appConfig = getIt<AppConfigProvider>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final crop = ref.watch(backgroundImageCropSettingProvider);
+    final overlayOpacity = ref.watch(backgroundImageOpacitySettingProvider);
+    final showWeekend = ref.watch(showWeekendSettingProvider);
+    final showNonCurrentWeekCourses =
+        ref.watch(showNonCurrentWeekCoursesSettingProvider);
+    final rowHeight = ref.watch(courseRowHeightSettingProvider);
+    final showCourseGrid = ref.watch(showCourseGridSettingProvider);
 
     return SizedBox(
       width: kScheduleImageLogicalWidth,
@@ -78,8 +84,8 @@ class ScheduleExportView extends StatelessWidget {
             Positioned.fill(
               child: BackgroundImageView(
                 path: backgroundImagePath!,
-                crop: appConfig.backgroundImageCrop.value,
-                overlayOpacity: appConfig.backgroundImageOpacity.value,
+                crop: crop,
+                overlayOpacity: overlayOpacity,
               ),
             ),
 
@@ -91,7 +97,7 @@ class ScheduleExportView extends StatelessWidget {
                 config: data.config,
                 displayWeek: data.targetWeek,
                 hasBackground: backgroundImagePath != null,
-                showWeekend: appConfig.showWeekend.value,
+                showWeekend: showWeekend,
                 showAllWeeks: false,
                 showHeaderDates: true,
               ),
@@ -99,11 +105,10 @@ class ScheduleExportView extends StatelessWidget {
                 courses: data.courses,
                 config: data.config,
                 displayWeek: data.targetWeek,
-                showWeekend: appConfig.showWeekend.value,
-                showNonCurrentWeekCourses:
-                    appConfig.showNonCurrentWeekCourses.value,
-                rowHeight: appConfig.courseRowHeight.value,
-                showCourseGrid: appConfig.showCourseGrid.value,
+                showWeekend: showWeekend,
+                showNonCurrentWeekCourses: showNonCurrentWeekCourses,
+                rowHeight: rowHeight,
+                showCourseGrid: showCourseGrid,
               ),
             ],
           ),

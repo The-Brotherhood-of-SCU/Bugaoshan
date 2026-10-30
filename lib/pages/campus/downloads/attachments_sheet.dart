@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/services/download_manager.dart';
 import 'package:bugaoshan/utils/share_utils.dart';
 import 'file_utils.dart';
@@ -124,7 +126,7 @@ class _AttachmentsSheetContent extends StatelessWidget {
   }
 }
 
-class _SheetAttachmentTile extends StatelessWidget {
+class _SheetAttachmentTile extends ConsumerWidget {
   const _SheetAttachmentTile({
     required this.item,
     required this.dirName,
@@ -180,8 +182,8 @@ class _SheetAttachmentTile extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final manager = getIt<DownloadManager>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final manager = ref.watch(downloadManagerBridge);
     return ListenableBuilder(
       listenable: manager,
       builder: (context, _) {

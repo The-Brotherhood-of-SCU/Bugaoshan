@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/pages/graduate/schedule_import_page.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
@@ -26,7 +26,6 @@ Future<void> showScheduleImportSheet(
 }) {
   final l10n = AppLocalizations.of(context)!;
   final outerContext = context;
-  final appConfig = getIt<AppConfigProvider>();
   return showModalBottomSheet(
     context: context,
     // 入口总高度可能超过默认的 9/16 屏高上限（横屏/矮屏/分屏下会裁掉最后几项），
@@ -38,9 +37,9 @@ Future<void> showScheduleImportSheet(
       ),
     ),
     builder: (context) => SafeArea(
-      child: ValueListenableBuilder<StudentType>(
-        valueListenable: appConfig.studentType,
-        builder: (context, studentType, _) {
+      child: Consumer(
+        builder: (context, ref, _) {
+          final studentType = ref.watch(studentTypeSettingProvider);
           final isUndergraduate = studentType == StudentType.undergraduate;
           return SingleChildScrollView(
             child: Padding(
