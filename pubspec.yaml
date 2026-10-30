@@ -52,6 +52,8 @@ dependencies:
   json_annotation: ^4.12.0
   device_info_plus: ^13.2.0
   encrypt: ^5.0.3
+  flutter_riverpod: ^3.4.3
+  riverpod_annotation: ^4.0.7
 
 dev_dependencies:
   flutter_test:
@@ -60,6 +62,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   build_runner: any
+  riverpod_generator: ^4.0.9
   injectable_generator: any
   json_serializable: any
   flutter_launcher_icons: ^0.14.1

@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:bugaoshan/app.dart';
@@ -21,7 +22,7 @@ const String _tag = 'Main';
 Future<void> main() async {
   try {
     await _initializeApp();
-    runApp(MyApp());
+    runApp(const ProviderScope(child: MyApp()));
   } catch (error, stackTrace) {
     AppLog.e(_tag, '应用启动失败', error: error, stackTrace: stackTrace);
     await AppLog.flushFileSink();
