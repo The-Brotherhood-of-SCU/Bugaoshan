@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:bugaoshan/models/widget_appearance.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/constants.dart';
+import 'package:bugaoshan/utils/platform_utils.dart';
 
 class WidgetUpdateService {
   static const String _tag = 'WidgetUpdateService';
@@ -28,7 +29,8 @@ class WidgetUpdateService {
            platformChecker ??
            (() =>
                !kIsWeb &&
-               (defaultTargetPlatform == TargetPlatform.android ||
+               (isOhos ||
+                   defaultTargetPlatform == TargetPlatform.android ||
                    defaultTargetPlatform == TargetPlatform.iOS ||
                    defaultTargetPlatform == TargetPlatform.macOS)) {
     _debounceDuration = debounceDuration ?? _debounceDuration;
@@ -102,7 +104,8 @@ class WidgetUpdateService {
       return Future.value();
     }
     try {
-      if (defaultTargetPlatform == TargetPlatform.iOS ||
+      if (isOhos ||
+          defaultTargetPlatform == TargetPlatform.iOS ||
           defaultTargetPlatform == TargetPlatform.macOS) {
         debugPrint(
           'BugaoShan WidgetUpdateService: calling native syncWidgetShowTomorrow',
@@ -129,7 +132,8 @@ class WidgetUpdateService {
     required WidgetDensity density,
   }) async {
     if (!_platformChecker() ||
-        (defaultTargetPlatform != TargetPlatform.iOS &&
+        (!isOhos &&
+            defaultTargetPlatform != TargetPlatform.iOS &&
             defaultTargetPlatform != TargetPlatform.macOS)) {
       return;
     }
@@ -140,6 +144,17 @@ class WidgetUpdateService {
       });
     } catch (e, stack) {
       AppLog.e(_tag, 'syncWidgetAppearance 失败', error: e, stackTrace: stack);
+    }
+  }
+
+  Future<bool> openCourseFormManager() async {
+    if (!isOhos || _disposed) return false;
+    try {
+      return await _channel.invokeMethod<bool>('openCourseFormManager') ??
+          false;
+    } catch (error, stackTrace) {
+      AppLog.e(_tag, '打开鸿蒙卡片管理器失败', error: error, stackTrace: stackTrace);
+      return false;
     }
   }
 

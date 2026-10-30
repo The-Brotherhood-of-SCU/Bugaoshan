@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/utils/platform_utils.dart';
 import 'package:bugaoshan/services/reminder/live_activity_service.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/semester_week.dart';
@@ -182,11 +184,14 @@ class LiveActivityCoordinator {
     required CourseProvider courseProvider,
     LiveActivityService? service,
     Duration? pollInterval,
+    AppConfigProvider? appConfig,
   }) : _courseProvider = courseProvider,
+       _appConfig = appConfig,
        _service = service ?? LiveActivityService(),
        _pollInterval = pollInterval ?? const Duration(seconds: 60);
 
   final CourseProvider _courseProvider;
+  final AppConfigProvider? _appConfig;
   final LiveActivityService _service;
   final Duration _pollInterval;
 
@@ -209,12 +214,14 @@ class LiveActivityCoordinator {
     if (_disposed || _running) return;
     _running = true;
     _available = await _service.isSupported();
-    if (!_available) {
+    if (_disposed) return;
+    if (!_available && !isOhos) {
       AppLog.d('LiveActivity', '当前设备不支持实时活动，协调器停用');
       return;
     }
     _courseProvider.courses.addListener(_onSourceChanged);
     _courseProvider.scheduleConfig.addListener(_onSourceChanged);
+    if (isOhos) _appConfig?.showLocation.addListener(_onSourceChanged);
     // 定时轮询仅用于在应用处于前台时发现课程结束并结束活动；
     // 课程切换由课表数据监听覆盖，应用恢复前台由生命周期监听覆盖。
     _timer = Timer.periodic(_pollInterval, (_) => unawaited(tick()));
@@ -229,14 +236,17 @@ class LiveActivityCoordinator {
     if (_running) {
       _courseProvider.courses.removeListener(_onSourceChanged);
       _courseProvider.scheduleConfig.removeListener(_onSourceChanged);
+      if (isOhos) _appConfig?.showLocation.removeListener(_onSourceChanged);
     }
     _running = false;
   }
 
-  void _onSourceChanged() => unawaited(tick());
+  void _onSourceChanged() => unawaited(tick(force: isOhos));
 
   /// 根据当前时间评估课程状态，执行活动启动、更新或结束的生命周期对齐。
-  Future<void> tick() async {
+  Future<void> tick({bool force = false}) async {
+    if (_disposed) return;
+    if (isOhos && force) _available = await _service.isSupported();
     if (_disposed || !_available) return;
 
     final snapshot = LiveCourseResolver.resolve(
@@ -249,35 +259,37 @@ class LiveActivityCoordinator {
       final current = snapshot.current;
       if (current == null) {
         // 无进行中课程（课间或当日课程已结束）：结束当前会话。后续调度匹配到新课程时将重新启动。
-        if (_activeSessionKey != null) await _end();
+        if (_activeSessionKey != null || (isOhos && force)) await _end();
         return;
       }
 
-      if (_activeSessionKey == snapshot.sessionKey) return;
+      if (_activeSessionKey == snapshot.sessionKey && !force) return;
 
       final next = snapshot.next;
+      final hideLocation = isOhos && _appConfig?.showLocation.value == false;
+      final location = hideLocation ? '' : current.location;
+      final nextLocation = hideLocation || (next?.location.isEmpty ?? true)
+          ? (isOhos ? '' : null)
+          : next!.location;
+      final nextCourseName = next?.name ?? (isOhos ? '' : null);
       if (_activeSessionKey == null) {
         await _service.start(
           courseName: current.name,
-          location: current.location,
+          location: location,
           startAt: snapshot.startAt,
           endAt: snapshot.endAt!,
-          nextCourseName: next?.name,
-          nextLocation: (next?.location.isEmpty ?? true)
-              ? null
-              : next!.location,
+          nextCourseName: nextCourseName,
+          nextLocation: nextLocation,
         );
       } else {
         // 课程切换时复用既有会话下发更新，而非重建会话，避免锁屏与灵动岛界面出现闪烁。
         await _service.update(
           courseName: current.name,
-          location: current.location,
+          location: location,
           startAt: snapshot.startAt,
           endAt: snapshot.endAt,
-          nextCourseName: next?.name,
-          nextLocation: (next?.location.isEmpty ?? true)
-              ? null
-              : next!.location,
+          nextCourseName: nextCourseName,
+          nextLocation: nextLocation,
         );
       }
       _activeSessionKey = snapshot.sessionKey;

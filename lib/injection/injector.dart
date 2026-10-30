@@ -67,6 +67,7 @@ import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/services/api/academic_calendar_service.dart';
 import 'package:bugaoshan/utils/app_log.dart';
+import 'package:bugaoshan/utils/platform_utils.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -471,12 +472,12 @@ void _configureAsyncDependencies() {
     };
 
     // Sync initial widget_show_tomorrow setting to App Group
-    if (!kIsWeb && (Platform.isIOS || Platform.isMacOS)) {
+    if (!kIsWeb && (isOhos || Platform.isIOS || Platform.isMacOS)) {
       try {
         await service.syncWidgetShowTomorrow(
           appConfig.widgetShowTomorrow.value,
         );
-        if (Platform.isIOS) {
+        if (isOhos || Platform.isIOS) {
           await service.syncWidgetAppearance(
             colorStyle: appConfig.widgetColorStyle.value,
             density: appConfig.widgetDensity.value,
@@ -507,8 +508,10 @@ void _configureAsyncDependencies() {
   // 异步触发 start() 而不阻塞启动流程，其内部监听课表状态并在异步就绪后自动对齐。
   getIt.registerSingletonAsync<LiveActivityCoordinator>(() async {
     await getIt.isReady<CourseProvider>();
+    if (isOhos) await getIt.isReady<AppConfigProvider>();
     final coordinator = LiveActivityCoordinator(
       courseProvider: getIt<CourseProvider>(),
+      appConfig: isOhos ? getIt<AppConfigProvider>() : null,
     );
     unawaited(coordinator.start());
     return coordinator;

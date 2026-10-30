@@ -17,6 +17,9 @@ import 'package:bugaoshan/services/reminder/live_activity_coordinator.dart';
 import 'package:bugaoshan/services/reminder/reminder_service.dart';
 import 'package:bugaoshan/theme.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
+import 'package:bugaoshan/utils/app_log.dart';
+import 'package:bugaoshan/utils/platform_utils.dart';
+import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/widgets/common/session_expired_listener.dart';
 import 'package:bugaoshan/widgets/eula_content.dart';
 import 'package:bugaoshan/widgets/route/mouse_back_handler.dart';
@@ -32,6 +35,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  static const String _tag = 'MyAppState';
   final AppConfigProvider _appConfig = getIt<AppConfigProvider>();
   late final BackgroundCacheService _bgCache = getIt<BackgroundCacheService>();
   late final void Function() _logPersistenceListener;
@@ -89,7 +93,17 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     }
     // 实时活动必须在前台启动，前台唤醒是核心触发节点；同时用于对齐课间与下一节课程的状态转换。
     if (getIt.isReadySync<LiveActivityCoordinator>()) {
-      unawaited(getIt<LiveActivityCoordinator>().tick());
+      unawaited(getIt<LiveActivityCoordinator>().tick(force: isOhos));
+    }
+    if (isOhos && getIt.isReadySync<WidgetUpdateService>()) {
+      unawaited(
+        getIt<WidgetUpdateService>().updateWidgetData(force: true).catchError((
+          Object error,
+          StackTrace stackTrace,
+        ) {
+          AppLog.e(_tag, '恢复前台后刷新课表卡片失败', error: error, stackTrace: stackTrace);
+        }),
+      );
     }
   }
 
@@ -171,6 +185,8 @@ class AppScrollBehavior extends MaterialScrollBehavior {
   const AppScrollBehavior();
 
   @override
-  Set<PointerDeviceKind> get dragDevices =>
-      {...super.dragDevices, PointerDeviceKind.mouse};
+  Set<PointerDeviceKind> get dragDevices => {
+    ...super.dragDevices,
+    PointerDeviceKind.mouse,
+  };
 }

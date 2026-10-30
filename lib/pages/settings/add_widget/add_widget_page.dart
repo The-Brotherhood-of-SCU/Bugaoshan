@@ -9,6 +9,7 @@ import 'package:bugaoshan/models/widget_appearance.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/utils/app_log.dart';
+import 'package:bugaoshan/utils/platform_utils.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/models/widget_size.dart';
 import 'package:bugaoshan/theme_shape.dart';
@@ -424,7 +425,24 @@ class _AddWidgetContentState extends State<AddWidgetContent>
             // Consolidated single card with size choices (Android only)
             if (isAndroid) _WidgetPickerCard(onPin: _pinWidget),
             if (isAndroid) const SizedBox(height: 16),
-            if (isApple) ...[
+            if (isOhos) ...[
+              FilledButton.icon(
+                icon: const Icon(Icons.widgets_outlined),
+                label: Text(localizations.pinWidgetButton),
+                onPressed: () async {
+                  final opened = await getIt<WidgetUpdateService>()
+                      .openCourseFormManager();
+                  if (!context.mounted || opened) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(localizations.pinWidgetNotSupported),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+            if (isApple || isOhos) ...[
               _buildAppearanceCard(context, localizations, appConfig),
               const SizedBox(height: 16),
             ],

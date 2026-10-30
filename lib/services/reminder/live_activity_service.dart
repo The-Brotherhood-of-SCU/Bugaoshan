@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:bugaoshan/utils/platform_utils.dart';
 import 'package:flutter/services.dart';
 
 // 异常体系定义
@@ -75,7 +76,8 @@ class LiveActivityService {
 
   bool get _isSupportedPlatform =>
       !kIsWeb &&
-      (defaultTargetPlatform == TargetPlatform.iOS ||
+      (isOhos ||
+          defaultTargetPlatform == TargetPlatform.iOS ||
           defaultTargetPlatform == TargetPlatform.android);
 
   /// 检查当前设备与系统是否支持且已启用实时活动/状态栏胶囊（需 iOS 16.1+ 或 Android 开启通知权限）。

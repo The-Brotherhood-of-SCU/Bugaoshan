@@ -12,6 +12,7 @@ import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/utils/app_log.dart';
+import 'package:bugaoshan/utils/platform_utils.dart';
 import 'package:bugaoshan/services/auth/auth_coordinator.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/utils/constants.dart';
@@ -97,7 +98,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   Future<void> _updateWidget() async {
-    if (!kIsWeb && (Platform.isAndroid || Platform.isIOS || Platform.isMacOS)) {
+    if (!kIsWeb &&
+        (isOhos || Platform.isAndroid || Platform.isIOS || Platform.isMacOS)) {
       try {
         await getIt<WidgetUpdateService>().updateWidgetData();
       } catch (e, logStackTrace) {
