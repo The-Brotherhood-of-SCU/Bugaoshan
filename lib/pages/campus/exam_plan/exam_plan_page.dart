@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/theme_shape.dart';
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/exam_plan/models/exam_info.dart';
-import 'package:bugaoshan/providers/exam_plan_provider.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/campus/exam_plan_pods.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/ics_service.dart';
 import 'package:bugaoshan/utils/calendar_export_utils.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
@@ -13,118 +14,103 @@ import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
-class ExamPlanPage extends StatefulWidget {
+class ExamPlanPage extends ConsumerWidget {
   const ExamPlanPage({super.key});
 
   @override
-  State<ExamPlanPage> createState() => _ExamPlanPageState();
-}
-
-class _ExamPlanPageState extends State<ExamPlanPage> {
-  late final ExamPlanProvider _provider;
-
-  @override
-  void initState() {
-    super.initState();
-    _provider = getIt<ExamPlanProvider>();
-    getIt<ScuAuthProvider>().addListener(_onAuthChanged);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _onAuthChanged();
-    });
-  }
-
-  @override
-  void dispose() {
-    getIt<ScuAuthProvider>().removeListener(_onAuthChanged);
-    super.dispose();
-  }
-
-  void _onAuthChanged() {
-    final auth = getIt<ScuAuthProvider>();
-    if (auth.isLoggedIn) _provider.ensureLoaded();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final auth = ref.watch(scuAuthProviderBridge);
+    final asyncExams = ref.watch(examPlanProvider);
 
-    return ListenableBuilder(
-      listenable: Listenable.merge([_provider, getIt<ScuAuthProvider>()]),
-      builder: (context, _) => Scaffold(
-        appBar: AppBar(
-          title: Text(l10n.examPlan),
-          actions: [
-            if (getIt<ScuAuthProvider>().isLoggedIn &&
-                _provider.state != ExamPlanLoadState.loading &&
-                _provider.exams.isNotEmpty)
-              IconButton(
-                tooltip: l10n.exportExamPlan,
-                onPressed: () => _showCalendarActions(l10n),
-                icon: const Icon(Icons.calendar_month_outlined),
-              ),
-            if (getIt<ScuAuthProvider>().isLoggedIn &&
-                _provider.state != ExamPlanLoadState.loading)
-              IconButton(
-                onPressed: _provider.refresh,
-                icon: const Icon(Icons.refresh),
-              ),
-          ],
-        ),
-        body: _buildBody(l10n),
+    final exams = asyncExams.value ?? const [];
+    final isLoading = asyncExams.isLoading;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.examPlan),
+        actions: [
+          if (auth.isLoggedIn && !isLoading && exams.isNotEmpty)
+            IconButton(
+              tooltip: l10n.exportExamPlan,
+              onPressed: () => _showCalendarActions(context, l10n, exams),
+              icon: const Icon(Icons.calendar_month_outlined),
+            ),
+          if (auth.isLoggedIn && !isLoading)
+            IconButton(
+              onPressed: () => ref.refresh(examPlanProvider.future),
+              icon: const Icon(Icons.refresh),
+            ),
+        ],
       ),
+      body: _buildBody(context, ref, asyncExams, l10n),
     );
   }
 
-  Widget _buildBody(AppLocalizations l10n) {
-    final auth = getIt<ScuAuthProvider>();
+  Widget _buildBody(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<List<ExamInfo>> asyncExams,
+    AppLocalizations l10n,
+  ) {
+    final auth = ref.watch(scuAuthProviderBridge);
 
     if (!auth.isLoggedIn && auth.isAutoLoggingIn) {
       return const AutoLoginLoadingWidget();
     }
 
-    if (_provider.state == ExamPlanLoadState.loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_provider.error == LoadErrorType.notLoggedIn) {
-      if (getIt<ScuAuthProvider>().isAutoLoggingIn) {
-        return const AutoLoginLoadingWidget();
-      }
+    if (!auth.isLoggedIn) {
       return const LoginRequiredWidget();
     }
 
-    if (_provider.error != null) {
-      return RetryableErrorWidget(
-        errorType: _provider.error!,
-        onRetry: _provider.refresh,
-      );
-    }
+    return asyncExams.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, _) {
+        final errType = () {
+          if (error is UnauthenticatedException) {
+            return zhjwAuthErrorType(error, fallback: LoadErrorType.notLoggedIn);
+          }
+          return campusNetworkErrorType(LoadErrorType.loadFailed);
+        }();
+        if (errType == LoadErrorType.notLoggedIn) {
+          if (auth.isAutoLoggingIn) {
+            return const AutoLoginLoadingWidget();
+          }
+          return const LoginRequiredWidget();
+        }
+        return RetryableErrorWidget(
+          errorType: errType,
+          onRetry: () => ref.refresh(examPlanProvider.future),
+        );
+      },
+      data: (exams) {
+        if (exams.isEmpty) {
+          return Center(
+            child: Text(
+              l10n.examPlanNoData,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          );
+        }
 
-    if (_provider.exams.isEmpty) {
-      return Center(
-        child: Text(
-          l10n.examPlanNoData,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+        return RefreshIndicator(
+          onRefresh: () => ref.refresh(examPlanProvider.future),
+          child: ListView.builder(
+            padding: withSystemBottomInset(
+              context,
+              EdgeInsets.all(AppShapes.large),
+            ),
+            itemCount: exams.length,
+            itemBuilder: (context, index) => _buildExamCard(context, exams[index]),
           ),
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _provider.refresh,
-      child: ListView.builder(
-        padding: withSystemBottomInset(
-          context,
-          EdgeInsets.all(AppShapes.large),
-        ),
-        itemCount: _provider.exams.length,
-        itemBuilder: (context, index) => _buildExamCard(_provider.exams[index]),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildExamCard(ExamInfo exam) {
+  Widget _buildExamCard(BuildContext context, ExamInfo exam) {
     final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final past = exam.isPast;
@@ -237,6 +223,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
                     const SizedBox(height: 12),
                     // 时间
                     _infoChip(
+                      context,
                       Icons.access_time_rounded,
                       exam.timeRange,
                       colorScheme,
@@ -245,6 +232,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
                     const SizedBox(height: 8),
                     // 地点
                     _infoChip(
+                      context,
                       Icons.location_on_outlined,
                       exam.location,
                       colorScheme,
@@ -256,6 +244,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
                       children: [
                         Expanded(
                           child: _infoChip(
+                            context,
                             Icons.event_seat_outlined,
                             exam.seatNumber,
                             colorScheme,
@@ -265,6 +254,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
                         if (exam.ticketNumber.isNotEmpty)
                           Expanded(
                             child: _infoChip(
+                              context,
                               Icons.confirmation_number_outlined,
                               exam.ticketNumber,
                               colorScheme,
@@ -327,35 +317,39 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
     );
   }
 
-  Future<void> _showCalendarActions(AppLocalizations l10n) async {
+  Future<void> _showCalendarActions(
+    BuildContext context,
+    AppLocalizations l10n,
+    List<ExamInfo> exams,
+  ) async {
     final action = await CalendarExportUtils.showActionSheet(
       context,
       l10n,
       title: l10n.exportExamPlan,
       includeCopy: true,
     );
-    if (!mounted || action == null) return;
+    if (!context.mounted || action == null) return;
 
     await CalendarExportUtils.handleExportAction(
       context: context,
       l10n: l10n,
       action: action,
       copyToClipboard: () => CalendarExportUtils.copyJsonToClipboard({
-        'exams': _provider.exams.map((exam) => exam.toJson()).toList(),
+        'exams': exams.map((exam) => exam.toJson()).toList(),
       }, logTag: 'ExamPlanPage'),
       copySuccessMessage: l10n.exportExamPlanAsCopySuccess,
       copyFailedMessage: l10n.exportScheduleAsCopyFailed,
       buildCalendarPayload: () => IcsService.genExamExportPayload(
-        exams: _provider.exams,
-        fileName: '${_examPlanFileName()}.ics',
+        exams: exams,
+        fileName: '${_examPlanFileName(exams)}.ics',
       ),
       logTag: 'ExamPlanPage',
     );
   }
 
-  String _examPlanFileName() {
+  String _examPlanFileName(List<ExamInfo> exams) {
     final dates =
-        _provider.exams
+        exams
             .map((exam) => exam.date)
             .where((date) => RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(date))
             .toList()
@@ -365,6 +359,7 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
   }
 
   Widget _infoChip(
+    BuildContext context,
     IconData icon,
     String text,
     ColorScheme colorScheme, {

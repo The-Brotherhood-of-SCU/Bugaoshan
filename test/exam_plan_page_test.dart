@@ -8,6 +8,7 @@ import 'package:bugaoshan/providers/exam_plan_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -22,14 +23,17 @@ void main() {
   testWidgets('shows export action after exams finish loading', (tester) async {
     final api = _ControllableExamApi();
     final provider = ExamPlanProvider(api);
+    getIt.registerSingleton<ZhjwApiService>(api);
     getIt.registerSingleton<ExamPlanProvider>(provider);
     getIt.registerSingleton<ScuAuthProvider>(_FakeScuAuthProvider());
 
     await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const ExamPlanPage(),
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: ExamPlanPage(),
+        ),
       ),
     );
     await tester.pump();
@@ -60,13 +64,13 @@ const _exam = ExamInfo(
 );
 
 class _ControllableExamApi implements ZhjwApiService {
-  final requests = <Completer<List<ExamInfo>>>[];
+  final List<Completer<List<ExamInfo>>> requests = [];
 
   @override
   Future<List<ExamInfo>> fetchExamPlan() {
-    final request = Completer<List<ExamInfo>>();
-    requests.add(request);
-    return request.future;
+    final completer = Completer<List<ExamInfo>>();
+    requests.add(completer);
+    return completer.future;
   }
 
   @override
