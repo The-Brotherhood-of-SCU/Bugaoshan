@@ -14,6 +14,7 @@
 | [运行日志](architecture/logging.md) | 认证与业务分类、错误覆盖、脱敏和导出 | 当前实现 |
 | [通知 WebView 架构](architecture/notice-webview.md) | 三类通知来源、JS bridge、附件下载和平台边界 | 当前实现 |
 | [Linux 分发架构](architecture/linux-distribution.md) | 本地构建、网页视图边界、Flatpak、AUR 和 Debian 状态 | 当前实现 |
+| [HarmonyOS 构建隔离](../ohos/README.md) | 标准 Flutter / CPF 双入口、独立依赖锁、共享源码与平台适配器 | 当前实现，CPF HAP 构建已验证 |
 | [iOS 液态玻璃适配](architecture/ios-liquid-glass.md) | UIKit 系统标签栏、原生按钮/开关、Flutter 内容延伸与平台回退 | 当前实现 |
 | [Android 系统栏底部避让](architecture/android-system-bars.md) | edge-to-edge 下滚动容器显式 padding 的 inset 补齐与边界 | 当前实现 |
 | [iOS TestFlight 分发](architecture/ios-distribution.md) | 本地归档、签名、上传、测试分发和加密问卷 | 当前实现 |

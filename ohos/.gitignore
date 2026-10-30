@@ -1,0 +1,30 @@
+/node_modules
+/oh_modules
+/local.properties
+/.sign/
+# 本地 CPF 源码克隆（依赖清单不引用本机路径）。
+/vendor/cpf/
+# Flutter / DevEco / 构建产物
+/.flutter-workspace/
+/.flutter-workspace.lock
+/.pub-cache/
+/build/
+/.idea
+/.appanalyzer
+/.hvigor
+/.clangd
+/.clang-format
+/.clang-tidy
+/.test
+**/build
+**/.test
+**/BuildProfile.ets
+**/oh-package-lock.json5
+/package.json
+/package-lock.json
+.cxx
+
+**/src/main/resources/rawfile/flutter_assets/
+**/libs/**/libapp.so
+**/libs/**/libflutter.so
+**/libs/**/libvmservice_snapshot.so

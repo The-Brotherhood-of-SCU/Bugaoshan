@@ -445,4 +445,11 @@ The auto-changelog flow:
 
 ## Platform Support
 
+HarmonyOS uses an isolated CPF Flutter entry under `ohos/`; see `ohos/AGENTS.md`
+and `ohos/README.md`. Root Pub files remain for standard Flutter. The OHOS wrapper
+links shared sources into its own workspace and injects `OhosPlatformAdapter`
+before calling the root entry point. Keep OHOS plugin imports and `OhosView`
+inside `ohos/`; shared code uses `PlatformAdapter` / `isOhos`, never an SDK-specific
+`TargetPlatform.ohos` reference. Do not copy the OHOS lock over the root lock.
+
 `flutter_launcher_icons` 为所有 6 个平台生成图标;`flutter_secure_storage` 在所有平台都可用;`sqflite_common_ffi` 处理桌面端 SQLite. UI 通过 `LayoutBuilder`/`MediaQuery` 适配手机/平板/桌面. 主 release pipeline(参见 `release.yml`)打包 **Android (split-per-ABI APK)**、**Windows (zip)** 和 **Linux (x64 tar.gz)**;Linux 仍支持本地构建. Linux 分发与网页视图边界见 `docs/architecture/linux-distribution.md`;新增发布平台时务必同时更新 `release.yml`、`release_prepare.py` 和发布正文.

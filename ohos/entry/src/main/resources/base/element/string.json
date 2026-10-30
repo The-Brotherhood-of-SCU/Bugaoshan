@@ -1,0 +1,37 @@
+{
+  "string": [
+    { "name": "card_lock_screen_name", "value": "Lock screen course" },
+    { "name": "reminder_close", "value": "Close" },
+    { "name": "live_course_remaining", "value": "Remaining" },
+    { "name": "live_course_next", "value": "Next course" },
+    { "name": "live_course_ended", "value": "Course ended" },
+    {
+      "name": "module_desc",
+      "value": "Sichuan University campus assistant"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "Bugaoshan campus assistant"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "不高山上"
+    },
+    {
+      "name": "card_title",
+      "value": "Bugaoshan"
+    },
+    {
+      "name": "card_name",
+      "value": "Course schedule"
+    },
+    {
+      "name": "card_description",
+      "value": "Remaining courses in your selected schedule"
+    },
+    {
+      "name": "card_sync_hint",
+      "value": "Open the app to sync your schedule"
+    }
+  ]
+}

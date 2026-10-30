@@ -1,4 +1,5 @@
 import 'package:bugaoshan/models/reminder_plan.dart';
+import 'package:bugaoshan/utils/platform_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
@@ -177,13 +178,16 @@ class MethodChannelReminderTransport implements ReminderTransport {
   }
 
   /// iOS 与 macOS 基于 `UNUserNotificationCenter`，受系统 64 条待投递上限约束；
-  /// Android 等其他平台采用独立调度机制，不受此硬性配额限制。
+  /// OHOS 原生通道采用 30 条预算；Android 不使用这里的硬性配额。
   @override
-  int? get pendingLimit => switch (defaultTargetPlatform) {
-    TargetPlatform.iOS ||
-    TargetPlatform.macOS => ReminderSettings.iosPendingNotificationLimit,
-    _ => null,
-  };
+  int? get pendingLimit {
+    if (isOhos) return 30;
+    return switch (defaultTargetPlatform) {
+      TargetPlatform.iOS ||
+      TargetPlatform.macOS => ReminderSettings.iosPendingNotificationLimit,
+      _ => null,
+    };
+  }
 }
 
 /// 系统通知权限缺失异常。
@@ -242,14 +246,13 @@ class NoopReminderTransport implements ReminderTransport {
 /// 集中平台判定逻辑，收敛平台差异分支。
 ReminderTransport createReminderTransport() {
   if (kIsWeb) return const NoopReminderTransport();
-  switch (defaultTargetPlatform) {
-    case TargetPlatform.android:
-    case TargetPlatform.iOS:
-    case TargetPlatform.macOS:
-      return const MethodChannelReminderTransport();
-    case TargetPlatform.windows:
-    case TargetPlatform.linux:
-    case TargetPlatform.fuchsia:
-      return const NoopReminderTransport();
+  // CPF adds enum members absent in upstream Flutter. Do not exhaustively
+  // switch over that SDK enum or refer to TargetPlatform.ohos in shared code.
+  if (isOhos ||
+      defaultTargetPlatform == TargetPlatform.android ||
+      defaultTargetPlatform == TargetPlatform.iOS ||
+      defaultTargetPlatform == TargetPlatform.macOS) {
+    return const MethodChannelReminderTransport();
   }
+  return const NoopReminderTransport();
 }
