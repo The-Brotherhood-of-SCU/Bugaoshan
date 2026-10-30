@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program_model.dart';
-import 'package:bugaoshan/services/api/zhjw_api_service.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/zhjw/zhjw_api_service.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 
 enum TrainProgramLoadState { idle, loading, loaded, error }

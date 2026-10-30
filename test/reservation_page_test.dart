@@ -5,8 +5,8 @@ import 'package:bugaoshan/pages/campus/reservation/models/reservation_models.dar
 import 'package:bugaoshan/pages/campus/reservation/reservation_page.dart';
 import 'package:bugaoshan/providers/reservation_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/api/reservation_api_service.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/reservation/reservation_api_service.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

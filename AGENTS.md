@@ -178,7 +178,7 @@ Two patterns coexist by design:
 - **多个 ValueNotifier 字段** — providers with many independent config/setting fields where widgets should only rebuild when specific fields change. UI consumes via `ListenableBuilder(listenable: Listenable.merge([field1, field2]))` or `ValueListenableBuilder`. Examples: `AppConfigProvider` (~25 fields: locale, themeColor, themeColorMode, colorOpacity, useGoogleFonts, …), `CourseProvider` (4 fields).
 - **手动 `addListener`** — only for imperative side-effects (animations, SnackBars, triggering data loads), never for pure rebuild triggers.
 
-**Directory convention:** All DI-registered providers live in `lib/providers/`. Page-specific non-DI utility classes may live in page directories (e.g. `lib/services/ccyl/ccyl_service.dart`).
+**Directory convention:** All DI-registered providers live in `lib/providers/`. Page-specific non-DI utility classes may live in page directories (e.g. `lib/scu_backend/ccyl/ccyl_service.dart`).
 
 ### Dependency Injection
 
@@ -186,35 +186,35 @@ Two patterns coexist by design:
 
 ### Service Layer — Three-Layer Architecture
 
-Authoritative reference: `docs/architecture/authentication.md`.
+Authoritative reference: `docs/architecture/authentication.md`. All SCU backend network access and authentication logic is centralized in `lib/scu_backend/`, organized by subsystem.
 
 **Layer 3 — Unified Auth (single source of truth):**
-- **`ScuAuth`** (`lib/services/auth/scu_auth.dart`) — SCU 统一身份认证. Owns login, captcha fetch, `bindSession()` (`session/save` via `CookieClient`), token/principal persistence (`FlutterSecureStorage`), 1-hour TTL, auto-renewal, and the `_synchronizedRefresh` `Completer` mutex (N concurrent → 1 refresh). Exposes `state` (`AuthState` enum) and `onSessionExpired` callback. On refresh failure → `UnauthenticatedException`. Subsystem SSO redirects do not live here.
+- **`ScuAuth`** (`lib/scu_backend/core/scu_auth.dart`) — SCU 统一身份认证. Owns login, captcha fetch, `bindSession()` (`session/save` via `CookieClient`), token/principal persistence (`FlutterSecureStorage`), 1-hour TTL, auto-renewal, and the `_synchronizedRefresh` `Completer` mutex (N concurrent → 1 refresh). Exposes `state` (`AuthState` enum) and `onSessionExpired` callback. On refresh failure → `UnauthenticatedException`. Subsystem SSO redirects do not live here.
 
 **Layer 2 — Subsystem Auth (one per backend):**
-- **`SubsystemAuth`** (`subsystem_auth.dart`) — abstract contract: `moduleId`, `dependencies`, `ensureAuthenticated()`, `invalidate()`.
-- **`SsoRelayAuth`** (`sso_relay_auth.dart`) — base class for SSOs that just need SCU's `CookieClient` + a redirect; used by `PayAppAuth` and `FitnessAuth`.
-- **`AuthCoordinator`** (`auth_coordinator.dart`) — after ScuAuth login, schedules every subsystem immediately; each task recursively awaits only its declared dependencies (zhjw/wfw/fitness/ccyl can run in parallel, while payapp waits for wfw). Failures skip only downstream modules, and dependency cycles are rejected.
-- **`ZhjwAuth`** — obtains ScuAuth's `CookieClient`, then performs and caches the ZHJW JWT SSO.
-- **`WfwAuth`** — shares ScuAuth's `CookieClient`, follows the WFW login redirect chain (get-info → `uc/wap/login` → `a_scu/api/cas/login` → id CAS) to establish a user-bound domain session, and self-manages `_ready` (gated on an `e == 0` JSON response) so Providers do not fetch before that warm-up completes.
-- **`PayAppAuth`** — payapp OAuth warrant jump, depends on `WfwAuth`.
-- **`FitnessAuth`** — fitness test SSO jump.
-- **`CcylAuth`** — second-classroom OAuth token management via `CcylOAuthService` (SCU → CCYL bridge); binds the persisted token to the current SCU principal and rejects stale async login results.
-- **`ZhhqAuth`** (`zhhq_auth.dart`) — 智慧后勤（zhhq，在线报修）认证. Shares SCU's `CookieClient`, follows SSO (scdxplugin_jwt31) → `login/auto` to exchange **tokenKey**; persists tokenKey to `FlutterSecureStorage` (`kZhhqTokenKey`), `init()` unconditionally restores it for a fast path (业务请求只依赖 Token/TokenKey 头，不依赖 SCU 会话), and `getClientFast()` returns an isolated `CookieClient`. On 4010-4017 token errors → `invalidate()` + full re-auth.
-- **`NewServiceAuth`** (`new_service_auth.dart`) — 校园网无感认证（Passpoint）子系统认证，绑定设备 MAC 自动认证.
-- **`CookieClient`** (`cookie_client.dart`) — domain-isolated cookie jar + manual `followRedirects()` collecting `Set-Cookie` per hop + `http.ClientException` retry with fresh `http.Client`.
+- **`SubsystemAuth`** (`lib/scu_backend/core/subsystem_auth.dart`) — abstract contract: `moduleId`, `dependencies`, `ensureAuthenticated()`, `invalidate()`.
+- **`SsoRelayAuth`** (`lib/scu_backend/core/sso_relay_auth.dart`) — base class for SSOs that just need SCU's `CookieClient` + a redirect; used by `PayAppAuth` and `FitnessAuth`.
+- **`AuthCoordinator`** (`lib/scu_backend/core/auth_coordinator.dart`) — after ScuAuth login, schedules every subsystem immediately; each task recursively awaits only its declared dependencies (zhjw/wfw/fitness/ccyl can run in parallel, while payapp waits for wfw). Failures skip only downstream modules, and dependency cycles are rejected.
+- **`ZhjwAuth`** (`lib/scu_backend/zhjw/zhjw_auth.dart`) — obtains ScuAuth's `CookieClient`, then performs and caches the ZHJW JWT SSO.
+- **`WfwAuth`** (`lib/scu_backend/wfw/wfw_auth.dart`) — shares ScuAuth's `CookieClient`, follows the WFW login redirect chain (get-info → `uc/wap/login` → `a_scu/api/cas/login` → id CAS) to establish a user-bound domain session, and self-manages `_ready` (gated on an `e == 0` JSON response) so Providers do not fetch before that warm-up completes.
+- **`PayAppAuth`** (`lib/scu_backend/payapp/payapp_auth.dart`) — payapp OAuth warrant jump, depends on `WfwAuth`.
+- **`FitnessAuth`** (`lib/scu_backend/fitness/fitness_auth.dart`) — fitness test SSO jump.
+- **`CcylAuth`** (`lib/scu_backend/ccyl/ccyl_auth.dart`) — second-classroom OAuth token management via `CcylOAuthService` (SCU → CCYL bridge); binds the persisted token to the current SCU principal and rejects stale async login results.
+- **`ZhhqAuth`** (`lib/scu_backend/zhhq/zhhq_auth.dart`) — 智慧后勤（zhhq，在线报修）认证. Shares SCU's `CookieClient`, follows SSO (scdxplugin_jwt31) → `login/auto` to exchange **tokenKey**; persists tokenKey to `FlutterSecureStorage` (`kZhhqTokenKey`), `init()` unconditionally restores it for a fast path (业务请求只依赖 Token/TokenKey 头，不依赖 SCU 会话), and `getClientFast()` returns an isolated `CookieClient`. On 4010-4017 token errors → `invalidate()` + full re-auth.
+- **`NewServiceAuth`** (`lib/scu_backend/passpoint/new_service_auth.dart`) — 校园网无感认证（Passpoint）子系统认证，绑定设备 MAC 自动认证.
+- **`CookieClient`** (`lib/scu_backend/core/cookie_client.dart`) — domain-isolated cookie jar + manual `followRedirects()` collecting `Set-Cookie` per hop + `http.ClientException` retry with fresh `http.Client`.
 
 **Layer 1 — API Services (stateless HTTP tools):**
-- **`ZhjwApiService`** (`zhjw_api_service.dart`) — 教务系统 API (课表 / 成绩 / 教室 / 培养方案 / 计划完成度 / 考表).
-- **`WfwApiService`** (`wfw_api_service.dart`) — 微服务 (用户信息 / 标签).
-- **`PayAppApiService`** (`payapp_api_service.dart`) — 缴费平台 (电费 / 空调).
-- **`CcylApiService`** (`ccyl_api_service.dart`) — 第二课堂.
-- **`CcylService`** (`lib/services/ccyl/ccyl_service.dart`) — CCYL static stateless data API.
-- **`BalanceQueryService`** (`lib/services/api/balance_query_service.dart`) — dorm balance data service (HTTP query methods + model classes; called inside `PayAppApiService._request()` so retry is handled by the parent, not by this service itself).
-- **`ZhhqApiService`** (`zhhq_api_service.dart`) — 智慧后勤 API（在线报修）：地址 / 区域树 / 项目 / 预约日期时段 / 工单列表（`activeTemplateData/list`）/ 提交工单（`publish`）/ 图片上传（multipart 明文 JSON）. 业务请求用独立 token（AES 加密 `{tokenKey, clientId, timestamp, GUID}`），4010-4017 错误码触发认证层重建.
-- **`NewServiceApiService`** (`new_service_api_service.dart`) — 校园网无感认证（Passpoint）API.
+- **`ZhjwApiService`** (`lib/scu_backend/zhjw/zhjw_api_service.dart`) — 教务系统 API (课表 / 成绩 / 教室 / 培养方案 / 计划完成度 / 考表).
+- **`WfwApiService`** (`lib/scu_backend/wfw/wfw_api_service.dart`) — 微服务 (用户信息 / 标签).
+- **`PayAppApiService`** (`lib/scu_backend/payapp/payapp_api_service.dart`) — 缴费平台 (电费 / 空调).
+- **`CcylApiService`** (`lib/scu_backend/ccyl/ccyl_api_service.dart`) — 第二课堂.
+- **`CcylService`** (`lib/scu_backend/ccyl/ccyl_service.dart`) — CCYL static stateless data API.
+- **`BalanceQueryService`** (`lib/scu_backend/payapp/balance_query_service.dart`) — dorm balance data service (HTTP query methods + model classes; called inside `PayAppApiService._request()` so retry is handled by the parent, not by this service itself).
+- **`ZhhqApiService`** (`lib/scu_backend/zhhq/zhhq_api_service.dart`) — 智慧后勤 API（在线报修）：地址 / 区域树 / 项目 / 预约日期时段 / 工单列表（`activeTemplateData/list`）/ 提交工单（`publish`）/ 图片上传（multipart 明文 JSON）. 业务请求用独立 token（AES 加密 `{tokenKey, clientId, timestamp, GUID}`），4010-4017 错误码触发认证层重建.
+- **`NewServiceApiService`** (`lib/scu_backend/passpoint/new_service_api_service.dart`) — 校园网无感认证（Passpoint）API.
 
-ZHJW, WFW, and PayApp API services follow the **`_request()` template** (internally calls `retryOnUnauthenticated` from `lib/services/api/api_request.dart`):
+ZHJW, WFW, and PayApp API services follow the **`_request()` template** (internally calls `retryOnUnauthenticated` from `lib/scu_backend/core/api_request.dart`):
 1. `getClient()` → 2. business HTTP → 3. on `UnauthenticatedException` → 4. `invalidate?.call()` + retry once → 5. still failing → propagate to the Provider (which converts to UI state).
 
 The CCYL service is special: its token expires via an explicit business error code classified as `CcylAuthExpiredException`. `CcylApiService._retryOnCcylAuthError()` handles only that path (`recoverExpiredSession()` single-flight → retry once); ordinary `CcylException` failures are not replayed, which protects non-idempotent operations.
@@ -230,7 +230,7 @@ The CCYL service is special: its token expires via an explicit business error co
 - **`UpdateAssetSelector`** (`lib/services/update_asset_selector.dart`) — selects correct APK/asset based on device platform and CPU architecture.
 - **`WidgetUpdateService`** — Android + iOS/macOS home-screen widget data sync via MethodChannel `bugaoshan/update` (Android) and App Group (iOS/macOS, `syncWidgetShowTomorrow`). Has its own debounce + in-flight coalescing logic (covered by `test/widget_update_service_test.dart`).
 - **`DownloadNotificationService`** (`lib/services/download_notification_service.dart`) — Android 下载进度通知栏（进度条 + 取消按钮，MethodChannel `bugaoshan/update` + EventChannel `bugaoshan/download_cancel`，仅 Android，其他平台静默 no-op）；由 `UpdateProvider` 使用。
-- **`AcademicCalendarService`** (`lib/services/api/academic_calendar_service.dart`) — academic calendar data with mirror fetch + SharedPreferences cache.
+- **`AcademicCalendarService`** (`lib/scu_backend/calendar/academic_calendar_service.dart`) — academic calendar data with mirror fetch + SharedPreferences cache.
 - **`DynamicIconService`** (`lib/services/dynamic_icon_service.dart`) — runtime app icon switching via MethodChannel `bugaoshan/dynamic_icon` (Android native).
 - **`BackgroundCacheService`** — precaches the user's background image post-frame.
 - **`ExitService`** — unified exit (windowManager.destroy on desktop, exit(0) on mobile).
@@ -410,7 +410,7 @@ The auto-changelog flow:
 
 ## Notable Implementation Details
 
-- `CookieClient` (`lib/services/auth/cookie_client.dart`) — 按域名隔离 cookie，发送时只带当前请求域的 cookie. `followRedirects()` 手动跟随重定向并收集每跳的 Set-Cookie；子系统 Auth 用它执行各自的 SSO 跳转链，`ScuAuth.bindSession()` 只负责 `session/save`.
+- `CookieClient` (`lib/scu_backend/core/cookie_client.dart`) — 按域名隔离 cookie，发送时只带当前请求域的 cookie. `followRedirects()` 手动跟随重定向并收集每跳的 Set-Cookie；子系统 Auth 用它执行各自的 SSO 跳转链，`ScuAuth.bindSession()` 只负责 `session/save`.
 - `_request()` 模板方法 — 业务方只调 `await apiService.fetchXxx()`,不碰 token/cookie/重试细节.
 - `SessionExpiredListener` (`lib/widgets/common/session_expired_listener.dart`) — 监听 `ScuAuth.onSessionExpired`,全局弹 SnackBar 带「前往登录」action (5 秒防抖).
 - 成绩刷新失败但 `sessionExpired` 时保留 SharedPreferences 缓存,并登出用户.

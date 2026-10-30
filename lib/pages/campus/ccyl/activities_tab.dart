@@ -13,7 +13,7 @@ import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/pages/campus/ccyl/widgets/ccyl_level_chip.dart';
 import 'package:bugaoshan/pages/campus/ccyl/widgets/ccyl_phase_chip.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activity_lib_detail_page.dart';
-import 'package:bugaoshan/services/api/ccyl_api_service.dart';
+import 'package:bugaoshan/scu_backend/ccyl/ccyl_api_service.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/utils/app_log.dart';

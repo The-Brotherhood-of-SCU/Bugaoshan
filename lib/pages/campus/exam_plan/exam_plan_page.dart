@@ -5,7 +5,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/exam_plan/models/exam_info.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/riverpod/campus/exam_plan_pods.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/services/ics_service.dart';
 import 'package:bugaoshan/utils/calendar_export_utils.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';

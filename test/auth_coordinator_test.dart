@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:bugaoshan/services/auth/auth_coordinator.dart';
-import 'package:bugaoshan/services/auth/subsystem_auth.dart';
+import 'package:bugaoshan/scu_backend/core/auth_coordinator.dart';
+import 'package:bugaoshan/scu_backend/core/subsystem_auth.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 
 class _FakeModule implements SubsystemAuth {

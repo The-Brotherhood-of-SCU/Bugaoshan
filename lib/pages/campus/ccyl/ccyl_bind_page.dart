@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/riverpod/campus/ccyl_pods.dart';
-import 'package:bugaoshan/services/auth/ccyl_oauth_service.dart';
+import 'package:bugaoshan/scu_backend/ccyl/ccyl_oauth_service.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 

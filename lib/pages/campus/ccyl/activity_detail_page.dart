@@ -7,7 +7,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
-import 'package:bugaoshan/services/api/ccyl_api_service.dart';
+import 'package:bugaoshan/scu_backend/ccyl/ccyl_api_service.dart';
 import 'package:bugaoshan/widgets/common/icon_info_row.dart';
 import 'package:bugaoshan/widgets/common/image_viewer.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';

@@ -11,7 +11,7 @@ import 'package:bugaoshan/pages/settings/set_course_style_page.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/utils/semester_week.dart';
 import 'package:bugaoshan/widgets/common/info_card.dart';
 import 'package:bugaoshan/widgets/common/section_title.dart';

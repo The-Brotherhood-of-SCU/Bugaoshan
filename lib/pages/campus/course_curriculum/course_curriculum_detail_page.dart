@@ -5,7 +5,7 @@ import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/campus/models/course_curriculum_model.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/riverpod/campus/course_curriculum_pods.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/pages/course/widgets/course_detail_sheet.dart';

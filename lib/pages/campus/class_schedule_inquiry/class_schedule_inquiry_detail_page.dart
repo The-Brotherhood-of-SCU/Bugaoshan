@@ -8,7 +8,7 @@ import 'package:bugaoshan/pages/course/widgets/course_detail_sheet.dart';
 import 'package:bugaoshan/pages/course/widgets/course_grid.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/riverpod/campus/class_schedule_inquiry_pods.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/utils/week_parser.dart';

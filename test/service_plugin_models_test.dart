@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:bugaoshan/services/api/service_form_models.dart';
-import 'package:bugaoshan/services/api/service_plugin_models.dart';
+import 'package:bugaoshan/scu_backend/service_hall/service_form_models.dart';
+import 'package:bugaoshan/scu_backend/service_hall/service_plugin_models.dart';
 
 /// 构造一份仿真实结构的 get-formv `d` 字段（对照
 /// test/fixtures/service_capture.json 中 350/337/356/357 的响应）：

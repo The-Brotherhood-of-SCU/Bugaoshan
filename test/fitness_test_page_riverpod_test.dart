@@ -8,7 +8,7 @@ import 'package:bugaoshan/pages/campus/fitness_test/fitness_test_page.dart';
 import 'package:bugaoshan/pages/campus/fitness_test/models/fitness_models.dart';
 import 'package:bugaoshan/providers/fitness_test_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/api/fitness_api_service.dart';
+import 'package:bugaoshan/scu_backend/fitness/fitness_api_service.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';

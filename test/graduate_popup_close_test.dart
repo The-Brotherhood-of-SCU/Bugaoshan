@@ -12,9 +12,9 @@ import 'package:bugaoshan/pages/graduate/schedule_import_page.dart';
 import 'package:bugaoshan/providers/graduate_grades_provider.dart';
 import 'package:bugaoshan/providers/graduate_train_plan_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/api/gs_api_service.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/gs/gs_api_service.dart';
+import 'package:bugaoshan/scu_backend/core/scu_auth.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
 /// #331：宽屏 / 横屏下 [popupOrNavigate] 用 `Dialog` + 内层 `Navigator` 承载

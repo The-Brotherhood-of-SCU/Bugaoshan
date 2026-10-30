@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/riverpod/campus/service_applications_pods.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/api/service_api_service.dart';
+import 'package:bugaoshan/scu_backend/service_hall/service_api_service.dart';
 
 class _FakeScuAuthProvider implements ScuAuthProvider {
   final bool _loggedIn;

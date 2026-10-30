@@ -11,9 +11,9 @@
 /// 4. DataSource 取数结果分发（resultKey 配对 / setplugin mapConfig 多列）。
 library;
 
-import 'package:bugaoshan/services/api/service_api_service.dart'
+import 'package:bugaoshan/scu_backend/service_hall/service_api_service.dart'
     show ServiceAttachment;
-import 'package:bugaoshan/services/api/service_plugin_models.dart';
+import 'package:bugaoshan/scu_backend/service_hall/service_plugin_models.dart';
 import 'package:bugaoshan/widgets/common/service_region_picker.dart';
 
 /// 校验问题类型。

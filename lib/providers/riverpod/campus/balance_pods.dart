@@ -2,7 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
-import 'package:bugaoshan/services/api/balance_query_service.dart';
+import 'package:bugaoshan/scu_backend/payapp/balance_query_service.dart';
 
 part 'balance_pods.g.dart';
 

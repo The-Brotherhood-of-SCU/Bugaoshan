@@ -5,7 +5,7 @@ import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart'
 import 'package:bugaoshan/pages/campus/models/course_curriculum_model.dart';
 import 'package:bugaoshan/providers/class_schedule_inquiry_provider.dart';
 import 'package:bugaoshan/providers/course_curriculum_provider.dart';
-import 'package:bugaoshan/services/api/zhjw_api_service.dart';
+import 'package:bugaoshan/scu_backend/zhjw/zhjw_api_service.dart';
 
 void main() {
   test('CourseCurriculumProvider loadMore 失败后重试仍请求同一页', () async {

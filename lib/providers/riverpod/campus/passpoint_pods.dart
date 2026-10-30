@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:bugaoshan/models/passpoint.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 
 part 'passpoint_pods.g.dart';

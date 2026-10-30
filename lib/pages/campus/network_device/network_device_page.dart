@@ -6,7 +6,7 @@ import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/riverpod/campus/network_device_pods.dart';
 import 'package:bugaoshan/providers/riverpod/campus/user_info_pods.dart';
 import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/info_row.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';

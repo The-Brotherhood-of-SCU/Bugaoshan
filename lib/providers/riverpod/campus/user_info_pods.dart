@@ -4,7 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/auth/auth_state.dart';
+import 'package:bugaoshan/scu_backend/core/auth_state.dart';
 import 'package:bugaoshan/utils/storage_keys.dart';
 
 part 'user_info_pods.g.dart';

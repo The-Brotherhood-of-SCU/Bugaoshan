@@ -5,7 +5,7 @@ import 'package:bugaoshan/pages/campus/reservation/models/reservation_models.dar
 import 'package:bugaoshan/pages/campus/reservation/reservation_page.dart';
 import 'package:bugaoshan/providers/reservation_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/api/reservation_api_service.dart';
+import 'package:bugaoshan/scu_backend/reservation/reservation_api_service.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';

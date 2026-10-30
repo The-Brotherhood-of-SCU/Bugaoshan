@@ -1,6 +1,6 @@
 import 'package:bugaoshan/pages/campus/reservation/models/reservation_models.dart';
-import 'package:bugaoshan/services/api/reservation_api_service.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/reservation/reservation_api_service.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:flutter/foundation.dart';
 

@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/services/api/api_session.dart';
-import 'package:bugaoshan/services/auth/cookie_client.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/core/api_session.dart';
+import 'package:bugaoshan/scu_backend/core/cookie_client.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 
 void main() {

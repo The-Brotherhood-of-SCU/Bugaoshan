@@ -5,7 +5,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/pages/campus/fitness_test/models/fitness_models.dart';
 import 'package:bugaoshan/providers/fitness_test_provider.dart';
 import 'package:bugaoshan/providers/riverpod/campus/fitness_test_pods.dart';
-import 'package:bugaoshan/services/api/fitness_api_service.dart';
+import 'package:bugaoshan/scu_backend/fitness/fitness_api_service.dart';
 
 FitnessNotice _notice(String title) => FitnessNotice(
   title: title,

@@ -13,7 +13,7 @@ import 'package:bugaoshan/models/cloud_print.dart';
 import 'package:bugaoshan/providers/cloud_print_provider.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/riverpod/campus/cloud_print_pods.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/share_utils.dart';
 import 'package:bugaoshan/utils/system_insets.dart';

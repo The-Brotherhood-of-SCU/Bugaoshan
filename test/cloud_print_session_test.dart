@@ -13,8 +13,8 @@ import 'package:bugaoshan/models/cloud_print.dart';
 import 'package:bugaoshan/pages/campus/cloud_print/cloud_print_page.dart';
 import 'package:bugaoshan/providers/cloud_print_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/api/cloud_print_api_service.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/cloud_print/cloud_print_api_service.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 
 class _Login extends ChangeNotifier implements ScuAuthProvider {

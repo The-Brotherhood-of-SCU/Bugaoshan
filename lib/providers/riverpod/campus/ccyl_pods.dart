@@ -2,7 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
-import 'package:bugaoshan/services/auth/ccyl_auth.dart';
+import 'package:bugaoshan/scu_backend/ccyl/ccyl_auth.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
 
 part 'ccyl_pods.g.dart';
