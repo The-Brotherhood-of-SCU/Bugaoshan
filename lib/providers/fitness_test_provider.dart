@@ -28,8 +28,6 @@ class FitnessTestProvider extends ChangeNotifier {
   final FitnessTestApi _api;
 
   int _epoch = 0;
-  int _noticesGeneration = 0;
-  int _scoreGeneration = 0;
   Future<void>? _noticesInFlight;
   Future<void>? _scoreInFlight;
   int? _scoreInFlightYear;
@@ -90,7 +88,7 @@ class FitnessTestProvider extends ChangeNotifier {
     _scoreData = null;
     _scoreError = null;
     _scoreState = FitnessTestLoadState.idle;
-    _scoreGeneration++;
+    _scoreData = null;
     notifyListeners();
 
     await _prefs.setInt(kFitnessTestSelectedYearKey, year);
@@ -104,7 +102,6 @@ class FitnessTestProvider extends ChangeNotifier {
     }
 
     final epoch = _epoch;
-    final generation = ++_noticesGeneration;
     _noticesState = FitnessTestLoadState.loading;
     _noticesError = null;
     notifyListeners();
@@ -113,7 +110,7 @@ class FitnessTestProvider extends ChangeNotifier {
     request = () async {
       try {
         final notices = await _api.fetchNotices();
-        if (!_isNoticesCurrent(epoch, generation)) return;
+        if (!_isNoticesCurrent(epoch)) return;
         _notices = notices;
         _noticesState = FitnessTestLoadState.loaded;
       } catch (error, logStackTrace) {
@@ -123,12 +120,12 @@ class FitnessTestProvider extends ChangeNotifier {
           error: error,
           stackTrace: logStackTrace,
         );
-        if (!_isNoticesCurrent(epoch, generation)) return;
+        if (!_isNoticesCurrent(epoch)) return;
         _noticesState = FitnessTestLoadState.error;
         _noticesError = _noticeError(error);
       } finally {
         if (_noticesInFlight == request) _noticesInFlight = null;
-        if (_isNoticesCurrent(epoch, generation)) notifyListeners();
+        if (_isNoticesCurrent(epoch)) notifyListeners();
       }
     }();
     _noticesInFlight = request;
@@ -146,7 +143,6 @@ class FitnessTestProvider extends ChangeNotifier {
 
     final year = _selectedYear;
     final epoch = _epoch;
-    final generation = ++_scoreGeneration;
     _scoreState = FitnessTestLoadState.loading;
     _scoreError = null;
     _scoreData = null;
@@ -156,7 +152,7 @@ class FitnessTestProvider extends ChangeNotifier {
     request = () async {
       try {
         final score = await _api.fetchScore(year);
-        if (!_isScoreCurrent(epoch, generation, year)) return;
+        if (!_isScoreCurrent(epoch, year)) return;
         _scoreData = score;
         _scoreState = FitnessTestLoadState.loaded;
       } catch (error, logStackTrace) {
@@ -166,7 +162,7 @@ class FitnessTestProvider extends ChangeNotifier {
           error: error,
           stackTrace: logStackTrace,
         );
-        if (!_isScoreCurrent(epoch, generation, year)) return;
+        if (!_isScoreCurrent(epoch, year)) return;
         _scoreState = FitnessTestLoadState.error;
         _scoreError = _scoreLoadError(error);
       } finally {
@@ -174,7 +170,7 @@ class FitnessTestProvider extends ChangeNotifier {
           _scoreInFlight = null;
           _scoreInFlightYear = null;
         }
-        if (_isScoreCurrent(epoch, generation, year)) {
+        if (_isScoreCurrent(epoch, year)) {
           notifyListeners();
         }
       }
@@ -184,13 +180,10 @@ class FitnessTestProvider extends ChangeNotifier {
     return request;
   }
 
-  bool _isNoticesCurrent(int epoch, int generation) =>
-      epoch == _epoch && generation == _noticesGeneration;
+  bool _isNoticesCurrent(int epoch) => epoch == _epoch;
 
-  bool _isScoreCurrent(int epoch, int generation, int year) =>
-      epoch == _epoch &&
-      generation == _scoreGeneration &&
-      year == _selectedYear;
+  bool _isScoreCurrent(int epoch, int year) =>
+      epoch == _epoch && year == _selectedYear;
 
   Object _noticeError(Object error) {
     if (error is UnauthenticatedException) return LoadErrorType.sessionExpired;
@@ -207,8 +200,6 @@ class FitnessTestProvider extends ChangeNotifier {
   /// 登出或账号切换时调用，丢弃全部会话内数据及飞行请求结果。
   void clear() {
     _epoch++;
-    _noticesGeneration++;
-    _scoreGeneration++;
     _noticesInFlight = null;
     _scoreInFlight = null;
     _scoreInFlightYear = null;

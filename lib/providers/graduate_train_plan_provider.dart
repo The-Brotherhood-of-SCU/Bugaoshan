@@ -40,7 +40,6 @@ class GraduateTrainPlanProvider extends ChangeNotifier {
   GraduateTrainPlanLoadState _state = GraduateTrainPlanLoadState.idle;
   GraduateTrainPlanErrorKind? _errorKind;
   String? _errorMessage;
-  int _generation = 0;
 
   GraduateTrainPlanInfo? _info;
   GraduateTrainPlanCreditStats? _creditStats;
@@ -62,7 +61,6 @@ class GraduateTrainPlanProvider extends ChangeNotifier {
 
   Future<void> refresh() async {
     if (_state == GraduateTrainPlanLoadState.loading) return;
-    final generation = ++_generation;
     _state = GraduateTrainPlanLoadState.loading;
     _errorKind = null;
     _errorMessage = null;
@@ -70,13 +68,13 @@ class GraduateTrainPlanProvider extends ChangeNotifier {
 
     try {
       final info = await _gsApi.fetchTrainPlanInfo();
-      if (generation != _generation) return;
+      if (_state != GraduateTrainPlanLoadState.loading) return;
       final (stats, categories) = await _gsApi.fetchTrainPlanCreditStats();
-      if (generation != _generation) return;
+      if (_state != GraduateTrainPlanLoadState.loading) return;
       final planCourses = await _gsApi.fetchTrainPlanCourses();
-      if (generation != _generation) return;
+      if (_state != GraduateTrainPlanLoadState.loading) return;
       final gradeRows = await _gsApi.fetchGrades();
-      if (generation != _generation) return;
+      if (_state != GraduateTrainPlanLoadState.loading) return;
 
       final sections = graduateTrainPlanSections(
         categories: categories,
@@ -92,12 +90,12 @@ class GraduateTrainPlanProvider extends ChangeNotifier {
       _errorMessage = null;
     } on UnauthenticatedException catch (logError, logStackTrace) {
       AppLog.e(_tag, 'refresh 失败', error: logError, stackTrace: logStackTrace);
-      if (generation != _generation) return;
+      if (_state != GraduateTrainPlanLoadState.loading) return;
       _state = GraduateTrainPlanLoadState.error;
       _errorKind = GraduateTrainPlanErrorKind.unauthenticated;
     } catch (e, logStackTrace) {
       AppLog.e(_tag, 'refresh 失败', error: e, stackTrace: logStackTrace);
-      if (generation != _generation) return;
+      if (_state != GraduateTrainPlanLoadState.loading) return;
       _state = GraduateTrainPlanLoadState.error;
       _errorKind = GraduateTrainPlanErrorKind.failed;
       _errorMessage = e.toString();
@@ -107,7 +105,6 @@ class GraduateTrainPlanProvider extends ChangeNotifier {
 
   /// 登出时复位缓存。
   void clear() {
-    _generation++;
     _info = null;
     _creditStats = null;
     _sections = const [];

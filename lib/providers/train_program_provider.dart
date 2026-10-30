@@ -35,8 +35,8 @@ class TrainProgramProvider extends ChangeNotifier {
 
   String? _selectedCollege;
   String? _selectedGrade;
-  int _detailGeneration = 0;
-  int _courseDetailGeneration = 0;
+  String? _loadingFajhh;
+  String? _loadingCourseUrl;
 
   List<College> get colleges => _colleges;
   List<Grade> get grades => _grades;
@@ -171,14 +171,14 @@ class TrainProgramProvider extends ChangeNotifier {
   }
 
   Future<void> fetchProgramDetail(String fajhh) async {
-    final generation = ++_detailGeneration;
+    _loadingFajhh = fajhh;
     _detailState = TrainProgramLoadState.loading;
     _detailError = null;
     _safeNotify();
 
     try {
       final detail = await _zhjwApi.fetchProgramDetail(fajhh);
-      if (generation != _detailGeneration) return;
+      if (fajhh != _loadingFajhh) return;
       _currentDetail = detail;
       _detailState = TrainProgramLoadState.loaded;
     } on UnauthenticatedException catch (e, logStackTrace) {
@@ -188,7 +188,7 @@ class TrainProgramProvider extends ChangeNotifier {
         error: e,
         stackTrace: logStackTrace,
       );
-      if (generation != _detailGeneration) return;
+      if (fajhh != _loadingFajhh) return;
       _detailState = TrainProgramLoadState.error;
       _detailError = zhjwAuthErrorType(e);
     } on ServiceException catch (logError, logStackTrace) {
@@ -198,7 +198,7 @@ class TrainProgramProvider extends ChangeNotifier {
         error: logError,
         stackTrace: logStackTrace,
       );
-      if (generation != _detailGeneration) return;
+      if (fajhh != _loadingFajhh) return;
       _detailState = TrainProgramLoadState.error;
       _detailError = campusNetworkErrorType(LoadErrorType.loadFailed);
     } catch (logError, logStackTrace) {
@@ -208,7 +208,7 @@ class TrainProgramProvider extends ChangeNotifier {
         error: logError,
         stackTrace: logStackTrace,
       );
-      if (generation != _detailGeneration) return;
+      if (fajhh != _loadingFajhh) return;
       _detailState = TrainProgramLoadState.error;
       _detailError = campusNetworkErrorType(LoadErrorType.loadFailed);
     }
@@ -216,7 +216,7 @@ class TrainProgramProvider extends ChangeNotifier {
   }
 
   void clearDetail() {
-    _detailGeneration++;
+    _loadingFajhh = null;
     _currentDetail = null;
     _detailState = TrainProgramLoadState.idle;
     _detailError = null;
@@ -224,14 +224,14 @@ class TrainProgramProvider extends ChangeNotifier {
   }
 
   Future<void> fetchCourseDetail(String urlPath) async {
-    final generation = ++_courseDetailGeneration;
+    _loadingCourseUrl = urlPath;
     _courseDetailState = TrainProgramLoadState.loading;
     _courseDetailError = null;
     _safeNotify();
 
     try {
       final detail = await _zhjwApi.fetchCourseDetail(urlPath);
-      if (generation != _courseDetailGeneration) return;
+      if (urlPath != _loadingCourseUrl) return;
       _currentCourseDetail = detail;
       _courseDetailState = TrainProgramLoadState.loaded;
     } on UnauthenticatedException catch (e, logStackTrace) {
@@ -241,7 +241,7 @@ class TrainProgramProvider extends ChangeNotifier {
         error: e,
         stackTrace: logStackTrace,
       );
-      if (generation != _courseDetailGeneration) return;
+      if (urlPath != _loadingCourseUrl) return;
       _courseDetailState = TrainProgramLoadState.error;
       _courseDetailError = zhjwAuthErrorType(e);
     } on ServiceException catch (logError, logStackTrace) {
@@ -251,7 +251,7 @@ class TrainProgramProvider extends ChangeNotifier {
         error: logError,
         stackTrace: logStackTrace,
       );
-      if (generation != _courseDetailGeneration) return;
+      if (urlPath != _loadingCourseUrl) return;
       _courseDetailState = TrainProgramLoadState.error;
       _courseDetailError = campusNetworkErrorType(LoadErrorType.loadFailed);
     } catch (logError, logStackTrace) {
@@ -261,7 +261,7 @@ class TrainProgramProvider extends ChangeNotifier {
         error: logError,
         stackTrace: logStackTrace,
       );
-      if (generation != _courseDetailGeneration) return;
+      if (urlPath != _loadingCourseUrl) return;
       _courseDetailState = TrainProgramLoadState.error;
       _courseDetailError = campusNetworkErrorType(LoadErrorType.loadFailed);
     }
@@ -269,7 +269,7 @@ class TrainProgramProvider extends ChangeNotifier {
   }
 
   void clearCourseDetail() {
-    _courseDetailGeneration++;
+    _loadingCourseUrl = null;
     _currentCourseDetail = null;
     _courseDetailState = TrainProgramLoadState.idle;
     _courseDetailError = null;

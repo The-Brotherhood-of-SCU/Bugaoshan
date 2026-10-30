@@ -16,7 +16,6 @@ class ExamPlanProvider extends ChangeNotifier {
   List<ExamInfo> _exams = const [];
   ExamPlanLoadState _state = ExamPlanLoadState.idle;
   LoadErrorType? _error;
-  int _generation = 0;
 
   List<ExamInfo> get exams => _exams;
   ExamPlanLoadState get state => _state;
@@ -30,25 +29,24 @@ class ExamPlanProvider extends ChangeNotifier {
     if (_state == ExamPlanLoadState.loading) return;
     if (!forceRefresh && _state == ExamPlanLoadState.loaded) return;
 
-    final generation = ++_generation;
     _state = ExamPlanLoadState.loading;
     _error = null;
     notifyListeners();
     try {
       final exams = await _api.fetchExamPlan();
-      if (generation != _generation) return;
+      if (_state != ExamPlanLoadState.loading) return;
       _exams = exams;
       _state = ExamPlanLoadState.loaded;
     } on UnauthenticatedException catch (e, logStackTrace) {
       AppLog.e(_tag, 'load 失败', error: e, stackTrace: logStackTrace);
-      if (generation != _generation) return;
+      if (_state != ExamPlanLoadState.loading) return;
       _state = ExamPlanLoadState.error;
       // 未登录 → notLoggedIn 让页面展示登录引导；统一认证已登录但本科教务
       // 始终踢回登录页（研究生账号）→ undergradOnly 给针对性指引。
       _error = zhjwAuthErrorType(e, fallback: LoadErrorType.notLoggedIn);
     } catch (error, logStackTrace) {
       AppLog.e(_tag, 'load 失败', error: error, stackTrace: logStackTrace);
-      if (generation != _generation) return;
+      if (_state != ExamPlanLoadState.loading) return;
 
       _state = ExamPlanLoadState.error;
       _error = campusNetworkErrorType(LoadErrorType.loadFailed);
@@ -57,7 +55,6 @@ class ExamPlanProvider extends ChangeNotifier {
   }
 
   void clear() {
-    _generation++;
     _exams = const [];
     _state = ExamPlanLoadState.idle;
     _error = null;

@@ -51,9 +51,6 @@ class CourseCurriculumProvider extends ChangeNotifier {
   LoadErrorType? _indexError;
   LoadErrorType? _coursesError;
   bool _isLoadingMorePage = false;
-  int _indexGeneration = 0;
-  int _coursesGeneration = 0;
-  final Map<_CourseScheduleKey, int> _detailGenerations = {};
 
   List<SemesterOption> get semesters => _semesters;
   List<DepartmentOption> get departments => _departments;
@@ -116,13 +113,12 @@ class CourseCurriculumProvider extends ChangeNotifier {
     if (!forceRefresh && _indexState == CourseCurriculumLoadState.loaded) {
       return;
     }
-    final generation = ++_indexGeneration;
     _indexState = CourseCurriculumLoadState.loading;
     _indexError = null;
     notifyListeners();
     try {
       final result = await _api.fetchCourseCurriculumIndex();
-      if (generation != _indexGeneration) return;
+      if (_indexState != CourseCurriculumLoadState.loading) return;
       _semesters = result.semesters;
       _departments = result.departments;
       _categories = result.categories;
@@ -135,13 +131,13 @@ class CourseCurriculumProvider extends ChangeNotifier {
       await search();
     } on UnauthenticatedException catch (e, logStackTrace) {
       AppLog.e(_tag, 'loadIndex 失败', error: e, stackTrace: logStackTrace);
-      if (generation != _indexGeneration) return;
+      if (_indexState != CourseCurriculumLoadState.loading) return;
       _indexState = CourseCurriculumLoadState.error;
       _indexError = zhjwAuthErrorType(e);
       notifyListeners();
     } catch (error, logStackTrace) {
       AppLog.e(_tag, 'loadIndex 失败', error: error, stackTrace: logStackTrace);
-      if (generation != _indexGeneration) return;
+      if (_indexState != CourseCurriculumLoadState.loading) return;
 
       _indexState = CourseCurriculumLoadState.error;
       _indexError = campusNetworkErrorType(LoadErrorType.loadFailed);
@@ -172,7 +168,6 @@ class CourseCurriculumProvider extends ChangeNotifier {
     final courseName = _courseName;
     final courseCode = _courseCode;
     final courseSeq = _courseSeq;
-    final generation = ++_coursesGeneration;
     _isLoadingMorePage = !replace;
     _coursesState = CourseCurriculumLoadState.loading;
     _coursesError = null;
@@ -188,13 +183,14 @@ class CourseCurriculumProvider extends ChangeNotifier {
         courseSeq: courseSeq,
         category: category,
       );
-      if (generation != _coursesGeneration ||
-          semester != _selectedSemester ||
-          department != _selectedDepartment ||
-          category != _selectedCategory ||
-          courseName != _courseName ||
-          courseCode != _courseCode ||
-          courseSeq != _courseSeq) {
+      if (!_isCurrentCourseRequest(
+        semester: semester,
+        department: department,
+        category: category,
+        courseName: courseName,
+        courseCode: courseCode,
+        courseSeq: courseSeq,
+      )) {
         return;
       }
       _pageNum = page;
@@ -204,7 +200,6 @@ class CourseCurriculumProvider extends ChangeNotifier {
     } on UnauthenticatedException catch (e, logStackTrace) {
       AppLog.e(_tag, '_loadCourses 失败', error: e, stackTrace: logStackTrace);
       if (!_isCurrentCourseRequest(
-        generation: generation,
         semester: semester,
         department: department,
         category: category,
@@ -224,7 +219,6 @@ class CourseCurriculumProvider extends ChangeNotifier {
         stackTrace: logStackTrace,
       );
       if (!_isCurrentCourseRequest(
-        generation: generation,
         semester: semester,
         department: department,
         category: category,
@@ -242,7 +236,6 @@ class CourseCurriculumProvider extends ChangeNotifier {
   }
 
   bool _isCurrentCourseRequest({
-    required int generation,
     required String semester,
     required String department,
     required String category,
@@ -250,7 +243,7 @@ class CourseCurriculumProvider extends ChangeNotifier {
     required String courseCode,
     required String courseSeq,
   }) =>
-      generation == _coursesGeneration &&
+      _coursesState == CourseCurriculumLoadState.loading &&
       semester == _selectedSemester &&
       department == _selectedDepartment &&
       category == _selectedCategory &&
@@ -274,6 +267,9 @@ class CourseCurriculumProvider extends ChangeNotifier {
   Future<void> refreshSchedule(CourseSectionInfo courseInfo) =>
       loadSchedule(courseInfo, forceRefresh: true);
 
+  bool _isDetailCurrent(_CourseScheduleKey key) =>
+      _details[key]?.state == CourseCurriculumLoadState.loading;
+
   Future<void> loadSchedule(
     CourseSectionInfo courseInfo, {
     bool forceRefresh = false,
@@ -284,8 +280,6 @@ class CourseCurriculumProvider extends ChangeNotifier {
     if (!forceRefresh && previous.state == CourseCurriculumLoadState.loaded) {
       return;
     }
-    final generation = (_detailGenerations[key] ?? 0) + 1;
-    _detailGenerations[key] = generation;
     _details[key] = CourseScheduleDetailState(
       courses: forceRefresh ? const [] : previous.courses,
       state: CourseCurriculumLoadState.loading,
@@ -297,14 +291,14 @@ class CourseCurriculumProvider extends ChangeNotifier {
         courseCode: courseInfo.courseCode,
         courseSequenceCode: courseInfo.courseSeq,
       );
-      if (_detailGenerations[key] != generation) return;
+      if (!_isDetailCurrent(key)) return;
       _details[key] = CourseScheduleDetailState(
         courses: courses,
         state: CourseCurriculumLoadState.loaded,
       );
     } on UnauthenticatedException catch (e, logStackTrace) {
       AppLog.e(_tag, 'loadSchedule 失败', error: e, stackTrace: logStackTrace);
-      if (_detailGenerations[key] != generation) return;
+      if (!_isDetailCurrent(key)) return;
       _details[key] = CourseScheduleDetailState(
         courses: previous.courses,
         state: CourseCurriculumLoadState.error,
@@ -317,7 +311,7 @@ class CourseCurriculumProvider extends ChangeNotifier {
         error: error,
         stackTrace: logStackTrace,
       );
-      if (_detailGenerations[key] != generation) return;
+      if (!_isDetailCurrent(key)) return;
 
       _details[key] = CourseScheduleDetailState(
         courses: previous.courses,
@@ -338,22 +332,15 @@ class CourseCurriculumProvider extends ChangeNotifier {
     for (final key in keys) {
       if (_details.length <= _maxDetailEntries) break;
       _details.remove(key);
-      // 同步丢弃对应代际号，使该 key 的飞行请求结果不再回写。
-      _detailGenerations.remove(key);
     }
   }
 
   void clear() {
-    _indexGeneration++;
-    _coursesGeneration++;
     _semesters = const [];
     _departments = const [];
     _categories = const [];
     _courses = const [];
     _details.clear();
-    for (final entry in _detailGenerations.entries.toList()) {
-      _detailGenerations[entry.key] = entry.value + 1;
-    }
     _selectedSemester = '';
     _selectedDepartment = '';
     _selectedCategory = '';

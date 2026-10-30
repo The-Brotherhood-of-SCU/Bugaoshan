@@ -33,7 +33,6 @@ class ReservationProvider extends ChangeNotifier {
   ReservationLoadState _state = ReservationLoadState.idle;
   ReservationErrorKind? _errorKind;
   String? _errorMessage;
-  int _generation = 0;
 
   List<ReservationResource> _resources = const [];
   String? _selectedResourceId;
@@ -68,7 +67,6 @@ class ReservationProvider extends ChangeNotifier {
 
   Future<void> refresh() async {
     if (_state == ReservationLoadState.loading) return;
-    final generation = ++_generation;
     _state = ReservationLoadState.loading;
     _errorKind = null;
     _errorMessage = null;
@@ -76,7 +74,7 @@ class ReservationProvider extends ChangeNotifier {
 
     try {
       final resources = await _api.fetchResources();
-      if (generation != _generation) return;
+      if (_state != ReservationLoadState.loading) return;
       _resources = resources;
       final selected = _selectedResourceId ?? resources.firstOrNull?.id;
       _selectedResourceId = selected;
@@ -84,15 +82,15 @@ class ReservationProvider extends ChangeNotifier {
       notifyListeners();
 
       if (selected != null) {
-        await _loadCalendar(selected, generation: generation);
+        await _loadCalendar(selected);
       }
     } on UnauthenticatedException {
-      if (generation != _generation) return;
+      if (_state != ReservationLoadState.loading) return;
       _state = ReservationLoadState.error;
       _errorKind = ReservationErrorKind.unauthenticated;
       notifyListeners();
     } catch (e, logStackTrace) {
-      if (generation != _generation) return;
+      if (_state != ReservationLoadState.loading) return;
       AppLog.e(_tag, 'refresh 失败', error: e, stackTrace: logStackTrace);
       _state = ReservationLoadState.error;
       _errorKind = ReservationErrorKind.failed;
@@ -107,7 +105,7 @@ class ReservationProvider extends ChangeNotifier {
     _selectedResourceId = resourceId;
     _calendar = null;
     notifyListeners();
-    await _loadCalendar(resourceId, generation: ++_generation);
+    await _loadCalendar(resourceId);
   }
 
   /// 日历区间前移 / 后移 [visibleDays] 天。
@@ -128,7 +126,7 @@ class ReservationProvider extends ChangeNotifier {
     }
     _calendar = null;
     notifyListeners();
-    await _loadCalendar(resourceId, generation: ++_generation);
+    await _loadCalendar(resourceId);
   }
 
   /// 区间是否已经在「今天」这一屏（用于禁用「回到今天」按钮）。
@@ -148,7 +146,7 @@ class ReservationProvider extends ChangeNotifier {
     _rangeStart = today;
     _calendar = null;
     notifyListeners();
-    await _loadCalendar(resourceId, generation: ++_generation);
+    await _loadCalendar(resourceId);
   }
 
   /// 回到以今天为起点的区间。
@@ -160,7 +158,7 @@ class ReservationProvider extends ChangeNotifier {
     _rangeStart = today;
     _calendar = null;
     notifyListeners();
-    await _loadCalendar(resourceId, generation: ++_generation);
+    await _loadCalendar(resourceId);
   }
 
   /// 提交预约：为当前选中资源预约 [slots]（日期 + 时段 id），[number] 为人数。
@@ -184,7 +182,7 @@ class ReservationProvider extends ChangeNotifier {
     );
     // 预约已改变占用情况，刷新当前区间日历；失败由 _loadCalendar 内部
     // 兜底，不掩盖提交成功的事实。
-    await _loadCalendar(resourceId, generation: ++_generation);
+    await _loadCalendar(resourceId);
     return result;
   }
 
@@ -255,15 +253,17 @@ class ReservationProvider extends ChangeNotifier {
     );
     final resourceId = _selectedResourceId;
     if (resourceId != null) {
-      await _loadCalendar(resourceId, generation: ++_generation);
+      await _loadCalendar(resourceId);
     }
     await loadAppointments();
   }
 
-  Future<void> _loadCalendar(
-    String resourceId, {
-    required int generation,
-  }) async {
+  bool _isCalendarCurrent(String resourceId, DateTime start) =>
+      _state != ReservationLoadState.idle &&
+      resourceId == _selectedResourceId &&
+      start.isAtSameMomentAs(_rangeStart);
+
+  Future<void> _loadCalendar(String resourceId) async {
     final start = _rangeStart;
     final end = start.add(const Duration(days: visibleDays - 1));
     try {
@@ -272,17 +272,17 @@ class ReservationProvider extends ChangeNotifier {
         startDate: start,
         endDate: end,
       );
-      if (generation != _generation) return;
+      if (!_isCalendarCurrent(resourceId, start)) return;
       _calendar = calendar;
       _state = ReservationLoadState.loaded;
       _errorKind = null;
       _errorMessage = null;
     } on UnauthenticatedException {
-      if (generation != _generation) return;
+      if (!_isCalendarCurrent(resourceId, start)) return;
       _state = ReservationLoadState.error;
       _errorKind = ReservationErrorKind.unauthenticated;
     } catch (e, logStackTrace) {
-      if (generation != _generation) return;
+      if (!_isCalendarCurrent(resourceId, start)) return;
       AppLog.e(_tag, 'loadCalendar 失败', error: e, stackTrace: logStackTrace);
       _state = ReservationLoadState.error;
       _errorKind = ReservationErrorKind.failed;
@@ -293,7 +293,6 @@ class ReservationProvider extends ChangeNotifier {
 
   /// 登出时复位。
   void clear() {
-    _generation++;
     _resources = const [];
     _selectedResourceId = null;
     _calendar = null;

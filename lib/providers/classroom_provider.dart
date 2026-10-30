@@ -27,7 +27,6 @@ class ClassroomProvider extends ChangeNotifier {
   LoadErrorType? _indexError;
 
   _ClassroomQueryKey? _currentQuery;
-  int _indexGeneration = 0;
   int _queryEpoch = 0;
 
   List<ClassroomCampus> get campuses => _campuses;
@@ -52,24 +51,23 @@ class ClassroomProvider extends ChangeNotifier {
     if (_indexState == ClassroomLoadState.loading) return;
     if (!forceRefresh && _indexState == ClassroomLoadState.loaded) return;
 
-    final generation = ++_indexGeneration;
     _indexState = ClassroomLoadState.loading;
     _indexError = null;
     notifyListeners();
     try {
       final result = await _api.fetchClassroomIndex();
-      if (generation != _indexGeneration) return;
+      if (_indexState != ClassroomLoadState.loading) return;
       _campuses = result.campuses;
       _buildings = result.buildings;
       _indexState = ClassroomLoadState.loaded;
     } on UnauthenticatedException catch (e, logStackTrace) {
       AppLog.e(_tag, 'loadIndex 失败', error: e, stackTrace: logStackTrace);
-      if (generation != _indexGeneration) return;
+      if (_indexState != ClassroomLoadState.loading) return;
       _indexState = ClassroomLoadState.error;
       _indexError = zhjwAuthErrorType(e);
     } catch (error, logStackTrace) {
       AppLog.e(_tag, 'loadIndex 失败', error: error, stackTrace: logStackTrace);
-      if (generation != _indexGeneration) return;
+      if (_indexState != ClassroomLoadState.loading) return;
 
       _indexState = ClassroomLoadState.error;
       _indexError = campusNetworkErrorType(LoadErrorType.loadFailed);
@@ -188,7 +186,6 @@ class ClassroomProvider extends ChangeNotifier {
   }
 
   void clear() {
-    _indexGeneration++;
     _queryEpoch++;
     _campuses = const [];
     _buildings = const [];

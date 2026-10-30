@@ -15,7 +15,6 @@ class ServiceApplicationsProvider extends ChangeNotifier {
   ServiceApplicationsProvider(this._api);
 
   final ServiceApiService _api;
-  int _generation = 0;
 
   List<Map<String, dynamic>> _items = const [];
   ServiceApplicationsLoadState _state = ServiceApplicationsLoadState.idle;
@@ -33,37 +32,35 @@ class ServiceApplicationsProvider extends ChangeNotifier {
     if (_state == ServiceApplicationsLoadState.loading) return;
     if (!force && _state == ServiceApplicationsLoadState.loaded) return;
 
-    final generation = ++_generation;
     _state = ServiceApplicationsLoadState.loading;
     _error = null;
     notifyListeners();
 
     try {
       final items = await _api.fetchMyApplications();
-      if (generation != _generation) return;
+      if (_state != ServiceApplicationsLoadState.loading) return;
       _items = items;
       _state = ServiceApplicationsLoadState.loaded;
     } on UnauthenticatedException catch (logError, logStackTrace) {
       AppLog.e(_tag, '_load 失败', error: logError, stackTrace: logStackTrace);
-      if (generation != _generation) return;
+      if (_state != ServiceApplicationsLoadState.loading) return;
       _state = ServiceApplicationsLoadState.error;
       _error = LoadErrorType.sessionExpired;
     } on ServiceException catch (logError, logStackTrace) {
       AppLog.e(_tag, '_load 失败', error: logError, stackTrace: logStackTrace);
-      if (generation != _generation) return;
+      if (_state != ServiceApplicationsLoadState.loading) return;
       _state = ServiceApplicationsLoadState.error;
       _error = campusNetworkErrorType(LoadErrorType.loadFailed);
     } catch (logError, logStackTrace) {
       AppLog.e(_tag, '_load 失败', error: logError, stackTrace: logStackTrace);
-      if (generation != _generation) return;
+      if (_state != ServiceApplicationsLoadState.loading) return;
       _state = ServiceApplicationsLoadState.error;
       _error = campusNetworkErrorType(LoadErrorType.loadFailed);
     }
-    if (generation == _generation) notifyListeners();
+    if (_state != ServiceApplicationsLoadState.idle) notifyListeners();
   }
 
   void clear() {
-    _generation++;
     _items = const [];
     _state = ServiceApplicationsLoadState.idle;
     _error = null;

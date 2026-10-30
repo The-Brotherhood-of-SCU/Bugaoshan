@@ -34,7 +34,6 @@ class GraduateGradesProvider extends ChangeNotifier {
   String? _errorMessage;
   List<GraduateGradeRow> _rows = const [];
   GraduateGradesStats? _stats;
-  int _generation = 0;
 
   GraduateGradesLoadState get state => _state;
   GraduateGradesErrorKind? get errorKind => _errorKind;
@@ -49,7 +48,6 @@ class GraduateGradesProvider extends ChangeNotifier {
 
   Future<void> refresh() async {
     if (_state == GraduateGradesLoadState.loading) return;
-    final generation = ++_generation;
     _state = GraduateGradesLoadState.loading;
     _errorKind = null;
     _errorMessage = null;
@@ -57,18 +55,18 @@ class GraduateGradesProvider extends ChangeNotifier {
 
     try {
       final rows = await _gsApi.fetchGrades();
-      if (generation != _generation) return;
+      if (_state != GraduateGradesLoadState.loading) return;
       _rows = rows;
       _stats = graduateGradesStatsFromRows(rows);
       _state = GraduateGradesLoadState.loaded;
     } on UnauthenticatedException catch (logError, logStackTrace) {
       AppLog.e(_tag, 'refresh 失败', error: logError, stackTrace: logStackTrace);
-      if (generation != _generation) return;
+      if (_state != GraduateGradesLoadState.loading) return;
       _state = GraduateGradesLoadState.error;
       _errorKind = GraduateGradesErrorKind.unauthenticated;
     } catch (e, logStackTrace) {
       AppLog.e(_tag, 'refresh 失败', error: e, stackTrace: logStackTrace);
-      if (generation != _generation) return;
+      if (_state != GraduateGradesLoadState.loading) return;
 
       _state = GraduateGradesLoadState.error;
       _errorKind = GraduateGradesErrorKind.failed;
@@ -79,7 +77,6 @@ class GraduateGradesProvider extends ChangeNotifier {
 
   /// 登出时复位缓存。
   void clear() {
-    _generation++;
     _rows = const [];
     _stats = null;
     _state = GraduateGradesLoadState.idle;

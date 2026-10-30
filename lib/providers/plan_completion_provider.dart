@@ -17,7 +17,6 @@ class PlanCompletionProvider extends ChangeNotifier {
 
   final SharedPreferences _prefs;
   final ZhjwApiService _zhjwApi;
-  int _requestGeneration = 0;
 
   PlanCompletionProvider(this._prefs, this._zhjwApi) {
     final cached = _prefs.getString(_keyPlanCompletion);
@@ -83,7 +82,6 @@ class PlanCompletionProvider extends ChangeNotifier {
         _plans.isNotEmpty) {
       return;
     }
-    final generation = ++_requestGeneration;
 
     _state = PlanCompletionLoadState.loading;
     _error = null;
@@ -91,14 +89,14 @@ class PlanCompletionProvider extends ChangeNotifier {
 
     try {
       final plans = await _zhjwApi.fetchPlanCompletion();
-      if (generation != _requestGeneration) return;
+      if (_state != PlanCompletionLoadState.loading) return;
       _plans = plans;
       // 若已滑到最后一个方案且刷新后方案变少，回退到 0，避免越界。
       if (_currentPlanIndex >= _plans.length) _currentPlanIndex = 0;
       _state = PlanCompletionLoadState.loaded;
       _error = null;
       await _saveToCache();
-      if (generation != _requestGeneration) return;
+      if (_state != PlanCompletionLoadState.loaded) return;
     } on RateLimitedException catch (logError, logStackTrace) {
       AppLog.e(
         _tag,
@@ -106,7 +104,7 @@ class PlanCompletionProvider extends ChangeNotifier {
         error: logError,
         stackTrace: logStackTrace,
       );
-      if (generation != _requestGeneration) return;
+      if (_state != PlanCompletionLoadState.loading) return;
       if (_plans.isNotEmpty) {
         _state = PlanCompletionLoadState.loaded;
       } else {
@@ -120,7 +118,7 @@ class PlanCompletionProvider extends ChangeNotifier {
         error: logError,
         stackTrace: logStackTrace,
       );
-      if (generation != _requestGeneration) return;
+      if (_state != PlanCompletionLoadState.loading) return;
       if (_plans.isNotEmpty) {
         _state = PlanCompletionLoadState.loaded;
         _error = campusNetworkErrorType(LoadErrorType.loadFailed);
@@ -135,7 +133,7 @@ class PlanCompletionProvider extends ChangeNotifier {
         error: e,
         stackTrace: logStackTrace,
       );
-      if (generation != _requestGeneration) return;
+      if (_state != PlanCompletionLoadState.loading) return;
       if (_plans.isNotEmpty) {
         _state = PlanCompletionLoadState.loaded;
       } else {
@@ -149,7 +147,7 @@ class PlanCompletionProvider extends ChangeNotifier {
         error: logError,
         stackTrace: logStackTrace,
       );
-      if (generation != _requestGeneration) return;
+      if (_state != PlanCompletionLoadState.loading) return;
       if (_plans.isNotEmpty) {
         _state = PlanCompletionLoadState.loaded;
       } else {
@@ -215,7 +213,6 @@ class PlanCompletionProvider extends ChangeNotifier {
   };
 
   Future<void> clearCache() async {
-    _requestGeneration++;
     _plans = [];
     _currentPlanIndex = 0;
     _state = PlanCompletionLoadState.idle;

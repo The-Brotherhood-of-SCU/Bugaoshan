@@ -18,7 +18,6 @@ class GradesProvider extends ChangeNotifier {
   final SharedPreferences _prefs;
   final ZhjwApiService _zhjwApi;
   String? _userIdentity;
-  int _identityGeneration = 0;
 
   GradesProvider(this._prefs, this._zhjwApi, {String? initialUserId})
     : _userIdentity = _normalizeIdentity(initialUserId) {
@@ -83,7 +82,6 @@ class GradesProvider extends ChangeNotifier {
   void setUserIdentity(String? userId) {
     final normalized = _normalizeIdentity(userId);
     if (normalized == _userIdentity) return;
-    _identityGeneration++;
     _userIdentity = normalized;
     _restoreCache();
     notifyListeners();
@@ -116,14 +114,13 @@ class GradesProvider extends ChangeNotifier {
 
   Future<void> refreshSchemeScores() async {
     if (_schemeState == GradesLoadState.loading) return;
-    final generation = _identityGeneration;
     final userIdentity = _userIdentity;
     _schemeState = GradesLoadState.loading;
     _schemeError = null;
     notifyListeners();
     try {
       final data = await _zhjwApi.fetchSchemeScores();
-      if (generation != _identityGeneration) return;
+      if (userIdentity != _userIdentity) return;
       _schemes = SchemeScoreSummary.listFromJson(data);
       _schemeState = GradesLoadState.loaded;
       if (userIdentity != null) {
@@ -131,7 +128,7 @@ class GradesProvider extends ChangeNotifier {
           _userCacheKey(_keySchemeScores, userIdentity),
           jsonEncode(data),
         );
-        if (generation != _identityGeneration) return;
+        if (userIdentity != _userIdentity) return;
       }
     } on UnauthenticatedException catch (e, logStackTrace) {
       AppLog.e(
@@ -140,7 +137,7 @@ class GradesProvider extends ChangeNotifier {
         error: e,
         stackTrace: logStackTrace,
       );
-      if (generation != _identityGeneration) return;
+      if (userIdentity != _userIdentity) return;
       if (_schemes != null) {
         _schemeState = GradesLoadState.loaded;
         _schemeError = zhjwAuthErrorType(e);
@@ -155,7 +152,7 @@ class GradesProvider extends ChangeNotifier {
         error: e,
         stackTrace: logStackTrace,
       );
-      if (generation != _identityGeneration) return;
+      if (userIdentity != _userIdentity) return;
 
       if (_schemes != null) {
         _schemeState = GradesLoadState.loaded;
@@ -183,14 +180,13 @@ class GradesProvider extends ChangeNotifier {
 
   Future<void> refreshPassingScores() async {
     if (_passingState == GradesLoadState.loading) return;
-    final generation = _identityGeneration;
     final userIdentity = _userIdentity;
     _passingState = GradesLoadState.loading;
     _passingError = null;
     notifyListeners();
     try {
       final data = await _zhjwApi.fetchPassingScores();
-      if (generation != _identityGeneration) return;
+      if (userIdentity != _userIdentity) return;
       _passingScores = PassingScoreResult.fromJson(data);
       _passingState = GradesLoadState.loaded;
       if (userIdentity != null) {
@@ -198,7 +194,7 @@ class GradesProvider extends ChangeNotifier {
           _userCacheKey(_keyPassingScores, userIdentity),
           jsonEncode(data),
         );
-        if (generation != _identityGeneration) return;
+        if (userIdentity != _userIdentity) return;
       }
     } on UnauthenticatedException catch (e, logStackTrace) {
       AppLog.e(
@@ -207,7 +203,7 @@ class GradesProvider extends ChangeNotifier {
         error: e,
         stackTrace: logStackTrace,
       );
-      if (generation != _identityGeneration) return;
+      if (userIdentity != _userIdentity) return;
       if (_passingScores != null) {
         _passingState = GradesLoadState.loaded;
         _passingError = zhjwAuthErrorType(e);
@@ -222,7 +218,7 @@ class GradesProvider extends ChangeNotifier {
         error: e,
         stackTrace: logStackTrace,
       );
-      if (generation != _identityGeneration) return;
+      if (userIdentity != _userIdentity) return;
 
       if (_passingScores != null) {
         _passingState = GradesLoadState.loaded;

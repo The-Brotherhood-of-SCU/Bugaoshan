@@ -58,11 +58,6 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
   LoadErrorType? _indexError;
   LoadErrorType? _classesError;
   bool _isLoadingMorePage = false;
-  int _indexGeneration = 0;
-  int _subjectsGeneration = 0;
-  int _classOptionsGeneration = 0;
-  int _classesGeneration = 0;
-  final Map<_ClassScheduleKey, int> _detailGenerations = {};
 
   List<SemesterOption> get semesters => _semesters;
   List<String> get grades => _grades;
@@ -107,8 +102,6 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
     _selectedClass = '';
     _subjects = const [];
     _classOptions = const [];
-    _subjectsGeneration++;
-    _classOptionsGeneration++;
     notifyListeners();
     await Future.wait([loadSubjects(), loadClassOptions()]);
   }
@@ -134,13 +127,12 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
     if (!forceRefresh && _indexState == ClassScheduleInquiryLoadState.loaded) {
       return;
     }
-    final generation = ++_indexGeneration;
     _indexState = ClassScheduleInquiryLoadState.loading;
     _indexError = null;
     notifyListeners();
     try {
       final result = await _api.fetchClassScheduleInquiryIndex();
-      if (generation != _indexGeneration) return;
+      if (_indexState != ClassScheduleInquiryLoadState.loading) return;
       _semesters = result.semesters;
       _grades = result.grades;
       _departments = result.departments;
@@ -149,13 +141,13 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
       await search();
     } on UnauthenticatedException catch (e, logStackTrace) {
       AppLog.e(_tag, 'loadIndex 失败', error: e, stackTrace: logStackTrace);
-      if (generation != _indexGeneration) return;
+      if (_indexState != ClassScheduleInquiryLoadState.loading) return;
       _indexState = ClassScheduleInquiryLoadState.error;
       _indexError = zhjwAuthErrorType(e);
       notifyListeners();
     } catch (error, logStackTrace) {
       AppLog.e(_tag, 'loadIndex 失败', error: error, stackTrace: logStackTrace);
-      if (generation != _indexGeneration) return;
+      if (_indexState != ClassScheduleInquiryLoadState.loading) return;
 
       _indexState = ClassScheduleInquiryLoadState.error;
       _indexError = campusNetworkErrorType(LoadErrorType.loadFailed);
@@ -165,7 +157,6 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
 
   Future<void> loadSubjects() async {
     final department = _selectedDepartment;
-    final generation = ++_subjectsGeneration;
     if (department.isEmpty) {
       _subjects = const [];
       _subjectsState = ClassScheduleInquiryLoadState.idle;
@@ -176,10 +167,7 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
     notifyListeners();
     try {
       final subjects = await _api.fetchSubjectsByDepartment(department);
-      if (generation != _subjectsGeneration ||
-          department != _selectedDepartment) {
-        return;
-      }
+      if (department != _selectedDepartment) return;
       _subjects = subjects;
       _subjectsState = ClassScheduleInquiryLoadState.loaded;
     } catch (error, logStackTrace) {
@@ -189,10 +177,7 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
         error: error,
         stackTrace: logStackTrace,
       );
-      if (generation != _subjectsGeneration ||
-          department != _selectedDepartment) {
-        return;
-      }
+      if (department != _selectedDepartment) return;
 
       _subjects = const [];
       _subjectsState = ClassScheduleInquiryLoadState.error;
@@ -204,7 +189,6 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
     final grade = _selectedGrade;
     final department = _selectedDepartment;
     final subject = _selectedSubject;
-    final generation = ++_classOptionsGeneration;
     if (grade.isEmpty || department.isEmpty) {
       _classOptions = const [];
       _classOptionsState = ClassScheduleInquiryLoadState.idle;
@@ -219,8 +203,7 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
         departmentNum: department,
         subjectNum: subject,
       );
-      if (generation != _classOptionsGeneration ||
-          grade != _selectedGrade ||
+      if (grade != _selectedGrade ||
           department != _selectedDepartment ||
           subject != _selectedSubject) {
         return;
@@ -234,8 +217,7 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
         error: error,
         stackTrace: logStackTrace,
       );
-      if (generation != _classOptionsGeneration ||
-          grade != _selectedGrade ||
+      if (grade != _selectedGrade ||
           department != _selectedDepartment ||
           subject != _selectedSubject) {
         return;
@@ -271,7 +253,6 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
     final department = _selectedDepartment;
     final subject = _selectedSubject;
     final classCode = _selectedClass;
-    final generation = ++_classesGeneration;
     _isLoadingMorePage = !replace;
     _classesState = ClassScheduleInquiryLoadState.loading;
     _classesError = null;
@@ -286,12 +267,13 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
         subjectNum: subject,
         classNum: classCode,
       );
-      if (generation != _classesGeneration ||
-          semester != _selectedSemester ||
-          grade != _selectedGrade ||
-          department != _selectedDepartment ||
-          subject != _selectedSubject ||
-          classCode != _selectedClass) {
+      if (!_isCurrentClassRequest(
+        semester: semester,
+        grade: grade,
+        department: department,
+        subject: subject,
+        classCode: classCode,
+      )) {
         return;
       }
       _pageNum = page;
@@ -301,7 +283,6 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
     } on UnauthenticatedException catch (e, logStackTrace) {
       AppLog.e(_tag, '_loadClasses 失败', error: e, stackTrace: logStackTrace);
       if (!_isCurrentClassRequest(
-        generation: generation,
         semester: semester,
         grade: grade,
         department: department,
@@ -320,7 +301,6 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
         stackTrace: logStackTrace,
       );
       if (!_isCurrentClassRequest(
-        generation: generation,
         semester: semester,
         grade: grade,
         department: department,
@@ -337,14 +317,13 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
   }
 
   bool _isCurrentClassRequest({
-    required int generation,
     required String semester,
     required String grade,
     required String department,
     required String subject,
     required String classCode,
   }) =>
-      generation == _classesGeneration &&
+      _classesState == ClassScheduleInquiryLoadState.loading &&
       semester == _selectedSemester &&
       grade == _selectedGrade &&
       department == _selectedDepartment &&
@@ -366,6 +345,9 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
   Future<void> refreshSchedule(ClassInfo classInfo) =>
       loadSchedule(classInfo, forceRefresh: true);
 
+  bool _isDetailCurrent(_ClassScheduleKey key) =>
+      _details[key]?.state == ClassScheduleInquiryLoadState.loading;
+
   Future<void> loadSchedule(
     ClassInfo classInfo, {
     bool forceRefresh = false,
@@ -377,8 +359,6 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
         previous.state == ClassScheduleInquiryLoadState.loaded) {
       return;
     }
-    final generation = (_detailGenerations[key] ?? 0) + 1;
-    _detailGenerations[key] = generation;
     _details[key] = ClassScheduleDetailState(
       courses: forceRefresh ? const [] : previous.courses,
       state: ClassScheduleInquiryLoadState.loading,
@@ -389,14 +369,14 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
         planCode: classInfo.planCode,
         classCode: classInfo.classCode,
       );
-      if (_detailGenerations[key] != generation) return;
+      if (!_isDetailCurrent(key)) return;
       _details[key] = ClassScheduleDetailState(
         courses: courses,
         state: ClassScheduleInquiryLoadState.loaded,
       );
     } on UnauthenticatedException catch (e, logStackTrace) {
       AppLog.e(_tag, 'loadSchedule 失败', error: e, stackTrace: logStackTrace);
-      if (_detailGenerations[key] != generation) return;
+      if (!_isDetailCurrent(key)) return;
       _details[key] = ClassScheduleDetailState(
         courses: previous.courses,
         state: ClassScheduleInquiryLoadState.error,
@@ -409,7 +389,7 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
         error: error,
         stackTrace: logStackTrace,
       );
-      if (_detailGenerations[key] != generation) return;
+      if (!_isDetailCurrent(key)) return;
 
       _details[key] = ClassScheduleDetailState(
         courses: previous.courses,
@@ -430,16 +410,10 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
     for (final key in keys) {
       if (_details.length <= _maxDetailEntries) break;
       _details.remove(key);
-      // 同步丢弃对应代际号，使该 key 的飞行请求结果不再回写。
-      _detailGenerations.remove(key);
     }
   }
 
   void clear() {
-    _indexGeneration++;
-    _subjectsGeneration++;
-    _classOptionsGeneration++;
-    _classesGeneration++;
     _semesters = const [];
     _grades = const [];
     _departments = const [];
@@ -447,9 +421,6 @@ class ClassScheduleInquiryProvider extends ChangeNotifier {
     _classOptions = const [];
     _classes = const [];
     _details.clear();
-    for (final entry in _detailGenerations.entries.toList()) {
-      _detailGenerations[entry.key] = entry.value + 1;
-    }
     _selectedSemester = '';
     _selectedGrade = '';
     _selectedDepartment = '';
