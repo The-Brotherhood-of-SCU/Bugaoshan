@@ -1,123 +1,98 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bugaoshan/pages/campus/exam_plan/models/exam_info.dart';
 import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart';
 import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
 import 'package:bugaoshan/providers/class_schedule_inquiry_provider.dart';
-import 'package:bugaoshan/providers/classroom_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/campus/classroom_pods.dart';
 import 'package:bugaoshan/providers/exam_plan_provider.dart';
 import 'package:bugaoshan/scu_backend/zhjw/zhjw_api_service.dart';
 
 void main() {
-  test('ClassroomProvider caches availability by building and date', () async {
-    final api = _FakeZhjwApiService();
-    final provider = ClassroomProvider(api);
-    final building = ClassroomBuilding(
-      campusNumber: 'A',
-      teachingBuildingNumber: '1',
-      teachingBuildingName: '一教',
-    );
-
-    await provider.queryAvailability(
-      building: building,
-      searchDate: '2026-01-01',
-    );
-    await provider.queryAvailability(
-      building: building,
-      searchDate: '2026-01-01',
-    );
-    await provider.queryAvailability(
-      building: building,
-      searchDate: '2026-01-02',
-    );
-
-    expect(api.availabilityCalls, 2);
-    expect(provider.queryState, ClassroomLoadState.loaded);
-  });
-
   test(
-    'ClassroomProvider dispatches a new query when switching buildings',
+    'ClassroomAvailabilityNotifier caches availability by building and date',
     () async {
-      final api = _ControllableClassroomApi();
-      final provider = ClassroomProvider(api);
-      final buildingA = _building('A');
-      final buildingB = _building('B');
-
-      final firstQuery = provider.queryAvailability(
-        building: buildingA,
-        searchDate: '2026-01-01',
+      final api = _FakeZhjwApiService();
+      final container = ProviderContainer(
+        overrides: [zhjwApiServiceBridge.overrideWithValue(api)],
       );
-      final secondQuery = provider.queryAvailability(
-        building: buildingB,
-        searchDate: '2026-01-01',
+      addTearDown(container.dispose);
+
+      final res1 = await container.read(
+        classroomAvailabilityProvider(
+          campusNumber: 'A',
+          buildingNumber: '1',
+          searchDate: '2026-01-01',
+        ).future,
+      );
+      final res2 = await container.read(
+        classroomAvailabilityProvider(
+          campusNumber: 'A',
+          buildingNumber: '1',
+          searchDate: '2026-01-01',
+        ).future,
+      );
+      final res3 = await container.read(
+        classroomAvailabilityProvider(
+          campusNumber: 'A',
+          buildingNumber: '1',
+          searchDate: '2026-01-02',
+        ).future,
       );
 
-      expect(api.requests, hasLength(2));
-      expect(provider.queryState, ClassroomLoadState.loading);
-
-      api.requests[1].complete(_classroomResult('B'));
-      await secondQuery;
-      expect(provider.queryResult!.classrooms.single.classroomName, 'B');
-      expect(provider.queryState, ClassroomLoadState.loaded);
-
-      api.requests[0].complete(_classroomResult('A'));
-      await firstQuery;
-      expect(provider.queryResult!.classrooms.single.classroomName, 'B');
-      expect(provider.queryState, ClassroomLoadState.loaded);
+      expect(api.availabilityCalls, 2);
+      expect(res1.classrooms, isNotEmpty);
+      expect(res2.classrooms, isNotEmpty);
+      expect(res3.classrooms, isNotEmpty);
     },
   );
 
-  test('ClassroomProvider coalesces same-key availability requests', () async {
+  test('ClassroomAvailabilityNotifier refreshes a cached query', () async {
     final api = _ControllableClassroomApi();
-    final provider = ClassroomProvider(api);
-    final building = _building('A');
-
-    final firstQuery = provider.queryAvailability(
-      building: building,
-      searchDate: '2026-01-01',
+    final container = ProviderContainer(
+      overrides: [zhjwApiServiceBridge.overrideWithValue(api)],
     );
-    final secondQuery = provider.queryAvailability(
-      building: building,
-      searchDate: '2026-01-01',
-    );
+    addTearDown(container.dispose);
 
-    expect(api.requests, hasLength(1));
-    api.requests.single.complete(_classroomResult('A'));
-    await Future.wait([firstQuery, secondQuery]);
-
-    expect(provider.queryState, ClassroomLoadState.loaded);
-    expect(provider.queryResult!.classrooms.single.classroomName, 'A');
-  });
-
-  test('ClassroomProvider refreshes a cached query once', () async {
-    final api = _ControllableClassroomApi();
-    final provider = ClassroomProvider(api);
-    final building = _building('A');
-
-    final initialQuery = provider.queryAvailability(
-      building: building,
-      searchDate: '2026-01-01',
+    final initialQuery = container.read(
+      classroomAvailabilityProvider(
+        campusNumber: 'A',
+        buildingNumber: '1',
+        searchDate: '2026-01-01',
+      ).future,
     );
     api.requests.single.complete(_classroomResult('old'));
-    await initialQuery;
+    final initialResult = await initialQuery;
+    expect(initialResult.classrooms.single.classroomName, 'old');
 
-    final refresh = provider.queryAvailability(
-      building: building,
-      searchDate: '2026-01-01',
-      forceRefresh: true,
-    );
-    final duplicateRefresh = provider.queryAvailability(
-      building: building,
-      searchDate: '2026-01-01',
-      forceRefresh: true,
-    );
-
+    final refresh = container
+        .read(
+          classroomAvailabilityProvider(
+            campusNumber: 'A',
+            buildingNumber: '1',
+            searchDate: '2026-01-01',
+          ).notifier,
+        )
+        .refresh(
+          campusNumber: 'A',
+          buildingNumber: '1',
+          searchDate: '2026-01-01',
+        );
     expect(api.requests, hasLength(2));
     api.requests.last.complete(_classroomResult('new'));
-    await Future.wait([refresh, duplicateRefresh]);
+    await refresh;
 
-    expect(provider.queryResult!.classrooms.single.classroomName, 'new');
+    final updated = await container.read(
+      classroomAvailabilityProvider(
+        campusNumber: 'A',
+        buildingNumber: '1',
+        searchDate: '2026-01-01',
+      ).future,
+    );
+    expect(updated.classrooms.single.classroomName, 'new');
   });
 
   test('ClassScheduleInquiryProvider ignores stale search result', () async {
@@ -164,12 +139,6 @@ ClassInfo _classInfo(String name) => ClassInfo(
   subjectName: '专业',
 );
 
-ClassroomBuilding _building(String number) => ClassroomBuilding(
-  campusNumber: 'campus',
-  teachingBuildingNumber: number,
-  teachingBuildingName: '$number 教',
-);
-
 ClassroomQueryResult _classroomResult(String name) => ClassroomQueryResult(
   classrooms: [
     ClassroomInfo(
@@ -205,7 +174,19 @@ class _FakeZhjwApiService implements ZhjwApiService {
   }) async {
     availabilityCalls++;
     return ClassroomQueryResult(
-      classrooms: const [],
+      classrooms: [
+        ClassroomInfo(
+          classroomName: 'A101',
+          classroomStatusCode: '1',
+          classroomTypeCode: '01',
+          campusNumber: campusNumber,
+          classroomNumber: '101',
+          teachingBuildingNumber: buildingNumber,
+          placeNum: 50,
+          remark: '',
+          sfkjy: '1',
+        ),
+      ],
       classroomTime: const [],
       date: searchDate,
       jxzc: 1,

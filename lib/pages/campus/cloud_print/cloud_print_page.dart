@@ -173,7 +173,6 @@ class _CloudPrintPageState extends ConsumerState<CloudPrintPage>
     AppLocalizations l10n, {
     CloudPrintQueueItem? item,
   }) async {
-    final generation = _provider.sessionGeneration;
     final options = await showModalBottomSheet<CloudPrintOptions>(
       context: context,
       isScrollControlled: true,
@@ -186,9 +185,7 @@ class _CloudPrintPageState extends ConsumerState<CloudPrintPage>
             : l10n.cloudPrintFileSettings,
       ),
     );
-    if (options == null ||
-        !mounted ||
-        generation != _provider.sessionGeneration) {
+    if (options == null || !mounted) {
       return;
     }
     if (item == null) {
@@ -199,21 +196,18 @@ class _CloudPrintPageState extends ConsumerState<CloudPrintPage>
   }
 
   Future<void> _pickFiles(AppLocalizations l10n) async {
-    final generation = _provider.sessionGeneration;
     try {
       final selection = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: cloudPrintExtensions,
       );
-      if (selection.isEmpty ||
-          !mounted ||
-          generation != _provider.sessionGeneration) {
+      if (selection.isEmpty || !mounted) {
         return;
       }
       final report = await _provider.addPaths(
         selection.map((file) => file.path).whereType<String>(),
       );
-      if (!mounted || generation != _provider.sessionGeneration) return;
+      if (!mounted) return;
       _snack(
         l10n.cloudPrintSelection(
           report.added,
@@ -285,20 +279,19 @@ class _CloudPrintPageState extends ConsumerState<CloudPrintPage>
   );
 
   Future<void> _deleteJob(CloudPrintJob job, AppLocalizations l10n) async {
-    final generation = _provider.sessionGeneration;
     final confirmed = await _confirmDelete(
       l10n.cloudPrintDelete,
       l10n.cloudPrintDeleteConfirm(job.name),
       l10n,
     );
-    if (!confirmed) return;
+    if (!confirmed || !mounted) return;
+    if (!_provider.jobs.any((j) => j.id == job.id)) return;
     final result = await _provider.deleteJobs([job]);
-    if (!mounted || generation != _provider.sessionGeneration) return;
+    if (!mounted) return;
     _snackDeleteResult(result.deleted, result.failed, l10n);
   }
 
   Future<void> _deleteSelectedJobs(AppLocalizations l10n) async {
-    final generation = _provider.sessionGeneration;
     final targets = _provider.jobs
         .where((job) => _selectedJobs.contains(job.id))
         .toList();
@@ -308,9 +301,13 @@ class _CloudPrintPageState extends ConsumerState<CloudPrintPage>
       l10n.cloudPrintDeleteSelectedConfirm(targets.length),
       l10n,
     );
-    if (!confirmed) return;
-    final result = await _provider.deleteJobs(targets);
-    if (!mounted || generation != _provider.sessionGeneration) return;
+    if (!confirmed || !mounted) return;
+    final stillPresent = targets
+        .where((t) => _provider.jobs.any((job) => job.id == t.id))
+        .toList();
+    if (stillPresent.isEmpty) return;
+    final result = await _provider.deleteJobs(stillPresent);
+    if (!mounted) return;
     _selectedJobs.removeWhere(
       (id) => !_provider.jobs.any((job) => job.id == id),
     );
@@ -322,7 +319,6 @@ class _CloudPrintPageState extends ConsumerState<CloudPrintPage>
     String message,
     AppLocalizations l10n,
   ) async {
-    final generation = _provider.sessionGeneration;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -340,9 +336,7 @@ class _CloudPrintPageState extends ConsumerState<CloudPrintPage>
         ],
       ),
     );
-    return confirmed == true &&
-        mounted &&
-        generation == _provider.sessionGeneration;
+    return confirmed == true && mounted;
   }
 
   void _snackDeleteResult(int deleted, int failed, AppLocalizations l10n) {

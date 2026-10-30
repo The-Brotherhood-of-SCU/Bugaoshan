@@ -44,7 +44,6 @@ class CloudPrintProvider extends ChangeNotifier {
   final int uploadConcurrency;
   final ScuAuth? _scu;
   String? _principal;
-  int _generation = 0;
   bool _disposed = false, _stopRequested = false;
   final List<CloudPrintQueueItem> _queue = [];
   final Map<int, String> _scanFiles = {};
@@ -60,7 +59,6 @@ class CloudPrintProvider extends ChangeNotifier {
   List<CloudPrintJob> jobs = [];
   List<CloudScanJob> scans = [];
   Future<void>? _jobsFuture, _scansFuture;
-  int _jobsRevision = 0, _scansRevision = 0;
   List<CloudPrintQueueItem> get queue => List.unmodifiable(_queue);
   Map<int, String> get scanFiles => Map.unmodifiable(_scanFiles);
   Map<int, double> get scanProgress => Map.unmodifiable(_scanProgress);
@@ -72,13 +70,12 @@ class CloudPrintProvider extends ChangeNotifier {
       .where((item) => item.status == CloudPrintQueueStatus.failed)
       .length;
   bool get stopRequested => _stopRequested;
-  int get sessionGeneration => _generation;
 
   void _notify() {
     if (!_disposed) notifyListeners();
   }
 
-  bool _current(int generation) => !_disposed && generation == _generation;
+  bool get _current => !_disposed;
   void _onAuthChanged() {
     if (_scu!.state == AuthState.unknown ||
         (_principal != null && _principal != _scu.principal)) {
@@ -92,16 +89,15 @@ class CloudPrintProvider extends ChangeNotifier {
   ) async {
     // 上传进行中也允许继续加文件：新项进入队列后由空闲 worker 接着取走。
     if (selecting) return (added: 0, duplicates: 0, invalid: 0);
-    final generation = _generation;
     selecting = true;
     _notify();
     var added = 0, duplicates = 0, invalid = 0;
     try {
       for (final path in paths) {
-        if (!_current(generation)) break;
+        if (!_current) break;
         try {
           final file = await CloudPrintFile.fromPath(path);
-          if (!_current(generation)) break;
+          if (!_current) break;
           // 只按实际路径去重；不同目录的同名文档仍可分别上传。
           if (_queue.any((item) => p.equals(item.file.path, file.path))) {
             duplicates++;
@@ -120,7 +116,7 @@ class CloudPrintProvider extends ChangeNotifier {
         }
       }
     } finally {
-      if (_current(generation)) {
+      if (_current) {
         selecting = false;
         _notify();
       }
@@ -243,7 +239,6 @@ class CloudPrintProvider extends ChangeNotifier {
 
   Future<void> uploadPending() async {
     if (uploading || selecting || pendingCount == 0) return;
-    final generation = _generation;
     uploading = true;
     _stopRequested = false;
     _notify();
@@ -271,7 +266,7 @@ class CloudPrintProvider extends ChangeNotifier {
         stackTrace: stack,
       );
       // 没有远端名称基线时先不提交，恢复列表读取后再分配提交名。
-      if (_current(generation)) {
+      if (_current) {
         for (final item in _queue) {
           if (item.status != CloudPrintQueueStatus.pending) continue;
           item.status = CloudPrintQueueStatus.failed;
@@ -284,12 +279,12 @@ class CloudPrintProvider extends ChangeNotifier {
       }
       return;
     }
-    if (!_current(generation)) return;
+    if (!_current) return;
     try {
       // 队列在批次进行中仍可能增长，worker 每次循环重新领取一项。
       Future<void> worker() async {
         while (true) {
-          if (!_current(generation) || _stopRequested) return;
+          if (!_current || _stopRequested) return;
           final item = _claimPending(reservedNames);
           if (item == null) return;
           _notify();
@@ -303,19 +298,19 @@ class CloudPrintProvider extends ChangeNotifier {
               item.options,
               knownJobIds: baseline,
               onProgress: (progress) {
-                if (_current(generation)) {
+                if (_current) {
                   item.progress = progress;
                   _notify();
                 }
               },
             );
-            if (!_current(generation)) return;
+            if (!_current) return;
             item.status = CloudPrintQueueStatus.uploaded;
             item.progress = 1;
             item.verificationPending = !result.verified;
             item.duplicate = result.duplicate;
           } catch (error, stack) {
-            if (!_current(generation)) return;
+            if (!_current) return;
             AppLog.e(_tag, '批量队列中的文件上传失败', error: error, stackTrace: stack);
             if (error is CloudPrintUploadUncertainException) {
               item.status = CloudPrintQueueStatus.uncertain;
@@ -341,7 +336,7 @@ class CloudPrintProvider extends ChangeNotifier {
       ];
       await Future.wait(workers);
     } finally {
-      if (_current(generation)) {
+      if (_current) {
         uploading = false;
         _notify();
         await refreshJobs();
@@ -351,21 +346,19 @@ class CloudPrintProvider extends ChangeNotifier {
 
   Future<void> refreshJobs({bool force = false}) {
     if (!force && _jobsFuture != null) return _jobsFuture!;
-    final generation = _generation;
-    final revision = ++_jobsRevision;
-    bool current() => _current(generation) && revision == _jobsRevision;
     loadingJobs = true;
     jobsFailed = false;
     _notify();
+    late final Future<void> currentFuture;
     Future<void> load() async {
       try {
         final result = await _api.fetchJobs();
-        if (current()) jobs = result;
+        if (_current && _jobsFuture == currentFuture) jobs = result;
       } catch (error, stack) {
-        if (current()) jobsFailed = true;
+        if (_current && _jobsFuture == currentFuture) jobsFailed = true;
         AppLog.e(_tag, '打印任务列表加载失败', error: error, stackTrace: stack);
       } finally {
-        if (current()) {
+        if (_current && _jobsFuture == currentFuture) {
           loadingJobs = false;
           _jobsFuture = null;
           _notify();
@@ -373,13 +366,13 @@ class CloudPrintProvider extends ChangeNotifier {
       }
     }
 
-    return _jobsFuture = load();
+    currentFuture = load();
+    return _jobsFuture = currentFuture;
   }
 
   Future<Uint8List> previewPage(CloudPrintJob job, int pageNo) async {
-    final generation = _generation;
     final bytes = await _api.previewPage(job, pageNo);
-    if (!_current(generation)) throw const UnauthenticatedException();
+    if (!_current) throw const UnauthenticatedException();
     return bytes;
   }
 
@@ -387,15 +380,13 @@ class CloudPrintProvider extends ChangeNotifier {
   Future<({int deleted, int failed})> deleteJobs(
     Iterable<CloudPrintJob> targets,
   ) async {
-    final generation = _generation;
     var deleted = 0, failed = 0;
     for (final job in targets) {
-      if (!_current(generation)) break;
+      if (!_current) break;
       try {
         await _api.deleteJob(job);
-        if (!_current(generation)) break;
+        if (!_current) break;
         // 删除前发出的列表响应已过期，不能再写回或被当作删除后的回查。
-        _jobsRevision++;
         _jobsFuture = null;
         loadingJobs = false;
         jobs = jobs.where((item) => item.id != job.id).toList();
@@ -406,7 +397,7 @@ class CloudPrintProvider extends ChangeNotifier {
         AppLog.e(_tag, '删除打印任务失败', error: error, stackTrace: stack);
       }
     }
-    if (_current(generation) && deleted > 0) await refreshJobs(force: true);
+    if (_current && deleted > 0) await refreshJobs(force: true);
     return (deleted: deleted, failed: failed);
   }
 
@@ -417,14 +408,12 @@ class CloudPrintProvider extends ChangeNotifier {
   Future<({int deleted, int failed})> deleteScans(
     Iterable<CloudScanJob> targets,
   ) async {
-    final generation = _generation;
     var deleted = 0, failed = 0;
     for (final scan in targets) {
-      if (!_current(generation)) break;
+      if (!_current) break;
       try {
         await _api.deleteScan(scan);
-        if (!_current(generation)) break;
-        _scansRevision++;
+        if (!_current) break;
         _scansFuture = null;
         loadingScans = false;
         scans = scans.where((item) => item.id != scan.id).toList();
@@ -438,27 +427,25 @@ class CloudPrintProvider extends ChangeNotifier {
         AppLog.e(_tag, '删除扫描记录失败', error: error, stackTrace: stack);
       }
     }
-    if (_current(generation) && deleted > 0) await refreshScans(force: true);
+    if (_current && deleted > 0) await refreshScans(force: true);
     return (deleted: deleted, failed: failed);
   }
 
   Future<void> refreshScans({bool force = false}) {
     if (!force && _scansFuture != null) return _scansFuture!;
-    final generation = _generation;
-    final revision = ++_scansRevision;
-    bool current() => _current(generation) && revision == _scansRevision;
     loadingScans = true;
     scansFailed = false;
     _notify();
+    late final Future<void> currentFuture;
     Future<void> load() async {
       try {
         final result = await _api.fetchScans();
-        if (current()) scans = result;
+        if (_current && _scansFuture == currentFuture) scans = result;
       } catch (error, stack) {
-        if (current()) scansFailed = true;
+        if (_current && _scansFuture == currentFuture) scansFailed = true;
         AppLog.e(_tag, '扫描文档列表加载失败', error: error, stackTrace: stack);
       } finally {
-        if (current()) {
+        if (_current && _scansFuture == currentFuture) {
           loadingScans = false;
           _scansFuture = null;
           _notify();
@@ -466,7 +453,8 @@ class CloudPrintProvider extends ChangeNotifier {
       }
     }
 
-    return _scansFuture = load();
+    currentFuture = load();
+    return _scansFuture = currentFuture;
   }
 
   /// 批量下载逐项隔离失败；只使用受控目录和去除路径字符后的文件名。
@@ -475,7 +463,6 @@ class CloudPrintProvider extends ChangeNotifier {
     Directory directory,
   ) async {
     if (downloading) return;
-    final generation = _generation;
     final scope = sha256
         .convert(utf8.encode(_principal ?? 'local'))
         .toString()
@@ -484,11 +471,11 @@ class CloudPrintProvider extends ChangeNotifier {
     _notify();
     try {
       for (final scan in selected) {
-        if (!_current(generation)) break;
+        if (!_current) break;
         if (scan.expired) continue;
         final cached = _scanFiles[scan.id];
         if (cached != null && await File(cached).exists()) continue;
-        if (!_current(generation)) break;
+        if (!_current) break;
         _scanFiles.remove(scan.id);
         _scanFailures.remove(scan.id);
         _scanProgress[scan.id] = 0;
@@ -514,24 +501,24 @@ class CloudPrintProvider extends ChangeNotifier {
             scan,
             destination,
             onProgress: (progress) {
-              if (_current(generation)) {
+              if (_current) {
                 _scanProgress[scan.id] = progress;
                 _notify();
               }
             },
           );
-          if (_current(generation)) _scanFiles[scan.id] = destination;
+          if (_current) _scanFiles[scan.id] = destination;
         } catch (error, stack) {
-          if (_current(generation)) _scanFailures.add(scan.id);
+          if (_current) _scanFailures.add(scan.id);
           AppLog.e(_tag, '扫描文档下载失败', error: error, stackTrace: stack);
         }
-        if (_current(generation)) {
+        if (_current) {
           _scanProgress.remove(scan.id);
           _notify();
         }
       }
     } finally {
-      if (_current(generation)) {
+      if (_current) {
         downloading = false;
         _notify();
       }
@@ -539,7 +526,6 @@ class CloudPrintProvider extends ChangeNotifier {
   }
 
   void clear() {
-    _generation++;
     _queue.clear();
     jobs = [];
     scans = [];
@@ -562,7 +548,6 @@ class CloudPrintProvider extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
-    _generation++;
     _scu?.removeListener(_onAuthChanged);
     super.dispose();
   }

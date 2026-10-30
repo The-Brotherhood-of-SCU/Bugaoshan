@@ -12,12 +12,9 @@ import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/providers/update_provider.dart';
-import 'package:bugaoshan/providers/user_info_provider.dart';
-import 'package:bugaoshan/scu_backend/wfw/wfw_api_service.dart';
 import 'package:bugaoshan/scu_backend/core/auth_coordinator.dart';
 import 'package:bugaoshan/scu_backend/core/scu_auth.dart';
 import 'package:bugaoshan/scu_backend/ccyl/ccyl_auth.dart';
-import 'package:bugaoshan/scu_backend/wfw/wfw_auth.dart';
 import 'package:bugaoshan/services/database_service.dart';
 import 'package:bugaoshan/services/download_notification_service.dart';
 import 'package:bugaoshan/services/github_resource_service.dart';
@@ -54,10 +51,6 @@ void main() {
     authProvider = ScuAuthProvider(scuAuth, ccylAuth, authCoordinator);
     getIt.registerSingleton<ScuAuthProvider>(authProvider);
     getIt.registerSingleton<AuthCoordinator>(authCoordinator);
-
-    final wfwAuth = WfwAuth(scuAuth);
-    final wfwApi = WfwApiService(wfwAuth);
-    getIt.registerSingleton<UserInfoProvider>(UserInfoProvider(wfwAuth, wfwApi));
 
     final db = DatabaseService();
     getIt.registerSingleton<DatabaseService>(db);

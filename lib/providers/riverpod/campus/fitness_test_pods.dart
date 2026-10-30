@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:bugaoshan/pages/campus/fitness_test/models/fitness_models.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
-import 'package:bugaoshan/providers/fitness_test_provider.dart';
+import 'package:bugaoshan/utils/storage_keys.dart';
 
 part 'fitness_test_pods.g.dart';
 

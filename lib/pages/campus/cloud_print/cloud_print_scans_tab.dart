@@ -171,7 +171,6 @@ extension _CloudPrintScansTab on _CloudPrintPageState {
                 (scan) => _selectedScans.contains(scan.id) && !scan.expired,
               )
               .toList();
-    final generation = _provider.sessionGeneration;
     try {
       final directory = Directory(
         p.join(
@@ -180,9 +179,9 @@ extension _CloudPrintScansTab on _CloudPrintPageState {
           'scans',
         ),
       );
-      if (!mounted || generation != _provider.sessionGeneration) return;
+      if (!mounted) return;
       await _provider.downloadScans(selected, directory);
-      if (!mounted || generation != _provider.sessionGeneration) return;
+      if (!mounted) return;
       final paths = selected
           .map((scan) => _provider.scanFiles[scan.id])
           .whereType<String>()
@@ -233,7 +232,6 @@ extension _CloudPrintScansTab on _CloudPrintPageState {
     bool cleanExpired = false,
   }) async {
     if (targets.isEmpty) return;
-    final generation = _provider.sessionGeneration;
     final confirmed = await _confirmDelete(
       l10n.cloudPrintDelete,
       cleanExpired
@@ -243,9 +241,13 @@ extension _CloudPrintScansTab on _CloudPrintPageState {
           : l10n.cloudPrintScanDeleteSelectedConfirm(targets.length),
       l10n,
     );
-    if (!confirmed) return;
-    final result = await _provider.deleteScans(targets);
-    if (!mounted || generation != _provider.sessionGeneration) return;
+    if (!confirmed || !mounted) return;
+    final stillPresent = targets
+        .where((t) => _provider.scans.any((scan) => scan.id == t.id))
+        .toList();
+    if (stillPresent.isEmpty) return;
+    final result = await _provider.deleteScans(stillPresent);
+    if (!mounted) return;
     _update(() {
       _selectedScans.removeWhere(
         (id) => !_provider.scans.any((scan) => scan.id == id),

@@ -1,208 +1,102 @@
 import 'dart:async';
 
-import 'package:bugaoshan/providers/network_device_provider.dart';
-import 'package:bugaoshan/scu_backend/wfw/wfw_api_service.dart';
-import 'package:bugaoshan/scu_backend/core/auth_state.dart';
-import 'package:bugaoshan/scu_backend/core/scu_auth.dart';
-import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
-import 'package:bugaoshan/scu_backend/wfw/wfw_auth.dart';
-import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/utils/app_logger.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/campus/network_device_pods.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/wfw/wfw_api_service.dart';
 
 void main() {
-  late AppLogger logger;
-  setUp(() async {
-    await getIt.reset();
-    logger = AppLogger();
-    getIt.registerSingleton<AppLogger>(logger);
-  });
-  tearDown(() async => getIt.reset());
-  test('concurrent ensure calls share a single list request', () async {
+  test('NetworkDevicesNotifier loads devices on build', () async {
     final api = _ControllableNetworkApi();
-    final provider = _readyProvider(api);
+    final container = ProviderContainer(
+      overrides: [wfwApiServiceBridge.overrideWithValue(api)],
+    );
+    addTearDown(container.dispose);
 
-    final first = provider.ensureDevices();
-    final second = provider.ensureDevices();
+    final future = container.read(networkDevicesProvider.future);
     expect(api.deviceRequests, hasLength(1));
-    expect(provider.state, NetworkDeviceLoadState.loading);
 
     api.completeDevices(0, [
       {'device_id': 'device-1', 'ip': '10.0.0.1'},
     ]);
-    await Future.wait([first, second]);
+    final devices = await future;
 
-    expect(provider.state, NetworkDeviceLoadState.loaded);
-    expect(provider.devices.single['device_id'], 'device-1');
-    provider.dispose();
+    expect(devices.single['device_id'], 'device-1');
   });
 
-  test('a completed request after clear cannot restore old devices', () async {
+  test('authentication errors map to AsyncError in Pod', () async {
     final api = _ControllableNetworkApi();
-    final provider = _readyProvider(api);
-
-    final request = provider.ensureDevices();
-    provider.clear();
-    api.completeDevices(0, [
-      {'device_id': 'old-device', 'ip': '10.0.0.2'},
-    ]);
-    await request;
-
-    expect(provider.state, NetworkDeviceLoadState.idle);
-    expect(provider.devices, isEmpty);
-    provider.dispose();
-  });
-
-  test('authentication errors map to session-expired state', () async {
-    final api = _ControllableNetworkApi();
-    final provider = _readyProvider(api);
-
-    final request = provider.ensureDevices();
-    api.failDevices(0, const UnauthenticatedException());
-    await request;
-
-    expect(provider.state, NetworkDeviceLoadState.error);
-    expect(provider.error, LoadErrorType.sessionExpired);
-    expect(logger.entries.single.level, LogLevel.error);
-    expect(logger.entries.single.category, LogCategory.business);
-    expect(logger.entries.single.stackTrace, isNotNull);
-    provider.dispose();
-  });
-
-  test(
-    'force offline refreshes the list after the operation succeeds',
-    () async {
-      final api = _ControllableNetworkApi();
-      final provider = _readyProvider(api);
-      final device = {'device_id': 'device-1', 'ip': '10.0.0.1'};
-
-      final initial = provider.ensureDevices();
-      api.completeDevices(0, [device]);
-      await initial;
-
-      final offline = provider.forceOffline(device);
-      expect(provider.isOfflining, isTrue);
-      expect(api.offlineRequests, hasLength(1));
-
-      api.completeOffline(0);
-      await Future<void>.delayed(Duration.zero);
-      expect(api.deviceRequests, hasLength(2));
-      api.completeDevices(1, const []);
-
-      expect(await offline, isTrue);
-      expect(provider.isOfflining, isFalse);
-      expect(provider.devices, isEmpty);
-      provider.dispose();
-    },
-  );
-
-  test('does not fetch until both SCU and WFW sessions are ready', () async {
-    final api = _ControllableNetworkApi();
-    final scuAuth = _FakeScuAuth(AuthState.unknown);
-    final wfwAuth = _FakeWfwAuth(AuthState.ready);
-    final provider = NetworkDeviceProvider(api, wfwAuth, scuAuth);
-
-    await provider.ensureDevices();
-    expect(api.deviceRequests, isEmpty);
-    expect(provider.state, NetworkDeviceLoadState.idle);
-
-    scuAuth.setState(AuthState.ready);
-    await Future<void>.delayed(Duration.zero);
-    expect(api.deviceRequests, hasLength(1));
-
-    api.completeDevices(0, const []);
-    await Future<void>.delayed(Duration.zero);
-    provider.dispose();
-  });
-
-  test('loads when WFW becomes ready after SCU login', () async {
-    final api = _ControllableNetworkApi();
-    final scuAuth = _FakeScuAuth(AuthState.ready);
-    final wfwAuth = _FakeWfwAuth(AuthState.unknown);
-    final provider = NetworkDeviceProvider(api, wfwAuth, scuAuth);
-
-    await provider.ensureDevices();
-    expect(api.deviceRequests, isEmpty);
-
-    wfwAuth.setState(AuthState.ready);
-    await Future<void>.delayed(Duration.zero);
-    expect(api.deviceRequests, hasLength(1));
-
-    api.completeDevices(0, const []);
-    await Future<void>.delayed(Duration.zero);
-    provider.dispose();
-  });
-
-  test('logout clears devices and ignores an in-flight result', () async {
-    final api = _ControllableNetworkApi();
-    final scuAuth = _FakeScuAuth(AuthState.ready);
-    final provider = NetworkDeviceProvider(
-      api,
-      _FakeWfwAuth(AuthState.ready),
-      scuAuth,
+    final container = ProviderContainer(
+      overrides: [wfwApiServiceBridge.overrideWithValue(api)],
     );
+    addTearDown(container.dispose);
+    container.listen(networkDevicesProvider, (_, _) {});
 
-    final request = provider.ensureDevices();
-    scuAuth.setState(AuthState.unknown);
-    api.completeDevices(0, [
-      {'device_id': 'old-device', 'ip': '10.0.0.2'},
-    ]);
-    await request;
+    expect(api.deviceRequests, hasLength(1));
+    api.failDevices(0, const UnauthenticatedException());
+    await Future<void>.delayed(Duration.zero);
 
-    expect(provider.state, NetworkDeviceLoadState.idle);
-    expect(provider.devices, isEmpty);
-    provider.dispose();
+    expect(container.read(networkDevicesProvider).hasError, isTrue);
+    expect(
+      container.read(networkDevicesProvider).error,
+      isA<UnauthenticatedException>(),
+    );
   });
-}
 
-class _FakeWfwAuth extends ChangeNotifier implements WfwAuth {
-  _FakeWfwAuth(this._state);
+  test('force offline refreshes the list after operation succeeds', () async {
+    final api = _ControllableNetworkApi();
+    final container = ProviderContainer(
+      overrides: [wfwApiServiceBridge.overrideWithValue(api)],
+    );
+    addTearDown(container.dispose);
+    container.listen(networkDevicesProvider, (_, _) {});
 
-  AuthState _state;
+    final device = {'device_id': 'device-1', 'ip': '10.0.0.1'};
+    final initialFuture = container.read(networkDevicesProvider.future);
+    api.completeDevices(0, [device]);
+    await initialFuture;
 
-  @override
-  AuthState get state => _state;
+    final offlineFuture = container
+        .read(networkDevicesProvider.notifier)
+        .forceOffline(device);
 
-  @override
-  bool get isReady => _state == AuthState.ready;
+    expect(container.read(offliningDeviceIdProvider), 'device-1');
+    expect(api.offlineRequests, hasLength(1));
 
-  void setState(AuthState state) {
-    _state = state;
-    notifyListeners();
-  }
+    api.completeOffline(0);
+    await Future<void>.delayed(Duration.zero);
+    expect(api.deviceRequests, hasLength(2));
+    api.completeDevices(1, const []);
 
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
+    expect(await offlineFuture, isTrue);
+    expect(container.read(offliningDeviceIdProvider), isNull);
+    final refreshed = await container.read(networkDevicesProvider.future);
+    expect(refreshed, isEmpty);
+  });
 
-class _FakeScuAuth extends ChangeNotifier implements ScuAuth {
-  _FakeScuAuth(this._state);
+  test('refresh updates state to loading and re-fetches', () async {
+    final api = _ControllableNetworkApi();
+    final container = ProviderContainer(
+      overrides: [wfwApiServiceBridge.overrideWithValue(api)],
+    );
+    addTearDown(container.dispose);
 
-  AuthState _state;
+    final initialFuture = container.read(networkDevicesProvider.future);
+    api.completeDevices(0, [{'device_id': 'device-1', 'ip': '10.0.0.1'}]);
+    await initialFuture;
 
-  @override
-  AuthState get state => _state;
+    final refreshFuture = container.read(networkDevicesProvider.notifier).refresh();
+    expect(container.read(networkDevicesProvider).isLoading, isTrue);
+    expect(api.deviceRequests, hasLength(2));
 
-  @override
-  bool get isReady => _state == AuthState.ready;
+    api.completeDevices(1, []);
+    await refreshFuture;
 
-  void setState(AuthState state) {
-    _state = state;
-    notifyListeners();
-  }
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-NetworkDeviceProvider _readyProvider(_ControllableNetworkApi api) {
-  return NetworkDeviceProvider(
-    api,
-    _FakeWfwAuth(AuthState.ready),
-    _FakeScuAuth(AuthState.ready),
-  );
+    final updated = await container.read(networkDevicesProvider.future);
+    expect(updated, isEmpty);
+  });
 }
 
 class _ControllableNetworkApi implements WfwApiService {

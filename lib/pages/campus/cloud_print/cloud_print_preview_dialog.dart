@@ -13,29 +13,23 @@ class _CloudPrintPreviewDialog extends StatefulWidget {
 class _CloudPrintPreviewDialogState extends State<_CloudPrintPreviewDialog> {
   static const _tag = 'CloudPrintPreview';
   final Map<int, Uint8List> _pages = {};
-  late final int _generation;
   int _page = 1;
   bool _loading = true, _failed = false, _invalidated = false;
 
-  bool get _current =>
-      mounted &&
-      !_invalidated &&
-      _generation == widget.provider.sessionGeneration;
+  bool get _current => mounted && !_invalidated;
 
   int get _total => widget.job.pages > 0 ? widget.job.pages : 1;
 
   @override
   void initState() {
     super.initState();
-    _generation = widget.provider.sessionGeneration;
     widget.provider.addListener(_onProviderChanged);
     unawaited(_load(1));
   }
 
   void _onProviderChanged() {
-    if (_invalidated || _generation == widget.provider.sessionGeneration) {
-      return;
-    }
+    if (_invalidated) return;
+    if (widget.provider.jobs.any((j) => j.id == widget.job.id)) return;
     setState(() {
       _invalidated = true;
       _pages.clear();

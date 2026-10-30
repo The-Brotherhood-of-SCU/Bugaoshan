@@ -5,23 +5,18 @@ import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:bugaoshan/providers/plan_completion_provider.dart';
-import 'package:bugaoshan/providers/user_info_provider.dart';
 import 'package:bugaoshan/providers/train_program_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/providers/class_schedule_inquiry_provider.dart';
-import 'package:bugaoshan/providers/classroom_provider.dart';
 import 'package:bugaoshan/providers/course_curriculum_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/exam_plan_provider.dart';
-import 'package:bugaoshan/providers/fitness_test_provider.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/providers/graduate_grades_provider.dart';
 import 'package:bugaoshan/providers/graduate_train_plan_provider.dart';
-import 'package:bugaoshan/providers/network_device_provider.dart';
-import 'package:bugaoshan/providers/passpoint_provider.dart';
 import 'package:bugaoshan/providers/cloud_print_provider.dart';
 import 'package:bugaoshan/scu_backend/cloud_print/cloud_print_api_service.dart';
 import 'package:bugaoshan/scu_backend/cloud_print/cloud_print_auth.dart';
@@ -312,11 +307,6 @@ void _configureAsyncDependencies() {
     await getIt.isReady<CcylApiService>();
     return CcylProvider(getIt<CcylAuth>(), getIt<CcylApiService>());
   });
-  getIt.registerSingletonAsync<UserInfoProvider>(() async {
-    await getIt.isReady<WfwAuth>();
-    await getIt.isReady<WfwApiService>();
-    return UserInfoProvider(getIt<WfwAuth>(), getIt<WfwApiService>());
-  });
   getIt.registerSingletonAsync<GradesProvider>(() async {
     await getIt.isReady<SharedPreferences>();
     await getIt.isReady<ZhjwApiService>();
@@ -351,24 +341,6 @@ void _configureAsyncDependencies() {
     final zhjwApi = getIt<ZhjwApiService>();
     return PlanCompletionProvider(prefs, zhjwApi);
   });
-  getIt.registerSingletonAsync<FitnessTestProvider>(() async {
-    await getIt.isReady<SharedPreferences>();
-    await getIt.isReady<FitnessApiService>();
-    return FitnessTestProvider(
-      getIt<SharedPreferences>(),
-      getIt<FitnessApiService>(),
-    );
-  });
-  getIt.registerSingletonAsync<NetworkDeviceProvider>(() async {
-    await getIt.isReady<WfwApiService>();
-    await getIt.isReady<WfwAuth>();
-    await getIt.isReady<ScuAuth>();
-    return NetworkDeviceProvider(
-      getIt<WfwApiService>(),
-      getIt<WfwAuth>(),
-      getIt<ScuAuth>(),
-    );
-  });
   getIt.registerSingletonAsync<ZhhqRepairProvider>(() async {
     await getIt.isReady<ZhhqApiService>();
     await getIt.isReady<ZhhqAuth>();
@@ -378,20 +350,6 @@ void _configureAsyncDependencies() {
       getIt<ZhhqAuth>(),
       getIt<ScuAuth>(),
     );
-  });
-  getIt.registerSingletonAsync<PasspointProvider>(() async {
-    await getIt.isReady<NewServiceApiService>();
-    await getIt.isReady<NewServiceAuth>();
-    await getIt.isReady<ScuAuth>();
-    return PasspointProvider(
-      getIt<NewServiceApiService>(),
-      getIt<NewServiceAuth>(),
-      getIt<ScuAuth>(),
-    );
-  });
-  getIt.registerSingletonAsync<ClassroomProvider>(() async {
-    await getIt.isReady<ZhjwApiService>();
-    return ClassroomProvider(getIt<ZhjwApiService>());
   });
   getIt.registerSingletonAsync<ClassScheduleInquiryProvider>(() async {
     await getIt.isReady<ZhjwApiService>();
@@ -529,26 +487,11 @@ void _configureAsyncDependencies() {
         if (getIt.isRegistered<PlanCompletionProvider>()) {
           getIt<PlanCompletionProvider>().clearCache();
         }
-        if (getIt.isRegistered<UserInfoProvider>()) {
-          getIt<UserInfoProvider>().clear();
-        }
-        if (getIt.isRegistered<FitnessTestProvider>()) {
-          getIt<FitnessTestProvider>().clear();
-        }
-        if (getIt.isRegistered<NetworkDeviceProvider>()) {
-          getIt<NetworkDeviceProvider>().clear();
-        }
         if (getIt.isRegistered<ZhhqRepairProvider>()) {
           getIt<ZhhqRepairProvider>().clear();
         }
-        if (getIt.isRegistered<PasspointProvider>()) {
-          getIt<PasspointProvider>().clear();
-        }
         if (getIt.isRegistered<CloudPrintProvider>()) {
           getIt<CloudPrintProvider>().clear();
-        }
-        if (getIt.isRegistered<ClassroomProvider>()) {
-          getIt<ClassroomProvider>().clear();
         }
         if (getIt.isRegistered<ClassScheduleInquiryProvider>()) {
           getIt<ClassScheduleInquiryProvider>().clear();

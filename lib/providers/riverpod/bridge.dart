@@ -7,7 +7,6 @@ import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/providers/service_applications_provider.dart';
 import 'package:bugaoshan/providers/update_provider.dart';
-import 'package:bugaoshan/providers/user_info_provider.dart';
 import 'package:bugaoshan/scu_backend/calendar/academic_calendar_service.dart';
 import 'package:bugaoshan/scu_backend/ccyl/ccyl_api_service.dart';
 import 'package:bugaoshan/scu_backend/cloud_print/cloud_print_api_service.dart';
@@ -205,8 +204,4 @@ final updateProviderBridge = Provider<UpdateProvider>(
 
 final serviceApplicationsProviderBridge = Provider<ServiceApplicationsProvider>(
   (ref) => getIt<ServiceApplicationsProvider>(),
-);
-
-final userInfoProviderBridge = Provider<UserInfoProvider>(
-  (ref) => getIt<UserInfoProvider>(),
 );

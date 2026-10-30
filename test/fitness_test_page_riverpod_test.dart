@@ -6,7 +6,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/fitness_test/fitness_test_page.dart';
 import 'package:bugaoshan/pages/campus/fitness_test/models/fitness_models.dart';
-import 'package:bugaoshan/providers/fitness_test_provider.dart';
+import 'package:bugaoshan/utils/storage_keys.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/scu_backend/fitness/fitness_api_service.dart';
 import 'package:bugaoshan/utils/app_logger.dart';

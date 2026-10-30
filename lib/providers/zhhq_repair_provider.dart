@@ -28,9 +28,8 @@ class ZhhqRepairProvider extends ChangeNotifier {
     _auth.addListener(_onAuthChanged);
     _scuAuth.addListener(_onScuAuthChanged);
     if (_canLoad) {
-      final initialGeneration = _generation;
       Future.microtask(() {
-        if (_isCurrent(initialGeneration)) {
+        if (!_disposed) {
           unawaited(ensureLoaded());
         }
       });
@@ -47,11 +46,10 @@ class ZhhqRepairProvider extends ChangeNotifier {
   RepairLoadState _state = RepairLoadState.idle;
   LoadErrorType? _error;
   Future<void>? _loadFuture;
-  int _generation = 0;
+  bool _disposed = false;
 
   bool _isSubmitting = false;
   String? _submitError;
-  int _operationGeneration = 0;
   bool _lastAuthReady = false;
   AuthState _lastScuAuthState = AuthState.unknown;
 
@@ -153,7 +151,6 @@ class ZhhqRepairProvider extends ChangeNotifier {
     final existing = _loadFuture;
     if (existing != null) return existing;
 
-    final generation = ++_generation;
     _state = RepairLoadState.loading;
     _error = null;
     notifyListeners();
@@ -163,7 +160,7 @@ class ZhhqRepairProvider extends ChangeNotifier {
         // 只加载地址（快速接口）；工单列表由 [loadTickets] 独立加载，
         // 避免 oneNetPublish/myList 服务端慢（pageSize 大时可达 20s）阻塞页面。
         final addresses = await _api.fetchAddresses();
-        if (!_isCurrent(generation)) return;
+        if (_disposed) return;
         _addresses = List.unmodifiable(addresses);
         _state = RepairLoadState.loaded;
         _log.d(
@@ -179,11 +176,11 @@ class ZhhqRepairProvider extends ChangeNotifier {
           stackTrace: logStackTrace,
           category: LogCategory.business,
         );
-        if (!_isCurrent(generation)) return;
+        if (_disposed) return;
         _state = RepairLoadState.error;
         _error = _mapError(error);
       } finally {
-        if (_isCurrent(generation)) {
+        if (!_disposed) {
           _loadFuture = null;
           notifyListeners();
         }
@@ -339,7 +336,6 @@ class ZhhqRepairProvider extends ChangeNotifier {
   }) async {
     if (!_canLoad || _isSubmitting) return false;
 
-    final generation = ++_operationGeneration;
     _isSubmitting = true;
     _submitError = null;
     notifyListeners();
@@ -353,9 +349,9 @@ class ZhhqRepairProvider extends ChangeNotifier {
         userName: userName,
         isCommon: isCommon,
       );
-      if (!_isOperationCurrent(generation)) return false;
+      if (_disposed) return false;
       await refresh();
-      return _isOperationCurrent(generation);
+      return !_disposed;
     } catch (error, logStackTrace) {
       _log.e(
         _tag,
@@ -364,12 +360,12 @@ class ZhhqRepairProvider extends ChangeNotifier {
         stackTrace: logStackTrace,
         category: LogCategory.business,
       );
-      if (_isOperationCurrent(generation)) {
+      if (!_disposed) {
         _submitError = _extractMessage(error);
       }
       return false;
     } finally {
-      if (_isOperationCurrent(generation)) {
+      if (!_disposed) {
         _isSubmitting = false;
         notifyListeners();
       }
@@ -385,18 +381,17 @@ class ZhhqRepairProvider extends ChangeNotifier {
   Future<bool> submitTicket(Map<String, dynamic> payload) async {
     if (!_canLoad || _isSubmitting) return false;
 
-    final generation = ++_operationGeneration;
     _isSubmitting = true;
     _submitError = null;
     notifyListeners();
 
     try {
       await _api.submitTicket(payload);
-      if (!_isOperationCurrent(generation)) return false;
+      if (_disposed) return false;
       // 提交成功后工单列表需重新拉取（下次页面重建时触发）
       _ticketsLoaded = false;
       await refresh();
-      return _isOperationCurrent(generation);
+      return !_disposed;
     } catch (error, logStackTrace) {
       _log.e(
         _tag,
@@ -405,12 +400,12 @@ class ZhhqRepairProvider extends ChangeNotifier {
         stackTrace: logStackTrace,
         category: LogCategory.business,
       );
-      if (_isOperationCurrent(generation)) {
+      if (!_disposed) {
         _submitError = _extractMessage(error);
       }
       return false;
     } finally {
-      if (_isOperationCurrent(generation)) {
+      if (!_disposed) {
         _isSubmitting = false;
         notifyListeners();
       }
@@ -501,8 +496,6 @@ class ZhhqRepairProvider extends ChangeNotifier {
   }
 
   void clear() {
-    _generation++;
-    _operationGeneration++;
     _loadFuture = null;
     _addresses = const [];
     _tickets = const [];
@@ -515,10 +508,6 @@ class ZhhqRepairProvider extends ChangeNotifier {
     _ticketsFuture = null;
     notifyListeners();
   }
-
-  bool _isCurrent(int generation) => generation == _generation;
-  bool _isOperationCurrent(int generation) =>
-      generation == _operationGeneration;
 
   /// 从异常中提取可供 UI 展示的具体文案；无则返回 null。
   static String? _extractMessage(Object error) {
@@ -540,8 +529,7 @@ class ZhhqRepairProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    _generation++;
-    _operationGeneration++;
+    _disposed = true;
     _auth.removeListener(_onAuthChanged);
     _scuAuth.removeListener(_onScuAuthChanged);
     super.dispose();

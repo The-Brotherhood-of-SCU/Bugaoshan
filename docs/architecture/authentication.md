@@ -557,7 +557,7 @@ flowchart TD
 lib/
 ├── providers/
 │   ├── scu_auth_provider.dart       # 登录 UI 控制器、预热和登出编排
-│   ├── user_info_provider.dart      # 监听 WfwAuth，自动加载用户信息
+│   ├── user_info_pods.dart          # 监听 WfwAuth，自动加载用户信息
 │   ├── grades_provider.dart         # 教务业务状态和按账号缓存
 │   ├── train_program_provider.dart
 │   ├── plan_completion_provider.dart

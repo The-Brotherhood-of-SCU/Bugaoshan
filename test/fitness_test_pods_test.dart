@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/pages/campus/fitness_test/models/fitness_models.dart';
-import 'package:bugaoshan/providers/fitness_test_provider.dart';
+import 'package:bugaoshan/utils/storage_keys.dart';
 import 'package:bugaoshan/providers/riverpod/campus/fitness_test_pods.dart';
 import 'package:bugaoshan/scu_backend/fitness/fitness_api_service.dart';
 
