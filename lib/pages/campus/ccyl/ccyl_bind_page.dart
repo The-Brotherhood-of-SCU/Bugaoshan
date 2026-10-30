@@ -1,27 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/providers/ccyl_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/campus/ccyl_pods.dart';
 import 'package:bugaoshan/services/auth/ccyl_oauth_service.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 
-class CcylBindPage extends StatefulWidget {
+class CcylBindPage extends ConsumerStatefulWidget {
   const CcylBindPage({super.key});
 
   @override
-  State<CcylBindPage> createState() => _CcylBindPageState();
+  ConsumerState<CcylBindPage> createState() => _CcylBindPageState();
 }
 
-class _CcylBindPageState extends State<CcylBindPage> {
+class _CcylBindPageState extends ConsumerState<CcylBindPage> {
   static const String _tag = 'CcylBindPageState';
 
-  late final CcylOAuthService _oauthService = CcylOAuthService(
-    getIt<ScuAuth>(),
-  );
+  late final CcylOAuthService _oauthService;
   bool _loading = false;
   Object? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _oauthService = CcylOAuthService(ref.read(scuAuthBridge));
+  }
 
   Future<void> _doOAuthBind() async {
     if (!mounted) return;
@@ -42,8 +46,7 @@ class _CcylBindPageState extends State<CcylBindPage> {
         return;
       }
 
-      final provider = getIt<CcylProvider>();
-      await provider.loginWithOAuthCode(code);
+      await ref.read(ccylAuthNotifierProvider.notifier).loginWithOAuthCode(code);
       if (mounted) {
         Navigator.of(context).pop(true);
       }

@@ -1,22 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
+import 'package:bugaoshan/services/api/ccyl_api_service.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/status_chip.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 
-class CreditListPage extends StatefulWidget {
+class CreditListPage extends ConsumerStatefulWidget {
   const CreditListPage({super.key});
 
   @override
-  State<CreditListPage> createState() => _CreditListPageState();
+  ConsumerState<CreditListPage> createState() => _CreditListPageState();
 }
 
-class _CreditListPageState extends State<CreditListPage> {
+class _CreditListPageState extends ConsumerState<CreditListPage> {
   static const String _tag = 'CreditListPageState';
+
+  CcylApiService get _apiService {
+    if (getIt.isRegistered<CcylApiService>()) {
+      return ref.read(ccylApiServiceBridge);
+    }
+    return getIt<CcylProvider>().service;
+  }
 
   final _scrollController = ScrollController();
   List<CyclCredit> _credits = [];
@@ -59,9 +69,8 @@ class _CreditListPageState extends State<CreditListPage> {
     });
 
     try {
-      final provider = getIt<CcylProvider>();
       final page = loadMore ? _pageNum + 1 : 1;
-      final results = await provider.service.getCreditList(pageNum: page);
+      final results = await _apiService.getCreditList(pageNum: page);
 
       if (!mounted) return;
       setState(() {
@@ -170,8 +179,7 @@ class _CreditListPageState extends State<CreditListPage> {
     ).showSnackBar(SnackBar(content: Text(l10n.loading)));
 
     try {
-      final provider = getIt<CcylProvider>();
-      final msg = await provider.service.exportCreditsToEmail(
+      final msg = await _apiService.exportCreditsToEmail(
         _selectedIds.toList(),
         email,
       );

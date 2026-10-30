@@ -1,14 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/campus/classroom/classroom_detail_page.dart';
 import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
-import 'package:bugaoshan/providers/classroom_provider.dart';
-import 'package:bugaoshan/providers/course_provider.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/campus/classroom_pods.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
@@ -17,15 +17,14 @@ import 'package:bugaoshan/utils/system_insets.dart';
 
 enum _ViewMode { campus, building, room }
 
-class ClassroomPage extends StatefulWidget {
+class ClassroomPage extends ConsumerStatefulWidget {
   const ClassroomPage({super.key});
 
   @override
-  State<ClassroomPage> createState() => _ClassroomPageState();
+  ConsumerState<ClassroomPage> createState() => _ClassroomPageState();
 }
 
-class _ClassroomPageState extends State<ClassroomPage> {
-  late final ClassroomProvider _provider;
+class _ClassroomPageState extends ConsumerState<ClassroomPage> {
   Timer? _clockTimer;
 
   ClassroomCampus? _selectedCampus;
@@ -39,12 +38,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
   @override
   void initState() {
     super.initState();
-    _provider = getIt<ClassroomProvider>();
-    getIt<ScuAuthProvider>().addListener(_onAuthChanged);
     _startClockTimer();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _onAuthChanged();
-    });
   }
 
   void _startClockTimer() {
@@ -56,30 +50,22 @@ class _ClassroomPageState extends State<ClassroomPage> {
 
   @override
   void dispose() {
-    getIt<ScuAuthProvider>().removeListener(_onAuthChanged);
     _clockTimer?.cancel();
     super.dispose();
   }
 
-  void _onAuthChanged() {
-    final auth = getIt<ScuAuthProvider>();
-    if (auth.isLoggedIn) _provider.ensureIndex();
-  }
-
-  Future<void> _queryBuilding(ClassroomBuilding building) async {
+  void _queryBuilding(ClassroomBuilding building) {
     setState(() {
       _selectedBuilding = building;
       _viewMode = _ViewMode.room;
     });
-    await _provider.queryAvailability(
-      building: building,
-      searchDate: _apiDate(_selectedDate),
-    );
   }
 
-  List<ClassroomBuilding> get _filteredBuildings {
+  List<ClassroomBuilding> _filteredBuildings(List<ClassroomBuilding> buildings) {
     if (_selectedCampus == null) return [];
-    return _provider.buildingsForCampus(_selectedCampus!.campusNumber);
+    return buildings
+        .where((b) => b.campusNumber == _selectedCampus!.campusNumber)
+        .toList(growable: false);
   }
 
   String _apiDate(DateTime date) =>
@@ -107,9 +93,6 @@ class _ClassroomPageState extends State<ClassroomPage> {
       setState(() {
         _selectedDate = picked;
       });
-      if (_selectedBuilding != null) {
-        unawaited(_queryBuilding(_selectedBuilding!));
-      }
     }
   }
 
@@ -118,9 +101,6 @@ class _ClassroomPageState extends State<ClassroomPage> {
     setState(() {
       _selectedDate = today;
     });
-    if (_selectedBuilding != null) {
-      _queryBuilding(_selectedBuilding!);
-    }
   }
 
   int? _currentPeriod() {
@@ -131,7 +111,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
         : null;
     final timeSlots =
         campusSlots ??
-        getIt<CourseProvider>().scheduleConfig.value?.timeSlots ??
+        ref.read(courseProviderBridge).scheduleConfig.value?.timeSlots ??
         const [];
     if (timeSlots.isEmpty) return null;
 
@@ -166,18 +146,15 @@ class _ClassroomPageState extends State<ClassroomPage> {
     return null;
   }
 
-  List<ClassroomInfo> _visibleRooms() {
-    final result = _provider.queryResult;
-    if (result == null) return [];
-
+  List<ClassroomInfo> _visibleRooms(ClassroomQueryResult queryResult) {
     final start = _filterPeriodStart;
     final end = _filterPeriodEnd;
     if (start == null || end == null || !_isToday) {
-      return result.classrooms;
+      return queryResult.classrooms;
     }
 
-    return result.classrooms.where((room) {
-      final statusMap = result.periodStatusMap(room.classroomNumber);
+    return queryResult.classrooms.where((room) {
+      final statusMap = queryResult.periodStatusMap(room.classroomNumber);
       for (int p = start; p <= end; p++) {
         final status = statusMap[p];
         if (status != null && status != ClassroomPeriodStatus.free) {
@@ -194,7 +171,6 @@ class _ClassroomPageState extends State<ClassroomPage> {
         case _ViewMode.room:
           _viewMode = _ViewMode.building;
           _selectedBuilding = null;
-          _provider.clearCurrentQuery();
           break;
         case _ViewMode.building:
           _viewMode = _ViewMode.campus;
@@ -227,44 +203,50 @@ class _ClassroomPageState extends State<ClassroomPage> {
                 )
               : null,
         ),
-        body: ListenableBuilder(
-          listenable: Listenable.merge([_provider, getIt<ScuAuthProvider>()]),
-          builder: (context, _) => _buildContent(l10n),
-        ),
+        body: _buildContent(l10n),
       ),
     );
   }
 
   Widget _buildContent(AppLocalizations l10n) {
-    final auth = getIt<ScuAuthProvider>();
+    final auth = ref.watch(scuAuthProviderBridge);
     if (!auth.isLoggedIn) {
       return auth.isAutoLoggingIn
           ? const AutoLoginLoadingWidget()
           : const LoginRequiredWidget();
     }
-    if (_provider.indexState == ClassroomLoadState.loading &&
-        _provider.campuses.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
 
-    if (_provider.indexError != null && _provider.campuses.isEmpty) {
-      return _buildErrorWidget(
-        _provider.indexError!,
-        () => _provider.loadIndex(forceRefresh: true),
-      );
-    }
+    final asyncIndex = ref.watch(classroomIndexProvider);
 
-    switch (_viewMode) {
-      case _ViewMode.campus:
-        return _buildCampusView(l10n);
-      case _ViewMode.building:
-        return _buildBuildingList(l10n);
-      case _ViewMode.room:
-        return _buildRoomView(l10n);
-    }
+    return asyncIndex.when(
+      data: (indexData) {
+        switch (_viewMode) {
+          case _ViewMode.campus:
+            return _buildCampusView(indexData.campuses, l10n);
+          case _ViewMode.building:
+            final buildings = _filteredBuildings(indexData.buildings);
+            return _buildBuildingList(buildings, l10n);
+          case _ViewMode.room:
+            return _buildRoomView(l10n);
+        }
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, _) {
+        final errorType = () {
+          if (error is UnauthenticatedException) {
+            return zhjwAuthErrorType(error);
+          }
+          return campusNetworkErrorType(LoadErrorType.loadFailed);
+        }();
+        return _buildErrorWidget(
+          errorType,
+          () => ref.refresh(classroomIndexProvider.future),
+        );
+      },
+    );
   }
 
-  Widget _buildCampusView(AppLocalizations l10n) {
+  Widget _buildCampusView(List<ClassroomCampus> campuses, AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -283,9 +265,9 @@ class _ClassroomPageState extends State<ClassroomPage> {
               context,
               EdgeInsets.fromLTRB(16, 0, 16, 16),
             ),
-            itemCount: _provider.campuses.length,
+            itemCount: campuses.length,
             itemBuilder: (context, index) {
-              final campus = _provider.campuses[index];
+              final campus = campuses[index];
               return StyledCard(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
@@ -307,9 +289,10 @@ class _ClassroomPageState extends State<ClassroomPage> {
     );
   }
 
-  Widget _buildBuildingList(AppLocalizations l10n) {
-    final buildings = _filteredBuildings;
-
+  Widget _buildBuildingList(
+    List<ClassroomBuilding> buildings,
+    AppLocalizations l10n,
+  ) {
     if (buildings.isEmpty) {
       return Center(
         child: Text(
@@ -359,27 +342,47 @@ class _ClassroomPageState extends State<ClassroomPage> {
   }
 
   Widget _buildRoomView(AppLocalizations l10n) {
-    if (_provider.queryState == ClassroomLoadState.loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    if (_selectedBuilding == null) return const SizedBox.shrink();
 
-    if (_provider.queryError != null) {
-      return _buildErrorWidget(
-        _provider.queryError!,
-        () => _provider.queryAvailability(
-          building: _selectedBuilding!,
-          searchDate: _apiDate(_selectedDate),
-          forceRefresh: true,
-        ),
-      );
-    }
+    final asyncAvailability = ref.watch(
+      classroomAvailabilityProvider(
+        campusNumber: _selectedBuilding!.campusNumber,
+        buildingNumber: _selectedBuilding!.teachingBuildingNumber,
+        searchDate: _apiDate(_selectedDate),
+      ),
+    );
 
-    final queryResult = _provider.queryResult;
-    if (queryResult == null) return const SizedBox.shrink();
+    return asyncAvailability.when(
+      data: (queryResult) => _buildRoomContent(queryResult, l10n),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, _) {
+        final errorType = () {
+          if (error is UnauthenticatedException) {
+            return zhjwAuthErrorType(error);
+          }
+          return campusNetworkErrorType(LoadErrorType.loadFailed);
+        }();
+        return _buildErrorWidget(
+          errorType,
+          () => ref.refresh(
+            classroomAvailabilityProvider(
+              campusNumber: _selectedBuilding!.campusNumber,
+              buildingNumber: _selectedBuilding!.teachingBuildingNumber,
+              searchDate: _apiDate(_selectedDate),
+            ).future,
+          ),
+        );
+      },
+    );
+  }
 
+  Widget _buildRoomContent(
+    ClassroomQueryResult queryResult,
+    AppLocalizations l10n,
+  ) {
     final currentPeriod = _currentPeriod();
     final hasFilter = _filterPeriodStart != null;
-    final rooms = _visibleRooms();
+    final rooms = _visibleRooms(queryResult);
 
     return Column(
       children: [
@@ -495,7 +498,7 @@ class _ClassroomPageState extends State<ClassroomPage> {
                   itemCount: rooms.length,
                   itemBuilder: (context, index) {
                     final room = rooms[index];
-                    return _buildRoomCard(room, l10n);
+                    return _buildRoomCard(room, queryResult, l10n);
                   },
                 ),
         ),
@@ -503,8 +506,11 @@ class _ClassroomPageState extends State<ClassroomPage> {
     );
   }
 
-  Widget _buildRoomCard(ClassroomInfo room, AppLocalizations l10n) {
-    final queryResult = _provider.queryResult!;
+  Widget _buildRoomCard(
+    ClassroomInfo room,
+    ClassroomQueryResult queryResult,
+    AppLocalizations l10n,
+  ) {
     final statusMap = queryResult.periodStatusMap(room.classroomNumber);
 
     return StyledCard(
@@ -582,7 +588,8 @@ class _ClassroomPageState extends State<ClassroomPage> {
 
   Widget _buildErrorWidget(LoadErrorType error, VoidCallback onRetry) {
     if (error == LoadErrorType.notLoggedIn) {
-      if (getIt<ScuAuthProvider>().isAutoLoggingIn) {
+      final auth = ref.watch(scuAuthProviderBridge);
+      if (auth.isAutoLoggingIn) {
         return const AutoLoginLoadingWidget();
       }
       return const LoginRequiredWidget();

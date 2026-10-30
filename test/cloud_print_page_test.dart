@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -161,15 +162,17 @@ void main() {
       });
     }
     await tester.pumpWidget(
-      MaterialApp(
-        locale: locale,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        theme: ThemeData(
-          colorSchemeSeed: Colors.teal,
-          fontFamily: fontPath == null ? null : 'CloudPrintPreview',
+      ProviderScope(
+        child: MaterialApp(
+          locale: locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: ThemeData(
+            colorSchemeSeed: Colors.teal,
+            fontFamily: fontPath == null ? null : 'CloudPrintPreview',
+          ),
+          home: RepaintBoundary(key: previewKey, child: const CloudPrintPage()),
         ),
-        home: RepaintBoundary(key: previewKey, child: const CloudPrintPage()),
       ),
     );
     await tester.pumpAndSettle();

@@ -163,8 +163,25 @@ final academicCalendarServiceBridge = Provider<AcademicCalendarService>(
 
 // ── 过渡期 Provider 桥接（允许在完全重构前被 Riverpod 消费）─────────────────────
 
-final scuAuthProviderBridge = Provider<ScuAuthProvider>(
-  (ref) => getIt<ScuAuthProvider>(),
+class _ScuAuthProviderBridgeNotifier extends Notifier<ScuAuthProvider> {
+  @override
+  bool updateShouldNotify(ScuAuthProvider previous, ScuAuthProvider next) => true;
+
+  @override
+  ScuAuthProvider build() {
+    final auth = getIt<ScuAuthProvider>();
+    void listener() {
+      state = auth;
+    }
+    auth.addListener(listener);
+    ref.onDispose(() => auth.removeListener(listener));
+    return auth;
+  }
+}
+
+final scuAuthProviderBridge =
+    NotifierProvider<_ScuAuthProviderBridgeNotifier, ScuAuthProvider>(
+  _ScuAuthProviderBridgeNotifier.new,
 );
 
 final appConfigProviderBridge = Provider<AppConfigProvider>(

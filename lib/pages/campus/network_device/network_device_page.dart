@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/providers/network_device_provider.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/campus/network_device_pods.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/providers/user_info_provider.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/info_row.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
@@ -13,46 +16,53 @@ import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
-class NetworkDevicePage extends StatefulWidget {
+class NetworkDevicePage extends ConsumerStatefulWidget {
   const NetworkDevicePage({super.key});
 
   @override
-  State<NetworkDevicePage> createState() => _NetworkDevicePageState();
+  ConsumerState<NetworkDevicePage> createState() => _NetworkDevicePageState();
 }
 
-class _NetworkDevicePageState extends State<NetworkDevicePage> {
+class _NetworkDevicePageState extends ConsumerState<NetworkDevicePage> {
   bool _privacyHidden = true;
+
+  LoadErrorType _mapError(Object error) {
+    if (error is UnauthenticatedException) {
+      return LoadErrorType.sessionExpired;
+    }
+    return campusNetworkErrorType(LoadErrorType.networkError);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final auth = getIt<ScuAuthProvider>();
-    final userInfo = getIt<UserInfoProvider>();
-    final devices = getIt<NetworkDeviceProvider>();
+    final auth = ref.watch(scuAuthProviderBridge);
+    final asyncDevices = ref.watch(networkDevicesProvider);
+    final offliningId = ref.watch(offliningDeviceIdProvider);
     final l10n = AppLocalizations.of(context)!;
+    final isOfflining = offliningId != null;
 
-    return ListenableBuilder(
-      listenable: Listenable.merge([auth, userInfo, devices]),
-      builder: (context, _) => Scaffold(
-        appBar: AppBar(
-          title: Text(l10n.networkDeviceQuery),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: devices.isOfflining ? null : devices.refresh,
-              tooltip: l10n.refresh,
-            ),
-          ],
-        ),
-        body: _buildBody(l10n, auth, userInfo, devices),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.networkDeviceQuery),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: isOfflining
+                ? null
+                : () => ref.read(networkDevicesProvider.notifier).refresh(),
+            tooltip: l10n.refresh,
+          ),
+        ],
       ),
+      body: _buildBody(l10n, auth, asyncDevices, offliningId),
     );
   }
 
   Widget _buildBody(
     AppLocalizations l10n,
-    ScuAuthProvider auth,
-    UserInfoProvider userInfo,
-    NetworkDeviceProvider devices,
+    dynamic auth,
+    AsyncValue<List<Map<String, dynamic>>> asyncDevices,
+    String? offliningId,
   ) {
     if (!auth.isLoggedIn) {
       return auth.isAutoLoggingIn
@@ -60,32 +70,36 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
           : const LoginRequiredWidget();
     }
 
-    final hasDevices = devices.devices.isNotEmpty;
-    if (devices.state == NetworkDeviceLoadState.idle ||
-        (devices.state == NetworkDeviceLoadState.loading && !hasDevices)) {
+    final hasDevices = (asyncDevices.value?.isNotEmpty ?? false);
+    if (asyncDevices.isLoading && !hasDevices) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (devices.state == NetworkDeviceLoadState.error && !hasDevices) {
+    if (asyncDevices.hasError && !hasDevices) {
       return RetryableErrorWidget(
-        errorType: devices.error ?? LoadErrorType.networkError,
-        onRetry: devices.refresh,
+        errorType: _mapError(asyncDevices.error!),
+        onRetry: () => ref.read(networkDevicesProvider.notifier).refresh(),
       );
     }
 
+    final devices = asyncDevices.value ?? const [];
+
     return RefreshIndicator(
-      onRefresh: devices.refresh,
+      onRefresh: () => ref.read(networkDevicesProvider.notifier).refresh(),
       child: ListView(
-        padding: withSystemBottomInset(context, EdgeInsets.all(16)),
+        padding: withSystemBottomInset(context, const EdgeInsets.all(16)),
         children: [
           // 已有列表但刷新失败时，保留旧数据并给出可见的错误提示。
-          if (devices.state == NetworkDeviceLoadState.error &&
-              devices.error != null) ...[
-            _buildRefreshErrorBanner(l10n, devices.error!, devices.refresh),
+          if (asyncDevices.hasError && asyncDevices.error != null) ...[
+            _buildRefreshErrorBanner(
+              l10n,
+              _mapError(asyncDevices.error!),
+              () => ref.read(networkDevicesProvider.notifier).refresh(),
+            ),
             const SizedBox(height: 16),
           ],
-          _buildUserInfoCard(l10n, userInfo.profile),
+          _buildUserInfoCard(l10n),
           const SizedBox(height: 16),
-          _buildDeviceListCard(l10n, devices),
+          _buildDeviceListCard(l10n, devices, offliningId),
         ],
       ),
     );
@@ -162,41 +176,48 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
     );
   }
 
-  Widget _buildUserInfoCard(AppLocalizations l10n, Map<String, dynamic>? user) {
-    final role = user?['role'] as Map<String, dynamic>?;
-    final departs = user?['departs'] as Map<String, dynamic>?;
+  Widget _buildUserInfoCard(AppLocalizations l10n) {
+    final userInfoProvider = getIt<UserInfoProvider>();
+    return ListenableBuilder(
+      listenable: userInfoProvider,
+      builder: (context, _) {
+        final user = userInfoProvider.profile;
+        final role = user?['role'] as Map<String, dynamic>?;
+        final departs = user?['departs'] as Map<String, dynamic>?;
 
-    return CardWithTitle(
-      title: l10n.networkDeviceUserInfo,
-      icon: const Icon(Icons.person_outline),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildPrivacyRow(l10n.nameLabel, _valueOf(user?['realname'])),
-            _infoRow(l10n.sexLabel, _valueOf(user?['sex'])),
-            _buildPrivacyRow(
-              l10n.studentIdLabel,
-              _valueOf(role?['number']),
-              visibleStart: 2,
-              visibleEnd: 2,
+        return CardWithTitle(
+          title: l10n.networkDeviceUserInfo,
+          icon: const Icon(Icons.person_outline),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildPrivacyRow(l10n.nameLabel, _valueOf(user?['realname'])),
+                _infoRow(l10n.sexLabel, _valueOf(user?['sex'])),
+                _buildPrivacyRow(
+                  l10n.studentIdLabel,
+                  _valueOf(role?['number']),
+                  visibleStart: 2,
+                  visibleEnd: 2,
+                ),
+                _infoRow(l10n.identityLabel, _valueOf(role?['identity'])),
+                _buildPrivacyRow(l10n.emailLabel, _valueOf(user?['email'])),
+                _buildPrivacyRow(
+                  l10n.phoneLabel,
+                  _valueOf(user?['mobile']),
+                  visibleStart: 3,
+                  visibleEnd: 2,
+                ),
+                _infoRow(
+                  l10n.collegeLabel,
+                  departs == null ? '-' : departs.values.join(', '),
+                ),
+              ],
             ),
-            _infoRow(l10n.identityLabel, _valueOf(role?['identity'])),
-            _buildPrivacyRow(l10n.emailLabel, _valueOf(user?['email'])),
-            _buildPrivacyRow(
-              l10n.phoneLabel,
-              _valueOf(user?['mobile']),
-              visibleStart: 3,
-              visibleEnd: 2,
-            ),
-            _infoRow(
-              l10n.collegeLabel,
-              departs == null ? '-' : departs.values.join(', '),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -208,12 +229,13 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
 
   Widget _buildDeviceListCard(
     AppLocalizations l10n,
-    NetworkDeviceProvider provider,
+    List<Map<String, dynamic>> devices,
+    String? offliningId,
   ) {
-    final appConfigService = getIt<AppConfigProvider>();
+    final cardDuration = ref.watch(cardSizeAnimationDurationSettingProvider);
 
     return AnimatedSize(
-      duration: appConfigService.cardSizeAnimationDuration.value,
+      duration: cardDuration,
       curve: appCurve,
       alignment: Alignment.topCenter,
       child: CardWithTitle(
@@ -224,7 +246,7 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (provider.devices.isEmpty)
+              if (devices.isEmpty)
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
@@ -237,8 +259,9 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
                   ),
                 )
               else
-                ...provider.devices.map(
-                  (device) => _buildDeviceItem(device, l10n, provider),
+                ...devices.map(
+                  (device) =>
+                      _buildDeviceItem(device, l10n, offliningId),
                 ),
             ],
           ),
@@ -250,11 +273,11 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
   Widget _buildDeviceItem(
     Map<String, dynamic> device,
     AppLocalizations l10n,
-    NetworkDeviceProvider provider,
+    String? offliningId,
   ) {
     final deviceId = device['device_id']?.toString();
-    final isThisDevice =
-        provider.isOfflining && provider.offliningDeviceId == deviceId;
+    final isOfflining = offliningId != null;
+    final isThisDevice = isOfflining && offliningId == deviceId;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
@@ -294,9 +317,9 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.power_settings_new_outlined),
-            onPressed: provider.isOfflining
+            onPressed: isOfflining
                 ? null
-                : () => _confirmForceOffline(device, l10n, provider),
+                : () => _confirmForceOffline(device, l10n),
             tooltip: l10n.networkDeviceForceOffline,
           ),
         ],
@@ -307,7 +330,6 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
   Future<void> _confirmForceOffline(
     Map<String, dynamic> device,
     AppLocalizations l10n,
-    NetworkDeviceProvider provider,
   ) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -332,7 +354,9 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
     );
     if (confirm != true || !mounted) return;
 
-    final success = await provider.forceOffline(device);
+    final success = await ref
+        .read(networkDevicesProvider.notifier)
+        .forceOffline(device);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

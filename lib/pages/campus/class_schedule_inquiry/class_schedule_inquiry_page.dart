@@ -1,33 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/class_schedule_inquiry/class_schedule_inquiry_detail_page.dart';
 import 'package:bugaoshan/pages/campus/filter_input_decoration.dart';
 import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart';
-import 'package:bugaoshan/providers/class_schedule_inquiry_provider.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/campus/class_schedule_inquiry_pods.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
-class ClassScheduleInquiryPage extends StatefulWidget {
+class ClassScheduleInquiryPage extends ConsumerStatefulWidget {
   const ClassScheduleInquiryPage({super.key});
 
   @override
-  State<ClassScheduleInquiryPage> createState() =>
+  ConsumerState<ClassScheduleInquiryPage> createState() =>
       _ClassScheduleInquiryPageState();
 }
 
-class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
-  late final ClassScheduleInquiryProvider _provider;
-
+class _ClassScheduleInquiryPageState
+    extends ConsumerState<ClassScheduleInquiryPage> {
   @override
   void initState() {
     super.initState();
-    _provider = getIt<ClassScheduleInquiryProvider>();
-    getIt<ScuAuthProvider>().addListener(_onAuthChanged);
+    ref.read(scuAuthProviderBridge).addListener(_onAuthChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _onAuthChanged();
     });
@@ -35,56 +33,72 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
 
   @override
   void dispose() {
-    getIt<ScuAuthProvider>().removeListener(_onAuthChanged);
+    ref.read(scuAuthProviderBridge).removeListener(_onAuthChanged);
     super.dispose();
   }
 
   void _onAuthChanged() {
-    final auth = getIt<ScuAuthProvider>();
-    if (auth.isLoggedIn) _provider.ensureIndex();
+    final auth = ref.read(scuAuthProviderBridge);
+    if (auth.isLoggedIn) {
+      ref.read(classScheduleInquiryProvider.notifier).ensureIndex();
+    }
+    if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final auth = ref.watch(scuAuthProviderBridge);
+
+    if (!auth.isLoggedIn) {
+      if (auth.isAutoLoggingIn) {
+        return Scaffold(
+          appBar: AppBar(title: Text(l10n.classScheduleInquiry)),
+          body: const AutoLoginLoadingWidget(),
+        );
+      }
+      return Scaffold(
+        appBar: AppBar(title: Text(l10n.classScheduleInquiry)),
+        body: const LoginRequiredWidget(),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: Text(l10n.classScheduleInquiry)),
-      body: ListenableBuilder(
-        listenable: Listenable.merge([_provider, getIt<ScuAuthProvider>()]),
-        builder: (context, _) {
-          final auth = getIt<ScuAuthProvider>();
-          if (!auth.isLoggedIn) {
-            if (auth.isAutoLoggingIn) return const AutoLoginLoadingWidget();
-            return const LoginRequiredWidget();
-          }
-          return _buildContent(context);
-        },
-      ),
+      body: _buildContent(context),
     );
   }
 
   Widget _buildContent(BuildContext context) {
-    if (_provider.indexState == ClassScheduleInquiryLoadState.loading) {
+    final state = ref.watch(classScheduleInquiryProvider);
+
+    if (state.indexState == ClassScheduleInquiryLoadState.loading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_provider.indexError != null && _provider.classes.isEmpty) {
+    if (state.indexError != null && state.classes.isEmpty) {
       return RetryableErrorWidget(
-        errorType: _provider.indexError!,
-        onRetry: () => _provider.loadIndex(forceRefresh: true),
+        errorType: state.indexError!,
+        onRetry: () => ref
+            .read(classScheduleInquiryProvider.notifier)
+            .loadIndex(forceRefresh: true),
       );
     }
 
     return Column(
       children: [
-        _buildFilterBar(context),
-        Expanded(child: _buildClassList(context)),
+        _buildFilterBar(context, state),
+        Expanded(child: _buildClassList(context, state)),
       ],
     );
   }
 
-  Widget _buildFilterBar(BuildContext context) {
+  Widget _buildFilterBar(
+    BuildContext context,
+    ClassScheduleInquiryState state,
+  ) {
     final l10n = AppLocalizations.of(context)!;
+    final notifier = ref.read(classScheduleInquiryProvider.notifier);
 
     return CardWithTitle(
       title: l10n.classScheduleInquiryFilter,
@@ -99,8 +113,8 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
               children: [
                 Expanded(
                   child: _buildDropdown(
-                    value: _provider.selectedSemester,
-                    items: _provider.semesters
+                    value: state.selectedSemester,
+                    items: state.semesters
                         .map(
                           (s) => DropdownMenuItem(
                             value: s.value,
@@ -111,15 +125,15 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
                           ),
                         )
                         .toList(),
-                    onChanged: _provider.setSelectedSemester,
+                    onChanged: notifier.setSelectedSemester,
                     hint: l10n.classScheduleInquirySemester,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildDropdown(
-                    value: _provider.selectedGrade,
-                    items: _provider.grades
+                    value: state.selectedGrade,
+                    items: state.grades
                         .map(
                           (g) => DropdownMenuItem(
                             value: g,
@@ -130,7 +144,7 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
                           ),
                         )
                         .toList(),
-                    onChanged: _provider.setSelectedGrade,
+                    onChanged: notifier.setSelectedGrade,
                     hint: l10n.classScheduleInquiryGrade,
                   ),
                 ),
@@ -141,8 +155,8 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
               children: [
                 Expanded(
                   child: _buildDropdown(
-                    value: _provider.selectedDepartment,
-                    items: _provider.departments
+                    value: state.selectedDepartment,
+                    items: state.departments
                         .map(
                           (d) => DropdownMenuItem(
                             value: d.value,
@@ -153,7 +167,7 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
                           ),
                         )
                         .toList(),
-                    onChanged: _provider.setSelectedDepartment,
+                    onChanged: notifier.setSelectedDepartment,
                     hint: l10n.classScheduleInquiryDepartment,
                   ),
                 ),
@@ -164,34 +178,34 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
               children: [
                 Expanded(
                   child: _buildDropdown(
-                    value: _provider.selectedSubject,
+                    value: state.selectedSubject,
                     items: [
                       DropdownMenuItem(value: '', child: Text(l10n.all)),
-                      ..._provider.subjects.map(
+                      ...state.subjects.map(
                         (s) => DropdownMenuItem(
                           value: s.code,
                           child: Text(s.name, overflow: TextOverflow.ellipsis),
                         ),
                       ),
                     ],
-                    onChanged: _provider.setSelectedSubject,
+                    onChanged: notifier.setSelectedSubject,
                     hint: l10n.classScheduleInquirySubject,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildDropdown(
-                    value: _provider.selectedClass,
+                    value: state.selectedClass,
                     items: [
                       DropdownMenuItem(value: '', child: Text(l10n.all)),
-                      ..._provider.classOptions.map(
+                      ...state.classOptions.map(
                         (c) => DropdownMenuItem(
                           value: c.code,
                           child: Text(c.name, overflow: TextOverflow.ellipsis),
                         ),
                       ),
                     ],
-                    onChanged: _provider.setSelectedClass,
+                    onChanged: notifier.setSelectedClass,
                     hint: l10n.classScheduleInquiryClass,
                   ),
                 ),
@@ -201,7 +215,7 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
-                onPressed: _provider.search,
+                onPressed: notifier.search,
                 icon: const Icon(Icons.search),
                 label: Text(l10n.classScheduleInquirySearch),
               ),
@@ -234,22 +248,26 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
     );
   }
 
-  Widget _buildClassList(BuildContext context) {
+  Widget _buildClassList(
+    BuildContext context,
+    ClassScheduleInquiryState state,
+  ) {
     final l10n = AppLocalizations.of(context)!;
+    final notifier = ref.read(classScheduleInquiryProvider.notifier);
 
-    if (_provider.classesState == ClassScheduleInquiryLoadState.loading &&
-        _provider.classes.isEmpty) {
+    if (state.classesState == ClassScheduleInquiryLoadState.loading &&
+        state.classes.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_provider.classesError != null && _provider.classes.isEmpty) {
+    if (state.classesError != null && state.classes.isEmpty) {
       return RetryableErrorWidget(
-        errorType: _provider.classesError!,
-        onRetry: _provider.search,
+        errorType: state.classesError!,
+        onRetry: notifier.search,
       );
     }
 
-    if (_provider.classes.isEmpty) {
+    if (state.classes.isEmpty) {
       return Center(
         child: Text(
           l10n.classScheduleInquiryNoData,
@@ -261,23 +279,23 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
     }
 
     return RefreshIndicator(
-      onRefresh: _provider.refresh,
+      onRefresh: notifier.refresh,
       child: ListView.builder(
-        padding: withSystemBottomInset(context, EdgeInsets.all(12)),
-        itemCount: _provider.classes.length + (_provider.hasMore ? 1 : 0),
+        padding: withSystemBottomInset(context, const EdgeInsets.all(12)),
+        itemCount: state.classes.length + (state.hasMore ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index == _provider.classes.length) {
+          if (index == state.classes.length) {
             return Padding(
               padding: const EdgeInsets.all(16),
               child: Center(
-                child: _provider.isLoadingMore
+                child: state.isLoadingMore
                     ? const CircularProgressIndicator()
                     : FilledButton.tonal(
                         // 列表非空时的 classesError 只可能来自
                         // 加载更多失败，此时按钮即重试入口。
-                        onPressed: _provider.loadMore,
+                        onPressed: notifier.loadMore,
                         child: Text(
-                          _provider.classesError != null
+                          state.classesError != null
                               ? l10n.retry
                               : l10n.classScheduleInquiryLoadMore,
                         ),
@@ -285,7 +303,7 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
               ),
             );
           }
-          final classInfo = _provider.classes[index];
+          final classInfo = state.classes[index];
           return _ClassCard(
             classInfo: classInfo,
             onTap: () => Navigator.of(context).push(

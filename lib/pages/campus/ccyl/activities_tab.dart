@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_activity_filter.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_activity_filter_sheet.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_activity_phase.dart';
@@ -11,18 +13,19 @@ import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/pages/campus/ccyl/widgets/ccyl_level_chip.dart';
 import 'package:bugaoshan/pages/campus/ccyl/widgets/ccyl_phase_chip.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activity_lib_detail_page.dart';
+import 'package:bugaoshan/services/api/ccyl_api_service.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 
-class ActivitiesTab extends StatefulWidget {
+class ActivitiesTab extends ConsumerStatefulWidget {
   const ActivitiesTab({super.key});
 
   @override
-  State<ActivitiesTab> createState() => _ActivitiesTabState();
+  ConsumerState<ActivitiesTab> createState() => _ActivitiesTabState();
 }
 
-class _ActivitiesTabState extends State<ActivitiesTab> {
+class _ActivitiesTabState extends ConsumerState<ActivitiesTab> {
   static const String _tag = 'ActivitiesTabState';
 
   static const _defaultPageSize = 10;
@@ -91,6 +94,13 @@ class _ActivitiesTabState extends State<ActivitiesTab> {
       )
       .toList();
 
+  CcylApiService get _apiService {
+    if (getIt.isRegistered<CcylApiService>()) {
+      return ref.read(ccylApiServiceBridge);
+    }
+    return getIt<CcylProvider>().service;
+  }
+
   Future<void> _loadActivities({bool loadMore = false}) async {
     if (_loading) return;
     if (!mounted) return;
@@ -103,9 +113,8 @@ class _ActivitiesTabState extends State<ActivitiesTab> {
         : _defaultPageSize;
 
     try {
-      final provider = getIt<CcylProvider>();
       final page = loadMore ? _pageNum + 1 : 1;
-      final results = await provider.service.searchActivities(
+      final results = await _apiService.searchActivities(
         pageNum: page,
         pageSize: pageSize,
         name: _searchCtrl.text,
@@ -171,8 +180,7 @@ class _ActivitiesTabState extends State<ActivitiesTab> {
         final id = _pendingSeriesResolution.removeAt(0);
         _seriesResolutionAttempted.add(id);
         try {
-          final provider = getIt<CcylProvider>();
-          final detail = await provider.service.getActivityLibDetail(id);
+          final detail = await _apiService.getActivityLibDetail(id);
           final phases = mergeCcylSeriesPhases(detail.activities);
           if (!mounted) return;
           if (phases.isNotEmpty) {
@@ -222,9 +230,8 @@ class _ActivitiesTabState extends State<ActivitiesTab> {
     if (_optionsLoaded) return;
     setState(() => _optionsLoading = true);
 
-    final provider = getIt<CcylProvider>();
     try {
-      final orgs = await provider.service.getAllOrgs();
+      final orgs = await _apiService.getAllOrgs();
       if (mounted) setState(() => _orgOptions = orgs);
     } catch (e, logStackTrace) {
       AppLog.e(
@@ -236,7 +243,7 @@ class _ActivitiesTabState extends State<ActivitiesTab> {
     }
 
     try {
-      final probe = await provider.service.searchActivities(pageSize: 100);
+      final probe = await _apiService.searchActivities(pageSize: 100);
       final levels = <String, String>{};
       for (final activity in probe) {
         final code = activity.level;

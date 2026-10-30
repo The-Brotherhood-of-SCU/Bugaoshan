@@ -1,24 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_activity_phase.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/pages/campus/ccyl/widgets/ccyl_phase_chip.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activity_detail_page.dart';
+import 'package:bugaoshan/services/api/ccyl_api_service.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 
-class MyActivitiesTab extends StatefulWidget {
+class MyActivitiesTab extends ConsumerStatefulWidget {
   const MyActivitiesTab({super.key});
 
   @override
-  State<MyActivitiesTab> createState() => _MyActivitiesTabState();
+  ConsumerState<MyActivitiesTab> createState() => _MyActivitiesTabState();
 }
 
-class _MyActivitiesTabState extends State<MyActivitiesTab> {
+class _MyActivitiesTabState extends ConsumerState<MyActivitiesTab> {
   static const String _tag = 'MyActivitiesTabState';
+
+  CcylApiService get _apiService {
+    if (getIt.isRegistered<CcylApiService>()) {
+      return ref.read(ccylApiServiceBridge);
+    }
+    return getIt<CcylProvider>().service;
+  }
 
   final _scrollController = ScrollController();
   List<CyclActivity> _activities = [];
@@ -58,9 +68,8 @@ class _MyActivitiesTabState extends State<MyActivitiesTab> {
     });
 
     try {
-      final provider = getIt<CcylProvider>();
       final page = loadMore ? _pageNum + 1 : 1;
-      final results = await provider.service.getMyActivities(pageNum: page);
+      final results = await _apiService.getMyActivities(pageNum: page);
 
       setState(() {
         if (loadMore) {

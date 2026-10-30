@@ -6,6 +6,7 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/class_schedule_inquiry_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -87,17 +88,19 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: ClassScheduleInquiryDetailPage(
-          classInfo: ClassInfo(
-            planCode: 'PLAN',
-            classCode: 'CLASS',
-            planName: '测试培养方案',
-            className: '测试班级',
-            departmentName: '测试学院',
-            subjectName: '测试专业',
+      ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: ClassScheduleInquiryDetailPage(
+            classInfo: ClassInfo(
+              planCode: 'PLAN',
+              classCode: 'CLASS',
+              planName: '测试培养方案',
+              className: '测试班级',
+              departmentName: '测试学院',
+              subjectName: '测试专业',
+            ),
           ),
         ),
       ),

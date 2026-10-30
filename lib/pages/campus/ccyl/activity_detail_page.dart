@@ -1,10 +1,13 @@
 import 'package:bugaoshan/utils/system_insets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
+import 'package:bugaoshan/services/api/ccyl_api_service.dart';
 import 'package:bugaoshan/widgets/common/icon_info_row.dart';
 import 'package:bugaoshan/widgets/common/image_viewer.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
@@ -12,17 +15,24 @@ import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/common/image_error_log.dart';
 
-class ActivityDetailPage extends StatefulWidget {
+class ActivityDetailPage extends ConsumerStatefulWidget {
   final String activityId;
 
   const ActivityDetailPage({super.key, required this.activityId});
 
   @override
-  State<ActivityDetailPage> createState() => _ActivityDetailPageState();
+  ConsumerState<ActivityDetailPage> createState() => _ActivityDetailPageState();
 }
 
-class _ActivityDetailPageState extends State<ActivityDetailPage> {
+class _ActivityDetailPageState extends ConsumerState<ActivityDetailPage> {
   static const String _tag = 'ActivityDetailPageState';
+
+  CcylApiService get _apiService {
+    if (getIt.isRegistered<CcylApiService>()) {
+      return ref.read(ccylApiServiceBridge);
+    }
+    return getIt<CcylProvider>().service;
+  }
 
   bool _loading = true;
   LoadErrorType? _error;
@@ -45,8 +55,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
     });
 
     try {
-      final provider = getIt<CcylProvider>();
-      final result = await provider.service.getActivityDetail(
+      final result = await _apiService.getActivityDetail(
         widget.activityId,
       );
       if (!mounted) return;
@@ -82,8 +91,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
     setState(() => _actionLoading = true);
 
     try {
-      final provider = getIt<CcylProvider>();
-      final scoreTypes = await provider.service.getActivityScoreTypes(
+      final scoreTypes = await _apiService.getActivityScoreTypes(
         _activity!.activityLibraryId,
       );
       if (!mounted || !_actionLoading) return;
@@ -104,7 +112,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
         return;
       }
 
-      await provider.service.signUpActivity(
+      await _apiService.signUpActivity(
         widget.activityId,
         selectedType.code ?? '',
       );
@@ -137,8 +145,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
     setState(() => _actionLoading = true);
 
     try {
-      final provider = getIt<CcylProvider>();
-      await provider.service.cancelSignUp(widget.activityId);
+      await _apiService.cancelSignUp(widget.activityId);
     } catch (e, logStackTrace) {
       AppLog.e(_tag, '_cancelSignUp 失败', error: e, stackTrace: logStackTrace);
 

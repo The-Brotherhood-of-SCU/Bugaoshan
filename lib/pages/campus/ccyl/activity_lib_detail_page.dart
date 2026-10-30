@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_activity_phase.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/pages/campus/ccyl/widgets/ccyl_level_chip.dart';
 import 'package:bugaoshan/pages/campus/ccyl/widgets/ccyl_phase_chip.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activity_detail_page.dart';
+import 'package:bugaoshan/services/api/ccyl_api_service.dart';
 import 'package:bugaoshan/widgets/common/icon_info_row.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
-class ActivityLibDetailPage extends StatefulWidget {
+class ActivityLibDetailPage extends ConsumerStatefulWidget {
   final String activityLibraryId;
 
   /// 场次列表加载完成后回调，携带由各场次状态归并出的系列状态。
@@ -30,11 +33,18 @@ class ActivityLibDetailPage extends StatefulWidget {
   });
 
   @override
-  State<ActivityLibDetailPage> createState() => _ActivityLibDetailPageState();
+  ConsumerState<ActivityLibDetailPage> createState() => _ActivityLibDetailPageState();
 }
 
-class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
+class _ActivityLibDetailPageState extends ConsumerState<ActivityLibDetailPage> {
   static const String _tag = 'ActivityLibDetailPageState';
+
+  CcylApiService get _apiService {
+    if (getIt.isRegistered<CcylApiService>()) {
+      return ref.read(ccylApiServiceBridge);
+    }
+    return getIt<CcylProvider>().service;
+  }
 
   bool _loading = true;
   LoadErrorType? _error;
@@ -57,8 +67,7 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
     });
 
     try {
-      final provider = getIt<CcylProvider>();
-      final result = await provider.service.getActivityLibDetail(
+      final result = await _apiService.getActivityLibDetail(
         widget.activityLibraryId,
       );
       if (!mounted) return;
@@ -89,11 +98,10 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
     setState(() => _actionLoading = true);
 
     try {
-      final provider = getIt<CcylProvider>();
       if (_subscribed) {
-        await provider.service.cancelSubscribe(widget.activityLibraryId);
+        await _apiService.cancelSubscribe(widget.activityLibraryId);
       } else {
-        await provider.service.subscribeActivity(widget.activityLibraryId);
+        await _apiService.subscribeActivity(widget.activityLibraryId);
       }
       if (!mounted) return;
       setState(() {

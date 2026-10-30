@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/course_curriculum/course_curriculum_detail_page.dart';
 import 'package:bugaoshan/pages/campus/filter_input_decoration.dart';
 import 'package:bugaoshan/pages/campus/models/course_curriculum_model.dart';
-import 'package:bugaoshan/providers/course_curriculum_provider.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/campus/course_curriculum_pods.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
-class CourseCurriculumPage extends StatefulWidget {
+class CourseCurriculumPage extends ConsumerStatefulWidget {
   const CourseCurriculumPage({super.key});
 
   @override
-  State<CourseCurriculumPage> createState() => _CourseCurriculumPageState();
+  ConsumerState<CourseCurriculumPage> createState() =>
+      _CourseCurriculumPageState();
 }
 
-class _CourseCurriculumPageState extends State<CourseCurriculumPage> {
-  late final CourseCurriculumProvider _provider;
+class _CourseCurriculumPageState extends ConsumerState<CourseCurriculumPage> {
   final _courseNameController = TextEditingController();
   final _courseCodeController = TextEditingController();
   final _courseSeqController = TextEditingController();
@@ -28,8 +28,7 @@ class _CourseCurriculumPageState extends State<CourseCurriculumPage> {
   @override
   void initState() {
     super.initState();
-    _provider = getIt<CourseCurriculumProvider>();
-    getIt<ScuAuthProvider>().addListener(_onAuthChanged);
+    ref.read(scuAuthProviderBridge).addListener(_onAuthChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _onAuthChanged();
     });
@@ -37,7 +36,7 @@ class _CourseCurriculumPageState extends State<CourseCurriculumPage> {
 
   @override
   void dispose() {
-    getIt<ScuAuthProvider>().removeListener(_onAuthChanged);
+    ref.read(scuAuthProviderBridge).removeListener(_onAuthChanged);
     _courseNameController.dispose();
     _courseCodeController.dispose();
     _courseSeqController.dispose();
@@ -45,51 +44,64 @@ class _CourseCurriculumPageState extends State<CourseCurriculumPage> {
   }
 
   void _onAuthChanged() {
-    final auth = getIt<ScuAuthProvider>();
-    if (auth.isLoggedIn) _provider.ensureIndex();
+    final auth = ref.read(scuAuthProviderBridge);
+    if (auth.isLoggedIn) {
+      ref.read(courseCurriculumProvider.notifier).ensureIndex();
+    }
+    if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final auth = ref.watch(scuAuthProviderBridge);
+
+    if (!auth.isLoggedIn) {
+      if (auth.isAutoLoggingIn) {
+        return Scaffold(
+          appBar: AppBar(title: Text(l10n.courseCurriculum)),
+          body: const AutoLoginLoadingWidget(),
+        );
+      }
+      return Scaffold(
+        appBar: AppBar(title: Text(l10n.courseCurriculum)),
+        body: const LoginRequiredWidget(),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: Text(l10n.courseCurriculum)),
-      body: ListenableBuilder(
-        listenable: Listenable.merge([_provider, getIt<ScuAuthProvider>()]),
-        builder: (context, _) {
-          final auth = getIt<ScuAuthProvider>();
-          if (!auth.isLoggedIn) {
-            if (auth.isAutoLoggingIn) return const AutoLoginLoadingWidget();
-            return const LoginRequiredWidget();
-          }
-          return _buildContent(context);
-        },
-      ),
+      body: _buildContent(context),
     );
   }
 
   Widget _buildContent(BuildContext context) {
-    if (_provider.indexState == CourseCurriculumLoadState.loading) {
+    final state = ref.watch(courseCurriculumProvider);
+
+    if (state.indexState == CourseCurriculumLoadState.loading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_provider.indexError != null && _provider.courses.isEmpty) {
+    if (state.indexError != null && state.courses.isEmpty) {
       return RetryableErrorWidget(
-        errorType: _provider.indexError!,
-        onRetry: () => _provider.loadIndex(forceRefresh: true),
+        errorType: state.indexError!,
+        onRetry: () => ref
+            .read(courseCurriculumProvider.notifier)
+            .loadIndex(forceRefresh: true),
       );
     }
 
     return Column(
       children: [
-        _buildFilterBar(context),
-        Expanded(child: _buildCourseList(context)),
+        _buildFilterBar(context, state),
+        Expanded(child: _buildCourseList(context, state)),
       ],
     );
   }
 
-  Widget _buildFilterBar(BuildContext context) {
+  Widget _buildFilterBar(BuildContext context, CourseCurriculumState state) {
     final l10n = AppLocalizations.of(context)!;
+    final notifier = ref.read(courseCurriculumProvider.notifier);
 
     return CardWithTitle(
       title: l10n.courseCurriculumFilter,
@@ -104,8 +116,8 @@ class _CourseCurriculumPageState extends State<CourseCurriculumPage> {
               children: [
                 Expanded(
                   child: _buildDropdown(
-                    value: _provider.selectedSemester,
-                    items: _provider.semesters
+                    value: state.selectedSemester,
+                    items: state.semesters
                         .map(
                           (s) => DropdownMenuItem(
                             value: s.value,
@@ -116,24 +128,24 @@ class _CourseCurriculumPageState extends State<CourseCurriculumPage> {
                           ),
                         )
                         .toList(),
-                    onChanged: _provider.setSelectedSemester,
+                    onChanged: notifier.setSelectedSemester,
                     hint: l10n.courseCurriculumSemester,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildDropdown(
-                    value: _provider.selectedDepartment,
+                    value: state.selectedDepartment,
                     items: [
                       DropdownMenuItem(value: '', child: Text(l10n.all)),
-                      ..._provider.departments.map(
+                      ...state.departments.map(
                         (d) => DropdownMenuItem(
                           value: d.value,
                           child: Text(d.name, overflow: TextOverflow.ellipsis),
                         ),
                       ),
                     ],
-                    onChanged: _provider.setSelectedDepartment,
+                    onChanged: notifier.setSelectedDepartment,
                     hint: l10n.courseCurriculumDepartment,
                   ),
                 ),
@@ -144,17 +156,17 @@ class _CourseCurriculumPageState extends State<CourseCurriculumPage> {
               children: [
                 Expanded(
                   child: _buildDropdown(
-                    value: _provider.selectedCategory,
+                    value: state.selectedCategory,
                     items: [
                       DropdownMenuItem(value: '', child: Text(l10n.all)),
-                      ..._provider.categories.map(
+                      ...state.categories.map(
                         (c) => DropdownMenuItem(
                           value: c.code,
                           child: Text(c.name, overflow: TextOverflow.ellipsis),
                         ),
                       ),
                     ],
-                    onChanged: _provider.setSelectedCategory,
+                    onChanged: notifier.setSelectedCategory,
                     hint: l10n.courseCurriculumCategory,
                   ),
                 ),
@@ -202,10 +214,11 @@ class _CourseCurriculumPageState extends State<CourseCurriculumPage> {
 
   void _search() {
     FocusScope.of(context).unfocus();
-    _provider.setCourseName(_courseNameController.text.trim());
-    _provider.setCourseCode(_courseCodeController.text.trim());
-    _provider.setCourseSeq(_courseSeqController.text.trim());
-    _provider.search();
+    final notifier = ref.read(courseCurriculumProvider.notifier);
+    notifier.setCourseName(_courseNameController.text.trim());
+    notifier.setCourseCode(_courseCodeController.text.trim());
+    notifier.setCourseSeq(_courseSeqController.text.trim());
+    notifier.search();
   }
 
   Widget _buildTextField({
@@ -244,22 +257,23 @@ class _CourseCurriculumPageState extends State<CourseCurriculumPage> {
     );
   }
 
-  Widget _buildCourseList(BuildContext context) {
+  Widget _buildCourseList(BuildContext context, CourseCurriculumState state) {
     final l10n = AppLocalizations.of(context)!;
+    final notifier = ref.read(courseCurriculumProvider.notifier);
 
-    if (_provider.coursesState == CourseCurriculumLoadState.loading &&
-        _provider.courses.isEmpty) {
+    if (state.coursesState == CourseCurriculumLoadState.loading &&
+        state.courses.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_provider.coursesError != null && _provider.courses.isEmpty) {
+    if (state.coursesError != null && state.courses.isEmpty) {
       return RetryableErrorWidget(
-        errorType: _provider.coursesError!,
-        onRetry: _provider.search,
+        errorType: state.coursesError!,
+        onRetry: notifier.search,
       );
     }
 
-    if (_provider.courses.isEmpty) {
+    if (state.courses.isEmpty) {
       return Center(
         child: Text(
           l10n.courseCurriculumNoData,
@@ -271,23 +285,23 @@ class _CourseCurriculumPageState extends State<CourseCurriculumPage> {
     }
 
     return RefreshIndicator(
-      onRefresh: _provider.refresh,
+      onRefresh: notifier.refresh,
       child: ListView.builder(
-        padding: withSystemBottomInset(context, EdgeInsets.all(12)),
-        itemCount: _provider.courses.length + (_provider.hasMore ? 1 : 0),
+        padding: withSystemBottomInset(context, const EdgeInsets.all(12)),
+        itemCount: state.courses.length + (state.hasMore ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index == _provider.courses.length) {
+          if (index == state.courses.length) {
             return Padding(
               padding: const EdgeInsets.all(16),
               child: Center(
-                child: _provider.isLoadingMore
+                child: state.isLoadingMore
                     ? const CircularProgressIndicator()
                     : FilledButton.tonal(
                         // 列表非空时的 coursesError 只可能来自
                         // 加载更多失败，此时按钮即重试入口。
-                        onPressed: _provider.loadMore,
+                        onPressed: notifier.loadMore,
                         child: Text(
-                          _provider.coursesError != null
+                          state.coursesError != null
                               ? l10n.retry
                               : l10n.courseCurriculumLoadMore,
                         ),
@@ -295,7 +309,7 @@ class _CourseCurriculumPageState extends State<CourseCurriculumPage> {
               ),
             );
           }
-          final courseInfo = _provider.courses[index];
+          final courseInfo = state.courses[index];
           return _CourseCard(
             courseInfo: courseInfo,
             onTap: () => Navigator.of(context).push(

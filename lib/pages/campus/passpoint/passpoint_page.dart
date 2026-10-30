@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/passpoint.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/providers/passpoint_provider.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/campus/passpoint_pods.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/info_row.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
@@ -21,61 +23,68 @@ import 'package:bugaoshan/utils/system_insets.dart';
 /// 对接后勤 newservice 平台的 passpoint 服务：查看/添加/取消无感设备，
 /// 绑定设备 MAC 后接入校园网自动通过认证。认证依赖 [NewServiceAuth]
 /// （独立于办事大厅的会话）。
-class PasspointPage extends StatefulWidget {
+class PasspointPage extends ConsumerStatefulWidget {
   const PasspointPage({super.key});
 
   @override
-  State<PasspointPage> createState() => _PasspointPageState();
+  ConsumerState<PasspointPage> createState() => _PasspointPageState();
 }
 
-class _PasspointPageState extends State<PasspointPage> {
+class _PasspointPageState extends ConsumerState<PasspointPage> {
   bool _privacyHidden = true;
+
+  LoadErrorType _mapError(Object error) {
+    if (error is UnauthenticatedException) {
+      return LoadErrorType.sessionExpired;
+    }
+    return campusNetworkErrorType(LoadErrorType.networkError);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final auth = getIt<ScuAuthProvider>();
-    final provider = getIt<PasspointProvider>();
+    final auth = ref.watch(scuAuthProviderBridge);
+    final asyncPasspoint = ref.watch(passpointProvider);
+    final cancellingMac = ref.watch(cancellingPasspointMacProvider);
+    final isCancelling = cancellingMac != null;
+    final l10n = AppLocalizations.of(context)!;
 
-    return ListenableBuilder(
-      listenable: Listenable.merge([auth, provider]),
-      builder: (context, _) {
-        final l10n = AppLocalizations.of(context)!;
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(l10n.passpointTitle),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: provider.state == PasspointLoadState.loading
-                    ? null
-                    : provider.refresh,
-                tooltip: l10n.refresh,
-              ),
-            ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.passpointTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: asyncPasspoint.isLoading
+                ? null
+                : () => ref.read(passpointProvider.notifier).refresh(),
+            tooltip: l10n.refresh,
           ),
-          floatingActionButton: FloatingActionButton.extended(
-            heroTag: 'passpoint_add',
-            onPressed: _canInteract(auth, provider)
-                ? () => _showAddSheet(context, provider, l10n)
-                : null,
-            icon: const Icon(Icons.add),
-            label: Text(l10n.passpointAddDevice),
-          ),
-          body: _buildBody(l10n, auth, provider),
-        );
-      },
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'passpoint_add',
+        onPressed: _canInteract(auth, asyncPasspoint.value, isCancelling)
+            ? () => _showAddSheet(context, l10n)
+            : null,
+        icon: const Icon(Icons.add),
+        label: Text(l10n.passpointAddDevice),
+      ),
+      body: _buildBody(l10n, auth, asyncPasspoint, cancellingMac),
     );
   }
 
-  bool _canInteract(ScuAuthProvider auth, PasspointProvider provider) =>
-      auth.isLoggedIn &&
-      provider.state == PasspointLoadState.loaded &&
-      !provider.isAdding;
+  bool _canInteract(
+    dynamic auth,
+    PasspointData? data,
+    bool isCancelling,
+  ) =>
+      auth.isLoggedIn && data != null && !isCancelling;
 
   Widget _buildBody(
     AppLocalizations l10n,
-    ScuAuthProvider auth,
-    PasspointProvider provider,
+    dynamic auth,
+    AsyncValue<PasspointData> asyncPasspoint,
+    String? cancellingMac,
   ) {
     if (!auth.isLoggedIn) {
       return auth.isAutoLoggingIn
@@ -83,33 +92,40 @@ class _PasspointPageState extends State<PasspointPage> {
           : const LoginRequiredWidget();
     }
 
-    final hasDevices = provider.devices.isNotEmpty;
-    if (provider.state == PasspointLoadState.idle ||
-        (provider.state == PasspointLoadState.loading && !hasDevices)) {
+    final data = asyncPasspoint.value;
+    final hasDevices = data?.devices.isNotEmpty ?? false;
+
+    if (asyncPasspoint.isLoading && !hasDevices) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (provider.state == PasspointLoadState.error && !hasDevices) {
+    if (asyncPasspoint.hasError && !hasDevices) {
       return RetryableErrorWidget(
-        errorType: provider.error ?? LoadErrorType.networkError,
-        onRetry: provider.refresh,
+        errorType: _mapError(asyncPasspoint.error!),
+        onRetry: () => ref.read(passpointProvider.notifier).refresh(),
       );
     }
 
+    final devices = data?.devices ?? const [];
+    final userInfo = data?.userInfo;
+
     return RefreshIndicator(
-      onRefresh: provider.refresh,
+      onRefresh: () => ref.read(passpointProvider.notifier).refresh(),
       child: ListView(
         padding: withSystemBottomInset(context, const EdgeInsets.all(16)),
         children: [
-          if (provider.state == PasspointLoadState.error &&
-              provider.error != null) ...[
-            _buildRefreshErrorBanner(l10n, provider.error!, provider.refresh),
+          if (asyncPasspoint.hasError && asyncPasspoint.error != null) ...[
+            _buildRefreshErrorBanner(
+              l10n,
+              _mapError(asyncPasspoint.error!),
+              () => ref.read(passpointProvider.notifier).refresh(),
+            ),
             const SizedBox(height: 16),
           ],
-          if (provider.userInfo != null) ...[
-            _buildUserInfoCard(l10n, provider.userInfo!),
+          if (userInfo != null) ...[
+            _buildUserInfoCard(l10n, userInfo),
             const SizedBox(height: 16),
           ],
-          _buildDeviceListCard(l10n, provider),
+          _buildDeviceListCard(l10n, devices, cancellingMac),
           const SizedBox(height: 72), // 给 FAB 留出空间
         ],
       ),
@@ -222,12 +238,13 @@ class _PasspointPageState extends State<PasspointPage> {
 
   Widget _buildDeviceListCard(
     AppLocalizations l10n,
-    PasspointProvider provider,
+    List<PasspointDevice> devices,
+    String? cancellingMac,
   ) {
-    final appConfigService = getIt<AppConfigProvider>();
+    final cardDuration = ref.watch(cardSizeAnimationDurationSettingProvider);
 
     return AnimatedSize(
-      duration: appConfigService.cardSizeAnimationDuration.value,
+      duration: cardDuration,
       curve: appCurve,
       alignment: Alignment.topCenter,
       child: CardWithTitle(
@@ -238,7 +255,7 @@ class _PasspointPageState extends State<PasspointPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (provider.devices.isEmpty)
+              if (devices.isEmpty)
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
@@ -251,8 +268,9 @@ class _PasspointPageState extends State<PasspointPage> {
                   ),
                 )
               else
-                ...provider.devices.map(
-                  (device) => _buildDeviceItem(device, l10n, provider),
+                ...devices.map(
+                  (device) =>
+                      _buildDeviceItem(device, l10n, cancellingMac),
                 ),
             ],
           ),
@@ -264,10 +282,10 @@ class _PasspointPageState extends State<PasspointPage> {
   Widget _buildDeviceItem(
     PasspointDevice device,
     AppLocalizations l10n,
-    PasspointProvider provider,
+    String? cancellingMac,
   ) {
-    final isThisDevice =
-        provider.isCancelling && provider.cancellingMac == device.userMac;
+    final isCancelling = cancellingMac != null;
+    final isThisDevice = isCancelling && cancellingMac == device.userMac;
     final exitLabel = PasspointExit.all
         .where((e) => e.value == device.defaultServiceName)
         .map((e) => e.label)
@@ -342,9 +360,9 @@ class _PasspointPageState extends State<PasspointPage> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.power_settings_new_outlined),
-            onPressed: provider.isCancelling
+            onPressed: isCancelling
                 ? null
-                : () => _confirmCancel(device, l10n, provider),
+                : () => _confirmCancel(device, l10n),
             tooltip: l10n.passpointCancelAuth,
           ),
         ],
@@ -364,7 +382,6 @@ class _PasspointPageState extends State<PasspointPage> {
   Future<void> _confirmCancel(
     PasspointDevice device,
     AppLocalizations l10n,
-    PasspointProvider provider,
   ) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -388,16 +405,18 @@ class _PasspointPageState extends State<PasspointPage> {
     );
     if (confirm != true || !mounted) return;
 
-    final success = await provider.cancelDevice(device);
+    final result = await ref
+        .read(passpointProvider.notifier)
+        .cancelDevice(device);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success
+          result.success
               ? l10n.passpointOperationSuccess
-              : (provider.cancelErrorMessage ?? l10n.operationFailed),
+              : (result.errorMessage ?? l10n.operationFailed),
         ),
-        backgroundColor: success
+        backgroundColor: result.success
             ? Theme.of(context).colorScheme.primary
             : Theme.of(context).colorScheme.error,
       ),
@@ -406,13 +425,12 @@ class _PasspointPageState extends State<PasspointPage> {
 
   void _showAddSheet(
     BuildContext context,
-    PasspointProvider provider,
     AppLocalizations l10n,
   ) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (sheetContext) => _AddDeviceSheet(provider: provider),
+      builder: (sheetContext) => const _AddDeviceSheet(),
     );
   }
 }
@@ -421,16 +439,14 @@ class _PasspointPageState extends State<PasspointPage> {
 ///
 /// 输入 MAC 地址（大写十六进制，如 `B8782EBDCE85`）、绑定有效期
 /// （0-365 天，0 表示最长 6 年）与出口（默认校园网）。
-class _AddDeviceSheet extends StatefulWidget {
-  const _AddDeviceSheet({required this.provider});
-
-  final PasspointProvider provider;
+class _AddDeviceSheet extends ConsumerStatefulWidget {
+  const _AddDeviceSheet();
 
   @override
-  State<_AddDeviceSheet> createState() => _AddDeviceSheetState();
+  ConsumerState<_AddDeviceSheet> createState() => _AddDeviceSheetState();
 }
 
-class _AddDeviceSheetState extends State<_AddDeviceSheet> {
+class _AddDeviceSheetState extends ConsumerState<_AddDeviceSheet> {
   final _formKey = GlobalKey<FormState>();
   final _macController = TextEditingController();
   final _expireController = TextEditingController(text: '0');
@@ -471,13 +487,13 @@ class _AddDeviceSheetState extends State<_AddDeviceSheet> {
     final navigator = Navigator.of(context);
     final rootMessenger = ScaffoldMessenger.of(logicRootContext);
     setState(() => _submitting = true);
-    final success = await widget.provider.addDevice(
+    final result = await ref.read(passpointProvider.notifier).addDevice(
       userMac: _macController.text.trim().toUpperCase(),
       macExpireTime: int.parse(_expireController.text.trim()),
       defaultServiceName: _exitValue,
     );
     if (!mounted) return;
-    if (success) {
+    if (result.success) {
       navigator.pop();
       rootMessenger.showSnackBar(
         SnackBar(content: Text(l10n.passpointOperationSuccess)),
@@ -487,7 +503,7 @@ class _AddDeviceSheetState extends State<_AddDeviceSheet> {
         _submitting = false;
         // 优先展示服务端返回的具体错误文案（如「MAC 已绑定」），
         // 让用户明白失败原因；无具体文案时退化为通用失败提示。
-        _errorText = widget.provider.addErrorMessage ?? l10n.operationFailed;
+        _errorText = result.errorMessage ?? l10n.operationFailed;
       });
     }
   }

@@ -5,6 +5,7 @@ import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/common/swipe_page_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -38,10 +39,12 @@ void main() {
     // 假 Provider 未提供 service，子 Tab 的加载失败会自行落入错误态并
     // 打一条 ERROR 日志，属预期，不影响断言。
     await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const CcylPage(),
+      ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const CcylPage(),
+        ),
       ),
     );
     await tester.pump();
@@ -57,10 +60,12 @@ void main() {
     register(loggedIn: false);
 
     await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: const CcylPage(),
+      ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const CcylPage(),
+        ),
       ),
     );
     await tester.pump();
@@ -93,6 +98,9 @@ class _FakeCcylProvider extends ChangeNotifier implements CcylProvider {
 
   @override
   bool get isLoggedIn => loggedIn;
+
+  @override
+  String? get token => null;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

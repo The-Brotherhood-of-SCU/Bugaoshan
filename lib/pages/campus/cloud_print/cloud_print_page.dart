@@ -4,14 +4,15 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/cloud_print.dart';
 import 'package:bugaoshan/providers/cloud_print_provider.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/campus/cloud_print_pods.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/share_utils.dart';
@@ -27,18 +28,17 @@ part 'cloud_print_options_sheet.dart';
 part 'cloud_print_preview_dialog.dart';
 
 /// 批量打印、待打印任务和扫描文档共用原生会话与响应式页面。
-class CloudPrintPage extends StatefulWidget {
+class CloudPrintPage extends ConsumerStatefulWidget {
   const CloudPrintPage({super.key});
   @override
-  State<CloudPrintPage> createState() => _CloudPrintPageState();
+  ConsumerState<CloudPrintPage> createState() => _CloudPrintPageState();
 }
 
-class _CloudPrintPageState extends State<CloudPrintPage>
+class _CloudPrintPageState extends ConsumerState<CloudPrintPage>
     with SingleTickerProviderStateMixin {
   static const _tag = 'CloudPrintPage';
   late final TabController _tabs;
-  late final CloudPrintProvider _provider;
-  late final ScuAuthProvider _auth;
+  late CloudPrintProvider _provider;
   final _pages = PageController();
   late bool _wasLoggedIn;
   final Set<int> _selectedScans = {};
@@ -46,45 +46,29 @@ class _CloudPrintPageState extends State<CloudPrintPage>
   @override
   void initState() {
     super.initState();
-    _provider = getIt<CloudPrintProvider>();
-    _auth = getIt<ScuAuthProvider>()..addListener(_onAuthChanged);
-    _wasLoggedIn = _auth.isLoggedIn;
+    _wasLoggedIn = ref.read(scuAuthProviderBridge).isLoggedIn;
     _tabs = TabController(length: 3, vsync: this)..addListener(_onTabChanged);
   }
 
-  void _onAuthChanged() {
-    if (_wasLoggedIn == _auth.isLoggedIn) return;
-    _wasLoggedIn = _auth.isLoggedIn;
-    _selectedScans.clear();
-    _selectedJobs.clear();
-    _onTabChanged();
-    if (_auth.isLoggedIn) {
-      // 登录门禁卸载了 PageView，重新挂载时恢复当前标签对应的页面。
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _pages.hasClients) _pages.jumpToPage(_tabs.index);
-      });
-    }
-  }
-
   void _onTabChanged() {
-    if (!getIt<ScuAuthProvider>().isLoggedIn) return;
+    if (!ref.read(scuAuthProviderBridge).isLoggedIn) return;
+    final provider = ref.read(cloudPrintProvider);
     if (_tabs.index == 1 &&
-        !_provider.loadingJobs &&
-        _provider.jobs.isEmpty &&
-        !_provider.jobsFailed) {
-      unawaited(_provider.refreshJobs());
+        !provider.loadingJobs &&
+        provider.jobs.isEmpty &&
+        !provider.jobsFailed) {
+      unawaited(provider.refreshJobs());
     }
     if (_tabs.index == 2 &&
-        !_provider.loadingScans &&
-        _provider.scans.isEmpty &&
-        !_provider.scansFailed) {
-      unawaited(_provider.refreshScans());
+        !provider.loadingScans &&
+        provider.scans.isEmpty &&
+        !provider.scansFailed) {
+      unawaited(provider.refreshScans());
     }
   }
 
   @override
   void dispose() {
-    _auth.removeListener(_onAuthChanged);
     _pages.dispose();
     _tabs.dispose();
     super.dispose();
@@ -92,46 +76,57 @@ class _CloudPrintPageState extends State<CloudPrintPage>
 
   @override
   Widget build(BuildContext context) {
-    final auth = getIt<ScuAuthProvider>();
-    return ListenableBuilder(
-      listenable: Listenable.merge([auth, _provider]),
-      builder: (context, _) {
-        final l10n = AppLocalizations.of(context)!;
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(l10n.cloudPrintTitle),
-            bottom: auth.isLoggedIn
-                ? TabBar(
-                    controller: _tabs,
-                    tabs: [
-                      Tab(text: l10n.cloudPrintQueue),
-                      Tab(text: l10n.cloudPrintJobs),
-                      Tab(text: l10n.cloudPrintScans),
-                    ],
-                  )
-                : null,
-          ),
-          body: !auth.isLoggedIn
-              ? (auth.isAutoLoggingIn
-                    ? const AutoLoginLoadingWidget()
-                    : const LoginRequiredWidget())
-              : Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 960),
-                    child: SwipePageView(
-                      controller: _pages,
-                      tabController: _tabs,
-                      keepPagesAlive: true,
-                      children: [
-                        _uploadTab(l10n),
-                        _jobsTab(l10n),
-                        _scansTab(l10n),
-                      ],
-                    ),
-                  ),
+    ref.listen(scuAuthProviderBridge, (_, next) {
+      if (_wasLoggedIn != next.isLoggedIn) {
+        _wasLoggedIn = next.isLoggedIn;
+        _selectedScans.clear();
+        _selectedJobs.clear();
+        _onTabChanged();
+        if (next.isLoggedIn) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _pages.hasClients) _pages.jumpToPage(_tabs.index);
+          });
+        }
+      }
+    });
+
+    final auth = ref.watch(scuAuthProviderBridge);
+    _provider = ref.watch(cloudPrintProvider);
+    final l10n = AppLocalizations.of(context)!;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.cloudPrintTitle),
+        bottom: auth.isLoggedIn
+            ? TabBar(
+                controller: _tabs,
+                tabs: [
+                  Tab(text: l10n.cloudPrintQueue),
+                  Tab(text: l10n.cloudPrintJobs),
+                  Tab(text: l10n.cloudPrintScans),
+                ],
+              )
+            : null,
+      ),
+      body: !auth.isLoggedIn
+          ? (auth.isAutoLoggingIn
+                ? const AutoLoginLoadingWidget()
+                : const LoginRequiredWidget())
+          : Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 960),
+                child: SwipePageView(
+                  controller: _pages,
+                  tabController: _tabs,
+                  keepPagesAlive: true,
+                  children: [
+                    _uploadTab(l10n),
+                    _jobsTab(l10n),
+                    _scansTab(l10n),
+                  ],
                 ),
-        );
-      },
+              ),
+            ),
     );
   }
 
