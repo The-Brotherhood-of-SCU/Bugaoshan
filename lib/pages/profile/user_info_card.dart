@@ -16,39 +16,37 @@ class UserInfoCard extends ConsumerWidget {
   Widget _buildContent(
     BuildContext context,
     WidgetRef ref,
-    UserInfoState userInfo,
+    AsyncValue<UserInfoState> userInfo,
   ) {
     final theme = Theme.of(context);
     final localizations = AppLocalizations.of(context)!;
     final primaryColor = theme.colorScheme.primary;
 
-    // 未登录或尚未获取，不显示
-    if (!userInfo.hasData && !userInfo.loading && !userInfo.error) {
-      return const SizedBox.shrink();
+    if (userInfo.isLoading) {
+      return StyledCard(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: _buildLoadingContent(theme, localizations),
+      );
     }
 
-    Widget child;
-    VoidCallback? onTap;
+    if (userInfo.hasError) {
+      return StyledCard(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        onTap: () => ref.read(userInfoProvider.notifier).retry(),
+        child: _buildErrorContent(theme, localizations, primaryColor),
+      );
+    }
 
-    if (userInfo.loading) {
-      child = _buildLoadingContent(theme, localizations);
-      onTap = null;
-    } else if (userInfo.error) {
-      child = _buildErrorContent(theme, localizations, primaryColor);
-      onTap = () => ref.read(userInfoProvider.notifier).retry();
-    } else {
-      final labels = userInfo.labels;
-      if (labels == null || labels.isEmpty) {
-        return const SizedBox.shrink();
-      }
-      child = _buildLabelsContent(theme, primaryColor, localizations, labels);
-      onTap = () => ref.read(userInfoProvider.notifier).retry();
+    final data = userInfo.value;
+    final labels = data?.labels;
+    if (data == null || !data.hasData || labels == null || labels.isEmpty) {
+      return const SizedBox.shrink();
     }
 
     return StyledCard(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      onTap: onTap,
-      child: child,
+      onTap: () => ref.read(userInfoProvider.notifier).retry(),
+      child: _buildLabelsContent(theme, primaryColor, localizations, labels),
     );
   }
 

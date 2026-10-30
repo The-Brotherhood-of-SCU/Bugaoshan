@@ -101,9 +101,6 @@ class CourseCurriculumNotifier extends _$CourseCurriculumNotifier {
   static const String _tag = 'CourseCurriculumNotifier';
   static const pageSize = 30;
 
-  int _indexGeneration = 0;
-  int _coursesGeneration = 0;
-
   @override
   CourseCurriculumState build() {
     return const CourseCurriculumState();
@@ -146,7 +143,6 @@ class CourseCurriculumNotifier extends _$CourseCurriculumNotifier {
     if (!forceRefresh && state.indexState == CourseCurriculumLoadState.loaded) {
       return;
     }
-    final generation = ++_indexGeneration;
     state = state.copyWith(
       indexState: CourseCurriculumLoadState.loading,
       clearIndexError: true,
@@ -154,7 +150,6 @@ class CourseCurriculumNotifier extends _$CourseCurriculumNotifier {
     try {
       final api = ref.read(zhjwApiServiceBridge);
       final result = await api.fetchCourseCurriculumIndex();
-      if (generation != _indexGeneration) return;
       var selectedSemester = state.selectedSemester;
       // 默认选中第一个学期（教务系统页面同样预选当前学期）。
       if (selectedSemester.isEmpty && result.semesters.isNotEmpty) {
@@ -170,14 +165,12 @@ class CourseCurriculumNotifier extends _$CourseCurriculumNotifier {
       await search();
     } on UnauthenticatedException catch (e, logStackTrace) {
       AppLog.e(_tag, 'loadIndex 失败', error: e, stackTrace: logStackTrace);
-      if (generation != _indexGeneration) return;
       state = state.copyWith(
         indexState: CourseCurriculumLoadState.error,
         indexError: zhjwAuthErrorType(e),
       );
     } catch (error, logStackTrace) {
       AppLog.e(_tag, 'loadIndex 失败', error: error, stackTrace: logStackTrace);
-      if (generation != _indexGeneration) return;
       state = state.copyWith(
         indexState: CourseCurriculumLoadState.error,
         indexError: campusNetworkErrorType(LoadErrorType.loadFailed),
@@ -213,7 +206,6 @@ class CourseCurriculumNotifier extends _$CourseCurriculumNotifier {
     final courseName = state.courseName;
     final courseCode = state.courseCode;
     final courseSeq = state.courseSeq;
-    final generation = ++_coursesGeneration;
     state = state.copyWith(
       isLoadingMorePage: !replace,
       coursesState: CourseCurriculumLoadState.loading,
@@ -231,13 +223,14 @@ class CourseCurriculumNotifier extends _$CourseCurriculumNotifier {
         courseSeq: courseSeq,
         category: category,
       );
-      if (generation != _coursesGeneration ||
-          semester != state.selectedSemester ||
-          department != state.selectedDepartment ||
-          category != state.selectedCategory ||
-          courseName != state.courseName ||
-          courseCode != state.courseCode ||
-          courseSeq != state.courseSeq) {
+      if (!_isCurrentCourseRequest(
+        semester: semester,
+        department: department,
+        category: category,
+        courseName: courseName,
+        courseCode: courseCode,
+        courseSeq: courseSeq,
+      )) {
         return;
       }
       state = state.copyWith(
@@ -250,7 +243,6 @@ class CourseCurriculumNotifier extends _$CourseCurriculumNotifier {
     } on UnauthenticatedException catch (e, logStackTrace) {
       AppLog.e(_tag, '_loadCourses 失败', error: e, stackTrace: logStackTrace);
       if (!_isCurrentCourseRequest(
-        generation: generation,
         semester: semester,
         department: department,
         category: category,
@@ -272,7 +264,6 @@ class CourseCurriculumNotifier extends _$CourseCurriculumNotifier {
         stackTrace: logStackTrace,
       );
       if (!_isCurrentCourseRequest(
-        generation: generation,
         semester: semester,
         department: department,
         category: category,
@@ -291,7 +282,6 @@ class CourseCurriculumNotifier extends _$CourseCurriculumNotifier {
   }
 
   bool _isCurrentCourseRequest({
-    required int generation,
     required String semester,
     required String department,
     required String category,
@@ -299,7 +289,6 @@ class CourseCurriculumNotifier extends _$CourseCurriculumNotifier {
     required String courseCode,
     required String courseSeq,
   }) =>
-      generation == _coursesGeneration &&
       semester == state.selectedSemester &&
       department == state.selectedDepartment &&
       category == state.selectedCategory &&
@@ -308,8 +297,6 @@ class CourseCurriculumNotifier extends _$CourseCurriculumNotifier {
       courseSeq == state.courseSeq;
 
   void clear() {
-    _indexGeneration++;
-    _coursesGeneration++;
     state = const CourseCurriculumState();
   }
 }

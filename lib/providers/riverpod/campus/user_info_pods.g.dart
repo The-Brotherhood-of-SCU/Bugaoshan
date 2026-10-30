@@ -13,7 +13,7 @@ part of 'user_info_pods.dart';
 final userInfoProvider = UserInfoNotifierProvider._();
 
 final class UserInfoNotifierProvider
-    extends $NotifierProvider<UserInfoNotifier, UserInfoState> {
+    extends $AsyncNotifierProvider<UserInfoNotifier, UserInfoState> {
   UserInfoNotifierProvider._()
     : super(
         from: null,
@@ -31,29 +31,21 @@ final class UserInfoNotifierProvider
   @$internal
   @override
   UserInfoNotifier create() => UserInfoNotifier();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(UserInfoState value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<UserInfoState>(value),
-    );
-  }
 }
 
-String _$userInfoNotifierHash() => r'19e3002d8e75f14fe3af3151396d385331b46bac';
+String _$userInfoNotifierHash() => r'4d58b3bfb305ee6335c54010042ad104e58ced2f';
 
-abstract class _$UserInfoNotifier extends $Notifier<UserInfoState> {
-  UserInfoState build();
+abstract class _$UserInfoNotifier extends $AsyncNotifier<UserInfoState> {
+  FutureOr<UserInfoState> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<UserInfoState, UserInfoState>;
+    final ref = this.ref as $Ref<AsyncValue<UserInfoState>, UserInfoState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<UserInfoState, UserInfoState>,
-              UserInfoState,
+              AnyNotifier<AsyncValue<UserInfoState>, UserInfoState>,
+              AsyncValue<UserInfoState>,
               Object?,
               Object?
             >;

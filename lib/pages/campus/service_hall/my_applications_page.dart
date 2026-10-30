@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/riverpod/campus/service_applications_pods.dart';
-import 'package:bugaoshan/providers/service_applications_provider.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
@@ -15,70 +15,52 @@ import 'package:bugaoshan/utils/system_insets.dart';
 /// 展示当前用户的所有已提交事项（`/site/process/inst-list`，status=0 查全部）。
 /// 列表项字段来自真实抓包：`app_name`（事项名）、`created`（提交时间）、
 /// `inst_status`（中文状态，如"已完成"）。
-class MyApplicationsPage extends ConsumerStatefulWidget {
+class MyApplicationsPage extends ConsumerWidget {
   const MyApplicationsPage({super.key});
 
   @override
-  ConsumerState<MyApplicationsPage> createState() => _MyApplicationsPageState();
-}
-
-class _MyApplicationsPageState extends ConsumerState<MyApplicationsPage> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && ref.read(scuAuthProviderBridge).isLoggedIn) {
-        ref.read(serviceApplicationsProvider.notifier).ensureLoaded();
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    ref.listen(scuAuthProviderBridge, (previous, next) {
-      if (next.isLoggedIn) {
-        ref.read(serviceApplicationsProvider.notifier).ensureLoaded();
-      }
-    });
-
     final auth = ref.watch(scuAuthProviderBridge);
-    final appsState = ref.watch(serviceApplicationsProvider);
+    final appsAsync = ref.watch(serviceApplicationsProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.leaveMyApplications)),
       body: !auth.isLoggedIn
           ? const LoginRequiredWidget()
-          : _buildBody(l10n, appsState),
+          : appsAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, st) => RetryableErrorWidget(
+                errorType: err is UnauthenticatedException
+                    ? LoadErrorType.sessionExpired
+                    : campusNetworkErrorType(LoadErrorType.loadFailed),
+                onRetry: () =>
+                    ref.read(serviceApplicationsProvider.notifier).refresh(),
+              ),
+              data: (items) => items.isEmpty
+                  ? _emptyState(context, l10n)
+                  : RefreshIndicator(
+                      onRefresh: () => ref
+                          .read(serviceApplicationsProvider.notifier)
+                          .refresh(),
+                      child: ListView.separated(
+                        padding:
+                            withSystemBottomInset(context, EdgeInsets.all(16)),
+                        itemCount: items.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 8),
+                        itemBuilder: (context, i) =>
+                            _itemCard(context, items[i], l10n),
+                      ),
+                    ),
+            ),
     );
   }
 
-  Widget _buildBody(AppLocalizations l10n, ServiceApplicationsState appsState) {
-    if (appsState.loadState == ServiceApplicationsLoadState.idle ||
-        appsState.loadState == ServiceApplicationsLoadState.loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (appsState.loadState == ServiceApplicationsLoadState.error) {
-      return RetryableErrorWidget(
-        errorType: appsState.error!,
-        onRetry: () => ref.read(serviceApplicationsProvider.notifier).refresh(),
-      );
-    }
-    if (appsState.items.isEmpty) {
-      return _emptyState(l10n);
-    }
-    return RefreshIndicator(
-      onRefresh: () => ref.read(serviceApplicationsProvider.notifier).refresh(),
-      child: ListView.separated(
-        padding: withSystemBottomInset(context, EdgeInsets.all(16)),
-        itemCount: appsState.items.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 8),
-        itemBuilder: (context, i) => _itemCard(appsState.items[i], l10n),
-      ),
-    );
-  }
-
-  Widget _itemCard(Map<String, dynamic> item, AppLocalizations l10n) {
+  Widget _itemCard(
+    BuildContext context,
+    Map<String, dynamic> item,
+    AppLocalizations l10n,
+  ) {
     final title = (item['app_name'] ?? item['name'] ?? '').toString();
     final created = (item['created'] ?? item['create_time'] ?? '').toString();
     return StyledCard(
@@ -116,7 +98,6 @@ class _MyApplicationsPageState extends ConsumerState<MyApplicationsPage> {
   }
 
   Widget _statusChip(Map<String, dynamic> item, AppLocalizations l10n) {
-    // 优先用服务端下发的中文状态（inst_status），兜底映射数字 status。
     final instStatus = (item['inst_status'] ?? '').toString();
     if (instStatus.isNotEmpty) {
       return _chip(instStatus, _colorForStatus(item['status']?.toString()));
@@ -156,7 +137,7 @@ class _MyApplicationsPageState extends ConsumerState<MyApplicationsPage> {
     );
   }
 
-  Widget _emptyState(AppLocalizations l10n) {
+  Widget _emptyState(BuildContext context, AppLocalizations l10n) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

@@ -116,11 +116,6 @@ class ClassScheduleInquiryNotifier extends _$ClassScheduleInquiryNotifier {
   static const String _tag = 'ClassScheduleInquiryNotifier';
   static const pageSize = 30;
 
-  int _indexGeneration = 0;
-  int _subjectsGeneration = 0;
-  int _classOptionsGeneration = 0;
-  int _classesGeneration = 0;
-
   @override
   ClassScheduleInquiryState build() {
     return const ClassScheduleInquiryState();
@@ -142,8 +137,6 @@ class ClassScheduleInquiryNotifier extends _$ClassScheduleInquiryNotifier {
 
   Future<void> setSelectedDepartment(String value) async {
     if (state.selectedDepartment == value) return;
-    _subjectsGeneration++;
-    _classOptionsGeneration++;
     state = state.copyWith(
       selectedDepartment: value,
       selectedSubject: '',
@@ -176,7 +169,6 @@ class ClassScheduleInquiryNotifier extends _$ClassScheduleInquiryNotifier {
         state.indexState == ClassScheduleInquiryLoadState.loaded) {
       return;
     }
-    final generation = ++_indexGeneration;
     state = state.copyWith(
       indexState: ClassScheduleInquiryLoadState.loading,
       clearIndexError: true,
@@ -184,7 +176,6 @@ class ClassScheduleInquiryNotifier extends _$ClassScheduleInquiryNotifier {
     try {
       final api = ref.read(zhjwApiServiceBridge);
       final result = await api.fetchClassScheduleInquiryIndex();
-      if (generation != _indexGeneration) return;
       state = state.copyWith(
         semesters: result.semesters,
         grades: result.grades,
@@ -194,14 +185,12 @@ class ClassScheduleInquiryNotifier extends _$ClassScheduleInquiryNotifier {
       await search();
     } on UnauthenticatedException catch (e, logStackTrace) {
       AppLog.e(_tag, 'loadIndex 失败', error: e, stackTrace: logStackTrace);
-      if (generation != _indexGeneration) return;
       state = state.copyWith(
         indexState: ClassScheduleInquiryLoadState.error,
         indexError: zhjwAuthErrorType(e),
       );
     } catch (error, logStackTrace) {
       AppLog.e(_tag, 'loadIndex 失败', error: error, stackTrace: logStackTrace);
-      if (generation != _indexGeneration) return;
       state = state.copyWith(
         indexState: ClassScheduleInquiryLoadState.error,
         indexError: campusNetworkErrorType(LoadErrorType.loadFailed),
@@ -211,7 +200,6 @@ class ClassScheduleInquiryNotifier extends _$ClassScheduleInquiryNotifier {
 
   Future<void> loadSubjects() async {
     final department = state.selectedDepartment;
-    final generation = ++_subjectsGeneration;
     if (department.isEmpty) {
       state = state.copyWith(
         subjects: const [],
@@ -225,8 +213,7 @@ class ClassScheduleInquiryNotifier extends _$ClassScheduleInquiryNotifier {
     try {
       final api = ref.read(zhjwApiServiceBridge);
       final subjects = await api.fetchSubjectsByDepartment(department);
-      if (generation != _subjectsGeneration ||
-          department != state.selectedDepartment) {
+      if (department != state.selectedDepartment) {
         return;
       }
       state = state.copyWith(
@@ -240,8 +227,7 @@ class ClassScheduleInquiryNotifier extends _$ClassScheduleInquiryNotifier {
         error: error,
         stackTrace: logStackTrace,
       );
-      if (generation != _subjectsGeneration ||
-          department != state.selectedDepartment) {
+      if (department != state.selectedDepartment) {
         return;
       }
       state = state.copyWith(
@@ -255,7 +241,6 @@ class ClassScheduleInquiryNotifier extends _$ClassScheduleInquiryNotifier {
     final grade = state.selectedGrade;
     final department = state.selectedDepartment;
     final subject = state.selectedSubject;
-    final generation = ++_classOptionsGeneration;
     if (grade.isEmpty || department.isEmpty) {
       state = state.copyWith(
         classOptions: const [],
@@ -273,8 +258,7 @@ class ClassScheduleInquiryNotifier extends _$ClassScheduleInquiryNotifier {
         departmentNum: department,
         subjectNum: subject,
       );
-      if (generation != _classOptionsGeneration ||
-          grade != state.selectedGrade ||
+      if (grade != state.selectedGrade ||
           department != state.selectedDepartment ||
           subject != state.selectedSubject) {
         return;
@@ -290,8 +274,7 @@ class ClassScheduleInquiryNotifier extends _$ClassScheduleInquiryNotifier {
         error: error,
         stackTrace: logStackTrace,
       );
-      if (generation != _classOptionsGeneration ||
-          grade != state.selectedGrade ||
+      if (grade != state.selectedGrade ||
           department != state.selectedDepartment ||
           subject != state.selectedSubject) {
         return;
@@ -328,7 +311,6 @@ class ClassScheduleInquiryNotifier extends _$ClassScheduleInquiryNotifier {
     final department = state.selectedDepartment;
     final subject = state.selectedSubject;
     final classCode = state.selectedClass;
-    final generation = ++_classesGeneration;
     state = state.copyWith(
       isLoadingMorePage: !replace,
       classesState: ClassScheduleInquiryLoadState.loading,
@@ -345,12 +327,13 @@ class ClassScheduleInquiryNotifier extends _$ClassScheduleInquiryNotifier {
         subjectNum: subject,
         classNum: classCode,
       );
-      if (generation != _classesGeneration ||
-          semester != state.selectedSemester ||
-          grade != state.selectedGrade ||
-          department != state.selectedDepartment ||
-          subject != state.selectedSubject ||
-          classCode != state.selectedClass) {
+      if (!_isCurrentClassRequest(
+        semester: semester,
+        grade: grade,
+        department: department,
+        subject: subject,
+        classCode: classCode,
+      )) {
         return;
       }
       state = state.copyWith(
@@ -363,7 +346,6 @@ class ClassScheduleInquiryNotifier extends _$ClassScheduleInquiryNotifier {
     } on UnauthenticatedException catch (e, logStackTrace) {
       AppLog.e(_tag, '_loadClasses 失败', error: e, stackTrace: logStackTrace);
       if (!_isCurrentClassRequest(
-        generation: generation,
         semester: semester,
         grade: grade,
         department: department,
@@ -384,7 +366,6 @@ class ClassScheduleInquiryNotifier extends _$ClassScheduleInquiryNotifier {
         stackTrace: logStackTrace,
       );
       if (!_isCurrentClassRequest(
-        generation: generation,
         semester: semester,
         grade: grade,
         department: department,
@@ -402,14 +383,12 @@ class ClassScheduleInquiryNotifier extends _$ClassScheduleInquiryNotifier {
   }
 
   bool _isCurrentClassRequest({
-    required int generation,
     required String semester,
     required String grade,
     required String department,
     required String subject,
     required String classCode,
   }) =>
-      generation == _classesGeneration &&
       semester == state.selectedSemester &&
       grade == state.selectedGrade &&
       department == state.selectedDepartment &&
@@ -417,10 +396,6 @@ class ClassScheduleInquiryNotifier extends _$ClassScheduleInquiryNotifier {
       classCode == state.selectedClass;
 
   void clear() {
-    _indexGeneration++;
-    _subjectsGeneration++;
-    _classOptionsGeneration++;
-    _classesGeneration++;
     state = const ClassScheduleInquiryState();
   }
 }

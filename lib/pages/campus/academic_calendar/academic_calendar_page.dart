@@ -49,7 +49,6 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
   List<CalendarEntry> _entries = [];
   List<String> _imageUrls = [];
   CalendarEntry? _selected;
-  int _detailRequestGeneration = 0;
 
   // Interactive Calendar variables
   bool _interactiveLoading = true;
@@ -74,7 +73,6 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
 
   @override
   void dispose() {
-    _detailRequestGeneration++;
     _tabController.removeListener(_handleTabChange);
     _tabController.dispose();
     super.dispose();
@@ -136,7 +134,6 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
 
   Future<void> _loadDetail(CalendarEntry entry) async {
     if (!mounted) return;
-    final requestGeneration = ++_detailRequestGeneration;
     setState(() {
       _loading = true;
       _error = null;
@@ -147,7 +144,7 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
       final uri = Uri.parse('$_base/${entry.path}');
       final request = widget.httpGet?.call(uri) ?? http.get(uri);
       final resp = await request.timeout(const Duration(seconds: 8));
-      if (!_isCurrentDetailRequest(requestGeneration, entry)) return;
+      if (!_isCurrentDetailRequest(entry)) return;
       if (resp.statusCode != 200) {
         throw Exception('HTTP ${resp.statusCode}');
       }
@@ -166,14 +163,14 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
         throw Exception('No images found');
       }
 
-      if (!_isCurrentDetailRequest(requestGeneration, entry)) return;
+      if (!_isCurrentDetailRequest(entry)) return;
       setState(() {
         _imageUrls = urls;
         _loading = false;
       });
     } catch (e, logStackTrace) {
       AppLog.e(_tag, '_loadDetail 失败', error: e, stackTrace: logStackTrace);
-      if (!_isCurrentDetailRequest(requestGeneration, entry)) return;
+      if (!_isCurrentDetailRequest(entry)) return;
       setState(() {
         _loading = false;
         _error = e.toString();
@@ -181,10 +178,8 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
     }
   }
 
-  bool _isCurrentDetailRequest(int generation, CalendarEntry entry) {
-    return mounted &&
-        generation == _detailRequestGeneration &&
-        identical(entry, _selected);
+  bool _isCurrentDetailRequest(CalendarEntry entry) {
+    return mounted && identical(entry, _selected);
   }
 
   // Fetch interactive calendar data

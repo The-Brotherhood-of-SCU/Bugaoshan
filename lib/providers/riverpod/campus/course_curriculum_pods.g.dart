@@ -42,7 +42,7 @@ final class CourseCurriculumNotifierProvider
 }
 
 String _$courseCurriculumNotifierHash() =>
-    r'904c73678396ac140a8913620ed5004918e21b07';
+    r'2c85b3ae9de061499ccbdf447d60223847bb688a';
 
 abstract class _$CourseCurriculumNotifier
     extends $Notifier<CourseCurriculumState> {

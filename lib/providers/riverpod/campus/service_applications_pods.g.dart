@@ -14,9 +14,9 @@ final serviceApplicationsProvider = ServiceApplicationsNotifierProvider._();
 
 final class ServiceApplicationsNotifierProvider
     extends
-        $NotifierProvider<
+        $AsyncNotifierProvider<
           ServiceApplicationsNotifier,
-          ServiceApplicationsState
+          List<Map<String, dynamic>>
         > {
   ServiceApplicationsNotifierProvider._()
     : super(
@@ -35,32 +35,31 @@ final class ServiceApplicationsNotifierProvider
   @$internal
   @override
   ServiceApplicationsNotifier create() => ServiceApplicationsNotifier();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(ServiceApplicationsState value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<ServiceApplicationsState>(value),
-    );
-  }
 }
 
 String _$serviceApplicationsNotifierHash() =>
-    r'0cf7181b7c7b524d9529ce517be86649a8a50b3e';
+    r'e6731bdf10003642b2f0db89bca8dfeb29e945a4';
 
 abstract class _$ServiceApplicationsNotifier
-    extends $Notifier<ServiceApplicationsState> {
-  ServiceApplicationsState build();
+    extends $AsyncNotifier<List<Map<String, dynamic>>> {
+  FutureOr<List<Map<String, dynamic>>> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
     final ref =
-        this.ref as $Ref<ServiceApplicationsState, ServiceApplicationsState>;
+        this.ref
+            as $Ref<
+              AsyncValue<List<Map<String, dynamic>>>,
+              List<Map<String, dynamic>>
+            >;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<ServiceApplicationsState, ServiceApplicationsState>,
-              ServiceApplicationsState,
+              AnyNotifier<
+                AsyncValue<List<Map<String, dynamic>>>,
+                List<Map<String, dynamic>>
+              >,
+              AsyncValue<List<Map<String, dynamic>>>,
               Object?,
               Object?
             >;

@@ -177,7 +177,7 @@ class _NetworkDevicePageState extends ConsumerState<NetworkDevicePage> {
 
   Widget _buildUserInfoCard(AppLocalizations l10n) {
     final userInfo = ref.watch(userInfoProvider);
-    final user = userInfo.profile;
+    final user = userInfo.value?.profile;
     final role = user?['role'] as Map<String, dynamic>?;
     final departs = user?['departs'] as Map<String, dynamic>?;
 

@@ -46,7 +46,7 @@ final class ClassScheduleInquiryNotifierProvider
 }
 
 String _$classScheduleInquiryNotifierHash() =>
-    r'5d5d60349f7841344a28d7f856b1fd9609ec5e81';
+    r'c416551fdb9c54e2e1238267c2b1a9fc5ad25fa7';
 
 abstract class _$ClassScheduleInquiryNotifier
     extends $Notifier<ClassScheduleInquiryState> {
