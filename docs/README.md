@@ -10,6 +10,7 @@
 
 | 文档 | 范围 | 状态 |
 |---|---|---|
+| [现代化状态与网络架构](architecture/modernized-state-and-network.md) | Riverpod 状态分层、代数检查消除、ApiSession 与 scu_backend 架构 | 当前实现 |
 | [认证架构](architecture/authentication.md) | SCU 根认证、子系统认证、重试、会话隔离和 DI | 当前实现 |
 | [运行日志](architecture/logging.md) | 认证与业务分类、错误覆盖、脱敏和导出 | 当前实现 |
 | [通知 WebView 架构](architecture/notice-webview.md) | 三类通知来源、JS bridge、附件下载和平台边界 | 当前实现 |
