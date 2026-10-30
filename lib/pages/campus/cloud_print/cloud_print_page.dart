@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
+import 'package:bugaoshan/platform/platform_adapter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:open_filex/open_filex.dart';
+import 'package:bugaoshan/utils/open_file.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:bugaoshan/injection/injector.dart';
@@ -206,8 +206,7 @@ class _CloudPrintPageState extends State<CloudPrintPage>
   Future<void> _pickFiles(AppLocalizations l10n) async {
     final generation = _provider.sessionGeneration;
     try {
-      final selection = await FilePicker.pickFiles(
-        type: FileType.custom,
+      final selection = await PlatformAdapter.instance.pickFiles(
         allowedExtensions: cloudPrintExtensions,
       );
       if (selection.isEmpty ||
