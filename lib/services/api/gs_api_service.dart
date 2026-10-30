@@ -1,39 +1,30 @@
 import 'dart:convert';
 
-import 'package:bugaoshan/services/api/api_request.dart';
-import 'package:bugaoshan/services/auth/cookie_client.dart';
-import 'package:bugaoshan/services/auth/gs_auth.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/models/graduate_grades.dart';
 import 'package:bugaoshan/models/graduate_train_plan.dart';
+import 'package:bugaoshan/services/api/api_request.dart';
+import 'package:bugaoshan/services/api/api_session.dart';
+import 'package:bugaoshan/services/auth/cookie_client.dart';
+import 'package:bugaoshan/services/auth/gs_auth.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/constants.dart';
-import 'package:bugaoshan/utils/graduate_schedule_parser.dart';
 import 'package:bugaoshan/utils/graduate_grades_parser.dart';
+import 'package:bugaoshan/utils/graduate_schedule_parser.dart';
 import 'package:bugaoshan/utils/gs_json_envelope.dart';
 
 /// 研教务（gsapp / EMAP）API 服务（第1层）。
-///
-/// 通过 [GsAuth] 获取的 CookieClient 访问研教务接口。响应信封已实测确认
-/// （见 [unwrapGsEnvelope]）：`{"code":"0","datas":{"<动作名>":{"rows":[…]}}}`
-/// —— [_postForm] 统一解包后交给各解析器。
-///
-/// 课表链路（2026-09-15 登录抓包实测定案，见 `.tmp/gs/findings.md` §8；
-/// 2026-09-20 浏览器抓包补充确认行内另带 ZCBH 周次位串与 KSSJ/JSSJ 时刻）：
-/// - 课表 `POST xspkjgcx.do`，body `XNXQDM=<学期5位码>&*order=-ZCBH`，
-///   行字段 KCMC/JSXM/JASMC/XQ(星期,周一=1)/KSJCDM/JSJCDM/ZCMC/ZCBH/KSSJ/JSSJ；
-/// - 学期列表 `kfdxnxqcx.do`、首次上课日期 `xsjxrwcx.do`（SCSKRQ）。
-///
-/// 成绩链路（2026-09-20 抓包定案）：`POST xscjcx.do`（wdcjapp），标准 GS
-/// 信封，行字段见 [GraduateGradeRow]。
-///
-/// 培养进度链路（2026-09-21 模拟机内抓包定案）：`wdpyjhapp` 的 `wdxx.do` /
-/// `wdkclbtj.do` / `wdfakcxx.do` 三个 GET 无参零框架信封接口，见
-/// [_getZeroJson]；培养方案入口 `/sys/wdpyfaappscu/*default/index.do#/pyfaxq`
-/// 尚无对应功能，未接线。
 class GsApiService {
-  GsApiService(this._gsAuth);
+  GsApiService(this._gsAuth, {ApiSession? session})
+    : _session =
+          session ??
+          ApiSession(
+            getClient: _gsAuth.getClient,
+            invalidate: _gsAuth.invalidate,
+            baseUrl: Uri.parse(kGsEhallBaseUrl),
+            logTag: _tag,
+          );
 
   static const String _tag = 'GsApiService';
 
@@ -41,7 +32,9 @@ class GsApiService {
   /// 于它命中，只兜「服务端元数据全撒谎」的死循环。
   static const int _maxPagedRequests = 50;
 
+  // ignore: unused_field
   final GsAuth _gsAuth;
+  final ApiSession _session;
 
   /// 研究生课表（供课表导入，直连）。
   ///
@@ -136,11 +129,8 @@ class GsApiService {
     String path,
     Map<String, String> fields,
   ) {
-    return retryOnUnauthenticated(
-      _gsAuth.getClient,
+    return _session.run(
       (client) => _postEnvelopeOnce(client, path, fields).then(gsRows),
-      invalidate: _gsAuth.invalidate,
-      logTag: 'GsApiService',
     );
   }
 
@@ -161,8 +151,7 @@ class GsApiService {
     final all = <Map<String, dynamic>>[];
     var page = 1;
     while (true) {
-      final envelope = await retryOnUnauthenticated(
-        _gsAuth.getClient,
+      final envelope = await _session.run(
         (client) async {
           final decoded = await _postEnvelopeOnce(client, path, {
             ...fields,
@@ -171,8 +160,6 @@ class GsApiService {
           });
           return gsPagedEnvelope(decoded) ?? GsPagedEnvelope(rows: const []);
         },
-        invalidate: _gsAuth.invalidate,
-        logTag: 'GsApiService',
       );
       if (envelope.rows.isEmpty) break;
       all.addAll(envelope.rows);
@@ -191,24 +178,13 @@ class GsApiService {
   }
 
   /// [retryOnUnauthenticated] 里的单次请求：状态码校验 + 信封 JSON 解码。
-  ///
-  /// - 401/403 → [UnauthenticatedException]；
-  /// - **空 body → [UnauthenticatedException]**：会话过期时服务端可能回
-  ///   200 空响应（网关剥 body），当成「无数据」会让成绩页显示「暂无
-  ///   成绩」而不是「去登录」——空 body 走自愈重试，重试仍空才穿透；
-  /// - 响应不是 JSON：会话失效时服务端给的是登录页 HTML，用
-  ///   [looksLikeLoginPage] 强特征判定后抛 [UnauthenticatedException]（让
-  ///   自动重试与全局「登录会话已过期」提示生效），其余非 JSON 抛
-  ///   [ServiceException]；
-  /// - 信封 `code` 非成功值 → 由 [unwrapGsEnvelope] 抛 [ServiceException]，
-  ///   这里**不吞**该异常。
   Future<Object?> _postEnvelopeOnce(
     CookieClient client,
     String path,
     Map<String, String> fields,
   ) async {
     final response = await client.post(
-      Uri.parse('$kGsEhallBaseUrl$path'),
+      _session.resolveUri(path),
       headers: {
         'Accept': 'application/json, text/javascript, */*; q=0.01',
         'User-Agent': kDefaultUserAgent,
@@ -217,15 +193,7 @@ class GsApiService {
       },
       body: fields,
     );
-    if (response.statusCode == 401 || response.statusCode == 403) {
-      throw const UnauthenticatedException();
-    }
-    if (response.statusCode < 200 || response.statusCode >= 400) {
-      throw ServiceException('研教务请求失败', statusCode: response.statusCode);
-    }
-    if (response.body.isEmpty) {
-      throw const UnauthenticatedException('研教务返回了空响应');
-    }
+    _session.checkResponse(response, apiName: path);
 
     final Object? decoded;
     try {
@@ -243,6 +211,10 @@ class GsApiService {
       AppLog.e(_tag, '$path 响应非 JSON（len=${response.body.length}）');
       throw ServiceException('研教务返回了无法解析的数据');
     }
+    if (decoded is! Map<String, dynamic>) {
+      throw ServiceException('研教务返回了无法解析的数据');
+    }
+    unwrapGsEnvelope(decoded);
     return decoded;
   }
 
@@ -299,15 +271,9 @@ class GsApiService {
     return reMapData is Map<String, dynamic> ? reMapData : const {};
   }
 
-  /// GET 零信封请求（带自愈）。会话失效判定与 [_postEnvelopeOnce] 一致：
-  /// 401/403、空 body、登录页 HTML；零信封额外要求 `success == true`。
+  /// GET 零信封请求（带自愈）。
   Future<Map<String, dynamic>> _getZeroJson(String path) {
-    return retryOnUnauthenticated(
-      _gsAuth.getClient,
-      (client) => _getZeroOnce(client, path),
-      invalidate: _gsAuth.invalidate,
-      logTag: 'GsApiService',
-    );
+    return _session.run((client) => _getZeroOnce(client, path));
   }
 
   Future<Map<String, dynamic>> _getZeroOnce(
@@ -315,7 +281,7 @@ class GsApiService {
     String path,
   ) async {
     final response = await client.followRedirects(
-      Uri.parse('$kGsEhallBaseUrl$path'),
+      _session.resolveUri(path),
       headers: {
         'Accept': 'application/json, text/javascript, */*; q=0.01',
         'User-Agent': kDefaultUserAgent,
@@ -323,15 +289,7 @@ class GsApiService {
         'X-Requested-With': 'XMLHttpRequest',
       },
     );
-    if (response.statusCode == 401 || response.statusCode == 403) {
-      throw const UnauthenticatedException();
-    }
-    if (response.statusCode < 200 || response.statusCode >= 400) {
-      throw ServiceException('研教务请求失败', statusCode: response.statusCode);
-    }
-    if (response.body.isEmpty) {
-      throw const UnauthenticatedException('研教务返回了空响应');
-    }
+    _session.checkResponse(response, apiName: path);
 
     final Object? decoded;
     try {

@@ -1,13 +1,10 @@
 import 'dart:convert';
 
 import 'package:bugaoshan/pages/campus/reservation/models/reservation_models.dart';
-import 'package:bugaoshan/services/api/api_request.dart';
-import 'package:bugaoshan/services/auth/cookie_client.dart';
+import 'package:bugaoshan/services/api/api_session.dart';
 import 'package:bugaoshan/services/auth/reservation_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
-import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/constants.dart';
-import 'package:http/http.dart' as http;
 
 /// 预约系统的业务 API 最小契约，供 [ReservationProvider] 注入测试替身。
 abstract interface class ReservationApi {
@@ -53,27 +50,45 @@ abstract interface class ReservationApi {
 /// 统一认证自愈链重试一次；`e` 非 `OK` 时抛 [ServiceException] 带服务端
 /// `m` 原文，`UN_AUTH` 转 [UnauthenticatedException] 以触发重认证。
 class ReservationApiService implements ReservationApi {
-  ReservationApiService(this._auth);
-
   static const String _tag = 'ReservationApiService';
 
+  // ignore: unused_field
   final ReservationAuth _auth;
+  final ApiSession _session;
+
+  ReservationApiService(this._auth, {ApiSession? session})
+    : _session =
+          session ??
+          ApiSession(
+            getClient: _auth.getClient,
+            invalidate: _auth.invalidate,
+            baseUrl: Uri.parse(kReservationBaseUrl),
+            logTag: _tag,
+            emptyBodyThrowsUnauthenticated: false,
+            jsonValidator: (json) {
+              final code = json['e']?.toString();
+              if (code == 'UN_AUTH') {
+                throw const UnauthenticatedException('预约系统会话未建立或已过期');
+              }
+            },
+            defaultHeaders: const {
+              'Referer': kReservationSpecialPageUrl,
+            },
+          );
 
   @override
-  Future<List<ReservationResource>> fetchResources() {
-    return _request((client) async {
-      final json = await _getJson(
-        client,
-        kReservationTopicResourceListPath,
-        query: {
-          'id': kReservationTopicId,
-          'p': '1',
-          'pageSize': '100',
-        },
-      );
-      // 抓包结构：`d = {data: [ {base: {...}} ], resources: [], total, ... }`。
-      return reservationResourcesFromJson(json);
-    });
+  Future<List<ReservationResource>> fetchResources() async {
+    final json = await _session.getJsonMap(
+      kReservationTopicResourceListPath,
+      query: {
+        'id': kReservationTopicId,
+        'p': '1',
+        'pageSize': '100',
+      },
+      apiName: 'fetchResources',
+    );
+    final data = _unwrap(json);
+    return reservationResourcesFromJson(data);
   }
 
   @override
@@ -81,20 +96,19 @@ class ReservationApiService implements ReservationApi {
     required String resourceId,
     required DateTime startDate,
     required DateTime endDate,
-  }) {
-    return _request((client) async {
-      // 服务端要求 date 是一个 JSON 字符串（不是对象），见 2026-10-23 抓包。
-      final date = jsonEncode({
-        'start_date': _formatDate(startDate),
-        'end_date': _formatDate(endDate),
-      });
-      final json = await _getJson(
-        client,
-        kReservationCalendarPath,
-        query: {'id': resourceId, 'date': date, 'collective': '0'},
-      );
-      return ReservationCalendar.fromJson(json);
+  }) async {
+    // 服务端要求 date 是一个 JSON 字符串（不是对象），见 2026-10-23 抓包。
+    final date = jsonEncode({
+      'start_date': _formatDate(startDate),
+      'end_date': _formatDate(endDate),
     });
+    final json = await _session.getJsonMap(
+      kReservationCalendarPath,
+      query: {'id': resourceId, 'date': date, 'collective': '0'},
+      apiName: 'fetchCalendar',
+    );
+    final data = _unwrap(json);
+    return ReservationCalendar.fromJson(data);
   }
 
   @override
@@ -102,19 +116,18 @@ class ReservationApiService implements ReservationApi {
     required String resourceId,
     required List<ReservationLaunchSlot> slots,
     required int number,
-  }) {
-    return _request((client) async {
-      final json = await _postJson(
-        client,
-        kReservationLaunchPath,
-        body: buildLaunchBody(
-          resourceId: resourceId,
-          slots: slots,
-          number: number,
-        ),
-      );
-      return ReservationLaunchResult.fromJson(json);
-    });
+  }) async {
+    final json = await _session.postJsonForJsonMap(
+      kReservationLaunchPath,
+      buildLaunchBody(
+        resourceId: resourceId,
+        slots: slots,
+        number: number,
+      ),
+      apiName: 'launchReservation',
+    );
+    final data = _unwrap(json);
+    return ReservationLaunchResult.fromJson(data);
   }
 
   @override
@@ -122,135 +135,50 @@ class ReservationApiService implements ReservationApi {
     int type = 0,
     int page = 1,
     int pageSize = 20,
-  }) {
-    return _request((client) async {
-      final json = await _getJson(
-        client,
-        kReservationAppointmentListPath,
-        query: {'p': '$page', 'type': '$type', 'pageSize': '$pageSize'},
-      );
-      final rows = json['data'];
-      if (rows is! List) return const [];
-      return [
-        for (final row in rows) ?ReservationAppointment.fromJson(row),
-      ];
-    });
+  }) async {
+    final json = await _session.getJsonMap(
+      kReservationAppointmentListPath,
+      query: {'p': '$page', 'type': '$type', 'pageSize': '$pageSize'},
+      apiName: 'fetchAppointments',
+    );
+    final data = _unwrap(json);
+    final rows = data['data'];
+    if (rows is! List) return const [];
+    return [
+      for (final row in rows) ?ReservationAppointment.fromJson(row),
+    ];
   }
 
   @override
   Future<void> cancelAppointment({
     required String appointmentId,
     required List<String> detailIds,
-  }) {
-    return _request((client) async {
-      await _postJson(
-        client,
-        kReservationCancelPath,
-        body: <String, dynamic>{
-          'appointment_id': appointmentId,
-          'appointment_detail_id': jsonEncode(detailIds),
-        },
-      );
-    });
-  }
-
-  Future<T> _request<T>(Future<T> Function(CookieClient client) fn) {
-    return retryOnUnauthenticated(
-      _auth.getClient,
-      fn,
-      invalidate: _auth.invalidate,
-      logTag: _tag,
-    );
-  }
-
-  /// GET 预约接口并解包 `{e, m, d}`，成功返回 `d`。
-  Future<Map<String, dynamic>> _getJson(
-    CookieClient client,
-    String path, {
-    Map<String, String>? query,
   }) async {
-    final uri = Uri.parse('$kReservationBaseUrl$path').replace(
-      queryParameters: query,
+    final json = await _session.postJsonForJsonMap(
+      kReservationCancelPath,
+      <String, dynamic>{
+        'appointment_id': appointmentId,
+        'appointment_detail_id': jsonEncode(detailIds),
+      },
+      apiName: 'cancelAppointment',
     );
-    final response = await client.get(uri, headers: _headers);
-    return _decodeEnvelope(response, path);
+    _unwrap(json);
   }
 
-  /// POST JSON 预约接口并解包 `{e, m, d}`，成功返回 `d`。
-  Future<Map<String, dynamic>> _postJson(
-    CookieClient client,
-    String path, {
-    required Map<String, dynamic> body,
-  }) async {
-    final uri = Uri.parse('$kReservationBaseUrl$path');
-    final response = await client.post(
-      uri,
-      headers: {..._headers, 'Content-Type': 'application/json'},
-      body: jsonEncode(body),
-    );
-    return _decodeEnvelope(response, path);
-  }
-
-  /// 解包 `{e, m, d}` 信封：`UN_AUTH` 转认证异常，`APPLY` 转未提交预约单
-  /// 异常，其它非 `OK` 抛 [ServiceException] 带服务端 `m` 原文。
-  Future<Map<String, dynamic>> _decodeEnvelope(
-    http.Response response,
-    String path,
-  ) async {
-    if (response.statusCode == 401 || response.statusCode == 403) {
-      throw const UnauthenticatedException('预约系统会话未建立或已过期');
-    }
-    if (response.statusCode < 200 || response.statusCode >= 400) {
-      throw ServiceException(
-        '预约系统请求失败',
-        statusCode: response.statusCode,
-      );
-    }
-
-    // 空 body 不直接判成未登录：网关偶发剥 body 时会白白触发一次重认证。
-    // 先按「无数据」处理，只有带登录页特征或业务码明确 UN_AUTH 才转认证异常。
-    if (response.body.trim().isEmpty) {
-      throw ServiceException('预约系统返回了空响应');
-    }
-
-    final Object? decoded;
-    try {
-      decoded = jsonDecode(response.body);
-    } on FormatException {
-      if (looksLikeLoginPage(response.body)) {
-        throw const UnauthenticatedException('预约系统会话已过期');
-      }
-      AppLog.e(_tag, '$path 响应非 JSON（len=${response.body.length}）');
-      throw ServiceException('预约系统返回了无法解析的数据');
-    }
-    if (decoded is! Map<String, dynamic>) {
-      throw ServiceException('预约系统返回了无法解析的数据');
-    }
-
-    final code = decoded['e']?.toString();
-    if (code == 'UN_AUTH') {
-      throw const UnauthenticatedException('预约系统会话未建立或已过期');
-    }
+  Map<String, dynamic> _unwrap(Map<String, dynamic> json) {
+    final code = json['e']?.toString();
     if (code == 'APPLY') {
       throw const ReservationApplyPendingException();
     }
     if (code != 'OK') {
-      final message = decoded['m']?.toString();
+      final message = json['m']?.toString();
       throw ServiceException(
         (message == null || message.isEmpty) ? '预约系统请求失败' : message,
       );
     }
-
-    final data = decoded['d'];
+    final data = json['d'];
     return data is Map<String, dynamic> ? data : const {};
   }
-
-  Map<String, String> get _headers => {
-    'Accept': 'application/json, text/plain, */*',
-    'User-Agent': kDefaultUserAgent,
-    'Referer': kReservationSpecialPageUrl,
-    'X-Requested-With': 'XMLHttpRequest',
-  };
 
   static String _formatDate(DateTime date) =>
       '${date.year.toString().padLeft(4, '0')}-'

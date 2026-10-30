@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/services/api/api_request.dart';
+import 'package:bugaoshan/services/api/api_session.dart';
 import 'package:bugaoshan/services/api/service_form_models.dart';
 import 'package:bugaoshan/services/api/service_plugin_models.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
@@ -16,29 +17,32 @@ import 'package:bugaoshan/utils/constants.dart';
 /// 网上办事大厅 API Service（第1层）
 ///
 /// service.scu.edu.cn 的动态表单事项 API。认证通过 [ServiceAuth]
-/// （CAS 会话 cookie `vjuid`），请求由 [CookieClient] 自动携带。
-///
-/// # 真实接口（app_id=350 已通过抓包确认，其余事项同一引擎）
-///
-/// 所有事项（350 离校请假 / 337 返校报备 / 356 暑假离校 / 357 留校登记）
-/// 共用同一套动态表单引擎：
-/// - 流程信息（含表单插件定义）：`GET /site/process/start-info?app_id=X`
-/// - 表单 schema（权限+预填）：`GET /site/form/start-data?app_id=X`
-/// - 表单插件（备用来源）：`GET /site/form/get-formv?bpmn_id=X&id=Y`
-/// - 数据源取数（如辅导员）：`POST /site/data-source/detail`
-/// - 省市区字典：`GET /api/dictionary/province`
-/// - 附件上传：`POST /site/attach/auth-upload`
-/// - **提交申请**：`POST /site/apps/launch`
-/// - 我的申请：  `GET /site/process/inst-list`
-///
-/// 提交体结构（来自真实抓包）：
-/// `data={"app_id":"350","node_id":"","form_data":{"1419":{...}},"userview":1}&step=0&agent_uid=&starter_depart_id=395876`
+/// （CAS 会话 cookie `vjuid`），请求由 [ApiSession] 统一调度。
 class ServiceApiService {
   static const String _tag = 'ServiceApiService';
 
+  // ignore: unused_field
   final ServiceAuth _auth;
+  final ApiSession _session;
   final AppLogger _log;
-  ServiceApiService(this._auth) : _log = getIt<AppLogger>();
+
+  ServiceApiService(
+    this._auth, {
+    ApiSession? session,
+    AppLogger? logger,
+  }) : _log = logger ?? getIt<AppLogger>(),
+       _session =
+           session ??
+           ApiSession(
+             getClient: _auth.getClient,
+             invalidate: _auth.invalidate,
+             baseUrl: Uri.parse(_base),
+             logTag: _tag,
+             defaultHeaders: const {
+               'Origin': _base,
+               'Referer': _base,
+             },
+           );
 
   static const String _base = 'https://service.scu.edu.cn';
 
@@ -75,12 +79,7 @@ class ServiceApiService {
   static const String tutorDataSourceId = '8';
 
   Future<T> _request<T>(Future<T> Function(CookieClient client) fn) {
-    return retryOnUnauthenticated(
-      _auth.getClient,
-      fn,
-      invalidate: _auth.invalidate,
-      logTag: 'ServiceApiService',
-    );
+    return _session.run(fn);
   }
 
   Map<String, String> get _headers => {

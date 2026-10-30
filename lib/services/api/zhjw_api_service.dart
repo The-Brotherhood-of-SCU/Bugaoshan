@@ -8,6 +8,7 @@ import 'package:bugaoshan/pages/campus/exam_plan/models/exam_info.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program.dart';
 import 'package:bugaoshan/pages/campus/train_program/models/train_program_model.dart';
 import 'package:bugaoshan/services/api/api_request.dart';
+import 'package:bugaoshan/services/api/api_session.dart';
 import 'package:bugaoshan/services/auth/zhjw_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
@@ -23,20 +24,35 @@ part 'zhjw_html_parsers.dart';
 /// zhjw.scu.edu.cn 的所有业务 API：课表、成绩、教室、培养方案、计划完成度。
 /// 通过 [ZhjwAuth] 获取已认证的 CookieClient，内置自动重试。
 class ZhjwApiService {
+  static const _tag = 'ZhjwApiService';
+
+  // ignore: unused_field
   final ZhjwAuth _auth;
-  ZhjwApiService(this._auth);
+  final ApiSession _session;
+
+  ZhjwApiService(this._auth, {ApiSession? session})
+    : _session =
+          session ??
+          ApiSession(
+            getClient: _auth.getClient,
+            invalidate: _auth.invalidate,
+            baseUrl: Uri.parse(kZhjwBase),
+            logTag: _tag,
+            sessionExpiryChecker: (body, status) {
+              final failure = classifyZhjwSessionFailure(body, status);
+              if (failure != null) throw failure;
+            },
+            defaultHeaders: const {
+              'Referer': '$kZhjwBase/',
+            },
+          );
 
   /// 多方案详情页请求之间的间隔，避免一次打开页面连续请求
   /// 多个 getPyfaIndex 详情页被教务系统限流（"请勿频繁刷新"）。
   static Duration planDetailRequestGap = const Duration(milliseconds: 600);
 
   Future<T> _request<T>(Future<T> Function(CookieClient client) fn) {
-    return retryOnUnauthenticated(
-      _auth.getClient,
-      fn,
-      invalidate: _auth.invalidate,
-      logTag: 'ZhjwApiService',
-    );
+    return _session.run(fn);
   }
 
   /// 检查会话是否过期。
@@ -86,80 +102,47 @@ class ZhjwApiService {
   ///
   /// 假期首页没有“第 N 周”字段，而是显示“当前处于假期时间”，此时返回
   /// `null`，由调用方给出明确的假期提示，而不是把正常假期当成系统异常。
-  Future<int?> fetchCurrentWeek() {
-    return _request((client) async {
-      final resp = await client.get(
-        Uri.parse('$kZhjwBase/'),
-        headers: {
-          'Accept': 'text/html,*/*',
-          'Referer': '$kZhjwBase/',
-          'User-Agent': kDefaultUserAgent,
-        },
-      );
-      final body = resp.body.trim();
-      _checkSessionExpiry(body, resp.statusCode);
-      final match = RegExp(r'第(\d+)周').firstMatch(body);
-      if (match != null) return int.parse(match.group(1)!);
-      if (body.contains('当前处于假期时间')) return null;
-      throw const ServiceException('无法获取当前周数，请检查教务系统状态');
-    });
+  Future<int?> fetchCurrentWeek() async {
+    final body = await _session.getHtml('/', apiName: 'fetchCurrentWeek');
+    final match = RegExp(r'第(\d+)周').firstMatch(body);
+    if (match != null) return int.parse(match.group(1)!);
+    if (body.contains('当前处于假期时间')) return null;
+    throw const ServiceException('无法获取当前周数，请检查教务系统状态');
   }
 
   /// 获取历年学期列表
-  Future<List<({String value, String label})>> fetchSemesters() {
-    return _request((client) async {
-      final resp = await client.get(
-        Uri.parse(
-          '$kZhjwBase/student/courseSelect'
-          '/calendarSemesterCurriculum/index',
-        ),
-        headers: {
-          'Accept': 'text/html,*/*',
-          'Referer': '$kZhjwBase/',
-          'User-Agent': kDefaultUserAgent,
-        },
-      );
-      final body = resp.body.trim();
-      _checkSessionExpiry(body, resp.statusCode);
-      final regex = RegExp(
-        r'<option[^>]+value="([^"]+)"[^>]*>(.*?)</option>',
-        dotAll: true,
-      );
-      final matches = regex.allMatches(body);
-      final semesters = matches.map((m) {
-        final value = m.group(1)!.trim();
-        final label = m.group(2)!.replaceAll(RegExp(r'<[^>]+>'), '').trim();
-        return (value: value, label: label);
-      }).toList();
-      if (semesters.isEmpty) {
-        throw const ServiceException('无法获取学期列表，请检查登录状态');
-      }
-      return semesters;
-    });
+  Future<List<({String value, String label})>> fetchSemesters() async {
+    final body = await _session.getHtml(
+      '/student/courseSelect/calendarSemesterCurriculum/index',
+      apiName: 'fetchSemesters',
+    );
+    final regex = RegExp(
+      r'<option[^>]+value="([^"]+)"[^>]*>(.*?)</option>',
+      dotAll: true,
+    );
+    final matches = regex.allMatches(body);
+    final semesters = matches.map((m) {
+      final value = m.group(1)!.trim();
+      final label = m.group(2)!.replaceAll(RegExp(r'<[^>]+>'), '').trim();
+      return (value: value, label: label);
+    }).toList();
+    if (semesters.isEmpty) {
+      throw const ServiceException('无法获取学期列表，请检查登录状态');
+    }
+    return semesters;
   }
 
   /// 获取指定学期课表 JSON，[planCode] 如 '2025-2026-2-1'
   Future<Map<String, dynamic>> fetchJwxtSchedule({required String planCode}) {
-    return _request((client) async {
-      final resp = await client.post(
-        Uri.parse(
-          '$kZhjwBase/student/courseSelect'
-          '/thisSemesterCurriculum/ajaxStudentSchedule/callback',
-        ),
-        headers: {
-          'Accept': 'application/json, text/javascript, */*; q=0.01',
-          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-          'Referer':
-              '$kZhjwBase/student/courseSelect/calendarSemesterCurriculum/index',
-          'User-Agent': kDefaultUserAgent,
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: 'planCode=$planCode',
-      );
-      final body = resp.body.trim();
-      _checkSessionExpiry(body, resp.statusCode);
-      return parseJson(body, 'jwxt/schedule', (msg) => ServiceException(msg));
-    });
+    return _session.postFormForJsonMap(
+      '/student/courseSelect/thisSemesterCurriculum/ajaxStudentSchedule/callback',
+      {'planCode': planCode},
+      headers: {
+        'Referer':
+            '$kZhjwBase/student/courseSelect/calendarSemesterCurriculum/index',
+      },
+      apiName: 'jwxt/schedule',
+    );
   }
 
   // ═══════════════════════════════════════════════════════════════════
