@@ -937,6 +937,14 @@
       }
     }
   },
+  "switchAppIconConfirmWithoutRestart": "是否切换至「{label}」？",
+  "@switchAppIconConfirmWithoutRestart": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
   "defaultIconRestored": "已恢复默认图标",
   "iconSwitched": "已切换到图标: {name}",
   "@iconSwitched": {

@@ -4519,6 +4519,12 @@ abstract class AppLocalizations {
   /// **'Switch to \"{label}\"? The app will restart. Continue?'**
   String switchAppIconConfirm(String label);
 
+  /// No description provided for @switchAppIconConfirmWithoutRestart.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to \"{label}\"?'**
+  String switchAppIconConfirmWithoutRestart(String label);
+
   /// No description provided for @defaultIconRestored.
   ///
   /// In en, this message translates to:

@@ -2304,6 +2304,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String switchAppIconConfirmWithoutRestart(String label) {
+    return '是否切换至「$label」？';
+  }
+
+  @override
   String get defaultIconRestored => '已恢复默认图标';
 
   @override

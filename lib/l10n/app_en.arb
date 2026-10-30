@@ -1006,6 +1006,14 @@
       }
     }
   },
+  "switchAppIconConfirmWithoutRestart": "Switch to \"{label}\"?",
+  "@switchAppIconConfirmWithoutRestart": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
   "defaultIconRestored": "Restored default icon",
   "iconSwitched": "Switched to icon: {name}",
   "@iconSwitched": {

@@ -181,8 +181,8 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
           EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),
         children: [
-          // 权限状态卡片置顶展示：未授权状态下优先引导用户完成权限配置。
-          if (!_isGranted) ...[
+          // 查询完成后再展示授权引导，避免将初始 null 状态误报为通知未开启。
+          if (_permissionStatus != null && !_isGranted) ...[
             _buildPermissionCard(l10n),
             const SizedBox(height: 14),
           ],
