@@ -1,32 +1,30 @@
 import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
-import 'package:bugaoshan/models/student_type.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
-class SetDockPage extends StatefulWidget {
+class SetDockPage extends ConsumerStatefulWidget {
   const SetDockPage({super.key});
 
   @override
-  State<SetDockPage> createState() => _SetDockPageState();
+  ConsumerState<SetDockPage> createState() => _SetDockPageState();
 }
 
-class _SetDockPageState extends State<SetDockPage> {
-  late final AppConfigProvider _appConfig;
+class _SetDockPageState extends ConsumerState<SetDockPage> {
   late List<String> _visibleIds;
 
   @override
   void initState() {
     super.initState();
-    _appConfig = getIt<AppConfigProvider>();
-    _visibleIds = List<String>.from(_appConfig.visibleDockIds.value);
+    _visibleIds = List<String>.from(ref.read(visibleDockIdsSettingProvider));
   }
 
   bool _isVisible(String id) => _visibleIds.contains(id);
@@ -46,14 +44,14 @@ class _SetDockPageState extends State<SetDockPage> {
       updated.add(id);
     }
     setState(() => _visibleIds = updated);
-    _appConfig.visibleDockIds.value = updated;
+    ref.read(visibleDockIdsSettingProvider.notifier).update(updated);
   }
 
   void _onReorderItem(int oldIndex, int newIndex) {
     // 拖拽列表只展示当前身份可见的项，索引基于过滤后列表；
     // 按 id 映射回完整列表，保持不属于当前身份的项不被丢弃。
     final availableItems = allCampusItemsForStudentType(
-      _appConfig.studentType.value,
+      ref.read(studentTypeSettingProvider),
     );
     final inMode = _visibleIdsForMode(availableItems);
     if (oldIndex < 0 || oldIndex >= inMode.length) return;
@@ -66,7 +64,7 @@ class _SetDockPageState extends State<SetDockPage> {
     final remaining = _visibleIds.where((x) => !inMode.contains(x)).toList();
     final updated = [...inMode, ...remaining];
     setState(() => _visibleIds = updated);
-    _appConfig.visibleDockIds.value = updated;
+    ref.read(visibleDockIdsSettingProvider.notifier).update(updated);
   }
 
   void _resetToDefault() async {
@@ -75,9 +73,10 @@ class _SetDockPageState extends State<SetDockPage> {
       content: '',
     );
     if (confirm == true) {
-      _appConfig.resetDockToDefault();
+      ref.read(appConfigProviderBridge).resetDockToDefault();
       setState(
-        () => _visibleIds = List<String>.from(_appConfig.visibleDockIds.value),
+        () => _visibleIds =
+            List<String>.from(ref.read(visibleDockIdsSettingProvider)),
       );
     }
   }
@@ -86,207 +85,201 @@ class _SetDockPageState extends State<SetDockPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final studentType = ref.watch(studentTypeSettingProvider);
 
-    // 只提供当前学生身份可用的功能项；其余项的开关配置原样保留在
-    // visibleDockIds 中，切回身份后自动恢复。
-    return ValueListenableBuilder<StudentType>(
-      valueListenable: _appConfig.studentType,
-      builder: (context, studentType, _) {
-        final availableItems = allCampusItemsForStudentType(studentType);
-        final inModeIds = _visibleIdsForMode(availableItems);
+    final availableItems = allCampusItemsForStudentType(studentType);
+    final inModeIds = _visibleIdsForMode(availableItems);
 
-        // Items shown in the preview bar (in order)
-        final previewItems = inModeIds
-            .map((id) => campusItemConfigById(id))
-            .toList();
-        final dockerPreview = Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.dockPreview,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                height: 64 * MediaQuery.textScalerOf(context).scale(1.0),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: previewItems
-                      .map(
-                        (item) => Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(item.icon, size: 24),
-                            const SizedBox(height: 4),
-                            FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                item.dockLabel(l10n),
-                                maxLines: 1,
-                                style: theme.textTheme.labelSmall,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                      .toList(),
-                ),
-              ),
-            ],
+    // Items shown in the preview bar (in order)
+    final previewItems = inModeIds
+        .map((id) => campusItemConfigById(id))
+        .toList();
+    final dockerPreview = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.dockPreview,
+            style: theme.textTheme.titleSmall?.copyWith(
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        );
-        final visibleItems = ReorderableListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          buildDefaultDragHandles: false,
-          itemCount: inModeIds.length,
-          onReorderItem: _onReorderItem,
-          proxyDecorator: (child, index, animation) {
-            return AnimatedBuilder(
-              animation: animation,
-              builder: (context, child) {
-                final t = Curves.easeInOut.transform(animation.value);
-                if (t <= 0.0) return child!;
-
-                // 拖动时只添加柔和阴影和轻微上移，
-                // 不施加额外的 borderRadius / Clip，避免裁剪掉 StyledCard 自身的圆角。
-                return Transform.translate(
-                  offset: Offset(0, -4 * t),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: theme.colorScheme.shadow.withValues(
-                            alpha: 0.25 * t,
+          const SizedBox(height: 12),
+          Container(
+            height: 64 * MediaQuery.textScalerOf(context).scale(1.0),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(AppShapes.largeIncreased),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: previewItems
+                  .map(
+                    (item) => Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(item.icon, size: 24),
+                        const SizedBox(height: 4),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            item.dockLabel(l10n),
+                            maxLines: 1,
+                            style: theme.textTheme.labelSmall,
                           ),
-                          blurRadius: 14 * t,
-                          offset: Offset(0, 5 * t),
                         ),
                       ],
                     ),
-                    child: child,
-                  ),
-                );
-              },
-              child: child,
+                  )
+                  .toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+    final visibleItems = ReorderableListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      buildDefaultDragHandles: false,
+      itemCount: inModeIds.length,
+      onReorderItem: _onReorderItem,
+      proxyDecorator: (child, index, animation) {
+        return AnimatedBuilder(
+          animation: animation,
+          builder: (context, child) {
+            final t = Curves.easeInOut.transform(animation.value);
+            if (t <= 0.0) return child!;
+
+            // 拖动时只添加柔和阴影和轻微上移，保持与原卡片完全一致的视觉。
+            return Transform.translate(
+              offset: Offset(0, -2 * t),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(AppShapes.large),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.12 * t),
+                      blurRadius: 16 * t,
+                      spreadRadius: 0,
+                      offset: Offset(0, 8 * t),
+                    ),
+                  ],
+                ),
+                child: child,
+              ),
             );
           },
-          itemBuilder: (context, index) {
-            final id = inModeIds[index];
-            final item = campusItemConfigById(id);
-            final isProfile = item.id == dockIdProfile;
+          child: child,
+        );
+      },
+      itemBuilder: (context, index) {
+        final item = campusItemConfigById(inModeIds[index]);
+        final isProfile = item.id == dockIdProfile;
 
-            return StyledCard(
+        return StyledCard(
+          key: ValueKey(item.id),
+          margin: const EdgeInsets.symmetric(vertical: 4),
+          child: ListTile(
+            leading: Icon(
+              item.icon,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            title: Text(
+              item.dockFullLabel(l10n),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AdaptiveGlassSwitch(
+                  semanticLabel: item.dockFullLabel(l10n),
+                  value: _isVisible(item.id),
+                  onChanged: isProfile
+                      ? null
+                      : (_) => _toggleVisibility(item.id),
+                ),
+                const SizedBox(width: 8),
+                ReorderableDragStartListener(
+                  index: index,
+                  child: Icon(
+                    size: 40,
+                    Icons.drag_handle,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    final hiddenItems = [
+      ...availableItems
+          .where((item) => !_isVisible(item.id))
+          .map(
+            (item) => StyledCard(
               key: ValueKey(item.id),
               margin: const EdgeInsets.symmetric(vertical: 4),
               child: ListTile(
-                leading: Icon(item.icon, color: theme.colorScheme.primary),
+                leading: Icon(
+                  item.icon,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
                 title: Text(
                   item.dockFullLabel(l10n),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                subtitle: null,
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    AdaptiveGlassSwitch(
-                      semanticLabel: item.dockFullLabel(l10n),
-                      value: _isVisible(item.id),
-                      onChanged: isProfile
-                          ? null
-                          : (_) => _toggleVisibility(item.id),
-                    ),
-                    const SizedBox(width: 8),
-                    ReorderableDragStartListener(
-                      index: index,
-                      child: Icon(
-                        size: 40,
-                        Icons.drag_handle,
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+                trailing: AdaptiveGlassSwitch(
+                  semanticLabel: item.dockFullLabel(l10n),
+                  value: false,
+                  onChanged: (_) => _toggleVisibility(item.id),
                 ),
               ),
-            );
-          },
-        );
-        final hiddenItems = [
-          ...availableItems
-              .where((item) => !_isVisible(item.id))
-              .map(
-                (item) => StyledCard(
-                  key: ValueKey(item.id),
-                  margin: const EdgeInsets.symmetric(vertical: 4),
-                  child: ListTile(
-                    leading: Icon(
-                      item.icon,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                    title: Text(
-                      item.dockFullLabel(l10n),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    trailing: AdaptiveGlassSwitch(
-                      semanticLabel: item.dockFullLabel(l10n),
-                      value: false,
-                      onChanged: (_) => _toggleVisibility(item.id),
-                    ),
-                  ),
-                ),
-              ),
-        ];
-
-        return Scaffold(
-          appBar: AppBar(title: Text(l10n.customDock)),
-          body: Column(
-            children: [
-              // Dock preview
-              dockerPreview,
-              const Divider(),
-              // Items list
-              Expanded(
-                child: ListView(
-                  padding: withSystemBottomInset(
-                    context,
-                    EdgeInsets.symmetric(horizontal: 16),
-                  ),
-                  children: [
-                    // Visible items (reorderable)
-                    visibleItems,
-                    const Divider(),
-                    // Hidden items (toggle only)
-                    ...hiddenItems,
-                  ],
-                ),
-              ),
-              // Reset button
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: _resetToDefault,
-                    icon: const Icon(Icons.refresh),
-                    label: Text(l10n.resetDock),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        );
-      },
+    ];
+
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.customDock)),
+      body: Column(
+        children: [
+          // Dock preview
+          dockerPreview,
+          const Divider(),
+          // Items list
+          Expanded(
+            child: ListView(
+              padding: withSystemBottomInset(
+                context,
+                const EdgeInsets.symmetric(horizontal: 16),
+              ),
+              children: [
+                // Visible items (reorderable)
+                visibleItems,
+                const Divider(),
+                // Hidden items (toggle only)
+                ...hiddenItems,
+              ],
+            ),
+          ),
+          // Reset button
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _resetToDefault,
+                icon: const Icon(Icons.refresh),
+                label: Text(l10n.resetDock),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

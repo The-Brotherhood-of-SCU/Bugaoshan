@@ -2,10 +2,10 @@ import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/background_crop.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/widgets/common/background_image_view.dart';
 
 /// 背景图裁剪/显示区域编辑器。
@@ -14,19 +14,18 @@ import 'package:bugaoshan/widgets/common/background_image_view.dart';
 /// [BackgroundCropParams.resolveLayout] 渲染数学，实时预览即最终效果。
 /// 支持拖动调整可见区域、双指/滚轮缩放、恢复默认；点保存后把参数写入
 /// [AppConfigProvider.backgroundImageCrop]（null = 恢复 BoxFit.cover 旧行为）。
-class BackgroundCropEditorPage extends StatefulWidget {
+class BackgroundCropEditorPage extends ConsumerStatefulWidget {
   const BackgroundCropEditorPage({super.key, required this.imagePath});
 
   final String imagePath;
 
   @override
-  State<BackgroundCropEditorPage> createState() =>
+  ConsumerState<BackgroundCropEditorPage> createState() =>
       _BackgroundCropEditorPageState();
 }
 
-class _BackgroundCropEditorPageState extends State<BackgroundCropEditorPage> {
-  final AppConfigProvider _appConfig = getIt<AppConfigProvider>();
-
+class _BackgroundCropEditorPageState
+    extends ConsumerState<BackgroundCropEditorPage> {
   double _zoom = BackgroundCropParams.minZoom;
   double _focusX = BackgroundCropParams.defaultFocus;
   double _focusY = BackgroundCropParams.defaultFocus;
@@ -41,7 +40,7 @@ class _BackgroundCropEditorPageState extends State<BackgroundCropEditorPage> {
   @override
   void initState() {
     super.initState();
-    final saved = _appConfig.backgroundImageCrop.value;
+    final saved = ref.read(backgroundImageCropSettingProvider);
     if (saved != null) {
       _zoom = saved.zoom;
       _focusX = saved.focusX;
@@ -65,7 +64,9 @@ class _BackgroundCropEditorPageState extends State<BackgroundCropEditorPage> {
   }
 
   void _save() {
-    _appConfig.backgroundImageCrop.value = _params.isCover ? null : _params;
+    ref
+        .read(backgroundImageCropSettingProvider.notifier)
+        .update(_params.isCover ? null : _params);
     Navigator.of(context).pop();
   }
 
@@ -204,7 +205,8 @@ class _BackgroundCropEditorPageState extends State<BackgroundCropEditorPage> {
                     child: BackgroundImageView(
                       path: widget.imagePath,
                       crop: _params,
-                      overlayOpacity: _appConfig.backgroundImageOpacity.value,
+                      overlayOpacity:
+                          ref.watch(backgroundImageOpacitySettingProvider),
                       onImageSize: _onImageSize,
                     ),
                   ),

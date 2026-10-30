@@ -3,10 +3,11 @@ import 'dart:async';
 import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/widget_appearance.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/services/widget_update_service.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
@@ -34,7 +35,7 @@ class AddWidgetPage extends StatelessWidget {
   }
 }
 
-class AddWidgetContent extends StatefulWidget {
+class AddWidgetContent extends ConsumerStatefulWidget {
   final bool showDescription;
   final TargetPlatform? debugPlatformOverride;
 
@@ -45,10 +46,10 @@ class AddWidgetContent extends StatefulWidget {
   });
 
   @override
-  State<AddWidgetContent> createState() => _AddWidgetContentState();
+  ConsumerState<AddWidgetContent> createState() => _AddWidgetContentState();
 }
 
-class _AddWidgetContentState extends State<AddWidgetContent>
+class _AddWidgetContentState extends ConsumerState<AddWidgetContent>
     with WidgetsBindingObserver {
   static const String _tag = 'AddWidgetContentState';
 
@@ -126,12 +127,12 @@ class _AddWidgetContentState extends State<AddWidgetContent>
     BuildContext context,
     AppLocalizations localizations,
   ) {
-    final appConfig = getIt<AppConfigProvider>();
+    final tomorrow = ref.watch(widgetShowTomorrowSettingProvider);
     return AdaptiveGlassSwitchListTile(
       title: Text(localizations.widgetShowTomorrowAfterEnd),
-      value: appConfig.widgetShowTomorrow.value,
+      value: tomorrow,
       onChanged: (v) async {
-        appConfig.widgetShowTomorrow.value = v;
+        ref.read(widgetShowTomorrowSettingProvider.notifier).update(v);
         final service = getIt<WidgetUpdateService>();
         try {
           await service.syncWidgetShowTomorrow(v);
@@ -147,11 +148,11 @@ class _AddWidgetContentState extends State<AddWidgetContent>
     );
   }
 
-  void _syncWidgetAppearance(AppConfigProvider appConfig) {
+  void _syncWidgetAppearance(WidgetColorStyle colorStyle, WidgetDensity density) {
     unawaited(
       getIt<WidgetUpdateService>().syncWidgetAppearance(
-        colorStyle: appConfig.widgetColorStyle.value,
-        density: appConfig.widgetDensity.value,
+        colorStyle: colorStyle,
+        density: density,
       ),
     );
   }
@@ -159,10 +160,11 @@ class _AddWidgetContentState extends State<AddWidgetContent>
   Widget _buildAppearanceCard(
     BuildContext context,
     AppLocalizations localizations,
-    AppConfigProvider appConfig,
   ) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+    final colorStyle = ref.watch(widgetColorStyleSettingProvider);
+    final density = ref.watch(widgetDensitySettingProvider);
 
     return StyledCard(
       child: Padding(
@@ -201,10 +203,10 @@ class _AddWidgetContentState extends State<AddWidgetContent>
                     label: Text(localizations.widgetMonochrome),
                   ),
                 ],
-                selected: {appConfig.widgetColorStyle.value},
+                selected: {colorStyle},
                 onSelectionChanged: (selection) {
-                  appConfig.widgetColorStyle.value = selection.single;
-                  _syncWidgetAppearance(appConfig);
+                  ref.read(widgetColorStyleSettingProvider.notifier).update(selection.single);
+                  _syncWidgetAppearance(selection.single, density);
                 },
               ),
             ),
@@ -226,10 +228,10 @@ class _AddWidgetContentState extends State<AddWidgetContent>
                     label: Text(localizations.widgetDensityCompact),
                   ),
                 ],
-                selected: {appConfig.widgetDensity.value},
+                selected: {density},
                 onSelectionChanged: (selection) {
-                  appConfig.widgetDensity.value = selection.single;
-                  _syncWidgetAppearance(appConfig);
+                  ref.read(widgetDensitySettingProvider.notifier).update(selection.single);
+                  _syncWidgetAppearance(colorStyle, selection.single);
                 },
               ),
             ),
@@ -365,77 +367,67 @@ class _AddWidgetContentState extends State<AddWidgetContent>
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    final appConfig = getIt<AppConfigProvider>();
     final isAndroid = _platform == TargetPlatform.android;
     final isApple =
         _platform == TargetPlatform.iOS || _platform == TargetPlatform.macOS;
 
-    return ListenableBuilder(
-      listenable: Listenable.merge([
-        appConfig.widgetShowTomorrow,
-        appConfig.widgetColorStyle,
-        appConfig.widgetDensity,
-      ]),
-      builder: (context, _) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (widget.showDescription) ...[
-              Text(
-                localizations.addWidgetDesc,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 24),
-            ],
-            if (isAndroid) ...[
-              BatteryOptimizationCard(
-                status: _status,
-                onRequestIgnore: _requestIgnoreBatteryOptimizations,
-              ),
-              const SizedBox(height: 16),
-            ],
-            if (isApple) ...[
-              StyledCard(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.widgets_outlined,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          _platform == TargetPlatform.iOS
-                              ? localizations.addWidgetIosHint
-                              : localizations.addWidgetMacHint,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ),
-                    ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (widget.showDescription) ...[
+          Text(
+            localizations.addWidgetDesc,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+        if (isAndroid) ...[
+          BatteryOptimizationCard(
+            status: _status,
+            onRequestIgnore: _requestIgnoreBatteryOptimizations,
+          ),
+          const SizedBox(height: 16),
+        ],
+        if (isApple) ...[
+          StyledCard(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.widgets_outlined,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      _platform == TargetPlatform.iOS
+                          ? localizations.addWidgetIosHint
+                          : localizations.addWidgetMacHint,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-            ],
-            // Consolidated single card with size choices (Android only)
-            if (isAndroid) _WidgetPickerCard(onPin: _pinWidget),
-            if (isAndroid) const SizedBox(height: 16),
-            if (isApple) ...[
-              _buildAppearanceCard(context, localizations, appConfig),
-              const SizedBox(height: 16),
-            ],
-            _buildShowTomorrowSwitch(context, localizations),
-            if (isAndroid) ...[
-              const SizedBox(height: 16),
-              HintCard(hint: localizations.pinWidgetHint),
-            ],
-          ],
-        );
-      },
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+        // Consolidated single card with size choices (Android only)
+        if (isAndroid) _WidgetPickerCard(onPin: _pinWidget),
+        if (isAndroid) const SizedBox(height: 16),
+        if (isApple) ...[
+          _buildAppearanceCard(context, localizations),
+          const SizedBox(height: 16),
+        ],
+        _buildShowTomorrowSwitch(context, localizations),
+        if (isAndroid) ...[
+          const SizedBox(height: 16),
+          HintCard(hint: localizations.pinWidgetHint),
+        ],
+      ],
     );
   }
 }

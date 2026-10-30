@@ -1,18 +1,18 @@
 import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/theme_shape.dart';
 
-class SetDurationPage extends StatefulWidget {
+class SetDurationPage extends ConsumerStatefulWidget {
   const SetDurationPage({super.key});
 
   @override
-  State<SetDurationPage> createState() => _SetDurationPageState();
+  ConsumerState<SetDurationPage> createState() => _SetDurationPageState();
 }
 
-class _SetDurationPageState extends State<SetDurationPage> {
+class _SetDurationPageState extends ConsumerState<SetDurationPage> {
   late int _tempAnimationTime; // 临时存储未确认的值
   bool _isAnimating = false; // 动画状态
   bool _shouldAnimate = true; // 控制动画循环的标志位
@@ -20,9 +20,8 @@ class _SetDurationPageState extends State<SetDurationPage> {
   @override
   void initState() {
     super.initState();
-    // 初始化当前动画时长为配置中的值
     _tempAnimationTime =
-        appConfigService.cardSizeAnimationDuration.value.inMilliseconds;
+        ref.read(cardSizeAnimationDurationSettingProvider).inMilliseconds;
 
     // 启动预览动画
     _startAnimation();
@@ -36,7 +35,6 @@ class _SetDurationPageState extends State<SetDurationPage> {
 
   Future<void> _startAnimation() async {
     while (_shouldAnimate && mounted) {
-      // 等待500ms后开始动画
       await Future.delayed(Duration(milliseconds: _tempAnimationTime + 100));
 
       if (!_shouldAnimate || !mounted) break;
@@ -45,7 +43,6 @@ class _SetDurationPageState extends State<SetDurationPage> {
         _isAnimating = true;
       });
 
-      // 等待动画时长 + 500ms后结束动画
       await Future.delayed(Duration(milliseconds: _tempAnimationTime + 100));
 
       if (!_shouldAnimate || !mounted) break;
@@ -62,11 +59,9 @@ class _SetDurationPageState extends State<SetDurationPage> {
     });
   }
 
-  final appConfigService = getIt<AppConfigProvider>();
-
   void _confirmChanges() {
-    appConfigService.cardSizeAnimationDuration.value = Duration(
-      milliseconds: _tempAnimationTime,
+    ref.read(cardSizeAnimationDurationSettingProvider.notifier).update(
+      Duration(milliseconds: _tempAnimationTime),
     );
 
     Navigator.pop(context);
@@ -75,6 +70,8 @@ class _SetDurationPageState extends State<SetDurationPage> {
   @override
   Widget build(BuildContext context) {
     final appLang = AppLocalizations.of(context)!;
+    final enableDockAnim = ref.watch(enableDockSwitchAnimationSettingProvider);
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
@@ -85,18 +82,14 @@ class _SetDurationPageState extends State<SetDurationPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ValueListenableBuilder<bool>(
-              valueListenable: appConfigService.enableDockSwitchAnimation,
-              builder: (context, enabled, _) {
-                return AdaptiveGlassSwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(appLang.enableDockSwitchAnimation),
-                  subtitle: Text(appLang.enableDockSwitchAnimationHint),
-                  value: enabled,
-                  onChanged: (v) =>
-                      appConfigService.enableDockSwitchAnimation.value = v,
-                );
-              },
+            AdaptiveGlassSwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(appLang.enableDockSwitchAnimation),
+              subtitle: Text(appLang.enableDockSwitchAnimationHint),
+              value: enableDockAnim,
+              onChanged: (v) => ref
+                  .read(enableDockSwitchAnimationSettingProvider.notifier)
+                  .update(v),
             ),
             const Divider(),
             Padding(

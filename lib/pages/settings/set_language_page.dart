@@ -1,27 +1,26 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/utils/locale_utils.dart';
 
-class SetLanguagePage extends StatefulWidget {
+class SetLanguagePage extends ConsumerStatefulWidget {
   const SetLanguagePage({super.key});
 
   @override
-  State<SetLanguagePage> createState() => _SetLanguagePageState();
+  ConsumerState<SetLanguagePage> createState() => _SetLanguagePageState();
 }
 
-class _SetLanguagePageState extends State<SetLanguagePage> {
+class _SetLanguagePageState extends ConsumerState<SetLanguagePage> {
   late List<Locale> locales = AppLocalizations.supportedLocales;
-  final appSetting = getIt<AppConfigProvider>();
   String? selected;
 
   @override
   void initState() {
-    selected = appSetting.locale.value?.toLanguageTag();
     super.initState();
+    selected = ref.read(localeSettingProvider)?.toLanguageTag();
   }
 
   void onValueChanged(String? v) {
@@ -29,12 +28,14 @@ class _SetLanguagePageState extends State<SetLanguagePage> {
       selected = v;
     });
     scheduleMicrotask(() {
-      appSetting.locale.value = parseLocale(v);
+      ref.read(localeSettingProvider.notifier).update(parseLocale(v));
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final cardAnimDuration = ref.watch(cardSizeAnimationDurationSettingProvider);
+
     var children = <Widget>[];
     children.add(
       Padding(
@@ -44,7 +45,7 @@ class _SetLanguagePageState extends State<SetLanguagePage> {
           selected: selected,
           onChanged: onValueChanged,
           text: AppLocalizations.of(context)!.followSystem,
-          appSetting: appSetting,
+          cardAnimDuration: cardAnimDuration,
         ),
       ),
     );
@@ -109,9 +110,10 @@ class RadioButton extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Flexible(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(text, textScaler: const TextScaler.linear(1.1)),
+          child: Text(
+            key: ValueKey(text),
+            text,
+            textScaler: const TextScaler.linear(1.1),
           ),
         ),
         AnimatedOpacity(
@@ -121,8 +123,13 @@ class RadioButton extends StatelessWidget {
         ),
       ],
     );
-
-    return OutlinedButton(onPressed: onPress, child: child);
+    return OutlinedButton(
+      onPressed: onPress,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 10, 0, 10),
+        child: child,
+      ),
+    );
   }
 }
 
@@ -133,10 +140,10 @@ class FollowSystemRadioButton extends RadioButton {
     required super.index,
     required super.text,
     required super.onChanged,
-    required this.appSetting,
+    required this.cardAnimDuration,
   });
 
-  final AppConfigProvider appSetting;
+  final Duration cardAnimDuration;
 
   @override
   Widget build(BuildContext context) {
@@ -164,7 +171,7 @@ class FollowSystemRadioButton extends RadioButton {
       child: Padding(
         padding: const EdgeInsets.fromLTRB(10, 10, 0, 10),
         child: AnimatedSize(
-          duration: appSetting.cardSizeAnimationDuration.value,
+          duration: cardAnimDuration,
           curve: Curves.easeOutQuart,
           child: selfSelected
               ? Column(

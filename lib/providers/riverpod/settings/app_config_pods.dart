@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:bugaoshan/models/background_crop.dart';
 import 'package:bugaoshan/models/student_type.dart';
+import 'package:bugaoshan/models/widget_appearance.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
 
@@ -389,5 +390,285 @@ class ShowNonCurrentWeekCoursesSetting
   void update(bool show) {
     ref.read(appConfigProviderBridge).showNonCurrentWeekCourses.value = show;
     state = show;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class ColorOpacitySetting extends _$ColorOpacitySetting {
+  @override
+  double build() {
+    final appConfig = ref.watch(appConfigProviderBridge);
+    void listener() => state = appConfig.colorOpacity.value;
+    appConfig.colorOpacity.addListener(listener);
+    ref.onDispose(() => appConfig.colorOpacity.removeListener(listener));
+    return appConfig.colorOpacity.value;
+  }
+
+  void update(double opacity) {
+    ref.read(appConfigProviderBridge).colorOpacity.value = opacity;
+    state = opacity;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class CourseCardFontSizeSetting extends _$CourseCardFontSizeSetting {
+  @override
+  double build() {
+    final appConfig = ref.watch(appConfigProviderBridge);
+    void listener() => state = appConfig.courseCardFontSize.value;
+    appConfig.courseCardFontSize.addListener(listener);
+    ref.onDispose(() => appConfig.courseCardFontSize.removeListener(listener));
+    return appConfig.courseCardFontSize.value;
+  }
+
+  void update(double size) {
+    ref.read(appConfigProviderBridge).courseCardFontSize.value = size;
+    state = size;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class ShowCourseGridSetting extends _$ShowCourseGridSetting {
+  @override
+  bool build() {
+    final appConfig = ref.watch(appConfigProviderBridge);
+    void listener() => state = appConfig.showCourseGrid.value;
+    appConfig.showCourseGrid.addListener(listener);
+    ref.onDispose(() => appConfig.showCourseGrid.removeListener(listener));
+    return appConfig.showCourseGrid.value;
+  }
+
+  void update(bool show) {
+    ref.read(appConfigProviderBridge).showCourseGrid.value = show;
+    state = show;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class CourseRowHeightSetting extends _$CourseRowHeightSetting {
+  @override
+  double build() {
+    final appConfig = ref.watch(appConfigProviderBridge);
+    void listener() => state = appConfig.courseRowHeight.value;
+    appConfig.courseRowHeight.addListener(listener);
+    ref.onDispose(() => appConfig.courseRowHeight.removeListener(listener));
+    return appConfig.courseRowHeight.value;
+  }
+
+  void update(double height) {
+    ref.read(appConfigProviderBridge).courseRowHeight.value = height;
+    state = height;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class WidgetShowTomorrowSetting extends _$WidgetShowTomorrowSetting {
+  @override
+  bool build() {
+    final appConfig = ref.watch(appConfigProviderBridge);
+    void listener() => state = appConfig.widgetShowTomorrow.value;
+    appConfig.widgetShowTomorrow.addListener(listener);
+    ref.onDispose(() => appConfig.widgetShowTomorrow.removeListener(listener));
+    return appConfig.widgetShowTomorrow.value;
+  }
+
+  void update(bool show) {
+    ref.read(appConfigProviderBridge).widgetShowTomorrow.value = show;
+    state = show;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class WidgetColorStyleSetting extends _$WidgetColorStyleSetting {
+  @override
+  WidgetColorStyle build() {
+    final appConfig = ref.watch(appConfigProviderBridge);
+    void listener() => state = appConfig.widgetColorStyle.value;
+    appConfig.widgetColorStyle.addListener(listener);
+    ref.onDispose(() => appConfig.widgetColorStyle.removeListener(listener));
+    return appConfig.widgetColorStyle.value;
+  }
+
+  void update(WidgetColorStyle style) {
+    ref.read(appConfigProviderBridge).widgetColorStyle.value = style;
+    state = style;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class WidgetDensitySetting extends _$WidgetDensitySetting {
+  @override
+  WidgetDensity build() {
+    final appConfig = ref.watch(appConfigProviderBridge);
+    void listener() => state = appConfig.widgetDensity.value;
+    appConfig.widgetDensity.addListener(listener);
+    ref.onDispose(() => appConfig.widgetDensity.removeListener(listener));
+    return appConfig.widgetDensity.value;
+  }
+
+  void update(WidgetDensity density) {
+    ref.read(appConfigProviderBridge).widgetDensity.value = density;
+    state = density;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class UsePreviewUpdateSourceSetting extends _$UsePreviewUpdateSourceSetting {
+  @override
+  bool build() {
+    final appConfig = ref.watch(appConfigProviderBridge);
+    void listener() => state = appConfig.usePreviewUpdateSource.value;
+    appConfig.usePreviewUpdateSource.addListener(listener);
+    ref.onDispose(
+      () => appConfig.usePreviewUpdateSource.removeListener(listener),
+    );
+    return appConfig.usePreviewUpdateSource.value;
+  }
+
+  void update(bool usePreview) {
+    ref.read(appConfigProviderBridge).usePreviewUpdateSource.value = usePreview;
+    state = usePreview;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class UseGithubProxySetting extends _$UseGithubProxySetting {
+  @override
+  bool build() {
+    final appConfig = ref.watch(appConfigProviderBridge);
+    void listener() => state = appConfig.useGithubProxy.value;
+    appConfig.useGithubProxy.addListener(listener);
+    ref.onDispose(() => appConfig.useGithubProxy.removeListener(listener));
+    return appConfig.useGithubProxy.value;
+  }
+
+  void update(bool useProxy) {
+    ref.read(appConfigProviderBridge).useGithubProxy.value = useProxy;
+    state = useProxy;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class AutoSampleBalanceOnLoginSetting
+    extends _$AutoSampleBalanceOnLoginSetting {
+  @override
+  bool build() {
+    final appConfig = ref.watch(appConfigProviderBridge);
+    void listener() => state = appConfig.autoSampleBalanceOnLogin.value;
+    appConfig.autoSampleBalanceOnLogin.addListener(listener);
+    ref.onDispose(
+      () => appConfig.autoSampleBalanceOnLogin.removeListener(listener),
+    );
+    return appConfig.autoSampleBalanceOnLogin.value;
+  }
+
+  void update(bool auto) {
+    ref.read(appConfigProviderBridge).autoSampleBalanceOnLogin.value = auto;
+    state = auto;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class ForceCaptchaForDownloadSetting
+    extends _$ForceCaptchaForDownloadSetting {
+  @override
+  bool build() {
+    final appConfig = ref.watch(appConfigProviderBridge);
+    void listener() => state = appConfig.forceCaptchaForDownload.value;
+    appConfig.forceCaptchaForDownload.addListener(listener);
+    ref.onDispose(
+      () => appConfig.forceCaptchaForDownload.removeListener(listener),
+    );
+    return appConfig.forceCaptchaForDownload.value;
+  }
+
+  void update(bool force) {
+    ref.read(appConfigProviderBridge).forceCaptchaForDownload.value = force;
+    state = force;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class ReminderEnabledSetting extends _$ReminderEnabledSetting {
+  @override
+  bool build() {
+    final appConfig = ref.watch(appConfigProviderBridge);
+    void listener() => state = appConfig.reminderEnabled.value;
+    appConfig.reminderEnabled.addListener(listener);
+    ref.onDispose(() => appConfig.reminderEnabled.removeListener(listener));
+    return appConfig.reminderEnabled.value;
+  }
+
+  void update(bool enabled) {
+    ref.read(appConfigProviderBridge).reminderEnabled.value = enabled;
+    state = enabled;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class ReminderLeadMinutesSetting extends _$ReminderLeadMinutesSetting {
+  @override
+  List<int> build() {
+    final appConfig = ref.watch(appConfigProviderBridge);
+    void listener() => state = appConfig.reminderLeadMinutes.value;
+    appConfig.reminderLeadMinutes.addListener(listener);
+    ref.onDispose(() => appConfig.reminderLeadMinutes.removeListener(listener));
+    return appConfig.reminderLeadMinutes.value;
+  }
+
+  void update(List<int> minutes) {
+    ref.read(appConfigProviderBridge).reminderLeadMinutes.value = minutes;
+    state = minutes;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class ReminderQuietStartSetting extends _$ReminderQuietStartSetting {
+  @override
+  TimeOfDay? build() {
+    final appConfig = ref.watch(appConfigProviderBridge);
+    void listener() => state = appConfig.reminderQuietStart.value;
+    appConfig.reminderQuietStart.addListener(listener);
+    ref.onDispose(() => appConfig.reminderQuietStart.removeListener(listener));
+    return appConfig.reminderQuietStart.value;
+  }
+
+  void update(TimeOfDay? time) {
+    ref.read(appConfigProviderBridge).reminderQuietStart.value = time;
+    state = time;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class ReminderQuietEndSetting extends _$ReminderQuietEndSetting {
+  @override
+  TimeOfDay? build() {
+    final appConfig = ref.watch(appConfigProviderBridge);
+    void listener() => state = appConfig.reminderQuietEnd.value;
+    appConfig.reminderQuietEnd.addListener(listener);
+    ref.onDispose(() => appConfig.reminderQuietEnd.removeListener(listener));
+    return appConfig.reminderQuietEnd.value;
+  }
+
+  void update(TimeOfDay? time) {
+    ref.read(appConfigProviderBridge).reminderQuietEnd.value = time;
+    state = time;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class ReminderWindowDaysSetting extends _$ReminderWindowDaysSetting {
+  @override
+  int build() {
+    final appConfig = ref.watch(appConfigProviderBridge);
+    void listener() => state = appConfig.reminderWindowDays.value;
+    appConfig.reminderWindowDays.addListener(listener);
+    ref.onDispose(() => appConfig.reminderWindowDays.removeListener(listener));
+    return appConfig.reminderWindowDays.value;
+  }
+
+  void update(int days) {
+    ref.read(appConfigProviderBridge).reminderWindowDays.value = days;
+    state = days;
   }
 }

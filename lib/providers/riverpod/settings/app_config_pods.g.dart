@@ -1188,3 +1188,855 @@ abstract class _$ShowNonCurrentWeekCoursesSetting extends $Notifier<bool> {
     return element.handleCreate(ref, build);
   }
 }
+
+@ProviderFor(ColorOpacitySetting)
+final colorOpacitySettingProvider = ColorOpacitySettingProvider._();
+
+final class ColorOpacitySettingProvider
+    extends $NotifierProvider<ColorOpacitySetting, double> {
+  ColorOpacitySettingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'colorOpacitySettingProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$colorOpacitySettingHash();
+
+  @$internal
+  @override
+  ColorOpacitySetting create() => ColorOpacitySetting();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(double value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<double>(value),
+    );
+  }
+}
+
+String _$colorOpacitySettingHash() =>
+    r'6f0396af6be2ffb053146db0fbd09e5d062f20fb';
+
+abstract class _$ColorOpacitySetting extends $Notifier<double> {
+  double build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<double, double>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<double, double>,
+              double,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(CourseCardFontSizeSetting)
+final courseCardFontSizeSettingProvider = CourseCardFontSizeSettingProvider._();
+
+final class CourseCardFontSizeSettingProvider
+    extends $NotifierProvider<CourseCardFontSizeSetting, double> {
+  CourseCardFontSizeSettingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'courseCardFontSizeSettingProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$courseCardFontSizeSettingHash();
+
+  @$internal
+  @override
+  CourseCardFontSizeSetting create() => CourseCardFontSizeSetting();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(double value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<double>(value),
+    );
+  }
+}
+
+String _$courseCardFontSizeSettingHash() =>
+    r'1f98fe66ffe70ac624dec965f107a53cbc8f89db';
+
+abstract class _$CourseCardFontSizeSetting extends $Notifier<double> {
+  double build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<double, double>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<double, double>,
+              double,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(ShowCourseGridSetting)
+final showCourseGridSettingProvider = ShowCourseGridSettingProvider._();
+
+final class ShowCourseGridSettingProvider
+    extends $NotifierProvider<ShowCourseGridSetting, bool> {
+  ShowCourseGridSettingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'showCourseGridSettingProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$showCourseGridSettingHash();
+
+  @$internal
+  @override
+  ShowCourseGridSetting create() => ShowCourseGridSetting();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$showCourseGridSettingHash() =>
+    r'c2c681b778a3f6439f50da6b49e9cbf00168b4ea';
+
+abstract class _$ShowCourseGridSetting extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(CourseRowHeightSetting)
+final courseRowHeightSettingProvider = CourseRowHeightSettingProvider._();
+
+final class CourseRowHeightSettingProvider
+    extends $NotifierProvider<CourseRowHeightSetting, double> {
+  CourseRowHeightSettingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'courseRowHeightSettingProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$courseRowHeightSettingHash();
+
+  @$internal
+  @override
+  CourseRowHeightSetting create() => CourseRowHeightSetting();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(double value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<double>(value),
+    );
+  }
+}
+
+String _$courseRowHeightSettingHash() =>
+    r'9a454d18a338f8e57912c9cc217591934ef8a088';
+
+abstract class _$CourseRowHeightSetting extends $Notifier<double> {
+  double build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<double, double>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<double, double>,
+              double,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(WidgetShowTomorrowSetting)
+final widgetShowTomorrowSettingProvider = WidgetShowTomorrowSettingProvider._();
+
+final class WidgetShowTomorrowSettingProvider
+    extends $NotifierProvider<WidgetShowTomorrowSetting, bool> {
+  WidgetShowTomorrowSettingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'widgetShowTomorrowSettingProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$widgetShowTomorrowSettingHash();
+
+  @$internal
+  @override
+  WidgetShowTomorrowSetting create() => WidgetShowTomorrowSetting();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$widgetShowTomorrowSettingHash() =>
+    r'687670ba8b1449b0712f8e95acd051b9f56fe8df';
+
+abstract class _$WidgetShowTomorrowSetting extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(WidgetColorStyleSetting)
+final widgetColorStyleSettingProvider = WidgetColorStyleSettingProvider._();
+
+final class WidgetColorStyleSettingProvider
+    extends $NotifierProvider<WidgetColorStyleSetting, WidgetColorStyle> {
+  WidgetColorStyleSettingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'widgetColorStyleSettingProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$widgetColorStyleSettingHash();
+
+  @$internal
+  @override
+  WidgetColorStyleSetting create() => WidgetColorStyleSetting();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(WidgetColorStyle value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<WidgetColorStyle>(value),
+    );
+  }
+}
+
+String _$widgetColorStyleSettingHash() =>
+    r'60bb84a4d16b5436d57ce6ae2764897311fc25d5';
+
+abstract class _$WidgetColorStyleSetting extends $Notifier<WidgetColorStyle> {
+  WidgetColorStyle build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<WidgetColorStyle, WidgetColorStyle>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<WidgetColorStyle, WidgetColorStyle>,
+              WidgetColorStyle,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(WidgetDensitySetting)
+final widgetDensitySettingProvider = WidgetDensitySettingProvider._();
+
+final class WidgetDensitySettingProvider
+    extends $NotifierProvider<WidgetDensitySetting, WidgetDensity> {
+  WidgetDensitySettingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'widgetDensitySettingProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$widgetDensitySettingHash();
+
+  @$internal
+  @override
+  WidgetDensitySetting create() => WidgetDensitySetting();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(WidgetDensity value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<WidgetDensity>(value),
+    );
+  }
+}
+
+String _$widgetDensitySettingHash() =>
+    r'9d0ca33968476283563dacdd152c87d58c9223d7';
+
+abstract class _$WidgetDensitySetting extends $Notifier<WidgetDensity> {
+  WidgetDensity build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<WidgetDensity, WidgetDensity>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<WidgetDensity, WidgetDensity>,
+              WidgetDensity,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(UsePreviewUpdateSourceSetting)
+final usePreviewUpdateSourceSettingProvider =
+    UsePreviewUpdateSourceSettingProvider._();
+
+final class UsePreviewUpdateSourceSettingProvider
+    extends $NotifierProvider<UsePreviewUpdateSourceSetting, bool> {
+  UsePreviewUpdateSourceSettingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'usePreviewUpdateSourceSettingProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$usePreviewUpdateSourceSettingHash();
+
+  @$internal
+  @override
+  UsePreviewUpdateSourceSetting create() => UsePreviewUpdateSourceSetting();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$usePreviewUpdateSourceSettingHash() =>
+    r'43e315b4cfa209537fb6cee1bf7b8ab4e57a30f2';
+
+abstract class _$UsePreviewUpdateSourceSetting extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(UseGithubProxySetting)
+final useGithubProxySettingProvider = UseGithubProxySettingProvider._();
+
+final class UseGithubProxySettingProvider
+    extends $NotifierProvider<UseGithubProxySetting, bool> {
+  UseGithubProxySettingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'useGithubProxySettingProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$useGithubProxySettingHash();
+
+  @$internal
+  @override
+  UseGithubProxySetting create() => UseGithubProxySetting();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$useGithubProxySettingHash() =>
+    r'ec0acbcc7a5828ba0ad3e6916eb8125c51498dd1';
+
+abstract class _$UseGithubProxySetting extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(AutoSampleBalanceOnLoginSetting)
+final autoSampleBalanceOnLoginSettingProvider =
+    AutoSampleBalanceOnLoginSettingProvider._();
+
+final class AutoSampleBalanceOnLoginSettingProvider
+    extends $NotifierProvider<AutoSampleBalanceOnLoginSetting, bool> {
+  AutoSampleBalanceOnLoginSettingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'autoSampleBalanceOnLoginSettingProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$autoSampleBalanceOnLoginSettingHash();
+
+  @$internal
+  @override
+  AutoSampleBalanceOnLoginSetting create() => AutoSampleBalanceOnLoginSetting();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$autoSampleBalanceOnLoginSettingHash() =>
+    r'7948519e1e630c6aa1fa92752af70ca4f6f634fc';
+
+abstract class _$AutoSampleBalanceOnLoginSetting extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(ForceCaptchaForDownloadSetting)
+final forceCaptchaForDownloadSettingProvider =
+    ForceCaptchaForDownloadSettingProvider._();
+
+final class ForceCaptchaForDownloadSettingProvider
+    extends $NotifierProvider<ForceCaptchaForDownloadSetting, bool> {
+  ForceCaptchaForDownloadSettingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'forceCaptchaForDownloadSettingProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$forceCaptchaForDownloadSettingHash();
+
+  @$internal
+  @override
+  ForceCaptchaForDownloadSetting create() => ForceCaptchaForDownloadSetting();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$forceCaptchaForDownloadSettingHash() =>
+    r'e460801e11d4e0dc081e2b7dc1b34f020ebdee13';
+
+abstract class _$ForceCaptchaForDownloadSetting extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(ReminderEnabledSetting)
+final reminderEnabledSettingProvider = ReminderEnabledSettingProvider._();
+
+final class ReminderEnabledSettingProvider
+    extends $NotifierProvider<ReminderEnabledSetting, bool> {
+  ReminderEnabledSettingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'reminderEnabledSettingProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$reminderEnabledSettingHash();
+
+  @$internal
+  @override
+  ReminderEnabledSetting create() => ReminderEnabledSetting();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$reminderEnabledSettingHash() =>
+    r'40e8549e3bf07f6adc8384850597f19417aec47f';
+
+abstract class _$ReminderEnabledSetting extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(ReminderLeadMinutesSetting)
+final reminderLeadMinutesSettingProvider =
+    ReminderLeadMinutesSettingProvider._();
+
+final class ReminderLeadMinutesSettingProvider
+    extends $NotifierProvider<ReminderLeadMinutesSetting, List<int>> {
+  ReminderLeadMinutesSettingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'reminderLeadMinutesSettingProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$reminderLeadMinutesSettingHash();
+
+  @$internal
+  @override
+  ReminderLeadMinutesSetting create() => ReminderLeadMinutesSetting();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(List<int> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<List<int>>(value),
+    );
+  }
+}
+
+String _$reminderLeadMinutesSettingHash() =>
+    r'eb94a99c9ed775c23dc3a60073a3aaa9b97487fb';
+
+abstract class _$ReminderLeadMinutesSetting extends $Notifier<List<int>> {
+  List<int> build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<List<int>, List<int>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<List<int>, List<int>>,
+              List<int>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(ReminderQuietStartSetting)
+final reminderQuietStartSettingProvider = ReminderQuietStartSettingProvider._();
+
+final class ReminderQuietStartSettingProvider
+    extends $NotifierProvider<ReminderQuietStartSetting, TimeOfDay?> {
+  ReminderQuietStartSettingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'reminderQuietStartSettingProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$reminderQuietStartSettingHash();
+
+  @$internal
+  @override
+  ReminderQuietStartSetting create() => ReminderQuietStartSetting();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(TimeOfDay? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<TimeOfDay?>(value),
+    );
+  }
+}
+
+String _$reminderQuietStartSettingHash() =>
+    r'e6818ae24190218e9828210228de69bc0255d4b5';
+
+abstract class _$ReminderQuietStartSetting extends $Notifier<TimeOfDay?> {
+  TimeOfDay? build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<TimeOfDay?, TimeOfDay?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<TimeOfDay?, TimeOfDay?>,
+              TimeOfDay?,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(ReminderQuietEndSetting)
+final reminderQuietEndSettingProvider = ReminderQuietEndSettingProvider._();
+
+final class ReminderQuietEndSettingProvider
+    extends $NotifierProvider<ReminderQuietEndSetting, TimeOfDay?> {
+  ReminderQuietEndSettingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'reminderQuietEndSettingProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$reminderQuietEndSettingHash();
+
+  @$internal
+  @override
+  ReminderQuietEndSetting create() => ReminderQuietEndSetting();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(TimeOfDay? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<TimeOfDay?>(value),
+    );
+  }
+}
+
+String _$reminderQuietEndSettingHash() =>
+    r'f601921d5fd697ef8e8450896744996ea958d0a4';
+
+abstract class _$ReminderQuietEndSetting extends $Notifier<TimeOfDay?> {
+  TimeOfDay? build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<TimeOfDay?, TimeOfDay?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<TimeOfDay?, TimeOfDay?>,
+              TimeOfDay?,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(ReminderWindowDaysSetting)
+final reminderWindowDaysSettingProvider = ReminderWindowDaysSettingProvider._();
+
+final class ReminderWindowDaysSettingProvider
+    extends $NotifierProvider<ReminderWindowDaysSetting, int> {
+  ReminderWindowDaysSettingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'reminderWindowDaysSettingProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$reminderWindowDaysSettingHash();
+
+  @$internal
+  @override
+  ReminderWindowDaysSetting create() => ReminderWindowDaysSetting();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(int value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<int>(value),
+    );
+  }
+}
+
+String _$reminderWindowDaysSettingHash() =>
+    r'7b7679fba65e848f10e828cf82f624a21beec195';
+
+abstract class _$ReminderWindowDaysSetting extends $Notifier<int> {
+  int build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<int, int>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<int, int>,
+              int,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}

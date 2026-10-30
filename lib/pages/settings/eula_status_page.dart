@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/services/exit_service.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/eula_content.dart';
 
-class EulaStatusPage extends StatelessWidget {
+class EulaStatusPage extends ConsumerWidget {
   const EulaStatusPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final appConfig = getIt<AppConfigProvider>();
+    final acceptedVersion = ref.watch(acceptedEulaVersionSettingProvider);
     final colorScheme = Theme.of(context);
 
     return Scaffold(
@@ -22,9 +23,7 @@ class EulaStatusPage extends StatelessWidget {
           children: [
             Text(l10n.eulaTitle),
             Text(
-              l10n.eulaAgreedVersion(
-                appConfig.acceptedEulaVersion.value.toString(),
-              ),
+              l10n.eulaAgreedVersion(acceptedVersion.toString()),
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
@@ -32,10 +31,10 @@ class EulaStatusPage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          Expanded(
+          const Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: const EulaContent(showCheckbox: false),
+              padding: EdgeInsets.all(16),
+              child: EulaContent(showCheckbox: false),
             ),
           ),
           SafeArea(
@@ -44,7 +43,7 @@ class EulaStatusPage extends StatelessWidget {
               child: SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: () => _revokeEula(context, appConfig, l10n),
+                  onPressed: () => _revokeEula(context, ref, l10n),
                   icon: const Icon(Icons.gavel),
                   label: Text(l10n.revokeEula),
                   style: OutlinedButton.styleFrom(
@@ -61,15 +60,15 @@ class EulaStatusPage extends StatelessWidget {
 
   Future<void> _revokeEula(
     BuildContext context,
-    AppConfigProvider appConfig,
+    WidgetRef ref,
     AppLocalizations l10n,
   ) async {
-    final confirm = await showYesNoDialog(
+    final confirmed = await showYesNoDialog(
       title: l10n.revokeEula,
       content: l10n.revokeEulaConfirm,
     );
-    if (confirm == true) {
-      appConfig.acceptedEulaVersion.value = 0;
+    if (confirmed == true) {
+      ref.read(acceptedEulaVersionSettingProvider.notifier).update(0);
       await getIt<ExitService>().exitApp();
     }
   }

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 enum BatteryOptimizationStatus { checking, enabled, disabled }
 
-class BatteryOptimizationCard extends StatelessWidget {
+class BatteryOptimizationCard extends ConsumerWidget {
   final BatteryOptimizationStatus status;
   final VoidCallback onRequestIgnore;
 
@@ -17,10 +18,10 @@ class BatteryOptimizationCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final localizations = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
-    final duration = getIt<AppConfigProvider>().cardSizeAnimationDuration.value;
+    final duration = ref.watch(cardSizeAnimationDurationSettingProvider);
 
     return AnimatedSize(
       duration: duration,

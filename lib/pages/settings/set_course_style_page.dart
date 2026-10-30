@@ -3,12 +3,14 @@ import 'dart:io';
 
 import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/course/main/course_page.dart';
 import 'package:bugaoshan/pages/settings/background_crop_editor_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/widgets/common/styled_widget.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/providers/set_theme_color_provider.dart';
@@ -17,87 +19,75 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:system_theme/system_theme.dart';
 
-class SetCourseStylePage extends StatelessWidget {
+class SetCourseStylePage extends ConsumerWidget {
   const SetCourseStylePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final localizations = AppLocalizations.of(context)!;
-    final appConfig = getIt<AppConfigProvider>();
+    final bgPath = ref.watch(backgroundImagePathSettingProvider);
 
-    return ListenableBuilder(
-      listenable: Listenable.merge([
-        appConfig.backgroundImagePath,
-        appConfig.backgroundImageOpacity,
-        appConfig.backgroundImageCrop,
-        appConfig.colorOpacity,
-        appConfig.courseCardFontSize,
-        appConfig.showCourseGrid,
-        appConfig.courseRowHeight,
-        appConfig.showTeacherName,
-        appConfig.showLocation,
-        appConfig.showCourseWeeks,
-        appConfig.showWeekend,
-        appConfig.showNonCurrentWeekCourses,
-      ]),
-      builder: (context, _) {
-        return Scaffold(
-          appBar: AppBar(title: Text(localizations.courseStyleSetting)),
-          body: LayoutBuilder(
-            builder: (context, constraints) {
-              final previewHeight = (constraints.maxHeight * 0.5).clamp(
-                200.0,
-                400.0,
-              );
-              return Column(
-                children: [
-                  // Preview section
-                  SizedBox(
-                    height: previewHeight,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(AppShapes.medium),
-                        child: CoursePage(
-                          key: ValueKey(
-                            appConfig.backgroundImagePath.value ?? '__none__',
-                          ),
-                          demoMode: true,
-                        ),
-                      ),
+    return Scaffold(
+      appBar: AppBar(title: Text(localizations.courseStyleSetting)),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final previewHeight = (constraints.maxHeight * 0.5).clamp(
+            200.0,
+            400.0,
+          );
+          return Column(
+            children: [
+              // Preview section
+              SizedBox(
+                height: previewHeight,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(AppShapes.medium),
+                    child: CoursePage(
+                      key: ValueKey(bgPath ?? '__none__'),
+                      demoMode: true,
                     ),
                   ),
-                  // Settings section
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: withSystemBottomInset(
-                        context,
-                        EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                      ),
-                      child: Column(
-                        spacing: 16,
-                        children: _buildSettings(
-                          context,
-                          localizations,
-                          appConfig,
-                        ),
-                      ),
-                    ),
+                ),
+              ),
+              // Settings section
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: withSystemBottomInset(
+                    context,
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   ),
-                ],
-              );
-            },
-          ),
-        );
-      },
+                  child: Column(
+                    spacing: 16,
+                    children: _buildSettings(context, ref, localizations),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
   List<Widget> _buildSettings(
     BuildContext context,
+    WidgetRef ref,
     AppLocalizations localizations,
-    AppConfigProvider appConfig,
   ) {
+    final colorOpacity = ref.watch(colorOpacitySettingProvider);
+    final fontSize = ref.watch(courseCardFontSizeSettingProvider);
+    final showCourseGrid = ref.watch(showCourseGridSettingProvider);
+    final rowHeight = ref.watch(courseRowHeightSettingProvider);
+    final showTeacher = ref.watch(showTeacherNameSettingProvider);
+    final showLocation = ref.watch(showLocationSettingProvider);
+    final showCourseWeeks = ref.watch(showCourseWeeksSettingProvider);
+    final showWeekend = ref.watch(showWeekendSettingProvider);
+    final showNonCurrent = ref.watch(showNonCurrentWeekCoursesSettingProvider);
+    final bgPath = ref.watch(backgroundImagePathSettingProvider);
+    final bgOpacity = ref.watch(backgroundImageOpacitySettingProvider);
+
     return [
       const Divider(),
       // Course card settings
@@ -118,16 +108,17 @@ class SetCourseStylePage extends StatelessWidget {
           Row(
             children: [
               Expanded(child: Text(localizations.colorOpacity)),
-              Text('${(appConfig.colorOpacity.value * 100).round()}%'),
+              Text('${(colorOpacity * 100).round()}%'),
             ],
           ),
           AdaptiveGlassSlider(
             semanticLabel: localizations.colorOpacity,
-            value: appConfig.colorOpacity.value,
+            value: colorOpacity,
             min: 0.3,
             max: 1.0,
             divisions: 14,
-            onChanged: (v) => appConfig.colorOpacity.value = v,
+            onChanged: (v) =>
+                ref.read(colorOpacitySettingProvider.notifier).update(v),
           ),
         ],
       ),
@@ -138,16 +129,17 @@ class SetCourseStylePage extends StatelessWidget {
           Row(
             children: [
               Expanded(child: Text(localizations.fontSize)),
-              Text('${appConfig.courseCardFontSize.value.round()}'),
+              Text('${fontSize.round()}'),
             ],
           ),
           AdaptiveGlassSlider(
             semanticLabel: localizations.fontSize,
-            value: appConfig.courseCardFontSize.value,
+            value: fontSize,
             min: 8,
             max: 20,
             divisions: 12,
-            onChanged: (v) => appConfig.courseCardFontSize.value = v,
+            onChanged: (v) =>
+                ref.read(courseCardFontSizeSettingProvider.notifier).update(v),
           ),
         ],
       ),
@@ -165,8 +157,9 @@ class SetCourseStylePage extends StatelessWidget {
       // Show course grid switch
       AdaptiveGlassSwitchListTile(
         title: Text(localizations.showCourseGrid),
-        value: appConfig.showCourseGrid.value,
-        onChanged: (v) => appConfig.showCourseGrid.value = v,
+        value: showCourseGrid,
+        onChanged: (v) =>
+            ref.read(showCourseGridSettingProvider.notifier).update(v),
         contentPadding: EdgeInsets.zero,
       ),
       // Course row height
@@ -176,16 +169,17 @@ class SetCourseStylePage extends StatelessWidget {
           Row(
             children: [
               Expanded(child: Text(localizations.courseRowHeight)),
-              Text('${appConfig.courseRowHeight.value.round()}'),
+              Text('${rowHeight.round()}'),
             ],
           ),
           AdaptiveGlassSlider(
             semanticLabel: localizations.courseRowHeight,
-            value: appConfig.courseRowHeight.value,
+            value: rowHeight,
             min: 48,
             max: 120,
             divisions: 18,
-            onChanged: (v) => appConfig.courseRowHeight.value = v,
+            onChanged: (v) =>
+                ref.read(courseRowHeightSettingProvider.notifier).update(v),
           ),
         ],
       ),
@@ -202,32 +196,37 @@ class SetCourseStylePage extends StatelessWidget {
       ),
       AdaptiveGlassSwitchListTile(
         title: Text(localizations.showTeacher),
-        value: appConfig.showTeacherName.value,
-        onChanged: (v) => appConfig.showTeacherName.value = v,
+        value: showTeacher,
+        onChanged: (v) =>
+            ref.read(showTeacherNameSettingProvider.notifier).update(v),
         contentPadding: EdgeInsets.zero,
       ),
       AdaptiveGlassSwitchListTile(
         title: Text(localizations.showLocation),
-        value: appConfig.showLocation.value,
-        onChanged: (v) => appConfig.showLocation.value = v,
+        value: showLocation,
+        onChanged: (v) =>
+            ref.read(showLocationSettingProvider.notifier).update(v),
         contentPadding: EdgeInsets.zero,
       ),
       AdaptiveGlassSwitchListTile(
         title: Text(localizations.showCourseWeeks),
-        value: appConfig.showCourseWeeks.value,
-        onChanged: (v) => appConfig.showCourseWeeks.value = v,
+        value: showCourseWeeks,
+        onChanged: (v) =>
+            ref.read(showCourseWeeksSettingProvider.notifier).update(v),
         contentPadding: EdgeInsets.zero,
       ),
       AdaptiveGlassSwitchListTile(
         title: Text(localizations.showWeekend),
-        value: appConfig.showWeekend.value,
-        onChanged: (v) => appConfig.showWeekend.value = v,
+        value: showWeekend,
+        onChanged: (v) =>
+            ref.read(showWeekendSettingProvider.notifier).update(v),
         contentPadding: EdgeInsets.zero,
       ),
       AdaptiveGlassSwitchListTile(
         title: Text(localizations.showNonCurrentWeekCourses),
-        value: appConfig.showNonCurrentWeekCourses.value,
-        onChanged: (v) => appConfig.showNonCurrentWeekCourses.value = v,
+        value: showNonCurrent,
+        onChanged: (v) =>
+            ref.read(showNonCurrentWeekCoursesSettingProvider.notifier).update(v),
         contentPadding: EdgeInsets.zero,
       ),
       const Divider(),
@@ -246,20 +245,20 @@ class SetCourseStylePage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ButtonWithMaxWidth(
-            onPressed: () => _pickBackgroundImage(context, appConfig),
+            onPressed: () => _pickBackgroundImage(context, ref),
             icon: const Icon(Icons.wallpaper),
             child: Text(localizations.setBackgroundImage),
           ),
-          if (appConfig.backgroundImagePath.value != null) ...[
+          if (bgPath != null) ...[
             const SizedBox(height: 8),
             ButtonWithMaxWidth(
-              onPressed: () => _editBackgroundCrop(context, appConfig),
+              onPressed: () => _editBackgroundCrop(context, ref),
               icon: const Icon(Icons.crop_free),
               child: Text(localizations.editBackgroundArea),
             ),
             const SizedBox(height: 8),
             ButtonWithMaxWidth(
-              onPressed: () => _removeBackgroundImage(appConfig),
+              onPressed: () => _removeBackgroundImage(ref),
               icon: const Icon(Icons.delete_outline),
               child: Text(localizations.removeBackgroundImage),
             ),
@@ -270,18 +269,17 @@ class SetCourseStylePage extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(child: Text(localizations.backgroundImageOpacity)),
-                    Text(
-                      '${(appConfig.backgroundImageOpacity.value * 100).round()}%',
-                    ),
+                    Text('${(bgOpacity * 100).round()}%'),
                   ],
                 ),
                 AdaptiveGlassSlider(
                   semanticLabel: localizations.backgroundImageOpacity,
-                  value: appConfig.backgroundImageOpacity.value,
+                  value: bgOpacity,
                   min: 0.05,
                   max: 0.8,
                   divisions: 15,
-                  onChanged: (v) => appConfig.backgroundImageOpacity.value = v,
+                  onChanged: (v) =>
+                      ref.read(backgroundImageOpacitySettingProvider.notifier).update(v),
                 ),
               ],
             ),
@@ -294,16 +292,16 @@ class SetCourseStylePage extends StatelessWidget {
         alignment: Alignment.center,
         child: TextButton.icon(
           onPressed: () {
-            appConfig.colorOpacity.value = 0.85;
-            appConfig.courseCardFontSize.value = 14.0;
-            appConfig.showCourseGrid.value = true;
-            appConfig.courseRowHeight.value = 72.0;
-            appConfig.backgroundImageOpacity.value = 0.3;
-            appConfig.showTeacherName.value = true;
-            appConfig.showLocation.value = true;
-            appConfig.showCourseWeeks.value = true;
-            appConfig.showWeekend.value = false;
-            appConfig.showNonCurrentWeekCourses.value = true;
+            ref.read(colorOpacitySettingProvider.notifier).update(0.85);
+            ref.read(courseCardFontSizeSettingProvider.notifier).update(14.0);
+            ref.read(showCourseGridSettingProvider.notifier).update(true);
+            ref.read(courseRowHeightSettingProvider.notifier).update(72.0);
+            ref.read(backgroundImageOpacitySettingProvider.notifier).update(0.3);
+            ref.read(showTeacherNameSettingProvider.notifier).update(true);
+            ref.read(showLocationSettingProvider.notifier).update(true);
+            ref.read(showCourseWeeksSettingProvider.notifier).update(true);
+            ref.read(showWeekendSettingProvider.notifier).update(false);
+            ref.read(showNonCurrentWeekCoursesSettingProvider.notifier).update(true);
           },
           icon: const Icon(Icons.refresh),
           label: Text(localizations.resetToDefault),
@@ -312,26 +310,26 @@ class SetCourseStylePage extends StatelessWidget {
     ];
   }
 
-  Future<void> _removeBackgroundImage(AppConfigProvider appConfig) async {
+  Future<void> _removeBackgroundImage(WidgetRef ref) async {
+    final appConfig = ref.read(appConfigProviderBridge);
     final oldPath = appConfig.backgroundImagePath.value;
-    appConfig.backgroundImagePath.value = null;
-    appConfig.backgroundImageCrop.value = null;
+    ref.read(backgroundImagePathSettingProvider.notifier).update(null);
+    ref.read(backgroundImageCropSettingProvider.notifier).update(null);
     if (oldPath != null) {
       unawaited(FileImage(File(oldPath)).evict());
       File(oldPath).delete().ignore();
     }
     if (appConfig.themeColorMode.value == ThemeColorMode.backgroundImage) {
       await SystemTheme.accentColor.load();
-      appConfig.themeColor.value = SystemTheme.accentColor.accent;
+      ref.read(themeColorSettingProvider.notifier).update(SystemTheme.accentColor.accent);
     }
   }
 
-  /// 打开裁剪编辑器调整当前背景图的显示区域。
   Future<void> _editBackgroundCrop(
     BuildContext context,
-    AppConfigProvider appConfig,
+    WidgetRef ref,
   ) async {
-    final path = appConfig.backgroundImagePath.value;
+    final path = ref.read(backgroundImagePathSettingProvider);
     if (path == null) return;
     await Navigator.of(context).push(
       MaterialPageRoute(
@@ -342,7 +340,7 @@ class SetCourseStylePage extends StatelessWidget {
 
   Future<void> _pickBackgroundImage(
     BuildContext context,
-    AppConfigProvider appConfig,
+    WidgetRef ref,
   ) async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
@@ -357,8 +355,7 @@ class SetCourseStylePage extends StatelessWidget {
     final ext = p.extension(picked.path);
     final destPath = '${bgDir.path}/schedule_bg$ext';
 
-    // Delete old background file and evict from image cache
-    final oldPath = appConfig.backgroundImagePath.value;
+    final oldPath = ref.read(backgroundImagePathSettingProvider);
     if (oldPath != null) {
       unawaited(FileImage(File(oldPath)).evict());
       final oldFile = File(oldPath);
@@ -368,21 +365,20 @@ class SetCourseStylePage extends StatelessWidget {
     }
 
     await File(picked.path).copy(destPath);
-    appConfig.backgroundImagePath.value = destPath;
-    // 新背景图不继承旧裁剪参数，保持默认(cover)显示，由裁剪编辑器调整。
-    appConfig.backgroundImageCrop.value = null;
+    ref.read(backgroundImagePathSettingProvider.notifier).update(destPath);
+    ref.read(backgroundImageCropSettingProvider.notifier).update(null);
 
+    final appConfig = ref.read(appConfigProviderBridge);
     if (appConfig.themeColorMode.value == ThemeColorMode.backgroundImage) {
       final themeColorProvider = SetThemeColorProvider(appConfig);
       final result = await themeColorProvider.extractColorFromBackgroundImage();
       if (result == ExtractColorResult.success &&
           themeColorProvider.extractedColor != null) {
-        appConfig.themeColor.value = themeColorProvider.extractedColor!;
+        ref.read(themeColorSettingProvider.notifier).update(themeColorProvider.extractedColor!);
       }
     }
 
     if (!context.mounted) return;
-    // 选图后进入裁剪编辑器：可拖动/缩放调整显示区域，直接返回则保持默认。
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => BackgroundCropEditorPage(imagePath: destPath),

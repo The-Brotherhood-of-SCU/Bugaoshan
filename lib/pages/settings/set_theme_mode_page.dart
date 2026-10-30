@@ -1,55 +1,60 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
 /// 深色模式设置页：跟随系统 / 浅色 / 深色，点选后立即生效并持久化。
 /// 每个选项渲染一张迷你界面预览卡，「跟随系统」左右分屏展示浅深两种外观。
-class SetThemeModePage extends StatelessWidget {
+class SetThemeModePage extends ConsumerWidget {
   const SetThemeModePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final appConfig = getIt<AppConfigProvider>();
+    final mode = ref.watch(themeModeSettingProvider);
+
     return Scaffold(
       appBar: AppBar(title: Text(l10n.darkMode)),
-      body: ValueListenableBuilder<ThemeMode>(
-        valueListenable: appConfig.themeMode,
-        builder: (context, mode, _) => ListView(
-          padding: withSystemBottomInset(
-            context,
-            EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          ),
-          children: [
-            Row(
-              children: [
-                _ThemeModeCard(
-                  selected: mode == ThemeMode.system,
-                  // 用较短的 "System"/「跟随系统」词条，避免窄卡内文字溢出
-                  label: l10n.themeColorModeSystem,
-                  previews: const [Brightness.light, Brightness.dark],
-                  onTap: () => appConfig.themeMode.value = ThemeMode.system,
-                ),
-                const SizedBox(width: 10),
-                _ThemeModeCard(
-                  selected: mode == ThemeMode.light,
-                  label: l10n.themeModeLight,
-                  previews: const [Brightness.light],
-                  onTap: () => appConfig.themeMode.value = ThemeMode.light,
-                ),
-                const SizedBox(width: 10),
-                _ThemeModeCard(
-                  selected: mode == ThemeMode.dark,
-                  label: l10n.themeModeDark,
-                  previews: const [Brightness.dark],
-                  onTap: () => appConfig.themeMode.value = ThemeMode.dark,
-                ),
-              ],
-            ),
-          ],
+      body: ListView(
+        padding: withSystemBottomInset(
+          context,
+          const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),
+        children: [
+          Row(
+            children: [
+              _ThemeModeCard(
+                selected: mode == ThemeMode.system,
+                // 用较短的 "System"/「跟随系统」词条，避免窄卡内文字溢出
+                label: l10n.themeColorModeSystem,
+                previews: const [Brightness.light, Brightness.dark],
+                onTap: () => ref
+                    .read(themeModeSettingProvider.notifier)
+                    .update(ThemeMode.system),
+              ),
+              const SizedBox(width: 10),
+              _ThemeModeCard(
+                selected: mode == ThemeMode.light,
+                label: l10n.themeModeLight,
+                previews: const [Brightness.light],
+                onTap: () => ref
+                    .read(themeModeSettingProvider.notifier)
+                    .update(ThemeMode.light),
+              ),
+              const SizedBox(width: 10),
+              _ThemeModeCard(
+                selected: mode == ThemeMode.dark,
+                label: l10n.themeModeDark,
+                previews: const [Brightness.dark],
+                onTap: () => ref
+                    .read(themeModeSettingProvider.notifier)
+                    .update(ThemeMode.dark),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

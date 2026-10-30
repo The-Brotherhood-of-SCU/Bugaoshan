@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/student_type.dart';
@@ -16,9 +17,9 @@ import 'package:bugaoshan/pages/settings/set_student_type_page.dart';
 import 'package:bugaoshan/pages/settings/set_theme_color_page.dart';
 import 'package:bugaoshan/pages/settings/reminder_setting_page.dart';
 import 'package:bugaoshan/pages/settings/set_theme_mode_page.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/providers/course_provider.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/course/course_pods.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/widgets/common/info_card.dart';
 import 'package:bugaoshan/widgets/common/section_title.dart';
@@ -27,13 +28,14 @@ import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
-class SoftwareSettingPage extends StatelessWidget {
+class SoftwareSettingPage extends ConsumerWidget {
   const SoftwareSettingPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final localizations = AppLocalizations.of(context)!;
-    final appConfig = getIt<AppConfigProvider>();
+    final studentType = ref.watch(studentTypeSettingProvider);
+    final mode = ref.watch(themeModeSettingProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(localizations.softwareSetting)),
@@ -49,7 +51,7 @@ class SoftwareSettingPage extends StatelessWidget {
               IconTile(
                 icon: Icons.language,
                 label: localizations.modifyLanguage,
-                onTap: () => popupOrNavigate(context, SetLanguagePage()),
+                onTap: () => popupOrNavigate(context, const SetLanguagePage()),
               ),
               IconTile(
                 icon: Icons.notifications_active_outlined,
@@ -57,17 +59,14 @@ class SoftwareSettingPage extends StatelessWidget {
                 onTap: () =>
                     popupOrNavigate(context, const ReminderSettingPage()),
               ),
-              ValueListenableBuilder<StudentType>(
-                valueListenable: appConfig.studentType,
-                builder: (context, studentType, _) => IconTile(
-                  icon: Icons.badge_outlined,
-                  label: localizations.studentTypeSetting,
-                  value: studentType == StudentType.graduate
-                      ? localizations.studentTypeGraduate
-                      : localizations.studentTypeUndergraduate,
-                  onTap: () =>
-                      popupOrNavigate(context, const SetStudentTypePage()),
-                ),
+              IconTile(
+                icon: Icons.badge_outlined,
+                label: localizations.studentTypeSetting,
+                value: studentType == StudentType.graduate
+                    ? localizations.studentTypeGraduate
+                    : localizations.studentTypeUndergraduate,
+                onTap: () =>
+                    popupOrNavigate(context, const SetStudentTypePage()),
               ),
               if (Platform.isAndroid)
                 IconTile(
@@ -78,7 +77,7 @@ class SoftwareSettingPage extends StatelessWidget {
               IconTile(
                 icon: Icons.timer,
                 label: localizations.animationDuration,
-                onTap: () => popupOrNavigate(context, SetDurationPage()),
+                onTap: () => popupOrNavigate(context, const SetDurationPage()),
               ),
               IconTile(
                 icon: Icons.dock_outlined,
@@ -102,24 +101,21 @@ class SoftwareSettingPage extends StatelessWidget {
           SectionTitle(title: localizations.settingsStyle),
           InfoCard(
             children: [
-              ValueListenableBuilder<ThemeMode>(
-                valueListenable: appConfig.themeMode,
-                builder: (context, mode, _) => IconTile(
-                  icon: Icons.dark_mode_outlined,
-                  label: localizations.darkMode,
-                  value: switch (mode) {
-                    ThemeMode.system => localizations.followSystem,
-                    ThemeMode.light => localizations.themeModeLight,
-                    ThemeMode.dark => localizations.themeModeDark,
-                  },
-                  onTap: () =>
-                      popupOrNavigate(context, const SetThemeModePage()),
-                ),
+              IconTile(
+                icon: Icons.dark_mode_outlined,
+                label: localizations.darkMode,
+                value: switch (mode) {
+                  ThemeMode.system => localizations.followSystem,
+                  ThemeMode.light => localizations.themeModeLight,
+                  ThemeMode.dark => localizations.themeModeDark,
+                },
+                onTap: () =>
+                    popupOrNavigate(context, const SetThemeModePage()),
               ),
               IconTile(
                 icon: Icons.color_lens,
                 label: localizations.themeColor,
-                onTap: () => popupOrNavigate(context, SetThemeColorPage()),
+                onTap: () => popupOrNavigate(context, const SetThemeColorPage()),
               ),
               IconTile(
                 icon: Icons.style,
@@ -149,12 +145,12 @@ class SoftwareSettingPage extends StatelessWidget {
                     content: localizations.confirmMessage,
                   );
                   if (confirm == true) {
-                    final scuAuth = getIt<ScuAuthProvider>();
+                    final scuAuth = ref.read(scuAuthProviderBridge);
                     await scuAuth.logout();
                     await scuAuth.clearCredentials();
-                    await appConfig.clearAll();
-                    final courseProvider = getIt<CourseProvider>();
-                    await courseProvider.clearAllData();
+                    await ref.read(appConfigProviderBridge).clearAll();
+                    final courseProv = ref.read(courseProvider);
+                    await courseProv.clearAllData();
                     // 日志文件也清掉：用户点了「清除所有数据」就应真的全清，
                     // 否则残留日志既不符预期，也与 privacy-policy / EULA 的
                     // 「按数据类型另行删除」说明产生矛盾。

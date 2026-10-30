@@ -1,28 +1,29 @@
 import 'dart:math' as math;
 
-import 'package:bugaoshan/widgets/navigation/home_dock_insets.dart';
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
+import 'package:bugaoshan/widgets/navigation/home_dock_insets.dart';
 import 'package:bugaoshan/widgets/common/third_center.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/pages/profile/login_status_card.dart';
 import 'package:bugaoshan/pages/profile/profile_menu_card.dart';
 import 'package:bugaoshan/pages/profile/user_info_card.dart';
 
-final _appConfig = getIt<AppConfigProvider>();
-
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cardAnimDuration = ref.watch(cardSizeAnimationDurationSettingProvider);
+
     final body = Column(
       mainAxisSize: MainAxisSize.min,
       spacing: 12,
       children: [
         const LoginStatusCard(),
         AnimatedSize(
-          duration: _appConfig.cardSizeAnimationDuration.value,
+          duration: cardAnimDuration,
           curve: appCurve,
           child: const UserInfoCard(),
         ),

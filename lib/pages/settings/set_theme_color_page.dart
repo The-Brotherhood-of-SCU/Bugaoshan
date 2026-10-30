@@ -1,23 +1,24 @@
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/providers/set_theme_color_provider.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 import 'package:system_theme/system_theme.dart';
 
-class SetThemeColorPage extends StatefulWidget {
+class SetThemeColorPage extends ConsumerStatefulWidget {
   const SetThemeColorPage({super.key});
 
   @override
-  State<SetThemeColorPage> createState() => _SetThemeColorPageState();
+  ConsumerState<SetThemeColorPage> createState() => _SetThemeColorPageState();
 }
 
-class _SetThemeColorPageState extends State<SetThemeColorPage> {
-  final appConfigService = getIt<AppConfigProvider>();
-  final themeColorProvider = SetThemeColorProvider(getIt<AppConfigProvider>());
+class _SetThemeColorPageState extends ConsumerState<SetThemeColorPage> {
+  late final SetThemeColorProvider _themeColorProvider;
 
   late Color pickerColor;
   late ThemeColorMode _selectedMode;
@@ -26,11 +27,13 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
   @override
   void initState() {
     super.initState();
-    _selectedMode = appConfigService.themeColorMode.value;
+    final appConfig = ref.read(appConfigProviderBridge);
+    _themeColorProvider = SetThemeColorProvider(appConfig);
+    _selectedMode = ref.read(themeColorModeSettingProvider);
     if (_selectedMode == ThemeColorMode.system) {
       pickerColor = SystemTheme.accentColor.accent;
     } else {
-      pickerColor = appConfigService.themeColor.value;
+      pickerColor = ref.read(themeColorSettingProvider);
     }
   }
 
@@ -73,7 +76,7 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
   }
 
   Future<void> _handleSystemMode() async {
-    final result = await themeColorProvider.previewSystemColor();
+    final result = await _themeColorProvider.previewSystemColor();
     if (!mounted) return;
     setState(() {
       pickerColor = result.color!;
@@ -85,7 +88,7 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
   }
 
   Future<void> _handleBackgroundImageMode() async {
-    final result = await themeColorProvider.previewBackgroundImageColor();
+    final result = await _themeColorProvider.previewBackgroundImageColor();
     if (!mounted) return;
     if (result.color != null && result.mode == ThemeColorMode.backgroundImage) {
       setState(() {
@@ -96,7 +99,7 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
         );
       });
     } else {
-      if (appConfigService.backgroundImagePath.value == null) {
+      if (ref.read(backgroundImagePathSettingProvider) == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -203,8 +206,8 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
   }
 
   void _confirmChanges() {
-    appConfigService.themeColor.value = pickerColor;
-    appConfigService.themeColorMode.value = _selectedMode;
+    ref.read(themeColorSettingProvider.notifier).update(pickerColor);
+    ref.read(themeColorModeSettingProvider.notifier).update(_selectedMode);
     Navigator.of(context).pop();
   }
 }

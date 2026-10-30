@@ -1,9 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/injection/injector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/secure_storage.dart';
@@ -38,34 +39,22 @@ enum LoginStatus {
   bool get isAutoLoggingIn => this == LoginStatus.autoLoggingIn;
 }
 
-class LoginStatusCard extends StatefulWidget {
+class LoginStatusCard extends ConsumerStatefulWidget {
   const LoginStatusCard({super.key});
 
   @override
-  State<LoginStatusCard> createState() => _LoginStatusCardState();
+  ConsumerState<LoginStatusCard> createState() => _LoginStatusCardState();
 }
 
-class _LoginStatusCardState extends State<LoginStatusCard> {
+class _LoginStatusCardState extends ConsumerState<LoginStatusCard> {
   static final _storage = SecureStorageProvider.instance;
 
-  final _authProvider = getIt<ScuAuthProvider>();
   String? _username;
   bool _privacyHidden = true;
 
   @override
   void initState() {
     super.initState();
-    _authProvider.addListener(_onChanged);
-    _loadUsername();
-  }
-
-  @override
-  void dispose() {
-    _authProvider.removeListener(_onChanged);
-    super.dispose();
-  }
-
-  void _onChanged() {
     _loadUsername();
   }
 
@@ -108,7 +97,7 @@ class _LoginStatusCardState extends State<LoginStatusCard> {
       ),
     );
     if (confirmed == true) {
-      await _authProvider.logout();
+      await ref.read(scuAuthProviderBridge).logout();
     }
   }
 
@@ -119,17 +108,12 @@ class _LoginStatusCardState extends State<LoginStatusCard> {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: _authProvider,
-      builder: (context, _) => _buildContent(context),
-    );
-  }
-
-  Widget _buildContent(BuildContext context) {
+    final authProvider = ref.watch(scuAuthProviderBridge);
+    ref.listen(scuAuthProviderBridge, (_, _) => _loadUsername());
     final theme = Theme.of(context);
     final localizations = AppLocalizations.of(context)!;
     final primaryColor = theme.colorScheme.primary;
-    final status = LoginStatus.from(_authProvider);
+    final status = LoginStatus.from(authProvider);
 
     return StyledCard(
       child: Column(

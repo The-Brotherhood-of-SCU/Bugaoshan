@@ -1,10 +1,12 @@
 import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/reminder_plan.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/services/reminder/reminder_service.dart';
 import 'package:bugaoshan/services/reminder/reminder_transport.dart';
 import 'package:bugaoshan/widgets/common/info_card.dart';
@@ -12,22 +14,20 @@ import 'package:bugaoshan/widgets/common/section_title.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
-import 'package:flutter/material.dart';
 
 /// 「通知与提醒」设置页面。
 ///
 /// 聚合系统通知权限授权状态、提醒主开关、提前量偏好、免打扰时段及当前排期状态。
 /// 显式呈现授权状态与系统待投递状态，用于异常排查与状态感知。
-class ReminderSettingPage extends StatefulWidget {
+class ReminderSettingPage extends ConsumerStatefulWidget {
   const ReminderSettingPage({super.key});
 
   @override
-  State<ReminderSettingPage> createState() => _ReminderSettingPageState();
+  ConsumerState<ReminderSettingPage> createState() => _ReminderSettingPageState();
 }
 
-class _ReminderSettingPageState extends State<ReminderSettingPage>
+class _ReminderSettingPageState extends ConsumerState<ReminderSettingPage>
     with WidgetsBindingObserver {
-  final _appConfig = getIt<AppConfigProvider>();
   final _service = getIt<ReminderService>();
 
   /// 系统通知权限状态，为 null 时表示尚未完成查询。
@@ -47,8 +47,8 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _lastQuietStart = _appConfig.reminderQuietStart.value;
-    _lastQuietEnd = _appConfig.reminderQuietEnd.value;
+    _lastQuietStart = ref.read(reminderQuietStartSettingProvider);
+    _lastQuietEnd = ref.read(reminderQuietEndSettingProvider);
     unawaited(_refreshStatus());
   }
 
@@ -90,7 +90,7 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
       _permissionStatus == ReminderPermissionStatus.unsupported;
 
   Future<void> _toggleMaster(bool enabled) async {
-    _appConfig.reminderEnabled.value = enabled;
+    ref.read(reminderEnabledSettingProvider.notifier).update(enabled);
     // 开启主开关且处于未决定授权状态时，主动请求系统权限以完成引导流程。
     if (enabled &&
         !_isGranted &&
@@ -140,8 +140,8 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
 
   Future<void> _pickQuietTime({required bool isStart}) async {
     final current = isStart
-        ? _appConfig.reminderQuietStart.value
-        : _appConfig.reminderQuietEnd.value;
+        ? ref.read(reminderQuietStartSettingProvider)
+        : ref.read(reminderQuietEndSettingProvider);
     final picked = await showTimePicker(
       context: context,
       initialTime:
@@ -149,9 +149,9 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
     );
     if (picked == null) return;
     if (isStart) {
-      _appConfig.reminderQuietStart.value = picked;
+      ref.read(reminderQuietStartSettingProvider.notifier).update(picked);
     } else {
-      _appConfig.reminderQuietEnd.value = picked;
+      ref.read(reminderQuietEndSettingProvider.notifier).update(picked);
     }
   }
 
@@ -273,19 +273,17 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
   // ── 总开关 ──────────────────────────────────────────────────────
 
   Widget _buildMasterSwitch(AppLocalizations l10n) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: _appConfig.reminderEnabled,
-      builder: (context, enabled, _) => AdaptiveGlassSwitchListTile(
-        // 与卡片内 IconTile 的 20 水平内边距对齐，避免内容贴住卡片边缘。
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-        title: Text(l10n.reminderMasterSwitch),
-        subtitle: Text(
-          l10n.reminderMasterSwitchHint,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-        value: enabled,
-        onChanged: _toggleMaster,
+    final enabled = ref.watch(reminderEnabledSettingProvider);
+    return AdaptiveGlassSwitchListTile(
+      // 与卡片内 IconTile 的 20 水平内边距对齐，避免内容贴住卡片边缘。
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+      title: Text(l10n.reminderMasterSwitch),
+      subtitle: Text(
+        l10n.reminderMasterSwitchHint,
+        style: Theme.of(context).textTheme.bodySmall,
       ),
+      value: enabled,
+      onChanged: _toggleMaster,
     );
   }
 
@@ -293,180 +291,168 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
 
   Widget _buildCourseSection(AppLocalizations l10n) {
     final theme = Theme.of(context);
-    return ValueListenableBuilder<bool>(
-      valueListenable: _appConfig.reminderEnabled,
-      builder: (context, masterEnabled, _) => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SectionTitle(title: l10n.reminderCourseSection),
-          Opacity(
-            // 主开关关闭时置灰并禁用交互，维持界面结构可见性。
-            opacity: masterEnabled ? 1 : 0.45,
-            child: IgnorePointer(
-              ignoring: !masterEnabled,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  StyledCard(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.reminderLeadTime,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+    final masterEnabled = ref.watch(reminderEnabledSettingProvider);
+    final selected = ref.watch(reminderLeadMinutesSettingProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SectionTitle(title: l10n.reminderCourseSection),
+        Opacity(
+          // 主开关关闭时置灰并禁用交互，维持界面结构可见性。
+          opacity: masterEnabled ? 1 : 0.45,
+          child: IgnorePointer(
+            ignoring: !masterEnabled,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                StyledCard(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.reminderLeadTime,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            l10n.reminderLeadTimeHint,
-                            style: theme.textTheme.bodySmall?.copyWith(
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          l10n.reminderLeadTimeHint,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            for (final minutes in _leadChoices)
+                              FilterChip(
+                                label: Text(
+                                  l10n.reminderLeadMinutes(minutes),
+                                ),
+                                selected: selected.contains(minutes),
+                                onSelected: (on) {
+                                  final next = {...selected};
+                                  if (on) {
+                                    next.add(minutes);
+                                  } else {
+                                    next.remove(minutes);
+                                  }
+                                  // 保证至少保留一个提前时间选项，避免全部取消后与主开关开启状态语义冲突。
+                                  if (next.isEmpty) return;
+                                  ref
+                                      .read(reminderLeadMinutesSettingProvider.notifier)
+                                      .update(next.toList()..sort());
+                                },
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              size: 16,
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
-                          ),
-                          const SizedBox(height: 12),
-                          ValueListenableBuilder<List<int>>(
-                            valueListenable: _appConfig.reminderLeadMinutes,
-                            builder: (context, selected, _) => Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                for (final minutes in _leadChoices)
-                                  FilterChip(
-                                    label: Text(
-                                      l10n.reminderLeadMinutes(minutes),
-                                    ),
-                                    selected: selected.contains(minutes),
-                                    onSelected: (on) {
-                                      final next = {...selected};
-                                      if (on) {
-                                        next.add(minutes);
-                                      } else {
-                                        next.remove(minutes);
-                                      }
-                                      // 保证至少保留一个提前时间选项，避免全部取消后与主开关开启状态语义冲突。
-                                      if (next.isEmpty) return;
-                                      _appConfig.reminderLeadMinutes.value =
-                                          next.toList()..sort();
-                                    },
-                                  ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.info_outline,
-                                size: 16,
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  l10n.reminderLeadTimeMultiHint,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                l10n.reminderLeadTimeMultiHint,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
                                 ),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                        ],
-                      ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   // ── 免打扰 ──────────────────────────────────────────────────────
 
   Widget _buildQuietSection(AppLocalizations l10n) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: _appConfig.reminderEnabled,
-      builder: (context, masterEnabled, _) => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SectionTitle(title: l10n.reminderQuietSection),
-          Opacity(
-            opacity: masterEnabled ? 1 : 0.45,
-            child: IgnorePointer(
-              ignoring: !masterEnabled,
-              child: InfoCard(
-                children: [
-                  ValueListenableBuilder<TimeOfDay?>(
-                    valueListenable: _appConfig.reminderQuietStart,
-                    builder: (context, start, _) =>
-                        ValueListenableBuilder<TimeOfDay?>(
-                          valueListenable: _appConfig.reminderQuietEnd,
-                          builder: (context, end, _) {
-                            final enabled = start != null && end != null;
-                            return Column(
-                              children: [
-                                AdaptiveGlassSwitchListTile(
-                                  // 与下方 IconTile 的 20 水平内边距对齐，保持同一卡片内视觉一致。
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                  ),
-                                  title: Text(l10n.reminderQuietEnabled),
-                                  value: enabled,
-                                  onChanged: (on) {
-                                    if (on) {
-                                      // 优先恢复历史时段；无历史记录时应用默认起止时段。
-                                      final start =
-                                          _lastQuietStart ??
-                                          const TimeOfDay(hour: 23, minute: 0);
-                                      final end =
-                                          _lastQuietEnd ??
-                                          const TimeOfDay(hour: 7, minute: 0);
-                                      _lastQuietStart = start;
-                                      _lastQuietEnd = end;
-                                      _appConfig.reminderQuietStart.value =
-                                          start;
-                                      _appConfig.reminderQuietEnd.value = end;
-                                    } else {
-                                      _lastQuietStart = start;
-                                      _lastQuietEnd = end;
-                                      _appConfig.reminderQuietStart.value =
-                                          null;
-                                      _appConfig.reminderQuietEnd.value = null;
-                                    }
-                                  },
-                                ),
-                                if (enabled) ...[
-                                  IconTile(
-                                    icon: Icons.bedtime_outlined,
-                                    label: l10n.reminderQuietStart,
-                                    value: _hhmm(start),
-                                    onTap: () => _pickQuietTime(isStart: true),
-                                  ),
-                                  IconTile(
-                                    icon: Icons.wb_sunny_outlined,
-                                    label: l10n.reminderQuietEnd,
-                                    value: _hhmm(end),
-                                    onTap: () => _pickQuietTime(isStart: false),
-                                  ),
-                                ],
-                              ],
-                            );
-                          },
-                        ),
-                  ),
-                ],
-              ),
+    final masterEnabled = ref.watch(reminderEnabledSettingProvider);
+    final start = ref.watch(reminderQuietStartSettingProvider);
+    final end = ref.watch(reminderQuietEndSettingProvider);
+    final enabled = start != null && end != null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SectionTitle(title: l10n.reminderQuietSection),
+        Opacity(
+          opacity: masterEnabled ? 1 : 0.45,
+          child: IgnorePointer(
+            ignoring: !masterEnabled,
+            child: InfoCard(
+              children: [
+                Column(
+                  children: [
+                    AdaptiveGlassSwitchListTile(
+                      // 与下方 IconTile 的 20 水平内边距对齐，保持同一卡片内视觉一致。
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                      ),
+                      title: Text(l10n.reminderQuietEnabled),
+                      value: enabled,
+                      onChanged: (on) {
+                        if (on) {
+                          // 优先恢复历史时段；无历史记录时应用默认起止时段。
+                          final s =
+                              _lastQuietStart ??
+                              const TimeOfDay(hour: 23, minute: 0);
+                          final e =
+                              _lastQuietEnd ??
+                              const TimeOfDay(hour: 7, minute: 0);
+                          _lastQuietStart = s;
+                          _lastQuietEnd = e;
+                          ref.read(reminderQuietStartSettingProvider.notifier).update(s);
+                          ref.read(reminderQuietEndSettingProvider.notifier).update(e);
+                        } else {
+                          _lastQuietStart = start;
+                          _lastQuietEnd = end;
+                          ref.read(reminderQuietStartSettingProvider.notifier).update(null);
+                          ref.read(reminderQuietEndSettingProvider.notifier).update(null);
+                        }
+                      },
+                    ),
+                    if (enabled) ...[
+                      IconTile(
+                        icon: Icons.bedtime_outlined,
+                        label: l10n.reminderQuietStart,
+                        value: _hhmm(start),
+                        onTap: () => _pickQuietTime(isStart: true),
+                      ),
+                      IconTile(
+                        icon: Icons.wb_sunny_outlined,
+                        label: l10n.reminderQuietEnd,
+                        value: _hhmm(end),
+                        onTap: () => _pickQuietTime(isStart: false),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
