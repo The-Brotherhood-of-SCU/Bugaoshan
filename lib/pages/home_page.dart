@@ -3,12 +3,13 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
-import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/utils/app_log.dart';
@@ -20,14 +21,14 @@ import 'package:bugaoshan/widgets/navigation/adaptive_home_dock.dart';
 import 'package:bugaoshan/widgets/navigation/home_dock_symbols.dart';
 import 'package:bugaoshan/widgets/navigation/home_dock_insets.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
+class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver {
   static const String _tag = 'HomePageState';
 
   int _currentIndex = 0;
@@ -112,146 +113,115 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   Widget _buildMainScreen() {
-    final appConfig = getIt<AppConfigProvider>();
     final authProvider = getIt<ScuAuthProvider>();
     final l10n = AppLocalizations.of(context)!;
 
-    return ValueListenableBuilder<List<String>>(
-      valueListenable: appConfig.visibleDockIds,
-      builder: (context, savedIds, _) {
-        // dock 中不属于当前学生身份的功能项临时隐藏，
-        // 不改动 visibleDockIds 里保存的配置，切回身份后恢复。
-        return ValueListenableBuilder<StudentType>(
-          valueListenable: appConfig.studentType,
-          builder: (context, studentType, _) {
-            final visibleIds = [
-              for (final id in savedIds)
-                if (campusItemVisibleForStudentType(
-                  campusItemConfigById(id),
-                  studentType,
-                ))
-                  id,
-            ];
-            _clampCurrentIndex(visibleIds);
+    final savedIds = ref.watch(visibleDockIdsSettingProvider);
+    final studentType = ref.watch(studentTypeSettingProvider);
+    final hasUpdate = ref.watch(hasUpdateNotificationSettingProvider);
+    final duration = ref.watch(cardSizeAnimationDurationSettingProvider);
+    final enableAnimation = ref.watch(enableDockSwitchAnimationSettingProvider);
 
-            return ValueListenableBuilder<bool>(
-              valueListenable: appConfig.hasUpdateNotification,
-              builder: (context, hasUpdate, _) {
-                return LayoutBuilder(
-                  builder: (context, constraints) {
-                    final isWide = constraints.maxWidth >= 600;
-                    final showRail = isWide && visibleIds.length >= 2;
-                    final showBar =
-                        !isWide &&
-                        visibleIds.length >= 2 &&
-                        (!_nativeDock ||
-                            MediaQuery.viewInsetsOf(context).bottom == 0);
-                    final extendBehindDock = showBar && _nativeDock;
-                    final pageContent = ListenableBuilder(
-                      listenable: Listenable.merge([
-                        appConfig.cardSizeAnimationDuration,
-                        appConfig.enableDockSwitchAnimation,
-                      ]),
-                      builder: (context, _) {
-                        return AuthScopedIndexedStack(
-                          authListenable: authProvider,
-                          isAuthenticated: () => authProvider.isLoggedIn,
-                          visibleIds: visibleIds,
-                          selectedIndex: _currentIndex,
-                          duration: appConfig.cardSizeAnimationDuration.value,
-                          enableAnimation:
-                              appConfig.enableDockSwitchAnimation.value,
-                          axis: showRail ? Axis.vertical : Axis.horizontal,
-                          pageBuilder: _buildDockPage,
-                        );
-                      },
-                    );
-                    return Scaffold(
-                      extendBody: extendBehindDock,
-                      body: Row(
-                        children: [
-                          // Rail placeholder: always present, hidden via Offstage
-                          Offstage(
-                            offstage: !showRail,
-                            child: showRail
-                                ? ValueListenableBuilder<bool>(
-                                    valueListenable:
-                                        appConfig.enableDockSwitchAnimation,
-                                    builder: (context, enableAnimation, _) =>
-                                        AdaptiveHomeDock(
-                                          axis: Axis.vertical,
-                                          reduceMotion: !enableAnimation,
-                                          selectedIndex: _currentIndex,
-                                          onDestinationSelected: (index) {
-                                            setState(
-                                              () => _currentIndex = index,
-                                            );
-                                          },
-                                          destinations: visibleIds
-                                              .map(
-                                                (id) => _buildDockDestination(
-                                                  id,
-                                                  hasUpdate,
-                                                  l10n,
-                                                ),
-                                              )
-                                              .toList(),
-                                        ),
-                                  )
-                                : const SizedBox.shrink(),
-                          ),
-                          Offstage(
-                            offstage: !showRail,
-                            child: const VerticalDivider(
-                              thickness: 1,
-                              width: 1,
-                            ),
-                          ),
-                          // Page content: always at index 2
-                          Expanded(
-                            child: HomeDockBody(
-                              extended: extendBehindDock,
-                              child: pageContent,
-                            ),
-                          ),
-                        ],
-                      ),
-                      bottomNavigationBar: showBar
-                          ? ValueListenableBuilder<bool>(
-                              valueListenable:
-                                  appConfig.enableDockSwitchAnimation,
-                              builder: (context, enableAnimation, _) =>
-                                  AdaptiveHomeDock(
-                                    selectedIndex: _currentIndex,
-                                    reduceMotion: !enableAnimation,
-                                    moreLabel: l10n.moreFeaturesTitle,
-                                    cancelLabel: l10n.cancel,
-                                    onNativeModeChanged: (native) {
-                                      if (_nativeDock != native) {
-                                        setState(() => _nativeDock = native);
-                                      }
-                                    },
-                                    onDestinationSelected: (index) {
-                                      setState(() => _currentIndex = index);
-                                    },
-                                    destinations: visibleIds
-                                        .map(
-                                          (id) => _buildDockDestination(
-                                            id,
-                                            hasUpdate,
-                                            l10n,
-                                          ),
-                                        )
-                                        .toList(),
-                                  ),
+    final visibleIds = [
+      for (final id in savedIds)
+        if (campusItemVisibleForStudentType(
+          campusItemConfigById(id),
+          studentType,
+        ))
+          id,
+    ];
+    _clampCurrentIndex(visibleIds);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 600;
+        final showRail = isWide && visibleIds.length >= 2;
+        final showBar =
+            !isWide &&
+            visibleIds.length >= 2 &&
+            (!_nativeDock ||
+                MediaQuery.viewInsetsOf(context).bottom == 0);
+        final extendBehindDock = showBar && _nativeDock;
+        final pageContent = AuthScopedIndexedStack(
+          authListenable: authProvider,
+          isAuthenticated: () => authProvider.isLoggedIn,
+          visibleIds: visibleIds,
+          selectedIndex: _currentIndex,
+          duration: duration,
+          enableAnimation: enableAnimation,
+          axis: showRail ? Axis.vertical : Axis.horizontal,
+          pageBuilder: _buildDockPage,
+        );
+        return Scaffold(
+          extendBody: extendBehindDock,
+          body: Row(
+            children: [
+              // Rail placeholder: always present, hidden via Offstage
+              Offstage(
+                offstage: !showRail,
+                child: showRail
+                    ? AdaptiveHomeDock(
+                        axis: Axis.vertical,
+                        reduceMotion: !enableAnimation,
+                        selectedIndex: _currentIndex,
+                        onDestinationSelected: (index) {
+                          setState(
+                            () => _currentIndex = index,
+                          );
+                        },
+                        destinations: visibleIds
+                            .map(
+                              (id) => _buildDockDestination(
+                                id,
+                                hasUpdate,
+                                l10n,
+                              ),
                             )
-                          : null,
-                    );
+                            .toList(),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+              Offstage(
+                offstage: !showRail,
+                child: const VerticalDivider(
+                  thickness: 1,
+                  width: 1,
+                ),
+              ),
+              // Page content: always at index 2
+              Expanded(
+                child: HomeDockBody(
+                  extended: extendBehindDock,
+                  child: pageContent,
+                ),
+              ),
+            ],
+          ),
+          bottomNavigationBar: showBar
+              ? AdaptiveHomeDock(
+                  selectedIndex: _currentIndex,
+                  reduceMotion: !enableAnimation,
+                  moreLabel: l10n.moreFeaturesTitle,
+                  cancelLabel: l10n.cancel,
+                  onNativeModeChanged: (native) {
+                    if (_nativeDock != native) {
+                      setState(() => _nativeDock = native);
+                    }
                   },
-                );
-              },
-            );
-          },
+                  onDestinationSelected: (index) {
+                    setState(() => _currentIndex = index);
+                  },
+                  destinations: visibleIds
+                      .map(
+                        (id) => _buildDockDestination(
+                          id,
+                          hasUpdate,
+                          l10n,
+                        ),
+                      )
+                      .toList(),
+                )
+              : null,
         );
       },
     );
