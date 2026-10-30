@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/pages/campus/fitness_test/models/fitness_models.dart';
 import 'package:bugaoshan/theme_shape.dart';
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/providers/fitness_test_provider.dart';
-import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/campus/fitness_test_pods.dart';
+import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
@@ -13,24 +14,22 @@ import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/common/swipe_page_view.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
-class FitnessTestPage extends StatefulWidget {
+class FitnessTestPage extends ConsumerStatefulWidget {
   const FitnessTestPage({super.key});
 
   @override
-  State<FitnessTestPage> createState() => _FitnessTestPageState();
+  ConsumerState<FitnessTestPage> createState() => _FitnessTestPageState();
 }
 
-class _FitnessTestPageState extends State<FitnessTestPage>
+class _FitnessTestPageState extends ConsumerState<FitnessTestPage>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
-  late final FitnessTestProvider _provider;
   bool _privacyHidden = true;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _provider = getIt<FitnessTestProvider>();
   }
 
   @override
@@ -42,93 +41,82 @@ class _FitnessTestPageState extends State<FitnessTestPage>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final auth = ref.watch(scuAuthProviderBridge);
 
-    return ListenableBuilder(
-      listenable: Listenable.merge([getIt<ScuAuthProvider>(), _provider]),
-      builder: (context, _) => Scaffold(
-        appBar: AppBar(
-          title: Text(l10n.fitnessTest),
-          bottom: TabBar(
-            controller: _tabController,
-            tabs: [
-              Tab(text: l10n.fitnessTestScores),
-              Tab(text: l10n.fitnessTestNotices),
-            ],
-          ),
-        ),
-        body: _buildBody(l10n),
-      ),
-    );
-  }
-
-  Widget _buildBody(AppLocalizations l10n) {
-    final auth = getIt<ScuAuthProvider>();
     if (!auth.isLoggedIn) {
-      return auth.isAutoLoggingIn
-          ? const AutoLoginLoadingWidget()
-          : const LoginRequiredWidget();
+      return Scaffold(
+        appBar: AppBar(title: Text(l10n.fitnessTest)),
+        body: auth.isAutoLoggingIn
+            ? const AutoLoginLoadingWidget()
+            : const LoginRequiredWidget(),
+      );
     }
 
-    // Provider 是数据的唯一来源。首次进入或登出后重新登录时，页面只表达
-    // 「确保已加载」意图；它不保存请求结果、加载态或认证会话。
-    if (_provider.noticesState == FitnessTestLoadState.idle ||
-        _provider.scoreState == FitnessTestLoadState.idle) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && getIt<ScuAuthProvider>().isLoggedIn) {
-          _provider.ensureLoaded();
-        }
-      });
-    }
-
-    if (_provider.noticesState == FitnessTestLoadState.loading &&
-        _provider.notices.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    final noticesError = _provider.noticesError;
-    if (_provider.noticesState == FitnessTestLoadState.error &&
-        noticesError != null) {
-      return _buildError(noticesError, _provider.refresh);
-    }
-
-    return SwipePageView(
-      tabController: _tabController,
-      keepPagesAlive: true,
-      children: [_buildScoresTab(l10n), _buildNoticesTab(l10n)],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.fitnessTest),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: [
+            Tab(text: l10n.fitnessTestScores),
+            Tab(text: l10n.fitnessTestNotices),
+          ],
+        ),
+      ),
+      body: SwipePageView(
+        tabController: _tabController,
+        keepPagesAlive: true,
+        children: [_buildScoresTab(l10n), _buildNoticesTab(l10n)],
+      ),
     );
   }
 
   // ==================== Notices Tab ====================
 
   Widget _buildNoticesTab(AppLocalizations l10n) {
-    final notices = _provider.notices;
-    if (notices.isEmpty) {
-      return Center(
-        child: Text(
-          l10n.noData,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-      );
-    }
+    final asyncNotices = ref.watch(fitnessNoticesProvider);
 
-    return RefreshIndicator(
-      onRefresh: _provider.refresh,
-      child: ListView.builder(
-        padding: withSystemBottomInset(context, EdgeInsets.all(16)),
-        itemCount: notices.length,
-        itemBuilder: (context, index) => _buildNoticeCard(notices[index], l10n),
+    return asyncNotices.when(
+      data: (notices) {
+        if (notices.isEmpty) {
+          return Center(
+            child: Text(
+              l10n.noData,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: () => ref.refresh(fitnessNoticesProvider.future),
+          child: ListView.builder(
+            padding: withSystemBottomInset(context, EdgeInsets.all(16)),
+            itemCount: notices.length,
+            itemBuilder: (context, index) => _buildNoticeCard(notices[index], l10n),
+          ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, _) => _buildError(
+        error,
+        () => ref.refresh(fitnessNoticesProvider.future),
       ),
     );
   }
 
   Widget _buildError(Object error, Future<void> Function() onRetry) {
-    if (error is LoadErrorType) {
-      return RetryableErrorWidget(errorType: error, onRetry: onRetry);
+    final effectiveError = () {
+      if (error is UnauthenticatedException) return LoadErrorType.sessionExpired;
+      if (error is ServiceException) return error.message;
+      return campusNetworkErrorType(LoadErrorType.networkError);
+    }();
+    if (effectiveError is LoadErrorType) {
+      return RetryableErrorWidget(errorType: effectiveError, onRetry: onRetry);
     }
     return RetryableErrorWidget.message(
-      message: error.toString(),
+      message: effectiveError.toString(),
       onRetry: onRetry,
     );
   }
@@ -293,9 +281,10 @@ class _FitnessTestPageState extends State<FitnessTestPage>
   Widget _buildScoresTab(AppLocalizations l10n) {
     final currentYear = DateTime.now().year;
     final years = List.generate(9, (i) => currentYear - i);
+    final selectedYear = ref.watch(fitnessSelectedYearProvider);
 
     return RefreshIndicator(
-      onRefresh: _provider.refresh,
+      onRefresh: () => ref.refresh(fitnessScoreDataProvider(selectedYear).future),
       child: ListView(
         padding: withSystemBottomInset(context, EdgeInsets.all(16)),
         children: [
@@ -311,7 +300,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                   ),
                   const Spacer(),
                   DropdownButton<int>(
-                    value: _provider.selectedYear,
+                    value: selectedYear,
                     underline: const SizedBox(),
                     // 桌面端收起菜单后按钮仍持有焦点，默认 focusColor 会留下一块
                     // 常驻灰底；这里将其去掉（悬停高亮保留，可正常随鼠标移出消失）。
@@ -322,8 +311,8 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                         )
                         .toList(),
                     onChanged: (value) {
-                      if (value != null && value != _provider.selectedYear) {
-                        _provider.selectYear(value);
+                      if (value != null && value != selectedYear) {
+                        ref.read(fitnessSelectedYearProvider.notifier).selectYear(value);
                       }
                     },
                   ),
@@ -333,58 +322,58 @@ class _FitnessTestPageState extends State<FitnessTestPage>
           ),
           const SizedBox(height: 16),
           // Score content
-          _buildScoreContent(l10n),
+          _buildScoreContent(selectedYear, l10n),
         ],
       ),
     );
   }
 
-  Widget _buildScoreContent(AppLocalizations l10n) {
-    if (_provider.scoreState == FitnessTestLoadState.loading) {
-      return const Center(
+  Widget _buildScoreContent(int selectedYear, AppLocalizations l10n) {
+    final asyncScore = ref.watch(fitnessScoreDataProvider(selectedYear));
+
+    return asyncScore.when(
+      data: (score) {
+        if (score == null) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Text(
+                l10n.fitnessTestNoScore,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          );
+        }
+
+        return Column(
+          children: [
+            _buildTotalScoreCard(score, l10n),
+            const SizedBox(height: 16),
+            _buildInfoCard(score, l10n),
+            const SizedBox(height: 16),
+            _buildScoreItemsCard(score, l10n),
+          ],
+        );
+      },
+      loading: () => const Center(
         child: Padding(
           padding: EdgeInsets.all(32),
           child: CircularProgressIndicator(),
         ),
-      );
-    }
-
-    final scoreError = _provider.scoreError;
-    if (_provider.scoreState == FitnessTestLoadState.error &&
-        scoreError != null) {
-      return Padding(
+      ),
+      error: (error, _) => Padding(
         padding: const EdgeInsets.all(32),
-        child: _buildError(scoreError, _provider.refreshScore),
-      );
-    }
-
-    if (_provider.scoreData == null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Text(
-            l10n.fitnessTestNoScore,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
+        child: _buildError(
+          error,
+          () => ref.refresh(fitnessScoreDataProvider(selectedYear).future),
         ),
-      );
-    }
-
-    return Column(
-      children: [
-        _buildTotalScoreCard(l10n),
-        const SizedBox(height: 16),
-        _buildInfoCard(l10n),
-        const SizedBox(height: 16),
-        _buildScoreItemsCard(l10n),
-      ],
+      ),
     );
   }
 
-  Widget _buildTotalScoreCard(AppLocalizations l10n) {
-    final score = _provider.scoreData!;
+  Widget _buildTotalScoreCard(FitnessScore score, AppLocalizations l10n) {
     final gradeColor = score.gradeColorFor(context);
 
     return StyledCard(
@@ -455,8 +444,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     return '$start$masked$end';
   }
 
-  Widget _buildInfoCard(AppLocalizations l10n) {
-    final score = _provider.scoreData!;
+  Widget _buildInfoCard(FitnessScore score, AppLocalizations l10n) {
 
     return StyledCard(
       child: Padding(
@@ -513,8 +501,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
     return InfoRow(label: label, value: value, trailing: trailing);
   }
 
-  Widget _buildScoreItemsCard(AppLocalizations l10n) {
-    final score = _provider.scoreData!;
+  Widget _buildScoreItemsCard(FitnessScore score, AppLocalizations l10n) {
     final items = [
       _ScoreItem(
         icon: Icons.monitor_weight_outlined,
