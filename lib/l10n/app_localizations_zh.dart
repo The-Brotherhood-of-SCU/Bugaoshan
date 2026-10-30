@@ -3835,6 +3835,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cloudPrintPickFailed => '文件选择失败，请重试。';
+
+  @override
+  String get appDirectoryEmpty => '此文件夹暂无文件';
+
+  @override
+  String get appDirectoryLoadFailed => '无法读取此文件夹，请刷新重试。';
+
+  @override
+  String get appDirectoryOpenFailed => '无法打开此文件，可尝试分享至其他应用。';
+
+  @override
+  String get appDirectoryShareFailed => '无法分享此文件，请刷新后重试。';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

@@ -3980,4 +3980,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get cloudPrintPickFailed =>
       'Could not select files. Please try again.';
+
+  @override
+  String get appDirectoryEmpty => 'No files in this folder';
+
+  @override
+  String get appDirectoryLoadFailed =>
+      'Could not read this folder. Refresh to try again.';
+
+  @override
+  String get appDirectoryOpenFailed =>
+      'Could not open this file. Try sharing it to another app.';
+
+  @override
+  String get appDirectoryShareFailed =>
+      'Could not share this file. Refresh and try again.';
 }

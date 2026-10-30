@@ -2200,5 +2200,9 @@
   "cloudPrintDownloadDone": "下载完成，可打开或分享已下载文档。",
   "cloudPrintOpenFailed": "无法打开此文件，可尝试分享至其他应用。",
   "cloudPrintShareFailed": "分享失败，已下载的文件仍然保留。",
-  "cloudPrintPickFailed": "文件选择失败，请重试。"
+  "cloudPrintPickFailed": "文件选择失败，请重试。",
+  "appDirectoryEmpty": "此文件夹暂无文件",
+  "appDirectoryLoadFailed": "无法读取此文件夹，请刷新重试。",
+  "appDirectoryOpenFailed": "无法打开此文件，可尝试分享至其他应用。",
+  "appDirectoryShareFailed": "无法分享此文件，请刷新后重试。"
 }

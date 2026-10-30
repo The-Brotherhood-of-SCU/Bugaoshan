@@ -7332,6 +7332,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not select files. Please try again.'**
   String get cloudPrintPickFailed;
+
+  /// No description provided for @appDirectoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No files in this folder'**
+  String get appDirectoryEmpty;
+
+  /// No description provided for @appDirectoryLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read this folder. Refresh to try again.'**
+  String get appDirectoryLoadFailed;
+
+  /// No description provided for @appDirectoryOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open this file. Try sharing it to another app.'**
+  String get appDirectoryOpenFailed;
+
+  /// No description provided for @appDirectoryShareFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not share this file. Refresh and try again.'**
+  String get appDirectoryShareFailed;
 }
 
 class _AppLocalizationsDelegate

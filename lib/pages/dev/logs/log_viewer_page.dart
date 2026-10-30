@@ -11,6 +11,8 @@ import 'package:bugaoshan/pages/dev/logs/log_filter_bar.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/share_utils.dart';
+import 'package:bugaoshan/utils/platform_utils.dart';
+import 'package:bugaoshan/widgets/common/app_directory_page.dart';
 
 /// 全屏日志查看器（开发者调试用）。
 ///
@@ -252,12 +254,23 @@ class _LogViewerPageState extends State<LogViewerPage> {
   ///   `Android/data/<package>/cache/`。
   ///
   /// 因此 Android 改为「复制绝对路径」——配合顶栏 Save（分享导出）才是把日志
-  /// 取出来的正确路径。其余平台 `Uri.file(dir)` 交给桌面文件管理器是有效的。
+  /// 取出来的正确路径。OHOS 使用应用内文件列表；其余平台沿用外部目录打开。
   Future<void> _openFolder() async {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     try {
       final dir = await _logDir();
+      if (isOhos) {
+        await _log.flushFileSink();
+        if (!mounted) return;
+        await Navigator.of(context).push<void>(
+          MaterialPageRoute(
+            builder: (_) =>
+                AppDirectoryPage(directory: dir, title: l10n.runtimeLogs),
+          ),
+        );
+        return;
+      }
       if (Platform.isAndroid) {
         await Clipboard.setData(ClipboardData(text: dir.path));
         if (!mounted) return;

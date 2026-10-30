@@ -2310,5 +2310,9 @@
   "cloudPrintDownloadDone": "Download finished. Completed files can be opened or shared.",
   "cloudPrintOpenFailed": "Could not open the file. Try sharing it to another app.",
   "cloudPrintShareFailed": "Could not share the files. Downloaded copies are kept.",
-  "cloudPrintPickFailed": "Could not select files. Please try again."
+  "cloudPrintPickFailed": "Could not select files. Please try again.",
+  "appDirectoryEmpty": "No files in this folder",
+  "appDirectoryLoadFailed": "Could not read this folder. Refresh to try again.",
+  "appDirectoryOpenFailed": "Could not open this file. Try sharing it to another app.",
+  "appDirectoryShareFailed": "Could not share this file. Refresh and try again."
 }

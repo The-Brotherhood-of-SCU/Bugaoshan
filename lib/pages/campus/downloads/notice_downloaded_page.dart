@@ -13,6 +13,8 @@ import 'package:path/path.dart' as p;
 
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/utils/share_utils.dart';
+import 'package:bugaoshan/utils/platform_utils.dart';
+import 'package:bugaoshan/widgets/common/app_directory_page.dart';
 import 'package:bugaoshan/widgets/common/swipe_page_view.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 import 'file_utils.dart';
@@ -132,13 +134,26 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
   /// Android 上不能靠 content URI 调起文件管理器：系统 DocumentsUI 不接受
   /// VIEW 一个目录 document URI（抛 `PlatformException(ACTIVITY_NOT_FOUND)`），
   /// 且 scoped storage 下也进不去 `Android/data/<package>/files/`。
-  /// 改为复制绝对路径，用户可自行到文件管理器/ADB 取。
+  /// Android 复制绝对路径；OHOS 在应用内浏览，文件可单独打开或分享。
   Future<void> _openFolder() async {
     final l10n = AppLocalizations.of(context)!;
     try {
-      final dir = await _attachmentsDir(_currentDir);
+      final config = _dirConfigs[_tabController.index];
+      final dir = await _attachmentsDir(config.dirName);
       if (!await dir.exists()) {
         await dir.create(recursive: true);
+      }
+      if (isOhos) {
+        if (!mounted) return;
+        await Navigator.of(context).push<void>(
+          MaterialPageRoute(
+            builder: (_) => AppDirectoryPage(
+              directory: dir,
+              title: '${l10n.downloadedAttachments} · ${config.label}',
+            ),
+          ),
+        );
+        return;
       }
       if (Platform.isAndroid) {
         await Clipboard.setData(ClipboardData(text: dir.path));
