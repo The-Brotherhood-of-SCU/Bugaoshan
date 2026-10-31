@@ -112,10 +112,7 @@ void main() {
               hasBackground: false,
               showWeekend: true,
               sectionWidth: 24,
-              dateFormat: const DateDisplayFormat(
-                monthFirst: true,
-                separator: '/',
-              ),
+              dateFormat: DateDisplayFormat.monthDayYear,
             ),
           ),
         ),

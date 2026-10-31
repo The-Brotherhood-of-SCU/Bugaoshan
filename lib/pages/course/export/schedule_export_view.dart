@@ -95,8 +95,9 @@ class ScheduleExportView extends StatelessWidget {
                 showWeekend: appConfig.showWeekend.value,
                 showAllWeeks: false,
                 showHeaderDates: true,
-                dateFormat: DateDisplayFormat.of(
-                  Localizations.localeOf(context),
+                dateFormat: DateDisplayFormat.resolve(
+                  context,
+                  appConfig.dateDisplayFormat.value,
                 ),
               ),
               CourseGridBody(

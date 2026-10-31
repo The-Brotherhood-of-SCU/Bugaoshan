@@ -158,6 +158,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
               _controller!,
               courseProvider.allSchedules,
               courseProvider.scheduleConfig,
+              appConfig.dateDisplayFormat,
             ]),
             builder: (context, _) => CoursePageTopBar(
               visibleWeek: _controller!.visibleWeek,
@@ -180,7 +181,10 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
               onSwitchSchedule: (id) => courseProvider.switchSchedule(id),
               onOpenScheduleManagement: () =>
                   _openScheduleManagement(logicRootContext),
-              dateFormat: DateDisplayFormat.of(Localizations.localeOf(context)),
+              dateFormat: DateDisplayFormat.resolve(
+                context,
+                appConfig.dateDisplayFormat.value,
+              ),
             ),
           ),
         Expanded(
@@ -410,6 +414,6 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
         context,
         date,
         info,
-        DateDisplayFormat.of(Localizations.localeOf(context)),
+        DateDisplayFormat.resolve(context, appConfig.dateDisplayFormat.value),
       );
 }

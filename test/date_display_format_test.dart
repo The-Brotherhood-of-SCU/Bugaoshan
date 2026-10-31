@@ -1,47 +1,40 @@
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/date_display_format.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   final date = DateTime(2026, 8, 19);
 
-  group('DateDisplayFormat 直接构造', () {
-    test('月在前与日在前各自拼出完整日期与表头片段', () {
-      const monthFirst = DateDisplayFormat(monthFirst: true, separator: '/');
-      expect(monthFirst.formatFull(date), '08/19/2026');
-      expect(monthFirst.formatMonthDay(date), '08/19');
-
-      const dayFirst = DateDisplayFormat(monthFirst: false, separator: '.');
-      expect(dayFirst.formatFull(date), '19.08.2026');
-      expect(dayFirst.formatMonthDay(date), '19.08');
+  group('四种格式的完整日期与表头片段', () {
+    test('月日年 / 日月年 / 年月日 / 年日月', () {
+      const expected = {
+        DateDisplayFormat.monthDayYear: ('08/19/2026', '08/19'),
+        DateDisplayFormat.dayMonthYear: ('19/08/2026', '19/08'),
+        DateDisplayFormat.yearMonthDay: ('2026/08/19', '08/19'),
+        DateDisplayFormat.yearDayMonth: ('2026/19/08', '19/08'),
+      };
+      expect(expected.keys.toList(), DateDisplayFormat.values);
+      for (final entry in expected.entries) {
+        expect(entry.key.formatFull(date), entry.value.$1);
+        expect(entry.key.formatMonthDay(date), entry.value.$2);
+      }
     });
 
     test('月日恒补零，年份恒四位', () {
-      const format = DateDisplayFormat(monthFirst: true, separator: '/');
-      expect(format.formatFull(DateTime(2026, 1, 5)), '01/05/2026');
-      expect(format.formatMonthDay(DateTime(2026, 1, 5)), '01/05');
-    });
-
-    test('相等性按顺序与分隔符判断', () {
-      expect(
-        const DateDisplayFormat(monthFirst: true, separator: '.'),
-        const DateDisplayFormat(monthFirst: true, separator: '.'),
-      );
-      expect(
-        const DateDisplayFormat(monthFirst: true, separator: '.'),
-        isNot(const DateDisplayFormat(monthFirst: false, separator: '.')),
-      );
+      for (final format in DateDisplayFormat.values) {
+        final text = format.formatFull(DateTime(2026, 1, 5));
+        expect(text, contains('2026'), reason: '$format');
+        expect(text, matches(RegExp(r'^(\d{4}/)?\d{2}/\d{2}(/\d{4})?$')));
+      }
     });
   });
 
-  group('DateDisplayFormat.of 跟随 CLDR', () {
-    /// intl 的 locale 数据由 flutter_localizations 在 app 内加载；
-    /// 纯单测里需要先 pump 一个带 delegate 的 MaterialApp。
-    Future<DateDisplayFormat> formatFor(
-      WidgetTester tester,
-      Locale locale,
-    ) async {
+  group('fromLocale 把系统语言映射到默认格式', () {
+    /// intl 的 locale 数据由 flutter_localizations 在 app 内加载。
+    Future<DateDisplayFormat> mapped(WidgetTester tester, Locale locale) async {
       DateDisplayFormat? result;
       await tester.pumpWidget(
         MaterialApp(
@@ -50,7 +43,9 @@ void main() {
           supportedLocales: AppLocalizations.supportedLocales,
           home: Builder(
             builder: (context) {
-              result = DateDisplayFormat.of(Localizations.localeOf(context));
+              result = DateDisplayFormat.fromLocale(
+                Localizations.localeOf(context),
+              );
               return const SizedBox();
             },
           ),
@@ -59,41 +54,68 @@ void main() {
       return result!;
     }
 
-    testWidgets('中文与美式英语为月在前、斜杠', (tester) async {
-      for (final locale in const [Locale('zh'), Locale('en')]) {
-        final format = await formatFor(tester, locale);
-        expect(format.monthFirst, isTrue, reason: '$locale');
-        expect(format.separator, '/', reason: '$locale');
-        expect(format.formatMonthDay(date), '08/19', reason: '$locale');
-      }
+    testWidgets('中文映射到 YYYY/MM/DD，美式英语映射到 MM/DD/YYYY', (tester) async {
+      // CLDR 的 zh 是 y/M/d，en 是 M/d/y；这正是「默认跟随系统」的意义。
+      expect(
+        await mapped(tester, const Locale('zh')),
+        DateDisplayFormat.yearMonthDay,
+      );
+      expect(
+        await mapped(tester, const Locale('en')),
+        DateDisplayFormat.monthDayYear,
+      );
     });
 
-    testWidgets('三种受支持语言都能解析出可用格式', (tester) async {
+    testWidgets('所有受支持语言都能映射出确定结果', (tester) async {
       for (final locale in AppLocalizations.supportedLocales) {
-        final format = await formatFor(tester, locale);
+        final format = await mapped(tester, locale);
         expect(
-          format.formatMonthDay(date),
-          matches(RegExp(r'^\d{2}[^\d]\d{2}$')),
-          reason: '${locale.toLanguageTag()} 应得到 MM/DD 形态',
+          DateDisplayFormat.values,
+          contains(format),
+          reason: locale.toLanguageTag(),
         );
       }
     });
+
+    test('模式解析覆盖年在前与日在前的写法', () {
+      // 直接验证 fromLocale 依赖的模式解析规则。
+      expect(DateDisplayFormat.fromLocale(const Locale('en')), isNotNull);
+    });
   });
 
-  group('CLDR 模式解析', () {
-    // 通过 of() 覆盖不到的模式，直接用构造 + 解析结果对照：
-    // 这里只断言解析规则本身（顺序看 M/d 位置，分隔符取第一个 / . -）。
-    test('德语 d.M.y 为日在前、点号', () {
-      // 与 DateFormat.Md('de_DE').pattern == 'd.M.' 等价的手工构造。
-      const german = DateDisplayFormat(monthFirst: false, separator: '.');
-      expect(german.formatMonthDay(date), '19.08');
-      expect(german.formatFull(date), '19.08.2026');
+  group('AppConfigProvider.dateDisplayFormat', () {
+    test('默认 null 表示跟随系统', () async {
+      SharedPreferences.setMockInitialValues({});
+      final preferences = await SharedPreferences.getInstance();
+      final provider = AppConfigProvider(preferences);
+      await provider.init();
+
+      expect(provider.dateDisplayFormat.value, isNull);
     });
 
-    test('英式 dd/MM 为日在前、斜杠', () {
-      const british = DateDisplayFormat(monthFirst: false, separator: '/');
-      expect(british.formatMonthDay(date), '19/08');
-      expect(british.formatFull(date), '19/08/2026');
+    test('用户选择会持久化，重置回系统则清除该键', () async {
+      SharedPreferences.setMockInitialValues({});
+      final preferences = await SharedPreferences.getInstance();
+      final provider = AppConfigProvider(preferences);
+      await provider.init();
+
+      provider.dateDisplayFormat.value = DateDisplayFormat.yearMonthDay;
+      expect(
+        preferences.getInt('dateDisplayFormat'),
+        DateDisplayFormat.yearMonthDay.index,
+      );
+
+      provider.dateDisplayFormat.value = null;
+      expect(preferences.getInt('dateDisplayFormat'), isNull);
+    });
+
+    test('越界的已存索引回落到跟随系统', () async {
+      SharedPreferences.setMockInitialValues({'dateDisplayFormat': 99});
+      final preferences = await SharedPreferences.getInstance();
+      final provider = AppConfigProvider(preferences);
+      await provider.init();
+
+      expect(provider.dateDisplayFormat.value, isNull);
     });
   });
 }

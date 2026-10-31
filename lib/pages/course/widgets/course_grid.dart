@@ -64,6 +64,8 @@ class _CourseGridState extends State<CourseGrid> {
     // build 里读了 backgroundImagePath（hasBackground），必须一并订阅，
     // 否则设置/清除背景图后网格样式不会刷新。
     appConfig.backgroundImagePath,
+    // 日期格式：改设置后表头即刻刷新。
+    appConfig.dateDisplayFormat,
   ]);
 
   @override
@@ -86,7 +88,10 @@ class _CourseGridState extends State<CourseGrid> {
               showWeekend: showWeekend,
               showAllWeeks: widget.showAllWeeks,
               showHeaderDates: widget.showHeaderDates,
-              dateFormat: DateDisplayFormat.of(Localizations.localeOf(context)),
+              dateFormat: DateDisplayFormat.resolve(
+                context,
+                appConfig.dateDisplayFormat.value,
+              ),
               onSpecialDayTap: widget.onSpecialDayTap,
             ),
             Expanded(
