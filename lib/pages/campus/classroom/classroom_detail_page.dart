@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/classroom_model.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 

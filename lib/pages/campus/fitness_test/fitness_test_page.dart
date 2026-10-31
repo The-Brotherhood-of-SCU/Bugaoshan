@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/pages/campus/fitness_test/models/fitness_models.dart';
+import 'package:bugaoshan/scu_backend/fitness/models/fitness_models.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';

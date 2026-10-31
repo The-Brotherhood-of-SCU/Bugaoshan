@@ -1,6 +1,6 @@
-import 'package:bugaoshan/pages/campus/reservation/models/reservation_models.dart';
-import 'package:bugaoshan/services/api/reservation_api_service.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/reservation/models/reservation_models.dart';
+import 'package:bugaoshan/scu_backend/reservation/reservation_api_service.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:flutter/foundation.dart';
 
@@ -135,7 +135,8 @@ class ReservationProvider extends ChangeNotifier {
   ///
   /// 每次读取都重新取当天日期：页面跨过午夜后，原来的「今天」会变成
   /// 昨天，这里会返回 false，「回到今天」随之可用。
-  bool get isAtTodayRange => _rangeStart.isAtSameMomentAs(_dateOnly(DateTime.now()));
+  bool get isAtTodayRange =>
+      _rangeStart.isAtSameMomentAs(_dateOnly(DateTime.now()));
 
   /// 页面回到前台时调用：若区间起点已早于今天（典型场景是页面跨夜挂着），
   /// 把它夹回今天并重新拉取，避免继续展示昨天的日历。
@@ -223,7 +224,12 @@ class ReservationProvider extends ChangeNotifier {
     } on ScuException catch (e) {
       _appointmentsError = e.message;
     } catch (e, logStackTrace) {
-      AppLog.e(_tag, 'loadAppointments 失败', error: e, stackTrace: logStackTrace);
+      AppLog.e(
+        _tag,
+        'loadAppointments 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       // 空串 = 未知异常，UI 走 l10n 兜底。
       _appointmentsError = '';
     } finally {

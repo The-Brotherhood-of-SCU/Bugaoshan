@@ -10,7 +10,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'package:bugaoshan/services/api/service_plugin_models.dart';
+import 'package:bugaoshan/scu_backend/service_hall/service_plugin_models.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/service_region_picker.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';

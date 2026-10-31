@@ -2,9 +2,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
-import 'package:bugaoshan/services/auth/ccyl_auth.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
+import 'package:bugaoshan/scu_backend/ccyl/models/ccyl_models.dart';
+import 'package:bugaoshan/scu_backend/ccyl/ccyl_auth.dart';
+import 'package:bugaoshan/scu_backend/core/scu_auth.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/secure_storage.dart';
 

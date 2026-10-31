@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
-import 'package:bugaoshan/services/api/zhjw_api_service.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/classroom_model.dart';
+import 'package:bugaoshan/scu_backend/zhjw/zhjw_api_service.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 

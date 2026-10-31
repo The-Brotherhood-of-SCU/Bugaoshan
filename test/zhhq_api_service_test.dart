@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/services/api/zhhq_api_service.dart';
-import 'package:bugaoshan/services/auth/cookie_client.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
-import 'package:bugaoshan/services/auth/zhhq_auth.dart';
+import 'package:bugaoshan/scu_backend/zhhq/zhhq_api_service.dart';
+import 'package:bugaoshan/scu_backend/core/cookie_client.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/zhhq/zhhq_auth.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
-import 'package:bugaoshan/utils/zhhq_crypto.dart';
+import 'package:bugaoshan/scu_backend/zhhq/zhhq_crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;

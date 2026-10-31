@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/pages/campus/plan_completion/models/plan_completion.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/plan_completion.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/plan_completion_page.dart';
 import 'package:bugaoshan/providers/plan_completion_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/api/zhjw_api_service.dart';
+import 'package:bugaoshan/scu_backend/zhjw/zhjw_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';

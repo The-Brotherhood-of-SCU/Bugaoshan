@@ -4,10 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/api/wfw_api_service.dart';
-import 'package:bugaoshan/services/auth/auth_state.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
-import 'package:bugaoshan/services/auth/wfw_auth.dart';
+import 'package:bugaoshan/scu_backend/wfw/wfw_api_service.dart';
+import 'package:bugaoshan/scu_backend/core/auth_state.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/wfw/wfw_auth.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/storage_keys.dart';
 
