@@ -3,9 +3,7 @@ import 'dart:convert';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/models/graduate_grades.dart';
 import 'package:bugaoshan/models/graduate_train_plan.dart';
-import 'package:bugaoshan/scu_backend/core/api_request.dart';
 import 'package:bugaoshan/scu_backend/core/api_session.dart';
-import 'package:bugaoshan/scu_backend/core/cookie_client.dart';
 import 'package:bugaoshan/scu_backend/gs/gs_auth.dart';
 import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/scu_backend/gs/gs_json_envelope.dart';
@@ -31,6 +29,19 @@ class GsApiService {
   /// 分页循环防呆硬上限：正常请求 totalPage / totalSize / 未满页都会先
   /// 于它命中，只兜「服务端元数据全撒谎」的死循环。
   static const int _maxPagedRequests = 50;
+
+  /// 表单 POST 的站点特定 Header（Accept / Referer 与页面一致）；
+  /// 其余通用 Header 由 [ApiSession] 注入。
+  static const Map<String, String> _postHeaders = {
+    'Accept': 'application/json, text/javascript, */*; q=0.01',
+    'Referer': kGsSchedulePageUrl,
+  };
+
+  /// 培养进度 GET 的站点特定 Header。
+  static const Map<String, String> _zeroHeaders = {
+    'Accept': 'application/json, text/javascript, */*; q=0.01',
+    'Referer': kGsTrainPlanAppIndexUrl,
+  };
 
   // ignore: unused_field
   final GsAuth _gsAuth;
@@ -121,22 +132,16 @@ class GsApiService {
   }
 
   /// POST 表单到 ehall 域的 `.do` 接口，解包信封为行列表。
-  ///
-  /// 包一层 [retryOnUnauthenticated]（与本科教务在线导入同一自愈模式）：
-  /// 首次请求若抛 [UnauthenticatedException]，先 [_gsAuth.invalidate] 清掉
-  /// 会话缓存、重新 SSO，再重试一次；第二次仍失败才穿透给调用方。
   Future<List<Map<String, dynamic>>> _postForm(
     String path,
     Map<String, String> fields,
-  ) {
-    return _session.run(
-      (client) => _postEnvelopeOnce(client, path, fields).then(gsRows),
-    );
+  ) async {
+    return gsRows(await _postEnvelope(path, fields));
   }
 
   /// 按 EMAP 分页信封循环翻页，聚合全部行。
   ///
-  /// 每页独立包一层 [retryOnUnauthenticated]（某页会话中途过期也能自愈，
+  /// 每页独立走一次 [ApiSession] 请求（某页会话中途过期也能自愈，
   /// 重试只重发当前页）。终止条件按可信度依次兜底：
   /// - 返回空页立即停（防 totalPage 谎报导致死循环）；
   /// - `extParams.totalPage` 给了且翻满 → 停；
@@ -151,14 +156,15 @@ class GsApiService {
     final all = <Map<String, dynamic>>[];
     var page = 1;
     while (true) {
-      final envelope = await _session.run((client) async {
-        final decoded = await _postEnvelopeOnce(client, path, {
-          ...fields,
-          'pageNumber': '$page',
-          'pageSize': '$pageSize',
-        });
-        return gsPagedEnvelope(decoded) ?? GsPagedEnvelope(rows: const []);
-      });
+      final envelope =
+          gsPagedEnvelope(
+            await _postEnvelope(path, {
+              ...fields,
+              'pageNumber': '$page',
+              'pageSize': '$pageSize',
+            }),
+          ) ??
+          const GsPagedEnvelope(rows: []);
       if (envelope.rows.isEmpty) break;
       all.addAll(envelope.rows);
       final totalPage = envelope.totalPage;
@@ -175,43 +181,18 @@ class GsApiService {
     return all;
   }
 
-  /// [retryOnUnauthenticated] 里的单次请求：状态码校验 + 信封 JSON 解码。
-  Future<Object?> _postEnvelopeOnce(
-    CookieClient client,
+  /// 单次表单 POST：认证生命周期、状态码校验与 JSON 解析均由
+  /// [ApiSession] 完成，这里只负责信封校验。
+  Future<Map<String, dynamic>> _postEnvelope(
     String path,
     Map<String, String> fields,
   ) async {
-    final response = await client.post(
-      _session.resolveUri(path),
-      headers: {
-        'Accept': 'application/json, text/javascript, */*; q=0.01',
-        'User-Agent': kDefaultUserAgent,
-        'Referer': kGsSchedulePageUrl,
-        'X-Requested-With': 'XMLHttpRequest',
-      },
-      body: fields,
+    final decoded = await _session.postFormForJsonMap(
+      path,
+      fields,
+      headers: _postHeaders,
+      apiName: path,
     );
-    _session.checkResponse(response, apiName: path);
-
-    final Object? decoded;
-    try {
-      decoded = jsonDecode(response.body);
-    } catch (logError, logStackTrace) {
-      AppLog.e(
-        _tag,
-        '_postEnvelopeOnce 失败',
-        error: logError,
-        stackTrace: logStackTrace,
-      );
-      if (looksLikeLoginPage(response.body)) {
-        throw const UnauthenticatedException('研教务会话已过期');
-      }
-      AppLog.e(_tag, '$path 响应非 JSON（len=${response.body.length}）');
-      throw ServiceException('研教务返回了无法解析的数据');
-    }
-    if (decoded is! Map<String, dynamic>) {
-      throw ServiceException('研教务返回了无法解析的数据');
-    }
     unwrapGsEnvelope(decoded);
     return decoded;
   }
@@ -269,25 +250,13 @@ class GsApiService {
     return reMapData is Map<String, dynamic> ? reMapData : const {};
   }
 
-  /// GET 零信封请求（带自愈）。
-  Future<Map<String, dynamic>> _getZeroJson(String path) {
-    return _session.run((client) => _getZeroOnce(client, path));
-  }
-
-  Future<Map<String, dynamic>> _getZeroOnce(
-    CookieClient client,
-    String path,
-  ) async {
-    final response = await client.followRedirects(
-      _session.resolveUri(path),
-      headers: {
-        'Accept': 'application/json, text/javascript, */*; q=0.01',
-        'User-Agent': kDefaultUserAgent,
-        'Referer': kGsTrainPlanAppIndexUrl,
-        'X-Requested-With': 'XMLHttpRequest',
-      },
+  /// GET 零信封请求（认证自愈与状态码校验由 [ApiSession] 完成）。
+  Future<Map<String, dynamic>> _getZeroJson(String path) async {
+    final response = await _session.followRedirects(
+      path,
+      headers: _zeroHeaders,
+      apiName: path,
     );
-    _session.checkResponse(response, apiName: path);
 
     final Object? decoded;
     try {
@@ -295,7 +264,7 @@ class GsApiService {
     } catch (logError, logStackTrace) {
       AppLog.e(
         _tag,
-        '_getZeroOnce 失败',
+        '_getZeroJson 失败',
         error: logError,
         stackTrace: logStackTrace,
       );

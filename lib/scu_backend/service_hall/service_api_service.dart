@@ -21,22 +21,23 @@ import 'package:bugaoshan/utils/constants.dart';
 class ServiceApiService {
   static const String _tag = 'ServiceApiService';
 
-  // ignore: unused_field
   final ServiceAuth _auth;
-  final ApiSession _session;
   final AppLogger _log;
+  late final ApiSession _session;
 
   ServiceApiService(this._auth, {ApiSession? session, AppLogger? logger})
-    : _log = logger ?? getIt<AppLogger>(),
-      _session =
-          session ??
-          ApiSession(
-            getClient: _auth.getClient,
-            invalidate: _auth.invalidate,
-            baseUrl: Uri.parse(_base),
-            logTag: _tag,
-            defaultHeaders: const {'Origin': _base, 'Referer': _base},
-          );
+    : _log = logger ?? getIt<AppLogger>() {
+    _session =
+        session ??
+        ApiSession(
+          getClient: _auth.getClient,
+          invalidate: _auth.invalidate,
+          baseUrl: Uri.parse(_base),
+          logTag: _tag,
+          defaultHeaders: const {'Origin': _base, 'Referer': _base},
+          sessionExpiryChecker: _checkSessionExpiry,
+        );
+  }
 
   static const String _base = 'https://service.scu.edu.cn';
 
@@ -76,6 +77,41 @@ class ServiceApiService {
     return _session.run(fn);
   }
 
+  /// GET 解码 JSON：会话校验与重试由 [ApiSession] 统一处理，
+  /// 这里保留站点特有的诊断日志与非 JSON 行为。
+  Future<Map<String, dynamic>> _getJson(
+    String path, {
+    Map<String, dynamic>? query,
+    String? apiName,
+  }) {
+    return _request((client) async {
+      final resp = await client.get(
+        _session.resolveUri(path, query),
+        headers: _jsonHeaders,
+      );
+      _session.checkResponse(resp, apiName: apiName ?? path);
+      return _decodeResponse(resp.body, resp.statusCode);
+    });
+  }
+
+  /// POST 表单并解码 JSON（认证重试由 [ApiSession] 统一处理）。
+  Future<Map<String, dynamic>> _postFormJson(
+    String path,
+    Map<String, String> fields, {
+    Map<String, dynamic>? query,
+    String? apiName,
+  }) {
+    return _request((client) async {
+      final resp = await client.post(
+        _session.resolveUri(path, query),
+        headers: _headers,
+        body: fields,
+      );
+      _session.checkResponse(resp, apiName: apiName ?? path);
+      return _decodeResponse(resp.body, resp.statusCode);
+    });
+  }
+
   Map<String, String> get _headers => {
     'Accept': 'application/json, text/plain, */*',
     'Content-Type': 'application/x-www-form-urlencoded',
@@ -111,8 +147,9 @@ class ServiceApiService {
     }
   }
 
+  /// 解码业务信封。调用前须已通过 `_session.checkResponse`
+  /// （会话失效已在 [ApiSession] 内统一判定并触发重试）。
   Map<String, dynamic> _decodeResponse(String body, int statusCode) {
-    _checkSessionExpiry(body, statusCode);
     // 诊断日志仅记录长度与脱敏后的 HTML 标题，保留拒绝原因而不暴露正文。
     final title = responseTitleForLog(body);
     if (statusCode < 200 || statusCode >= 300) {
@@ -145,19 +182,17 @@ class ServiceApiService {
     String appId, {
     String starterDepartId = kDefaultStarterDepartId,
   }) async {
-    final json = await _request((client) async {
-      final uri = Uri.parse('$_base${paths['formStartData']}').replace(
-        queryParameters: {
-          'app_id': appId,
-          'node_id': '',
-          'userview': '1',
-          'agent_uid': '',
-          'starter_depart_id': starterDepartId,
-        },
-      );
-      final resp = await client.get(uri, headers: _jsonHeaders);
-      return _decodeResponse(resp.body, resp.statusCode);
-    });
+    final json = await _getJson(
+      paths['formStartData']!,
+      query: {
+        'app_id': appId,
+        'node_id': '',
+        'userview': '1',
+        'agent_uid': '',
+        'starter_depart_id': starterDepartId,
+      },
+      apiName: 'fetchFormSchema',
+    );
     if (json['e'] == 0 && json['d'] != null) {
       return ServiceFormDefinition.fromJson(json['d'] as Map<String, dynamic>);
     }
@@ -175,13 +210,11 @@ class ServiceApiService {
   /// 插件描述字段标签、类型、选项、排序、数据源配置）。
   /// 由 [ServiceFormSchema.build] 解析。
   Future<Map<String, dynamic>> fetchStartInfo(String appId) async {
-    final json = await _request((client) async {
-      final uri = Uri.parse(
-        '$_base${paths['processStartInfo']}',
-      ).replace(queryParameters: {'app_id': appId});
-      final resp = await client.get(uri, headers: _jsonHeaders);
-      return _decodeResponse(resp.body, resp.statusCode);
-    });
+    final json = await _getJson(
+      paths['processStartInfo']!,
+      query: {'app_id': appId},
+      apiName: 'fetchStartInfo',
+    );
     if (json['e'] == 0 && json['d'] is Map<String, dynamic>) {
       return json['d'] as Map<String, dynamic>;
     }
@@ -200,20 +233,18 @@ class ServiceApiService {
     required String formId,
     String starterDepartId = kDefaultStarterDepartId,
   }) async {
-    final json = await _request((client) async {
-      final uri = Uri.parse('$_base${paths['formPlugins']}').replace(
-        queryParameters: {
-          'id': formId,
-          'bpmn_id': bpmnId,
-          'sess_id': '0',
-          'report_id': '0',
-          'agent_uid': '',
-          'starter_depart_id': starterDepartId,
-        },
-      );
-      final resp = await client.get(uri, headers: _jsonHeaders);
-      return _decodeResponse(resp.body, resp.statusCode);
-    });
+    final json = await _getJson(
+      paths['formPlugins']!,
+      query: {
+        'id': formId,
+        'bpmn_id': bpmnId,
+        'sess_id': '0',
+        'report_id': '0',
+        'agent_uid': '',
+        'starter_depart_id': starterDepartId,
+      },
+      apiName: 'fetchFormPlugins',
+    );
     if (json['e'] == 0 && json['d'] is Map<String, dynamic>) {
       return json['d'] as Map<String, dynamic>;
     }
@@ -227,13 +258,11 @@ class ServiceApiService {
   /// 作为后续所有请求的 starter_depart_id（如 395876）。
   /// 解析不出时返回 null，由调用方回退 [kDefaultStarterDepartId]。
   Future<String?> fetchStarterDepartId(String appId) async {
-    final json = await _request((client) async {
-      final uri = Uri.parse(
-        '$_base${paths['selectDepartment']}',
-      ).replace(queryParameters: {'app_id': appId});
-      final resp = await client.get(uri, headers: _jsonHeaders);
-      return _decodeResponse(resp.body, resp.statusCode);
-    });
+    final json = await _getJson(
+      paths['selectDepartment']!,
+      query: {'app_id': appId},
+      apiName: 'fetchStarterDepartId',
+    );
     if (json['e'] != 0 || json['d'] == null) return null;
     return _extractDepartId(json['d']);
   }
@@ -299,29 +328,25 @@ class ServiceApiService {
     required ServiceDataSourceRef ref,
     String starterDepartId = kDefaultStarterDepartId,
   }) async {
-    final json = await _request((client) async {
-      final params = <String, String>{
-        'id': ref.id,
-        'inst_id': '0',
-        'app_id': appId,
-        'form_version_id': ref.formVersionId,
-        'component': ref.component,
-        'params[formId]': ref.formId,
-        'params[pluginKey]': ref.component,
-        'agent_uid': '',
-        'starter_depart_id': starterDepartId,
-        // 插件 sourceConfig 里的附加参数（前端以 configure[key] 形式发送）
-        for (final entry in ref.configure.entries)
-          'configure[${entry.key}]': entry.value,
-      };
-      final body = Uri(queryParameters: params).query;
-      final resp = await client.post(
-        Uri.parse('$_base${paths['dataSourceDetail']}'),
-        headers: _headers,
-        body: body,
-      );
-      return _decodeResponse(resp.body, resp.statusCode);
-    });
+    final params = <String, String>{
+      'id': ref.id,
+      'inst_id': '0',
+      'app_id': appId,
+      'form_version_id': ref.formVersionId,
+      'component': ref.component,
+      'params[formId]': ref.formId,
+      'params[pluginKey]': ref.component,
+      'agent_uid': '',
+      'starter_depart_id': starterDepartId,
+      // 插件 sourceConfig 里的附加参数（前端以 configure[key] 形式发送）
+      for (final entry in ref.configure.entries)
+        'configure[${entry.key}]': entry.value,
+    };
+    final json = await _postFormJson(
+      paths['dataSourceDetail']!,
+      params,
+      apiName: 'fetchDataSourceValue',
+    );
     if (json['e'] != 0 || json['d'] == null) {
       _log.e(
         _tag,
@@ -346,13 +371,11 @@ class ServiceApiService {
   /// 接口：`GET /api/dictionary/province?agent_uid=&starter_depart_id=395876`
   /// 返回 `d` 字段的原始列表（可能为树形或扁平，由调用方按真实结构解析）。
   Future<List<dynamic>> fetchProvinces() async {
-    final json = await _request((client) async {
-      final uri = Uri.parse('$_base${paths['provinceDict']}').replace(
-        queryParameters: {'agent_uid': '', 'starter_depart_id': '395876'},
-      );
-      final resp = await client.get(uri, headers: _jsonHeaders);
-      return _decodeResponse(resp.body, resp.statusCode);
-    });
+    final json = await _getJson(
+      paths['provinceDict']!,
+      query: {'agent_uid': '', 'starter_depart_id': '395876'},
+      apiName: 'fetchProvinces',
+    );
     if (json['e'] != 0 || json['d'] == null) {
       _log.e(
         _tag,
@@ -482,25 +505,15 @@ class ServiceApiService {
       'form_data': formData,
       'userview': 1,
     };
-    final body = Uri(
-      queryParameters: {
-        'data': jsonEncode(data),
-        'step': '0',
-        'agent_uid': '',
-        'starter_depart_id': starterDepartId,
-      },
-    ).query;
-    await _request((client) async {
-      final resp = await client.post(
-        Uri.parse('$_base${paths['launch']}'),
-        headers: _headers,
-        body: body,
-      );
-      final json = _decodeResponse(resp.body, resp.statusCode);
-      if (json['e'] != 0) {
-        throw ServiceException(json['m'] ?? '提交失败');
-      }
-    });
+    final json = await _postFormJson(paths['launch']!, {
+      'data': jsonEncode(data),
+      'step': '0',
+      'agent_uid': '',
+      'starter_depart_id': starterDepartId,
+    }, apiName: 'submitMatter');
+    if (json['e'] != 0) {
+      throw ServiceException(json['m'] ?? '提交失败');
+    }
   }
 
   /// 提交请假申请（[submitMatter] 的 350 委托，保持原行为）。
@@ -522,22 +535,20 @@ class ServiceApiService {
     int status = 0,
     int page = 1,
   }) async {
-    final json = await _request((client) async {
-      final uri = Uri.parse('$_base${paths['instList']}').replace(
-        queryParameters: {
-          'p': '$page',
-          'page_size': '20',
-          'status': '$status',
-          'keyword': '',
-          'time_lower': '',
-          'time_upper': '',
-          'y': '',
-          'task_name': '',
-        },
-      );
-      final resp = await client.get(uri, headers: _jsonHeaders);
-      return _decodeResponse(resp.body, resp.statusCode);
-    });
+    final json = await _getJson(
+      paths['instList']!,
+      query: {
+        'p': '$page',
+        'page_size': '20',
+        'status': '$status',
+        'keyword': '',
+        'time_lower': '',
+        'time_upper': '',
+        'y': '',
+        'task_name': '',
+      },
+      apiName: 'fetchMyApplications',
+    );
     if (json['e'] == 0 && json['d'] != null) {
       final d = json['d'];
       if (d is Map && d['list'] is List) {
