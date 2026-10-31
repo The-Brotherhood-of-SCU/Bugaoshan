@@ -198,6 +198,10 @@ class CookieClient extends http.BaseClient {
         left.port == right.port;
   }
 
+  /// 发送请求并附上 cookie。
+  ///
+  /// 仅对普通 [http.Request] 做 `ClientException` 传输层重试；multipart /
+  /// 流式请求没有可安全重放的 body，失败时直接上抛。
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
     final cookies = _cookiesFor(request.url);
@@ -268,14 +272,17 @@ class CookieClient extends http.BaseClient {
         );
 
         _retireInner();
+        // Multipart / Streamed 请求没有可复制的 body；重建成 http.Request
+        // 会发出「空 body + 原 multipart Content-Type/boundary」，比直接失败
+        // 更危险。此类请求不重放，由调用方决定是否重试。
+        if (request is! http.Request) rethrow;
+
         final retryRequest = http.Request(request.method, request.url)
           ..followRedirects = request.followRedirects
           ..maxRedirects = request.maxRedirects
           ..persistentConnection = true
-          ..headers.addAll(request.headers);
-        if (request is http.Request) {
-          retryRequest.body = request.body;
-        }
+          ..headers.addAll(request.headers)
+          ..body = request.body;
         final result = await _inner.send(retryRequest).timeout(kHttpTimeout);
         _log.d(_tag, 'send: retry ok ${request.method} ${request.url}');
         return result;

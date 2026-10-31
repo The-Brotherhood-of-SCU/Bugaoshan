@@ -214,5 +214,34 @@ void main() {
         expect(shared.closeCount, 1);
       },
     );
+
+    test('does not retry multipart requests after ClientException', () async {
+      var calls = 0;
+      final inner = _CountingClient((request) async {
+        calls++;
+        throw http.ClientException('boom', request.url);
+      });
+      var factoryCalls = 0;
+      final client = CookieClient(
+        inner: inner,
+        innerFactory: () {
+          factoryCalls++;
+          return MockClient((request) async => http.Response('ok', 200));
+        },
+      );
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('https://a.test/upload'),
+      )..fields['x'] = '1';
+
+      await expectLater(
+        client.send(request),
+        throwsA(isA<http.ClientException>()),
+      );
+      // Multipart 没有可复制 body，不能重放成空 body 请求。
+      expect(calls, 1);
+      // 仍会准备一个新 client 给后续请求，但不会重发当前请求。
+      expect(factoryCalls, 1);
+    });
   });
 }

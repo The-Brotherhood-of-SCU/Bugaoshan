@@ -412,6 +412,9 @@ class ServiceApiService {
   ///
   /// [file] 本地图片文件。[fileName] 上传后的显示名（默认取文件 basename）。
   /// [appId] 仅用于 Referer 头（模拟对应事项的发起页）。
+  ///
+  /// multipart 闭包在 [ApiSession.run] 认证重试时会重建请求（新的 boundary
+  /// 与 body）；传输层 `ClientException` 不会重放该请求。
   Future<ServiceAttachment> uploadAttachment(
     File file, {
     String? fileName,
