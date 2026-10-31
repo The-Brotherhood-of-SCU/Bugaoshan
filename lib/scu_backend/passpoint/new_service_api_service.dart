@@ -13,32 +13,33 @@ import 'package:bugaoshan/utils/app_logger.dart';
 class NewServiceApiService {
   static const String _tag = 'NewServiceApiService';
 
-  // ignore: unused_field
-  final NewServiceAuth _auth;
   final ApiSession _session;
   final AppLogger _log;
 
-  NewServiceApiService(this._auth, {ApiSession? session, AppLogger? logger})
-    : _log = logger ?? getIt<AppLogger>(),
-      _session =
-          session ??
-          ApiSession(
-            getClient: _auth.getClient,
-            invalidate: _auth.invalidate,
-            baseUrl: Uri.parse('https://service.scu.edu.cn/newservice'),
-            logTag: _tag,
-            jsonValidator: (json) {
-              final code = json['e']?.toString() ?? '';
-              if (code == 'UN_AUTH') {
-                throw const UnauthenticatedException('newservice 登录已失效');
-              }
-            },
-            defaultHeaders: const {
-              'Origin': 'https://service.scu.edu.cn',
-              'Referer':
-                  'https://service.scu.edu.cn/newservice/fe/site/m_passpoint',
-            },
-          );
+  NewServiceApiService(
+    NewServiceAuth auth, {
+    ApiSession? session,
+    AppLogger? logger,
+  }) : _log = logger ?? getIt<AppLogger>(),
+       _session =
+           session ??
+           ApiSession(
+             getClient: auth.getClient,
+             invalidate: auth.invalidate,
+             baseUrl: Uri.parse('https://service.scu.edu.cn/newservice'),
+             logTag: _tag,
+             jsonValidator: (json) {
+               final code = json['e']?.toString() ?? '';
+               if (code == 'UN_AUTH') {
+                 throw const UnauthenticatedException('newservice 登录已失效');
+               }
+             },
+             defaultHeaders: const {
+               'Origin': 'https://service.scu.edu.cn',
+               'Referer':
+                   'https://service.scu.edu.cn/newservice/fe/site/m_passpoint',
+             },
+           );
 
   /// 检查业务信封及 `d` 内的业务错误码（0 成功）。
   Map<String, dynamic> _checkData(Map<String, dynamic> json) {

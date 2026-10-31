@@ -8,21 +8,19 @@ import 'package:bugaoshan/scu_backend/payapp/payapp_auth.dart';
 class PayAppApiService {
   static const _tag = 'PayAppApiService';
 
-  // ignore: unused_field
-  final PayAppAuth _auth;
   final ApiSession _session;
   final BalanceQueryService _service;
 
   PayAppApiService(
-    this._auth, {
+    PayAppAuth auth, {
     ApiSession? session,
     BalanceQueryService? service,
   }) : _service = service ?? BalanceQueryService(),
        _session =
            session ??
            ApiSession(
-             getClient: _auth.getClient,
-             invalidate: _auth.invalidate,
+             getClient: auth.getClient,
+             invalidate: auth.invalidate,
              baseUrl: Uri.parse('https://payapp.scu.edu.cn/eleFees'),
              logTag: _tag,
            );

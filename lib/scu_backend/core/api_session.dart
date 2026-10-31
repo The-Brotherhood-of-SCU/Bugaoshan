@@ -397,23 +397,4 @@ abstract final class ApiEnvelope {
     }
     return json['d'];
   }
-
-  /// 解包通用 `{ "status": ..., "message": ..., "data": ... }` 信封。
-  static dynamic unwrapStatus(
-    Map<String, dynamic> json, {
-    dynamic successStatus = 'success',
-    String statusKey = 'status',
-    String messageKey = 'message',
-    String dataKey = 'data',
-    String fallbackError = '请求失败',
-  }) {
-    final status = json[statusKey];
-    if (status?.toString() != successStatus?.toString()) {
-      final msg = json[messageKey]?.toString();
-      throw ServiceException(
-        (msg != null && msg.isNotEmpty) ? msg : fallbackError,
-      );
-    }
-    return json[dataKey];
-  }
 }

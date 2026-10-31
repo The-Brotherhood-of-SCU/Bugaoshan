@@ -9,16 +9,14 @@ class WfwApiService {
   static const _tag = 'WfwApiService';
   static final _baseUrl = Uri.parse('https://wfw.scu.edu.cn');
 
-  // ignore: unused_field
-  final WfwAuth _auth;
   final ApiSession _session;
 
-  WfwApiService(this._auth, {ApiSession? session})
+  WfwApiService(WfwAuth auth, {ApiSession? session})
     : _session =
           session ??
           ApiSession(
-            getClient: _auth.getClient,
-            invalidate: _auth.invalidate,
+            getClient: auth.getClient,
+            invalidate: auth.invalidate,
             baseUrl: _baseUrl,
             logTag: _tag,
             jsonValidator: ApiEnvelope.validateWfw,

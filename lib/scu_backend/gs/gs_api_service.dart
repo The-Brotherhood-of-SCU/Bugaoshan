@@ -14,12 +14,12 @@ import 'package:bugaoshan/utils/graduate_schedule_parser.dart';
 
 /// 研教务（gsapp / EMAP）API 服务（第1层）。
 class GsApiService {
-  GsApiService(this._gsAuth, {ApiSession? session})
+  GsApiService(GsAuth gsAuth, {ApiSession? session})
     : _session =
           session ??
           ApiSession(
-            getClient: _gsAuth.getClient,
-            invalidate: _gsAuth.invalidate,
+            getClient: gsAuth.getClient,
+            invalidate: gsAuth.invalidate,
             baseUrl: Uri.parse(kGsEhallBaseUrl),
             logTag: _tag,
           );
@@ -43,8 +43,6 @@ class GsApiService {
     'Referer': kGsTrainPlanAppIndexUrl,
   };
 
-  // ignore: unused_field
-  final GsAuth _gsAuth;
   final ApiSession _session;
 
   /// 研究生课表（供课表导入，直连）。

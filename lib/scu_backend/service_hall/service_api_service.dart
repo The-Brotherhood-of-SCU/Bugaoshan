@@ -21,17 +21,16 @@ import 'package:bugaoshan/utils/constants.dart';
 class ServiceApiService {
   static const String _tag = 'ServiceApiService';
 
-  final ServiceAuth _auth;
   final AppLogger _log;
   late final ApiSession _session;
 
-  ServiceApiService(this._auth, {ApiSession? session, AppLogger? logger})
+  ServiceApiService(ServiceAuth auth, {ApiSession? session, AppLogger? logger})
     : _log = logger ?? getIt<AppLogger>() {
     _session =
         session ??
         ApiSession(
-          getClient: _auth.getClient,
-          invalidate: _auth.invalidate,
+          getClient: auth.getClient,
+          invalidate: auth.invalidate,
           baseUrl: Uri.parse(_base),
           logTag: _tag,
           defaultHeaders: const {'Origin': _base, 'Referer': _base},

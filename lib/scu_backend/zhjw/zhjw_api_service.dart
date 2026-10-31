@@ -22,16 +22,14 @@ part 'zhjw_html_parsers.dart';
 class ZhjwApiService {
   static const _tag = 'ZhjwApiService';
 
-  // ignore: unused_field
-  final ZhjwAuth _auth;
   final ApiSession _session;
 
-  ZhjwApiService(this._auth, {ApiSession? session})
+  ZhjwApiService(ZhjwAuth auth, {ApiSession? session})
     : _session =
           session ??
           ApiSession(
-            getClient: _auth.getClient,
-            invalidate: _auth.invalidate,
+            getClient: auth.getClient,
+            invalidate: auth.invalidate,
             baseUrl: Uri.parse(kZhjwBase),
             logTag: _tag,
             sessionExpiryChecker: (body, status) {
@@ -586,10 +584,7 @@ class ZhjwApiService {
   }) async {
     final json = await _session.getJsonList(
       '/student/teachingResources/classCurriculum/searchCurriculumInfo/callback',
-      query: {
-        'planCode': planCode,
-        'classCode': classCode,
-      },
+      query: {'planCode': planCode, 'classCode': classCode},
       headers: {
         'Referer': '$kZhjwBase/student/teachingResources/classCurriculum/index',
         'X-Requested-With': 'XMLHttpRequest',

@@ -355,7 +355,13 @@ flowchart TD
 
 默认 Header 由 `_buildHeaders` 注入（`User-Agent` / `Accept` / `X-Requested-With`），`getHtml` 会把 `Accept` 覆盖为 HTML 优先值。保留自定义解析的服务（办事大厅的 WAF 诊断、研教务的 EMAP 分页信封、缴费余额查询）通过 `run()` 复用同一套认证与重试骨架。
 
-不使用 ApiSession 的服务：第二课堂（业务码过期，见 7.2）、云打印（multipart 上传后结果不确定，禁止自动重放）、智慧后勤（独立 tokenKey + AES 响应，需自有请求层）。
+相对各服务原有实现，这轮收敛带来三处刻意差异：
+
+- 非 2xx 统一提前抛带 `statusCode` 的 `ServiceException`（办事大厅不再由 `jsonDecode` 抛 `FormatException`，但 WAF / HTML 标题诊断保留）；
+- 空响应默认按会话失效重认证一次（体测冷启动等场景可能多等 5-8 秒）；预约系统因网关偶发剥 body 设为 `false`，文案为「服务器返回了空响应」；
+- 302 统一按会话失效处理（预约 / 研教务会因此触发一次重认证；缴费平台原本已如此）。
+
+不使用 ApiSession 的服务：第二课堂（业务码过期，见 7.2）、云打印（multipart 上传后结果不确定，禁止自动重放）、智慧后勤（独立 tokenKey、每次请求动态生成 `Token` 头 + AES 响应，需自有请求层）。
 
 ### 7.2 CCYL
 

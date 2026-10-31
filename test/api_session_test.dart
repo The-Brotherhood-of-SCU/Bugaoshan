@@ -224,6 +224,28 @@ void main() {
         );
       },
     );
+
+    test('empty body triggers UnauthenticatedException by default', () async {
+      var attempts = 0;
+      final client = CookieClient(
+        inner: MockClient((req) async {
+          attempts++;
+          return http.Response('', 200);
+        }),
+      );
+      final session = ApiSession(
+        getClient: () async => client,
+        baseUrl: Uri.parse('https://example.com/api'),
+        logTag: 'Test',
+      );
+
+      await expectLater(
+        session.getJsonMap('empty'),
+        throwsA(isA<UnauthenticatedException>()),
+      );
+      // 会话失效会重试一次，第二次仍为空才上抛。
+      expect(attempts, 2);
+    });
   });
 
   group('ApiSession typed methods', () {
@@ -285,6 +307,63 @@ void main() {
       final json = await session.postJsonForJsonMap('submit', {'score': 99});
       expect(json['code'], 0);
     });
+
+    test('getJsonList parses json arrays', () async {
+      final client = CookieClient(
+        inner: MockClient((req) async => http.Response('[1, 2, 3]', 200)),
+      );
+      final session = ApiSession(
+        getClient: () async => client,
+        baseUrl: Uri.parse('https://example.com/api'),
+        logTag: 'Test',
+      );
+
+      expect(await session.getJsonList('list'), [1, 2, 3]);
+    });
+
+    test(
+      'postFormForJsonList sends form body and parses json arrays',
+      () async {
+        final client = CookieClient(
+          inner: MockClient((req) async {
+            expect(req.body, 'name=test&type=list');
+            return http.Response('[{"id": 1}, {"id": 2}]', 200);
+          }),
+        );
+        final session = ApiSession(
+          getClient: () async => client,
+          baseUrl: Uri.parse('https://example.com/api'),
+          logTag: 'Test',
+        );
+
+        final list = await session.postFormForJsonList('list', {
+          'name': 'test',
+          'type': 'list',
+        });
+        expect(list, hasLength(2));
+        expect(list.first['id'], 1);
+      },
+    );
+
+    test('followRedirects follows 302 to the final response', () async {
+      final client = CookieClient(
+        inner: MockClient((req) async {
+          if (req.url.path.endsWith('/start')) {
+            return http.Response('', 302, headers: {'location': '/api/final'});
+          }
+          return http.Response('done', 200);
+        }),
+      );
+      final session = ApiSession(
+        getClient: () async => client,
+        baseUrl: Uri.parse('https://example.com/api'),
+        logTag: 'Test',
+      );
+
+      final resp = await session.followRedirects('start');
+      expect(resp.statusCode, 200);
+      expect(resp.body, 'done');
+    });
   });
 
   group('ApiEnvelope', () {
@@ -315,26 +394,6 @@ void main() {
             (e) => e.message,
             'message',
             'Permission denied',
-          ),
-        ),
-      );
-    });
-
-    test('unwrapStatus works for standard status envelopes', () {
-      final success = {
-        'status': 'success',
-        'data': [1, 2, 3],
-      };
-      expect(ApiEnvelope.unwrapStatus(success), [1, 2, 3]);
-
-      final failure = {'status': 'error', 'message': 'Failed to load'};
-      expect(
-        () => ApiEnvelope.unwrapStatus(failure),
-        throwsA(
-          isA<ServiceException>().having(
-            (e) => e.message,
-            'message',
-            'Failed to load',
           ),
         ),
       );

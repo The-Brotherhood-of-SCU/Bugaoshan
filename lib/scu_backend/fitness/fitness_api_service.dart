@@ -19,16 +19,14 @@ class FitnessApiService implements FitnessTestApi {
     'https://pead.scu.edu.cn/bdlp_h5_fitness_test/public/index.php',
   );
 
-  // ignore: unused_field
-  final FitnessAuth _auth;
   final ApiSession _session;
 
-  FitnessApiService(this._auth, {ApiSession? session})
+  FitnessApiService(FitnessAuth auth, {ApiSession? session})
     : _session =
           session ??
           ApiSession(
-            getClient: _auth.getClient,
-            invalidate: _auth.invalidate,
+            getClient: auth.getClient,
+            invalidate: auth.invalidate,
             baseUrl: _baseUrl,
             logTag: _tag,
             jsonValidator: (json) {

@@ -52,16 +52,14 @@ abstract interface class ReservationApi {
 class ReservationApiService implements ReservationApi {
   static const String _tag = 'ReservationApiService';
 
-  // ignore: unused_field
-  final ReservationAuth _auth;
   final ApiSession _session;
 
-  ReservationApiService(this._auth, {ApiSession? session})
+  ReservationApiService(ReservationAuth auth, {ApiSession? session})
     : _session =
           session ??
           ApiSession(
-            getClient: _auth.getClient,
-            invalidate: _auth.invalidate,
+            getClient: auth.getClient,
+            invalidate: auth.invalidate,
             baseUrl: Uri.parse(kReservationBaseUrl),
             logTag: _tag,
             emptyBodyThrowsUnauthenticated: false,
