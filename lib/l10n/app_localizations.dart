@@ -4171,7 +4171,7 @@ abstract class AppLocalizations {
   /// **'{month}/{day}'**
   String dateMonthDay(int month, int day);
 
-  /// No description provided for @dateFormatSetting.
+  /// Separator choice for course schedule dates
   ///
   /// In en, this message translates to:
   /// **'Date format'**

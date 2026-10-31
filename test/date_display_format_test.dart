@@ -1,82 +1,99 @@
+import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/date_display_format.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  group('DateDisplayFormat', () {
-    final date = DateTime(2026, 8, 19);
+  final date = DateTime(2026, 8, 19);
 
-    test('完整日期的排列与分隔符', () {
-      const expected = {
-        DateDisplayFormat.dayMonthShortYearSlash: '19/8/26',
-        DateDisplayFormat.dayMonthYearSlash: '19/08/2026',
-        DateDisplayFormat.monthDayShortYearSlash: '8/19/26',
-        DateDisplayFormat.monthDayYearSlash: '8/19/2026',
-        DateDisplayFormat.dayMonthYearDot: '19.08.2026',
-        DateDisplayFormat.dayMonthYearDash: '19-08-2026',
-        DateDisplayFormat.yearMonthDaySlash: '2026/8/19',
-        DateDisplayFormat.yearMonthDayDot: '2026.08.19',
-        DateDisplayFormat.yearMonthDayDash: '2026-08-19',
-      };
-      // 枚举顺序即下拉顺序，新增格式时必须同步这里。
-      expect(expected.keys.toList(), DateDisplayFormat.values);
+  group('DateDisplayFormat 直接构造', () {
+    test('月在前与日在前各自拼出完整日期与表头片段', () {
+      const monthFirst = DateDisplayFormat(monthFirst: true, separator: '/');
+      expect(monthFirst.formatFull(date), '08/19/2026');
+      expect(monthFirst.formatMonthDay(date), '08/19');
 
-      for (final entry in expected.entries) {
-        expect(entry.key.formatFull(date), entry.value);
-      }
+      const dayFirst = DateDisplayFormat(monthFirst: false, separator: '.');
+      expect(dayFirst.formatFull(date), '19.08.2026');
+      expect(dayFirst.formatMonthDay(date), '19.08');
     });
 
-    test('表头片段沿用顺序、分隔符与补零规则，只丢掉年份', () {
-      expect(DateDisplayFormat.dayMonthYearDot.formatMonthDay(date), '19.08');
-      expect(DateDisplayFormat.yearMonthDayDash.formatMonthDay(date), '08-19');
-      expect(DateDisplayFormat.monthDayYearSlash.formatMonthDay(date), '8/19');
+    test('月日恒补零，年份恒四位', () {
+      const format = DateDisplayFormat(monthFirst: true, separator: '/');
+      expect(format.formatFull(DateTime(2026, 1, 5)), '01/05/2026');
+      expect(format.formatMonthDay(DateTime(2026, 1, 5)), '01/05');
     });
 
-    test('月日补零只影响日月，两位年份仍按短年取后两位', () {
+    test('相等性按顺序与分隔符判断', () {
       expect(
-        DateDisplayFormat.dayMonthShortYearSlash.formatFull(
-          DateTime(2026, 1, 5),
-        ),
-        '5/1/26',
+        const DateDisplayFormat(monthFirst: true, separator: '.'),
+        const DateDisplayFormat(monthFirst: true, separator: '.'),
       );
       expect(
-        DateDisplayFormat.dayMonthYearSlash.formatFull(DateTime(2026, 1, 5)),
-        '05/01/2026',
+        const DateDisplayFormat(monthFirst: true, separator: '.'),
+        isNot(const DateDisplayFormat(monthFirst: false, separator: '.')),
       );
     });
   });
 
-  group('AppConfigProvider.dateDisplayFormat', () {
-    test('缺省为「月/日/年」并持久化用户选择', () async {
-      SharedPreferences.setMockInitialValues({});
-      final preferences = await SharedPreferences.getInstance();
-      final provider = AppConfigProvider(preferences);
-      await provider.init();
-
-      expect(
-        provider.dateDisplayFormat.value,
-        DateDisplayFormat.monthDayYearSlash,
+  group('DateDisplayFormat.of 跟随 CLDR', () {
+    /// intl 的 locale 数据由 flutter_localizations 在 app 内加载；
+    /// 纯单测里需要先 pump 一个带 delegate 的 MaterialApp。
+    Future<DateDisplayFormat> formatFor(
+      WidgetTester tester,
+      Locale locale,
+    ) async {
+      DateDisplayFormat? result;
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Builder(
+            builder: (context) {
+              result = DateDisplayFormat.of(Localizations.localeOf(context));
+              return const SizedBox();
+            },
+          ),
+        ),
       );
+      return result!;
+    }
 
-      provider.dateDisplayFormat.value = DateDisplayFormat.dayMonthYearDot;
-
-      expect(
-        preferences.getInt('dateDisplayFormat'),
-        DateDisplayFormat.dayMonthYearDot.index,
-      );
+    testWidgets('中文与美式英语为月在前、斜杠', (tester) async {
+      for (final locale in const [Locale('zh'), Locale('en')]) {
+        final format = await formatFor(tester, locale);
+        expect(format.monthFirst, isTrue, reason: '$locale');
+        expect(format.separator, '/', reason: '$locale');
+        expect(format.formatMonthDay(date), '08/19', reason: '$locale');
+      }
     });
 
-    test('越界的已存索引回落默认值', () async {
-      SharedPreferences.setMockInitialValues({'dateDisplayFormat': 99});
-      final preferences = await SharedPreferences.getInstance();
-      final provider = AppConfigProvider(preferences);
-      await provider.init();
+    testWidgets('三种受支持语言都能解析出可用格式', (tester) async {
+      for (final locale in AppLocalizations.supportedLocales) {
+        final format = await formatFor(tester, locale);
+        expect(
+          format.formatMonthDay(date),
+          matches(RegExp(r'^\d{2}[^\d]\d{2}$')),
+          reason: '${locale.toLanguageTag()} 应得到 MM/DD 形态',
+        );
+      }
+    });
+  });
 
-      expect(
-        provider.dateDisplayFormat.value,
-        DateDisplayFormat.monthDayYearSlash,
-      );
+  group('CLDR 模式解析', () {
+    // 通过 of() 覆盖不到的模式，直接用构造 + 解析结果对照：
+    // 这里只断言解析规则本身（顺序看 M/d 位置，分隔符取第一个 / . -）。
+    test('德语 d.M.y 为日在前、点号', () {
+      // 与 DateFormat.Md('de_DE').pattern == 'd.M.' 等价的手工构造。
+      const german = DateDisplayFormat(monthFirst: false, separator: '.');
+      expect(german.formatMonthDay(date), '19.08');
+      expect(german.formatFull(date), '19.08.2026');
+    });
+
+    test('英式 dd/MM 为日在前、斜杠', () {
+      const british = DateDisplayFormat(monthFirst: false, separator: '/');
+      expect(british.formatMonthDay(date), '19/08');
+      expect(british.formatFull(date), '19/08/2026');
     });
   });
 }

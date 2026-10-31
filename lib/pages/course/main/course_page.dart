@@ -5,6 +5,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/academic_calendar.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/models/date_display_format.dart';
 import 'course_page_actions.dart';
 import 'course_page_controller.dart';
 import 'course_page_no_schedule_view.dart';
@@ -157,7 +158,6 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
               _controller!,
               courseProvider.allSchedules,
               courseProvider.scheduleConfig,
-              appConfig.dateDisplayFormat,
             ]),
             builder: (context, _) => CoursePageTopBar(
               visibleWeek: _controller!.visibleWeek,
@@ -180,7 +180,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
               onSwitchSchedule: (id) => courseProvider.switchSchedule(id),
               onOpenScheduleManagement: () =>
                   _openScheduleManagement(logicRootContext),
-              dateFormat: appConfig.dateDisplayFormat.value,
+              dateFormat: DateDisplayFormat.of(Localizations.localeOf(context)),
             ),
           ),
         Expanded(
@@ -410,6 +410,6 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
         context,
         date,
         info,
-        appConfig.dateDisplayFormat.value,
+        DateDisplayFormat.of(Localizations.localeOf(context)),
       );
 }

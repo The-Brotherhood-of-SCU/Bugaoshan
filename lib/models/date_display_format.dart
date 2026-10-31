@@ -1,106 +1,111 @@
-/// 日期显示的组成部分。
-enum _DatePart { day, month, year }
+import 'package:flutter/widgets.dart';
+import 'package:intl/intl.dart';
 
-/// 课表日期格式：一个完整的「年-月-日」排列方式。
+/// 课表日期格式：顺序与分隔符都取自当前语言环境的 CLDR 数据。
 ///
-/// 由用户在「软件设置 → 日期格式」下拉中挑选，全局生效并持久化在
-/// `AppConfigProvider.dateDisplayFormat`。
+/// 顺序（月在前还是日在前）和分隔符（`/`、`.`、`-`）都是地区习惯，不是
+/// 产品偏好，因此不写死在 ARB 里，而是直接向 `intl` 要当前 locale 的
+/// `DateFormat.Md` 模式：
 ///
-/// 两种消费方式，共用同一份排列与分隔符，保证两处看起来是一套格式：
-/// - [formatFull]：课表左上角顶栏，显示完整日期；
-/// - [formatMonthDay]：课表表头每一列，只保留月与日。
+/// | locale | CLDR 模式 | 表头 |
+/// |---|---|---|
+/// | en_US | `M/d` | 8/19 |
+/// | en_GB | `dd/MM` | 19/08 |
+/// | zh_CN | `M/d` | 8/19 |
+/// | de_DE | `d.M.` | 19.8. |
 ///
-/// 之所以不再按语言输出「10月19日」：低分辨率屏上 5~7 列平摊后每列只有
-/// 60px 上下，中文长日期会被压缩到难以辨认，定宽数字则不受文案长度影响。
-enum DateDisplayFormat {
-  /// `19/8/26`
-  dayMonthShortYearSlash(
-    [_DatePart.day, _DatePart.month, _DatePart.year],
-    '/',
-    padded: false,
-    shortYear: true,
-  ),
-
-  /// `19/08/2026`
-  dayMonthYearSlash([_DatePart.day, _DatePart.month, _DatePart.year], '/'),
-
-  /// `8/19/26`
-  monthDayShortYearSlash(
-    [_DatePart.month, _DatePart.day, _DatePart.year],
-    '/',
-    padded: false,
-    shortYear: true,
-  ),
-
-  /// `8/19/2026`
-  monthDayYearSlash(
-    [_DatePart.month, _DatePart.day, _DatePart.year],
-    '/',
-    padded: false,
-  ),
-
-  /// `19.08.2026`
-  dayMonthYearDot([_DatePart.day, _DatePart.month, _DatePart.year], '.'),
-
-  /// `19-08-2026`
-  dayMonthYearDash([_DatePart.day, _DatePart.month, _DatePart.year], '-'),
-
-  /// `2026/8/19`
-  yearMonthDaySlash(
-    [_DatePart.year, _DatePart.month, _DatePart.day],
-    '/',
-    padded: false,
-  ),
-
-  /// `2026.08.19`
-  yearMonthDayDot([_DatePart.year, _DatePart.month, _DatePart.day], '.'),
-
-  /// `2026-08-19`
-  yearMonthDayDash([_DatePart.year, _DatePart.month, _DatePart.day], '-');
-
-  const DateDisplayFormat(
-    this._order,
-    this._separator, {
-    this.padded = true,
-    this.shortYear = false,
+/// 顶栏显示完整日期（带年份），网格表头只保留月与日；两者共用同一份
+/// 顺序与分隔符，保证同屏看起来是一套格式。
+///
+/// 之所以不用「10月19日」：低分辨率屏上 5~7 列平摊后每列只有 60px 上下，
+/// 中文长日期会被压缩到难以辨认，数字则不受语言文案长度影响。
+@immutable
+class DateDisplayFormat {
+  /// 直接指定顺序与分隔符，主要用于测试与默认值。
+  const DateDisplayFormat({
+    required this.monthFirst,
+    required this.separator,
   });
 
-  final List<_DatePart> _order;
-  final String _separator;
-
-  /// 月与日是否补零到两位。年份恒为四位，或用 [shortYear] 缩成两位。
-  final bool padded;
-
-  /// 年份是否缩写为两位（如 `26`）。
-  final bool shortYear;
-
-  /// 完整日期，供课表顶栏使用。
-  String formatFull(DateTime date) =>
-      _order.map((part) => _part(part, date)).join(_separator);
-
-  /// 只含月与日的片段，供课表表头窄列使用。
-  ///
-  /// 顺序与分隔符沿用当前格式，只是丢掉年份：选 `19.08.2026` 时表头是
-  /// `19.08`，选 `2026-08-19` 时是 `08-19`。
-  String formatMonthDay(DateTime date) {
-    const kept = {_DatePart.day, _DatePart.month};
-    return _order
-        .where((part) => kept.contains(part))
-        .map((part) => _part(part, date))
-        .join(_separator);
+  /// 从语言环境解析。CLDR 数据缺失时回落到 `M/d`（绝大多数语言的写法）。
+  factory DateDisplayFormat.of(Locale locale) {
+    final pattern = _patternFor(locale);
+    return DateDisplayFormat(
+      monthFirst: _isMonthFirst(pattern),
+      separator: _separatorOf(pattern),
+    );
   }
 
-  String _part(_DatePart part, DateTime date) {
-    switch (part) {
-      case _DatePart.day:
-        return padded ? _two(date.day) : '${date.day}';
-      case _DatePart.month:
-        return padded ? _two(date.month) : '${date.month}';
-      case _DatePart.year:
-        final year = '${date.year}';
-        return shortYear ? year.substring(year.length - 2) : year;
-    }
+  /// 月是否排在日前。
+  final bool monthFirst;
+
+  /// 月与日之间的分隔符，取自同一份 CLDR 模式。
+  final String separator;
+
+  /// 完整日期，供课表顶栏使用：`10/26/2026` 或 `26.10.2026`。
+  String formatFull(DateTime date) {
+    final year = '${date.year}';
+    final month = _two(date.month);
+    final day = _two(date.day);
+    return monthFirst
+        ? [month, day, year].join(separator)
+        : [day, month, year].join(separator);
+  }
+
+  /// 只含月与日的片段，供课表表头窄列使用：`10/26` 或 `26.10`。
+  String formatMonthDay(DateTime date) {
+    final month = _two(date.month);
+    final day = _two(date.day);
+    return monthFirst ? '$month$separator$day' : '$day$separator$month';
   }
 
   static String _two(int value) => value.toString().padLeft(2, '0');
+
+  static const String _fallbackPattern = 'M/d';
+
+  static String _patternFor(Locale locale) {
+    final candidates = <String>[
+      locale.toString(),
+      if (locale.countryCode != null) locale.languageCode,
+      'en_US',
+    ];
+    for (final candidate in candidates) {
+      try {
+        return DateFormat.Md(candidate).pattern ?? _fallbackPattern;
+      } on Exception {
+        // 该 locale 的 intl 数据未加载，换下一个候选。
+      }
+    }
+    return _fallbackPattern;
+  }
+
+  /// 模式里月份在日之前即「月在前」。
+  static bool _isMonthFirst(String pattern) {
+    final month = pattern.indexOf('M');
+    final day = pattern.indexOf('d');
+    if (month < 0 || day < 0) return true;
+    return month < day;
+  }
+
+  /// 取模式里第一个分隔字符（`/`、`.` 或 `-`）；空白与非 ASCII 标点
+  /// （如韩语的 `. ` 与阿拉伯语的 RTL 标记）一律归到主分隔符。
+  static String _separatorOf(String pattern) {
+    for (final char in pattern.split('')) {
+      if ('/.-'.contains(char)) return char;
+    }
+    return '/';
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is DateDisplayFormat &&
+      other.monthFirst == monthFirst &&
+      other.separator == separator;
+
+  @override
+  int get hashCode => Object.hash(monthFirst, separator);
+
+  @override
+  String toString() =>
+      'DateDisplayFormat(monthFirst: $monthFirst, separator: "$separator")';
 }

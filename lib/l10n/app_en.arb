@@ -856,6 +856,9 @@
     }
   },
   "dateFormatSetting": "Date format",
+  "@dateFormatSetting": {
+    "description": "Separator choice for course schedule dates"
+  },
   "holidayLabel": "Hol",
   "@holidayLabel": {
     "description": "Short label for statutory holiday displayed in course grid date header"

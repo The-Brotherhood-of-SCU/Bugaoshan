@@ -14,7 +14,10 @@ CoursePageTopBar _buildBar({
   int visibleWeek = 1,
   int totalWeeks = 20,
   int actualWeek = 1,
-  DateDisplayFormat dateFormat = DateDisplayFormat.monthDayYearSlash,
+  DateDisplayFormat dateFormat = const DateDisplayFormat(
+    monthFirst: true,
+    separator: '/',
+  ),
 }) {
   return CoursePageTopBar(
     visibleWeek: visibleWeek,
@@ -288,11 +291,14 @@ void main() {
           currentScheduleId: 'a',
           onSwitchSchedule: (_) {},
           onOpenScheduleManagement: () {},
-          dateFormat: DateDisplayFormat.dayMonthYearDash,
+          dateFormat: const DateDisplayFormat(
+            monthFirst: false,
+            separator: '.',
+          ),
         ),
         width: 430,
       );
-      expect(_dateText(tester), matches(RegExp(r'^\d{2}-\d{2}-\d{4}$')));
+      expect(_dateText(tester), matches(RegExp(r'^\d{2}\.\d{2}\.\d{4}$')));
     });
   });
 }

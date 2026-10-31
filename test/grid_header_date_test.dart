@@ -39,19 +39,25 @@ void main() {
     );
   }
 
-  testWidgets('默认「月/日/年」时表头只显示月与日', (tester) async {
-    await pumpHeader(tester, format: DateDisplayFormat.monthDayYearSlash);
+  testWidgets('月在前时表头为补零的「月/日」', (tester) async {
+    await pumpHeader(
+      tester,
+      format: const DateDisplayFormat(monthFirst: true, separator: '/'),
+    );
 
     // 周一~周五 = 9/7 ~ 9/11（教学周以周日为首日成行）。
-    for (final label in ['9/7', '9/8', '9/9', '9/10', '9/11']) {
+    for (final label in ['09/07', '09/08', '09/09', '09/10', '09/11']) {
       expect(find.text(label), findsOneWidget);
     }
     expect(find.textContaining('月'), findsNothing);
     expect(find.textContaining('年'), findsNothing);
   });
 
-  testWidgets('「日.月.年」时表头为「日.月」且不带年份', (tester) async {
-    await pumpHeader(tester, format: DateDisplayFormat.dayMonthYearDot);
+  testWidgets('日在前 + 点号时表头为「日.月」且不带年份', (tester) async {
+    await pumpHeader(
+      tester,
+      format: const DateDisplayFormat(monthFirst: false, separator: '.'),
+    );
 
     expect(find.text('07.09'), findsOneWidget);
     expect(find.text('11.09'), findsOneWidget);

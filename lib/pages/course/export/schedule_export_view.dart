@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/models/date_display_format.dart';
 import 'package:bugaoshan/pages/course/widgets/course_grid_body.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/common/background_image_view.dart';
@@ -94,7 +95,9 @@ class ScheduleExportView extends StatelessWidget {
                 showWeekend: appConfig.showWeekend.value,
                 showAllWeeks: false,
                 showHeaderDates: true,
-                dateFormat: appConfig.dateDisplayFormat.value,
+                dateFormat: DateDisplayFormat.of(
+                  Localizations.localeOf(context),
+                ),
               ),
               CourseGridBody(
                 courses: data.courses,

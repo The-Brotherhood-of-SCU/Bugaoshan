@@ -69,7 +69,10 @@ class CoursePageTopBar extends StatelessWidget {
     this.currentScheduleId,
     required this.onSwitchSchedule,
     required this.onOpenScheduleManagement,
-    this.dateFormat = DateDisplayFormat.monthDayYearSlash,
+    this.dateFormat = const DateDisplayFormat(
+      monthFirst: true,
+      separator: '/',
+    ),
   });
 
   @override

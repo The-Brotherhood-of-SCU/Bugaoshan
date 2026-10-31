@@ -822,6 +822,9 @@
     }
   },
   "dateFormatSetting": "日期格式",
+  "@dateFormatSetting": {
+    "description": "课表日期的分隔符选项"
+  },
   "holidayLabel": "假",
   "@holidayLabel": {
     "description": "Short label for statutory holiday displayed in course grid date header"
