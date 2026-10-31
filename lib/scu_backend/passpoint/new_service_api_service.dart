@@ -29,6 +29,7 @@ class NewServiceApiService {
              baseUrl: Uri.parse('https://service.scu.edu.cn/newservice'),
              logTag: _tag,
              jsonValidator: (json) {
+               if (json is! Map<String, dynamic>) return;
                final code = json['e']?.toString() ?? '';
                if (code == 'UN_AUTH') {
                  throw const UnauthenticatedException('newservice 登录已失效');

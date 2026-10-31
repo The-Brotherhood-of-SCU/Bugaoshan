@@ -30,6 +30,7 @@ class FitnessApiService implements FitnessTestApi {
             baseUrl: _baseUrl,
             logTag: _tag,
             jsonValidator: (json) {
+              if (json is! Map<String, dynamic>) return;
               final message = json['info']?.toString() ?? '';
               if (message.contains('登录信息失效') || message.contains('请重新登录')) {
                 throw UnauthenticatedException(message);

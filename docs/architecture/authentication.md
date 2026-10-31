@@ -347,7 +347,7 @@ flowchart TD
 
 1. 配置了 `sessionExpiryChecker` 时由后端自行判定（如 ZHJW 的 `undergradOnly` 标记，办事大厅的 302 / 401 / 403 / 空 body 规则及 WAF 标题日志）；
 2. 否则使用默认规则：302 / 401 / 403、空响应（`emptyBodyThrowsUnauthenticated` 为 `true` 时）、HTML 登录页；
-3. JSON 解析成功后 `jsonValidator` 可继续把业务层过期码（WFW `e == 10013`、Reservation / Passpoint `e == UN_AUTH`）转为 `UnauthenticatedException`，从而在重试上下文内触发一次重认证；保留自定义解析的服务也可以在 `run()` 内直接抛出（如办事大厅的 `e == 10042`）。
+3. JSON 解析成功后 `jsonValidator` 可继续把业务层过期码（WFW `e == 10013`、Reservation / Passpoint `e == UN_AUTH`）转为 `UnauthenticatedException`，从而在重试上下文内触发一次重认证；Map 与 List 两种顶层响应都会调用校验器，只关心 Map 信封的校验器需先做类型收窄（`if (json is! Map<String, dynamic>) return;`）。保留自定义解析的服务也可以在 `run()` 内直接抛出（如办事大厅的 `e == 10042`）。
 
 `emptyBodyThrowsUnauthenticated` 默认 `true`；预约系统设为 `false`（网关偶发剥 body 时不误触发重认证），此时空响应抛 `ServiceException('服务器返回了空响应')`。
 

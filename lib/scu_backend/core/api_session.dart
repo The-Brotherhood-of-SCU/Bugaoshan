@@ -18,12 +18,19 @@ import 'package:bugaoshan/utils/json_utils.dart';
 /// 若会话正常，正常返回即可。
 typedef SessionExpiryChecker = void Function(String body, int statusCode);
 
+/// 任意 JSON 值（object / array / string / number / bool / null）。
+typedef JsonValue = Object?;
+
 /// JSON 业务响应校验器签名。
 ///
-/// 在请求重试保护上下文中执行。若检测到业务层面的未登录或会话过期
-/// （如微服务的 `e == 10013`、预约系统的 `e == 'UN_AUTH'`），
-/// 抛出 [UnauthenticatedException] 以便触发自动重认证与重试。
-typedef JsonValidator = void Function(Map<String, dynamic> json);
+/// 在请求重试保护上下文中执行，覆盖 Map 与 List 两种顶层响应。
+/// 若检测到业务层面的未登录或会话过期（如微服务的 `e == 10013`、
+/// 预约系统的 `e == 'UN_AUTH'`），抛出 [UnauthenticatedException]
+/// 以便触发自动重认证与重试。
+///
+/// 只关心 Map 信封的校验器应先做类型收窄：
+/// `if (json is! Map<String, dynamic>) return;`
+typedef JsonValidator = void Function(JsonValue json);
 
 /// 面向业务 API 的高阶会话客户端。
 ///
@@ -219,7 +226,9 @@ class ApiSession {
   }
 
   List<dynamic> _decodeJsonList(http.Response resp, String apiName) {
-    return parseJsonList(resp.body, apiName, (m) => ServiceException(m));
+    final json = parseJsonList(resp.body, apiName, (m) => ServiceException(m));
+    jsonValidator?.call(json);
+    return json;
   }
 
   /// 发送 GET 请求并返回原始 [http.Response]。
@@ -371,7 +380,10 @@ class ApiSession {
 /// 常用子系统响应信封辅助类。
 abstract final class ApiEnvelope {
   /// 校验微服务响应，若 `e == 10013` 抛出 [UnauthenticatedException]。
-  static void validateWfw(Map<String, dynamic> json) {
+  ///
+  /// 接受任意 JSON 值；数组等非 Map 响应直接跳过。
+  static void validateWfw(JsonValue json) {
+    if (json is! Map<String, dynamic>) return;
     final e = json['e'];
     if (e == 10013 || e?.toString() == '10013') {
       throw const UnauthenticatedException('微服务登录已失效');

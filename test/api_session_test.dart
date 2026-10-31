@@ -364,6 +364,45 @@ void main() {
       expect(resp.statusCode, 200);
       expect(resp.body, 'done');
     });
+
+    test('jsonValidator receives both map and list payloads', () async {
+      final client = CookieClient(
+        inner: MockClient((req) async {
+          return req.url.path.endsWith('/list')
+              ? http.Response('[1, 2]', 200)
+              : http.Response('{"e": 10013}', 200);
+        }),
+      );
+      final session = ApiSession(
+        getClient: () async => client,
+        baseUrl: Uri.parse('https://example.com/api'),
+        logTag: 'Test',
+        jsonValidator: (json) {
+          if (json is Map<String, dynamic> &&
+              json['e']?.toString() == '10013') {
+            throw const UnauthenticatedException('session expired');
+          }
+          if (json is List<dynamic>) {
+            throw const ServiceException('list business error');
+          }
+        },
+      );
+
+      await expectLater(
+        session.getJsonMap('map'),
+        throwsA(isA<UnauthenticatedException>()),
+      );
+      await expectLater(
+        session.getJsonList('list'),
+        throwsA(
+          isA<ServiceException>().having(
+            (e) => e.message,
+            'message',
+            'list business error',
+          ),
+        ),
+      );
+    });
   });
 
   group('ApiEnvelope', () {
@@ -397,6 +436,10 @@ void main() {
           ),
         ),
       );
+    });
+
+    test('validateWfw skips non-map payloads', () {
+      expect(() => ApiEnvelope.validateWfw(const [1, 2]), returnsNormally);
     });
   });
 }

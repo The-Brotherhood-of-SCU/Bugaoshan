@@ -64,6 +64,7 @@ class ReservationApiService implements ReservationApi {
             logTag: _tag,
             emptyBodyThrowsUnauthenticated: false,
             jsonValidator: (json) {
+              if (json is! Map<String, dynamic>) return;
               final code = json['e']?.toString();
               if (code == 'UN_AUTH') {
                 throw const UnauthenticatedException('预约系统会话未建立或已过期');
