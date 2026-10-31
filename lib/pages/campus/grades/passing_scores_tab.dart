@@ -5,6 +5,7 @@ import 'package:bugaoshan/models/scheme_score.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/stat_item.dart';
+import 'package:bugaoshan/services/course_teacher_index.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'scheme_scores_tab.dart' show ScoreCardWidget;
 
@@ -18,6 +19,21 @@ class PassingScoresTab extends StatefulWidget {
 }
 
 class _PassingScoresTabState extends State<PassingScoresTab> {
+  CourseTeacherIndex? _teacherIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTeacherIndex();
+  }
+
+  Future<void> _loadTeacherIndex() async {
+    final index = await CourseTeacherIndex.load();
+    if (mounted) {
+      setState(() => _teacherIndex = index);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -95,6 +111,7 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
   Widget _buildContent(BuildContext context, GradesProvider provider) {
     final result = provider.passingScores!;
     final query = widget.searchQuery.trim();
+    final lowerQuery = query.toLowerCase();
 
     // Filter items by course name, remove empty groups
     final groups = result.groups
@@ -103,9 +120,7 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
             label: g.label,
             items: g.items
                 .where(
-                  (item) => item.courseName.toLowerCase().contains(
-                    query.toLowerCase(),
-                  ),
+                  (item) => item.courseName.toLowerCase().contains(lowerQuery),
                 )
                 .toList(),
           ),
@@ -115,36 +130,39 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
 
     return RefreshIndicator(
       onRefresh: provider.refreshPassingScores,
-      child: groups.isEmpty && query.isNotEmpty
-          ? CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(child: _OverallSummaryCard(result: result)),
-                SliverFillRemaining(
-                  child: Center(
-                    child: Text(
-                      AppLocalizations.of(context)!.gradesNoSearchResults,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(child: _OverallSummaryCard(result: result)),
+          if (groups.isEmpty && query.isNotEmpty)
+            SliverFillRemaining(
+              child: Center(
+                child: Text(
+                  AppLocalizations.of(context)!.gradesNoSearchResults,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
-              ],
+              ),
             )
-          : CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(child: _OverallSummaryCard(result: result)),
-                for (final group in groups) ...[
-                  SliverToBoxAdapter(child: _TermHeader(group: group)),
-                  SliverList.builder(
-                    itemCount: group.items.length,
-                    itemBuilder: (context, i) =>
-                        ScoreCardWidget(item: group.items[i]),
-                  ),
-                ],
-                const SliverToBoxAdapter(child: SizedBox(height: 16)),
-              ],
-            ),
+          else ...[
+            for (final group in groups) ...[
+              SliverToBoxAdapter(child: _TermHeader(group: group)),
+              SliverList.builder(
+                itemCount: group.items.length,
+                itemBuilder: (context, i) {
+                  final item = group.items[i];
+                  final teacher = _teacherIndex?.getTeacher(
+                    rawTermLabel: group.label,
+                    courseName: item.courseName,
+                  );
+                  return ScoreCardWidget(item: item, teacher: teacher);
+                },
+              ),
+            ],
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+          ],
+        ],
+      ),
     );
   }
 }

@@ -508,6 +508,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get teacher => 'Teacher';
 
   @override
+  String courseTeacher(String teacher) {
+    return 'Instructor: $teacher';
+  }
+
+  @override
   String get location => 'Location';
 
   @override

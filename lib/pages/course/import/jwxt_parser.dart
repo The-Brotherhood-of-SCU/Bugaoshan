@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/utils/class_week_parser.dart';
 
+export 'package:bugaoshan/models/schedule_config.dart'
+    show
+        academicYearRegExp,
+        matchAcademicYear,
+        resolveTermSeason,
+        parseSemesterMetadata;
+
 /// 剥离教务处学期标签中的"（当前）"标记。
 String cleanSemesterLabel(String label) {
   return label.replaceAll('（当前）', '').replaceAll('(当前)', '').trim();

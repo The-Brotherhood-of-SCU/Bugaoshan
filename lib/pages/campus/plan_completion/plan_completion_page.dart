@@ -4,6 +4,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/models/plan_completion.dart';
 import 'package:bugaoshan/providers/plan_completion_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/services/course_teacher_index.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
@@ -20,6 +21,7 @@ class PlanCompletionPage extends StatefulWidget {
 
 class _PlanCompletionPageState extends State<PlanCompletionPage> {
   late final PlanCompletionProvider _provider;
+  CourseTeacherIndex? _teacherIndex;
 
   @override
   void initState() {
@@ -27,6 +29,18 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
     _provider = getIt<PlanCompletionProvider>();
     _provider.addListener(_onProviderUpdate);
     _provider.fetchPlanCompletion();
+    _loadTeacherIndex();
+  }
+
+  static final _passedIconRegExp = RegExp(r'fa-smile-o.*green');
+  static final _passedCoursesRegExp = RegExp(r'已及格课程门数:(\d+)');
+  static final _uncompletedCoursesRegExp = RegExp(r'必修课未修读:(\d+)');
+
+  Future<void> _loadTeacherIndex() async {
+    final index = await CourseTeacherIndex.load();
+    if (mounted) {
+      setState(() => _teacherIndex = index);
+    }
   }
 
   @override
@@ -37,13 +51,13 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
 
   void _onProviderUpdate() {
     if (!mounted) return;
-    final l10n = AppLocalizations.of(context)!;
+    final error = _provider.error;
 
     // 有缓存时刷新失败，provider 保留旧数据并置 state=loaded、error≠null；
     // 若不提示，用户无法得知看到的是过期缓存（与成绩页保持一致）。
-    if (_provider.state == PlanCompletionLoadState.loaded &&
-        _provider.error != null) {
-      final message = switch (_provider.error!) {
+    if (_provider.state == PlanCompletionLoadState.loaded && error != null) {
+      final l10n = AppLocalizations.of(context)!;
+      final message = switch (error) {
         LoadErrorType.rateLimited => l10n.planCompletionRateLimited,
         LoadErrorType.sessionExpired => l10n.sessionExpired,
         LoadErrorType.undergradOnly => l10n.undergradDataOnly,
@@ -51,16 +65,6 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
       };
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message), duration: const Duration(seconds: 3)),
-      );
-      return;
-    }
-
-    if (_provider.error == LoadErrorType.rateLimited) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.planCompletionRateLimited),
-          duration: const Duration(seconds: 3),
-        ),
       );
     }
   }
@@ -136,52 +140,48 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
       );
     }
 
+    final index = _provider.currentPlanIndex;
+    final name = plans[index].name;
+    final showCount = plans.length > 1;
+
     // 顶部方案名指示栏 + PageView 承载各方案内容：
     // - 单方案：只有一页，无法左右滑动（滑动不反应）；
     // - 多方案：左右滑动切换，顶部指示栏跟随更新。
     return Column(
       children: [
-        ListenableBuilder(
-          listenable: _provider,
-          builder: (context, _) {
-            final index = _provider.currentPlanIndex;
-            final name = plans[index].name;
-            final showCount = plans.length > 1;
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // 多方案时才提示可滑动，单方案不误导。
-                  if (showCount) ...[
-                    Icon(
-                      Icons.swipe,
-                      size: 16,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 6),
-                  ],
-                  Flexible(
-                    child: Text(
-                      name.isNotEmpty ? name : l10n.planCompletionPlanFallback,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                  ),
-                  if (showCount) ...[
-                    const SizedBox(width: 6),
-                    Text(
-                      '${index + 1}/${plans.length}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ],
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 多方案时才提示可滑动，单方案不误导。
+              if (showCount) ...[
+                Icon(
+                  Icons.swipe,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 6),
+              ],
+              Flexible(
+                child: Text(
+                  name.isNotEmpty ? name : l10n.planCompletionPlanFallback,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
               ),
-            );
-          },
+              if (showCount) ...[
+                const SizedBox(width: 6),
+                Text(
+                  '${index + 1}/${plans.length}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
         Expanded(
           child: PageView.builder(
@@ -291,22 +291,20 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
     PlanCompletionNode node,
     int depth,
   ) {
-    final l10n = AppLocalizations.of(context)!;
-    final children = nodes.where((n) => n.pId == node.id).toList();
-
-    // 无子节点的模块（如美育、创新创业教育、跨学科专业教育）以列表项形式展示，
-    // 与教务处方案层级保持一致。
-    if (children.isEmpty && !node.isCourse) {
-      return _buildLeafModuleTile(context, node, depth);
-    }
-
     if (node.isCourse) {
       return _buildCourseTile(context, node, depth);
     }
 
-    final earned = double.tryParse(node.earnedCredits) ?? 0;
-    final required = double.tryParse(node.requiredCredits) ?? 0;
-    final progress = required > 0 ? (earned / required).clamp(0.0, 1.0) : 0.0;
+    final children = nodes.where((n) => n.pId == node.id).toList();
+
+    // 无子节点的模块（如美育、创新创业教育、跨学科专业教育）以列表项形式展示，
+    // 与教务处方案层级保持一致。
+    if (children.isEmpty) {
+      return _buildLeafModuleTile(context, node, depth);
+    }
+
+    final l10n = AppLocalizations.of(context)!;
+    final courseCountInfo = _extractCourseCountInfo(node.name, l10n);
 
     return StyledCard(
       margin: const EdgeInsets.only(bottom: 8),
@@ -319,7 +317,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
           size: 22,
         ),
         title: Text(
-          _extractCategoryDisplayName(node.name),
+          node.categoryDisplayName,
           style: Theme.of(
             context,
           ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
@@ -334,10 +332,10 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
                   '${l10n.planCompletionCredits}: ${node.earnedCredits}/${node.requiredCredits}',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
-                if (node.name.contains('已修课程门数')) ...[
+                if (courseCountInfo != null) ...[
                   const SizedBox(width: 12),
                   Text(
-                    _extractCourseCountInfo(node.name, l10n),
+                    courseCountInfo,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
@@ -347,7 +345,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
             ClipRRect(
               borderRadius: BorderRadius.circular(AppShapes.xs),
               child: LinearProgressIndicator(
-                value: progress,
+                value: node.progress,
                 minHeight: 4,
                 backgroundColor: Theme.of(
                   context,
@@ -365,25 +363,18 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
     );
   }
 
-  String _extractCategoryDisplayName(String name) {
-    // Remove parenthesized info: 公共基础课(最低修读学分:25,...) -> 公共基础课
-    final idx = name.indexOf('(');
-    return idx > 0 ? name.substring(0, idx).trim() : name;
-  }
-
-  String _extractCourseCountInfo(String name, AppLocalizations l10n) {
+  String? _extractCourseCountInfo(String name, AppLocalizations l10n) {
     // Extract: 已及格课程门数:17,必修课未修读:3
-    final passedMatch = RegExp(r'已及格课程门数:(\d+)').firstMatch(name);
-    final uncompletedMatch = RegExp(r'必修课未修读:(\d+)').firstMatch(name);
-    if (passedMatch != null) {
-      final passed = int.parse(passedMatch.group(1)!);
-      final uncompleted = uncompletedMatch != null
-          ? int.parse(uncompletedMatch.group(1)!)
-          : 0;
-      final total = passed + uncompleted;
-      return '${l10n.planCompletionCourses}: $passed/$total';
-    }
-    return '';
+    final passedMatch = _passedCoursesRegExp.firstMatch(name);
+    if (passedMatch == null) return null;
+
+    final passed = int.parse(passedMatch[1]!);
+    final uncompletedMatch = _uncompletedCoursesRegExp.firstMatch(name);
+    final uncompleted = uncompletedMatch != null
+        ? int.parse(uncompletedMatch[1]!)
+        : 0;
+    final total = passed + uncompleted;
+    return '${l10n.planCompletionCourses}: $passed/$total';
   }
 
   Widget _buildLeafModuleTile(
@@ -392,8 +383,6 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
     int depth,
   ) {
     final l10n = AppLocalizations.of(context)!;
-    final earned = double.tryParse(node.earnedCredits) ?? 0;
-    final required = double.tryParse(node.requiredCredits) ?? 0;
     final theme = Theme.of(context);
 
     return StyledCard(
@@ -419,7 +408,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _extractCategoryDisplayName(node.name),
+                    node.categoryDisplayName,
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -438,9 +427,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(AppShapes.xs),
                 child: LinearProgressIndicator(
-                  value: required > 0
-                      ? (earned / required).clamp(0.0, 1.0)
-                      : 0.0,
+                  value: node.progress,
                   minHeight: 4,
                   backgroundColor: theme.colorScheme.surfaceContainerHighest,
                 ),
@@ -457,17 +444,18 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
     PlanCompletionNode node,
     int depth,
   ) {
-    final hasGrade = node.gradeInfo.isNotEmpty;
-    String gradeDisplay = '';
-    if (hasGrade) {
-      // Parse: (必修,96.0(20240107)) -> 96.0
-      final gradeMatch = RegExp(r',([\d.]+)\(').firstMatch(node.gradeInfo);
-      if (gradeMatch != null) {
-        gradeDisplay = gradeMatch.group(1)!;
-      }
-    }
+    final l10n = AppLocalizations.of(context)!;
+    final gradeDisplay = node.scoreDisplay;
+    final isPassed = _passedIconRegExp.hasMatch(node.rawName);
+    final isStudied = node.completed || node.gradeInfo.isNotEmpty;
 
-    final isPassed = RegExp(r'fa-smile-o.*green').hasMatch(node.rawName);
+    final teacher = (isStudied && node.courseName.isNotEmpty)
+        ? _teacherIndex?.getTeacher(
+            rawTermLabel: node.academicTerm,
+            gradeInfo: node.gradeInfo,
+            courseName: node.courseName,
+          )
+        : null;
 
     return Padding(
       padding: EdgeInsets.only(left: 16.0 * depth),
@@ -484,9 +472,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
                 ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
         ),
         title: Text(
-          node.courseName.isNotEmpty
-              ? node.courseName
-              : _extractCategoryDisplayName(node.name),
+          node.courseName.isNotEmpty ? node.courseName : node.name,
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         subtitle: Column(
@@ -521,6 +507,15 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
             if (node.academicTerm.isNotEmpty)
               Text(
                 node.academicTerm,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            if (teacher != null)
+              Text(
+                l10n.courseTeacher(teacher),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -577,7 +572,7 @@ PlanCompletionSummaryStats computeSummaryStats(List<PlanCompletionNode> nodes) {
       .toList();
   final totalEarned = rootModuleNodes.fold<double>(
     0,
-    (sum, n) => sum + (double.tryParse(n.earnedCredits) ?? 0),
+    (sum, n) => sum + n.earnedCreditsValue,
   );
   final completedCount = rootModuleNodes.where((n) => n.completed).length;
   return PlanCompletionSummaryStats(

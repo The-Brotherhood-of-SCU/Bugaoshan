@@ -129,5 +129,28 @@ void main() {
       expect(result.courses, hasLength(1));
       expect(result.courses.first.location, '第一教学楼101');
     });
+
+    test('parseSemesterMetadata 正确解析学年与学期代码', () {
+      final meta1 = parseSemesterMetadata('2025-2026学年春(当前)', '2025-2026-2-1');
+      expect(meta1.academicYearCode, '2025-2026');
+      expect(meta1.termName, '春');
+
+      final meta2 = parseSemesterMetadata('2024-2025学年秋', '2024-2025-1-1');
+      expect(meta2.academicYearCode, '2024-2025');
+      expect(meta2.termName, '秋');
+
+      final meta3 = parseSemesterMetadata('2023-2024-2', '2023-2024-2-1');
+      expect(meta3.academicYearCode, '2023-2024');
+      expect(meta3.termName, '春');
+
+      // 仅传入 label 时同样能正确解析学期序号
+      final meta3LabelOnly = parseSemesterMetadata('2023-2024-2');
+      expect(meta3LabelOnly.academicYearCode, '2023-2024');
+      expect(meta3LabelOnly.termName, '春');
+
+      final meta4 = parseSemesterMetadata('我的自定义课表');
+      expect(meta4.academicYearCode, isNull);
+      expect(meta4.termName, isNull);
+    });
   });
 }

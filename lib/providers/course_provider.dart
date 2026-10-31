@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/services/course_teacher_index.dart';
 import 'package:bugaoshan/services/database_service.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 
@@ -63,6 +64,7 @@ class CourseProvider {
       // 间隙里会出现「hasSchedule=true 而 scheduleConfig 未就位」的中间态，
       // 空库首次导入时课表页网格会以未创建的控制器构建并抛空指针。
       await _db.addSchedule(config);
+      CourseTeacherIndex.invalidate();
       await switchSchedule(config.id);
     });
   }
@@ -70,6 +72,7 @@ class CourseProvider {
   Future<void> deleteSchedule(String scheduleId) async {
     return AppLog.guard(_tag, '删除课表', () async {
       await _db.deleteSchedule(scheduleId);
+      CourseTeacherIndex.invalidate();
       // Reload everything as current schedule might have changed
       await _loadData();
     });
@@ -106,6 +109,7 @@ class CourseProvider {
   Future<void> addCourse(Course course) async {
     return AppLog.guard(_tag, '新增课程', () async {
       await _db.addCourse(course);
+      CourseTeacherIndex.invalidate();
       courses.value = _db.getCourses();
       onCoursesChanged?.call();
     });
@@ -114,6 +118,7 @@ class CourseProvider {
   Future<void> updateCourse(Course course) async {
     return AppLog.guard(_tag, '修改课程', () async {
       await _db.updateCourse(course);
+      CourseTeacherIndex.invalidate();
       courses.value = _db.getCourses();
       onCoursesChanged?.call();
     });
@@ -122,6 +127,7 @@ class CourseProvider {
   Future<void> deleteCourse(String courseId) async {
     return AppLog.guard(_tag, '删除课程', () async {
       await _db.deleteCourse(courseId);
+      CourseTeacherIndex.invalidate();
       courses.value = _db.getCourses();
       onCoursesChanged?.call();
     });
@@ -130,6 +136,7 @@ class CourseProvider {
   Future<void> updateScheduleConfig(ScheduleConfig config) async {
     return AppLog.guard(_tag, '保存课表设置', () async {
       await _db.saveScheduleConfig(config);
+      CourseTeacherIndex.invalidate();
       allSchedules.value = _db.getAllSchedules();
       if (config.id == _db.getCurrentScheduleId()) {
         scheduleConfig.value = config;
@@ -146,6 +153,7 @@ class CourseProvider {
   ) async {
     return AppLog.guard(_tag, '替换课表课程', () async {
       await _db.replaceScheduleCourses(scheduleId, newCourses);
+      CourseTeacherIndex.invalidate();
       if (scheduleId == _db.getCurrentScheduleId()) {
         courses.value = _db.getCourses();
       }
@@ -164,6 +172,7 @@ class CourseProvider {
   Future<void> clearAllData() async {
     return AppLog.guard(_tag, '清空课表', () async {
       await _db.clearAllCourseData();
+      CourseTeacherIndex.invalidate();
       await _loadData();
     });
   }

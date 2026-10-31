@@ -51,6 +51,14 @@ class ScheduleConfig {
   bool autoSyncTime;
   List<TimeSlot> timeSlots;
 
+  /// 学年代码，例如 '2025-2026'。
+  /// 从教务处在线导入时记录；旧数据或手动新建课表若未提供则为 null。
+  String? academicYearCode;
+
+  /// 学期名称，例如 '秋' 或 '春'。
+  /// 从教务处在线导入时记录；旧数据或手动新建课表若未提供则为 null。
+  String? termName;
+
   int get sectionsPerDay =>
       morningSections + afternoonSections + eveningSections;
 
@@ -75,6 +83,8 @@ class ScheduleConfig {
     this.breakDuration = 10,
     this.autoSyncTime = true,
     List<TimeSlot>? timeSlots,
+    this.academicYearCode,
+    this.termName,
   }) : timeSlots = timeSlots ?? _defaultTimeSlots(4, 5, 3, 45, 10);
 
   factory ScheduleConfig.fromJson(Map<String, dynamic> json) {
@@ -133,6 +143,8 @@ class ScheduleConfig {
             courseDuration,
             breakDuration,
           ),
+      academicYearCode: json['academicYearCode']?.toString(),
+      termName: json['termName']?.toString(),
     );
   }
 
@@ -149,6 +161,8 @@ class ScheduleConfig {
     'breakDuration': breakDuration,
     'autoSyncTime': autoSyncTime,
     'timeSlots': timeSlots.map((e) => e.toJson()).toList(),
+    if (academicYearCode != null) 'academicYearCode': academicYearCode,
+    if (termName != null) 'termName': termName,
   };
 
   /// 四川大学江安校区时间表预设（4-5-3）
@@ -487,6 +501,8 @@ class ScheduleConfig {
     int? breakDuration,
     bool? autoSyncTime,
     List<TimeSlot>? timeSlots,
+    String? academicYearCode,
+    String? termName,
   }) {
     return ScheduleConfig(
       id: id ?? this.id,
@@ -500,6 +516,36 @@ class ScheduleConfig {
       breakDuration: breakDuration ?? this.breakDuration,
       autoSyncTime: autoSyncTime ?? this.autoSyncTime,
       timeSlots: timeSlots ?? List.of(this.timeSlots),
+      academicYearCode: academicYearCode ?? this.academicYearCode,
+      termName: termName ?? this.termName,
     );
   }
 }
+
+final academicYearRegExp = RegExp(r'(\d{4}-\d{4})');
+final seasonDigitRegExp = RegExp(r'(?:^|[^\d])([12一二])(?:[^\d]|$)');
+
+/// 从文本中提取学年代码（如 '2024-2025'）。
+String? matchAcademicYear(String? text) =>
+    text != null ? academicYearRegExp.firstMatch(text)?.group(1) : null;
+
+/// 从文本中提取学期季节（'春' 或 '秋'）。
+String? resolveTermSeason(String? text) {
+  if (text == null) return null;
+  if (text.contains('春')) return '春';
+  if (text.contains('秋')) return '秋';
+  final match = seasonDigitRegExp.firstMatch(text);
+  if (match != null) {
+    return (match[1] == '1' || match[1] == '一') ? '秋' : '春';
+  }
+  return null;
+}
+
+/// 从教务处学期标签或 planCode 解析学年代码与学期名。
+({String? academicYearCode, String? termName}) parseSemesterMetadata(
+  String? label, [
+  String? value,
+]) => (
+  academicYearCode: matchAcademicYear(label) ?? matchAcademicYear(value),
+  termName: resolveTermSeason(label) ?? resolveTermSeason(value),
+);
