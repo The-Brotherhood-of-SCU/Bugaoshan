@@ -1,5 +1,6 @@
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/models/date_display_format.dart';
 import 'package:bugaoshan/pages/course/main/course_page_top_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -13,6 +14,7 @@ CoursePageTopBar _buildBar({
   int visibleWeek = 1,
   int totalWeeks = 20,
   int actualWeek = 1,
+  DateDisplayFormat dateFormat = DateDisplayFormat.monthDayYear,
 }) {
   return CoursePageTopBar(
     visibleWeek: visibleWeek,
@@ -29,6 +31,7 @@ CoursePageTopBar _buildBar({
     currentScheduleId: currentScheduleId,
     onSwitchSchedule: onSwitchSchedule,
     onOpenScheduleManagement: onOpenScheduleManagement,
+    dateFormat: dateFormat,
   );
 }
 
@@ -40,13 +43,17 @@ Widget _wrap(Widget child) => MaterialApp(
 );
 
 /// 顶栏左上角日期文本（宽屏 `2026/10/18` / 窄屏 `10/18`）。
+/// 取顶栏里唯一的日期文本（分隔符可能是 `/`、`.` 或 `-`）。
 String _dateText(WidgetTester tester) {
   final matches = find
       .byType(Text)
       .evaluate()
       .map((element) => (element.widget as Text).data)
       .whereType<String>()
-      .where((text) => RegExp(r'^\d{1,4}/\d{1,2}(/\d{1,4})?$').hasMatch(text))
+      .where(
+        (text) =>
+            RegExp(r'^\d{1,4}[/.-]\d{1,2}([/.-]\d{1,4})?$').hasMatch(text),
+      )
       .toList();
   expect(matches, hasLength(1));
   return matches.single;
@@ -252,7 +259,28 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('宽屏日期保留年份，窄屏省掉年份', (tester) async {
+    testWidgets('顶栏始终显示完整日期，与宽度无关', (tester) async {
+      for (final width in <double>[430, 320]) {
+        await _pumpAt(
+          tester,
+          _buildBar(
+            schedules: twoSchedules(),
+            currentScheduleId: 'a',
+            onSwitchSchedule: (_) {},
+            onOpenScheduleManagement: () {},
+          ),
+          width: width,
+        );
+        // 默认格式为「月/日/年」且不补零，窄屏也不再省掉年份。
+        expect(
+          _dateText(tester),
+          matches(RegExp(r'^\d{1,2}/\d{1,2}/\d{4}$')),
+          reason: '宽 $width 下日期应为完整日期',
+        );
+      }
+    });
+
+    testWidgets('顶栏日期顺序跟随全局日期格式设置', (tester) async {
       await _pumpAt(
         tester,
         _buildBar(
@@ -260,22 +288,11 @@ void main() {
           currentScheduleId: 'a',
           onSwitchSchedule: (_) {},
           onOpenScheduleManagement: () {},
+          dateFormat: DateDisplayFormat.dayMonthYear,
         ),
         width: 430,
       );
-      expect(_dateText(tester), matches(RegExp(r'^\d{4}/\d{1,2}/\d{1,2}$')));
-
-      await _pumpAt(
-        tester,
-        _buildBar(
-          schedules: twoSchedules(),
-          currentScheduleId: 'a',
-          onSwitchSchedule: (_) {},
-          onOpenScheduleManagement: () {},
-        ),
-        width: 320,
-      );
-      expect(_dateText(tester), matches(RegExp(r'^\d{1,2}/\d{1,2}$')));
+      expect(_dateText(tester), matches(RegExp(r'^\d{2}/\d{2}/\d{4}$')));
     });
   });
 }

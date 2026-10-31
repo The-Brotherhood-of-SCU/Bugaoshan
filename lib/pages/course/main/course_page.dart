@@ -5,6 +5,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/academic_calendar.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/models/date_display_format.dart';
 import 'course_page_actions.dart';
 import 'course_page_controller.dart';
 import 'course_page_no_schedule_view.dart';
@@ -157,6 +158,7 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
               _controller!,
               courseProvider.allSchedules,
               courseProvider.scheduleConfig,
+              appConfig.dateDisplayFormat,
             ]),
             builder: (context, _) => CoursePageTopBar(
               visibleWeek: _controller!.visibleWeek,
@@ -179,6 +181,10 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
               onSwitchSchedule: (id) => courseProvider.switchSchedule(id),
               onOpenScheduleManagement: () =>
                   _openScheduleManagement(logicRootContext),
+              dateFormat: DateDisplayFormat.resolve(
+                context,
+                appConfig.dateDisplayFormat.value,
+              ),
             ),
           ),
         Expanded(
@@ -404,5 +410,10 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
   }
 
   void _onSpecialDayTap(DateTime date, SpecialDayInfo info) =>
-      CoursePageActions.handleSpecialDayTap(context, date, info);
+      CoursePageActions.handleSpecialDayTap(
+        context,
+        date,
+        info,
+        DateDisplayFormat.resolve(context, appConfig.dateDisplayFormat.value),
+      );
 }

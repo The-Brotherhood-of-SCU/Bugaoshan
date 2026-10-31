@@ -14,6 +14,7 @@ ADR 保存已经影响代码边界、后续开发仍需遵守的设计决策。�
 | [0008](0008-reminder-scheduling-in-dart.md) | 2026-10-07 | 已接受并实施 | 提醒排期在 Dart 预计算，原生只按表投递 |
 | [0009](0009-export-schedule-as-image.md) | 2026-10-09 | 已接受并实施 | 课表导出为图片采用「离屏挂载 + RepaintBoundary 捕获」 |
 | [0010](0010-remove-linux-native-webview.md) | 2026-10-18 | 已接受并实施 | Linux 端不再提供原生 WebView，改用无原生依赖的占位实现 |
+| [0011](0011-course-date-display-format.md) | 2026-10-26 | 已接受并实施 | 课表日期为四种数字格式，默认跟随系统语言 |
 
 ## 状态定义
 

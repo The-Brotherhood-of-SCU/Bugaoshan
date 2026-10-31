@@ -821,32 +821,9 @@
       }
     }
   },
-  "dateMonthDayCompact": "{month}/{day}",
-  "@dateMonthDayCompact": {
-    "description": "紧凑数字月/日：课表表头等窄空间使用，避免「10月19日」在低分辨率屏上挤成一团",
-    "placeholders": {
-      "month": {
-        "type": "int"
-      },
-      "day": {
-        "type": "int"
-      }
-    }
-  },
-  "dateYearMonthDay": "{year}/{month}/{day}",
-  "@dateYearMonthDay": {
-    "description": "带年份的数字日期：宽屏顶栏日期用，窄屏省掉年份只留月/日",
-    "placeholders": {
-      "year": {
-        "type": "int"
-      },
-      "month": {
-        "type": "int"
-      },
-      "day": {
-        "type": "int"
-      }
-    }
+  "dateFormatSetting": "日期格式",
+  "@dateFormatSetting": {
+    "description": "课表日期的分隔符选项"
   },
   "holidayLabel": "假",
   "@holidayLabel": {

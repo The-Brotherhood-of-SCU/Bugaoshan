@@ -4171,17 +4171,11 @@ abstract class AppLocalizations {
   /// **'{month}/{day}'**
   String dateMonthDay(int month, int day);
 
-  /// Compact numeric month/day for narrow spaces such as the course grid header
+  /// Separator choice for course schedule dates
   ///
   /// In en, this message translates to:
-  /// **'{month}/{day}'**
-  String dateMonthDayCompact(int month, int day);
-
-  /// Full numeric date shown in the course page header when there is room for the year
-  ///
-  /// In en, this message translates to:
-  /// **'{month}/{day}/{year}'**
-  String dateYearMonthDay(int year, int month, int day);
+  /// **'Date format'**
+  String get dateFormatSetting;
 
   /// Short label for statutory holiday displayed in course grid date header
   ///

@@ -2,6 +2,7 @@ import 'package:bugaoshan/widgets/navigation/home_dock_insets.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/models/date_display_format.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
 import 'course_grid_body.dart';
@@ -63,6 +64,8 @@ class _CourseGridState extends State<CourseGrid> {
     // build 里读了 backgroundImagePath（hasBackground），必须一并订阅，
     // 否则设置/清除背景图后网格样式不会刷新。
     appConfig.backgroundImagePath,
+    // 日期格式：改设置后表头即刻刷新。
+    appConfig.dateDisplayFormat,
   ]);
 
   @override
@@ -85,6 +88,10 @@ class _CourseGridState extends State<CourseGrid> {
               showWeekend: showWeekend,
               showAllWeeks: widget.showAllWeeks,
               showHeaderDates: widget.showHeaderDates,
+              dateFormat: DateDisplayFormat.resolve(
+                context,
+                appConfig.dateDisplayFormat.value,
+              ),
               onSpecialDayTap: widget.onSpecialDayTap,
             ),
             Expanded(

@@ -855,32 +855,9 @@
       }
     }
   },
-  "dateMonthDayCompact": "{month}/{day}",
-  "@dateMonthDayCompact": {
-    "description": "Compact numeric month/day for narrow spaces such as the course grid header",
-    "placeholders": {
-      "month": {
-        "type": "int"
-      },
-      "day": {
-        "type": "int"
-      }
-    }
-  },
-  "dateYearMonthDay": "{month}/{day}/{year}",
-  "@dateYearMonthDay": {
-    "description": "Full numeric date shown in the course page header when there is room for the year",
-    "placeholders": {
-      "year": {
-        "type": "int"
-      },
-      "month": {
-        "type": "int"
-      },
-      "day": {
-        "type": "int"
-      }
-    }
+  "dateFormatSetting": "Date format",
+  "@dateFormatSetting": {
+    "description": "Separator choice for course schedule dates"
   },
   "holidayLabel": "Hol",
   "@holidayLabel": {
