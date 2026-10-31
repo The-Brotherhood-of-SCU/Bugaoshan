@@ -249,10 +249,11 @@ void main() {
   });
 
   group('ApiSession typed methods', () {
-    test('getHtml returns trimmed body', () async {
+    test('getHtml returns trimmed body and omits the XHR header', () async {
       final client = CookieClient(
         inner: MockClient((req) async {
           expect(req.headers['Accept'], contains('text/html'));
+          expect(req.headers.containsKey('X-Requested-With'), isFalse);
           return http.Response('  <div>Hello</div>  ', 200);
         }),
       );
@@ -306,6 +307,24 @@ void main() {
 
       final json = await session.postJsonForJsonMap('submit', {'score': 99});
       expect(json['code'], 0);
+    });
+
+    test('postJsonForJsonMap sends no body when jsonBody is null', () async {
+      final client = CookieClient(
+        inner: MockClient((req) async {
+          expect(req.body, '');
+          expect(req.headers['Content-Type'], contains('application/json'));
+          return http.Response('{"e": 0, "d": {}}', 200);
+        }),
+      );
+      final session = ApiSession(
+        getClient: () async => client,
+        baseUrl: Uri.parse('https://example.com/api'),
+        logTag: 'Test',
+      );
+
+      final json = await session.postJsonForJsonMap('empty-post', null);
+      expect(json['e'], 0);
     });
 
     test('getJsonList parses json arrays', () async {

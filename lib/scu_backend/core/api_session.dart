@@ -76,6 +76,9 @@ class ApiSession {
   /// 在带有认证重试机制的上下文中执行底层 [CookieClient] 操作。
   ///
   /// 遇到 [UnauthenticatedException] 时会自动调用 `invalidate()` 并重试一次。
+  /// 重试会重新执行 [action]；非幂等请求（如 multipart 上传）必须保证
+  /// 闭包能安全重建请求，且不要依赖 [CookieClient] 对 multipart 的
+  /// `ClientException` 传输层重试（该重试只对普通 `http.Request` 生效）。
   Future<T> run<T>(Future<T> Function(CookieClient client) action) {
     return retryOnUnauthenticated(
       _getClient,
@@ -121,7 +124,13 @@ class ApiSession {
   }
 
   /// 合并默认 Headers 与当前请求特定的 Headers。
-  Map<String, String> _buildHeaders(Map<String, String>? headers) {
+  ///
+  /// [includeXhrHeader] 为 `false` 时不注入 `X-Requested-With`；用于
+  /// HTML 页面 GET，保持与浏览器整页导航一致。
+  Map<String, String> _buildHeaders(
+    Map<String, String>? headers, {
+    bool includeXhrHeader = true,
+  }) {
     final map = <String, String>{
       'User-Agent': kDefaultUserAgent,
       'Accept': 'application/json, text/plain, */*',
@@ -130,6 +139,9 @@ class ApiSession {
     };
     if (headers != null && headers.isNotEmpty) {
       map.addAll(headers);
+    }
+    if (!includeXhrHeader) {
+      map.remove('X-Requested-With');
     }
     return map;
   }
@@ -185,13 +197,17 @@ class ApiSession {
     String path, {
     Map<String, dynamic>? query,
     Map<String, String>? headers,
+    bool includeXhrHeader = true,
     String? apiName,
     required T Function(http.Response resp, String apiName) decode,
   }) {
     final name = apiName ?? path;
     return run((client) async {
       final uri = resolveUri(path, query);
-      final resp = await client.get(uri, headers: _buildHeaders(headers));
+      final resp = await client.get(
+        uri,
+        headers: _buildHeaders(headers, includeXhrHeader: includeXhrHeader),
+      );
       checkResponse(resp, apiName: name);
       return decode(resp, name);
     });
@@ -269,7 +285,8 @@ class ApiSession {
 
   /// 发送 GET 请求并返回经 trim 处理后的 HTML 字符串。
   ///
-  /// 默认发送 HTML 优先的 `Accept`（调用方传入的 `headers` 可覆盖）。
+  /// 默认发送 HTML 优先的 `Accept`（调用方传入的 `headers` 可覆盖），
+  /// 且不注入 `X-Requested-With`——保持与浏览器整页导航一致。
   Future<String> getHtml(
     String path, {
     Map<String, dynamic>? query,
@@ -285,6 +302,7 @@ class ApiSession {
       path,
       query: query,
       headers: mergedHeaders,
+      includeXhrHeader: false,
       apiName: apiName,
       decode: (resp, _) => resp.body.trim(),
     );
@@ -359,16 +377,22 @@ class ApiSession {
   }
 
   /// 发送 POST JSON 请求并解析为 JSON Map。
+  ///
+  /// [jsonBody] 为 `null` 时发送无 body 请求，但仍保留
+  /// `Content-Type: application/json`（用于 `get-index` 这类参数化空 POST）。
   Future<Map<String, dynamic>> postJsonForJsonMap(
     String path,
-    Object jsonBody, {
+    Object? jsonBody, {
     Map<String, dynamic>? query,
     Map<String, String>? headers,
     String? apiName,
   }) {
+    final encoded = jsonBody == null
+        ? null
+        : (jsonBody is String ? jsonBody : jsonEncode(jsonBody));
     return _post(
       path,
-      body: jsonBody is String ? jsonBody : jsonEncode(jsonBody),
+      body: encoded,
       query: query,
       headers: {'Content-Type': _jsonContentType, ...?headers},
       apiName: apiName,
