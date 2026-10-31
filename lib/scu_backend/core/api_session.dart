@@ -3,6 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:bugaoshan/scu_backend/core/api_request.dart';
 import 'package:bugaoshan/scu_backend/core/cookie_client.dart';
+
+export 'package:bugaoshan/scu_backend/core/api_request.dart'
+    show looksLikeLoginPage;
 import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/scu_backend/core/subsystem_auth.dart';
 import 'package:bugaoshan/utils/app_log.dart';
@@ -331,6 +334,34 @@ class ApiSession {
         );
         throw ServiceException('[${apiName ?? path}] 响应解析失败');
       }
+    });
+  }
+
+  /// 发送 POST 表单请求并解析为 JSON 数组。
+  Future<List<dynamic>> postFormForJsonList(
+    String path,
+    Map<String, String> fields, {
+    Map<String, dynamic>? query,
+    Map<String, String>? headers,
+    String? apiName,
+  }) {
+    return run((client) async {
+      final uri = resolveUri(path, query);
+      final mergedHeaders = {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        ...?headers,
+      };
+      final resp = await client.post(
+        uri,
+        headers: _buildHeaders(mergedHeaders),
+        body: fields,
+      );
+      checkResponse(resp, apiName: apiName ?? path);
+      return parseJsonList(
+        resp.body,
+        apiName ?? path,
+        (m) => ServiceException(m),
+      );
     });
   }
 
