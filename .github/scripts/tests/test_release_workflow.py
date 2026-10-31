@@ -17,6 +17,13 @@ class ReleaseWorkflowTest(unittest.TestCase):
         )
         self.assertNotIn("macos_arm64.dmg", release_body)
 
+    def test_release_has_no_macos_job_secrets_or_wait(self):
+        workflow = (REPOSITORY_ROOT / ".github/workflows/release.yml").read_text()
+        for removed in ["build-macos", "MACOS_SIGN", "macos-release", "macos-signing", "*.dmg"]:
+            self.assertNotIn(removed, workflow)
+        body = (REPOSITORY_ROOT / ".github/scripts/release_body.py").read_text()
+        self.assertIn("https://github.com/wjlfish/Bugaoshan-macos/releases", body)
+
     def test_ios_download_points_to_apple_mirror_release(self):
         release_body = (
             REPOSITORY_ROOT / ".github/scripts/release_body.py"
@@ -52,7 +59,7 @@ class ReleaseWorkflowTest(unittest.TestCase):
             workflow,
         )
         self.assertIn(
-            "needs: [resolve-metadata, build-android, build-windows, build-linux, build-macos]",
+            "needs: [resolve-metadata, build-android, build-windows, build-linux]",
             workflow,
         )
         self.assertIn("name: linux-release", workflow)

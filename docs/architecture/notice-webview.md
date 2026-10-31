@@ -185,7 +185,7 @@ WebView 触发 `onDownloadStarting` 时，Flutter 使用 suggested filename、We
 ## 9. 平台边界
 
 - Android、iOS、macOS 和 Windows 使用 `flutter_inappwebview` 对应后端；HarmonyOS 由 fork 的 `flutter_inappwebview_ohos` 后端提供，不走不支持页。
-- Linux 没有可用的原生 WebView 后端（纯 Dart 占位实现），直接显示 `WebViewUnsupportedPage`；判据是 `hasNoWebViewBackend`，详见 [Linux 分发架构](linux-distribution.md)。
+- Linux 没有可用的原生 WebView 后端（纯 Dart 占位实现），`WebViewUnsupportedPage` 会显示浏览器交接页，把通知地址交给系统默认浏览器打开，并提供复制链接兜底；判据是 `hasNoWebViewBackend`，详见 [Linux 分发架构](linux-distribution.md)。
 - WebView 后端行为可能影响下载回调、cookie 和窗口导航，新增平台必须验证完整通知与附件流程。
 
 ## 10. 已知技术债

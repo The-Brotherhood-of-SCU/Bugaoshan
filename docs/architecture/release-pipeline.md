@@ -51,7 +51,7 @@ branch-policy 只做一条硬校验：**`main` 只能接收来自 `preview` 的 
 3. **合并进 `preview`**：push 事件同时触发 pre-flight 重跑与 release.yml preview 通道——
    - 预览 tag 与 pubspec 解耦：脚本取「最新正式 tag」严格递增 Z 位（X、Y 不动），推导 `vX.Y.Z-preview`（首次）或递增序号 `vX.Y.Z-preview.N`（如上一正式版 v2.5.1 → v2.5.2-preview.2）；
    - workflow 自动打 tag（`resolve-metadata` job，需要 `contents: write`，推送失败立即终止本次发布）；
-   - `build-android.yml`（universal + split-per-ABI，混淆，JDK 21）、`build-windows.yml`（zip）、`build-linux.yml`（Linux x64 tar.gz，`debian:13` 容器）与 `build-macos.yml`（未签名 universal 验证包）并行构建；Mac 商店包单独签名上传，验证包不进入 GitHub Release；
+   - `build-android.yml`（universal + split-per-ABI，混淆，JDK 21）、`build-windows.yml`（zip）、`build-linux.yml`（Linux x64 tar.gz，`debian:13` 容器）并行构建；macOS 发布完全在个人 fork 运行，不属于主仓库发布依赖；
    - 发布走 **Draft → 上传产物 → Publish** 顺序，兼容仓库的不可变 Release 策略，标记为 prerelease；
    - 预览版的 release notes 取 `CHANGELOG.md` 第一个章节（约定为 `[Unreleased]`；该取法的已知问题见 §4.8），对比范围为上一个**正式** tag。tag 在构建开始前就已推送，构建/发布失败时 tag 会留存（见 §4.12）。
 4. **周期内迭代**：后续变更继续以 PR 合入 `preview`，预览版序号自动递增（`.2`、`.3`…）。周期内 `pubspec.yaml` 的版本号保持上一正式版不变，预览产物的 versionName 与 tag 不同名是设计使然。
@@ -150,7 +150,7 @@ preview 通道的并发组开启取消（cancel-in-progress）：短时间连续
 setup action 里 `build_runner` 带 `|| true`，生成器配置坏了不会让 setup 显式失败，只能靠漂移检查与测试兜底。
 
 ### 4.19 Apple 平台下载与签名边界
-`release_body.py` 指向 iOS/macOS 共用的 App Store 条目，商店版本与 GitHub tag 独立，Mac 可下载状态以商店为准。启用 `MACOS_SIGNING_ENABLED=true` 后，macOS job 必须从专用签名仓库取得同一 tag / commit 的 Developer ID universal DMG，验证源码、实际包内版本、校验和、签名与 Apple 公证后，才随 Android / Windows 一起上传并发布；失败会阻止发布，未签名验证包始终不进入 Release。变量未启用时保持原有验证流程且不显示 DMG 链接。iOS 旧测试 IPA 外链仍指向 `Visio-Vanitas/Bugaoshan`（#285 的 mirror 决策），不是本流水线上传的产物。配置与凭据见 [macOS 分发](macos-distribution.md)。
+macOS DMG 由个人 fork [wjlfish/Bugaoshan-macos](https://github.com/wjlfish/Bugaoshan-macos/releases) 独立构建、签名、公证和发布。主仓库仅构建并发布 Android / Windows / Linux，不调用、不等待、不导入 macOS 制品；个人仓库失败不影响主仓库发布。PR 的 macOS 无凭据构建验证独立运行。iOS/macOS 共用 App Store 条目，商店状态以商店为准；iOS 测试 IPA 外链保持原有 mirror。
 
 ### 4.20 Python 单测重复发现
 pre-flight 的 `unittest discover -s .github/scripts/` 会把 `tests/` 子目录的用例再发现并执行一遍，用例双跑属无害冗余，分析 CI 时长时勿据此误判。
@@ -172,7 +172,7 @@ pre-flight 的 `unittest discover -s .github/scripts/` 会把 `tests/` 子目录
 | `.github/workflows/build-android.yml` | Android 的 PR 编译验证、手动构建与发布构建复用；PR 触发构建为未签名 release APK，不依赖发布 keystore |
 | `.github/workflows/build-windows.yml` | Windows 的 PR 编译验证、手动构建与发布构建复用 |
 | `.github/workflows/build-linux.yml` | Linux x64 tar.gz 的发布构建复用；在 `debian:13` 容器内构建，无 PR 触发 |
-| `.github/workflows/build-macos.yml` | macOS 未签名 universal 验证构建，支持 PR / 手动触发与发布流程复用 |
+| `.github/workflows/build-macos.yml` | macOS 未签名 universal 验证构建，仅支持 PR / 手动触发，不参与发布流程 |
 | `.github/actions/setup/action.yml` | 公共环境：钉版 Flutter、镜像 pub get、代码生成、git 元数据 |
 | `.github/scripts/resolve_release_version.py` | 通道判定、tag 推导、幂等守卫 |
 | `.github/scripts/release_tags.py` / `release_changelog.py` / `release_body.py` / `release_prepare.py` | 发布说明与产物整理 |

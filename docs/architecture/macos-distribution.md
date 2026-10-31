@@ -2,7 +2,7 @@
 
 macOS 与 iOS 共用 App Store Connect 应用记录 `6813305962`。主应用 Bundle ID 为 `io.github.thebrotherhoodofscu.bugaoshan.ios`，Widget 为该 ID 加 `.CourseWidget`，两者使用 `group.io.github.thebrotherhoodofscu.bugaoshan.ios` 共享课表数据库与显示设置。共用商店条目不代表跨设备同步课表；iPhone 与 Mac 各自保存本地数据。
 
-最低系统为 macOS 13，课表小组件需要 macOS 14。应用、小组件及 Flutter 引擎以 universal binary 支持 Apple Silicon 和 Intel。签名团队与 iOS 一致；私钥和描述文件只存入本机受限目录及主仓库 `macos-signing` Environment 的 GitHub Secrets，不提交 Git。
+最低系统为 macOS 13，课表小组件需要 macOS 14。应用、小组件及 Flutter 引擎以 universal binary 支持 Apple Silicon 和 Intel。签名团队与 iOS 一致；私钥和描述文件只存入本机受限目录及个人仓库 `wjlfish/Bugaoshan-macos` 的 GitHub Secrets，不提交 Git。
 
 安装后的主应用为 `不高山上.app`，`CFBundleName` 与 `CFBundleDisplayName` 均为「不高山上」，供 Finder、Dock、菜单栏、窗口标题和系统授权页面使用。内部可执行文件仍为 `Bugaoshan`；Bundle ID、签名身份和数据容器保持连续。商店导出包为 `不高山上.pkg`，CI 的 unsigned ZIP 与公开 DMG 文件名保留既有 ASCII 命名规则。
 
@@ -28,7 +28,8 @@ Flutter 维护选中入口与开关值，原生层仅回传稳定入口 ID、开
 
 ```bash
 export PUB_HOSTED_URL=https://pub.flutter-io.cn
-# 先更新 .github/macos-signing.json 中 Mac 专用的 version / build。
+# 以下归档脚本在个人 fork 的 macos-signing 分支执行。
+# 先更新个人 fork 的 .github/macos-signing.json 中 Mac 专用的 version / build。
 # build 必须是 App Store Connect 中未使用的递增构建号。
 bash tool/macos_distribution.sh archive
 bash tool/macos_distribution.sh export
@@ -42,19 +43,13 @@ bash tool/macos_distribution.sh export
 
 ## CI 与既有安装
 
-PR 与 build-only 调用 `build-macos.yml` 的无证书 universal 构建，验证制品保留 7 天。商店归档、安装器签名和上传通过上述本机流程处理。
+主仓库保留独立的 `build-macos.yml` PR / 手动无证书 universal 构建验证，制品保留 7 天。该工作流不参与 Release Pipeline，也不持有发布凭据。macOS 应用和 Widget 源码正常留在主仓库。
 
-站外安装使用独立的 Developer ID Application 证书（团队 `2MDTD66RDG`），并为主应用和 Widget 分别嵌入 Developer ID 描述文件。App Store 签名不能直接用于 GitHub DMG。GitHub Release 在主仓库工作流内直接编译、签名和公证，不等待外部签名仓库。
+所有 macOS 发布编排、Developer ID 签名、公证、DMG 工具及 Mac version/build 配置均迁至个人 fork [wjlfish/Bugaoshan-macos](https://github.com/wjlfish/Bugaoshan-macos)，由 `macos-signing` 分支维护；商店归档脚本也在该分支。其定时任务每 30 分钟检查上游最新 tag，也支持手动指定 tag。源码固定到已合入上游 main/preview 的 commit，编译 job 不接触凭据，签名代码与 entitlements 来自个人签名分支。
 
-Mac 商店归档与 DMG 共用 `.github/macos-signing.json` 的 `version` / `build`，与 Android 的预览版版本号规则独立。每次 Mac 商店更新前递增该文件；DMG tag / 源码仍与上游 Release 严格匹配，包内 Mac 版本以 manifest 为准。`MACOS_BUILD_NAME` / `MACOS_BUILD_NUMBER` 仅用于本地诊断覆盖，实际商店发布使用该文件的值。
+DMG 及校验 manifest 仅发布到[个人仓库 Releases](https://github.com/wjlfish/Bugaoshan-macos/releases)，版本名为 `macos-<上游 tag>`。上游不触发、不等待、不下载这些产物；个人发布失败可独立重跑，绝不影响 Android / Windows / Linux 发布。`stapler staple` 与 `validate` 均重试最多三次（间隔 10 / 20 秒），验证失败不发布未签名替代包。
 
-`build-macos.yml` 将无凭据编译与签名分为两个 job；两个 job 均声明 `environment: macos-signing`，仅签名 job 引用其中的 Secrets。临时钥匙串导入证书，逐层签名 Mach-O、Framework、Widget 和主应用，启用 Hardened Runtime 与安全时间戳。分别公证并装订 app / DMG，执行签名、Gatekeeper 和 manifest 校验后，直接上传 `macos-release` 制品。主仓库已删除旧的 `signed-macos-release.yml`；旧签名仓库的编排工作流保持禁用，文件本身也删除 cron，避免重新启用后重复构建。`stapler staple` 对 app / DMG 均最多尝试三次，间隔 10 / 20 秒；仍失败时停止发布。
-
-所需 Secrets：`MACOS_CERTIFICATE_P12_BASE64`、`MACOS_CERTIFICATE_PASSWORD`、`MACOS_APP_PROFILE_BASE64`、`MACOS_WIDGET_PROFILE_BASE64`、`NOTARY_KEY_P8`、`NOTARY_KEY_ID`、`NOTARY_ISSUER_ID`。公证使用独立的 App Store Connect **团队 API 密钥**（Developer 角色）；个人 API 密钥不能用于 notarytool。无需把 GitHub 个人 PAT 交给上游或签名仓库。
-
-这 7 项凭据仅存于 `macos-signing` Environment，删除同名 repository secrets；不能在仓库级保留副本，否则任意可写分支的 workflow 仍能访问。Environment 不设置 required reviewer，团队成员可直接使用签名流程，不因人工审批阻塞版本发布；部署分支策略仅允许类型为 branch 的 `main` / `preview`，不允许 feature 分支或 tag。Environment 管理权限仍属于仓库管理员，无法阻止管理员主动改动这些设置；若管理员本身不可信，需恢复独立权限域的签名仓库。
-
-主仓库变量 `MACOS_SIGNING_ENABLED=true` 启用签名发布；两个签名发布 job 的 `if` 同时限制仓库与 `refs/heads/main` / `refs/heads/preview`，`release.yml` 无需透传仓库 Secrets。tag 触发签名发布会在元数据阶段失败并提示从 `main` / `preview` 手动执行，避免后续缺制品才报错。缺凭据、签名或公证失败会直接阻止本次 Release，不再等待外部仓库 90 分钟，也不回退未签名包。PR 和 build-only 只执行无凭据构建验证。
+7 项 Secrets 仅配置在个人 fork：`MACOS_CERTIFICATE_P12_BASE64`、`MACOS_CERTIFICATE_PASSWORD`、`MACOS_APP_PROFILE_BASE64`、`MACOS_WIDGET_PROFILE_BASE64`、`NOTARY_KEY_P8`、`NOTARY_KEY_ID`、`NOTARY_ISSUER_ID`。主仓库无需 macOS Environment、签名 Secrets、启用变量或跨仓库 PAT。公证使用 App Store Connect 团队 API 密钥。
 
 macOS 凭据统一使用 Data Protection Keychain，服务名独立于插件默认值，权限由签名和描述文件中的 access group 决定。旧实现 `usesDataProtectionKeychain: false` 使用登录钥匙串，其 ACL 绑定旧应用签名，更新后会对多个凭据反复弹授权。新版不自动读取、删除或迁移旧钥匙串项目；既有 Mac 用户需重新登录一次，本地课表和设置保留。iOS 的服务名和可访问性设置保持原样。
 
