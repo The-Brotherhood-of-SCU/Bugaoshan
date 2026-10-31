@@ -59,9 +59,6 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 ├── .editorconfig               # LF, UTF-8, 2-space indent
 ├── .flutter-plugins-dependencies
 ├── .gitattributes
-├── _build_generator.bat        # helper wrapper
-├── _build_icon.bat             # helper wrapper
-├── _build_l10n.bat             # helper wrapper
 ├── update_and_push_tag.py      # release tag helper script
 ├── assets/
 │   ├── icon.png                # app icon (referenced by flutter_launcher_icons)
