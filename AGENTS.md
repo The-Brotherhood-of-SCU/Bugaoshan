@@ -185,7 +185,7 @@ Two patterns coexist by design:
 - **多个 ValueNotifier 字段** — providers with many independent config/setting fields where widgets should only rebuild when specific fields change. UI consumes via `ListenableBuilder(listenable: Listenable.merge([field1, field2]))` or `ValueListenableBuilder`. Examples: `AppConfigProvider` (~25 fields: locale, themeColor, themeColorMode, colorOpacity, useGoogleFonts, …), `CourseProvider` (4 fields).
 - **手动 `addListener`** — only for imperative side-effects (animations, SnackBars, triggering data loads), never for pure rebuild triggers.
 
-**Directory convention:** All DI-registered providers live in `lib/providers/`. Page-specific non-DI utility classes may live in page directories (e.g. `lib/services/ccyl/ccyl_service.dart`).
+**Directory convention:** All DI-registered providers live in `lib/providers/`. Page-specific non-DI utility classes may live in page directories (e.g. `lib/scu_backend/ccyl/ccyl_service.dart`).
 
 ### Dependency Injection
 

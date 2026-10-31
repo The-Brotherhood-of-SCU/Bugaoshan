@@ -71,6 +71,6 @@ flutter build ipa --release --export-method app-store \
 应用包含系统 HTTPS / 安全存储以外的加密实现：
 
 - `dart_sm` 的 SM2 C1C2C3 用于 SCU 登录密码加密，见 `lib/utils/sm2_crypto.dart`。
-- `encrypt` 的 AES-128-CBC + PKCS7 用于智慧后勤认证 Token 及业务响应解密，见 `lib/utils/zhhq_crypto.dart`。
+- `encrypt` 的 AES-128-CBC + PKCS7 用于智慧后勤认证 Token 及业务响应解密，见 `lib/scu_backend/zhhq/zhhq_crypto.dart`。
 
 因此不能把问卷回答为仅使用操作系统加密、仅 HTTPS 或全部仅用于身份认证。应按实际算法、用途及分发地区回答，依据 App Store Connect 的结果决定是否需要文档及 `ITSAppUsesNonExemptEncryption` 配置，不预先声明豁免。法国相关问题也按实际分发计划回答；Apple 当前说明中，标准算法对应的法国加密声明取决于是否在法国 App Store 分发。参见 [Apple 加密文档要求](https://developer.apple.com/help/app-store-connect/reference/app-information/export-compliance-documentation-for-encryption)及[问卷流程](https://developer.apple.com/help/app-store-connect/manage-app-information/determine-and-upload-app-encryption-documentation)。
