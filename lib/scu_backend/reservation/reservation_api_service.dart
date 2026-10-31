@@ -70,7 +70,10 @@ class ReservationApiService implements ReservationApi {
                 throw const UnauthenticatedException('预约系统会话未建立或已过期');
               }
             },
-            defaultHeaders: const {'Referer': kReservationSpecialPageUrl},
+            defaultHeaders: const {
+              'Referer': kReservationSpecialPageUrl,
+              'X-Requested-With': 'XMLHttpRequest',
+            },
           );
 
   @override

@@ -39,6 +39,7 @@ class NewServiceApiService {
                'Origin': 'https://service.scu.edu.cn',
                'Referer':
                    'https://service.scu.edu.cn/newservice/fe/site/m_passpoint',
+               'X-Requested-With': 'XMLHttpRequest',
              },
            );
 

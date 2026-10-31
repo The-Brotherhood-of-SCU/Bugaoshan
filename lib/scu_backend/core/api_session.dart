@@ -125,23 +125,16 @@ class ApiSession {
 
   /// 合并默认 Headers 与当前请求特定的 Headers。
   ///
-  /// [includeXhrHeader] 为 `false` 时不注入 `X-Requested-With`；用于
-  /// HTML 页面 GET，保持与浏览器整页导航一致。
-  Map<String, String> _buildHeaders(
-    Map<String, String>? headers, {
-    bool includeXhrHeader = true,
-  }) {
+  /// `X-Requested-With` 不是标准头，默认不注入；需要的调用方自行在
+  /// `headers` 里加。
+  Map<String, String> _buildHeaders(Map<String, String>? headers) {
     final map = <String, String>{
       'User-Agent': kDefaultUserAgent,
       'Accept': 'application/json, text/plain, */*',
-      'X-Requested-With': 'XMLHttpRequest',
       ...defaultHeaders,
     };
     if (headers != null && headers.isNotEmpty) {
       map.addAll(headers);
-    }
-    if (!includeXhrHeader) {
-      map.remove('X-Requested-With');
     }
     return map;
   }
@@ -197,17 +190,13 @@ class ApiSession {
     String path, {
     Map<String, dynamic>? query,
     Map<String, String>? headers,
-    bool includeXhrHeader = true,
     String? apiName,
     required T Function(http.Response resp, String apiName) decode,
   }) {
     final name = apiName ?? path;
     return run((client) async {
       final uri = resolveUri(path, query);
-      final resp = await client.get(
-        uri,
-        headers: _buildHeaders(headers, includeXhrHeader: includeXhrHeader),
-      );
+      final resp = await client.get(uri, headers: _buildHeaders(headers));
       checkResponse(resp, apiName: name);
       return decode(resp, name);
     });
@@ -285,8 +274,8 @@ class ApiSession {
 
   /// 发送 GET 请求并返回经 trim 处理后的 HTML 字符串。
   ///
-  /// 默认发送 HTML 优先的 `Accept`（调用方传入的 `headers` 可覆盖），
-  /// 且不注入 `X-Requested-With`——保持与浏览器整页导航一致。
+  /// 默认发送 HTML 优先的 `Accept`；`X-Requested-With` 等非标准头默认不注入，
+  /// 需要时由调用方通过 `headers` 自行添加。
   Future<String> getHtml(
     String path, {
     Map<String, dynamic>? query,
@@ -302,7 +291,6 @@ class ApiSession {
       path,
       query: query,
       headers: mergedHeaders,
-      includeXhrHeader: false,
       apiName: apiName,
       decode: (resp, _) => resp.body.trim(),
     );

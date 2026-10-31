@@ -122,6 +122,7 @@ class ZhjwApiService {
       headers: {
         'Referer':
             '$kZhjwBase/student/courseSelect/calendarSemesterCurriculum/index',
+        'X-Requested-With': 'XMLHttpRequest',
       },
       apiName: 'jwxt/schedule',
     );
@@ -263,6 +264,7 @@ class ZhjwApiService {
       headers: {
         'Referer':
             '$kZhjwBase/student/teachingResources/classroomUseStatus/index',
+        'X-Requested-With': 'XMLHttpRequest',
       },
       apiName: 'classroomUseStatus/jasInfo',
     );

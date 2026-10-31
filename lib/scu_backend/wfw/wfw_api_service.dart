@@ -30,6 +30,7 @@ class WfwApiService {
   Future<List<Map<String, dynamic>>> fetchProfileLabels() async {
     final json = await _session.getJsonMap(
       '/mashupapp/wap/real/user',
+      headers: {'X-Requested-With': 'XMLHttpRequest'},
       apiName: 'fetchProfileLabels',
     );
     final data = ApiEnvelope.unwrapWfw(json, fallbackError: '获取用户标签失败');
@@ -64,6 +65,7 @@ class WfwApiService {
     final json = await _session.postJsonForJsonMap(
       '/netclient/wap/default/get-index',
       null,
+      headers: {'X-Requested-With': 'XMLHttpRequest'},
       apiName: 'fetchNetworkDevices',
     );
     final data = ApiEnvelope.unwrapWfw(json, fallbackError: '获取设备信息失败');
@@ -85,6 +87,7 @@ class WfwApiService {
     final json = await _session.postFormForJsonMap(
       '/netclient/wap/default/offline',
       {'device_id': deviceId, 'ip': ip},
+      headers: {'X-Requested-With': 'XMLHttpRequest'},
       apiName: 'forceNetworkDeviceOffline',
     );
     ApiEnvelope.unwrapWfw(json, fallbackError: '设备下线失败');

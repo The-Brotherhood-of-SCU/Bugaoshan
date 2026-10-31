@@ -35,12 +35,14 @@ class GsApiService {
   static const Map<String, String> _postHeaders = {
     'Accept': 'application/json, text/javascript, */*; q=0.01',
     'Referer': kGsSchedulePageUrl,
+    'X-Requested-With': 'XMLHttpRequest',
   };
 
   /// 培养进度 GET 的站点特定 Header。
   static const Map<String, String> _zeroHeaders = {
     'Accept': 'application/json, text/javascript, */*; q=0.01',
     'Referer': kGsTrainPlanAppIndexUrl,
+    'X-Requested-With': 'XMLHttpRequest',
   };
 
   final ApiSession _session;

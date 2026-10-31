@@ -40,6 +40,7 @@ class FitnessApiService implements FitnessTestApi {
               'Origin': 'https://pead.scu.edu.cn',
               'Referer':
                   'https://pead.scu.edu.cn/bdlp_h5_fitness_test/public/index.php/index/index',
+              'X-Requested-With': 'XMLHttpRequest',
             },
           );
 
