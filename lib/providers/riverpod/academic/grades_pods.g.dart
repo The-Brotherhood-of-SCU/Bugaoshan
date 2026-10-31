@@ -41,7 +41,7 @@ final class GradesNotifierProvider
   }
 }
 
-String _$gradesNotifierHash() => r'33e38443879fdf7933e4005f3cb88c0ddf1c3d8d';
+String _$gradesNotifierHash() => r'267f54c660a07fc9445fbb054124b3eca64e67b2';
 
 abstract class _$GradesNotifier extends $Notifier<GradesProvider> {
   GradesProvider build();
@@ -94,7 +94,7 @@ final class GraduateGradesNotifierProvider
 }
 
 String _$graduateGradesNotifierHash() =>
-    r'bd288be4c5883f9bce86627e5311f7b48f43f2f3';
+    r'a89ce90113c7985ca757925250ab9fdb712be02d';
 
 abstract class _$GraduateGradesNotifier
     extends $Notifier<GraduateGradesProvider> {

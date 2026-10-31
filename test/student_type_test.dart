@@ -1,43 +1,53 @@
 import 'package:bugaoshan/models/campus_item_config.dart';
 import 'package:bugaoshan/models/student_type.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/utils/constants.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  group('AppConfigProvider.studentType 持久化', () {
+  group('studentType 持久化', () {
     test('默认为本科生', () async {
       SharedPreferences.setMockInitialValues({});
       final preferences = await SharedPreferences.getInstance();
-      final provider = AppConfigProvider(preferences);
-      await provider.init();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesBridge.overrideWithValue(preferences)],
+      );
+      addTearDown(container.dispose);
 
-      expect(provider.studentType.value, StudentType.undergraduate);
+      expect(container.read(studentTypeSettingProvider), StudentType.undergraduate);
     });
 
     test('切换研究生后持久化，重启恢复', () async {
       SharedPreferences.setMockInitialValues({});
       final preferences = await SharedPreferences.getInstance();
-      final provider = AppConfigProvider(preferences);
-      await provider.init();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesBridge.overrideWithValue(preferences)],
+      );
+      addTearDown(container.dispose);
 
-      provider.studentType.value = StudentType.graduate;
+      container.read(studentTypeSettingProvider.notifier).update(StudentType.graduate);
       expect(preferences.getInt('studentType'), StudentType.graduate.index);
 
-      // 模拟重启：同一份持久化数据加载新实例。
-      final restored = AppConfigProvider(preferences);
-      await restored.init();
-      expect(restored.studentType.value, StudentType.graduate);
+      // 模拟重启：同一份持久化数据加载新 container。
+      final restored = ProviderContainer(
+        overrides: [sharedPreferencesBridge.overrideWithValue(preferences)],
+      );
+      addTearDown(restored.dispose);
+      expect(restored.read(studentTypeSettingProvider), StudentType.graduate);
     });
 
     test('越界索引回退为本科生', () async {
       SharedPreferences.setMockInitialValues({'studentType': 99});
       final preferences = await SharedPreferences.getInstance();
-      final provider = AppConfigProvider(preferences);
-      await provider.init();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesBridge.overrideWithValue(preferences)],
+      );
+      addTearDown(container.dispose);
 
-      expect(provider.studentType.value, StudentType.undergraduate);
+      expect(container.read(studentTypeSettingProvider), StudentType.undergraduate);
     });
   });
 

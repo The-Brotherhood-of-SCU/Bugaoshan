@@ -42,7 +42,7 @@ final class ReservationNotifierProvider
 }
 
 String _$reservationNotifierHash() =>
-    r'ccefa40f342a6a67dbe1c8b63bed101565d1fde2';
+    r'485d271dc9a21d182ad2297f8e2f9a6e14d3a9c2';
 
 abstract class _$ReservationNotifier extends $Notifier<ReservationProvider> {
   ReservationProvider build();

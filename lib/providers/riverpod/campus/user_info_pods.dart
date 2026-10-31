@@ -50,7 +50,7 @@ class UserInfoNotifier extends _$UserInfoNotifier {
     final number = role is Map ? role['number']?.toString() : null;
 
     if (getIt.isRegistered<ScuAuthProvider>()) {
-      getIt<ScuAuthProvider>().setUserInfo(realname, number);
+      ref.read(scuAuthProviderBridge).setUserInfo(realname, number);
     }
     await _persistUserInfo(realname, number);
 

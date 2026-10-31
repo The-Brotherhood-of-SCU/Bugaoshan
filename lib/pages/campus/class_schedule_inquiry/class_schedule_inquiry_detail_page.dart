@@ -6,8 +6,8 @@ import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart'
 import 'package:bugaoshan/pages/course/main/course_page_swipe_page_view.dart';
 import 'package:bugaoshan/pages/course/widgets/course_detail_sheet.dart';
 import 'package:bugaoshan/pages/course/widgets/course_grid.dart';
-import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/riverpod/campus/class_schedule_inquiry_pods.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
@@ -33,7 +33,7 @@ class _ClassScheduleInquiryDetailPageState
   static const int _totalWeeks = kDefaultTotalWeeks;
 
   Duration get _pageTransitionDuration =>
-      ref.watch(appConfigProviderBridge).cardSizeAnimationDuration.value;
+      ref.watch(cardSizeAnimationDurationSettingProvider);
 
   late final PageController _pageController;
   int _displayWeek = 1;
@@ -130,7 +130,7 @@ class _ClassScheduleInquiryDetailPageState
 
         final hasWeekend = courses.any((c) => c.dayOfWeek > 5);
         final rowHeight =
-            ref.watch(appConfigProviderBridge).courseRowHeight.value;
+            ref.watch(courseRowHeightSettingProvider);
         const headerHeight = 40.0;
         const int totalPeriods = 12;
         final gridHeight = headerHeight + totalPeriods * rowHeight;

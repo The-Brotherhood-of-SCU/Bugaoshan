@@ -6,17 +6,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/dev/logs/log_persistence_tile.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 
 void main() {
   testWidgets('落盘故障和丢弃计数实时显示并使用英文翻译', (tester) async {
     SharedPreferences.setMockInitialValues({});
     await getIt.reset();
-    final config = AppConfigProvider(await SharedPreferences.getInstance());
-    await config.init();
+    final prefs = await SharedPreferences.getInstance();
     final logger = _DiagnosticLogger();
-    getIt.registerSingleton<AppConfigProvider>(config);
+    getIt.registerSingleton<SharedPreferences>(prefs);
     getIt.registerSingleton<AppLogger>(logger);
     addTearDown(() async {
       await getIt.reset();

@@ -1,4 +1,3 @@
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/scu_backend/calendar/academic_calendar_service.dart';
 import 'package:bugaoshan/services/github_resource_service.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -25,10 +24,10 @@ class _TrackingClient extends http.BaseClient {
   }
 }
 
-/// 构造带注入 client 的 GithubResourceService（AppConfigProvider 不 init，
-/// useGithubProxy 保持字段默认值 true，镜像优先行为与旧实现一致）。
+/// 构造带注入 client 的 GithubResourceService（useProxy 为 true，
+/// 镜像优先行为与旧实现一致）。
 GithubResourceService _resource(http.Client client, SharedPreferences prefs) =>
-    GithubResourceService(AppConfigProvider(prefs), client: client);
+    GithubResourceService(useProxy: () => true, client: client);
 
 void main() {
   const cacheKey = 'cached_academic_calendar_json';
@@ -119,7 +118,7 @@ void main() {
     final tracking = _TrackingClient(inner);
     final service = AcademicCalendarService(
       prefs,
-      GithubResourceService(AppConfigProvider(prefs), client: tracking),
+      GithubResourceService(useProxy: () => true, client: tracking),
     );
 
     final calendar = await service.refreshCalendarData();

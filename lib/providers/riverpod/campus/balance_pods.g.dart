@@ -42,7 +42,7 @@ final class BalanceQueryNotifierProvider
 }
 
 String _$balanceQueryNotifierHash() =>
-    r'ed0071b86b37147b074994a81a96de980a7489ff';
+    r'64abc4e226df3312f122b0823c89ae8848080278';
 
 abstract class _$BalanceQueryNotifier extends $Notifier<BalanceQueryProvider> {
   BalanceQueryProvider build();

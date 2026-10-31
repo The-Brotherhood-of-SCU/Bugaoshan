@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:bugaoshan/models/reminder_plan.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/services/reminder/reminder_plan_builder.dart';
 import 'package:bugaoshan/services/reminder/reminder_transport.dart';
@@ -23,18 +22,21 @@ import 'package:flutter/foundation.dart';
 class ReminderService {
   ReminderService({
     required CourseProvider courseProvider,
-    required AppConfigProvider appConfig,
+    required ReminderSettings Function() getSettings,
     required ReminderTransport transport,
+    Listenable? settingsChangeListenable,
     Duration? debounceDuration,
   }) : _courseProvider = courseProvider,
-       _appConfig = appConfig,
+       _getSettings = getSettings,
        _transport = transport,
+       _settingsChangeListenable = settingsChangeListenable,
        _debounceDuration =
            debounceDuration ?? const Duration(milliseconds: 800);
 
   final CourseProvider _courseProvider;
-  final AppConfigProvider _appConfig;
+  final ReminderSettings Function() _getSettings;
   final ReminderTransport _transport;
+  final Listenable? _settingsChangeListenable;
   final Duration _debounceDuration;
 
   /// 最近一次成功同步的计划哈希标识，用于短路重复下发。
@@ -67,14 +69,7 @@ class ReminderService {
     if (_disposed) return;
     _courseProvider.courses.addListener(_onSourceChanged);
     _courseProvider.scheduleConfig.addListener(_onSourceChanged);
-    _appConfig.reminderEnabled.addListener(_onSourceChanged);
-    _appConfig.reminderLeadMinutes.addListener(_onSourceChanged);
-    _appConfig.reminderQuietStart.addListener(_onSourceChanged);
-    _appConfig.reminderQuietEnd.addListener(_onSourceChanged);
-    _appConfig.reminderWindowDays.addListener(_onSourceChanged);
-    // 隐私配置变更会影响通知文本的脱敏展示，需要重新构建排期计划。
-    _appConfig.showLocation.addListener(_onSourceChanged);
-    _appConfig.showTeacherName.addListener(_onSourceChanged);
+    _settingsChangeListenable?.addListener(_onSourceChanged);
     await reschedule(force: true);
   }
 
@@ -86,13 +81,7 @@ class ReminderService {
     _debounceTimer = null;
     _courseProvider.courses.removeListener(_onSourceChanged);
     _courseProvider.scheduleConfig.removeListener(_onSourceChanged);
-    _appConfig.reminderEnabled.removeListener(_onSourceChanged);
-    _appConfig.reminderLeadMinutes.removeListener(_onSourceChanged);
-    _appConfig.reminderQuietStart.removeListener(_onSourceChanged);
-    _appConfig.reminderQuietEnd.removeListener(_onSourceChanged);
-    _appConfig.reminderWindowDays.removeListener(_onSourceChanged);
-    _appConfig.showLocation.removeListener(_onSourceChanged);
-    _appConfig.showTeacherName.removeListener(_onSourceChanged);
+    _settingsChangeListenable?.removeListener(_onSourceChanged);
     lastPlan.dispose();
     lastError.dispose();
     needsPermission.dispose();
@@ -140,10 +129,11 @@ class ReminderService {
   bool get _canWrite => !_disposed;
 
   Future<void> _pushOnce() async {
+    final settings = _getSettings();
     final plan = buildPlan(now: DateTime.now());
 
     // 提醒开关关闭时撤销全部待投递通知，防止残留通知继续触发。
-    if (!_appConfig.reminderEnabled.value) {
+    if (!settings.courseReminderEnabled) {
       try {
         await _transport.cancelAll();
         if (!_canWrite) return;
@@ -210,7 +200,7 @@ class ReminderService {
   ReminderPlan buildPlan({required DateTime now}) => ReminderPlanBuilder.build(
     courses: _courseProvider.courses.value,
     config: _courseProvider.scheduleConfig.value,
-    settings: _appConfig.reminderSettings,
+    settings: _getSettings(),
     now: now,
     // 在计划构建阶段应用系统容量截断，避免由系统按未定义顺序丢弃通知，
     // 同时保证 droppedCount 精确反映截断数量。

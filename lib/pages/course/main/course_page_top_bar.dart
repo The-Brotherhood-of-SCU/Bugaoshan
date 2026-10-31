@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/theme_shape.dart';
 
 /// 切换课表菜单里「管理课表」项的哨兵值，不会与课表 id 冲突。

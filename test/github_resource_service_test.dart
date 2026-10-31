@@ -1,9 +1,7 @@
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/github_resource_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 const String _directUrl =
     'https://raw.githubusercontent.com/The-Brotherhood-of-SCU/Bugaoshan/main/assets/academic_calendar.json';
@@ -31,8 +29,7 @@ class _TrackingClient extends http.BaseClient {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late SharedPreferences prefs;
-  late AppConfigProvider appConfig;
+  late bool useGithubProxy;
 
   /// 构造 service + 请求 URL 记录列表。[respond] 按请求 URL 决定响应；
   /// 返回 null 表示模拟网络异常。
@@ -46,14 +43,14 @@ void main() {
       if (response == null) throw Exception('network down');
       return response;
     });
-    return (GithubResourceService(appConfig, client: client), requestedUrls);
+    return (
+      GithubResourceService(useProxy: () => useGithubProxy, client: client),
+      requestedUrls,
+    );
   }
 
-  setUp(() async {
-    SharedPreferences.setMockInitialValues({});
-    prefs = await SharedPreferences.getInstance();
-    // 不调用 init()：useGithubProxy 保持字段默认值 true（镜像优先）。
-    appConfig = AppConfigProvider(prefs);
+  setUp(() {
+    useGithubProxy = true;
   });
 
   group('get · 开启 GitHub 加速', () {
@@ -116,7 +113,10 @@ void main() {
         }
         return http.Response(_okBody, 200);
       });
-      final service = GithubResourceService(appConfig, client: client);
+      final service = GithubResourceService(
+        useProxy: () => useGithubProxy,
+        client: client,
+      );
 
       final response = await service.get(
         _directUrl,
@@ -130,7 +130,7 @@ void main() {
 
   group('get · 关闭 GitHub 加速', () {
     test('只请求直连，零镜像请求', () async {
-      appConfig.useGithubProxy.value = false;
+      useGithubProxy = false;
       final (service, urls) = buildService((_) => http.Response(_okBody, 200));
 
       final response = await service.get(_directUrl);
@@ -140,7 +140,7 @@ void main() {
     });
 
     test('直连失败直接抛异常，不回退镜像', () async {
-      appConfig.useGithubProxy.value = false;
+      useGithubProxy = false;
       final (service, urls) = buildService(
         (_) => http.Response('direct error', 500),
       );
@@ -168,7 +168,7 @@ void main() {
     });
 
     test('关闭：只请求直连', () async {
-      appConfig.useGithubProxy.value = false;
+      useGithubProxy = false;
       final (service, urls) = buildService((_) => http.Response(_okBody, 200));
 
       final response = await service.getStreamed(_directUrl);
@@ -181,7 +181,10 @@ void main() {
   test('注入的 client 不会被 service 关闭', () async {
     final inner = MockClient((_) async => http.Response(_okBody, 200));
     final tracking = _TrackingClient(inner);
-    final service = GithubResourceService(appConfig, client: tracking);
+    final service = GithubResourceService(
+      useProxy: () => useGithubProxy,
+      client: tracking,
+    );
 
     await service.get(_directUrl);
 

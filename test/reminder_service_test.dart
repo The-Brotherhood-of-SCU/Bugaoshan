@@ -1,6 +1,5 @@
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/models/reminder_plan.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/services/database_service.dart';
 import 'package:bugaoshan/services/reminder/reminder_plan_builder.dart';
@@ -8,7 +7,22 @@ import 'package:bugaoshan/services/reminder/reminder_service.dart';
 import 'package:bugaoshan/services/reminder/reminder_transport.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+class _TestReminderConfig with ChangeNotifier {
+  bool courseReminderEnabled = true;
+  List<int> leadMinutes = const [20];
+  bool includeTeacher = true;
+  bool includeLocation = true;
+
+  ReminderSettings get settings => ReminderSettings(
+        courseReminderEnabled: courseReminderEnabled,
+        leadMinutes: leadMinutes,
+        includeTeacher: includeTeacher,
+        includeLocation: includeLocation,
+      );
+
+  void notify() => notifyListeners();
+}
 
 /// [ReminderService] 排期生命周期与协调逻辑单元测试。
 ///
@@ -112,7 +126,7 @@ void main() {
 
   late _FakeDatabase db;
   late CourseProvider courseProvider;
-  late AppConfigProvider appConfig;
+  late _TestReminderConfig testConfig;
   late RecordingTransport transport;
   late ReminderService service;
 
@@ -171,11 +185,7 @@ void main() {
 
   /// 初始化测试环境：配置基准课表（周二单课程）与提醒测试服务。
   Future<void> setUpService({bool enabled = true}) async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    appConfig = AppConfigProvider(prefs);
-    await appConfig.init();
-    appConfig.reminderEnabled.value = enabled;
+    testConfig = _TestReminderConfig()..courseReminderEnabled = enabled;
 
     db = _FakeDatabase(config: schedule());
     courseProvider = CourseProvider(db);
@@ -184,7 +194,8 @@ void main() {
     transport = RecordingTransport();
     service = ReminderService(
       courseProvider: courseProvider,
-      appConfig: appConfig,
+      getSettings: () => testConfig.settings,
+      settingsChangeListenable: testConfig,
       transport: transport,
       // 测试环境将防抖延迟设为 0，避免引入真实时钟等待。
       debounceDuration: Duration.zero,
@@ -290,7 +301,8 @@ void main() {
       await service.reschedule(force: true);
       expect(transport.synced.last.reminders.first.body, contains('张老师'));
 
-      appConfig.showTeacherName.value = false;
+      testConfig.includeTeacher = false;
+      testConfig.notify();
       await service.reschedule(force: true);
 
       expect(
@@ -305,7 +317,8 @@ void main() {
       await service.reschedule(force: true);
       expect(transport.synced, isNotEmpty);
 
-      appConfig.reminderEnabled.value = false;
+      testConfig.courseReminderEnabled = false;
+      testConfig.notify();
       await service.reschedule(force: true);
 
       expect(transport.cancelAllCount, 1);
@@ -461,7 +474,8 @@ void main() {
   group('构建计划', () {
     test('buildPlan 使用注入的 now，且反映当前设置', () async {
       await setUpService();
-      appConfig.reminderLeadMinutes.value = const [30];
+      testConfig.leadMinutes = const [30];
+      testConfig.notify();
 
       // 注入今天零点：基准课程排在明天，触发时刻为明天 09:00 提前 30 分钟，
       // 既晚于注入时刻又落在 7 天窗口内，断言与运行日期无关。

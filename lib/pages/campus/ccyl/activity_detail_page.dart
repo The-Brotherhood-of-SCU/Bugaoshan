@@ -2,9 +2,7 @@ import 'package:bugaoshan/utils/system_insets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/theme_shape.dart';
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/scu_backend/ccyl/ccyl_api_service.dart';
@@ -27,12 +25,7 @@ class ActivityDetailPage extends ConsumerStatefulWidget {
 class _ActivityDetailPageState extends ConsumerState<ActivityDetailPage> {
   static const String _tag = 'ActivityDetailPageState';
 
-  CcylApiService get _apiService {
-    if (getIt.isRegistered<CcylApiService>()) {
-      return ref.read(ccylApiServiceBridge);
-    }
-    return getIt<CcylProvider>().service;
-  }
+  CcylApiService get _apiService => ref.read(ccylApiServiceProvider);
 
   bool _loading = true;
   LoadErrorType? _error;

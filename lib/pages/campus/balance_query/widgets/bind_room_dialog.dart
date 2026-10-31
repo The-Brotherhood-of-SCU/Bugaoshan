@@ -5,7 +5,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/scu_backend/payapp/balance_query_service.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 

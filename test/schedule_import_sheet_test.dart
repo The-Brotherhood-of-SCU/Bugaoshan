@@ -3,7 +3,6 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/pages/course/import/import_source_sheet.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/services/database_service.dart';
 import 'package:flutter/material.dart';
@@ -28,19 +27,20 @@ class _FakeDatabaseService implements DatabaseService {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late AppConfigProvider appConfig;
-
   setUp(() async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    appConfig = AppConfigProvider(prefs);
-    await appConfig.init();
     await getIt.reset();
-    getIt.registerSingleton<AppConfigProvider>(appConfig);
   });
 
   /// 打开共用导入弹窗并返回 l10n（用于取文案）。
-  Future<AppLocalizations> openSheet(WidgetTester tester) async {
+  Future<AppLocalizations> openSheet(
+    WidgetTester tester, {
+    StudentType studentType = StudentType.undergraduate,
+  }) async {
+    SharedPreferences.setMockInitialValues({'studentType': studentType.index});
+    final prefs = await SharedPreferences.getInstance();
+    await getIt.reset();
+    getIt.registerSingleton<SharedPreferences>(prefs);
+
     final provider = CourseProvider(_FakeDatabaseService());
     late AppLocalizations l10n;
     await tester.pumpWidget(
@@ -74,9 +74,8 @@ void main() {
   }
 
   testWidgets('本科生模式：分享 + 教务处两入口，无研究生入口', (tester) async {
-    final l10n = await openSheet(tester);
+    final l10n = await openSheet(tester, studentType: StudentType.undergraduate);
 
-    expect(appConfig.studentType.value, StudentType.undergraduate);
     expect(find.byType(ListTile), findsNWidgets(3));
     for (final label in [
       l10n.importFromShare,
@@ -89,8 +88,7 @@ void main() {
   });
 
   testWidgets('研究生模式：分享 + 研究生入口，无教务处入口', (tester) async {
-    appConfig.studentType.value = StudentType.graduate;
-    final l10n = await openSheet(tester);
+    final l10n = await openSheet(tester, studentType: StudentType.graduate);
 
     expect(find.byType(ListTile), findsNWidgets(2));
     for (final label in [l10n.importFromShare, l10n.importFromGraduate]) {

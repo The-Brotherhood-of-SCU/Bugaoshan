@@ -1,58 +1,34 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' show TimeOfDay;
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:bugaoshan/providers/plan_completion_provider.dart';
-import 'package:bugaoshan/providers/train_program_provider.dart';
+import 'package:bugaoshan/models/reminder_plan.dart';
+import 'package:bugaoshan/models/widget_appearance.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/providers/balance_query_provider.dart';
-import 'package:bugaoshan/providers/ccyl_provider.dart';
-import 'package:bugaoshan/providers/class_schedule_inquiry_provider.dart';
-import 'package:bugaoshan/providers/course_curriculum_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
-import 'package:bugaoshan/providers/exam_plan_provider.dart';
-import 'package:bugaoshan/providers/grades_provider.dart';
-import 'package:bugaoshan/providers/graduate_grades_provider.dart';
-import 'package:bugaoshan/providers/graduate_train_plan_provider.dart';
-import 'package:bugaoshan/providers/cloud_print_provider.dart';
-import 'package:bugaoshan/scu_backend/cloud_print/cloud_print_api_service.dart';
-import 'package:bugaoshan/scu_backend/cloud_print/cloud_print_auth.dart';
-import 'package:bugaoshan/providers/reservation_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/providers/service_applications_provider.dart';
 import 'package:bugaoshan/providers/update_provider.dart';
-import 'package:bugaoshan/providers/zhhq_repair_provider.dart';
-import 'package:bugaoshan/scu_backend/ccyl/ccyl_api_service.dart';
-import 'package:bugaoshan/scu_backend/fitness/fitness_api_service.dart';
-import 'package:bugaoshan/scu_backend/forgot_password/forgot_password_service.dart';
-import 'package:bugaoshan/scu_backend/gs/gs_api_service.dart';
-import 'package:bugaoshan/scu_backend/passpoint/new_service_api_service.dart';
-import 'package:bugaoshan/scu_backend/payapp/payapp_api_service.dart';
-import 'package:bugaoshan/scu_backend/reservation/reservation_api_service.dart';
-import 'package:bugaoshan/scu_backend/service_hall/service_api_service.dart';
-import 'package:bugaoshan/scu_backend/wfw/wfw_api_service.dart';
-import 'package:bugaoshan/scu_backend/zhhq/zhhq_api_service.dart';
-import 'package:bugaoshan/scu_backend/zhjw/zhjw_api_service.dart';
 import 'package:bugaoshan/scu_backend/core/auth_coordinator.dart';
 import 'package:bugaoshan/scu_backend/core/auth_state.dart';
+import 'package:bugaoshan/scu_backend/core/scu_auth.dart';
 import 'package:bugaoshan/scu_backend/ccyl/ccyl_auth.dart';
+import 'package:bugaoshan/scu_backend/cloud_print/cloud_print_auth.dart';
 import 'package:bugaoshan/scu_backend/fitness/fitness_auth.dart';
 import 'package:bugaoshan/scu_backend/gs/gs_auth.dart';
 import 'package:bugaoshan/scu_backend/passpoint/new_service_auth.dart';
 import 'package:bugaoshan/scu_backend/payapp/payapp_auth.dart';
 import 'package:bugaoshan/scu_backend/reservation/reservation_auth.dart';
-import 'package:bugaoshan/scu_backend/core/scu_auth.dart';
 import 'package:bugaoshan/scu_backend/service_hall/service_auth.dart';
 import 'package:bugaoshan/scu_backend/wfw/wfw_auth.dart';
 import 'package:bugaoshan/scu_backend/zhhq/zhhq_auth.dart';
-import 'package:bugaoshan/services/download_notification_service.dart';
 import 'package:bugaoshan/scu_backend/zhjw/zhjw_auth.dart';
 import 'package:bugaoshan/services/background_cache_service.dart';
 import 'package:bugaoshan/services/database_service.dart';
 import 'package:bugaoshan/services/download_manager.dart';
+import 'package:bugaoshan/services/download_notification_service.dart';
 import 'package:bugaoshan/services/exit_service.dart';
 import 'package:bugaoshan/services/github_resource_service.dart';
 import 'package:bugaoshan/services/reminder/live_activity_coordinator.dart';
@@ -85,10 +61,6 @@ void configureDependencies() {
   // 观察——而启动失败恰恰是最需要留痕的时刻。
   // 移植自 PR #369（moranfanhua）。
   getIt.registerLazySingleton<AppLogger>(() => AppLog.bootstrapLogger);
-  // 忘记密码流程不依赖登录态，纯 HTTP 工具，同步注册即可
-  getIt.registerLazySingleton<ForgotPasswordService>(
-    () => ForgotPasswordService(),
-  );
   _configureAsyncDependencies();
 }
 
@@ -96,18 +68,14 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<SharedPreferences>(
     () => SharedPreferences.getInstance(),
   );
-  getIt.registerSingletonAsync<AppConfigProvider>(() async {
-    await getIt.isReady<SharedPreferences>();
-    final prefs = getIt<SharedPreferences>();
-    final instance = AppConfigProvider(prefs);
-    await instance.init();
-    return instance;
-  });
 
   // GitHub 资源统一访问入口：镜像/直连选择与回退内聚于 service 内部。
   getIt.registerSingletonAsync<GithubResourceService>(() async {
-    await getIt.isReady<AppConfigProvider>();
-    return GithubResourceService(getIt<AppConfigProvider>());
+    await getIt.isReady<SharedPreferences>();
+    final prefs = getIt<SharedPreferences>();
+    return GithubResourceService(
+      useProxy: () => prefs.getBool('useGithubProxy') ?? true,
+    );
   });
   getIt.registerSingletonAsync<PackageInfo>(() => PackageInfo.fromPlatform());
   getIt.registerSingletonAsync<AppInfoProvider>(() async {
@@ -178,6 +146,19 @@ void _configureAsyncDependencies() {
     await auth.init();
     return auth;
   });
+  getIt.registerSingletonAsync<GsAuth>(() async {
+    await getIt.isReady<ScuAuth>();
+    return GsAuth(getIt<ScuAuth>());
+  });
+  getIt.registerSingletonAsync<CloudPrintAuth>(() async {
+    await getIt.isReady<ScuAuth>();
+    return CloudPrintAuth(getIt<ScuAuth>());
+  }, dispose: (auth) => auth.dispose());
+  getIt.registerSingletonAsync<ReservationAuth>(() async {
+    await getIt.isReady<ScuAuth>();
+    return ReservationAuth(getIt<ScuAuth>());
+  });
+
   getIt.registerSingletonAsync<AuthCoordinator>(() async {
     await getIt.isReady<ZhjwAuth>();
     await getIt.isReady<WfwAuth>();
@@ -203,93 +184,7 @@ void _configureAsyncDependencies() {
     ]);
   });
 
-  // ── 第1层：API Service ──────────────────────────────────────────
-  getIt.registerSingletonAsync<ZhjwApiService>(() async {
-    await getIt.isReady<ZhjwAuth>();
-    return ZhjwApiService(getIt<ZhjwAuth>());
-  });
-  getIt.registerSingletonAsync<WfwApiService>(() async {
-    await getIt.isReady<WfwAuth>();
-    return WfwApiService(getIt<WfwAuth>());
-  });
-  getIt.registerSingletonAsync<FitnessApiService>(() async {
-    await getIt.isReady<FitnessAuth>();
-    return FitnessApiService(getIt<FitnessAuth>());
-  });
-  getIt.registerSingletonAsync<PayAppApiService>(() async {
-    await getIt.isReady<PayAppAuth>();
-    return PayAppApiService(getIt<PayAppAuth>());
-  });
-  getIt.registerSingletonAsync<CcylApiService>(() async {
-    await getIt.isReady<CcylAuth>();
-    return CcylApiService(getIt<CcylAuth>());
-  });
-  getIt.registerSingletonAsync<ServiceApiService>(() async {
-    await getIt.isReady<ServiceAuth>();
-    return ServiceApiService(getIt<ServiceAuth>());
-  });
-  getIt.registerSingletonAsync<ZhhqApiService>(() async {
-    await getIt.isReady<ZhhqAuth>();
-    return ZhhqApiService(getIt<ZhhqAuth>());
-  });
-  getIt.registerSingletonAsync<NewServiceApiService>(() async {
-    await getIt.isReady<NewServiceAuth>();
-    return NewServiceApiService(getIt<NewServiceAuth>());
-  });
-
-  // ── 研教务（gsapp / ehall，研究生模块）──────────────────────────
-  getIt.registerSingletonAsync<GsAuth>(() async {
-    await getIt.isReady<ScuAuth>();
-    return GsAuth(getIt<ScuAuth>());
-  });
-  getIt.registerSingletonAsync<GsApiService>(() async {
-    await getIt.isReady<GsAuth>();
-    return GsApiService(getIt<GsAuth>());
-  });
-  // 研究生成绩：依赖 GsApiService（_postForm 自愈链）。
-  getIt.registerSingletonAsync<GraduateGradesProvider>(() async {
-    await getIt.isReady<GsApiService>();
-    return GraduateGradesProvider(getIt<GsApiService>());
-  });
-  // 研究生培养进度：依赖 GsApiService（wdpyjhapp 零信封 GET 自愈链）。
-  getIt.registerSingletonAsync<GraduateTrainPlanProvider>(() async {
-    await getIt.isReady<GsApiService>();
-    return GraduateTrainPlanProvider(getIt<GsApiService>());
-  });
-
-  // ── 图书馆打印与扫描（按需认证，不加入全站预热）────────────────
-  getIt.registerSingletonAsync<CloudPrintAuth>(() async {
-    await getIt.isReady<ScuAuth>();
-    return CloudPrintAuth(getIt<ScuAuth>());
-  }, dispose: (auth) => auth.dispose());
-  getIt.registerSingletonAsync<CloudPrintApiService>(() async {
-    await getIt.isReady<CloudPrintAuth>();
-    return CloudPrintApiService(getIt<CloudPrintAuth>());
-  });
-  getIt.registerSingletonAsync<CloudPrintProvider>(() async {
-    await getIt.isReady<CloudPrintApiService>();
-    await getIt.isReady<ScuAuth>();
-    return CloudPrintProvider(
-      getIt<CloudPrintApiService>(),
-      scuAuth: getIt<ScuAuth>(),
-    );
-  }, dispose: (provider) => provider.dispose());
-
-  // ── 预约系统（service.scu.edu.cn/reservation，活动室预约）────────
-  getIt.registerSingletonAsync<ReservationAuth>(() async {
-    await getIt.isReady<ScuAuth>();
-    return ReservationAuth(getIt<ScuAuth>());
-  });
-  getIt.registerSingletonAsync<ReservationApiService>(() async {
-    await getIt.isReady<ReservationAuth>();
-    return ReservationApiService(getIt<ReservationAuth>());
-  });
-  getIt.registerSingletonAsync<ReservationProvider>(() async {
-    await getIt.isReady<ReservationApiService>();
-    return ReservationProvider(getIt<ReservationApiService>());
-  });
-
-  // ── Provider ────────────────────────────────────────────────────
+  // ── Auth Provider ───────────────────────────────────────────────
   getIt.registerSingletonAsync<ScuAuthProvider>(() async {
     await getIt.isReady<ScuAuth>();
     await getIt.isReady<CcylAuth>();
@@ -302,85 +197,8 @@ void _configureAsyncDependencies() {
     await provider.init();
     return provider;
   });
-  getIt.registerSingletonAsync<CcylProvider>(() async {
-    await getIt.isReady<CcylAuth>();
-    await getIt.isReady<CcylApiService>();
-    return CcylProvider(getIt<CcylAuth>(), getIt<CcylApiService>());
-  });
-  getIt.registerSingletonAsync<GradesProvider>(() async {
-    await getIt.isReady<SharedPreferences>();
-    await getIt.isReady<ZhjwApiService>();
-    await getIt.isReady<ScuAuthProvider>();
-    await getIt.isReady<ScuAuth>();
-    final prefs = getIt<SharedPreferences>();
-    final zhjwApi = getIt<ZhjwApiService>();
-    final authProvider = getIt<ScuAuthProvider>();
-    final scuAuth = getIt<ScuAuth>();
-    String? currentIdentity() => GradesProvider.confirmedUserIdentity(
-      isLoggedIn: authProvider.isLoggedIn,
-      principal: scuAuth.principal,
-    );
-    final gradesProvider = GradesProvider(
-      prefs,
-      zhjwApi,
-      initialUserId: currentIdentity(),
-    );
-    authProvider.addListener(() {
-      gradesProvider.setUserIdentity(currentIdentity());
-    });
-    return gradesProvider;
-  });
-  getIt.registerSingletonAsync<TrainProgramProvider>(() async {
-    await getIt.isReady<ZhjwApiService>();
-    return TrainProgramProvider(getIt<ZhjwApiService>());
-  });
-  getIt.registerSingletonAsync<PlanCompletionProvider>(() async {
-    await getIt.isReady<SharedPreferences>();
-    await getIt.isReady<ZhjwApiService>();
-    final prefs = getIt<SharedPreferences>();
-    final zhjwApi = getIt<ZhjwApiService>();
-    return PlanCompletionProvider(prefs, zhjwApi);
-  });
-  getIt.registerSingletonAsync<ZhhqRepairProvider>(() async {
-    await getIt.isReady<ZhhqApiService>();
-    await getIt.isReady<ZhhqAuth>();
-    await getIt.isReady<ScuAuth>();
-    return ZhhqRepairProvider(
-      getIt<ZhhqApiService>(),
-      getIt<ZhhqAuth>(),
-      getIt<ScuAuth>(),
-    );
-  });
-  getIt.registerSingletonAsync<ClassScheduleInquiryProvider>(() async {
-    await getIt.isReady<ZhjwApiService>();
-    return ClassScheduleInquiryProvider(getIt<ZhjwApiService>());
-  });
-  getIt.registerSingletonAsync<CourseCurriculumProvider>(() async {
-    await getIt.isReady<ZhjwApiService>();
-    return CourseCurriculumProvider(getIt<ZhjwApiService>());
-  });
-  getIt.registerSingletonAsync<ExamPlanProvider>(() async {
-    await getIt.isReady<ZhjwApiService>();
-    return ExamPlanProvider(getIt<ZhjwApiService>());
-  });
-  getIt.registerSingletonAsync<ServiceApplicationsProvider>(() async {
-    await getIt.isReady<ServiceApiService>();
-    return ServiceApplicationsProvider(getIt<ServiceApiService>());
-  });
-  getIt.registerSingletonAsync<BalanceQueryProvider>(() async {
-    await getIt.isReady<SharedPreferences>();
-    await getIt.isReady<PayAppApiService>();
-    await getIt.isReady<DatabaseService>();
-    await getIt.isReady<PayAppAuth>();
-    await getIt.isReady<AppConfigProvider>();
-    return BalanceQueryProvider(
-      getIt<SharedPreferences>(),
-      getIt<PayAppApiService>(),
-      getIt<DatabaseService>(),
-      getIt<PayAppAuth>(),
-      getIt<AppConfigProvider>(),
-    );
-  });
+
+  // ── 客户端辅助服务 ──────────────────────────────────────────────
   getIt.registerSingletonAsync<UpdateService>(() async {
     await getIt.isReady<SharedPreferences>();
     await getIt.isReady<AppInfoProvider>();
@@ -401,9 +219,11 @@ void _configureAsyncDependencies() {
     );
   });
   getIt.registerSingletonAsync<BackgroundCacheService>(() async {
-    await getIt.isReady<AppConfigProvider>();
-    final appConfig = getIt<AppConfigProvider>();
-    return BackgroundCacheService(appConfig);
+    await getIt.isReady<SharedPreferences>();
+    final prefs = getIt<SharedPreferences>();
+    return BackgroundCacheService(
+      getBackgroundImagePath: () => prefs.getString('backgroundImagePath'),
+    );
   });
   getIt.registerSingletonAsync<AcademicCalendarService>(() async {
     await getIt.isReady<SharedPreferences>();
@@ -415,9 +235,9 @@ void _configureAsyncDependencies() {
   });
   getIt.registerSingletonAsync<WidgetUpdateService>(() async {
     await getIt.isReady<CourseProvider>();
-    await getIt.isReady<AppConfigProvider>();
+    await getIt.isReady<SharedPreferences>();
     final courseProvider = getIt<CourseProvider>();
-    final appConfig = getIt<AppConfigProvider>();
+    final prefs = getIt<SharedPreferences>();
     final service = WidgetUpdateService();
     courseProvider.onCoursesChanged = () {
       service.updateWidgetData().catchError((
@@ -432,12 +252,18 @@ void _configureAsyncDependencies() {
     if (!kIsWeb && (Platform.isIOS || Platform.isMacOS)) {
       try {
         await service.syncWidgetShowTomorrow(
-          appConfig.widgetShowTomorrow.value,
+          prefs.getBool('widget_show_tomorrow') ?? false,
         );
         if (Platform.isIOS) {
+          final colorIdx = prefs.getInt('widget_color_style') ?? 0;
+          final densityIdx = prefs.getInt('widget_density') ?? 0;
           await service.syncWidgetAppearance(
-            colorStyle: appConfig.widgetColorStyle.value,
-            density: appConfig.widgetDensity.value,
+            colorStyle: colorIdx < WidgetColorStyle.values.length
+                ? WidgetColorStyle.values[colorIdx]
+                : WidgetColorStyle.colorful,
+            density: densityIdx < WidgetDensity.values.length
+                ? WidgetDensity.values[densityIdx]
+                : WidgetDensity.standard,
           );
         }
       } catch (error, stackTrace) {
@@ -448,13 +274,34 @@ void _configureAsyncDependencies() {
     return service;
   });
 
-  // 本地提醒排期服务：依赖 CourseProvider 与 AppConfigProvider，负责排期计算与原生同步。
+  // 本地提醒排期服务：依赖 CourseProvider 与原生排期 Transport
   getIt.registerSingletonAsync<ReminderService>(() async {
     await getIt.isReady<CourseProvider>();
-    await getIt.isReady<AppConfigProvider>();
+    await getIt.isReady<SharedPreferences>();
+    final prefs = getIt<SharedPreferences>();
     final service = ReminderService(
       courseProvider: getIt<CourseProvider>(),
-      appConfig: getIt<AppConfigProvider>(),
+      getSettings: () {
+        final leadList = prefs.getStringList('reminder_lead_minutes')
+            ?.map(int.tryParse)
+            .whereType<int>()
+            .toList();
+        final qStart = prefs.getInt('reminder_quiet_start');
+        final qEnd = prefs.getInt('reminder_quiet_end');
+        return ReminderSettings(
+          courseReminderEnabled: prefs.getBool('reminder_enabled') ?? false,
+          leadMinutes: (leadList == null || leadList.isEmpty) ? const [15] : leadList,
+          quietStart: (qStart == null || qStart < 0)
+              ? null
+              : TimeOfDay(hour: qStart ~/ 60, minute: qStart % 60),
+          quietEnd: (qEnd == null || qEnd < 0)
+              ? null
+              : TimeOfDay(hour: qEnd ~/ 60, minute: qEnd % 60),
+          windowDays: prefs.getInt('reminder_window_days') ?? ReminderSettings.defaultWindowDays,
+          includeLocation: prefs.getBool('showLocation') ?? true,
+          includeTeacher: prefs.getBool('showTeacherName') ?? true,
+        );
+      },
       transport: createReminderTransport(),
     );
     await service.start();
@@ -462,7 +309,6 @@ void _configureAsyncDependencies() {
   });
 
   // 实时活动（Live Activity）协调器：仅在 iOS 平台执行物理调度，其他平台完成能力探测后自动停用。
-  // 异步触发 start() 而不阻塞启动流程，其内部监听课表状态并在异步就绪后自动对齐。
   getIt.registerSingletonAsync<LiveActivityCoordinator>(() async {
     await getIt.isReady<CourseProvider>();
     final coordinator = LiveActivityCoordinator(
@@ -473,48 +319,12 @@ void _configureAsyncDependencies() {
   });
 
   // ── Logout cleanup listener ──────────────────────────────────────
-  // 当 ScuAuth 状态变为 unknown（logout）时，清理下游 Provider 缓存。
-  // 用 listener 机制替代 ScuAuthProvider 直接 getIt 调用（PRR-05）。
   getIt.isReady<ScuAuth>().then((_) {
     getIt<ScuAuth>().addListener(() {
       final scu = getIt<ScuAuth>();
       if (scu.state == AuthState.unknown) {
-        // logout 发生，清理子系统会话缓存
         if (getIt.isRegistered<GsAuth>()) {
           getIt<GsAuth>().invalidate();
-        }
-        // logout 发生，清理需要登录态的 Provider 缓存
-        if (getIt.isRegistered<PlanCompletionProvider>()) {
-          getIt<PlanCompletionProvider>().clearCache();
-        }
-        if (getIt.isRegistered<ZhhqRepairProvider>()) {
-          getIt<ZhhqRepairProvider>().clear();
-        }
-        if (getIt.isRegistered<CloudPrintProvider>()) {
-          getIt<CloudPrintProvider>().clear();
-        }
-        if (getIt.isRegistered<ClassScheduleInquiryProvider>()) {
-          getIt<ClassScheduleInquiryProvider>().clear();
-        }
-        if (getIt.isRegistered<CourseCurriculumProvider>()) {
-          getIt<CourseCurriculumProvider>().clear();
-        }
-        if (getIt.isRegistered<ExamPlanProvider>()) {
-          getIt<ExamPlanProvider>().clear();
-        }
-        if (getIt.isRegistered<GraduateGradesProvider>()) {
-          getIt<GraduateGradesProvider>().clear();
-        }
-        if (getIt.isRegistered<GraduateTrainPlanProvider>()) {
-          getIt<GraduateTrainPlanProvider>().clear();
-        }
-        // 预约系统是独立的 reservation_uid 会话，换号后必须丢弃上一个账号
-        // 的活动室与时段缓存，否则会继续展示过期数据。
-        if (getIt.isRegistered<ReservationProvider>()) {
-          getIt<ReservationProvider>().clear();
-        }
-        if (getIt.isRegistered<ServiceApplicationsProvider>()) {
-          getIt<ServiceApplicationsProvider>().clear();
         }
       }
     });

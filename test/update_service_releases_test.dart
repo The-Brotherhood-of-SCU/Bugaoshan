@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/github_resource_service.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -36,7 +35,7 @@ void main() {
     service = UpdateService(
       prefs,
       '2.5.3',
-      GithubResourceService(AppConfigProvider(prefs)),
+      GithubResourceService(useProxy: () => true),
     );
   });
 

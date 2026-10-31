@@ -12,7 +12,6 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/pages/home_page.dart';
 import 'package:bugaoshan/pages/wizard/eula_gate_page.dart';
 import 'package:bugaoshan/pages/wizard/wizard_page.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/services/background_cache_service.dart';
 import 'package:bugaoshan/services/reminder/live_activity_coordinator.dart';

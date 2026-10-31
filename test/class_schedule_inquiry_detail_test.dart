@@ -2,8 +2,9 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/class_schedule_inquiry/class_schedule_inquiry_detail_page.dart';
 import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/class_schedule_inquiry_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/scu_backend/zhjw/zhjw_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -65,12 +66,14 @@ class _FakeZhjwApiService implements ZhjwApiService {
 }
 
 void main() {
+  late _FakeZhjwApiService api;
+
   setUp(() async {
     await getIt.reset();
     SharedPreferences.setMockInitialValues({'showWeekend': false});
     final prefs = await SharedPreferences.getInstance();
-    getIt.registerSingleton<AppConfigProvider>(AppConfigProvider(prefs));
-    final api = _FakeZhjwApiService();
+    getIt.registerSingleton<SharedPreferences>(prefs);
+    api = _FakeZhjwApiService();
     getIt.registerSingleton<ZhjwApiService>(api);
     getIt.registerSingleton<ClassScheduleInquiryProvider>(
       ClassScheduleInquiryProvider(api),
@@ -89,6 +92,9 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [
+          zhjwApiServiceBridge.overrideWithValue(api),
+        ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
@@ -111,8 +117,9 @@ void main() {
   testWidgets('班级详情局部显示周末但不修改全局偏好', (tester) async {
     await pumpDetailPage(tester);
 
-    final appConfig = getIt<AppConfigProvider>();
-    expect(appConfig.showWeekend.value, isFalse);
+    final element = tester.element(find.byType(ClassScheduleInquiryDetailPage));
+    final container = ProviderScope.containerOf(element);
+    expect(container.read(showWeekendSettingProvider), isFalse);
 
     final l10n = AppLocalizations.of(
       tester.element(find.byType(ClassScheduleInquiryDetailPage)),

@@ -4,14 +4,30 @@ import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-AppConfigProvider get appConfigService => getIt<AppConfigProvider>();
+class AppConfigServiceHelper {
+  SharedPreferences get _prefs => getIt<SharedPreferences>();
 
-Duration get _animationDuration => getIt.isRegistered<AppConfigProvider>()
-    ? getIt<AppConfigProvider>().cardSizeAnimationDuration.value
-    : const Duration(milliseconds: 300);
+  ValueNotifier<Duration> get cardSizeAnimationDuration => ValueNotifier(
+    Duration(
+      milliseconds: getIt.isRegistered<SharedPreferences>()
+          ? (_prefs.getInt('cardSizeAnimationDuration') ?? 200)
+          : 200,
+    ),
+  );
+
+  ValueNotifier<bool> get forceCaptchaForDownload => ValueNotifier(
+    getIt.isRegistered<SharedPreferences>()
+        ? (_prefs.getBool('forceCaptchaForDownload') ?? false)
+        : false,
+  );
+}
+
+final AppConfigServiceHelper appConfigService = AppConfigServiceHelper();
+
+Duration get _animationDuration => appConfigService.cardSizeAnimationDuration.value;
 
 Future showInfoDialog({
   BuildContext? context, //this is no need anymore

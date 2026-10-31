@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/models/academic_calendar.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/scu_backend/calendar/academic_calendar_service.dart';
 import 'package:bugaoshan/services/github_resource_service.dart';
 import 'package:http/http.dart' as http;
@@ -10,7 +9,7 @@ import 'package:http/testing.dart';
 /// genExportPayload 不走网络，用永不命中的 MockClient 构造即可。
 GithubResourceService _stubResource(SharedPreferences prefs) {
   final client = MockClient((_) async => http.Response('', 404));
-  return GithubResourceService(AppConfigProvider(prefs), client: client);
+  return GithubResourceService(useProxy: () => true, client: client);
 }
 
 void main() {

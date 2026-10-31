@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/passpoint.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/riverpod/campus/passpoint_pods.dart';
 import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';

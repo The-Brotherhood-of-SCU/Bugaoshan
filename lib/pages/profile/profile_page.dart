@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/widgets/navigation/home_dock_insets.dart';
 import 'package:bugaoshan/widgets/common/third_center.dart';

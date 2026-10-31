@@ -1,4 +1,7 @@
+import 'package:flutter/material.dart' show Curve, Curves;
 import 'package:flutter/services.dart';
+
+const Curve appCurve = Curves.easeOutQuart;
 
 const String orgLink = "https://github.com/The-Brotherhood-of-SCU";
 const String appLink = "https://github.com/The-Brotherhood-of-SCU/Bugaoshan";

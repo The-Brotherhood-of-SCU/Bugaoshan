@@ -8,7 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_list.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/scu_backend/payapp/balance_query_service.dart';
 import 'package:bugaoshan/scu_backend/payapp/payapp_api_service.dart';
@@ -238,15 +237,11 @@ Future<_ProviderHarness> _createProvider({
   final scuAuth = ScuAuth(prefs);
   final wfwAuth = WfwAuth(scuAuth);
   final payAppAuth = PayAppAuth(scuAuth, wfwAuth);
-  final appConfig = AppConfigProvider(prefs);
-  await appConfig.init();
-  getIt.registerSingleton<AppConfigProvider>(appConfig);
   final provider = BalanceQueryProvider(
     prefs,
     fakeApi ?? _FakePayAppApiService(),
     dbService,
     payAppAuth,
-    appConfig,
     now: now,
   );
   return _ProviderHarness(provider, prefs, db, getIt);

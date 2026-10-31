@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/scu_backend/payapp/balance_query_service.dart';
 
 part 'balance_pods.g.dart';
@@ -17,24 +17,18 @@ class BalanceQueryNotifier extends _$BalanceQueryNotifier {
 
   @override
   BalanceQueryProvider build() {
-    final BalanceQueryProvider provider;
-    if (getIt.isRegistered<BalanceQueryProvider>()) {
-      provider = getIt<BalanceQueryProvider>();
-    } else {
-      final prefs = ref.watch(sharedPreferencesBridge);
-      final payappApi = ref.watch(payAppApiServiceBridge);
-      final db = ref.watch(databaseServiceBridge);
-      final payAppAuth = ref.watch(payAppAuthBridge);
-      final appConfig = ref.watch(appConfigProviderBridge);
-      provider = BalanceQueryProvider(
-        prefs,
-        payappApi,
-        db,
-        payAppAuth,
-        appConfig,
-      );
-      ref.onDispose(provider.dispose);
-    }
+    final prefs = ref.watch(sharedPreferencesBridge);
+    final payappApi = ref.watch(payAppApiServiceBridge);
+    final db = ref.watch(databaseServiceBridge);
+    final payAppAuth = ref.watch(payAppAuthBridge);
+    final provider = BalanceQueryProvider(
+      prefs,
+      payappApi,
+      db,
+      payAppAuth,
+      autoSampleOnLogin: () => ref.read(autoSampleBalanceOnLoginSettingProvider),
+    );
+    ref.onDispose(provider.dispose);
 
     void listener() {
       state = provider;

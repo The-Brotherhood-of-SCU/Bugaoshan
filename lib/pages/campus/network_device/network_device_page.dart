@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/riverpod/campus/network_device_pods.dart';
 import 'package:bugaoshan/providers/riverpod/campus/user_info_pods.dart';

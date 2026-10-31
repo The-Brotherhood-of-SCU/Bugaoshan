@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:http/http.dart' as http;
@@ -33,21 +32,22 @@ class GithubResourceException implements Exception {
 /// 惰性自建一个长生命周期 client——本服务以单例注册、与 app 同寿（与
 /// CookieClient 的持有策略一致），也避免流式响应返回后无法安全 close。
 class GithubResourceService {
-  final AppConfigProvider _appConfig;
+  final bool Function() _useProxy;
 
   /// 测试注入 MockClient 用。
   final http.Client? _client;
   http.Client? _ownedClient;
 
-  GithubResourceService(this._appConfig, {http.Client? client})
-    : _client = client;
+  GithubResourceService({bool Function()? useProxy, http.Client? client})
+      : _useProxy = useProxy ?? (() => true),
+        _client = client;
 
   http.Client get _inner => _client ?? (_ownedClient ??= http.Client());
 
   /// 候选 URL 列表：开启 → [镜像, 直连]；关闭 → [直连]。
   List<Uri> _candidates(String url) {
     final direct = Uri.parse(url);
-    if (!_appConfig.useGithubProxy.value) return [direct];
+    if (!_useProxy()) return [direct];
     return [Uri.parse('$kGithubProxyPrefix$url'), direct];
   }
 

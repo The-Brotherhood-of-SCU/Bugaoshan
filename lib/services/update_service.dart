@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/services/github_resource_service.dart';
 import 'package:bugaoshan/services/update_asset_selector.dart';
@@ -294,7 +293,7 @@ class UpdateService {
   Future<UpdateCheckResult> checkForUpdate() {
     if (!supportsInAppUpdate) return Future.value(UpdateCheckResult.noUpdate());
     final includePreview =
-        getIt<AppConfigProvider>().usePreviewUpdateSource.value;
+        _prefs.getBool('usePreviewUpdateSource') ?? false;
     final versionProvider = getIt<AppInfoProvider>();
     final currentVersion = versionProvider.currentVersion;
     final gitTag = includePreview ? versionProvider.gitTag : null;

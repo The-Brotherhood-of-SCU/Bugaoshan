@@ -7,13 +7,12 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
 import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/pages/settings/set_dock_page.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  Future<AppConfigProvider> pumpDockPage(
+  Future<SharedPreferences> pumpDockPage(
     WidgetTester tester, {
     StudentType studentType = StudentType.undergraduate,
     List<String> dockIds = defaultVisibleDockIds,
@@ -23,10 +22,8 @@ void main() {
       'studentType': studentType.index,
     });
     final prefs = await SharedPreferences.getInstance();
-    final appConfig = AppConfigProvider(prefs);
-    await appConfig.init();
     await getIt.reset();
-    getIt.registerSingleton<AppConfigProvider>(appConfig);
+    getIt.registerSingleton<SharedPreferences>(prefs);
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
@@ -37,11 +34,11 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    return appConfig;
+    return prefs;
   }
 
   testWidgets('研究生模式：不展示本科项，可添加研究生项', (tester) async {
-    final appConfig = await pumpDockPage(
+    final prefs = await pumpDockPage(
       tester,
       studentType: StudentType.graduate,
       // dock 里预置了一个本科项（成绩统计）。
@@ -75,17 +72,17 @@ void main() {
     await tester.tap(graduateSwitch);
     await tester.pumpAndSettle();
 
-    final ids = appConfig.visibleDockIds.value;
+    final ids = prefs.getStringList('visibleDockIds');
     expect(ids, contains(dockIdGraduateScheduleImport));
     // 关键回归：本科项的配置不被丢弃，切回本科生模式即恢复。
     expect(ids, contains(dockIdGrades));
   });
 
   testWidgets('本科生模式：研究生项不出现在列表中', (tester) async {
-    final appConfig = await pumpDockPage(tester);
+    final prefs = await pumpDockPage(tester);
     final l10n = AppLocalizations.of(tester.element(find.byType(SetDockPage)))!;
 
-    expect(appConfig.studentType.value, StudentType.undergraduate);
+    expect(prefs.getInt('studentType') ?? 0, StudentType.undergraduate.index);
     expect(
       find.text(l10n.graduateScheduleImport),
       findsNothing,

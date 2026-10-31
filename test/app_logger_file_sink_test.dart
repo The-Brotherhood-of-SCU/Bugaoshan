@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
@@ -103,19 +102,14 @@ void main() {
   });
 
   test('开关已为默认开启时清除数据，无通知也恢复落盘', () async {
-    final config = AppConfigProvider(await SharedPreferences.getInstance());
-    await config.init();
+    final prefs = await SharedPreferences.getInstance();
     final instance = logger();
     await instance.enableFileSink(overridePath: directory.path);
     instance.e('Test', 'before-clear');
-    var notifications = 0;
-    config.logPersistenceEnabled.addListener(() => notifications++);
 
-    await config.clearAll();
+    await prefs.clear();
     await instance.deletePersistedFiles(preserveEnabled: true);
 
-    expect(notifications, 0);
-    expect(config.logPersistenceEnabled.value, isTrue);
     expect(instance.fileSinkEnabled, isTrue);
     expect(instance.fileSinkUnavailable, isFalse);
     instance.e('Test', 'after-clear');

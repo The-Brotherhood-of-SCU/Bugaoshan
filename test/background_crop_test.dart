@@ -1,35 +1,43 @@
 import 'dart:math';
 
 import 'package:bugaoshan/models/background_crop.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  group('AppConfigProvider 裁剪参数持久化', () {
+  group('backgroundImageCropSetting 持久化', () {
     test('写入后新实例可读回，清空后回到 cover 行为', () async {
       SharedPreferences.setMockInitialValues({});
       final preferences = await SharedPreferences.getInstance();
-      final provider = AppConfigProvider(preferences);
-      await provider.init();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesBridge.overrideWithValue(preferences)],
+      );
+      addTearDown(container.dispose);
 
-      expect(provider.backgroundImageCrop.value, isNull);
+      expect(container.read(backgroundImageCropSettingProvider), isNull);
 
       const crop = BackgroundCropParams(focusX: 0.4, focusY: 0.6, zoom: 1.5);
-      provider.backgroundImageCrop.value = crop;
+      container.read(backgroundImageCropSettingProvider.notifier).update(crop);
       expect(preferences.getString('backgroundImageCrop'), crop.encode());
 
       // 模拟重启：新实例从同一 SharedPreferences 恢复。
-      final reloaded = AppConfigProvider(preferences);
-      await reloaded.init();
-      expect(reloaded.backgroundImageCrop.value, crop);
+      final reloaded = ProviderContainer(
+        overrides: [sharedPreferencesBridge.overrideWithValue(preferences)],
+      );
+      addTearDown(reloaded.dispose);
+      expect(reloaded.read(backgroundImageCropSettingProvider), crop);
 
       // 清空 → 移除持久化 key。
-      reloaded.backgroundImageCrop.value = null;
+      reloaded.read(backgroundImageCropSettingProvider.notifier).update(null);
       expect(preferences.getString('backgroundImageCrop'), isNull);
-      final cleared = AppConfigProvider(preferences);
-      await cleared.init();
-      expect(cleared.backgroundImageCrop.value, isNull);
+      final cleared = ProviderContainer(
+        overrides: [sharedPreferencesBridge.overrideWithValue(preferences)],
+      );
+      addTearDown(cleared.dispose);
+      expect(cleared.read(backgroundImageCropSettingProvider), isNull);
     });
 
     test('持久化数据损坏时回退为 null（cover 行为）', () async {
@@ -37,9 +45,11 @@ void main() {
         'backgroundImageCrop': '{broken json',
       });
       final preferences = await SharedPreferences.getInstance();
-      final provider = AppConfigProvider(preferences);
-      await provider.init();
-      expect(provider.backgroundImageCrop.value, isNull);
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesBridge.overrideWithValue(preferences)],
+      );
+      addTearDown(container.dispose);
+      expect(container.read(backgroundImageCropSettingProvider), isNull);
     });
   });
 

@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/providers/set_theme_color_provider.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
@@ -27,8 +25,11 @@ class _SetThemeColorPageState extends ConsumerState<SetThemeColorPage> {
   @override
   void initState() {
     super.initState();
-    final appConfig = ref.read(appConfigProviderBridge);
-    _themeColorProvider = SetThemeColorProvider(appConfig);
+    _themeColorProvider = SetThemeColorProvider(
+      getBackgroundImagePath: () => ref.read(backgroundImagePathSettingProvider),
+      getThemeColorMode: () => ref.read(themeColorModeSettingProvider),
+      getThemeColor: () => ref.read(themeColorSettingProvider),
+    );
     _selectedMode = ref.read(themeColorModeSettingProvider);
     if (_selectedMode == ThemeColorMode.system) {
       pickerColor = SystemTheme.accentColor.accent;

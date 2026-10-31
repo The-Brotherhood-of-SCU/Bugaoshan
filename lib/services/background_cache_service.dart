@@ -1,22 +1,22 @@
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 
 class BackgroundCacheService {
   static const String _tag = 'BackgroundCacheService';
 
-  final AppConfigProvider _appConfig;
+  final String? Function() _getBackgroundImagePath;
 
   ImageStream? _bgImageStream;
   ImageStreamListener? _bgImageListener;
 
-  BackgroundCacheService(this._appConfig);
+  BackgroundCacheService({required String? Function() getBackgroundImagePath})
+      : _getBackgroundImagePath = getBackgroundImagePath;
 
   /// 预加载背景图片到 ImageCache。
   void precache() {
-    final path = _appConfig.backgroundImagePath.value;
+    final path = _getBackgroundImagePath();
     if (path == null) return;
     try {
       final file = File(path);

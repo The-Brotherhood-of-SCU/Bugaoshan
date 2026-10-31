@@ -35,9 +35,10 @@ flowchart TB
         AS["AuthScopedIndexedStack (按认证边界隔离缓存)"]
     end
 
-    subgraph State["2. 状态管理层 (lib/providers/riverpod/)"]
+    subgraph State["2. 状态与业务单例层 (lib/providers/riverpod/)"]
         Pods["Riverpod Pods (@riverpod Notifiers / Families)"]
-        Bridge["bridge.dart (双向互操作桥接)"]
+        ApiPods["12 个 SCU API Services (@Riverpod(keepAlive: true) 单例)"]
+        Bridge["bridge.dart (Auth 桥接与向后兼容别名)"]
     end
 
     subgraph ClientServices["3. 纯客户端服务层 (lib/services/)"]
@@ -47,7 +48,7 @@ flowchart TB
         LocalOther["DynamicIcon / WindowState / DownloadManager"]
     end
 
-    subgraph ScuBackend["4. SCU 后端网络模块 (lib/scu_backend/)"]
+    subgraph ScuBackend["4. SCU 后端网络与认证模块 (lib/scu_backend/)"]
         subgraph Core["scu_backend/core/ (基础设施)"]
             SA["ScuAuth (统一身份认证根源)"]
             AC["AuthCoordinator (依赖调度后台预热)"]
@@ -59,42 +60,65 @@ flowchart TB
         end
     end
 
-    subgraph DI["5. 依赖注入层 (lib/injection/injector.dart)"]
-        GetItBoot["GetIt (全局单例注册与前置启动编排)"]
+    subgraph DI["5. 核心认证注入层 (lib/injection/injector.dart)"]
+        GetItBoot["GetIt (严格限定为 SCU 核心认证、子系统 Auth、ScuAuthProvider、AppLogger、SharedPreferences)"]
     end
 
     UI -->|ref.watch / ref.read| State
-    State -->|bridge| ClientServices
-    State -->|bridge| ScuBackend
-    ScuBackend -->|依赖倒置注册| DI
-    ClientServices -->|依赖倒置注册| DI
+    State -->|原生消费| ApiPods
+    ApiPods -->|依赖注入客户端| ScuBackend
+    Bridge -->|只读接入认证单例| DI
+    ScuBackend -->|Auth 注册| DI
 ```
 
 各层边界原则：
 - **`lib/scu_backend/`**：只关注四川大学各后端接口协议、认证鉴权、数据加解密与 JSON 解析，不持有任何 UI 状态。
 - **`lib/services/`**：仅承载设备级、操作系统级或通用开源服务（如 SQLite、原生窗口、更新检测），不掺杂任何四川大学专有网络请求。
-- **`lib/providers/riverpod/`**：纯粹的状态与业务逻辑控制，向下消费服务，向上向 Widget 提供响应式绑定。
+- **`lib/providers/riverpod/`**：纯粹的状态与业务逻辑控制，并通过原生 Riverpod `keepAlive: true` 管理所有业务 API Services 单例，向上向 Widget 提供响应式绑定。
+- **`lib/injection/injector.dart`**：严格收敛为 SCU 统一身份认证与会话基础设施，不再注册任何无状态业务 API Service 或废弃业务 Provider。
 
 ---
 
 ## 3. 状态管理现代化 (Riverpod)
 
-### 3.1 状态细粒度拆解与精准渲染
+### 3.1 彻底移除 AppConfigProvider 上帝类
 
-原架构下庞大的 `AppConfigProvider`（持有多达 25 个 `ValueNotifier` 字段）被拆解为细粒度的状态 Pods（位于 `lib/providers/riverpod/settings/app_config_pods.dart`）：
+原架构下庞大的 `AppConfigProvider`（~529 行，持有多达 25 个 `ValueNotifier` 字段）被完全删除，配置状态被彻底拆解为细粒度的状态 Pods（位于 `lib/providers/riverpod/settings/app_config_pods.dart`）：
 - `themeColorProvider`、`themeColorModeProvider`、`localeProvider`、`dockItemsProvider`、`visibleDockIdsProvider` 等彼此独立；
-- 页面（如 `HomePage`）重构为 `ConsumerStatefulWidget`，仅通过 `ref.watch(visibleDockIdsProvider)` 监听底部 Dock 栏变更，其他与外观无关的设置项变更不再引发导航容器的重绘。
+- 页面（如 `HomePage`）重构为 `ConsumerStatefulWidget`，仅通过 `ref.watch(visibleDockIdsProvider)` 监听底部 Dock 栏变更，其他与外观无关的设置项变更不再引发导航容器的重绘；
+- 原先对 `AppConfigProvider` 产生硬依赖的后台服务（如 `GithubResourceService`、`ReminderService`、`UpdateService`、`BackgroundCacheService`、`BalanceQueryProvider`、`ScheduleImageRenderer`、`SetThemeColorProvider`）全部解除耦合，改为由调用方或显式配置注入；
+- 全仓库（包括 `lib/` 与 `test/`）对 `AppConfigProvider` 的引用计数降为 **0**。
 
-### 3.2 废弃 Provider 的清理
+### 3.2 SCU API Services 提升为 Riverpod 原生单例与 GetIt 瘦身
 
-随着状态全面转向 Riverpod，5 个历史遗留的旧 `ChangeNotifier` 文件及其对应测试被彻底移除：
+此前，Riverpod 状态层通过 `*ApiServiceBridge` 间接从 `GetIt` 提取各无状态 API 客户端。重构后，技术债务被彻底扫清：
+1. **API Services 转为 Riverpod 单例**：创建 `lib/providers/riverpod/scu_backend/api_service_pods.dart`，12 个 SCU 业务 API Service 全部声明为 `@Riverpod(keepAlive: true)` 单例：
+   - `zhjwApiServiceProvider`
+   - `wfwApiServiceProvider`
+   - `fitnessApiServiceProvider`
+   - `payAppApiServiceProvider`
+   - `ccylApiServiceProvider`
+   - `serviceApiServiceProvider`
+   - `zhhqApiServiceProvider`
+   - `newServiceApiServiceProvider`
+   - `gsApiServiceProvider`
+   - `reservationApiServiceProvider`
+   - `cloudPrintApiServiceProvider`
+   - `forgotPasswordServiceProvider`
+2. **`GetIt` 职责最小化**：`lib/injection/injector.dart` 彻底剥离所有业务 API Services 与旧 Provider 注册，只保留 SCU 认证层核心设施（`ScuAuth`、`AuthCoordinator`、11 个子系统 Auth、`ScuAuthProvider`、`AppLogger` 与 `SharedPreferences`）；
+3. **测试向后兼容性保护**：在各 Pod 内置 `if (getIt.isRegistered<T>()) return getIt<T>();` 回退机制，生产环境 100% 运行在纯原生 Riverpod 单例之上，同时无缝兼容旧有轻量单元测试基于 GetIt 注入 Mock 的机制。
+
+### 3.3 废弃 Provider 的清理
+
+随着状态全面转向 Riverpod，历史遗留的旧 `ChangeNotifier` 文件及其对应测试被彻底移除：
+- `lib/providers/app_config_provider.dart`
 - `lib/providers/network_device_provider.dart`
 - `lib/providers/passpoint_provider.dart`
 - `lib/providers/classroom_provider.dart`
 - `lib/providers/fitness_test_provider.dart`
 - `lib/providers/user_info_provider.dart`
 
-对应的 DI 注册从 `lib/injection/injector.dart` 剔除，注销清空回调统一收敛。单元测试套件直接基于 `ProviderContainer` 与桥接 Provider 对 Riverpod Notifier（如 `networkDevicesProvider`、`passpointProvider`、`classroomAvailabilityProvider`、`userInfoProvider`）进行细粒度状态断言。
+对应的 DI 注册从 `lib/injection/injector.dart` 彻底剔除。单元测试套件直接基于 `ProviderContainer` 对 Riverpod Notifier（如 `networkDevicesProvider`、`passpointProvider`、`classroomAvailabilityProvider`、`userInfoProvider`）进行细粒度状态断言。
 
 ---
 
@@ -187,6 +211,8 @@ Future<void> fetch() async {
 |---|---|---|
 | **代码静态分析** | `dart analyze --fatal-infos lib test` | **0 errors, 0 warnings, 0 infos** 全部通过 |
 | **测试套件回归** | `flutter test` | **1151 passed, 1 skipped, 0 failed** 全部通过 |
-| **代码规模净化** | 业务与废弃代码净减少 | **-2339 行** 废弃样板与旧 Provider 代码 |
+| **代码规模净化** | 业务与废弃代码净减少 | **-2868 行** 废弃样板、旧 Provider 与上帝类代码 |
+| **AppConfigProvider 引用** | 全工程（`lib/` 与 `test/`）剩余引用 | **0 处** 完全清除删除 |
+| **GetIt 注册范围** | 仅保留 SCU 认证层基础设施 | **100% 达成**（12 个业务 API Services 提升为 Riverpod keepAlive 单例） |
 | **非 Auth 代数检查** | `sessionGeneration` / `queryEpoch` / `operationGeneration` | **0 处** 完全清除 |
 | **Auth 边界保护** | 核心 Auth Epoch 纪元检查 | **5 处** 显式受控保留 |

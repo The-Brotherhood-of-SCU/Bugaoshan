@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_activity_phase.dart';
 import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
@@ -24,12 +22,7 @@ class OrderedActivitiesTab extends ConsumerStatefulWidget {
 class _OrderedActivitiesTabState extends ConsumerState<OrderedActivitiesTab> {
   static const String _tag = 'OrderedActivitiesTabState';
 
-  CcylApiService get _apiService {
-    if (getIt.isRegistered<CcylApiService>()) {
-      return ref.read(ccylApiServiceBridge);
-    }
-    return getIt<CcylProvider>().service;
-  }
+  CcylApiService get _apiService => ref.read(ccylApiServiceProvider);
 
   List<CyclActivity> _activities = [];
   bool _loading = false;

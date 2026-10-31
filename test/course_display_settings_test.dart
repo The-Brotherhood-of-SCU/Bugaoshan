@@ -3,8 +3,9 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/course/widgets/course_card.dart';
 import 'package:bugaoshan/pages/settings/set_course_style_page.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
+import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/services/database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -48,18 +49,20 @@ void main() {
   });
 
   group('showCourseWeeks setting and display', () {
-    test('loads and persists showCourseWeeks in AppConfigProvider', () async {
+    test('loads and persists showCourseWeeks', () async {
       SharedPreferences.setMockInitialValues({'showCourseWeeks': false});
       final prefs = await SharedPreferences.getInstance();
-      final provider = AppConfigProvider(prefs);
-      await provider.init();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesBridge.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
 
-      expect(provider.showCourseWeeks.value, isFalse);
+      expect(container.read(showCourseWeeksSettingProvider), isFalse);
 
-      provider.showCourseWeeks.value = true;
+      container.read(showCourseWeeksSettingProvider.notifier).update(true);
       expect(prefs.getBool('showCourseWeeks'), isTrue);
 
-      provider.showCourseWeeks.value = false;
+      container.read(showCourseWeeksSettingProvider.notifier).update(false);
       expect(prefs.getBool('showCourseWeeks'), isFalse);
     });
 
@@ -68,10 +71,12 @@ void main() {
       () async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
-        final provider = AppConfigProvider(prefs);
-        await provider.init();
+        final container = ProviderContainer(
+          overrides: [sharedPreferencesBridge.overrideWithValue(prefs)],
+        );
+        addTearDown(container.dispose);
 
-        expect(provider.showCourseWeeks.value, isTrue);
+        expect(container.read(showCourseWeeksSettingProvider), isTrue);
       },
     );
 
@@ -80,9 +85,7 @@ void main() {
       (tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
-        final appConfig = AppConfigProvider(prefs);
-        await appConfig.init();
-        getIt.registerSingleton<AppConfigProvider>(appConfig);
+        getIt.registerSingleton<SharedPreferences>(prefs);
 
         final course = Course(
           name: '高等数学',
@@ -128,7 +131,9 @@ void main() {
         expect(find.text(weekRangeText), findsOneWidget);
 
         // Turn off showCourseWeeks
-        appConfig.showCourseWeeks.value = false;
+        final element = tester.element(find.byType(CourseCard));
+        final container = ProviderScope.containerOf(element);
+        container.read(showCourseWeeksSettingProvider.notifier).update(false);
         await tester.pumpAndSettle();
 
         expect(find.text('高等数学'), findsOneWidget);
@@ -137,7 +142,7 @@ void main() {
         expect(find.text(weekRangeText), findsNothing);
 
         // Turn on showCourseWeeks again
-        appConfig.showCourseWeeks.value = true;
+        container.read(showCourseWeeksSettingProvider.notifier).update(true);
         await tester.pumpAndSettle();
 
         expect(find.text(weekRangeText), findsOneWidget);
@@ -149,9 +154,7 @@ void main() {
       (tester) async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
-        final appConfig = AppConfigProvider(prefs);
-        await appConfig.init();
-        getIt.registerSingleton<AppConfigProvider>(appConfig);
+        getIt.registerSingleton<SharedPreferences>(prefs);
 
         final fakeDb = _FakeDatabaseService(
           schedules: [
@@ -196,7 +199,7 @@ void main() {
         await tester.tap(switchFinder);
         await tester.pumpAndSettle();
 
-        expect(appConfig.showCourseWeeks.value, isFalse);
+        expect(prefs.getBool('showCourseWeeks'), isFalse);
         final switchOff = tester.widget<SwitchListTile>(switchFinder);
         expect(switchOff.value, isFalse);
         // In preview, week range text should no longer be visible
@@ -215,7 +218,7 @@ void main() {
         await tester.tap(resetFinder);
         await tester.pumpAndSettle();
 
-        expect(appConfig.showCourseWeeks.value, isTrue);
+        expect(prefs.getBool('showCourseWeeks'), isTrue);
         final switchReset = tester.widget<SwitchListTile>(switchFinder);
         expect(switchReset.value, isTrue);
       },

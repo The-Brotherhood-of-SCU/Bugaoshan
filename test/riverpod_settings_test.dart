@@ -4,31 +4,25 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/models/student_type.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late SharedPreferences prefs;
-  late AppConfigProvider appConfig;
 
   setUp(() async {
     await getIt.reset();
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
     getIt.registerSingleton<SharedPreferences>(prefs);
-
-    appConfig = AppConfigProvider(prefs);
-    await appConfig.init();
-    getIt.registerSingleton<AppConfigProvider>(appConfig);
   });
 
   tearDown(() async {
     await getIt.reset();
   });
 
-  testWidgets('StudentTypeSetting reflects changes from legacy AppConfig and updates state', (
+  testWidgets('StudentTypeSetting updates state and persists to SharedPreferences', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -46,22 +40,24 @@ void main() {
 
     expect(find.text('undergraduate'), findsOneWidget);
 
-    // Legacy change updates Riverpod Consumer
-    appConfig.studentType.value = StudentType.graduate;
-    await tester.pump();
-    expect(find.text('graduate'), findsOneWidget);
-
-    // Riverpod update updates legacy AppConfig
     final element = tester.element(find.byType(Consumer));
     final container = ProviderScope.containerOf(element);
+    container.read(studentTypeSettingProvider.notifier).update(StudentType.graduate);
+    await tester.pump();
+
+    expect(find.text('graduate'), findsOneWidget);
+    expect(prefs.getInt('studentType'), StudentType.graduate.index);
+
     container.read(studentTypeSettingProvider.notifier).update(StudentType.undergraduate);
     await tester.pump();
 
     expect(find.text('undergraduate'), findsOneWidget);
-    expect(appConfig.studentType.value, StudentType.undergraduate);
+    expect(prefs.getInt('studentType'), StudentType.undergraduate.index);
   });
 
-  testWidgets('VisibleDockIdsSetting reflects updates', (tester) async {
+  testWidgets('VisibleDockIdsSetting reflects updates and persists to SharedPreferences', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
@@ -82,6 +78,6 @@ void main() {
     await tester.pump();
 
     expect(find.text('course,profile'), findsOneWidget);
-    expect(appConfig.visibleDockIds.value, ['course', 'profile']);
+    expect(prefs.getStringList('visibleDockIds'), ['course', 'profile']);
   });
 }

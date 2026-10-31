@@ -41,7 +41,7 @@ final class RepairNotifierProvider
   }
 }
 
-String _$repairNotifierHash() => r'2aeaf8cca534b96a5e870e6e4ccd387aa8332106';
+String _$repairNotifierHash() => r'e5faf641c471975c1a8331dcc2197310f5dd4217';
 
 abstract class _$RepairNotifier extends $Notifier<ZhhqRepairProvider> {
   ZhhqRepairProvider build();

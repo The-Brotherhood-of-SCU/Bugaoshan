@@ -2,9 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_activity_filter.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_activity_filter_sheet.dart';
@@ -94,12 +92,7 @@ class _ActivitiesTabState extends ConsumerState<ActivitiesTab> {
       )
       .toList();
 
-  CcylApiService get _apiService {
-    if (getIt.isRegistered<CcylApiService>()) {
-      return ref.read(ccylApiServiceBridge);
-    }
-    return getIt<CcylProvider>().service;
-  }
+  CcylApiService get _apiService => ref.read(ccylApiServiceProvider);
 
   Future<void> _loadActivities({bool loadMore = false}) async {
     if (_loading) return;

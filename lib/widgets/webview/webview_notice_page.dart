@@ -1,7 +1,7 @@
 import 'package:bugaoshan/utils/open_link.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/downloads/shared_notice_downloads.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';

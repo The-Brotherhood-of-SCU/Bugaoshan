@@ -42,7 +42,7 @@ final class TrainProgramNotifierProvider
 }
 
 String _$trainProgramNotifierHash() =>
-    r'4cfb80802592d6e393eb0044ccf065b7f794e0de';
+    r'8cd9659c383b32e70f9a99f482e502a89f342c34';
 
 abstract class _$TrainProgramNotifier extends $Notifier<TrainProgramProvider> {
   TrainProgramProvider build();
@@ -99,7 +99,7 @@ final class GraduateTrainPlanNotifierProvider
 }
 
 String _$graduateTrainPlanNotifierHash() =>
-    r'c50889b7c59367e4b6ce4717a4ea2021f6ad0556';
+    r'7825c05957154477f7b1bafc6c759157f5e62ebb';
 
 abstract class _$GraduateTrainPlanNotifier
     extends $Notifier<GraduateTrainPlanProvider> {

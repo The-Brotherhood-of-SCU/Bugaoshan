@@ -510,7 +510,7 @@ L3 ScuAuth
 
 ## 13. 依赖注入与生命周期
 
-认证组件在 [`injector.dart`](../../lib/injection/injector.dart) 中手动注册，顺序为：
+认证组件在 [`injector.dart`](../../lib/injection/injector.dart) 中手动注册，严格收敛为 SCU 认证层核心与会话调度底座：
 
 ```mermaid
 flowchart TD
@@ -526,21 +526,18 @@ flowchart TD
     PAYAPP --> COORD
     FITNESS --> COORD
     CCYL --> COORD
-    ZHJW --> ZAPI[ZhjwApiService]
-    WFW --> WAPI[WfwApiService]
-    PAYAPP --> PAPI[PayAppApiService]
-    CCYL --> CAPI[CcylApiService]
     SCU --> SAP[ScuAuthProvider]
     CCYL --> SAP
     COORD --> SAP
-    ZAPI --> ZPROVIDERS["Grades / TrainProgram / PlanCompletion Providers"]
-    SCU -->|principal identity| ZPROVIDERS
-    WFW --> UIP[UserInfoProvider]
-    WAPI --> UIP
-    PAYAPP --> BQP[BalanceQueryProvider]
-    PAPI --> BQP
-    CCYL --> CP[CcylProvider]
-    CAPI --> CP
+    
+    subgraph RiverpodSingletons["Riverpod 原生单例 (@Riverpod(keepAlive: true))"]
+        ZHJW -.-> ZAPI[zhjwApiServiceProvider]
+        WFW -.-> WAPI[wfwApiServiceProvider]
+        PAYAPP -.-> PAPI[payAppApiServiceProvider]
+        CCYL -.-> CAPI[ccylApiServiceProvider]
+        ZAPI --> ZPODS["Grades / TrainProgram / PlanCompletion Pods"]
+        WAPI --> UIP[userInfoProvider]
+    end
 ```
 
 退出登录由 `ScuAuthProvider.logout()` 统一编排：
@@ -549,44 +546,49 @@ flowchart TD
 2. `CcylAuth.logout()` 清独立 token 和用户。
 3. `AuthCoordinator.invalidateAll()` 清所有 L2 缓存。
 4. 清用户姓名、学号等本地 UI 缓存。
-5. `injector.dart` 注册的根状态 listener 进一步清理 `PlanCompletionProvider`、`UserInfoProvider` 等下游缓存。
+5. `injector.dart` 注册的根状态 listener 进一步触发下游缓存清理与状态同步。
 
 ## 14. 文件结构
 
 ```text
 lib/
-├── providers/
-│   ├── scu_auth_provider.dart       # 登录 UI 控制器、预热和登出编排
-│   ├── user_info_pods.dart          # 监听 WfwAuth，自动加载用户信息
-│   ├── grades_provider.dart         # 教务业务状态和按账号缓存
-│   ├── train_program_provider.dart
-│   ├── plan_completion_provider.dart
-│   ├── balance_query_provider.dart
-│   └── ccyl_provider.dart
-├── services/
-│   ├── api/
-│   │   ├── api_request.dart         # 通用认证失败重试一次
-│   │   ├── zhjw_api_service.dart
-│   │   ├── wfw_api_service.dart
-│   │   ├── payapp_api_service.dart
-│   │   ├── balance_query_service.dart
-│   │   └── ccyl_api_service.dart    # CCYL 精确过期恢复
-│   ├── auth/
+├── scu_backend/                     # SCU 后端专用网络与认证
+│   ├── core/
 │   │   ├── auth_state.dart
 │   │   ├── scu_exceptions.dart
 │   │   ├── cookie_client.dart
 │   │   ├── scu_auth.dart            # L3 根认证
 │   │   ├── subsystem_auth.dart      # L2 契约
 │   │   ├── auth_coordinator.dart    # L2 调度
-│   │   ├── zhjw_auth.dart
-│   │   ├── wfw_auth.dart
 │   │   ├── sso_relay_auth.dart
+│   │   ├── api_session.dart         # 高阶业务会话客户端
+│   │   └── api_request.dart         # 通用认证重试
+│   ├── zhjw/                        # 本科教务子系统
+│   │   ├── zhjw_auth.dart
+│   │   ├── zhjw_api_service.dart
+│   │   └── zhjw_html_parsers.dart
+│   ├── wfw/                         # 移动微服务平台
+│   │   ├── wfw_auth.dart
+│   │   └── wfw_api_service.dart
+│   ├── payapp/                      # 财务缴费平台
 │   │   ├── payapp_auth.dart
-│   │   ├── fitness_auth.dart
+│   │   ├── payapp_api_service.dart
+│   │   └── balance_query_service.dart
+│   ├── ccyl/                        # 第二课堂
 │   │   ├── ccyl_auth.dart
-│   │   └── ccyl_oauth_service.dart
-│   └── ccyl/
-│       └── ccyl_service.dart        # CCYL 底层 HTTP 与业务错误分类
+│   │   ├── ccyl_oauth_service.dart
+│   │   ├── ccyl_api_service.dart
+│   │   └── ccyl_service.dart
+│   └── ...                          # 其余 9 个子系统
+├── providers/
+│   ├── scu_auth_provider.dart       # 登录 UI 控制器、预热和登出编排 (GetIt 注册)
+│   └── riverpod/                    # Riverpod 状态与业务单例生态
+│       ├── scu_backend/
+│       │   └── api_service_pods.dart # 12 个 API Service 原生单例
+│       ├── bridge.dart              # AuthBridge 依赖桥接
+│       ├── academic/                # 教务业务 Pods (grades, train_program, plan_completion...)
+│       ├── campus/                  # 校园功能 Pods (user_info, balance, ccyl...)
+│       └── settings/                # 细粒度设置 Pods (直接绑定 SharedPreferences)
 ├── utils/
 │   ├── app_logger.dart              # 脱敏应用日志（认证 + 业务共用）
 │   ├── app_error_reporter.dart      # 全局异常接管（框架/引擎/isolate）
@@ -605,9 +607,9 @@ lib/
 4. 合并并发登录，避免多个页面请求同时发起重复 SSO。
 5. cookie 型模块必须在根 `CookieClient` 身份变化时清理缓存。
 6. `invalidate()` 必须清理 client/token、ready 状态和正在缓存的登录 Future；若有异步写回，还必须使旧任务失效。
-7. 新建无状态 API Service，在其中识别该后端明确的认证过期信号。
+7. 新建基于 `ApiSession` 的 API Service，在其中识别该后端明确的认证过期信号。
 8. 只在明确认证过期时重试一次；普通业务错误不得重放非幂等请求。
-9. 在 `injector.dart` 注册 Auth、API Service 和 Provider，并把 Auth 加入 `AuthCoordinator`。
+9. 在 `injector.dart` 注册 Auth 并加入 `AuthCoordinator`；在 `lib/providers/riverpod/scu_backend/api_service_pods.dart` 声明其 API Service 的 `@Riverpod(keepAlive: true)` 单例。
 10. 为并发合并、会话过期、账号切换、登出竞态和重试上限增加针对性测试。
 
 ## 16. 不变量

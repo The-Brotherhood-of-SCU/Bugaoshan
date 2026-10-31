@@ -14,7 +14,6 @@ import 'course_page_vacation_view.dart';
 import 'course_preview_data.dart';
 import '../management/schedule_management_page.dart';
 import 'package:bugaoshan/utils/app_log.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
@@ -37,10 +36,9 @@ class _CoursePageState extends ConsumerState<CoursePage> with WidgetsBindingObse
   static const String _tag = 'CoursePageState';
 
   late final CourseProvider _courseProvider;
-  late final AppConfigProvider _appConfig;
+  late final ValueNotifier<Duration> _animationDuration;
 
   CourseProvider get courseProvider => _courseProvider;
-  AppConfigProvider get appConfig => _appConfig;
 
   /// 页面级控制器（demo 模式或无课表时为 null）。
   /// 不进 GetIt —— demo/真实两个 CoursePage 实例共存时单例语义错误。
@@ -53,7 +51,9 @@ class _CoursePageState extends ConsumerState<CoursePage> with WidgetsBindingObse
   void initState() {
     super.initState();
     _courseProvider = ref.read(courseProviderBridge);
-    _appConfig = ref.read(appConfigProviderBridge);
+    _animationDuration = ValueNotifier<Duration>(
+      ref.read(cardSizeAnimationDurationSettingProvider),
+    );
 
     if (!widget.demoMode) {
       // 非 demo 模式：始终监听 hasSchedule 空↔非空翻转，覆盖「无→有」与「有→无」两个方向。
@@ -73,7 +73,7 @@ class _CoursePageState extends ConsumerState<CoursePage> with WidgetsBindingObse
     _controller = CoursePageController(
       scheduleConfig: _courseProvider.scheduleConfig,
       allSchedules: _courseProvider.allSchedules,
-      animationDuration: _appConfig.cardSizeAnimationDuration,
+      animationDuration: _animationDuration,
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -112,6 +112,7 @@ class _CoursePageState extends ConsumerState<CoursePage> with WidgetsBindingObse
         _controller?.dispose();
       }
     }
+    _animationDuration.dispose();
     super.dispose();
   }
 

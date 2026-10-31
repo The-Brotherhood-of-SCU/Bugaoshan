@@ -6,18 +6,16 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/pages/campus_page/campus_page.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  Future<AppConfigProvider> pumpCampusPage(WidgetTester tester) async {
+  Future<void> pumpCampusPage(WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    final appConfig = AppConfigProvider(prefs);
-    await appConfig.init();
     await getIt.reset();
-    getIt.registerSingleton<AppConfigProvider>(appConfig);
+    getIt.registerSingleton<SharedPreferences>(prefs);
     await tester.pumpWidget(
       const ProviderScope(
         child: MaterialApp(
@@ -28,7 +26,6 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    return appConfig;
   }
 
   testWidgets('点击搜索角标展开搜索框，输入关键词后过滤功能', (tester) async {
@@ -72,7 +69,7 @@ void main() {
   });
 
   testWidgets('切换学生类型后校园页功能分区即时调整', (tester) async {
-    final appConfig = await pumpCampusPage(tester);
+    await pumpCampusPage(tester);
 
     // 本科生默认模式：本科教务功能可见，研究生条目隐藏。
     expect(find.text('Grade Statistics'), findsOneWidget);
@@ -81,7 +78,9 @@ void main() {
 
     // 切换为研究生：本科教务功能消失，研究生条目在对应分区原位出现
     // （研究生成绩并入学业区、紧邻成绩统计的位置，顶部视口即可见）。
-    appConfig.studentType.value = StudentType.graduate;
+    final element = tester.element(find.byType(CampusPage));
+    final container = ProviderScope.containerOf(element);
+    container.read(studentTypeSettingProvider.notifier).update(StudentType.graduate);
     await tester.pumpAndSettle();
 
     expect(find.text('Grade Statistics'), findsNothing);

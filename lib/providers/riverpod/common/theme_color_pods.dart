@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/providers/set_theme_color_provider.dart';
 
 part 'theme_color_pods.g.dart';
@@ -25,11 +23,11 @@ class ThemeColorNotifier extends _$ThemeColorNotifier {
   }
 
   SetThemeColorProvider _getProvider() {
-    final appConfig =
-        getIt.isRegistered<AppConfigProvider>()
-            ? getIt<AppConfigProvider>()
-            : ref.read(appConfigProviderBridge);
-    return SetThemeColorProvider(appConfig);
+    return SetThemeColorProvider(
+      getBackgroundImagePath: () => ref.read(backgroundImagePathSettingProvider),
+      getThemeColorMode: () => ref.read(themeColorModeSettingProvider),
+      getThemeColor: () => ref.read(themeColorSettingProvider),
+    );
   }
 
   Future<Color> getSystemAccentColor() async {

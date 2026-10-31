@@ -5,7 +5,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/models/theme_color_mode.dart';
 import 'package:system_theme/system_theme.dart';
 
 enum ExtractColorResult { noBackgroundImage, success, failure }
@@ -20,9 +20,17 @@ class ThemeColorPreviewResult {
 class SetThemeColorProvider {
   static const String _tag = 'SetThemeColorProvider';
 
-  final AppConfigProvider _appConfigProvider;
+  final String? Function() _getBackgroundImagePath;
+  final ThemeColorMode Function() _getThemeColorMode;
+  final Color Function() _getThemeColor;
 
-  SetThemeColorProvider(this._appConfigProvider);
+  SetThemeColorProvider({
+    required String? Function() getBackgroundImagePath,
+    required ThemeColorMode Function() getThemeColorMode,
+    required Color Function() getThemeColor,
+  })  : _getBackgroundImagePath = getBackgroundImagePath,
+        _getThemeColorMode = getThemeColorMode,
+        _getThemeColor = getThemeColor;
 
   ExtractColorResult? _lastExtractResult;
   Color? _extractedColor;
@@ -43,10 +51,10 @@ class SetThemeColorProvider {
   }
 
   Future<ThemeColorPreviewResult> previewBackgroundImageColor() async {
-    final bgPath = _appConfigProvider.backgroundImagePath.value;
+    final bgPath = _getBackgroundImagePath();
     if (bgPath == null) {
       _lastExtractResult = ExtractColorResult.noBackgroundImage;
-      final previousMode = _appConfigProvider.themeColorMode.value;
+      final previousMode = _getThemeColorMode();
       if (previousMode == ThemeColorMode.system) {
         final color = await getSystemAccentColor();
         return ThemeColorPreviewResult(
@@ -55,12 +63,12 @@ class SetThemeColorProvider {
         );
       } else if (previousMode == ThemeColorMode.custom) {
         return ThemeColorPreviewResult(
-          color: _appConfigProvider.themeColor.value,
+          color: _getThemeColor(),
           mode: ThemeColorMode.custom,
         );
       }
       return ThemeColorPreviewResult(
-        color: _appConfigProvider.themeColor.value,
+        color: _getThemeColor(),
         mode: previousMode,
       );
     }
@@ -73,14 +81,14 @@ class SetThemeColorProvider {
       );
     }
     return ThemeColorPreviewResult(
-      color: _appConfigProvider.themeColor.value,
-      mode: _appConfigProvider.themeColorMode.value,
+      color: _getThemeColor(),
+      mode: _getThemeColorMode(),
     );
   }
 
   Future<ExtractColorResult> extractColorFromBackgroundImage() async {
     return AppLog.guard(_tag, '提取背景主题色', () async {
-      final bgPath = _appConfigProvider.backgroundImagePath.value;
+      final bgPath = _getBackgroundImagePath();
       if (bgPath == null) {
         _lastExtractResult = ExtractColorResult.noBackgroundImage;
         return ExtractColorResult.noBackgroundImage;

@@ -6,7 +6,6 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/pages/home_page.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
@@ -26,7 +25,6 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late SharedPreferences prefs;
-  late AppConfigProvider appConfig;
   late ScuAuth scuAuth;
   late CcylAuth ccylAuth;
   late AuthCoordinator authCoordinator;
@@ -40,10 +38,6 @@ void main() {
 
     final logger = AppLogger();
     getIt.registerSingleton<AppLogger>(logger);
-
-    appConfig = AppConfigProvider(prefs);
-    await appConfig.init();
-    getIt.registerSingleton<AppConfigProvider>(appConfig);
 
     scuAuth = ScuAuth(prefs);
     ccylAuth = CcylAuth(scuAuth);
@@ -65,7 +59,7 @@ void main() {
     final appInfo = AppInfoProvider(packageInfo, isFdroidInstall: false);
     getIt.registerSingleton<AppInfoProvider>(appInfo);
 
-    final githubResource = GithubResourceService(appConfig);
+    final githubResource = GithubResourceService(useProxy: () => true);
     final updateService = UpdateService(prefs, appInfo.currentVersion, githubResource);
     getIt.registerSingleton<UpdateService>(updateService);
     getIt.registerSingleton<UpdateProvider>(
@@ -105,6 +99,7 @@ void main() {
     container.read(studentTypeSettingProvider.notifier).update(StudentType.graduate);
     await tester.pump();
 
-    expect(appConfig.studentType.value, StudentType.graduate);
+    expect(container.read(studentTypeSettingProvider), StudentType.graduate);
+    expect(prefs.getInt('studentType'), StudentType.graduate.index);
   });
 }

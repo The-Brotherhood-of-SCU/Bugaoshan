@@ -1,24 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/scu_backend/api_service_pods.dart';
+export 'package:bugaoshan/providers/riverpod/scu_backend/api_service_pods.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/providers/service_applications_provider.dart';
 import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/scu_backend/calendar/academic_calendar_service.dart';
-import 'package:bugaoshan/scu_backend/ccyl/ccyl_api_service.dart';
-import 'package:bugaoshan/scu_backend/cloud_print/cloud_print_api_service.dart';
-import 'package:bugaoshan/scu_backend/fitness/fitness_api_service.dart';
-import 'package:bugaoshan/scu_backend/gs/gs_api_service.dart';
-import 'package:bugaoshan/scu_backend/passpoint/new_service_api_service.dart';
-import 'package:bugaoshan/scu_backend/payapp/payapp_api_service.dart';
-import 'package:bugaoshan/scu_backend/reservation/reservation_api_service.dart';
-import 'package:bugaoshan/scu_backend/service_hall/service_api_service.dart';
-import 'package:bugaoshan/scu_backend/wfw/wfw_api_service.dart';
-import 'package:bugaoshan/scu_backend/zhhq/zhhq_api_service.dart';
-import 'package:bugaoshan/scu_backend/zhjw/zhjw_api_service.dart';
 import 'package:bugaoshan/scu_backend/core/auth_coordinator.dart';
 import 'package:bugaoshan/scu_backend/ccyl/ccyl_auth.dart';
 import 'package:bugaoshan/scu_backend/cloud_print/cloud_print_auth.dart';
@@ -113,51 +103,19 @@ final cloudPrintAuthBridge = Provider<CloudPrintAuth>(
   (ref) => getIt<CloudPrintAuth>(),
 );
 
-// ── API 服务层桥接 ───────────────────────────────────────────────────────────
+// ── API 服务层（已迁移至 Riverpod 原生单例，保留别名保持向前兼容）──────────────
 
-final zhjwApiServiceBridge = Provider<ZhjwApiService>(
-  (ref) => getIt<ZhjwApiService>(),
-);
-
-final wfwApiServiceBridge = Provider<WfwApiService>(
-  (ref) => getIt<WfwApiService>(),
-);
-
-final fitnessApiServiceBridge = Provider<FitnessApiService>(
-  (ref) => getIt<FitnessApiService>(),
-);
-
-final payAppApiServiceBridge = Provider<PayAppApiService>(
-  (ref) => getIt<PayAppApiService>(),
-);
-
-final ccylApiServiceBridge = Provider<CcylApiService>(
-  (ref) => getIt<CcylApiService>(),
-);
-
-final serviceApiServiceBridge = Provider<ServiceApiService>(
-  (ref) => getIt<ServiceApiService>(),
-);
-
-final zhhqApiServiceBridge = Provider<ZhhqApiService>(
-  (ref) => getIt<ZhhqApiService>(),
-);
-
-final newServiceApiServiceBridge = Provider<NewServiceApiService>(
-  (ref) => getIt<NewServiceApiService>(),
-);
-
-final gsApiServiceBridge = Provider<GsApiService>(
-  (ref) => getIt<GsApiService>(),
-);
-
-final reservationApiServiceBridge = Provider<ReservationApiService>(
-  (ref) => getIt<ReservationApiService>(),
-);
-
-final cloudPrintApiServiceBridge = Provider<CloudPrintApiService>(
-  (ref) => getIt<CloudPrintApiService>(),
-);
+final zhjwApiServiceBridge = zhjwApiServiceProvider;
+final wfwApiServiceBridge = wfwApiServiceProvider;
+final fitnessApiServiceBridge = fitnessApiServiceProvider;
+final payAppApiServiceBridge = payAppApiServiceProvider;
+final ccylApiServiceBridge = ccylApiServiceProvider;
+final serviceApiServiceBridge = serviceApiServiceProvider;
+final zhhqApiServiceBridge = zhhqApiServiceProvider;
+final newServiceApiServiceBridge = newServiceApiServiceProvider;
+final gsApiServiceBridge = gsApiServiceProvider;
+final reservationApiServiceBridge = reservationApiServiceProvider;
+final cloudPrintApiServiceBridge = cloudPrintApiServiceProvider;
 
 final academicCalendarServiceBridge = Provider<AcademicCalendarService>(
   (ref) => getIt<AcademicCalendarService>(),
@@ -184,10 +142,6 @@ class ScuAuthProviderBridgeNotifier extends Notifier<ScuAuthProvider> {
 final scuAuthProviderBridge =
     NotifierProvider<ScuAuthProviderBridgeNotifier, ScuAuthProvider>(
   ScuAuthProviderBridgeNotifier.new,
-);
-
-final appConfigProviderBridge = Provider<AppConfigProvider>(
-  (ref) => getIt<AppConfigProvider>(),
 );
 
 final appInfoProviderBridge = Provider<AppInfoProvider>(

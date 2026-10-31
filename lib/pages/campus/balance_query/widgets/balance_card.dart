@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/balance_query/balance_trend_page.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';

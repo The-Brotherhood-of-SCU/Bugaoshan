@@ -41,7 +41,7 @@ final class CcylAuthNotifierProvider
   }
 }
 
-String _$ccylAuthNotifierHash() => r'c7b0ffb68c43fafd2c3f4909128ec4b30bbf9fce';
+String _$ccylAuthNotifierHash() => r'485d71a3077e6a654144b11bc835d2d5bf687d48';
 
 abstract class _$CcylAuthNotifier extends $Notifier<CcylAuthState> {
   CcylAuthState build();

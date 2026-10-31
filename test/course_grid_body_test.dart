@@ -8,22 +8,17 @@ import 'package:bugaoshan/pages/course/widgets/grid_day_column.dart';
 import 'package:bugaoshan/pages/course/widgets/grid_header.dart';
 import 'package:bugaoshan/pages/course/widgets/grid_section_column.dart';
 import 'package:bugaoshan/pages/course/widgets/minimal_weekday_header.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// 与 test/course_display_settings_test.dart 相同的 AppConfigProvider 装配方式。
-/// CourseGridBody 本身不读 GetIt，但内部的 CourseCard 仍 live 读 AppConfig，
-/// 因此渲染网格前必须注册。
-Future<AppConfigProvider> _registerAppConfig() async {
+Future<SharedPreferences> _registerAppConfig() async {
   SharedPreferences.setMockInitialValues({});
   final prefs = await SharedPreferences.getInstance();
-  final appConfig = AppConfigProvider(prefs);
-  await appConfig.init();
-  getIt.registerSingleton<AppConfigProvider>(appConfig);
-  return appConfig;
+  getIt.registerSingleton<SharedPreferences>(prefs);
+  return prefs;
 }
 
 /// 每天 [sections] 节、无时间段的课表（节次列只显示编号）。
@@ -92,11 +87,11 @@ Widget _bounded(Widget child, {double width = 400, double height = 240}) =>
     );
 
 void main() {
-  late AppConfigProvider appConfig;
+  late SharedPreferences prefs;
 
   setUp(() async {
     await getIt.reset();
-    appConfig = await _registerAppConfig();
+    prefs = await _registerAppConfig();
   });
 
   tearDown(() async {
@@ -180,7 +175,7 @@ void main() {
     testWidgets('CourseGridBody 自身不含 Scrollable；CourseGrid 恰好 1 个', (
       tester,
     ) async {
-      appConfig.courseRowHeight.value = 60;
+      await prefs.setDouble('courseRowHeight', 60);
 
       await tester.pumpWidget(
         _bounded(
@@ -423,7 +418,7 @@ void main() {
     });
   });
 
-  group('CourseCard 仍 live 读 AppConfig（本次重构未改变）', () {
+  group('CourseCard 响应 Riverpod 设置', () {
     Widget grid() => _app(
       CourseGrid(
         courses: [_course()],
@@ -440,16 +435,19 @@ void main() {
       expect(find.text('张老师'), findsOneWidget);
       expect(find.text('一教101'), findsOneWidget);
 
-      appConfig.showTeacherName.value = false;
-      appConfig.showLocation.value = false;
+      final element = tester.element(find.byType(CourseGrid));
+      final container = ProviderScope.containerOf(element);
+
+      container.read(showTeacherNameSettingProvider.notifier).update(false);
+      container.read(showLocationSettingProvider.notifier).update(false);
       await tester.pump();
 
       expect(find.text('高等数学'), findsOneWidget);
       expect(find.text('张老师'), findsNothing);
       expect(find.text('一教101'), findsNothing);
 
-      appConfig.showTeacherName.value = true;
-      appConfig.showLocation.value = true;
+      container.read(showTeacherNameSettingProvider.notifier).update(true);
+      container.read(showLocationSettingProvider.notifier).update(true);
       await tester.pump();
 
       expect(find.text('张老师'), findsOneWidget);
@@ -459,8 +457,8 @@ void main() {
     testWidgets('rowHeight / showWeekend 由 CourseGrid 透传给 Body', (
       tester,
     ) async {
-      appConfig.courseRowHeight.value = 120;
-      appConfig.showWeekend.value = true;
+      await prefs.setDouble('courseRowHeight', 120);
+      await prefs.setBool('showWeekend', true);
 
       await tester.pumpWidget(
         _app(
@@ -483,8 +481,8 @@ void main() {
     testWidgets('showNonCurrentWeekCourses / showCourseGrid 由 CourseGrid 透传', (
       tester,
     ) async {
-      appConfig.showNonCurrentWeekCourses.value = false;
-      appConfig.showCourseGrid.value = false;
+      await prefs.setBool('showNonCurrentWeekCourses', false);
+      await prefs.setBool('showCourseGrid', false);
 
       await tester.pumpWidget(
         _app(
@@ -502,7 +500,7 @@ void main() {
     });
 
     testWidgets('showWeekendOverride 仍然优先于全局 showWeekend', (tester) async {
-      appConfig.showWeekend.value = true;
+      await prefs.setBool('showWeekend', true);
 
       // 覆盖为 false：即使全局显示周末，也只渲染 5 天（班级课表/培养方案依赖该语义）
       await tester.pumpWidget(
@@ -522,7 +520,7 @@ void main() {
       );
 
       // 覆盖为 true：全局关闭周末时仍然渲染 7 天
-      appConfig.showWeekend.value = false;
+      await prefs.setBool('showWeekend', false);
       await tester.pumpWidget(
         _app(
           CourseGrid(

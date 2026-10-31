@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/models/balance_record.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/scu_backend/payapp/balance_query_service.dart';
 import 'package:bugaoshan/scu_backend/payapp/payapp_api_service.dart';
 import 'package:bugaoshan/scu_backend/payapp/payapp_auth.dart';
@@ -40,7 +39,7 @@ class BalanceQueryProvider extends ChangeNotifier {
   final PayAppApiService _payappApi;
   final DatabaseService _db;
   final PayAppAuth _payAppAuth;
-  final AppConfigProvider _appConfig;
+  final bool Function() _autoSampleOnLogin;
   final DateTime Function() _now;
 
   final _balanceEntries = <_BalanceCacheKey, _ResourceEntry<RoomInfo>>{};
@@ -56,10 +55,11 @@ class BalanceQueryProvider extends ChangeNotifier {
     this._prefs,
     this._payappApi,
     this._db,
-    this._payAppAuth,
-    this._appConfig, {
+    this._payAppAuth, {
+    bool Function()? autoSampleOnLogin,
     DateTime Function()? now,
-  }) : _now = now ?? DateTime.now {
+  })  : _autoSampleOnLogin = autoSampleOnLogin ?? (() => false),
+        _now = now ?? DateTime.now {
     _loadBindingInfo();
     _payAppAuth.addListener(_onPayAppAuthChanged);
     _lastPayAppReady = _payAppAuth.isReady;
@@ -77,7 +77,7 @@ class BalanceQueryProvider extends ChangeNotifier {
 
   Future<void> _maybeAutoSample() async {
     if (_autoSampling) return;
-    if (!_appConfig.autoSampleBalanceOnLogin.value) return;
+    if (!_autoSampleOnLogin()) return;
     final binding = currentBinding;
     if (binding == null) return;
 

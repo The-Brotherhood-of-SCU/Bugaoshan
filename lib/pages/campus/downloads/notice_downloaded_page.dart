@@ -4,7 +4,7 @@ import 'package:bugaoshan/utils/app_log.dart';
 import 'dart:io';
 
 import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/services/download_manager.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:flutter/material.dart';

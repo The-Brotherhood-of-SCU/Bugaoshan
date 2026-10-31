@@ -42,7 +42,7 @@ final class CloudPrintNotifierProvider
 }
 
 String _$cloudPrintNotifierHash() =>
-    r'739087bc159fb6c7564cb79685c030f11581ff93';
+    r'ff3e8da092a56930ebe432cfe7f1d1768badcea9';
 
 abstract class _$CloudPrintNotifier extends $Notifier<CloudPrintProvider> {
   CloudPrintProvider build();

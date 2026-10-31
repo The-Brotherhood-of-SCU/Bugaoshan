@@ -42,7 +42,7 @@ final class StudentTypeSettingProvider
 }
 
 String _$studentTypeSettingHash() =>
-    r'145af73e3822808bb9e63b3becfcc2034a28f9a9';
+    r'ff4bcff520afe59f4bac778843a415944747a614';
 
 abstract class _$StudentTypeSetting extends $Notifier<StudentType> {
   StudentType build();
@@ -95,7 +95,7 @@ final class VisibleDockIdsSettingProvider
 }
 
 String _$visibleDockIdsSettingHash() =>
-    r'77deef53b2c889901f99fc30960adb9085137cf0';
+    r'0b5a768a6bc12c5ce24f11893415d1e0193c2fa3';
 
 abstract class _$VisibleDockIdsSetting extends $Notifier<List<String>> {
   List<String> build();
@@ -149,7 +149,7 @@ final class HasUpdateNotificationSettingProvider
 }
 
 String _$hasUpdateNotificationSettingHash() =>
-    r'ec5af8e37a8cf8c5577d1c0756df1f9f64a92b1a';
+    r'28556e1a6c98fda6530db3d6a3e0602190496178';
 
 abstract class _$HasUpdateNotificationSetting extends $Notifier<bool> {
   bool build();
@@ -204,7 +204,7 @@ final class EnableDockSwitchAnimationSettingProvider
 }
 
 String _$enableDockSwitchAnimationSettingHash() =>
-    r'161ce9713e84b21fbc12c0e6418e4bd1eb40ff3c';
+    r'739e2849b5291fa2eb6c6a8011f479bb10eb32ba';
 
 abstract class _$EnableDockSwitchAnimationSetting extends $Notifier<bool> {
   bool build();
@@ -259,7 +259,7 @@ final class CardSizeAnimationDurationSettingProvider
 }
 
 String _$cardSizeAnimationDurationSettingHash() =>
-    r'd1f3633002ef5cfa4a5601116b853d3dcb253c36';
+    r'bca60577e2b70391bdaa73dc1bd8cd42560bc414';
 
 abstract class _$CardSizeAnimationDurationSetting extends $Notifier<Duration> {
   Duration build();
@@ -311,7 +311,7 @@ final class LocaleSettingProvider
   }
 }
 
-String _$localeSettingHash() => r'1d08e5e3e2a35b1a43bf2dd9b069af8d4c552ffa';
+String _$localeSettingHash() => r'5bbba0cd15e67c932280ac3d3723fe0180b0b057';
 
 abstract class _$LocaleSetting extends $Notifier<Locale?> {
   Locale? build();
@@ -363,7 +363,7 @@ final class ThemeColorSettingProvider
   }
 }
 
-String _$themeColorSettingHash() => r'73080837ab64aeeaf2213dab6d71eee53d2636ae';
+String _$themeColorSettingHash() => r'20c6a919c08e4be8eb9db0c9770e7290c0b41508';
 
 abstract class _$ThemeColorSetting extends $Notifier<Color> {
   Color build();
@@ -416,7 +416,7 @@ final class ThemeColorModeSettingProvider
 }
 
 String _$themeColorModeSettingHash() =>
-    r'b4ca31826ffacb970d397f76dfe74fc644e90c17';
+    r'23aea45819cef806624cb1a8bf4a9cf89fd46df0';
 
 abstract class _$ThemeColorModeSetting extends $Notifier<ThemeColorMode> {
   ThemeColorMode build();
@@ -468,7 +468,7 @@ final class ThemeModeSettingProvider
   }
 }
 
-String _$themeModeSettingHash() => r'4e9c813139d7e179fe9097957d4ca306b81fb9aa';
+String _$themeModeSettingHash() => r'4101fa73cd29fc93f6d6177c2bdd35212a5b3402';
 
 abstract class _$ThemeModeSetting extends $Notifier<ThemeMode> {
   ThemeMode build();
@@ -521,7 +521,7 @@ final class UseGoogleFontsSettingProvider
 }
 
 String _$useGoogleFontsSettingHash() =>
-    r'4e0807c9ec499ac0460b580d7d6be6c02a4ac0d6';
+    r'22bacdd1f41bf500008f7fc8d23d6e84a0ca1df9';
 
 abstract class _$UseGoogleFontsSetting extends $Notifier<bool> {
   bool build();
@@ -575,7 +575,7 @@ final class AcceptedEulaVersionSettingProvider
 }
 
 String _$acceptedEulaVersionSettingHash() =>
-    r'c95c14a052437fb7da51ef73b72968fc0f3e77c3';
+    r'4e74b19763e3cf4042229619a0ad4f68ce8ab68d';
 
 abstract class _$AcceptedEulaVersionSetting extends $Notifier<int> {
   int build();
@@ -631,7 +631,7 @@ final class FirstLaunchWizardCompletedSettingProvider
 }
 
 String _$firstLaunchWizardCompletedSettingHash() =>
-    r'6f02cededa480b694986f68e4c58d24cd6c763ae';
+    r'c614952c8a047935a0999baf1f8422841e341ec0';
 
 abstract class _$FirstLaunchWizardCompletedSetting extends $Notifier<bool> {
   bool build();
@@ -685,7 +685,7 @@ final class LogPersistenceEnabledSettingProvider
 }
 
 String _$logPersistenceEnabledSettingHash() =>
-    r'034d1236e2c2198f11005de035af515b3abebbd1';
+    r'fbee29afd2f5008f1eeee28bb1dd6dbc40d6d930';
 
 abstract class _$LogPersistenceEnabledSetting extends $Notifier<bool> {
   bool build();
@@ -739,7 +739,7 @@ final class BackgroundImagePathSettingProvider
 }
 
 String _$backgroundImagePathSettingHash() =>
-    r'e89974ded63481b0b2cf66cd5d21461bace4d56f';
+    r'5245bc8c30a7391d643de251803e5b22fd042591';
 
 abstract class _$BackgroundImagePathSetting extends $Notifier<String?> {
   String? build();
@@ -794,7 +794,7 @@ final class BackgroundImageCropSettingProvider
 }
 
 String _$backgroundImageCropSettingHash() =>
-    r'af04a0bd2b0ff47639818fa9066a90204b0319be';
+    r'0091b76000060e5d91a9dbeaeef09697053fe55e';
 
 abstract class _$BackgroundImageCropSetting
     extends $Notifier<BackgroundCropParams?> {
@@ -849,7 +849,7 @@ final class BackgroundImageOpacitySettingProvider
 }
 
 String _$backgroundImageOpacitySettingHash() =>
-    r'4e7139f29dd89e78883442e96159b7bd70a8c003';
+    r'3f553d574cc5c9081c307104fb6a280816422d18';
 
 abstract class _$BackgroundImageOpacitySetting extends $Notifier<double> {
   double build();
@@ -902,7 +902,7 @@ final class CampusGridViewSettingProvider
 }
 
 String _$campusGridViewSettingHash() =>
-    r'520a7fc3a64088c0ccf855b61db666fcf89807a7';
+    r'047c05033c69393d70103a9a300fd85c04074627';
 
 abstract class _$CampusGridViewSetting extends $Notifier<bool> {
   bool build();
@@ -955,7 +955,7 @@ final class ShowCourseWeeksSettingProvider
 }
 
 String _$showCourseWeeksSettingHash() =>
-    r'11283839f14ee76ea59ae2503935923cb0b94825';
+    r'a3ff903dcc085c4ebe6f976227cfc9808f58a818';
 
 abstract class _$ShowCourseWeeksSetting extends $Notifier<bool> {
   bool build();
@@ -1008,7 +1008,7 @@ final class ShowWeekendSettingProvider
 }
 
 String _$showWeekendSettingHash() =>
-    r'937a1267c814edd613bc6452e3d452b3c4baa5d1';
+    r'8979b0fd849301a2061aa76205d729175643e6ef';
 
 abstract class _$ShowWeekendSetting extends $Notifier<bool> {
   bool build();
@@ -1061,7 +1061,7 @@ final class ShowTeacherNameSettingProvider
 }
 
 String _$showTeacherNameSettingHash() =>
-    r'1f1814a819e836cf198441fd818ea5a47322093c';
+    r'40d28f84f25076e677ba4da082503968b8a0b2aa';
 
 abstract class _$ShowTeacherNameSetting extends $Notifier<bool> {
   bool build();
@@ -1114,7 +1114,7 @@ final class ShowLocationSettingProvider
 }
 
 String _$showLocationSettingHash() =>
-    r'f6fadcba2e9db2277264e47a6fac9563808533c7';
+    r'1f67a2cac3494f5f7230037006b1d2b6da2ddfcc';
 
 abstract class _$ShowLocationSetting extends $Notifier<bool> {
   bool build();
@@ -1169,7 +1169,7 @@ final class ShowNonCurrentWeekCoursesSettingProvider
 }
 
 String _$showNonCurrentWeekCoursesSettingHash() =>
-    r'0c31aa23aaf7b643cc4b771317fcd7db64c0af3b';
+    r'5bfe3b891c2a807e52e77391411db1ded662373f';
 
 abstract class _$ShowNonCurrentWeekCoursesSetting extends $Notifier<bool> {
   bool build();
@@ -1222,7 +1222,7 @@ final class ColorOpacitySettingProvider
 }
 
 String _$colorOpacitySettingHash() =>
-    r'6f0396af6be2ffb053146db0fbd09e5d062f20fb';
+    r'df4c988363eb95db2d8a0bc341788c45077cbd79';
 
 abstract class _$ColorOpacitySetting extends $Notifier<double> {
   double build();
@@ -1275,7 +1275,7 @@ final class CourseCardFontSizeSettingProvider
 }
 
 String _$courseCardFontSizeSettingHash() =>
-    r'1f98fe66ffe70ac624dec965f107a53cbc8f89db';
+    r'237d440c6bbe9ee7e41dc4cbd7a33a121718593e';
 
 abstract class _$CourseCardFontSizeSetting extends $Notifier<double> {
   double build();
@@ -1328,7 +1328,7 @@ final class ShowCourseGridSettingProvider
 }
 
 String _$showCourseGridSettingHash() =>
-    r'c2c681b778a3f6439f50da6b49e9cbf00168b4ea';
+    r'cdd5fa7382cc428e411bb30d89884ae2c8bdb346';
 
 abstract class _$ShowCourseGridSetting extends $Notifier<bool> {
   bool build();
@@ -1381,7 +1381,7 @@ final class CourseRowHeightSettingProvider
 }
 
 String _$courseRowHeightSettingHash() =>
-    r'9a454d18a338f8e57912c9cc217591934ef8a088';
+    r'f1376f4a91b4b35663fbcd1089380e84ff75a27e';
 
 abstract class _$CourseRowHeightSetting extends $Notifier<double> {
   double build();
@@ -1434,7 +1434,7 @@ final class WidgetShowTomorrowSettingProvider
 }
 
 String _$widgetShowTomorrowSettingHash() =>
-    r'687670ba8b1449b0712f8e95acd051b9f56fe8df';
+    r'00933092b63e574abe92d9ac52f2e1ed9d4a5902';
 
 abstract class _$WidgetShowTomorrowSetting extends $Notifier<bool> {
   bool build();
@@ -1487,7 +1487,7 @@ final class WidgetColorStyleSettingProvider
 }
 
 String _$widgetColorStyleSettingHash() =>
-    r'60bb84a4d16b5436d57ce6ae2764897311fc25d5';
+    r'1ff317705bb02509e804a85917f6943dad2461a9';
 
 abstract class _$WidgetColorStyleSetting extends $Notifier<WidgetColorStyle> {
   WidgetColorStyle build();
@@ -1540,7 +1540,7 @@ final class WidgetDensitySettingProvider
 }
 
 String _$widgetDensitySettingHash() =>
-    r'9d0ca33968476283563dacdd152c87d58c9223d7';
+    r'4376c02d8d2a4b30dbea7f0ad463873620e3abd8';
 
 abstract class _$WidgetDensitySetting extends $Notifier<WidgetDensity> {
   WidgetDensity build();
@@ -1594,7 +1594,7 @@ final class UsePreviewUpdateSourceSettingProvider
 }
 
 String _$usePreviewUpdateSourceSettingHash() =>
-    r'43e315b4cfa209537fb6cee1bf7b8ab4e57a30f2';
+    r'b65e9625cad8ce99bb0e055cdc090005d689526b';
 
 abstract class _$UsePreviewUpdateSourceSetting extends $Notifier<bool> {
   bool build();
@@ -1647,7 +1647,7 @@ final class UseGithubProxySettingProvider
 }
 
 String _$useGithubProxySettingHash() =>
-    r'ec0acbcc7a5828ba0ad3e6916eb8125c51498dd1';
+    r'4ddb7fe942c53ed7269d664c73f92f35e4fd9b28';
 
 abstract class _$UseGithubProxySetting extends $Notifier<bool> {
   bool build();
@@ -1701,7 +1701,7 @@ final class AutoSampleBalanceOnLoginSettingProvider
 }
 
 String _$autoSampleBalanceOnLoginSettingHash() =>
-    r'7948519e1e630c6aa1fa92752af70ca4f6f634fc';
+    r'970cd21c34cbe249d9709fd6c3659a8ee1e1fd1c';
 
 abstract class _$AutoSampleBalanceOnLoginSetting extends $Notifier<bool> {
   bool build();
@@ -1755,7 +1755,7 @@ final class ForceCaptchaForDownloadSettingProvider
 }
 
 String _$forceCaptchaForDownloadSettingHash() =>
-    r'e460801e11d4e0dc081e2b7dc1b34f020ebdee13';
+    r'9a534121629538cf406587930d9f15d5fd737d1b';
 
 abstract class _$ForceCaptchaForDownloadSetting extends $Notifier<bool> {
   bool build();
@@ -1808,7 +1808,7 @@ final class ReminderEnabledSettingProvider
 }
 
 String _$reminderEnabledSettingHash() =>
-    r'40e8549e3bf07f6adc8384850597f19417aec47f';
+    r'1e0672fff61db742beec27737f4d611a82d978b4';
 
 abstract class _$ReminderEnabledSetting extends $Notifier<bool> {
   bool build();
@@ -1862,7 +1862,7 @@ final class ReminderLeadMinutesSettingProvider
 }
 
 String _$reminderLeadMinutesSettingHash() =>
-    r'eb94a99c9ed775c23dc3a60073a3aaa9b97487fb';
+    r'861908e69e4679b27d56642b0d9e46e8899d9dd2';
 
 abstract class _$ReminderLeadMinutesSetting extends $Notifier<List<int>> {
   List<int> build();
@@ -1915,7 +1915,7 @@ final class ReminderQuietStartSettingProvider
 }
 
 String _$reminderQuietStartSettingHash() =>
-    r'e6818ae24190218e9828210228de69bc0255d4b5';
+    r'b9543a6284d969f34dd49b9355216dfd66555868';
 
 abstract class _$ReminderQuietStartSetting extends $Notifier<TimeOfDay?> {
   TimeOfDay? build();
@@ -1968,7 +1968,7 @@ final class ReminderQuietEndSettingProvider
 }
 
 String _$reminderQuietEndSettingHash() =>
-    r'f601921d5fd697ef8e8450896744996ea958d0a4';
+    r'd0b328e514936aa3380982afaee661e6bc85e490';
 
 abstract class _$ReminderQuietEndSetting extends $Notifier<TimeOfDay?> {
   TimeOfDay? build();
@@ -2021,7 +2021,7 @@ final class ReminderWindowDaysSettingProvider
 }
 
 String _$reminderWindowDaysSettingHash() =>
-    r'7b7679fba65e848f10e828cf82f624a21beec195';
+    r'71cafc1bf9b58b4fcfd8e78bac7b6f2095ca3a5c';
 
 abstract class _$ReminderWindowDaysSetting extends $Notifier<int> {
   int build();
@@ -2040,3 +2040,50 @@ abstract class _$ReminderWindowDaysSetting extends $Notifier<int> {
     return element.handleCreate(ref, build);
   }
 }
+
+@ProviderFor(reminderSettingsPod)
+final reminderSettingsPodProvider = ReminderSettingsPodProvider._();
+
+final class ReminderSettingsPodProvider
+    extends
+        $FunctionalProvider<
+          ReminderSettings,
+          ReminderSettings,
+          ReminderSettings
+        >
+    with $Provider<ReminderSettings> {
+  ReminderSettingsPodProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'reminderSettingsPodProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$reminderSettingsPodHash();
+
+  @$internal
+  @override
+  $ProviderElement<ReminderSettings> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  ReminderSettings create(Ref ref) {
+    return reminderSettingsPod(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ReminderSettings value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ReminderSettings>(value),
+    );
+  }
+}
+
+String _$reminderSettingsPodHash() =>
+    r'05c6039a5044736485e73d110e1f6deb4ba102ba';

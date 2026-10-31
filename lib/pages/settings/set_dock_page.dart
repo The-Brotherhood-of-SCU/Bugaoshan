@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/campus_item_config.dart';
-import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
@@ -73,7 +72,9 @@ class _SetDockPageState extends ConsumerState<SetDockPage> {
       content: '',
     );
     if (confirm == true) {
-      ref.read(appConfigProviderBridge).resetDockToDefault();
+      ref
+          .read(visibleDockIdsSettingProvider.notifier)
+          .update(List<String>.from(defaultVisibleDockIds));
       setState(
         () => _visibleIds =
             List<String>.from(ref.read(visibleDockIdsSettingProvider)),

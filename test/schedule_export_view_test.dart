@@ -10,7 +10,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/course/export/schedule_export_view.dart';
 import 'package:bugaoshan/pages/course/widgets/grid_day_column.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 
 Widget _wrapHost(Widget child, {ThemeData? theme}) => ProviderScope(
   child: MaterialApp(
@@ -34,18 +34,16 @@ Widget _wrapHost(Widget child, {ThemeData? theme}) => ProviderScope(
   ),
 );
 
-Future<AppConfigProvider> _createAppConfig({
+Future<SharedPreferences> _createPrefs({
   Map<String, Object> values = const {},
 }) async {
   SharedPreferences.setMockInitialValues(values);
   final prefs = await SharedPreferences.getInstance();
-  final config = AppConfigProvider(prefs);
-  await config.init();
-  if (getIt.isRegistered<AppConfigProvider>()) {
-    await getIt.unregister<AppConfigProvider>();
+  if (getIt.isRegistered<SharedPreferences>()) {
+    await getIt.unregister<SharedPreferences>();
   }
-  getIt.registerSingleton<AppConfigProvider>(config);
-  return config;
+  getIt.registerSingleton<SharedPreferences>(prefs);
+  return prefs;
 }
 
 Future<File> _writeTestImage(WidgetTester tester) async {
@@ -120,8 +118,7 @@ void main() {
   testWidgets('showWeekend=false 显示 5 列，showWeekend=true 显示 7 列', (
     tester,
   ) async {
-    final appConfig = await _createAppConfig();
-    appConfig.showWeekend.value = false;
+    await _createPrefs(values: {'showWeekend': false});
 
     final data = ScheduleExportData(
       config: sampleConfig,
@@ -132,16 +129,21 @@ void main() {
     await tester.pumpWidget(_wrapHost(ScheduleExportView(data: data)));
     expect(find.byType(GridDayColumn), findsNWidgets(5));
 
-    appConfig.showWeekend.value = true;
-    await tester.pumpWidget(_wrapHost(ScheduleExportView(data: data)));
+    final element = tester.element(find.byType(ScheduleExportView));
+    final container = ProviderScope.containerOf(element);
+    container.read(showWeekendSettingProvider.notifier).update(true);
+    await tester.pump();
     expect(find.byType(GridDayColumn), findsNWidgets(7));
   });
 
   testWidgets('教师/地点/周次在对应设置关闭时不渲染', (tester) async {
-    final appConfig = await _createAppConfig();
-    appConfig.showTeacherName.value = false;
-    appConfig.showLocation.value = false;
-    appConfig.showCourseWeeks.value = false;
+    await _createPrefs(
+      values: {
+        'showTeacherName': false,
+        'showLocation': false,
+        'showCourseWeeks': false,
+      },
+    );
 
     final data = ScheduleExportData(
       config: sampleConfig,
@@ -165,8 +167,11 @@ void main() {
   });
 
   testWidgets('rowHeight=120 确实生效并决定日列高度', (tester) async {
-    final appConfig = await _createAppConfig();
-    appConfig.courseRowHeight.value = 120.0;
+    await _createPrefs(
+      values: {
+        'courseRowHeight': 120.0,
+      },
+    );
 
     final data = ScheduleExportData(
       config: sampleConfig,
@@ -186,7 +191,7 @@ void main() {
   });
 
   testWidgets('ScheduleExportView 内部不包含任何 Scrollable 组件', (tester) async {
-    await _createAppConfig();
+    await _createPrefs();
     final data = ScheduleExportData(
       config: sampleConfig,
       courses: const [],
@@ -205,8 +210,7 @@ void main() {
   testWidgets(
     '宿主约束下（宽度固定 420，高度无界）size.height ≈ 40*textScale + rowHeight*sections',
     (tester) async {
-      final appConfig = await _createAppConfig();
-      appConfig.courseRowHeight.value = 65.0;
+      await _createPrefs(values: {'courseRowHeight': 65.0});
 
       final data = ScheduleExportData(
         config: sampleConfig,
@@ -228,7 +232,7 @@ void main() {
   );
 
   testWidgets('最后一节课程卡片完全落在 boundary 边界内', (tester) async {
-    await _createAppConfig();
+    await _createPrefs();
     final data = ScheduleExportData(
       config: sampleConfig,
       courses: [course1, lastCourse],
@@ -246,9 +250,8 @@ void main() {
   });
 
   testWidgets('light/dark 两种 Theme 下卡片文字色不同', (tester) async {
-    final appConfig = await _createAppConfig();
+    await _createPrefs(values: {'colorOpacity': 0.2});
     // 半透明背景使卡片受 scaffoldBackgroundColor 影响，明暗主题下反衬出不同文字色
-    appConfig.colorOpacity.value = 0.2;
 
     final data = ScheduleExportData(
       config: sampleConfig,
@@ -282,7 +285,7 @@ void main() {
   });
 
   testWidgets('背景图预热后首帧即挂载 Image 组件', (tester) async {
-    await _createAppConfig();
+    await _createPrefs();
     final file = await _writeTestImage(tester);
     await _warmImageCache(tester, file);
 
@@ -301,7 +304,7 @@ void main() {
   });
 
   testWidgets('背景图片文件不存在时无 Image 且不抛出异常', (tester) async {
-    await _createAppConfig();
+    await _createPrefs();
     final data = ScheduleExportData(
       config: sampleConfig,
       courses: [course1],
@@ -322,7 +325,7 @@ void main() {
   });
 
   testWidgets('反向纪律用例：将 View 放进高度有界的容器会触发 RenderFlex 溢出', (tester) async {
-    await _createAppConfig();
+    await _createPrefs();
     final data = ScheduleExportData(
       config: sampleConfig,
       courses: [course1],

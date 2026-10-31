@@ -42,7 +42,7 @@ final class PlanCompletionNotifierProvider
 }
 
 String _$planCompletionNotifierHash() =>
-    r'29c0be4a30d92aba7dbfd8d73ebc946a7c834a05';
+    r'699ecf031cc0562e3d6c66828d626985fcdda71f';
 
 abstract class _$PlanCompletionNotifier
     extends $Notifier<PlanCompletionProvider> {

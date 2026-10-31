@@ -15,7 +15,6 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/course/export/schedule_export_view.dart';
 import 'package:bugaoshan/pages/course/export/schedule_image_export.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 
 Widget _wrap(Widget child) => ProviderScope(
   child: MaterialApp(
@@ -25,16 +24,14 @@ Widget _wrap(Widget child) => ProviderScope(
   ),
 );
 
-Future<AppConfigProvider> _initAppConfig() async {
+Future<SharedPreferences> _initAppConfig() async {
   SharedPreferences.setMockInitialValues({});
   final prefs = await SharedPreferences.getInstance();
-  final config = AppConfigProvider(prefs);
-  await config.init();
-  if (getIt.isRegistered<AppConfigProvider>()) {
-    await getIt.unregister<AppConfigProvider>();
+  if (getIt.isRegistered<SharedPreferences>()) {
+    await getIt.unregister<SharedPreferences>();
   }
-  getIt.registerSingleton<AppConfigProvider>(config);
-  return config;
+  getIt.registerSingleton<SharedPreferences>(prefs);
+  return prefs;
 }
 
 class _TestPathProviderPlatform extends PathProviderPlatform {

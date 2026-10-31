@@ -148,7 +148,7 @@ class SoftwareSettingPage extends ConsumerWidget {
                     final scuAuth = ref.read(scuAuthProviderBridge);
                     await scuAuth.logout();
                     await scuAuth.clearCredentials();
-                    await ref.read(appConfigProviderBridge).clearAll();
+                    await ref.read(sharedPreferencesBridge).clear();
                     final courseProv = ref.read(courseProvider);
                     await courseProv.clearAllData();
                     // 日志文件也清掉：用户点了「清除所有数据」就应真的全清，

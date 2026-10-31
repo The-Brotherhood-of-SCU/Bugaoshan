@@ -8,8 +8,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/course/main/course_page.dart';
 import 'package:bugaoshan/pages/settings/background_crop_editor_page.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/providers/riverpod/bridge.dart';
 import 'package:bugaoshan/providers/riverpod/settings/app_config_pods.dart';
 import 'package:bugaoshan/widgets/common/styled_widget.dart';
 import 'package:bugaoshan/theme_shape.dart';
@@ -311,15 +309,14 @@ class SetCourseStylePage extends ConsumerWidget {
   }
 
   Future<void> _removeBackgroundImage(WidgetRef ref) async {
-    final appConfig = ref.read(appConfigProviderBridge);
-    final oldPath = appConfig.backgroundImagePath.value;
+    final oldPath = ref.read(backgroundImagePathSettingProvider);
     ref.read(backgroundImagePathSettingProvider.notifier).update(null);
     ref.read(backgroundImageCropSettingProvider.notifier).update(null);
     if (oldPath != null) {
       unawaited(FileImage(File(oldPath)).evict());
       File(oldPath).delete().ignore();
     }
-    if (appConfig.themeColorMode.value == ThemeColorMode.backgroundImage) {
+    if (ref.read(themeColorModeSettingProvider) == ThemeColorMode.backgroundImage) {
       await SystemTheme.accentColor.load();
       ref.read(themeColorSettingProvider.notifier).update(SystemTheme.accentColor.accent);
     }
@@ -368,9 +365,13 @@ class SetCourseStylePage extends ConsumerWidget {
     ref.read(backgroundImagePathSettingProvider.notifier).update(destPath);
     ref.read(backgroundImageCropSettingProvider.notifier).update(null);
 
-    final appConfig = ref.read(appConfigProviderBridge);
-    if (appConfig.themeColorMode.value == ThemeColorMode.backgroundImage) {
-      final themeColorProvider = SetThemeColorProvider(appConfig);
+    final mode = ref.read(themeColorModeSettingProvider);
+    if (mode == ThemeColorMode.backgroundImage) {
+      final themeColorProvider = SetThemeColorProvider(
+        getBackgroundImagePath: () => destPath,
+        getThemeColorMode: () => mode,
+        getThemeColor: () => ref.read(themeColorSettingProvider),
+      );
       final result = await themeColorProvider.extractColorFromBackgroundImage();
       if (result == ExtractColorResult.success &&
           themeColorProvider.extractedColor != null) {
@@ -386,7 +387,7 @@ class SetCourseStylePage extends ConsumerWidget {
     );
 
     if (!context.mounted) return;
-    if (appConfig.themeColorMode.value != ThemeColorMode.backgroundImage) {
+    if (mode != ThemeColorMode.backgroundImage) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.backgroundImageSetHint),

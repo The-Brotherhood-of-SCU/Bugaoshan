@@ -9,7 +9,7 @@ import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'schedule_export_view.dart';
 
@@ -224,8 +224,11 @@ class _ScheduleImageExportDialogState
 
   Future<void> _startWarmupAndRender() async {
     try {
-      final appConfig = getIt<AppConfigProvider>();
-      if (appConfig.useGoogleFonts.value) {
+      final prefs = getIt.isRegistered<SharedPreferences>()
+          ? getIt<SharedPreferences>()
+          : await SharedPreferences.getInstance();
+      final useGoogleFonts = prefs.getBool('useGoogleFonts') ?? true;
+      if (useGoogleFonts) {
         try {
           await GoogleFonts.pendingFonts().timeout(const Duration(seconds: 3));
         } catch (e) {
@@ -236,7 +239,7 @@ class _ScheduleImageExportDialogState
         }
       }
 
-      final rawPath = appConfig.backgroundImagePath.value;
+      final rawPath = prefs.getString('backgroundImagePath');
       if (rawPath != null) {
         final file = File(rawPath);
         bool exists = false;

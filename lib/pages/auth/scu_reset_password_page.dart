@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/auth/scu_login_button.dart';
 import 'package:bugaoshan/pages/auth/scu_login_captcha_row.dart';
@@ -43,7 +42,7 @@ class ScuResetPasswordPage extends StatefulWidget {
 class _ScuResetPasswordPageState extends State<ScuResetPasswordPage> {
   static const String _tag = 'ScuResetPasswordPageState';
 
-  final _accountService = getIt<ForgotPasswordService>();
+  final _accountService = ForgotPasswordService();
 
   final _usernameCtrl = TextEditingController();
   final _captchaCtrl = TextEditingController();

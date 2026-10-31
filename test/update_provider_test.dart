@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:bugaoshan/models/version_info.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/services/download_notification_service.dart';
@@ -26,7 +25,7 @@ class _ControllableUpdateService extends UpdateService {
         prefs,
         '2.5.3',
         GithubResourceService(
-          AppConfigProvider(prefs),
+          useProxy: () => true,
           client: _stubResourceClient,
         ),
       );
@@ -210,7 +209,7 @@ void main() {
     final realService = UpdateService(
       prefs,
       '2.5.3',
-      GithubResourceService(AppConfigProvider(prefs), client: _stubResourceClient),
+      GithubResourceService(useProxy: () => true, client: _stubResourceClient),
     );
     final realProvider = UpdateProvider(
       realService,

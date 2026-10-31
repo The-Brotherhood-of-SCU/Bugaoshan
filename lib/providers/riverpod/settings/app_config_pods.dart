@@ -1,26 +1,85 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' show Color, Colors, Locale, TimeOfDay, ThemeMode;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:bugaoshan/models/background_crop.dart';
+import 'package:bugaoshan/models/campus_item_config.dart';
+import 'package:bugaoshan/models/reminder_plan.dart';
 import 'package:bugaoshan/models/student_type.dart';
+import 'package:bugaoshan/models/theme_color_mode.dart';
 import 'package:bugaoshan/models/widget_appearance.dart';
-import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/riverpod/bridge.dart';
+import 'package:bugaoshan/utils/locale_utils.dart';
+
+export 'package:bugaoshan/models/theme_color_mode.dart';
 
 part 'app_config_pods.g.dart';
+
+const String _keyLocale = 'locale';
+const String _keyCardSizeAnimationDuration = 'cardSizeAnimationDuration';
+const String _keyThemeColor = 'themeColor';
+const String _keyColorOpacity = 'colorOpacity';
+const String _keyCourseCardFontSize = 'courseCardFontSize';
+const String _keyShowCourseGrid = 'showCourseGrid';
+const String _keyCourseRowHeight = 'courseRowHeight';
+const String _keyBackgroundImageOpacity = 'backgroundImageOpacity';
+const String _keyBackgroundImagePath = 'backgroundImagePath';
+const String _keyBackgroundImageCrop = 'backgroundImageCrop';
+const String _keyFirstLaunchWizardCompleted = 'firstLaunchWizardCompleted';
+const String _keyHasUpdateNotification = 'hasUpdateNotification';
+const String _keyVisibleDockIds = 'visibleDockIds';
+const String _keyAcceptedEulaVersion = 'acceptedEulaVersion';
+const String _keyThemeColorMode = 'themeColorMode';
+const String _keyThemeMode = 'themeMode';
+const String _keyWidgetShowTomorrow = 'widget_show_tomorrow';
+const String _keyWidgetColorStyle = 'widget_color_style';
+const String _keyWidgetDensity = 'widget_density';
+const String _keyUsePreviewUpdateSource = 'usePreviewUpdateSource';
+const String _keyUseGithubProxy = 'useGithubProxy';
+const String _keyShowTeacherName = 'showTeacherName';
+const String _keyShowLocation = 'showLocation';
+const String _keyShowCourseWeeks = 'showCourseWeeks';
+const String _keyShowWeekend = 'showWeekend';
+const String _keyShowNonCurrentWeekCourses = 'showNonCurrentWeekCourses';
+const String _keyUseGoogleFonts = 'useGoogleFonts';
+const String _keyCampusGridView = 'campusGridView';
+const String _keyAutoSampleBalanceOnLogin = 'autoSampleBalanceOnLogin';
+const String _keyForceCaptchaForDownload = 'forceCaptchaForDownload';
+const String _keyEnablePageTransitionAnimation = 'enablePageTransitionAnimation';
+const String _keyStudentType = 'studentType';
+const String _keyReminderEnabled = 'reminder_enabled';
+const String _keyReminderLeadMinutes = 'reminder_lead_minutes';
+const String _keyReminderQuietStart = 'reminder_quiet_start';
+const String _keyReminderQuietEnd = 'reminder_quiet_end';
+const String _keyReminderWindowDays = 'reminder_window_days';
+const String _keyLogPersistenceEnabled = 'log_persistence_enabled';
+
+TimeOfDay? _decodeTimeOfDay(int? minutes) {
+  if (minutes == null || minutes < 0 || minutes >= 24 * 60) return null;
+  return TimeOfDay(hour: minutes ~/ 60, minute: minutes % 60);
+}
+
+int _encodeTimeOfDay(TimeOfDay? time) =>
+    time == null ? -1 : time.hour * 60 + time.minute;
+
+List<int>? _decodeLeadMinutes(List<String>? raw) {
+  if (raw == null) return null;
+  final values = raw.map(int.tryParse).whereType<int>().toList();
+  return values.isEmpty ? null : values;
+}
 
 @Riverpod(keepAlive: true)
 class StudentTypeSetting extends _$StudentTypeSetting {
   @override
   StudentType build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.studentType.value;
-    appConfig.studentType.addListener(listener);
-    ref.onDispose(() => appConfig.studentType.removeListener(listener));
-    return appConfig.studentType.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    final idx = prefs.getInt(_keyStudentType) ?? StudentType.undergraduate.index;
+    return idx < StudentType.values.length
+        ? StudentType.values[idx]
+        : StudentType.undergraduate;
   }
 
   void update(StudentType type) {
-    ref.read(appConfigProviderBridge).studentType.value = type;
+    ref.read(sharedPreferencesBridge).setInt(_keyStudentType, type.index);
     state = type;
   }
 }
@@ -29,15 +88,13 @@ class StudentTypeSetting extends _$StudentTypeSetting {
 class VisibleDockIdsSetting extends _$VisibleDockIdsSetting {
   @override
   List<String> build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.visibleDockIds.value;
-    appConfig.visibleDockIds.addListener(listener);
-    ref.onDispose(() => appConfig.visibleDockIds.removeListener(listener));
-    return appConfig.visibleDockIds.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getStringList(_keyVisibleDockIds) ??
+        List<String>.from(defaultVisibleDockIds);
   }
 
   void update(List<String> ids) {
-    ref.read(appConfigProviderBridge).visibleDockIds.value = ids;
+    ref.read(sharedPreferencesBridge).setStringList(_keyVisibleDockIds, ids);
     state = ids;
   }
 }
@@ -46,15 +103,12 @@ class VisibleDockIdsSetting extends _$VisibleDockIdsSetting {
 class HasUpdateNotificationSetting extends _$HasUpdateNotificationSetting {
   @override
   bool build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.hasUpdateNotification.value;
-    appConfig.hasUpdateNotification.addListener(listener);
-    ref.onDispose(() => appConfig.hasUpdateNotification.removeListener(listener));
-    return appConfig.hasUpdateNotification.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getBool(_keyHasUpdateNotification) ?? false;
   }
 
   void update(bool hasUpdate) {
-    ref.read(appConfigProviderBridge).hasUpdateNotification.value = hasUpdate;
+    ref.read(sharedPreferencesBridge).setBool(_keyHasUpdateNotification, hasUpdate);
     state = hasUpdate;
   }
 }
@@ -63,15 +117,12 @@ class HasUpdateNotificationSetting extends _$HasUpdateNotificationSetting {
 class EnableDockSwitchAnimationSetting extends _$EnableDockSwitchAnimationSetting {
   @override
   bool build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.enableDockSwitchAnimation.value;
-    appConfig.enableDockSwitchAnimation.addListener(listener);
-    ref.onDispose(() => appConfig.enableDockSwitchAnimation.removeListener(listener));
-    return appConfig.enableDockSwitchAnimation.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getBool(_keyEnablePageTransitionAnimation) ?? true;
   }
 
   void update(bool enable) {
-    ref.read(appConfigProviderBridge).enableDockSwitchAnimation.value = enable;
+    ref.read(sharedPreferencesBridge).setBool(_keyEnablePageTransitionAnimation, enable);
     state = enable;
   }
 }
@@ -80,15 +131,17 @@ class EnableDockSwitchAnimationSetting extends _$EnableDockSwitchAnimationSettin
 class CardSizeAnimationDurationSetting extends _$CardSizeAnimationDurationSetting {
   @override
   Duration build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.cardSizeAnimationDuration.value;
-    appConfig.cardSizeAnimationDuration.addListener(listener);
-    ref.onDispose(() => appConfig.cardSizeAnimationDuration.removeListener(listener));
-    return appConfig.cardSizeAnimationDuration.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return Duration(
+      milliseconds: prefs.getInt(_keyCardSizeAnimationDuration) ?? 200,
+    );
   }
 
   void update(Duration duration) {
-    ref.read(appConfigProviderBridge).cardSizeAnimationDuration.value = duration;
+    ref.read(sharedPreferencesBridge).setInt(
+      _keyCardSizeAnimationDuration,
+      duration.inMilliseconds,
+    );
     state = duration;
   }
 }
@@ -97,15 +150,17 @@ class CardSizeAnimationDurationSetting extends _$CardSizeAnimationDurationSettin
 class LocaleSetting extends _$LocaleSetting {
   @override
   Locale? build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.locale.value;
-    appConfig.locale.addListener(listener);
-    ref.onDispose(() => appConfig.locale.removeListener(listener));
-    return appConfig.locale.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return parseLocale(prefs.getString(_keyLocale));
   }
 
   void update(Locale? locale) {
-    ref.read(appConfigProviderBridge).locale.value = locale;
+    final prefs = ref.read(sharedPreferencesBridge);
+    if (locale != null) {
+      prefs.setString(_keyLocale, locale.toLanguageTag());
+    } else {
+      prefs.remove(_keyLocale);
+    }
     state = locale;
   }
 }
@@ -114,15 +169,14 @@ class LocaleSetting extends _$LocaleSetting {
 class ThemeColorSetting extends _$ThemeColorSetting {
   @override
   Color build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.themeColor.value;
-    appConfig.themeColor.addListener(listener);
-    ref.onDispose(() => appConfig.themeColor.removeListener(listener));
-    return appConfig.themeColor.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return Color(
+      prefs.getInt(_keyThemeColor) ?? Colors.blueAccent.toARGB32(),
+    );
   }
 
   void update(Color color) {
-    ref.read(appConfigProviderBridge).themeColor.value = color;
+    ref.read(sharedPreferencesBridge).setInt(_keyThemeColor, color.toARGB32());
     state = color;
   }
 }
@@ -131,15 +185,15 @@ class ThemeColorSetting extends _$ThemeColorSetting {
 class ThemeColorModeSetting extends _$ThemeColorModeSetting {
   @override
   ThemeColorMode build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.themeColorMode.value;
-    appConfig.themeColorMode.addListener(listener);
-    ref.onDispose(() => appConfig.themeColorMode.removeListener(listener));
-    return appConfig.themeColorMode.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    final idx = prefs.getInt(_keyThemeColorMode) ?? 0;
+    return idx < ThemeColorMode.values.length
+        ? ThemeColorMode.values[idx]
+        : ThemeColorMode.system;
   }
 
   void update(ThemeColorMode mode) {
-    ref.read(appConfigProviderBridge).themeColorMode.value = mode;
+    ref.read(sharedPreferencesBridge).setInt(_keyThemeColorMode, mode.index);
     state = mode;
   }
 }
@@ -148,15 +202,15 @@ class ThemeColorModeSetting extends _$ThemeColorModeSetting {
 class ThemeModeSetting extends _$ThemeModeSetting {
   @override
   ThemeMode build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.themeMode.value;
-    appConfig.themeMode.addListener(listener);
-    ref.onDispose(() => appConfig.themeMode.removeListener(listener));
-    return appConfig.themeMode.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    final idx = prefs.getInt(_keyThemeMode) ?? 0;
+    return idx < ThemeMode.values.length
+        ? ThemeMode.values[idx]
+        : ThemeMode.system;
   }
 
   void update(ThemeMode mode) {
-    ref.read(appConfigProviderBridge).themeMode.value = mode;
+    ref.read(sharedPreferencesBridge).setInt(_keyThemeMode, mode.index);
     state = mode;
   }
 }
@@ -165,15 +219,12 @@ class ThemeModeSetting extends _$ThemeModeSetting {
 class UseGoogleFontsSetting extends _$UseGoogleFontsSetting {
   @override
   bool build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.useGoogleFonts.value;
-    appConfig.useGoogleFonts.addListener(listener);
-    ref.onDispose(() => appConfig.useGoogleFonts.removeListener(listener));
-    return appConfig.useGoogleFonts.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getBool(_keyUseGoogleFonts) ?? true;
   }
 
   void update(bool use) {
-    ref.read(appConfigProviderBridge).useGoogleFonts.value = use;
+    ref.read(sharedPreferencesBridge).setBool(_keyUseGoogleFonts, use);
     state = use;
   }
 }
@@ -182,15 +233,12 @@ class UseGoogleFontsSetting extends _$UseGoogleFontsSetting {
 class AcceptedEulaVersionSetting extends _$AcceptedEulaVersionSetting {
   @override
   int build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.acceptedEulaVersion.value;
-    appConfig.acceptedEulaVersion.addListener(listener);
-    ref.onDispose(() => appConfig.acceptedEulaVersion.removeListener(listener));
-    return appConfig.acceptedEulaVersion.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getInt(_keyAcceptedEulaVersion) ?? (kDebugMode ? 114514 : 0);
   }
 
   void update(int version) {
-    ref.read(appConfigProviderBridge).acceptedEulaVersion.value = version;
+    ref.read(sharedPreferencesBridge).setInt(_keyAcceptedEulaVersion, version);
     state = version;
   }
 }
@@ -200,18 +248,12 @@ class FirstLaunchWizardCompletedSetting
     extends _$FirstLaunchWizardCompletedSetting {
   @override
   bool build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.firstLaunchWizardCompleted.value;
-    appConfig.firstLaunchWizardCompleted.addListener(listener);
-    ref.onDispose(
-      () => appConfig.firstLaunchWizardCompleted.removeListener(listener),
-    );
-    return appConfig.firstLaunchWizardCompleted.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getBool(_keyFirstLaunchWizardCompleted) ?? kDebugMode;
   }
 
   void update(bool completed) {
-    ref.read(appConfigProviderBridge).firstLaunchWizardCompleted.value =
-        completed;
+    ref.read(sharedPreferencesBridge).setBool(_keyFirstLaunchWizardCompleted, completed);
     state = completed;
   }
 }
@@ -220,17 +262,12 @@ class FirstLaunchWizardCompletedSetting
 class LogPersistenceEnabledSetting extends _$LogPersistenceEnabledSetting {
   @override
   bool build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.logPersistenceEnabled.value;
-    appConfig.logPersistenceEnabled.addListener(listener);
-    ref.onDispose(
-      () => appConfig.logPersistenceEnabled.removeListener(listener),
-    );
-    return appConfig.logPersistenceEnabled.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getBool(_keyLogPersistenceEnabled) ?? true;
   }
 
   void update(bool enabled) {
-    ref.read(appConfigProviderBridge).logPersistenceEnabled.value = enabled;
+    ref.read(sharedPreferencesBridge).setBool(_keyLogPersistenceEnabled, enabled);
     state = enabled;
   }
 }
@@ -239,15 +276,17 @@ class LogPersistenceEnabledSetting extends _$LogPersistenceEnabledSetting {
 class BackgroundImagePathSetting extends _$BackgroundImagePathSetting {
   @override
   String? build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.backgroundImagePath.value;
-    appConfig.backgroundImagePath.addListener(listener);
-    ref.onDispose(() => appConfig.backgroundImagePath.removeListener(listener));
-    return appConfig.backgroundImagePath.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getString(_keyBackgroundImagePath);
   }
 
   void update(String? path) {
-    ref.read(appConfigProviderBridge).backgroundImagePath.value = path;
+    final prefs = ref.read(sharedPreferencesBridge);
+    if (path != null) {
+      prefs.setString(_keyBackgroundImagePath, path);
+    } else {
+      prefs.remove(_keyBackgroundImagePath);
+    }
     state = path;
   }
 }
@@ -256,15 +295,17 @@ class BackgroundImagePathSetting extends _$BackgroundImagePathSetting {
 class BackgroundImageCropSetting extends _$BackgroundImageCropSetting {
   @override
   BackgroundCropParams? build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.backgroundImageCrop.value;
-    appConfig.backgroundImageCrop.addListener(listener);
-    ref.onDispose(() => appConfig.backgroundImageCrop.removeListener(listener));
-    return appConfig.backgroundImageCrop.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return BackgroundCropParams.tryDecode(prefs.getString(_keyBackgroundImageCrop));
   }
 
   void update(BackgroundCropParams? crop) {
-    ref.read(appConfigProviderBridge).backgroundImageCrop.value = crop;
+    final prefs = ref.read(sharedPreferencesBridge);
+    if (crop != null) {
+      prefs.setString(_keyBackgroundImageCrop, crop.encode());
+    } else {
+      prefs.remove(_keyBackgroundImageCrop);
+    }
     state = crop;
   }
 }
@@ -273,17 +314,12 @@ class BackgroundImageCropSetting extends _$BackgroundImageCropSetting {
 class BackgroundImageOpacitySetting extends _$BackgroundImageOpacitySetting {
   @override
   double build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.backgroundImageOpacity.value;
-    appConfig.backgroundImageOpacity.addListener(listener);
-    ref.onDispose(
-      () => appConfig.backgroundImageOpacity.removeListener(listener),
-    );
-    return appConfig.backgroundImageOpacity.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getDouble(_keyBackgroundImageOpacity) ?? 0.3;
   }
 
   void update(double opacity) {
-    ref.read(appConfigProviderBridge).backgroundImageOpacity.value = opacity;
+    ref.read(sharedPreferencesBridge).setDouble(_keyBackgroundImageOpacity, opacity);
     state = opacity;
   }
 }
@@ -292,15 +328,12 @@ class BackgroundImageOpacitySetting extends _$BackgroundImageOpacitySetting {
 class CampusGridViewSetting extends _$CampusGridViewSetting {
   @override
   bool build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.campusGridView.value;
-    appConfig.campusGridView.addListener(listener);
-    ref.onDispose(() => appConfig.campusGridView.removeListener(listener));
-    return appConfig.campusGridView.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getBool(_keyCampusGridView) ?? false;
   }
 
   void update(bool isGridView) {
-    ref.read(appConfigProviderBridge).campusGridView.value = isGridView;
+    ref.read(sharedPreferencesBridge).setBool(_keyCampusGridView, isGridView);
     state = isGridView;
   }
 }
@@ -309,15 +342,12 @@ class CampusGridViewSetting extends _$CampusGridViewSetting {
 class ShowCourseWeeksSetting extends _$ShowCourseWeeksSetting {
   @override
   bool build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.showCourseWeeks.value;
-    appConfig.showCourseWeeks.addListener(listener);
-    ref.onDispose(() => appConfig.showCourseWeeks.removeListener(listener));
-    return appConfig.showCourseWeeks.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getBool(_keyShowCourseWeeks) ?? true;
   }
 
   void update(bool show) {
-    ref.read(appConfigProviderBridge).showCourseWeeks.value = show;
+    ref.read(sharedPreferencesBridge).setBool(_keyShowCourseWeeks, show);
     state = show;
   }
 }
@@ -326,15 +356,12 @@ class ShowCourseWeeksSetting extends _$ShowCourseWeeksSetting {
 class ShowWeekendSetting extends _$ShowWeekendSetting {
   @override
   bool build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.showWeekend.value;
-    appConfig.showWeekend.addListener(listener);
-    ref.onDispose(() => appConfig.showWeekend.removeListener(listener));
-    return appConfig.showWeekend.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getBool(_keyShowWeekend) ?? false;
   }
 
   void update(bool show) {
-    ref.read(appConfigProviderBridge).showWeekend.value = show;
+    ref.read(sharedPreferencesBridge).setBool(_keyShowWeekend, show);
     state = show;
   }
 }
@@ -343,15 +370,12 @@ class ShowWeekendSetting extends _$ShowWeekendSetting {
 class ShowTeacherNameSetting extends _$ShowTeacherNameSetting {
   @override
   bool build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.showTeacherName.value;
-    appConfig.showTeacherName.addListener(listener);
-    ref.onDispose(() => appConfig.showTeacherName.removeListener(listener));
-    return appConfig.showTeacherName.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getBool(_keyShowTeacherName) ?? true;
   }
 
   void update(bool show) {
-    ref.read(appConfigProviderBridge).showTeacherName.value = show;
+    ref.read(sharedPreferencesBridge).setBool(_keyShowTeacherName, show);
     state = show;
   }
 }
@@ -360,15 +384,12 @@ class ShowTeacherNameSetting extends _$ShowTeacherNameSetting {
 class ShowLocationSetting extends _$ShowLocationSetting {
   @override
   bool build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.showLocation.value;
-    appConfig.showLocation.addListener(listener);
-    ref.onDispose(() => appConfig.showLocation.removeListener(listener));
-    return appConfig.showLocation.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getBool(_keyShowLocation) ?? true;
   }
 
   void update(bool show) {
-    ref.read(appConfigProviderBridge).showLocation.value = show;
+    ref.read(sharedPreferencesBridge).setBool(_keyShowLocation, show);
     state = show;
   }
 }
@@ -378,17 +399,12 @@ class ShowNonCurrentWeekCoursesSetting
     extends _$ShowNonCurrentWeekCoursesSetting {
   @override
   bool build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.showNonCurrentWeekCourses.value;
-    appConfig.showNonCurrentWeekCourses.addListener(listener);
-    ref.onDispose(
-      () => appConfig.showNonCurrentWeekCourses.removeListener(listener),
-    );
-    return appConfig.showNonCurrentWeekCourses.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getBool(_keyShowNonCurrentWeekCourses) ?? true;
   }
 
   void update(bool show) {
-    ref.read(appConfigProviderBridge).showNonCurrentWeekCourses.value = show;
+    ref.read(sharedPreferencesBridge).setBool(_keyShowNonCurrentWeekCourses, show);
     state = show;
   }
 }
@@ -397,15 +413,12 @@ class ShowNonCurrentWeekCoursesSetting
 class ColorOpacitySetting extends _$ColorOpacitySetting {
   @override
   double build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.colorOpacity.value;
-    appConfig.colorOpacity.addListener(listener);
-    ref.onDispose(() => appConfig.colorOpacity.removeListener(listener));
-    return appConfig.colorOpacity.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getDouble(_keyColorOpacity) ?? 0.85;
   }
 
   void update(double opacity) {
-    ref.read(appConfigProviderBridge).colorOpacity.value = opacity;
+    ref.read(sharedPreferencesBridge).setDouble(_keyColorOpacity, opacity);
     state = opacity;
   }
 }
@@ -414,15 +427,12 @@ class ColorOpacitySetting extends _$ColorOpacitySetting {
 class CourseCardFontSizeSetting extends _$CourseCardFontSizeSetting {
   @override
   double build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.courseCardFontSize.value;
-    appConfig.courseCardFontSize.addListener(listener);
-    ref.onDispose(() => appConfig.courseCardFontSize.removeListener(listener));
-    return appConfig.courseCardFontSize.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getDouble(_keyCourseCardFontSize) ?? 14.0;
   }
 
   void update(double size) {
-    ref.read(appConfigProviderBridge).courseCardFontSize.value = size;
+    ref.read(sharedPreferencesBridge).setDouble(_keyCourseCardFontSize, size);
     state = size;
   }
 }
@@ -431,15 +441,12 @@ class CourseCardFontSizeSetting extends _$CourseCardFontSizeSetting {
 class ShowCourseGridSetting extends _$ShowCourseGridSetting {
   @override
   bool build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.showCourseGrid.value;
-    appConfig.showCourseGrid.addListener(listener);
-    ref.onDispose(() => appConfig.showCourseGrid.removeListener(listener));
-    return appConfig.showCourseGrid.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getBool(_keyShowCourseGrid) ?? true;
   }
 
   void update(bool show) {
-    ref.read(appConfigProviderBridge).showCourseGrid.value = show;
+    ref.read(sharedPreferencesBridge).setBool(_keyShowCourseGrid, show);
     state = show;
   }
 }
@@ -448,15 +455,12 @@ class ShowCourseGridSetting extends _$ShowCourseGridSetting {
 class CourseRowHeightSetting extends _$CourseRowHeightSetting {
   @override
   double build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.courseRowHeight.value;
-    appConfig.courseRowHeight.addListener(listener);
-    ref.onDispose(() => appConfig.courseRowHeight.removeListener(listener));
-    return appConfig.courseRowHeight.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getDouble(_keyCourseRowHeight) ?? 72.0;
   }
 
   void update(double height) {
-    ref.read(appConfigProviderBridge).courseRowHeight.value = height;
+    ref.read(sharedPreferencesBridge).setDouble(_keyCourseRowHeight, height);
     state = height;
   }
 }
@@ -465,15 +469,12 @@ class CourseRowHeightSetting extends _$CourseRowHeightSetting {
 class WidgetShowTomorrowSetting extends _$WidgetShowTomorrowSetting {
   @override
   bool build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.widgetShowTomorrow.value;
-    appConfig.widgetShowTomorrow.addListener(listener);
-    ref.onDispose(() => appConfig.widgetShowTomorrow.removeListener(listener));
-    return appConfig.widgetShowTomorrow.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getBool(_keyWidgetShowTomorrow) ?? false;
   }
 
   void update(bool show) {
-    ref.read(appConfigProviderBridge).widgetShowTomorrow.value = show;
+    ref.read(sharedPreferencesBridge).setBool(_keyWidgetShowTomorrow, show);
     state = show;
   }
 }
@@ -482,15 +483,15 @@ class WidgetShowTomorrowSetting extends _$WidgetShowTomorrowSetting {
 class WidgetColorStyleSetting extends _$WidgetColorStyleSetting {
   @override
   WidgetColorStyle build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.widgetColorStyle.value;
-    appConfig.widgetColorStyle.addListener(listener);
-    ref.onDispose(() => appConfig.widgetColorStyle.removeListener(listener));
-    return appConfig.widgetColorStyle.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    final idx = prefs.getInt(_keyWidgetColorStyle) ?? 0;
+    return idx < WidgetColorStyle.values.length
+        ? WidgetColorStyle.values[idx]
+        : WidgetColorStyle.colorful;
   }
 
   void update(WidgetColorStyle style) {
-    ref.read(appConfigProviderBridge).widgetColorStyle.value = style;
+    ref.read(sharedPreferencesBridge).setInt(_keyWidgetColorStyle, style.index);
     state = style;
   }
 }
@@ -499,15 +500,15 @@ class WidgetColorStyleSetting extends _$WidgetColorStyleSetting {
 class WidgetDensitySetting extends _$WidgetDensitySetting {
   @override
   WidgetDensity build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.widgetDensity.value;
-    appConfig.widgetDensity.addListener(listener);
-    ref.onDispose(() => appConfig.widgetDensity.removeListener(listener));
-    return appConfig.widgetDensity.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    final idx = prefs.getInt(_keyWidgetDensity) ?? 0;
+    return idx < WidgetDensity.values.length
+        ? WidgetDensity.values[idx]
+        : WidgetDensity.standard;
   }
 
   void update(WidgetDensity density) {
-    ref.read(appConfigProviderBridge).widgetDensity.value = density;
+    ref.read(sharedPreferencesBridge).setInt(_keyWidgetDensity, density.index);
     state = density;
   }
 }
@@ -516,17 +517,12 @@ class WidgetDensitySetting extends _$WidgetDensitySetting {
 class UsePreviewUpdateSourceSetting extends _$UsePreviewUpdateSourceSetting {
   @override
   bool build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.usePreviewUpdateSource.value;
-    appConfig.usePreviewUpdateSource.addListener(listener);
-    ref.onDispose(
-      () => appConfig.usePreviewUpdateSource.removeListener(listener),
-    );
-    return appConfig.usePreviewUpdateSource.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getBool(_keyUsePreviewUpdateSource) ?? false;
   }
 
   void update(bool usePreview) {
-    ref.read(appConfigProviderBridge).usePreviewUpdateSource.value = usePreview;
+    ref.read(sharedPreferencesBridge).setBool(_keyUsePreviewUpdateSource, usePreview);
     state = usePreview;
   }
 }
@@ -535,15 +531,12 @@ class UsePreviewUpdateSourceSetting extends _$UsePreviewUpdateSourceSetting {
 class UseGithubProxySetting extends _$UseGithubProxySetting {
   @override
   bool build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.useGithubProxy.value;
-    appConfig.useGithubProxy.addListener(listener);
-    ref.onDispose(() => appConfig.useGithubProxy.removeListener(listener));
-    return appConfig.useGithubProxy.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getBool(_keyUseGithubProxy) ?? true;
   }
 
   void update(bool useProxy) {
-    ref.read(appConfigProviderBridge).useGithubProxy.value = useProxy;
+    ref.read(sharedPreferencesBridge).setBool(_keyUseGithubProxy, useProxy);
     state = useProxy;
   }
 }
@@ -553,17 +546,12 @@ class AutoSampleBalanceOnLoginSetting
     extends _$AutoSampleBalanceOnLoginSetting {
   @override
   bool build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.autoSampleBalanceOnLogin.value;
-    appConfig.autoSampleBalanceOnLogin.addListener(listener);
-    ref.onDispose(
-      () => appConfig.autoSampleBalanceOnLogin.removeListener(listener),
-    );
-    return appConfig.autoSampleBalanceOnLogin.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getBool(_keyAutoSampleBalanceOnLogin) ?? false;
   }
 
   void update(bool auto) {
-    ref.read(appConfigProviderBridge).autoSampleBalanceOnLogin.value = auto;
+    ref.read(sharedPreferencesBridge).setBool(_keyAutoSampleBalanceOnLogin, auto);
     state = auto;
   }
 }
@@ -573,17 +561,12 @@ class ForceCaptchaForDownloadSetting
     extends _$ForceCaptchaForDownloadSetting {
   @override
   bool build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.forceCaptchaForDownload.value;
-    appConfig.forceCaptchaForDownload.addListener(listener);
-    ref.onDispose(
-      () => appConfig.forceCaptchaForDownload.removeListener(listener),
-    );
-    return appConfig.forceCaptchaForDownload.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getBool(_keyForceCaptchaForDownload) ?? false;
   }
 
   void update(bool force) {
-    ref.read(appConfigProviderBridge).forceCaptchaForDownload.value = force;
+    ref.read(sharedPreferencesBridge).setBool(_keyForceCaptchaForDownload, force);
     state = force;
   }
 }
@@ -592,15 +575,12 @@ class ForceCaptchaForDownloadSetting
 class ReminderEnabledSetting extends _$ReminderEnabledSetting {
   @override
   bool build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.reminderEnabled.value;
-    appConfig.reminderEnabled.addListener(listener);
-    ref.onDispose(() => appConfig.reminderEnabled.removeListener(listener));
-    return appConfig.reminderEnabled.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return prefs.getBool(_keyReminderEnabled) ?? false;
   }
 
   void update(bool enabled) {
-    ref.read(appConfigProviderBridge).reminderEnabled.value = enabled;
+    ref.read(sharedPreferencesBridge).setBool(_keyReminderEnabled, enabled);
     state = enabled;
   }
 }
@@ -609,15 +589,16 @@ class ReminderEnabledSetting extends _$ReminderEnabledSetting {
 class ReminderLeadMinutesSetting extends _$ReminderLeadMinutesSetting {
   @override
   List<int> build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.reminderLeadMinutes.value;
-    appConfig.reminderLeadMinutes.addListener(listener);
-    ref.onDispose(() => appConfig.reminderLeadMinutes.removeListener(listener));
-    return appConfig.reminderLeadMinutes.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return _decodeLeadMinutes(prefs.getStringList(_keyReminderLeadMinutes)) ??
+        const [15];
   }
 
   void update(List<int> minutes) {
-    ref.read(appConfigProviderBridge).reminderLeadMinutes.value = minutes;
+    ref.read(sharedPreferencesBridge).setStringList(
+      _keyReminderLeadMinutes,
+      minutes.map((e) => e.toString()).toList(),
+    );
     state = minutes;
   }
 }
@@ -626,15 +607,15 @@ class ReminderLeadMinutesSetting extends _$ReminderLeadMinutesSetting {
 class ReminderQuietStartSetting extends _$ReminderQuietStartSetting {
   @override
   TimeOfDay? build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.reminderQuietStart.value;
-    appConfig.reminderQuietStart.addListener(listener);
-    ref.onDispose(() => appConfig.reminderQuietStart.removeListener(listener));
-    return appConfig.reminderQuietStart.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return _decodeTimeOfDay(prefs.getInt(_keyReminderQuietStart));
   }
 
   void update(TimeOfDay? time) {
-    ref.read(appConfigProviderBridge).reminderQuietStart.value = time;
+    ref.read(sharedPreferencesBridge).setInt(
+      _keyReminderQuietStart,
+      _encodeTimeOfDay(time),
+    );
     state = time;
   }
 }
@@ -643,15 +624,15 @@ class ReminderQuietStartSetting extends _$ReminderQuietStartSetting {
 class ReminderQuietEndSetting extends _$ReminderQuietEndSetting {
   @override
   TimeOfDay? build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.reminderQuietEnd.value;
-    appConfig.reminderQuietEnd.addListener(listener);
-    ref.onDispose(() => appConfig.reminderQuietEnd.removeListener(listener));
-    return appConfig.reminderQuietEnd.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    return _decodeTimeOfDay(prefs.getInt(_keyReminderQuietEnd));
   }
 
   void update(TimeOfDay? time) {
-    ref.read(appConfigProviderBridge).reminderQuietEnd.value = time;
+    ref.read(sharedPreferencesBridge).setInt(
+      _keyReminderQuietEnd,
+      _encodeTimeOfDay(time),
+    );
     state = time;
   }
 }
@@ -660,15 +641,36 @@ class ReminderQuietEndSetting extends _$ReminderQuietEndSetting {
 class ReminderWindowDaysSetting extends _$ReminderWindowDaysSetting {
   @override
   int build() {
-    final appConfig = ref.watch(appConfigProviderBridge);
-    void listener() => state = appConfig.reminderWindowDays.value;
-    appConfig.reminderWindowDays.addListener(listener);
-    ref.onDispose(() => appConfig.reminderWindowDays.removeListener(listener));
-    return appConfig.reminderWindowDays.value;
+    final prefs = ref.watch(sharedPreferencesBridge);
+    final savedWindowDays = prefs.getInt(_keyReminderWindowDays);
+    return savedWindowDays != null && savedWindowDays > 0
+        ? savedWindowDays
+        : ReminderSettings.defaultWindowDays;
   }
 
   void update(int days) {
-    ref.read(appConfigProviderBridge).reminderWindowDays.value = days;
+    ref.read(sharedPreferencesBridge).setInt(_keyReminderWindowDays, days);
     state = days;
   }
+}
+
+@Riverpod(keepAlive: true)
+ReminderSettings reminderSettingsPod(Ref ref) {
+  final reminderEnabled = ref.watch(reminderEnabledSettingProvider);
+  final reminderLeadMinutes = ref.watch(reminderLeadMinutesSettingProvider);
+  final reminderQuietStart = ref.watch(reminderQuietStartSettingProvider);
+  final reminderQuietEnd = ref.watch(reminderQuietEndSettingProvider);
+  final reminderWindowDays = ref.watch(reminderWindowDaysSettingProvider);
+  final showLocation = ref.watch(showLocationSettingProvider);
+  final showTeacherName = ref.watch(showTeacherNameSettingProvider);
+
+  return ReminderSettings(
+    courseReminderEnabled: reminderEnabled,
+    leadMinutes: reminderLeadMinutes,
+    quietStart: reminderQuietStart,
+    quietEnd: reminderQuietEnd,
+    windowDays: reminderWindowDays,
+    includeLocation: showLocation,
+    includeTeacher: showTeacherName,
+  );
 }
