@@ -176,12 +176,61 @@ void main() {
         ),
       );
     });
+
+    test('non-2xx response throws ServiceException with statusCode', () async {
+      final client = CookieClient(
+        inner: MockClient((req) async {
+          return http.Response('gateway error', 500);
+        }),
+      );
+      final session = ApiSession(
+        getClient: () async => client,
+        baseUrl: Uri.parse('https://example.com/api'),
+        logTag: 'Test',
+      );
+
+      await expectLater(
+        session.getJsonMap('failing'),
+        throwsA(
+          isA<ServiceException>()
+              .having((e) => e.statusCode, 'statusCode', 500)
+              .having((e) => e.message, 'message', contains('failing')),
+        ),
+      );
+    });
+
+    test(
+      'empty body is a ServiceException when not treated as expiry',
+      () async {
+        final client = CookieClient(
+          inner: MockClient((req) async => http.Response('', 200)),
+        );
+        final session = ApiSession(
+          getClient: () async => client,
+          baseUrl: Uri.parse('https://example.com/api'),
+          logTag: 'Test',
+          emptyBodyThrowsUnauthenticated: false,
+        );
+
+        await expectLater(
+          session.getJsonMap('empty'),
+          throwsA(
+            isA<ServiceException>().having(
+              (e) => e.message,
+              'message',
+              contains('空响应'),
+            ),
+          ),
+        );
+      },
+    );
   });
 
   group('ApiSession typed methods', () {
     test('getHtml returns trimmed body', () async {
       final client = CookieClient(
         inner: MockClient((req) async {
+          expect(req.headers['Accept'], contains('text/html'));
           return http.Response('  <div>Hello</div>  ', 200);
         }),
       );

@@ -8,7 +8,6 @@ export 'package:bugaoshan/scu_backend/core/api_request.dart'
     show looksLikeLoginPage;
 import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/scu_backend/core/subsystem_auth.dart';
-import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/json_utils.dart';
 
@@ -129,28 +128,98 @@ class ApiSession {
   }
 
   /// 检查响应是否为未登录、会话过期或网关异常。
+  ///
+  /// 会话失效统一转为 [UnauthenticatedException]（触发自动重认证）；
+  /// 其余非 2xx/3xx 状态统一转为带 `statusCode` 的 [ServiceException]，
+  /// 避免落到「响应解析失败」这类误导性文案。
   void checkResponse(http.Response resp, {String? apiName}) {
+    final body = resp.body;
+    final statusCode = resp.statusCode;
+
     if (sessionExpiryChecker != null) {
-      sessionExpiryChecker!(resp.body, resp.statusCode);
-      return;
+      sessionExpiryChecker!(body, statusCode);
+    } else {
+      _defaultSessionCheck(body, statusCode);
     }
 
-    final code = resp.statusCode;
-    if (code == 401 || code == 403) {
-      throw const UnauthenticatedException('会话已失效 (401/403)');
+    if (statusCode < 200 || statusCode >= 400) {
+      throw ServiceException(
+        apiName != null ? '[$apiName] 请求失败' : '请求失败',
+        statusCode: statusCode,
+      );
     }
-    if (code == 302) {
-      throw const UnauthenticatedException('会话重定向至认证页 (302)');
+  }
+
+  /// 默认会话失效判定：重定向/未授权/空响应/登录页。
+  void _defaultSessionCheck(String body, int statusCode) {
+    if (statusCode == 302 || statusCode == 401 || statusCode == 403) {
+      throw const UnauthenticatedException('会话已失效或已重定向至认证页');
     }
 
-    final trimmed = resp.body.trim();
-    if (trimmed.isEmpty && emptyBodyThrowsUnauthenticated) {
-      throw const UnauthenticatedException('服务返回空响应，会话可能已过期');
+    final trimmed = body.trim();
+    if (trimmed.isEmpty) {
+      if (emptyBodyThrowsUnauthenticated) {
+        throw const UnauthenticatedException('服务返回空响应，会话可能已过期');
+      }
+      throw const ServiceException('服务器返回了空响应');
     }
 
     if (looksLikeLoginPage(trimmed)) {
       throw const UnauthenticatedException('检测到登录页，会话已过期');
     }
+  }
+
+  static const String _formContentType =
+      'application/x-www-form-urlencoded; charset=UTF-8';
+  static const String _jsonContentType = 'application/json; charset=UTF-8';
+
+  /// 统一的 GET 执行骨架：解析 URL、注入 Header、会话校验后交给调用方解码。
+  Future<T> _get<T>(
+    String path, {
+    Map<String, dynamic>? query,
+    Map<String, String>? headers,
+    String? apiName,
+    required T Function(http.Response resp, String apiName) decode,
+  }) {
+    final name = apiName ?? path;
+    return run((client) async {
+      final uri = resolveUri(path, query);
+      final resp = await client.get(uri, headers: _buildHeaders(headers));
+      checkResponse(resp, apiName: name);
+      return decode(resp, name);
+    });
+  }
+
+  /// 统一的 POST 执行骨架。
+  Future<T> _post<T>(
+    String path, {
+    Object? body,
+    Map<String, dynamic>? query,
+    Map<String, String>? headers,
+    String? apiName,
+    required T Function(http.Response resp, String apiName) decode,
+  }) {
+    final name = apiName ?? path;
+    return run((client) async {
+      final uri = resolveUri(path, query);
+      final resp = await client.post(
+        uri,
+        headers: _buildHeaders(headers),
+        body: body,
+      );
+      checkResponse(resp, apiName: name);
+      return decode(resp, name);
+    });
+  }
+
+  Map<String, dynamic> _decodeJsonMap(http.Response resp, String apiName) {
+    final json = parseJson(resp.body, apiName, (m) => ServiceException(m));
+    jsonValidator?.call(json);
+    return json;
+  }
+
+  List<dynamic> _decodeJsonList(http.Response resp, String apiName) {
+    return parseJsonList(resp.body, apiName, (m) => ServiceException(m));
   }
 
   /// 发送 GET 请求并返回原始 [http.Response]。
@@ -160,74 +229,12 @@ class ApiSession {
     Map<String, String>? headers,
     String? apiName,
   }) {
-    return run((client) async {
-      final uri = resolveUri(path, query);
-      final resp = await client.get(uri, headers: _buildHeaders(headers));
-      checkResponse(resp, apiName: apiName ?? path);
-      return resp;
-    });
-  }
-
-  /// 发送 POST 请求并返回原始 [http.Response]。
-  Future<http.Response> post(
-    String path, {
-    Object? body,
-    Map<String, dynamic>? query,
-    Map<String, String>? headers,
-    String? apiName,
-  }) {
-    return run((client) async {
-      final uri = resolveUri(path, query);
-      final resp = await client.post(
-        uri,
-        headers: _buildHeaders(headers),
-        body: body,
-      );
-      checkResponse(resp, apiName: apiName ?? path);
-      return resp;
-    });
-  }
-
-  /// 发送 POST 表单请求。
-  Future<http.Response> postForm(
-    String path,
-    Map<String, String> fields, {
-    Map<String, dynamic>? query,
-    Map<String, String>? headers,
-    String? apiName,
-  }) {
-    final mergedHeaders = {
-      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-      ...?headers,
-    };
-    return post(
+    return _get(
       path,
-      body: fields,
       query: query,
-      headers: mergedHeaders,
+      headers: headers,
       apiName: apiName,
-    );
-  }
-
-  /// 发送 POST JSON 请求。
-  Future<http.Response> postJson(
-    String path,
-    Object jsonBody, {
-    Map<String, dynamic>? query,
-    Map<String, String>? headers,
-    String? apiName,
-  }) {
-    final mergedHeaders = {
-      'Content-Type': 'application/json; charset=UTF-8',
-      ...?headers,
-    };
-    final encoded = jsonBody is String ? jsonBody : jsonEncode(jsonBody);
-    return post(
-      path,
-      body: encoded,
-      query: query,
-      headers: mergedHeaders,
-      apiName: apiName,
+      decode: (resp, _) => resp,
     );
   }
 
@@ -252,19 +259,26 @@ class ApiSession {
   }
 
   /// 发送 GET 请求并返回经 trim 处理后的 HTML 字符串。
+  ///
+  /// 默认发送 HTML 优先的 `Accept`（调用方传入的 `headers` 可覆盖）。
   Future<String> getHtml(
     String path, {
     Map<String, dynamic>? query,
     Map<String, String>? headers,
     String? apiName,
-  }) async {
-    final resp = await get(
+  }) {
+    final mergedHeaders = {
+      'Accept':
+          'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      ...?headers,
+    };
+    return _get(
       path,
       query: query,
-      headers: headers,
+      headers: mergedHeaders,
       apiName: apiName,
+      decode: (resp, _) => resp.body.trim(),
     );
-    return resp.body.trim();
   }
 
   /// 发送 GET 请求并解析为 JSON Map。
@@ -274,18 +288,13 @@ class ApiSession {
     Map<String, String>? headers,
     String? apiName,
   }) {
-    return run((client) async {
-      final uri = resolveUri(path, query);
-      final resp = await client.get(uri, headers: _buildHeaders(headers));
-      checkResponse(resp, apiName: apiName ?? path);
-      final json = parseJson(
-        resp.body,
-        apiName ?? path,
-        (m) => ServiceException(m),
-      );
-      jsonValidator?.call(json);
-      return json;
-    });
+    return _get(
+      path,
+      query: query,
+      headers: headers,
+      apiName: apiName,
+      decode: _decodeJsonMap,
+    );
   }
 
   /// 发送 GET 请求并解析为 JSON 数组。
@@ -295,46 +304,13 @@ class ApiSession {
     Map<String, String>? headers,
     String? apiName,
   }) {
-    return run((client) async {
-      final uri = resolveUri(path, query);
-      final resp = await client.get(uri, headers: _buildHeaders(headers));
-      checkResponse(resp, apiName: apiName ?? path);
-      return parseJsonList(
-        resp.body,
-        apiName ?? path,
-        (m) => ServiceException(m),
-      );
-    });
-  }
-
-  /// 发送 GET 请求并返回任意 JSON 对象（Map 或 List 等）。
-  Future<dynamic> getJson(
-    String path, {
-    Map<String, dynamic>? query,
-    Map<String, String>? headers,
-    String? apiName,
-  }) {
-    return run((client) async {
-      final uri = resolveUri(path, query);
-      final resp = await client.get(uri, headers: _buildHeaders(headers));
-      checkResponse(resp, apiName: apiName ?? path);
-      try {
-        final decoded = jsonDecode(resp.body);
-        if (decoded is Map<String, dynamic>) {
-          jsonValidator?.call(decoded);
-        }
-        return decoded;
-      } catch (e, stackTrace) {
-        if (e is UnauthenticatedException) rethrow;
-        AppLog.e(
-          logTag,
-          '[${apiName ?? path}] JSON 解析失败(len=${resp.body.length})',
-          error: e,
-          stackTrace: stackTrace,
-        );
-        throw ServiceException('[${apiName ?? path}] 响应解析失败');
-      }
-    });
+    return _get(
+      path,
+      query: query,
+      headers: headers,
+      apiName: apiName,
+      decode: _decodeJsonList,
+    );
   }
 
   /// 发送 POST 表单请求并解析为 JSON 数组。
@@ -345,24 +321,14 @@ class ApiSession {
     Map<String, String>? headers,
     String? apiName,
   }) {
-    return run((client) async {
-      final uri = resolveUri(path, query);
-      final mergedHeaders = {
-        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        ...?headers,
-      };
-      final resp = await client.post(
-        uri,
-        headers: _buildHeaders(mergedHeaders),
-        body: fields,
-      );
-      checkResponse(resp, apiName: apiName ?? path);
-      return parseJsonList(
-        resp.body,
-        apiName ?? path,
-        (m) => ServiceException(m),
-      );
-    });
+    return _post(
+      path,
+      body: fields,
+      query: query,
+      headers: {'Content-Type': _formContentType, ...?headers},
+      apiName: apiName,
+      decode: _decodeJsonList,
+    );
   }
 
   /// 发送 POST 表单请求并解析为 JSON Map。
@@ -373,26 +339,14 @@ class ApiSession {
     Map<String, String>? headers,
     String? apiName,
   }) {
-    return run((client) async {
-      final uri = resolveUri(path, query);
-      final mergedHeaders = {
-        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        ...?headers,
-      };
-      final resp = await client.post(
-        uri,
-        headers: _buildHeaders(mergedHeaders),
-        body: fields,
-      );
-      checkResponse(resp, apiName: apiName ?? path);
-      final json = parseJson(
-        resp.body,
-        apiName ?? path,
-        (m) => ServiceException(m),
-      );
-      jsonValidator?.call(json);
-      return json;
-    });
+    return _post(
+      path,
+      body: fields,
+      query: query,
+      headers: {'Content-Type': _formContentType, ...?headers},
+      apiName: apiName,
+      decode: _decodeJsonMap,
+    );
   }
 
   /// 发送 POST JSON 请求并解析为 JSON Map。
@@ -403,27 +357,14 @@ class ApiSession {
     Map<String, String>? headers,
     String? apiName,
   }) {
-    return run((client) async {
-      final uri = resolveUri(path, query);
-      final mergedHeaders = {
-        'Content-Type': 'application/json; charset=UTF-8',
-        ...?headers,
-      };
-      final encoded = jsonBody is String ? jsonBody : jsonEncode(jsonBody);
-      final resp = await client.post(
-        uri,
-        headers: _buildHeaders(mergedHeaders),
-        body: encoded,
-      );
-      checkResponse(resp, apiName: apiName ?? path);
-      final json = parseJson(
-        resp.body,
-        apiName ?? path,
-        (m) => ServiceException(m),
-      );
-      jsonValidator?.call(json);
-      return json;
-    });
+    return _post(
+      path,
+      body: jsonBody is String ? jsonBody : jsonEncode(jsonBody),
+      query: query,
+      headers: {'Content-Type': _jsonContentType, ...?headers},
+      apiName: apiName,
+      decode: _decodeJsonMap,
+    );
   }
 }
 

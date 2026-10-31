@@ -96,7 +96,11 @@ void main() {
         throwsA(
           status == 403
               ? isA<UnauthenticatedException>()
-              : isA<FormatException>(),
+              : isA<ServiceException>().having(
+                  (e) => e.statusCode,
+                  'statusCode',
+                  status,
+                ),
         ),
       );
       final exported = logger.exportToText();

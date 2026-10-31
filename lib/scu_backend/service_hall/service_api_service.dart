@@ -89,6 +89,7 @@ class ServiceApiService {
         _session.resolveUri(path, query),
         headers: _jsonHeaders,
       );
+      _logResponseDiagnostics(resp);
       _session.checkResponse(resp, apiName: apiName ?? path);
       return _decodeResponse(resp.body, resp.statusCode);
     });
@@ -107,6 +108,7 @@ class ServiceApiService {
         headers: _headers,
         body: fields,
       );
+      _logResponseDiagnostics(resp);
       _session.checkResponse(resp, apiName: apiName ?? path);
       return _decodeResponse(resp.body, resp.statusCode);
     });
@@ -147,23 +149,30 @@ class ServiceApiService {
     }
   }
 
-  /// 解码业务信封。调用前须已通过 `_session.checkResponse`
-  /// （会话失效已在 [ApiSession] 内统一判定并触发重试）。
-  Map<String, dynamic> _decodeResponse(String body, int statusCode) {
-    // 诊断日志仅记录长度与脱敏后的 HTML 标题，保留拒绝原因而不暴露正文。
-    final title = responseTitleForLog(body);
+  /// 记录非 2xx / HTML 响应的脱敏诊断（只记长度与标题，不记正文）。
+  ///
+  /// 302/401/403 的诊断由 [ApiSession] 的会话检查负责，避免重复。
+  void _logResponseDiagnostics(http.Response resp) {
+    final statusCode = resp.statusCode;
+    if (statusCode == 302 || statusCode == 401 || statusCode == 403) return;
+    final title = responseTitleForLog(resp.body);
     if (statusCode < 200 || statusCode >= 300) {
       AppLog.e(
         _tag,
-        'non-2xx: status=$statusCode bodyLength=${body.length}'
+        'non-2xx: status=$statusCode bodyLength=${resp.body.length}'
         '${title == null ? '' : ' title=$title'}',
       );
     } else if (title != null) {
       AppLog.e(
         _tag,
-        '响应非 JSON: status=$statusCode bodyLength=${body.length} title=$title',
+        '响应非 JSON: status=$statusCode bodyLength=${resp.body.length} title=$title',
       );
     }
+  }
+
+  /// 解码业务信封。调用前须已通过 [_logResponseDiagnostics] 与
+  /// `_session.checkResponse`（非 2xx 已统一转为 [ServiceException]）。
+  Map<String, dynamic> _decodeResponse(String body, int statusCode) {
     final json = jsonDecode(body) as Map<String, dynamic>;
     // e:10042 表示未登录（vjuid cookie 缺失/失效），交给认证层重试
     if (json['e']?.toString() == '10042') {
@@ -431,7 +440,15 @@ class ServiceApiService {
 
       final streamed = await client.send(request);
       final body = await streamed.stream.bytesToString();
-      _checkSessionExpiry(body, streamed.statusCode);
+      // 仅用于统一的会话/非 2xx 判定，原始响应头不再需要；指定 utf-8
+      // 以免 http.Response 构造时按 latin1 编码失败。
+      final resp = http.Response(
+        body,
+        streamed.statusCode,
+        headers: const {'content-type': 'text/plain; charset=utf-8'},
+      );
+      _logResponseDiagnostics(resp);
+      _session.checkResponse(resp, apiName: 'uploadAttachment');
       // 上传接口响应是 `{url, size, title, original, state, type, id}` 结构，
       // **没有 `e` 字段**！不能用 _decodeResponse（会误判业务错误），也不能用
       // `json['e'] != 0` 判断（null 恒为 true）。这里直接用 url/state/id 判断。
