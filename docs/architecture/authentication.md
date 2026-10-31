@@ -353,7 +353,7 @@ flowchart TD
 
 重试只发生一次，且仅针对 `UnauthenticatedException`。普通网络错误、解析失败、限流和业务错误直接上抛；其余 4xx / 5xx 统一转为带 `statusCode` 的 `ServiceException`，不再落到“响应解析失败”这类误导性文案。因此各 API Service 必须把“登录页、空响应、业务过期码”等**明确证据**识别为 `UnauthenticatedException`——不能把任意 HTML 或普通业务失败当成认证过期，否则会错误重放写请求。
 
-默认 Header 由 `_buildHeaders` 注入（`User-Agent` / `Accept` / `X-Requested-With`）；`getHtml` 使用 HTML 优先的 `Accept`，且不注入 `X-Requested-With`（保持与浏览器整页导航一致）。保留自定义解析的服务（办事大厅的 WAF 诊断、研教务的 EMAP 分页信封、缴费余额查询）通过 `run()` 复用同一套认证与重试骨架。
+默认 Header 由 `_buildHeaders` 注入（`User-Agent` / `Accept`）；`X-Requested-With` 不是标准头，默认不注入，需要的调用方自行在 `headers` 中加入。`getHtml` 使用 HTML 优先的 `Accept`。保留自定义解析的服务（办事大厅的 WAF 诊断、研教务的 EMAP 分页信封、缴费余额查询）通过 `run()` 复用同一套认证与重试骨架。
 
 相对各服务原有实现，这轮收敛带来三处刻意差异：
 
