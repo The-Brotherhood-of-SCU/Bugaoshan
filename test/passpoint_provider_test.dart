@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:bugaoshan/models/passpoint.dart';
 import 'package:bugaoshan/providers/passpoint_provider.dart';
-import 'package:bugaoshan/services/api/new_service_api_service.dart';
-import 'package:bugaoshan/services/auth/auth_state.dart';
-import 'package:bugaoshan/services/auth/new_service_auth.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/passpoint/new_service_api_service.dart';
+import 'package:bugaoshan/scu_backend/core/auth_state.dart';
+import 'package:bugaoshan/scu_backend/passpoint/new_service_auth.dart';
+import 'package:bugaoshan/scu_backend/core/scu_auth.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -1,0 +1,337 @@
+import 'package:http/http.dart' as http;
+import 'package:bugaoshan/injection/injector.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
+import 'package:bugaoshan/utils/constants.dart';
+
+/// Cookie 感知的 http.Client，按域名隔离存储，发送时只带当前请求域的 cookie。
+class CookieClient extends http.BaseClient {
+  static const String _tag = 'CookieClient';
+  static const Set<String> _sensitiveRedirectHeaders = {
+    'authorization',
+    'proxy-authorization',
+    'cookie',
+  };
+
+  http.Client _inner;
+
+  /// 异常重试时创建替换 client 的工厂（测试注入用）。
+  final http.Client Function() _innerFactory;
+
+  CookieClient({http.Client? inner, http.Client Function()? innerFactory})
+    : _inner = inner ?? http.Client(),
+      _innerFactory = innerFactory ?? http.Client.new;
+
+  // 按域名存 cookie：host -> {name: value}
+  final _jar = <String, Map<String, String>>{};
+
+  bool reusable = false;
+
+  /// 因 ClientException 被换下、待在飞请求结束后再关闭的旧 client。
+  final List<http.Client> _retiredInners = [];
+
+  /// 当前经 [sendWithClientExceptionRetry] 发出、尚未结束的请求数。
+  int _inFlightRequests = 0;
+
+  AppLogger get _log => getIt<AppLogger>();
+
+  /// 返回所有域 cookie 拼接的字符串（仅用于调试日志）
+  String get cookieHeader {
+    final all = <String, String>{};
+    for (final m in _jar.values) {
+      all.addAll(m);
+    }
+    return all.entries.map((e) => '${e.key}=${e.value}').join('; ');
+  }
+
+  /// 获取适合发送给 [uri] 的 cookie（域名匹配：精确 host 或父域）
+  Map<String, String> _cookiesFor(Uri uri) {
+    final host = uri.host;
+    final result = <String, String>{};
+    for (final entry in _jar.entries) {
+      final jarHost = entry.key;
+      if (host == jarHost || host.endsWith('.$jarHost')) {
+        result.addAll(entry.value);
+      }
+    }
+    return result;
+  }
+
+  /// 解析并存储响应中的 Set-Cookie
+  void _storeCookies(Uri uri, http.BaseResponse response) {
+    final raw = response.headers['set-cookie'];
+    if (raw == null) return;
+
+    final host = uri.host;
+    _jar.putIfAbsent(host, () => {});
+
+    final stored = <String>[];
+    for (final part in raw.split(RegExp(r',\s*(?=[A-Za-z][^,=\s]*\s*=)'))) {
+      final kv = part.split(';').first.trim();
+      final eq = kv.indexOf('=');
+      if (eq > 0) {
+        final name = kv.substring(0, eq).trim();
+        final value = kv.substring(eq + 1).trim();
+        _jar[host]![name] = value;
+        stored.add(name);
+      }
+    }
+    if (stored.isNotEmpty) {
+      _log.d(
+        _tag,
+        'set-cookie host=$host count=${stored.length} [${stored.join(',')}]',
+      );
+    }
+  }
+
+  /// 手动跟随重定向，每跳都：
+  ///   1. 只带当前跳目标域的 cookie
+  ///   2. 收集响应的 Set-Cookie 存回对应域
+  Future<http.Response> followRedirects(
+    Uri url, {
+    Map<String, String>? headers,
+    Set<Uri> sensitiveHeaderAllowedOrigins = const {},
+    int maxRedirects = 10,
+  }) async {
+    Uri current = url;
+    http.Response? lastResponse;
+
+    _log.d(_tag, 'followRedirects: start url=$url maxRedirects=$maxRedirects');
+    for (int i = 0; i <= maxRedirects; i++) {
+      final cookies = _cookiesFor(current);
+      final reqHeaders = <String, String>{
+        ..._redirectHeadersForHop(
+          initialUrl: url,
+          currentUrl: current,
+          headers: headers,
+          allowedOrigins: sensitiveHeaderAllowedOrigins,
+        ),
+        if (cookies.isNotEmpty)
+          'Cookie': cookies.entries
+              .map((e) => '${e.key}=${e.value}')
+              .join('; '),
+      };
+
+      final request = http.Request('GET', current)
+        ..followRedirects = false
+        ..headers.addAll(reqHeaders);
+
+      final streamed = await sendWithClientExceptionRetry(request);
+      final response = await http.Response.fromStream(streamed);
+      _storeCookies(current, response);
+
+      if (response.statusCode >= 300 && response.statusCode < 400) {
+        final location = response.headers['location'];
+        String nextHost = '?';
+        if (location != null) {
+          try {
+            nextHost = Uri.parse(location).host;
+          } catch (logError, logStackTrace) {
+            _log.e(
+              _tag,
+              'followRedirects 失败',
+              error: logError,
+              stackTrace: logStackTrace,
+            );
+            nextHost = location;
+          }
+        }
+        _log.d(
+          _tag,
+          'redirect hop=$i ${response.statusCode} ${current.host} -> $nextHost',
+        );
+        if (location == null) break;
+        try {
+          current = current.resolve(location);
+        } on FormatException catch (logError, logStackTrace) {
+          _log.e(
+            _tag,
+            'followRedirects 失败',
+            error: logError,
+            stackTrace: logStackTrace,
+          );
+          throw ServiceException('SSO 重定向地址无法解析: $location');
+        }
+        lastResponse = response;
+      } else {
+        _log.log(
+          response.statusCode >= 400 ? LogLevel.error : LogLevel.debug,
+          _tag,
+          'followRedirects: end hop=$i status=${response.statusCode} url=$current',
+        );
+        return response;
+      }
+    }
+    _log.e(
+      _tag,
+      'followRedirects: max redirects exceeded, last url=$current status=${lastResponse?.statusCode}',
+    );
+    throw ServiceException(
+      'SSO 重定向链超过上限',
+      statusCode: lastResponse?.statusCode,
+    );
+  }
+
+  Map<String, String> _redirectHeadersForHop({
+    required Uri initialUrl,
+    required Uri currentUrl,
+    required Map<String, String>? headers,
+    required Set<Uri> allowedOrigins,
+  }) {
+    if (headers == null || headers.isEmpty) return const {};
+
+    final mayForwardSensitive =
+        _isSameOrigin(initialUrl, currentUrl) ||
+        allowedOrigins.any((origin) => _isSameOrigin(origin, currentUrl));
+    if (mayForwardSensitive) return headers;
+
+    return Map.fromEntries(
+      headers.entries.where(
+        (entry) => !_sensitiveRedirectHeaders.contains(entry.key.toLowerCase()),
+      ),
+    );
+  }
+
+  bool _isSameOrigin(Uri left, Uri right) {
+    return left.scheme.toLowerCase() == right.scheme.toLowerCase() &&
+        left.host.toLowerCase() == right.host.toLowerCase() &&
+        left.port == right.port;
+  }
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) async {
+    final cookies = _cookiesFor(request.url);
+    if (cookies.isNotEmpty) {
+      request.headers['Cookie'] = cookies.entries
+          .map((e) => '${e.key}=${e.value}')
+          .join('; ');
+    }
+    final response = await sendWithClientExceptionRetry(request);
+    _storeCookies(request.url, response);
+    final summary =
+        '${request.method} ${request.url.host}${request.url.path} -> ${response.statusCode}';
+    if (response.statusCode >= 400) {
+      _log.e(_tag, summary);
+    } else {
+      _log.d(_tag, summary);
+    }
+    return response;
+  }
+
+  /// 单次发送，保留共享 cookie，但绝不重建或重放请求。
+  /// 文件上传等非幂等操作必须走此入口；超时不表示服务器未接收。
+  Future<http.StreamedResponse> sendOnce(
+    http.BaseRequest request, {
+    Duration timeout = kHttpTimeout,
+  }) async {
+    final cookies = _cookiesFor(request.url);
+    if (cookies.isNotEmpty) {
+      request.headers['Cookie'] = cookies.entries
+          .map((entry) => '${entry.key}=${entry.value}')
+          .join('; ');
+    }
+    request.followRedirects = false;
+    _inFlightRequests++;
+    try {
+      final response = await _inner.send(request).timeout(timeout);
+      _storeCookies(request.url, response);
+      return response;
+    } catch (_, stackTrace) {
+      // 不记录原异常中的 URL query，认证回跳可能含 CAS 票据。
+      _log.e(
+        _tag,
+        '${request.method} ${request.url.host}${request.url.path} 单次请求失败',
+        error: const ServiceException('单次网络请求失败'),
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    } finally {
+      _inFlightRequests--;
+      _closeRetiredInnersIfIdle();
+    }
+  }
+
+  /// 带 http.ClientException 错误重试的请求发送函数
+  Future<http.StreamedResponse> sendWithClientExceptionRetry(
+    http.BaseRequest request,
+  ) async {
+    _inFlightRequests++;
+    try {
+      try {
+        return await _inner.send(request).timeout(kHttpTimeout);
+      } on http.ClientException catch (e, logStackTrace) {
+        _log.e(
+          _tag,
+          'sendWithClientExceptionRetry 失败',
+          error: e,
+          stackTrace: logStackTrace,
+        );
+
+        _retireInner();
+        final retryRequest = http.Request(request.method, request.url)
+          ..followRedirects = request.followRedirects
+          ..maxRedirects = request.maxRedirects
+          ..persistentConnection = true
+          ..headers.addAll(request.headers);
+        if (request is http.Request) {
+          retryRequest.body = request.body;
+        }
+        final result = await _inner.send(retryRequest).timeout(kHttpTimeout);
+        _log.d(_tag, 'send: retry ok ${request.method} ${request.url}');
+        return result;
+      }
+    } catch (error, stackTrace) {
+      _log.e(
+        _tag,
+        '${request.method} ${request.url.host}${request.url.path} 网络请求失败',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    } finally {
+      _inFlightRequests--;
+      _closeRetiredInnersIfIdle();
+    }
+  }
+
+  /// 换掉出错的底层 client，但不立即 close。
+  ///
+  /// IOClient.close() 是强制关闭，会取消该 client 上所有在飞请求。登录后
+  /// AuthCoordinator 让各子系统共用本 client 并发跑 SSO 链，此时任何一个
+  /// 请求的 ClientException（例如占位域名的 DNS 失败）若立刻 close，会
+  /// 连坐取消其他子系统正在飞行中的请求，把单点抖动放大成整批认证失败。
+  /// 旧 client 先入队，等最后一个在飞请求结束后统一关闭。
+  void _retireInner() {
+    _retiredInners.add(_inner);
+    _inner = _innerFactory();
+  }
+
+  void _closeRetiredInnersIfIdle() {
+    if (_inFlightRequests > 0 || _retiredInners.isEmpty) return;
+    final retired = List.of(_retiredInners);
+    _retiredInners.clear();
+    for (final client in retired) {
+      client.close();
+    }
+  }
+
+  @override
+  void close() {
+    _close(force: false);
+  }
+
+  /// 强制关闭（即使 reusable），用于替换/登出时释放底层连接。
+  void closeForce() {
+    _close(force: true);
+  }
+
+  void _close({required bool force}) {
+    if (reusable && !force) return;
+    for (final client in _retiredInners) {
+      client.close();
+    }
+    _retiredInners.clear();
+    _inner.close();
+    super.close();
+  }
+}

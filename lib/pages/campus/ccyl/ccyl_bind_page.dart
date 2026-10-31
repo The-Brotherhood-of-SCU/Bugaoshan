@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/ccyl_provider.dart';
-import 'package:bugaoshan/services/auth/ccyl_oauth_service.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
+import 'package:bugaoshan/scu_backend/ccyl/ccyl_oauth_service.dart';
+import 'package:bugaoshan/scu_backend/core/scu_auth.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 

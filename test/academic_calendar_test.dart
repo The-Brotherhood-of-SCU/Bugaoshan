@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/models/academic_calendar.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
-import 'package:bugaoshan/services/api/academic_calendar_service.dart';
+import 'package:bugaoshan/scu_backend/calendar/academic_calendar_service.dart';
 import 'package:bugaoshan/services/github_resource_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';

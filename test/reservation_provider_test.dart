@@ -1,7 +1,7 @@
 import 'package:bugaoshan/pages/campus/reservation/models/reservation_models.dart';
 import 'package:bugaoshan/providers/reservation_provider.dart';
-import 'package:bugaoshan/services/api/reservation_api_service.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/reservation/reservation_api_service.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -201,9 +201,7 @@ void main() {
 
     group('launchReservation', () {
       test('成功：参数透传给 API，结果返回且日历刷新', () async {
-        final api = _FakeReservationApi(
-          resources: [_resource('493', '党建活动室')],
-        );
+        final api = _FakeReservationApi(resources: [_resource('493', '党建活动室')]);
         final provider = ReservationProvider(api);
         await provider.refresh();
         final calendarCallsBefore = api.calendarCalls;
@@ -432,7 +430,11 @@ void main() {
         await expectLater(
           provider.cancelAppointment(appointment),
           throwsA(
-            isA<ServiceException>().having((e) => e.message, 'message', '该预约不可取消'),
+            isA<ServiceException>().having(
+              (e) => e.message,
+              'message',
+              '该预约不可取消',
+            ),
           ),
         );
       });
@@ -490,7 +492,6 @@ class _FakeReservationApi implements ReservationApi {
     if (error != null) throw error;
     return resources;
   }
-
 
   @override
   Future<ReservationCalendar> fetchCalendar({

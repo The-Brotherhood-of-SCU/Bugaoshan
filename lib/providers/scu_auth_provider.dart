@@ -5,10 +5,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/secure_storage.dart';
-import 'package:bugaoshan/services/auth/auth_coordinator.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
-import 'package:bugaoshan/services/auth/ccyl_auth.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/core/auth_coordinator.dart';
+import 'package:bugaoshan/scu_backend/core/scu_auth.dart';
+import 'package:bugaoshan/scu_backend/ccyl/ccyl_auth.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/services/ocr_service.dart';
 import 'package:bugaoshan/utils/storage_keys.dart';
 

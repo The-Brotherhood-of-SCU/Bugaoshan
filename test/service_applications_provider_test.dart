@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bugaoshan/providers/service_applications_provider.dart';
-import 'package:bugaoshan/services/api/service_api_service.dart';
+import 'package:bugaoshan/scu_backend/service_hall/service_api_service.dart';
 
 void main() {
   test('loaded applications are reused until an explicit refresh', () async {

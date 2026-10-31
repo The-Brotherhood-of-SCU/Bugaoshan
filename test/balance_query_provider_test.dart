@@ -10,11 +10,11 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_list.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
-import 'package:bugaoshan/services/api/balance_query_service.dart';
-import 'package:bugaoshan/services/api/payapp_api_service.dart';
-import 'package:bugaoshan/services/auth/payapp_auth.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
-import 'package:bugaoshan/services/auth/wfw_auth.dart';
+import 'package:bugaoshan/scu_backend/payapp/balance_query_service.dart';
+import 'package:bugaoshan/scu_backend/payapp/payapp_api_service.dart';
+import 'package:bugaoshan/scu_backend/payapp/payapp_auth.dart';
+import 'package:bugaoshan/scu_backend/core/scu_auth.dart';
+import 'package:bugaoshan/scu_backend/wfw/wfw_auth.dart';
 import 'package:bugaoshan/services/database_service.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 

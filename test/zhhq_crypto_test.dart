@@ -1,4 +1,4 @@
-import 'package:bugaoshan/utils/zhhq_crypto.dart';
+import 'package:bugaoshan/scu_backend/zhhq/zhhq_crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

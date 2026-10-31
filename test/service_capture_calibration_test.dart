@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:bugaoshan/services/api/service_form_models.dart';
-import 'package:bugaoshan/services/api/service_plugin_models.dart';
+import 'package:bugaoshan/scu_backend/service_hall/service_form_models.dart';
+import 'package:bugaoshan/scu_backend/service_hall/service_plugin_models.dart';
 import 'package:bugaoshan/pages/campus/service_hall/service_form_controller.dart';
 import 'package:bugaoshan/widgets/common/service_region_picker.dart';
 

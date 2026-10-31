@@ -110,7 +110,7 @@ UI -> Provider -> API Service -> SubsystemAuth -> ScuAuth
 
 ## 3. 子系统依赖图
 
-[`SubsystemAuth`](../../lib/services/auth/subsystem_auth.dart) 的契约为：
+[`SubsystemAuth`](../../lib/scu_backend/core/subsystem_auth.dart) 的契约为：
 
 ```dart
 abstract interface class SubsystemAuth {
@@ -158,7 +158,7 @@ flowchart TD
 
 恢复 SCU token 或完成 `session/save` 只说明 `id.scu.edu.cn` session 可用，不代表 `wfw.scu.edu.cn` 已建立 session。WFW API 常带 `X-Requested-With`，未预热时服务端可能直接返回“用户信息已失效”，不会自动进入 SSO 重定向。
 
-WFW 首页也不能用来预热：它匿名访问直接返回 200 并下发匿名 `eai-sess` cookie，永远不触发 SSO 链。因此 [`WfwAuth`](../../lib/services/auth/wfw_auth.dart) 必须：
+WFW 首页也不能用来预热：它匿名访问直接返回 200 并下发匿名 `eai-sess` cookie，永远不触发 SSO 链。因此 [`WfwAuth`](../../lib/scu_backend/wfw/wfw_auth.dart) 必须：
 
 1. 获取当前 `ScuAuth` 的 `CookieClient`。
 2. 不带 AJAX header 访问需登录的 `uc/wap/user/get-info` 并手动跟随重定向：匿名时链路为 get-info → `uc/wap/login` → `a_scu/api/cas/login` → `id.scu.edu.cn` CAS → 回跳 wfw 绑定用户 session。
@@ -167,7 +167,7 @@ WFW 首页也不能用来预热：它匿名访问直接返回 200 并下发匿�
 
 ## 4. AuthCoordinator 调度
 
-[`AuthCoordinator`](../../lib/services/auth/auth_coordinator.dart) 在统一认证成功后进行尽力而为的后台预热：
+[`AuthCoordinator`](../../lib/scu_backend/core/auth_coordinator.dart) 在统一认证成功后进行尽力而为的后台预热：
 
 ```text
 zhjw + wfw + fitness + ccyl   concurrently
@@ -194,7 +194,7 @@ zhjw + wfw + fitness + ccyl   concurrently
 
 ## 5. 根认证 ScuAuth
 
-[`ScuAuth`](../../lib/services/auth/scu_auth.dart) 是根认证的单一事实来源，负责：
+[`ScuAuth`](../../lib/scu_backend/core/scu_auth.dart) 是根认证的单一事实来源，负责：
 
 - 获取验证码和 SM2 公钥，以 SM2 加密密码后登录。
 - 将 access token 存入 `FlutterSecureStorage`。
@@ -326,7 +326,7 @@ TTL 到期本身不会先把状态切换为 `expired`。系统会直接尝试刷
 
 ### 7.1 ZHJW / WFW / PayApp
 
-这三个 API Service 使用 [`retryOnUnauthenticated`](../../lib/services/api/api_request.dart)：
+这三个 API Service 使用 [`retryOnUnauthenticated`](../../lib/scu_backend/core/api_request.dart) 或高阶客户端 [`ApiSession`](../../lib/scu_backend/core/api_session.dart)：
 
 ```text
 getClient -> business request
@@ -343,7 +343,7 @@ getClient -> business request
 
 ### 7.2 CCYL
 
-CCYL 通过业务响应码表示 token 过期，因此使用 [`retryOnCcylAuthError`](../../lib/services/api/ccyl_api_service.dart)，不使用通用 wrapper：
+CCYL 通过业务响应码表示 token 过期，因此使用 [`retryOnCcylAuthError`](../../lib/scu_backend/ccyl/ccyl_api_service.dart)，不使用通用 wrapper：
 
 ```text
 ensureAuthenticated
@@ -357,15 +357,15 @@ ensureAuthenticated
 
 ### 7.3 Fitness
 
-体测通过独立的 [`FitnessApiService`](../../lib/services/api/fitness_api_service.dart)（第 1 层）承载业务 HTTP，页面仅通过 `FitnessTestProvider` 消费已解析的 `FitnessNotice` / `FitnessScore` 模型：
+体测通过独立的 [`FitnessApiService`](../../lib/scu_backend/fitness/fitness_api_service.dart)（第 1 层）承载业务 HTTP，页面仅通过 `FitnessTestProvider` 消费已解析的 `FitnessNotice` / `FitnessScore` 模型：
 
 - `FitnessAuth.getClient()` 按需建立 SSO（`SsoRelayAuth`）。
-- `FitnessApiService._request` 统一走 `retryOnUnauthenticated(getClient, fn, invalidate: _auth.invalidate)`，业务响应中 `登录信息失效/请重新登录` 转为 `UnauthenticatedException` 后单次重试，其余 `ServiceException` 透传。
+- `FitnessApiService` 统一走 `ApiSession`，业务响应中 `登录信息失效/请重新登录` 转为 `UnauthenticatedException` 后单次重试，其余 `ServiceException` 透传。
 - 解析与 HTML → 纯文本转换由 `FitnessNotice.fromJson` / `FitnessScore.fromJson` 负责，`fitness_test_page.dart` 不再直接持有 HTTP、重试或 `Map` 字段解析逻辑。
 
 ### 7.4 HTTP ClientException
 
-[`CookieClient`](../../lib/services/auth/cookie_client.dart) 在底层 `http.Client` 抛 `ClientException` 时会重建 client 并重发一次。这是传输层恢复，与认证重试相互独立。第二次失败直接上抛。
+[`CookieClient`](../../lib/scu_backend/core/cookie_client.dart) 在底层 `http.Client` 抛 `ClientException` 时会重建 client 并重发一次。这是传输层恢复，与认证重试相互独立。第二次失败直接上抛。
 
 ## 8. CCYL 的账号隔离
 
@@ -449,7 +449,7 @@ Provider 捕获最终异常并转换为页面状态，不实现 token、cookie �
 
 ## 11. 异常边界
 
-根认证异常定义在 [`scu_exceptions.dart`](../../lib/services/auth/scu_exceptions.dart)，CCYL 业务异常定义在 [`ccyl_service.dart`](../../lib/services/ccyl/ccyl_service.dart)：
+根认证异常定义在 [`scu_exceptions.dart`](../../lib/scu_backend/core/scu_exceptions.dart)，CCYL 业务异常定义在 [`ccyl_service.dart`](../../lib/scu_backend/ccyl/ccyl_service.dart)：
 
 | 异常 | 含义 | 自动重试 |
 |---|---|---|
@@ -563,30 +563,45 @@ lib/
 │   ├── plan_completion_provider.dart
 │   ├── balance_query_provider.dart
 │   └── ccyl_provider.dart
-├── services/
-│   ├── api/
+├── scu_backend/                     # 四川大学各子系统后端通信 SDK
+│   ├── core/
 │   │   ├── api_request.dart         # 通用认证失败重试一次
-│   │   ├── zhjw_api_service.dart
-│   │   ├── wfw_api_service.dart
-│   │   ├── payapp_api_service.dart
-│   │   ├── balance_query_service.dart
-│   │   └── ccyl_api_service.dart    # CCYL 精确过期恢复
-│   ├── auth/
+│   │   ├── api_session.dart         # 高阶请求会话客户端与信封拆包
+│   │   ├── auth_coordinator.dart    # L2 调度
 │   │   ├── auth_state.dart
-│   │   ├── scu_exceptions.dart
 │   │   ├── cookie_client.dart
 │   │   ├── scu_auth.dart            # L3 根认证
-│   │   ├── subsystem_auth.dart      # L2 契约
-│   │   ├── auth_coordinator.dart    # L2 调度
-│   │   ├── zhjw_auth.dart
-│   │   ├── wfw_auth.dart
+│   │   ├── scu_exceptions.dart
 │   │   ├── sso_relay_auth.dart
+│   │   └── subsystem_auth.dart      # L2 契约
+│   ├── zhjw/
+│   │   ├── zhjw_auth.dart
+│   │   ├── zhjw_api_service.dart
+│   │   └── zhjw_html_parsers.dart
+│   ├── wfw/
+│   │   ├── wfw_auth.dart
+│   │   └── wfw_api_service.dart
+│   ├── payapp/
 │   │   ├── payapp_auth.dart
+│   │   ├── payapp_api_service.dart
+│   │   └── balance_query_service.dart
+│   ├── fitness/
 │   │   ├── fitness_auth.dart
+│   │   └── fitness_api_service.dart
+│   ├── ccyl/
 │   │   ├── ccyl_auth.dart
-│   │   └── ccyl_oauth_service.dart
-│   └── ccyl/
-│       └── ccyl_service.dart        # CCYL 底层 HTTP 与业务错误分类
+│   │   ├── ccyl_api_service.dart    # CCYL 精确过期恢复
+│   │   ├── ccyl_oauth_service.dart
+│   │   └── ccyl_service.dart        # CCYL 底层 HTTP 与业务错误分类
+│   ├── gs/                          # 研教务 (EMAP)
+│   ├── reservation/                 # 场馆预约
+│   ├── zhhq/                        # 智慧后勤报修
+│   ├── passpoint/                   # 校园网无感认证
+│   ├── service_hall/                # 办事大厅表单引擎
+│   ├── cloud_print/                 # 云打印
+│   ├── calendar/                    # 校历
+│   └── forgot_password/             # 找回密码
+├── services/                        # 客户端本地通用服务 (DB, update, reminder 等)
 ├── utils/
 │   ├── app_logger.dart              # 脱敏应用日志（认证 + 业务共用）
 │   ├── app_error_reporter.dart      # 全局异常接管（框架/引擎/isolate）

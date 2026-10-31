@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:bugaoshan/pages/campus/reservation/models/reservation_models.dart';
-import 'package:bugaoshan/services/api/reservation_api_service.dart';
+import 'package:bugaoshan/scu_backend/reservation/reservation_api_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

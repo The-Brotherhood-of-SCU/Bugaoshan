@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/academic_calendar.dart';
-import 'package:bugaoshan/services/api/academic_calendar_service.dart';
+import 'package:bugaoshan/scu_backend/calendar/academic_calendar_service.dart';
 import 'package:bugaoshan/utils/calendar_export_utils.dart';
 import 'package:bugaoshan/widgets/common/swipe_page_view.dart';
 

@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/utils/class_week_parser.dart';
-import 'package:bugaoshan/utils/gs_json_envelope.dart';
+import 'package:bugaoshan/scu_backend/gs/gs_json_envelope.dart';
 import 'package:flutter/material.dart' show Colors, TimeOfDay;
 
 /// 研究生课表解析器（纯函数，无网络 / 无状态）。

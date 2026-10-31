@@ -5,7 +5,7 @@ import 'package:bugaoshan/pages/campus/reservation/models/reservation_models.dar
 import 'package:bugaoshan/pages/campus/reservation/reservation_page.dart';
 import 'package:bugaoshan/providers/reservation_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/api/reservation_api_service.dart';
+import 'package:bugaoshan/scu_backend/reservation/reservation_api_service.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -32,9 +32,8 @@ void main() {
   }
 
   Finder stripFinder() => find.byWidgetPredicate(
-        (widget) =>
-            widget is ListView && widget.scrollDirection == Axis.horizontal,
-      );
+    (widget) => widget is ListView && widget.scrollDirection == Axis.horizontal,
+  );
 
   IconButton arrow(WidgetTester tester, String tooltip) =>
       tester.widget<IconButton>(
@@ -77,8 +76,7 @@ void main() {
     }
 
     // 3) 点击右箭头，标签条应继续向右滚
-    final stripController =
-        tester.widget<ListView>(stripFinder()).controller!;
+    final stripController = tester.widget<ListView>(stripFinder()).controller!;
     final before = stripController.offset;
     await tester.tap(find.byTooltip(l10n.reservationScrollRight));
     await tester.pumpAndSettle();
@@ -89,12 +87,12 @@ void main() {
   }
 
   Widget host(Widget Function(BuildContext) body) => MaterialApp(
-        navigatorKey: navigatorKey,
-        scrollBehavior: const AppScrollBehavior(),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Builder(builder: (context) => Scaffold(body: body(context))),
-      );
+    navigatorKey: navigatorKey,
+    scrollBehavior: const AppScrollBehavior(),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: Builder(builder: (context) => Scaffold(body: body(context))),
+  );
 
   void registerFakes() {
     getIt.registerSingleton<ReservationProvider>(
@@ -103,36 +101,38 @@ void main() {
     getIt.registerSingleton<ScuAuthProvider>(_LoggedInAuth());
   }
 
-  testWidgets('1 direct-home：真实桌面尺寸下鼠标拖拽/芯片/箭头全部可用',
-      (tester) async {
+  testWidgets('1 direct-home：真实桌面尺寸下鼠标拖拽/芯片/箭头全部可用', (tester) async {
     registerFakes();
     await useRealDesktopSize(tester);
 
-    await tester.pumpWidget(MaterialApp(
-      scrollBehavior: const AppScrollBehavior(),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: const ReservationPage(),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        scrollBehavior: const AppScrollBehavior(),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const ReservationPage(),
+      ),
+    );
     await tester.pumpAndSettle();
 
     final failure = await probePointerPaths(tester);
     expect(failure, isNull, reason: failure ?? '');
   });
 
-  testWidgets('2 popup-chain：完整 popupOrNavigate 链路（宽屏弹窗正式入口）',
-      (tester) async {
+  testWidgets('2 popup-chain：完整 popupOrNavigate 链路（宽屏弹窗正式入口）', (tester) async {
     registerFakes();
     await useRealDesktopSize(tester);
 
-    await tester.pumpWidget(host((context) {
-      return Center(
-        child: FilledButton(
-          onPressed: () => popupOrNavigate(context, const ReservationPage()),
-          child: const Text('OPEN'),
-        ),
-      );
-    }));
+    await tester.pumpWidget(
+      host((context) {
+        return Center(
+          child: FilledButton(
+            onPressed: () => popupOrNavigate(context, const ReservationPage()),
+            child: const Text('OPEN'),
+          ),
+        );
+      }),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('OPEN'));
@@ -147,31 +147,33 @@ void main() {
     registerFakes();
     await useRealDesktopSize(tester);
 
-    await tester.pumpWidget(host((context) {
-      return Center(
-        child: FilledButton(
-          onPressed: () => showDialog(
-            context: context,
-            useRootNavigator: false,
-            builder: (_) => Dialog(
-              backgroundColor: Colors.transparent,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  color: DialogTheme.of(context).backgroundColor,
-                  child: const SizedBox(
-                    width: 853,
-                    height: 900,
-                    child: ReservationPage(),
+    await tester.pumpWidget(
+      host((context) {
+        return Center(
+          child: FilledButton(
+            onPressed: () => showDialog(
+              context: context,
+              useRootNavigator: false,
+              builder: (_) => Dialog(
+                backgroundColor: Colors.transparent,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    color: DialogTheme.of(context).backgroundColor,
+                    child: const SizedBox(
+                      width: 853,
+                      height: 900,
+                      child: ReservationPage(),
+                    ),
                   ),
                 ),
               ),
             ),
+            child: const Text('OPEN'),
           ),
-          child: const Text('OPEN'),
-        ),
-      );
-    }));
+        );
+      }),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('OPEN'));
@@ -182,36 +184,39 @@ void main() {
     expect(failure, isNull, reason: failure ?? '');
   });
 
-  testWidgets('4 dialog-fragment：showDialog + Fragment 嵌套 Navigator',
-      (tester) async {
+  testWidgets('4 dialog-fragment：showDialog + Fragment 嵌套 Navigator', (
+    tester,
+  ) async {
     registerFakes();
     await useRealDesktopSize(tester);
 
-    await tester.pumpWidget(host((context) {
-      return Center(
-        child: FilledButton(
-          onPressed: () => showDialog(
-            context: context,
-            useRootNavigator: false,
-            builder: (_) => Dialog(
-              backgroundColor: Colors.transparent,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  color: DialogTheme.of(context).backgroundColor,
-                  child: const SizedBox(
-                    width: 853,
-                    height: 900,
-                    child: Fragment(child: ReservationPage()),
+    await tester.pumpWidget(
+      host((context) {
+        return Center(
+          child: FilledButton(
+            onPressed: () => showDialog(
+              context: context,
+              useRootNavigator: false,
+              builder: (_) => Dialog(
+                backgroundColor: Colors.transparent,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    color: DialogTheme.of(context).backgroundColor,
+                    child: const SizedBox(
+                      width: 853,
+                      height: 900,
+                      child: Fragment(child: ReservationPage()),
+                    ),
                   ),
                 ),
               ),
             ),
+            child: const Text('OPEN'),
           ),
-          child: const Text('OPEN'),
-        ),
-      );
-    }));
+        );
+      }),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('OPEN'));
@@ -239,15 +244,15 @@ class _LoggedInAuth extends ChangeNotifier implements ScuAuthProvider {
 
 /// 足够多的活动室，保证宽屏（1707 逻辑宽）与窄弹窗（853）下标签条都横向溢出。
 List<ReservationResource> manyResources() => [
-      for (var i = 0; i < 20; i++)
-        ReservationResource(
-          id: '$i',
-          name: 'Room$i',
-          attributes: const [],
-          needsApproval: false,
-          maxPeriodsPerDay: 0,
-        ),
-    ];
+  for (var i = 0; i < 20; i++)
+    ReservationResource(
+      id: '$i',
+      name: 'Room$i',
+      attributes: const [],
+      needsApproval: false,
+      maxPeriodsPerDay: 0,
+    ),
+];
 
 class _FakeReservationApi implements ReservationApi {
   @override
@@ -283,9 +288,21 @@ class _FakeReservationApi implements ReservationApi {
   }) async {
     return const ReservationCalendar(
       slots: [
-        ReservationTimeSlot(id: 'a', startTime: '08:00:00', endTime: '12:00:00'),
-        ReservationTimeSlot(id: 'b', startTime: '12:00:00', endTime: '18:00:00'),
-        ReservationTimeSlot(id: 'c', startTime: '18:00:00', endTime: '22:00:00'),
+        ReservationTimeSlot(
+          id: 'a',
+          startTime: '08:00:00',
+          endTime: '12:00:00',
+        ),
+        ReservationTimeSlot(
+          id: 'b',
+          startTime: '12:00:00',
+          endTime: '18:00:00',
+        ),
+        ReservationTimeSlot(
+          id: 'c',
+          startTime: '18:00:00',
+          endTime: '22:00:00',
+        ),
       ],
       days: ['2026-10-24'],
       states: {
