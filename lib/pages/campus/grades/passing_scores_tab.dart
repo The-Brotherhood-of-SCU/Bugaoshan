@@ -24,7 +24,14 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
   @override
   void initState() {
     super.initState();
+    CourseTeacherIndex.revision.addListener(_loadTeacherIndex);
     _loadTeacherIndex();
+  }
+
+  @override
+  void dispose() {
+    CourseTeacherIndex.revision.removeListener(_loadTeacherIndex);
+    super.dispose();
   }
 
   Future<void> _loadTeacherIndex() async {
@@ -91,7 +98,12 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
           ),
           const SizedBox(height: 24),
           FilledButton.icon(
-            onPressed: provider.refreshPassingScores,
+            onPressed: () {
+              if (_teacherIndex == null) {
+                _loadTeacherIndex();
+              }
+              provider.refreshPassingScores();
+            },
             icon: const Icon(Icons.refresh),
             label: Text(l10n.gradesGet),
           ),
@@ -103,7 +115,12 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
   Widget _buildError(BuildContext context, GradesProvider provider) {
     return RetryableErrorWidget(
       errorType: provider.passingError!,
-      onRetry: provider.refreshPassingScores,
+      onRetry: () {
+        if (_teacherIndex == null) {
+          _loadTeacherIndex();
+        }
+        provider.refreshPassingScores();
+      },
       iconSize: 56,
     );
   }
@@ -129,7 +146,10 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
         .toList();
 
     return RefreshIndicator(
-      onRefresh: provider.refreshPassingScores,
+      onRefresh: () async {
+        await _loadTeacherIndex();
+        await provider.refreshPassingScores();
+      },
       child: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(child: _OverallSummaryCard(result: result)),
@@ -152,6 +172,8 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
                 itemBuilder: (context, i) {
                   final item = group.items[i];
                   final teacher = _teacherIndex?.getTeacher(
+                    academicYear: item.academicYearCode,
+                    termSeason: item.termName,
                     rawTermLabel: group.label,
                     courseName: item.courseName,
                   );

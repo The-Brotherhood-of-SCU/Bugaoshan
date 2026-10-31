@@ -27,12 +27,18 @@ class CourseTeacherIndex {
   static CourseTeacherIndex? _cachedInstance;
   static Future<CourseTeacherIndex?>? _buildingFuture;
 
+  /// 索引失效与版本更新通知。
+  ///
+  /// 当 [invalidate] 被调用时版本号递增，页面可监听此通知自动重新加载最新索引。
+  static final ValueNotifier<int> revision = ValueNotifier<int>(0);
+
   /// 使当前内存中的教师索引失效。
   ///
   /// 应在课表新增、删除、课程替换、课程编辑以及学期元数据更新后调用。
   static void invalidate() {
     _cachedInstance = null;
     _buildingFuture = null;
+    revision.value++;
   }
 
   /// 测试用：直接注入预先构建好的索引实例。
@@ -40,6 +46,7 @@ class CourseTeacherIndex {
   static void setInstanceForTesting(CourseTeacherIndex? instance) {
     _cachedInstance = instance;
     _buildingFuture = null;
+    revision.value++;
   }
 
   /// 获取或异步构建教师索引。
@@ -51,15 +58,16 @@ class CourseTeacherIndex {
     if (_cachedInstance != null) return _cachedInstance;
     if (_buildingFuture != null) return _buildingFuture;
 
+    final future = _safeBuild(db);
+    _buildingFuture = future;
+    return future;
+  }
+
+  static Future<CourseTeacherIndex?> _safeBuild(DatabaseService? db) async {
     try {
       final database = db ?? getIt<DatabaseService>();
-      final future = _build(database);
-      _buildingFuture = future;
-
-      final instance = await future;
-      if (_buildingFuture == future) {
-        _cachedInstance = instance;
-      }
+      final instance = await _build(database);
+      _cachedInstance = instance;
       return instance;
     } catch (e, st) {
       AppLog.e(_tag, '加载教师索引失败', error: e, stackTrace: st);

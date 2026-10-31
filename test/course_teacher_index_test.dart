@@ -418,6 +418,25 @@ void main() {
         '刘老师',
       );
     });
+
+    test('调用 invalidate() 时 revision 版本号自增且通知监听者', () async {
+      final initialRevision = CourseTeacherIndex.revision.value;
+      var notified = 0;
+      void listener() => notified++;
+      CourseTeacherIndex.revision.addListener(listener);
+
+      try {
+        CourseTeacherIndex.invalidate();
+        expect(CourseTeacherIndex.revision.value, initialRevision + 1);
+        expect(notified, 1);
+
+        CourseTeacherIndex.invalidate();
+        expect(CourseTeacherIndex.revision.value, initialRevision + 2);
+        expect(notified, 2);
+      } finally {
+        CourseTeacherIndex.revision.removeListener(listener);
+      }
+    });
   });
 
   group('UI 渲染与展示测试', () {

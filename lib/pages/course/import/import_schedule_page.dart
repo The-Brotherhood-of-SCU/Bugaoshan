@@ -554,34 +554,17 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         .firstOrNull;
     if (existing == null) return;
 
-    final newSlots = ScheduleConfig.isPresetTimeSlots(existing.timeSlots)
-        ? ScheduleConfig.campusTimeSlotsForCourses(newCourses)
-        : null;
+    final updated = jwxt_parser.computeUpdatedScheduleConfig(
+      existing: existing,
+      newCourses: newCourses,
+      academicYearCode: academicYearCode,
+      termName: termName,
+      semesterStartDate: semesterStartDate,
+      totalWeeks: totalWeeks,
+    );
 
-    final hasYearUpdate =
-        academicYearCode != null &&
-        academicYearCode != existing.academicYearCode;
-    final hasTermUpdate = termName != null && termName != existing.termName;
-    final hasDateUpdate =
-        semesterStartDate != null &&
-        semesterStartDate != existing.semesterStartDate;
-    final hasWeeksUpdate =
-        totalWeeks != null && totalWeeks != existing.totalWeeks;
-
-    if (newSlots != null ||
-        hasYearUpdate ||
-        hasTermUpdate ||
-        hasDateUpdate ||
-        hasWeeksUpdate) {
-      await widget.courseProvider.updateScheduleConfig(
-        existing.copyWith(
-          timeSlots: newSlots,
-          academicYearCode: academicYearCode,
-          termName: termName,
-          semesterStartDate: semesterStartDate,
-          totalWeeks: totalWeeks,
-        ),
-      );
+    if (updated != null) {
+      await widget.courseProvider.updateScheduleConfig(updated);
     }
   }
 

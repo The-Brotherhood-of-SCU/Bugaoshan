@@ -335,10 +335,10 @@ class ScheduleConfig {
 
   /// 判断 [slots] 是否与某个预置时间表完全一致（即用户未自定义过）。
   static bool isPresetTimeSlots(List<TimeSlot> slots) =>
-      _sameTimeSlots(slots, jiangAnTimeSlots) ||
-      _sameTimeSlots(slots, wangJiangHuaXiTimeSlots);
+      sameTimeSlots(slots, jiangAnTimeSlots) ||
+      sameTimeSlots(slots, wangJiangHuaXiTimeSlots);
 
-  static bool _sameTimeSlots(List<TimeSlot> a, List<TimeSlot> b) {
+  static bool sameTimeSlots(List<TimeSlot> a, List<TimeSlot> b) {
     if (a.length != b.length) return false;
     for (var i = 0; i < a.length; i++) {
       final s = a[i], t = b[i];

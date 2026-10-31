@@ -24,7 +24,14 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
   @override
   void initState() {
     super.initState();
+    CourseTeacherIndex.revision.addListener(_loadTeacherIndex);
     _loadTeacherIndex();
+  }
+
+  @override
+  void dispose() {
+    CourseTeacherIndex.revision.removeListener(_loadTeacherIndex);
+    super.dispose();
   }
 
   Future<void> _loadTeacherIndex() async {
@@ -91,7 +98,12 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
           ),
           const SizedBox(height: 24),
           FilledButton.icon(
-            onPressed: provider.refreshSchemeScores,
+            onPressed: () {
+              if (_teacherIndex == null) {
+                _loadTeacherIndex();
+              }
+              provider.refreshSchemeScores();
+            },
             icon: const Icon(Icons.refresh),
             label: Text(l10n.gradesGet),
           ),
@@ -103,7 +115,12 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
   Widget _buildError(BuildContext context, GradesProvider provider) {
     return RetryableErrorWidget(
       errorType: provider.schemeError!,
-      onRetry: provider.refreshSchemeScores,
+      onRetry: () {
+        if (_teacherIndex == null) {
+          _loadTeacherIndex();
+        }
+        provider.refreshSchemeScores();
+      },
       iconSize: 56,
     );
   }
@@ -131,7 +148,10 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
         .toList();
 
     return RefreshIndicator(
-      onRefresh: provider.refreshSchemeScores,
+      onRefresh: () async {
+        await _loadTeacherIndex();
+        await provider.refreshSchemeScores();
+      },
       child: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -172,6 +192,7 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
                   final teacher = _teacherIndex?.getTeacher(
                     academicYear: item.academicYearCode,
                     termSeason: item.termName,
+                    rawTermLabel: group.label,
                     courseName: item.courseName,
                   );
                   return ScoreCardWidget(item: item, teacher: teacher);

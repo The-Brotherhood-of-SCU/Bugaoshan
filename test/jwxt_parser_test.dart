@@ -1,4 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/models/schedule_config.dart';
 import 'package:bugaoshan/pages/course/import/jwxt_parser.dart';
 
 void main() {
@@ -151,6 +154,137 @@ void main() {
       final meta4 = parseSemesterMetadata('我的自定义课表');
       expect(meta4.academicYearCode, isNull);
       expect(meta4.termName, isNull);
+    });
+
+    group('computeUpdatedScheduleConfig', () {
+      final baseConfig = ScheduleConfig(
+        id: 'sch1',
+        semesterName: '旧课表',
+        semesterStartDate: DateTime(2024, 9, 1),
+        totalWeeks: 18,
+      );
+
+      final dummyCourse = Course(
+        name: '普通课程',
+        teacher: '老师',
+        location: '',
+        campus: '江安校区',
+        startWeek: 1,
+        endWeek: 16,
+        dayOfWeek: 1,
+        startSection: 1,
+        endSection: 2,
+        colorValue: 0,
+      );
+
+      test('当已有课表学期元数据为空时，更新写回 academicYearCode 与 termName', () {
+        final updated = computeUpdatedScheduleConfig(
+          existing: baseConfig,
+          newCourses: [dummyCourse],
+          academicYearCode: '2024-2025',
+          termName: '秋',
+        );
+
+        expect(updated, isNotNull);
+        expect(updated!.academicYearCode, '2024-2025');
+        expect(updated.termName, '秋');
+        expect(updated.semesterName, '旧课表'); // 保留原有名称
+      });
+
+      test('当传入校历起止日期与周数时，正确更新校历信息', () {
+        final newDate = DateTime(2025, 3, 3);
+        final updated = computeUpdatedScheduleConfig(
+          existing: baseConfig,
+          newCourses: [dummyCourse],
+          semesterStartDate: newDate,
+          totalWeeks: 20,
+        );
+
+        expect(updated, isNotNull);
+        expect(updated!.semesterStartDate, newDate);
+        expect(updated.totalWeeks, 20);
+      });
+
+      test('当用户自定义过时间表（非预置）时，保留用户时间表不覆盖，但仍更新元数据', () {
+        final customSlots = [
+          const TimeSlot(
+            startTime: TimeOfDay(hour: 7, minute: 0),
+            endTime: TimeOfDay(hour: 8, minute: 0),
+          ),
+        ];
+        final customConfig = baseConfig.copyWith(timeSlots: customSlots);
+
+        final updated = computeUpdatedScheduleConfig(
+          existing: customConfig,
+          newCourses: [
+            Course(
+              name: '望江课',
+              teacher: '',
+              location: '望江东三教',
+              campus: '望江校区',
+              startWeek: 1,
+              endWeek: 16,
+              dayOfWeek: 1,
+              startSection: 1,
+              endSection: 2,
+              colorValue: 0,
+            ),
+          ],
+          academicYearCode: '2024-2025',
+          termName: '秋',
+        );
+
+        expect(updated, isNotNull);
+        expect(updated!.academicYearCode, '2024-2025');
+        expect(updated.termName, '秋');
+        // 自定义时间表未被覆盖
+        expect(updated.timeSlots.length, 1);
+        expect(updated.timeSlots.first.startTime.hour, 7);
+      });
+
+      test('当课程主导校区变更且为预置时间表时，按主导校区刷新时间表', () {
+        // baseConfig 默认为江安时间表（8:15 开始）
+        final updated = computeUpdatedScheduleConfig(
+          existing: baseConfig,
+          newCourses: [
+            Course(
+              name: '望江课程',
+              teacher: '',
+              location: '',
+              campus: '望江校区',
+              startWeek: 1,
+              endWeek: 16,
+              dayOfWeek: 1,
+              startSection: 1,
+              endSection: 2,
+              colorValue: 0,
+            ),
+          ],
+        );
+
+        expect(updated, isNotNull);
+        // 望江第1节课 8:00 开始
+        expect(updated!.timeSlots.first.startTime.hour, 8);
+        expect(updated.timeSlots.first.startTime.minute, 0);
+      });
+
+      test('当配置字段全部一致时返回 null，避免无谓数据库写操作', () {
+        final alreadyUpdated = baseConfig.copyWith(
+          academicYearCode: '2024-2025',
+          termName: '秋',
+        );
+
+        final result = computeUpdatedScheduleConfig(
+          existing: alreadyUpdated,
+          newCourses: [dummyCourse],
+          academicYearCode: '2024-2025',
+          termName: '秋',
+          semesterStartDate: baseConfig.semesterStartDate,
+          totalWeeks: baseConfig.totalWeeks,
+        );
+
+        expect(result, isNull);
+      });
     });
   });
 }

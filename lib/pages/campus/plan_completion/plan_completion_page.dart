@@ -29,6 +29,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
     _provider = getIt<PlanCompletionProvider>();
     _provider.addListener(_onProviderUpdate);
     _provider.fetchPlanCompletion();
+    CourseTeacherIndex.revision.addListener(_loadTeacherIndex);
     _loadTeacherIndex();
   }
 
@@ -45,12 +46,16 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
 
   @override
   void dispose() {
+    CourseTeacherIndex.revision.removeListener(_loadTeacherIndex);
     _provider.removeListener(_onProviderUpdate);
     super.dispose();
   }
 
   void _onProviderUpdate() {
     if (!mounted) return;
+    if (_teacherIndex == null) {
+      _loadTeacherIndex();
+    }
     final error = _provider.error;
 
     // 有缓存时刷新失败，provider 保留旧数据并置 state=loaded、error≠null；
@@ -90,7 +95,12 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
                     : const Icon(Icons.refresh),
                 onPressed: _provider.state == PlanCompletionLoadState.loading
                     ? null
-                    : () => _provider.fetchPlanCompletion(forceRefresh: true),
+                    : () {
+                        if (_teacherIndex == null) {
+                          _loadTeacherIndex();
+                        }
+                        _provider.fetchPlanCompletion(forceRefresh: true);
+                      },
               );
             },
           ),
@@ -118,7 +128,12 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
         const Center(child: CircularProgressIndicator()),
       PlanCompletionLoadState.error => RetryableErrorWidget(
         errorType: _provider.error!,
-        onRetry: () => _provider.fetchPlanCompletion(),
+        onRetry: () {
+          if (_teacherIndex == null) {
+            _loadTeacherIndex();
+          }
+          _provider.fetchPlanCompletion();
+        },
         iconSize: 56,
       ),
       PlanCompletionLoadState.loaded => _buildTree(context),

@@ -14,6 +14,53 @@ String cleanSemesterLabel(String label) {
   return label.replaceAll('（当前）', '').replaceAll('(当前)', '').trim();
 }
 
+/// 计算更新已有课表配置时需要写回的新配置。
+///
+/// 若无任何字段发生变化，返回 null（避免不必要的数据库写操作与状态刷新）。
+/// 仅当已有课表的时间表仍是预置（用户未自定义）时才按课程主导校区刷新时间表，
+/// 保护用户手动微调过的节次起止时间。
+ScheduleConfig? computeUpdatedScheduleConfig({
+  required ScheduleConfig existing,
+  required List<Course> newCourses,
+  String? academicYearCode,
+  String? termName,
+  DateTime? semesterStartDate,
+  int? totalWeeks,
+}) {
+  final campusSlots = ScheduleConfig.isPresetTimeSlots(existing.timeSlots)
+      ? ScheduleConfig.campusTimeSlotsForCourses(newCourses)
+      : null;
+  final newSlots =
+      (campusSlots != null &&
+          !ScheduleConfig.sameTimeSlots(campusSlots, existing.timeSlots))
+      ? campusSlots
+      : null;
+
+  final hasYearUpdate =
+      academicYearCode != null && academicYearCode != existing.academicYearCode;
+  final hasTermUpdate = termName != null && termName != existing.termName;
+  final hasDateUpdate =
+      semesterStartDate != null &&
+      semesterStartDate != existing.semesterStartDate;
+  final hasWeeksUpdate =
+      totalWeeks != null && totalWeeks != existing.totalWeeks;
+
+  if (newSlots != null ||
+      hasYearUpdate ||
+      hasTermUpdate ||
+      hasDateUpdate ||
+      hasWeeksUpdate) {
+    return existing.copyWith(
+      timeSlots: newSlots,
+      academicYearCode: academicYearCode,
+      termName: termName,
+      semesterStartDate: semesterStartDate,
+      totalWeeks: totalWeeks,
+    );
+  }
+  return null;
+}
+
 /// 校验导入的课表是否合法，非法时抛 [FormatException]。
 void validateImportedSchedule(ScheduleConfig config, List<Course> courses) {
   if (config.totalWeeks < 1 || config.timeSlots.isEmpty) {
