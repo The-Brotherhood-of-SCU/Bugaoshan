@@ -223,7 +223,7 @@ Authoritative reference: `docs/architecture/authentication.md`.
 - **`NewServiceApiService`** (`new_service_api_service.dart`) — 校园网无感认证（Passpoint）API.
 - **`AcademicCalendarService`** (`lib/scu_backend/calendar/academic_calendar_service.dart`) — academic calendar data with mirror fetch + SharedPreferences cache.
 
-ZHJW, WFW, and PayApp API services follow the **`_request()` template** (internally calls `retryOnUnauthenticated` from `lib/scu_backend/core/api_request.dart` or uses `ApiSession`):
+Cookie 型子系统的 API Services（ZHJW / WFW / PayApp / Fitness / Reservation / Passpoint / GS / ServiceHall）统一使用 **`ApiSession`**（保留自定义解析的服务通过 `run()` / `checkResponse` 复用同一骨架）：
 1. `getClient()` → 2. business HTTP → 3. on `UnauthenticatedException` → 4. `invalidate?.call()` + retry once → 5. still failing → propagate to the Provider (which converts to UI state).
 
 The CCYL service is special: its token expires via an explicit business error code classified as `CcylAuthExpiredException`. `CcylApiService._retryOnCcylAuthError()` handles only that path (`recoverExpiredSession()` single-flight → retry once); ordinary `CcylException` failures are not replayed, which protects non-idempotent operations.
@@ -323,7 +323,7 @@ Shared downloads module lives in `lib/pages/campus/downloads/`:
 
 ### Key Patterns
 
-- **Session expiry** — `ScuAuth.getClient()` checks 1-hour TTL, calls `_synchronizedRefresh()` on expiry. Refresh failure → `onSessionExpired` callback → `SessionExpiredListener` shows a global SnackBar with "前往登录" action (5 s debounce). ZHJW/WFW/PayApp API Services wrap calls in `retryOnUnauthenticated(getClient, fn)` to retry once on `UnauthenticatedException`; CCYL only retries `CcylAuthExpiredException`. Business providers catch final exceptions for UI state.
+- **Session expiry** — `ScuAuth.getClient()` checks 1-hour TTL, calls `_synchronizedRefresh()` on expiry. Refresh failure → `onSessionExpired` callback → `SessionExpiredListener` shows a global SnackBar with "前往登录" action (5 s debounce). ZHJW/WFW/PayApp/Fitness/Reservation/Passpoint/GS/ServiceHall API Services go through `ApiSession` (`run` / `checkResponse`), retrying once on `UnauthenticatedException`; CCYL only retries `CcylAuthExpiredException`; cloud print / zhhq keep their own retry semantics. Business providers catch final exceptions for UI state.
 - **左右 + 上下双滑页面** — 统一用 `SwipePageView`（`lib/widgets/common/swipe_page_view.dart`，做法源自课表页：禁用 PageView 自带物理、外层 GestureDetector 接管横滑并手动 jumpTo 跟手，纵向拖动放行给页内列表），替代 `TabBarView` / `PageView`，避免手势冲突导致的滑动不跟手。传 `tabController` 与 TabBar 双向联动；`keepPagesAlive: true` 保留各页 State（表单/滚动位置）。课表页的 `CourseSwipePageView` 是它的薄壳转发。
 - **Multiple schedules** — Courses are stored in a single SQLite `courses` table, filtered by `schedule_id`. `DatabaseService.switchSchedule()` updates the current ID and refreshes the in-memory cache.
 - **Responsive dialogs** — `popupOrNavigate(context, page)` in `lib/widgets/route/router_utils.dart`: dialog at width/2 on tablets/landscape, dialog at 2/3 w+h on big portrait, full-page push on phones. Falls back to `Navigator.push` if already inside a popup (`PopupContext.of(context)`).
