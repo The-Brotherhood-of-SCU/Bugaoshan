@@ -40,12 +40,18 @@ class WfwApiService {
   }
 
   /// 获取用户基本信息（realname, number 等）
+  ///
+  /// 业务失败（`e != 0` 且非 10013）返回 `null`（与旧实现一致）；仅
+  /// 10013 会话失效继续走认证异常与重试。
   Future<Map<String, dynamic>?> fetchUserProfile() async {
     final json = await _session.getJsonMap(
       '/uc/wap/user/get-info',
       apiName: 'fetchUserProfile',
     );
-    final data = ApiEnvelope.unwrapWfw(json);
+    ApiEnvelope.validateWfw(json);
+    final e = json['e'];
+    if (e != 0 && e?.toString() != '0') return null;
+    final data = json['d'];
     if (data is Map) {
       return data['base'] as Map<String, dynamic>?;
     }
@@ -54,9 +60,10 @@ class WfwApiService {
 
   /// 获取当前账号的校园网在线设备列表。
   Future<List<Map<String, dynamic>>> fetchNetworkDevices() async {
+    // 旧实现是无 body POST（仅保留 JSON Content-Type），不要发 `{}`。
     final json = await _session.postJsonForJsonMap(
       '/netclient/wap/default/get-index',
-      {},
+      null,
       apiName: 'fetchNetworkDevices',
     );
     final data = ApiEnvelope.unwrapWfw(json, fallbackError: '获取设备信息失败');
