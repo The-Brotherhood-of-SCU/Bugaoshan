@@ -1,4 +1,4 @@
-import 'package:bugaoshan/pages/campus/reservation/models/reservation_models.dart';
+import 'package:bugaoshan/scu_backend/reservation/models/reservation_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

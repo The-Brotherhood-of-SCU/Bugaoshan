@@ -1,12 +1,12 @@
 import 'dart:convert';
 
-import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart';
-import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
-import 'package:bugaoshan/pages/campus/models/course_curriculum_model.dart';
-import 'package:bugaoshan/pages/campus/plan_completion/models/plan_completion.dart';
-import 'package:bugaoshan/pages/campus/exam_plan/models/exam_info.dart';
-import 'package:bugaoshan/pages/campus/train_program/models/train_program.dart';
-import 'package:bugaoshan/pages/campus/train_program/models/train_program_model.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/class_schedule_inquiry_model.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/classroom_model.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/course_curriculum_model.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/plan_completion.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/exam_info.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/train_program.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/train_program_model.dart';
 import 'package:bugaoshan/scu_backend/core/api_session.dart';
 import 'package:bugaoshan/scu_backend/zhjw/zhjw_auth.dart';
 import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';

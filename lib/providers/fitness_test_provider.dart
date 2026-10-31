@@ -3,7 +3,7 @@ import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:bugaoshan/pages/campus/fitness_test/models/fitness_models.dart';
+import 'package:bugaoshan/scu_backend/fitness/models/fitness_models.dart';
 import 'package:bugaoshan/scu_backend/fitness/fitness_api_service.dart';
 import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';

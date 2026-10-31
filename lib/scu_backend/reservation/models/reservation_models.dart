@@ -128,8 +128,6 @@ class ReservationAppointment {
   }
 }
 
-
-
 /// 解析 `topic/resource-list` 的 `d`（不是整个信封）。
 ///
 /// 抓包结构：
@@ -154,10 +152,7 @@ List<ReservationResource> reservationResourcesFromJson(Object? json) {
 /// `type == 0` 时 [value] 是纯文本（如「28」）；`type == 1` 时是
 /// `[{id, value}]` 选项列表，取首项的 [value] 展示。
 class ReservationAttribute {
-  const ReservationAttribute({
-    required this.name,
-    required this.value,
-  });
+  const ReservationAttribute({required this.name, required this.value});
 
   /// 属性名，如「容量/人数」「校区」。
   final String name;

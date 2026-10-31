@@ -1,4 +1,4 @@
-import 'package:bugaoshan/pages/campus/reservation/models/reservation_models.dart';
+import 'package:bugaoshan/scu_backend/reservation/models/reservation_models.dart';
 import 'package:bugaoshan/providers/reservation_provider.dart';
 import 'package:bugaoshan/scu_backend/reservation/reservation_api_service.dart';
 import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';

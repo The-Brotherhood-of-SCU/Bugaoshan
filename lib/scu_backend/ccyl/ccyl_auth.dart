@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
+import 'package:bugaoshan/scu_backend/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/utils/secure_storage.dart';
 import 'package:bugaoshan/scu_backend/ccyl/ccyl_oauth_service.dart';
 import 'package:bugaoshan/scu_backend/core/scu_auth.dart';

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:bugaoshan/pages/campus/fitness_test/models/fitness_models.dart';
+import 'package:bugaoshan/scu_backend/fitness/models/fitness_models.dart';
 import 'package:bugaoshan/providers/fitness_test_provider.dart';
 import 'package:bugaoshan/scu_backend/fitness/fitness_api_service.dart';
 import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';

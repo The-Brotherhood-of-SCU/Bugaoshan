@@ -1,4 +1,4 @@
-import 'package:bugaoshan/pages/campus/fitness_test/models/fitness_models.dart';
+import 'package:bugaoshan/scu_backend/fitness/models/fitness_models.dart';
 import 'package:bugaoshan/scu_backend/core/api_session.dart';
 import 'package:bugaoshan/scu_backend/fitness/fitness_auth.dart';
 import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';

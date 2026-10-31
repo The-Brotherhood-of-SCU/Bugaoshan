@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/class_schedule_inquiry_model.dart';
 import 'package:bugaoshan/scu_backend/zhjw/zhjw_api_service.dart';
 import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/utils/app_log.dart';

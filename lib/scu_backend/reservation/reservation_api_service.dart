@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:bugaoshan/pages/campus/reservation/models/reservation_models.dart';
+import 'package:bugaoshan/scu_backend/reservation/models/reservation_models.dart';
 import 'package:bugaoshan/scu_backend/core/api_session.dart';
 import 'package:bugaoshan/scu_backend/reservation/reservation_auth.dart';
 import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';

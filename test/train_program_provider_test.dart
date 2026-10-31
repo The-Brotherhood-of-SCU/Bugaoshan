@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:bugaoshan/pages/campus/train_program/models/train_program.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/train_program.dart';
 import 'package:bugaoshan/providers/train_program_provider.dart';
 import 'package:bugaoshan/scu_backend/zhjw/zhjw_api_service.dart';
 import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';

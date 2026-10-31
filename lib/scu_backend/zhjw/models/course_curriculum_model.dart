@@ -1,4 +1,4 @@
-export 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart'
+export 'package:bugaoshan/scu_backend/zhjw/models/class_schedule_inquiry_model.dart'
     show ClassScheduleInquiryItem, SemesterOption, DepartmentOption;
 
 /// 课程课表 - 课程列表中的一门课程（教学班）
