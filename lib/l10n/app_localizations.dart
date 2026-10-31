@@ -1015,6 +1015,12 @@ abstract class AppLocalizations {
   /// **'Teacher'**
   String get teacher;
 
+  /// No description provided for @courseTeacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructor: {teacher}'**
+  String courseTeacher(String teacher);
+
   /// No description provided for @location.
   ///
   /// In en, this message translates to:

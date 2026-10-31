@@ -5,6 +5,7 @@ import 'package:bugaoshan/models/scheme_score.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/stat_item.dart';
+import 'package:bugaoshan/services/course_teacher_index.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'scheme_scores_tab.dart' show ScoreCardWidget;
 
@@ -18,6 +19,28 @@ class PassingScoresTab extends StatefulWidget {
 }
 
 class _PassingScoresTabState extends State<PassingScoresTab> {
+  CourseTeacherIndex? _teacherIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    CourseTeacherIndex.revision.addListener(_loadTeacherIndex);
+    _loadTeacherIndex();
+  }
+
+  @override
+  void dispose() {
+    CourseTeacherIndex.revision.removeListener(_loadTeacherIndex);
+    super.dispose();
+  }
+
+  Future<void> _loadTeacherIndex() async {
+    final index = await CourseTeacherIndex.load();
+    if (mounted) {
+      setState(() => _teacherIndex = index);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -75,7 +98,12 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
           ),
           const SizedBox(height: 24),
           FilledButton.icon(
-            onPressed: provider.refreshPassingScores,
+            onPressed: () {
+              if (_teacherIndex == null) {
+                _loadTeacherIndex();
+              }
+              provider.refreshPassingScores();
+            },
             icon: const Icon(Icons.refresh),
             label: Text(l10n.gradesGet),
           ),
@@ -87,7 +115,12 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
   Widget _buildError(BuildContext context, GradesProvider provider) {
     return RetryableErrorWidget(
       errorType: provider.passingError!,
-      onRetry: provider.refreshPassingScores,
+      onRetry: () {
+        if (_teacherIndex == null) {
+          _loadTeacherIndex();
+        }
+        provider.refreshPassingScores();
+      },
       iconSize: 56,
     );
   }
@@ -95,6 +128,7 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
   Widget _buildContent(BuildContext context, GradesProvider provider) {
     final result = provider.passingScores!;
     final query = widget.searchQuery.trim();
+    final lowerQuery = query.toLowerCase();
 
     // Filter items by course name, remove empty groups
     final groups = result.groups
@@ -103,9 +137,7 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
             label: g.label,
             items: g.items
                 .where(
-                  (item) => item.courseName.toLowerCase().contains(
-                    query.toLowerCase(),
-                  ),
+                  (item) => item.courseName.toLowerCase().contains(lowerQuery),
                 )
                 .toList(),
           ),
@@ -114,37 +146,45 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
         .toList();
 
     return RefreshIndicator(
-      onRefresh: provider.refreshPassingScores,
-      child: groups.isEmpty && query.isNotEmpty
-          ? CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(child: _OverallSummaryCard(result: result)),
-                SliverFillRemaining(
-                  child: Center(
-                    child: Text(
-                      AppLocalizations.of(context)!.gradesNoSearchResults,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
+      onRefresh: () async {
+        await _loadTeacherIndex();
+        await provider.refreshPassingScores();
+      },
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(child: _OverallSummaryCard(result: result)),
+          if (groups.isEmpty && query.isNotEmpty)
+            SliverFillRemaining(
+              child: Center(
+                child: Text(
+                  AppLocalizations.of(context)!.gradesNoSearchResults,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
-              ],
+              ),
             )
-          : CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(child: _OverallSummaryCard(result: result)),
-                for (final group in groups) ...[
-                  SliverToBoxAdapter(child: _TermHeader(group: group)),
-                  SliverList.builder(
-                    itemCount: group.items.length,
-                    itemBuilder: (context, i) =>
-                        ScoreCardWidget(item: group.items[i]),
-                  ),
-                ],
-                const SliverToBoxAdapter(child: SizedBox(height: 16)),
-              ],
-            ),
+          else ...[
+            for (final group in groups) ...[
+              SliverToBoxAdapter(child: _TermHeader(group: group)),
+              SliverList.builder(
+                itemCount: group.items.length,
+                itemBuilder: (context, i) {
+                  final item = group.items[i];
+                  final teacher = _teacherIndex?.getTeacher(
+                    academicYear: item.academicYearCode,
+                    termSeason: item.termName,
+                    rawTermLabel: group.label,
+                    courseName: item.courseName,
+                  );
+                  return ScoreCardWidget(item: item, teacher: teacher);
+                },
+              ),
+            ],
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+          ],
+        ],
+      ),
     );
   }
 }

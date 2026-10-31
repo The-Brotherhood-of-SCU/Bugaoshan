@@ -487,6 +487,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get teacher => '教师';
 
   @override
+  String courseTeacher(String teacher) {
+    return '授课教师：$teacher';
+  }
+
+  @override
   String get location => '教室';
 
   @override

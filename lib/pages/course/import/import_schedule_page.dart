@@ -163,14 +163,11 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         final newCourses = courses
             .map((c) => c.copyWith(id: Course.generateId()))
             .toList();
-        await widget.courseProvider.replaceScheduleCourses(
-          resolution.existingScheduleId!,
-          newCourses,
-        );
-        // 课程已整体替换，同步按主导校区刷新已有课表的时间表
-        await _applyCampusTimeSlotsToExisting(
-          resolution.existingScheduleId!,
-          newCourses,
+        await _updateExistingScheduleCourses(
+          scheduleId: resolution.existingScheduleId!,
+          courses: newCourses,
+          academicYearCode: config.academicYearCode,
+          termName: config.termName,
         );
         if (mounted) {
           _showSuccessAndPop();
@@ -349,7 +346,6 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
       _currentProgress = 0;
     });
     try {
-      final importedSchedules = <({String id, String name})>[];
       for (final semester in toImport) {
         setState(() => _currentProgress++);
         final data = await getIt<ZhjwApiService>().fetchJwxtSchedule(
@@ -395,10 +391,24 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         final parsed = _parseJwxtData(data);
         final config = parsed.config;
         config.semesterName = scheduleName;
+        final semesterMeta = jwxt_parser.parseSemesterMetadata(
+          semester.label,
+          semester.value,
+        );
+        config.academicYearCode = semesterMeta.academicYearCode;
+        config.termName = semesterMeta.termName;
         config.id = DateTime.now().millisecondsSinceEpoch.toString();
         _validateImportedSchedule(config, parsed.courses);
         // 按主导校区自动应用预置时间表（无主导校区时保持原时间表）
         ScheduleConfig.applyCampusTimeSlotsForCourses(config, parsed.courses);
+
+        final calSemester = await AcademicCalendarService.findMatchingSemester(
+          scheduleName,
+        );
+        if (calSemester != null) {
+          config.semesterStartDate = calSemester.startDate;
+          config.totalWeeks = calSemester.totalWeeks;
+        }
 
         if (!importAll) {
           // 单个导入：询问用户如何处理名称冲突
@@ -408,19 +418,15 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
           } else if (resolution.isCancel) {
             return;
           } else if (resolution.isUpdate) {
-            await widget.courseProvider.replaceScheduleCourses(
-              resolution.existingScheduleId!,
-              parsed.courses,
+            final existingId = resolution.existingScheduleId!;
+            await _updateExistingScheduleCourses(
+              scheduleId: existingId,
+              courses: parsed.courses,
+              academicYearCode: config.academicYearCode,
+              termName: config.termName,
+              semesterStartDate: calSemester?.startDate,
+              totalWeeks: calSemester?.totalWeeks,
             );
-            // 课程已整体替换，同步按主导校区刷新已有课表的时间表
-            await _applyCampusTimeSlotsToExisting(
-              resolution.existingScheduleId!,
-              parsed.courses,
-            );
-            importedSchedules.add((
-              id: resolution.existingScheduleId!,
-              name: scheduleName,
-            ));
             continue;
           } else {
             config.semesterName = resolution.finalName!;
@@ -431,13 +437,14 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
             scheduleName,
           );
           if (existingId != null) {
-            await widget.courseProvider.replaceScheduleCourses(
-              existingId,
-              parsed.courses,
+            await _updateExistingScheduleCourses(
+              scheduleId: existingId,
+              courses: parsed.courses,
+              academicYearCode: config.academicYearCode,
+              termName: config.termName,
+              semesterStartDate: calSemester?.startDate,
+              totalWeeks: calSemester?.totalWeeks,
             );
-            // 课程已整体替换，同步按主导校区刷新已有课表的时间表
-            await _applyCampusTimeSlotsToExisting(existingId, parsed.courses);
-            importedSchedules.add((id: existingId, name: scheduleName));
             continue;
           }
           // existingId == null 表示该学期无冲突，正常添加即可
@@ -451,10 +458,10 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
         // batchAction == null 表示预检查时无冲突，保持原名正常导入
 
         await widget.courseProvider.addSchedule(config);
-        for (final course in parsed.courses) {
-          await widget.courseProvider.addCourse(course);
-        }
-        importedSchedules.add((id: config.id, name: config.semesterName));
+        await widget.courseProvider.replaceScheduleCourses(
+          config.id,
+          parsed.courses,
+        );
       }
 
       // 导入完成后，将教务处标记为"（当前）"的课表设为当前
@@ -469,37 +476,6 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
       }
 
       if (mounted) {
-        // 静默根据校历自动设置学期开始日期和周数
-        for (final imported in importedSchedules) {
-          try {
-            final semester = await AcademicCalendarService.findMatchingSemester(
-              imported.name,
-            );
-            if (semester != null) {
-              final allSchedules = widget.courseProvider.allSchedules.value;
-              final schedule = allSchedules
-                  .where((s) => s.id == imported.id)
-                  .firstOrNull;
-              if (schedule != null) {
-                final updated = schedule.copyWith(
-                  semesterStartDate: semester.startDate,
-                  totalWeeks: semester.totalWeeks,
-                );
-                await widget.courseProvider.updateScheduleConfig(updated);
-              }
-            }
-          } catch (logError, logStackTrace) {
-            AppLog.e(
-              _tag,
-              '_importOnline 失败',
-              error: logError,
-              stackTrace: logStackTrace,
-            );
-            // 单个匹配失败不阻断，继续下一个
-          }
-        }
-
-        if (!mounted) return;
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(l10n.importSuccess)));
@@ -545,26 +521,51 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
   void _validateImportedSchedule(ScheduleConfig config, List<Course> courses) =>
       jwxt_parser.validateImportedSchedule(config, courses);
 
-  /// 更新已有课表（仅替换课程）后，按课程主导校区刷新其时间表。
-  ///
-  /// 仅当已有课表的时间表仍是预置（用户未自定义）时才覆盖，避免静默
-  /// 改动用户手动调整过的每节课起止时间。
-  Future<void> _applyCampusTimeSlotsToExisting(
-    String scheduleId,
-    List<Course> courses,
-  ) async {
+  Future<void> _updateExistingScheduleCourses({
+    required String scheduleId,
+    required List<Course> courses,
+    String? academicYearCode,
+    String? termName,
+    DateTime? semesterStartDate,
+    int? totalWeeks,
+  }) async {
+    await widget.courseProvider.replaceScheduleCourses(scheduleId, courses);
+    await _syncExistingScheduleConfig(
+      existingScheduleId: scheduleId,
+      newCourses: courses,
+      academicYearCode: academicYearCode,
+      termName: termName,
+      semesterStartDate: semesterStartDate,
+      totalWeeks: totalWeeks,
+    );
+  }
+
+  /// 更新已有课表（替换课程）后，按主导校区刷新时间表并同步学期元数据与校历。
+  Future<void> _syncExistingScheduleConfig({
+    required String existingScheduleId,
+    required List<Course> newCourses,
+    String? academicYearCode,
+    String? termName,
+    DateTime? semesterStartDate,
+    int? totalWeeks,
+  }) async {
     final existing = widget.courseProvider.allSchedules.value
-        .where((s) => s.id == scheduleId)
+        .where((s) => s.id == existingScheduleId)
         .firstOrNull;
     if (existing == null) return;
-    if (!ScheduleConfig.isPresetTimeSlots(existing.timeSlots)) return;
-    final slots = ScheduleConfig.campusTimeSlotsForCourses(courses);
-    if (slots == null) return;
-    // 拷贝后再落库，避免原地修改 allSchedules 缓存中的对象，
-    // 造成内存与 DB 状态不一致。
-    await widget.courseProvider.updateScheduleConfig(
-      existing.copyWith(timeSlots: List.of(slots)),
+
+    final updated = jwxt_parser.computeUpdatedScheduleConfig(
+      existing: existing,
+      newCourses: newCourses,
+      academicYearCode: academicYearCode,
+      termName: termName,
+      semesterStartDate: semesterStartDate,
+      totalWeeks: totalWeeks,
     );
+
+    if (updated != null) {
+      await widget.courseProvider.updateScheduleConfig(updated);
+    }
   }
 
   /// 检查课表名称是否冲突，如果冲突则弹出对话框询问用户操作。

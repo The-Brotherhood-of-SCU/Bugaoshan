@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/services/course_teacher_index.dart';
 import 'package:bugaoshan/models/scheme_score.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
@@ -18,6 +19,28 @@ class SchemeScoresTab extends StatefulWidget {
 }
 
 class _SchemeScoresTabState extends State<SchemeScoresTab> {
+  CourseTeacherIndex? _teacherIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    CourseTeacherIndex.revision.addListener(_loadTeacherIndex);
+    _loadTeacherIndex();
+  }
+
+  @override
+  void dispose() {
+    CourseTeacherIndex.revision.removeListener(_loadTeacherIndex);
+    super.dispose();
+  }
+
+  Future<void> _loadTeacherIndex() async {
+    final index = await CourseTeacherIndex.load();
+    if (mounted) {
+      setState(() => _teacherIndex = index);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -75,7 +98,12 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
           ),
           const SizedBox(height: 24),
           FilledButton.icon(
-            onPressed: provider.refreshSchemeScores,
+            onPressed: () {
+              if (_teacherIndex == null) {
+                _loadTeacherIndex();
+              }
+              provider.refreshSchemeScores();
+            },
             icon: const Icon(Icons.refresh),
             label: Text(l10n.gradesGet),
           ),
@@ -87,7 +115,12 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
   Widget _buildError(BuildContext context, GradesProvider provider) {
     return RetryableErrorWidget(
       errorType: provider.schemeError!,
-      onRetry: provider.refreshSchemeScores,
+      onRetry: () {
+        if (_teacherIndex == null) {
+          _loadTeacherIndex();
+        }
+        provider.refreshSchemeScores();
+      },
       iconSize: 56,
     );
   }
@@ -96,6 +129,7 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
     final schemes = provider.schemes;
     final summary = provider.schemeScores!;
     final query = widget.searchQuery.trim();
+    final lowerQuery = query.toLowerCase();
     final allGroups = summary.groupedByTerm;
 
     // Filter items by course name, remove empty groups
@@ -105,9 +139,7 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
             label: g.label,
             items: g.items
                 .where(
-                  (item) => item.courseName.toLowerCase().contains(
-                    query.toLowerCase(),
-                  ),
+                  (item) => item.courseName.toLowerCase().contains(lowerQuery),
                 )
                 .toList(),
           ),
@@ -116,59 +148,61 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
         .toList();
 
     return RefreshIndicator(
-      onRefresh: provider.refreshSchemeScores,
-      child: groups.isEmpty && query.isNotEmpty
-          ? CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: _SummaryCard(
-                    summary: summary,
-                    schemes: schemes,
-                    onSchemeChanged: provider.selectScheme,
-                  ),
-                ),
-                SliverFillRemaining(
-                  child: Center(
-                    child: Text(
-                      AppLocalizations.of(context)!.gradesNoSearchResults,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            )
-          : CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: _SummaryCard(
-                    summary: summary,
-                    schemes: schemes,
-                    onSchemeChanged: provider.selectScheme,
-                  ),
-                ),
-                for (final group in groups) ...[
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-                      child: Text(
-                        group.label,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                  ),
-                  SliverList.builder(
-                    itemCount: group.items.length,
-                    itemBuilder: (context, i) =>
-                        ScoreCardWidget(item: group.items[i]),
-                  ),
-                ],
-                const SliverToBoxAdapter(child: SizedBox(height: 16)),
-              ],
+      onRefresh: () async {
+        await _loadTeacherIndex();
+        await provider.refreshSchemeScores();
+      },
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: _SummaryCard(
+              summary: summary,
+              schemes: schemes,
+              onSchemeChanged: provider.selectScheme,
             ),
+          ),
+          if (groups.isEmpty && query.isNotEmpty)
+            SliverFillRemaining(
+              child: Center(
+                child: Text(
+                  AppLocalizations.of(context)!.gradesNoSearchResults,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            )
+          else ...[
+            for (final group in groups) ...[
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                  child: Text(
+                    group.label,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ),
+              SliverList.builder(
+                itemCount: group.items.length,
+                itemBuilder: (context, i) {
+                  final item = group.items[i];
+                  final teacher = _teacherIndex?.getTeacher(
+                    academicYear: item.academicYearCode,
+                    termSeason: item.termName,
+                    rawTermLabel: group.label,
+                    courseName: item.courseName,
+                  );
+                  return ScoreCardWidget(item: item, teacher: teacher);
+                },
+              ),
+            ],
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+          ],
+        ],
+      ),
     );
   }
 }
@@ -311,35 +345,40 @@ class ScoreCardWidget extends StatelessWidget {
   const ScoreCardWidget({
     super.key,
     required this.item,
+    this.teacher,
     this.selected,
     this.onTap,
   });
   final SchemeScoreItem item;
+  final String? teacher;
   final bool? selected;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
     final scoreColor = !item.passed
-        ? Theme.of(context).colorScheme.error
+        ? colorScheme.error
         : item.courseScore >= 90
-        ? Theme.of(context).colorScheme.primary
+        ? colorScheme.primary
         : null;
 
-    final attrColor = switch (item.courseAttributeName) {
-      '必修' => Theme.of(context).colorScheme.primaryContainer,
-      '选修' => Theme.of(context).colorScheme.secondaryContainer,
-      _ => Theme.of(context).colorScheme.tertiaryContainer,
-    };
-    final attrTextColor = switch (item.courseAttributeName) {
-      '必修' => Theme.of(context).colorScheme.onPrimaryContainer,
-      '选修' => Theme.of(context).colorScheme.onSecondaryContainer,
-      _ => Theme.of(context).colorScheme.onTertiaryContainer,
+    final (attrColor, attrTextColor) = switch (item.courseAttributeName) {
+      '必修' => (colorScheme.primaryContainer, colorScheme.onPrimaryContainer),
+      '选修' => (
+        colorScheme.secondaryContainer,
+        colorScheme.onSecondaryContainer,
+      ),
+      _ => (colorScheme.tertiaryContainer, colorScheme.onTertiaryContainer),
     };
 
-    Widget card = StyledCard(
+    final englishCourseName = item.englishCourseName?.trim();
+    final teacher = this.teacher;
+
+    return StyledCard(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+      onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
@@ -360,15 +399,26 @@ class ScoreCardWidget extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  if (item.englishCourseName != null &&
-                      item.englishCourseName!.isNotEmpty)
+                  if (englishCourseName != null && englishCourseName.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 2),
                       child: Text(
-                        item.englishCourseName!.trim(),
+                        englishCourseName,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: colorScheme.onSurfaceVariant,
                         ),
+                      ),
+                    ),
+                  if (teacher != null && teacher.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        l10n.courseTeacher(teacher),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   const SizedBox(height: 4),
@@ -393,7 +443,7 @@ class ScoreCardWidget extends StatelessWidget {
                       Text(
                         l10n.creditUnit(item.credit),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -414,7 +464,7 @@ class ScoreCardWidget extends StatelessWidget {
                 Text(
                   item.gradeName,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -423,15 +473,5 @@ class ScoreCardWidget extends StatelessWidget {
         ),
       ),
     );
-
-    if (onTap != null) {
-      card = InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppShapes.medium),
-        child: card,
-      );
-    }
-
-    return card;
   }
 }
