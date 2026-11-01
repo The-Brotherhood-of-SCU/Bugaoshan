@@ -156,6 +156,24 @@ void main() {
       expect(meta4.termName, isNull);
     });
 
+    test(
+      'formatCourseNameWithSequence 与 stripCourseSequenceSuffix 双向契约往返测试',
+      () {
+        final cases = [
+          ('高等数学', '01'),
+          ('C语言程序设计(A)', '03'),
+          ('大学物理(1)', '10'),
+          ('高等数学', 'A1'),
+          ('高等数学', ''),
+        ];
+
+        for (final (rawName, seq) in cases) {
+          final formatted = formatCourseNameWithSequence(rawName, seq);
+          expect(stripCourseSequenceSuffix(formatted), rawName);
+        }
+      },
+    );
+
     group('computeUpdatedScheduleConfig', () {
       final baseConfig = ScheduleConfig(
         id: 'sch1',

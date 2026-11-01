@@ -87,6 +87,7 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
           const SizedBox(height: 24),
           FilledButton.icon(
             onPressed: () {
+              widget.teacherIndexController?.retryIfNeeded();
               provider.refreshSchemeScores();
             },
             icon: const Icon(Icons.refresh),
@@ -101,6 +102,7 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
     return RetryableErrorWidget(
       errorType: provider.schemeError!,
       onRetry: () {
+        widget.teacherIndexController?.retryIfNeeded();
         provider.refreshSchemeScores();
       },
       iconSize: 56,
@@ -131,6 +133,7 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
 
     return RefreshIndicator(
       onRefresh: () async {
+        widget.teacherIndexController?.retryIfNeeded();
         await provider.refreshSchemeScores();
       },
       child: CustomScrollView(

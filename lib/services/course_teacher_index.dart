@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/models/schedule_config.dart';
+import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/services/database_service.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 
@@ -14,7 +15,6 @@ import 'package:bugaoshan/utils/app_log.dart';
 class CourseTeacherIndex {
   static const String _tag = 'CourseTeacherIndex';
 
-  static final _courseNumberSuffixRegExp = RegExp(r'\s+\([A-Za-z0-9]*\)\s*$');
   static final _teacherSplitRegExp = RegExp(r'[,，、;\s/；]+');
   static final _gradeDateRegExp = RegExp(
     r'(?:^|[^\d])(20\d{2})(0[1-9]|1[0-2])\d{2}(?:[^\d]|$)',
@@ -56,13 +56,14 @@ class CourseTeacherIndex {
   /// 2. 剥除由教务解析器追加的课序号后缀，如 ' (01)', ' (101)', ' (A1)', ' ()'；
   /// 3. 去除首尾空白。
   static String normalizeCourseName(String rawName) {
-    return rawName
-        .trim()
-        .replaceAll('（', '(')
-        .replaceAll('）', ')')
-        .replaceAll('—', '-')
-        .replaceAll('－', '-')
-        .replaceFirst(_courseNumberSuffixRegExp, '');
+    return stripCourseSequenceSuffix(
+      rawName
+          .trim()
+          .replaceAll('（', '(')
+          .replaceAll('）', ')')
+          .replaceAll('—', '-')
+          .replaceAll('－', '-'),
+    ).trim();
   }
 
   /// 归一化学期标识，格式形如 '2024-2025_秋' 或 '2024-2025_春'。
@@ -81,15 +82,16 @@ class CourseTeacherIndex {
     return (year != null && season != null) ? '${year}_$season' : null;
   }
 
-  /// 教师字符串拆分、清理与去重排序。
+  /// 教师字符串拆分、清理与去重，保留教务处返回的先后顺序。
   static List<String> parseTeachers(String rawTeacher) {
     final trimmed = rawTeacher.trim();
     if (trimmed.isEmpty) return const [];
-    final set = trimmed
+    final seen = <String>{};
+    return trimmed
         .split(_teacherSplitRegExp)
         .where((s) => s.isNotEmpty)
-        .toSet();
-    return set.toList()..sort();
+        .where(seen.add)
+        .toList();
   }
 
   /// 从成绩日期代码（如 '20260115'）推断实际开课学期标识（如 '2025-2026_秋'）。
@@ -115,11 +117,16 @@ class CourseTeacherIndex {
   ///   [ScheduleConfig.termName]，重命名课表不会影响匹配；
   /// - 手动新建、历史旧数据或旧版分享 JSON 导入的课表仅能通过
   ///   [ScheduleConfig.semesterName] 解析学期；若用户将其重命名为
-  ///   「大二上」等不含学年学期的名称，该学期将降级为不展示教师。
+  ///   「大二上」等不含学年学期的名称，该学期将降级为不展示教师；
+  /// - 同一学期内同名课程若存在多个不同教师组合（如公共课多班次），
+  ///   视为歧义并不展示教师（返回 null），避免错误猜测。
   factory CourseTeacherIndex.fromSchedules(
     List<({ScheduleConfig config, List<Course> courses})> schedules,
   ) {
-    final candidateSignatures = <String, Set<String>>{};
+    // 每个课程键保存“规范化签名 -> 首次出现时的显示顺序”。
+    // 规范化签名用于识别不同班次/记录的教师组合是否一致，显示值保留
+    // 教务处返回的主讲教师、助教先后顺序。
+    final candidateSignatures = <String, Map<String, String>>{};
 
     for (final schedule in schedules) {
       final termKey = normalizeTerm(
@@ -137,23 +144,28 @@ class CourseTeacherIndex {
         if (normName.isEmpty) continue;
 
         final teacherSignature = teachers.join('、');
+        final canonicalSignature = [...teachers]..sort();
+        final canonicalKey = canonicalSignature.join('、');
         final key = '$termKey::$normName';
-        (candidateSignatures[key] ??= {}).add(teacherSignature);
+        (candidateSignatures[key] ??= {})[canonicalKey] ??= teacherSignature;
 
         // 为体育专项课建立规范化别名索引（如「体育-1气排球」建立「体育-1」别名，且「体育-10」不误匹配「体育-1」）
         final peMatch = _peCourseRegExp.firstMatch(normName);
         if (peMatch != null) {
           final peKey = '$termKey::体育-${peMatch[1]}';
           if (peKey != key) {
-            (candidateSignatures[peKey] ??= {}).add(teacherSignature);
+            (candidateSignatures[peKey] ??= {})[canonicalKey] ??=
+                teacherSignature;
           }
         }
       }
     }
 
+    // 同学期同名课若存在多个不同教师组合（常见于大学英语、体育等公共课
+    // 的多班次），无法从成绩接口得知具体班级，安全起见不猜测，整项不展示。
     return CourseTeacherIndex._({
       for (final entry in candidateSignatures.entries)
-        if (entry.value.length == 1) entry.key: entry.value.first,
+        if (entry.value.length == 1) entry.key: entry.value.values.first,
     });
   }
 
@@ -198,17 +210,40 @@ class CourseTeacherIndex {
 /// 页面级课程教师索引控制器。
 ///
 /// 生命周期严格绑定于所属页面（由 [GradesPage] 或 [PlanCompletionPage]
-/// 在其 State 中创建与销毁），作为 API 数据的派生状态存在。
-/// 不监听任何全局 Provider；由所在页面在接口数据（成绩、培养方案）发生变更时触发重新加载。
+/// 在其 State 中创建与销毁）。
+/// 仅监听课程数据变更（[CourseProvider.courseDataVersion] 或注入的 [courseDataListenable]）
+/// 并通过 [scheduleReload] 更新，避免把与课表无关的成绩/培养方案刷新误当成索引失效信号。
+/// 支持 [retryIfNeeded] 在初次或先前数据库加载失败后恢复索引，而在索引已就绪时不会产生多余查询。
 /// 支持微任务合并连续变更、异步竞态守卫与页面卸载守卫。
 class CourseTeacherIndexController extends ChangeNotifier {
+  static const String _tag = 'CourseTeacherIndexController';
+
   CourseTeacherIndexController({
     DatabaseService? database,
     CourseTeacherIndex? initialIndex,
     Future<CourseTeacherIndex?> Function([DatabaseService? db])? loader,
+    Listenable? courseDataListenable,
   }) : _database = database,
        _loader = loader ?? CourseTeacherIndex.load,
        _index = initialIndex {
+    if (courseDataListenable != null) {
+      _attachCourseDataListenable(courseDataListenable);
+    } else if (database == null &&
+        loader == null &&
+        getIt.isRegistered<CourseProvider>()) {
+      bool isReady = false;
+      try {
+        isReady = getIt.isReadySync<CourseProvider>();
+      } catch (_) {
+        // 同步注册的单例在 isReadySync 时会抛出 ArgumentError，直接视为已就绪
+        isReady = true;
+      }
+      if (isReady) {
+        _attachCourseDataListenable(getIt<CourseProvider>().courseDataVersion);
+      } else {
+        unawaited(_bindAsyncCourseProvider());
+      }
+    }
     if (initialIndex == null) {
       unawaited(reload());
     }
@@ -221,20 +256,68 @@ class CourseTeacherIndexController extends ChangeNotifier {
   int _loadGeneration = 0;
   bool _reloadScheduled = false;
   bool _disposed = false;
+  bool _latestInFlight = false;
+  bool _reloadPendingAfterInFlight = false;
+  bool _needsRetry = false;
+  Listenable? _courseDataListenable;
+
+  void _attachCourseDataListenable(Listenable listenable) {
+    _courseDataListenable = listenable;
+    listenable.addListener(_onCourseDataChanged);
+  }
+
+  void _onCourseDataChanged() => scheduleReload();
+
+  Future<void> _bindAsyncCourseProvider() async {
+    try {
+      await getIt.isReady<CourseProvider>();
+    } catch (_) {
+      return;
+    }
+    if (_disposed ||
+        _courseDataListenable != null ||
+        !getIt.isRegistered<CourseProvider>()) {
+      return;
+    }
+    _attachCourseDataListenable(getIt<CourseProvider>().courseDataVersion);
+    retryIfNeeded();
+  }
 
   /// 当前已就绪的教师索引；若尚未加载完成或加载失败则为 null。
   CourseTeacherIndex? get index => _index;
 
   /// 调度微任务合并同一事件循环内的多次重新加载请求。
+  ///
+  /// 若当前已有加载正在进行中（[_latestInFlight] 为 true），则仅置位
+  /// [_reloadPendingAfterInFlight]，在该次加载完成后由 finally 块触发一次尾随重载，
+  /// 避免并发多路重载引发无意义的重叠全表扫描。
   void scheduleReload() {
     if (_disposed || _reloadScheduled) return;
+    if (_latestInFlight) {
+      _reloadPendingAfterInFlight = true;
+      return;
+    }
     _reloadScheduled = true;
     scheduleMicrotask(() {
       _reloadScheduled = false;
-      if (!_disposed) {
-        unawaited(reload());
+      if (_disposed) return;
+      if (_latestInFlight) {
+        _reloadPendingAfterInFlight = true;
+        return;
       }
+      unawaited(reload());
     });
+  }
+
+  /// 若初次加载或最近一次重载失败（[_needsRetry] 为 true 或 [index] 仍为 null），
+  /// 且当前最新一代加载未在进行中，则通过 [scheduleReload] 触发一次重试。
+  ///
+  /// 索引已正常就绪时调用为空操作，不会在课表未变更时产生额外数据库查询。
+  void retryIfNeeded() {
+    if (_disposed || (!_needsRetry && _index != null) || _latestInFlight) {
+      return;
+    }
+    scheduleReload();
   }
 
   /// 重新从数据库加载教师索引。
@@ -243,9 +326,35 @@ class CourseTeacherIndexController extends ChangeNotifier {
   Future<void> reload() async {
     if (_disposed) return;
     final generation = ++_loadGeneration;
-    final loaded = await _loader(_database);
+    _latestInFlight = true;
+    CourseTeacherIndex? loaded;
+    try {
+      loaded = await _loader(_database);
+    } catch (e, st) {
+      if (!_disposed && generation == _loadGeneration) {
+        _needsRetry = true;
+      }
+      AppLog.e(_tag, '重新加载教师索引失败', error: e, stackTrace: st);
+      return;
+    } finally {
+      if (generation == _loadGeneration) {
+        _latestInFlight = false;
+        final shouldScheduleTrailing =
+            _reloadPendingAfterInFlight && !_disposed;
+        _reloadPendingAfterInFlight = false;
+        if (shouldScheduleTrailing) {
+          scheduleReload();
+        }
+      }
+    }
     if (_disposed || generation != _loadGeneration) return;
 
+    if (loaded == null) {
+      _needsRetry = true;
+      return;
+    }
+
+    _needsRetry = false;
     if (!identical(_index, loaded)) {
       _index = loaded;
       notifyListeners();
@@ -256,6 +365,9 @@ class CourseTeacherIndexController extends ChangeNotifier {
   void dispose() {
     if (_disposed) return;
     _disposed = true;
+    _reloadPendingAfterInFlight = false;
+    _courseDataListenable?.removeListener(_onCourseDataChanged);
+    _courseDataListenable = null;
     _index = null;
     super.dispose();
   }

@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/utils/class_week_parser.dart';
 
+export 'package:bugaoshan/models/course.dart'
+    show
+        courseSequenceSuffixRegExp,
+        formatCourseNameWithSequence,
+        stripCourseSequenceSuffix;
 export 'package:bugaoshan/models/schedule_config.dart'
     show
         academicYearRegExp,
@@ -108,7 +113,10 @@ void validateImportedSchedule(ScheduleConfig config, List<Course> courses) {
       final String rawName = details['courseName'] as String? ?? 'Unknown';
       final String courseSequence =
           details['id']?['coureSequenceNumber'] as String? ?? '';
-      final String courseName = '$rawName ($courseSequence)';
+      final String courseName = formatCourseNameWithSequence(
+        rawName,
+        courseSequence,
+      );
       final String teacher = details['attendClassTeacher'] as String? ?? '';
       final List<dynamic> timeAndPlaceList =
           details['timeAndPlaceList'] as List<dynamic>? ?? [];

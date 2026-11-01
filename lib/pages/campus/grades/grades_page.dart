@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/models/scheme_score.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/course_teacher_index.dart';
@@ -15,8 +14,9 @@ import 'passing_scores_tab.dart';
 import 'custom_stats_tab.dart';
 
 class GradesPage extends StatefulWidget {
-  const GradesPage({super.key, this.initialTeacherIndex});
+  const GradesPage({super.key, @visibleForTesting this.initialTeacherIndex});
 
+  @visibleForTesting
   final CourseTeacherIndex? initialTeacherIndex;
 
   @override
@@ -33,8 +33,6 @@ class _GradesPageState extends State<GradesPage>
 
   late final TabController _tabController;
   late final CourseTeacherIndexController _teacherIndexController;
-  List<SchemeScoreSummary>? _lastSchemes;
-  PassingScoreResult? _lastPassingScores;
 
   @override
   void initState() {
@@ -43,35 +41,15 @@ class _GradesPageState extends State<GradesPage>
     _teacherIndexController = CourseTeacherIndexController(
       initialIndex: widget.initialTeacherIndex,
     );
-    final gradesProvider = getIt<GradesProvider>();
-    _lastSchemes = gradesProvider.schemes;
-    _lastPassingScores = gradesProvider.passingScores;
-    gradesProvider.addListener(_onGradesProviderUpdate);
   }
 
   @override
   void dispose() {
-    getIt<GradesProvider>().removeListener(_onGradesProviderUpdate);
     _teacherIndexController.dispose();
     _tabController.dispose();
     _searchController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
-  }
-
-  void _onGradesProviderUpdate() {
-    final provider = getIt<GradesProvider>();
-    final schemesChanged = !identical(_lastSchemes, provider.schemes);
-    final passingChanged = !identical(
-      _lastPassingScores,
-      provider.passingScores,
-    );
-
-    if (schemesChanged || passingChanged) {
-      _lastSchemes = provider.schemes;
-      _lastPassingScores = provider.passingScores;
-      _teacherIndexController.scheduleReload();
-    }
   }
 
   List<Widget> get _pages => [
@@ -148,6 +126,7 @@ class _GradesPageState extends State<GradesPage>
               if (isDesktop && auth.isLoggedIn)
                 IconButton(
                   onPressed: () {
+                    _teacherIndexController.retryIfNeeded();
                     if (_currentIndex == 0 || _currentIndex == 2) {
                       gradesProvider.refreshSchemeScores();
                     } else {

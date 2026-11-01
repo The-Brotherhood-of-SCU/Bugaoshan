@@ -5,6 +5,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/models/plan_completion.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/plan_completion_page.dart';
+import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/plan_completion_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/api/zhjw_api_service.dart';
@@ -356,100 +357,289 @@ void main() {
       expect(find.text('授课教师：张老教授'), findsOneWidget);
     });
 
-    testWidgets(
-      '11. 接口数据派生状态：plans 实例变更时重新加载教师索引并展示新教师，未变更 plans 的 notify 不触发重新加载',
-      (tester) async {
-        final controllableDb = _ControllableDatabaseService([
-          (
-            config: ScheduleConfig(
-              id: 's1',
-              semesterStartDate: DateTime(2023, 9, 1),
-              semesterName: '2023-2024学年秋',
-            ),
-            courses: [_mockCourse('新生研讨课 (01)', '初始教师')],
+    testWidgets('11. 培养方案数据变更不触发教师索引重载', (tester) async {
+      final controllableDb = _ControllableDatabaseService([
+        (
+          config: ScheduleConfig(
+            id: 's1',
+            semesterStartDate: DateTime(2023, 9, 1),
+            semesterName: '2023-2024学年秋',
           ),
-        ]);
+          courses: [_mockCourse('新生研讨课 (01)', '初始教师')],
+        ),
+      ]);
 
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
-        final api = _ControllablePlanApi();
-        final provider = PlanCompletionProvider(prefs, api);
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final api = _ControllablePlanApi();
+      final provider = PlanCompletionProvider(prefs, api);
 
-        final node = PlanCompletionNode.fromJson(
-          _courseNodeJson(
-            id: 'c1',
-            code: '304112010',
-            name: '新生研讨课',
-            credits: '1',
-            term: '2023-2024学年秋',
-            gradeInfo: '(必修,96.0(20240107))',
+      final node = PlanCompletionNode.fromJson(
+        _courseNodeJson(
+          id: 'c1',
+          code: '304112010',
+          name: '新生研讨课',
+          credits: '1',
+          term: '2023-2024学年秋',
+          gradeInfo: '(必修,96.0(20240107))',
+        ),
+      );
+
+      final initialPlans = [
+        PlanCompletionPlan(id: 'p1', name: '测试培养方案一', nodes: [node]),
+        PlanCompletionPlan(id: 'p2', name: '测试培养方案二', nodes: [node]),
+      ];
+      final future = provider.fetchPlanCompletion(forceRefresh: true);
+      api.completeWith(initialPlans);
+      await future;
+
+      getIt.registerSingleton<PlanCompletionProvider>(provider);
+      getIt.registerSingleton<ScuAuthProvider>(_FakeScuAuthProvider());
+      getIt.registerSingleton<DatabaseService>(controllableDb);
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('zh'),
+          home: PlanCompletionPage(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 初始渲染：展示初始教师
+      expect(find.text('授课教师：初始教师'), findsOneWidget);
+      final initialDbCallCount = controllableDb.getCoursesCallCount;
+
+      // 1. 模拟非 plans 数据变更的普通通知（如 selectPlan）：不触发教师索引重新加载
+      provider.selectPlan(1);
+      await tester.pumpAndSettle();
+      expect(controllableDb.getCoursesCallCount, initialDbCallCount);
+
+      // 2. 数据库更新，同时点击刷新按钮重新拉取；教师索引不随 plans
+      // 实例变化重查课表数据库。
+      controllableDb.schedules = [
+        (
+          config: ScheduleConfig(
+            id: 's1',
+            semesterStartDate: DateTime(2023, 9, 1),
+            semesterName: '2023-2024学年秋',
           ),
-        );
+          courses: [_mockCourse('新生研讨课 (01)', '更新后的新教师')],
+        ),
+      ];
 
-        final initialPlans = [
-          PlanCompletionPlan(id: 'p1', name: '测试培养方案一', nodes: [node]),
-          PlanCompletionPlan(id: 'p2', name: '测试培养方案二', nodes: [node]),
-        ];
-        final future = provider.fetchPlanCompletion(forceRefresh: true);
-        api.completeWith(initialPlans);
-        await future;
+      final newPlans = [
+        PlanCompletionPlan(id: 'p1', name: '测试培养方案一', nodes: [node]),
+        PlanCompletionPlan(id: 'p2', name: '测试培养方案二', nodes: [node]),
+      ];
+      await tester.tap(find.byIcon(Icons.refresh));
+      api.completeWith(newPlans);
+      await tester.pumpAndSettle();
 
-        getIt.registerSingleton<PlanCompletionProvider>(provider);
-        getIt.registerSingleton<ScuAuthProvider>(_FakeScuAuthProvider());
-        getIt.registerSingleton<DatabaseService>(controllableDb);
+      expect(find.text('授课教师：初始教师'), findsOneWidget);
+      expect(find.text('授课教师：更新后的新教师'), findsNothing);
+      expect(controllableDb.getCoursesCallCount, initialDbCallCount);
 
-        await tester.pumpWidget(
-          const MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            locale: Locale('zh'),
-            home: PlanCompletionPage(),
+      // 3. 卸载页面（pump 空容器）
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('12. 培养方案页冷启动首开（接口异步返回 plans）只查一次课表数据库', (tester) async {
+      final controllableDb = _ControllableDatabaseService([
+        (
+          config: ScheduleConfig(
+            id: 's1',
+            semesterStartDate: DateTime(2023, 9, 1),
+            semesterName: '2023-2024学年秋',
           ),
-        );
-        await tester.pumpAndSettle();
-
-        // 初始渲染：展示初始教师
-        expect(find.text('授课教师：初始教师'), findsOneWidget);
-        final initialDbCallCount = controllableDb.getCoursesCallCount;
-
-        // 1. 模拟非 plans 数据变更的普通通知（如 selectPlan）：不触发教师索引重新加载
-        provider.selectPlan(1);
-        await tester.pumpAndSettle();
-        expect(controllableDb.getCoursesCallCount, initialDbCallCount);
-
-        // 2. 数据库更新，同时点击刷新按钮重新拉取（plans 列表实例变更）
-        controllableDb.schedules = [
-          (
-            config: ScheduleConfig(
-              id: 's1',
-              semesterStartDate: DateTime(2023, 9, 1),
-              semesterName: '2023-2024学年秋',
-            ),
-            courses: [_mockCourse('新生研讨课 (01)', '更新后的新教师')],
+          courses: [_mockCourse('新生研讨课 (01)', '冷启动首开教师')],
+        ),
+        (
+          config: ScheduleConfig(
+            id: 's2',
+            semesterStartDate: DateTime(2024, 2, 25),
+            semesterName: '2023-2024学年春',
           ),
-        ];
+          courses: [_mockCourse('大学物理 (01)', '王老师')],
+        ),
+      ]);
 
-        final newPlans = [
-          PlanCompletionPlan(id: 'p1', name: '测试培养方案一', nodes: [node]),
-          PlanCompletionPlan(id: 'p2', name: '测试培养方案二', nodes: [node]),
-        ];
-        await tester.tap(find.byIcon(Icons.refresh));
-        api.completeWith(newPlans);
-        await tester.pumpAndSettle();
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final api = _ControllablePlanApi();
+      final provider = PlanCompletionProvider(prefs, api);
 
-        // plans 实例更新触发重新加载并展示新教师
-        expect(find.text('授课教师：更新后的新教师'), findsOneWidget);
-        expect(
-          controllableDb.getCoursesCallCount,
-          greaterThan(initialDbCallCount),
-        );
+      getIt.registerSingleton<PlanCompletionProvider>(provider);
+      getIt.registerSingleton<ScuAuthProvider>(_FakeScuAuthProvider());
+      getIt.registerSingleton<DatabaseService>(controllableDb);
 
-        // 3. 卸载页面（pump 空容器）
-        await tester.pumpWidget(const SizedBox.shrink());
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
-      },
-    );
+      await tester.pumpWidget(
+        const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('zh'),
+          home: PlanCompletionPage(),
+        ),
+      );
+
+      final node = PlanCompletionNode.fromJson(
+        _courseNodeJson(
+          id: 'c1',
+          code: '304112010',
+          name: '新生研讨课',
+          credits: '1',
+          term: '2023-2024学年秋',
+          gradeInfo: '(必修,96.0(20240107))',
+        ),
+      );
+
+      final plans = [
+        PlanCompletionPlan(id: 'p1', name: '测试培养方案一', nodes: [node]),
+      ];
+
+      api.completeWith(plans);
+      await tester.pumpAndSettle();
+
+      expect(find.text('授课教师：冷启动首开教师'), findsOneWidget);
+      expect(controllableDb.getCoursesCallCount, 2);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('13. 初始数据库加载失败后通过顶部刷新按钮重试恢复教师展示', (tester) async {
+      final controllableDb = _ControllableDatabaseService([
+        (
+          config: ScheduleConfig(
+            id: 's1',
+            semesterStartDate: DateTime(2023, 9, 1),
+            semesterName: '2023-2024学年秋',
+          ),
+          courses: [_mockCourse('新生研讨课 (01)', '重试恢复首开教师')],
+        ),
+      ]);
+      controllableDb.shouldThrowOnGetSchedules = true;
+
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final api = _ControllablePlanApi();
+      final provider = PlanCompletionProvider(prefs, api);
+
+      getIt.registerSingleton<PlanCompletionProvider>(provider);
+      getIt.registerSingleton<ScuAuthProvider>(_FakeScuAuthProvider());
+      getIt.registerSingleton<DatabaseService>(controllableDb);
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('zh'),
+          home: PlanCompletionPage(),
+        ),
+      );
+
+      final node = PlanCompletionNode.fromJson(
+        _courseNodeJson(
+          id: 'c1',
+          code: '304112010',
+          name: '新生研讨课',
+          credits: '1',
+          term: '2023-2024学年秋',
+          gradeInfo: '(必修,96.0(20240107))',
+        ),
+      );
+      final plans = [
+        PlanCompletionPlan(id: 'p1', name: '测试培养方案一', nodes: [node]),
+      ];
+      api.completeWith(plans);
+      await tester.pumpAndSettle();
+
+      // 初始渲染时数据库失败：展示课程但无教师
+      expect(find.textContaining('新生研讨课'), findsOneWidget);
+      expect(find.textContaining('授课教师'), findsNothing);
+
+      // 数据库恢复
+      controllableDb.shouldThrowOnGetSchedules = false;
+
+      // 点击 AppBar 刷新按钮
+      await tester.tap(find.byIcon(Icons.refresh));
+      api.completeWith(plans);
+      await tester.pumpAndSettle();
+
+      // 重试后教师正常展示
+      expect(find.text('授课教师：重试恢复首开教师'), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('14. CourseProvider 课程修改自动同步更新培养方案页展示的任课教师', (tester) async {
+      final controllableDb = _ControllableDatabaseService([
+        (
+          config: ScheduleConfig(
+            id: 's1',
+            semesterStartDate: DateTime(2023, 9, 1),
+            semesterName: '2023-2024学年秋',
+          ),
+          courses: [_mockCourse('新生研讨课 (01)', '初始方案教师')],
+        ),
+      ]);
+
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final api = _ControllablePlanApi();
+      final provider = PlanCompletionProvider(prefs, api);
+      final courseProvider = CourseProvider(controllableDb);
+
+      getIt.registerSingleton<PlanCompletionProvider>(provider);
+      getIt.registerSingleton<ScuAuthProvider>(_FakeScuAuthProvider());
+      getIt.registerSingleton<DatabaseService>(controllableDb);
+      getIt.registerSingleton<CourseProvider>(courseProvider);
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: Locale('zh'),
+          home: PlanCompletionPage(),
+        ),
+      );
+
+      final node = PlanCompletionNode.fromJson(
+        _courseNodeJson(
+          id: 'c1',
+          code: '304112010',
+          name: '新生研讨课',
+          credits: '1',
+          term: '2023-2024学年秋',
+          gradeInfo: '(必修,96.0(20240107))',
+        ),
+      );
+      final plans = [
+        PlanCompletionPlan(id: 'p1', name: '测试培养方案一', nodes: [node]),
+      ];
+      api.completeWith(plans);
+      await tester.pumpAndSettle();
+
+      // 初始展示
+      expect(find.text('授课教师：初始方案教师'), findsOneWidget);
+
+      // 通过 CourseProvider 修改课程信息（课表数据变更版本号自增）
+      await courseProvider.updateCourse(_mockCourse('新生研讨课 (01)', '更新后的方案新教师'));
+      await tester.pumpAndSettle();
+
+      // 验证培养方案页自动更新展示新教师
+      expect(find.text('授课教师：更新后的方案新教师'), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
   });
 }
 
@@ -534,16 +724,65 @@ class _ControllableDatabaseService implements DatabaseService {
 
   List<({ScheduleConfig config, List<Course> courses})> schedules;
   int getCoursesCallCount = 0;
+  bool shouldThrowOnGetSchedules = false;
+  String currentScheduleId = 's1';
 
   @override
-  List<ScheduleConfig> getAllSchedules() =>
-      schedules.map((e) => e.config).toList();
+  List<ScheduleConfig> getAllSchedules() {
+    if (shouldThrowOnGetSchedules) {
+      throw StateError('DB simulated failure');
+    }
+    return schedules.map((e) => e.config).toList();
+  }
 
   @override
   Future<List<Course>> getCoursesAsync({String? scheduleId}) async {
     getCoursesCallCount++;
     final match = schedules.firstWhere((e) => e.config.id == scheduleId);
     return match.courses;
+  }
+
+  @override
+  List<Course> getCourses({String? scheduleId}) {
+    final targetId = scheduleId ?? currentScheduleId;
+    final match = schedules.firstWhere(
+      (e) => e.config.id == targetId,
+      orElse: () => schedules.first,
+    );
+    return match.courses;
+  }
+
+  @override
+  ScheduleConfig? getScheduleConfig() =>
+      schedules.isNotEmpty ? schedules.first.config : null;
+
+  @override
+  String getCurrentScheduleId() => currentScheduleId;
+
+  @override
+  Future<void> updateCourse(Course course) async {
+    for (var i = 0; i < schedules.length; i++) {
+      final s = schedules[i];
+      final idx = s.courses.indexWhere(
+        (c) => c.name == course.name || c.id == course.id,
+      );
+      if (idx != -1) {
+        final newCourses = List<Course>.from(s.courses);
+        newCourses[idx] = course;
+        schedules[i] = (config: s.config, courses: newCourses);
+      }
+    }
+  }
+
+  @override
+  Future<void> replaceScheduleCourses(
+    String scheduleId,
+    List<Course> newCourses,
+  ) async {
+    final idx = schedules.indexWhere((e) => e.config.id == scheduleId);
+    if (idx != -1) {
+      schedules[idx] = (config: schedules[idx].config, courses: newCourses);
+    }
   }
 
   @override

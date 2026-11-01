@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -15,8 +13,12 @@ import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
 class PlanCompletionPage extends StatefulWidget {
-  const PlanCompletionPage({super.key, this.initialTeacherIndex});
+  const PlanCompletionPage({
+    super.key,
+    @visibleForTesting this.initialTeacherIndex,
+  });
 
+  @visibleForTesting
   final CourseTeacherIndex? initialTeacherIndex;
 
   @override
@@ -26,13 +28,11 @@ class PlanCompletionPage extends StatefulWidget {
 class _PlanCompletionPageState extends State<PlanCompletionPage> {
   late final PlanCompletionProvider _provider;
   late final CourseTeacherIndexController _teacherIndexController;
-  List<PlanCompletionPlan>? _lastPlans;
 
   @override
   void initState() {
     super.initState();
     _provider = getIt<PlanCompletionProvider>();
-    _lastPlans = _provider.plans;
     _teacherIndexController = CourseTeacherIndexController(
       initialIndex: widget.initialTeacherIndex,
     );
@@ -53,14 +53,11 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
 
   void _onProviderUpdate() {
     if (!mounted) return;
-    if (!identical(_lastPlans, _provider.plans)) {
-      _lastPlans = _provider.plans;
-      unawaited(_teacherIndexController.reload());
-    }
     final error = _provider.error;
 
     // 有缓存时刷新失败，provider 保留旧数据并置 state=loaded、error≠null；
-    // 若不提示，用户无法得知看到的是过期缓存（与成绩页保持一致）。
+    // 若不提示，用户无法得知看到的是过期缓存。教师索引不在这里刷新，
+    // 它只依赖课表数据库，培养方案数据变化与之无关。
     if (_provider.state == PlanCompletionLoadState.loaded && error != null) {
       final l10n = AppLocalizations.of(context)!;
       final message = switch (error) {
@@ -97,6 +94,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
                 onPressed: _provider.state == PlanCompletionLoadState.loading
                     ? null
                     : () {
+                        _teacherIndexController.retryIfNeeded();
                         _provider.fetchPlanCompletion(forceRefresh: true);
                       },
               );
@@ -131,6 +129,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
       PlanCompletionLoadState.error => RetryableErrorWidget(
         errorType: _provider.error!,
         onRetry: () {
+          _teacherIndexController.retryIfNeeded();
           _provider.fetchPlanCompletion();
         },
         iconSize: 56,
@@ -525,7 +524,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
-            if (teacher != null)
+            if (teacher != null && teacher.isNotEmpty)
               Text(
                 l10n.courseTeacher(teacher),
                 maxLines: 2,

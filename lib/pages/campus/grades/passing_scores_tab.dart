@@ -87,6 +87,7 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
           const SizedBox(height: 24),
           FilledButton.icon(
             onPressed: () {
+              widget.teacherIndexController?.retryIfNeeded();
               provider.refreshPassingScores();
             },
             icon: const Icon(Icons.refresh),
@@ -101,6 +102,7 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
     return RetryableErrorWidget(
       errorType: provider.passingError!,
       onRetry: () {
+        widget.teacherIndexController?.retryIfNeeded();
         provider.refreshPassingScores();
       },
       iconSize: 56,
@@ -129,6 +131,7 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
 
     return RefreshIndicator(
       onRefresh: () async {
+        widget.teacherIndexController?.retryIfNeeded();
         await provider.refreshPassingScores();
       },
       child: CustomScrollView(
