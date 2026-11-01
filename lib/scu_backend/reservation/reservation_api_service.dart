@@ -5,6 +5,7 @@ import 'package:bugaoshan/scu_backend/core/api_session.dart';
 import 'package:bugaoshan/scu_backend/reservation/reservation_auth.dart';
 import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/utils/constants.dart';
+import 'package:bugaoshan/utils/json_utils.dart';
 
 /// 预约系统的业务 API 最小契约，供 [ReservationProvider] 注入测试替身。
 abstract interface class ReservationApi {
@@ -70,6 +71,8 @@ class ReservationApiService implements ReservationApi {
                 throw const UnauthenticatedException('预约系统会话未建立或已过期');
               }
             },
+            non2xxMessageBuilder: (resp, apiName) =>
+                tryJsonStringField(resp.body, 'm') ?? '[$apiName] 请求失败',
             defaultHeaders: const {
               'Referer': kReservationSpecialPageUrl,
               'X-Requested-With': 'XMLHttpRequest',

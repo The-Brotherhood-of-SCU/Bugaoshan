@@ -2,6 +2,7 @@ import 'package:bugaoshan/scu_backend/fitness/models/fitness_models.dart';
 import 'package:bugaoshan/scu_backend/core/api_session.dart';
 import 'package:bugaoshan/scu_backend/fitness/fitness_auth.dart';
 import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
+import 'package:bugaoshan/utils/json_utils.dart';
 
 /// 体测系统业务 API 的最小契约，供 [FitnessTestProvider] 注入和测试替身使用。
 abstract interface class FitnessTestApi {
@@ -36,6 +37,8 @@ class FitnessApiService implements FitnessTestApi {
                 throw UnauthenticatedException(message);
               }
             },
+            non2xxMessageBuilder: (resp, apiName) =>
+                tryJsonStringField(resp.body, 'info') ?? '[$apiName] 请求失败',
             defaultHeaders: const {
               'Origin': 'https://pead.scu.edu.cn',
               'Referer':

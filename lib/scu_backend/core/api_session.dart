@@ -32,6 +32,13 @@ typedef JsonValue = Object?;
 /// `if (json is! Map<String, dynamic>) return;`
 typedef JsonValidator = void Function(JsonValue json);
 
+/// 非 2xx 响应的错误文案构造器。
+///
+/// 默认实现只给出通用提示 `[$apiName] 请求失败`；需要按各自信封提取
+/// `m` / `info` 的调用方传入自己的实现。
+typedef Non2xxMessageBuilder =
+    String Function(http.Response response, String apiName);
+
 /// 面向业务 API 的高阶会话客户端。
 ///
 /// 封装各子系统的认证生命周期（[SubsystemAuth]）、统一重试与自愈（[retryOnUnauthenticated]）、
@@ -50,10 +57,18 @@ class ApiSession {
   final Map<String, String> defaultHeaders;
 
   /// 自定义会话失效检查器。若为空则执行默认规则。
+  ///
+  /// 一旦提供，[ApiSession] **不再执行** 302 / 401 / 403、空响应与登录页
+  /// 的默认判定，自定义实现必须自己覆盖这些情况。
   final SessionExpiryChecker? sessionExpiryChecker;
 
   /// JSON 业务响应校验器。
   final JsonValidator? jsonValidator;
+
+  /// 非 2xx 响应的错误文案构造器。
+  ///
+  /// 为空时使用通用提示 `[$apiName] 请求失败`。
+  final Non2xxMessageBuilder? non2xxMessageBuilder;
 
   /// 遇到空响应 body 时是否抛出 [UnauthenticatedException]。
   ///
@@ -69,6 +84,7 @@ class ApiSession {
     this.defaultHeaders = const {},
     this.sessionExpiryChecker,
     this.jsonValidator,
+    this.non2xxMessageBuilder,
     this.emptyBodyThrowsUnauthenticated = true,
   }) : _getClient = getClient,
        _invalidate = invalidate;
@@ -79,6 +95,9 @@ class ApiSession {
   /// 重试会重新执行 [action]；非幂等请求（如 multipart 上传）必须保证
   /// 闭包能安全重建请求，且不要依赖 [CookieClient] 对 multipart 的
   /// `ClientException` 传输层重试（该重试只对普通 `http.Request` 生效）。
+  ///
+  /// 多请求业务流（如首页 + N 个详情页）必须整段包进本方法，而不是逐个
+  /// 调用 typed helper：否则每个请求都会独立触发一次认证重试与重新 SSO。
   Future<T> run<T>(Future<T> Function(CookieClient client) action) {
     return retryOnUnauthenticated(
       _getClient,
@@ -156,7 +175,8 @@ class ApiSession {
 
     if (statusCode < 200 || statusCode >= 400) {
       throw ServiceException(
-        apiName != null ? '[$apiName] 请求失败' : '请求失败',
+        non2xxMessageBuilder?.call(resp, apiName ?? '') ??
+            (apiName != null ? '[$apiName] 请求失败' : '请求失败'),
         statusCode: statusCode,
       );
     }

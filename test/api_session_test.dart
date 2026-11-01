@@ -147,35 +147,71 @@ void main() {
       },
     );
 
-    test('custom sessionExpiryChecker takes precedence', () async {
-      final client = CookieClient(
-        inner: MockClient((req) async {
-          return http.Response('custom error', 200);
-        }),
-      );
+    test(
+      'custom sessionExpiryChecker is invoked and can mark expiry',
+      () async {
+        final client = CookieClient(
+          inner: MockClient((req) async {
+            return http.Response('custom error', 200);
+          }),
+        );
 
-      final session = ApiSession(
-        getClient: () async => client,
-        baseUrl: Uri.parse('https://example.com/api'),
-        logTag: 'Test',
-        sessionExpiryChecker: (body, status) {
-          if (body.contains('custom error')) {
-            throw const UnauthenticatedException('custom auth expired');
-          }
-        },
-      );
+        final session = ApiSession(
+          getClient: () async => client,
+          baseUrl: Uri.parse('https://example.com/api'),
+          logTag: 'Test',
+          sessionExpiryChecker: (body, status) {
+            if (body.contains('custom error')) {
+              throw const UnauthenticatedException('custom auth expired');
+            }
+          },
+        );
 
-      await expectLater(
-        session.get('test'),
-        throwsA(
-          isA<UnauthenticatedException>().having(
-            (e) => e.message,
-            'message',
-            'custom auth expired',
+        await expectLater(
+          session.get('test'),
+          throwsA(
+            isA<UnauthenticatedException>().having(
+              (e) => e.message,
+              'message',
+              'custom auth expired',
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
+
+    test(
+      'custom sessionExpiryChecker replaces the default login-page check',
+      () async {
+        final loginHtml = '''
+        <html>
+          <head><title>登录</title></head>
+          <body><form action="/j_spring_security_check"></form></body>
+        </html>
+      ''';
+        final client = CookieClient(
+          inner: MockClient((req) async {
+            return http.Response.bytes(
+              utf8.encode(loginHtml),
+              200,
+              headers: {'content-type': 'text/html; charset=utf-8'},
+            );
+          }),
+        );
+
+        final session = ApiSession(
+          getClient: () async => client,
+          baseUrl: Uri.parse('https://example.com/api'),
+          logTag: 'Test',
+          sessionExpiryChecker: (body, status) {},
+        );
+
+        // 默认判定会把登录页转成 UnauthenticatedException；自定义 checker
+        // 为空实现时请求应正常返回，证明默认判定确实被替换。
+        final resp = await session.get('login-page');
+        expect(resp.statusCode, 200);
+      },
+    );
 
     test('non-2xx response throws ServiceException with statusCode', () async {
       final client = CookieClient(
@@ -195,6 +231,61 @@ void main() {
           isA<ServiceException>()
               .having((e) => e.statusCode, 'statusCode', 500)
               .having((e) => e.message, 'message', contains('failing')),
+        ),
+      );
+    });
+
+    test('non-2xx falls back to the generic apiName message', () async {
+      final client = CookieClient(
+        inner: MockClient(
+          (req) async => http.Response(
+            '{"e":1,"m":"设备不存在"}',
+            400,
+            headers: {'content-type': 'application/json; charset=utf-8'},
+          ),
+        ),
+      );
+      final session = ApiSession(
+        getClient: () async => client,
+        baseUrl: Uri.parse('https://example.com/api'),
+        logTag: 'Test',
+      );
+
+      await expectLater(
+        session.getJsonMap('offline'),
+        throwsA(
+          isA<ServiceException>()
+              .having((e) => e.message, 'message', '[offline] 请求失败')
+              .having((e) => e.statusCode, 'statusCode', 400),
+        ),
+      );
+    });
+
+    test('non2xxMessageBuilder overrides the generic default', () async {
+      final client = CookieClient(
+        inner: MockClient(
+          (req) async => http.Response(
+            '{"e":1,"m":"设备不存在"}',
+            400,
+            headers: {'content-type': 'application/json; charset=utf-8'},
+          ),
+        ),
+      );
+      final session = ApiSession(
+        getClient: () async => client,
+        baseUrl: Uri.parse('https://example.com/api'),
+        logTag: 'Test',
+        non2xxMessageBuilder: (resp, apiName) => '[$apiName] 设备不存在',
+      );
+
+      await expectLater(
+        session.getJsonMap('offline'),
+        throwsA(
+          isA<ServiceException>().having(
+            (e) => e.message,
+            'message',
+            '[offline] 设备不存在',
+          ),
         ),
       );
     });
@@ -382,6 +473,62 @@ void main() {
       final resp = await session.followRedirects('start');
       expect(resp.statusCode, 200);
       expect(resp.body, 'done');
+    });
+
+    test('followRedirects follows multiple hops', () async {
+      final client = CookieClient(
+        inner: MockClient((req) async {
+          final path = req.url.path;
+          if (path.endsWith('/start')) {
+            return http.Response('', 302, headers: {'location': '/api/middle'});
+          }
+          if (path.endsWith('/middle')) {
+            return http.Response('', 302, headers: {'location': '/api/final'});
+          }
+          return http.Response('done', 200);
+        }),
+      );
+      final session = ApiSession(
+        getClient: () async => client,
+        baseUrl: Uri.parse('https://example.com/api'),
+        logTag: 'Test',
+      );
+
+      final resp = await session.followRedirects('start');
+      expect(resp.statusCode, 200);
+      expect(resp.body, 'done');
+    });
+
+    test('followRedirects throws when maxRedirects is exceeded', () async {
+      final client = CookieClient(
+        inner: MockClient((req) async {
+          return http.Response(
+            '',
+            302,
+            headers: {
+              'location': req.url.path.endsWith('/start')
+                  ? '/api/middle'
+                  : '/api/final',
+            },
+          );
+        }),
+      );
+      final session = ApiSession(
+        getClient: () async => client,
+        baseUrl: Uri.parse('https://example.com/api'),
+        logTag: 'Test',
+      );
+
+      await expectLater(
+        session.followRedirects('start', maxRedirects: 1),
+        throwsA(
+          isA<ServiceException>().having(
+            (e) => e.message,
+            'message',
+            contains('重定向链超过上限'),
+          ),
+        ),
+      );
     });
 
     test('jsonValidator receives both map and list payloads', () async {

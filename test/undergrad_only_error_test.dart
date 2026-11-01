@@ -55,11 +55,16 @@ void main() {
       expect(failure!.undergradOnly, isFalse);
     });
 
-    test('302 重定向与登录页 HTML 是打标强证据', () {
+    test('302 重定向、401/403 与登录页 HTML 是打标强证据', () {
       expect(
         ZhjwApiService.classifyZhjwSessionFailure('', 302)!.undergradOnly,
         isTrue,
       );
+      for (final status in const [401, 403]) {
+        final failure = ZhjwApiService.classifyZhjwSessionFailure('', status);
+        expect(failure, isNotNull);
+        expect(failure!.undergradOnly, isTrue);
+      }
       final loginPage = ZhjwApiService.classifyZhjwSessionFailure(
         '<html><body><form action="/login">请登录</form></body></html>',
         200,

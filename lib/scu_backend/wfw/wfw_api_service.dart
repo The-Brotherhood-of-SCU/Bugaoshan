@@ -1,6 +1,7 @@
 import 'package:bugaoshan/scu_backend/core/api_session.dart';
 import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/scu_backend/wfw/wfw_auth.dart';
+import 'package:bugaoshan/utils/json_utils.dart';
 
 /// 微服务 API Service（第1层）
 ///
@@ -20,6 +21,8 @@ class WfwApiService {
             baseUrl: _baseUrl,
             logTag: _tag,
             jsonValidator: ApiEnvelope.validateWfw,
+            non2xxMessageBuilder: (resp, apiName) =>
+                tryJsonStringField(resp.body, 'm') ?? '[$apiName] 请求失败',
             defaultHeaders: const {
               'Origin': 'https://wfw.scu.edu.cn',
               'Referer': 'https://wfw.scu.edu.cn',

@@ -71,6 +71,28 @@ void main() {
       );
     },
   );
+
+  test('non-2xx keeps the m field through the service builder', () async {
+    final client = CookieClient(
+      inner: MockClient(
+        (request) async => http.Response(
+          '{"e":1,"m":"设备不存在"}',
+          400,
+          headers: const {'content-type': 'application/json; charset=utf-8'},
+          request: request,
+        ),
+      ),
+    );
+    // 不注入 ApiSession，验证 service 自己构造的 non2xxMessageBuilder 生效。
+    final api = WfwApiService(_FakeWfwAuth(client));
+
+    await expectLater(
+      api.forceNetworkDeviceOffline(deviceId: 'd1', ip: '10.0.0.1'),
+      throwsA(
+        isA<ServiceException>().having((e) => e.message, 'message', '设备不存在'),
+      ),
+    );
+  });
 }
 
 /// 只用于满足 WfwApiService 的构造签名；注入 session 时不会调用 auth。

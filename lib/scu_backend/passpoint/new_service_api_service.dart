@@ -4,6 +4,7 @@ import 'package:bugaoshan/scu_backend/core/api_session.dart';
 import 'package:bugaoshan/scu_backend/passpoint/new_service_auth.dart';
 import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
+import 'package:bugaoshan/utils/json_utils.dart';
 
 /// 智慧线上服务平台（后勤 newservice）API Service（第1层）
 ///
@@ -35,6 +36,8 @@ class NewServiceApiService {
                  throw const UnauthenticatedException('newservice 登录已失效');
                }
              },
+             non2xxMessageBuilder: (resp, apiName) =>
+                 tryJsonStringField(resp.body, 'm') ?? '[$apiName] 请求失败',
              defaultHeaders: const {
                'Origin': 'https://service.scu.edu.cn',
                'Referer':

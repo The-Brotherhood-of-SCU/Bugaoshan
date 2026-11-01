@@ -13,6 +13,7 @@ import 'package:bugaoshan/scu_backend/service_hall/service_auth.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
+import 'package:bugaoshan/utils/json_utils.dart';
 
 /// 网上办事大厅 API Service（第1层）
 ///
@@ -35,6 +36,8 @@ class ServiceApiService {
           logTag: _tag,
           defaultHeaders: const {'Origin': _base, 'Referer': _base},
           sessionExpiryChecker: _checkSessionExpiry,
+          non2xxMessageBuilder: (resp, apiName) =>
+              tryJsonStringField(resp.body, 'm') ?? '[$apiName] 请求失败',
         );
   }
 

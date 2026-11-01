@@ -351,7 +351,9 @@ flowchart TD
 
 `emptyBodyThrowsUnauthenticated` 默认 `true`；预约系统设为 `false`（网关偶发剥 body 时不误触发重认证），此时空响应抛 `ServiceException('服务器返回了空响应')`。
 
-重试只发生一次，且仅针对 `UnauthenticatedException`。普通网络错误、解析失败、限流和业务错误直接上抛；其余 4xx / 5xx 统一转为带 `statusCode` 的 `ServiceException`，不再落到“响应解析失败”这类误导性文案。因此各 API Service 必须把“登录页、空响应、业务过期码”等**明确证据**识别为 `UnauthenticatedException`——不能把任意 HTML 或普通业务失败当成认证过期，否则会错误重放写请求。
+重试只发生一次，且仅针对 `UnauthenticatedException`。普通网络错误、解析失败、限流和业务错误直接上抛；其余 4xx / 5xx 统一转为带 `statusCode` 的 `ServiceException`。需要按各自信封取服务端报文的调用方在构造 `ApiSession` 时传入 `non2xxMessageBuilder`（如 WFW 取 `m`），避免写路径（如办事大厅提交申请）丢失服务端驳回原因。因此各 API Service 必须把“登录页、空响应、业务过期码”等**明确证据**识别为 `UnauthenticatedException`——不能把任意 HTML 或普通业务失败当成认证过期，否则会错误重放写请求。
+
+多请求业务流（如计划完成度的 index + N 个详情页、成绩的 index + callback）必须整段包在 `run()` 内，用 `client.get` + `checkResponse` 手工执行，共享同一个重试边界；逐个调用 `getHtml` / `getJsonMap` 会让每个请求独立重认证，最坏放大成 1+N 次 SSO。
 
 默认 Header 由 `_buildHeaders` 注入（`User-Agent` / `Accept`）；`X-Requested-With` 不是标准头，默认不注入，需要的调用方自行在 `headers` 中加入。`getHtml` 使用 HTML 优先的 `Accept`。保留自定义解析的服务（办事大厅的 WAF 诊断、研教务的 EMAP 分页信封、缴费余额查询）通过 `run()` 复用同一套认证与重试骨架。
 

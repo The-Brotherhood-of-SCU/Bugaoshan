@@ -11,6 +11,7 @@ import 'package:bugaoshan/scu_backend/core/api_session.dart';
 import 'package:bugaoshan/scu_backend/zhjw/zhjw_auth.dart';
 import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/scu_backend/core/scu_auth.dart' show kZhjwBase;
+import 'package:bugaoshan/utils/constants.dart';
 import 'package:flutter/foundation.dart';
 
 part 'zhjw_html_parsers.dart';
@@ -45,7 +46,7 @@ class ZhjwApiService {
 
   /// 会话失效判定；未失效返回 null。
   ///
-  /// zhjw 在 session 过期时返回 302、空 body 或 HTML 登录页。
+  /// zhjw 在 session 过期时返回 302、401/403、空 body 或 HTML 登录页。
   /// 检测到时抛 [UnauthenticatedException]，由 [ApiSession] 捕获重试。
   /// 登录页用 [looksLikeLoginPage] 的强特征组合判断，不做裸 login 子串
   /// 匹配——正常业务页（如选课页含 loginStatus/clientLogin）不能误伤
@@ -68,7 +69,9 @@ class ZhjwApiService {
     int statusCode,
   ) {
     const flagged = UnauthenticatedException('本科教务会话未建立', true);
-    if (statusCode == 302) return flagged;
+    if (statusCode == 302 || statusCode == 401 || statusCode == 403) {
+      return flagged;
+    }
     if (body.trim().isEmpty) {
       return const UnauthenticatedException('教务系统返回了空响应');
     }
@@ -370,74 +373,88 @@ class ZhjwApiService {
   ///    不再静默返回空数组。
   ///
   /// 如果遇到频率限制，抛出 [RateLimitedException]。
-  Future<List<PlanCompletionPlan>> fetchPlanCompletion() async {
-    final body = await _session.getHtml(
-      '/student/integratedQuery/planCompletion/index',
-      apiName: 'planCompletion/index',
-    );
+  ///
+  /// index + N 个详情页整段包在 [ApiSession.run] 内：会话过期时只做一次
+  /// 重认证（而不是每个请求各做一次），与旧实现的业务流级重试边界一致。
+  Future<List<PlanCompletionPlan>> fetchPlanCompletion() {
+    return _session.run((client) async {
+      final indexResp = await client.get(
+        _session.resolveUri('/student/integratedQuery/planCompletion/index'),
+        headers: {
+          'Accept': 'text/html,*/*',
+          'Referer': '$kZhjwBase/',
+          'User-Agent': kDefaultUserAgent,
+        },
+      );
+      _session.checkResponse(indexResp, apiName: 'planCompletion/index');
+      final body = indexResp.body.trim();
 
-    // 频率限制检测
-    if (body.contains('请勿频繁刷新')) {
-      throw const RateLimitedException();
-    }
-
-    // 1) 尝试直接解析 zNodes（单方案场景）。
-    //    仅当正则匹配到 zNodes 时才解析；匹配不上返回 null，不抛错，
-    //    以便继续走链接提取分支（多方案选择页可能不含 zNodes）。
-    final directNodes = _tryParseZNodes(body);
-    if (directNodes != null && directNodes.isNotEmpty) {
-      return [
-        PlanCompletionPlan(
-          id: '',
-          name: _extractPlanName(body),
-          nodes: directNodes,
-        ),
-      ];
-    }
-
-    // 2) 多方案场景：从入口页提取 getPyfaIndex 链接，逐个请求详情页。
-    final planLinks = _extractPlanLinks(body);
-    if (planLinks.isNotEmpty) {
-      final plans = <PlanCompletionPlan>[];
-      for (final link in planLinks) {
-        // 教务系统对连续请求有限流（"请勿频繁刷新"），详情页之间
-        // 加短暂间隔，避免打开页面时一次触发 N+1 个请求被限流。
-        if (plans.isNotEmpty) {
-          await Future<void>.delayed(planDetailRequestGap);
-        }
-        final detailBody = await _session.getHtml(
-          link.path,
-          headers: {
-            'Referer':
-                '$kZhjwBase/student/integratedQuery/planCompletion/index',
-          },
-          apiName: 'planCompletion/detail',
-        );
-        if (detailBody.contains('请勿频繁刷新')) {
-          throw const RateLimitedException();
-        }
-        // 详情页必须包含数据；解析失败/结构异常在此抛错，不再静默返回空。
-        final nodes = _parseZNodes(detailBody);
-        plans.add(
-          PlanCompletionPlan(id: link.id, name: link.name, nodes: nodes),
-        );
+      // 频率限制检测
+      if (body.contains('请勿频繁刷新')) {
+        throw const RateLimitedException();
       }
-      return plans;
-    }
 
-    // 3) 无数据也无链接：zNodes 明确存在但为空数组 → 账号无方案。
-    if (directNodes != null) {
-      return const [];
-    }
+      // 1) 尝试直接解析 zNodes（单方案场景）。
+      //    仅当正则匹配到 zNodes 时才解析；匹配不上返回 null，不抛错，
+      //    以便继续走链接提取分支（多方案选择页可能不含 zNodes）。
+      final directNodes = _tryParseZNodes(body);
+      if (directNodes != null && directNodes.isNotEmpty) {
+        return [
+          PlanCompletionPlan(
+            id: '',
+            name: _extractPlanName(body),
+            nodes: directNodes,
+          ),
+        ];
+      }
 
-    // 4) 页面结构异常（既无 zNodes 也无 getPyfaIndex 链接）：
-    //    - 页面是登录页/会话过期页 → 抛 UnauthenticatedException 走重认证；
-    //    - 其它无法识别的 HTML（如错误页）→ 抛 ServiceException，
-    //      避免触发重认证风暴（每次都会重新 SSO，进一步触发限流）。
-    if (looksLikeLoginPage(body)) {
-      throw const UnauthenticatedException();
-    }
-    throw const ServiceException('方案修读数据格式异常：页面无法解析');
+      // 2) 多方案场景：从入口页提取 getPyfaIndex 链接，逐个请求详情页。
+      final planLinks = _extractPlanLinks(body);
+      if (planLinks.isNotEmpty) {
+        final plans = <PlanCompletionPlan>[];
+        for (final link in planLinks) {
+          // 教务系统对连续请求有限流（"请勿频繁刷新"），详情页之间
+          // 加短暂间隔，避免打开页面时一次触发 N+1 个请求被限流。
+          if (plans.isNotEmpty) {
+            await Future<void>.delayed(planDetailRequestGap);
+          }
+          final detailResp = await client.get(
+            _session.resolveUri(link.path),
+            headers: {
+              'Accept': 'text/html,*/*',
+              'Referer':
+                  '$kZhjwBase/student/integratedQuery/planCompletion/index',
+              'User-Agent': kDefaultUserAgent,
+            },
+          );
+          _session.checkResponse(detailResp, apiName: 'planCompletion/detail');
+          final detailBody = detailResp.body.trim();
+          if (detailBody.contains('请勿频繁刷新')) {
+            throw const RateLimitedException();
+          }
+          // 详情页必须包含数据；解析失败/结构异常在此抛错，不再静默返回空。
+          final nodes = _parseZNodes(detailBody);
+          plans.add(
+            PlanCompletionPlan(id: link.id, name: link.name, nodes: nodes),
+          );
+        }
+        return plans;
+      }
+
+      // 3) 无数据也无链接：zNodes 明确存在但为空数组 → 账号无方案。
+      if (directNodes != null) {
+        return const [];
+      }
+
+      // 4) 页面结构异常（既无 zNodes 也无 getPyfaIndex 链接）：
+      //    - 页面是登录页/会话过期页 → 抛 UnauthenticatedException 走重认证；
+      //    - 其它无法识别的 HTML（如错误页）→ 抛 ServiceException，
+      //      避免触发重认证风暴（每次都会重新 SSO，进一步触发限流）。
+      if (looksLikeLoginPage(body)) {
+        throw const UnauthenticatedException();
+      }
+      throw const ServiceException('方案修读数据格式异常：页面无法解析');
+    });
   }
 
   // ═══════════════════════════════════════════════════════════════════
