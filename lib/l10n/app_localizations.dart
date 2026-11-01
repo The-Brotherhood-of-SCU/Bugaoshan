@@ -811,7 +811,7 @@ abstract class AppLocalizations {
   /// **'Update to Latest (Include Preview)'**
   String get updateToPreview;
 
-  /// Toggle in the test page that makes the home/about update checks target the preview release channel.
+  /// Toggle in the developer page that makes the home/about update checks target the preview release channel.
   ///
   /// In en, this message translates to:
   /// **'Use Preview Release Source'**
@@ -820,7 +820,7 @@ abstract class AppLocalizations {
   /// No description provided for @usePreviewUpdateSourceHint.
   ///
   /// In en, this message translates to:
-  /// **'Affects only the automatic checks on the home and about pages. The test page always checks both channels.'**
+  /// **'Affects only the automatic checks on the home and about pages. The developer page always checks both channels.'**
   String get usePreviewUpdateSourceHint;
 
   /// Settings entry title for GitHub mirror / proxy configuration.

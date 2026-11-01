@@ -399,7 +399,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get usePreviewUpdateSourceHint =>
-      'Affects only the automatic checks on the home and about pages. The test page always checks both channels.';
+      'Affects only the automatic checks on the home and about pages. The developer page always checks both channels.';
 
   @override
   String get networkProxy => 'Network Acceleration';
