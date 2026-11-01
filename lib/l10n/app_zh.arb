@@ -2114,7 +2114,7 @@
   "logClearTitle": "清空内存中的日志？",
   "logClearHint": "仅清空当前进程的内存日志，磁盘上已保存的文件不受影响。",
   "logPersistenceOff": "日志仅保留在内存，应用退出即丢失",
-  "logPersistenceActive": "警告与错误会写入 bugaoshan.log（约 6 MB，自动轮转）",
+  "logPersistenceActive": "警告与错误会写入日志（约 6 MB）",
   "logPersistenceRetryHint": "请关闭后重新开启；若仍失败，请检查设备剩余存储空间。",
   "logPersistenceUnavailable": "落盘不可用{reason}",
   "logDroppedEntries": "已丢弃 {count} 条待写日志",

@@ -3653,7 +3653,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logPersistenceActive =>
-      'Warnings and errors are saved to bugaoshan.log (about 6 MB, rotating)';
+      'Warnings and errors are saved(about 6 MB)';
 
   @override
   String get logPersistenceRetryHint =>

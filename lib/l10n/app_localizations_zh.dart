@@ -3525,7 +3525,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get logPersistenceOff => '日志仅保留在内存，应用退出即丢失';
 
   @override
-  String get logPersistenceActive => '警告与错误会写入 bugaoshan.log（约 6 MB，自动轮转）';
+  String get logPersistenceActive => '警告与错误会写入日志（约 6 MB）';
 
   @override
   String get logPersistenceRetryHint => '请关闭后重新开启；若仍失败，请检查设备剩余存储空间。';
