@@ -1474,7 +1474,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get networkDeviceQuery => '校园网设备查询';
 
   @override
-  String get networkDeviceQueryDesc => '查询校园网账户、在线设备与无感认证';
+  String get networkDeviceQueryDesc => '查询校园网账户和在线设备';
 
   @override
   String get networkDeviceUserInfo => '用户信息';

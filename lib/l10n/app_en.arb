@@ -609,7 +609,7 @@
   "noData": "No Data",
   "noFreeClassrooms": "No free classrooms right now",
   "networkDeviceQuery": "Network Device Query",
-  "networkDeviceQueryDesc": "Query campus network account, online devices and passive authentication",
+  "networkDeviceQueryDesc": "Query campus network account and online devices",
   "networkDeviceUserInfo": "User Information",
   "networkDeviceOnlineDevices": "Online Devices",
   "networkDeviceDeviceId": "Device ID",

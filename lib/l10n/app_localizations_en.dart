@@ -1518,7 +1518,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get networkDeviceQueryDesc =>
-      'Query campus network account, online devices and passive authentication';
+      'Query campus network account and online devices';
 
   @override
   String get networkDeviceUserInfo => 'User Information';

@@ -2926,7 +2926,7 @@ abstract class AppLocalizations {
   /// No description provided for @networkDeviceQueryDesc.
   ///
   /// In en, this message translates to:
-  /// **'Query campus network account, online devices and passive authentication'**
+  /// **'Query campus network account and online devices'**
   String get networkDeviceQueryDesc;
 
   /// No description provided for @networkDeviceUserInfo.
