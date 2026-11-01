@@ -15,6 +15,7 @@ const String _keyCurrentScheduleId = 'currentScheduleId';
 
 class DatabaseService {
   static const String _tag = 'DatabaseService';
+  static const int _schemaVersion = 3;
 
   late Database _db;
 
@@ -36,6 +37,108 @@ class DatabaseService {
   @visibleForTesting
   Future<void> ensureBalanceRecordsTableForTesting() async {
     await _createBalanceRecordsTable(_db);
+  }
+
+  /// 按实际表结构补齐当前所需字段，不依赖旧版本号推断字段是否存在。
+  ///
+  /// 已有列和数据保持原样，只有缺失列才执行 ALTER TABLE。
+  static Future<void> _ensureCourseColumns(DatabaseExecutor db) async {
+    const definitions = {
+      // v2: courses 增加 campus 列（教务处 campusName 字段）
+      'campus': "TEXT NOT NULL DEFAULT ''",
+      // v3: courses 增加 custom_weeks 列（支持离散周次）
+      'custom_weeks': 'TEXT',
+    };
+    final rows = await db.rawQuery('PRAGMA table_info(courses)');
+    final existing = rows.map((row) => row['name']).toSet();
+    for (final column in definitions.entries) {
+      if (!existing.contains(column.key)) {
+        await db.execute(
+          'ALTER TABLE courses ADD COLUMN ${column.key} ${column.value}',
+        );
+      }
+    }
+  }
+
+  /// 版本不低于当前支持版本时信任已有结构，更高版本同时记录告警。
+  static bool _canSkipSchemaRepair(int version) {
+    if (version < _schemaVersion) return false;
+    if (version > _schemaVersion) {
+      AppLog.w(
+        _tag,
+        '数据库版本高于当前程序支持的版本：当前=$version，支持=$_schemaVersion；'
+        '保留现有版本和结构继续打开',
+      );
+    }
+    return true;
+  }
+
+  /// 打开数据库，仅对版本低于3的旧库检查并修复结构。
+  ///
+  /// 版本3及以上视为已具备当前结构，跳过补列、补表和迁移事务。
+  /// 不向 sqflite 传 version，避免它回写更低的版本号。
+  /// 打开或修复失败时记录原始异常和堆栈，并继续向上传播。
+  @visibleForTesting
+  Future<Database> openDatabaseAtPath(String path) {
+    return AppLog.guard<Database>(
+      _tag,
+      '打开或修复数据库',
+      () => openDatabase(
+        path,
+        onOpen: (db) async {
+          final version = await db.getVersion();
+          if (_canSkipSchemaRepair(version)) return;
+
+          await db.transaction((txn) async {
+            // 加锁后重新读取，避免其他进程已升级数据库仍按旧版本执行修复。
+            final rows = await txn.rawQuery('PRAGMA user_version');
+            final currentVersion = rows.single['user_version'] as int;
+            if (_canSkipSchemaRepair(currentVersion)) return;
+
+            if (currentVersion == 0) {
+              await _createSchema(txn);
+            }
+            await _ensureCourseColumns(txn);
+            await _createBalanceRecordsTable(txn);
+            await txn.execute('PRAGMA user_version = $_schemaVersion');
+          }, exclusive: true);
+        },
+      ),
+    );
+  }
+
+  Future<void> _createSchema(DatabaseExecutor db) async {
+    await db.execute('''
+      CREATE TABLE metadata (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE schedules (
+        id TEXT PRIMARY KEY,
+        config_json TEXT NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE courses (
+        id TEXT PRIMARY KEY,
+        schedule_id TEXT NOT NULL,
+        name TEXT,
+        teacher TEXT,
+        location TEXT,
+        campus TEXT NOT NULL DEFAULT '',
+        start_week INTEGER,
+        end_week INTEGER,
+        day_of_week INTEGER,
+        start_section INTEGER,
+        end_section INTEGER,
+        color_value INTEGER,
+        week_type INTEGER,
+        custom_weeks TEXT,
+        FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE
+      )
+    ''');
   }
 
   Future<void> init() async {
@@ -101,60 +204,7 @@ class DatabaseService {
       }
     }
 
-    _db = await openDatabase(
-      dbPath,
-      version: 3,
-      onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
-          // v2: courses 增加 campus 列（教务处 campusName 字段）
-          await db.execute(
-            "ALTER TABLE courses ADD COLUMN campus TEXT NOT NULL DEFAULT ''",
-          );
-        }
-        if (oldVersion < 3) {
-          // v3: courses 增加 custom_weeks 列（支持离散周次）
-          await db.execute('ALTER TABLE courses ADD COLUMN custom_weeks TEXT');
-        }
-      },
-      onCreate: (db, version) async {
-        await db.execute('''
-          CREATE TABLE metadata (
-            key TEXT PRIMARY KEY,
-            value TEXT NOT NULL
-          )
-        ''');
-        await db.execute('''
-          CREATE TABLE schedules (
-            id TEXT PRIMARY KEY,
-            config_json TEXT NOT NULL
-          )
-        ''');
-        await db.execute('''
-          CREATE TABLE courses (
-            id TEXT PRIMARY KEY,
-            schedule_id TEXT NOT NULL,
-            name TEXT,
-            teacher TEXT,
-            location TEXT,
-            campus TEXT NOT NULL DEFAULT '',
-            start_week INTEGER,
-            end_week INTEGER,
-            day_of_week INTEGER,
-            start_section INTEGER,
-            end_section INTEGER,
-            color_value INTEGER,
-            week_type INTEGER,
-            custom_weeks TEXT,
-            FOREIGN KEY (schedule_id) REFERENCES schedules(id) ON DELETE CASCADE
-          )
-        ''');
-        await _createBalanceRecordsTable(db);
-      },
-    );
-
-    // 老用户(db 已存在)通过此处确保新表创建
-    await _ensureBalanceRecordsTable();
-    await _ensureCustomWeeksColumn();
+    _db = await openDatabaseAtPath(dbPath);
 
     // Load current schedule ID from metadata
     final metaRows = await _db.query(
@@ -433,27 +483,6 @@ class DatabaseService {
       CREATE INDEX IF NOT EXISTS idx_balance_records_lookup
       ON balance_records(room_key, balance_type, timestamp)
     ''');
-  }
-
-  Future<void> _ensureBalanceRecordsTable() async {
-    await _createBalanceRecordsTable(_db);
-  }
-
-  Future<void> _ensureCustomWeeksColumn() async {
-    try {
-      final info = await _db.rawQuery('PRAGMA table_info(courses)');
-      final hasCol = info.any((col) => col['name'] == 'custom_weeks');
-      if (!hasCol) {
-        await _db.execute('ALTER TABLE courses ADD COLUMN custom_weeks TEXT');
-      }
-    } catch (e, logStackTrace) {
-      AppLog.e(
-        _tag,
-        '_ensureCustomWeeksColumn 失败',
-        error: e,
-        stackTrace: logStackTrace,
-      );
-    }
   }
 
   Future<int> insertBalanceRecord(BalanceRecord record) async {
