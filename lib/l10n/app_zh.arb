@@ -158,7 +158,7 @@
   "updateToStable": "更新到最新稳定版",
   "updateToPreview": "更新到最新版（包括预览版）",
   "usePreviewUpdateSource": "软件更新使用预览版源",
-  "usePreviewUpdateSourceHint": "仅影响首页和关于页面的自动检查；测试页面始终同时检查两个渠道。",
+  "usePreviewUpdateSourceHint": "仅影响首页和关于页面的自动检查；开发者页面始终同时检查两个渠道。",
   "networkProxy": "网络加速",
   "ghProxyMirror": "GitHub 加速",
   "ghProxyMirrorHint": "通过 gh-proxy 镜像下载 GitHub 资源（软件更新、校历），失败时自动回退直连。",
