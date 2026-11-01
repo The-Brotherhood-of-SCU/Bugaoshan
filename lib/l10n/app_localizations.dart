@@ -2926,7 +2926,7 @@ abstract class AppLocalizations {
   /// No description provided for @networkDeviceQueryDesc.
   ///
   /// In en, this message translates to:
-  /// **'Query campus network account and online devices'**
+  /// **'Query campus network account, online devices and passive authentication'**
   String get networkDeviceQueryDesc;
 
   /// No description provided for @networkDeviceUserInfo.
@@ -3409,12 +3409,6 @@ abstract class AppLocalizations {
   /// **'Price'**
   String get balanceTrendTooltipPrice;
 
-  /// No description provided for @balanceTrendUnitPerDay.
-  ///
-  /// In en, this message translates to:
-  /// **'CNY/day'**
-  String get balanceTrendUnitPerDay;
-
   /// No description provided for @balanceTrendUnitYuanPerKwh.
   ///
   /// In en, this message translates to:
@@ -3636,12 +3630,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Network'**
   String get dockLabelNetworkDevice;
-
-  /// No description provided for @dockLabelPasspoint.
-  ///
-  /// In en, this message translates to:
-  /// **'Passive'**
-  String get dockLabelPasspoint;
 
   /// No description provided for @dockLabelBalanceQuery.
   ///

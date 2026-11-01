@@ -1474,7 +1474,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get networkDeviceQuery => '校园网设备查询';
 
   @override
-  String get networkDeviceQueryDesc => '查询校园网账户和在线设备';
+  String get networkDeviceQueryDesc => '查询校园网账户、在线设备与无感认证';
 
   @override
   String get networkDeviceUserInfo => '用户信息';
@@ -1720,9 +1720,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get balanceTrendTooltipPrice => '单价';
 
   @override
-  String get balanceTrendUnitPerDay => '元/天';
-
-  @override
   String get balanceTrendUnitYuanPerKwh => '元/度';
 
   @override
@@ -1835,9 +1832,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dockLabelNetworkDevice => '校园网';
-
-  @override
-  String get dockLabelPasspoint => '无感';
 
   @override
   String get dockLabelBalanceQuery => '电费';

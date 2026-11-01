@@ -1518,7 +1518,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get networkDeviceQueryDesc =>
-      'Query campus network account and online devices';
+      'Query campus network account, online devices and passive authentication';
 
   @override
   String get networkDeviceUserInfo => 'User Information';
@@ -1769,9 +1769,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get balanceTrendTooltipPrice => 'Price';
 
   @override
-  String get balanceTrendUnitPerDay => 'CNY/day';
-
-  @override
   String get balanceTrendUnitYuanPerKwh => 'CNY/kWh';
 
   @override
@@ -1891,9 +1888,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dockLabelNetworkDevice => 'Network';
-
-  @override
-  String get dockLabelPasspoint => 'Passive';
 
   @override
   String get dockLabelBalanceQuery => 'Electricity';
