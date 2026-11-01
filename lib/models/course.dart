@@ -23,6 +23,21 @@ const int kDefaultTotalWeeks = 20;
 /// `graduate_schedule_parser` 的学期周次上限也复用该值，避免两处魔数漂移。
 const int kMaxCourseWeeks = 60;
 
+/// 教务处导入课程时追加在课程名末尾的课序号后缀正则（与 [formatCourseNameWithSequence] 保持同一真源）。
+///
+/// 要求左括号前至少有一个空白字符，避免误剥离课程名本体的括号（如 `C语言程序设计(A)`、`大学物理(1)`）。
+final RegExp courseSequenceSuffixRegExp = RegExp(r'\s+\([A-Za-z0-9]*\)\s*$');
+
+/// 将教务处原始课程名与课序号拼接为课程显示名称（例如 `'高等数学 (01)'`）。
+///
+/// 与 [stripCourseSequenceSuffix] 成对维护；修改拼接格式时必须同步更新剥离逻辑。
+String formatCourseNameWithSequence(String rawName, String courseSequence) =>
+    '$rawName ($courseSequence)';
+
+/// 剥离由 [formatCourseNameWithSequence] 追加的课序号后缀。
+String stripCourseSequenceSuffix(String courseName) =>
+    courseName.replaceFirst(courseSequenceSuffixRegExp, '');
+
 /// 周类型：每周 / 单周 / 双周。
 enum WeekType { every, odd, even }
 
