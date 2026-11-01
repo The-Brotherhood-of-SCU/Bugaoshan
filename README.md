@@ -7,13 +7,14 @@
 [![Flutter](https://img.shields.io/badge/Flutter-3.44-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.10-0175C2?logo=dart&logoColor=white)](https://dart.dev)
 [![License](https://img.shields.io/badge/License-AGPL3.0-green.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Android%20%7C%20Windows%20%7C%20macOS-blue)](https://flutter.dev)
+[![Downloads](https://img.shields.io/github/downloads/The-Brotherhood-of-SCU/Bugaoshan/total?style=flat-square&logo=github&label=Downloads)](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases)
+[![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Android%20%7C%20iOS%20%7C%20Windows%20%7C%20macOS-blue)](https://flutter.dev)
+
+
 
 > 川大学生专属校园助手
 
 </div>
-
----
 
 ## 📖 背景
 
@@ -21,7 +22,6 @@
 
 "不高山"是江安校区的一处标志性地标，App 以此命名，寓意扎根校园、服务同学。
 
----
 
 ## ✨ 主要功能
 
@@ -60,17 +60,31 @@
 
 ## 📥 下载
 
-**前往 [Release 页面](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/latest) 下载最新版本**
+|最新稳定版|最新预览版|
+|--|--|
+|[![GitHub Release](https://img.shields.io/github/v/release/The-Brotherhood-of-SCU/Bugaoshan?style=flat-square&logo=github&label=Release)](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases)|[![GitHub Pre-release](https://img.shields.io/github/v/release/The-Brotherhood-of-SCU/Bugaoshan?include_prereleases&style=flat-square&logo=github&label=Preview)](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases)|
 
-> 📱 **iOS 与鸿蒙版本正在邀测中**，欢迎加入官方QQ群（1102483776）参与测试
 
----
+
+<div align="left">
+
+<a href="https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases/latest"><img src="https://raw.githubusercontent.com/Kunzisoft/Github-badge/main/get-it-on-github.png" alt="Get it on GitHub" width="217" align="middle"></a> &nbsp;&nbsp;&nbsp; <a href="https://apps.apple.com/cn/app/%E4%B8%8D%E9%AB%98%E5%B1%B1%E4%B8%8A/id6813305962"><img src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/zh-cn?size=250x83" alt="Download on the App Store" width="153" align="middle"></a> &nbsp;&nbsp;&nbsp; <a href="https://f-droid.org/packages/io.github.the_brotherhood_of_scu.bugaoshan"><img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" width="217" align="middle"></a>
+
+</div>
+
+按平台选择下载：
+
+- Android: [GitHub Releases](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases)、[F-Droid](https://f-droid.org/packages/io.github.the_brotherhood_of_scu.bugaoshan)
+- iOS: [App Store](https://apps.apple.com/cn/app/%E4%B8%8D%E9%AB%98%E5%B1%B1%E4%B8%8A/id6813305962)
+- macOS: [App Store](https://apps.apple.com/cn/app/%E4%B8%8D%E9%AB%98%E5%B1%B1%E4%B8%8A/id6813305962)、[macOS Releases](https://github.com/wjlfish/Bugaoshan-macos/releases)
+- Windows / Linux: [GitHub Releases](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases)
+- HarmonyOS: 正在邀测中，欢迎加入官方 QQ 群（1102483776）参与测试
+
 
 ## 🛠️ 开发
 
 如需参与开发或自行编译，请参阅 [CONTRIBUTING.md](CONTRIBUTING.md) 了解环境配置、构建命令等详细指引；当前架构与设计决策见 [工程文档](docs/README.md)。
 
----
 
 ## 💖 致谢与贡献者
 
@@ -78,7 +92,6 @@
 
 [![Contributors](https://contrib.rocks/image?repo=The-Brotherhood-of-SCU/Bugaoshan)](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/graphs/contributors)
 
----
 
 ## 📜️ 许可证
 
