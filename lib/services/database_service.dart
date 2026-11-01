@@ -41,7 +41,8 @@ class DatabaseService {
 
   /// 按实际表结构补齐当前所需字段，不依赖旧版本号推断字段是否存在。
   ///
-  /// 基础表由 [_createSchema] 先幂等创建，此处只添加缺失列，保留已有数据。
+  /// 必须在 [_createSchema] 之后调用，本方法假定 courses 表已存在。
+  /// 已有列和数据保持原样，只有缺失列才执行 ALTER TABLE。
   static Future<void> _ensureCourseColumns(DatabaseExecutor db) async {
     const definitions = {
       // v2: courses 增加 campus 列（教务处 campusName 字段）
@@ -85,7 +86,7 @@ class DatabaseService {
       () => openDatabase(
         path,
         onConfigure: (db) async {
-          // 为 Widget 等并发连接产生的短时锁冲突预留5秒等待。
+          // 为当前 App 连接配置5秒锁等待；Widget 的独立连接需单独配置。
           await db.rawQuery('PRAGMA busy_timeout = 5000');
         },
         onOpen: (db) async {
