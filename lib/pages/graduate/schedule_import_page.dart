@@ -307,14 +307,16 @@ class _GraduateScheduleImportPageState
     }
 
     try {
-      if (existingId != null) {
-        await provider.replaceScheduleCourses(existingId, courses);
-        await provider.switchSchedule(existingId);
-      } else {
-        await provider.addSchedule(config);
-        await provider.replaceScheduleCourses(config.id, courses);
-        await provider.switchSchedule(config.id);
-      }
+      await provider.runBatch(() async {
+        if (existingId != null) {
+          await provider.replaceScheduleCourses(existingId, courses);
+          await provider.switchSchedule(existingId);
+        } else {
+          await provider.addSchedule(config);
+          await provider.replaceScheduleCourses(config.id, courses);
+          await provider.switchSchedule(config.id);
+        }
+      });
       AppLog.i(_tag, '导入完成：${courses.length} 门课程 → $scheduleName');
       if (!mounted) return;
       setState(() => _importing = false);

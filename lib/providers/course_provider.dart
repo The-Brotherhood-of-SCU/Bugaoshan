@@ -23,6 +23,41 @@ class CourseProvider {
       ValueNotifier<List<ScheduleConfig>>([]);
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
 
+  /// 课表或课程数据变更版本号。
+  ///
+  /// 仅在实际增删改课表、课程、清空数据，或修改课表学期元数据（[ScheduleConfig.semesterName]、
+  /// [ScheduleConfig.academicYearCode]、[ScheduleConfig.termName]）时递增；单纯切换当前激活课表或修改
+  /// 非学期设置（如节次时间、总周数、作息设置等）不递增。
+  /// 支持通过 [runBatch] 在同一批次内合并多次写操作，仅在最外层批次执行完毕时递增一次。
+  final ValueNotifier<int> courseDataVersion = ValueNotifier<int>(0);
+
+  int _batchDepth = 0;
+  bool _pendingCourseDataVersionBump = false;
+
+  void _bumpCourseDataVersion() {
+    if (_batchDepth > 0) {
+      _pendingCourseDataVersionBump = true;
+      return;
+    }
+    courseDataVersion.value++;
+  }
+
+  /// 在同一批次内执行多次课表/课程写操作，仅在最外层批次结束时合并发布一次
+  /// [courseDataVersion] 变更，避免批量导入跨多个 await 触发重复的派生索引重建。
+  /// 若中途抛出异常但已有部分写操作落库，`finally` 仍会发布一次版本递增以保持一致性。
+  Future<T> runBatch<T>(Future<T> Function() action) async {
+    _batchDepth++;
+    try {
+      return await action();
+    } finally {
+      _batchDepth--;
+      if (_batchDepth == 0 && _pendingCourseDataVersionBump) {
+        _pendingCourseDataVersionBump = false;
+        courseDataVersion.value++;
+      }
+    }
+  }
+
   /// 当前数据库中是否存在课表。UI 据此在「暂无课表」空状态和 grid 之间切换。
   bool get hasSchedule => allSchedules.value.isNotEmpty;
 
@@ -64,6 +99,7 @@ class CourseProvider {
       // 空库首次导入时课表页网格会以未创建的控制器构建并抛空指针。
       await _db.addSchedule(config);
       await switchSchedule(config.id);
+      _bumpCourseDataVersion();
     });
   }
 
@@ -72,6 +108,7 @@ class CourseProvider {
       await _db.deleteSchedule(scheduleId);
       // Reload everything as current schedule might have changed
       await _loadData();
+      _bumpCourseDataVersion();
     });
   }
 
@@ -107,6 +144,7 @@ class CourseProvider {
     return AppLog.guard(_tag, '新增课程', () async {
       await _db.addCourse(course);
       courses.value = _db.getCourses();
+      _bumpCourseDataVersion();
       onCoursesChanged?.call();
     });
   }
@@ -115,6 +153,7 @@ class CourseProvider {
     return AppLog.guard(_tag, '修改课程', () async {
       await _db.updateCourse(course);
       courses.value = _db.getCourses();
+      _bumpCourseDataVersion();
       onCoursesChanged?.call();
     });
   }
@@ -123,18 +162,33 @@ class CourseProvider {
     return AppLog.guard(_tag, '删除课程', () async {
       await _db.deleteCourse(courseId);
       courses.value = _db.getCourses();
+      _bumpCourseDataVersion();
       onCoursesChanged?.call();
     });
   }
 
   Future<void> updateScheduleConfig(ScheduleConfig config) async {
     return AppLog.guard(_tag, '保存课表设置', () async {
+      final previous = _db
+          .getAllSchedules()
+          .where((s) => s.id == config.id)
+          .firstOrNull;
+      final semesterMetadataChanged =
+          previous == null ||
+          identical(previous, config) ||
+          previous.semesterName != config.semesterName ||
+          previous.academicYearCode != config.academicYearCode ||
+          previous.termName != config.termName;
+
       await _db.saveScheduleConfig(config);
       allSchedules.value = _db.getAllSchedules();
       if (config.id == _db.getCurrentScheduleId()) {
         scheduleConfig.value = config;
         // 非当前课表不影响当前课程展示，也无需刷新桌面组件。
         onCoursesChanged?.call();
+      }
+      if (semesterMetadataChanged) {
+        _bumpCourseDataVersion();
       }
     });
   }
@@ -149,6 +203,7 @@ class CourseProvider {
       if (scheduleId == _db.getCurrentScheduleId()) {
         courses.value = _db.getCourses();
       }
+      _bumpCourseDataVersion();
       onCoursesChanged?.call();
     });
   }
@@ -165,6 +220,7 @@ class CourseProvider {
     return AppLog.guard(_tag, '清空课表', () async {
       await _db.clearAllCourseData();
       await _loadData();
+      _bumpCourseDataVersion();
     });
   }
 }

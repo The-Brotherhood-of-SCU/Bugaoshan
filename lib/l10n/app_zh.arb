@@ -204,6 +204,14 @@
   "deleteCourseConfirm": "确定要删除这门课程吗？",
   "courseName": "课程名称",
   "teacher": "教师",
+  "courseTeacher": "授课教师：{teacher}",
+  "@courseTeacher": {
+    "placeholders": {
+      "teacher": {
+        "type": "String"
+      }
+    }
+  },
   "location": "教室",
   "courseColor": "课程颜色",
   "week": "周",

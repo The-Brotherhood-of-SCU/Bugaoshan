@@ -231,6 +231,14 @@
   "deleteCourseConfirm": "Are you sure you want to delete this course?",
   "courseName": "Course Name",
   "teacher": "Teacher",
+  "courseTeacher": "Instructor: {teacher}",
+  "@courseTeacher": {
+    "placeholders": {
+      "teacher": {
+        "type": "String"
+      }
+    }
+  },
   "location": "Location",
   "courseColor": "Course Color",
   "week": "Week",

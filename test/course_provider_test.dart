@@ -80,6 +80,63 @@ void main() {
     expect(provider.scheduleConfig.value?.id, 'A');
     expect(provider.allSchedules.value.single.id, 'A');
   });
+
+  test('runBatch 合并多个写操作只递增一次 courseDataVersion', () async {
+    final current = _schedule(id: 'A', name: '当前课表', weeksAgo: 1);
+    final database = _FakeDatabaseService(
+      currentScheduleId: current.id,
+      schedules: [current],
+    );
+    final provider = CourseProvider(database);
+
+    expect(provider.courseDataVersion.value, 0);
+
+    await provider.runBatch(() async {
+      await provider.addCourse(
+        Course(
+          id: 'c1',
+          name: '课程1',
+          teacher: '教师1',
+          location: '',
+          startWeek: 1,
+          endWeek: 16,
+          dayOfWeek: 1,
+          startSection: 1,
+          endSection: 2,
+          colorValue: 0,
+        ),
+      );
+      await provider.updateScheduleConfig(
+        current.copyWith(semesterName: '新课表名称'),
+      );
+      expect(provider.courseDataVersion.value, 0);
+    });
+
+    expect(provider.courseDataVersion.value, 1);
+  });
+
+  test('updateScheduleConfig 仅在学期元数据改变时递增 courseDataVersion', () async {
+    final current = _schedule(id: 'A', name: '当前课表', weeksAgo: 1);
+    final database = _FakeDatabaseService(
+      currentScheduleId: current.id,
+      schedules: [current],
+    );
+    final provider = CourseProvider(database);
+
+    expect(provider.courseDataVersion.value, 0);
+
+    // 修改非学期设置（周数、起始日期）不递增
+    await provider.updateScheduleConfig(
+      current.copyWith(totalWeeks: 18, semesterStartDate: _weeksAgo(3)),
+    );
+    expect(provider.courseDataVersion.value, 0);
+
+    // 修改学期名称递增
+    await provider.updateScheduleConfig(
+      current.copyWith(semesterName: '改名后的课表'),
+    );
+    expect(provider.courseDataVersion.value, 1);
+  });
 }
 
 ScheduleConfig _schedule({
@@ -131,6 +188,9 @@ class _FakeDatabaseService extends DatabaseService {
         if (schedule.id == config.id) config else schedule,
     ];
   }
+
+  @override
+  Future<void> addCourse(Course course) async {}
 }
 
 /// 模拟空库首次 addSchedule：初始无任何课表，落库与切换才有数据。
