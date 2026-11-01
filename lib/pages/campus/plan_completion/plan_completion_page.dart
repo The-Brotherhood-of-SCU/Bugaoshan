@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -13,7 +15,9 @@ import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
 class PlanCompletionPage extends StatefulWidget {
-  const PlanCompletionPage({super.key});
+  const PlanCompletionPage({super.key, this.initialTeacherIndex});
+
+  final CourseTeacherIndex? initialTeacherIndex;
 
   @override
   State<PlanCompletionPage> createState() => _PlanCompletionPageState();
@@ -21,40 +25,37 @@ class PlanCompletionPage extends StatefulWidget {
 
 class _PlanCompletionPageState extends State<PlanCompletionPage> {
   late final PlanCompletionProvider _provider;
-  CourseTeacherIndex? _teacherIndex;
+  late final CourseTeacherIndexController _teacherIndexController;
+  List<PlanCompletionPlan>? _lastPlans;
 
   @override
   void initState() {
     super.initState();
     _provider = getIt<PlanCompletionProvider>();
+    _lastPlans = _provider.plans;
+    _teacherIndexController = CourseTeacherIndexController(
+      initialIndex: widget.initialTeacherIndex,
+    );
     _provider.addListener(_onProviderUpdate);
     _provider.fetchPlanCompletion();
-    CourseTeacherIndex.revision.addListener(_loadTeacherIndex);
-    _loadTeacherIndex();
   }
 
   static final _passedIconRegExp = RegExp(r'fa-smile-o.*green');
   static final _passedCoursesRegExp = RegExp(r'已及格课程门数:(\d+)');
   static final _uncompletedCoursesRegExp = RegExp(r'必修课未修读:(\d+)');
 
-  Future<void> _loadTeacherIndex() async {
-    final index = await CourseTeacherIndex.load();
-    if (mounted) {
-      setState(() => _teacherIndex = index);
-    }
-  }
-
   @override
   void dispose() {
-    CourseTeacherIndex.revision.removeListener(_loadTeacherIndex);
+    _teacherIndexController.dispose();
     _provider.removeListener(_onProviderUpdate);
     super.dispose();
   }
 
   void _onProviderUpdate() {
     if (!mounted) return;
-    if (_teacherIndex == null) {
-      _loadTeacherIndex();
+    if (!identical(_lastPlans, _provider.plans)) {
+      _lastPlans = _provider.plans;
+      unawaited(_teacherIndexController.reload());
     }
     final error = _provider.error;
 
@@ -96,9 +97,6 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
                 onPressed: _provider.state == PlanCompletionLoadState.loading
                     ? null
                     : () {
-                        if (_teacherIndex == null) {
-                          _loadTeacherIndex();
-                        }
                         _provider.fetchPlanCompletion(forceRefresh: true);
                       },
               );
@@ -107,7 +105,11 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
         ],
       ),
       body: ListenableBuilder(
-        listenable: Listenable.merge([getIt<ScuAuthProvider>(), _provider]),
+        listenable: Listenable.merge([
+          getIt<ScuAuthProvider>(),
+          _provider,
+          _teacherIndexController,
+        ]),
         builder: (context, _) {
           final auth = getIt<ScuAuthProvider>();
           if (!auth.isLoggedIn) {
@@ -129,9 +131,6 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
       PlanCompletionLoadState.error => RetryableErrorWidget(
         errorType: _provider.error!,
         onRetry: () {
-          if (_teacherIndex == null) {
-            _loadTeacherIndex();
-          }
           _provider.fetchPlanCompletion();
         },
         iconSize: 56,
@@ -465,7 +464,7 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
     final isStudied = node.completed || node.gradeInfo.isNotEmpty;
 
     final teacher = (isStudied && node.courseName.isNotEmpty)
-        ? _teacherIndex?.getTeacher(
+        ? _teacherIndexController.index?.getTeacher(
             rawTermLabel: node.academicTerm,
             gradeInfo: node.gradeInfo,
             courseName: node.courseName,

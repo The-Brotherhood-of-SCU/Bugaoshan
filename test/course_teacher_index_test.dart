@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/scheme_score.dart';
@@ -311,12 +313,11 @@ void main() {
     });
   });
 
-  group('CourseTeacherIndex - 数据库集成与失效缓存测试', () {
+  group('CourseTeacherIndex - 数据库无状态加载测试', () {
     late Database db;
     late DatabaseService dbService;
 
     setUp(() async {
-      CourseTeacherIndex.invalidate();
       db = await databaseFactory.openDatabase(inMemoryDatabasePath);
       await db.execute('''
         CREATE TABLE metadata (
@@ -354,7 +355,6 @@ void main() {
     });
 
     tearDown(() async {
-      CourseTeacherIndex.invalidate();
       await db.close();
     });
 
@@ -391,7 +391,7 @@ void main() {
       );
     });
 
-    test('调用 invalidate() 后重新从数据库加载新数据', () async {
+    test('新增课程后再次调用 CourseTeacherIndex.load(dbService) 返回最新索引', () async {
       final config = _cfg(id: 'sch1', semesterName: '2024-2025学年秋');
       await dbService.addSchedule(config);
       await dbService.switchSchedule('sch1');
@@ -405,9 +405,8 @@ void main() {
         isNull,
       );
 
-      // 新增课程并使索引失效
+      // 新增课程
       await dbService.addCourse(_c('新加课程 (01)', '刘老师'));
-      CourseTeacherIndex.invalidate();
 
       final indexAfter = await CourseTeacherIndex.load(dbService);
       expect(
@@ -418,24 +417,173 @@ void main() {
         '刘老师',
       );
     });
+  });
 
-    test('调用 invalidate() 时 revision 版本号自增且通知监听者', () async {
-      final initialRevision = CourseTeacherIndex.revision.value;
-      var notified = 0;
-      void listener() => notified++;
-      CourseTeacherIndex.revision.addListener(listener);
+  group('CourseTeacherIndexController - 页面级控制器测试', () {
+    test('页面生命周期释放：dispose() 后 index 置空，且进行中的加载结果被丢弃并不触发通知', () async {
+      final completer = Completer<CourseTeacherIndex?>();
+      var notifyCount = 0;
 
-      try {
-        CourseTeacherIndex.invalidate();
-        expect(CourseTeacherIndex.revision.value, initialRevision + 1);
-        expect(notified, 1);
+      final controller = CourseTeacherIndexController(
+        initialIndex: CourseTeacherIndex.fromSchedules([]),
+        loader: ([db]) => completer.future,
+      );
+      controller.addListener(() => notifyCount++);
 
-        CourseTeacherIndex.invalidate();
-        expect(CourseTeacherIndex.revision.value, initialRevision + 2);
-        expect(notified, 2);
-      } finally {
-        CourseTeacherIndex.revision.removeListener(listener);
-      }
+      expect(controller.index, isNotNull);
+
+      // 触发异步加载
+      unawaited(controller.reload());
+
+      // 页面销毁：立即 dispose
+      controller.dispose();
+      expect(controller.index, isNull);
+
+      // 加载完成
+      completer.complete(
+        CourseTeacherIndex.fromSchedules([
+          (
+            config: _cfg(academicYear: '2024-2025', termName: '秋'),
+            courses: [_c('大学物理', '赵老师')],
+          ),
+        ]),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      // dispose 之后 index 依然为 null，且没有触发 notify
+      expect(controller.index, isNull);
+      expect(notifyCount, 0);
+    });
+
+    test('微任务合并：scheduleReload() 在同一事件循环内多次调用时仅触发一次重新加载', () async {
+      var loadCount = 0;
+      final controller = CourseTeacherIndexController(
+        initialIndex: CourseTeacherIndex.fromSchedules([]),
+        loader: ([db]) async {
+          loadCount++;
+          return CourseTeacherIndex.fromSchedules([]);
+        },
+      );
+
+      expect(loadCount, 0);
+
+      // 同一事件循环内多次调用 scheduleReload
+      controller.scheduleReload();
+      controller.scheduleReload();
+      controller.scheduleReload();
+
+      // 微任务执行前尚未加载
+      expect(loadCount, 0);
+
+      // 执行微任务
+      await Future<void>.delayed(Duration.zero);
+
+      expect(loadCount, 1);
+      controller.dispose();
+    });
+
+    test('异步竞态守卫：先发起的慢加载在后发起的快加载完成之后才返回时，旧结果不会覆盖新索引', () async {
+      final slowCompleter = Completer<CourseTeacherIndex?>();
+      final fastCompleter = Completer<CourseTeacherIndex?>();
+
+      final slowIndex = CourseTeacherIndex.fromSchedules([
+        (
+          config: _cfg(academicYear: '2024-2025', termName: '秋'),
+          courses: [_c('高数', '慢速旧老师')],
+        ),
+      ]);
+      final fastIndex = CourseTeacherIndex.fromSchedules([
+        (
+          config: _cfg(academicYear: '2024-2025', termName: '秋'),
+          courses: [_c('高数', '快速新老师')],
+        ),
+      ]);
+
+      var callIndex = 0;
+      final controller = CourseTeacherIndexController(
+        initialIndex: CourseTeacherIndex.fromSchedules([]),
+        loader: ([db]) {
+          callIndex++;
+          if (callIndex == 1) {
+            return slowCompleter.future;
+          } else {
+            return fastCompleter.future;
+          }
+        },
+      );
+
+      // 发起第 1 次慢加载
+      final reload1 = controller.reload();
+      // 紧接着发起第 2 次快加载
+      final reload2 = controller.reload();
+
+      // 快加载先完成
+      fastCompleter.complete(fastIndex);
+      await reload2;
+
+      expect(
+        controller.index?.getTeacher(
+          academicYear: '2024-2025',
+          termSeason: '秋',
+          courseName: '高数',
+        ),
+        '快速新老师',
+      );
+
+      // 慢加载后完成
+      slowCompleter.complete(slowIndex);
+      await reload1;
+
+      // 索引依然保持 fastIndex，旧结果被丢弃
+      expect(
+        controller.index?.getTeacher(
+          academicYear: '2024-2025',
+          termSeason: '秋',
+          courseName: '高数',
+        ),
+        '快速新老师',
+      );
+
+      controller.dispose();
+    });
+
+    test('初次加载失败后调用 reload() 可重试恢复', () async {
+      var loadCount = 0;
+      var shouldFail = true;
+
+      final controller = CourseTeacherIndexController(
+        initialIndex: null, // 触发初次异步加载
+        loader: ([db]) async {
+          loadCount++;
+          if (shouldFail) return null;
+          return CourseTeacherIndex.fromSchedules([
+            (
+              config: _cfg(academicYear: '2024-2025', termName: '秋'),
+              courses: [_c('大学物理', '赵老师')],
+            ),
+          ]);
+        },
+      );
+
+      // 等待初次加载完成（失败）
+      await Future<void>.delayed(Duration.zero);
+      expect(loadCount, 1);
+      expect(controller.index, isNull);
+
+      // 恢复状态并调用 reload() 重试
+      shouldFail = false;
+      await controller.reload();
+      expect(loadCount, 2);
+      expect(
+        controller.index?.getTeacher(
+          academicYear: '2024-2025',
+          termSeason: '秋',
+          courseName: '大学物理',
+        ),
+        '赵老师',
+      );
+
+      controller.dispose();
     });
   });
 

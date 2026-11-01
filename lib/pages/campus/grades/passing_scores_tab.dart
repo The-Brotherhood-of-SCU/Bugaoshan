@@ -10,41 +10,29 @@ import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'scheme_scores_tab.dart' show ScoreCardWidget;
 
 class PassingScoresTab extends StatefulWidget {
-  const PassingScoresTab({super.key, this.searchQuery = ''});
+  const PassingScoresTab({
+    super.key,
+    this.searchQuery = '',
+    this.teacherIndexController,
+  });
 
   final String searchQuery;
+  final CourseTeacherIndexController? teacherIndexController;
 
   @override
   State<PassingScoresTab> createState() => _PassingScoresTabState();
 }
 
 class _PassingScoresTabState extends State<PassingScoresTab> {
-  CourseTeacherIndex? _teacherIndex;
-
-  @override
-  void initState() {
-    super.initState();
-    CourseTeacherIndex.revision.addListener(_loadTeacherIndex);
-    _loadTeacherIndex();
-  }
-
-  @override
-  void dispose() {
-    CourseTeacherIndex.revision.removeListener(_loadTeacherIndex);
-    super.dispose();
-  }
-
-  Future<void> _loadTeacherIndex() async {
-    final index = await CourseTeacherIndex.load();
-    if (mounted) {
-      setState(() => _teacherIndex = index);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: getIt<GradesProvider>(),
+      listenable: widget.teacherIndexController != null
+          ? Listenable.merge([
+              getIt<GradesProvider>(),
+              widget.teacherIndexController!,
+            ])
+          : getIt<GradesProvider>(),
       builder: (context, _) {
         final provider = getIt<GradesProvider>();
         final errorKey = provider.passingError;
@@ -99,9 +87,6 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
           const SizedBox(height: 24),
           FilledButton.icon(
             onPressed: () {
-              if (_teacherIndex == null) {
-                _loadTeacherIndex();
-              }
               provider.refreshPassingScores();
             },
             icon: const Icon(Icons.refresh),
@@ -116,9 +101,6 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
     return RetryableErrorWidget(
       errorType: provider.passingError!,
       onRetry: () {
-        if (_teacherIndex == null) {
-          _loadTeacherIndex();
-        }
         provider.refreshPassingScores();
       },
       iconSize: 56,
@@ -147,7 +129,6 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
 
     return RefreshIndicator(
       onRefresh: () async {
-        await _loadTeacherIndex();
         await provider.refreshPassingScores();
       },
       child: CustomScrollView(
@@ -171,12 +152,13 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
                 itemCount: group.items.length,
                 itemBuilder: (context, i) {
                   final item = group.items[i];
-                  final teacher = _teacherIndex?.getTeacher(
-                    academicYear: item.academicYearCode,
-                    termSeason: item.termName,
-                    rawTermLabel: group.label,
-                    courseName: item.courseName,
-                  );
+                  final teacher = widget.teacherIndexController?.index
+                      ?.getTeacher(
+                        academicYear: item.academicYearCode,
+                        termSeason: item.termName,
+                        rawTermLabel: group.label,
+                        courseName: item.courseName,
+                      );
                   return ScoreCardWidget(item: item, teacher: teacher);
                 },
               ),

@@ -10,41 +10,29 @@ import 'package:bugaoshan/widgets/common/stat_item.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 
 class SchemeScoresTab extends StatefulWidget {
-  const SchemeScoresTab({super.key, this.searchQuery = ''});
+  const SchemeScoresTab({
+    super.key,
+    this.searchQuery = '',
+    this.teacherIndexController,
+  });
 
   final String searchQuery;
+  final CourseTeacherIndexController? teacherIndexController;
 
   @override
   State<SchemeScoresTab> createState() => _SchemeScoresTabState();
 }
 
 class _SchemeScoresTabState extends State<SchemeScoresTab> {
-  CourseTeacherIndex? _teacherIndex;
-
-  @override
-  void initState() {
-    super.initState();
-    CourseTeacherIndex.revision.addListener(_loadTeacherIndex);
-    _loadTeacherIndex();
-  }
-
-  @override
-  void dispose() {
-    CourseTeacherIndex.revision.removeListener(_loadTeacherIndex);
-    super.dispose();
-  }
-
-  Future<void> _loadTeacherIndex() async {
-    final index = await CourseTeacherIndex.load();
-    if (mounted) {
-      setState(() => _teacherIndex = index);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: getIt<GradesProvider>(),
+      listenable: widget.teacherIndexController != null
+          ? Listenable.merge([
+              getIt<GradesProvider>(),
+              widget.teacherIndexController!,
+            ])
+          : getIt<GradesProvider>(),
       builder: (context, _) {
         final provider = getIt<GradesProvider>();
         final errorKey = provider.schemeError;
@@ -99,9 +87,6 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
           const SizedBox(height: 24),
           FilledButton.icon(
             onPressed: () {
-              if (_teacherIndex == null) {
-                _loadTeacherIndex();
-              }
               provider.refreshSchemeScores();
             },
             icon: const Icon(Icons.refresh),
@@ -116,9 +101,6 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
     return RetryableErrorWidget(
       errorType: provider.schemeError!,
       onRetry: () {
-        if (_teacherIndex == null) {
-          _loadTeacherIndex();
-        }
         provider.refreshSchemeScores();
       },
       iconSize: 56,
@@ -149,7 +131,6 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
 
     return RefreshIndicator(
       onRefresh: () async {
-        await _loadTeacherIndex();
         await provider.refreshSchemeScores();
       },
       child: CustomScrollView(
@@ -189,12 +170,13 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
                 itemCount: group.items.length,
                 itemBuilder: (context, i) {
                   final item = group.items[i];
-                  final teacher = _teacherIndex?.getTeacher(
-                    academicYear: item.academicYearCode,
-                    termSeason: item.termName,
-                    rawTermLabel: group.label,
-                    courseName: item.courseName,
-                  );
+                  final teacher = widget.teacherIndexController?.index
+                      ?.getTeacher(
+                        academicYear: item.academicYearCode,
+                        termSeason: item.termName,
+                        rawTermLabel: group.label,
+                        courseName: item.courseName,
+                      );
                   return ScoreCardWidget(item: item, teacher: teacher);
                 },
               ),

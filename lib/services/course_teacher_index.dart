@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/models/course.dart';
@@ -5,7 +7,7 @@ import 'package:bugaoshan/models/schedule_config.dart';
 import 'package:bugaoshan/services/database_service.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 
-/// 课程历史教师索引服务。
+/// 课程历史教师索引。
 ///
 /// 利用用户已导入的历史课表数据，为成绩页和培养方案完成度页提供
 /// 基于「学期 + 归一化课程名」的已修课程授课教师映射。
@@ -24,56 +26,17 @@ class CourseTeacherIndex {
 
   CourseTeacherIndex._(this._index);
 
-  static CourseTeacherIndex? _cachedInstance;
-  static Future<CourseTeacherIndex?>? _buildingFuture;
-
-  /// 索引失效与版本更新通知。
+  /// 纯无状态构建教师索引（不缓存静态实例）。
   ///
-  /// 当 [invalidate] 被调用时版本号递增，页面可监听此通知自动重新加载最新索引。
-  static final ValueNotifier<int> revision = ValueNotifier<int>(0);
-
-  /// 使当前内存中的教师索引失效。
-  ///
-  /// 应在课表新增、删除、课程替换、课程编辑以及学期元数据更新后调用。
-  static void invalidate() {
-    _cachedInstance = null;
-    _buildingFuture = null;
-    revision.value++;
-  }
-
-  /// 测试用：直接注入预先构建好的索引实例。
-  @visibleForTesting
-  static void setInstanceForTesting(CourseTeacherIndex? instance) {
-    _cachedInstance = instance;
-    _buildingFuture = null;
-    revision.value++;
-  }
-
-  /// 获取或异步构建教师索引。
-  ///
-  /// 优先返回内存缓存；若正在加载中则合并等待请求。
-  /// 可传入自定义 [db]，默认从 GetIt 获取已注册的 [DatabaseService]。
-  /// 若数据库未就绪或加载失败则记录日志并安全返回 null。
+  /// 若传入 [db] 则使用 [db]；否则直接从 GetIt 获取已注册的 [DatabaseService]。
+  /// 若加载失败则记录日志并安全返回 null。
   static Future<CourseTeacherIndex?> load([DatabaseService? db]) async {
-    if (_cachedInstance != null) return _cachedInstance;
-    if (_buildingFuture != null) return _buildingFuture;
-
-    final future = _safeBuild(db);
-    _buildingFuture = future;
-    return future;
-  }
-
-  static Future<CourseTeacherIndex?> _safeBuild(DatabaseService? db) async {
     try {
       final database = db ?? getIt<DatabaseService>();
-      final instance = await _build(database);
-      _cachedInstance = instance;
-      return instance;
+      return await _build(database);
     } catch (e, st) {
       AppLog.e(_tag, '加载教师索引失败', error: e, stackTrace: st);
       return null;
-    } finally {
-      _buildingFuture = null;
     }
   }
 
@@ -145,7 +108,14 @@ class CourseTeacherIndex {
     return '$startYear-${startYear + 1}_$season';
   }
 
-  /// 从给定的课表及课程列表构建索引。
+  /// 从给定的课表及课程列表构建不可变索引。
+  ///
+  /// 降级路径说明：
+  /// - 教务在线导入的课表带有 [ScheduleConfig.academicYearCode] 与
+  ///   [ScheduleConfig.termName]，重命名课表不会影响匹配；
+  /// - 手动新建、历史旧数据或旧版分享 JSON 导入的课表仅能通过
+  ///   [ScheduleConfig.semesterName] 解析学期；若用户将其重命名为
+  ///   「大二上」等不含学年学期的名称，该学期将降级为不展示教师。
   factory CourseTeacherIndex.fromSchedules(
     List<({ScheduleConfig config, List<Course> courses})> schedules,
   ) {
@@ -223,4 +193,70 @@ class CourseTeacherIndex {
 
   String? _lookup(String termKey, String normName) =>
       _index['$termKey::$normName'];
+}
+
+/// 页面级课程教师索引控制器。
+///
+/// 生命周期严格绑定于所属页面（由 [GradesPage] 或 [PlanCompletionPage]
+/// 在其 State 中创建与销毁），作为 API 数据的派生状态存在。
+/// 不监听任何全局 Provider；由所在页面在接口数据（成绩、培养方案）发生变更时触发重新加载。
+/// 支持微任务合并连续变更、异步竞态守卫与页面卸载守卫。
+class CourseTeacherIndexController extends ChangeNotifier {
+  CourseTeacherIndexController({
+    DatabaseService? database,
+    CourseTeacherIndex? initialIndex,
+    Future<CourseTeacherIndex?> Function([DatabaseService? db])? loader,
+  }) : _database = database,
+       _loader = loader ?? CourseTeacherIndex.load,
+       _index = initialIndex {
+    if (initialIndex == null) {
+      unawaited(reload());
+    }
+  }
+
+  final DatabaseService? _database;
+  final Future<CourseTeacherIndex?> Function([DatabaseService? db]) _loader;
+
+  CourseTeacherIndex? _index;
+  int _loadGeneration = 0;
+  bool _reloadScheduled = false;
+  bool _disposed = false;
+
+  /// 当前已就绪的教师索引；若尚未加载完成或加载失败则为 null。
+  CourseTeacherIndex? get index => _index;
+
+  /// 调度微任务合并同一事件循环内的多次重新加载请求。
+  void scheduleReload() {
+    if (_disposed || _reloadScheduled) return;
+    _reloadScheduled = true;
+    scheduleMicrotask(() {
+      _reloadScheduled = false;
+      if (!_disposed) {
+        unawaited(reload());
+      }
+    });
+  }
+
+  /// 重新从数据库加载教师索引。
+  ///
+  /// 具备异步竞态守卫：若加载期间有更新的请求发起，较早发起的请求结果将被丢弃。
+  Future<void> reload() async {
+    if (_disposed) return;
+    final generation = ++_loadGeneration;
+    final loaded = await _loader(_database);
+    if (_disposed || generation != _loadGeneration) return;
+
+    if (!identical(_index, loaded)) {
+      _index = loaded;
+      notifyListeners();
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_disposed) return;
+    _disposed = true;
+    _index = null;
+    super.dispose();
+  }
 }
