@@ -49,7 +49,7 @@ class UpdateProvider {
 
   /// 当前正在下载的版本号（null 表示当前无下载任务）。
   ///
-  /// 用于多入口 UI（开发者页的正式版/预览版卡片等）区分「正在下载的是哪个版本」，
+  /// 用于多入口 UI（开发者页面的正式版/预览版卡片等）区分「正在下载的是哪个版本」，
   /// 避免所有入口共用 [isDownloading] 导致非当前下载的入口也展示同一进度。
   final ValueNotifier<String?> downloadingVersion = ValueNotifier(null);
 
