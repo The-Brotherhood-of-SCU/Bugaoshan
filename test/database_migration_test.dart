@@ -56,6 +56,52 @@ void main() {
     ]);
   });
 
+  test('version zero preserves existing tables and records', () async {
+    final course = await _createDatabaseFixture(
+      path,
+      version: 2,
+      missingColumns: {'custom_weeks'},
+    );
+    var db = await openDatabase(path);
+    database = db;
+    await db.setVersion(0);
+    await db.close();
+    database = null;
+
+    db = await DatabaseService().openDatabaseAtPath(path);
+    database = db;
+    expect(await db.getVersion(), 3);
+    expect(await db.query('metadata'), [_metadata]);
+    expect(await db.query('schedules'), [_schedule]);
+    expect(await db.query('courses'), [
+      {...course, 'custom_weeks': null},
+    ]);
+    expect(logger.entries, isEmpty);
+  });
+
+  test('a missing courses table preserves existing schedules', () async {
+    await _createDatabaseFixture(path, version: 2);
+    var db = await openDatabase(path);
+    database = db;
+    await db.execute('DROP TABLE courses');
+    await db.close();
+    database = null;
+
+    db = await DatabaseService().openDatabaseAtPath(path);
+    database = db;
+    expect(await db.getVersion(), 3);
+    expect(await db.query('metadata'), [_metadata]);
+    expect(await db.query('schedules'), [_schedule]);
+    expect(await db.query('courses'), isEmpty);
+    final columns = await db.rawQuery('PRAGMA table_info(courses)');
+    expect(
+      columns.map((column) => column['name']),
+      containsAll(['id', 'schedule_id', 'campus', 'custom_weeks']),
+    );
+    expect(await db.query('balance_records'), isEmpty);
+    expect(logger.entries, isEmpty);
+  });
+
   test('existing columns and values survive repeated opens', () async {
     final course = await _createDatabaseFixture(path, version: 2);
 
@@ -113,6 +159,8 @@ void main() {
     database = db;
 
     expect(await db.getVersion(), 3);
+    final timeout = await db.rawQuery('PRAGMA busy_timeout');
+    expect(timeout.single.values.single, 5000);
     for (final table in ['metadata', 'schedules', 'courses', 'balance_records']) {
       expect(await db.query(table), isEmpty);
     }

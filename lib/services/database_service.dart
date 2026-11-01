@@ -41,7 +41,7 @@ class DatabaseService {
 
   /// 按实际表结构补齐当前所需字段，不依赖旧版本号推断字段是否存在。
   ///
-  /// 已有列和数据保持原样，只有缺失列才执行 ALTER TABLE。
+  /// 基础表由 [_createSchema] 先幂等创建，此处只添加缺失列，保留已有数据。
   static Future<void> _ensureCourseColumns(DatabaseExecutor db) async {
     const definitions = {
       // v2: courses 增加 campus 列（教务处 campusName 字段）
@@ -78,13 +78,16 @@ class DatabaseService {
   /// 版本3及以上视为已具备当前结构，跳过补列、补表和迁移事务。
   /// 不向 sqflite 传 version，避免它回写更低的版本号。
   /// 打开或修复失败时记录原始异常和堆栈，并继续向上传播。
-  @visibleForTesting
   Future<Database> openDatabaseAtPath(String path) {
     return AppLog.guard<Database>(
       _tag,
       '打开或修复数据库',
       () => openDatabase(
         path,
+        onConfigure: (db) async {
+          // 为 Widget 等并发连接产生的短时锁冲突预留5秒等待。
+          await db.rawQuery('PRAGMA busy_timeout = 5000');
+        },
         onOpen: (db) async {
           final version = await db.getVersion();
           if (_canSkipSchemaRepair(version)) return;
@@ -95,9 +98,8 @@ class DatabaseService {
             final currentVersion = rows.single['user_version'] as int;
             if (_canSkipSchemaRepair(currentVersion)) return;
 
-            if (currentVersion == 0) {
-              await _createSchema(txn);
-            }
+            // 旧库可能保留了表却丢失版本号，也可能只缺少部分基础表。
+            await _createSchema(txn);
             await _ensureCourseColumns(txn);
             await _createBalanceRecordsTable(txn);
             await txn.execute('PRAGMA user_version = $_schemaVersion');
@@ -109,19 +111,19 @@ class DatabaseService {
 
   Future<void> _createSchema(DatabaseExecutor db) async {
     await db.execute('''
-      CREATE TABLE metadata (
+      CREATE TABLE IF NOT EXISTS metadata (
         key TEXT PRIMARY KEY,
         value TEXT NOT NULL
       )
     ''');
     await db.execute('''
-      CREATE TABLE schedules (
+      CREATE TABLE IF NOT EXISTS schedules (
         id TEXT PRIMARY KEY,
         config_json TEXT NOT NULL
       )
     ''');
     await db.execute('''
-      CREATE TABLE courses (
+      CREATE TABLE IF NOT EXISTS courses (
         id TEXT PRIMARY KEY,
         schedule_id TEXT NOT NULL,
         name TEXT,
