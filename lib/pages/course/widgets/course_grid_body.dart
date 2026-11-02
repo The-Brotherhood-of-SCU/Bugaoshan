@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/models/date_display_format.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
 import 'grid_day_column.dart';
 import 'grid_header.dart';
@@ -33,6 +34,9 @@ class CourseGridHeader extends StatelessWidget {
   final bool showWeekend;
   final bool showAllWeeks;
   final bool showHeaderDates;
+
+  /// 表头日期的「月/日」顺序，由调用方从全局设置解析后传入。
+  final DateDisplayFormat dateFormat;
   final void Function(DateTime date, SpecialDayInfo info)? onSpecialDayTap;
 
   const CourseGridHeader({
@@ -41,6 +45,7 @@ class CourseGridHeader extends StatelessWidget {
     required this.displayWeek,
     required this.hasBackground,
     required this.showWeekend,
+    required this.dateFormat,
     this.showAllWeeks = false,
     this.showHeaderDates = true,
     this.onSpecialDayTap,
@@ -60,6 +65,7 @@ class CourseGridHeader extends StatelessWidget {
       hasBackground: hasBackground,
       sectionWidth: kCourseGridSectionWidth,
       showWeekend: showWeekend,
+      dateFormat: dateFormat,
       onSpecialDayTap: onSpecialDayTap,
     );
   }

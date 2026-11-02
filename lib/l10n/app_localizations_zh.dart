@@ -2117,14 +2117,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String dateMonthDayCompact(int month, int day) {
-    return '$month/$day';
-  }
-
-  @override
-  String dateYearMonthDay(int year, int month, int day) {
-    return '$year/$month/$day';
-  }
+  String get dateFormatSetting => '日期格式';
 
   @override
   String get holidayLabel => '假';

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/models/date_display_format.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
 
@@ -12,6 +13,9 @@ class GridHeaderRow extends StatelessWidget {
   final bool hasBackground;
   final bool showWeekend;
   final double sectionWidth;
+
+  /// 日期列「月/日」的先后顺序，由调用方从全局设置解析后传入。
+  final DateDisplayFormat dateFormat;
   final void Function(DateTime date, SpecialDayInfo info)? onSpecialDayTap;
 
   const GridHeaderRow({
@@ -21,6 +25,7 @@ class GridHeaderRow extends StatelessWidget {
     required this.hasBackground,
     required this.showWeekend,
     required this.sectionWidth,
+    required this.dateFormat,
     this.onSpecialDayTap,
   });
 
@@ -158,9 +163,11 @@ class GridHeaderRow extends StatelessWidget {
                             FittedBox(
                               fit: BoxFit.scaleDown,
                               child: Text(
-                                // 窄列宽下用「10/19」而非「10月19日」：低分辨率屏上
-                                // 5~7 列平摊后每列只有 60px 左右，中文格式会被压缩得很难看。
-                                l10n.dateMonthDayCompact(date.month, date.day),
+                                // 窄列宽下固定用补零数字（10/19）：低分辨率屏上
+                                // 5~7 列平摊后每列只有 60px 上下，中文的
+                                // 「10月19日」会被压得难以辨认，定宽数字则不会被
+                                // 语言文案长度牵着走。
+                                dateFormat.formatMonthDay(date),
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   fontSize: 10,
                                   fontWeight: isToday

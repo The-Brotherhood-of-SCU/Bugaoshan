@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart'
     show Colors, Curve, Curves, ThemeMode, TimeOfDay;
 import 'package:bugaoshan/models/background_crop.dart';
+import 'package:bugaoshan/models/date_display_format.dart';
 import 'package:bugaoshan/models/reminder_plan.dart';
 import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/models/widget_appearance.dart';
@@ -46,6 +47,7 @@ const String _keyForceCaptchaForDownload = 'forceCaptchaForDownload';
 const String _keyEnablePageTransitionAnimation =
     'enablePageTransitionAnimation';
 const String _keyStudentType = 'studentType';
+const String _keyDateDisplayFormat = 'dateDisplayFormat';
 // ── 本地提醒（见 docs/decisions 与 issue #358）───────────────────────
 const String _keyReminderEnabled = 'reminder_enabled';
 const String _keyReminderLeadMinutes = 'reminder_lead_minutes';
@@ -140,6 +142,13 @@ class AppConfigProvider {
   final ValueNotifier<bool> enableDockSwitchAnimation = ValueNotifier<bool>(
     true,
   );
+
+  /// 课表日期格式。null 表示跟随系统语言（默认），用户可显式覆盖。
+  ///
+  /// 默认从 locale 映射而不是硬编码某一国写法：中文系统给 MM/DD/YYYY，
+  /// 德语系统给 DD/MM/YYYY，都不需要用户先改一次设置。
+  final ValueNotifier<DateDisplayFormat?> dateDisplayFormat =
+      ValueNotifier<DateDisplayFormat?>(null);
 
   /// 学生身份（本科生 / 研究生），决定课表导入入口与校园页功能分区展示范围。
   final ValueNotifier<StudentType> studentType = ValueNotifier<StudentType>(
@@ -276,6 +285,13 @@ class AppConfigProvider {
         _sharedPreferences.getBool(_keyForceCaptchaForDownload) ?? false;
     enableDockSwitchAnimation.value =
         _sharedPreferences.getBool(_keyEnablePageTransitionAnimation) ?? true;
+    final savedDateFormat = _sharedPreferences.getInt(_keyDateDisplayFormat);
+    dateDisplayFormat.value =
+        savedDateFormat != null &&
+            savedDateFormat >= 0 &&
+            savedDateFormat < DateDisplayFormat.values.length
+        ? DateDisplayFormat.values[savedDateFormat]
+        : null;
     final studentTypeIndex =
         _sharedPreferences.getInt(_keyStudentType) ??
         StudentType.undergraduate.index;
@@ -476,6 +492,14 @@ class AppConfigProvider {
     });
     studentType.addListener(() {
       _sharedPreferences.setInt(_keyStudentType, studentType.value.index);
+    });
+    dateDisplayFormat.addListener(() {
+      final value = dateDisplayFormat.value;
+      if (value == null) {
+        _sharedPreferences.remove(_keyDateDisplayFormat);
+      } else {
+        _sharedPreferences.setInt(_keyDateDisplayFormat, value.index);
+      }
     });
     reminderEnabled.addListener(() {
       _sharedPreferences.setBool(_keyReminderEnabled, reminderEnabled.value);
