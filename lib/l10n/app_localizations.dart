@@ -3409,12 +3409,6 @@ abstract class AppLocalizations {
   /// **'Price'**
   String get balanceTrendTooltipPrice;
 
-  /// No description provided for @balanceTrendUnitPerDay.
-  ///
-  /// In en, this message translates to:
-  /// **'CNY/day'**
-  String get balanceTrendUnitPerDay;
-
   /// No description provided for @balanceTrendUnitYuanPerKwh.
   ///
   /// In en, this message translates to:
@@ -3636,12 +3630,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Network'**
   String get dockLabelNetworkDevice;
-
-  /// No description provided for @dockLabelPasspoint.
-  ///
-  /// In en, this message translates to:
-  /// **'Passive'**
-  String get dockLabelPasspoint;
 
   /// No description provided for @dockLabelBalanceQuery.
   ///
@@ -6790,7 +6778,7 @@ abstract class AppLocalizations {
   /// No description provided for @logPersistenceActive.
   ///
   /// In en, this message translates to:
-  /// **'Warnings and errors are saved to bugaoshan.log (about 6 MB, rotating)'**
+  /// **'Warnings and errors are saved(about 6 MB)'**
   String get logPersistenceActive;
 
   /// No description provided for @logPersistenceRetryHint.

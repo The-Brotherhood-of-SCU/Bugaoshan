@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/pages/campus/passpoint/passpoint_page.dart';
+import 'package:bugaoshan/pages/campus_page/list_card.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/network_device_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
@@ -11,6 +13,7 @@ import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
+import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
 class NetworkDevicePage extends StatefulWidget {
@@ -83,11 +86,27 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
             _buildRefreshErrorBanner(l10n, devices.error!, devices.refresh),
             const SizedBox(height: 16),
           ],
+          _buildPasspointEntry(l10n),
+          const SizedBox(height: 16),
           _buildUserInfoCard(l10n, userInfo.profile),
           const SizedBox(height: 16),
           _buildDeviceListCard(l10n, devices),
         ],
       ),
+    );
+  }
+
+  /// 无感认证入口：作为校园网的子功能，不再单独占用校园页 / dock 入口。
+  Widget _buildPasspointEntry(AppLocalizations l10n) {
+    return CampusListCard(
+      icon: Icons.wifi_password_outlined,
+      title: l10n.passpointTitle,
+      desc: l10n.passpointDesc,
+      trailing: Icon(
+        Icons.chevron_right,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+      onTap: () => popupOrNavigate(context, const PasspointPage()),
     );
   }
 
@@ -210,10 +229,15 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
     AppLocalizations l10n,
     NetworkDeviceProvider provider,
   ) {
-    final appConfigService = getIt<AppConfigProvider>();
+    final duration = getIt<AppConfigProvider>().cardSizeAnimationDuration.value;
+    // 下线设备后会重新拉取列表，用设备签名作为 key 触发淡入淡出，
+    // 让列表替换不是瞬间跳变。
+    final deviceSignature = provider.devices
+        .map((device) => '${device['device_id']}:${device['ip']}')
+        .join(',');
 
     return AnimatedSize(
-      duration: appConfigService.cardSizeAnimationDuration.value,
+      duration: duration,
       curve: appCurve,
       alignment: Alignment.topCenter,
       child: CardWithTitle(
@@ -221,26 +245,42 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
         icon: const Icon(Icons.devices_outlined),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (provider.devices.isEmpty)
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      l10n.noData,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+          child: AnimatedSwitcher(
+            duration: duration,
+            switchInCurve: appCurve,
+            switchOutCurve: appCurve,
+            // 默认居中 Stack 在行数变化时会让新旧内容上下错位，
+            // 这里统一顶部对齐后交叉淡入淡出。
+            layoutBuilder: (currentChild, previousChildren) => Stack(
+              alignment: Alignment.topLeft,
+              children: [...previousChildren, ?currentChild],
+            ),
+            child: provider.devices.isEmpty
+                ? _buildEmptyDevices(l10n)
+                : Column(
+                    key: ValueKey(deviceSignature),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ...provider.devices.map(
+                        (device) => _buildDeviceItem(device, l10n, provider),
                       ),
-                    ),
+                    ],
                   ),
-                )
-              else
-                ...provider.devices.map(
-                  (device) => _buildDeviceItem(device, l10n, provider),
-                ),
-            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyDevices(AppLocalizations l10n) {
+    return Center(
+      key: const ValueKey('empty_devices'),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Text(
+          l10n.noData,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
       ),
@@ -255,9 +295,17 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
     final deviceId = device['device_id']?.toString();
     final isThisDevice =
         provider.isOfflining && provider.offliningDeviceId == deviceId;
-    return Container(
+    final scheme = Theme.of(context).colorScheme;
+    return AnimatedContainer(
+      duration: getIt<AppConfigProvider>().cardSizeAnimationDuration.value,
+      curve: appCurve,
       padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
+        // 下线请求期间高亮该行，完成/失败后颜色平滑淡出。
+        color: isThisDevice
+            ? scheme.errorContainer.withValues(alpha: 0.3)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(AppShapes.small),
         border: Border(
           bottom: BorderSide(color: Theme.of(context).dividerColor),
         ),
