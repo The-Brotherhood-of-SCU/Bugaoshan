@@ -1,6 +1,6 @@
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/services/api/zhjw_api_service.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/zhjw/zhjw_api_service.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -55,11 +55,16 @@ void main() {
       expect(failure!.undergradOnly, isFalse);
     });
 
-    test('302 重定向与登录页 HTML 是打标强证据', () {
+    test('302 重定向、401/403 与登录页 HTML 是打标强证据', () {
       expect(
         ZhjwApiService.classifyZhjwSessionFailure('', 302)!.undergradOnly,
         isTrue,
       );
+      for (final status in const [401, 403]) {
+        final failure = ZhjwApiService.classifyZhjwSessionFailure('', status);
+        expect(failure, isNotNull);
+        expect(failure!.undergradOnly, isTrue);
+      }
       final loginPage = ZhjwApiService.classifyZhjwSessionFailure(
         '<html><body><form action="/login">请登录</form></body></html>',
         200,

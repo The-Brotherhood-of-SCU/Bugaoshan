@@ -6,11 +6,12 @@ import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/services/api/zhjw_api_service.dart';
-import 'package:bugaoshan/services/auth/cookie_client.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
-import 'package:bugaoshan/services/auth/zhjw_auth.dart';
+import 'package:bugaoshan/scu_backend/zhjw/zhjw_api_service.dart';
+import 'package:bugaoshan/scu_backend/core/api_session.dart';
+import 'package:bugaoshan/scu_backend/core/cookie_client.dart';
+import 'package:bugaoshan/scu_backend/core/scu_auth.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/zhjw/zhjw_auth.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 
 void main() {
@@ -102,6 +103,86 @@ void main() {
     expect(plans[1].id, '202601221181');
     expect(plans[1].name, '生成式人工智能与影视工业化（微专业）教学计划');
     expect(plans[1].nodes.single.name, '微专业方案');
+  });
+
+  test('fetchPlanCompletion: session expiry retries the whole flow once', () async {
+    var indexCalls = 0;
+    var firstDetailCalls = 0;
+    var secondDetailCalls = 0;
+    const indexHtml = '''
+        <html>
+          <button class="btn btn-success btn-round" title="广播电视编导培养方案(10692)" onclick="getPyfaIndex(&#39;10692&#39;);return false;">
+            广播电视编导培养方案 (主修)
+          </button>
+          <button class="btn btn-success btn-round" title="生成式人工智能与影视工业化（微专业）教学计划(202601221181)" onclick="getPyfaIndex(&#39;202601221181&#39;);return false;">
+            生成式人工智能与影视工业化（微专业）教学计划
+          </button>
+        </html>
+      ''';
+    const loginPage = '''
+        <html>
+        <head><title>登录</title></head>
+        <body><form action="/j_spring_security_check"></form></body>
+        </html>
+      ''';
+
+    final client = CookieClient(
+      inner: MockClient((request) async {
+        http.Response html(String body) => http.Response.bytes(
+          utf8.encode(body),
+          200,
+          headers: const {'content-type': 'text/html; charset=utf-8'},
+        );
+        switch (request.url.path) {
+          case '/student/integratedQuery/planCompletion/index':
+            indexCalls++;
+            return html(indexHtml);
+          case '/student/integratedQuery/planCompletion/getPyfaIndex/10692':
+            firstDetailCalls++;
+            return html(
+              '<html><script>var zNodes = [${_nodeJson('a', '-1', '主修方案')}];</script></html>',
+            );
+          case '/student/integratedQuery/planCompletion/getPyfaIndex/202601221181':
+            secondDetailCalls++;
+            if (secondDetailCalls == 1) return html(loginPage);
+            return html(
+              '<html><script>var zNodes = [${_nodeJson('b', '-1', '微专业方案')}];</script></html>',
+            );
+        }
+        return http.Response(
+          'route not found: ${request.url.path}',
+          404,
+          request: request,
+        );
+      }),
+    );
+
+    var invalidateCount = 0;
+    final session = ApiSession(
+      getClient: () async => client,
+      invalidate: () => invalidateCount++,
+      baseUrl: Uri.parse(kZhjwBase),
+      logTag: 'TestZhjw',
+      sessionExpiryChecker: (body, status) {
+        final failure = ZhjwApiService.classifyZhjwSessionFailure(body, status);
+        if (failure != null) throw failure;
+      },
+    );
+    final auth = ZhjwAuth(
+      _TestScuAuth(prefs, logger: logger, client: client),
+      logger: logger,
+    );
+    addTearDown(auth.dispose);
+    final api = ZhjwApiService(auth, session: session);
+
+    final plans = await api.fetchPlanCompletion();
+    expect(plans, hasLength(2));
+    // 整个 index + 详情页流程只允许一次 invalidate / 重认证。
+    expect(invalidateCount, 1);
+    // 业务流级重试会重放已成功的 index 与第一个详情页；逐请求重试则不会。
+    expect(indexCalls, 2);
+    expect(firstDetailCalls, 2);
+    expect(secondDetailCalls, 2);
   });
 
   test(

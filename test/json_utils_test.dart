@@ -101,4 +101,20 @@ void main() {
       expect(safeBool('yes', fallback: true), isTrue);
     });
   });
+
+  group('tryJsonStringField', () {
+    test('读取指定字符串字段并保留原值', () {
+      expect(tryJsonStringField('{"m":"设备不存在"}', 'm'), '设备不存在');
+      expect(tryJsonStringField('{"info":" 请重新登录 "}', 'info'), ' 请重新登录 ');
+    });
+
+    test('缺失/类型不符/空白/非 JSON 返回 null', () {
+      expect(tryJsonStringField('{"m":"x"}', 'info'), isNull);
+      expect(tryJsonStringField('{"m":1}', 'm'), isNull);
+      expect(tryJsonStringField('{"m":"  "}', 'm'), isNull);
+      expect(tryJsonStringField('[]', 'm'), isNull);
+      expect(tryJsonStringField('<html>oops</html>', 'm'), isNull);
+      expect(tryJsonStringField('', 'm'), isNull);
+    });
+  });
 }

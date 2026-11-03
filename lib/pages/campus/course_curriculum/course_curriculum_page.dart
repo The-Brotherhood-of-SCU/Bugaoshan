@@ -3,7 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/course_curriculum/course_curriculum_detail_page.dart';
 import 'package:bugaoshan/pages/campus/filter_input_decoration.dart';
-import 'package:bugaoshan/pages/campus/models/course_curriculum_model.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/course_curriculum_model.dart';
 import 'package:bugaoshan/providers/course_curriculum_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';

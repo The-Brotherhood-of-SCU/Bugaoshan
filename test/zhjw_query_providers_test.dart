@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:bugaoshan/pages/campus/exam_plan/models/exam_info.dart';
-import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart';
-import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/exam_info.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/class_schedule_inquiry_model.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/classroom_model.dart';
 import 'package:bugaoshan/providers/class_schedule_inquiry_provider.dart';
 import 'package:bugaoshan/providers/classroom_provider.dart';
 import 'package:bugaoshan/providers/exam_plan_provider.dart';
-import 'package:bugaoshan/services/api/zhjw_api_service.dart';
+import 'package:bugaoshan/scu_backend/zhjw/zhjw_api_service.dart';
 
 void main() {
   test('ClassroomProvider caches availability by building and date', () async {

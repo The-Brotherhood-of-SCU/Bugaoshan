@@ -1,5 +1,5 @@
 import 'package:bugaoshan/providers/grades_provider.dart';
-import 'package:bugaoshan/services/api/zhjw_api_service.dart';
+import 'package:bugaoshan/scu_backend/zhjw/zhjw_api_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

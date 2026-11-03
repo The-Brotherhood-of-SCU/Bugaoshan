@@ -49,6 +49,23 @@ List<dynamic> parseJsonList(
   }
 }
 
+/// 从 JSON 对象读取指定字符串字段。
+///
+/// 解析失败、字段不存在、类型不是 String 或内容为空白时返回 null。
+/// 字段名由调用方决定（各子系统信封不同），这里不做跨后端猜测。
+String? tryJsonStringField(String body, String key) {
+  try {
+    final decoded = jsonDecode(body);
+    if (decoded is Map) {
+      final value = decoded[key];
+      if (value is String && value.trim().isNotEmpty) return value;
+    }
+  } on FormatException {
+    return null;
+  }
+  return null;
+}
+
 // ── 手写 JSON 解析的安全取值 helper ─────────────────────────────────
 //
 // 统一手写 fromJson 中的宽松取值模式，替代各模型里重复的

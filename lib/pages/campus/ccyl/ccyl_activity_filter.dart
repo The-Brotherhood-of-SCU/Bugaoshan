@@ -7,7 +7,7 @@
 library;
 
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_activity_phase.dart';
-import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
+import 'package:bugaoshan/scu_backend/ccyl/models/ccyl_models.dart';
 
 /// 活动等级筛选选项（code 透传服务端，name 用于展示）。
 class CcylLevelOption {

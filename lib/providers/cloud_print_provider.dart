@@ -5,10 +5,10 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:bugaoshan/models/cloud_print.dart';
-import 'package:bugaoshan/services/api/cloud_print_api_service.dart';
-import 'package:bugaoshan/services/auth/auth_state.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/cloud_print/cloud_print_api_service.dart';
+import 'package:bugaoshan/scu_backend/core/auth_state.dart';
+import 'package:bugaoshan/scu_backend/core/scu_auth.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 
 enum CloudPrintQueueStatus { pending, uploading, uploaded, failed, uncertain }

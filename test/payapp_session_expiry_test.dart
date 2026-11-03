@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:bugaoshan/services/api/api_request.dart';
-import 'package:bugaoshan/services/api/balance_query_service.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/core/api_request.dart';
+import 'package:bugaoshan/scu_backend/payapp/balance_query_service.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';

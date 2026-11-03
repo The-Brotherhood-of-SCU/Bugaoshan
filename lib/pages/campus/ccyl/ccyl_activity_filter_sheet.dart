@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_activity_filter.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_activity_phase.dart';
-import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
+import 'package:bugaoshan/scu_backend/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/pages/campus/ccyl/widgets/ccyl_phase_chip.dart';
 import 'package:bugaoshan/theme_shape.dart';
 

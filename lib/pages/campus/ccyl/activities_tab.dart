@@ -7,7 +7,7 @@ import 'package:bugaoshan/providers/ccyl_provider.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_activity_filter.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_activity_filter_sheet.dart';
 import 'package:bugaoshan/pages/campus/ccyl/ccyl_activity_phase.dart';
-import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
+import 'package:bugaoshan/scu_backend/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/pages/campus/ccyl/widgets/ccyl_level_chip.dart';
 import 'package:bugaoshan/pages/campus/ccyl/widgets/ccyl_phase_chip.dart';
 import 'package:bugaoshan/pages/campus/ccyl/activity_lib_detail_page.dart';

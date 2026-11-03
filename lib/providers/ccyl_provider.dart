@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
-import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
-import 'package:bugaoshan/services/api/ccyl_api_service.dart';
-import 'package:bugaoshan/services/auth/ccyl_auth.dart';
+import 'package:bugaoshan/scu_backend/ccyl/models/ccyl_models.dart';
+import 'package:bugaoshan/scu_backend/ccyl/ccyl_api_service.dart';
+import 'package:bugaoshan/scu_backend/ccyl/ccyl_auth.dart';
 
 /// 第二课堂（CCYL）登录状态的 Provider。
 ///

@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 
 import 'package:bugaoshan/models/academic_calendar.dart';
 import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/services/api/academic_calendar_service.dart';
+import 'package:bugaoshan/scu_backend/calendar/academic_calendar_service.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 

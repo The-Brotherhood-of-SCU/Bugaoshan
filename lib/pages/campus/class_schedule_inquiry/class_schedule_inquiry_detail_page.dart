@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/class_schedule_inquiry_model.dart';
 import 'package:bugaoshan/pages/course/main/course_page_swipe_page_view.dart';
 import 'package:bugaoshan/pages/course/widgets/course_detail_sheet.dart';
 import 'package:bugaoshan/pages/course/widgets/course_grid.dart';

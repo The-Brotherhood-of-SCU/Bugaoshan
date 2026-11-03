@@ -1,4 +1,4 @@
-import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/classroom_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -6,11 +6,11 @@ import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/services/api/zhjw_api_service.dart';
-import 'package:bugaoshan/services/auth/cookie_client.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
-import 'package:bugaoshan/services/auth/zhjw_auth.dart';
+import 'package:bugaoshan/scu_backend/zhjw/zhjw_api_service.dart';
+import 'package:bugaoshan/scu_backend/core/cookie_client.dart';
+import 'package:bugaoshan/scu_backend/core/scu_auth.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/zhjw/zhjw_auth.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 
 void main() {

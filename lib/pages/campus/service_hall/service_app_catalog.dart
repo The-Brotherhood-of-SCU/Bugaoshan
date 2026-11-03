@@ -18,10 +18,10 @@ library;
 import 'package:flutter/material.dart';
 
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/services/api/service_api_service.dart';
-import 'package:bugaoshan/services/api/service_form_fields.dart';
-import 'package:bugaoshan/services/api/service_form_models.dart';
-import 'package:bugaoshan/services/api/service_plugin_models.dart';
+import 'package:bugaoshan/scu_backend/service_hall/service_api_service.dart';
+import 'package:bugaoshan/scu_backend/service_hall/service_form_fields.dart';
+import 'package:bugaoshan/scu_backend/service_hall/service_form_models.dart';
+import 'package:bugaoshan/scu_backend/service_hall/service_plugin_models.dart';
 import 'package:bugaoshan/pages/campus/service_hall/service_form_controller.dart';
 
 /// 单个事项（办事大厅列表项）。
