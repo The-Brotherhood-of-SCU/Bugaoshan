@@ -36,10 +36,11 @@ Flutter 的手势竞技场是**先声明 accepted 者胜**，命中路径更深�
 
 | 场景 | 结果 |
 |---|---|
-| [`SwipePageView`](../../lib/widgets/common/swipe_page_view.dart)（pan 识别器）、`InteractiveViewer`（scale 识别器） | 内层横滑优先，返回手势不介入 |
+| [`SwipePageView`](../../lib/widgets/common/swipe_page_view.dart)（pan 识别器）中间页 | 内层横滑优先，返回手势不介入 |
+| `SwipePageView` 第一页右滑 / 最后一页左滑 | 组件在竞技场判定阶段不认领：第一页右滑交还返回手势，最后一页左滑两边都不翻 |
 | 可横向滚动的 `ListView` / `PageView`（18 阈值、命中更深） | 内层横滑优先 |
 | 横向内容不足以滚动（`minScrollExtent == maxScrollExtent`） | 内层不注册拖动识别器，返回手势生效 |
-| 横向滚动内容停在最左端再向右拖 | 内层仍先接受手势（只是滚不动），返回手势不接管；与原生「到边界后交给返回手势」不同，属已知取舍 |
+| 普通横向滚动容器停在最左端再向右拖 | 内层仍先接受手势（只是滚不动），返回手势不接管；`SwipePageView` 已在边界显式让位，普通容器未做 |
 | 纵向列表 / `CustomScrollView` | 纵向位移不满足横向阈值，列表正常滚动，返回手势不介入 |
 | 向左拖动（LTR）/ 向右拖动（RTL） | 在竞技场胜出前就被拒绝，不会「先吞手势再回弹」 |
 | 平台视图（原生 Dock、WebView 正文） | 原生视图自带的手势识别器参与同一竞技场，横滑通常归原生侧；从平台视图起手一般不会触发返回 |

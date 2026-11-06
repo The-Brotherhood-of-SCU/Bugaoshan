@@ -212,7 +212,7 @@ void main() {
     expect(find.byType(ListView), findsOneWidget);
   });
 
-  testWidgets('内层横向翻页容器优先消费手势', (tester) async {
+  testWidgets('多 Tab 页面在中间页右滑只切 Tab，不返回', (tester) async {
     await _pumpPushedPage(
       tester,
       secondPage: _SecondPage(
@@ -222,14 +222,71 @@ void main() {
       ),
     );
 
-    // SwipePageView 自带横向拖动识别器，位于更深的命中路径上。
+    // 先左滑到第 2 页
+    await _dragPushedPage(
+      tester,
+      const Offset(-500, 0),
+      from: find.text('tab 0'),
+    );
+    expect(find.byType(SwipePageView), findsOneWidget);
+    expect(find.text('tab 1'), findsOneWidget);
+
+    // 第 2 页右滑：有上一页可翻，SwipePageView 认领手势
+    await _dragPushedPage(
+      tester,
+      const Offset(500, 0),
+      from: find.text('tab 1'),
+    );
+    expect(find.byType(SwipePageView), findsOneWidget);
+    expect(find.text('tab 0'), findsOneWidget);
+  });
+
+  testWidgets('多 Tab 页面在第一页右滑触发全局返回', (tester) async {
+    await _pumpPushedPage(
+      tester,
+      secondPage: _SecondPage(
+        child: SwipePageView(
+          children: const <Widget>[Text('tab 0'), Text('tab 1')],
+        ),
+      ),
+    );
+
+    // 第一页没有上一页可翻，SwipePageView 不再认领，手势交还全局返回。
     await _dragPushedPage(
       tester,
       const Offset(500, 0),
       from: find.text('tab 0'),
     );
 
+    expect(find.byType(SwipePageView), findsNothing);
+    expect(find.text('push'), findsOneWidget);
+  });
+
+  testWidgets('多 Tab 页面在最后一页左滑既不翻页也不返回', (tester) async {
+    await _pumpPushedPage(
+      tester,
+      secondPage: _SecondPage(
+        child: SwipePageView(
+          children: const <Widget>[Text('tab 0'), Text('tab 1')],
+        ),
+      ),
+    );
+
+    await _dragPushedPage(
+      tester,
+      const Offset(-500, 0),
+      from: find.text('tab 0'),
+    );
+    expect(find.text('tab 1'), findsOneWidget);
+
+    await _dragPushedPage(
+      tester,
+      const Offset(-500, 0),
+      from: find.text('tab 1'),
+    );
+
     expect(find.byType(SwipePageView), findsOneWidget);
+    expect(find.text('tab 1'), findsOneWidget);
   });
 
   testWidgets('转场尚未结束时按下不起手', (tester) async {

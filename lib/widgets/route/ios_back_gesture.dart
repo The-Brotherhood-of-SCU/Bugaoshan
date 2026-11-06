@@ -27,7 +27,8 @@ const double _kMinFlingVelocity = 1.0;
 /// 3. 手势竞争交给 Flutter 手势竞技场：识别器的启动阈值抬到内层 pan / scale
 ///    识别器的阈值之上，`SwipePageView`、`PageView`、`InteractiveViewer` 这类
 ///    位于更深命中路径的横向手势会先跨过阈值、先声明接受并胜出，横向拖动仍归
-///    它们，与系统「内容自带的横向平移优先」一致；
+///    它们，与系统「内容自带的横向平移优先」一致；`SwipePageView` 另外在滑动
+///    边界（第一页向右 / 最后一页向左）不认领手势，右滑才能交还到这里；
 /// 4. 松手后的判定、补齐动画和曲线（超过半屏或甩出即 pop，否则回弹）直接
 ///    复刻 [CupertinoPageTransitionsBuilder] 的实现，视觉与原生一致。
 ///
