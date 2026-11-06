@@ -128,6 +128,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │   ├── README.md                # engineering documentation index
 │   ├── architecture/           # current implementation architecture
 │   │   ├── authentication.md
+│   │   ├── ios-back-gesture.md
 │   │   ├── ios-distribution.md
 │   │   ├── ios-liquid-glass.md
 │   │   ├── linux-distribution.md
