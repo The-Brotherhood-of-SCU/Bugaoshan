@@ -289,21 +289,6 @@ void main() {
     expect(find.text('tab 1'), findsOneWidget);
   });
 
-  testWidgets('触控板两指横滑同样返回', (tester) async {
-    await _pumpPushedPage(tester);
-
-    // PointerPanZoom（触控板两指）与手指拖动一致：横向平移触发返回
-    await tester.trackpadFling(
-      find.text(_SecondPage.marker),
-      const Offset(400, 0),
-      1000,
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text(_SecondPage.marker), findsNothing);
-    _expectNoUserGesture(tester);
-  });
-
   testWidgets('整页 InteractiveViewer：内容区交给它，边缘仍可返回', (tester) async {
     await _pumpPushedPage(
       tester,

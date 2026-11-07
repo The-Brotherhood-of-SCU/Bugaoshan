@@ -162,25 +162,12 @@ class _ContentAreaBackGestureDetectorState<T>
   }
 
   void _handlePointerDown(PointerDownEvent event) {
-    if (!_prepareGesture(event.localPosition)) return;
-    _recognizer.addPointer(event);
-  }
-
-  /// iPad 触控板的两指横滑走 `PointerPanZoom`，与手指拖动分开派发。
-  /// 这里同样喂给识别器，让「两指左滑返回」与手指侧滑行为一致。
-  void _handlePointerPanZoomStart(PointerPanZoomStartEvent event) {
-    if (!_prepareGesture(event.localPosition)) return;
-    _recognizer.addPointerPanZoom(event);
-  }
-
-  /// 起手前的一次性判定，返回 false 表示本次手势不参与。
-  bool _prepareGesture(Offset localPosition) {
-    // 已经有一根手指在手势中：不再接管新的指针，避免识别器把活动指针切到
+    // 已经有一根手指在手势中：不再接管新按下的手指，避免识别器把活动指针切到
     // 第二根手指后，第一根抬起不触发 onEnd、页面卡在跟手状态。
-    if (_backGestureController != null) return false;
+    if (_backGestureController != null) return;
     // 与官方实现一致：按下时判定一次，转场进行中 / 栈底 / 被 PopScope 拦截的
     // 路由不参与手势竞争，点击直接透传给页面内容。
-    if (!widget.route.popGestureEnabled) return false;
+    if (!widget.route.popGestureEnabled) return;
     final bool rtl = Directionality.of(context) == TextDirection.rtl;
     final MediaQueryData mediaQuery = MediaQuery.of(context);
     final double width = context.size?.width ?? 0.0;
@@ -190,12 +177,12 @@ class _ContentAreaBackGestureDetectorState<T>
       _kEdgeGestureWidth,
     );
     final double leadingDistance = rtl
-        ? width - localPosition.dx
-        : localPosition.dx;
+        ? width - event.localPosition.dx
+        : event.localPosition.dx;
     _recognizer
       ..reverse = rtl
-      ..acceptsFromEdge = leadingDistance <= edgeWidth;
-    return true;
+      ..acceptsFromEdge = leadingDistance <= edgeWidth
+      ..addPointer(event);
   }
 
   void _handleDragStart(DragStartDetails details) {
@@ -260,7 +247,6 @@ class _ContentAreaBackGestureDetectorState<T>
     return Listener(
       behavior: HitTestBehavior.translucent,
       onPointerDown: _handlePointerDown,
-      onPointerPanZoomStart: _handlePointerPanZoomStart,
       child: widget.child,
     );
   }
