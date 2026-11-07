@@ -48,15 +48,15 @@ Flutter 的手势竞技场是**先声明 accepted 者胜**，命中路径更深�
 | 纵向列表 / `CustomScrollView` | 纵向位移不满足横向阈值，列表正常滚动，返回手势不介入 |
 | 向左拖动（LTR）/ 向右拖动（RTL） | 在竞技场胜出前就被拒绝，不会「先吞手势再回弹」 |
 | 平台视图（原生 Dock、WebView 正文） | 原生视图自带的手势识别器参与同一竞技场，横滑通常归原生侧；从平台视图起手一般不会触发返回 |
-| 通知 WebView 页（[`webview_notice_page.dart`](../../lib/widgets/webview/webview_notice_page.dart)） | 该页声明了 `PopScope(canPop: false)`（内部自己处理网页历史回退），`popGestureEnabled` 恒为 false，整页都不参与全局返回手势，与本次改动前一致 |
+| 通知 WebView 页（[`webview_notice_page.dart`](../../lib/widgets/webview/webview_notice_page.dart)） | 该页声明了 `PopScope(canPop: false)`（内部自己处理网页历史回退），`popGestureEnabled` 恒为 false，整页都不参与全局返回手势 |
 
 桌面端的 `MouseBackHandler`（鼠标侧键）与 `TargetPlatform.macOS` 的 FadeForwards 转场不受影响：本构建器只挂在 `TargetPlatform.iOS` 上。
 
-`popupOrNavigate` 的宽屏弹窗走 `DialogRoute`，不经过 `PageTransitionsTheme.buildTransitions`；弹窗里 `Fragment` 的 Navigator 只注册 `initialRoute` 一条路由，`popGestureEnabled` 因 `isFirst` 恒为 false。所以弹窗内容根本不参与全局返回手势，与改动前一致。
+`popupOrNavigate` 的宽屏弹窗走 `DialogRoute`，不经过 `PageTransitionsTheme.buildTransitions`；弹窗里 `Fragment` 的 Navigator 只注册 `initialRoute` 一条路由，`popGestureEnabled` 因 `isFirst` 恒为 false。所以弹窗内容根本不参与全局返回手势。
 
 ## iPad 与弹窗页面
 
-iPad 上「打开一个功能页」走的不是 `Navigator.push`：`popupOrNavigate` 在横屏或 `width > 600 && height > 600` 的竖屏下调用 `popupContent` → `showDialog`，得到的是 `DialogRoute`（`PopupRoute`）。`DialogRoute` 不经过 `PageTransitionsTheme.buildTransitions`，也不存在「回上一页」语义，所以**iPad 的详情页不参与全局返回手势**——无论手指还是触控板，与本次改动前一致。返回依靠点击弹窗外部或页面内的关闭/返回按钮，这也是 iOS 弹窗的标准交互。
+iPad 上「打开一个功能页」走的不是 `Navigator.push`：`popupOrNavigate` 在横屏或 `width > 600 && height > 600` 的竖屏下调用 `popupContent` → `showDialog`，得到的是 `DialogRoute`（`PopupRoute`）。`DialogRoute` 不经过 `PageTransitionsTheme.buildTransitions`，也不存在「回上一页」语义，所以**iPad 的详情页不参与全局返回手势**——无论手指还是触控板。返回依靠点击弹窗外部或页面内的关闭/返回按钮，这也是 iOS 弹窗的标准交互。
 
 窗口化到手机尺寸（`smallPortrait`）后页面会变成 `push`，此时手势层生效；但在 iPadOS 上，触控板两指平移由系统按滚动事件（`PointerScrollEvent`）派发，不会产生 `PointerPanZoom`，因此两指横滑不会触发返回。Mac 触控板通过「通用控制」操作 iPad 同理。手势本质上只覆盖整页 push 路由，iPad 的分栏/窗口化体验不在本次范围内。
 

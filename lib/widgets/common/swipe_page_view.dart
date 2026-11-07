@@ -8,7 +8,7 @@ import 'package:bugaoshan/theme_shape.dart';
 /// 左右滑页容器：解决 PageView / TabBarView 自带手势与页内纵向滚动冲突、
 /// 滑动不跟手的问题。做法与课表页一致：
 ///
-/// - 禁用 PageView 自带滑动物理，由外层 GestureDetector 接管横向拖动，
+/// - 禁用 PageView 自带滑动物理，由外层的 pan 识别器接管横向拖动，
 ///   手动改写 PageController 的 offset，页面严格跟手；
 /// - 位移超过阈值后按「横向位移明显大于纵向」判定方向：纵向拖动不认领，
 ///   手势完整交给页内的 ListView / CustomScrollView；
@@ -244,12 +244,12 @@ class _SwipePageViewState extends State<SwipePageView> {
 
 /// [SwipePageView] 用的 pan 识别器：到边界时拒绝接受手势。
 ///
-/// 普通 `GestureDetector(onPan*)` 只要位移超过 pan slop 就会接受，位于更外层
-/// 的全局侧滑返回（`ios_back_gesture.dart`）便再也拿不到这一滑；表现为多 Tab
-/// 页面上「右滑返回」失效。这里在竞技场判定阶段就拒绝「没有页可翻」的方向，
-/// 让外层识别器接管：第一页向右→交还返回手势；最后一页向左→谁也不翻。
+/// 如果边界处仍然接受手势，位于更外层的全局侧滑返回（`ios_back_gesture.dart`）
+/// 就拿不到这一滑，多 Tab 页面上「右滑返回」会失效。这里在竞技场判定阶段就
+/// 拒绝「没有页可翻」的方向，让外层识别器接管：第一页向右→交还返回手势；
+/// 最后一页向左→谁也不翻。
 ///
-/// 判定只在横向明显大于纵向时生效，纵向拖动维持原有行为（交给页内列表）。
+/// 判定只在横向明显大于纵向时生效，纵向拖动仍交给页内列表。
 class _SwipePageViewPanRecognizer extends PanGestureRecognizer {
   _SwipePageViewPanRecognizer({super.debugOwner});
 

@@ -14,8 +14,7 @@ const Duration _kSwipeSettleDuration = Duration(milliseconds: 350);
 ///
 /// iOS 26 的系统实现是两个识别器并存：左缘的 `interactivePopGestureRecognizer`
 /// 与内容区的 `interactiveContentPopGestureRecognizer`。这里同样保留两层，
-/// 否则内容自带横向手势的页面（`PhotoView`、横向列表）连边缘都滑不动——
-/// 那是改动前可以返回的地方。
+/// 否则内容自带横向手势的页面（`PhotoView`、横向列表）连边缘都滑不动。
 const double _kEdgeGestureWidth = 20.0;
 
 /// 边缘起手时的接受阈值，低于 `kTouchSlop`（18）。
@@ -254,10 +253,10 @@ class _ContentAreaBackGestureDetectorState<T>
 
 /// 只在「从前往后」方向上接受手势的横向拖动识别器。
 ///
-/// 官方实现把手势区限制在左缘 20 点，方向由区域本身保证；手势区扩大到全屏
-/// 后必须显式判方向：否则在内容区左滑也会被识别成返回手势，把本该交给内层
-/// 或本就无意义的横滑吞掉。判定发生在竞技场胜出之前（[hasSufficientGlobalDistanceToAccept]），
-/// 反向拖动根本不会接受手势，内层组件拿到的输入不受影响。
+/// 手势区覆盖整页内容，因此必须显式判方向：否则在内容区左滑也会被识别成
+/// 返回手势，把本该交给内层或本就无意义的横滑吞掉。判定发生在竞技场胜出
+/// 之前（[hasSufficientGlobalDistanceToAccept]），反向拖动根本不会接受手势，
+/// 内层组件拿到的输入不受影响。
 class _BackGestureRecognizer extends HorizontalDragGestureRecognizer {
   _BackGestureRecognizer({super.debugOwner});
 

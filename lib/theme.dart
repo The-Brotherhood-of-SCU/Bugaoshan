@@ -40,8 +40,8 @@ PageTransitionsTheme _pageTransitionsTheme(Duration duration) {
   return PageTransitionsTheme(
     builders: {
       TargetPlatform.android: _AppPredictiveBackBuilder(duration),
-      // iOS 用自研转场：除 Cupertino 滑动视差外，还把返回手势从「左缘 20 点」
-      // 扩大到整个内容区，对齐 iOS 26 起系统新增的全局侧滑返回。
+      // iOS 用自研转场：Cupertino 滑动视差 + 内容区任意位置起手的返回手势，
+      // 对齐 iOS 26 系统新增的全局侧滑返回。
       TargetPlatform.iOS: AppCupertinoPageTransitionsBuilder(
         duration: duration,
       ),
