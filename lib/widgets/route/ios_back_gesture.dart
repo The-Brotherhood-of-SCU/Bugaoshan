@@ -3,8 +3,27 @@ import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 
-/// 手势结束后补齐动画的时长（与 Cupertino 返回手势一致）。
+/// 手势结束后补齐动画的时长。
+///
+/// 固定 350ms，取自官方 Cupertino 返回手势（`_kDroppedSwipePageAnimationDuration`），
+/// **刻意不跟随「设置 → 动画时长」**：该设置管的是进页/退出的转场，而返回
+/// 手势松手后的补齐动画以系统手感为基准，跟着设置变只会比原生快或慢半拍。
 const Duration _kSwipeSettleDuration = Duration(milliseconds: 350);
+
+/// 页面前缘的宽度：起手点落在这条带子里时按「边缘返回」处理。
+///
+/// iOS 26 的系统实现是两个识别器并存：左缘的 `interactivePopGestureRecognizer`
+/// 与内容区的 `interactiveContentPopGestureRecognizer`。这里同样保留两层，
+/// 否则内容自带横向手势的页面（`PhotoView`、横向列表）连边缘都滑不动——
+/// 那是改动前可以返回的地方。
+const double _kEdgeGestureWidth = 20.0;
+
+/// 边缘起手时的接受阈值，低于 `kTouchSlop`（18）。
+///
+/// 边缘识别器要抢在内容自带的横向手势之前接受：普通横向滚动/拖动识别器的
+/// 阈值是 18，`HorizontalDragGestureRecognizer` 的兄弟识别器在命中路径上更深，
+/// 同阈值时会因先派发而胜出，所以这里必须更小才抢得到。
+const double _kEdgeAcceptSlop = 12.0;
 
 /// 触发「甩出」的最小速度，单位为「屏宽/秒」（与 Cupertino 返回手势一致）。
 const double _kMinFlingVelocity = 1.0;
@@ -21,7 +40,8 @@ const double _kMinFlingVelocity = 1.0;
 /// `_CupertinoBackGestureDetector`，手势区被写死为 20 点。因此这里在 Flutter
 /// 侧重放同一套交互，把转场、跟手、松手判定都对齐官方实现：
 ///
-/// 1. 手势区覆盖整页内容（[Listener] 覆盖 child，命中任意位置都能起手）；
+/// 1. 手势区覆盖整页内容（[Listener] 覆盖 child，命中任意位置都能起手），
+///    同时保留左缘 20 点的「边缘优先」通道，见 [_kEdgeGestureWidth]；
 /// 2. 只接受「从前往后」的横向平移（LTR 向右、RTL 向左），反向拖动不接受，
 ///    因此不会把内层的左滑误吞成「返回后又弹回」；
 /// 3. 手势竞争交给 Flutter 手势竞技场：识别器的启动阈值抬到内层 pan / scale
@@ -148,8 +168,21 @@ class _ContentAreaBackGestureDetectorState<T>
     // 与官方实现一致：按下时判定一次，转场进行中 / 栈底 / 被 PopScope 拦截的
     // 路由不参与手势竞争，点击直接透传给页面内容。
     if (!widget.route.popGestureEnabled) return;
+    final TextDirection direction = Directionality.of(context);
+    final bool rtl = direction == TextDirection.rtl;
+    final MediaQueryData mediaQuery = MediaQuery.of(context);
+    final double width = context.size?.width ?? 0.0;
+    // 起手点距离「前缘」多远：LTR 看左边、RTL 看右边，刘海侧还要更宽。
+    final double edgeWidth = math.max(
+      rtl ? mediaQuery.padding.right : mediaQuery.padding.left,
+      _kEdgeGestureWidth,
+    );
+    final double leadingDistance = rtl
+        ? width - event.localPosition.dx
+        : event.localPosition.dx;
     _recognizer
-      ..reverse = Directionality.of(context) == TextDirection.rtl
+      ..reverse = rtl
+      ..acceptsFromEdge = leadingDistance <= edgeWidth
       ..addPointer(event);
   }
 
@@ -232,6 +265,20 @@ class _BackGestureRecognizer extends HorizontalDragGestureRecognizer {
   /// 当前文本方向是否为 RTL：RTL 下「从前往后」对应向左滑。
   bool reverse = false;
 
+  /// 本次手势是否从页面前缘起手：边缘通道用更低阈值，优先于内容自带的
+  /// 横向手势（`PhotoView` 缩放、横向滚动列表等）。
+  bool acceptsFromEdge = false;
+
+  // 只接受触摸。默认 `supportedDevices == null` 时，iPad 触控板的两指平移
+  // （`PointerPanZoom`）也会进入本识别器、`globalDistanceMoved` 同样累积，
+  // 于是在没有横向内容的页面上两指一划就退出了。系统手势只响应手指。
+  @override
+  bool isPointerAllowed(PointerEvent event) =>
+      event.kind == PointerDeviceKind.touch && super.isPointerAllowed(event);
+
+  @override
+  bool isPointerPanZoomAllowed(PointerPanZoomStartEvent event) => false;
+
   @override
   bool hasSufficientGlobalDistanceToAccept(
     PointerDeviceKind pointerDeviceKind,
@@ -246,6 +293,10 @@ class _BackGestureRecognizer extends HorizontalDragGestureRecognizer {
     // 这类内层组件用的正是 pan/scale 识别器：若仍用 18 的 hit slop，返回手势会
     // 抢在它们之前接受，把「右滑回上一个 Tab」变成「退出页面」。抬到此阈值后，
     // 两者会在同一次移动事件里同时跨过阈值，内层因命中路径更深先接受并胜出。
+    if (acceptsFromEdge) {
+      // 边缘通道：比内容识别器（18）更早接受，抢下内容自带的横向手势。
+      return leadingToTrailing > _kEdgeAcceptSlop;
+    }
     final double slop = math.max(
       computeHitSlop(pointerDeviceKind, gestureSettings),
       computePanSlop(pointerDeviceKind, gestureSettings),

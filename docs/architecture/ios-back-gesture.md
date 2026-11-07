@@ -19,8 +19,10 @@ Flutter 的页面栈不经过 UIKit 的 `UINavigationController`：根视图是 
 | 转场动画 | 直接用公开的 `CupertinoPageTransition`，手势进行中 `linearTransition: true` 保证跟手 |
 | 上一页视差 | 转发 `CupertinoPageTransition.delegatedTransition`，否则侧滑时上一页停在原地 |
 | 手势区 | `Listener(behavior: HitTestBehavior.translucent)` 包裹整页内容，任意位置按下都会参与竞争 |
-| 方向门控 | 继承 `HorizontalDragGestureRecognizer`，`hasSufficientGlobalDistanceToAccept` 阶段就拒绝反向拖动；启动阈值抬到 `computePanSlop`（36）之上 |
-| 跟手/松手 | 复刻 `_CupertinoBackGestureController`：扣减路由动画进度，过半屏或速度 ≥ 1 屏宽/秒则 pop，否则 350ms 回弹 |
+| 边缘通道 | 起手点落在前缘 20 点（刘海侧取安全区宽度）时阈值降到 12，抢在内容自带的横向手势之前接受；与系统「边缘 `interactivePopGestureRecognizer` + 内容区 `interactiveContentPopGestureRecognizer` 并存」一致 |
+| 方向门控 | 继承 `HorizontalDragGestureRecognizer`，`hasSufficientGlobalDistanceToAccept` 阶段就拒绝反向拖动；内容区阈值抬到 `max(computeHitSlop, computePanSlop)`（36） |
+| 输入设备 | 只接受触摸。触控板的 `PointerPanZoom` 不进入识别器，否则两指平移会累积 `globalDistanceMoved` 并触发返回 |
+| 跟手/松手 | 复刻 `_CupertinoBackGestureController`：扣减路由动画进度，过半屏或速度 ≥ 1 屏宽/秒则 pop，否则 350ms 回弹（固定值，刻意不跟随「动画时长」设置） |
 | 放行条件 | 复用 `ModalRoute.popGestureEnabled`：栈底、`PopScope(canPop: false)`、转场进行中、`willHandlePopInternally` 都不起手；`fullscreenDialog` 在 `buildTransitions` 里直接不装手势 |
 
 `TransitionRoute.controller` 是 `@protected` 成员，Flutter 没有公开「在 `PageTransitionsBuilder` 里驱动路由动画」的 API。实现里对它做了一次带注释的 `// ignore: invalid_use_of_protected_member`：不驱动控制器就只能拿到只读的 `Animation<double>`，无法做到跟手，而官方手势同样是在路由内部直接使用该控制器。
@@ -40,19 +42,23 @@ Flutter 的手势竞技场是**先声明 accepted 者胜**，命中路径更深�
 | `SwipePageView` 第一页右滑 / 最后一页左滑 | 组件在竞技场判定阶段不认领：第一页右滑交还返回手势，最后一页左滑两边都不翻 |
 | 可横向滚动的 `ListView` / `PageView`（18 阈值、命中更深） | 内层横滑优先 |
 | 横向内容不足以滚动（`minScrollExtent == maxScrollExtent`） | 内层不注册拖动识别器，返回手势生效 |
-| 普通横向滚动容器停在最左端再向右拖 | 内层仍先接受手势（只是滚不动），返回手势不接管；`SwipePageView` 已在边界显式让位，普通容器未做 |
+| 普通横向滚动容器的内容区起手 | 内层先接受手势；停在最左端向右拖也仍归内层（只是滚不动），需要从前缘起手才能返回 |
+| 整页 `PhotoView` / `InteractiveViewer` 的内容区起手 | 缩放/平移识别器先接受；前缘起手仍可返回（边缘通道阈值 12 抢在 36 之前） |
+| 触控板两指平移 | 不进入返回识别器，不触发返回 |
 | 纵向列表 / `CustomScrollView` | 纵向位移不满足横向阈值，列表正常滚动，返回手势不介入 |
 | 向左拖动（LTR）/ 向右拖动（RTL） | 在竞技场胜出前就被拒绝，不会「先吞手势再回弹」 |
 | 平台视图（原生 Dock、WebView 正文） | 原生视图自带的手势识别器参与同一竞技场，横滑通常归原生侧；从平台视图起手一般不会触发返回 |
 | 通知 WebView 页（[`webview_notice_page.dart`](../../lib/widgets/webview/webview_notice_page.dart)） | 该页声明了 `PopScope(canPop: false)`（内部自己处理网页历史回退），`popGestureEnabled` 恒为 false，整页都不参与全局返回手势，与本次改动前一致 |
 
-桌面端的 `MouseBackHandler`（鼠标侧键）与 `TargetPlatform.macOS` 的 FadeForwards 转场不受影响：本构建器只挂在 `TargetPlatform.iOS` 上。嵌套 Navigator（如 `popupOrNavigate` 宽屏 dialog 里的 `Fragment`）里，返回手势按该页自身宽度归一化，只 pop 内层路由。
+桌面端的 `MouseBackHandler`（鼠标侧键）与 `TargetPlatform.macOS` 的 FadeForwards 转场不受影响：本构建器只挂在 `TargetPlatform.iOS` 上。
+
+`popupOrNavigate` 的宽屏弹窗走 `DialogRoute`，不经过 `PageTransitionsTheme.buildTransitions`；弹窗里 `Fragment` 的 Navigator 只注册 `initialRoute` 一条路由，`popGestureEnabled` 因 `isFirst` 恒为 false。所以弹窗内容根本不参与全局返回手势，与改动前一致。
 
 ## 与官方实现的关系
 
 | 行为 | Flutter 内置 `CupertinoPageTransitionsBuilder` | 本项目构建器 |
 |---|---|---|
-| 手势起点 | 左缘 20 点 | 整页内容区 |
+| 手势起点 | 左缘 20 点 | 整页内容区，前缘 20 点另有更低阈值的优先通道 |
 | 方向 | 由区域决定，横滑即判定 | 显式要求「从前往后」 |
 | 转场、曲线、阈值、速度判定 | 官方实现 | 同官方实现（复刻） |
 | 上一页视差 | `delegatedTransition` | 转发同一实现 |
@@ -70,6 +76,6 @@ Flutter 的手势竞技场是**先声明 accepted 者胜**，命中路径更深�
 
 ## 验证状态
 
-[`ios_back_gesture_test.dart`](../../test/ios_back_gesture_test.dart) 覆盖：中央起手过半屏返回、不足半屏回弹、反向拖动不返回、纵向拖动交给页内列表、RTL 双向、内层横向滚动内容优先、内层 pan 翻页容器（`SwipePageView`）优先、转场未结束时不起手、`PopScope(canPop: false)` 拦截、`fullscreenDialog` 不装手势、栈底无副作用、Android 平台不受影响、拖动中被程序化 pop、连续两次返回、`userGestureInProgress` 复位，以及 `buildTheme` 的 iOS 挂载（该接线断言在 [`theme_page_transitions_test.dart`](../../test/theme_page_transitions_test.dart)）。
+[`ios_back_gesture_test.dart`](../../test/ios_back_gesture_test.dart) 覆盖：中央起手过半屏返回、不足半屏回弹、反向拖动不返回、纵向拖动交给页内列表、RTL 双向、内层横向滚动内容优先、`SwipePageView` 中间页优先 / 首页右滑返回 / 末页左滑不返回、整页 `InteractiveViewer` 内容区不返回但前缘可返回（缩放前后各一条）、触控板两指平和不返回、转场未结束时不起手、`PopScope(canPop: false)` 拦截、`fullscreenDialog` 不装手势、栈底无副作用、Android 平台不受影响、拖动中被程序化 pop、连续两次返回、`userGestureInProgress` 复位，以及 `buildTheme` 的 iOS 挂载（该接线断言在 [`theme_page_transitions_test.dart`](../../test/theme_page_transitions_test.dart)）。
 
 Widget 测试不能替代真机验收。合入前仍应在 iOS 26+ 真机/模拟器确认：从列表、表单、地图/图片等区域起手的手感，与 `SwipePageView` 翻页、`InteractiveViewer`、横向轮播的手势竞争，通知 WebView 页（当前整页不参与手势）与产品预期是否一致，以及系统「减少动态效果」下的表现。

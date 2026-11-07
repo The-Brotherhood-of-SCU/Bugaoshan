@@ -289,6 +289,74 @@ void main() {
     expect(find.text('tab 1'), findsOneWidget);
   });
 
+  testWidgets('触控板两指平移不触发返回', (tester) async {
+    await _pumpPushedPage(tester);
+
+    // PointerPanZoom（触控板两指）不进入返回识别器
+    await tester.trackpadFling(
+      find.text(_SecondPage.marker),
+      const Offset(400, 0),
+      1000,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text(_SecondPage.marker), findsOneWidget);
+    _expectNoUserGesture(tester);
+  });
+
+  testWidgets('整页 InteractiveViewer：内容区交给它，边缘仍可返回', (tester) async {
+    await _pumpPushedPage(
+      tester,
+      secondPage: Scaffold(
+        body: InteractiveViewer(
+          child: Container(color: Colors.grey, width: 2000, height: 2000),
+        ),
+      ),
+    );
+
+    // 内容区起手：scale 识别器阈值 36 且命中更深，返回手势不介入
+    await _slowDrag(
+      tester,
+      tester.getCenter(find.byType(InteractiveViewer)),
+      const Offset(500, 0),
+    );
+    expect(find.byType(InteractiveViewer), findsOneWidget);
+
+    // 前缘起手：边缘通道阈值更低。真机触摸事件是逐帧小位移，这里同样用
+    // 更细的步长，否则单帧一次跨过 36 会让内层在同一个事件里先接受。
+    await _slowDrag(
+      tester,
+      const Offset(6, 300),
+      const Offset(500, 0),
+      steps: 60,
+    );
+    expect(find.byType(InteractiveViewer), findsNothing);
+  });
+
+  testWidgets('缩放后的整页 InteractiveViewer 内容区仍不返回', (tester) async {
+    final TransformationController transformation = TransformationController(
+      Matrix4.identity()..scaleByDouble(2.0, 2.0, 2.0, 1.0),
+    );
+    addTearDown(transformation.dispose);
+    await _pumpPushedPage(
+      tester,
+      secondPage: Scaffold(
+        body: InteractiveViewer(
+          transformationController: transformation,
+          child: Container(color: Colors.grey, width: 2000, height: 2000),
+        ),
+      ),
+    );
+
+    await _slowDrag(
+      tester,
+      tester.getCenter(find.byType(InteractiveViewer)),
+      const Offset(500, 0),
+    );
+
+    expect(find.byType(InteractiveViewer), findsOneWidget);
+  });
+
   testWidgets('转场尚未结束时按下不起手', (tester) async {
     await _pumpPushedPage(
       tester,
