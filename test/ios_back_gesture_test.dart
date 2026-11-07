@@ -289,10 +289,10 @@ void main() {
     expect(find.text('tab 1'), findsOneWidget);
   });
 
-  testWidgets('触控板两指平移不触发返回', (tester) async {
+  testWidgets('触控板两指横滑同样返回', (tester) async {
     await _pumpPushedPage(tester);
 
-    // PointerPanZoom（触控板两指）不进入返回识别器
+    // PointerPanZoom（触控板两指）与手指拖动一致：横向平移触发返回
     await tester.trackpadFling(
       find.text(_SecondPage.marker),
       const Offset(400, 0),
@@ -300,7 +300,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text(_SecondPage.marker), findsOneWidget);
+    expect(find.text(_SecondPage.marker), findsNothing);
     _expectNoUserGesture(tester);
   });
 
