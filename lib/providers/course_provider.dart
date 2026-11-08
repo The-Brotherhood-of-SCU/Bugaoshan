@@ -1,18 +1,31 @@
 import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/services/database_service.dart';
+import 'package:bugaoshan/services/hook_registry.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 
 class CourseProvider {
   static const String _tag = 'CourseProvider';
 
+  /// 「课表数据已变更」时机。
+  ///
+  /// 语义：课程增删改、当前课表切换、课表配置保存等会影响课表展示的写操作完成后触发，
+  /// 携带变更后的完整课程列表。订阅者通过 [HookRegistry] 按 (本对象, 该时机) 订阅，
+  /// 因此同一时机可以有任意多个订阅者（桌面小组件同步、缓存刷新、埋点……），
+  /// 后订阅者不会覆盖先订阅者。
+  static final Hook<List<Course>> courseChanged = Hook<List<Course>>(
+    'courseChanged',
+  );
+
+  /// 本类对外声明的全部时机，构造时注册进 [HookRegistry]。
+  static final List<Hook<dynamic>> hooks = <Hook<dynamic>>[courseChanged];
+
   final DatabaseService _db;
+  final HookRegistry _hooks;
 
-  /// Called after any data mutation that affects displayed courses.
-  /// Set this from outside (e.g., WidgetUpdateService) to avoid circular DI.
-  VoidCallback? onCoursesChanged;
-
-  CourseProvider(this._db) {
+  CourseProvider(this._db, {HookRegistry? registry})
+    : _hooks = registry ?? HookRegistry.instance {
+    _hooks.register(this, CourseProvider.hooks);
     _loadData();
   }
 
@@ -22,6 +35,11 @@ class CourseProvider {
   final ValueNotifier<List<ScheduleConfig>> allSchedules =
       ValueNotifier<List<ScheduleConfig>>([]);
   final ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
+
+  /// 广播 [courseChanged]：由注册中心分发给全部订阅者，单个订阅者异常不影响其余订阅者。
+  void _notifyCoursesChanged() {
+    _hooks.fire(this, courseChanged, courses.value);
+  }
 
   /// 课表或课程数据变更版本号。
   ///
@@ -75,7 +93,7 @@ class CourseProvider {
       AppLog.e(_tag, '_loadData 失败', error: e, stackTrace: logStackTrace);
     } finally {
       isLoading.value = false;
-      onCoursesChanged?.call();
+      _notifyCoursesChanged();
     }
   }
 
@@ -145,7 +163,7 @@ class CourseProvider {
       await _db.addCourse(course);
       courses.value = _db.getCourses();
       _bumpCourseDataVersion();
-      onCoursesChanged?.call();
+      _notifyCoursesChanged();
     });
   }
 
@@ -154,7 +172,7 @@ class CourseProvider {
       await _db.updateCourse(course);
       courses.value = _db.getCourses();
       _bumpCourseDataVersion();
-      onCoursesChanged?.call();
+      _notifyCoursesChanged();
     });
   }
 
@@ -163,7 +181,7 @@ class CourseProvider {
       await _db.deleteCourse(courseId);
       courses.value = _db.getCourses();
       _bumpCourseDataVersion();
-      onCoursesChanged?.call();
+      _notifyCoursesChanged();
     });
   }
 
@@ -185,7 +203,7 @@ class CourseProvider {
       if (config.id == _db.getCurrentScheduleId()) {
         scheduleConfig.value = config;
         // 非当前课表不影响当前课程展示，也无需刷新桌面组件。
-        onCoursesChanged?.call();
+        _notifyCoursesChanged();
       }
       if (semesterMetadataChanged) {
         _bumpCourseDataVersion();
@@ -204,7 +222,7 @@ class CourseProvider {
         courses.value = _db.getCourses();
       }
       _bumpCourseDataVersion();
-      onCoursesChanged?.call();
+      _notifyCoursesChanged();
     });
   }
 
