@@ -28,6 +28,26 @@ void main() {
     expect(scrollable.position.pixels, greaterThan(0));
   });
 
+  testWidgets('第一页向右拖动不翻页（手势让给外层）', (tester) async {
+    await _pumpHost(tester);
+
+    await _swipe(tester, const Offset(400, 0));
+
+    expect(_hostState(tester).tabController.index, 0);
+    expect(find.text('page 0'), findsOneWidget);
+  });
+
+  testWidgets('最后一页向左拖动不翻页', (tester) async {
+    await _pumpHost(tester);
+    await tester.tap(find.text('Tab 2'));
+    await tester.pumpAndSettle();
+
+    await _swipe(tester, const Offset(-400, 0));
+
+    expect(_hostState(tester).tabController.index, 2);
+    expect(find.text('page 2'), findsOneWidget);
+  });
+
   testWidgets('点击 Tab 翻页', (tester) async {
     final pages = <int>[];
     await _pumpHost(tester, onPageChanged: pages.add);

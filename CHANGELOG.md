@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- iOS 新增全局侧滑返回：详情页任意位置向右滑即可返回上一页（此前只有屏幕左缘 20 点可滑），对齐 iOS 26 系统的同款手势；多 Tab 页面在第一页向右滑同样返回，中间页仍优先切换 Tab
 - 成绩页（方案成绩、及格成绩）与「方案修读情况」现支持根据已导入的历史课表显示已修课程的授课教师；支持多教师换行展示，无课表数据时保持原样（#410）
 - 新增「图书馆打印与扫描」，支持批量上传、打印设置、任务预览及扫描件下载与分享
 - macOS 增加专用签名仓库自动同步、Developer ID 签名与 Apple 公证流程；通过源码、签名和公证校验的 universal DMG 可随 GitHub Release 一起分发

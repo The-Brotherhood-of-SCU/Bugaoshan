@@ -1,8 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'theme_shape.dart';
+import 'widgets/route/ios_back_gesture.dart';
 
 /// 页面转场时长跟随「设置 → 动画时长」滑杆（进页与退出同值）；转场形态
 /// 维持 Material 规格不变。不直接用规格默认值的原因：Flutter 3.44 起
@@ -36,23 +36,15 @@ class _AppPredictiveBackBuilder extends PredictiveBackPageTransitionsBuilder {
   Duration get reverseTransitionDuration => duration;
 }
 
-class _AppCupertinoBuilder extends CupertinoPageTransitionsBuilder {
-  const _AppCupertinoBuilder(this.duration);
-
-  final Duration duration;
-
-  @override
-  Duration get transitionDuration => duration;
-
-  @override
-  Duration get reverseTransitionDuration => duration;
-}
-
 PageTransitionsTheme _pageTransitionsTheme(Duration duration) {
   return PageTransitionsTheme(
     builders: {
       TargetPlatform.android: _AppPredictiveBackBuilder(duration),
-      TargetPlatform.iOS: _AppCupertinoBuilder(duration),
+      // iOS 用自研转场：Cupertino 滑动视差 + 内容区任意位置起手的返回手势，
+      // 对齐 iOS 26 系统新增的全局侧滑返回。
+      TargetPlatform.iOS: AppCupertinoPageTransitionsBuilder(
+        duration: duration,
+      ),
       //desktop use FadeForwardsPageTransitionsBuilder
       TargetPlatform.windows: _AppFadeForwardsBuilder(duration),
       TargetPlatform.linux: _AppFadeForwardsBuilder(duration),
