@@ -104,6 +104,18 @@ class PubGetWithFallbackTest(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 fallback.install_archive_to_cache(Path(tmp), pkg, archive)
 
+    def test_download_rejects_non_https_scheme(self):
+        pkg = fallback.HostedPackage(
+            name="demo_pkg",
+            version="1.0.0",
+            sha256="a" * 64,
+            url="https://pub.flutter-io.cn",
+        )
+        with self.assertRaises(ValueError):
+            fallback.download_and_verify_archive(pkg, official_base_url="http://pub.dev")
+        with self.assertRaises(ValueError):
+            fallback.download_and_verify_archive(pkg, official_base_url="file:///tmp")
+
     def test_mirror_pub_dev_cache_copies_into_mirror_host(self):
         with tempfile.TemporaryDirectory() as tmp:
             cache_dir = Path(tmp)

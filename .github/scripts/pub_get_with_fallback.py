@@ -134,6 +134,9 @@ def download_and_verify_archive(
     quoted_name = urllib.parse.quote(pkg.name, safe="")
     quoted_version = urllib.parse.quote(pkg.version, safe="")
     archive_url = f"{official_base_url.rstrip('/')}/api/archives/{quoted_name}-{quoted_version}.tar.gz"
+    parsed_archive_url = urllib.parse.urlparse(archive_url)
+    if parsed_archive_url.scheme != "https" or not parsed_archive_url.netloc:
+        raise ValueError(f"Refusing non-HTTPS archive URL: {archive_url!r}")
 
     last_error: Exception | None = None
     for attempt in range(1, retries + 1):
@@ -142,6 +145,7 @@ def download_and_verify_archive(
                 archive_url,
                 headers={"User-Agent": "Bugaoshan-CI-PubFallback/1.0"},
             )
+            # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
             with urllib.request.urlopen(req, timeout=timeout) as resp:
                 data = resp.read()
             actual_sha256 = hashlib.sha256(data).hexdigest().lower()
