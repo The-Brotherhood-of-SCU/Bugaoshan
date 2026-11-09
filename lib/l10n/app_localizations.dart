@@ -811,7 +811,7 @@ abstract class AppLocalizations {
   /// **'Update to Latest (Include Preview)'**
   String get updateToPreview;
 
-  /// Toggle in the test page that makes the home/about update checks target the preview release channel.
+  /// Toggle in the developer page that makes the home/about update checks target the preview release channel.
   ///
   /// In en, this message translates to:
   /// **'Use Preview Release Source'**
@@ -820,7 +820,7 @@ abstract class AppLocalizations {
   /// No description provided for @usePreviewUpdateSourceHint.
   ///
   /// In en, this message translates to:
-  /// **'Affects only the automatic checks on the home and about pages. The test page always checks both channels.'**
+  /// **'Affects only the automatic checks on the home and about pages. The developer page always checks both channels.'**
   String get usePreviewUpdateSourceHint;
 
   /// Settings entry title for GitHub mirror / proxy configuration.
@@ -1014,6 +1014,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Teacher'**
   String get teacher;
+
+  /// No description provided for @courseTeacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructor: {teacher}'**
+  String courseTeacher(String teacher);
 
   /// No description provided for @location.
   ///
@@ -4171,17 +4177,11 @@ abstract class AppLocalizations {
   /// **'{month}/{day}'**
   String dateMonthDay(int month, int day);
 
-  /// Compact numeric month/day for narrow spaces such as the course grid header
+  /// Separator choice for course schedule dates
   ///
   /// In en, this message translates to:
-  /// **'{month}/{day}'**
-  String dateMonthDayCompact(int month, int day);
-
-  /// Full numeric date shown in the course page header when there is room for the year
-  ///
-  /// In en, this message translates to:
-  /// **'{month}/{day}/{year}'**
-  String dateYearMonthDay(int year, int month, int day);
+  /// **'Date format'**
+  String get dateFormatSetting;
 
   /// Short label for statutory holiday displayed in course grid date header
   ///

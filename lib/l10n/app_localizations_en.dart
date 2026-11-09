@@ -399,7 +399,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get usePreviewUpdateSourceHint =>
-      'Affects only the automatic checks on the home and about pages. The test page always checks both channels.';
+      'Affects only the automatic checks on the home and about pages. The developer page always checks both channels.';
 
   @override
   String get networkProxy => 'Network Acceleration';
@@ -506,6 +506,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get teacher => 'Teacher';
+
+  @override
+  String courseTeacher(String teacher) {
+    return 'Instructor: $teacher';
+  }
 
   @override
   String get location => 'Location';
@@ -2176,14 +2181,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String dateMonthDayCompact(int month, int day) {
-    return '$month/$day';
-  }
-
-  @override
-  String dateYearMonthDay(int year, int month, int day) {
-    return '$month/$day/$year';
-  }
+  String get dateFormatSetting => 'Date format';
 
   @override
   String get holidayLabel => 'Hol';

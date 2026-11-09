@@ -160,9 +160,9 @@
   "updateToPreview": "Update to Latest (Include Preview)",
   "usePreviewUpdateSource": "Use Preview Release Source",
   "@usePreviewUpdateSource": {
-    "description": "Toggle in the test page that makes the home/about update checks target the preview release channel."
+    "description": "Toggle in the developer page that makes the home/about update checks target the preview release channel."
   },
-  "usePreviewUpdateSourceHint": "Affects only the automatic checks on the home and about pages. The test page always checks both channels.",
+  "usePreviewUpdateSourceHint": "Affects only the automatic checks on the home and about pages. The developer page always checks both channels.",
   "networkProxy": "Network Acceleration",
   "@networkProxy": {
     "description": "Settings entry title for GitHub mirror / proxy configuration."
@@ -231,6 +231,14 @@
   "deleteCourseConfirm": "Are you sure you want to delete this course?",
   "courseName": "Course Name",
   "teacher": "Teacher",
+  "courseTeacher": "Instructor: {teacher}",
+  "@courseTeacher": {
+    "placeholders": {
+      "teacher": {
+        "type": "String"
+      }
+    }
+  },
   "location": "Location",
   "courseColor": "Course Color",
   "week": "Week",
@@ -855,32 +863,9 @@
       }
     }
   },
-  "dateMonthDayCompact": "{month}/{day}",
-  "@dateMonthDayCompact": {
-    "description": "Compact numeric month/day for narrow spaces such as the course grid header",
-    "placeholders": {
-      "month": {
-        "type": "int"
-      },
-      "day": {
-        "type": "int"
-      }
-    }
-  },
-  "dateYearMonthDay": "{month}/{day}/{year}",
-  "@dateYearMonthDay": {
-    "description": "Full numeric date shown in the course page header when there is room for the year",
-    "placeholders": {
-      "year": {
-        "type": "int"
-      },
-      "month": {
-        "type": "int"
-      },
-      "day": {
-        "type": "int"
-      }
-    }
+  "dateFormatSetting": "Date format",
+  "@dateFormatSetting": {
+    "description": "Separator choice for course schedule dates"
   },
   "holidayLabel": "Hol",
   "@holidayLabel": {

@@ -158,7 +158,7 @@
   "updateToStable": "更新到最新稳定版",
   "updateToPreview": "更新到最新版（包括预览版）",
   "usePreviewUpdateSource": "软件更新使用预览版源",
-  "usePreviewUpdateSourceHint": "仅影响首页和关于页面的自动检查；测试页面始终同时检查两个渠道。",
+  "usePreviewUpdateSourceHint": "仅影响首页和关于页面的自动检查；开发者页面始终同时检查两个渠道。",
   "networkProxy": "网络加速",
   "ghProxyMirror": "GitHub 加速",
   "ghProxyMirrorHint": "通过 gh-proxy 镜像下载 GitHub 资源（软件更新、校历），失败时自动回退直连。",
@@ -204,6 +204,14 @@
   "deleteCourseConfirm": "确定要删除这门课程吗？",
   "courseName": "课程名称",
   "teacher": "教师",
+  "courseTeacher": "授课教师：{teacher}",
+  "@courseTeacher": {
+    "placeholders": {
+      "teacher": {
+        "type": "String"
+      }
+    }
+  },
   "location": "教室",
   "courseColor": "课程颜色",
   "week": "周",
@@ -821,32 +829,9 @@
       }
     }
   },
-  "dateMonthDayCompact": "{month}/{day}",
-  "@dateMonthDayCompact": {
-    "description": "紧凑数字月/日：课表表头等窄空间使用，避免「10月19日」在低分辨率屏上挤成一团",
-    "placeholders": {
-      "month": {
-        "type": "int"
-      },
-      "day": {
-        "type": "int"
-      }
-    }
-  },
-  "dateYearMonthDay": "{year}/{month}/{day}",
-  "@dateYearMonthDay": {
-    "description": "带年份的数字日期：宽屏顶栏日期用，窄屏省掉年份只留月/日",
-    "placeholders": {
-      "year": {
-        "type": "int"
-      },
-      "month": {
-        "type": "int"
-      },
-      "day": {
-        "type": "int"
-      }
-    }
+  "dateFormatSetting": "日期格式",
+  "@dateFormatSetting": {
+    "description": "课表日期的分隔符选项"
   },
   "holidayLabel": "假",
   "@holidayLabel": {

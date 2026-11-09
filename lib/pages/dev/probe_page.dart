@@ -5,7 +5,7 @@ import 'package:bugaoshan/pages/dev/live_activity_probe_view.dart';
 import 'package:bugaoshan/pages/dev/reminder_probe_view.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
-/// 开发者选项子页：探针合集。
+/// 开发者页面子页：探针合集。
 ///
 /// 两条探针各自保持独立组件与状态（[ReminderProbeView] / [LiveActivityProbeView]），
 /// 本页只负责把它们同时渲染出来，便于一次操作对照两端行为。

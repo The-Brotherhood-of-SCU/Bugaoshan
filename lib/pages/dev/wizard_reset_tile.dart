@@ -5,7 +5,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
-/// TestPage 入口：重置首启引导。
+/// 开发者页面入口：重置首启引导。
 class WizardResetTile extends StatelessWidget {
   const WizardResetTile({super.key});
 

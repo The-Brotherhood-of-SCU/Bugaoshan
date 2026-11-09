@@ -381,7 +381,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get usePreviewUpdateSource => '软件更新使用预览版源';
 
   @override
-  String get usePreviewUpdateSourceHint => '仅影响首页和关于页面的自动检查；测试页面始终同时检查两个渠道。';
+  String get usePreviewUpdateSourceHint => '仅影响首页和关于页面的自动检查；开发者页面始终同时检查两个渠道。';
 
   @override
   String get networkProxy => '网络加速';
@@ -485,6 +485,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get teacher => '教师';
+
+  @override
+  String courseTeacher(String teacher) {
+    return '授课教师：$teacher';
+  }
 
   @override
   String get location => '教室';
@@ -2112,14 +2117,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String dateMonthDayCompact(int month, int day) {
-    return '$month/$day';
-  }
-
-  @override
-  String dateYearMonthDay(int year, int month, int day) {
-    return '$year/$month/$day';
-  }
+  String get dateFormatSetting => '日期格式';
 
   @override
   String get holidayLabel => '假';
