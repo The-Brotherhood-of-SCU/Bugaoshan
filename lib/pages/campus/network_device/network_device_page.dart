@@ -31,6 +31,7 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
     final auth = getIt<ScuAuthProvider>();
     final userInfo = getIt<UserInfoProvider>();
     final devices = getIt<NetworkDeviceProvider>();
+    final appConfig = getIt<AppConfigProvider>();
     final l10n = AppLocalizations.of(context)!;
 
     return ListenableBuilder(
@@ -46,7 +47,7 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
             ),
           ],
         ),
-        body: _buildBody(l10n, auth, userInfo, devices),
+        body: _buildBody(l10n, auth, userInfo, devices, appConfig),
       ),
     );
   }
@@ -56,6 +57,35 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
     ScuAuthProvider auth,
     UserInfoProvider userInfo,
     NetworkDeviceProvider devices,
+    AppConfigProvider appConfig,
+  ) {
+    // 无感认证走独立的 NewServiceAuth，与 wfw 登录/在线设备查询互不影响。
+    // 因此这个入口始终置顶渲染，wfw 认证挂起、设备列表加载或失败时仍可进入。
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: _buildPasspointEntry(l10n),
+        ),
+        Expanded(
+          child: _buildNetworkDeviceContent(
+            l10n,
+            auth,
+            userInfo,
+            devices,
+            appConfig,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNetworkDeviceContent(
+    AppLocalizations l10n,
+    ScuAuthProvider auth,
+    UserInfoProvider userInfo,
+    NetworkDeviceProvider devices,
+    AppConfigProvider appConfig,
   ) {
     if (!auth.isLoggedIn) {
       return auth.isAutoLoggingIn
@@ -86,11 +116,9 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
             _buildRefreshErrorBanner(l10n, devices.error!, devices.refresh),
             const SizedBox(height: 16),
           ],
-          _buildPasspointEntry(l10n),
-          const SizedBox(height: 16),
           _buildUserInfoCard(l10n, userInfo.profile),
           const SizedBox(height: 16),
-          _buildDeviceListCard(l10n, devices),
+          _buildDeviceListCard(l10n, devices, appConfig),
         ],
       ),
     );
@@ -228,8 +256,9 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
   Widget _buildDeviceListCard(
     AppLocalizations l10n,
     NetworkDeviceProvider provider,
+    AppConfigProvider appConfig,
   ) {
-    final duration = getIt<AppConfigProvider>().cardSizeAnimationDuration.value;
+    final duration = appConfig.cardSizeAnimationDuration.value;
     // 下线设备后会重新拉取列表，用设备签名作为 key 触发淡入淡出，
     // 让列表替换不是瞬间跳变。
     final deviceSignature = provider.devices
@@ -251,9 +280,13 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
             switchOutCurve: appCurve,
             // 默认居中 Stack 在行数变化时会让新旧内容上下错位，
             // 这里统一顶部对齐后交叉淡入淡出。
+            // 退场内容仍在树中，需屏蔽点击，避免淡出期间误触上一版的行。
             layoutBuilder: (currentChild, previousChildren) => Stack(
               alignment: Alignment.topLeft,
-              children: [...previousChildren, ?currentChild],
+              children: [
+                ...previousChildren.map((child) => IgnorePointer(child: child)),
+                ?currentChild,
+              ],
             ),
             child: provider.devices.isEmpty
                 ? _buildEmptyDevices(l10n)
@@ -262,7 +295,8 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       ...provider.devices.map(
-                        (device) => _buildDeviceItem(device, l10n, provider),
+                        (device) =>
+                            _buildDeviceItem(device, l10n, provider, duration),
                       ),
                     ],
                   ),
@@ -291,13 +325,14 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
     Map<String, dynamic> device,
     AppLocalizations l10n,
     NetworkDeviceProvider provider,
+    Duration duration,
   ) {
     final deviceId = device['device_id']?.toString();
     final isThisDevice =
         provider.isOfflining && provider.offliningDeviceId == deviceId;
     final scheme = Theme.of(context).colorScheme;
     return AnimatedContainer(
-      duration: getIt<AppConfigProvider>().cardSizeAnimationDuration.value,
+      duration: duration,
       curve: appCurve,
       padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(

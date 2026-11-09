@@ -2184,7 +2184,7 @@
   "logClearTitle": "Clear logs in memory?",
   "logClearHint": "Only logs from the current process will be cleared. Saved log files are kept.",
   "logPersistenceOff": "Logs stay in memory and are lost when the app closes",
-  "logPersistenceActive": "Warnings and errors are saved(about 6 MB)",
+  "logPersistenceActive": "Warnings and errors are saved (about 6 MB)",
   "logPersistenceRetryHint": "Turn this off and on to retry. If it still fails, check available storage.",
   "logPersistenceUnavailable": "Log file writing is unavailable{reason}",
   "@logPersistenceUnavailable": {"placeholders": {"reason": {"type": "String"}}},

@@ -6778,7 +6778,7 @@ abstract class AppLocalizations {
   /// No description provided for @logPersistenceActive.
   ///
   /// In en, this message translates to:
-  /// **'Warnings and errors are saved(about 6 MB)'**
+  /// **'Warnings and errors are saved (about 6 MB)'**
   String get logPersistenceActive;
 
   /// No description provided for @logPersistenceRetryHint.

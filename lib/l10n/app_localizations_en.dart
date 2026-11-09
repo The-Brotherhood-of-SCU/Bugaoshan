@@ -3646,7 +3646,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logPersistenceActive =>
-      'Warnings and errors are saved(about 6 MB)';
+      'Warnings and errors are saved (about 6 MB)';
 
   @override
   String get logPersistenceRetryHint =>
