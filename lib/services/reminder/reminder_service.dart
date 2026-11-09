@@ -18,8 +18,10 @@ import 'package:flutter/foundation.dart';
 /// - 哈希短路：计划特征哈希未变化时直接短路返回，避免前台唤醒等高频事件触发冗余系统排期调度。
 ///
 /// 依赖设计：
-/// 监听 [CourseProvider] 的 ValueNotifier 字段而非复用 [CourseProvider.onCoursesChanged]，
-/// 是由于后者为单一回调，已在依赖注入层由桌面小组件更新服务占用，二次赋值会导致小组件数据同步失效。
+/// 课表相关变更仍监听 [CourseProvider] 的 ValueNotifier 字段，而不是注册中心的
+/// `courseChanged` 时机：提醒排期需要「值确实变了」的语义（后者在每次写操作后都会触发，
+/// 包括保存了内容未变的配置），并且要与提醒配置的多路变更合并去抖。
+/// 只做副作用、不关心数据是否变化的订阅（如桌面小组件同步）走注册中心。
 class ReminderService {
   ReminderService({
     required CourseProvider courseProvider,
