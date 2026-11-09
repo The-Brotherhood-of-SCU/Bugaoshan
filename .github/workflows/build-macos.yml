@@ -9,6 +9,7 @@ on:
       - 'pubspec*'
       - 'tool/validate_macos.sh'
       - 'tool/verify_macos_bundle.py'
+      - '.github/scripts/pub_get_with_fallback.py'
       - '.github/workflows/build-macos.yml'
   workflow_dispatch:
 
