@@ -60,6 +60,7 @@ import 'package:bugaoshan/services/database_service.dart';
 import 'package:bugaoshan/services/download_manager.dart';
 import 'package:bugaoshan/services/exit_service.dart';
 import 'package:bugaoshan/services/github_resource_service.dart';
+import 'package:bugaoshan/services/hook_registry.dart';
 import 'package:bugaoshan/services/reminder/live_activity_coordinator.dart';
 import 'package:bugaoshan/services/reminder/reminder_service.dart';
 import 'package:bugaoshan/services/reminder/reminder_transport.dart';
@@ -76,6 +77,12 @@ const String _tag = 'Injector';
 
 final getIt = GetIt.instance;
 
+/// 课表变更订阅的取消句柄。
+///
+/// [WidgetUpdateService] 与 [CourseProvider] 都是进程级单例，正常情况下不会退订；
+/// 保存句柄是为了让 getIt 销毁（测试 reset / 热重启）时能成对解除订阅。
+VoidCallback? _cancelCourseChangedSubscription;
+
 @InjectableInit(
   initializerName: 'init', // default
   preferRelativeImports: true, // default
@@ -85,6 +92,8 @@ void configureDependencies() {
   getIt.init();
   getIt.registerSingleton<ExitService>(ExitService());
   getIt.registerSingleton<DownloadManager>(DownloadManager());
+  // 全局时机注册中心：Provider 在此声明可订阅的时机，跨模块订阅者按 (拥有者, 时机) 订阅。
+  getIt.registerSingleton<HookRegistry>(HookRegistry.instance);
   // 复用 AppLog 的启动缓冲实例，而非新建：DI 装配完成前（getIt 尚未能
   // 提供实例）的启动日志已经写进这个缓冲，若此处另建实例，那批日志将无人
   // 观察——而启动失败恰恰是最需要留痕的时刻。
@@ -455,40 +464,58 @@ void _configureAsyncDependencies() {
       getIt<GithubResourceService>(),
     );
   });
-  getIt.registerSingletonAsync<WidgetUpdateService>(() async {
-    await getIt.isReady<CourseProvider>();
-    await getIt.isReady<AppConfigProvider>();
-    final courseProvider = getIt<CourseProvider>();
-    final appConfig = getIt<AppConfigProvider>();
-    final service = WidgetUpdateService();
-    courseProvider.onCoursesChanged = () {
-      service.updateWidgetData().catchError((
-        Object error,
-        StackTrace stackTrace,
-      ) {
-        AppLog.e(_tag, '课表变更后同步小组件失败', error: error, stackTrace: stackTrace);
-      });
-    };
+  getIt.registerSingletonAsync<WidgetUpdateService>(
+    () async {
+      await getIt.isReady<CourseProvider>();
+      await getIt.isReady<AppConfigProvider>();
+      final courseProvider = getIt<CourseProvider>();
+      final appConfig = getIt<AppConfigProvider>();
+      final service = WidgetUpdateService();
+      // 订阅课表变更时机：经注册中心分发，同一时机可挂多个订阅者且互不覆盖。
+      // 句柄保存在模块级变量里，供 getIt 销毁时退订，避免测试 reset 之后留下悬挂订阅。
+      _cancelCourseChangedSubscription = getIt<HookRegistry>().on(
+        courseProvider,
+        CourseProvider.courseChanged,
+        (_) {
+          service.updateWidgetData().catchError((
+            Object error,
+            StackTrace stackTrace,
+          ) {
+            AppLog.e(
+              _tag,
+              '课表变更后同步小组件失败',
+              error: error,
+              stackTrace: stackTrace,
+            );
+          });
+        },
+      );
 
-    // Sync initial widget_show_tomorrow setting to App Group
-    if (!kIsWeb && (Platform.isIOS || Platform.isMacOS)) {
-      try {
-        await service.syncWidgetShowTomorrow(
-          appConfig.widgetShowTomorrow.value,
-        );
-        if (Platform.isIOS) {
-          await service.syncWidgetAppearance(
-            colorStyle: appConfig.widgetColorStyle.value,
-            density: appConfig.widgetDensity.value,
+      // Sync initial widget_show_tomorrow setting to App Group
+      if (!kIsWeb && (Platform.isIOS || Platform.isMacOS)) {
+        try {
+          await service.syncWidgetShowTomorrow(
+            appConfig.widgetShowTomorrow.value,
           );
+          if (Platform.isIOS) {
+            await service.syncWidgetAppearance(
+              colorStyle: appConfig.widgetColorStyle.value,
+              density: appConfig.widgetDensity.value,
+            );
+          }
+        } catch (error, stackTrace) {
+          AppLog.e(_tag, '初始化小组件设置失败', error: error, stackTrace: stackTrace);
         }
-      } catch (error, stackTrace) {
-        AppLog.e(_tag, '初始化小组件设置失败', error: error, stackTrace: stackTrace);
       }
-    }
 
-    return service;
-  });
+      return service;
+    },
+    dispose: (service) {
+      _cancelCourseChangedSubscription?.call();
+      _cancelCourseChangedSubscription = null;
+      service.dispose();
+    },
+  );
 
   // 本地提醒排期服务：依赖 CourseProvider 与 AppConfigProvider，负责排期计算与原生同步。
   getIt.registerSingletonAsync<ReminderService>(() async {

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'package:bugaoshan/theme_shape.dart';
@@ -7,10 +8,13 @@ import 'package:bugaoshan/theme_shape.dart';
 /// 左右滑页容器：解决 PageView / TabBarView 自带手势与页内纵向滚动冲突、
 /// 滑动不跟手的问题。做法与课表页一致：
 ///
-/// - 禁用 PageView 自带滑动物理，由外层 GestureDetector 接管横向拖动，
+/// - 禁用 PageView 自带滑动物理，由外层的 pan 识别器接管横向拖动，
 ///   手动改写 PageController 的 offset，页面严格跟手；
 /// - 位移超过阈值后按「横向位移明显大于纵向」判定方向：纵向拖动不认领，
 ///   手势完整交给页内的 ListView / CustomScrollView；
+/// - 已经滑到边界（第一页向右 / 最后一页向左）时不认领手势：向右的那次
+///   交还给外层的全局侧滑返回（见 `ios_back_gesture.dart`），否则多 Tab
+///   页面上「右滑返回」会被本组件吃掉；
 /// - 松手时按速度或位移决定翻页或回弹。
 ///
 /// 传 [tabController] 时与 TabBar 双向联动（点 Tab 翻页、滑页同步指示器）；
@@ -195,12 +199,29 @@ class _SwipePageViewState extends State<SwipePageView> {
     );
   }
 
+  /// 手势开始前所在页；识别器在竞技场里判断「这一滑有没有页可翻」时用。
+  int _pageIndexForGesture() {
+    if (!_pageController.hasClients) return 0;
+    return (_pageController.page ?? 0).round();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onPanStart: _handlePanStart,
-      onPanUpdate: _handlePanUpdate,
-      onPanEnd: _handlePanEnd,
+    return RawGestureDetector(
+      gestures: <Type, GestureRecognizerFactory>{
+        _SwipePageViewPanRecognizer:
+            GestureRecognizerFactoryWithHandlers<_SwipePageViewPanRecognizer>(
+              () => _SwipePageViewPanRecognizer(debugOwner: this),
+              (_SwipePageViewPanRecognizer recognizer) {
+                recognizer
+                  ..currentPage = _pageIndexForGesture
+                  ..pageCount = (() => _pageCount)
+                  ..onStart = _handlePanStart
+                  ..onUpdate = _handlePanUpdate
+                  ..onEnd = _handlePanEnd;
+              },
+            ),
+      },
       child: PageView.builder(
         physics: const NeverScrollableScrollPhysics(),
         controller: _pageController,
@@ -217,6 +238,67 @@ class _SwipePageViewState extends State<SwipePageView> {
           return page;
         },
       ),
+    );
+  }
+}
+
+/// [SwipePageView] 用的 pan 识别器：到边界时拒绝接受手势。
+///
+/// 如果边界处仍然接受手势，位于更外层的全局侧滑返回（`ios_back_gesture.dart`）
+/// 就拿不到这一滑，多 Tab 页面上「右滑返回」会失效。这里在竞技场判定阶段就
+/// 拒绝「没有页可翻」的方向，让外层识别器接管：第一页向右→交还返回手势；
+/// 最后一页向左→谁也不翻。
+///
+/// 判定只在横向明显大于纵向时生效，纵向拖动仍交给页内列表。
+class _SwipePageViewPanRecognizer extends PanGestureRecognizer {
+  _SwipePageViewPanRecognizer({super.debugOwner});
+
+  /// 当前页序号（松开前不会因手势本身改变）。
+  int Function()? currentPage;
+
+  /// 总页数。
+  int Function()? pageCount;
+
+  Offset? _origin;
+  Offset? _latest;
+
+  @override
+  void addAllowedPointer(PointerDownEvent event) {
+    _origin = event.position;
+    _latest = event.position;
+    super.addAllowedPointer(event);
+  }
+
+  @override
+  void handleEvent(PointerEvent event) {
+    if (event is PointerMoveEvent) {
+      _latest = event.position;
+    }
+    super.handleEvent(event);
+  }
+
+  @override
+  bool hasSufficientGlobalDistanceToAccept(
+    PointerDeviceKind pointerDeviceKind,
+    double? deviceTouchSlop,
+  ) {
+    final Offset? origin = _origin;
+    final Offset? latest = _latest;
+    if (origin != null && latest != null) {
+      final double dx = latest.dx - origin.dx;
+      final double dy = latest.dy - origin.dy;
+      final bool horizontal = dx.abs() > dy.abs() * 1.5;
+      if (horizontal) {
+        final int page = currentPage?.call() ?? 0;
+        final int count = pageCount?.call() ?? 1;
+        // 向左滑 = 下一页；向右滑 = 上一页。没有目标页时不认领。
+        if (dx < 0 && page >= count - 1) return false;
+        if (dx > 0 && page <= 0) return false;
+      }
+    }
+    return super.hasSufficientGlobalDistanceToAccept(
+      pointerDeviceKind,
+      deviceTouchSlop,
     );
   }
 }
