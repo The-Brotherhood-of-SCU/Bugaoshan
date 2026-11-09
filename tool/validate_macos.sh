@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 export PUB_HOSTED_URL="${PUB_HOSTED_URL:-https://pub.flutter-io.cn}"
-flutter pub get
+python3 .github/scripts/pub_get_with_fallback.py
 dart run build_runner build --delete-conflicting-outputs
 flutter gen-l10n
 
