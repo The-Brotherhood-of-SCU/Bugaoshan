@@ -97,11 +97,11 @@ void main() {
       expect(version, isNull);
     });
 
-    test('returns first prerelease when multiple exist', () async {
+    test('returns highest prerelease version regardless of order', () async {
       final version = await fetchLatestPrereleaseFromGithub(
         client: mockClient(
-          '[{"tag_name": "v0.6.0-beta.2", "prerelease": true}, '
-          '{"tag_name": "v0.6.0-beta.1", "prerelease": true}]',
+          '[{"tag_name": "v0.6.0-beta.1", "prerelease": true}, '
+          '{"tag_name": "v0.6.0-beta.2", "prerelease": true}]',
         ),
       );
       expect(version, '0.6.0-beta.2');

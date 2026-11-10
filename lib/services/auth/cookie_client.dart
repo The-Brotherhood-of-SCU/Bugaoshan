@@ -218,6 +218,39 @@ class CookieClient extends http.BaseClient {
     return response;
   }
 
+  /// 单次发送，保留共享 cookie，但绝不重建或重放请求。
+  /// 文件上传等非幂等操作必须走此入口；超时不表示服务器未接收。
+  Future<http.StreamedResponse> sendOnce(
+    http.BaseRequest request, {
+    Duration timeout = kHttpTimeout,
+  }) async {
+    final cookies = _cookiesFor(request.url);
+    if (cookies.isNotEmpty) {
+      request.headers['Cookie'] = cookies.entries
+          .map((entry) => '${entry.key}=${entry.value}')
+          .join('; ');
+    }
+    request.followRedirects = false;
+    _inFlightRequests++;
+    try {
+      final response = await _inner.send(request).timeout(timeout);
+      _storeCookies(request.url, response);
+      return response;
+    } catch (_, stackTrace) {
+      // 不记录原异常中的 URL query，认证回跳可能含 CAS 票据。
+      _log.e(
+        _tag,
+        '${request.method} ${request.url.host}${request.url.path} 单次请求失败',
+        error: const ServiceException('单次网络请求失败'),
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    } finally {
+      _inFlightRequests--;
+      _closeRetiredInnersIfIdle();
+    }
+  }
+
   /// 带 http.ClientException 错误重试的请求发送函数
   Future<http.StreamedResponse> sendWithClientExceptionRetry(
     http.BaseRequest request,

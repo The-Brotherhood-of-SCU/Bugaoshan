@@ -8,7 +8,6 @@ import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:os_type/os_type.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'download_options.dart';
@@ -201,8 +200,8 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
 
   @override
   Widget build(BuildContext context) {
-    if (OS.isHarmony) {
-      return WebViewUnsupportedPage(title: widget.title);
+    if (hasNoWebViewBackend) {
+      return WebViewUnsupportedPage(title: widget.title, url: widget.url);
     }
     return _buildWebViewPage(context);
   }

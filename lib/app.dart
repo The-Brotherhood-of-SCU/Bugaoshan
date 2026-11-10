@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show PointerDeviceKind;
 
 // 这个库是为了在iOS上使用CupertinoPageTransitionsBuilder，flutter新版已经分离出来了，不要删
 // ignore: unnecessary_import
@@ -111,6 +112,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         onGenerateTitle: (ctx) => AppLocalizations.of(ctx)!.bugaoshan,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
+        scrollBehavior: const AppScrollBehavior(),
         theme: _buildTheme(Brightness.light, context),
         darkTheme: _buildTheme(Brightness.dark, context),
         themeMode: _appConfig.themeMode.value,
@@ -156,4 +158,19 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       pageTransitionDuration: _appConfig.cardSizeAnimationDuration.value,
     );
   }
+}
+
+/// 全局滚动行为：桌面端允许鼠标左键拖动滚动视图。
+///
+/// Flutter 默认的 [ScrollBehavior.dragDevices] 不含 [PointerDeviceKind.mouse]，
+/// 桌面 / Web 上按住鼠标拖不动任何列表与横向标签条（只能滚轮）。在默认集合
+/// 基础上追加鼠标，不手动抄整套——默认值里的 `unknown` 是 Android 无障碍
+/// 语音滚动（VoiceAccess）依赖的，漏掉会让 TalkBack 用户滑不动列表，以后
+/// Flutter 新增设备类型也不会在这里漏跟。
+class AppScrollBehavior extends MaterialScrollBehavior {
+  const AppScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices =>
+      {...super.dragDevices, PointerDeviceKind.mouse};
 }

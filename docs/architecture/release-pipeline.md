@@ -51,13 +51,13 @@ branch-policy 只做一条硬校验：**`main` 只能接收来自 `preview` 的 
 3. **合并进 `preview`**：push 事件同时触发 pre-flight 重跑与 release.yml preview 通道——
    - 预览 tag 与 pubspec 解耦：脚本取「最新正式 tag」严格递增 Z 位（X、Y 不动），推导 `vX.Y.Z-preview`（首次）或递增序号 `vX.Y.Z-preview.N`（如上一正式版 v2.5.1 → v2.5.2-preview.2）；
    - workflow 按解析出的目标版本检查 changelog，再自动打 tag（`resolve-metadata` job，需要 `contents: write`，推送失败立即终止本次发布）；正式版说明缺失、空置或章节重复时在打 tag 与构建前终止；
-   - `build-android.yml`（universal + split-per-ABI，混淆，JDK 21）、`build-windows.yml`（zip）与 `build-macos.yml`（未签名 universal 验证包）并行构建；Mac 商店包单独签名上传，验证包不进入 GitHub Release；
+   - `build-android.yml`（universal + split-per-ABI，混淆，JDK 21）、`build-windows.yml`（zip）、`build-linux.yml`（Linux x64 tar.gz，`debian:13` 容器）并行构建；macOS 发布完全在个人 fork 运行，不属于主仓库发布依赖；
    - 发布走 **Draft → 上传产物 → Publish** 顺序，兼容仓库的不可变 Release 策略，标记为 prerelease；
    - 预览版的 release notes 按完整目标版本精确提取（例如 `[2.5.4-preview.2]` 或 `[2.5.4-rc]`），缺失或空置时显示占位说明（见 §4.8），对比范围为上一个**正式** tag。tag 在构建开始前就已推送，构建/发布失败时 tag 会留存（见 §4.12）。
 4. **周期内迭代**：后续变更继续以 PR 合入 `preview`，预览版序号自动递增（`.2`、`.3`…）。周期内 `pubspec.yaml` 的版本号保持上一正式版不变，预览产物的 versionName 与 tag 不同名是设计使然。
 5. **准备正式版（`/release X.Y.Z`）**：bump `pubspec.yaml` 版本并同步 `+buildNumber`，使用 changelog skill 合并同周期预览变化和最后增量，创建或更新 `[X.Y.Z] - 日期` 章节。更新 F-Droid 元数据（`metadata/*.yml` 的 versionName/versionCode + `metadata_changelog.py` 生成多语言 changelogs），本地跑严格模式 `pre_release_check.py X.Y.Z`，提交推送 `preview`——这会先触发一轮 RC 发布（首轮 `vX.Y.Z-rc`，后续为 `-rc1`、`-rc2`…；构建时仍注入上一正式版的包体版本）。若需要该 RC 的发布说明，另行整理完整 RC 版本章节，提取器不会借用正式版说明。随后创建 `preview → main` 的发布 PR，合并后才发正式版。
 6. **合并进 `main`**：release.yml formal 通道——
-   - 基础版本读自 pubspec；远端不存在 `vX.Y.Z` → 打 tag、双端构建、发布正式 Release（`--latest`）；
+   - 基础版本读自 pubspec；远端不存在 `vX.Y.Z` → 打 tag、多端构建、发布正式 Release（`--latest`）；
    - F-Droid changelog 由 `metadata_changelog.py --skip-existing` 生成并兜底提交回 `main`；
    - `vX.Y.Z` 已存在 → `should_release=false`，秒级跳过，不会重复发布。
 7. **事后**：main 的 push 再触发一次 pre-flight（结构性检查照常硬拦截；时机类检查在两个版本之间的正常状态下为 WARN，不会长期挂红）。
@@ -150,7 +150,7 @@ preview 通道的并发组开启取消（cancel-in-progress）：短时间连续
 setup action 里 `build_runner` 带 `|| true`，生成器配置坏了不会让 setup 显式失败，只能靠漂移检查与测试兜底。
 
 ### 4.19 Apple 平台下载与签名边界
-`release_body.py` 指向 iOS/macOS 共用的 App Store 条目，商店版本与 GitHub tag 独立，Mac 可下载状态以商店为准。Mac CI 制品只供构建验证，`release_prepare.py` 不整理或发布未签名 Mac 包。iOS 旧测试 IPA 外链仍指向 `Visio-Vanitas/Bugaoshan`（#285 的 mirror 决策），不是本流水线上传的产物。Mac 商店签名、导出及上传见 [macOS 分发](macos-distribution.md)。
+macOS DMG 由个人 fork [wjlfish/Bugaoshan-macos](https://github.com/wjlfish/Bugaoshan-macos/releases) 独立构建、签名、公证和发布。主仓库仅构建并发布 Android / Windows / Linux，不调用、不等待、不导入 macOS 制品；个人仓库失败不影响主仓库发布。PR 的 macOS 无凭据构建验证独立运行。iOS/macOS 共用 App Store 条目，商店状态以商店为准；iOS 测试 IPA 外链保持原有 mirror。
 
 ### 4.20 Python 单测重复发现
 pre-flight 的 `unittest discover -s .github/scripts/` 会把 `tests/` 子目录的用例再发现并执行一遍，用例双跑属无害冗余，分析 CI 时长时勿据此误判。
@@ -171,7 +171,8 @@ pre-flight 的 `unittest discover -s .github/scripts/` 会把 `tests/` 子目录
 | `.github/workflows/release.yml` | 双通道发布：版本推导、打 tag、构建、发布 |
 | `.github/workflows/build-android.yml` | Android 的 PR 编译验证、手动构建与发布构建复用；PR 触发构建为未签名 release APK，不依赖发布 keystore |
 | `.github/workflows/build-windows.yml` | Windows 的 PR 编译验证、手动构建与发布构建复用 |
-| `.github/workflows/build-macos.yml` | macOS 未签名 universal 验证构建，支持 PR / 手动触发与发布流程复用 |
+| `.github/workflows/build-linux.yml` | Linux x64 tar.gz 的发布构建复用；在 `debian:13` 容器内构建，无 PR 触发 |
+| `.github/workflows/build-macos.yml` | macOS 未签名 universal 验证构建，仅支持 PR / 手动触发，不参与发布流程 |
 | `.github/actions/setup/action.yml` | 公共环境：钉版 Flutter、镜像 pub get、代码生成、git 元数据 |
 | `.github/scripts/resolve_release_version.py` | 通道判定、tag 推导、幂等守卫 |
 | `.github/scripts/changelog_sections.py` / `release_tags.py` / `release_changelog.py` / `release_body.py` / `release_prepare.py` | 版本章节解析、发布说明与产物整理 |

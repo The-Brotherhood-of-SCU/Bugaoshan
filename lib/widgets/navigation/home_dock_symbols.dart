@@ -21,7 +21,6 @@ import 'package:bugaoshan/utils/constants.dart';
     selected: 'door.left.hand.open',
   ),
   dockIdNetworkDevice => (normal: 'network', selected: 'network'),
-  dockIdPasspoint => (normal: 'wifi', selected: 'wifi'),
   dockIdBalanceQuery => (normal: 'bolt', selected: 'bolt.fill'),
   dockIdAcademicCalendar => (normal: 'calendar', selected: 'calendar'),
   dockIdFitnessTest => (normal: 'figure.run', selected: 'figure.run'),
@@ -38,6 +37,10 @@ import 'package:bugaoshan/utils/constants.dart';
   dockIdExamPlan => (normal: 'doc.text', selected: 'doc.text.fill'),
   dockIdZysc => (normal: 'heart', selected: 'heart.fill'),
   dockIdLeave => (normal: 'checklist', selected: 'checklist'),
+  dockIdReservation => (
+    normal: 'door.left.hand.closed',
+    selected: 'door.left.hand.open',
+  ),
   dockIdRepair => (
     normal: 'wrench.and.screwdriver',
     selected: 'wrench.and.screwdriver.fill',

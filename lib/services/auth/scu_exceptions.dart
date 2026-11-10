@@ -33,6 +33,16 @@ class ServiceException extends ScuException {
   const ServiceException(super.message, {this.statusCode});
 }
 
+/// 预约系统存在未提交的预约单（`launch` 返回业务码 `APPLY`）
+///
+/// 预约系统的约束：一个账号同一时间只能有一张「未提交（待审批/待使用）」
+/// 的预约单；再次提交时服务端返回 `e == "APPLY"`。UI 据此引导用户先去
+/// 官方页面处理已有预约单，而不是把服务端原文当普通错误展示。
+class ReservationApplyPendingException extends ServiceException {
+  const ReservationApplyPendingException()
+    : super('当前存在未提交的预约，请先在预约系统提交或取消');
+}
+
 /// 频率限制（请求过于频繁）
 ///
 /// 由 API Service 在检测到服务端限流时产生。

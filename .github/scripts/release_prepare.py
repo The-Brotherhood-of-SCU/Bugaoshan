@@ -17,8 +17,6 @@ def _android_asset_suffix(filename):
 
 
 def prepare_release_files(version, root=Path(".")):
-    # macOS is distributed through App Store Connect. The CI unsigned validation
-    # bundle is deliberately excluded from GitHub release assets.
     root = Path(root)
     version = version.lstrip("v")
     android_dir = root / "android-apk"
@@ -61,6 +59,10 @@ def prepare_release_files(version, root=Path(".")):
         )
 
     print(f"Archived windows artifact -> {zip_base_name}.zip")
+
+    linux_src = root / "linux-release" / "linux-release.tar.gz"
+    shutil.copy2(linux_src, root / f"bugaoshan_{version}_linux_x64.tar.gz")
+    print(f"Copied linux artifact -> bugaoshan_{version}_linux_x64.tar.gz")
 
 
 def main():

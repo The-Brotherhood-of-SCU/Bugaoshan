@@ -9,7 +9,8 @@
 - [Flutter SDK](https://flutter.dev/docs/get-started/install) >= 3.44（Dart SDK 3.10+）
 - [Dart SDK](https://dart.dev/get-dart) >= 3.10.4
 - [Nuget CLI](https://learn.microsoft.com/en-us/nuget/install-nuget-client-tools?tabs=windows#nugetexe-cli)  required by `flutter_inappwebview` (windows target)
-- Linux 构建需要 GTK 3、WPE WebKit 2.0、WPEBackend-fdo、libwpe、libsecret、libepoxy 和 Wayland 开发包。Linux 发布包动态链接这些系统库，不包含 WPE WebKit 的副本。
+- Windows 需要先执行 `git config --global core.longpaths true`，否则部分依赖在 pub cache 内检出时可能因路径超过 MAX_PATH 报 `Filename too long`
+- Linux 构建需要 GTK 3、libsecret、libepoxy 和 Wayland 开发包。Linux 发布包动态链接这些系统库。
 
 ### 安装运行
 

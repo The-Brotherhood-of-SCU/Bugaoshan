@@ -7,17 +7,10 @@ on:
       - 'macos/**'
       - 'lib/**'
       - 'pubspec*'
-      - 'tool/macos_distribution.sh'
+      - 'tool/validate_macos.sh'
       - 'tool/verify_macos_bundle.py'
+      - '.github/scripts/pub_get_with_fallback.py'
       - '.github/workflows/build-macos.yml'
-  workflow_call:
-    inputs:
-      build_name:
-        type: string
-        required: false
-      build_number:
-        type: string
-        required: false
   workflow_dispatch:
 
 permissions:
@@ -32,8 +25,6 @@ jobs:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
       PUB_HOSTED_URL: https://pub.flutter-io.cn
       COCOAPODS_DISABLE_STATS: 'true'
-      MACOS_BUILD_NAME: ${{ inputs.build_name }}
-      MACOS_BUILD_NUMBER: ${{ inputs.build_number }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -44,7 +35,7 @@ jobs:
           channel: stable
           cache: true
       - name: Compile and verify app and widget for arm64 and x86_64
-        run: bash tool/macos_distribution.sh unsigned
+        run: bash tool/validate_macos.sh unsigned
       - name: Upload unsigned validation bundle (not a public release)
         uses: actions/upload-artifact@v4
         with:

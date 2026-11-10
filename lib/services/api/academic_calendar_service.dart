@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/models/academic_calendar.dart';
+import 'package:bugaoshan/services/github_resource_service.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/calendar_event_utils.dart';
 
@@ -10,16 +10,15 @@ class AcademicCalendarService {
   static const String _tag = 'AcademicCalendarService';
 
   final SharedPreferences _prefs;
-  final http.Client? _client;
+
+  /// GitHub 资源访问入口：校历远程拉取的镜像/直连选择与回退内聚于此。
+  final GithubResourceService _resource;
 
   static const String _remoteUrl =
       'https://raw.githubusercontent.com/The-Brotherhood-of-SCU/Bugaoshan/main/assets/academic_calendar.json';
-  static const String _mirrorUrl =
-      'https://gh-proxy.com/https://raw.githubusercontent.com/The-Brotherhood-of-SCU/Bugaoshan/refs/heads/main/assets/academic_calendar.json';
   static const String _cacheKey = 'cached_academic_calendar_json';
 
-  AcademicCalendarService(this._prefs, {http.Client? client})
-    : _client = client;
+  AcademicCalendarService(this._prefs, this._resource);
 
   /// Parse a calendar JSON string (supports both compact and expanded formats).
   AcademicCalendarData _parseCalendarJson(String raw) {
@@ -76,31 +75,13 @@ class AcademicCalendarService {
     final local = await _loadLocalCalendar();
     if (local != null) return local;
 
-    final client = _client ?? http.Client();
-    try {
-      for (final url in [_mirrorUrl, _remoteUrl]) {
-        final calendar = await _tryFetch(client, url);
-        if (calendar != null) return calendar;
-      }
-    } finally {
-      // 仅关闭本次自建的 client；注入的 _client 由注入方管理生命周期。
-      if (_client == null) client.close();
-    }
-    return AcademicCalendarData(semesters: []);
+    final calendar = await _tryFetch();
+    return calendar ?? AcademicCalendarData(semesters: []);
   }
 
   /// 下拉刷新：仅走网络拉取最新校历，成功写缓存并返回新数据，失败返回 null。
   Future<AcademicCalendarData?> refreshCalendarData() async {
-    final client = _client ?? http.Client();
-    try {
-      for (final url in [_mirrorUrl, _remoteUrl]) {
-        final calendar = await _tryFetch(client, url);
-        if (calendar != null) return calendar;
-      }
-    } finally {
-      if (_client == null) client.close();
-    }
-    return null;
+    return _tryFetch();
   }
 
   /// 读取本地校历：优先 SharedPreferences 缓存，其次内置 asset。
@@ -137,16 +118,17 @@ class AcademicCalendarService {
     }
   }
 
-  /// 从 [url] 拉取远程校历；成功时写入缓存并返回，失败返回 null。
-  Future<AcademicCalendarData?> _tryFetch(
-    http.Client client,
-    String url,
-  ) async {
+  /// 拉取远程校历；成功时写入缓存并返回，失败返回 null。
+  ///
+  /// 镜像/直连选择与失败回退由 [GithubResourceService] 内聚处理；
+  /// 5 秒超时为单次尝试（镜像与直连各自计时）。
+  Future<AcademicCalendarData?> _tryFetch() async {
     try {
-      final response = await client
-          .get(Uri.parse(url))
-          .timeout(const Duration(seconds: 5));
-      if (response.statusCode == 200 && response.body.isNotEmpty) {
+      final response = await _resource.get(
+        _remoteUrl,
+        timeout: const Duration(seconds: 5),
+      );
+      if (response.body.isNotEmpty) {
         final data = jsonDecode(response.body);
         if (data is Map<String, dynamic> && data.containsKey('semesters')) {
           final calendar = _parseCalendarJson(response.body);

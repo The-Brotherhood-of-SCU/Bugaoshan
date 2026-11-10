@@ -9,6 +9,8 @@ from pathlib import Path
 BUNDLE_ID = "io.github.thebrotherhoodofscu.bugaoshan.ios"
 APP_GROUP = f"group.{BUNDLE_ID}"
 TEAM_ID = "2MDTD66RDG"
+APP_NAME = "不高山上"
+APP_BUNDLE_NAME = f"{APP_NAME}.app"
 
 
 def require(condition, message):
@@ -27,6 +29,9 @@ def signed_entitlements(bundle):
 def verify(bundle, signed=False, version=None, build=None):
     bundle = Path(bundle)
     app_info = plistlib.loads((bundle / "Contents/Info.plist").read_bytes())
+    require(bundle.name == APP_BUNDLE_NAME, "Unexpected installed application name")
+    for key in ("CFBundleName", "CFBundleDisplayName"):
+        require(app_info.get(key) == APP_NAME, f"Unexpected {key}")
     require(app_info.get("LSApplicationCategoryType") == "public.app-category.education",
             "Missing Mac App Store education category")
     if version:
@@ -84,7 +89,7 @@ def verify_package(package):
     with tempfile.TemporaryDirectory(prefix="bugaoshan-macos-export-") as temporary:
         expanded = Path(temporary) / "expanded"
         subprocess.run(["pkgutil", "--expand-full", str(package), str(expanded)], check=True)
-        applications = list(expanded.glob("*.pkg/Payload/Bugaoshan.app"))
+        applications = list(expanded.glob(f"*.pkg/Payload/{APP_BUNDLE_NAME}"))
         require(len(applications) == 1, "Expected one application in the exported package")
         application = applications[0]
         verify(application, signed=True)

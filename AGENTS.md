@@ -128,6 +128,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │   ├── README.md                # engineering documentation index
 │   ├── architecture/           # current implementation architecture
 │   │   ├── authentication.md
+│   │   ├── ios-back-gesture.md
 │   │   ├── ios-distribution.md
 │   │   ├── ios-liquid-glass.md
 │   │   ├── linux-distribution.md
@@ -148,7 +149,8 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │       ├── 0006-sunday-first-course-week.md
 │       ├── 0007-global-student-type-switch.md
 │       ├── 0008-reminder-scheduling-in-dart.md
-│       └── 0009-export-schedule-as-image.md
+│       ├── 0009-export-schedule-as-image.md
+│       └── 0010-remove-linux-native-webview.md
 └── .github/
     ├── actions/setup/          # composite action: install Flutter 3.44, gen-l10n, git metadata
     ├── scripts/                # Python release automation
@@ -161,6 +163,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
     │   ├── release.yml         # releases on push to main/preview, target-gated tags, or manual dispatch
     │   ├── build-android.yml   # workflow_call → APK (split per ABI, obfuscated)
     │   ├── build-windows.yml   # workflow_call → Windows zip
+    │   ├── build-linux.yml     # workflow_call → Linux x64 tar.gz (debian:13 container)
     └── ISSUE_TEMPLATE/feature_request.yml
 ```
 
@@ -314,7 +317,7 @@ Shared downloads module lives in `lib/pages/campus/downloads/`:
 ### Key Patterns
 
 - **Session expiry** — `ScuAuth.getClient()` checks 1-hour TTL, calls `_synchronizedRefresh()` on expiry. Refresh failure → `onSessionExpired` callback → `SessionExpiredListener` shows a global SnackBar with "前往登录" action (5 s debounce). ZHJW/WFW/PayApp API Services wrap calls in `retryOnUnauthenticated(getClient, fn)` to retry once on `UnauthenticatedException`; CCYL only retries `CcylAuthExpiredException`. Business providers catch final exceptions for UI state.
-- **左右 + 上下双滑页面** — 统一用 `SwipePageView`（`lib/widgets/common/swipe_page_view.dart`，做法源自课表页：禁用 PageView 自带物理、外层 GestureDetector 接管横滑并手动 jumpTo 跟手，纵向拖动放行给页内列表），替代 `TabBarView` / `PageView`，避免手势冲突导致的滑动不跟手。传 `tabController` 与 TabBar 双向联动；`keepPagesAlive: true` 保留各页 State（表单/滚动位置）。课表页的 `CourseSwipePageView` 是它的薄壳转发。
+- **左右 + 上下双滑页面** — 统一用 `SwipePageView`（`lib/widgets/common/swipe_page_view.dart`，做法源自课表页：禁用 PageView 自带物理、外层 GestureDetector 接管横滑并手动 jumpTo 跟手，纵向拖动放行给页内列表），替代 `TabBarView` / `PageView`，避免手势冲突导致的滑动不跟手。传 `tabController` 与 TabBar 双向联动；`keepPagesAlive: true` 保留各页 State（表单/滚动位置）。课表页的 `CourseSwipePageView` 是它的薄壳转发。已到边界（第一页向右 / 最后一页向左）时它不认领手势，第一页的右滑交还给 iOS 全局侧滑返回（`docs/architecture/ios-back-gesture.md`）。
 - **Multiple schedules** — Courses are stored in a single SQLite `courses` table, filtered by `schedule_id`. `DatabaseService.switchSchedule()` updates the current ID and refreshes the in-memory cache.
 - **Responsive dialogs** — `popupOrNavigate(context, page)` in `lib/widgets/route/router_utils.dart`: dialog at width/2 on tablets/landscape, dialog at 2/3 w+h on big portrait, full-page push on phones. Falls back to `Navigator.push` if already inside a popup (`PopupContext.of(context)`).
 - **`logicRootContext`** — global getter `navigatorKey.currentContext!` in `router_utils.dart`. Use when you need a `BuildContext` outliving the current widget — e.g. after `Navigator.pop(context)` the local `context` is disposed, so capture `final rootCtx = logicRootContext; Navigator.pop(context); popupOrNavigate(rootCtx, ...)`.
@@ -387,7 +390,7 @@ Two labels drive automation / review routing on pull requests:
 - **`release.yml` (Release Pipeline)**:
   - Triggers on pushes to `main` / `preview`, tags matching `v*.*.*` (published only when the tag targets the main/preview head), and `workflow_dispatch` (build-only on other branches).
   - Version/tag rules via `.github/scripts/resolve_release_version.py` (formal: pubspec, idempotent; preview: anchored to the last formal tag with a patch increment `-preview[.N]`; the `/release` prep phase switches to `-rc` naming; preview builds inject the last formal versionName/versionCode).
-  - Triggers `build-android.yml` (universal + split APKs with Java 21) and `build-windows.yml` (Windows zip with dynamic WebView2Loader).
+  - Triggers `build-android.yml` (universal + split APKs with Java 21), `build-windows.yml` (Windows zip with dynamic WebView2Loader) and `build-linux.yml` (Linux x64 tar.gz, built in a `debian:13` container).
   - Publishes GitHub Releases with safe Draft -> Upload -> Publish ordering to support Immutable Releases.
 - **`close-linked-issues.yml` (Issue Auto-Close)**:
   - Triggers on `pull_request: [closed]`, only runs when the PR was merged.
@@ -444,4 +447,4 @@ These are project-specific Claude Code slash commands:
 
 ## Platform Support
 
-`flutter_launcher_icons` 为所有 6 个平台生成图标;`flutter_secure_storage` 在所有平台都可用;`sqflite_common_ffi` 处理桌面端 SQLite. UI 通过 `LayoutBuilder`/`MediaQuery` 适配手机/平板/桌面. 主 release pipeline(参见 `release.yml`)打包 **Android (split-per-ABI APK)** 和 **Windows (zip)**;Linux 仅支持本地构建,不再由 CI 发布. Linux 分发与 WPE 边界见 `docs/architecture/linux-distribution.md`;新增发布平台时务必同时更新 `release.yml`、`release_prepare.py` 和发布正文.
+`flutter_launcher_icons` 为所有 6 个平台生成图标;`flutter_secure_storage` 在所有平台都可用;`sqflite_common_ffi` 处理桌面端 SQLite. UI 通过 `LayoutBuilder`/`MediaQuery` 适配手机/平板/桌面. 主 release pipeline(参见 `release.yml`)打包 **Android (split-per-ABI APK)**、**Windows (zip)** 和 **Linux (x64 tar.gz)**;Linux 仍支持本地构建. Linux 分发与网页视图边界见 `docs/architecture/linux-distribution.md`;新增发布平台时务必同时更新 `release.yml`、`release_prepare.py` 和发布正文.

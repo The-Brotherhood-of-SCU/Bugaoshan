@@ -14,8 +14,10 @@ class ReleasePrepareTest(unittest.TestCase):
             root = Path(temp)
             android_dir = root / "android-apk"
             windows_dir = root / "windows-release"
+            linux_dir = root / "linux-release"
             android_dir.mkdir()
             windows_dir.mkdir()
+            linux_dir.mkdir()
 
             packages = {
                 "app-universal-release.apk": b"universal",
@@ -26,6 +28,7 @@ class ReleasePrepareTest(unittest.TestCase):
             for name, content in packages.items():
                 (android_dir / name).write_bytes(content)
             (windows_dir / "Bugaoshan.exe").write_bytes(b"dummy content")
+            (linux_dir / "linux-release.tar.gz").write_bytes(b"linux")
             validation_dir = root / "macos-validation-unsigned"
             validation_dir.mkdir()
             (validation_dir / "Bugaoshan-unsigned.zip").write_bytes(b"not distributable")
@@ -43,6 +46,9 @@ class ReleasePrepareTest(unittest.TestCase):
             
             windows_zip = root / "bugaoshan_2.2.0_windows_x64.zip"
             self.assertTrue(windows_zip.exists(), "Windows zip file was not created")
+            linux_targz = root / "bugaoshan_2.2.0_linux_x64.tar.gz"
+            self.assertTrue(linux_targz.exists(), "Linux tar.gz file was not created")
+            self.assertEqual(linux_targz.read_bytes(), b"linux")
             self.assertEqual(list(root.glob("bugaoshan_*_macos*")), [])
             
             with zipfile.ZipFile(windows_zip, 'r') as zf:

@@ -49,8 +49,6 @@ String _formatBytes(int bytes) {
   return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
 }
 
-String proxyDownloadUrl(String url) => 'https://gh-proxy.org/$url';
-
 /// 纯 UI 视图,只渲染下载进度;便于在 widget test 中独立挂载验证。
 ///
 /// 业务逻辑(状态更新、下载请求、错误处理)保留在 [showDownloadProgressDialog] 中。
@@ -211,7 +209,6 @@ Future<bool> showDownloadProgressDialog({
   required UpdateProvider updateProvider,
 }) async {
   final l10n = AppLocalizations.of(context)!;
-  downloadUrl = proxyDownloadUrl(downloadUrl);
 
   // Android:仅执行下载,通知栏负责所有 UI 反馈
   if (kIsWeb || Platform.isAndroid) {

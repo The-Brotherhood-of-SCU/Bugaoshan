@@ -11,6 +11,7 @@ import 'package:bugaoshan/pages/settings/set_language_page.dart';
 import 'package:bugaoshan/pages/settings/set_app_icon_page.dart';
 import 'package:bugaoshan/pages/settings/set_course_style_page.dart';
 import 'package:bugaoshan/pages/settings/set_font_page.dart';
+import 'package:bugaoshan/pages/settings/set_proxy_page.dart';
 import 'package:bugaoshan/pages/settings/set_student_type_page.dart';
 import 'package:bugaoshan/pages/settings/set_theme_color_page.dart';
 import 'package:bugaoshan/pages/settings/reminder_setting_page.dart';
@@ -83,6 +84,11 @@ class SoftwareSettingPage extends StatelessWidget {
                 icon: Icons.dock_outlined,
                 label: localizations.customDock,
                 onTap: () => popupOrNavigate(context, const SetDockPage()),
+              ),
+              IconTile(
+                icon: Icons.alt_route,
+                label: localizations.networkProxy,
+                onTap: () => popupOrNavigate(context, const SetProxyPage()),
               ),
               if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS)
                 IconTile(

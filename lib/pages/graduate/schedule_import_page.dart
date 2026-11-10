@@ -18,7 +18,6 @@ import 'package:bugaoshan/widgets/webview/webview_unsupported_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:os_type/os_type.dart';
 
 /// 直连失败的原因分类，决定失败态的文案与可用动作。
 enum _DirectFailureKind {
@@ -308,14 +307,16 @@ class _GraduateScheduleImportPageState
     }
 
     try {
-      if (existingId != null) {
-        await provider.replaceScheduleCourses(existingId, courses);
-        await provider.switchSchedule(existingId);
-      } else {
-        await provider.addSchedule(config);
-        await provider.replaceScheduleCourses(config.id, courses);
-        await provider.switchSchedule(config.id);
-      }
+      await provider.runBatch(() async {
+        if (existingId != null) {
+          await provider.replaceScheduleCourses(existingId, courses);
+          await provider.switchSchedule(existingId);
+        } else {
+          await provider.addSchedule(config);
+          await provider.replaceScheduleCourses(config.id, courses);
+          await provider.switchSchedule(config.id);
+        }
+      });
       AppLog.i(_tag, '导入完成：${courses.length} 门课程 → $scheduleName');
       if (!mounted) return;
       setState(() => _importing = false);
@@ -324,7 +325,7 @@ class _GraduateScheduleImportPageState
           content: Text(l10n.graduateScheduleImportDoneTo(scheduleName)),
         ),
       );
-      Navigator.of(context).pop();
+      popDialog(context: context);
     } catch (e, logStackTrace) {
       AppLog.e(_tag, '_import 失败', error: e, stackTrace: logStackTrace);
 
@@ -360,8 +361,8 @@ class _GraduateScheduleImportPageState
       return WebViewUnsupportedPage(title: l10n.graduateScheduleImport);
     }
 
-    // 用户主动点了「应急网页抓取」：渲染 WebView（鸿蒙无 WebView，给不了）。
-    if (_manualWebView && !OS.isHarmony) {
+    // 用户主动点了「应急网页抓取」：渲染 WebView（Linux 无 WebView，给不了）。
+    if (_manualWebView && !hasNoWebViewBackend) {
       return Scaffold(appBar: _buildAppBar(l10n), body: _fallbackBody(l10n));
     }
 
@@ -372,13 +373,13 @@ class _GraduateScheduleImportPageState
   /// 统一认证登录页）+ 重试；其余给错误信息 + 重试。WebView 应急入口只在
   /// 有 WebView 的平台显示，且保持不显眼（TextButton）。
   Widget _buildDirectFailure(AppLocalizations l10n) {
-    final isHarmony = OS.isHarmony;
+    final hasNoWebView = hasNoWebViewBackend;
     final isUnauthenticated =
         _directFailureKind == _DirectFailureKind.unauthenticated;
     final message = switch (_directFailureKind) {
       _DirectFailureKind.unauthenticated =>
         l10n.graduateScheduleImportSessionExpired,
-      _ when isHarmony => l10n.graduateScheduleImportNoWebView,
+      _ when hasNoWebView => l10n.graduateScheduleImportNoWebView,
       _ => l10n.graduateScheduleImportFailed,
     };
 
@@ -431,7 +432,7 @@ class _GraduateScheduleImportPageState
                       : l10n.retry,
                 ),
               ),
-              if (!isHarmony) ...[
+              if (!hasNoWebView) ...[
                 const SizedBox(height: 8),
                 TextButton(
                   onPressed: () => setState(() => _manualWebView = true),
@@ -457,7 +458,7 @@ class _GraduateScheduleImportPageState
       leading: IconButton(
         icon: const Icon(Icons.close),
         tooltip: l10n.close,
-        onPressed: () => Navigator.of(context).pop(),
+        onPressed: () => popDialog(context: context),
       ),
       actions: [
         IconButton(

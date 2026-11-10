@@ -6,7 +6,7 @@ import 'package:bugaoshan/pages/dev/logs/log_viewer_page.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
-/// TestPage 入口：运行日志。
+/// 开发者页面入口：运行日志。
 /// 点击进入全屏日志查看器（保存 / 打开文件夹 / 清空由查看器 AppBar 提供）。
 class LogTile extends StatelessWidget {
   const LogTile({super.key});

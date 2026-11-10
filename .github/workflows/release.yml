@@ -53,7 +53,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -106,18 +106,17 @@ jobs:
       build_name: ${{ needs.resolve-metadata.outputs.build_version }}
       build_number: ${{ needs.resolve-metadata.outputs.build_number }}
 
-  build-macos:
-    name: macOS Build Validation
+  build-linux:
+    name: Linux Build
     needs: resolve-metadata
     if: needs.resolve-metadata.outputs.should_release == 'true' || needs.resolve-metadata.outputs.build_only == 'true'
-    uses: ./.github/workflows/build-macos.yml
+    uses: ./.github/workflows/build-linux.yml
     with:
-      build_name: ${{ needs.resolve-metadata.outputs.build_version }}
-      build_number: ${{ needs.resolve-metadata.outputs.build_number }}
+      version: ${{ needs.resolve-metadata.outputs.tag }}
 
   publish-release:
     name: Publish Release
-    needs: [resolve-metadata, build-android, build-windows, build-macos]
+    needs: [resolve-metadata, build-android, build-windows, build-linux]
     if: needs.resolve-metadata.outputs.should_release == 'true'
     runs-on: ubuntu-latest
     permissions:
@@ -139,16 +138,26 @@ jobs:
           name: windows-release
           path: windows-release
 
+      - name: Download Linux Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-release
+          path: linux-release
+
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
+      # 翻译依赖仅 metadata_changelog.py（formal only）使用；preview 跳过，
+      # 避免每轮预览都安装 argostranslate 重依赖并恢复 50MB 模型缓存。
       - name: Install Python dependencies
+        if: needs.resolve-metadata.outputs.is_prerelease != 'true'
         run: |
           pip install pyyaml deep-translator argostranslate
 
       - name: Cache Argos Translate model
+        if: needs.resolve-metadata.outputs.is_prerelease != 'true'
         uses: actions/cache@v4
         id: cache-argos
         with:
@@ -156,7 +165,7 @@ jobs:
           key: argos-translate-zh-en-v1
 
       - name: Download Argos Translate zh->en model
-        if: steps.cache-argos.outputs.cache-hit != 'true'
+        if: needs.resolve-metadata.outputs.is_prerelease != 'true' && steps.cache-argos.outputs.cache-hit != 'true'
         run: |
           python -c "
           import argostranslate.package
@@ -233,7 +242,8 @@ jobs:
             --draft \
             "${GOPTS[@]}"
 
-          gh release upload "$TAG" bugaoshan_*.apk bugaoshan_*.zip
+          assets=(bugaoshan_*.apk bugaoshan_*.zip bugaoshan_*.tar.gz)
+          gh release upload "$TAG" "${assets[@]}"
 
           if [ "$IS_PRERELEASE" = "true" ]; then
             gh release edit "$TAG" --draft=false --prerelease

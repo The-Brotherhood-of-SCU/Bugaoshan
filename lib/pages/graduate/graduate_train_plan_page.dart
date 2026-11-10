@@ -11,6 +11,7 @@ import 'package:bugaoshan/utils/graduate_train_plan_progress.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
+import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +35,9 @@ class _GraduateTrainPlanPageState extends State<GraduateTrainPlanPage> {
 
   late final GraduateTrainPlanProvider _provider;
 
+  /// 缓存实例：dispose 时 getIt 可能已被 reset，重新取会抛异常。
+  late final ScuAuthProvider _auth;
+
   /// 统一认证会话过期（token 还在）时的自愈刷新进行中。
   bool _recoveringSession = false;
 
@@ -41,7 +45,8 @@ class _GraduateTrainPlanPageState extends State<GraduateTrainPlanPage> {
   void initState() {
     super.initState();
     _provider = getIt<GraduateTrainPlanProvider>();
-    getIt<ScuAuthProvider>().addListener(_onAuthChanged);
+    _auth = getIt<ScuAuthProvider>();
+    _auth.addListener(_onAuthChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _onAuthChanged();
     });
@@ -49,12 +54,12 @@ class _GraduateTrainPlanPageState extends State<GraduateTrainPlanPage> {
 
   @override
   void dispose() {
-    getIt<ScuAuthProvider>().removeListener(_onAuthChanged);
+    _auth.removeListener(_onAuthChanged);
     super.dispose();
   }
 
   void _onAuthChanged() {
-    final auth = getIt<ScuAuthProvider>();
+    final auth = _auth;
     if (auth.isLoggedIn) {
       _provider.ensureLoaded();
     } else if (!auth.isAutoLoggingIn &&
@@ -90,7 +95,7 @@ class _GraduateTrainPlanPageState extends State<GraduateTrainPlanPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return ListenableBuilder(
-      listenable: Listenable.merge([_provider, getIt<ScuAuthProvider>()]),
+      listenable: Listenable.merge([_provider, _auth]),
       builder: (context, _) => Scaffold(
         appBar: AppBar(
           centerTitle: true,
@@ -98,12 +103,13 @@ class _GraduateTrainPlanPageState extends State<GraduateTrainPlanPage> {
           leading: IconButton(
             icon: const Icon(Icons.close),
             tooltip: l10n.close,
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => popDialog(context: context),
           ),
           actions: [
-            if (getIt<ScuAuthProvider>().isLoggedIn &&
+            if (_auth.isLoggedIn &&
                 _provider.state != GraduateTrainPlanLoadState.loading)
               IconButton(
+                tooltip: l10n.refresh,
                 onPressed: _provider.refresh,
                 icon: const Icon(Icons.refresh),
               ),
@@ -115,7 +121,7 @@ class _GraduateTrainPlanPageState extends State<GraduateTrainPlanPage> {
   }
 
   Widget _buildBody(AppLocalizations l10n) {
-    final auth = getIt<ScuAuthProvider>();
+    final auth = _auth;
 
     // 统一认证未登录：自动登录或会话自愈中给加载态，否则给「请先登录」
     // 引导。研教务会话过期的错误态走下方 unauthenticated。

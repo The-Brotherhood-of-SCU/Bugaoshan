@@ -9,6 +9,7 @@ class MainFlutterWindow: NSWindow {
   private let appGroupId = "group.io.github.thebrotherhoodofscu.bugaoshan.ios"
   private let calendarEventIdentifierMapKey = "bugaoshan.calendarEventIdentifiers"
   private let eventStore = EKEventStore()
+  private let reminderChannel = ReminderChannel()
 
   override func awakeFromNib() {
     let flutterViewController = FlutterViewController()
@@ -23,6 +24,7 @@ class MainFlutterWindow: NSWindow {
 
     // Register the method channel
     registerBugaoshanMethodChannel(messenger: flutterViewController.engine.binaryMessenger)
+    reminderChannel.register(messenger: flutterViewController.engine.binaryMessenger)
 
     super.awakeFromNib()
   }

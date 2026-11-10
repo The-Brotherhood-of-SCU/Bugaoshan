@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:bugaoshan/injection/injector.dart';
@@ -32,9 +31,6 @@ class LogStressTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // release 构建直接不渲染，避免把测试工具暴露给用户。
-    if (!kDebugMode) return const SizedBox.shrink();
-
     final logger = getIt<AppLogger>();
     return ListTile(
       leading: const Icon(Icons.speed),

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/services/reminder/live_activity_service.dart';
 
-/// 开发者选项中的课程实时活动（灵动岛）探针组件。
+/// 课程实时活动（灵动岛）探针视图。
 ///
 /// 用于在课表数据不可用、或当前不在上课时段时验证灵动岛与锁屏的渲染形态：
 /// 直接经原生通道启动一条示例会话，跳过「当前必须有课」这一业务前提。
@@ -14,17 +14,19 @@ import 'package:bugaoshan/services/reminder/live_activity_service.dart';
 /// 并发说明：若调用时确实处于上课时段，协调器会在下一次前台恢复时按真实课程
 /// 覆盖当前会话：它只比对自身记录的会话标识，不感知探针启动的会话。这是预期
 /// 行为：探针用于单次界面验证，不与业务链路并行维护同一条会话。
-class LiveActivityProbeTile extends StatefulWidget {
-  const LiveActivityProbeTile({super.key, this.service});
+///
+/// 仅提供内容本体，由 [ProbePage] 与本地提醒探针同页渲染。
+class LiveActivityProbeView extends StatefulWidget {
+  const LiveActivityProbeView({super.key, this.service});
 
   /// 注入用服务实例，缺省时使用默认通道实现。
   final LiveActivityService? service;
 
   @override
-  State<LiveActivityProbeTile> createState() => _LiveActivityProbeTileState();
+  State<LiveActivityProbeView> createState() => _LiveActivityProbeViewState();
 }
 
-class _LiveActivityProbeTileState extends State<LiveActivityProbeTile> {
+class _LiveActivityProbeViewState extends State<LiveActivityProbeView> {
   /// 示例会话时长。取值较短，便于快速走完「启动 → 倒计时 → 自动结束」全流程，
   /// 同时留出切至主屏、长按灵动岛的操作时间。
   static const Duration _sampleDuration = Duration(minutes: 30);

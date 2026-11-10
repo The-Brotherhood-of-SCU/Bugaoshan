@@ -22,9 +22,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your campus assistant: schedules, grades and campus services in one place';
 
   @override
-  String get wizard => 'Wizard';
-
-  @override
   String get resetWizardTitle => 'Reset Wizard Status';
 
   @override
@@ -191,9 +188,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectBuilding => 'Select Building';
 
   @override
-  String get allBuildings => 'All Buildings';
-
-  @override
   String get seats => 'seats';
 
   @override
@@ -226,9 +220,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get classroomCanBorrow => 'Borrowable';
-
-  @override
-  String get classroomCannotBorrow => 'Not Borrowable';
 
   @override
   String get classroomRemark => 'Remark';
@@ -271,16 +262,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Access is restricted to campus network during 23:00-6:00. Please connect to campus Wi-Fi or use the school VPN.';
 
   @override
-  String get appOnly => 'Available on App only';
-
-  @override
   String get softwareSetting => 'Software Setting';
 
   @override
   String get followSystem => 'Follow System';
 
   @override
-  String get modifyLanguage => 'Modify Language';
+  String get modifyLanguage => 'Language';
 
   @override
   String get current => 'Current';
@@ -300,11 +288,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String animationDurationUpdated(Object value) {
-    return 'Animation Duration updated to $value ms';
-  }
-
-  @override
   String get animationDurationHint =>
       'Hint: Adjust the slider to preview the animation, click Confirm to save the settings';
 
@@ -317,9 +300,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get themeColor => 'Theme Color';
-
-  @override
-  String get changeThemeColor => 'Change Theme Color';
 
   @override
   String get confirmButton => 'Confirm';
@@ -357,22 +337,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeModeDark => 'Dark';
 
   @override
-  String get blockPicker => 'Block';
-
-  @override
-  String get materialPicker => 'Material';
-
-  @override
-  String get advancedPicker => 'Advanced';
-
-  @override
   String get about => 'About';
 
   @override
   String get developmentTeam => 'Dev Team';
-
-  @override
-  String get projectInfo => 'Project Info';
 
   @override
   String get appName => 'App Name';
@@ -385,17 +353,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appDescription => 'Explore everything, all on the Bugaoshan';
-
-  @override
-  String get contactUs => 'Contact Us';
-
-  @override
-  String developedBy(Object team) {
-    return 'Developed by $team';
-  }
-
-  @override
-  String get externalResources => 'External Resources';
 
   @override
   String get projectRepository => 'Repository';
@@ -423,9 +380,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noUpdateAvailable => 'Already on Latest Version';
 
   @override
-  String get goToReleases => 'Go to Releases';
-
-  @override
   String get startUpdate => 'Start Update';
 
   @override
@@ -445,7 +399,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get usePreviewUpdateSourceHint =>
-      'Affects only the automatic checks on the home and about pages. The test page always checks both channels.';
+      'Affects only the automatic checks on the home and about pages. The developer page always checks both channels.';
+
+  @override
+  String get networkProxy => 'Network Acceleration';
+
+  @override
+  String get ghProxyMirror => 'GitHub Mirror';
+
+  @override
+  String get ghProxyMirrorHint =>
+      'Download GitHub resources (app updates, academic calendar) via the gh-proxy mirror; falls back to direct connection on failure.';
 
   @override
   String get forceCaptchaForDownload => 'Force CAPTCHA for Download';
@@ -470,9 +434,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String notificationDownloading(int percent) {
     return 'Downloading... $percent%';
   }
-
-  @override
-  String get notificationInstalling => 'Installing...';
 
   @override
   String notificationUpdateFailed(String error) {
@@ -502,12 +463,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get devPage => 'Developer Page';
 
   @override
-  String get forceUpdate => 'Update to Latest (Include Preview)';
-
-  @override
-  String get appLogTitle => 'Runtime Log';
-
-  @override
   String get viewAppLog => 'View Runtime Log';
 
   @override
@@ -523,9 +478,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduleManagement => 'Schedule Management';
-
-  @override
-  String get globalSetting => 'Global Setting';
 
   @override
   String get noSchedule => 'No schedule yet';
@@ -554,6 +506,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get teacher => 'Teacher';
+
+  @override
+  String courseTeacher(String teacher) {
+    return 'Instructor: $teacher';
+  }
 
   @override
   String get location => 'Location';
@@ -690,9 +647,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'No teaching week is available during vacation. Schedule unchanged.';
 
   @override
-  String get fetchingCurrentWeek => 'Fetching...';
-
-  @override
   String get loginRequired =>
       'Please complete SCU Unified Identity login in the Profile page first';
 
@@ -758,13 +712,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get extractColorFromBackgroundImage => 'Extract Color from Background';
 
   @override
-  String get themeColorAutoExtractedHint =>
-      'Theme color extracted from background image. Go to Software Setting -> Theme Color to modify.';
-
-  @override
-  String get noBackgroundImageSet => 'Please set a background image first';
-
-  @override
   String get removeBackgroundImage => 'Remove Background Image';
 
   @override
@@ -811,9 +758,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get customColor => 'Custom Color';
 
   @override
-  String get noCourseThisWeek => 'No courses this week';
-
-  @override
   String get timeConflict => 'Time Conflict';
 
   @override
@@ -822,10 +766,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fieldRequired => 'This field is required';
-
-  @override
-  String get invalidWeekRange =>
-      'End week must be greater than or equal to start week';
 
   @override
   String get duplicateScheduleName => 'Schedule name already exists';
@@ -872,11 +812,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importedScheduleDefaultName => 'Imported Schedule';
-
-  @override
-  String importNameConflictHint(Object name) {
-    return 'Name \"$name\" already exists, please rename:';
-  }
 
   @override
   String get importNameSuffix => '(Import)';
@@ -989,10 +924,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String totalWeeksSubtitle(Object count) {
     return '$count weeks';
   }
-
-  @override
-  String get invalidSectionRange =>
-      'End section must be greater than start section';
 
   @override
   String get crossPeriodError => 'Cross Period Error';
@@ -1119,17 +1050,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gradesStatsDesc => 'View and analyze your academic performance';
 
   @override
-  String get gradesStatsComingSoon => 'Coming soon';
-
-  @override
   String get schemeScores => 'Scheme Scores';
 
   @override
   String get passingScores => 'Passing Scores';
-
-  @override
-  String get gradesLoginRequired =>
-      'Please complete SCU Unified Identity login in the Profile page first';
 
   @override
   String get gradesNoData => 'No grade data';
@@ -1163,9 +1087,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gradesGet => 'Fetch Grades';
-
-  @override
-  String get gradesRetry => 'Retry';
 
   @override
   String get gpa => 'GPA';
@@ -1220,21 +1141,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get sessionExpiredTitle => 'Session Expired';
-
-  @override
-  String get sessionExpiredMessage =>
-      'Your login session has expired. Please login again to continue using this feature.';
-
-  @override
   String get sessionExpired => 'Session expired';
 
   @override
   String get undergradDataOnly =>
       'Undergraduate academic session unavailable. Graduate accounts: use the Graduate section under Campus. Undergraduate accounts: sign in again and retry.';
-
-  @override
-  String get relogin => 'Login Again';
 
   @override
   String get trainProgram => 'Training Program';
@@ -1257,15 +1168,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get trainProgramNoData => 'No training program data';
-
-  @override
-  String get trainProgramLoading => 'Loading...';
-
-  @override
-  String get trainProgramLoadFailed => 'Load failed';
-
-  @override
-  String get trainProgramName => 'Program Name';
 
   @override
   String get trainProgramMajor => 'Major';
@@ -1340,10 +1242,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get trainProgramExperimentHours => 'Experiment Hours';
 
   @override
-  String get trainProgramLoginRequired =>
-      'Please complete SCU Unified Identity login in the Profile page first';
-
-  @override
   String get planCompletion => 'Plan Completion';
 
   @override
@@ -1409,9 +1307,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ccylEmailHint => 'Enter QQ email to receive the report';
 
   @override
-  String get ccylExportSuccess => 'Report sent to email';
-
-  @override
   String get ccylSearchHint => 'Search activity name';
 
   @override
@@ -1463,10 +1358,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ccylCurrentValue => 'Current value';
 
   @override
-  String get ccylLoginRequired =>
-      'Please complete SCU Unified Identity login in the Profile page first';
-
-  @override
   String get ccylBindRequired =>
       'Please bind your Second Classroom account first';
 
@@ -1476,9 +1367,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get ccylBindDesc =>
       'Bind your Second Classroom account to view activities';
-
-  @override
-  String get ccylOpenOAuth => 'Open OAuth Authorization';
 
   @override
   String get ccylDoBind => 'Bind Second Classroom';
@@ -1645,24 +1533,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get networkDeviceIp => 'IP Address';
 
   @override
-  String get networkDeviceLogout => 'Logout';
-
-  @override
-  String get networkDeviceLogoutConfirm =>
-      'Are you sure you want to logout all devices?';
-
-  @override
   String get networkDeviceForceOffline => 'Force Offline';
 
   @override
   String get networkDeviceConfirmOffline =>
       'Are you sure you want to offline this device?';
-
-  @override
-  String get networkDeviceOfflineSuccess => 'Operation successful';
-
-  @override
-  String get networkDeviceAuthFailed => 'Authentication failed';
 
   @override
   String get networkDeviceOperationSuccess => 'Operation successful';
@@ -1805,9 +1680,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectUnit => 'Select Unit';
 
   @override
-  String get inputInfo => 'Input Info';
-
-  @override
   String get stepCampus => 'Cmp';
 
   @override
@@ -1826,9 +1698,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cusName => 'Name';
 
   @override
-  String get cusNameHint => 'Enter name';
-
-  @override
   String get roomNumber => 'Room Number';
 
   @override
@@ -1838,10 +1707,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pricePerUnit => 'Price per unit';
 
   @override
-  String get balanceQueryLoginRequired =>
-      'Please complete SCU Unified Identity login in the Profile page first';
-
-  @override
   String get balanceQueryNoBinding =>
       'You haven\'t bound any room yet, please bind first';
 
@@ -1849,16 +1714,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get balanceTrend => 'Usage Trend';
 
   @override
-  String get balanceTrendTitleElectric => 'Lighting Electricity Trend';
-
-  @override
-  String get balanceTrendTitleAc => 'AC Electricity Trend';
-
-  @override
   String get balanceTrendDailyAvgCost => 'Daily Avg Cost';
-
-  @override
-  String get balanceTrendDailyAvgKwh => 'Daily Avg Consumption';
 
   @override
   String get balanceTrendTotalCost => 'Total Cost';
@@ -1898,9 +1754,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get balanceTrendTimeRangeCustom => 'Custom';
 
   @override
-  String get balanceTrendChangeRange => 'Change Range';
-
-  @override
   String get balanceTrendCustomStart => 'Start date';
 
   @override
@@ -1914,9 +1767,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get balanceTrendTooltipPrice => 'Price';
-
-  @override
-  String get balanceTrendUnitPerDay => 'CNY/day';
 
   @override
   String get balanceTrendUnitYuanPerKwh => 'CNY/kWh';
@@ -1968,45 +1818,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get campusNoticesDesc => 'View SCU Academic Affairs notices';
 
   @override
-  String get campusNoticesSearchHint => 'Search notice title';
-
-  @override
-  String get campusNoticesAllDates => 'All dates';
-
-  @override
-  String get campusNoticesClearDate => 'Clear filter';
-
-  @override
-  String get campusNoticesLoadFailed => 'Load failed, please check network';
-
-  @override
-  String get campusNoticesOpenOriginal => 'View in browser';
-
-  @override
   String get campusNoticesExternalLink =>
       'This is an external page, please open in browser to view';
 
   @override
   String get campusNoticesOpenInBrowser => 'Open in browser';
-
-  @override
-  String get campusNoticesSearch => 'Search';
-
-  @override
-  String campusNoticesSearchResults(int count) {
-    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
-      locale: localeName,
-    );
-    final String countString = countNumberFormat.format(count);
-
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$countString results',
-      zero: 'No results',
-    );
-    return '$_temp0';
-  }
 
   @override
   String campusNoticesConfirmOpenLink(String url) {
@@ -2024,9 +1840,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get userInfoRetry => 'Tap to retry';
-
-  @override
-  String get loginToViewUserInfo => 'Login to view user info';
 
   @override
   String get labelBookBorrowCount => 'Books Borrowed';
@@ -2048,9 +1861,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dockResetConfirm => 'Reset dock bar to default configuration?';
-
-  @override
-  String get cannotDeleteProfile => 'Cannot be deleted';
 
   @override
   String get dockLabelCourse => 'Course';
@@ -2080,9 +1890,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dockLabelNetworkDevice => 'Network';
 
   @override
-  String get dockLabelPasspoint => 'Passive';
-
-  @override
   String get dockLabelBalanceQuery => 'Electricity';
 
   @override
@@ -2105,9 +1912,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fitnessTestTotalScore => 'Total Score';
-
-  @override
-  String get fitnessTestGrade => 'Grade';
 
   @override
   String get fitnessTestYear => 'Year';
@@ -2164,28 +1968,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fitnessTestSticky => 'Pinned';
 
   @override
-  String get fitnessTestNoticeDetail => 'Notice Detail';
-
-  @override
   String get dockLabelFitnessTest => 'Fitness';
 
   @override
   String get dockLabelNotice => 'Notice';
 
   @override
-  String get dockLabelNoticeParty => 'XGB';
-
-  @override
-  String get dockLabelNoticeTuanwei => 'Youth';
-
-  @override
   String get dockLabelDownloads => 'Downloads';
 
   @override
   String get eulaTitle => 'User Agreement';
-
-  @override
-  String get eulaScrollToBottom => 'Please read the entire agreement first';
 
   @override
   String get eulaAgreeCheckbox =>
@@ -2205,15 +1997,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'After revoking, you will need to agree to the user agreement again to continue using. Are you sure?';
 
   @override
-  String get revokeEulaSuccess => 'User agreement revoked';
-
-  @override
   String eulaAgreedVersion(String version) {
     return 'Agreed version v$version';
   }
-
-  @override
-  String get addWidgetSection => 'Desktop Widget';
 
   @override
   String get addWidgetPageTitle => 'Widget';
@@ -2286,21 +2072,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Battery optimization is already disabled';
 
   @override
-  String get batteryOptimizationSuccess =>
-      'Battery optimization disabled successfully';
-
-  @override
-  String get autoSetCurrentWeekTitle => 'Auto-set Current Teaching Week';
-
-  @override
-  String get autoSetCurrentWeekContent =>
-      'Fetch the current teaching week from the academic system and set it automatically?';
-
-  @override
-  String get autoSetCurrentWeekSuccess =>
-      'Current teaching week set automatically';
-
-  @override
   String get share => 'Share';
 
   @override
@@ -2319,14 +2090,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get download => 'Download';
 
   @override
-  String attachmentSaved(String path) {
-    return 'Attachment saved to: $path';
-  }
-
-  @override
-  String get attachmentDownloadFailed => 'Failed to download attachment';
-
-  @override
   String get downloadedAttachments => 'Downloaded Attachments';
 
   @override
@@ -2340,9 +2103,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fileDeleted => 'File deleted';
-
-  @override
-  String get attachmentSavedTapToOpen => 'Attachment saved, tap to open';
 
   @override
   String get confirmDelete => 'Confirm Delete';
@@ -2415,6 +2175,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get dateFormatSetting => 'Date format';
+
+  @override
   String get holidayLabel => 'Hol';
 
   @override
@@ -2443,9 +2206,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get classScheduleInquiryNoSchedule => 'No schedule data';
-
-  @override
-  String get classScheduleInquiryDetail => 'Course Details';
 
   @override
   String get classScheduleInquiryFilter => 'Filter';
@@ -2529,17 +2289,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get originalCalendar => 'Official Charts';
-
-  @override
-  String get calendarLoadingData => 'Loading calendar data...';
-
-  @override
-  String calendarImportSuccess(int count) {
-    return 'Successfully imported $count events to system calendar';
-  }
-
-  @override
-  String get calendarImportFailed => 'Failed to import to system calendar';
 
   @override
   String get calendarImportCalendarTitle => 'SCU Academic Calendar';
@@ -2632,12 +2381,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'This feature is not supported on this platform';
 
   @override
-  String get newIconSubtitle => 'Bugaoshan New Icon';
-
-  @override
-  String get oldIconSubtitle => 'Bugaoshan Classic Icon';
-
-  @override
   String get close => 'Close';
 
   @override
@@ -2718,9 +2461,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String appliedPreset(String campus) {
     return 'Applied $campus time slot preset';
   }
-
-  @override
-  String get presetLabel => 'Preset';
 
   @override
   String roomCount(int count) {
@@ -2841,6 +2581,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openInBrowser => 'Open in browser';
 
   @override
+  String get webViewFallbackTitle => 'Open this page in your browser';
+
+  @override
+  String get webViewFallbackBody =>
+      'This platform doesn\'t support an in-app web view. Please continue in your system browser.';
+
+  @override
+  String get webViewFallbackOpen => 'Open in default browser';
+
+  @override
+  String get webViewFallbackCopyLink => 'Copy link';
+
+  @override
+  String get webViewFallbackLinkCopied => 'Link copied';
+
+  @override
+  String get webViewFallbackOpenFailed =>
+      'Couldn\'t open a browser. Copy the link and open it manually.';
+
+  @override
+  String get webViewFallbackCopyFailed =>
+      'Couldn\'t copy the link. Please try again.';
+
+  @override
   String get downloadComplete => 'Download complete';
 
   @override
@@ -2862,6 +2626,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dockLabelLeave => 'Service Hall';
+
+  @override
+  String get dockLabelReservation => 'Rooms';
 
   @override
   String get dockLabelRepair => 'Repair';
@@ -3073,26 +2840,158 @@ class AppLocalizationsEn extends AppLocalizations {
   String get serviceFormSelectHint => 'Please select';
 
   @override
-  String get serviceFormOptional => 'Optional';
-
-  @override
-  String get leaveTitle => 'Leave Application';
-
-  @override
   String get leaveDesc =>
       'Handle leave requests, check-ins and more in the service hall';
 
   @override
-  String get leaveApply => 'Apply';
+  String get reservationTitle => 'Room Reservation';
+
+  @override
+  String get reservationDesc => 'Check free slots of Wangjiang activity rooms';
+
+  @override
+  String get reservationChooseRoom => 'Choose a room';
+
+  @override
+  String get reservationAvailability => 'Free slots';
+
+  @override
+  String get reservationTimeColumn => 'Time';
+
+  @override
+  String get reservationNoResources => 'No rooms available';
+
+  @override
+  String get reservationNoSlots => 'No bookable slots in this range';
+
+  @override
+  String get reservationSessionExpired =>
+      'The reservation session is missing or expired. Please sign in with the unified identity first.';
+
+  @override
+  String get reservationPreviousWeek => 'Previous 7 days';
+
+  @override
+  String get reservationBackToToday => 'Back to today';
+
+  @override
+  String get reservationScrollLeft => 'Scroll left for more rooms';
+
+  @override
+  String get reservationScrollRight => 'Scroll right for more rooms';
+
+  @override
+  String get reservationNextWeek => 'Next 7 days';
+
+  @override
+  String reservationRemaining(int count) {
+    return '$count left';
+  }
+
+  @override
+  String get reservationStatusAvailable => 'Available';
+
+  @override
+  String get reservationStatusFull => 'Full';
+
+  @override
+  String get reservationStatusUnavailable => 'Unavailable';
+
+  @override
+  String get reservationNeedsApproval => 'Approval required';
+
+  @override
+  String reservationDailyLimit(int count) {
+    return 'Up to $count slots per day';
+  }
+
+  @override
+  String get reservationGoOfficial => 'Book on the official page';
+
+  @override
+  String get reservationLaunchButton => 'Book selected slots';
+
+  @override
+  String get reservationLaunchConfirmTitle => 'Confirm booking';
+
+  @override
+  String get reservationPeopleNumber => 'People';
+
+  @override
+  String get reservationLaunchSubmit => 'Book';
+
+  @override
+  String get reservationLaunchSuccess => 'Booked successfully';
+
+  @override
+  String get reservationLaunchProcessTitle => 'Booking submitted';
+
+  @override
+  String get reservationLaunchProcessBody =>
+      'The booking has been created. This room requires approval — please continue the application process; the booking takes effect after approval.';
+
+  @override
+  String get reservationOpenProcess => 'Open application';
+
+  @override
+  String get reservationApplyPendingBody =>
+      'This account already has a pending booking. Please submit or cancel it under \"My reservations\" on the official page before making a new one.';
+
+  @override
+  String reservationDailyLimitReached(int count) {
+    return 'Up to $count slots per day for this room';
+  }
+
+  @override
+  String get reservationClearSelection => 'Clear selected slots';
+
+  @override
+  String get reservationApplyPendingTitle => 'Pending booking exists';
+
+  @override
+  String get reservationLaunchFailedGeneric =>
+      'Booking failed, please try again later';
+
+  @override
+  String get reservationMyAppointments => 'My reservations';
+
+  @override
+  String get reservationMyAppointmentsEmpty => 'No reservations yet';
+
+  @override
+  String get reservationMyAppointmentsError =>
+      'Failed to load reservations, please retry';
+
+  @override
+  String get reservationStatusPendingApply => 'Pending application';
+
+  @override
+  String get reservationStatusReviewing => 'Under review';
+
+  @override
+  String get reservationStatusBooked => 'Booked';
+
+  @override
+  String get reservationStatusCheckInPending => 'Awaiting check-in';
+
+  @override
+  String get reservationStatusClosed => 'Closed';
+
+  @override
+  String get reservationCancel => 'Cancel reservation';
+
+  @override
+  String get reservationCancelConfirm =>
+      'Cancel this reservation? The slot is released immediately.';
+
+  @override
+  String get reservationCancelSuccess => 'Cancelled';
 
   @override
   String get leaveMyApplications => 'My Requests';
 
   @override
   String get leaveSubmit => 'Submit';
-
-  @override
-  String get leaveReasonRequired => 'Please enter the leave reason';
 
   @override
   String get leaveEndAfterStart => 'End time must be after start time';
@@ -3107,37 +3006,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get leaveInfo => 'Student Info';
 
   @override
-  String get leaveTutor => 'Tutor';
-
-  @override
-  String get leaveCampusRequired => 'Please select the campus you are leaving';
-
-  @override
-  String get leaveDetail => 'Other Reason';
-
-  @override
-  String get leaveDetailHint => 'Please specify the reason';
-
-  @override
-  String get leaveAttachment => 'Upload Proof';
-
-  @override
   String get leaveAttachmentHint => 'Optional: upload 1-3 images as proof';
 
   @override
   String get leaveAttachmentAdd => 'Add Image';
-
-  @override
-  String get leaveDepartReturn => 'Leave & Return';
-
-  @override
-  String get leaveDepartTime => 'Depart Time';
-
-  @override
-  String get leaveReturnTime => 'Return Time';
-
-  @override
-  String get leaveRegionRequired => 'Please select your destination address';
 
   @override
   String get regionProvince => 'Province';
@@ -3249,10 +3121,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get graduateScheduleImportFailed => 'Import failed, please try again';
 
   @override
-  String get graduateScheduleImportWebUnsupported =>
-      'Recognising the page requires script injection, which browsers block across origins. Please use this feature on Android, iOS or Windows.';
-
-  @override
   String get graduateScheduleImportNoWebView =>
       'Direct connection failed and this platform has no in-app web fallback. Check your network and retry, or import on Android, iOS or desktop.';
 
@@ -3291,141 +3159,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get graduateTrainPlanNoCourses => 'No courses in this module';
-
-  @override
-  String get labAttendance => 'Lab Attendance';
-
-  @override
-  String get labAttendanceDesc => 'Record lab attendance';
-
-  @override
-  String get labAttendanceMonthDay => 'Today';
-
-  @override
-  String get labAttendanceEmpty => 'No attendance records this month';
-
-  @override
-  String get labAttendanceDays => 'Days';
-
-  @override
-  String get labAttendanceHours => 'Hours';
-
-  @override
-  String get labCheckIn => 'Check in';
-
-  @override
-  String get labCheckOut => 'Check out';
-
-  @override
-  String get thesisProgress => 'Thesis Progress';
-
-  @override
-  String get thesisProgressDesc => 'Track thesis progress';
-
-  @override
-  String get thesisProgressEmpty => 'No thesis stages';
-
-  @override
-  String get thesisProgressOverview => 'Thesis Overview';
-
-  @override
-  String thesisProgressText(int completed, int total) {
-    return '$completed / $total stages done';
-  }
-
-  @override
-  String get thesisStageNotStarted => 'Not started';
-
-  @override
-  String get thesisStageInProgress => 'In progress';
-
-  @override
-  String get thesisStageCompleted => 'Done';
-
-  @override
-  String get thesisStageName => 'Stage name';
-
-  @override
-  String get thesisStageNameHint => 'e.g. Proposal, Mid-term, Defense';
-
-  @override
-  String get thesisStageNote => 'Note';
-
-  @override
-  String get thesisStageNoPlanDate => 'Set a plan date';
-
-  @override
-  String thesisStagePlanDate(String date) {
-    return 'Plan date: $date';
-  }
-
-  @override
-  String get thesisStagePlan => 'Plan';
-
-  @override
-  String get addThesisStage => 'Add Stage';
-
-  @override
-  String get editThesisStage => 'Edit Stage';
-
-  @override
-  String get mentorTasks => 'Mentor Tasks';
-
-  @override
-  String get mentorTasksDesc => 'View tasks from your mentor';
-
-  @override
-  String get mentorTasksEmpty => 'No mentor tasks';
-
-  @override
-  String get mentorTaskPending => 'Pending';
-
-  @override
-  String get mentorTaskOverdue => 'Overdue';
-
-  @override
-  String get mentorTaskDueSoon => 'Due soon';
-
-  @override
-  String get mentorTaskPriorityLow => 'Low';
-
-  @override
-  String get mentorTaskPriorityMedium => 'Medium';
-
-  @override
-  String get mentorTaskPriorityHigh => 'High';
-
-  @override
-  String get mentorTaskNoDueDate => 'No due date';
-
-  @override
-  String mentorTaskDueDate(String date) {
-    return 'Due: $date';
-  }
-
-  @override
-  String mentorTaskDaysText(int days) {
-    return '$days day(s) left';
-  }
-
-  @override
-  String get mentorTaskTitle => 'Task title';
-
-  @override
-  String get mentorTaskNote => 'Note';
-
-  @override
-  String get addMentorTask => 'Add Task';
-
-  @override
-  String get editMentorTask => 'Edit Task';
-
-  @override
-  String get mentorTaskLoginRequired => 'Log in to view mentor tasks';
-
-  @override
-  String get graduateLoginRequired =>
-      'Please log in via the unified identity on the Profile page to use graduate features';
 
   @override
   String get userManual => 'User Manual';
@@ -3593,11 +3326,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Provisional (quiet delivery)';
 
   @override
+  String get reminderHostProbePermissionEphemeral =>
+      'Ephemeral (temporary authorization)';
+
+  @override
   String get reminderHostProbePermissionDeniedLabel =>
       'Denied in system settings';
 
   @override
   String get reminderHostProbePermissionNotDetermined => 'Not requested yet';
+
+  @override
+  String get reminderHostProbePermissionUnsupported =>
+      'Unsupported on this platform';
 
   @override
   String get reminderHostProbeRequestPermission => 'Request';
@@ -3621,9 +3362,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reminderProbeBody => '这是一条 15 秒后触发的测试提醒';
-
-  @override
-  String get reminderPlanTitle => 'Scheduled reminder plan';
 
   @override
   String get reminderPlanEmpty => 'No plan generated yet';
@@ -3698,10 +3436,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reminderQuietEnabled => 'Quiet hours';
 
   @override
-  String get reminderQuietHint =>
-      'Reminders inside this window are dropped, not delayed';
-
-  @override
   String get reminderQuietStart => 'From';
 
   @override
@@ -3731,6 +3465,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Grant the permission so reminders can reach you.';
 
   @override
+  String get reminderPermissionUnsupportedHint =>
+      'This platform does not support local reminders.';
+
+  @override
   String get reminderPermissionRequest => 'Allow';
 
   @override
@@ -3751,7 +3489,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reminderPrivacyHint =>
-      'Reminders appear on the lock screen, so they follow your privacy switches: if you hide the teacher\'s name, it stays hidden here too.';
+      'Lock-screen reminders also follow the Show Teacher switch under Course Style: turn it off there and the teacher\'s name won\'t appear in reminders.';
 
   @override
   String get reminderPlanCopy => 'Copy plan JSON';
@@ -3823,16 +3561,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get liveActivityProbeStatusUnsupported => 'Not supported / disabled';
 
   @override
-  String get liveActivityProbeActive => 'A sample session is running';
-
-  @override
-  String get liveActivityProbeSentEnded => 'Session ended';
-
-  @override
-  String get liveActivityProbeNoSession =>
-      'Could not reach the host (no active session).';
-
-  @override
   String get privacyPolicy => 'Privacy Policy';
 
   @override
@@ -3846,10 +3574,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logPersistenceSwitch => 'Keep diagnostic logs on device';
-
-  @override
-  String get logPersistenceSwitchHint =>
-      'Save warnings and errors to log files on this device (about 6 MB, rotating). On by default. When off, logs stay in memory only and are lost when the app closes.';
 
   @override
   String get runtimeLogs => 'Runtime logs';
@@ -3922,7 +3646,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logPersistenceActive =>
-      'Warnings and errors are saved to bugaoshan.log (about 6 MB, rotating)';
+      'Warnings and errors are saved (about 6 MB)';
 
   @override
   String get logPersistenceRetryHint =>
@@ -3962,4 +3686,290 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logShare => 'Share logs';
+
+  @override
+  String get cloudPrintTitle => 'Library print & scan';
+
+  @override
+  String get cloudPrintDock => 'Cloud print';
+
+  @override
+  String get cloudPrintDesc =>
+      'Batch upload documents, manage print jobs and download scans';
+
+  @override
+  String get cloudPrintQueue => 'Upload queue';
+
+  @override
+  String get cloudPrintJobs => 'Print jobs';
+
+  @override
+  String get cloudPrintScans => 'Scans';
+
+  @override
+  String get cloudPrintChoose => 'Add files';
+
+  @override
+  String get cloudPrintSettings => 'Default print settings';
+
+  @override
+  String get cloudPrintSharedSettings => 'Default print settings';
+
+  @override
+  String get cloudPrintFileSettings => 'File print settings';
+
+  @override
+  String get cloudPrintEmptyQueue => 'Choose one or more documents to start';
+
+  @override
+  String get cloudPrintHint =>
+      'Uploads create print jobs. Confirm printing with your campus card at a library terminal.';
+
+  @override
+  String get cloudPrintScanHint =>
+      'Scan at a library machine first. Your scanned files will appear here for download and sharing.';
+
+  @override
+  String get cloudPrintScanEmpty => 'No scanned documents';
+
+  @override
+  String get cloudPrintJobsEmpty => 'No print jobs';
+
+  @override
+  String get cloudPrintLoadFailed =>
+      'Could not load the list. Refresh to try again.';
+
+  @override
+  String cloudPrintSelection(int added, int duplicates, int invalid) {
+    return 'Added $added; duplicates skipped: $duplicates; unreadable or unsupported: $invalid';
+  }
+
+  @override
+  String cloudPrintStart(int count) {
+    return 'Upload pending ($count)';
+  }
+
+  @override
+  String get cloudPrintStop => 'Stop uploading';
+
+  @override
+  String get cloudPrintStopping => 'Stopping after this file';
+
+  @override
+  String get cloudPrintRetryFailed => 'Requeue failed files';
+
+  @override
+  String get cloudPrintClearFinished => 'Clear list';
+
+  @override
+  String get cloudPrintPending => 'Ready to upload';
+
+  @override
+  String cloudPrintUploading(int percent) {
+    return 'Uploading $percent%';
+  }
+
+  @override
+  String get cloudPrintProcessing => 'Processing document…';
+
+  @override
+  String get cloudPrintUploaded => 'Uploaded';
+
+  @override
+  String get cloudPrintFailed => 'Upload failed';
+
+  @override
+  String get cloudPrintUncertain => 'Check whether a job was created';
+
+  @override
+  String get cloudPrintVerify => 'Check print jobs';
+
+  @override
+  String get cloudPrintVerificationPending =>
+      'Upload accepted; verify the job in Print jobs before uploading again.';
+
+  @override
+  String get cloudPrintDuplicatePending =>
+      'A duplicate file was detected. Check it in Print jobs.';
+
+  @override
+  String get cloudPrintRequeue => 'Upload again';
+
+  @override
+  String get cloudPrintMissingConfirm => 'I checked: no job was created';
+
+  @override
+  String get cloudPrintMissingHint =>
+      'Only requeue after checking Print jobs and confirming this document is missing. Uploading again may create a duplicate job.';
+
+  @override
+  String get cloudPrintFailureAuth =>
+      'The session expired before submission. Sign in again before retrying.';
+
+  @override
+  String get cloudPrintFailureSize =>
+      'The server rejected this file because it is too large.';
+
+  @override
+  String get cloudPrintFailureRequest =>
+      'Check the file and network, then upload it again.';
+
+  @override
+  String get cloudPrintRemove => 'Remove from upload queue';
+
+  @override
+  String get cloudPrintColor => 'Color';
+
+  @override
+  String get cloudPrintMono => 'Black & white';
+
+  @override
+  String get cloudPrintFullColor => 'Color';
+
+  @override
+  String get cloudPrintPaper => 'Paper';
+
+  @override
+  String get cloudPrintOriginal => 'Original size';
+
+  @override
+  String get cloudPrintDuplex => 'Sides';
+
+  @override
+  String get cloudPrintLongEdge => 'Duplex, long edge';
+
+  @override
+  String get cloudPrintShortEdge => 'Duplex, short edge';
+
+  @override
+  String get cloudPrintSimplex => 'Single-sided';
+
+  @override
+  String get cloudPrintCopies => 'Copies';
+
+  @override
+  String get cloudPrintPages => 'Pages';
+
+  @override
+  String get cloudPrintPagesHint => 'Blank: all pages; or 2, 2-5';
+
+  @override
+  String get cloudPrintAllPages => 'All pages';
+
+  @override
+  String get cloudPrintInvalidCopies => 'Enter a positive number of copies';
+
+  @override
+  String get cloudPrintInvalidPages =>
+      'Enter one page or a continuous range such as 2-5';
+
+  @override
+  String cloudPrintSummary(int copies, String pages) {
+    return '$copies copies · $pages';
+  }
+
+  @override
+  String cloudPrintJobInfo(int pages, int copies) {
+    return '$pages pages · $copies copies';
+  }
+
+  @override
+  String cloudPrintJobCreated(String date, String time) {
+    return '$date $time';
+  }
+
+  @override
+  String get cloudPrintPreview => 'Preview';
+
+  @override
+  String cloudPrintPreviewPage(int page, int total) {
+    return 'Page $page of $total';
+  }
+
+  @override
+  String get cloudPrintPreviewFailed => 'Preview failed. Please try again.';
+
+  @override
+  String get cloudPrintDelete => 'Delete job';
+
+  @override
+  String cloudPrintDeleteConfirm(String name) {
+    return 'Delete \"$name\"? You will need to upload it again to print.';
+  }
+
+  @override
+  String get cloudPrintSelectAll => 'Select all';
+
+  @override
+  String cloudPrintDeleteSelected(int count) {
+    return 'Delete selected ($count)';
+  }
+
+  @override
+  String cloudPrintDeleteSelectedConfirm(int count) {
+    return 'Delete $count selected item(s)? You will need to upload them again to print.';
+  }
+
+  @override
+  String cloudPrintScanDeleteConfirm(String name) {
+    return 'Delete the scan record for “$name”? Files already downloaded are not affected.';
+  }
+
+  @override
+  String cloudPrintScanDeleteSelectedConfirm(int count) {
+    return 'Delete $count selected scan record(s)? Files already downloaded are not affected.';
+  }
+
+  @override
+  String cloudPrintDeletedCount(int count) {
+    return 'Deleted $count item(s)';
+  }
+
+  @override
+  String cloudPrintDeletePartial(int deleted, int failed) {
+    return 'Deleted $deleted, $failed failed. Please retry.';
+  }
+
+  @override
+  String get cloudPrintCleanExpired => 'Clean up expired';
+
+  @override
+  String cloudPrintCleanExpiredConfirm(int count) {
+    return 'Delete $count expired scan record(s)?';
+  }
+
+  @override
+  String get cloudPrintDownloadSelected => 'Download selected';
+
+  @override
+  String get cloudPrintShareSelected => 'Share selected';
+
+  @override
+  String get cloudPrintDownload => 'Download';
+
+  @override
+  String get cloudPrintShare => 'Share';
+
+  @override
+  String get cloudPrintScanExpired => 'Expired';
+
+  @override
+  String get cloudPrintDownloadFailed =>
+      'Download failed. You can retry the failed files.';
+
+  @override
+  String get cloudPrintDownloadDone =>
+      'Download finished. Completed files can be opened or shared.';
+
+  @override
+  String get cloudPrintOpenFailed =>
+      'Could not open the file. Try sharing it to another app.';
+
+  @override
+  String get cloudPrintShareFailed =>
+      'Could not share the files. Downloaded copies are kept.';
+
+  @override
+  String get cloudPrintPickFailed =>
+      'Could not select files. Please try again.';
 }

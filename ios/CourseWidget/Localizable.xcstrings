@@ -1,6 +1,24 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "liveActivity.classEndsAt" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Ends at %@" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%@ 下课" } }
+      }
+    },
+    "liveActivity.nextCourse" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Next: %@" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "下节: %@" } }
+      }
+    },
+    "liveActivity.untilClassEnds" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "until class ends" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "后下课" } }
+      }
+    },
     "widget.allClassesFinished" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "All classes are finished" } },

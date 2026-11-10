@@ -29,4 +29,8 @@
     <!-- 实时活动与状态栏胶囊通知 -->
     <string name="live_activity_channel_name">Live Activities</string>
     <string name="live_activity_channel_desc">Status bar capsules and lock screen live cards during classes</string>
+    <string name="live_activity_current_course">Current class</string>
+    <string name="live_activity_in_progress">In class</string>
+    <string name="live_activity_ends_at">Ends at %1$s</string>
+    <string name="live_activity_next_course">Next: %1$s</string>
 </resources>

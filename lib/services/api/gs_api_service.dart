@@ -28,9 +28,10 @@ import 'package:bugaoshan/utils/gs_json_envelope.dart';
 /// 成绩链路（2026-09-20 抓包定案）：`POST xscjcx.do`（wdcjapp），标准 GS
 /// 信封，行字段见 [GraduateGradeRow]。
 ///
-/// 培养计划的 `.do` 端点尚未定案，对应方法随功能一并添加
-/// （应用入口：培养进度 `/sys/wdpyjhapp/*default/index.do`、
-/// 培养方案 `/sys/wdpyfaappscu/*default/index.do#/pyfaxq`）。
+/// 培养进度链路（2026-09-21 模拟机内抓包定案）：`wdpyjhapp` 的 `wdxx.do` /
+/// `wdkclbtj.do` / `wdfakcxx.do` 三个 GET 无参零框架信封接口，见
+/// [_getZeroJson]；培养方案入口 `/sys/wdpyfaappscu/*default/index.do#/pyfaxq`
+/// 尚无对应功能，未接线。
 class GsApiService {
   GsApiService(this._gsAuth);
 

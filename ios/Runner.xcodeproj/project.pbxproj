@@ -15,7 +15,8 @@
 		32A1DE733010E68D00E054EA /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32A1DE1A3010D84A00E054EA /* SwiftUI.framework */; };
 		32A1DE7A3010E68D00E054EA /* WidgetExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32A1DE793010E68D00E054EA /* WidgetExtension.swift */; };
 		E1F2A3B4C5D60718293A4B02 /* CourseLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F2A3B4C5D60718293A4B01 /* CourseLiveActivity.swift */; };
-		E1F2A3B4C5D60718293A4B03 /* CourseLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F2A3B4C5D60718293A4B01 /* CourseLiveActivity.swift */; };
+		E1F2A3B4C5D60718293A4B12 /* CourseLiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F2A3B4C5D60718293A4B11 /* CourseLiveActivityAttributes.swift */; };
+		E1F2A3B4C5D60718293A4B13 /* CourseLiveActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F2A3B4C5D60718293A4B11 /* CourseLiveActivityAttributes.swift */; };
 		32A1DE7C3010E68E00E054EA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 32A1DE7B3010E68E00E054EA /* Assets.xcassets */; };
 		A8C9D0E1F2A3456789BCDEF0 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = B9D0E1F2A3B4567890CDEF12 /* Localizable.xcstrings */; };
 		32A1DE803010E68E00E054EA /* CourseWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 32A1DE713010E68D00E054EA /* CourseWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -90,6 +91,7 @@
 		32A1DE713010E68D00E054EA /* CourseWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CourseWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		32A1DE793010E68D00E054EA /* WidgetExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetExtension.swift; sourceTree = "<group>"; };
 		E1F2A3B4C5D60718293A4B01 /* CourseLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseLiveActivity.swift; sourceTree = "<group>"; };
+		E1F2A3B4C5D60718293A4B11 /* CourseLiveActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseLiveActivityAttributes.swift; sourceTree = "<group>"; };
 		32A1DE7B3010E68E00E054EA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		32A1DE7D3010E68E00E054EA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B9D0E1F2A3B4567890CDEF12 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
@@ -162,6 +164,7 @@
 				32E5A21A3010F48500D73941 /* CourseWidgetExtension.entitlements */,
 				32A1DE793010E68D00E054EA /* WidgetExtension.swift */,
 				E1F2A3B4C5D60718293A4B01 /* CourseLiveActivity.swift */,
+				E1F2A3B4C5D60718293A4B11 /* CourseLiveActivityAttributes.swift */,
 				32A1DE7B3010E68E00E054EA /* Assets.xcassets */,
 				32A1DE7D3010E68E00E054EA /* Info.plist */,
 				561B1DB7945C4AADB04CE4FD /* InfoPlist.xcstrings */,
@@ -506,6 +509,7 @@
 			files = (
 				32A1DE7A3010E68D00E054EA /* WidgetExtension.swift in Sources */,
 				E1F2A3B4C5D60718293A4B02 /* CourseLiveActivity.swift in Sources */,
+				E1F2A3B4C5D60718293A4B12 /* CourseLiveActivityAttributes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -523,7 +527,7 @@
 			files = (
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				B2C3D4E5F60718293A4B5C6D /* ReminderChannel.swift in Sources */,
-				E1F2A3B4C5D60718293A4B03 /* CourseLiveActivity.swift in Sources */,
+				E1F2A3B4C5D60718293A4B13 /* CourseLiveActivityAttributes.swift in Sources */,
 				E1F2A3B4C5D60718293A4B05 /* LiveActivityChannel.swift in Sources */,
 				F627A009C48B40519E038204 /* LiquidGlassDock.swift in Sources */,
 				F627A009C48B40519E038206 /* LiquidGlassControls.swift in Sources */,

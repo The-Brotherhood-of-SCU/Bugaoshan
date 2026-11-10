@@ -1,11 +1,11 @@
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/pages/dev/live_activity_probe_tile.dart';
+import 'package:bugaoshan/pages/dev/live_activity_probe_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// [LiveActivityProbeTile] 的启动参数与异常文案映射测试。
+/// [LiveActivityProbeView] 的启动参数与异常文案映射测试。
 ///
 /// 探针跳过「当前必须有课」这一业务前提，直接验证原生投递与系统渲染。
 /// 对应地，测试只覆盖两点：下发给原生通道的参数是否正确，以及平台异常是否被
@@ -55,14 +55,15 @@ void main() {
     }
   }
 
-  Future<void> pumpTile(WidgetTester tester) async {
+  Future<void> pumpView(WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
         // 固定中文断言文案：默认 locale 会随宿主环境变化，断言不能依赖它。
         locale: const Locale('zh'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: const Scaffold(body: LiveActivityProbeTile()),
+        // 探针视图本身不含 Scaffold，这里补一个宿主 Scaffold 供 SnackBar 使用。
+        home: const Scaffold(body: LiveActivityProbeView()),
       ),
     );
     await tester.pumpAndSettle();
@@ -84,7 +85,7 @@ void main() {
     installChannel();
 
     await asIos(() async {
-      await pumpTile(tester);
+      await pumpView(tester);
       await tester.tap(find.text('立即触发示例'));
       await tester.pumpAndSettle();
     });
@@ -113,7 +114,7 @@ void main() {
     installChannel();
 
     await asIos(() async {
-      await pumpTile(tester);
+      await pumpView(tester);
       await tester.tap(find.text('立即结束'));
       await tester.pumpAndSettle();
     });
@@ -125,7 +126,7 @@ void main() {
     installChannel(startError: PlatformException(code: 'NOT_IN_FOREGROUND'));
 
     await asIos(() async {
-      await pumpTile(tester);
+      await pumpView(tester);
       await tester.tap(find.text('立即触发示例'));
       await tester.pumpAndSettle();
     });
@@ -137,7 +138,7 @@ void main() {
     installChannel(startError: PlatformException(code: 'NOT_AUTHORIZED'));
 
     await asIos(() async {
-      await pumpTile(tester);
+      await pumpView(tester);
       await tester.tap(find.text('立即触发示例'));
       await tester.pumpAndSettle();
     });
@@ -149,7 +150,7 @@ void main() {
     installChannel(isSupported: false);
 
     await asIos(() async {
-      await pumpTile(tester);
+      await pumpView(tester);
 
       expect(find.text('不支持 / 未开启'), findsOneWidget);
       final button = tester.widget<FilledButton>(find.byType(FilledButton));
