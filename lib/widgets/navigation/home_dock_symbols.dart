@@ -21,7 +21,6 @@ import 'package:bugaoshan/utils/constants.dart';
     selected: 'door.left.hand.open',
   ),
   dockIdNetworkDevice => (normal: 'network', selected: 'network'),
-  dockIdPasspoint => (normal: 'wifi', selected: 'wifi'),
   dockIdBalanceQuery => (normal: 'bolt', selected: 'bolt.fill'),
   dockIdAcademicCalendar => (normal: 'calendar', selected: 'calendar'),
   dockIdFitnessTest => (normal: 'figure.run', selected: 'figure.run'),

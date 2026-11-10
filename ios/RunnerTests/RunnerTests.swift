@@ -173,4 +173,128 @@ final class RunnerTests: XCTestCase {
     slider.sendActions(for: .valueChanged)
     XCTAssertEqual(events.count, 3)
   }
+
+  @MainActor
+  func testWindowingSafeAreaCalculatorDistinguishesFullScreenAndWindowedOnIPad() {
+    let screen = CGRect(x: 0, y: 0, width: 1024, height: 1366)
+
+    // Full-screen portrait and landscape match screen bounds -> not windowed.
+    XCTAssertFalse(
+      WindowingSafeAreaCalculator.isWindowed(
+        idiom: .pad,
+        sceneBounds: screen,
+        screenBounds: screen
+      )
+    )
+    XCTAssertFalse(
+      WindowingSafeAreaCalculator.isWindowed(
+        idiom: .pad,
+        sceneBounds: CGRect(x: 0, y: 0, width: 1366, height: 1024),
+        screenBounds: screen
+      )
+    )
+
+    // Floating window and Split View are smaller than screen -> windowed.
+    XCTAssertTrue(
+      WindowingSafeAreaCalculator.isWindowed(
+        idiom: .pad,
+        sceneBounds: CGRect(x: 0, y: 0, width: 420, height: 760),
+        screenBounds: screen
+      )
+    )
+    XCTAssertTrue(
+      WindowingSafeAreaCalculator.isWindowed(
+        idiom: .pad,
+        sceneBounds: CGRect(x: 0, y: 0, width: 507, height: 1366),
+        screenBounds: screen
+      )
+    )
+
+    // iPhone is never treated as iPad windowed mode.
+    XCTAssertFalse(
+      WindowingSafeAreaCalculator.isWindowed(
+        idiom: .phone,
+        sceneBounds: CGRect(x: 0, y: 0, width: 393, height: 852),
+        screenBounds: screen
+      )
+    )
+  }
+
+  @MainActor
+  func testWindowingSafeAreaCalculatorComputesDeltaAndResetsOnFullScreen() {
+    // Floating window with 0 base safe area and 36pt traffic-light vertical adaptation.
+    XCTAssertEqual(
+      WindowingSafeAreaCalculator.additionalTopInset(
+        isWindowed: true,
+        baseSafeAreaTop: 0,
+        cornerAdaptedSafeAreaTop: 36,
+        cornerAdaptedMarginsTop: 44,
+        unadaptedMarginsTop: 8
+      ),
+      36
+    )
+
+    // Window partially overlapping status bar (baseSafeAreaTop = 12, corner = 36) -> delta 24.
+    XCTAssertEqual(
+      WindowingSafeAreaCalculator.additionalTopInset(
+        isWindowed: true,
+        baseSafeAreaTop: 12,
+        cornerAdaptedSafeAreaTop: 36,
+        cornerAdaptedMarginsTop: 44,
+        unadaptedMarginsTop: 8
+      ),
+      24
+    )
+
+    // Fallback when only margins layout region reports the corner control height.
+    XCTAssertEqual(
+      WindowingSafeAreaCalculator.additionalTopInset(
+        isWindowed: true,
+        baseSafeAreaTop: 0,
+        cornerAdaptedSafeAreaTop: 0,
+        cornerAdaptedMarginsTop: 40,
+        unadaptedMarginsTop: 8
+      ),
+      32
+    )
+
+    // Dragging back to full-screen must force 0 even if layout guide retains stale value.
+    XCTAssertEqual(
+      WindowingSafeAreaCalculator.additionalTopInset(
+        isWindowed: false,
+        baseSafeAreaTop: 24,
+        cornerAdaptedSafeAreaTop: 56,
+        cornerAdaptedMarginsTop: 64,
+        unadaptedMarginsTop: 8
+      ),
+      0
+    )
+  }
+
+  @MainActor
+  func testSceneDelegateInstallsObserverAndResetsFullScreenAdditionalSafeArea() {
+    let delegate = SceneDelegate()
+    let window = UIWindow(frame: UIScreen.main.bounds)
+    let rootVC = UIViewController()
+    rootVC.additionalSafeAreaInsets = UIEdgeInsets(top: 36, left: 4, bottom: 8, right: 4)
+    window.rootViewController = rootVC
+    delegate.window = window
+
+    delegate.installWindowSafeAreaObserverIfNeeded()
+    let observers = window.subviews.compactMap { $0 as? WindowingSafeAreaObserverView }
+    XCTAssertEqual(observers.count, 1)
+    XCTAssertTrue(observers[0].isHidden)
+    XCTAssertFalse(observers[0].isUserInteractionEnabled)
+
+    // Calling install again is idempotent.
+    delegate.installWindowSafeAreaObserverIfNeeded()
+    XCTAssertEqual(window.subviews.compactMap { $0 as? WindowingSafeAreaObserverView }.count, 1)
+
+    // Full-screen window resets top additionalSafeAreaInsets to 0 while preserving other edges.
+    delegate.updateWindowingSafeAreaInsets()
+    XCTAssertEqual(rootVC.additionalSafeAreaInsets.top, 0)
+    XCTAssertEqual(rootVC.additionalSafeAreaInsets.left, 4)
+    XCTAssertEqual(rootVC.additionalSafeAreaInsets.bottom, 8)
+    XCTAssertEqual(rootVC.additionalSafeAreaInsets.right, 4)
+  }
 }
