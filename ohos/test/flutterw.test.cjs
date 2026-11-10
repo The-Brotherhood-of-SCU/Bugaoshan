@@ -18,7 +18,7 @@ function fixture(t) {
     'lib/services/example.dart': 'shared-service',
     'pubspec.yaml': 'name: bugaoshan\nversion: 2.5.3+20503\n',
     'pubspec.lock': 'upstream-lock',
-    'ohos/pubspec.yaml': 'name: bugaoshan\nversion: 2.5.3+20503\n',
+    'ohos/pubspec.yaml': 'name: bugaoshan\ndependencies:\n  ohos_plugin: any\n',
     'ohos/pubspec.lock': 'ohos-lock',
     'ohos/flutter/main.dart': 'ohos-main',
   })) fs.writeFileSync(path.join(root, file), contents);
@@ -60,12 +60,71 @@ test('old lib junction is replaced without modifying upstream sources', (t) => {
   assert.equal(fs.readFileSync(path.join(root, 'lib/app.dart'), 'utf8'), 'shared-app');
 });
 
-test('version drift fails instead of changing either dependency manifest', (t) => {
+test('root-only version bumps update Flutter and native metadata without changing OHOS dependencies', (t) => {
   const { root, nativeRoot, wrapper } = fixture(t);
-  fs.writeFileSync(path.join(nativeRoot, 'pubspec.yaml'), 'version: 1.0.0+1\n');
-  assert.throws(() => wrapper.prepareWorkspace(), /Synchronize the app version/);
+  const sdk = path.join(root, 'cpf sdk');
+  fs.mkdirSync(path.join(sdk, 'packages', 'flutter_tools', 'lib', 'src', 'ohos'), { recursive: true });
+  const previousSdk = process.env.CPF_FLUTTER_ROOT;
+  process.env.CPF_FLUTTER_ROOT = sdk;
+  t.after(() => {
+    if (previousSdk === undefined) delete process.env.CPF_FLUTTER_ROOT;
+    else process.env.CPF_FLUTTER_ROOT = previousSdk;
+  });
+  const nativeManifest = fs.readFileSync(path.join(nativeRoot, 'pubspec.yaml'), 'utf8');
+  const propertiesPath = path.join(nativeRoot, 'local.properties');
+  fs.writeFileSync(propertiesPath, 'custom.setting=preserved\nflutter.versionName=1.0.0\nflutter.versionCode=1\n');
+
+  wrapper.prepareWorkspace();
+  wrapper.prepareNativeProperties();
+  const generatedPath = path.join(wrapper.projectPath, 'pubspec.yaml');
+  assert.equal(fs.readFileSync(generatedPath, 'utf8'), `version: 2.5.3+20503\n${nativeManifest}`);
+  assert.match(fs.readFileSync(propertiesPath, 'utf8'), /^flutter.versionName=2\.5\.3$/m);
+  assert.match(fs.readFileSync(propertiesPath, 'utf8'), /^flutter.versionCode=20503$/m);
+
+  const nextRootManifest = 'name: bugaoshan\nversion: "2.6.0-rc.1+20600" # release version\n';
+  fs.writeFileSync(path.join(root, 'pubspec.yaml'), nextRootManifest);
+  assert.equal(wrapper.prepareWorkspace(), true);
+  wrapper.prepareNativeProperties();
+  assert.equal(fs.readFileSync(generatedPath, 'utf8'), `version: 2.6.0-rc.1+20600\n${nativeManifest}`);
+  const properties = fs.readFileSync(propertiesPath, 'utf8');
+  assert.match(properties, /^flutter.versionName=2\.6\.0-rc\.1$/m);
+  assert.match(properties, /^flutter.versionCode=20600$/m);
+  assert.match(properties, /^custom.setting=preserved$/m);
+  assert.equal(fs.readFileSync(path.join(root, 'pubspec.yaml'), 'utf8'), nextRootManifest);
+  assert.equal(fs.readFileSync(path.join(nativeRoot, 'pubspec.yaml'), 'utf8'), nativeManifest);
   assert.equal(fs.readFileSync(path.join(root, 'pubspec.lock'), 'utf8'), 'upstream-lock');
-  assert.equal(fs.readFileSync(path.join(nativeRoot, 'pubspec.yaml'), 'utf8'), 'version: 1.0.0+1\n');
+  assert.equal(fs.readFileSync(path.join(nativeRoot, 'pubspec.lock'), 'utf8'), 'ohos-lock');
+  assert.equal(fs.readFileSync(path.join(wrapper.projectPath, 'pubspec.lock'), 'utf8'), 'ohos-lock');
+
+  const timestamp = new Date('2020-01-01T00:00:00Z');
+  for (const file of [generatedPath, propertiesPath]) fs.utimesSync(file, timestamp, timestamp);
+  assert.equal(wrapper.prepareWorkspace(), false);
+  wrapper.prepareNativeProperties();
+  for (const file of [generatedPath, propertiesPath]) assert.equal(fs.statSync(file).mtimeMs, timestamp.getTime());
+});
+
+test('a legacy OHOS version cannot override the root version', (t) => {
+  const { nativeRoot, wrapper } = fixture(t);
+  const nativeManifest = 'name: bugaoshan\r\nversion: 1.0.0+1\r\ndependencies:\r\n  ohos_plugin: any\r\n';
+  fs.writeFileSync(path.join(nativeRoot, 'pubspec.yaml'), nativeManifest);
+  wrapper.prepareWorkspace();
+  const generated = fs.readFileSync(path.join(wrapper.projectPath, 'pubspec.yaml'), 'utf8');
+  assert.deepEqual(generated.match(/^version:.*$/gm), ['version: 2.5.3+20503']);
+  assert.ok(generated.includes('dependencies:\r\n  ohos_plugin: any\r\n'));
+  assert.equal(fs.readFileSync(path.join(nativeRoot, 'pubspec.yaml'), 'utf8'), nativeManifest);
+});
+
+test('missing or malformed root versions fail before changing generated metadata', (t) => {
+  const { root, wrapper } = fixture(t);
+  wrapper.prepareWorkspace();
+  const generatedPath = path.join(wrapper.projectPath, 'pubspec.yaml');
+  const original = fs.readFileSync(generatedPath, 'utf8');
+  for (const versionLine of ['', 'version:', 'version: 2.6.0', 'version: 2.6.0+abc', 'version: invalid+1']) {
+    fs.writeFileSync(path.join(root, 'pubspec.yaml'), `name: bugaoshan\n${versionLine}\ndependencies: {}\n`);
+    assert.throws(() => wrapper.prepareWorkspace(), /Root pubspec.yaml version/);
+    assert.throws(() => wrapper.prepareNativeProperties(), /Root pubspec.yaml version/);
+    assert.equal(fs.readFileSync(generatedPath, 'utf8'), original);
+  }
 });
 
 test('upstream file removal clears only its obsolete workspace link', (t) => {

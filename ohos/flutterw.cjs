@@ -7,11 +7,25 @@ const nativeRoot = fs.realpathSync(__dirname);
 const repositoryRoot = path.dirname(nativeRoot);
 const projectPath = path.join(nativeRoot, '.flutter-workspace');
 
-function copyIfChanged(source, destination) {
-  const contents = fs.readFileSync(source);
-  if (fs.existsSync(destination) && contents.equals(fs.readFileSync(destination))) return false;
-  fs.copyFileSync(source, destination);
+function writeIfChanged(destination, contents) {
+  const bytes = Buffer.from(contents);
+  if (fs.existsSync(destination) && bytes.equals(fs.readFileSync(destination))) return false;
+  fs.writeFileSync(destination, bytes);
   return true;
+}
+
+function copyIfChanged(source, destination) {
+  return writeIfChanged(destination, fs.readFileSync(source));
+}
+
+function readAppVersion() {
+  const manifest = fs.readFileSync(path.join(repositoryRoot, 'pubspec.yaml'), 'utf8');
+  const version = manifest.match(/^version:[ \t]*([^\r\n#]+)/m)?.[1].trim()
+    .replace(/^(['"])(.*)\1$/, '$2');
+  if (!version || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?\+\d+$/.test(version)) {
+    throw new Error('Root pubspec.yaml version must include a semantic version and numeric build number (e.g. 2.5.3+20503).');
+  }
+  return version;
 }
 
 function linkPath(destination, source, directory = true) {
@@ -73,12 +87,8 @@ function prepareSources() {
 }
 
 function prepareWorkspace() {
+  const version = readAppVersion();
   fs.mkdirSync(projectPath, { recursive: true });
-  const rootVersion = fs.readFileSync(path.join(repositoryRoot, 'pubspec.yaml'), 'utf8').match(/^version:\s*(\S+)/m)?.[1];
-  const ohosVersion = fs.readFileSync(path.join(nativeRoot, 'pubspec.yaml'), 'utf8').match(/^version:\s*(\S+)/m)?.[1];
-  if (!rootVersion || rootVersion !== ohosVersion) {
-    throw new Error('Synchronize the app version in ohos/pubspec.yaml with the root pubspec.yaml first.');
-  }
   prepareSources();
   for (const name of ['assets', 'docs', 'test', 'test_driver']) {
     linkPath(path.join(projectPath, name), path.join(repositoryRoot, name));
@@ -89,12 +99,13 @@ function prepareWorkspace() {
     const source = path.join(repositoryRoot, name);
     if (fs.existsSync(source)) copyIfChanged(source, path.join(projectPath, name));
   }
-  let dependenciesChanged = false;
-  for (const name of ['pubspec.yaml', 'pubspec.lock']) {
-    dependenciesChanged = copyIfChanged(path.join(nativeRoot, name), path.join(projectPath, name)) ||
-      dependenciesChanged;
-  }
-  return dependenciesChanged;
+  const manifest = fs.readFileSync(path.join(nativeRoot, 'pubspec.yaml'), 'utf8');
+  // Only the generated manifest gets the root version; OHOS dependencies stay independent.
+  // Replace a legacy version line as well, so a stale OHOS value cannot override the root.
+  const generatedManifest = `version: ${version}\n${manifest.replace(/^version:[^\r\n]*(?:\r?\n|$)/m, '')}`;
+  const manifestChanged = writeIfChanged(path.join(projectPath, 'pubspec.yaml'), generatedManifest);
+  const lockChanged = copyIfChanged(path.join(nativeRoot, 'pubspec.lock'), path.join(projectPath, 'pubspec.lock'));
+  return manifestChanged || lockChanged;
 }
 
 function flutterExecutable() {
@@ -110,11 +121,10 @@ function flutterExecutable() {
 }
 
 function prepareNativeProperties() {
+  const version = readAppVersion();
   const executable = flutterExecutable();
   const propertiesPath = path.join(nativeRoot, 'local.properties');
   let properties = fs.existsSync(propertiesPath) ? fs.readFileSync(propertiesPath, 'utf8') : '';
-  const version = fs.readFileSync(path.join(nativeRoot, 'pubspec.yaml'), 'utf8').match(/^version:\s*(\S+)/m)?.[1];
-  if (!version || !/^.+\+\d+$/.test(version)) throw new Error('OHOS version must include a numeric build number.');
   const [versionName, versionCode] = version.split('+');
   const values = {
     'flutter.sdk': path.dirname(path.dirname(executable)).replace(/\\/g, '/'),
