@@ -80,3 +80,31 @@ def has_changelog_content(content: str) -> bool:
         and not re.fullmatch(r"[-*_]{3,}", line.strip())
         for line in content.splitlines()
     )
+
+
+def has_unreleased_content(content: str) -> bool:
+    """Return True if a legacy ## [Unreleased] section exists and has non-empty notes."""
+    in_unreleased = False
+    body: list[str] = []
+    fence: str | None = None
+
+    for line in content.splitlines():
+        marker = re.match(r"^[ \t]*(`{3,}|~{3,})(.*)$", line)
+        if marker:
+            token, suffix = marker.groups()
+            if fence is None:
+                fence = token
+            elif token[0] == fence[0] and len(token) >= len(fence) and not suffix.strip():
+                fence = None
+        elif fence is None and re.match(r"^##[ \t]+", line):
+            if in_unreleased and has_changelog_content("\n".join(body)):
+                return True
+            header = HEADER_RE.fullmatch(line)
+            label = header["label"].strip("[]").lower() if header else ""
+            in_unreleased = label == "unreleased"
+            body = []
+            continue
+        if in_unreleased:
+            body.append(line)
+
+    return in_unreleased and has_changelog_content("\n".join(body))

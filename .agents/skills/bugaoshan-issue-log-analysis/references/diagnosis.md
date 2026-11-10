@@ -14,6 +14,9 @@
 | 第二课堂重复认证、报名或业务错误 | `lib/services/auth/ccyl_auth.dart`、`lib/services/api/ccyl_api_service.dart`、`lib/services/ccyl/ccyl_service.dart` | `test/ccyl_auth_generation_test.dart`、`ccyl_auth_principal_test.dart`、`ccyl_api_retry_test.dart` |
 | 报修的独立 token、工单或表单 | `lib/services/auth/zhhq_auth.dart`、`lib/services/api/zhhq_api_service.dart`、`lib/providers/zhhq_repair_provider.dart` | `test/zhhq_api_service_test.dart`、`zhhq_repair_provider_test.dart` |
 | 办事大厅表单、HTML 响应、提交失败 | `lib/services/auth/service_auth.dart`、`lib/services/api/service_api_service.dart`、`lib/pages/campus/service_hall/` | `test/service_api_service_test.dart`、`service_form_controller_test.dart` |
+| 活动室预约时段、申请或取消 | `lib/services/auth/reservation_auth.dart`、`lib/services/api/reservation_api_service.dart`、`lib/providers/reservation_provider.dart`、`lib/pages/campus/reservation/` | `test/reservation_*_test.dart` |
+| 图书馆打印与扫描上传、预览或下载 | `lib/services/auth/cloud_print_auth.dart`、`lib/services/api/cloud_print_api_service.dart`、`lib/providers/cloud_print_provider.dart`、`lib/pages/campus/cloud_print/` | `test/cloud_print*_test.dart` |
+| 校园网在线设备与无感认证 | `lib/pages/campus/network_device/`、`lib/services/auth/wfw_auth.dart`、`lib/services/auth/new_service_auth.dart` | 在线设备依赖 `WfwAuth`，同页无感认证入口使用独立 `NewServiceAuth`（故障互不阻塞） |
 
 关键判读：
 
@@ -28,9 +31,9 @@
 
 | 现象 | 入口与验证方向 |
 | --- | --- |
-| 编辑、复制、导入后数据异常 | `lib/providers/course_provider.dart`、`lib/services/database_service.dart` 和对应页面/解析器；查 `test/course_*`、`schedule_import_sheet_test.dart` |
+| 编辑、复制、导入后数据异常 | `lib/providers/course_provider.dart`、`lib/services/hook_registry.dart`、`lib/services/database_service.dart` 和对应页面/解析器；查 `test/course_*`、`schedule_import_sheet_test.dart` |
 | 小组件未更新、隐私或显示设置不一致 | `lib/services/widget_update_service.dart` 与对应平台的 `android/`、`ios/`、`macos/` 实现；查 `test/widget_update_service_test.dart`，必要时真机验证 |
-| 课前提醒或实时活动 | `lib/services/reminder/reminder_service.dart`、`lib/services/reminder/live_activity_service.dart`、`lib/services/reminder/live_activity_coordinator.dart` 与平台实现；查对应测试和开发者页面探针 |
+| 课前提醒或实时活动 | `lib/services/reminder/reminder_service.dart`、`lib/services/reminder/live_activity_service.dart`、`lib/services/reminder/live_activity_coordinator.dart`、`lib/pages/dev/probe_page.dart` 与平台实现；查对应测试和开发者页面探针 |
 | 通知空白、附件下载或 WebView 失败 | `lib/widgets/webview/`、`lib/pages/campus/notice/`、`lib/services/download_manager.dart`、`assets/js/`；查 `test/webview_notice_handlers_test.dart`、`download_manager_test.dart` |
 | 原生方法调用、图标、存储、窗口失败 | 从 `PlatformException` 的 code/message 和调用 tag 定位 Dart 入口，再核对相应平台实现、权限与系统环境 |
 

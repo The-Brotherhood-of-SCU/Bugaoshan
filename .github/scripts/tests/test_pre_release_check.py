@@ -51,6 +51,16 @@ class PreReleaseChangelogTest(unittest.TestCase):
         results = self.check("## [2.5.2]\n### Fixed\n## [2.5.1]\n- old\n", "2.5.2")
         self.assertEqual(results[0][0], "FAIL")
 
+    def test_formal_release_warns_when_legacy_unreleased_has_content(self):
+        text = "## [Unreleased]\n- legacy item\n\n## [2.5.2] - 2026-11-10\n- formal item\n"
+        results = self.check(text, "2.5.2")
+        self.assertTrue(
+            any(s == "WARN" and n == "Unreleased 遗留内容" for s, n, _ in results)
+        )
+        self.assertTrue(
+            any(s == "OK" and n == "CHANGELOG.md" for s, n, _ in results)
+        )
+
     def test_structure_only_accepts_history_without_guessing_future_tag(self):
         results = self.check(
             "## [2.5.1]\n- old\n", "2.5.1-prerelease", ci=True, changelog_structure_only=True

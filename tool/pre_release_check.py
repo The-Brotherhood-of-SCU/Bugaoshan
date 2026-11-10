@@ -26,7 +26,12 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS_DIR = ROOT / ".github" / "scripts"
 sys.path.insert(0, str(SCRIPTS_DIR))
 
-from changelog_sections import has_changelog_content, normalize_version, parse_changelog
+from changelog_sections import (
+    has_changelog_content,
+    has_unreleased_content,
+    normalize_version,
+    parse_changelog,
+)
 
 # 与 android/app/build.gradle.kts 的 ABI override / F-Droid VercodeOperation 一致
 ABI_CODES = (1, 2, 4)
@@ -311,6 +316,12 @@ class Checker:
                 self.record(WARN, "CHANGELOG 日期", f"发布日期 {date} 不是今天，确认是否正确")
         elif not self.is_prerelease:
             self.record(WARN, "CHANGELOG 日期", f"[{self.version}] 缺少 YYYY-MM-DD 日期")
+        if not self.is_prerelease and has_unreleased_content(text):
+            self.record(
+                WARN,
+                "Unreleased 遗留内容",
+                "[Unreleased] 仍有未归并内容，请核对并入目标版本章节后移除 [Unreleased]",
+            )
         self.record(OK, name, f"[{self.version}] 有更新说明")
 
     def check_metadata_yml(self):

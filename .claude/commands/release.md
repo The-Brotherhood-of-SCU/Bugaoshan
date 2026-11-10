@@ -6,7 +6,7 @@
 
 > **流水线背景**：仓库采用 `feature -> preview -> main` 两级流水线，`main` 只接收
 > 来自 `preview` 分支的 PR。合并进 `main` 后，`release.yml` 会自动从 `pubspec.yaml`
-> 推导 `vX.Y.Z` tag、构建双端产物并发布 GitHub Release（latest）。本命令只负责
+> 推导 `vX.Y.Z` tag、构建多端产物并发布 GitHub Release（latest）。本命令只负责
 > **准备发布内容并发起 PR**，不再手动打 tag / 推 tag。
 
 ## Step 1: 获取目标版本
@@ -56,7 +56,7 @@ python tool/pre_release_check.py X.Y.Z
 推送前，向用户展示变更摘要以获取最终确认：
 
 - 展示 `git diff -- pubspec.yaml CHANGELOG.md metadata/`，让用户审查本次准备的版本、说明与元数据改动。
-- 说明推送 `preview` 会自动触发预览版构建（tag 由流水线推导为 `vX.Y.Z-preview` 或下一序号）。
+- 说明推送 `preview` 会自动触发 RC 预览构建（因 `pubspec.yaml` 已 bump，tag 由流水线推导为 `vX.Y.Z-rc` 或下一 RC 序号）。
 - 询问用户确认：继续推送，还是保留当前改动并中止发布。
 
 只有用户明确确认后才继续：
