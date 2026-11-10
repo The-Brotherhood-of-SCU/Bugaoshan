@@ -1,4 +1,3 @@
-import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'dart:async';
 
 import 'package:bugaoshan/injection/injector.dart';
@@ -7,11 +6,13 @@ import 'package:bugaoshan/models/reminder_plan.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/reminder/reminder_service.dart';
 import 'package:bugaoshan/services/reminder/reminder_transport.dart';
+import 'package:bugaoshan/theme_shape.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
+import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:bugaoshan/widgets/common/info_card.dart';
 import 'package:bugaoshan/widgets/common/section_title.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
-import 'package:bugaoshan/utils/system_insets.dart';
 import 'package:flutter/material.dart';
 
 /// 「通知与提醒」设置页面。
@@ -42,6 +43,9 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
 
   /// 提前提醒备选时间列表（单位：分钟）。涵盖近距离教学区与跨校区通勤等不同时间粒度。
   static const List<int> _leadChoices = [5, 10, 15, 30, 60];
+
+  /// 卡片内带 [TileIcon] 的行文本起始缩进（20 左内边距 + 36 图标宽 + 14 间距）。
+  static const double _tileDividerIndent = 70;
 
   @override
   void initState() {
@@ -88,6 +92,8 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
   /// 当前平台不具备本地提醒投递能力，授权引导无意义。
   bool get _isPermissionUnsupported =>
       _permissionStatus == ReminderPermissionStatus.unsupported;
+
+  Duration get _animDuration => _appConfig.cardSizeAnimationDuration.value;
 
   Future<void> _toggleMaster(bool enabled) async {
     _appConfig.reminderEnabled.value = enabled;
@@ -169,6 +175,12 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
       '${t.hour.toString().padLeft(2, '0')}:'
       '${t.minute.toString().padLeft(2, '0')}';
 
+  static String _formatMonthDayTime(DateTime dt) =>
+      '${dt.month.toString().padLeft(2, '0')}/'
+      '${dt.day.toString().padLeft(2, '0')} '
+      '${dt.hour.toString().padLeft(2, '0')}:'
+      '${dt.minute.toString().padLeft(2, '0')}';
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -178,16 +190,26 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
       body: ListView(
         padding: withSystemBottomInset(
           context,
-          EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),
         children: [
-          // 查询完成后再展示授权引导，避免将初始 null 状态误报为通知未开启。
-          if (_permissionStatus != null && !_isGranted) ...[
-            _buildPermissionCard(l10n),
-            const SizedBox(height: 14),
-          ],
+          // 权限状态横幅：授权通过后平滑收起，避免从系统设置返回时生硬跳变。
+          AnimatedSize(
+            duration: _animDuration,
+            curve: appCurve,
+            alignment: Alignment.topCenter,
+            child: _permissionStatus == null || _isGranted
+                ? const SizedBox.shrink()
+                : Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: _buildPermissionCard(l10n),
+                  ),
+          ),
           SectionTitle(title: l10n.settingsGeneral),
-          InfoCard(children: [_buildMasterSwitch(l10n)]),
+          InfoCard(
+            indent: _tileDividerIndent,
+            children: [_buildMasterSwitch(l10n)],
+          ),
           const SizedBox(height: 14),
           _buildCourseSection(l10n),
           const SizedBox(height: 14),
@@ -202,68 +224,88 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
     );
   }
 
-  // ── 权限 ────────────────────────────────────────────────────────
+  // ── 权限引导卡片 ─────────────────────────────────────────────────
 
   Widget _buildPermissionCard(AppLocalizations l10n) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final denied = _permissionStatus == ReminderPermissionStatus.denied;
-    // 采用中性背景容器搭配错误强调色，避免深色模式下大面积高饱和容器过度强调。
-    final accent = theme.colorScheme.error;
+    final accent = _isPermissionUnsupported
+        ? colorScheme.onSurfaceVariant
+        : colorScheme.error;
     final hint = switch (_permissionStatus) {
       ReminderPermissionStatus.denied => l10n.reminderPermissionDeniedHint,
-      // 平台不支持投递时给出说明，但不提供无法生效的授权入口。
       ReminderPermissionStatus.unsupported =>
         l10n.reminderPermissionUnsupportedHint,
       _ => l10n.reminderPermissionNotDeterminedHint,
     };
+
     return StyledCard(
-      backgroundColor: theme.colorScheme.surfaceContainerHighest,
+      borderColor: accent.withValues(alpha: 0.22),
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.notifications_off_outlined, size: 20, color: accent),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.reminderPermissionTitle,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TileIcon(
+                  icon: _isPermissionUnsupported
+                      ? Icons.notifications_paused_outlined
+                      : Icons.notifications_off_outlined,
+                  color: accent,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.reminderPermissionTitle,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        hint,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    hint,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  if (!_isPermissionUnsupported) ...[
-                    const SizedBox(height: 10),
-                    FilledButton.tonal(
-                      onPressed: _requestingPermission
-                          ? null
-                          : _requestPermission,
-                      child: _requestingPermission
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Text(
-                              denied
-                                  ? l10n.reminderPermissionOpenSettings
-                                  : l10n.reminderPermissionRequest,
-                            ),
-                    ),
-                  ],
-                ],
-              ),
+                ),
+              ],
             ),
+            if (!_isPermissionUnsupported) ...[
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.tonalIcon(
+                  onPressed: _requestingPermission ? null : _requestPermission,
+                  icon: _requestingPermission
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Icon(
+                          denied
+                              ? Icons.open_in_new_rounded
+                              : Icons.notifications_active_outlined,
+                          size: 18,
+                        ),
+                  label: Text(
+                    denied
+                        ? l10n.reminderPermissionOpenSettings
+                        : l10n.reminderPermissionRequest,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -275,14 +317,12 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
   Widget _buildMasterSwitch(AppLocalizations l10n) {
     return ValueListenableBuilder<bool>(
       valueListenable: _appConfig.reminderEnabled,
-      builder: (context, enabled, _) => AdaptiveGlassSwitchListTile(
-        // 与卡片内 IconTile 的 20 水平内边距对齐，避免内容贴住卡片边缘。
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-        title: Text(l10n.reminderMasterSwitch),
-        subtitle: Text(
-          l10n.reminderMasterSwitchHint,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+      builder: (context, enabled, _) => _ReminderSwitchTile(
+        icon: enabled
+            ? Icons.notifications_active_outlined
+            : Icons.notifications_none_outlined,
+        title: l10n.reminderMasterSwitch,
+        subtitle: l10n.reminderMasterSwitchHint,
         value: enabled,
         onChanged: _toggleMaster,
       ),
@@ -293,40 +333,63 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
 
   Widget _buildCourseSection(AppLocalizations l10n) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return ValueListenableBuilder<bool>(
       valueListenable: _appConfig.reminderEnabled,
       builder: (context, masterEnabled, _) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SectionTitle(title: l10n.reminderCourseSection),
-          Opacity(
-            // 主开关关闭时置灰并禁用交互，维持界面结构可见性。
-            opacity: masterEnabled ? 1 : 0.45,
+          AnimatedOpacity(
+            duration: _animDuration,
+            curve: appCurve,
+            opacity: masterEnabled ? 1.0 : 0.45,
             child: IgnorePointer(
               ignoring: !masterEnabled,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  StyledCard(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: StyledCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const TileIcon(icon: Icons.alarm_outlined),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  l10n.reminderLeadTime,
+                                  style: theme.textTheme.bodyLarge,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  l10n.reminderLeadTimeHint,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Divider(
+                      height: 1,
+                      indent: 20,
+                      endIndent: 20,
+                      color: theme.dividerColor.withValues(alpha: 0.08),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 14, 20, 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            l10n.reminderLeadTime,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            l10n.reminderLeadTimeHint,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
                           ValueListenableBuilder<List<int>>(
                             valueListenable: _appConfig.reminderLeadMinutes,
                             builder: (context, selected, _) => Wrap(
@@ -334,17 +397,16 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
                               runSpacing: 8,
                               children: [
                                 for (final minutes in _leadChoices)
-                                  FilterChip(
-                                    label: Text(
-                                      l10n.reminderLeadMinutes(minutes),
-                                    ),
-                                    selected: selected.contains(minutes),
-                                    onSelected: (on) {
+                                  _buildLeadChip(
+                                    context: context,
+                                    label: l10n.reminderLeadMinutes(minutes),
+                                    isSelected: selected.contains(minutes),
+                                    onTap: () {
                                       final next = {...selected};
-                                      if (on) {
-                                        next.add(minutes);
-                                      } else {
+                                      if (selected.contains(minutes)) {
                                         next.remove(minutes);
+                                      } else {
+                                        next.add(minutes);
                                       }
                                       // 保证至少保留一个提前时间选项，避免全部取消后与主开关开启状态语义冲突。
                                       if (next.isEmpty) return;
@@ -355,31 +417,33 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
                               ],
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 12),
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Icon(
-                                Icons.info_outline,
-                                size: 16,
-                                color: theme.colorScheme.onSurfaceVariant,
+                                Icons.info_outline_rounded,
+                                size: 15,
+                                color: colorScheme.onSurfaceVariant.withValues(
+                                  alpha: 0.75,
+                                ),
                               ),
                               const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
                                   l10n.reminderLeadTimeMultiHint,
                                   style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
+                                    color: colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
                         ],
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -388,80 +452,139 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
     );
   }
 
+  Widget _buildLeadChip({
+    required BuildContext context,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return FilterChip(
+      label: Text(
+        label,
+        style: theme.textTheme.labelLarge?.copyWith(
+          color: isSelected
+              ? colorScheme.onPrimaryContainer
+              : colorScheme.onSurfaceVariant,
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+        ),
+      ),
+      selected: isSelected,
+      showCheckmark: false,
+      selectedColor: colorScheme.primaryContainer,
+      backgroundColor: colorScheme.surfaceContainerHighest.withValues(
+        alpha: 0.45,
+      ),
+      side: BorderSide(
+        color: isSelected
+            ? colorScheme.primary.withValues(alpha: 0.35)
+            : colorScheme.outlineVariant.withValues(alpha: 0.4),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      onSelected: (_) => onTap(),
+    );
+  }
+
   // ── 免打扰 ──────────────────────────────────────────────────────
 
   Widget _buildQuietSection(AppLocalizations l10n) {
+    final theme = Theme.of(context);
+
     return ValueListenableBuilder<bool>(
       valueListenable: _appConfig.reminderEnabled,
       builder: (context, masterEnabled, _) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SectionTitle(title: l10n.reminderQuietSection),
-          Opacity(
-            opacity: masterEnabled ? 1 : 0.45,
+          AnimatedOpacity(
+            duration: _animDuration,
+            curve: appCurve,
+            opacity: masterEnabled ? 1.0 : 0.45,
             child: IgnorePointer(
               ignoring: !masterEnabled,
-              child: InfoCard(
-                children: [
-                  ValueListenableBuilder<TimeOfDay?>(
-                    valueListenable: _appConfig.reminderQuietStart,
-                    builder: (context, start, _) =>
-                        ValueListenableBuilder<TimeOfDay?>(
-                          valueListenable: _appConfig.reminderQuietEnd,
-                          builder: (context, end, _) {
-                            final enabled = start != null && end != null;
-                            return Column(
-                              children: [
-                                AdaptiveGlassSwitchListTile(
-                                  // 与下方 IconTile 的 20 水平内边距对齐，保持同一卡片内视觉一致。
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                  ),
-                                  title: Text(l10n.reminderQuietEnabled),
-                                  value: enabled,
-                                  onChanged: (on) {
-                                    if (on) {
-                                      // 优先恢复历史时段；无历史记录时应用默认起止时段。
-                                      final start =
-                                          _lastQuietStart ??
-                                          const TimeOfDay(hour: 23, minute: 0);
-                                      final end =
-                                          _lastQuietEnd ??
-                                          const TimeOfDay(hour: 7, minute: 0);
-                                      _lastQuietStart = start;
-                                      _lastQuietEnd = end;
-                                      _appConfig.reminderQuietStart.value =
-                                          start;
-                                      _appConfig.reminderQuietEnd.value = end;
-                                    } else {
-                                      _lastQuietStart = start;
-                                      _lastQuietEnd = end;
-                                      _appConfig.reminderQuietStart.value =
-                                          null;
-                                      _appConfig.reminderQuietEnd.value = null;
-                                    }
-                                  },
+              child: StyledCard(
+                child: ValueListenableBuilder<TimeOfDay?>(
+                  valueListenable: _appConfig.reminderQuietStart,
+                  builder: (context, start, _) =>
+                      ValueListenableBuilder<TimeOfDay?>(
+                        valueListenable: _appConfig.reminderQuietEnd,
+                        builder: (context, end, _) {
+                          final enabled = start != null && end != null;
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _ReminderSwitchTile(
+                                icon: Icons.do_not_disturb_on_outlined,
+                                title: l10n.reminderQuietEnabled,
+                                subtitle: enabled
+                                    ? '${_hhmm(start)} – ${_hhmm(end)}'
+                                    : null,
+                                value: enabled,
+                                onChanged: (on) {
+                                  if (on) {
+                                    // 优先恢复历史时段；无历史记录时应用默认起止时段。
+                                    final nextStart =
+                                        _lastQuietStart ??
+                                        const TimeOfDay(hour: 23, minute: 0);
+                                    final nextEnd =
+                                        _lastQuietEnd ??
+                                        const TimeOfDay(hour: 7, minute: 0);
+                                    _lastQuietStart = nextStart;
+                                    _lastQuietEnd = nextEnd;
+                                    _appConfig.reminderQuietStart.value =
+                                        nextStart;
+                                    _appConfig.reminderQuietEnd.value = nextEnd;
+                                  } else {
+                                    _lastQuietStart = start;
+                                    _lastQuietEnd = end;
+                                    _appConfig.reminderQuietStart.value = null;
+                                    _appConfig.reminderQuietEnd.value = null;
+                                  }
+                                },
+                              ),
+                              ClipRect(
+                                child: AnimatedSize(
+                                  duration: _animDuration,
+                                  curve: appCurve,
+                                  alignment: Alignment.topCenter,
+                                  child: enabled
+                                      ? Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            InfoCard.divider(
+                                              theme,
+                                              _tileDividerIndent,
+                                            ),
+                                            IconTile(
+                                              icon: Icons.bedtime_outlined,
+                                              label: l10n.reminderQuietStart,
+                                              value: _hhmm(start),
+                                              onTap: () =>
+                                                  _pickQuietTime(isStart: true),
+                                            ),
+                                            InfoCard.divider(
+                                              theme,
+                                              _tileDividerIndent,
+                                            ),
+                                            IconTile(
+                                              icon: Icons.wb_sunny_outlined,
+                                              label: l10n.reminderQuietEnd,
+                                              value: _hhmm(end),
+                                              onTap: () => _pickQuietTime(
+                                                isStart: false,
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      : const SizedBox.shrink(),
                                 ),
-                                if (enabled) ...[
-                                  IconTile(
-                                    icon: Icons.bedtime_outlined,
-                                    label: l10n.reminderQuietStart,
-                                    value: _hhmm(start),
-                                    onTap: () => _pickQuietTime(isStart: true),
-                                  ),
-                                  IconTile(
-                                    icon: Icons.wb_sunny_outlined,
-                                    label: l10n.reminderQuietEnd,
-                                    value: _hhmm(end),
-                                    onTap: () => _pickQuietTime(isStart: false),
-                                  ),
-                                ],
-                              ],
-                            );
-                          },
-                        ),
-                  ),
-                ],
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                ),
               ),
             ),
           ),
@@ -474,146 +597,310 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
 
   Widget _buildStatusSection(AppLocalizations l10n) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SectionTitle(title: l10n.reminderStatusSection),
         StyledCard(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ValueListenableBuilder<ReminderPlan?>(
-                  valueListenable: _service.lastPlan,
-                  builder: (context, plan, _) {
-                    if (plan == null) {
-                      return Text(
-                        l10n.reminderStatusEmpty,
-                        style: theme.textTheme.bodySmall,
-                      );
-                    }
-                    if (plan.reminders.isEmpty) {
-                      return Text(
-                        l10n.reminderStatusNoUpcoming,
-                        style: theme.textTheme.bodySmall,
-                      );
-                    }
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.reminderStatusScheduled(
+          child: ValueListenableBuilder<ReminderPlan?>(
+            valueListenable: _service.lastPlan,
+            builder: (context, plan, _) {
+              final hasReminders = plan != null && plan.reminders.isNotEmpty;
+              final statusIcon = plan == null
+                  ? Icons.schedule_outlined
+                  : (hasReminders
+                        ? Icons.event_available_outlined
+                        : Icons.event_busy_outlined);
+              final statusTitle = plan == null
+                  ? l10n.reminderStatusEmpty
+                  : (hasReminders
+                        ? l10n.reminderStatusScheduled(
                             plan.reminders.length,
-                            '${plan.windowEnd.month}/${plan.windowEnd.day} '
-                            '${plan.windowEnd.hour.toString().padLeft(2, '0')}:'
-                            '${plan.windowEnd.minute.toString().padLeft(2, '0')}',
-                          ),
-                          style: theme.textTheme.bodyMedium,
+                            _formatMonthDayTime(plan.windowEnd),
+                          )
+                        : l10n.reminderStatusNoUpcoming);
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        TileIcon(
+                          icon: statusIcon,
+                          color: hasReminders
+                              ? colorScheme.primary
+                              : colorScheme.onSurfaceVariant,
                         ),
-                        if (_pendingCount != null && _isGranted) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            l10n.reminderStatusPending(_pendingCount!),
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                statusTitle,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              if (_pendingCount != null && _isGranted) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  l10n.reminderStatusPending(_pendingCount!),
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
-                        ],
-                        if (plan.droppedCount > 0) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            l10n.reminderStatusDropped(plan.droppedCount),
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.error,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 10),
-                        Text(
-                          _previewOf(plan, l10n),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        IconButton.filledTonal(
+                          tooltip: l10n.reminderStatusRefresh,
+                          onPressed: _refreshing ? null : _refreshPlan,
+                          icon: _refreshing
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.refresh_rounded, size: 20),
                         ),
                       ],
-                    );
-                  },
-                ),
-                ValueListenableBuilder<String?>(
-                  valueListenable: _service.lastError,
-                  builder: (context, error, _) => error == null
-                      ? const SizedBox.shrink()
-                      : Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            l10n.reminderStatusError(error),
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.error,
+                    ),
+                  ),
+                  if (hasReminders) ...[
+                    Divider(
+                      height: 1,
+                      indent: 20,
+                      endIndent: 20,
+                      color: theme.dividerColor.withValues(alpha: 0.08),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        spacing: 8,
+                        children: [
+                          for (final item in plan.reminders.take(3))
+                            _buildReminderPreviewRow(theme, item),
+                        ],
+                      ),
+                    ),
+                  ],
+                  if (plan != null && plan.droppedCount > 0)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+                      child: _buildInlineAlert(
+                        theme: theme,
+                        icon: Icons.warning_amber_rounded,
+                        text: l10n.reminderStatusDropped(plan.droppedCount),
+                      ),
+                    ),
+                  ValueListenableBuilder<String?>(
+                    valueListenable: _service.lastError,
+                    builder: (context, error, _) => error == null
+                        ? const SizedBox.shrink()
+                        : Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+                            child: _buildInlineAlert(
+                              theme: theme,
+                              icon: Icons.error_outline_rounded,
+                              text: l10n.reminderStatusError(error),
                             ),
                           ),
-                        ),
-                ),
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: _refreshing ? null : _refreshPlan,
-                    icon: _refreshing
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.refresh, size: 18),
-                    label: Text(l10n.reminderStatusRefresh),
                   ),
-                ),
-              ],
-            ),
+                ],
+              );
+            },
           ),
         ),
       ],
     );
   }
 
-  /// 生成最近待触发提醒项的预览文本，便于用户直观核验排期结果。
-  String _previewOf(ReminderPlan plan, AppLocalizations l10n) {
-    return plan.reminders
-        .take(3)
-        .map(
-          (r) =>
-              '${r.fireAt.month}/${r.fireAt.day} '
-              '${r.fireAt.hour.toString().padLeft(2, '0')}:'
-              '${r.fireAt.minute.toString().padLeft(2, '0')} '
-              '${r.title}',
-        )
-        .join('\n');
+  Widget _buildReminderPreviewRow(ThemeData theme, ReminderItem item) {
+    final colorScheme = theme.colorScheme;
+    final timeLabel = _formatMonthDayTime(item.fireAt);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(AppShapes.medium),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(AppShapes.small),
+            ),
+            child: Text(
+              timeLabel,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: colorScheme.primary,
+                fontWeight: FontWeight.w600,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  item.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (item.body.isNotEmpty) ...[
+                  const SizedBox(height: 1),
+                  Text(
+                    item.body,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInlineAlert({
+    required ThemeData theme,
+    required IconData icon,
+    required String text,
+  }) {
+    final colorScheme = theme.colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: colorScheme.errorContainer.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(AppShapes.medium),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 16, color: colorScheme.error),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onErrorContainer,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // ── 隐私提示 ────────────────────────────────────────────────────
 
   Widget _buildPrivacyHint(AppLocalizations l10n) {
     final theme = Theme.of(context);
-    // 与上方卡片内容的 16 水平内边距对齐，避免提示文字比卡片内容更靠左。
+    final colorScheme = theme.colorScheme;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.lock_outline,
-            size: 16,
-            color: theme.colorScheme.onSurfaceVariant,
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Icon(
+              Icons.lock_outline_rounded,
+              size: 15,
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+            ),
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               l10n.reminderPrivacyHint,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+                color: colorScheme.onSurfaceVariant,
+                height: 1.4,
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 与 [IconTile] 保持完全一致的左内边距（20）、图标块（36×36）和间距（14），
+/// 尾部承载 [AdaptiveGlassSwitch]，确保同一卡片内开关行与普通行像素级对齐。
+class _ReminderSwitchTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _ReminderSwitchTile({
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return BaseTile(
+      onTap: () => onChanged(!value),
+      child: Row(
+        children: [
+          TileIcon(icon: icon),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(title, style: theme.textTheme.bodyLarge),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle!,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          AdaptiveGlassSwitch(
+            semanticLabel: title,
+            value: value,
+            onChanged: onChanged,
           ),
         ],
       ),
