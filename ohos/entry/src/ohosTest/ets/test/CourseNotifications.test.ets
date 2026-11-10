@@ -1,6 +1,6 @@
 import { describe, it, expect } from '@ohos/hypium';
 import {
-  COURSE_REMINDER_LIMIT, CourseReminder, courseReminderRequest, isCourseReminder, parseCourseReminderPlan
+  CourseReminder, courseReminderRequest, isCourseReminder, parseCourseReminderPlan
 } from '../../../main/ets/platform/ReminderChannel';
 import { CourseLiveState } from '../../../main/ets/platform/LiveActivityChannel';
 
@@ -67,13 +67,18 @@ export default function courseNotificationsTest() {
       expect(rejects(() => { parseCourseReminderPlan(args, now); })).assertTrue();
     });
 
-    it('rejects plans exceeding the native scheduling budget', 0, () => {
+    it('accepts Dart plans above the old quota and recognizes their notification IDs', 0, () => {
       const now = Date.now();
       const items: Map<string, Object>[] = [];
-      for (let index = 0; index <= COURSE_REMINDER_LIMIT; index++) {
+      for (let index = 0; index < 64; index++) {
         items.push(reminder(index.toString(), now + 60000));
       }
-      expect(rejects(() => { parseCourseReminderPlan(plan(items, now), now); })).assertTrue();
+      expect(parseCourseReminderPlan(plan(items, now), now).length).assertEqual(items.length);
+      const last = courseReminderRequest(new CourseReminder(items[items.length - 1]),
+        items.length - 1, 'test.app', 'Close');
+      expect(isCourseReminder(last)).assertTrue();
+      last.groupId = 'unrelated';
+      expect(isCourseReminder(last)).assertFalse();
     });
 
     it('gives separate lead times independent notification groups and preserves calendar seconds', 0, () => {

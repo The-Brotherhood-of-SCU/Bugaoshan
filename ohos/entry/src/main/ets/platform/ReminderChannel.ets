@@ -6,8 +6,6 @@ import { notificationManager } from '@kit.NotificationKit';
 import { preferences } from '@kit.ArkData';
 import { MethodCall, MethodResult } from '@ohos/flutter_ohos';
 
-// Keep this budget in sync with MethodChannelReminderTransport.pendingLimit.
-export const COURSE_REMINDER_LIMIT = 30;
 const NOTIFICATION_BASE = 0x42000000;
 const GROUP_PREFIX = 'bugaoshan.reminder.';
 
@@ -78,15 +76,12 @@ export function parseCourseReminderPlan(value: Object, now: number): CourseRemin
     ids.add(item.id);
     if (item.fireAt > now) reminders.push(item);
   }
-  if (reminders.length > COURSE_REMINDER_LIMIT) {
-    throw new ReminderChannelError('REMINDER_LIMIT', 'Course reminder plan exceeds the OHOS scheduling budget');
-  }
   return reminders;
 }
 
 export function isCourseReminder(request: reminderAgentManager.ReminderRequest): boolean {
   const id = request.notificationId;
-  return id !== undefined && id >= NOTIFICATION_BASE && id < NOTIFICATION_BASE + COURSE_REMINDER_LIMIT &&
+  return id !== undefined && id >= NOTIFICATION_BASE &&
     request.groupId === `${GROUP_PREFIX}${id}`;
 }
 

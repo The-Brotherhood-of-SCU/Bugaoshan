@@ -7,6 +7,11 @@ class _OhosHost extends OhosPlatformAdapter {
   bool get isOhos => true;
 }
 
+class _NonOhosHost extends OhosPlatformAdapter {
+  @override
+  bool get isOhos => false;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final messenger =
@@ -76,5 +81,22 @@ void main() {
       'model': 'test-device',
       'sdkApiVersion': '26',
     });
+    expect(await adapter.getOhosApiVersion(), 26);
+  });
+
+  test('OHOS API reading accepts numbers and rejects malformed device info', () async {
+    messenger.setMockMethodCallHandler(environment, (_) async => {'sdkApiVersion': 25});
+    expect(await adapter.getOhosApiVersion(), 25);
+    for (final invalid in <Object?>[null, 'invalid', 26.5]) {
+      messenger.setMockMethodCallHandler(environment, (_) async => {'sdkApiVersion': invalid});
+      expect(await adapter.getOhosApiVersion(), isNull);
+    }
+  });
+
+  test('non-OHOS hosts do not query the OHOS API channel', () async {
+    messenger.setMockMethodCallHandler(environment, (_) async {
+      fail('OHOS channel must not be called');
+    });
+    expect(await _NonOhosHost().getOhosApiVersion(), isNull);
   });
 }

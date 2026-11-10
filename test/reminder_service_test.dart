@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/models/reminder_plan.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
@@ -8,6 +10,7 @@ import 'package:bugaoshan/services/reminder/reminder_service.dart';
 import 'package:bugaoshan/services/reminder/reminder_transport.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// [ReminderService] 排期生命周期与协调逻辑单元测试。
@@ -59,8 +62,18 @@ class RecordingTransport implements ReminderTransport {
   Future<bool> openNotificationSettings() async => !unavailable;
 
   /// 默认不限制投递配额，特定截断测试用例按需配置。
-  @override
   int? pendingLimit;
+  int limitCalls = 0;
+  Object? limitFailure;
+  Completer<int?>? limitResponse;
+
+  @override
+  Future<int?> getPendingLimit() async {
+    limitCalls++;
+    if (limitFailure != null) throw limitFailure!;
+    if (limitResponse != null) return limitResponse!.future;
+    return pendingLimit;
+  }
 }
 
 /// 内存测试桩数据源，模拟 [DatabaseService] 核心接口以避免测试对原生平台存储插件的依赖。
@@ -172,6 +185,7 @@ void main() {
   /// 初始化测试环境：配置基准课表（周二单课程）与提醒测试服务。
   Future<void> setUpService({bool enabled = true}) async {
     SharedPreferences.setMockInitialValues({});
+    await GetIt.instance.reset();
     final prefs = await SharedPreferences.getInstance();
     appConfig = AppConfigProvider(prefs);
     await appConfig.init();
@@ -328,6 +342,110 @@ void main() {
   });
 
   group('失败与不可用', () {
+    test('额度未返回前不投递，返回后按额度裁剪', () async {
+      await setUpService();
+      appConfig.reminderLeadMinutes.value = const [5, 10, 15];
+      final response = transport.limitResponse = Completer<int?>();
+      final scheduling = service.reschedule(force: true);
+      await pumpEventQueue();
+      expect(transport.synced, isEmpty);
+      expect(transport.cancelAllCount, 0);
+
+      response.complete(2);
+      await scheduling;
+      expect(transport.synced.single.reminders, hasLength(2));
+      expect(transport.synced.single.droppedCount, 1);
+    });
+
+    test('额度查询失败保留原排期，恢复后重新同步', () async {
+      await setUpService();
+      await service.reschedule(force: true);
+      final previous = service.lastPlan.value;
+      appConfig.reminderLeadMinutes.value = const [5, 10, 15];
+      transport.limitFailure = StateError('quota unavailable');
+
+      await service.reschedule(force: true);
+      expect(transport.synced, hasLength(1));
+      expect(transport.cancelAllCount, 0);
+      expect(service.lastPlan.value, same(previous));
+      expect(service.lastError.value, contains('quota unavailable'));
+
+      transport.limitFailure = null;
+      transport.pendingLimit = 2;
+      await service.reschedule(force: true);
+      expect(transport.synced, hasLength(2));
+      expect(transport.synced.last.reminders, hasLength(2));
+      expect(service.lastError.value, isNull);
+    });
+
+    test('额度查询恢复且计划未变时清除旧错误', () async {
+      await setUpService();
+      await service.reschedule(force: true);
+      transport.limitFailure = StateError('quota unavailable');
+      await service.reschedule(force: true);
+      expect(service.lastError.value, isNotNull);
+      transport.limitFailure = null;
+      await service.reschedule(force: true);
+      expect(service.lastError.value, isNull);
+      expect(transport.synced, hasLength(1));
+    });
+
+    test('关闭提醒不依赖额度查询成功', () async {
+      await setUpService();
+      await service.reschedule(force: true);
+      final queries = transport.limitCalls;
+      transport.limitFailure = StateError('quota unavailable');
+      appConfig.reminderEnabled.value = false;
+
+      await service.reschedule(force: true);
+      expect(transport.limitCalls, queries);
+      expect(transport.cancelAllCount, 1);
+      expect(service.lastPlan.value!.reminders, isEmpty);
+      expect(service.lastError.value, isNull);
+    });
+
+    test('读取额度期间关闭提醒只取消、不下发', () async {
+      await setUpService();
+      final response = transport.limitResponse = Completer<int?>();
+      final scheduling = service.reschedule(force: true);
+      await pumpEventQueue();
+      appConfig.reminderEnabled.value = false;
+      response.complete(2);
+      await scheduling;
+      expect(transport.synced, isEmpty);
+      expect(transport.cancelAllCount, 1);
+    });
+
+    test('读取额度期间 dispose 不再投递或更新状态', () async {
+      await setUpService();
+      final response = transport.limitResponse = Completer<int?>();
+      final scheduling = service.reschedule(force: true);
+      await pumpEventQueue();
+      service.dispose();
+      response.complete(2);
+      await scheduling;
+      expect(transport.synced, isEmpty);
+      expect(transport.cancelAllCount, 0);
+    });
+
+    test('测试提醒和预览在额度读取失败时不生成无限额计划', () async {
+      await setUpService();
+      await service.reschedule(force: true);
+      final previous = service.lastPlan.value;
+      final failure = transport.limitFailure = StateError('quota unavailable');
+      await expectLater(
+        service.buildPlan(now: DateTime.now()),
+        throwsA(same(failure)),
+      );
+      await expectLater(
+        service.fireProbe(title: '探针', body: '15 秒后'),
+        throwsA(same(failure)),
+      );
+      expect(transport.synced, hasLength(1));
+      expect(transport.cancelAllCount, 0);
+      expect(service.lastPlan.value, same(previous));
+    });
+
     test('投递失败时记录 lastError 且下一次仍会重试同一份计划', () async {
       await setUpService();
       transport.failWith = Exception('boom');
@@ -455,6 +573,15 @@ void main() {
       expect(plan.reminders, hasLength(3));
       // 截断项数量记录于 droppedCount，保证排期状态统计的一致性。
       expect(plan.droppedCount, greaterThan(0));
+
+      final preview = await service.buildPlan(now: DateTime.now());
+      expect(preview.reminders, hasLength(3));
+      expect(preview.droppedCount, plan.droppedCount);
+
+      await service.fireProbe(title: '探针', body: '15 秒后');
+      final probe = transport.synced.last;
+      expect(probe.reminders, hasLength(3));
+      expect(probe.reminders.first.id, startsWith('probe:'));
     });
   });
 
@@ -467,7 +594,7 @@ void main() {
       // 既晚于注入时刻又落在 7 天窗口内，断言与运行日期无关。
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
-      final plan = service.buildPlan(now: today);
+      final plan = await service.buildPlan(now: today);
       final expected = tomorrow();
 
       expect(plan.reminders, hasLength(1));

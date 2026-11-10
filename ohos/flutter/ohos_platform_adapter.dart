@@ -16,6 +16,13 @@ class OhosPlatformAdapter extends PlatformAdapter {
   bool get isOhos => !kIsWeb && Platform.operatingSystem == 'ohos';
 
   @override
+  Future<int?> getOhosApiVersion() async {
+    if (!isOhos) return null;
+    final info = await getDeviceInfo();
+    return int.tryParse(info['sdkApiVersion']?.toString() ?? '');
+  }
+
+  @override
   bool get supportsNativeControls => isOhos;
 
   @override

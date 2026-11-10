@@ -1,4 +1,5 @@
 import 'package:bugaoshan/models/reminder_plan.dart';
+import 'package:bugaoshan/platform/platform_adapter.dart';
 import 'package:bugaoshan/utils/platform_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -70,7 +71,8 @@ abstract class ReminderTransport {
   /// iOS / macOS 的 `UNUserNotificationCenter` 限制每个应用最多挂起 64 条待投递通知，
   /// 超额项将被系统按未定义顺序丢弃。将容量配额前置注入排期构建阶段，
   /// 保证在 Dart 侧按时间升序显式截断，并准确记录 [ReminderPlan.droppedCount]。
-  int? get pendingLimit;
+  /// OHOS 读取设备 API 版本后计算并缓存额度；读取失败不能当作无限额继续排期。
+  Future<int?> getPendingLimit();
 }
 
 /// 基于 MethodChannel 的跨平台通知投递实现。
@@ -80,7 +82,7 @@ abstract class ReminderTransport {
 class MethodChannelReminderTransport implements ReminderTransport {
   static const MethodChannel _channel = MethodChannel('bugaoshan/reminder');
 
-  const MethodChannelReminderTransport();
+  Future<int>? _ohosPendingLimit;
 
   @override
   Future<void> syncPlan(ReminderPlan plan) async {
@@ -178,15 +180,31 @@ class MethodChannelReminderTransport implements ReminderTransport {
   }
 
   /// iOS 与 macOS 基于 `UNUserNotificationCenter`，受系统 64 条待投递上限约束；
-  /// OHOS 原生通道采用 30 条预算；Android 不使用这里的硬性配额。
+  /// OHOS 按设备 API 版本选择额度；Android 不使用这里的硬性配额。
   @override
-  int? get pendingLimit {
-    if (isOhos) return 30;
+  Future<int?> getPendingLimit() async {
+    if (isOhos) return _ohosPendingLimit ??= _readOhosPendingLimit();
     return switch (defaultTargetPlatform) {
       TargetPlatform.iOS ||
       TargetPlatform.macOS => ReminderSettings.iosPendingNotificationLimit,
       _ => null,
     };
+  }
+
+  Future<int> _readOhosPendingLimit() async {
+    try {
+      final api = await PlatformAdapter.instance.getOhosApiVersion();
+      if (api == null || api <= 0) {
+        throw StateError(
+          'OHOS device info returned an invalid API version',
+        );
+      }
+      return api >= 26 ? 64 : 30;
+    } catch (_) {
+      // 合并并发读取，只缓存成功结果；下次排期可重试临时的通道故障。
+      _ohosPendingLimit = null;
+      rethrow;
+    }
   }
 }
 
@@ -238,7 +256,7 @@ class NoopReminderTransport implements ReminderTransport {
 
   /// 无原生投递能力时不设上限，避免产生虚假的截断计数。
   @override
-  int? get pendingLimit => null;
+  Future<int?> getPendingLimit() async => null;
 }
 
 /// 根据运行平台构造对应的 [ReminderTransport] 实例。
@@ -252,7 +270,7 @@ ReminderTransport createReminderTransport() {
       defaultTargetPlatform == TargetPlatform.android ||
       defaultTargetPlatform == TargetPlatform.iOS ||
       defaultTargetPlatform == TargetPlatform.macOS) {
-    return const MethodChannelReminderTransport();
+    return MethodChannelReminderTransport();
   }
   return const NoopReminderTransport();
 }

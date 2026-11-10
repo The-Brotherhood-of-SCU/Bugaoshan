@@ -21,6 +21,8 @@ class PlatformAdapter {
 
   bool get isOhos => false;
 
+  Future<int?> getOhosApiVersion() async => null;
+
   bool get supportsNativeControls => false;
 
   Future<OpenResult> openFile(String path) => OpenFilex.open(path);

@@ -22,6 +22,9 @@ class _OhosAdapter extends PlatformAdapter {
   bool get isOhos => true;
 
   @override
+  Future<int?> getOhosApiVersion() async => 26;
+
+  @override
   bool get supportsNativeControls => true;
 
   @override
@@ -49,6 +52,12 @@ class _OhosAdapter extends PlatformAdapter {
   }
 }
 
+class _StandardAdapter extends PlatformAdapter {
+  @override
+  Future<int?> getOhosApiVersion() async =>
+      throw StateError('OHOS API must not be queried on other platforms');
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const capabilities = MethodChannel('bugaoshan/liquid_glass');
@@ -70,26 +79,31 @@ void main() {
     messenger.setMockMethodCallHandler(widgets, null);
   });
 
-  test('standard Flutter keeps platform defaults without OHOS plugins', () {
-    PlatformAdapter.instance = PlatformAdapter();
-    expect(isOhos, isFalse);
-    expect(PlatformAdapter.instance.supportsNativeControls, isFalse);
-    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
-    expect(createReminderTransport(), isA<NoopReminderTransport>());
-    debugDefaultTargetPlatformOverride = TargetPlatform.android;
-    expect(createReminderTransport(), isA<MethodChannelReminderTransport>());
-    expect(createReminderTransport().pendingLimit, isNull);
-    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-    expect(createReminderTransport().pendingLimit, 64);
-  });
+  test(
+    'standard Flutter keeps platform defaults without OHOS plugins',
+    () async {
+      PlatformAdapter.instance = _StandardAdapter();
+      expect(isOhos, isFalse);
+      expect(PlatformAdapter.instance.supportsNativeControls, isFalse);
+      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+      expect(createReminderTransport(), isA<NoopReminderTransport>());
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      expect(createReminderTransport(), isA<MethodChannelReminderTransport>());
+      expect(await createReminderTransport().getPendingLimit(), isNull);
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      expect(await createReminderTransport().getPendingLimit(), 64);
+      debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
+      expect(await createReminderTransport().getPendingLimit(), 64);
+    },
+  );
 
-  test('OHOS bootstrap selects reminder transport and 30-entry budget', () {
+  test('OHOS bootstrap selects the reminder budget from its API version', () async {
     PlatformAdapter.instance = _OhosAdapter();
     // A standard Flutter SDK can test the OHOS contract without its enum.
     debugDefaultTargetPlatformOverride = TargetPlatform.linux;
     expect(isOhos, isTrue);
     expect(createReminderTransport(), isA<MethodChannelReminderTransport>());
-    expect(createReminderTransport().pendingLimit, 30);
+    expect(await createReminderTransport().getPendingLimit(), 64);
   });
 
   test('shared file opening dispatches to the selected host', () async {
