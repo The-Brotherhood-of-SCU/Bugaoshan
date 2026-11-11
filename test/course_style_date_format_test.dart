@@ -94,9 +94,14 @@ void main() {
     await tester.tap(dropdown);
     await tester.pumpAndSettle();
 
-    final today = DateTime.now();
-    final label = DateDisplayFormat.yearMonthDay.formatFull(today);
-    await tester.tap(find.text(label).last);
+    // 按 value 定位下拉项，不依赖格式化文本。
+    await tester.tap(
+      find.byWidgetPredicate(
+        (w) =>
+            w is DropdownMenuItem<DateDisplayFormat> &&
+            w.value == DateDisplayFormat.yearMonthDay,
+      ).last,
+    );
     await tester.pumpAndSettle();
 
     expect(

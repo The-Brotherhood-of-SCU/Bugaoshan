@@ -21,6 +21,9 @@ import 'package:system_theme/system_theme.dart';
 class SetCourseStylePage extends StatelessWidget {
   const SetCourseStylePage({super.key});
 
+  /// 日期格式下拉框的示例日期（月≠日），保证四种格式的显示文本互不相同。
+  static final DateTime dateFormatSample = DateTime(2026, 10, 26);
+
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
@@ -243,12 +246,12 @@ class SetCourseStylePage extends StatelessWidget {
           labelText: localizations.dateFormatSetting,
           border: const OutlineInputBorder(),
         ),
-        // 用今天的日期做示例，用户不必回课表页就能看出差异。
+        // 用固定日期做示例（月≠日），避免月==日当天多个格式显示相同文本。
         items: [
           for (final format in DateDisplayFormat.values)
             DropdownMenuItem(
               value: format,
-              child: Text(format.formatFull(DateTime.now())),
+              child: Text(format.formatFull(dateFormatSample)),
             ),
         ],
         onChanged: (value) {
