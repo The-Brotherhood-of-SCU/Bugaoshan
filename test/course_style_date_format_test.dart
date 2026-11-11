@@ -94,14 +94,20 @@ void main() {
     await tester.tap(dropdown);
     await tester.pumpAndSettle();
 
-    final labels = <String>[];
-    for (final format in DateDisplayFormat.values) {
-      final option = menuOption(format);
-      expect(option, findsOneWidget);
-      labels.add(tester.widget<Text>(option).data!);
-    }
-    expect(labels.toSet(), hasLength(4));
-    expect(labels, ['10/26/2026', '26/10/2026', '2026/10/26', '2026/26/10']);
+    // 按 value 定位下拉项，不依赖格式化文本。
+    await tester.tap(
+      find.byWidgetPredicate(
+        (w) =>
+            w is DropdownMenuItem<DateDisplayFormat> &&
+            w.value == DateDisplayFormat.yearMonthDay,
+      ).last,
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      getIt<AppConfigProvider>().dateDisplayFormat.value,
+      DateDisplayFormat.yearMonthDay,
+    );
   });
 
   for (final format in DateDisplayFormat.values) {
