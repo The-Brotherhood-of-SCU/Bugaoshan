@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:bugaoshan/utils/platform_utils.dart';
 
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
@@ -69,7 +70,7 @@ class SoftwareSettingPage extends StatelessWidget {
                       popupOrNavigate(context, const SetStudentTypePage()),
                 ),
               ),
-              if (Platform.isAndroid)
+              if (isOhos || Platform.isAndroid)
                 IconTile(
                   icon: Icons.photo_size_select_actual_outlined,
                   label: localizations.appIcon,
@@ -90,7 +91,10 @@ class SoftwareSettingPage extends StatelessWidget {
                 label: localizations.networkProxy,
                 onTap: () => popupOrNavigate(context, const SetProxyPage()),
               ),
-              if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS)
+              if (isOhos ||
+                  Platform.isAndroid ||
+                  Platform.isIOS ||
+                  Platform.isMacOS)
                 IconTile(
                   icon: Icons.widgets_outlined,
                   label: localizations.addWidgetPageTitle,

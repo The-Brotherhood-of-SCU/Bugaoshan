@@ -1,0 +1,13 @@
+{
+  "modelVersion": "5.1.0",
+  "name": "bugaoshan",
+  "version": "2.5.3",
+  "description": "Sichuan University campus assistant.",
+  "main": "",
+  "author": "The Brotherhood of SCU",
+  "license": "AGPL-3.0",
+  "dependencies": {},
+  "devDependencies": {
+    "@ohos/hypium": "1.0.6"
+  }
+}

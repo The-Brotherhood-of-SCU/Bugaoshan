@@ -11,6 +11,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/app_log.dart';
+import 'package:bugaoshan/utils/platform_utils.dart';
 import 'schedule_export_view.dart';
 
 /// 课表导出图片的渲染层：数据模型、DPR 策略与「离屏挂载 + RepaintBoundary 捕获」。
@@ -78,7 +79,7 @@ String scheduleImageFileName(int week) => '${scheduleImageBaseName(week)}.png';
 
 /// 当前平台是否支持课表图片导出。
 bool get isScheduleImageExportSupported =>
-    !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+    !kIsWeb && (isOhos || Platform.isAndroid || Platform.isIOS);
 
 /// 根据逻辑尺寸与像素上限动态计算安全 DPR。
 ///

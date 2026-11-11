@@ -1,7 +1,5 @@
 import 'package:bugaoshan/utils/app_log.dart';
-import 'dart:io';
-
-import 'package:device_info_plus/device_info_plus.dart';
+import 'package:bugaoshan/platform/platform_adapter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -33,33 +31,8 @@ class _EnvironmentInfoPageState extends State<EnvironmentInfoPage> {
     _deviceInfoFuture = AppLog.guard(_tag, '读取设备信息', _getDeviceInfo);
   }
 
-  Future<Map<String, dynamic>> _getDeviceInfo() async {
-    final deviceInfo = DeviceInfoPlugin();
-    if (Platform.isAndroid) {
-      final androidInfo = await deviceInfo.androidInfo;
-      return {
-        'brand': androidInfo.brand,
-        'model': androidInfo.model,
-        'device': androidInfo.device,
-        'manufacturer': androidInfo.manufacturer,
-        'supported32BitAbis': androidInfo.supported32BitAbis.join(', '),
-        'supported64BitAbis': androidInfo.supported64BitAbis.join(', '),
-        'supportedAbis': androidInfo.supportedAbis.join(', '),
-        'isPhysicalDevice': androidInfo.isPhysicalDevice.toString(),
-      };
-    } else if (Platform.isIOS) {
-      final iosInfo = await deviceInfo.iosInfo;
-      return {
-        'name': iosInfo.name,
-        'model': iosInfo.model,
-        'localizedModel': iosInfo.localizedModel,
-        'systemName': iosInfo.systemName,
-        'systemVersion': iosInfo.systemVersion,
-        'isPhysicalDevice': iosInfo.isPhysicalDevice.toString(),
-      };
-    }
-    return {};
-  }
+  Future<Map<String, dynamic>> _getDeviceInfo() =>
+      PlatformAdapter.instance.getDeviceInfo();
 
   Future<void> _copyAll() async {
     final info = _info;

@@ -16,6 +16,8 @@ analyzer:
     - windows/**
     - macos/**
     - linux/**
+    # CPF-only entry point and plugins are analyzed in the OHOS workspace.
+    - ohos/**
 include: package:flutter_lints/flutter.yaml
 
 linter:

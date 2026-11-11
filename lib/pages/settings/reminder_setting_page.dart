@@ -198,7 +198,7 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
             duration: _animDuration,
             curve: appCurve,
             alignment: Alignment.topCenter,
-            child: _isGranted
+            child: _permissionStatus == null || _isGranted
                 ? const SizedBox.shrink()
                 : Padding(
                     padding: const EdgeInsets.only(bottom: 14),

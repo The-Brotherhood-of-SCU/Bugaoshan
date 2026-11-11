@@ -1,5 +1,6 @@
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/utils/app_log.dart';
+import 'package:bugaoshan/utils/platform_utils.dart';
 import 'package:bugaoshan/widgets/common/image_error_log.dart';
 import 'package:bugaoshan/services/dynamic_icon_service.dart';
 import 'package:bugaoshan/theme_shape.dart';
@@ -57,7 +58,11 @@ class _SetAppIconPageState extends State<SetAppIconPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l.switchAppIcon),
-        content: Text(l.switchAppIconConfirm(iconLabel)),
+        content: Text(
+          isOhos
+              ? l.switchAppIconConfirmWithoutRestart(iconLabel)
+              : l.switchAppIconConfirm(iconLabel),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),

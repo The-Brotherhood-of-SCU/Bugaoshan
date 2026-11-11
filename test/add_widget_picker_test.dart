@@ -50,6 +50,9 @@ class FakeWidgetUpdateService implements WidgetUpdateService {
   Future<bool> openAppSettings() async => false;
 
   @override
+  Future<bool> openCourseFormManager() async => true;
+
+  @override
   Future<bool> isIgnoringBatteryOptimizations() async => true;
 
   @override

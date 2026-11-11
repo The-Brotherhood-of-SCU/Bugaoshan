@@ -258,7 +258,7 @@ extension _CloudPrintScansTab on _CloudPrintPageState {
     final path = _provider.scanFiles[scan.id];
     if (path == null) return;
     try {
-      final result = await OpenFilex.open(path);
+      final result = await openFile(path);
       if (result.type != ResultType.done) {
         throw const ServiceException('无可用的文件打开方式');
       }

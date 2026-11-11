@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:bugaoshan/utils/app_log.dart';
+import 'package:bugaoshan/platform/platform_adapter.dart';
+import 'package:bugaoshan/utils/platform_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +16,12 @@ class LiquidGlassCapabilities {
   static Future<bool>? _supported;
 
   static Future<bool> isSupported() {
+    if (isOhos) {
+      if (!PlatformAdapter.instance.supportsNativeControls) {
+        return SynchronousFuture(false);
+      }
+      return _supported ??= _checkSupport();
+    }
     if (kIsWeb ||
         (defaultTargetPlatform != TargetPlatform.iOS &&
             defaultTargetPlatform != TargetPlatform.macOS)) {
@@ -273,6 +281,8 @@ class _AdaptiveGlassControlState extends State<_AdaptiveGlassControl> {
   }
 
   Future<void> _checkSupport() async {
+    // The OHOS host currently implements switches and buttons, not sliders.
+    if (isOhos && widget.kind == _GlassControlKind.slider) return;
     final supported = await LiquidGlassCapabilities.isSupported();
     if (mounted && supported) setState(() => _supported = true);
   }
@@ -412,7 +422,20 @@ class _AdaptiveGlassControlState extends State<_AdaptiveGlassControl> {
   Widget build(BuildContext context) {
     if (!_supported) return widget.fallback;
 
-    final nativeView = defaultTargetPlatform == TargetPlatform.macOS
+    final nativeView = isOhos
+        ? PlatformAdapter.instance.createNativeControl(
+            viewType: _viewType,
+            layoutDirection: Directionality.of(context),
+            creationParams: _parameters(),
+            onPlatformViewCreated: _onPlatformViewCreated,
+            gestureRecognizers: {
+              Factory<TapGestureRecognizer>(TapGestureRecognizer.new),
+              Factory<HorizontalDragGestureRecognizer>(
+                HorizontalDragGestureRecognizer.new,
+              ),
+            },
+          )
+        : defaultTargetPlatform == TargetPlatform.macOS
         ? AppKitView(
             viewType: _viewType,
             layoutDirection: Directionality.of(context),
@@ -436,7 +459,7 @@ class _AdaptiveGlassControlState extends State<_AdaptiveGlassControl> {
             },
           );
     final control = widget.kind == _GlassControlKind.toggle
-        ? SizedBox(width: 64, height: 44, child: nativeView)
+        ? SizedBox(width: 64, height: isOhos ? 48 : 44, child: nativeView)
         : SizedBox(
             height: 48,
             width: double.infinity,

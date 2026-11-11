@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:bugaoshan/utils/app_log.dart';
+import 'package:bugaoshan/utils/platform_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
@@ -24,7 +25,7 @@ class DynamicIconService {
   /// Uses [defaultTargetPlatform] instead of `Platform.isAndroid` so tests can
   /// override the platform via [debugDefaultTargetPlatformOverride].
   static bool get _isSupported =>
-      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+      !kIsWeb && (isOhos || defaultTargetPlatform == TargetPlatform.android);
 
   /// Returns the list of available alternate icon names.
   static Future<List<String>> getAvailableIcons() async {

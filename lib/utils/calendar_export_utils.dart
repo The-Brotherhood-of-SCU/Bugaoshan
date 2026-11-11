@@ -3,10 +3,11 @@ import 'package:bugaoshan/utils/app_log.dart';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
+import 'package:bugaoshan/platform/platform_adapter.dart';
+import 'package:bugaoshan/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:open_filex/open_filex.dart';
+import 'package:bugaoshan/utils/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/theme_shape.dart';
@@ -92,6 +93,7 @@ class CalendarExportUtils {
   }
 
   static bool get nativeCalendarImportAvailable =>
+      isOhos ||
       Platform.isAndroid ||
       Platform.isIOS ||
       Platform.isMacOS ||
@@ -276,7 +278,7 @@ class CalendarExportUtils {
 
     Uri? destinationPath;
     try {
-      destinationPath = await FilePicker.saveFile(
+      destinationPath = await PlatformAdapter.instance.saveFile(
         dialogTitle: l10n.exportScheduleAsIcsTo,
         fileName: fileName,
         bytes: bytes,
@@ -339,7 +341,7 @@ class CalendarExportUtils {
           'importIcsToCalendar',
           {'events': events, 'calendarIdentifier': calendarIdentifier},
         );
-      } else if (Platform.isAndroid) {
+      } else if (isOhos || Platform.isAndroid) {
         final icsPath = await saveIcsToCache();
         result = await CalendarImportUtils.channel.invokeMethod<String>(
           'importIcsToCalendar',
@@ -347,7 +349,7 @@ class CalendarExportUtils {
         );
       } else {
         final icsPath = await saveIcsToCache();
-        final openResult = await OpenFilex.open(icsPath);
+        final openResult = await openFile(icsPath);
         if (openResult.type != ResultType.done) {
           throw PlatformException(
             code: 'OPEN_ICS_FAILED',

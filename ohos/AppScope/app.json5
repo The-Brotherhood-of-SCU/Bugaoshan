@@ -1,0 +1,13 @@
+{
+  "app": {
+    "bundleName": "com.scubrotherhood.bugaoshan",
+    "vendor": "许盛凯",
+    "versionCode": 20503,
+    "versionName": "2.5.3",
+    "icon": "$media:app_icon",
+    "label": "$string:app_name",
+    "alternateIcons": [
+      { "name": "old", "icon": "$media:app_icon_old" }
+    ]
+  }
+}

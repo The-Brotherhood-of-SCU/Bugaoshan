@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
+import 'package:bugaoshan/platform/platform_adapter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/utils/app_log.dart';
@@ -63,12 +64,11 @@ Future<ScheduleImageOutputStatus> saveScheduleImageToGallery({
   required ScheduleImageArtifact artifact,
 }) async {
   try {
-    final granted = await Gal.requestAccess();
-    if (!granted) {
-      AppLog.w('ScheduleImageExport', 'Gallery access denied by user');
-      return ScheduleImageOutputStatus.permissionDenied;
-    }
-    await Gal.putImageBytes(artifact.pngBytes, name: artifact.baseName);
+    final saved = await PlatformAdapter.instance.saveImage(
+      artifact.pngBytes,
+      name: artifact.baseName,
+    );
+    if (!saved) return ScheduleImageOutputStatus.canceled;
     return ScheduleImageOutputStatus.success;
   } on GalException catch (e) {
     AppLog.w('ScheduleImageExport', 'GalException while saving image: $e');

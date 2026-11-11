@@ -11,6 +11,7 @@ import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/platform/platform_adapter.dart';
 import 'package:bugaoshan/models/cloud_print.dart';
 import 'package:bugaoshan/pages/campus/cloud_print/cloud_print_page.dart';
 import 'package:bugaoshan/providers/cloud_print_provider.dart';
@@ -96,6 +97,23 @@ class _Picker extends FilePickerPlatform {
   }
 }
 
+class _HostPicker extends PlatformAdapter {
+  List<SelectedFile> files = [];
+  int calls = 0;
+
+  @override
+  bool get isOhos => true;
+
+  @override
+  Future<List<SelectedFile>> pickFiles({
+    required List<String> allowedExtensions,
+  }) async {
+    calls++;
+    expect(allowedExtensions, contains('pdf'));
+    return files;
+  }
+}
+
 final class _PickedFile extends PlatformFile {
   _PickedFile(this.name, this.path, this.size);
   @override
@@ -115,6 +133,7 @@ void main() {
   late _Login login;
   late _Picker picker;
   late FilePickerPlatform originalPicker;
+  late PlatformAdapter originalAdapter;
   final previewKey = GlobalKey();
 
   setUp(() async {
@@ -128,11 +147,14 @@ void main() {
     getIt.registerSingleton<CloudPrintProvider>(provider);
     getIt.registerSingleton<ScuAuthProvider>(login);
     originalPicker = FilePickerPlatform.instance;
+    originalAdapter = PlatformAdapter.instance;
+    PlatformAdapter.instance = PlatformAdapter();
     picker = _Picker();
     FilePickerPlatform.instance = picker;
   });
   tearDown(() async {
     FilePickerPlatform.instance = originalPicker;
+    PlatformAdapter.instance = originalAdapter;
     provider.dispose();
     login.dispose();
     await getIt.reset();
@@ -196,6 +218,40 @@ void main() {
     expect(find.byType(LoginRequiredWidget), findsOneWidget);
     expect(find.byType(TabBar), findsNothing);
     expect(api.reads, 0);
+  });
+
+  testWidgets('鸿蒙文件选择通过宿主适配器将本地快照加入打印队列', (tester) async {
+    final adapter = _HostPicker();
+    PlatformAdapter.instance = adapter;
+    await tester.runAsync(() async {
+      final file = File(p.join(temp.path, '讲义.pdf'));
+      await file.writeAsString('%PDF fixture');
+      adapter.files = [SelectedFile(name: '讲义.pdf', path: file.path)];
+    });
+    await pump(tester);
+    await tester.runAsync(() async {
+      final selected = Completer<void>();
+      void onSelected() {
+        if (!provider.selecting &&
+            provider.queue.length == 1 &&
+            !selected.isCompleted) {
+          selected.complete();
+        }
+      }
+
+      provider.addListener(onSelected);
+      try {
+        await tester.tap(find.text('Add files'));
+        await selected.future.timeout(const Duration(seconds: 5));
+      } finally {
+        provider.removeListener(onSelected);
+      }
+    });
+    await tester.pumpAndSettle();
+    expect(adapter.calls, 1);
+    expect(provider.queue.single.file.name, '讲义.pdf');
+    expect(find.text('讲义.pdf'), findsOneWidget);
+    expect(picker.files, isEmpty);
   });
 
   testWidgets('原生多选文件进入队列，可只修改其中一个文件的设置', (tester) async {

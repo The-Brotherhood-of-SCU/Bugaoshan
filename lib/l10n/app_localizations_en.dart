@@ -2360,6 +2360,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String switchAppIconConfirmWithoutRestart(String label) {
+    return 'Switch to \"$label\"?';
+  }
+
+  @override
   String get defaultIconRestored => 'Restored default icon';
 
   @override

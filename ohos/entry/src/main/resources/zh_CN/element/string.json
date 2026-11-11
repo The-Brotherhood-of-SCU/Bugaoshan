@@ -1,0 +1,37 @@
+{
+  "string": [
+    { "name": "card_lock_screen_name", "value": "锁屏课程" },
+    { "name": "reminder_close", "value": "关闭" },
+    { "name": "live_course_remaining", "value": "剩余" },
+    { "name": "live_course_next", "value": "下一节课" },
+    { "name": "live_course_ended", "value": "课程已结束" },
+    {
+      "name": "module_desc",
+      "value": "四川大学校园助手"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "不高山上校园助手"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "不高山上"
+    },
+    {
+      "name": "card_title",
+      "value": "不高山上"
+    },
+    {
+      "name": "card_name",
+      "value": "课表"
+    },
+    {
+      "name": "card_description",
+      "value": "查看当前课表中尚未结束的课程"
+    },
+    {
+      "name": "card_sync_hint",
+      "value": "打开 App 同步课表"
+    }
+  ]
+}
