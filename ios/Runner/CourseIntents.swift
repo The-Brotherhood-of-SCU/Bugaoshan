@@ -25,6 +25,34 @@ public struct IntentCourseInfo: Identifiable, Sendable {
     public var timeRangeText: String {
         "\(startTimeText) - \(endTimeText)"
     }
+
+    public var hasValidTimeRange: Bool {
+        startTimeText != "--:--" && endTimeText != "--:--"
+    }
+
+    public var trimmedLocation: String {
+        location.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// 语音播报用的上课地点从句；无教室时返回空串，避免拼出「在，」。
+    public var speechLocationClause: String {
+        trimmedLocation.isEmpty ? "" : "，在\(trimmedLocation)"
+    }
+
+    /// 卡片副标题用的课程简述；无教室时不拼接空括号。
+    public var briefTitleWithLocation: String {
+        trimmedLocation.isEmpty ? name : "\(name) (\(trimmedLocation))"
+    }
+
+    /// 语音播报用的开始时间描述；节次时间缺失时回退为节次文本。
+    public var speechStartClause: String {
+        startTimeText == "--:--" ? sectionText : "\(startTimeText)开始"
+    }
+
+    /// 语音播报用的下课时间描述；节次时间缺失时回退为节次文本。
+    public var speechEndClause: String {
+        endTimeText == "--:--" ? "（\(sectionText)）" : "，将于\(endTimeText)下课"
+    }
 }
 
 @available(iOS 16.0, *)
@@ -46,9 +74,16 @@ public enum CourseQueryResult: Sendable {
 @available(iOS 16.0, *)
 public final class CourseIntentDataProvider {
     public static let shared = CourseIntentDataProvider()
-    private let appGroupId = "group.io.github.thebrotherhoodofscu.bugaoshan.ios"
+    private static let appGroupId = "group.io.github.thebrotherhoodofscu.bugaoshan.ios"
+    private let databasePathResolver: () -> String?
 
-    private init() {}
+    public convenience init() {
+        self.init(databasePathResolver: Self.defaultDatabasePath)
+    }
+
+    init(databasePathResolver: @escaping () -> String?) {
+        self.databasePathResolver = databasePathResolver
+    }
 
     private struct TimeSlotData {
         let section: Int
@@ -65,7 +100,7 @@ public final class CourseIntentDataProvider {
         let timeSlots: [TimeSlotData]
     }
 
-    private func getDatabasePath() -> String? {
+    private static func defaultDatabasePath() -> String? {
         let fileManager = FileManager.default
 
         // 1. 优先读取 App Group 共享目录
@@ -95,6 +130,10 @@ public final class CourseIntentDataProvider {
         return nil
     }
 
+    private func getDatabasePath() -> String? {
+        databasePathResolver()
+    }
+
     private func courseWeekAnchor(semesterStartDate: Date) -> Date? {
         let calendar = Calendar.current
         let start = calendar.startOfDay(for: semesterStartDate)
@@ -105,9 +144,8 @@ public final class CourseIntentDataProvider {
     private func computeWeekForDate(semesterStartDate: Date, totalWeeks: Int, date: Date) -> Int {
         let calendar = Calendar.current
         let target = calendar.startOfDay(for: date)
-        let startOfSemester = calendar.startOfDay(for: semesterStartDate)
-        if target < startOfSemester { return 1 }
-        guard let anchor = courseWeekAnchor(semesterStartDate: startOfSemester) else { return 1 }
+        guard let anchor = courseWeekAnchor(semesterStartDate: semesterStartDate) else { return 1 }
+        if target < anchor { return 1 }
         let days = calendar.dateComponents([.day], from: anchor, to: target).day ?? 0
         let week = days / 7 + 1
         return max(1, min(week, totalWeeks))
@@ -142,10 +180,17 @@ public final class CourseIntentDataProvider {
         return true
     }
 
+    private static func intValue(_ raw: Any?) -> Int? {
+        if let value = raw as? Int { return value }
+        if let num = raw as? NSNumber { return num.intValue }
+        return nil
+    }
+
     private func loadScheduleData(db: OpaquePointer) -> ScheduleData? {
         var activeId: String?
         var metaStmt: OpaquePointer?
-        let metaQuery = "SELECT value FROM metadata WHERE key = 'active_schedule_id'"
+        // 与 DatabaseService._keyCurrentScheduleId 及 WidgetExtension 保持同一键名
+        let metaQuery = "SELECT value FROM metadata WHERE key = 'currentScheduleId'"
         if sqlite3_prepare_v2(db, metaQuery, -1, &metaStmt, nil) == SQLITE_OK {
             if sqlite3_step(metaStmt) == SQLITE_ROW,
                let cStr = sqlite3_column_text(metaStmt, 0) {
@@ -157,7 +202,7 @@ public final class CourseIntentDataProvider {
         var jsonString: String?
         var resolvedScheduleId: String?
 
-        if let targetId = activeId {
+        if let targetId = activeId, !targetId.isEmpty {
             var schedStmt: OpaquePointer?
             let schedQuery = "SELECT config_json FROM schedules WHERE id = ?"
             if sqlite3_prepare_v2(db, schedQuery, -1, &schedStmt, nil) == SQLITE_OK {
@@ -192,7 +237,7 @@ public final class CourseIntentDataProvider {
               let jsonData = validJson.data(using: .utf8),
               let json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
               let startStr = json["semesterStartDate"] as? String,
-              let totalWeeks = json["totalWeeks"] as? Int
+              let totalWeeks = Self.intValue(json["totalWeeks"])
         else {
             return nil
         }
@@ -208,12 +253,12 @@ public final class CourseIntentDataProvider {
         var timeSlots: [TimeSlotData] = []
         if let slotsArray = json["timeSlots"] as? [[String: Any]] {
             for (idx, slot) in slotsArray.enumerated() {
-                if let startDict = slot["startTime"] as? [String: Int],
-                   let endDict = slot["endTime"] as? [String: Int],
-                   let sHour = startDict["hour"],
-                   let sMin = startDict["minute"],
-                   let eHour = endDict["hour"],
-                   let eMin = endDict["minute"] {
+                if let startDict = slot["startTime"] as? [String: Any],
+                   let endDict = slot["endTime"] as? [String: Any],
+                   let sHour = Self.intValue(startDict["hour"]),
+                   let sMin = Self.intValue(startDict["minute"]),
+                   let eHour = Self.intValue(endDict["hour"]),
+                   let eMin = Self.intValue(endDict["minute"]) {
                     timeSlots.append(TimeSlotData(
                         section: idx + 1,
                         startHour: sHour,
@@ -233,7 +278,7 @@ public final class CourseIntentDataProvider {
         )
     }
 
-    public func queryCourses(for targetDate: Date) -> CourseQueryResult {
+    public func queryCourses(for targetDate: Date, now: Date = Date()) -> CourseQueryResult {
         guard let dbPath = getDatabasePath() else {
             return .noData
         }
@@ -246,6 +291,7 @@ public final class CourseIntentDataProvider {
         }
         defer { sqlite3_close(db) }
         guard let safeDb = db else { return .noData }
+        sqlite3_busy_timeout(safeDb, 5000)
 
         guard let schedule = loadScheduleData(db: safeDb) else {
             return .noData
@@ -253,15 +299,16 @@ public final class CourseIntentDataProvider {
 
         let calendar = Calendar.current
         let todayStart = calendar.startOfDay(for: targetDate)
-        let semesterStart = calendar.startOfDay(for: schedule.semesterStartDate)
-        guard let semesterEnd = computeSemesterEndDate(
-            semesterStartDate: schedule.semesterStartDate,
-            totalWeeks: schedule.totalWeeks
-        ) else {
+        guard let weekOneAnchor = courseWeekAnchor(semesterStartDate: schedule.semesterStartDate),
+              let semesterEnd = computeSemesterEndDate(
+                  semesterStartDate: schedule.semesterStartDate,
+                  totalWeeks: schedule.totalWeeks
+              )
+        else {
             return .noData
         }
 
-        if todayStart < semesterStart {
+        if todayStart < weekOneAnchor {
             return .onVacation(message: "当前学期尚未开始，享受假期时光吧！")
         }
         if todayStart > semesterEnd {
@@ -342,10 +389,10 @@ public final class CourseIntentDataProvider {
             ))
         }
 
-        rawList.sort { $0.startSection < $1.startSection }
+        rawList.sort { ($0.startSection, $0.endSection) < ($1.startSection, $1.endSection) }
 
-        let isSameDayAsNow = calendar.isDateInToday(targetDate)
-        let nowComponents = calendar.dateComponents([.hour, .minute], from: Date())
+        let isSameDayAsNow = calendar.isDate(targetDate, inSameDayAs: now)
+        let nowComponents = calendar.dateComponents([.hour, .minute], from: now)
         let nowMinutes = (nowComponents.hour ?? 0) * 60 + (nowComponents.minute ?? 0)
 
         var courses: [IntentCourseInfo] = []
@@ -356,26 +403,33 @@ public final class CourseIntentDataProvider {
             let sSlot = schedule.timeSlots.first { $0.section == raw.startSection }
             let eSlot = schedule.timeSlots.first { $0.section == raw.endSection }
 
-            let sHour = sSlot?.startHour ?? 8
-            let sMin = sSlot?.startMinute ?? 0
-            let eHour = eSlot?.endHour ?? 9
-            let eMin = eSlot?.endMinute ?? 40
-
-            let startTimeText = String(format: "%02d:%02d", sHour, sMin)
-            let endTimeText = String(format: "%02d:%02d", eHour, eMin)
-
-            let startMinutes = sHour * 60 + sMin
-            let endMinutes = eHour * 60 + eMin
-
+            let startTimeText: String
+            let endTimeText: String
             let isCurrent: Bool
             let isCompleted: Bool
+            let isUpcomingToday: Bool
 
-            if isSameDayAsNow {
-                isCurrent = nowMinutes >= startMinutes && nowMinutes < endMinutes
-                isCompleted = nowMinutes >= endMinutes
+            if let sSlot, let eSlot {
+                startTimeText = String(format: "%02d:%02d", sSlot.startHour, sSlot.startMinute)
+                endTimeText = String(format: "%02d:%02d", eSlot.endHour, eSlot.endMinute)
+                let startMinutes = sSlot.startHour * 60 + sSlot.startMinute
+                let endMinutes = eSlot.endHour * 60 + eSlot.endMinute
+
+                if isSameDayAsNow && endMinutes >= startMinutes {
+                    isCurrent = nowMinutes >= startMinutes && nowMinutes < endMinutes
+                    isCompleted = nowMinutes >= endMinutes
+                    isUpcomingToday = startMinutes > nowMinutes
+                } else {
+                    isCurrent = false
+                    isCompleted = false
+                    isUpcomingToday = false
+                }
             } else {
+                startTimeText = sSlot.map { String(format: "%02d:%02d", $0.startHour, $0.startMinute) } ?? "--:--"
+                endTimeText = eSlot.map { String(format: "%02d:%02d", $0.endHour, $0.endMinute) } ?? "--:--"
                 isCurrent = false
                 isCompleted = false
+                isUpcomingToday = isSameDayAsNow
             }
 
             let info = IntentCourseInfo(
@@ -395,16 +449,26 @@ public final class CourseIntentDataProvider {
                 activeCourse = info
             }
 
-            if isSameDayAsNow && nextCourse == nil && startMinutes > nowMinutes {
+            if isUpcomingToday && nextCourse == nil {
                 nextCourse = info
             }
         }
 
         let weekdayNames = ["一", "二", "三", "四", "五", "六", "日"]
         let weekdayName = weekdayNames[max(0, min(isoWeekday - 1, 6))]
-        let dateDesc = isSameDayAsNow
-            ? "今天 (第\(currentWeek)周·周\(weekdayName))"
-            : "明天 (第\(currentWeek)周·周\(weekdayName))"
+        let tomorrowOfNow = calendar.date(byAdding: .day, value: 1, to: now)
+        let dayPrefix: String
+        if isSameDayAsNow {
+            dayPrefix = "今天"
+        } else if let tomorrowOfNow, calendar.isDate(targetDate, inSameDayAs: tomorrowOfNow) {
+            dayPrefix = "明天"
+        } else {
+            let mdFormatter = DateFormatter()
+            mdFormatter.locale = Locale(identifier: "zh_CN")
+            mdFormatter.dateFormat = "M月d日"
+            dayPrefix = mdFormatter.string(from: targetDate)
+        }
+        let dateDesc = "\(dayPrefix) (第\(currentWeek)周·周\(weekdayName))"
 
         if courses.isEmpty {
             return .noCourses(dateDescription: dateDesc)
@@ -465,8 +529,8 @@ public struct NextCourseSnippetView: View {
                         Label(active.timeRangeText, systemImage: "clock")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        if !active.location.isEmpty {
-                            Label(active.location, systemImage: "mappin.and.ellipse")
+                        if !active.trimmedLocation.isEmpty {
+                            Label(active.trimmedLocation, systemImage: "mappin.and.ellipse")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 .lineLimit(1)
@@ -500,8 +564,8 @@ public struct NextCourseSnippetView: View {
                         Label(next.timeRangeText, systemImage: "clock")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        if !next.location.isEmpty {
-                            Label(next.location, systemImage: "mappin.and.ellipse")
+                        if !next.trimmedLocation.isEmpty {
+                            Label(next.trimmedLocation, systemImage: "mappin.and.ellipse")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 .lineLimit(1)
@@ -593,11 +657,11 @@ public struct DailyCoursesSnippetView: View {
                                     .lineLimit(1)
                                     .strikethrough(course.isCompleted, color: .secondary)
                                     .foregroundColor(course.isCompleted ? .secondary : .primary)
-                                if !course.location.isEmpty {
+                                if !course.trimmedLocation.isEmpty {
                                     HStack(spacing: 3) {
                                         Image(systemName: "mappin.and.ellipse")
                                             .font(.system(size: 9))
-                                        Text(course.location)
+                                        Text(course.trimmedLocation)
                                             .font(.caption2)
                                     }
                                     .foregroundColor(.secondary)
@@ -633,6 +697,26 @@ public struct DailyCoursesSnippetView: View {
     }
 }
 
+// MARK: - 语音文案构建工具
+
+@available(iOS 16.0, *)
+enum CourseIntentSpeechFormatter {
+    static func formatDailySummary(dayLabel: String, courses: [IntentCourseInfo]) -> String {
+        let courseCount = courses.count
+        if courseCount == 1, let c = courses.first {
+            let timeDetail = c.hasValidTimeRange ? c.timeRangeText : c.sectionText
+            return "你\(dayLabel)有 1 节课：《\(c.name)》\(c.speechLocationClause)，\(timeDetail)。"
+        }
+        let items = courses.prefix(3).map { c in
+            let loc = c.trimmedLocation.isEmpty ? "" : "在\(c.trimmedLocation)"
+            return "\(c.sectionText)《\(c.name)》\(loc)"
+        }.joined(separator: "；")
+        return courseCount > 3
+            ? "你\(dayLabel)一共有 \(courseCount) 节课：\(items) 等，可在屏幕查看完整课表。"
+            : "你\(dayLabel)一共有 \(courseCount) 节课：\(items)。"
+    }
+}
+
 // MARK: - App Intents 定义
 
 @available(iOS 16.0, *)
@@ -646,11 +730,12 @@ public struct GetNextCourseIntent: AppIntent {
     @MainActor
     public func perform() async throws -> some IntentResult & ProvidesDialog & ShowsSnippetView & ReturnsValue<String> {
         let provider = CourseIntentDataProvider.shared
-        let todayResult = provider.queryCourses(for: Date())
+        let now = Date()
+        let todayResult = provider.queryCourses(for: now, now: now)
 
         switch todayResult {
         case .noData:
-            let text = "还没有找到你的课表数据，请先打开不高山 App 导入或同步课表。"
+            let text = "还没有找到你的课表数据，请先打开不高山上 App 导入或同步课表。"
             return .result(value: text, dialog: IntentDialog(stringLiteral: text)) {
                 NextCourseSnippetView(
                     activeCourse: nil,
@@ -661,6 +746,20 @@ public struct GetNextCourseIntent: AppIntent {
             }
 
         case .onVacation(let message):
+            let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: now) ?? now
+            let tomorrowResult = provider.queryCourses(for: tomorrow, now: now)
+            if case .success(let tomorrowCourses, _, _, _, _) = tomorrowResult,
+               let firstTomorrow = tomorrowCourses.first {
+                let speech = "明天即将开始新学期课程！第一节课是《\(firstTomorrow.name)》\(firstTomorrow.speechLocationClause)，\(firstTomorrow.speechStartClause)。"
+                return .result(value: speech, dialog: IntentDialog(stringLiteral: speech)) {
+                    NextCourseSnippetView(
+                        activeCourse: nil,
+                        nextCourse: firstTomorrow,
+                        summaryText: "新学期明日开课",
+                        subtitleText: "明早首节：\(firstTomorrow.briefTitleWithLocation)"
+                    )
+                }
+            }
             let text = "当前处于假期中：\(message)"
             return .result(value: text, dialog: IntentDialog(stringLiteral: text)) {
                 NextCourseSnippetView(
@@ -672,18 +771,18 @@ public struct GetNextCourseIntent: AppIntent {
             }
 
         case .noCourses:
-            let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
-            let tomorrowResult = provider.queryCourses(for: tomorrow)
+            let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: now) ?? now
+            let tomorrowResult = provider.queryCourses(for: tomorrow, now: now)
 
             if case .success(let tomorrowCourses, _, _, _, _) = tomorrowResult,
                let firstTomorrow = tomorrowCourses.first {
-                let speech = "今天没有课程安排。明天的第一节课是《\(firstTomorrow.name)》，在\(firstTomorrow.location)，\(firstTomorrow.startTimeText)开始。"
+                let speech = "今天没有课程安排。明天的第一节课是《\(firstTomorrow.name)》\(firstTomorrow.speechLocationClause)，\(firstTomorrow.speechStartClause)。"
                 return .result(value: speech, dialog: IntentDialog(stringLiteral: speech)) {
                     NextCourseSnippetView(
                         activeCourse: nil,
                         nextCourse: firstTomorrow,
                         summaryText: "今天无课 · 明天首节预告",
-                        subtitleText: "明早首节：\(firstTomorrow.name) (\(firstTomorrow.location))"
+                        subtitleText: "明早首节：\(firstTomorrow.briefTitleWithLocation)"
                     )
                 }
             } else {
@@ -701,17 +800,17 @@ public struct GetNextCourseIntent: AppIntent {
         case .success(_, _, _, let active, let next):
             if let active = active {
                 if let next = next {
-                    let speech = "你正在上《\(active.name)》，在\(active.location)，将于\(active.endTimeText)下课。下一节课是《\(next.name)》，在\(next.location)，\(next.startTimeText)开始。"
+                    let speech = "你正在上《\(active.name)》\(active.speechLocationClause)\(active.speechEndClause)。下一节课是《\(next.name)》\(next.speechLocationClause)，\(next.speechStartClause)。"
                     return .result(value: speech, dialog: IntentDialog(stringLiteral: speech)) {
                         NextCourseSnippetView(
                             activeCourse: active,
                             nextCourse: next,
                             summaryText: "正在上课中",
-                            subtitleText: "下节预告：\(next.name) (\(next.location))"
+                            subtitleText: "下节预告：\(next.briefTitleWithLocation)"
                         )
                     }
                 } else {
-                    let speech = "你正在上今天的最后一节课《\(active.name)》，在\(active.location)，将于\(active.endTimeText)下课。"
+                    let speech = "你正在上今天的最后一节课《\(active.name)》\(active.speechLocationClause)\(active.speechEndClause)。"
                     return .result(value: speech, dialog: IntentDialog(stringLiteral: speech)) {
                         NextCourseSnippetView(
                             activeCourse: active,
@@ -722,28 +821,30 @@ public struct GetNextCourseIntent: AppIntent {
                     }
                 }
             } else if let next = next {
-                let speech = "你的下一节课是《\(next.name)》，在\(next.location)，将于\(next.startTimeText)开始。"
+                let startDetail = next.startTimeText == "--:--" ? "（\(next.sectionText)）" : "，将于\(next.startTimeText)开始"
+                let speech = "你的下一节课是《\(next.name)》\(next.speechLocationClause)\(startDetail)。"
+                let subtitle = next.hasValidTimeRange ? "\(next.sectionText) · \(next.timeRangeText)" : next.sectionText
                 return .result(value: speech, dialog: IntentDialog(stringLiteral: speech)) {
                     NextCourseSnippetView(
                         activeCourse: nil,
                         nextCourse: next,
                         summaryText: "下一节课",
-                        subtitleText: "\(next.sectionText) · \(next.timeRangeText)"
+                        subtitleText: subtitle
                     )
                 }
             } else {
-                let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
-                let tomorrowResult = provider.queryCourses(for: tomorrow)
+                let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: now) ?? now
+                let tomorrowResult = provider.queryCourses(for: tomorrow, now: now)
 
                 if case .success(let tomorrowCourses, _, _, _, _) = tomorrowResult,
                    let firstTomorrow = tomorrowCourses.first {
-                    let speech = "今天的所有课程已经结束啦！明天的第一节课是《\(firstTomorrow.name)》，在\(firstTomorrow.location)，\(firstTomorrow.startTimeText)开始。"
+                    let speech = "今天的所有课程已经结束啦！明天的第一节课是《\(firstTomorrow.name)》\(firstTomorrow.speechLocationClause)，\(firstTomorrow.speechStartClause)。"
                     return .result(value: speech, dialog: IntentDialog(stringLiteral: speech)) {
                         NextCourseSnippetView(
                             activeCourse: nil,
                             nextCourse: firstTomorrow,
                             summaryText: "今日课程已结束",
-                            subtitleText: "明天首节：\(firstTomorrow.name) (\(firstTomorrow.location))"
+                            subtitleText: "明天首节：\(firstTomorrow.briefTitleWithLocation)"
                         )
                     }
                 } else {
@@ -773,11 +874,12 @@ public struct GetTodayCoursesIntent: AppIntent {
     @MainActor
     public func perform() async throws -> some IntentResult & ProvidesDialog & ShowsSnippetView & ReturnsValue<String> {
         let provider = CourseIntentDataProvider.shared
-        let result = provider.queryCourses(for: Date())
+        let now = Date()
+        let result = provider.queryCourses(for: now, now: now)
 
         switch result {
         case .noData:
-            let text = "还没有找到你的课表数据，请先打开不高山 App 导入或同步课表。"
+            let text = "还没有找到你的课表数据，请先打开不高山上 App 导入或同步课表。"
             return .result(value: text, dialog: IntentDialog(stringLiteral: text)) {
                 DailyCoursesSnippetView(
                     title: "今日课表",
@@ -807,18 +909,7 @@ public struct GetTodayCoursesIntent: AppIntent {
             }
 
         case .success(let courses, let desc, _, _, _):
-            let courseCount = courses.count
-            let speech: String
-            if courseCount == 1, let c = courses.first {
-                speech = "你今天有 1 节课：《\(c.name)》，在\(c.location)，\(c.timeRangeText)。"
-            } else {
-                let items = courses.prefix(3).enumerated().map { (idx, c) in
-                    "第\(idx + 1)节《\(c.name)》在\(c.location)"
-                }.joined(separator: "；")
-                speech = courseCount > 3
-                    ? "你今天一共有 \(courseCount) 节课：\(items) 等，可在屏幕查看完整课表。"
-                    : "你今天一共有 \(courseCount) 节课：\(items)。"
-            }
+            let speech = CourseIntentSpeechFormatter.formatDailySummary(dayLabel: "今天", courses: courses)
 
             return .result(value: speech, dialog: IntentDialog(stringLiteral: speech)) {
                 DailyCoursesSnippetView(
@@ -841,12 +932,13 @@ public struct GetTomorrowCoursesIntent: AppIntent {
     @MainActor
     public func perform() async throws -> some IntentResult & ProvidesDialog & ShowsSnippetView & ReturnsValue<String> {
         let provider = CourseIntentDataProvider.shared
-        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
-        let result = provider.queryCourses(for: tomorrow)
+        let now = Date()
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: now) ?? now
+        let result = provider.queryCourses(for: tomorrow, now: now)
 
         switch result {
         case .noData:
-            let text = "还没有找到你的课表数据，请先打开不高山 App 导入或同步课表。"
+            let text = "还没有找到你的课表数据，请先打开不高山上 App 导入或同步课表。"
             return .result(value: text, dialog: IntentDialog(stringLiteral: text)) {
                 DailyCoursesSnippetView(
                     title: "明日课表",
@@ -876,18 +968,7 @@ public struct GetTomorrowCoursesIntent: AppIntent {
             }
 
         case .success(let courses, let desc, _, _, _):
-            let courseCount = courses.count
-            let speech: String
-            if courseCount == 1, let c = courses.first {
-                speech = "你明天有 1 节课：《\(c.name)》，在\(c.location)，\(c.timeRangeText)。"
-            } else {
-                let items = courses.prefix(3).enumerated().map { (idx, c) in
-                    "第\(idx + 1)节《\(c.name)》在\(c.location)"
-                }.joined(separator: "；")
-                speech = courseCount > 3
-                    ? "你明天一共有 \(courseCount) 节课：\(items) 等，可在屏幕查看完整课表。"
-                    : "你明天一共有 \(courseCount) 节课：\(items)。"
-            }
+            let speech = CourseIntentSpeechFormatter.formatDailySummary(dayLabel: "明天", courses: courses)
 
             return .result(value: speech, dialog: IntentDialog(stringLiteral: speech)) {
                 DailyCoursesSnippetView(
@@ -904,6 +985,10 @@ public struct GetTomorrowCoursesIntent: AppIntent {
 @available(iOS 16.0, *)
 public struct CourseShortcutsProvider: AppShortcutsProvider {
     public static var shortcutTileColor: ShortcutTileColor = .blue
+
+    public static func refreshShortcuts() {
+        updateAppShortcutParameters()
+    }
 
     public static var appShortcuts: [AppShortcut] {
         AppShortcut(
