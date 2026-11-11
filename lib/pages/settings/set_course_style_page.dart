@@ -100,6 +100,7 @@ class SetCourseStylePage extends StatelessWidget {
     AppLocalizations localizations,
     AppConfigProvider appConfig,
   ) {
+    final dateFormatExample = DateTime(2026, 10, 26);
     return [
       const Divider(),
       // Course card settings
@@ -243,12 +244,12 @@ class SetCourseStylePage extends StatelessWidget {
           labelText: localizations.dateFormatSetting,
           border: const OutlineInputBorder(),
         ),
-        // 用今天的日期做示例，用户不必回课表页就能看出差异。
+        // 固定示例日期，让四种排列始终可区分。
         items: [
           for (final format in DateDisplayFormat.values)
             DropdownMenuItem(
               value: format,
-              child: Text(format.formatFull(DateTime.now())),
+              child: Text(format.formatFull(dateFormatExample)),
             ),
         ],
         onChanged: (value) {

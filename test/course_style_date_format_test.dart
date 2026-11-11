@@ -66,6 +66,17 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Finder menuOption(DateDisplayFormat format) => find
+      .descendant(
+        of: find.byWidgetPredicate(
+          (widget) =>
+              widget is DropdownMenuItem<DateDisplayFormat> &&
+              widget.value == format,
+        ),
+        matching: find.byType(Text),
+      )
+      .hitTestable();
+
   testWidgets('下拉只有四种格式，默认跟随系统', (tester) async {
     await pumpStylePage(tester);
 
@@ -80,28 +91,40 @@ void main() {
       scrollable: find.byType(Scrollable).last,
     );
     expect(dropdown, findsOneWidget);
-  });
-
-  testWidgets('选中一项后写回设置并持久化', (tester) async {
-    await pumpStylePage(tester);
-
-    final dropdown = find.byType(DropdownButtonFormField<DateDisplayFormat>);
-    await tester.scrollUntilVisible(
-      dropdown,
-      120,
-      scrollable: find.byType(Scrollable).last,
-    );
     await tester.tap(dropdown);
     await tester.pumpAndSettle();
 
-    final today = DateTime.now();
-    final label = DateDisplayFormat.yearMonthDay.formatFull(today);
-    await tester.tap(find.text(label).last);
-    await tester.pumpAndSettle();
-
-    expect(
-      getIt<AppConfigProvider>().dateDisplayFormat.value,
-      DateDisplayFormat.yearMonthDay,
-    );
+    final labels = <String>[];
+    for (final format in DateDisplayFormat.values) {
+      final option = menuOption(format);
+      expect(option, findsOneWidget);
+      labels.add(tester.widget<Text>(option).data!);
+    }
+    expect(labels.toSet(), hasLength(4));
+    expect(labels, ['10/26/2026', '26/10/2026', '2026/10/26', '2026/26/10']);
   });
+
+  for (final format in DateDisplayFormat.values) {
+    testWidgets('选中 ${format.name} 后写回设置并持久化', (tester) async {
+      await pumpStylePage(tester);
+
+      final dropdown = find.byType(DropdownButtonFormField<DateDisplayFormat>);
+      await tester.scrollUntilVisible(
+        dropdown,
+        120,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.tap(dropdown);
+      await tester.pumpAndSettle();
+
+      final option = menuOption(format);
+      expect(option, findsOneWidget);
+      await tester.tap(option);
+      await tester.pumpAndSettle();
+
+      expect(getIt<AppConfigProvider>().dateDisplayFormat.value, format);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getInt('dateDisplayFormat'), format.index);
+    });
+  }
 }
