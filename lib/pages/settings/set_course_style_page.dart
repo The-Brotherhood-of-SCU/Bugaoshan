@@ -103,7 +103,6 @@ class SetCourseStylePage extends StatelessWidget {
     AppLocalizations localizations,
     AppConfigProvider appConfig,
   ) {
-    final dateFormatExample = DateTime(2026, 10, 26);
     return [
       const Divider(),
       // Course card settings
