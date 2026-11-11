@@ -1,6 +1,19 @@
 name: Build Android
 
 on:
+  pull_request:
+    branches: [main, preview]
+    paths:
+      - 'android/**'
+      - 'lib/**'
+      - 'assets/**'
+      - 'docs/legal/**'
+      - 'CHANGELOG.md'
+      - 'pubspec*'
+      - 'l10n.yaml'
+      - '.github/actions/setup/**'
+      - '.github/scripts/git_meta.py'
+      - '.github/workflows/build-android.yml'
   workflow_call:
     inputs:
       version:
@@ -15,6 +28,10 @@ on:
         description: "构建注入的 versionCode 基数（--build-number）"
         required: false
         type: string
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build-android:
@@ -41,11 +58,14 @@ jobs:
           cache: gradle
 
       - name: Decode Keystore
+        # PR 只验证未签名 release 构建，不依赖发布密钥（包括 fork PR）。
+        if: github.event_name != 'pull_request'
         run: |
           mkdir -p android/keystore
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/keystore/upload-keystore.jks
 
       - name: Create key.properties
+        if: github.event_name != 'pull_request'
         run: |
           echo 'storePassword=${{ secrets.KEYSTORE_PASSWORD }}' > android/key.properties
           echo 'keyPassword=${{ secrets.KEY_PASSWORD }}' >> android/key.properties
@@ -91,5 +111,7 @@ jobs:
       - name: Upload universal and split APKs
         uses: actions/upload-artifact@v4
         with:
-          name: android-apk
+          name: ${{ github.event_name == 'pull_request' && 'android-validation-unsigned' || 'android-apk' }}
           path: release-apks/*.apk
+          if-no-files-found: error
+          retention-days: ${{ github.event_name == 'pull_request' && 7 || 0 }}

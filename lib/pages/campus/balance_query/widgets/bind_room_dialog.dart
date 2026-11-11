@@ -19,6 +19,8 @@ class BindRoomDialog extends StatefulWidget {
 }
 
 class BindRoomDialogState extends State<BindRoomDialog> {
+  static const String _tag = 'BindRoomDialogState';
+
   int _step = 0;
   bool _isVerifying = false;
   String? _verifyError;
@@ -43,7 +45,13 @@ class BindRoomDialogState extends State<BindRoomDialog> {
   Future<void> _loadCampuses() async {
     try {
       await widget.provider.getCampusList();
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_loadCampuses 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // 错误保留在 Provider 的 campusState 中。
     }
   }
@@ -59,7 +67,13 @@ class BindRoomDialogState extends State<BindRoomDialog> {
 
     try {
       await widget.provider.getArchitectureList(_selectedCampus!.code);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_loadBuildings 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // 错误保留在 Provider 的 buildingState 中。
     }
   }
@@ -87,7 +101,13 @@ class BindRoomDialogState extends State<BindRoomDialog> {
           }
         });
       }
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_loadUnits 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // 错误保留在 Provider 的 unitState 中。
     }
   }
@@ -143,8 +163,9 @@ class BindRoomDialogState extends State<BindRoomDialog> {
           _verifyError = l10n.verifyFailedCheckInfo;
         });
       }
-    } catch (e) {
-      AppLog.e('BindRoomDialog', 'Verify error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(_tag, '_verifyAndBind 失败', error: e, stackTrace: logStackTrace);
+
       if (mounted) {
         setState(() {
           _isVerifying = false;

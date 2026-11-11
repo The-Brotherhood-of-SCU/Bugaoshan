@@ -6,6 +6,7 @@ import 'package:bugaoshan/pages/campus/service_hall/service_form_page.dart';
 import 'package:bugaoshan/pages/campus_page/list_card.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 import 'package:flutter/material.dart';
 
 /// 办事大厅入口页。
@@ -37,7 +38,7 @@ class ServiceHallPage extends StatelessWidget {
       appBar: AppBar(title: Text(l10n.serviceHallTitle)),
       body: getIt<ScuAuthProvider>().isLoggedIn
           ? ListView(
-              padding: const EdgeInsets.all(16),
+              padding: withSystemBottomInset(context, EdgeInsets.all(16)),
               children: [
                 for (final app in kServiceAppCatalog) ...[
                   CampusListCard(

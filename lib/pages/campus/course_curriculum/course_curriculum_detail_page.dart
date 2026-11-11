@@ -10,6 +10,7 @@ import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/pages/course/widgets/course_detail_sheet.dart';
 import 'package:bugaoshan/pages/course/widgets/course_grid.dart';
 import 'package:bugaoshan/utils/week_parser.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 /// 课程课表详情页 - 以课表网格展示某门课程（教学班）的排课
 class CourseCurriculumDetailPage extends StatefulWidget {
@@ -109,7 +110,7 @@ class _CourseCurriculumDetailPageState
     );
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(2, 2, 2, 16),
+      padding: withSystemBottomInset(context, EdgeInsets.fromLTRB(2, 2, 2, 16)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

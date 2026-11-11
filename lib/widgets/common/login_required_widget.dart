@@ -1,5 +1,4 @@
 import 'package:bugaoshan/widgets/route/router_utils.dart';
-import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
@@ -31,16 +30,10 @@ class LoginRequiredWidget extends StatelessWidget {
             const SizedBox(height: 8),
             Text(l10n.loginRequired, textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            AdaptiveGlassButton(
-              label: l10n.goToLogin,
+            ElevatedButton.icon(
               onPressed: openLogin,
-              prominent: true,
-              symbol: 'person.crop.circle',
-              fallback: ElevatedButton.icon(
-                onPressed: openLogin,
-                icon: const Icon(Icons.person),
-                label: Text(l10n.goToLogin),
-              ),
+              icon: const Icon(Icons.person),
+              label: Text(l10n.goToLogin),
             ),
           ],
         ),

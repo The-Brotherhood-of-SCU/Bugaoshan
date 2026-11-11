@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
@@ -209,8 +209,35 @@ Future showLoadingDialogWithErrorString({
   );
 }
 
-void popDialog([dynamic result]) {
+/// 关闭由 [popupOrNavigate] 以弹窗形式承载的页面（或任意根导航器上的弹窗）。
+///
+/// 宽屏 / 横屏下 [popupOrNavigate] 把页面放进 `Dialog` 的内层 `Navigator`，
+/// 页面内直接 `Navigator.of(context).pop()` 只会弹掉内层路由，外层
+/// `Dialog` 与遮罩仍在（#331 研究生课表导入）。
+///
+/// 传入 [context]（页面自身的 context）时优先弹**最近一层** Navigator：
+/// - 内层还有上一页（例如从课表导入 sheet 进入、下面压着
+///   `ImportSchedulePage`）→ 只退出当前页，保留下层页面状态；
+/// - 内层已到栈底（页面就是弹窗的初始路由）→ 关闭承载它的 `Dialog`；
+/// - 页面在根导航器上直接 push → 正常返回上一页。
+///
+/// 不传 [context] 时直接操作根导航器，等价于「关闭整个弹窗」，仅适用于
+/// 页面本身独占一个弹窗的场景。
+///
+/// 走 [NavigatorState.maybePop] 而非硬 `pop`：与鼠标侧键 / 系统返回键
+/// 那条链路（`mouse_back_handler.dart`）保持同一套语义，尊重页面
+/// `PopScope(canPop: false)` 的拦截，栈底时也不会产生副作用。**注意**：
+/// 因此关闭按钮在 `PopScope(canPop: false)` 的页面上会被静默拦截，这是
+/// 预期行为，调用方需要自行提供可离开的路径。
+void popDialog({dynamic result, BuildContext? context}) {
+  if (context != null && context.mounted) {
+    final nested = Navigator.of(context);
+    if (nested.canPop()) {
+      nested.maybePop(result);
+      return;
+    }
+  }
   if (logicRootContext.mounted) {
-    Navigator.of(logicRootContext).pop(result);
+    Navigator.of(logicRootContext).maybePop(result);
   }
 }

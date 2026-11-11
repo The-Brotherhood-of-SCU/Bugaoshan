@@ -1,6 +1,7 @@
 import 'package:bugaoshan/widgets/common/third_center.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 /// 课表为空时显示的占位视图：图标 + 「暂无课表」+ 「课表管理」/「导入课表」/「新建课表」按钮。
 class NoScheduleView extends StatelessWidget {
@@ -23,7 +24,10 @@ class NoScheduleView extends StatelessWidget {
 
     return ThirdCenter(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        padding: withSystemBottomInset(
+          context,
+          EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        ),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 360),
           child: Column(

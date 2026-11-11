@@ -9,7 +9,8 @@
 - [Flutter SDK](https://flutter.dev/docs/get-started/install) >= 3.44（Dart SDK 3.10+）
 - [Dart SDK](https://dart.dev/get-dart) >= 3.10.4
 - [Nuget CLI](https://learn.microsoft.com/en-us/nuget/install-nuget-client-tools?tabs=windows#nugetexe-cli)  required by `flutter_inappwebview` (windows target)
-- Linux 构建需要 GTK 3、WPE WebKit 2.0、WPEBackend-fdo、libwpe、libsecret、libepoxy 和 Wayland 开发包。Linux 发布包动态链接这些系统库，不包含 WPE WebKit 的副本。
+- Windows 需要先执行 `git config --global core.longpaths true`，否则部分依赖在 pub cache 内检出时可能因路径超过 MAX_PATH 报 `Filename too long`
+- Linux 构建需要 GTK 3、libsecret、libepoxy 和 Wayland 开发包。Linux 发布包动态链接这些系统库。
 
 ### 安装运行
 
@@ -73,6 +74,8 @@ tool/install_ios_profile.sh <device>
 
 `<device>` 可以是 `xcrun devicectl list devices` 显示的设备标识、UDID 或设备名。若已经完成 Profile 构建，可用 `--no-build` 复用现有产物。
 
+脚本的 Bundle ID 从构建产物的 `Info.plist` 读取并打印，不写死：App Store 分发准备把主应用 Bundle ID 改为 `.ios` 后缀后，写死的旧值会静默失效。改动 Bundle ID 时无需同步该脚本。
+
 脚本会先结束旧 App 及 Widget Extension 进程，再覆盖安装并启动新包。请不要直接对正在运行的 App 反复执行 `devicectl device install app`：iOS 可能保留指向旧安装路径的 Runner 进程，表现为安装成功但启动后白屏。若启动在 15 秒内没有完成，脚本会停止等待并提示解锁或重启设备。
 
 
@@ -113,7 +116,7 @@ lib/
 1. Fork 本仓库（组织成员可直接在仓库建分支）
 2. 从 **`preview`** 分支切出功能分支 (`git checkout -b feat/your-feature preview`)
 3. 提交更改 (`git commit -m 'feat: add some feature'`，pre-commit 会自动执行 `dart format`)
-4. 若变更包含用户可感知的行为，请在 `CHANGELOG.md` 的 `## [Unreleased]` 中补充条目
+4. 日常开发通过提交和 PR 说明改动；发版前按 [changelog skill](.agents/skills/bugaoshan-changelog/SKILL.md) 集中整理目标版本的更新说明
 5. 推送分支 (`git push origin feat/your-feature`)
 6. 向 **`preview` 分支**发起 Pull Request——门禁全绿且 review 通过后合并，合并会自动发布一轮预览版（无需手动操作）
 

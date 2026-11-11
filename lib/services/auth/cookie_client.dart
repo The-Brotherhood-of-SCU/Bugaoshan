@@ -1,7 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 /// Cookie 感知的 http.Client，按域名隔离存储，发送时只带当前请求域的 cookie。
@@ -33,7 +33,7 @@ class CookieClient extends http.BaseClient {
   /// 当前经 [sendWithClientExceptionRetry] 发出、尚未结束的请求数。
   int _inFlightRequests = 0;
 
-  AuthLogger get _log => getIt<AuthLogger>();
+  AppLogger get _log => getIt<AppLogger>();
 
   /// 返回所有域 cookie 拼接的字符串（仅用于调试日志）
   String get cookieHeader {
@@ -126,7 +126,13 @@ class CookieClient extends http.BaseClient {
         if (location != null) {
           try {
             nextHost = Uri.parse(location).host;
-          } catch (_) {
+          } catch (logError, logStackTrace) {
+            _log.e(
+              _tag,
+              'followRedirects 失败',
+              error: logError,
+              stackTrace: logStackTrace,
+            );
             nextHost = location;
           }
         }
@@ -137,12 +143,19 @@ class CookieClient extends http.BaseClient {
         if (location == null) break;
         try {
           current = current.resolve(location);
-        } on FormatException {
+        } on FormatException catch (logError, logStackTrace) {
+          _log.e(
+            _tag,
+            'followRedirects 失败',
+            error: logError,
+            stackTrace: logStackTrace,
+          );
           throw ServiceException('SSO 重定向地址无法解析: $location');
         }
         lastResponse = response;
       } else {
-        _log.d(
+        _log.log(
+          response.statusCode >= 400 ? LogLevel.error : LogLevel.debug,
           _tag,
           'followRedirects: end hop=$i status=${response.statusCode} url=$current',
         );
@@ -195,11 +208,47 @@ class CookieClient extends http.BaseClient {
     }
     final response = await sendWithClientExceptionRetry(request);
     _storeCookies(request.url, response);
-    _log.d(
-      _tag,
-      '${request.method} ${request.url.host}${request.url.path} -> ${response.statusCode}',
-    );
+    final summary =
+        '${request.method} ${request.url.host}${request.url.path} -> ${response.statusCode}';
+    if (response.statusCode >= 400) {
+      _log.e(_tag, summary);
+    } else {
+      _log.d(_tag, summary);
+    }
     return response;
+  }
+
+  /// 单次发送，保留共享 cookie，但绝不重建或重放请求。
+  /// 文件上传等非幂等操作必须走此入口；超时不表示服务器未接收。
+  Future<http.StreamedResponse> sendOnce(
+    http.BaseRequest request, {
+    Duration timeout = kHttpTimeout,
+  }) async {
+    final cookies = _cookiesFor(request.url);
+    if (cookies.isNotEmpty) {
+      request.headers['Cookie'] = cookies.entries
+          .map((entry) => '${entry.key}=${entry.value}')
+          .join('; ');
+    }
+    request.followRedirects = false;
+    _inFlightRequests++;
+    try {
+      final response = await _inner.send(request).timeout(timeout);
+      _storeCookies(request.url, response);
+      return response;
+    } catch (_, stackTrace) {
+      // 不记录原异常中的 URL query，认证回跳可能含 CAS 票据。
+      _log.e(
+        _tag,
+        '${request.method} ${request.url.host}${request.url.path} 单次请求失败',
+        error: const ServiceException('单次网络请求失败'),
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    } finally {
+      _inFlightRequests--;
+      _closeRetiredInnersIfIdle();
+    }
   }
 
   /// 带 http.ClientException 错误重试的请求发送函数
@@ -210,8 +259,14 @@ class CookieClient extends http.BaseClient {
     try {
       try {
         return await _inner.send(request).timeout(kHttpTimeout);
-      } on http.ClientException catch (e) {
-        _log.w(_tag, 'send: ClientException, retrying: $e');
+      } on http.ClientException catch (e, logStackTrace) {
+        _log.e(
+          _tag,
+          'sendWithClientExceptionRetry 失败',
+          error: e,
+          stackTrace: logStackTrace,
+        );
+
         _retireInner();
         final retryRequest = http.Request(request.method, request.url)
           ..followRedirects = request.followRedirects
@@ -225,6 +280,14 @@ class CookieClient extends http.BaseClient {
         _log.d(_tag, 'send: retry ok ${request.method} ${request.url}');
         return result;
       }
+    } catch (error, stackTrace) {
+      _log.e(
+        _tag,
+        '${request.method} ${request.url.host}${request.url.path} 网络请求失败',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      rethrow;
     } finally {
       _inFlightRequests--;
       _closeRetiredInnersIfIdle();

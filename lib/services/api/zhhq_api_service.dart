@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'dart:io';
 import 'dart:math';
 
@@ -7,7 +8,7 @@ import 'package:bugaoshan/models/repair.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/zhhq_auth.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/zhhq_crypto.dart';
 import 'package:http/http.dart' as http;
@@ -34,9 +35,11 @@ import 'package:http/http.dart' as http;
 /// 成功 `status == "success"`，业务数据在 `data`；错误在 `errorCode`/`message`
 /// （4010/4013/4017 为 token 类错误，交给认证层重建会话）。
 class ZhhqApiService {
+  static const String _tag = 'ZhhqApiService';
+
   final ZhhqAuth _auth;
-  final AuthLogger _log;
-  ZhhqApiService(this._auth) : _log = getIt<AuthLogger>();
+  final AppLogger _log;
+  ZhhqApiService(this._auth) : _log = getIt<AppLogger>();
 
   static const String _base = 'https://zhhq.scu.edu.cn/api';
 
@@ -90,9 +93,19 @@ class ZhhqApiService {
     if (fastClient != null && fastTokenKey != null) {
       try {
         return await fn(fastClient, fastTokenKey);
-      } on UnauthenticatedException {
+      } on UnauthenticatedException catch (logError, logStackTrace) {
+        AppLog.e(
+          _tag,
+          '_executeWithRetry 失败',
+          error: logError,
+          stackTrace: logStackTrace,
+        );
         // tokenKey 失效（4010-4017）：走完整认证重建
-        _log.w('ZHhq', 'fast path token invalid, re-authenticating');
+        _log.e(
+          _tag,
+          'fast path token invalid, re-authenticating',
+          category: LogCategory.business,
+        );
       }
     }
     // 完整路径：确保 SCU 会话 + zhhq tokenKey（必要时走 SSO）
@@ -101,7 +114,13 @@ class ZhhqApiService {
       final tokenKey = _auth.tokenKey;
       if (tokenKey == null) throw const UnauthenticatedException();
       return await fn(client, tokenKey);
-    } on UnauthenticatedException {
+    } on UnauthenticatedException catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_executeWithRetry 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       _auth.invalidate();
       final client = await _auth.getClient();
       final tokenKey = _auth.tokenKey;
@@ -113,7 +132,7 @@ class ZhhqApiService {
   Future<T> _request<T>(
     Future<T> Function(CookieClient client, String tokenKey) fn,
   ) {
-    return _executeWithRetry(fn);
+    return AppLog.guard(_tag, '智慧后勤请求', () => _executeWithRetry(fn));
   }
 
   Map<String, String> _headers(
@@ -145,9 +164,10 @@ class ZhhqApiService {
     final json = zhhqDecodeResponse(body);
     if (json == null) {
       // 诊断：解密失败时记录响应片段，便于定位（可能为明文错误页 / 非标准加密）
-      _log.w(
-        'ZHhq',
-        '响应解析失败，status=$statusCode body=${body.length > 100 ? body.substring(0, 100) : body}',
+      _log.e(
+        _tag,
+        '响应解析失败，status=$statusCode bodyLength=${body.length}',
+        category: LogCategory.business,
       );
       throw ServiceException('zhhq 响应解析失败');
     }
@@ -155,13 +175,21 @@ class ZhhqApiService {
     // 4010-4017 均为 token 类错误（无效/超时/签名错误），触发重新认证
     final codeInt = int.tryParse(code);
     if (codeInt != null && codeInt >= 4010 && codeInt <= 4017) {
-      _log.w('ZHhq', 'token 错误 errorCode=$code: ${json['message']}');
+      _log.e(
+        _tag,
+        'token 错误 errorCode=$code: ${json['message']}',
+        category: LogCategory.business,
+      );
       throw const UnauthenticatedException('zhhq 会话已失效');
     }
     // 业务错误统一判定：status 明确非 success，或 errorCode 明确非 0。
     final message = _businessErrorMessage(json);
     if (message != null) {
-      _log.w('ZHhq', '业务错误 errorCode=$code: $message');
+      _log.e(
+        _tag,
+        '业务错误 errorCode=$code: $message',
+        category: LogCategory.business,
+      );
       throw ServiceException(message);
     }
     return json;
@@ -541,7 +569,13 @@ class ZhhqApiService {
     final Map<String, dynamic> json;
     try {
       json = jsonDecode(resp.body) as Map<String, dynamic>;
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_uploadImageWith 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       throw ServiceException('图片上传失败：响应解析异常');
     }
     // 与 _decode 共用业务错误判定

@@ -8,6 +8,7 @@ import 'package:photo_view/photo_view.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/share_utils.dart';
+import 'package:bugaoshan/widgets/common/image_error_log.dart';
 
 void showFullScreenImageViewer(
   BuildContext context, {
@@ -22,6 +23,8 @@ void showFullScreenImageViewer(
 }
 
 class ImageViewerPage extends StatelessWidget {
+  static const String _tag = 'ImageViewerPage';
+
   final String imageUrl;
   final Map<String, String>? headers;
 
@@ -38,20 +41,28 @@ class ImageViewerPage extends StatelessWidget {
           Center(
             child: GestureDetector(
               onLongPress: () => _showActions(context, l10n),
-              child: PhotoView(
-                imageProvider: NetworkImage(imageUrl, headers: headers),
-                minScale: PhotoViewComputedScale.contained,
-                maxScale: PhotoViewComputedScale.covered * 3,
-                backgroundDecoration: const BoxDecoration(color: Colors.black),
-                errorBuilder: (context, error, stackTrace) {
-                  return const Center(
-                    child: Icon(
-                      Icons.broken_image,
-                      size: 64,
-                      color: Colors.white54,
-                    ),
-                  );
-                },
+              child: ImageErrorLog(
+                source: imageUrl,
+                tag: _tag,
+                message: '图片加载失败',
+                builder: (report) => PhotoView(
+                  imageProvider: NetworkImage(imageUrl, headers: headers),
+                  minScale: PhotoViewComputedScale.contained,
+                  maxScale: PhotoViewComputedScale.covered * 3,
+                  backgroundDecoration: const BoxDecoration(
+                    color: Colors.black,
+                  ),
+                  errorBuilder: (context, error, stackTrace) {
+                    report(error, stackTrace);
+                    return const Center(
+                      child: Icon(
+                        Icons.broken_image,
+                        size: 64,
+                        color: Colors.white54,
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ),
@@ -121,8 +132,9 @@ class ImageViewerPage extends StatelessWidget {
           context,
         ).showSnackBar(SnackBar(content: Text(l10n.imageSavedToGallery)));
       }
-    } catch (e) {
-      AppLog.e('ImageViewer', 'Save image error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(_tag, '_saveToGallery 失败', error: e, stackTrace: logStackTrace);
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -145,8 +157,9 @@ class ImageViewerPage extends StatelessWidget {
       await file.writeAsBytes(response.bodyBytes);
       if (!context.mounted) return;
       await shareSingleFile(file.path, context: context);
-    } catch (e) {
-      AppLog.e('ImageViewer', 'Share image error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(_tag, '_share 失败', error: e, stackTrace: logStackTrace);
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

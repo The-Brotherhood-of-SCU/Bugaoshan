@@ -15,10 +15,11 @@ import 'package:bugaoshan/pages/campus/exam_plan/exam_plan_page.dart';
 import 'package:bugaoshan/pages/campus/fitness_test/fitness_test_page.dart';
 import 'package:bugaoshan/pages/campus/grades/grades_page.dart';
 import 'package:bugaoshan/pages/campus/network_device/network_device_page.dart';
-import 'package:bugaoshan/pages/campus/passpoint/passpoint_page.dart';
+import 'package:bugaoshan/pages/campus/cloud_print/cloud_print_page.dart';
 import 'package:bugaoshan/pages/campus/notice/notice_page.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/plan_completion_page.dart';
 import 'package:bugaoshan/pages/campus/repair/repair_page.dart';
+import 'package:bugaoshan/pages/campus/reservation/reservation_page.dart';
 import 'package:bugaoshan/pages/campus/train_program/train_program_page.dart';
 import 'package:bugaoshan/pages/campus_page/campus_page.dart';
 import 'package:bugaoshan/pages/course/main/course_page.dart';
@@ -187,16 +188,6 @@ final campusItemNetworkDevice = CampusItemConfig(
   page: () => const NetworkDevicePage(),
 );
 
-final campusItemPasspoint = CampusItemConfig(
-  id: dockIdPasspoint,
-  icon: Icons.wifi_password_outlined,
-  selectedIcon: Icons.wifi_password,
-  dockLabel: (l10n) => l10n.dockLabelPasspoint,
-  dockFullLabel: (l10n) => l10n.passpointTitle,
-  desc: (l10n) => l10n.passpointDesc,
-  page: () => const PasspointPage(),
-);
-
 final campusItemBalanceQuery = CampusItemConfig(
   id: dockIdBalanceQuery,
   icon: Icons.account_balance_wallet_outlined,
@@ -205,6 +196,16 @@ final campusItemBalanceQuery = CampusItemConfig(
   dockFullLabel: (l10n) => l10n.balanceQuery,
   desc: (l10n) => l10n.balanceQueryDesc,
   page: () => const BalanceQueryPage(),
+);
+
+final campusItemCloudPrint = CampusItemConfig(
+  id: dockIdCloudPrint,
+  icon: Icons.print_outlined,
+  selectedIcon: Icons.print,
+  dockLabel: (l10n) => l10n.cloudPrintDock,
+  dockFullLabel: (l10n) => l10n.cloudPrintTitle,
+  desc: (l10n) => l10n.cloudPrintDesc,
+  page: () => const CloudPrintPage(),
 );
 
 final campusItemAcademicCalendar = CampusItemConfig(
@@ -226,6 +227,20 @@ final campusItemExamPlan = CampusItemConfig(
   desc: (l10n) => l10n.examPlanDesc,
   page: () => const ExamPlanPage(),
   audience: StudentType.undergraduate,
+);
+
+/// 望江校区研究生活动室预约（只读查询 + 跳官方页面提交）。
+///
+/// 入口按需求只对研究生开放（`audience: StudentType.graduate`）。
+final campusItemReservation = CampusItemConfig(
+  id: dockIdReservation,
+  icon: Icons.meeting_room_outlined,
+  selectedIcon: Icons.meeting_room,
+  dockLabel: (l10n) => l10n.dockLabelReservation,
+  dockFullLabel: (l10n) => l10n.reservationTitle,
+  desc: (l10n) => l10n.reservationDesc,
+  page: () => const ReservationPage(),
+  audience: StudentType.graduate,
 );
 
 final campusItemNotice = CampusItemConfig(
@@ -336,9 +351,10 @@ final campusSections = [
       campusItemGraduateScheduleImport,
       campusItemClassroom,
       campusItemNetworkDevice,
-      campusItemPasspoint,
+      campusItemCloudPrint,
       campusItemBalanceQuery,
       campusItemRepair,
+      campusItemReservation,
       campusItemAcademicCalendar,
       campusItemZysc,
       campusItemLeave,
@@ -363,6 +379,13 @@ CampusItemConfig campusItemConfigById(String id) => allCampusItems.firstWhere(
   (item) => item.id == id,
   orElse: () => campusItemProfile,
 );
+
+/// 该 id 是否仍对应一个校园功能入口。
+///
+/// 加载历史 dock 配置时用它丢弃已移除的入口（如并入校园网的无感认证），
+/// 避免 [campusItemConfigById] 的兜底逻辑把旧 id 显示成「我的」。
+bool campusItemIdExists(String id) =>
+    allCampusItems.any((item) => item.id == id);
 
 /// 该功能项在指定学生身份下是否展示；[CampusItemConfig.audience] 为 null
 /// （通用）时恒为 true。

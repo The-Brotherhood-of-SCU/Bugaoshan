@@ -48,7 +48,7 @@ The repo ships three small CMD wrappers at the project root that just chain the 
 
 ### Commit Convention
 
-Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `perf:`, `build:`, `ci:`, `test:`, `style:`. The release tooling in `.claude/commands/release.md` and `prerelease.md` classifies commits by prefix when generating changelogs.
+Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `perf:`, `build:`, `ci:`, `test:`, `style:`. Release notes are prepared separately using the Changelog Preparation workflow below.
 
 ## Project Layout
 
@@ -58,7 +58,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 ├── CLAUDE.md                   # pointer → "follow AGENTS.md"
 ├── README.md                   # public-facing intro
 ├── CONTRIBUTING.md             # dev environment + workflow
-├── CHANGELOG.md                # Keep-a-Changelog format (Chinese summaries)
+├── CHANGELOG.md                # Versioned release notes (Chinese summaries)
 ├── LICENSE                     # AGPL-3.0
 ├── pubspec.yaml                # package metadata, deps, flutter_launcher_icons config
 ├── analysis_options.yaml       # extends package:flutter_lints/flutter.yaml
@@ -128,6 +128,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │   ├── README.md                # engineering documentation index
 │   ├── architecture/           # current implementation architecture
 │   │   ├── authentication.md
+│   │   ├── ios-back-gesture.md
 │   │   ├── ios-distribution.md
 │   │   ├── ios-liquid-glass.md
 │   │   ├── linux-distribution.md
@@ -148,7 +149,8 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │       ├── 0006-sunday-first-course-week.md
 │       ├── 0007-global-student-type-switch.md
 │       ├── 0008-reminder-scheduling-in-dart.md
-│       └── 0009-export-schedule-as-image.md
+│       ├── 0009-export-schedule-as-image.md
+│       └── 0010-remove-linux-native-webview.md
 └── .github/
     ├── actions/setup/          # composite action: install Flutter 3.44, gen-l10n, git metadata
     ├── scripts/                # Python release automation
@@ -161,6 +163,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
     │   ├── release.yml         # releases on push to main/preview, target-gated tags, or manual dispatch
     │   ├── build-android.yml   # workflow_call → APK (split per ABI, obfuscated)
     │   ├── build-windows.yml   # workflow_call → Windows zip
+    │   ├── build-linux.yml     # workflow_call → Linux x64 tar.gz (debian:13 container)
     └── ISSUE_TEMPLATE/feature_request.yml
 ```
 
@@ -234,34 +237,44 @@ The CCYL service is special: its token expires via an explicit business error co
 - **`ExitService`** — unified exit (windowManager.destroy on desktop, exit(0) on mobile).
 - **`WindowStateService`** — desktop window position/size persistence.
 
-### Auth Logging
+### App Logging
 
-All auth-layer modules (`ScuAuth`, `CookieClient`, `AuthCoordinator`, `ZhjwAuth` / `WfwAuth` / `PayAppAuth` / `FitnessAuth` via `SsoRelayAuth`, `CcylAuth`, `CcylOAuthService`, `ScuAuthProvider`) log key lifecycle events to a single in-memory ring buffer via `AuthLogger` (`lib/utils/auth_logger.dart`):
+All modules log through a single in-memory ring buffer via `AppLogger` (`lib/utils/app_logger.dart`). It is a **general-purpose** logger — auth-layer modules (`ScuAuth`, `CookieClient`, `AuthCoordinator`, `ZhjwAuth` / `WfwAuth` / `PayAppAuth` / `FitnessAuth` via `SsoRelayAuth`, `CcylAuth`, `CcylOAuthService`, `ScuAuthProvider`) are only the earliest adopters. Business modules log via the `AppLog` facade (see below); all entries share one buffer and are visible in the Dev page viewer.
 
 - Ring buffer caps at 1000 entries (oldest evicted).
-- Each entry has timestamp + `AuthLogLevel` (`debug` / `info` / `warn` / `error`) + `tag` (e.g. `ScuAuth`, `CookieClient`, `ZhjwAuth`) + redacted message.
-- `AuthLogRedactor.apply()` strips `"access_token":"…"`, `"password":"…"`, `Bearer <token>` and truncates `?code=` values before storage, so logs are safe to share via the Dev page "Save" button.
-- `tag` is a stable class/module identifier (for example `ScuAuth`, `CookieClient`, or `PAYAPP`) so the Viewer's dropdown groups events by source.
+- Each entry has timestamp + category (`authentication` / `business`) + `LogLevel` (`debug` / `info` / `warn` / `error`) + `tag` + redacted message, with optional redacted error and stack trace.
+- `LogRedactor.apply()` strips `"access_token":"…"`, `"password":"…"`, `Bearer <token>` and truncates `?code=` values before storage, so logs are safe to share via the Dev page "Save" button.
+- `LogRedactor` also covers student identifiers in three shapes: camelCase (`studentId=`), snake_case (`student_id=`, `student_number=`), and the Chinese label (`学号202612345678`). The Chinese pattern requires the value to start with an alphanumeric so prose like `学号相关的缓存 key` is **not** redacted — over-redaction destroys diagnostic value, not just privacy. Do not add loosely-typed keys such as `account` / `id` / `sid` for the same reason.
+- `LogRedactor` covers **both** JSON (`"password":"x"`) and non-JSON (`password=x`, `token: x`) credential forms. The non-JSON form is the common one in exception stacks (`StateError('token=...')`) and was a real leak path until PR #369's review surfaced it. Key names are deliberately narrow — **no `id` / `account` / `key`**, and **no `authorization` / `cookie`**: the latter two are handled by `_bearerHeader`, and listing them here would consume the `Authorization: ` prefix first, silently breaking Bearer redaction.
+- `tag` is a stable class/module identifier (for example `ScuAuth`, `CookieClient`, or `ServiceApiService`) so the Viewer's dropdown groups events by source. **Convention**: PascalCase matching the owning class name, declared as `static const String _tag` next to the class — never a bare string literal. Top-level functions use a module-level `const String _tag`. The Viewer's dropdown sorts tags by entry count (descending) so the noisiest module is visible first, and shows that count inline.
 - `debug` lines are only echoed to console in `kDebugMode`; production builds stay silent.
-- `AuthLogger` is a `ChangeNotifier` — Dev page's `AuthLogTile` and `AuthLogViewerPage` use `ListenableBuilder` for live updates.
-- Optional file sink (`enableFileSink`) writes to `getApplicationDocumentsDirectory()/auth.log`; default off to avoid disk I/O for normal users. The Dev page "Save" button is the recommended path for capturing a snapshot.
+- `AppLogger` is a `ChangeNotifier` — Dev page's `LogTile` and `LogViewerPage` use `ListenableBuilder` for live updates.
+- **Persistence (on by default)**: `warn` / `error` entries are written to `<getLogBaseDir()>/Bugaoshan/logs/bugaoshan.log` when `AppConfigProvider.logPersistenceEnabled` is on, which is the **default**. Default-off would mean a crash is only diagnosable if the user enabled the switch beforehand — and the users who report crashes are exactly the ones who never go looking for a diagnostics toggle. The switch is exposed in the Dev page (`LogPersistenceTile`) and backed by `AppConfigProvider.logPersistenceEnabled`. `debug` / `info` stay in memory only — they record lifecycle milestones that are near-useless for user bug reports but would fill the file quickly.
+- **Write path is a single-writer queue**: `log()` only appends the formatted line to an in-memory queue (never touching the file), and one serial async consumer (`_drainQueue`) does openWrite / writeln / flush / rotate. This is deliberate: `log()` is synchronous and may be called from any business path, while file IO is async — coupling them directly produced a race where entries written between "rotation scheduled" and "sink closed" were neither written nor drained. Queue is bounded (`_maxWriteQueue = 2000`); overflow increments `droppedWriteLines` rather than growing without limit, since logging must not become the failure. `disableFileSink()` drains the queue before closing.
+- **Rotation**: multi-file, threshold-driven — `bugaoshan.2.log` deleted, `bugaoshan.1.log` → `bugaoshan.2.log`, `bugaoshan.log` → `bugaoshan.1.log`, then a fresh `bugaoshan.log` opens. Totals ≈ 6 MB (2 MB × 3). Rotation uses only rename/delete (no read-rewrite) so it never stalls on slow storage; rotation happens after a complete record, so each file may exceed its threshold by one record.
+- **Verifying persistence**: entries beyond the size cap are *evicted by design*, so "lines on disk == lines written" only holds when the write volume is below capacity. Test both: (1) volume well under cap → nothing may be missing; (2) volume far over cap → on-disk size must sit at the cap. A burst test lives in `test/app_logger_test.dart`; `LogStressTile` (Dev page, **debug builds only**) does the same on-device so filesystem timing can be checked with `adb`, since `flutter test` is not representative here.
+- `AppLogger` is the only writer; the Dev page "Save" button uses `exportToFile()` for a shareable snapshot alongside the auto-rotated files in the same directory. Exports are named `bugaoshan-export-<timestamp>.log`, deliberately **not** matching the rotated-file pattern: `deletePersistedFiles()` matches rotation files by regex (`^bugaoshan(\.\d+)?\.log$`), not by prefix, so turning the switch off does not delete a snapshot the user already exported to share.
+- Global error handlers are installed by `setupGlobalErrorHandlers()` (`lib/utils/app_error_reporter.dart`), called from `main()` right after `WidgetsFlutterBinding.ensureInitialized()`. It covers `FlutterError.onError` (framework errors, red screen in debug), `PlatformDispatcher.instance.onError` (unhandled async — preserves the previous handler, or returns `true` when none was installed), and `Isolate.current` error listener. `formatExceptionForLog()` truncates over-long stack traces to 2000 chars while preserving the head, since the exception type and message are the highest-value part.
+- Startup failure in `main()` logs via `AppLog.e(_tag, …)` — note the previous `debugPrint`-only handling was invisible in release builds.
+- `resolveLogDir()` / `kLogDir` / `getLogBaseDir()` live in `app_logger.dart`, not in `pages/campus/downloads/file_utils.dart` — the log path is used by both auto-persistence and the Dev page, so defining it in the pages layer would invert the dependency direction. The Dev page's folder button now shows both auto-rotated logs and manual exports.
+- **Do not open app-private directories with an Android content URI.** `launchUrl` on a `content://com.android.externalstorage.documents/document/...` URI sends `ACTION_VIEW`, which DocumentsUI does not accept for a *directory* document — it always fails with `PlatformException(ACTIVITY_NOT_FOUND)`. Scoped storage (Android 11+) additionally bars file managers from `Android/data/<package>/{cache,files}/`. Both the Dev log viewer and the notice attachment page now **copy the absolute path to the clipboard on Android** and only use `Uri.file(dir)` on desktop. Getting logs off the device is the "Save" (share) action, not the folder button.
 
-Dev page (`lib/pages/dev/auth_log/`) gains:
-- `AuthLogTile` — entry showing last log line + count, plus a "Save" button that exports to `bugaoshan-auth-{timestamp}.log` in the temp dir and opens the system share sheet.
-- `AuthLogEntryTile` — individual log entry display with level color coding.
-- `AuthLogFilterBar` — filter chips for log level and tag selection.
-- `AuthLogViewerPage` — full-screen viewer with level filter chips + tag dropdown + clear + copy + save actions.
+Dev page (`lib/pages/dev/logs/`) contains:
+- `LogTile` — entry showing last log line + count; opens the runtime log viewer with copy/save/share actions. Exports use `bugaoshan-export-<timestamp>.log`.
+- `LogEntryTile` — individual log entry display with level color coding.
+- `LogFilterBar` — filter chips for log level and tag selection.
+- `LogViewerPage` — full-screen viewer with all/authentication/business-error views, level and tag filters, expandable stack traces, clear/copy/save actions.
 
 ### 业务日志（AppLog）
 
-`AppLog`（`lib/utils/app_log.dart`）是业务层日志门面：与 `AuthLogger` **共享同一个**内存环形缓冲、脱敏规则与文件落盘，Dev 页日志查看器能看到全部来源的日志。延迟从 GetIt 取 `AuthLogger` 单例；测试环境未注册时退化为独立裸实例，保证日志调用永不抛异常。
+`AppLog`（`lib/utils/app_log.dart`）是业务层日志门面：与 `AppLogger` **共享同一个**内存环形缓冲、脱敏规则与文件落盘，分类为 `business`。每次从 GetIt 取当前实例；DI 前使用 `bootstrapLogger`，装配时沿用以保留启动错误。完整流程见 `docs/architecture/logging.md`。
 
-约定（与 Auth Logging 一并遵守）：
+约定（与 App Logging 一并遵守）：
 
-- 错误路径（catch 分支、失败状态）→ `AppLog.e` / `AppLog.w`，**不要**在错误分支写 `debugPrint`。
+- 真实错误（catch 分支、失败状态、图片/平台回调、HTTP 失败）必须记录 `AppLog.e`，捕获异常时传 `error` 与 `stackTrace`；可恢复的重试可用 `AppLog.w`。不要只写 `debugPrint`、错误文案或吞掉异常。认证操作使用 `AppLogger`，必要时用相应 `guard` 记录并保持原异常传播。正常取消和格式兼容探测不属于操作失败。
 - 生命周期 / 关键里程碑 → `AppLog.i`。
-- 本地调试输出 → `AppLog.d`（生产静默）；`debugPrint` 仅限 kDebugMode 下的 DI 装配期 / 启动期调试。
-- 消息中的 access_token / password 等敏感字段由 `AuthLogRedactor` 自动脱敏，无需手动处理。
+- 本地调试输出 → `AppLog.d`（仍进入内存缓冲，仅 debug 构建输出控制台）；`debugPrint` 仅限 kDebugMode 下的 DI 装配期 / 启动期调试。
+- 消息、异常和堆栈统一脱敏；仍禁止主动记录凭据、完整表单和个人数据。`FormatException` 不输出原 source。全局错误处理仅作兜底，本地仍须记录功能上下文。
 
 ### Notice Pages
 
@@ -304,7 +317,7 @@ Shared downloads module lives in `lib/pages/campus/downloads/`:
 ### Key Patterns
 
 - **Session expiry** — `ScuAuth.getClient()` checks 1-hour TTL, calls `_synchronizedRefresh()` on expiry. Refresh failure → `onSessionExpired` callback → `SessionExpiredListener` shows a global SnackBar with "前往登录" action (5 s debounce). ZHJW/WFW/PayApp API Services wrap calls in `retryOnUnauthenticated(getClient, fn)` to retry once on `UnauthenticatedException`; CCYL only retries `CcylAuthExpiredException`. Business providers catch final exceptions for UI state.
-- **左右 + 上下双滑页面** — 统一用 `SwipePageView`（`lib/widgets/common/swipe_page_view.dart`，做法源自课表页：禁用 PageView 自带物理、外层 GestureDetector 接管横滑并手动 jumpTo 跟手，纵向拖动放行给页内列表），替代 `TabBarView` / `PageView`，避免手势冲突导致的滑动不跟手。传 `tabController` 与 TabBar 双向联动；`keepPagesAlive: true` 保留各页 State（表单/滚动位置）。课表页的 `CourseSwipePageView` 是它的薄壳转发。
+- **左右 + 上下双滑页面** — 统一用 `SwipePageView`（`lib/widgets/common/swipe_page_view.dart`，做法源自课表页：禁用 PageView 自带物理、外层 GestureDetector 接管横滑并手动 jumpTo 跟手，纵向拖动放行给页内列表），替代 `TabBarView` / `PageView`，避免手势冲突导致的滑动不跟手。传 `tabController` 与 TabBar 双向联动；`keepPagesAlive: true` 保留各页 State（表单/滚动位置）。课表页的 `CourseSwipePageView` 是它的薄壳转发。已到边界（第一页向右 / 最后一页向左）时它不认领手势，第一页的右滑交还给 iOS 全局侧滑返回（`docs/architecture/ios-back-gesture.md`）。
 - **Multiple schedules** — Courses are stored in a single SQLite `courses` table, filtered by `schedule_id`. `DatabaseService.switchSchedule()` updates the current ID and refreshes the in-memory cache.
 - **Responsive dialogs** — `popupOrNavigate(context, page)` in `lib/widgets/route/router_utils.dart`: dialog at width/2 on tablets/landscape, dialog at 2/3 w+h on big portrait, full-page push on phones. Falls back to `Navigator.push` if already inside a popup (`PopupContext.of(context)`).
 - **`logicRootContext`** — global getter `navigatorKey.currentContext!` in `router_utils.dart`. Use when you need a `BuildContext` outliving the current widget — e.g. after `Navigator.pop(context)` the local `context` is disposed, so capture `final rootCtx = logicRootContext; Navigator.pop(context); popupOrNavigate(rootCtx, ...)`.
@@ -361,29 +374,41 @@ The repository operates a strict two-tier release model (`preview` -> `main`):
   - **Only accepts PRs from `preview`**. Direct pushes or direct feature PRs are strictly forbidden.
   - Merges into `main` automatically trigger the release pipeline to publish a **Formal Stable Release** (`prerelease: false, latest: true`, tag `vX.Y.Z`), generate F-Droid changelogs, and commit metadata.
 
+### PR Labels
+
+Two labels drive automation / review routing on pull requests:
+
+- **`close issue`** — the PR closes the issue(s) it references. GitHub's native `Closes #N` keyword only fires when a PR merges into the default branch, and PRs here target `preview`, so `close-linked-issues.yml` reads this label and closes the referenced issues at preview-merge time. Always write the reference as `Closes #N` in the PR title or body, and apply the label.
+- **`review request`** — the change needs someone with the matching device / OS environment to run it before merging (e.g. Android multi-button navigation, iOS 26 Liquid Glass, a specific vendor ROM). It is a manual routing marker: nothing consumes it automatically, so a reviewer must be asked directly.
+
 ### CI Workflows
 
 - **`pre-flight.yml` (Quality Gate & Policy Enforcement)**:
   - Triggers on PRs to `main` / `preview`, pushes to `main` / `preview`, and `workflow_dispatch`.
   - Enforces branch flow policy: `main` must originate from `preview` (there is no `dev` branch; feature branches target `preview` directly).
-  - Runs `dart analyze --fatal-infos`, `flutter test`, codegen cleanliness check (`git status --porcelain` after codegen), Python CI unit tests (`.github/scripts/tests/`), and `tool/pre_release_check.py --ci` (release-timing checks are advisory WARNs in CI; structural checks still fail the gate).
+  - Runs `dart analyze --fatal-infos`, `flutter test`, codegen cleanliness check (`git status --porcelain` after codegen), Python CI unit tests (`.github/scripts/tests/`), and `tool/pre_release_check.py --ci`. Daily preview checks add `--prerelease --changelog-structure-only`; the release workflow validates notes against its resolved tag before tagging. Release-timing checks are advisory WARNs in CI; structural errors still fail the gate.
 - **`release.yml` (Release Pipeline)**:
   - Triggers on pushes to `main` / `preview`, tags matching `v*.*.*` (published only when the tag targets the main/preview head), and `workflow_dispatch` (build-only on other branches).
   - Version/tag rules via `.github/scripts/resolve_release_version.py` (formal: pubspec, idempotent; preview: anchored to the last formal tag with a patch increment `-preview[.N]`; the `/release` prep phase switches to `-rc` naming; preview builds inject the last formal versionName/versionCode).
-  - Triggers `build-android.yml` (universal + split APKs with Java 21) and `build-windows.yml` (Windows zip with dynamic WebView2Loader).
+  - Triggers `build-android.yml` (universal + split APKs with Java 21), `build-windows.yml` (Windows zip with dynamic WebView2Loader) and `build-linux.yml` (Linux x64 tar.gz, built in a `debian:13` container).
   - Publishes GitHub Releases with safe Draft -> Upload -> Publish ordering to support Immutable Releases.
+- **`close-linked-issues.yml` (Issue Auto-Close)**:
+  - Triggers on `pull_request: [closed]`, only runs when the PR was merged.
+  - Because PRs target `preview` rather than the default branch `main`, GitHub's native `Closes #N` keyword would only fire at the `preview -> main` step; this workflow closes the referenced issues at preview merge time instead.
+  - Only acts on PRs labeled **`close issue`**; parses `closes` / `fixes` / `resolves` keywords (with optional `#`) from the PR title and body, closes each referenced issue as completed, and leaves a comment linking the merged PR. Issues already closed, and references that are PRs, are skipped.
 
 ### Release Helpers (`.claude/commands/`)
 
 These are project-specific Claude Code slash commands:
 
-- `release.md` (`/release <version>`) — prepares formal release: updates `pubspec.yaml` (e.g. `2.5.1+20501`), formats `CHANGELOG.md [X.Y.Z]`, generates F-Droid metadata changelogs, runs `tool/pre_release_check.py`, and opens/merges a PR from `preview` to `main`.
-- `prerelease.md` (`/prerelease [tag]`) — prepares preview release: updates `CHANGELOG.md [Unreleased]`, runs pre-flight checks, and merges into `preview` to trigger automated preview builds.
+- `release.md` (`/release <version>`) — prepares formal release: updates `pubspec.yaml` (e.g. `2.5.1+20501`), generates F-Droid metadata changelogs, runs `tool/pre_release_check.py`, and opens/merges a PR from `preview` to `main`.
+- `prerelease.md` (`/prerelease [tag]`) — prepares preview release, runs pre-flight checks, and publishes through `preview`.
 
-The auto-changelog flow:
-1. Find last stable tag: `git tag -l "v[0-9]*.[0-9]*.[0-9]*" --sort=-v:refname | grep -E "^v[0-9]+\.[0-9]+\.[0-9]+$" | head -n 1`.
-2. `git log <last>..HEAD --pretty=format:"%s" --no-merges`.
-3. Classify by Conventional Commits prefix into `### Added` / `### Changed` / `### Fixed` / `### Removed`. Drop `docs:` / `chore:` / `test:` / `style:`. Translate to Chinese bullet points (matching the style of existing entries).
+### Changelog Preparation
+
+- `CHANGELOG.md` is prepared centrally at release time for a specific target version. Do not add entries during ordinary development unless the user explicitly requests a changelog update.
+- To generate, supplement, or merge version notes, use [bugaoshan-changelog](.agents/skills/bugaoshan-changelog/SKILL.md). It defines version and commit boundaries, diff verification, net-change merging, and user-facing wording.
+- Release helpers follow that skill for changelog content. Version metadata, validation, PRs, and publication remain separate operations within the user's requested scope.
 
 ## Notable Implementation Details
 
@@ -422,4 +447,4 @@ The auto-changelog flow:
 
 ## Platform Support
 
-`flutter_launcher_icons` 为所有 6 个平台生成图标;`flutter_secure_storage` 在所有平台都可用;`sqflite_common_ffi` 处理桌面端 SQLite. UI 通过 `LayoutBuilder`/`MediaQuery` 适配手机/平板/桌面. 主 release pipeline(参见 `release.yml`)打包 **Android (split-per-ABI APK)** 和 **Windows (zip)**;Linux 仅支持本地构建,不再由 CI 发布. Linux 分发与 WPE 边界见 `docs/architecture/linux-distribution.md`;新增发布平台时务必同时更新 `release.yml`、`release_prepare.py` 和发布正文.
+`flutter_launcher_icons` 为所有 6 个平台生成图标;`flutter_secure_storage` 在所有平台都可用;`sqflite_common_ffi` 处理桌面端 SQLite. UI 通过 `LayoutBuilder`/`MediaQuery` 适配手机/平板/桌面. 主 release pipeline(参见 `release.yml`)打包 **Android (split-per-ABI APK)**、**Windows (zip)** 和 **Linux (x64 tar.gz)**;Linux 仍支持本地构建. Linux 分发与网页视图边界见 `docs/architecture/linux-distribution.md`;新增发布平台时务必同时更新 `release.yml`、`release_prepare.py` 和发布正文.

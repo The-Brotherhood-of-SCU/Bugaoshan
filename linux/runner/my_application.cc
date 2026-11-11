@@ -5,6 +5,7 @@
 #include <gdk/gdkx.h>
 #endif
 
+#include "desktop_entry.h"
 #include "flutter/generated_plugin_registrant.h"
 
 struct _MyApplication {
@@ -19,11 +20,36 @@ static void first_frame_cb(MyApplication* self, FlView* view) {
   gtk_widget_show(gtk_widget_get_toplevel(GTK_WIDGET(view)));
 }
 
+// Sets the window icon from the icon installed next to the executable.
+// Wayland compositors resolve the icon from the desktop entry instead, so
+// this only covers X11/XWayland.
+static void set_window_icon(GtkWindow* window) {
+  g_autofree gchar* executable_path =
+      g_file_read_link("/proc/self/exe", nullptr);
+  if (executable_path == nullptr) {
+    return;
+  }
+  g_autofree gchar* bundle_dir = g_path_get_dirname(executable_path);
+
+  g_autofree gchar* icon_path = g_build_filename(
+      bundle_dir, "share", "icons", "hicolor", "512x512", "apps",
+      APPLICATION_ID ".png", nullptr);
+  if (!g_file_test(icon_path, G_FILE_TEST_IS_REGULAR)) {
+    return;
+  }
+
+  g_autoptr(GError) error = nullptr;
+  if (!gtk_window_set_icon_from_file(window, icon_path, &error)) {
+    g_warning("Failed to set window icon: %s", error->message);
+  }
+}
+
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
+  set_window_icon(window);
 
   // Use a header bar when running in GNOME as this is the common style used
   // by applications and is the setup most users will be using (e.g. Ubuntu
@@ -103,7 +129,9 @@ static gboolean my_application_local_command_line(GApplication* application,
 static void my_application_startup(GApplication* application) {
   // MyApplication* self = MY_APPLICATION(object);
 
-  // Perform any actions required at application startup.
+  // Register the icon association before the first window is created, so
+  // Wayland compositors can resolve the window icon on the first launch.
+  register_desktop_entry();
 
   G_APPLICATION_CLASS(my_application_parent_class)->startup(application);
 }

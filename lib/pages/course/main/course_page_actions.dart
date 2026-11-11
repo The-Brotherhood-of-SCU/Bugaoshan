@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/models/date_display_format.dart';
 import '../edit/course_edit_page.dart';
 import '../import/import_source_sheet.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
@@ -87,7 +88,8 @@ class CoursePageActions {
     BuildContext context,
     DateTime date,
     SpecialDayInfo info,
+    DateDisplayFormat dateFormat,
   ) {
-    showSpecialDaySheet(context, date, info);
+    showSpecialDaySheet(context, date, info, dateFormat: dateFormat);
   }
 }

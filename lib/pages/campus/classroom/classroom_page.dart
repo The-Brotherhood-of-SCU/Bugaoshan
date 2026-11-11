@@ -13,6 +13,7 @@ import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 enum _ViewMode { campus, building, room }
 
@@ -278,7 +279,10 @@ class _ClassroomPageState extends State<ClassroomPage> {
         ),
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            padding: withSystemBottomInset(
+              context,
+              EdgeInsets.fromLTRB(16, 0, 16, 16),
+            ),
             itemCount: _provider.campuses.length,
             itemBuilder: (context, index) {
               final campus = _provider.campuses[index];
@@ -331,7 +335,10 @@ class _ClassroomPageState extends State<ClassroomPage> {
         ),
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            padding: withSystemBottomInset(
+              context,
+              EdgeInsets.fromLTRB(16, 0, 16, 16),
+            ),
             itemCount: buildings.length,
             itemBuilder: (context, index) {
               final building = buildings[index];
@@ -481,7 +488,10 @@ class _ClassroomPageState extends State<ClassroomPage> {
                   ),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  padding: withSystemBottomInset(
+                    context,
+                    EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  ),
                   itemCount: rooms.length,
                   itemBuilder: (context, index) {
                     final room = rooms[index];

@@ -6,6 +6,7 @@ import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:intl/intl.dart';
 
 import 'package:bugaoshan/models/academic_calendar.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 class InteractiveCalendarView extends StatelessWidget {
   final AcademicCalendarData? data;
@@ -51,7 +52,7 @@ class InteractiveCalendarView extends StatelessWidget {
         _buildInteractiveSelector(l10n),
         if (selectedSemester != null) ...[
           _buildSemesterHeaderCard(context, l10n, selectedSemester!),
-          Expanded(child: _buildTimeline(l10n, selectedSemester!)),
+          Expanded(child: _buildTimeline(context, l10n, selectedSemester!)),
         ],
       ],
     );
@@ -187,6 +188,7 @@ class InteractiveCalendarView extends StatelessWidget {
   }
 
   Widget _buildTimeline(
+    BuildContext context,
     AppLocalizations l10n,
     AcademicCalendarSemester semester,
   ) {
@@ -201,7 +203,10 @@ class InteractiveCalendarView extends StatelessWidget {
       child: ListView.builder(
         // 内容不足一屏时也允许下拉触发刷新
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        padding: withSystemBottomInset(
+          context,
+          EdgeInsets.fromLTRB(16, 8, 16, 32),
+        ),
         itemCount: sortedEvents.length,
         itemBuilder: (context, index) {
           final event = sortedEvents[index];

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/models/passpoint.dart';
@@ -16,6 +17,8 @@ enum PasspointLoadState { idle, loading, loaded, error }
 /// 页面只读取本 Provider 的设备列表、账户信息与操作状态；newservice 会话
 /// 失效后的重建、API 重试和旧异步结果屏蔽均由底层认证/API 层及本类负责。
 class PasspointProvider extends ChangeNotifier {
+  static const String _tag = 'PasspointProvider';
+
   PasspointProvider(this._api, this._auth, this._scuAuth) {
     _lastAuthReady = _auth.isReady;
     _lastScuAuthState = _scuAuth.state;
@@ -126,14 +129,21 @@ class PasspointProvider extends ChangeNotifier {
         // 账户信息查询失败不阻断列表展示（保持与页面"列表 + 用户卡"的容错）
         try {
           userInfo = await _api.fetchUserInfo();
-        } on ScuException {
+        } on ScuException catch (logError, logStackTrace) {
+          AppLog.e(
+            _tag,
+            'execute 失败',
+            error: logError,
+            stackTrace: logStackTrace,
+          );
           userInfo = null;
         }
         if (!_isCurrent(generation)) return;
         _devices = List.unmodifiable(devices);
         _userInfo = userInfo;
         _state = PasspointLoadState.loaded;
-      } catch (error) {
+      } catch (error, logStackTrace) {
+        AppLog.e(_tag, 'execute 失败', error: error, stackTrace: logStackTrace);
         if (!_isCurrent(generation)) return;
         _state = PasspointLoadState.error;
         _error = _mapError(error);
@@ -173,7 +183,8 @@ class PasspointProvider extends ChangeNotifier {
       if (!_isOperationCurrent(generation)) return false;
       await refresh();
       return _isOperationCurrent(generation);
-    } catch (error) {
+    } catch (error, logStackTrace) {
+      AppLog.e(_tag, 'addDevice 失败', error: error, stackTrace: logStackTrace);
       if (_isOperationCurrent(generation)) {
         _addError = _mapError(error);
         _addErrorMessage = _extractMessage(error);
@@ -206,7 +217,13 @@ class PasspointProvider extends ChangeNotifier {
       if (!_isOperationCurrent(generation)) return false;
       await refresh();
       return _isOperationCurrent(generation);
-    } catch (error) {
+    } catch (error, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'cancelDevice 失败',
+        error: error,
+        stackTrace: logStackTrace,
+      );
       if (_isOperationCurrent(generation)) {
         _cancelErrorMessage = _extractMessage(error);
       }

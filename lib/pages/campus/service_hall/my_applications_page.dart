@@ -6,6 +6,7 @@ import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 import 'package:flutter/material.dart';
 
 /// 办事大厅 · 我的申请。
@@ -77,7 +78,7 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
     return RefreshIndicator(
       onRefresh: _provider.refresh,
       child: ListView.separated(
-        padding: const EdgeInsets.all(16),
+        padding: withSystemBottomInset(context, EdgeInsets.all(16)),
         itemCount: _provider.items.length,
         separatorBuilder: (_, _) => const SizedBox(height: 8),
         itemBuilder: (context, i) => _itemCard(_provider.items[i], l10n),

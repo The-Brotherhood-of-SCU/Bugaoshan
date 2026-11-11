@@ -3,6 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/common/student_type_selector.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 /// 学生类型（本科生 / 研究生）切换页。
 ///
@@ -24,7 +25,10 @@ class SetStudentTypePage extends StatelessWidget {
         listenable: appConfig.studentType,
         builder: (context, _) {
           return ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: withSystemBottomInset(
+              context,
+              EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
             children: [
               StudentTypeSelector(
                 value: appConfig.studentType.value,

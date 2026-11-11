@@ -1,9 +1,11 @@
 # ADR-0004：Linux WebView 由分发环境提供 WPE
 
-- 状态：已接受并实施
+- 状态：已取代（由 [ADR-0010](0010-remove-linux-native-webview.md) 替代，保留用于历史追溯）
 - 决策日期：2026-07-29
 - 实施提交：`d5cbabb`
 - 当前实现：[Linux 分发架构](../architecture/linux-distribution.md)
+
+> **已取代（2026-10-18）**：Linux 端不再提供原生 WebView，改用无原生依赖的纯 Dart 占位实现；本文记录的「插件保留、WPE 由分发环境提供」边界已作废。决策与理由见 [ADR-0010：Linux 端不再提供原生 WebView](0010-remove-linux-native-webview.md)。
 
 ## 背景
 

@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 
 /// 可统计 close 次数的假 client，用于验证退役时序。
 class _CountingClient extends http.BaseClient {
@@ -29,7 +29,7 @@ class _CountingClient extends http.BaseClient {
 void main() {
   setUp(() async {
     await getIt.reset();
-    getIt.registerSingleton<AuthLogger>(AuthLogger());
+    getIt.registerSingleton<AppLogger>(AppLogger());
   });
 
   tearDown(() async {

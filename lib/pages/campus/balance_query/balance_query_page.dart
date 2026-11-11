@@ -1,5 +1,6 @@
 import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
@@ -16,6 +17,8 @@ import 'widgets/bind_room_dialog.dart';
 /// 页面只负责渲染认证和 [BalanceQueryProvider] 的当前快照；余额、绑定选项
 /// 的缓存、加载和错误状态均由 Provider 管理。
 class BalanceQueryPage extends StatelessWidget {
+  static const String _tag = 'BalanceQueryPage';
+
   const BalanceQueryPage({super.key});
 
   @override
@@ -140,7 +143,8 @@ class BalanceQueryPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     try {
       await provider.switchBinding(index);
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(_tag, '_switchBinding 失败', error: e, stackTrace: logStackTrace);
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

@@ -41,6 +41,8 @@ Future<void> _persistUserInfoToPreferences(
 /// - 登录成功（ready）→ 自动获取用户信息标签和用户基本信息
 /// - 登出（unknown）→ 自动清空
 class UserInfoProvider extends ChangeNotifier {
+  static const String _tag = 'UserInfoProvider';
+
   final WfwAuth _wfwAuth;
   final WfwApiService _wfwApi;
   final UserInfoPersistence _persistUserInfo;
@@ -143,15 +145,23 @@ class UserInfoProvider extends ChangeNotifier {
   Future<_UserInfoResult?> _doFetch(int generation) async {
     try {
       return await _attemptFetch();
-    } on UnauthenticatedException {
+    } on UnauthenticatedException catch (logError, logStackTrace) {
+      AppLog.e(_tag, '_doFetch 失败', error: logError, stackTrace: logStackTrace);
       return null;
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(_tag, '_doFetch 失败', error: logError, stackTrace: logStackTrace);
       // 非认证错误（如服务端限流、网络瞬断），自动重试一次
       try {
         await Future.delayed(const Duration(seconds: 1));
         if (!_isCurrent(generation)) return null;
         return await _attemptFetch();
-      } catch (_) {
+      } catch (logError, logStackTrace) {
+        AppLog.e(
+          _tag,
+          '_doFetch 失败',
+          error: logError,
+          stackTrace: logStackTrace,
+        );
         return null;
       }
     }
@@ -191,7 +201,7 @@ class UserInfoProvider extends ChangeNotifier {
     _persistenceTail = operation.then<void>(
       (_) {},
       onError: (Object error, StackTrace stackTrace) {
-        AppLog.e('UserInfoProvider', 'Persistence error: $error');
+        AppLog.e(_tag, '用户信息持久化失败', error: error, stackTrace: stackTrace);
       },
     );
     return operation;
@@ -211,10 +221,17 @@ class UserInfoProvider extends ChangeNotifier {
       if (!_isCurrent(generation)) return;
       _labels = labels;
       _error = false;
-    } on UnauthenticatedException {
+    } on UnauthenticatedException catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'fetchLabels 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       if (!_isCurrent(generation)) return;
       _error = true;
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(_tag, 'fetchLabels 失败', error: e, stackTrace: logStackTrace);
       if (!_isCurrent(generation)) return;
       _error = true;
     }
@@ -242,7 +259,14 @@ class UserInfoProvider extends ChangeNotifier {
                 _scheduleFetch(const Duration(milliseconds: 300));
               }
             })
-            .catchError((Object _) {}),
+            .catchError((Object error, StackTrace stackTrace) {
+              AppLog.e(
+                _tag,
+                '后台获取用户信息失败',
+                error: error,
+                stackTrace: stackTrace,
+              );
+            }),
       );
     }
   }

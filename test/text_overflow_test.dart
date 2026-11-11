@@ -1,5 +1,6 @@
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
+import 'package:bugaoshan/models/date_display_format.dart';
 import 'package:bugaoshan/widgets/common/info_row.dart';
 import 'package:bugaoshan/widgets/common/status_chip.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
@@ -85,7 +86,6 @@ void main() {
           SizedBox(
             width: 200,
             child: ButtonWithMaxWidth(
-              label: '一个非常长的按钮文字内容示例',
               onPressed: () {},
               icon: const Icon(Icons.arrow_forward),
               child: const Text('一个非常长的按钮文字内容示例'),
@@ -112,6 +112,7 @@ void main() {
               hasBackground: false,
               showWeekend: true,
               sectionWidth: 24,
+              dateFormat: DateDisplayFormat.monthDayYear,
             ),
           ),
         ),

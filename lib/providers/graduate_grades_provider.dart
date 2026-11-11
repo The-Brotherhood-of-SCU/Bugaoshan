@@ -23,6 +23,8 @@ enum GraduateGradesErrorKind {
 /// 数据链：[GsApiService.fetchGrades]（`_postForm` 自愈链）→
 /// [graduateGradeRowsFromJson] → [graduateGradesStatsFromRows]。
 class GraduateGradesProvider extends ChangeNotifier {
+  static const String _tag = 'GraduateGradesProvider';
+
   GraduateGradesProvider(this._gsApi);
 
   final GsApiService _gsApi;
@@ -59,13 +61,15 @@ class GraduateGradesProvider extends ChangeNotifier {
       _rows = rows;
       _stats = graduateGradesStatsFromRows(rows);
       _state = GraduateGradesLoadState.loaded;
-    } on UnauthenticatedException {
+    } on UnauthenticatedException catch (logError, logStackTrace) {
+      AppLog.e(_tag, 'refresh 失败', error: logError, stackTrace: logStackTrace);
       if (generation != _generation) return;
       _state = GraduateGradesLoadState.error;
       _errorKind = GraduateGradesErrorKind.unauthenticated;
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(_tag, 'refresh 失败', error: e, stackTrace: logStackTrace);
       if (generation != _generation) return;
-      AppLog.e('GraduateGradesProvider', 'Load error: $e');
+
       _state = GraduateGradesLoadState.error;
       _errorKind = GraduateGradesErrorKind.failed;
       _errorMessage = e is ServiceException ? e.message : null;

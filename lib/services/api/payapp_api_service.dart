@@ -16,6 +16,7 @@ class PayAppApiService {
       _auth.getClient,
       fn,
       invalidate: _auth.invalidate,
+      logTag: 'PayappApiService',
     );
   }
 

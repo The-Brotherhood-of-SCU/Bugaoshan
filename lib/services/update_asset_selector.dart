@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 
 enum UpdateAssetPlatform { android, windows, linux }
 
@@ -13,6 +14,8 @@ const _androidArchMap = {
 
 /// Android 架构提供者，负责检测和缓存设备架构
 class AndroidArchProvider {
+  static const String _tag = 'AndroidArchProvider';
+
   static final AndroidArchProvider _instance = AndroidArchProvider._internal();
   factory AndroidArchProvider() => _instance;
   AndroidArchProvider._internal();
@@ -46,7 +49,8 @@ class AndroidArchProvider {
           return _cachedArch;
         }
       }
-    } catch (_) {
+    } catch (error, stackTrace) {
+      AppLog.e(_tag, '检测设备架构失败，使用通用安装包', error: error, stackTrace: stackTrace);
       // 获取失败时返回 null，回退到 universal
     }
     return null;

@@ -6,6 +6,7 @@ import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/open_link.dart';
 import 'package:bugaoshan/widgets/common/info_card.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 class TeamPage extends StatelessWidget {
   const TeamPage({super.key});
@@ -20,7 +21,10 @@ class TeamPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.developmentTeam)),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        padding: withSystemBottomInset(
+          context,
+          EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        ),
         children: [
           _buildHeader(theme, primaryColor),
           const SizedBox(height: 24),

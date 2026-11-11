@@ -127,12 +127,6 @@ abstract class AppLocalizations {
   /// **'Your campus assistant: schedules, grades and campus services in one place'**
   String get wizardWelcomeDesc;
 
-  /// Section title for the onboarding wizard (short). Shown in the Test page and headings.
-  ///
-  /// In en, this message translates to:
-  /// **'Wizard'**
-  String get wizard;
-
   /// Title for the action that resets the onboarding/wizard status so the wizard runs again.
   ///
   /// In en, this message translates to:
@@ -439,12 +433,6 @@ abstract class AppLocalizations {
   /// **'Select Building'**
   String get selectBuilding;
 
-  /// No description provided for @allBuildings.
-  ///
-  /// In en, this message translates to:
-  /// **'All Buildings'**
-  String get allBuildings;
-
   /// No description provided for @seats.
   ///
   /// In en, this message translates to:
@@ -504,12 +492,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Borrowable'**
   String get classroomCanBorrow;
-
-  /// No description provided for @classroomCannotBorrow.
-  ///
-  /// In en, this message translates to:
-  /// **'Not Borrowable'**
-  String get classroomCannotBorrow;
 
   /// No description provided for @classroomRemark.
   ///
@@ -583,12 +565,6 @@ abstract class AppLocalizations {
   /// **'Access is restricted to campus network during 23:00-6:00. Please connect to campus Wi-Fi or use the school VPN.'**
   String get campusNetworkRequiredAtNight;
 
-  /// No description provided for @appOnly.
-  ///
-  /// In en, this message translates to:
-  /// **'Available on App only'**
-  String get appOnly;
-
   /// No description provided for @softwareSetting.
   ///
   /// In en, this message translates to:
@@ -604,7 +580,7 @@ abstract class AppLocalizations {
   /// No description provided for @modifyLanguage.
   ///
   /// In en, this message translates to:
-  /// **'Modify Language'**
+  /// **'Language'**
   String get modifyLanguage;
 
   /// No description provided for @current.
@@ -637,12 +613,6 @@ abstract class AppLocalizations {
   /// **'Current Animation Duration: {value} ms'**
   String currentAnimationDuration(Object value);
 
-  /// No description provided for @animationDurationUpdated.
-  ///
-  /// In en, this message translates to:
-  /// **'Animation Duration updated to {value} ms'**
-  String animationDurationUpdated(Object value);
-
   /// No description provided for @animationDurationHint.
   ///
   /// In en, this message translates to:
@@ -666,12 +636,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Theme Color'**
   String get themeColor;
-
-  /// No description provided for @changeThemeColor.
-  ///
-  /// In en, this message translates to:
-  /// **'Change Theme Color'**
-  String get changeThemeColor;
 
   /// No description provided for @confirmButton.
   ///
@@ -739,24 +703,6 @@ abstract class AppLocalizations {
   /// **'Dark'**
   String get themeModeDark;
 
-  /// No description provided for @blockPicker.
-  ///
-  /// In en, this message translates to:
-  /// **'Block'**
-  String get blockPicker;
-
-  /// No description provided for @materialPicker.
-  ///
-  /// In en, this message translates to:
-  /// **'Material'**
-  String get materialPicker;
-
-  /// No description provided for @advancedPicker.
-  ///
-  /// In en, this message translates to:
-  /// **'Advanced'**
-  String get advancedPicker;
-
   /// No description provided for @about.
   ///
   /// In en, this message translates to:
@@ -768,12 +714,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dev Team'**
   String get developmentTeam;
-
-  /// No description provided for @projectInfo.
-  ///
-  /// In en, this message translates to:
-  /// **'Project Info'**
-  String get projectInfo;
 
   /// No description provided for @appName.
   ///
@@ -799,24 +739,6 @@ abstract class AppLocalizations {
   /// **'Explore everything, all on the Bugaoshan'**
   String get appDescription;
 
-  /// No description provided for @contactUs.
-  ///
-  /// In en, this message translates to:
-  /// **'Contact Us'**
-  String get contactUs;
-
-  /// No description provided for @developedBy.
-  ///
-  /// In en, this message translates to:
-  /// **'Developed by {team}'**
-  String developedBy(Object team);
-
-  /// No description provided for @externalResources.
-  ///
-  /// In en, this message translates to:
-  /// **'External Resources'**
-  String get externalResources;
-
   /// No description provided for @projectRepository.
   ///
   /// In en, this message translates to:
@@ -835,17 +757,29 @@ abstract class AppLocalizations {
   /// **'New Version Available'**
   String get newVersionAvailable;
 
+  /// No description provided for @anotherVersionDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Another version is downloading...'**
+  String get anotherVersionDownloading;
+
+  /// Stable version label.
+  ///
+  /// In en, this message translates to:
+  /// **'Stable: {version}'**
+  String stableVersion(String version);
+
+  /// Preview version label.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview: {version}'**
+  String previewVersion(String version);
+
   /// No description provided for @noUpdateAvailable.
   ///
   /// In en, this message translates to:
   /// **'Already on Latest Version'**
   String get noUpdateAvailable;
-
-  /// No description provided for @goToReleases.
-  ///
-  /// In en, this message translates to:
-  /// **'Go to Releases'**
-  String get goToReleases;
 
   /// No description provided for @startUpdate.
   ///
@@ -877,7 +811,7 @@ abstract class AppLocalizations {
   /// **'Update to Latest (Include Preview)'**
   String get updateToPreview;
 
-  /// Toggle in the test page that makes the home/about update checks target the preview release channel.
+  /// Toggle in the developer page that makes the home/about update checks target the preview release channel.
   ///
   /// In en, this message translates to:
   /// **'Use Preview Release Source'**
@@ -886,8 +820,26 @@ abstract class AppLocalizations {
   /// No description provided for @usePreviewUpdateSourceHint.
   ///
   /// In en, this message translates to:
-  /// **'Affects only the automatic checks on the home and about pages. The test page always checks both channels.'**
+  /// **'Affects only the automatic checks on the home and about pages. The developer page always checks both channels.'**
   String get usePreviewUpdateSourceHint;
+
+  /// Settings entry title for GitHub mirror / proxy configuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Network Acceleration'**
+  String get networkProxy;
+
+  /// Toggle that routes GitHub resource downloads through the gh-proxy mirror.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub Mirror'**
+  String get ghProxyMirror;
+
+  /// No description provided for @ghProxyMirrorHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Download GitHub resources (app updates, academic calendar) via the gh-proxy mirror; falls back to direct connection on failure.'**
+  String get ghProxyMirrorHint;
 
   /// Toggle in the developer page to force the CAPTCHA dialog when downloading attachments, for testing the CAPTCHA flow.
   ///
@@ -930,12 +882,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Downloading... {percent}%'**
   String notificationDownloading(int percent);
-
-  /// No description provided for @notificationInstalling.
-  ///
-  /// In en, this message translates to:
-  /// **'Installing...'**
-  String get notificationInstalling;
 
   /// No description provided for @notificationUpdateFailed.
   ///
@@ -985,35 +931,23 @@ abstract class AppLocalizations {
   /// **'Developer Page'**
   String get devPage;
 
-  /// No description provided for @forceUpdate.
+  /// No description provided for @viewAppLog.
   ///
   /// In en, this message translates to:
-  /// **'Update to Latest (Include Preview)'**
-  String get forceUpdate;
+  /// **'View Runtime Log'**
+  String get viewAppLog;
 
-  /// No description provided for @authLog.
+  /// No description provided for @logEmpty.
   ///
   /// In en, this message translates to:
-  /// **'Auth Log'**
-  String get authLog;
+  /// **'No runtime log yet.'**
+  String get logEmpty;
 
-  /// No description provided for @viewAuthLog.
-  ///
-  /// In en, this message translates to:
-  /// **'View Auth Log'**
-  String get viewAuthLog;
-
-  /// No description provided for @authLogEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No auth log yet.'**
-  String get authLogEmpty;
-
-  /// No description provided for @authLogLastEntry.
+  /// No description provided for @logLastEntry.
   ///
   /// In en, this message translates to:
   /// **'{level} · {tag} · {time}'**
-  String authLogLastEntry(String time, String level, String tag);
+  String logLastEntry(String time, String level, String tag);
 
   /// No description provided for @scheduleSetting.
   ///
@@ -1026,12 +960,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Schedule Management'**
   String get scheduleManagement;
-
-  /// No description provided for @globalSetting.
-  ///
-  /// In en, this message translates to:
-  /// **'Global Setting'**
-  String get globalSetting;
 
   /// No description provided for @noSchedule.
   ///
@@ -1086,6 +1014,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Teacher'**
   String get teacher;
+
+  /// No description provided for @courseTeacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructor: {teacher}'**
+  String courseTeacher(String teacher);
 
   /// No description provided for @location.
   ///
@@ -1333,12 +1267,6 @@ abstract class AppLocalizations {
   /// **'No teaching week is available during vacation. Schedule unchanged.'**
   String get autoFetchCurrentWeekOnVacation;
 
-  /// No description provided for @fetchingCurrentWeek.
-  ///
-  /// In en, this message translates to:
-  /// **'Fetching...'**
-  String get fetchingCurrentWeek;
-
   /// No description provided for @loginRequired.
   ///
   /// In en, this message translates to:
@@ -1465,18 +1393,6 @@ abstract class AppLocalizations {
   /// **'Extract Color from Background'**
   String get extractColorFromBackgroundImage;
 
-  /// No description provided for @themeColorAutoExtractedHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Theme color extracted from background image. Go to Software Setting -> Theme Color to modify.'**
-  String get themeColorAutoExtractedHint;
-
-  /// No description provided for @noBackgroundImageSet.
-  ///
-  /// In en, this message translates to:
-  /// **'Please set a background image first'**
-  String get noBackgroundImageSet;
-
   /// No description provided for @removeBackgroundImage.
   ///
   /// In en, this message translates to:
@@ -1567,12 +1483,6 @@ abstract class AppLocalizations {
   /// **'Custom Color'**
   String get customColor;
 
-  /// No description provided for @noCourseThisWeek.
-  ///
-  /// In en, this message translates to:
-  /// **'No courses this week'**
-  String get noCourseThisWeek;
-
   /// No description provided for @timeConflict.
   ///
   /// In en, this message translates to:
@@ -1590,12 +1500,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This field is required'**
   String get fieldRequired;
-
-  /// No description provided for @invalidWeekRange.
-  ///
-  /// In en, this message translates to:
-  /// **'End week must be greater than or equal to start week'**
-  String get invalidWeekRange;
 
   /// No description provided for @duplicateScheduleName.
   ///
@@ -1680,12 +1584,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Imported Schedule'**
   String get importedScheduleDefaultName;
-
-  /// No description provided for @importNameConflictHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Name \"{name}\" already exists, please rename:'**
-  String importNameConflictHint(Object name);
 
   /// No description provided for @importNameSuffix.
   ///
@@ -1890,12 +1788,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} weeks'**
   String totalWeeksSubtitle(Object count);
-
-  /// No description provided for @invalidSectionRange.
-  ///
-  /// In en, this message translates to:
-  /// **'End section must be greater than start section'**
-  String get invalidSectionRange;
 
   /// No description provided for @crossPeriodError.
   ///
@@ -2131,12 +2023,6 @@ abstract class AppLocalizations {
   /// **'View and analyze your academic performance'**
   String get gradesStatsDesc;
 
-  /// No description provided for @gradesStatsComingSoon.
-  ///
-  /// In en, this message translates to:
-  /// **'Coming soon'**
-  String get gradesStatsComingSoon;
-
   /// No description provided for @schemeScores.
   ///
   /// In en, this message translates to:
@@ -2148,12 +2034,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Passing Scores'**
   String get passingScores;
-
-  /// No description provided for @gradesLoginRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Please complete SCU Unified Identity login in the Profile page first'**
-  String get gradesLoginRequired;
 
   /// No description provided for @gradesNoData.
   ///
@@ -2214,12 +2094,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Fetch Grades'**
   String get gradesGet;
-
-  /// No description provided for @gradesRetry.
-  ///
-  /// In en, this message translates to:
-  /// **'Retry'**
-  String get gradesRetry;
 
   /// No description provided for @gpa.
   ///
@@ -2317,18 +2191,6 @@ abstract class AppLocalizations {
   /// **'{count} courses · {credits} cr.'**
   String termPassedSummary(Object count, Object credits);
 
-  /// No description provided for @sessionExpiredTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Session Expired'**
-  String get sessionExpiredTitle;
-
-  /// No description provided for @sessionExpiredMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Your login session has expired. Please login again to continue using this feature.'**
-  String get sessionExpiredMessage;
-
   /// No description provided for @sessionExpired.
   ///
   /// In en, this message translates to:
@@ -2340,12 +2202,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Undergraduate academic session unavailable. Graduate accounts: use the Graduate section under Campus. Undergraduate accounts: sign in again and retry.'**
   String get undergradDataOnly;
-
-  /// No description provided for @relogin.
-  ///
-  /// In en, this message translates to:
-  /// **'Login Again'**
-  String get relogin;
 
   /// No description provided for @trainProgram.
   ///
@@ -2388,24 +2244,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No training program data'**
   String get trainProgramNoData;
-
-  /// No description provided for @trainProgramLoading.
-  ///
-  /// In en, this message translates to:
-  /// **'Loading...'**
-  String get trainProgramLoading;
-
-  /// No description provided for @trainProgramLoadFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Load failed'**
-  String get trainProgramLoadFailed;
-
-  /// No description provided for @trainProgramName.
-  ///
-  /// In en, this message translates to:
-  /// **'Program Name'**
-  String get trainProgramName;
 
   /// No description provided for @trainProgramMajor.
   ///
@@ -2551,12 +2389,6 @@ abstract class AppLocalizations {
   /// **'Experiment Hours'**
   String get trainProgramExperimentHours;
 
-  /// No description provided for @trainProgramLoginRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Please complete SCU Unified Identity login in the Profile page first'**
-  String get trainProgramLoginRequired;
-
   /// No description provided for @planCompletion.
   ///
   /// In en, this message translates to:
@@ -2683,12 +2515,6 @@ abstract class AppLocalizations {
   /// **'Enter QQ email to receive the report'**
   String get ccylEmailHint;
 
-  /// No description provided for @ccylExportSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Report sent to email'**
-  String get ccylExportSuccess;
-
   /// No description provided for @ccylSearchHint.
   ///
   /// In en, this message translates to:
@@ -2791,12 +2617,6 @@ abstract class AppLocalizations {
   /// **'Current value'**
   String get ccylCurrentValue;
 
-  /// No description provided for @ccylLoginRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Please complete SCU Unified Identity login in the Profile page first'**
-  String get ccylLoginRequired;
-
   /// No description provided for @ccylBindRequired.
   ///
   /// In en, this message translates to:
@@ -2814,12 +2634,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Bind your Second Classroom account to view activities'**
   String get ccylBindDesc;
-
-  /// No description provided for @ccylOpenOAuth.
-  ///
-  /// In en, this message translates to:
-  /// **'Open OAuth Authorization'**
-  String get ccylOpenOAuth;
 
   /// No description provided for @ccylDoBind.
   ///
@@ -3139,18 +2953,6 @@ abstract class AppLocalizations {
   /// **'IP Address'**
   String get networkDeviceIp;
 
-  /// No description provided for @networkDeviceLogout.
-  ///
-  /// In en, this message translates to:
-  /// **'Logout'**
-  String get networkDeviceLogout;
-
-  /// No description provided for @networkDeviceLogoutConfirm.
-  ///
-  /// In en, this message translates to:
-  /// **'Are you sure you want to logout all devices?'**
-  String get networkDeviceLogoutConfirm;
-
   /// No description provided for @networkDeviceForceOffline.
   ///
   /// In en, this message translates to:
@@ -3162,18 +2964,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure you want to offline this device?'**
   String get networkDeviceConfirmOffline;
-
-  /// No description provided for @networkDeviceOfflineSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Operation successful'**
-  String get networkDeviceOfflineSuccess;
-
-  /// No description provided for @networkDeviceAuthFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Authentication failed'**
-  String get networkDeviceAuthFailed;
 
   /// No description provided for @networkDeviceOperationSuccess.
   ///
@@ -3445,12 +3235,6 @@ abstract class AppLocalizations {
   /// **'Select Unit'**
   String get selectUnit;
 
-  /// No description provided for @inputInfo.
-  ///
-  /// In en, this message translates to:
-  /// **'Input Info'**
-  String get inputInfo;
-
   /// No description provided for @stepCampus.
   ///
   /// In en, this message translates to:
@@ -3487,12 +3271,6 @@ abstract class AppLocalizations {
   /// **'Name'**
   String get cusName;
 
-  /// No description provided for @cusNameHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter name'**
-  String get cusNameHint;
-
   /// No description provided for @roomNumber.
   ///
   /// In en, this message translates to:
@@ -3511,12 +3289,6 @@ abstract class AppLocalizations {
   /// **'Price per unit'**
   String get pricePerUnit;
 
-  /// No description provided for @balanceQueryLoginRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Please complete SCU Unified Identity login in the Profile page first'**
-  String get balanceQueryLoginRequired;
-
   /// No description provided for @balanceQueryNoBinding.
   ///
   /// In en, this message translates to:
@@ -3529,29 +3301,11 @@ abstract class AppLocalizations {
   /// **'Usage Trend'**
   String get balanceTrend;
 
-  /// No description provided for @balanceTrendTitleElectric.
-  ///
-  /// In en, this message translates to:
-  /// **'Lighting Electricity Trend'**
-  String get balanceTrendTitleElectric;
-
-  /// No description provided for @balanceTrendTitleAc.
-  ///
-  /// In en, this message translates to:
-  /// **'AC Electricity Trend'**
-  String get balanceTrendTitleAc;
-
   /// No description provided for @balanceTrendDailyAvgCost.
   ///
   /// In en, this message translates to:
   /// **'Daily Avg Cost'**
   String get balanceTrendDailyAvgCost;
-
-  /// No description provided for @balanceTrendDailyAvgKwh.
-  ///
-  /// In en, this message translates to:
-  /// **'Daily Avg Consumption'**
-  String get balanceTrendDailyAvgKwh;
 
   /// No description provided for @balanceTrendTotalCost.
   ///
@@ -3625,12 +3379,6 @@ abstract class AppLocalizations {
   /// **'Custom'**
   String get balanceTrendTimeRangeCustom;
 
-  /// No description provided for @balanceTrendChangeRange.
-  ///
-  /// In en, this message translates to:
-  /// **'Change Range'**
-  String get balanceTrendChangeRange;
-
   /// No description provided for @balanceTrendCustomStart.
   ///
   /// In en, this message translates to:
@@ -3660,12 +3408,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Price'**
   String get balanceTrendTooltipPrice;
-
-  /// No description provided for @balanceTrendUnitPerDay.
-  ///
-  /// In en, this message translates to:
-  /// **'CNY/day'**
-  String get balanceTrendUnitPerDay;
 
   /// No description provided for @balanceTrendUnitYuanPerKwh.
   ///
@@ -3751,36 +3493,6 @@ abstract class AppLocalizations {
   /// **'View SCU Academic Affairs notices'**
   String get campusNoticesDesc;
 
-  /// No description provided for @campusNoticesSearchHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Search notice title'**
-  String get campusNoticesSearchHint;
-
-  /// No description provided for @campusNoticesAllDates.
-  ///
-  /// In en, this message translates to:
-  /// **'All dates'**
-  String get campusNoticesAllDates;
-
-  /// No description provided for @campusNoticesClearDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear filter'**
-  String get campusNoticesClearDate;
-
-  /// No description provided for @campusNoticesLoadFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Load failed, please check network'**
-  String get campusNoticesLoadFailed;
-
-  /// No description provided for @campusNoticesOpenOriginal.
-  ///
-  /// In en, this message translates to:
-  /// **'View in browser'**
-  String get campusNoticesOpenOriginal;
-
   /// No description provided for @campusNoticesExternalLink.
   ///
   /// In en, this message translates to:
@@ -3792,18 +3504,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open in browser'**
   String get campusNoticesOpenInBrowser;
-
-  /// No description provided for @campusNoticesSearch.
-  ///
-  /// In en, this message translates to:
-  /// **'Search'**
-  String get campusNoticesSearch;
-
-  /// No description provided for @campusNoticesSearchResults.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =0{No results} other{{count} results}}'**
-  String campusNoticesSearchResults(int count);
 
   /// No description provided for @campusNoticesConfirmOpenLink.
   ///
@@ -3834,12 +3534,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap to retry'**
   String get userInfoRetry;
-
-  /// No description provided for @loginToViewUserInfo.
-  ///
-  /// In en, this message translates to:
-  /// **'Login to view user info'**
-  String get loginToViewUserInfo;
 
   /// No description provided for @labelBookBorrowCount.
   ///
@@ -3882,12 +3576,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reset dock bar to default configuration?'**
   String get dockResetConfirm;
-
-  /// No description provided for @cannotDeleteProfile.
-  ///
-  /// In en, this message translates to:
-  /// **'Cannot be deleted'**
-  String get cannotDeleteProfile;
 
   /// No description provided for @dockLabelCourse.
   ///
@@ -3943,12 +3631,6 @@ abstract class AppLocalizations {
   /// **'Network'**
   String get dockLabelNetworkDevice;
 
-  /// No description provided for @dockLabelPasspoint.
-  ///
-  /// In en, this message translates to:
-  /// **'Passive'**
-  String get dockLabelPasspoint;
-
   /// No description provided for @dockLabelBalanceQuery.
   ///
   /// In en, this message translates to:
@@ -3996,12 +3678,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Total Score'**
   String get fitnessTestTotalScore;
-
-  /// No description provided for @fitnessTestGrade.
-  ///
-  /// In en, this message translates to:
-  /// **'Grade'**
-  String get fitnessTestGrade;
 
   /// No description provided for @fitnessTestYear.
   ///
@@ -4111,12 +3787,6 @@ abstract class AppLocalizations {
   /// **'Pinned'**
   String get fitnessTestSticky;
 
-  /// No description provided for @fitnessTestNoticeDetail.
-  ///
-  /// In en, this message translates to:
-  /// **'Notice Detail'**
-  String get fitnessTestNoticeDetail;
-
   /// No description provided for @dockLabelFitnessTest.
   ///
   /// In en, this message translates to:
@@ -4129,18 +3799,6 @@ abstract class AppLocalizations {
   /// **'Notice'**
   String get dockLabelNotice;
 
-  /// No description provided for @dockLabelNoticeParty.
-  ///
-  /// In en, this message translates to:
-  /// **'XGB'**
-  String get dockLabelNoticeParty;
-
-  /// No description provided for @dockLabelNoticeTuanwei.
-  ///
-  /// In en, this message translates to:
-  /// **'Youth'**
-  String get dockLabelNoticeTuanwei;
-
   /// No description provided for @dockLabelDownloads.
   ///
   /// In en, this message translates to:
@@ -4152,12 +3810,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'User Agreement'**
   String get eulaTitle;
-
-  /// No description provided for @eulaScrollToBottom.
-  ///
-  /// In en, this message translates to:
-  /// **'Please read the entire agreement first'**
-  String get eulaScrollToBottom;
 
   /// No description provided for @eulaAgreeCheckbox.
   ///
@@ -4189,23 +3841,11 @@ abstract class AppLocalizations {
   /// **'After revoking, you will need to agree to the user agreement again to continue using. Are you sure?'**
   String get revokeEulaConfirm;
 
-  /// No description provided for @revokeEulaSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'User agreement revoked'**
-  String get revokeEulaSuccess;
-
   /// No description provided for @eulaAgreedVersion.
   ///
   /// In en, this message translates to:
   /// **'Agreed version v{version}'**
   String eulaAgreedVersion(String version);
-
-  /// No description provided for @addWidgetSection.
-  ///
-  /// In en, this message translates to:
-  /// **'Desktop Widget'**
-  String get addWidgetSection;
 
   /// No description provided for @addWidgetPageTitle.
   ///
@@ -4333,30 +3973,6 @@ abstract class AppLocalizations {
   /// **'Battery optimization is already disabled'**
   String get batteryOptimizationAlreadyDisabled;
 
-  /// No description provided for @batteryOptimizationSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Battery optimization disabled successfully'**
-  String get batteryOptimizationSuccess;
-
-  /// No description provided for @autoSetCurrentWeekTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Auto-set Current Teaching Week'**
-  String get autoSetCurrentWeekTitle;
-
-  /// No description provided for @autoSetCurrentWeekContent.
-  ///
-  /// In en, this message translates to:
-  /// **'Fetch the current teaching week from the academic system and set it automatically?'**
-  String get autoSetCurrentWeekContent;
-
-  /// No description provided for @autoSetCurrentWeekSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Current teaching week set automatically'**
-  String get autoSetCurrentWeekSuccess;
-
   /// No description provided for @share.
   ///
   /// In en, this message translates to:
@@ -4393,18 +4009,6 @@ abstract class AppLocalizations {
   /// **'Download'**
   String get download;
 
-  /// No description provided for @attachmentSaved.
-  ///
-  /// In en, this message translates to:
-  /// **'Attachment saved to: {path}'**
-  String attachmentSaved(String path);
-
-  /// No description provided for @attachmentDownloadFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to download attachment'**
-  String get attachmentDownloadFailed;
-
   /// No description provided for @downloadedAttachments.
   ///
   /// In en, this message translates to:
@@ -4434,12 +4038,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'File deleted'**
   String get fileDeleted;
-
-  /// No description provided for @attachmentSavedTapToOpen.
-  ///
-  /// In en, this message translates to:
-  /// **'Attachment saved, tap to open'**
-  String get attachmentSavedTapToOpen;
 
   /// No description provided for @confirmDelete.
   ///
@@ -4567,6 +4165,12 @@ abstract class AppLocalizations {
   /// **'{month}/{day}'**
   String dateMonthDay(int month, int day);
 
+  /// Separator choice for course schedule dates
+  ///
+  /// In en, this message translates to:
+  /// **'Date format'**
+  String get dateFormatSetting;
+
   /// Short label for statutory holiday displayed in course grid date header
   ///
   /// In en, this message translates to:
@@ -4626,12 +4230,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No schedule data'**
   String get classScheduleInquiryNoSchedule;
-
-  /// No description provided for @classScheduleInquiryDetail.
-  ///
-  /// In en, this message translates to:
-  /// **'Course Details'**
-  String get classScheduleInquiryDetail;
 
   /// No description provided for @classScheduleInquiryFilter.
   ///
@@ -4795,24 +4393,6 @@ abstract class AppLocalizations {
   /// **'Official Charts'**
   String get originalCalendar;
 
-  /// No description provided for @calendarLoadingData.
-  ///
-  /// In en, this message translates to:
-  /// **'Loading calendar data...'**
-  String get calendarLoadingData;
-
-  /// No description provided for @calendarImportSuccess.
-  ///
-  /// In en, this message translates to:
-  /// **'Successfully imported {count} events to system calendar'**
-  String calendarImportSuccess(int count);
-
-  /// No description provided for @calendarImportFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to import to system calendar'**
-  String get calendarImportFailed;
-
   /// No description provided for @calendarImportCalendarTitle.
   ///
   /// In en, this message translates to:
@@ -4957,18 +4537,6 @@ abstract class AppLocalizations {
   /// **'This feature is not supported on this platform'**
   String get featureNotSupported;
 
-  /// No description provided for @newIconSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Bugaoshan New Icon'**
-  String get newIconSubtitle;
-
-  /// No description provided for @oldIconSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Bugaoshan Classic Icon'**
-  String get oldIconSubtitle;
-
   /// No description provided for @close.
   ///
   /// In en, this message translates to:
@@ -5106,12 +4674,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Applied {campus} time slot preset'**
   String appliedPreset(String campus);
-
-  /// Label for preset time slot configuration
-  ///
-  /// In en, this message translates to:
-  /// **'Preset'**
-  String get presetLabel;
 
   /// Number of classrooms found, e.g. '12 rooms'
   ///
@@ -5299,6 +4861,48 @@ abstract class AppLocalizations {
   /// **'Open in browser'**
   String get openInBrowser;
 
+  /// Heading on the desktop fallback page shown when an in-app web view is unavailable
+  ///
+  /// In en, this message translates to:
+  /// **'Open this page in your browser'**
+  String get webViewFallbackTitle;
+
+  /// Explanation on the desktop fallback page shown when an in-app web view is unavailable
+  ///
+  /// In en, this message translates to:
+  /// **'This platform doesn\'t support an in-app web view. Please continue in your system browser.'**
+  String get webViewFallbackBody;
+
+  /// Primary action on the desktop fallback page
+  ///
+  /// In en, this message translates to:
+  /// **'Open in default browser'**
+  String get webViewFallbackOpen;
+
+  /// Tooltip for copying the target URL on the desktop fallback page
+  ///
+  /// In en, this message translates to:
+  /// **'Copy link'**
+  String get webViewFallbackCopyLink;
+
+  /// SnackBar message after copying the URL on the desktop fallback page
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied'**
+  String get webViewFallbackLinkCopied;
+
+  /// SnackBar message when the external browser cannot be launched
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open a browser. Copy the link and open it manually.'**
+  String get webViewFallbackOpenFailed;
+
+  /// SnackBar message when copying the URL fails
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t copy the link. Please try again.'**
+  String get webViewFallbackCopyFailed;
+
   /// SnackBar message when a file download is complete
   ///
   /// In en, this message translates to:
@@ -5322,6 +4926,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Service Hall'**
   String get dockLabelLeave;
+
+  /// Short dock label for the activity room reservation entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Rooms'**
+  String get dockLabelReservation;
 
   /// Short dock label for the online repair entry.
   ///
@@ -5719,29 +5329,275 @@ abstract class AppLocalizations {
   /// **'Please select'**
   String get serviceFormSelectHint;
 
-  /// Suffix marking optional fields in service-hall forms.
-  ///
-  /// In en, this message translates to:
-  /// **'Optional'**
-  String get serviceFormOptional;
-
-  /// Page title for leave application.
-  ///
-  /// In en, this message translates to:
-  /// **'Leave Application'**
-  String get leaveTitle;
-
   /// Description shown on the campus entry card for the service hall.
   ///
   /// In en, this message translates to:
   /// **'Handle leave requests, check-ins and more in the service hall'**
   String get leaveDesc;
 
-  /// Tab label for the leave application form.
+  /// Title of the Wangjiang activity room reservation page.
   ///
   /// In en, this message translates to:
-  /// **'Apply'**
-  String get leaveApply;
+  /// **'Room Reservation'**
+  String get reservationTitle;
+
+  /// Description shown on the campus entry card for room reservation.
+  ///
+  /// In en, this message translates to:
+  /// **'Check free slots of Wangjiang activity rooms'**
+  String get reservationDesc;
+
+  /// Heading of the room picker section.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a room'**
+  String get reservationChooseRoom;
+
+  /// Heading of the availability table.
+  ///
+  /// In en, this message translates to:
+  /// **'Free slots'**
+  String get reservationAvailability;
+
+  /// First column header of the availability table.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get reservationTimeColumn;
+
+  /// Empty state when the topic has no resources.
+  ///
+  /// In en, this message translates to:
+  /// **'No rooms available'**
+  String get reservationNoResources;
+
+  /// Empty state when the calendar returns no slots.
+  ///
+  /// In en, this message translates to:
+  /// **'No bookable slots in this range'**
+  String get reservationNoSlots;
+
+  /// Shown when the reservation session is invalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The reservation session is missing or expired. Please sign in with the unified identity first.'**
+  String get reservationSessionExpired;
+
+  /// Tooltip of the previous range button.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous 7 days'**
+  String get reservationPreviousWeek;
+
+  /// Resets the availability range back to today.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to today'**
+  String get reservationBackToToday;
+
+  /// Tooltip of the room strip left arrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Scroll left for more rooms'**
+  String get reservationScrollLeft;
+
+  /// Tooltip of the room strip right arrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Scroll right for more rooms'**
+  String get reservationScrollRight;
+
+  /// Tooltip of the next range button.
+  ///
+  /// In en, this message translates to:
+  /// **'Next 7 days'**
+  String get reservationNextWeek;
+
+  /// Remaining capacity shown on a bookable slot.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} left'**
+  String reservationRemaining(int count);
+
+  /// Legend: bookable.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get reservationStatusAvailable;
+
+  /// Legend: fully booked.
+  ///
+  /// In en, this message translates to:
+  /// **'Full'**
+  String get reservationStatusFull;
+
+  /// Legend: not open / expired / disabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get reservationStatusUnavailable;
+
+  /// Chip on the resource info card.
+  ///
+  /// In en, this message translates to:
+  /// **'Approval required'**
+  String get reservationNeedsApproval;
+
+  /// Chip showing the daily slot limit.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {count} slots per day'**
+  String reservationDailyLimit(int count);
+
+  /// Button opening the official reservation page.
+  ///
+  /// In en, this message translates to:
+  /// **'Book on the official page'**
+  String get reservationGoOfficial;
+
+  /// Submit button on the bottom bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Book selected slots'**
+  String get reservationLaunchButton;
+
+  /// Title of the booking confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm booking'**
+  String get reservationLaunchConfirmTitle;
+
+  /// Label of the people-number stepper in the confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'People'**
+  String get reservationPeopleNumber;
+
+  /// Submit button in the confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Book'**
+  String get reservationLaunchSubmit;
+
+  /// Toast shown when the booking is accepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Booked successfully'**
+  String get reservationLaunchSuccess;
+
+  /// Title of the dialog after submitting a booking that needs approval.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking submitted'**
+  String get reservationLaunchProcessTitle;
+
+  /// Body of the dialog after submitting a booking that needs approval.
+  ///
+  /// In en, this message translates to:
+  /// **'The booking has been created. This room requires approval — please continue the application process; the booking takes effect after approval.'**
+  String get reservationLaunchProcessBody;
+
+  /// Button that opens the approval process page.
+  ///
+  /// In en, this message translates to:
+  /// **'Open application'**
+  String get reservationOpenProcess;
+
+  /// Dialog body when the server returns APPLY (a pending booking exists).
+  ///
+  /// In en, this message translates to:
+  /// **'This account already has a pending booking. Please submit or cancel it under \"My reservations\" on the official page before making a new one.'**
+  String get reservationApplyPendingBody;
+
+  /// Toast shown when the per-day selection limit is reached.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {count} slots per day for this room'**
+  String reservationDailyLimitReached(int count);
+
+  /// Tooltip of the clear-selection button.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear selected slots'**
+  String get reservationClearSelection;
+
+  /// Dialog title when the server returns APPLY (a pending booking exists).
+  ///
+  /// In en, this message translates to:
+  /// **'Pending booking exists'**
+  String get reservationApplyPendingTitle;
+
+  /// Fallback message when booking fails without a server reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking failed, please try again later'**
+  String get reservationLaunchFailedGeneric;
+
+  /// AppBar button (and dialog title) opening my reservation list.
+  ///
+  /// In en, this message translates to:
+  /// **'My reservations'**
+  String get reservationMyAppointments;
+
+  /// Empty state of my reservation list.
+  ///
+  /// In en, this message translates to:
+  /// **'No reservations yet'**
+  String get reservationMyAppointmentsEmpty;
+
+  /// Fallback error text when loading my reservations fails without a server reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load reservations, please retry'**
+  String get reservationMyAppointmentsError;
+
+  /// Status label: pending application (status=0).
+  ///
+  /// In en, this message translates to:
+  /// **'Pending application'**
+  String get reservationStatusPendingApply;
+
+  /// Status label: under review (status=1/2).
+  ///
+  /// In en, this message translates to:
+  /// **'Under review'**
+  String get reservationStatusReviewing;
+
+  /// Status label: booked (status=3).
+  ///
+  /// In en, this message translates to:
+  /// **'Booked'**
+  String get reservationStatusBooked;
+
+  /// Status label: awaiting check-in (status=4).
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting check-in'**
+  String get reservationStatusCheckInPending;
+
+  /// Status label: other (finished/cancelled).
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get reservationStatusClosed;
+
+  /// Cancel button on a reservation row.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel reservation'**
+  String get reservationCancel;
+
+  /// Confirmation text before cancelling.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this reservation? The slot is released immediately.'**
+  String get reservationCancelConfirm;
+
+  /// Toast shown after cancelling.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get reservationCancelSuccess;
 
   /// Tab label for viewing my submitted leave requests.
   ///
@@ -5754,12 +5610,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Submit'**
   String get leaveSubmit;
-
-  /// No description provided for @leaveReasonRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter the leave reason'**
-  String get leaveReasonRequired;
 
   /// No description provided for @leaveEndAfterStart.
   ///
@@ -5785,36 +5635,6 @@ abstract class AppLocalizations {
   /// **'Student Info'**
   String get leaveInfo;
 
-  /// No description provided for @leaveTutor.
-  ///
-  /// In en, this message translates to:
-  /// **'Tutor'**
-  String get leaveTutor;
-
-  /// No description provided for @leaveCampusRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Please select the campus you are leaving'**
-  String get leaveCampusRequired;
-
-  /// No description provided for @leaveDetail.
-  ///
-  /// In en, this message translates to:
-  /// **'Other Reason'**
-  String get leaveDetail;
-
-  /// No description provided for @leaveDetailHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Please specify the reason'**
-  String get leaveDetailHint;
-
-  /// No description provided for @leaveAttachment.
-  ///
-  /// In en, this message translates to:
-  /// **'Upload Proof'**
-  String get leaveAttachment;
-
   /// No description provided for @leaveAttachmentHint.
   ///
   /// In en, this message translates to:
@@ -5826,30 +5646,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add Image'**
   String get leaveAttachmentAdd;
-
-  /// No description provided for @leaveDepartReturn.
-  ///
-  /// In en, this message translates to:
-  /// **'Leave & Return'**
-  String get leaveDepartReturn;
-
-  /// No description provided for @leaveDepartTime.
-  ///
-  /// In en, this message translates to:
-  /// **'Depart Time'**
-  String get leaveDepartTime;
-
-  /// No description provided for @leaveReturnTime.
-  ///
-  /// In en, this message translates to:
-  /// **'Return Time'**
-  String get leaveReturnTime;
-
-  /// No description provided for @leaveRegionRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Please select your destination address'**
-  String get leaveRegionRequired;
 
   /// No description provided for @regionProvince.
   ///
@@ -6055,12 +5851,6 @@ abstract class AppLocalizations {
   /// **'Import failed, please try again'**
   String get graduateScheduleImportFailed;
 
-  /// No description provided for @graduateScheduleImportWebUnsupported.
-  ///
-  /// In en, this message translates to:
-  /// **'Recognising the page requires script injection, which browsers block across origins. Please use this feature on Android, iOS or Windows.'**
-  String get graduateScheduleImportWebUnsupported;
-
   /// No description provided for @graduateScheduleImportNoWebView.
   ///
   /// In en, this message translates to:
@@ -6120,258 +5910,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No courses in this module'**
   String get graduateTrainPlanNoCourses;
-
-  /// No description provided for @labAttendance.
-  ///
-  /// In en, this message translates to:
-  /// **'Lab Attendance'**
-  String get labAttendance;
-
-  /// No description provided for @labAttendanceDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Record lab attendance'**
-  String get labAttendanceDesc;
-
-  /// No description provided for @labAttendanceMonthDay.
-  ///
-  /// In en, this message translates to:
-  /// **'Today'**
-  String get labAttendanceMonthDay;
-
-  /// No description provided for @labAttendanceEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No attendance records this month'**
-  String get labAttendanceEmpty;
-
-  /// No description provided for @labAttendanceDays.
-  ///
-  /// In en, this message translates to:
-  /// **'Days'**
-  String get labAttendanceDays;
-
-  /// No description provided for @labAttendanceHours.
-  ///
-  /// In en, this message translates to:
-  /// **'Hours'**
-  String get labAttendanceHours;
-
-  /// No description provided for @labCheckIn.
-  ///
-  /// In en, this message translates to:
-  /// **'Check in'**
-  String get labCheckIn;
-
-  /// No description provided for @labCheckOut.
-  ///
-  /// In en, this message translates to:
-  /// **'Check out'**
-  String get labCheckOut;
-
-  /// No description provided for @thesisProgress.
-  ///
-  /// In en, this message translates to:
-  /// **'Thesis Progress'**
-  String get thesisProgress;
-
-  /// No description provided for @thesisProgressDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Track thesis progress'**
-  String get thesisProgressDesc;
-
-  /// No description provided for @thesisProgressEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No thesis stages'**
-  String get thesisProgressEmpty;
-
-  /// No description provided for @thesisProgressOverview.
-  ///
-  /// In en, this message translates to:
-  /// **'Thesis Overview'**
-  String get thesisProgressOverview;
-
-  /// No description provided for @thesisProgressText.
-  ///
-  /// In en, this message translates to:
-  /// **'{completed} / {total} stages done'**
-  String thesisProgressText(int completed, int total);
-
-  /// No description provided for @thesisStageNotStarted.
-  ///
-  /// In en, this message translates to:
-  /// **'Not started'**
-  String get thesisStageNotStarted;
-
-  /// No description provided for @thesisStageInProgress.
-  ///
-  /// In en, this message translates to:
-  /// **'In progress'**
-  String get thesisStageInProgress;
-
-  /// No description provided for @thesisStageCompleted.
-  ///
-  /// In en, this message translates to:
-  /// **'Done'**
-  String get thesisStageCompleted;
-
-  /// No description provided for @thesisStageName.
-  ///
-  /// In en, this message translates to:
-  /// **'Stage name'**
-  String get thesisStageName;
-
-  /// No description provided for @thesisStageNameHint.
-  ///
-  /// In en, this message translates to:
-  /// **'e.g. Proposal, Mid-term, Defense'**
-  String get thesisStageNameHint;
-
-  /// No description provided for @thesisStageNote.
-  ///
-  /// In en, this message translates to:
-  /// **'Note'**
-  String get thesisStageNote;
-
-  /// No description provided for @thesisStageNoPlanDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Set a plan date'**
-  String get thesisStageNoPlanDate;
-
-  /// No description provided for @thesisStagePlanDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Plan date: {date}'**
-  String thesisStagePlanDate(String date);
-
-  /// No description provided for @thesisStagePlan.
-  ///
-  /// In en, this message translates to:
-  /// **'Plan'**
-  String get thesisStagePlan;
-
-  /// No description provided for @addThesisStage.
-  ///
-  /// In en, this message translates to:
-  /// **'Add Stage'**
-  String get addThesisStage;
-
-  /// No description provided for @editThesisStage.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit Stage'**
-  String get editThesisStage;
-
-  /// No description provided for @mentorTasks.
-  ///
-  /// In en, this message translates to:
-  /// **'Mentor Tasks'**
-  String get mentorTasks;
-
-  /// No description provided for @mentorTasksDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'View tasks from your mentor'**
-  String get mentorTasksDesc;
-
-  /// No description provided for @mentorTasksEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No mentor tasks'**
-  String get mentorTasksEmpty;
-
-  /// No description provided for @mentorTaskPending.
-  ///
-  /// In en, this message translates to:
-  /// **'Pending'**
-  String get mentorTaskPending;
-
-  /// No description provided for @mentorTaskOverdue.
-  ///
-  /// In en, this message translates to:
-  /// **'Overdue'**
-  String get mentorTaskOverdue;
-
-  /// No description provided for @mentorTaskDueSoon.
-  ///
-  /// In en, this message translates to:
-  /// **'Due soon'**
-  String get mentorTaskDueSoon;
-
-  /// No description provided for @mentorTaskPriorityLow.
-  ///
-  /// In en, this message translates to:
-  /// **'Low'**
-  String get mentorTaskPriorityLow;
-
-  /// No description provided for @mentorTaskPriorityMedium.
-  ///
-  /// In en, this message translates to:
-  /// **'Medium'**
-  String get mentorTaskPriorityMedium;
-
-  /// No description provided for @mentorTaskPriorityHigh.
-  ///
-  /// In en, this message translates to:
-  /// **'High'**
-  String get mentorTaskPriorityHigh;
-
-  /// No description provided for @mentorTaskNoDueDate.
-  ///
-  /// In en, this message translates to:
-  /// **'No due date'**
-  String get mentorTaskNoDueDate;
-
-  /// No description provided for @mentorTaskDueDate.
-  ///
-  /// In en, this message translates to:
-  /// **'Due: {date}'**
-  String mentorTaskDueDate(String date);
-
-  /// No description provided for @mentorTaskDaysText.
-  ///
-  /// In en, this message translates to:
-  /// **'{days} day(s) left'**
-  String mentorTaskDaysText(int days);
-
-  /// No description provided for @mentorTaskTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Task title'**
-  String get mentorTaskTitle;
-
-  /// No description provided for @mentorTaskNote.
-  ///
-  /// In en, this message translates to:
-  /// **'Note'**
-  String get mentorTaskNote;
-
-  /// No description provided for @addMentorTask.
-  ///
-  /// In en, this message translates to:
-  /// **'Add Task'**
-  String get addMentorTask;
-
-  /// No description provided for @editMentorTask.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit Task'**
-  String get editMentorTask;
-
-  /// No description provided for @mentorTaskLoginRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Log in to view mentor tasks'**
-  String get mentorTaskLoginRequired;
-
-  /// No description provided for @graduateLoginRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Please log in via the unified identity on the Profile page to use graduate features'**
-  String get graduateLoginRequired;
 
   /// No description provided for @userManual.
   ///
@@ -6673,6 +6211,12 @@ abstract class AppLocalizations {
   /// **'Provisional (quiet delivery)'**
   String get reminderHostProbePermissionProvisional;
 
+  /// No description provided for @reminderHostProbePermissionEphemeral.
+  ///
+  /// In en, this message translates to:
+  /// **'Ephemeral (temporary authorization)'**
+  String get reminderHostProbePermissionEphemeral;
+
   /// No description provided for @reminderHostProbePermissionDeniedLabel.
   ///
   /// In en, this message translates to:
@@ -6684,6 +6228,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not requested yet'**
   String get reminderHostProbePermissionNotDetermined;
+
+  /// No description provided for @reminderHostProbePermissionUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsupported on this platform'**
+  String get reminderHostProbePermissionUnsupported;
 
   /// No description provided for @reminderHostProbeRequestPermission.
   ///
@@ -6726,12 +6276,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'这是一条 15 秒后触发的测试提醒'**
   String get reminderProbeBody;
-
-  /// No description provided for @reminderPlanTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Scheduled reminder plan'**
-  String get reminderPlanTitle;
 
   /// No description provided for @reminderPlanEmpty.
   ///
@@ -6841,12 +6385,6 @@ abstract class AppLocalizations {
   /// **'Quiet hours'**
   String get reminderQuietEnabled;
 
-  /// No description provided for @reminderQuietHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Reminders inside this window are dropped, not delayed'**
-  String get reminderQuietHint;
-
   /// No description provided for @reminderQuietStart.
   ///
   /// In en, this message translates to:
@@ -6901,6 +6439,12 @@ abstract class AppLocalizations {
   /// **'Grant the permission so reminders can reach you.'**
   String get reminderPermissionNotDeterminedHint;
 
+  /// No description provided for @reminderPermissionUnsupportedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This platform does not support local reminders.'**
+  String get reminderPermissionUnsupportedHint;
+
   /// No description provided for @reminderPermissionRequest.
   ///
   /// In en, this message translates to:
@@ -6940,7 +6484,7 @@ abstract class AppLocalizations {
   /// No description provided for @reminderPrivacyHint.
   ///
   /// In en, this message translates to:
-  /// **'Reminders appear on the lock screen, so they follow your privacy switches: if you hide the teacher\'s name, it stays hidden here too.'**
+  /// **'Lock-screen reminders also follow the Show Teacher switch under Course Style: turn it off there and the teacher\'s name won\'t appear in reminders.'**
   String get reminderPrivacyHint;
 
   /// No description provided for @reminderPlanCopy.
@@ -7069,24 +6613,6 @@ abstract class AppLocalizations {
   /// **'Not supported / disabled'**
   String get liveActivityProbeStatusUnsupported;
 
-  /// No description provided for @liveActivityProbeActive.
-  ///
-  /// In en, this message translates to:
-  /// **'A sample session is running'**
-  String get liveActivityProbeActive;
-
-  /// No description provided for @liveActivityProbeSentEnded.
-  ///
-  /// In en, this message translates to:
-  /// **'Session ended'**
-  String get liveActivityProbeSentEnded;
-
-  /// No description provided for @liveActivityProbeNoSession.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not reach the host (no active session).'**
-  String get liveActivityProbeNoSession;
-
   /// No description provided for @privacyPolicy.
   ///
   /// In en, this message translates to:
@@ -7110,6 +6636,690 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to load document'**
   String get docLoadFailed;
+
+  /// No description provided for @logPersistenceSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep diagnostic logs on device'**
+  String get logPersistenceSwitch;
+
+  /// No description provided for @runtimeLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Runtime logs'**
+  String get runtimeLogs;
+
+  /// No description provided for @logCopyAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy all'**
+  String get logCopyAll;
+
+  /// No description provided for @logSaveShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Save and share'**
+  String get logSaveShare;
+
+  /// No description provided for @logCopyFolderPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy log folder path'**
+  String get logCopyFolderPath;
+
+  /// No description provided for @logOpenFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Open log folder'**
+  String get logOpenFolder;
+
+  /// No description provided for @logClearMemory.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear memory logs'**
+  String get logClearMemory;
+
+  /// No description provided for @logAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get logAll;
+
+  /// No description provided for @logAuthentication.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication'**
+  String get logAuthentication;
+
+  /// No description provided for @logBusinessErrors.
+  ///
+  /// In en, this message translates to:
+  /// **'Business errors'**
+  String get logBusinessErrors;
+
+  /// No description provided for @logAllTags.
+  ///
+  /// In en, this message translates to:
+  /// **'All tags'**
+  String get logAllTags;
+
+  /// No description provided for @logNoMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching logs'**
+  String get logNoMatches;
+
+  /// No description provided for @logCategoryAuthentication.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication'**
+  String get logCategoryAuthentication;
+
+  /// No description provided for @logCategoryBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Business'**
+  String get logCategoryBusiness;
+
+  /// No description provided for @logStackTrace.
+  ///
+  /// In en, this message translates to:
+  /// **'Stack trace'**
+  String get logStackTrace;
+
+  /// No description provided for @logCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Logs copied to clipboard'**
+  String get logCopied;
+
+  /// No description provided for @logCopyFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not copy logs'**
+  String get logCopyFailed;
+
+  /// No description provided for @logShared.
+  ///
+  /// In en, this message translates to:
+  /// **'Log snapshot exported'**
+  String get logShared;
+
+  /// No description provided for @logSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save logs'**
+  String get logSaveFailed;
+
+  /// No description provided for @logShareFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not share logs. The saved snapshot is still available.'**
+  String get logShareFailed;
+
+  /// No description provided for @logClearTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear logs in memory?'**
+  String get logClearTitle;
+
+  /// No description provided for @logClearHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only logs from the current process will be cleared. Saved log files are kept.'**
+  String get logClearHint;
+
+  /// No description provided for @logPersistenceOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Logs stay in memory and are lost when the app closes'**
+  String get logPersistenceOff;
+
+  /// No description provided for @logPersistenceActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Warnings and errors are saved (about 6 MB)'**
+  String get logPersistenceActive;
+
+  /// No description provided for @logPersistenceRetryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn this off and on to retry. If it still fails, check available storage.'**
+  String get logPersistenceRetryHint;
+
+  /// No description provided for @logPersistenceUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Log file writing is unavailable{reason}'**
+  String logPersistenceUnavailable(String reason);
+
+  /// No description provided for @logDroppedEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'Queued log entries dropped: {count}'**
+  String logDroppedEntries(int count);
+
+  /// No description provided for @logDirectoryCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder path copied: {path}\nUse Save and share to export logs.'**
+  String logDirectoryCopied(String path);
+
+  /// No description provided for @logSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Log snapshot saved to: {path}'**
+  String logSaved(String path);
+
+  /// No description provided for @logDirectoryOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the log folder'**
+  String get logDirectoryOpenFailed;
+
+  /// No description provided for @logStartupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bugaoshan could not start'**
+  String get logStartupTitle;
+
+  /// No description provided for @logCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy logs'**
+  String get logCopy;
+
+  /// No description provided for @logSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save logs'**
+  String get logSave;
+
+  /// No description provided for @logShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share logs'**
+  String get logShare;
+
+  /// No description provided for @cloudPrintTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Library print & scan'**
+  String get cloudPrintTitle;
+
+  /// No description provided for @cloudPrintDock.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud print'**
+  String get cloudPrintDock;
+
+  /// No description provided for @cloudPrintDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Batch upload documents, manage print jobs and download scans'**
+  String get cloudPrintDesc;
+
+  /// No description provided for @cloudPrintQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload queue'**
+  String get cloudPrintQueue;
+
+  /// No description provided for @cloudPrintJobs.
+  ///
+  /// In en, this message translates to:
+  /// **'Print jobs'**
+  String get cloudPrintJobs;
+
+  /// No description provided for @cloudPrintScans.
+  ///
+  /// In en, this message translates to:
+  /// **'Scans'**
+  String get cloudPrintScans;
+
+  /// No description provided for @cloudPrintChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Add files'**
+  String get cloudPrintChoose;
+
+  /// No description provided for @cloudPrintSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Default print settings'**
+  String get cloudPrintSettings;
+
+  /// No description provided for @cloudPrintSharedSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Default print settings'**
+  String get cloudPrintSharedSettings;
+
+  /// No description provided for @cloudPrintFileSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'File print settings'**
+  String get cloudPrintFileSettings;
+
+  /// No description provided for @cloudPrintEmptyQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose one or more documents to start'**
+  String get cloudPrintEmptyQueue;
+
+  /// No description provided for @cloudPrintHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploads create print jobs. Confirm printing with your campus card at a library terminal.'**
+  String get cloudPrintHint;
+
+  /// No description provided for @cloudPrintScanHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan at a library machine first. Your scanned files will appear here for download and sharing.'**
+  String get cloudPrintScanHint;
+
+  /// No description provided for @cloudPrintScanEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No scanned documents'**
+  String get cloudPrintScanEmpty;
+
+  /// No description provided for @cloudPrintJobsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No print jobs'**
+  String get cloudPrintJobsEmpty;
+
+  /// No description provided for @cloudPrintLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the list. Refresh to try again.'**
+  String get cloudPrintLoadFailed;
+
+  /// No description provided for @cloudPrintSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Added {added}; duplicates skipped: {duplicates}; unreadable or unsupported: {invalid}'**
+  String cloudPrintSelection(int added, int duplicates, int invalid);
+
+  /// No description provided for @cloudPrintStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload pending ({count})'**
+  String cloudPrintStart(int count);
+
+  /// No description provided for @cloudPrintStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop uploading'**
+  String get cloudPrintStop;
+
+  /// No description provided for @cloudPrintStopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopping after this file'**
+  String get cloudPrintStopping;
+
+  /// No description provided for @cloudPrintRetryFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Requeue failed files'**
+  String get cloudPrintRetryFailed;
+
+  /// No description provided for @cloudPrintClearFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear list'**
+  String get cloudPrintClearFinished;
+
+  /// No description provided for @cloudPrintPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to upload'**
+  String get cloudPrintPending;
+
+  /// No description provided for @cloudPrintUploading.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading {percent}%'**
+  String cloudPrintUploading(int percent);
+
+  /// No description provided for @cloudPrintProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing document…'**
+  String get cloudPrintProcessing;
+
+  /// No description provided for @cloudPrintUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded'**
+  String get cloudPrintUploaded;
+
+  /// No description provided for @cloudPrintFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload failed'**
+  String get cloudPrintFailed;
+
+  /// No description provided for @cloudPrintUncertain.
+  ///
+  /// In en, this message translates to:
+  /// **'Check whether a job was created'**
+  String get cloudPrintUncertain;
+
+  /// No description provided for @cloudPrintVerify.
+  ///
+  /// In en, this message translates to:
+  /// **'Check print jobs'**
+  String get cloudPrintVerify;
+
+  /// No description provided for @cloudPrintVerificationPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload accepted; verify the job in Print jobs before uploading again.'**
+  String get cloudPrintVerificationPending;
+
+  /// No description provided for @cloudPrintDuplicatePending.
+  ///
+  /// In en, this message translates to:
+  /// **'A duplicate file was detected. Check it in Print jobs.'**
+  String get cloudPrintDuplicatePending;
+
+  /// No description provided for @cloudPrintRequeue.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload again'**
+  String get cloudPrintRequeue;
+
+  /// No description provided for @cloudPrintMissingConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'I checked: no job was created'**
+  String get cloudPrintMissingConfirm;
+
+  /// No description provided for @cloudPrintMissingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only requeue after checking Print jobs and confirming this document is missing. Uploading again may create a duplicate job.'**
+  String get cloudPrintMissingHint;
+
+  /// No description provided for @cloudPrintFailureAuth.
+  ///
+  /// In en, this message translates to:
+  /// **'The session expired before submission. Sign in again before retrying.'**
+  String get cloudPrintFailureAuth;
+
+  /// No description provided for @cloudPrintFailureSize.
+  ///
+  /// In en, this message translates to:
+  /// **'The server rejected this file because it is too large.'**
+  String get cloudPrintFailureSize;
+
+  /// No description provided for @cloudPrintFailureRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the file and network, then upload it again.'**
+  String get cloudPrintFailureRequest;
+
+  /// No description provided for @cloudPrintRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from upload queue'**
+  String get cloudPrintRemove;
+
+  /// No description provided for @cloudPrintColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get cloudPrintColor;
+
+  /// No description provided for @cloudPrintMono.
+  ///
+  /// In en, this message translates to:
+  /// **'Black & white'**
+  String get cloudPrintMono;
+
+  /// No description provided for @cloudPrintFullColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get cloudPrintFullColor;
+
+  /// No description provided for @cloudPrintPaper.
+  ///
+  /// In en, this message translates to:
+  /// **'Paper'**
+  String get cloudPrintPaper;
+
+  /// No description provided for @cloudPrintOriginal.
+  ///
+  /// In en, this message translates to:
+  /// **'Original size'**
+  String get cloudPrintOriginal;
+
+  /// No description provided for @cloudPrintDuplex.
+  ///
+  /// In en, this message translates to:
+  /// **'Sides'**
+  String get cloudPrintDuplex;
+
+  /// No description provided for @cloudPrintLongEdge.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplex, long edge'**
+  String get cloudPrintLongEdge;
+
+  /// No description provided for @cloudPrintShortEdge.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplex, short edge'**
+  String get cloudPrintShortEdge;
+
+  /// No description provided for @cloudPrintSimplex.
+  ///
+  /// In en, this message translates to:
+  /// **'Single-sided'**
+  String get cloudPrintSimplex;
+
+  /// No description provided for @cloudPrintCopies.
+  ///
+  /// In en, this message translates to:
+  /// **'Copies'**
+  String get cloudPrintCopies;
+
+  /// No description provided for @cloudPrintPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages'**
+  String get cloudPrintPages;
+
+  /// No description provided for @cloudPrintPagesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Blank: all pages; or 2, 2-5'**
+  String get cloudPrintPagesHint;
+
+  /// No description provided for @cloudPrintAllPages.
+  ///
+  /// In en, this message translates to:
+  /// **'All pages'**
+  String get cloudPrintAllPages;
+
+  /// No description provided for @cloudPrintInvalidCopies.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a positive number of copies'**
+  String get cloudPrintInvalidCopies;
+
+  /// No description provided for @cloudPrintInvalidPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter one page or a continuous range such as 2-5'**
+  String get cloudPrintInvalidPages;
+
+  /// No description provided for @cloudPrintSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{copies} copies · {pages}'**
+  String cloudPrintSummary(int copies, String pages);
+
+  /// No description provided for @cloudPrintJobInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'{pages} pages · {copies} copies'**
+  String cloudPrintJobInfo(int pages, int copies);
+
+  /// No description provided for @cloudPrintJobCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'{date} {time}'**
+  String cloudPrintJobCreated(String date, String time);
+
+  /// No description provided for @cloudPrintPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get cloudPrintPreview;
+
+  /// No description provided for @cloudPrintPreviewPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page} of {total}'**
+  String cloudPrintPreviewPage(int page, int total);
+
+  /// No description provided for @cloudPrintPreviewFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview failed. Please try again.'**
+  String get cloudPrintPreviewFailed;
+
+  /// No description provided for @cloudPrintDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete job'**
+  String get cloudPrintDelete;
+
+  /// No description provided for @cloudPrintDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\"? You will need to upload it again to print.'**
+  String cloudPrintDeleteConfirm(String name);
+
+  /// No description provided for @cloudPrintSelectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get cloudPrintSelectAll;
+
+  /// No description provided for @cloudPrintDeleteSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete selected ({count})'**
+  String cloudPrintDeleteSelected(int count);
+
+  /// No description provided for @cloudPrintDeleteSelectedConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {count} selected item(s)? You will need to upload them again to print.'**
+  String cloudPrintDeleteSelectedConfirm(int count);
+
+  /// No description provided for @cloudPrintScanDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete the scan record for “{name}”? Files already downloaded are not affected.'**
+  String cloudPrintScanDeleteConfirm(String name);
+
+  /// No description provided for @cloudPrintScanDeleteSelectedConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {count} selected scan record(s)? Files already downloaded are not affected.'**
+  String cloudPrintScanDeleteSelectedConfirm(int count);
+
+  /// No description provided for @cloudPrintDeletedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted {count} item(s)'**
+  String cloudPrintDeletedCount(int count);
+
+  /// No description provided for @cloudPrintDeletePartial.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted {deleted}, {failed} failed. Please retry.'**
+  String cloudPrintDeletePartial(int deleted, int failed);
+
+  /// No description provided for @cloudPrintCleanExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Clean up expired'**
+  String get cloudPrintCleanExpired;
+
+  /// No description provided for @cloudPrintCleanExpiredConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {count} expired scan record(s)?'**
+  String cloudPrintCleanExpiredConfirm(int count);
+
+  /// No description provided for @cloudPrintDownloadSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Download selected'**
+  String get cloudPrintDownloadSelected;
+
+  /// No description provided for @cloudPrintShareSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Share selected'**
+  String get cloudPrintShareSelected;
+
+  /// No description provided for @cloudPrintDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get cloudPrintDownload;
+
+  /// No description provided for @cloudPrintShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get cloudPrintShare;
+
+  /// No description provided for @cloudPrintScanExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get cloudPrintScanExpired;
+
+  /// No description provided for @cloudPrintDownloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed. You can retry the failed files.'**
+  String get cloudPrintDownloadFailed;
+
+  /// No description provided for @cloudPrintDownloadDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Download finished. Completed files can be opened or shared.'**
+  String get cloudPrintDownloadDone;
+
+  /// No description provided for @cloudPrintOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the file. Try sharing it to another app.'**
+  String get cloudPrintOpenFailed;
+
+  /// No description provided for @cloudPrintShareFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not share the files. Downloaded copies are kept.'**
+  String get cloudPrintShareFailed;
+
+  /// No description provided for @cloudPrintPickFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not select files. Please try again.'**
+  String get cloudPrintPickFailed;
 }
 
 class _AppLocalizationsDelegate

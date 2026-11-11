@@ -4,7 +4,7 @@ import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/subsystem_auth.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
 /// 教务系统认证（第2层）
@@ -16,13 +16,13 @@ class ZhjwAuth extends ChangeNotifier implements SubsystemAuth {
   static const String _tag = 'ZhjwAuth';
 
   final ScuAuth _scuAuth;
-  final AuthLogger _log;
+  final AppLogger _log;
   CookieClient? _cachedClient;
   CookieClient? _lastScuClient;
   Future<CookieClient>? _loginFuture;
 
-  ZhjwAuth(this._scuAuth, {AuthLogger? logger})
-    : _log = logger ?? getIt<AuthLogger>() {
+  ZhjwAuth(this._scuAuth, {AppLogger? logger})
+    : _log = logger ?? getIt<AppLogger>() {
     _scuAuth.addListener(notifyListeners);
   }
 
@@ -61,7 +61,7 @@ class ZhjwAuth extends ChangeNotifier implements SubsystemAuth {
     }
 
     _log.i(_tag, 'getClient: starting SSO login');
-    _loginFuture = _login(scuClient);
+    _loginFuture = _log.guard(_tag, '教务 SSO 登录', () => _login(scuClient));
     try {
       return await _loginFuture!;
     } finally {

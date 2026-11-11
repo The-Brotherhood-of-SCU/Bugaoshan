@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:bugaoshan/models/graduate_train_plan.dart';
 import 'package:bugaoshan/services/api/gs_api_service.dart';
@@ -30,6 +31,8 @@ enum GraduateTrainPlanErrorKind {
 /// 前三个为 GET 无参零信封（success/reListData/reMapData），走
 /// _getZeroJson 自愈链；成绩走信封分页链。
 class GraduateTrainPlanProvider extends ChangeNotifier {
+  static const String _tag = 'GraduateTrainPlanProvider';
+
   GraduateTrainPlanProvider(this._gsApi);
 
   final GsApiService _gsApi;
@@ -87,11 +90,13 @@ class GraduateTrainPlanProvider extends ChangeNotifier {
       _state = GraduateTrainPlanLoadState.loaded;
       _errorKind = null;
       _errorMessage = null;
-    } on UnauthenticatedException {
+    } on UnauthenticatedException catch (logError, logStackTrace) {
+      AppLog.e(_tag, 'refresh 失败', error: logError, stackTrace: logStackTrace);
       if (generation != _generation) return;
       _state = GraduateTrainPlanLoadState.error;
       _errorKind = GraduateTrainPlanErrorKind.unauthenticated;
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(_tag, 'refresh 失败', error: e, stackTrace: logStackTrace);
       if (generation != _generation) return;
       _state = GraduateTrainPlanLoadState.error;
       _errorKind = GraduateTrainPlanErrorKind.failed;

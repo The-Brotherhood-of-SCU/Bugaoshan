@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 class SetFontPage extends StatelessWidget {
   const SetFontPage({super.key});
@@ -19,7 +20,10 @@ class SetFontPage extends StatelessWidget {
       body: ListenableBuilder(
         listenable: appConfig.useGoogleFonts,
         builder: (context, _) => ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: withSystemBottomInset(
+            context,
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          ),
           children: [
             AdaptiveGlassSwitchListTile(
               title: Text(localizations.useGoogleFonts),

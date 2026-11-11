@@ -4,7 +4,7 @@
 
 ## 联系我们
 
-- **支持、隐私与安全邮箱：wjl@wjlo.cc**
+- **支持、隐私与安全邮箱：[wjl@wjlo.cc](mailto:wjl@wjlo.cc)**
 - [提交功能建议或不含个人信息的问题](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/issues)
 - [源代码与项目说明](https://github.com/The-Brotherhood-of-SCU/Bugaoshan)
 - [用户手册](https://bugaoshan-docs.scubro.dev/manual/)
@@ -34,4 +34,4 @@ iOS 版会在系统浏览器打开志愿四川网站。注册、登录、报名�
 
 ### 安全或隐私问题
 
-请直接联系 **wjl@wjlo.cc**。不要在公开评论、截图或 Issue 中提供校园账号密码、验证码和认证凭证。涉及学校后台的个人资料更正或删除时，请同时使用学校的正式服务渠道。
+请直接联系 **[wjl@wjlo.cc](mailto:wjl@wjlo.cc)**。不要在公开评论、截图或 Issue 中提供校园账号密码、验证码和认证凭证。涉及学校后台的个人资料更正或删除时，请同时使用学校的正式服务渠道。

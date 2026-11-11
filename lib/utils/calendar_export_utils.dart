@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -36,6 +37,8 @@ class ExportSheetItem<T> {
 }
 
 class CalendarExportUtils {
+  static const String _tag = 'CalendarExportUtils';
+
   const CalendarExportUtils._();
 
   /// 通用导出动作弹层：外观与 [showActionSheet] 保持一致
@@ -167,10 +170,20 @@ class CalendarExportUtils {
       await Clipboard.setData(ClipboardData(text: json.encode(data)));
       debugPrint("[$logTag] clipboard written success");
       return true;
-    } on PlatformException catch (e) {
-      debugPrint("[$logTag] platform related exception: $e");
-    } catch (e) {
-      debugPrint("[$logTag] other exception: $e");
+    } on PlatformException catch (e, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'copyJsonToClipboard 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'copyJsonToClipboard 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
     }
     return false;
   }
@@ -268,15 +281,17 @@ class CalendarExportUtils {
         fileName: fileName,
         bytes: bytes,
       );
-    } on PlatformException catch (e) {
-      debugPrint("[$logTag] failed to save ICS file: $e");
+    } on PlatformException catch (e, logStackTrace) {
+      AppLog.e(_tag, 'saveIcsBytes 失败', error: e, stackTrace: logStackTrace);
+
       if (!context.mounted) return;
       scaffoldMessenger.showSnackBar(
         SnackBar(content: Text(l10n.exportScheduleAsIcsFailed)),
       );
       return;
-    } catch (e) {
-      debugPrint("[$logTag] failed to export ICS file: $e");
+    } catch (e, logStackTrace) {
+      AppLog.e(_tag, 'saveIcsBytes 失败', error: e, stackTrace: logStackTrace);
+
       if (!context.mounted) return;
       scaffoldMessenger.showSnackBar(
         SnackBar(content: Text(l10n.exportScheduleAsIcsFailed)),
@@ -305,6 +320,7 @@ class CalendarExportUtils {
   }) async {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     if (events.isEmpty) {
+      AppLog.e(logTag, '导入系统日历失败：没有可导出的事件');
       scaffoldMessenger.showSnackBar(
         SnackBar(content: Text(l10n.exportScheduleAddToCalendarFailed)),
       );
@@ -348,8 +364,14 @@ class CalendarExportUtils {
         );
       }
       // If result == 'picker', the system picker is already shown.
-    } catch (e) {
-      debugPrint("[$logTag] failed to import calendar: $e");
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'importToCalendar 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       if (!context.mounted) return;
       scaffoldMessenger.showSnackBar(
         SnackBar(content: Text(l10n.exportScheduleAddToCalendarFailed)),

@@ -6,18 +6,23 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/models/date_display_format.dart';
 import 'package:bugaoshan/pages/course/main/course_page.dart';
 import 'package:bugaoshan/pages/settings/background_crop_editor_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/widgets/common/styled_widget.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/providers/set_theme_color_provider.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:system_theme/system_theme.dart';
 
 class SetCourseStylePage extends StatelessWidget {
   const SetCourseStylePage({super.key});
+
+  /// 日期格式下拉框的示例日期（月≠日），保证四种格式的显示文本互不相同。
+  static final DateTime dateFormatSample = DateTime(2026, 10, 26);
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +43,7 @@ class SetCourseStylePage extends StatelessWidget {
         appConfig.showCourseWeeks,
         appConfig.showWeekend,
         appConfig.showNonCurrentWeekCourses,
+        appConfig.dateDisplayFormat,
       ]),
       builder: (context, _) {
         return Scaffold(
@@ -69,9 +75,9 @@ class SetCourseStylePage extends StatelessWidget {
                   // Settings section
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
+                      padding: withSystemBottomInset(
+                        context,
+                        EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       ),
                       child: Column(
                         spacing: 16,
@@ -120,7 +126,8 @@ class SetCourseStylePage extends StatelessWidget {
               Text('${(appConfig.colorOpacity.value * 100).round()}%'),
             ],
           ),
-          Slider(
+          AdaptiveGlassSlider(
+            semanticLabel: localizations.colorOpacity,
             value: appConfig.colorOpacity.value,
             min: 0.3,
             max: 1.0,
@@ -139,7 +146,8 @@ class SetCourseStylePage extends StatelessWidget {
               Text('${appConfig.courseCardFontSize.value.round()}'),
             ],
           ),
-          Slider(
+          AdaptiveGlassSlider(
+            semanticLabel: localizations.fontSize,
             value: appConfig.courseCardFontSize.value,
             min: 8,
             max: 20,
@@ -176,7 +184,8 @@ class SetCourseStylePage extends StatelessWidget {
               Text('${appConfig.courseRowHeight.value.round()}'),
             ],
           ),
-          Slider(
+          AdaptiveGlassSlider(
+            semanticLabel: localizations.courseRowHeight,
             value: appConfig.courseRowHeight.value,
             min: 48,
             max: 120,
@@ -226,6 +235,29 @@ class SetCourseStylePage extends StatelessWidget {
         onChanged: (v) => appConfig.showNonCurrentWeekCourses.value = v,
         contentPadding: EdgeInsets.zero,
       ),
+      // 日期格式：顶栏完整日期，表头只取月与日。未设置时跟随系统语言。
+      DropdownButtonFormField<DateDisplayFormat>(
+        initialValue: DateDisplayFormat.resolve(
+          context,
+          appConfig.dateDisplayFormat.value,
+        ),
+        isExpanded: true,
+        decoration: InputDecoration(
+          labelText: localizations.dateFormatSetting,
+          border: const OutlineInputBorder(),
+        ),
+        // 用固定日期做示例（月≠日），避免月==日当天多个格式显示相同文本。
+        items: [
+          for (final format in DateDisplayFormat.values)
+            DropdownMenuItem(
+              value: format,
+              child: Text(format.formatFull(dateFormatSample)),
+            ),
+        ],
+        onChanged: (value) {
+          if (value != null) appConfig.dateDisplayFormat.value = value;
+        },
+      ),
       const Divider(),
       // Background image settings
       Align(
@@ -244,8 +276,6 @@ class SetCourseStylePage extends StatelessWidget {
           ButtonWithMaxWidth(
             onPressed: () => _pickBackgroundImage(context, appConfig),
             icon: const Icon(Icons.wallpaper),
-            label: localizations.setBackgroundImage,
-            symbol: 'photo',
             child: Text(localizations.setBackgroundImage),
           ),
           if (appConfig.backgroundImagePath.value != null) ...[
@@ -253,16 +283,12 @@ class SetCourseStylePage extends StatelessWidget {
             ButtonWithMaxWidth(
               onPressed: () => _editBackgroundCrop(context, appConfig),
               icon: const Icon(Icons.crop_free),
-              label: localizations.editBackgroundArea,
-              symbol: 'crop',
               child: Text(localizations.editBackgroundArea),
             ),
             const SizedBox(height: 8),
             ButtonWithMaxWidth(
               onPressed: () => _removeBackgroundImage(appConfig),
               icon: const Icon(Icons.delete_outline),
-              label: localizations.removeBackgroundImage,
-              symbol: 'trash',
               child: Text(localizations.removeBackgroundImage),
             ),
             const SizedBox(height: 8),
@@ -277,7 +303,8 @@ class SetCourseStylePage extends StatelessWidget {
                     ),
                   ],
                 ),
-                Slider(
+                AdaptiveGlassSlider(
+                  semanticLabel: localizations.backgroundImageOpacity,
                   value: appConfig.backgroundImageOpacity.value,
                   min: 0.05,
                   max: 0.8,

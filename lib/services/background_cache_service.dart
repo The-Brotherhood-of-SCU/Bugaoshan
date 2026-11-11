@@ -5,6 +5,8 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 
 class BackgroundCacheService {
+  static const String _tag = 'BackgroundCacheService';
+
   final AppConfigProvider _appConfig;
 
   ImageStream? _bgImageStream;
@@ -23,10 +25,14 @@ class BackgroundCacheService {
       _bgImageStream = provider.resolve(ImageConfiguration.empty);
       _bgImageListener = ImageStreamListener(
         (_, _) => _cleanup(),
-        onError: (_, _) => _cleanup(),
+        onError: (error, stackTrace) {
+          AppLog.e(_tag, '背景图片预加载失败', error: error, stackTrace: stackTrace);
+          _cleanup();
+        },
       );
       _bgImageStream?.addListener(_bgImageListener!);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(_tag, 'precache 失败', error: logError, stackTrace: logStackTrace);
       // ignore precache/resolve errors
     }
   }
@@ -34,8 +40,8 @@ class BackgroundCacheService {
   void _cleanup() {
     try {
       _bgImageStream?.removeListener(_bgImageListener!);
-    } catch (e) {
-      AppLog.w('BackgroundCacheService', 'Cleanup error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(_tag, '_cleanup 失败', error: e, stackTrace: logStackTrace);
     }
     _bgImageStream = null;
     _bgImageListener = null;

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -7,6 +8,8 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/update_provider.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:bugaoshan/theme_shape.dart';
+
+const String _tag = 'DownloadProgressDialog';
 
 /// 下载进度状态
 class UpdateProgressState extends ChangeNotifier {
@@ -45,8 +48,6 @@ String _formatBytes(int bytes) {
   if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
   return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
 }
-
-String proxyDownloadUrl(String url) => 'https://gh-proxy.org/$url';
 
 /// 纯 UI 视图,只渲染下载进度;便于在 widget test 中独立挂载验证。
 ///
@@ -208,7 +209,6 @@ Future<bool> showDownloadProgressDialog({
   required UpdateProvider updateProvider,
 }) async {
   final l10n = AppLocalizations.of(context)!;
-  downloadUrl = proxyDownloadUrl(downloadUrl);
 
   // Android:仅执行下载,通知栏负责所有 UI 反馈
   if (kIsWeb || Platform.isAndroid) {
@@ -222,7 +222,13 @@ Future<bool> showDownloadProgressDialog({
       return true;
     } on UpdateCancelledException {
       return false;
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'showDownloadProgressDialog 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
@@ -266,7 +272,13 @@ Future<bool> showDownloadProgressDialog({
     );
   } on UpdateCancelledException {
     return false;
-  } catch (e) {
+  } catch (e, logStackTrace) {
+    AppLog.e(
+      _tag,
+      'showDownloadProgressDialog 失败',
+      error: e,
+      stackTrace: logStackTrace,
+    );
     if (context.mounted && visible) {
       unawaited(Navigator.of(context, rootNavigator: true).maybePop());
       ScaffoldMessenger.of(

@@ -1,7 +1,10 @@
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/utils/app_log.dart';
+import 'package:bugaoshan/widgets/common/image_error_log.dart';
 import 'package:bugaoshan/services/dynamic_icon_service.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 import 'package:flutter/material.dart';
 
 class SetAppIconPage extends StatefulWidget {
@@ -12,6 +15,8 @@ class SetAppIconPage extends StatefulWidget {
 }
 
 class _SetAppIconPageState extends State<SetAppIconPage> {
+  static const String _tag = 'SetAppIconPageState';
+
   List<String> _availableIcons = [];
   String? _currentIcon;
   bool _isLoading = true;
@@ -34,7 +39,13 @@ class _SetAppIconPageState extends State<SetAppIconPage> {
         _currentIcon = current;
         _isLoading = false;
       });
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_loadData 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       if (!mounted) return;
       setState(() => _isLoading = false);
     }
@@ -77,7 +88,13 @@ class _SetAppIconPageState extends State<SetAppIconPage> {
           ),
         );
       }
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_confirmAndSwitch 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (mounted) {
         final l = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -99,12 +116,14 @@ class _SetAppIconPageState extends State<SetAppIconPage> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              padding: withSystemBottomInset(
+                context,
+                EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              ),
               children: [
                 _IconOption(
                   iconAsset: 'assets/icon.png',
                   label: l.defaultIcon,
-                  subtitle: l.newIconSubtitle,
                   isSelected: _currentIcon == null,
                   onTap: _currentIcon == null
                       ? null
@@ -116,7 +135,6 @@ class _SetAppIconPageState extends State<SetAppIconPage> {
                   _IconOption(
                     iconAsset: 'assets/icon_old.png',
                     label: l.oldIcon,
-                    subtitle: l.oldIconSubtitle,
                     isSelected: _currentIcon == 'old',
                     onTap: _currentIcon == 'old'
                         ? null
@@ -142,9 +160,10 @@ class _SetAppIconPageState extends State<SetAppIconPage> {
 }
 
 class _IconOption extends StatelessWidget {
+  static const String _tag = 'IconOption';
+
   final String iconAsset;
   final String label;
-  final String subtitle;
   final bool isSelected;
   final VoidCallback? onTap;
   final bool isLoading;
@@ -152,7 +171,6 @@ class _IconOption extends StatelessWidget {
   const _IconOption({
     required this.iconAsset,
     required this.label,
-    required this.subtitle,
     required this.isSelected,
     this.onTap,
     required this.isLoading,
@@ -164,22 +182,30 @@ class _IconOption extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppShapes.large),
-      child: Image.asset(
-        iconAsset,
-        width: size,
-        height: size,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => Container(
+      child: ImageErrorLog(
+        source: iconAsset,
+        tag: _tag,
+        message: '图标图片加载失败',
+        builder: (report) => Image.asset(
+          iconAsset,
           width: size,
           height: size,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(AppShapes.large),
-          ),
-          child: Icon(
-            Icons.broken_image,
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            report(error, stackTrace);
+            return Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(AppShapes.large),
+              ),
+              child: Icon(
+                Icons.broken_image,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            );
+          },
         ),
       ),
     );
@@ -203,23 +229,11 @@ class _IconOption extends StatelessWidget {
               const SizedBox(width: 16),
               // 文字说明
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  label,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               // 选中标记

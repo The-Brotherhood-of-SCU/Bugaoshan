@@ -35,6 +35,11 @@ linter:
     - unawaited_futures
     # always_declare_return_types：缺省返回类型的函数/闭包（补齐类型信息）。
     - always_declare_return_types
+    # empty_catches：空 catch 块会静默吞掉错误，使故障无从排查。
+    # #367 实测全仓 Dart 代码中仅 0 处违规（唯一形似的在
+    # graduate_schedule_capture.dart 的 JS 注入字符串内，不受本规则约束）。
+    # 有意忽略的异常请显式写注释说明理由，而不是留空。
+    - empty_catches
     # avoid_redundant_argument_values：实测 138 命中（UI 刻意显式传参为主），
     # 噪音过高不启用，仅留档备查。
     # - avoid_redundant_argument_values

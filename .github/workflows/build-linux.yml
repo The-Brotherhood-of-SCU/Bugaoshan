@@ -1,0 +1,84 @@
+name: Build Linux
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "tag name"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build-linux:
+    name: Linux
+    runs-on: ubuntu-latest
+    container:
+      # 钉住发行版而不是跟随 debian:testing：testing 是滚动目标，同一个 commit
+      # 在不同时间会构建出不同的 glibc/GTK 基线；Debian 13 是当前稳定版，基线更
+      # 老，产物能覆盖更多发行版，也保证构建可复现。
+      image: debian:13
+    steps:
+      - name: Install git for checkout
+        run: apt-get update && apt-get install -y git
+
+      - uses: actions/checkout@v4
+
+      - name: Mark workspace as safe for git
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Cache apt packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            /var/cache/apt/archives
+          key: linux-apt-${{ runner.os }}-${{ hashFiles('.github/workflows/build-linux.yml') }}
+          restore-keys: |
+            linux-apt-${{ runner.os }}-
+
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+          key: linux-pub-${{ runner.os }}-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            linux-pub-${{ runner.os }}-
+
+      - name: Install Dependencies
+        # Linux 端不提供应用内网页视图，因此不需要 WPE WebKit / WPEBackend-fdo
+        # 开发包；其余为 Flutter Linux 构建的常规依赖。
+        run: |
+          apt-get update
+          apt-get install -y \
+            git clang cmake ninja-build pkg-config g++ \
+            libgtk-3-dev liblzma-dev \
+            libsecret-1-dev libepoxy-dev libwayland-dev \
+            jq curl xz-utils
+
+      - name: Setup build environment
+        id: setup
+        uses: ./.github/actions/setup
+        with:
+          version: ${{ inputs.version }}
+        env:
+          GIT_DISCOVERY_ACROSS_FILESYSTEM: 1
+
+      - name: Build Linux
+        run: |
+          flutter build linux --release \
+            --dart-define=GIT_TAG=${{ steps.setup.outputs.GIT_TAG }} \
+            --dart-define=GIT_COMMIT=${{ steps.setup.outputs.GIT_COMMIT }} \
+            --dart-define=GIT_COMMIT_DATE=${{ steps.setup.outputs.GIT_COMMIT_DATE }}
+
+      - name: Archive Linux Release
+        run: tar -czvf linux-release.tar.gz -C build/linux/x64/release/bundle .
+
+      - name: Upload Linux
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release
+          path: linux-release.tar.gz
+          if-no-files-found: error

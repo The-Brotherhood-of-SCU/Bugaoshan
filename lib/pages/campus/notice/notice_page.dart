@@ -5,6 +5,7 @@ import 'package:bugaoshan/pages/campus/notice/xgb/party_notice_page.dart';
 import 'package:bugaoshan/pages/campus/notice/tuanwei/tuanwei_notice_page.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 class NoticePage extends StatelessWidget {
   const NoticePage({super.key});
@@ -16,7 +17,7 @@ class NoticePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.noticeSection)),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: withSystemBottomInset(context, EdgeInsets.all(16)),
         children: [
           _NoticeCard(
             icon: Icons.campaign,

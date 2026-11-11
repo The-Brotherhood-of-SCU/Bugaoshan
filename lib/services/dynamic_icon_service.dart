@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform, kIsWeb;
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:flutter/services.dart';
 import 'package:bugaoshan/utils/constants.dart';
 
@@ -13,6 +14,8 @@ import 'package:bugaoshan/utils/constants.dart';
 /// applicationId mismatch (debug builds add a .debug suffix to applicationId
 /// but component class names resolve from the Gradle namespace).
 class DynamicIconService {
+  static const String _tag = 'DynamicIconService';
+
   static const MethodChannel _channel = kDynamicIconMethodChannel;
 
   /// The native channel is only implemented on Android; other platforms
@@ -31,7 +34,13 @@ class DynamicIconService {
         'getAvailableIcons',
       );
       return list?.cast<String>() ?? [];
-    } on MissingPluginException {
+    } on MissingPluginException catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'getAvailableIcons 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       return [];
     }
   }
@@ -41,7 +50,13 @@ class DynamicIconService {
     if (!_isSupported) return null;
     try {
       return await _channel.invokeMethod<String?>('getCurrentIconName');
-    } on MissingPluginException {
+    } on MissingPluginException catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'getCurrentIconName 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       return null;
     }
   }
@@ -53,7 +68,13 @@ class DynamicIconService {
       await _channel.invokeMethod('setAlternateIconName', {
         'iconName': iconName,
       });
-    } on MissingPluginException {
+    } on MissingPluginException catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'setAlternateIconName 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // Ignore: no native implementation on this platform.
     }
   }

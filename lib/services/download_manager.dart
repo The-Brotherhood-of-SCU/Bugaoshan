@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:bugaoshan/pages/campus/downloads/file_utils.dart';
 
@@ -39,6 +40,8 @@ class DownloadTask {
 ///
 /// Register as a singleton in GetIt and observe with [ListenableBuilder].
 class DownloadManager extends ChangeNotifier {
+  static const String _tag = 'DownloadManager';
+
   final Map<String, DownloadTask> _tasks = {};
 
   Map<String, DownloadTask> get tasks => Map.unmodifiable(_tasks);
@@ -110,7 +113,10 @@ class DownloadManager extends ChangeNotifier {
       );
       updateTask(task, status: DownloadStatus.done, downloadedPath: path);
       return path;
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      if (e is! DownloadCancelledException) {
+        AppLog.e(_tag, 'download 失败', error: e, stackTrace: logStackTrace);
+      }
       updateTask(
         task,
         status: DownloadStatus.error,

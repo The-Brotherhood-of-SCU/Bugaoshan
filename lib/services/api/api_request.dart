@@ -1,7 +1,50 @@
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/utils/app_log.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 
 /// 登录页强特征（对大小写不敏感，body 需先转小写后再匹配）。
-final RegExp _titlePattern = RegExp(r'<title[^>]*>([^<]*)</title>');
+final RegExp _titlePattern = RegExp(
+  r'<title[^>]*>([^<]*)</title>',
+  caseSensitive: false,
+);
+
+/// 只保留脱敏后的短标题用于区分登录页、网关或 WAF 错误页，不记录正文。
+String? responseTitleForLog(String body) {
+  if (!body.trimLeft().startsWith('<')) return null;
+  final match = _titlePattern.firstMatch(body);
+  if (match == null) return null;
+  final title = LogRedactor.apply(
+    _decodeTitleEntities(match[1]!),
+  ).replaceAll(RegExp(r'\s+'), ' ').trim();
+  if (title.isEmpty) return null;
+  return title.length <= 160 ? title : '${title.substring(0, 159)}…';
+}
+
+String _decodeTitleEntities(String text) {
+  const entities = {
+    'amp': '&',
+    'quot': '"',
+    'apos': "'",
+    'lt': '<',
+    'gt': '>',
+    'nbsp': ' ',
+  };
+  return text.replaceAllMapped(
+    RegExp(r'&(#(?:[xX][0-9a-fA-F]+|[0-9]+)|amp|quot|apos|lt|gt|nbsp);'),
+    (match) {
+      final entity = match[1]!;
+      if (!entity.startsWith('#')) return entities[entity]!;
+      final hex = entity.length > 1 && entity[1].toLowerCase() == 'x';
+      final code = int.tryParse(
+        entity.substring(hex ? 2 : 1),
+        radix: hex ? 16 : 10,
+      );
+      return code != null && code >= 0 && code <= 0x10ffff
+          ? String.fromCharCode(code)
+          : match[0]!;
+    },
+  );
+}
 
 /// Spring Security 登录端点必须出现在 `<form action="…">` 里：
 /// HTML/JS 文本中提及该端点（如业务脚本里的跳转 URL 字面量）不判为登录页。
@@ -104,13 +147,17 @@ Future<T> retryOnUnauthenticated<T, C>(
   Future<C> Function() getClient,
   Future<T> Function(C client) fn, {
   void Function()? invalidate,
+  String logTag = 'ApiRequest',
 }) async {
-  try {
-    final client = await getClient();
-    return await fn(client);
-  } on UnauthenticatedException {
-    invalidate?.call();
-    final client = await getClient();
-    return await fn(client);
-  }
+  return AppLog.guard(logTag, 'API 请求', () async {
+    try {
+      final client = await getClient();
+      return await fn(client);
+    } on UnauthenticatedException catch (error) {
+      AppLog.w(logTag, '会话失效，重新认证后重试', error: error);
+      invalidate?.call();
+      final client = await getClient();
+      return await fn(client);
+    }
+  });
 }

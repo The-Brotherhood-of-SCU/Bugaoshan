@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
@@ -9,6 +10,8 @@ import 'package:bugaoshan/injection/injector.dart';
 ///
 /// 全部为静态方法，调用方自行处理异常与结果反馈。
 class StorageCleanupService {
+  static const String _tag = 'StorageCleanupService';
+
   const StorageCleanupService._();
 
   /// `getTemporaryDirectory()` 是否等价于「本应用的缓存目录」。
@@ -41,8 +44,13 @@ class StorageCleanupService {
     await for (final entity in dir.list()) {
       try {
         await entity.delete(recursive: true);
-      } catch (error) {
-        debugPrint('Failed to delete ${entity.path}: $error');
+      } catch (error, logStackTrace) {
+        AppLog.e(
+          _tag,
+          'clearDirectory 失败',
+          error: error,
+          stackTrace: logStackTrace,
+        );
       }
     }
   }

@@ -9,7 +9,7 @@ import 'package:bugaoshan/services/auth/auth_state.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/zhhq_auth.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 
 enum RepairLoadState { idle, loading, loaded, error }
@@ -21,8 +21,8 @@ enum RepairLoadState { idle, loading, loaded, error }
 class ZhhqRepairProvider extends ChangeNotifier {
   static const String _tag = 'ZhhqRepairProvider';
 
-  ZhhqRepairProvider(this._api, this._auth, this._scuAuth, {AuthLogger? logger})
-    : _log = logger ?? getIt<AuthLogger>() {
+  ZhhqRepairProvider(this._api, this._auth, this._scuAuth, {AppLogger? logger})
+    : _log = logger ?? getIt<AppLogger>() {
     _lastAuthReady = _auth.isReady;
     _lastScuAuthState = _scuAuth.state;
     _auth.addListener(_onAuthChanged);
@@ -40,7 +40,7 @@ class ZhhqRepairProvider extends ChangeNotifier {
   final ZhhqApiService _api;
   final ZhhqAuth _auth;
   final ScuAuth _scuAuth;
-  final AuthLogger _log;
+  final AppLogger _log;
 
   List<RepairAddress> _addresses = const [];
   List<RepairTicket> _tickets = const [];
@@ -125,8 +125,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
     if (_scuAuth.state == AuthState.unknown) return;
     try {
       await _auth.ensureAuthenticated();
-    } catch (e) {
-      _log.w(_tag, 'retryAuth failed: $e');
+    } catch (e, logStackTrace) {
+      _log.e(
+        _tag,
+        'retryAuth 失败',
+        error: e,
+        stackTrace: logStackTrace,
+        category: LogCategory.business,
+      );
     }
     if (!_auth.isReady) {
       _state = RepairLoadState.error;
@@ -160,12 +166,22 @@ class ZhhqRepairProvider extends ChangeNotifier {
         if (!_isCurrent(generation)) return;
         _addresses = List.unmodifiable(addresses);
         _state = RepairLoadState.loaded;
-        _log.d(_tag, 'loaded: addresses=${addresses.length}');
-      } catch (error) {
+        _log.d(
+          _tag,
+          'loaded: addresses=${addresses.length}',
+          category: LogCategory.business,
+        );
+      } catch (error, logStackTrace) {
+        _log.e(
+          _tag,
+          'execute 失败',
+          error: error,
+          stackTrace: logStackTrace,
+          category: LogCategory.business,
+        );
         if (!_isCurrent(generation)) return;
         _state = RepairLoadState.error;
         _error = _mapError(error);
-        _log.w(_tag, 'load error: $error');
       } finally {
         if (_isCurrent(generation)) {
           _loadFuture = null;
@@ -200,7 +216,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
       // force：等当前加载完成后再拉一次（若已是最新则结果相同，无副作用）
       try {
         await inFlight;
-      } catch (_) {
+      } catch (logError, logStackTrace) {
+        _log.e(
+          _tag,
+          'loadTickets 失败',
+          error: logError,
+          stackTrace: logStackTrace,
+          category: LogCategory.business,
+        );
         // 前一次失败不阻塞本次重新拉取
       }
       if (!_canLoad || userId.isEmpty) return;
@@ -218,9 +241,19 @@ class ZhhqRepairProvider extends ChangeNotifier {
       final tickets = await _api.fetchDynamicTickets(userId: userId);
       _tickets = List.unmodifiable(tickets);
       _ticketsLoaded = true;
-      _log.d(_tag, 'tickets loaded: ${tickets.length}');
-    } catch (error) {
-      _log.w(_tag, 'tickets load error: $error');
+      _log.d(
+        _tag,
+        'tickets loaded: ${tickets.length}',
+        category: LogCategory.business,
+      );
+    } catch (error, logStackTrace) {
+      _log.e(
+        _tag,
+        '_fetchTickets 失败',
+        error: error,
+        stackTrace: logStackTrace,
+        category: LogCategory.business,
+      );
     } finally {
       _isLoadingTickets = false;
       _ticketsFuture = null;
@@ -237,7 +270,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
   Future<bool> ifAllowWithdrawRepair({required String id}) async {
     try {
       return await _api.ifAllowWithdrawRepair(id: id);
-    } on ScuException {
+    } on ScuException catch (logError, logStackTrace) {
+      _log.e(
+        _tag,
+        'ifAllowWithdrawRepair 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+        category: LogCategory.business,
+      );
       return false;
     }
   }
@@ -276,7 +316,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
   Future<List<RepairEvaluateProject>> fetchEvaluateProjects() async {
     try {
       return await _api.fetchEvaluateProjects();
-    } on ScuException {
+    } on ScuException catch (logError, logStackTrace) {
+      _log.e(
+        _tag,
+        'fetchEvaluateProjects 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+        category: LogCategory.business,
+      );
       return const [];
     }
   }
@@ -309,7 +356,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
       if (!_isOperationCurrent(generation)) return false;
       await refresh();
       return _isOperationCurrent(generation);
-    } catch (error) {
+    } catch (error, logStackTrace) {
+      _log.e(
+        _tag,
+        'addAddress 失败',
+        error: error,
+        stackTrace: logStackTrace,
+        category: LogCategory.business,
+      );
       if (_isOperationCurrent(generation)) {
         _submitError = _extractMessage(error);
       }
@@ -343,7 +397,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
       _ticketsLoaded = false;
       await refresh();
       return _isOperationCurrent(generation);
-    } catch (error) {
+    } catch (error, logStackTrace) {
+      _log.e(
+        _tag,
+        'submitTicket 失败',
+        error: error,
+        stackTrace: logStackTrace,
+        category: LogCategory.business,
+      );
       if (_isOperationCurrent(generation)) {
         _submitError = _extractMessage(error);
       }
@@ -360,7 +421,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
   Future<List<String>> fetchBookDates() async {
     try {
       return await _api.fetchBookDates();
-    } on ScuException {
+    } on ScuException catch (logError, logStackTrace) {
+      _log.e(
+        _tag,
+        'fetchBookDates 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+        category: LogCategory.business,
+      );
       return const [];
     }
   }
@@ -369,7 +437,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
   Future<List<String>> fetchBookTimes(String date) async {
     try {
       return await _api.fetchBookTimes(date);
-    } on ScuException {
+    } on ScuException catch (logError, logStackTrace) {
+      _log.e(
+        _tag,
+        'fetchBookTimes 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+        category: LogCategory.business,
+      );
       return const [];
     }
   }
@@ -378,7 +453,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
   Future<List<RepairProject>> fetchProjects(String areaId) async {
     try {
       return await _api.fetchProjects(areaId);
-    } on ScuException {
+    } on ScuException catch (logError, logStackTrace) {
+      _log.e(
+        _tag,
+        'fetchProjects 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+        category: LogCategory.business,
+      );
       return const [];
     }
   }
@@ -390,7 +472,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
   }) async {
     try {
       return await _api.fetchAcceptDept(areaId: areaId, projectId: projectId);
-    } on ScuException {
+    } on ScuException catch (logError, logStackTrace) {
+      _log.e(
+        _tag,
+        'fetchAcceptDept 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+        category: LogCategory.business,
+      );
       return null;
     }
   }
@@ -399,7 +488,14 @@ class ZhhqRepairProvider extends ChangeNotifier {
   Future<List<RepairAreaNode>> fetchAreaTree() async {
     try {
       return await _api.fetchAreaTreeNodes();
-    } on ScuException {
+    } on ScuException catch (logError, logStackTrace) {
+      _log.e(
+        _tag,
+        'fetchAreaTree 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+        category: LogCategory.business,
+      );
       return const [];
     }
   }

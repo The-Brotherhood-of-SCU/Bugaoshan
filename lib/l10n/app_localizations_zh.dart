@@ -21,9 +21,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get wizardWelcomeDesc => '你的校园生活助手，一站式查看课表、成绩与校园服务';
 
   @override
-  String get wizard => '向导';
-
-  @override
   String get resetWizardTitle => '重置引导状态';
 
   @override
@@ -179,9 +176,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get selectBuilding => '选择楼栋';
 
   @override
-  String get allBuildings => '全部教学楼';
-
-  @override
   String get seats => '座';
 
   @override
@@ -214,9 +208,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get classroomCanBorrow => '可借用';
-
-  @override
-  String get classroomCannotBorrow => '不可借用';
 
   @override
   String get classroomRemark => '备注';
@@ -258,16 +249,13 @@ class AppLocalizationsZh extends AppLocalizations {
       '该时段（23:00-次日6:00）仅限校园网访问，请连接校园网或使用学校 VPN 后重试';
 
   @override
-  String get appOnly => '仅 App 端可使用';
-
-  @override
   String get softwareSetting => '软件设置';
 
   @override
   String get followSystem => '跟随系统';
 
   @override
-  String get modifyLanguage => '修改语言';
+  String get modifyLanguage => '语言';
 
   @override
   String get current => '当前';
@@ -287,11 +275,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String animationDurationUpdated(Object value) {
-    return '动画时长已更新为 $value ms';
-  }
-
-  @override
   String get animationDurationHint => '提示：调整滑块查看动画效果，点击确认后才会保存设置';
 
   @override
@@ -302,9 +285,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get themeColor => '主题颜色';
-
-  @override
-  String get changeThemeColor => '更改主题颜色';
 
   @override
   String get confirmButton => '确认';
@@ -340,22 +320,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get themeModeDark => '深色';
 
   @override
-  String get blockPicker => '色块';
-
-  @override
-  String get materialPicker => '材质';
-
-  @override
-  String get advancedPicker => '高级';
-
-  @override
   String get about => '关于';
 
   @override
   String get developmentTeam => '开发团队';
-
-  @override
-  String get projectInfo => '项目信息';
 
   @override
   String get appName => '应用名称';
@@ -370,17 +338,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appDescription => '探索一切，尽在不高山上';
 
   @override
-  String get contactUs => '联系我们';
-
-  @override
-  String developedBy(Object team) {
-    return '由 $team 倾情打造';
-  }
-
-  @override
-  String get externalResources => '外部资源';
-
-  @override
   String get projectRepository => '项目仓库';
 
   @override
@@ -390,10 +347,20 @@ class AppLocalizationsZh extends AppLocalizations {
   String get newVersionAvailable => '发现新版本';
 
   @override
-  String get noUpdateAvailable => '已是最新版本';
+  String get anotherVersionDownloading => '另一版本正在下载…';
 
   @override
-  String get goToReleases => '前往 Releases';
+  String stableVersion(String version) {
+    return '正式版：$version';
+  }
+
+  @override
+  String previewVersion(String version) {
+    return '预览版：$version';
+  }
+
+  @override
+  String get noUpdateAvailable => '已是最新版本';
 
   @override
   String get startUpdate => '开始更新';
@@ -414,7 +381,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get usePreviewUpdateSource => '软件更新使用预览版源';
 
   @override
-  String get usePreviewUpdateSourceHint => '仅影响首页和关于页面的自动检查；测试页面始终同时检查两个渠道。';
+  String get usePreviewUpdateSourceHint => '仅影响首页和关于页面的自动检查；开发者页面始终同时检查两个渠道。';
+
+  @override
+  String get networkProxy => '网络加速';
+
+  @override
+  String get ghProxyMirror => 'GitHub 加速';
+
+  @override
+  String get ghProxyMirrorHint =>
+      '通过 gh-proxy 镜像下载 GitHub 资源（软件更新、校历），失败时自动回退直连。';
 
   @override
   String get forceCaptchaForDownload => '强制下载验证码';
@@ -438,9 +415,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String notificationDownloading(int percent) {
     return '正在下载... $percent%';
   }
-
-  @override
-  String get notificationInstalling => '正在安装...';
 
   @override
   String notificationUpdateFailed(String error) {
@@ -469,19 +443,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get devPage => '开发者页面';
 
   @override
-  String get forceUpdate => '更新到最新版本（含预览版）';
+  String get viewAppLog => '查看运行日志';
 
   @override
-  String get authLog => '认证日志';
+  String get logEmpty => '暂无运行日志。';
 
   @override
-  String get viewAuthLog => '查看认证日志';
-
-  @override
-  String get authLogEmpty => '暂无认证日志。';
-
-  @override
-  String authLogLastEntry(String time, String level, String tag) {
+  String logLastEntry(String time, String level, String tag) {
     return '$level · $tag · $time';
   }
 
@@ -490,9 +458,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get scheduleManagement => '课表管理';
-
-  @override
-  String get globalSetting => '全局设置';
 
   @override
   String get noSchedule => '暂无课表';
@@ -520,6 +485,11 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get teacher => '教师';
+
+  @override
+  String courseTeacher(String teacher) {
+    return '授课教师：$teacher';
+  }
 
   @override
   String get location => '教室';
@@ -653,9 +623,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoFetchCurrentWeekOnVacation => '假期中暂无教学周，未修改课表';
 
   @override
-  String get fetchingCurrentWeek => '正在获取...';
-
-  @override
   String get loginRequired => '请先在「我的」页面完成统一身份认证登录';
 
   @override
@@ -719,12 +686,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get extractColorFromBackgroundImage => '从背景图取色';
 
   @override
-  String get themeColorAutoExtractedHint => '主题色已从背景图片提取，如需修改请前往软件设置->主题颜色';
-
-  @override
-  String get noBackgroundImageSet => '请先设置背景图片';
-
-  @override
   String get removeBackgroundImage => '移除背景图片';
 
   @override
@@ -770,9 +731,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get customColor => '自定义颜色';
 
   @override
-  String get noCourseThisWeek => '本周没有课程';
-
-  @override
   String get timeConflict => '时间冲突';
 
   @override
@@ -780,9 +738,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get fieldRequired => '此字段不能为空';
-
-  @override
-  String get invalidWeekRange => '结束周必须大于或等于开始周';
 
   @override
   String get duplicateScheduleName => '课表名称已存在';
@@ -827,11 +782,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get importedScheduleDefaultName => '导入的课表';
-
-  @override
-  String importNameConflictHint(Object name) {
-    return '名称 \"$name\" 已存在，请重命名：';
-  }
 
   @override
   String get importNameSuffix => '(导入)';
@@ -940,9 +890,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String totalWeeksSubtitle(Object count) {
     return '共 $count 周';
   }
-
-  @override
-  String get invalidSectionRange => '结束节次必须大于开始节次';
 
   @override
   String get crossPeriodError => '跨时间段错误';
@@ -1066,16 +1013,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get gradesStatsDesc => '查看和分析你的学业成绩';
 
   @override
-  String get gradesStatsComingSoon => '功能即将上线';
-
-  @override
   String get schemeScores => '方案成绩';
 
   @override
   String get passingScores => '及格成绩';
-
-  @override
-  String get gradesLoginRequired => '请先在「我的」页面完成统一身份认证登录';
 
   @override
   String get gradesNoData => '暂无成绩数据';
@@ -1108,9 +1049,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get gradesGet => '获取成绩';
-
-  @override
-  String get gradesRetry => '重试';
 
   @override
   String get gpa => 'GPA';
@@ -1165,20 +1103,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get sessionExpiredTitle => '会话已过期';
-
-  @override
-  String get sessionExpiredMessage => '登录会话已过期，请重新登录后继续使用该功能。';
-
-  @override
   String get sessionExpired => '登录会话已过期';
 
   @override
   String get undergradDataOnly =>
       '本科教务会话未建立。研究生账号请使用「校园 → 研究生」区功能；本科账号请重新登录后重试。';
-
-  @override
-  String get relogin => '重新登录';
 
   @override
   String get trainProgram => '培养方案';
@@ -1200,15 +1129,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get trainProgramNoData => '暂无培养方案数据';
-
-  @override
-  String get trainProgramLoading => '加载中...';
-
-  @override
-  String get trainProgramLoadFailed => '加载失败';
-
-  @override
-  String get trainProgramName => '方案名称';
 
   @override
   String get trainProgramMajor => '专业';
@@ -1283,9 +1203,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get trainProgramExperimentHours => '实验学时';
 
   @override
-  String get trainProgramLoginRequired => '请先在「我的」页面完成统一身份认证登录';
-
-  @override
   String get planCompletion => '方案修读情况';
 
   @override
@@ -1349,9 +1266,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ccylEmailHint => '请输入接收成绩单的QQ邮箱';
 
   @override
-  String get ccylExportSuccess => '成绩单已发送至邮箱';
-
-  @override
   String get ccylSearchHint => '搜索活动名称';
 
   @override
@@ -1403,9 +1317,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ccylCurrentValue => '当前值';
 
   @override
-  String get ccylLoginRequired => '请先在「我的」页面完成统一身份认证登录';
-
-  @override
   String get ccylBindRequired => '请先绑定第二课堂账号';
 
   @override
@@ -1413,9 +1324,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get ccylBindDesc => '绑定第二课堂账号后即可查看活动信息';
-
-  @override
-  String get ccylOpenOAuth => '打开统一认证授权页';
 
   @override
   String get ccylDoBind => '绑定第二课堂';
@@ -1581,22 +1489,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get networkDeviceIp => 'IP 地址';
 
   @override
-  String get networkDeviceLogout => '下线';
-
-  @override
-  String get networkDeviceLogoutConfirm => '确定要下线所有设备吗？';
-
-  @override
   String get networkDeviceForceOffline => '强制下线';
 
   @override
   String get networkDeviceConfirmOffline => '确定要下线该设备吗？';
-
-  @override
-  String get networkDeviceOfflineSuccess => '操作成功';
-
-  @override
-  String get networkDeviceAuthFailed => '认证失败';
 
   @override
   String get networkDeviceOperationSuccess => '操作成功';
@@ -1737,9 +1633,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get selectUnit => '选择单元';
 
   @override
-  String get inputInfo => '输入信息';
-
-  @override
   String get stepCampus => '校区';
 
   @override
@@ -1758,9 +1651,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cusName => '姓名';
 
   @override
-  String get cusNameHint => '请输入姓名';
-
-  @override
   String get roomNumber => '房间号';
 
   @override
@@ -1770,25 +1660,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pricePerUnit => '单价';
 
   @override
-  String get balanceQueryLoginRequired => '请先在「我的」页面完成统一身份认证登录';
-
-  @override
   String get balanceQueryNoBinding => '您还没有绑定房间，请先绑定';
 
   @override
   String get balanceTrend => '用电趋势';
 
   @override
-  String get balanceTrendTitleElectric => '照明电量趋势';
-
-  @override
-  String get balanceTrendTitleAc => '空调电量趋势';
-
-  @override
   String get balanceTrendDailyAvgCost => '日均电费';
-
-  @override
-  String get balanceTrendDailyAvgKwh => '日均消耗';
 
   @override
   String get balanceTrendTotalCost => '累计消耗金额';
@@ -1827,9 +1705,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get balanceTrendTimeRangeCustom => '自定义';
 
   @override
-  String get balanceTrendChangeRange => '修改区间';
-
-  @override
   String get balanceTrendCustomStart => '开始日期';
 
   @override
@@ -1843,9 +1718,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get balanceTrendTooltipPrice => '单价';
-
-  @override
-  String get balanceTrendUnitPerDay => '元/天';
 
   @override
   String get balanceTrendUnitYuanPerKwh => '元/度';
@@ -1891,44 +1763,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get campusNoticesDesc => '查看四川大学教务处通知公告';
 
   @override
-  String get campusNoticesSearchHint => '搜索通知标题';
-
-  @override
-  String get campusNoticesAllDates => '全部时间';
-
-  @override
-  String get campusNoticesClearDate => '清除筛选';
-
-  @override
-  String get campusNoticesLoadFailed => '加载失败，请检查网络';
-
-  @override
-  String get campusNoticesOpenOriginal => '在浏览器中查看';
-
-  @override
   String get campusNoticesExternalLink => '该链接为外部页面，请在浏览器中打开查看';
 
   @override
   String get campusNoticesOpenInBrowser => '在浏览器中打开';
-
-  @override
-  String get campusNoticesSearch => '搜索';
-
-  @override
-  String campusNoticesSearchResults(int count) {
-    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
-      locale: localeName,
-    );
-    final String countString = countNumberFormat.format(count);
-
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '共 $countString 条结果',
-      zero: '无结果',
-    );
-    return '$_temp0';
-  }
 
   @override
   String campusNoticesConfirmOpenLink(String url) {
@@ -1946,9 +1784,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get userInfoRetry => '点击重试';
-
-  @override
-  String get loginToViewUserInfo => '登录后查看个人信息';
 
   @override
   String get labelBookBorrowCount => '图书借阅量';
@@ -1970,9 +1805,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dockResetConfirm => '确定恢复默认Dock栏配置？';
-
-  @override
-  String get cannotDeleteProfile => '不可删除';
 
   @override
   String get dockLabelCourse => '课表';
@@ -2002,9 +1834,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dockLabelNetworkDevice => '校园网';
 
   @override
-  String get dockLabelPasspoint => '无感';
-
-  @override
   String get dockLabelBalanceQuery => '电费';
 
   @override
@@ -2027,9 +1856,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get fitnessTestTotalScore => '总分';
-
-  @override
-  String get fitnessTestGrade => '等级';
 
   @override
   String get fitnessTestYear => '查询年份';
@@ -2086,28 +1912,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fitnessTestSticky => '置顶';
 
   @override
-  String get fitnessTestNoticeDetail => '通知详情';
-
-  @override
   String get dockLabelFitnessTest => '体测';
 
   @override
   String get dockLabelNotice => '通知';
 
   @override
-  String get dockLabelNoticeParty => '学工部';
-
-  @override
-  String get dockLabelNoticeTuanwei => '团委';
-
-  @override
   String get dockLabelDownloads => '附件';
 
   @override
   String get eulaTitle => '用户协议';
-
-  @override
-  String get eulaScrollToBottom => '请先阅读完协议内容';
 
   @override
   String get eulaAgreeCheckbox => '我已阅读并同意《用户协议》与《隐私政策》';
@@ -2125,15 +1939,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get revokeEulaConfirm => '撤回后将需要重新同意用户协议才能继续使用，确定要撤回吗？';
 
   @override
-  String get revokeEulaSuccess => '已撤回用户协议同意';
-
-  @override
   String eulaAgreedVersion(String version) {
     return '已同意版本 v$version';
   }
-
-  @override
-  String get addWidgetSection => '桌面小组件';
 
   @override
   String get addWidgetPageTitle => '小组件';
@@ -2201,18 +2009,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get batteryOptimizationAlreadyDisabled => '省电优化已关闭';
 
   @override
-  String get batteryOptimizationSuccess => '省电优化已关闭';
-
-  @override
-  String get autoSetCurrentWeekTitle => '自动设置当前教学周';
-
-  @override
-  String get autoSetCurrentWeekContent => '是否从教务系统获取当前教学周并自动设置？';
-
-  @override
-  String get autoSetCurrentWeekSuccess => '已自动设置当前教学周';
-
-  @override
   String get share => '分享';
 
   @override
@@ -2231,14 +2027,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get download => '下载';
 
   @override
-  String attachmentSaved(String path) {
-    return '附件已保存到：$path';
-  }
-
-  @override
-  String get attachmentDownloadFailed => '附件下载失败';
-
-  @override
   String get downloadedAttachments => '已下载附件';
 
   @override
@@ -2252,9 +2040,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get fileDeleted => '文件已删除';
-
-  @override
-  String get attachmentSavedTapToOpen => '附件已保存，点击打开';
 
   @override
   String get confirmDelete => '确认删除';
@@ -2326,6 +2111,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get dateFormatSetting => '日期格式';
+
+  @override
   String get holidayLabel => '假';
 
   @override
@@ -2354,9 +2142,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get classScheduleInquiryNoSchedule => '暂无课表数据';
-
-  @override
-  String get classScheduleInquiryDetail => '课程详情';
 
   @override
   String get classScheduleInquiryFilter => '查询条件';
@@ -2440,17 +2225,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get originalCalendar => '官方图表';
-
-  @override
-  String get calendarLoadingData => '正在获取校历数据...';
-
-  @override
-  String calendarImportSuccess(int count) {
-    return '已成功导入 $count 个事件到系统日历';
-  }
-
-  @override
-  String get calendarImportFailed => '导入系统日历失败';
 
   @override
   String get calendarImportCalendarTitle => '四川大学校历';
@@ -2541,12 +2315,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get featureNotSupported => '当前平台不支持此功能';
 
   @override
-  String get newIconSubtitle => 'Bugaoshan 新图标';
-
-  @override
-  String get oldIconSubtitle => 'Bugaoshan 经典图标';
-
-  @override
   String get close => '关闭';
 
   @override
@@ -2624,9 +2392,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String appliedPreset(String campus) {
     return '已应用$campus时间表预设';
   }
-
-  @override
-  String get presetLabel => '预设';
 
   @override
   String roomCount(int count) {
@@ -2737,6 +2502,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get openInBrowser => '在浏览器中打开';
 
   @override
+  String get webViewFallbackTitle => '用浏览器打开此页面';
+
+  @override
+  String get webViewFallbackBody => '当前平台不支持应用内网页视图，请在系统浏览器中继续浏览。';
+
+  @override
+  String get webViewFallbackOpen => '在默认浏览器中打开';
+
+  @override
+  String get webViewFallbackCopyLink => '复制链接';
+
+  @override
+  String get webViewFallbackLinkCopied => '链接已复制';
+
+  @override
+  String get webViewFallbackOpenFailed => '无法打开浏览器，请复制链接后手动打开';
+
+  @override
+  String get webViewFallbackCopyFailed => '无法复制链接，请稍后重试';
+
+  @override
   String get downloadComplete => '下载完成';
 
   @override
@@ -2758,6 +2544,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dockLabelLeave => '办事大厅';
+
+  @override
+  String get dockLabelReservation => '活动室';
 
   @override
   String get dockLabelRepair => '报修';
@@ -2960,25 +2749,153 @@ class AppLocalizationsZh extends AppLocalizations {
   String get serviceFormSelectHint => '请选择';
 
   @override
-  String get serviceFormOptional => '选填';
-
-  @override
-  String get leaveTitle => '请假申请';
-
-  @override
   String get leaveDesc => '办事大厅内可在线办理请假、报备等事项';
 
   @override
-  String get leaveApply => '请假申请';
+  String get reservationTitle => '活动室预约';
+
+  @override
+  String get reservationDesc => '查看望江研究生活动室空闲时段';
+
+  @override
+  String get reservationChooseRoom => '选择活动室';
+
+  @override
+  String get reservationAvailability => '空闲时段';
+
+  @override
+  String get reservationTimeColumn => '时段';
+
+  @override
+  String get reservationNoResources => '暂无可用活动室';
+
+  @override
+  String get reservationNoSlots => '该时间段暂无可预约时段';
+
+  @override
+  String get reservationSessionExpired => '预约系统会话未建立或已过期，请先完成统一身份认证登录';
+
+  @override
+  String get reservationPreviousWeek => '前 7 天';
+
+  @override
+  String get reservationBackToToday => '回到今天';
+
+  @override
+  String get reservationScrollLeft => '向左查看更多活动室';
+
+  @override
+  String get reservationScrollRight => '向右查看更多活动室';
+
+  @override
+  String get reservationNextWeek => '后 7 天';
+
+  @override
+  String reservationRemaining(int count) {
+    return '余 $count';
+  }
+
+  @override
+  String get reservationStatusAvailable => '可预约';
+
+  @override
+  String get reservationStatusFull => '约满';
+
+  @override
+  String get reservationStatusUnavailable => '不可预约';
+
+  @override
+  String get reservationNeedsApproval => '需审批';
+
+  @override
+  String reservationDailyLimit(int count) {
+    return '每天最多 $count 段';
+  }
+
+  @override
+  String get reservationGoOfficial => '去官方页面预约';
+
+  @override
+  String get reservationLaunchButton => '预约所选时段';
+
+  @override
+  String get reservationLaunchConfirmTitle => '确认预约';
+
+  @override
+  String get reservationPeopleNumber => '预约人数';
+
+  @override
+  String get reservationLaunchSubmit => '确认预约';
+
+  @override
+  String get reservationLaunchSuccess => '预约成功';
+
+  @override
+  String get reservationLaunchProcessTitle => '预约已提交';
+
+  @override
+  String get reservationLaunchProcessBody =>
+      '预约单已创建。该活动室需要审批，请继续完成申请流程，审核通过后预约生效。';
+
+  @override
+  String get reservationOpenProcess => '打开审批流程';
+
+  @override
+  String get reservationApplyPendingBody =>
+      '当前账号已有未提交的预约单。请先在预约系统「我的预约」里提交或取消，再发起新的预约。';
+
+  @override
+  String reservationDailyLimitReached(int count) {
+    return '该活动室每天最多可预约 $count 个时段';
+  }
+
+  @override
+  String get reservationClearSelection => '清空已选时段';
+
+  @override
+  String get reservationApplyPendingTitle => '存在未提交的预约';
+
+  @override
+  String get reservationLaunchFailedGeneric => '预约失败，请稍后重试';
+
+  @override
+  String get reservationMyAppointments => '我的预约';
+
+  @override
+  String get reservationMyAppointmentsEmpty => '暂无预约记录';
+
+  @override
+  String get reservationMyAppointmentsError => '预约记录加载失败，请重试';
+
+  @override
+  String get reservationStatusPendingApply => '待申请';
+
+  @override
+  String get reservationStatusReviewing => '审核中';
+
+  @override
+  String get reservationStatusBooked => '已预约';
+
+  @override
+  String get reservationStatusCheckInPending => '待签到';
+
+  @override
+  String get reservationStatusClosed => '已结束';
+
+  @override
+  String get reservationCancel => '取消预约';
+
+  @override
+  String get reservationCancelConfirm => '确定取消这条预约？取消后名额即时释放。';
+
+  @override
+  String get reservationCancelSuccess => '已取消';
 
   @override
   String get leaveMyApplications => '我的申请';
 
   @override
   String get leaveSubmit => '提交申请';
-
-  @override
-  String get leaveReasonRequired => '请填写请假事由';
 
   @override
   String get leaveEndAfterStart => '结束时间需晚于开始时间';
@@ -2993,37 +2910,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get leaveInfo => '学生信息';
 
   @override
-  String get leaveTutor => '辅导员';
-
-  @override
-  String get leaveCampusRequired => '请选择离开校区';
-
-  @override
-  String get leaveDetail => '其他事由';
-
-  @override
-  String get leaveDetailHint => '请填写具体事由';
-
-  @override
-  String get leaveAttachment => '上传证明';
-
-  @override
   String get leaveAttachmentHint => '可上传 1-3 张图片作为请假证明（非必填）';
 
   @override
   String get leaveAttachmentAdd => '添加图片';
-
-  @override
-  String get leaveDepartReturn => '离校/返校时间';
-
-  @override
-  String get leaveDepartTime => '离校时间';
-
-  @override
-  String get leaveReturnTime => '返校时间';
-
-  @override
-  String get leaveRegionRequired => '请选择去往地址';
 
   @override
   String get regionProvince => '省';
@@ -3132,10 +3022,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get graduateScheduleImportFailed => '导入失败，请重试';
 
   @override
-  String get graduateScheduleImportWebUnsupported =>
-      '识别网页需要在页面里注入脚本，浏览器会因跨域而拦截。请在 Android / iOS / Windows 客户端使用此功能。';
-
-  @override
   String get graduateScheduleImportNoWebView =>
       '直连获取研究生课表失败，且当前平台没有内置网页兜底。请检查网络后重试，或使用 Android / iOS / 桌面客户端导入。';
 
@@ -3173,140 +3059,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get graduateTrainPlanNoCourses => '本模块暂无课程';
-
-  @override
-  String get labAttendance => '实验室考勤';
-
-  @override
-  String get labAttendanceDesc => '记录实验室出勤';
-
-  @override
-  String get labAttendanceMonthDay => '今日考勤';
-
-  @override
-  String get labAttendanceEmpty => '本月暂无考勤记录';
-
-  @override
-  String get labAttendanceDays => '出勤天数';
-
-  @override
-  String get labAttendanceHours => '出勤时长(小时)';
-
-  @override
-  String get labCheckIn => '签到';
-
-  @override
-  String get labCheckOut => '签退';
-
-  @override
-  String get thesisProgress => '论文进度';
-
-  @override
-  String get thesisProgressDesc => '跟踪课题论文进度';
-
-  @override
-  String get thesisProgressEmpty => '暂无论文阶段';
-
-  @override
-  String get thesisProgressOverview => '论文进度概览';
-
-  @override
-  String thesisProgressText(int completed, int total) {
-    return '已完成 $completed / $total 个阶段';
-  }
-
-  @override
-  String get thesisStageNotStarted => '未开始';
-
-  @override
-  String get thesisStageInProgress => '进行中';
-
-  @override
-  String get thesisStageCompleted => '已完成';
-
-  @override
-  String get thesisStageName => '阶段名称';
-
-  @override
-  String get thesisStageNameHint => '例如：开题、中期、预答辩';
-
-  @override
-  String get thesisStageNote => '备注';
-
-  @override
-  String get thesisStageNoPlanDate => '设置计划日期';
-
-  @override
-  String thesisStagePlanDate(String date) {
-    return '计划日期：$date';
-  }
-
-  @override
-  String get thesisStagePlan => '计划';
-
-  @override
-  String get addThesisStage => '添加阶段';
-
-  @override
-  String get editThesisStage => '编辑阶段';
-
-  @override
-  String get mentorTasks => '导师任务';
-
-  @override
-  String get mentorTasksDesc => '查看导师布置的任务';
-
-  @override
-  String get mentorTasksEmpty => '暂无导师任务';
-
-  @override
-  String get mentorTaskPending => '待完成';
-
-  @override
-  String get mentorTaskOverdue => '已逾期';
-
-  @override
-  String get mentorTaskDueSoon => '即将到期';
-
-  @override
-  String get mentorTaskPriorityLow => '低';
-
-  @override
-  String get mentorTaskPriorityMedium => '中';
-
-  @override
-  String get mentorTaskPriorityHigh => '高';
-
-  @override
-  String get mentorTaskNoDueDate => '无截止时间';
-
-  @override
-  String mentorTaskDueDate(String date) {
-    return '截止：$date';
-  }
-
-  @override
-  String mentorTaskDaysText(int days) {
-    return '剩余 $days 天';
-  }
-
-  @override
-  String get mentorTaskTitle => '任务标题';
-
-  @override
-  String get mentorTaskNote => '备注';
-
-  @override
-  String get addMentorTask => '添加任务';
-
-  @override
-  String get editMentorTask => '编辑任务';
-
-  @override
-  String get mentorTaskLoginRequired => '登录后查看导师任务';
-
-  @override
-  String get graduateLoginRequired => '请先在「我的」页面完成统一身份认证登录后再使用研究生功能';
 
   @override
   String get userManual => '用户手册';
@@ -3465,10 +3217,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reminderHostProbePermissionProvisional => '临时授权（安静投递）';
 
   @override
+  String get reminderHostProbePermissionEphemeral => '临时授权（Ephemeral）';
+
+  @override
   String get reminderHostProbePermissionDeniedLabel => '已被系统设置拒绝';
 
   @override
   String get reminderHostProbePermissionNotDetermined => '尚未请求';
+
+  @override
+  String get reminderHostProbePermissionUnsupported => '当前平台不支持';
 
   @override
   String get reminderHostProbeRequestPermission => '请求授权';
@@ -3490,9 +3248,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reminderProbeBody => '这是一条 15 秒后触发的测试提醒';
-
-  @override
-  String get reminderPlanTitle => '当前排期计划';
 
   @override
   String get reminderPlanEmpty => '尚未生成计划';
@@ -3565,9 +3320,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reminderQuietEnabled => '免打扰时段';
 
   @override
-  String get reminderQuietHint => '落在该时段内的提醒会被丢弃，而不是延后';
-
-  @override
   String get reminderQuietStart => '开始';
 
   @override
@@ -3595,6 +3347,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reminderPermissionNotDeterminedHint => '需要授予通知权限，提醒才能送达。';
 
   @override
+  String get reminderPermissionUnsupportedHint => '当前平台暂不支持本地提醒。';
+
+  @override
   String get reminderPermissionRequest => '去授权';
 
   @override
@@ -3613,7 +3368,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reminderPermissionFailed => '请求权限失败';
 
   @override
-  String get reminderPrivacyHint => '提醒会显示在锁屏上，因此与隐私开关联动：关掉了「显示教师姓名」，锁屏上也不会出现。';
+  String get reminderPrivacyHint =>
+      '锁屏上的提醒也遵循「课程表样式」里的「显示教师」开关：在那里关掉后，提醒里就不会出现老师名字。';
 
   @override
   String get reminderPlanCopy => '复制计划 JSON';
@@ -3681,15 +3437,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get liveActivityProbeStatusUnsupported => '不支持 / 未开启';
 
   @override
-  String get liveActivityProbeActive => '示例会话进行中';
-
-  @override
-  String get liveActivityProbeSentEnded => '会话已结束';
-
-  @override
-  String get liveActivityProbeNoSession => '未能连上宿主（无进行中的会话）。';
-
-  @override
   String get privacyPolicy => '隐私政策';
 
   @override
@@ -3700,6 +3447,386 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get docLoadFailed => '文档加载失败';
+
+  @override
+  String get logPersistenceSwitch => '在本机保留诊断日志';
+
+  @override
+  String get runtimeLogs => '运行日志';
+
+  @override
+  String get logCopyAll => '复制全部';
+
+  @override
+  String get logSaveShare => '保存并分享';
+
+  @override
+  String get logCopyFolderPath => '复制日志目录路径';
+
+  @override
+  String get logOpenFolder => '打开日志目录';
+
+  @override
+  String get logClearMemory => '清空内存日志';
+
+  @override
+  String get logAll => '全部';
+
+  @override
+  String get logAuthentication => '认证日志';
+
+  @override
+  String get logBusinessErrors => '业务错误';
+
+  @override
+  String get logAllTags => '全部 tag';
+
+  @override
+  String get logNoMatches => '没有符合条件的日志';
+
+  @override
+  String get logCategoryAuthentication => '认证';
+
+  @override
+  String get logCategoryBusiness => '业务';
+
+  @override
+  String get logStackTrace => '错误堆栈';
+
+  @override
+  String get logCopied => '已复制日志到剪贴板';
+
+  @override
+  String get logCopyFailed => '复制日志失败';
+
+  @override
+  String get logShared => '日志快照已导出';
+
+  @override
+  String get logSaveFailed => '保存日志失败';
+
+  @override
+  String get logShareFailed => '分享日志失败，已保存的快照仍可使用。';
+
+  @override
+  String get logClearTitle => '清空内存中的日志？';
+
+  @override
+  String get logClearHint => '仅清空当前进程的内存日志，磁盘上已保存的文件不受影响。';
+
+  @override
+  String get logPersistenceOff => '日志仅保留在内存，应用退出即丢失';
+
+  @override
+  String get logPersistenceActive => '警告与错误会写入日志（约 6 MB）';
+
+  @override
+  String get logPersistenceRetryHint => '请关闭后重新开启；若仍失败，请检查设备剩余存储空间。';
+
+  @override
+  String logPersistenceUnavailable(String reason) {
+    return '落盘不可用$reason';
+  }
+
+  @override
+  String logDroppedEntries(int count) {
+    return '已丢弃 $count 条待写日志';
+  }
+
+  @override
+  String logDirectoryCopied(String path) {
+    return '已复制目录路径：$path\n点「保存并分享」可导出日志。';
+  }
+
+  @override
+  String logSaved(String path) {
+    return '日志快照已保存至：$path';
+  }
+
+  @override
+  String get logDirectoryOpenFailed => '打开日志目录失败';
+
+  @override
+  String get logStartupTitle => 'Bugaoshan 启动失败';
+
+  @override
+  String get logCopy => '复制日志';
+
+  @override
+  String get logSave => '保存日志';
+
+  @override
+  String get logShare => '分享日志';
+
+  @override
+  String get cloudPrintTitle => '图书馆打印与扫描';
+
+  @override
+  String get cloudPrintDock => '云打印';
+
+  @override
+  String get cloudPrintDesc => '批量上传打印文档，查看任务、下载和分享扫描件';
+
+  @override
+  String get cloudPrintQueue => '上传队列';
+
+  @override
+  String get cloudPrintJobs => '打印任务';
+
+  @override
+  String get cloudPrintScans => '扫描文档';
+
+  @override
+  String get cloudPrintChoose => '添加文件';
+
+  @override
+  String get cloudPrintSettings => '默认打印设置';
+
+  @override
+  String get cloudPrintSharedSettings => '默认打印设置';
+
+  @override
+  String get cloudPrintFileSettings => '本文件打印设置';
+
+  @override
+  String get cloudPrintEmptyQueue => '选择一个或多个文档开始上传';
+
+  @override
+  String get cloudPrintHint => '上传后生成待打印任务，到图书馆终端刷校园卡确认打印。';
+
+  @override
+  String get cloudPrintScanHint => '请先在图书馆机器上完成扫描，扫描件会出现在这里，可下载或分享。';
+
+  @override
+  String get cloudPrintScanEmpty => '暂无扫描文档';
+
+  @override
+  String get cloudPrintJobsEmpty => '暂无打印任务';
+
+  @override
+  String get cloudPrintLoadFailed => '列表加载失败，请刷新重试。';
+
+  @override
+  String cloudPrintSelection(int added, int duplicates, int invalid) {
+    return '已添加 $added 个，跳过重复 $duplicates 个，不可读取或格式不支持 $invalid 个';
+  }
+
+  @override
+  String cloudPrintStart(int count) {
+    return '上传待处理文件（$count）';
+  }
+
+  @override
+  String get cloudPrintStop => '停止上传';
+
+  @override
+  String get cloudPrintStopping => '当前文件结束后停止';
+
+  @override
+  String get cloudPrintRetryFailed => '失败文件重新排队';
+
+  @override
+  String get cloudPrintClearFinished => '清理记录';
+
+  @override
+  String get cloudPrintPending => '等待上传';
+
+  @override
+  String cloudPrintUploading(int percent) {
+    return '上传中 $percent%';
+  }
+
+  @override
+  String get cloudPrintProcessing => '文档处理中…';
+
+  @override
+  String get cloudPrintUploaded => '已上传';
+
+  @override
+  String get cloudPrintFailed => '上传失败';
+
+  @override
+  String get cloudPrintUncertain => '上传结果待核对';
+
+  @override
+  String get cloudPrintVerify => '核对打印任务';
+
+  @override
+  String get cloudPrintVerificationPending => '服务器已接受上传；请先在「打印任务」核对，勿重复上传。';
+
+  @override
+  String get cloudPrintDuplicatePending => '已识别到重复文件，请到「打印任务」核对。';
+
+  @override
+  String get cloudPrintRequeue => '重新上传';
+
+  @override
+  String get cloudPrintMissingConfirm => '已核对，确认未生成任务';
+
+  @override
+  String get cloudPrintMissingHint => '请先查看打印任务，确认没有此文档后再重新排队。再次上传可能生成重复任务。';
+
+  @override
+  String get cloudPrintFailureAuth => '文件提交前会话已失效，请重新登录后重试。';
+
+  @override
+  String get cloudPrintFailureSize => '文件过大，打印服务器已拒绝此文件。';
+
+  @override
+  String get cloudPrintFailureRequest => '请检查文件和网络后重新上传。';
+
+  @override
+  String get cloudPrintRemove => '从上传队列移除';
+
+  @override
+  String get cloudPrintColor => '颜色';
+
+  @override
+  String get cloudPrintMono => '黑白';
+
+  @override
+  String get cloudPrintFullColor => '彩色';
+
+  @override
+  String get cloudPrintPaper => '纸型';
+
+  @override
+  String get cloudPrintOriginal => '原文档纸型';
+
+  @override
+  String get cloudPrintDuplex => '单双面';
+
+  @override
+  String get cloudPrintLongEdge => '长边双面';
+
+  @override
+  String get cloudPrintShortEdge => '短边双面';
+
+  @override
+  String get cloudPrintSimplex => '单面';
+
+  @override
+  String get cloudPrintCopies => '份数';
+
+  @override
+  String get cloudPrintPages => '页范围';
+
+  @override
+  String get cloudPrintPagesHint => '留空打印全部；或填 2、2-5';
+
+  @override
+  String get cloudPrintAllPages => '全部页';
+
+  @override
+  String get cloudPrintInvalidCopies => '请输入正整数份数';
+
+  @override
+  String get cloudPrintInvalidPages => '请输入单页或连续范围，例如 2-5';
+
+  @override
+  String cloudPrintSummary(int copies, String pages) {
+    return '$copies 份 · $pages';
+  }
+
+  @override
+  String cloudPrintJobInfo(int pages, int copies) {
+    return '$pages 页 · $copies 份';
+  }
+
+  @override
+  String cloudPrintJobCreated(String date, String time) {
+    return '$date $time';
+  }
+
+  @override
+  String get cloudPrintPreview => '预览';
+
+  @override
+  String cloudPrintPreviewPage(int page, int total) {
+    return '第 $page / $total 页';
+  }
+
+  @override
+  String get cloudPrintPreviewFailed => '预览加载失败，请稍后重试。';
+
+  @override
+  String get cloudPrintDelete => '删除任务';
+
+  @override
+  String cloudPrintDeleteConfirm(String name) {
+    return '删除「$name」后需要重新上传才能打印，确认删除？';
+  }
+
+  @override
+  String get cloudPrintSelectAll => '全选';
+
+  @override
+  String cloudPrintDeleteSelected(int count) {
+    return '删除选中（$count）';
+  }
+
+  @override
+  String cloudPrintDeleteSelectedConfirm(int count) {
+    return '删除选中的 $count 项？删除后需重新上传才能打印。';
+  }
+
+  @override
+  String cloudPrintScanDeleteConfirm(String name) {
+    return '删除扫描记录「$name」？本地已下载的文件不受影响。';
+  }
+
+  @override
+  String cloudPrintScanDeleteSelectedConfirm(int count) {
+    return '删除选中的 $count 条扫描记录？本地已下载的文件不受影响。';
+  }
+
+  @override
+  String cloudPrintDeletedCount(int count) {
+    return '已删除 $count 项';
+  }
+
+  @override
+  String cloudPrintDeletePartial(int deleted, int failed) {
+    return '已删除 $deleted 项，$failed 项失败，请重试。';
+  }
+
+  @override
+  String get cloudPrintCleanExpired => '清理过期文件';
+
+  @override
+  String cloudPrintCleanExpiredConfirm(int count) {
+    return '将删除 $count 个已过期的扫描记录，确认？';
+  }
+
+  @override
+  String get cloudPrintDownloadSelected => '下载选中';
+
+  @override
+  String get cloudPrintShareSelected => '分享选中';
+
+  @override
+  String get cloudPrintDownload => '下载';
+
+  @override
+  String get cloudPrintShare => '分享';
+
+  @override
+  String get cloudPrintScanExpired => '已过期';
+
+  @override
+  String get cloudPrintDownloadFailed => '部分文档下载失败，可单独重试失败项。';
+
+  @override
+  String get cloudPrintDownloadDone => '下载完成，可打开或分享已下载文档。';
+
+  @override
+  String get cloudPrintOpenFailed => '无法打开此文件，可尝试分享至其他应用。';
+
+  @override
+  String get cloudPrintShareFailed => '分享失败，已下载的文件仍然保留。';
+
+  @override
+  String get cloudPrintPickFailed => '文件选择失败，请重试。';
 }
 
 /// The translations for Chinese, as used in China, using the Han script (`zh_Hans_CN`).

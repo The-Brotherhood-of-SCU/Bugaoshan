@@ -28,6 +28,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
+  static const String _tag = 'HomePageState';
+
   int _currentIndex = 0;
   bool _nativeDock = false;
 
@@ -48,8 +50,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         return;
       }
       await authProvider.autoLogin();
-    } catch (e) {
-      AppLog.w('HomePage', 'Auto login attempt error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_attemptAutoLogin 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
     }
   }
 
@@ -66,8 +73,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       if (result.hasUpdate) {
         appConfig.hasUpdateNotification.value = true;
       }
-    } catch (e) {
-      AppLog.w('HomePage', 'CheckForUpdateInBackground error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_checkForUpdateInBackground 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
     }
   }
 
@@ -88,8 +100,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     if (!kIsWeb && (Platform.isAndroid || Platform.isIOS || Platform.isMacOS)) {
       try {
         await getIt<WidgetUpdateService>().updateWidgetData();
-      } catch (e) {
-        AppLog.e('HomePage', 'Widget update failed: $e');
+      } catch (e, logStackTrace) {
+        AppLog.e(_tag, '_updateWidget 失败', error: e, stackTrace: logStackTrace);
       }
     }
   }
@@ -97,11 +109,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return _buildMainScreen();
-  }
-
-  Widget _buildUpdateBadge({required Widget child, required bool showBadge}) {
-    if (!showBadge) return child;
-    return Badge(child: child);
   }
 
   Widget _buildMainScreen() {
@@ -166,22 +173,32 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                           // Rail placeholder: always present, hidden via Offstage
                           Offstage(
                             offstage: !showRail,
-                            child: NavigationRail(
-                              selectedIndex: _currentIndex,
-                              onDestinationSelected: (index) {
-                                setState(() => _currentIndex = index);
-                              },
-                              labelType: NavigationRailLabelType.all,
-                              destinations: visibleIds
-                                  .map(
-                                    (id) => _buildRailDestination(
-                                      id,
-                                      hasUpdate,
-                                      l10n,
-                                    ),
+                            child: showRail
+                                ? ValueListenableBuilder<bool>(
+                                    valueListenable:
+                                        appConfig.enableDockSwitchAnimation,
+                                    builder: (context, enableAnimation, _) =>
+                                        AdaptiveHomeDock(
+                                          axis: Axis.vertical,
+                                          reduceMotion: !enableAnimation,
+                                          selectedIndex: _currentIndex,
+                                          onDestinationSelected: (index) {
+                                            setState(
+                                              () => _currentIndex = index,
+                                            );
+                                          },
+                                          destinations: visibleIds
+                                              .map(
+                                                (id) => _buildDockDestination(
+                                                  id,
+                                                  hasUpdate,
+                                                  l10n,
+                                                ),
+                                              )
+                                              .toList(),
+                                        ),
                                   )
-                                  .toList(),
-                            ),
+                                : const SizedBox.shrink(),
                           ),
                           Offstage(
                             offstage: !showRail,
@@ -245,12 +262,15 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     if (id == dockIdCourse || id == dockIdCampus || id == dockIdProfile) {
       return page;
     }
-    // 自定义业务入口各有表单/FAB/Scaffold，暂保留完整可操作区域。
-    // 已适配的三张主页把这段空间放到滚动内容末尾，而非裁短 viewport。
+    // 其余自定义业务入口由外层整页抬起一块 Dock 高度的空间，保留表单与 FAB
+    // 的可操作区域，同时屏蔽被 extendBody 注入的底部 padding：若页面自带底栏
+    // （如改造前第二课堂的 NavigationBar）或内层滚动组件再消费一次，就会多留出
+    // 一整个 Dock 高度的空白 (#376)。已适配的三张主页不走这里，它们把这段
+    // 空间放到滚动内容末尾，而非裁短 viewport。
     return Builder(
       builder: (context) => Padding(
         padding: EdgeInsets.only(bottom: HomeDockInsets.bottomOf(context)),
-        child: page,
+        child: HomeDockInsets.consumed(context: context, child: page),
       ),
     );
   }
@@ -261,27 +281,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     } else if (_currentIndex >= ids.length) {
       _currentIndex = ids.length - 1;
     }
-  }
-
-  NavigationRailDestination _buildRailDestination(
-    String id,
-    bool hasUpdate,
-    AppLocalizations l10n,
-  ) {
-    final config = campusItemConfigById(id);
-    final isProfile = id == dockIdProfile;
-    return NavigationRailDestination(
-      icon: isProfile
-          ? _buildUpdateBadge(showBadge: hasUpdate, child: Icon(config.icon))
-          : Icon(config.icon),
-      selectedIcon: isProfile
-          ? _buildUpdateBadge(
-              showBadge: hasUpdate,
-              child: Icon(config.selectedIcon),
-            )
-          : Icon(config.selectedIcon),
-      label: Text(config.dockLabel(l10n)),
-    );
   }
 
   HomeDockDestination _buildDockDestination(

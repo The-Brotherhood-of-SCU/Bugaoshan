@@ -31,6 +31,8 @@ class ScuLoginPage extends StatefulWidget {
 }
 
 class _ScuLoginPageState extends State<ScuLoginPage> {
+  static const String _tag = 'ScuLoginPageState';
+
   final _formKey = GlobalKey<FormState>();
   final _usernameCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
@@ -51,7 +53,7 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
     // Web 端 scu_ocr_lite 依赖 dart:isolate，运行时不受支持，直接跳过初始化
     if (OcrService.isSupported) {
       OcrService.init().catchError((e) {
-        AppLog.e('ScuLoginPage', 'OCR Init error: $e');
+        AppLog.e(_tag, 'OCR Init error: $e');
       });
     }
     _loadSaved();
@@ -92,16 +94,21 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
       Uint8List? imageBytes;
       try {
         imageBytes = _decodeBase64Image(captcha.captchaBase64);
-      } catch (e) {
-        AppLog.e('ScuLoginPage', 'Captcha decode error: $e');
+      } catch (e, logStackTrace) {
+        AppLog.e(_tag, '_loadCaptcha 失败', error: e, stackTrace: logStackTrace);
       }
 
       String? recognizedText;
       if (imageBytes != null && OcrService.isSupported) {
         try {
           recognizedText = await OcrService.performOcr(imageBytes);
-        } catch (e) {
-          AppLog.e('ScuLoginPage', 'OCR error: $e');
+        } catch (e, logStackTrace) {
+          AppLog.e(
+            _tag,
+            '_loadCaptcha 失败',
+            error: e,
+            stackTrace: logStackTrace,
+          );
         }
       }
 
@@ -119,8 +126,9 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
           _captchaCtrl.clear();
         }
       });
-    } catch (e) {
-      AppLog.e('ScuLoginPage', 'Captcha load error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(_tag, '_loadCaptcha 失败', error: e, stackTrace: logStackTrace);
+
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       setState(() => _errorMsg = l10n.captchaLoadFailed);
@@ -166,14 +174,16 @@ class _ScuLoginPageState extends State<ScuLoginPage> {
 
       if (!logicRootContext.mounted) return;
       Navigator.of(logicRootContext).pop(true);
-    } on ScuLoginException catch (e) {
-      AppLog.w('ScuLoginPage', 'Login failed: ${e.message}');
+    } on ScuLoginException catch (e, logStackTrace) {
+      AppLog.e(_tag, '_submit 失败', error: e, stackTrace: logStackTrace);
+
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       setState(() => _errorMsg = _localizeLoginError(e, l10n));
       unawaited(_loadCaptcha());
-    } catch (e) {
-      AppLog.e('ScuLoginPage', 'Login network error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(_tag, '_submit 失败', error: e, stackTrace: logStackTrace);
+
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       setState(() => _errorMsg = _describeNetworkError(e, l10n));

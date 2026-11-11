@@ -1,0 +1,58 @@
+name: PR Commit Check
+
+on:
+  pull_request_target:
+    branches: [main, preview]
+    types: [opened, edited, reopened, ready_for_review, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: pr-commits-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check-commits:
+    name: Check Conventional Commits
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # 只读取 PR 元数据，不检出或执行贡献者的代码。
+      - name: Check commit subjects
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pull_number = context.payload.pull_request.number;
+            const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number });
+            if (pr.base.ref === 'main' && pr.head.ref === 'preview'
+                && pr.head.repo?.full_name === pr.base.repo.full_name) {
+              core.notice('preview → main 发布合并不重复检查历史提交。');
+              return;
+            }
+
+            const commits = await github.paginate(github.rest.pulls.listCommits, {
+              owner, repo, pull_number, per_page: 100,
+            });
+            if (commits.length !== pr.commits) {
+              core.setFailed('未能获取完整提交列表，请重新运行检查或拆分过大的 PR。');
+              return;
+            }
+
+            const conventional = /^(feat|fix|refactor|docs|chore|perf|build|ci|test|style)(\([^()\r\n]+\))?!?: \S.*$/;
+            const invalid = commits.filter(commit => {
+              if (commit.parents.length > 1) return false;
+              const subject = commit.commit.message.split(/\r?\n/, 1)[0];
+              // Git 原生 revert 提交保留默认标题。
+              return !conventional.test(subject) && !/^Revert ".+"$/.test(subject);
+            });
+            for (const commit of invalid) {
+              core.error(`${commit.sha.slice(0, 7)}: ${commit.commit.message.split(/\r?\n/, 1)[0]}`);
+            }
+            if (invalid.length > 0) {
+              core.setFailed(`发现 ${invalid.length} 个不合规提交，请使用 feat:、fix:、docs: 等 Conventional Commits 格式。`);
+            } else {
+              core.info(`已检查 ${commits.length} 个提交。`);
+            }

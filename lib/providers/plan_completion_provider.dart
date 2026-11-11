@@ -13,6 +13,8 @@ const _keyPlanCompletion = 'plan_completion_nodes';
 enum PlanCompletionLoadState { idle, loading, loaded, error }
 
 class PlanCompletionProvider extends ChangeNotifier {
+  static const String _tag = 'PlanCompletionProvider';
+
   final SharedPreferences _prefs;
   final ZhjwApiService _zhjwApi;
   int _requestGeneration = 0;
@@ -24,8 +26,13 @@ class PlanCompletionProvider extends ChangeNotifier {
         final list = jsonDecode(cached) as List<dynamic>;
         _plans = _decodeCached(list);
         _state = PlanCompletionLoadState.loaded;
-      } catch (e) {
-        AppLog.w('PlanCompletionProvider', 'Cache decode error: $e');
+      } catch (e, logStackTrace) {
+        AppLog.e(
+          _tag,
+          'PlanCompletionProvider 失败',
+          error: e,
+          stackTrace: logStackTrace,
+        );
       }
     }
   }
@@ -92,7 +99,13 @@ class PlanCompletionProvider extends ChangeNotifier {
       _error = null;
       await _saveToCache();
       if (generation != _requestGeneration) return;
-    } on RateLimitedException catch (_) {
+    } on RateLimitedException catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'fetchPlanCompletion 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       if (generation != _requestGeneration) return;
       if (_plans.isNotEmpty) {
         _state = PlanCompletionLoadState.loaded;
@@ -100,7 +113,13 @@ class PlanCompletionProvider extends ChangeNotifier {
         _state = PlanCompletionLoadState.error;
       }
       _error = LoadErrorType.rateLimited;
-    } on ServiceException catch (_) {
+    } on ServiceException catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'fetchPlanCompletion 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       if (generation != _requestGeneration) return;
       if (_plans.isNotEmpty) {
         _state = PlanCompletionLoadState.loaded;
@@ -109,7 +128,13 @@ class PlanCompletionProvider extends ChangeNotifier {
         _state = PlanCompletionLoadState.error;
         _error = campusNetworkErrorType(LoadErrorType.loadFailed);
       }
-    } on UnauthenticatedException catch (e) {
+    } on UnauthenticatedException catch (e, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'fetchPlanCompletion 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (generation != _requestGeneration) return;
       if (_plans.isNotEmpty) {
         _state = PlanCompletionLoadState.loaded;
@@ -117,7 +142,13 @@ class PlanCompletionProvider extends ChangeNotifier {
         _state = PlanCompletionLoadState.error;
       }
       _error = zhjwAuthErrorType(e);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'fetchPlanCompletion 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       if (generation != _requestGeneration) return;
       if (_plans.isNotEmpty) {
         _state = PlanCompletionLoadState.loaded;

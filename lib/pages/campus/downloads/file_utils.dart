@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -6,8 +7,11 @@ import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:open_filex/open_filex.dart';
 
 import 'package:bugaoshan/services/download_manager.dart';
+
+const String _tag = 'FileUtils';
 
 /// Default subdirectory name under `Bugaoshan/` for jwc notice downloads.
 const kNoticeAttachmentDir = 'notice_attachments';
@@ -18,8 +22,14 @@ const kPartyAttachmentDir = 'party_attachments';
 /// Subdirectory name under `Bugaoshan/` for tuanwei notice downloads.
 const kTuanweiAttachmentDir = 'tuanwei_attachments';
 
-/// Subdirectory name under `Bugaoshan/` for saved auth log exports.
-const kAuthLogDir = 'auth_logs';
+Future<void> openDownloadedFile(String path) {
+  return AppLog.guard(_tag, '打开下载文件', () async {
+    final result = await OpenFilex.open(path);
+    if (result.type != ResultType.done) {
+      AppLog.e(_tag, '打开下载文件失败 type=${result.type}', error: result.message);
+    }
+  });
+}
 
 /// Persistent URL-to-file index for notice attachments.
 ///
@@ -27,6 +37,8 @@ const kAuthLogDir = 'auth_logs';
 /// a shared JSON map. Legacy files are adopted only when no other URL already
 /// owns that path.
 class DownloadPathIndex {
+  static const String _tag = 'DownloadPathIndex';
+
   DownloadPathIndex(this.downloadDir);
 
   static const _indexDirName = '.download_index';
@@ -51,7 +63,13 @@ class DownloadPathIndex {
     try {
       try {
         await previous;
-      } catch (_) {
+      } catch (logError, logStackTrace) {
+        AppLog.e(
+          _tag,
+          '下载索引队列恢复失败',
+          error: logError,
+          stackTrace: logStackTrace,
+        );
         // A previous operation must not poison the per-directory queue.
       }
       return await action();
@@ -158,7 +176,13 @@ class DownloadPathIndex {
         throw const FormatException();
       }
       return rawName;
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_readFileName 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       if (await entry.exists()) await entry.delete();
       return null;
     }
@@ -187,21 +211,6 @@ Future<Directory> getNoticeBaseDir() async {
     if (dir != null) return dir;
   }
   return getApplicationDocumentsDirectory();
-}
-
-/// Auth log 落盘策略：
-/// - Android：app 外部 cache (`Android/data/<package>/cache/`)，
-///   文件管理器可见，OS 会在低存储时清理。
-/// - 其他平台：OS temp 目录，由 OS 管理生命周期。
-///
-/// 不走 `getDownloadsDirectory()` / `getExternalStorageDirectory()`，
-/// 因为 auth log 是调试用的瞬态产物，不是用户文件。
-Future<Directory> getAuthLogBaseDir() async {
-  if (Platform.isAndroid) {
-    final dirs = await getExternalCacheDirectories();
-    if (dirs != null && dirs.isNotEmpty) return dirs.first;
-  }
-  return getTemporaryDirectory();
 }
 
 /// Resolves a subdirectory under `Bugaoshan/{dirName}/` inside the app's

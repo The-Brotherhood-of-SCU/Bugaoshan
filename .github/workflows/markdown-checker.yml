@@ -1,0 +1,42 @@
+name: Markdown Link Check
+
+on:
+  push:
+    branches: [main, preview]
+    paths:
+      - '**/*.md'
+      - .github/workflows/markdown-checker.yml
+  pull_request:
+    branches: [main, preview]
+    paths:
+      - '**/*.md'
+      - .github/workflows/markdown-checker.yml
+  schedule:
+    - cron: '0 0 * * 2'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: markdown-links-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-links:
+    name: Check Internal Documentation Links
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Check local links and images
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2
+        with:
+          lycheeVersion: v0.24.2
+          args: >-
+            --offline --root-dir . --verbose --no-progress
+            './*.md' './docs/**/*.md' './packaging/**/*.md' './lib/l10n/README.md'

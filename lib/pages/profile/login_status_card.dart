@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -244,81 +243,59 @@ class _LoginStatusCardState extends State<LoginStatusCard> {
     Color primaryColor,
     LoginStatus status,
   ) {
-    return AdaptiveGlassButton(
-      label: status.isAutoLoggingIn
-          ? localizations.autoLoggingIn
-          : status.isLoggedIn
-          ? localizations.logout
-          : localizations.scuLogin,
-      onPressed: status.isAutoLoggingIn
+    return InkWell(
+      onTap: status.isAutoLoggingIn
           ? null
           : status.isLoggedIn
           ? _onLogout
           : _onLogin,
-      loading: status.isAutoLoggingIn,
-      prominent: !status.isLoggedIn,
-      tint: status.isLoggedIn ? theme.colorScheme.error : primaryColor,
-      symbol: status.isLoggedIn
-          ? 'rectangle.portrait.and.arrow.right'
-          : 'person.crop.circle',
-      fallback: InkWell(
-        onTap: status.isAutoLoggingIn
-            ? null
-            : status.isLoggedIn
-            ? _onLogout
-            : _onLogin,
-        borderRadius: const BorderRadius.vertical(
-          bottom: Radius.circular(AppShapes.largeIncreased),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          child: Row(
-            children: [
-              if (status.isAutoLoggingIn)
-                SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                )
-              else
-                Icon(
-                  status.isLoggedIn
-                      ? Icons.logout_rounded
-                      : Icons.login_rounded,
-                  color: status.isLoggedIn
-                      ? theme.colorScheme.error
-                      : primaryColor,
-                  size: 20,
+      borderRadius: const BorderRadius.vertical(
+        bottom: Radius.circular(AppShapes.largeIncreased),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        child: Row(
+          children: [
+            if (status.isAutoLoggingIn)
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Text(
-                  status.isAutoLoggingIn
-                      ? localizations.autoLoggingIn
-                      : status.isLoggedIn
-                      ? localizations.logout
-                      : localizations.scuLogin,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: status.isAutoLoggingIn
-                        ? theme.colorScheme.onSurfaceVariant
-                        : status.isLoggedIn
-                        ? theme.colorScheme.error
-                        : primaryColor,
-                  ),
-                ),
-              ),
+              )
+            else
               Icon(
-                Icons.chevron_right_rounded,
-                color: theme.colorScheme.onSurfaceVariant.withValues(
-                  alpha: 0.4,
-                ),
+                status.isLoggedIn ? Icons.logout_rounded : Icons.login_rounded,
+                color: status.isLoggedIn
+                    ? theme.colorScheme.error
+                    : primaryColor,
                 size: 20,
               ),
-            ],
-          ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                status.isAutoLoggingIn
+                    ? localizations.autoLoggingIn
+                    : status.isLoggedIn
+                    ? localizations.logout
+                    : localizations.scuLogin,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: status.isAutoLoggingIn
+                      ? theme.colorScheme.onSurfaceVariant
+                      : status.isLoggedIn
+                      ? theme.colorScheme.error
+                      : primaryColor,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+              size: 20,
+            ),
+          ],
         ),
       ),
     );

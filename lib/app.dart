@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:ui' show PointerDeviceKind;
 
 // 这个库是为了在iOS上使用CupertinoPageTransitionsBuilder，flutter新版已经分离出来了，不要删
 // ignore: unnecessary_import
 import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/pages/home_page.dart';
 import 'package:bugaoshan/pages/wizard/eula_gate_page.dart';
@@ -14,6 +16,7 @@ import 'package:bugaoshan/services/background_cache_service.dart';
 import 'package:bugaoshan/services/reminder/live_activity_coordinator.dart';
 import 'package:bugaoshan/services/reminder/reminder_service.dart';
 import 'package:bugaoshan/theme.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/widgets/common/session_expired_listener.dart';
 import 'package:bugaoshan/widgets/eula_content.dart';
 import 'package:bugaoshan/widgets/route/mouse_back_handler.dart';
@@ -31,6 +34,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   final AppConfigProvider _appConfig = getIt<AppConfigProvider>();
   late final BackgroundCacheService _bgCache = getIt<BackgroundCacheService>();
+  late final void Function() _logPersistenceListener;
 
   @override
   void initState() {
@@ -40,11 +44,35 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       if (!mounted) return;
       _bgCache.precache();
     });
+    _bindLogPersistence();
+  }
+
+  /// 按用户开关启停 warn/error 日志落盘。
+  ///
+  /// 默认开启（`AppConfigProvider.logPersistenceEnabled`）：落盘是崩溃现场的
+  /// 唯一后手，默认关闭等于要求用户在出问题前就去设置里翻开关。用户关闭时
+  /// 同时清理可能残留的旧文件。
+  void _bindLogPersistence() {
+    final logger = getIt<AppLogger>();
+    final notifier = _appConfig.logPersistenceEnabled;
+    void apply(bool enabled) {
+      if (kIsWeb) return;
+      if (enabled) {
+        unawaited(logger.enableFileSink());
+      } else {
+        unawaited(logger.deletePersistedFiles());
+      }
+    }
+
+    _logPersistenceListener = () => apply(notifier.value);
+    notifier.addListener(_logPersistenceListener);
+    apply(notifier.value);
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _appConfig.logPersistenceEnabled.removeListener(_logPersistenceListener);
     _bgCache.dispose();
     super.dispose();
   }
@@ -84,6 +112,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         onGenerateTitle: (ctx) => AppLocalizations.of(ctx)!.bugaoshan,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
+        scrollBehavior: const AppScrollBehavior(),
         theme: _buildTheme(Brightness.light, context),
         darkTheme: _buildTheme(Brightness.dark, context),
         themeMode: _appConfig.themeMode.value,
@@ -129,4 +158,19 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       pageTransitionDuration: _appConfig.cardSizeAnimationDuration.value,
     );
   }
+}
+
+/// 全局滚动行为：桌面端允许鼠标左键拖动滚动视图。
+///
+/// Flutter 默认的 [ScrollBehavior.dragDevices] 不含 [PointerDeviceKind.mouse]，
+/// 桌面 / Web 上按住鼠标拖不动任何列表与横向标签条（只能滚轮）。在默认集合
+/// 基础上追加鼠标，不手动抄整套——默认值里的 `unknown` 是 Android 无障碍
+/// 语音滚动（VoiceAccess）依赖的，漏掉会让 TalkBack 用户滑不动列表，以后
+/// Flutter 新增设备类型也不会在这里漏跟。
+class AppScrollBehavior extends MaterialScrollBehavior {
+  const AppScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices =>
+      {...super.dragDevices, PointerDeviceKind.mouse};
 }

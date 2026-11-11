@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/utils/app_log.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 import 'balance_card.dart';
 
 class BalanceList extends StatefulWidget {
@@ -14,6 +15,8 @@ class BalanceList extends StatefulWidget {
 }
 
 class _BalanceListState extends State<BalanceList> {
+  static const String _tag = 'BalanceListState';
+
   @override
   void initState() {
     super.initState();
@@ -42,7 +45,7 @@ class _BalanceListState extends State<BalanceList> {
         return RefreshIndicator(
           onRefresh: () => _refreshAll(context),
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: withSystemBottomInset(context, EdgeInsets.all(16)),
             children: [
               BalanceCard(
                 key: ValueKey('electric_$balanceKey'),
@@ -77,9 +80,9 @@ class _BalanceListState extends State<BalanceList> {
     for (final type in [kBalanceTypeElectric, kBalanceTypeAc]) {
       try {
         await widget.provider.refreshBalance(type);
-      } catch (e) {
+      } catch (e, logStackTrace) {
+        AppLog.e(_tag, '_refreshAll 失败', error: e, stackTrace: logStackTrace);
         failed = true;
-        AppLog.e('BalanceList', 'Refresh error: $e');
       }
     }
     if (!failed || !context.mounted) return;

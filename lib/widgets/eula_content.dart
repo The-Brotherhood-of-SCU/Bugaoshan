@@ -27,6 +27,8 @@ class EulaContent extends StatefulWidget {
 
 class _EulaContentState extends State<EulaContent>
     with AutomaticKeepAliveClientMixin {
+  static const String _tag = 'EulaContentState';
+
   @override
   bool get wantKeepAlive => true;
   String _eulaContent = '';
@@ -56,8 +58,13 @@ class _EulaContentState extends State<EulaContent>
           _isLoading = false;
         });
       }
-    } catch (e) {
-      AppLog.e('EulaContent', 'load $kEulaAsset failed: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_loadEulaContent 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (mounted) {
         setState(() {
           _loadFailed = true;

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart'
     show Colors, Curve, Curves, ThemeMode, TimeOfDay;
 import 'package:bugaoshan/models/background_crop.dart';
+import 'package:bugaoshan/models/date_display_format.dart';
 import 'package:bugaoshan/models/reminder_plan.dart';
 import 'package:bugaoshan/models/student_type.dart';
 import 'package:bugaoshan/models/widget_appearance.dart';
@@ -33,6 +34,7 @@ const String _keyWidgetShowTomorrow = 'widget_show_tomorrow';
 const String _keyWidgetColorStyle = 'widget_color_style';
 const String _keyWidgetDensity = 'widget_density';
 const String _keyUsePreviewUpdateSource = 'usePreviewUpdateSource';
+const String _keyUseGithubProxy = 'useGithubProxy';
 const String _keyShowTeacherName = 'showTeacherName';
 const String _keyShowLocation = 'showLocation';
 const String _keyShowCourseWeeks = 'showCourseWeeks';
@@ -45,6 +47,7 @@ const String _keyForceCaptchaForDownload = 'forceCaptchaForDownload';
 const String _keyEnablePageTransitionAnimation =
     'enablePageTransitionAnimation';
 const String _keyStudentType = 'studentType';
+const String _keyDateDisplayFormat = 'dateDisplayFormat';
 // ── 本地提醒（见 docs/decisions 与 issue #358）───────────────────────
 const String _keyReminderEnabled = 'reminder_enabled';
 const String _keyReminderLeadMinutes = 'reminder_lead_minutes';
@@ -52,6 +55,9 @@ const String _keyReminderLeadMinutes = 'reminder_lead_minutes';
 const String _keyReminderQuietStart = 'reminder_quiet_start';
 const String _keyReminderQuietEnd = 'reminder_quiet_end';
 const String _keyReminderWindowDays = 'reminder_window_days';
+
+/// 是否把 warn/error 级日志落盘到本机文件。
+const String _keyLogPersistenceEnabled = 'log_persistence_enabled';
 const Curve appCurve = Curves.easeOutQuart;
 
 enum ThemeColorMode { system, backgroundImage, custom }
@@ -60,6 +66,11 @@ class AppConfigProvider {
   final SharedPreferences _sharedPreferences;
 
   AppConfigProvider(this._sharedPreferences);
+
+  /// 启动期与完整设置装配共用同一开关读取逻辑。
+  static bool readLogPersistenceEnabled(SharedPreferences preferences) =>
+      preferences.getBool(_keyLogPersistenceEnabled) ?? true;
+
   Future<void> init() async {
     await _loadPreferences();
     _addSaveCallback();
@@ -106,6 +117,13 @@ class AppConfigProvider {
   final ValueNotifier<WidgetDensity> widgetDensity =
       ValueNotifier<WidgetDensity>(WidgetDensity.standard);
   final ValueNotifier<bool> usePreviewUpdateSource = ValueNotifier<bool>(false);
+
+  /// GitHub 资源（软件更新包、校历）是否走 gh-proxy 镜像。**默认开启**。
+  ///
+  /// 开启：镜像优先，请求失败自动回退直连（由 [GithubResourceService] 统一
+  /// 处理，对消费方透明）；关闭：严格直连，不使用镜像。默认值与历史行为
+  /// 一致——更新包下载此前被无条件加 gh-proxy 前缀。
+  final ValueNotifier<bool> useGithubProxy = ValueNotifier<bool>(true);
   final ValueNotifier<bool> useGoogleFonts = ValueNotifier<bool>(true);
   final ValueNotifier<bool> showTeacherName = ValueNotifier<bool>(true);
   final ValueNotifier<bool> showLocation = ValueNotifier<bool>(true);
@@ -125,6 +143,13 @@ class AppConfigProvider {
     true,
   );
 
+  /// 课表日期格式。null 表示跟随系统语言（默认），用户可显式覆盖。
+  ///
+  /// 默认从 locale 映射而不是硬编码某一国写法：中文系统给 MM/DD/YYYY，
+  /// 德语系统给 DD/MM/YYYY，都不需要用户先改一次设置。
+  final ValueNotifier<DateDisplayFormat?> dateDisplayFormat =
+      ValueNotifier<DateDisplayFormat?>(null);
+
   /// 学生身份（本科生 / 研究生），决定课表导入入口与校园页功能分区展示范围。
   final ValueNotifier<StudentType> studentType = ValueNotifier<StudentType>(
     StudentType.undergraduate,
@@ -136,6 +161,21 @@ class AppConfigProvider {
   // showTeacherName），这里只保存提醒自身的开关与时机。默认全部关闭：
   // 请求通知权限属于高打扰动作，不在用户未表达意愿时替他决定。
   final ValueNotifier<bool> reminderEnabled = ValueNotifier<bool>(false);
+
+  /// 是否把 warn/error 级日志落盘。**默认开启**。
+  ///
+  /// 落盘是崩溃现场唯一的后手——内存缓冲在进程退出后必然丢失，而默认关闭
+  /// 的话，崩溃时用户没提前开开关 → 问题依旧无解；需要报障的用户恰恰不会
+  /// 去设置里翻诊断开关。留后路的开关等于没解决。
+  ///
+  /// 历史上曾默认关闭：`AppLogger` 的轮转在**同步突发写入**下会丢日志
+  /// （`log()` 同步而 `_rotate()` 异步，实测 400 条仅落盘 30 行）。
+  /// 已改为**单写入队列**（同步写只入队、由串行异步消费者串行落盘与轮转），
+  /// 并在真机压测验证：200 条 warn 全部落盘，序号 0–199 无缺失。
+  ///
+  /// 若发现该开关被默认关闭，先读这段历史再改回去——会丢日志的落盘比不落盘
+  /// 更糟，它给出「已经记录了」的假象。
+  final ValueNotifier<bool> logPersistenceEnabled = ValueNotifier<bool>(true);
 
   /// 提前量（分钟），可多选。存为升序去重的列表。
   final ValueNotifier<List<int>> reminderLeadMinutes = ValueNotifier<List<int>>(
@@ -196,9 +236,13 @@ class AppConfigProvider {
         kDebugMode;
     hasUpdateNotification.value =
         _sharedPreferences.getBool(_keyHasUpdateNotification) ?? false;
-    visibleDockIds.value =
-        _sharedPreferences.getStringList(_keyVisibleDockIds) ??
-        List<String>.from(defaultVisibleDockIds);
+    final savedDockIds = _sharedPreferences.getStringList(_keyVisibleDockIds);
+    visibleDockIds.value = savedDockIds == null
+        ? List<String>.from(defaultVisibleDockIds)
+        : [
+            for (final id in savedDockIds)
+              if (campusItemIdExists(id)) id,
+          ];
     acceptedEulaVersion.value =
         _sharedPreferences.getInt(_keyAcceptedEulaVersion) ??
         (kDebugMode ? 114514 : 0); //debug mode default 114514, skip eula check
@@ -225,6 +269,8 @@ class AppConfigProvider {
         : WidgetDensity.standard;
     usePreviewUpdateSource.value =
         _sharedPreferences.getBool(_keyUsePreviewUpdateSource) ?? false;
+    useGithubProxy.value =
+        _sharedPreferences.getBool(_keyUseGithubProxy) ?? true;
     useGoogleFonts.value =
         _sharedPreferences.getBool(_keyUseGoogleFonts) ?? true;
     showTeacherName.value =
@@ -243,6 +289,13 @@ class AppConfigProvider {
         _sharedPreferences.getBool(_keyForceCaptchaForDownload) ?? false;
     enableDockSwitchAnimation.value =
         _sharedPreferences.getBool(_keyEnablePageTransitionAnimation) ?? true;
+    final savedDateFormat = _sharedPreferences.getInt(_keyDateDisplayFormat);
+    dateDisplayFormat.value =
+        savedDateFormat != null &&
+            savedDateFormat >= 0 &&
+            savedDateFormat < DateDisplayFormat.values.length
+        ? DateDisplayFormat.values[savedDateFormat]
+        : null;
     final studentTypeIndex =
         _sharedPreferences.getInt(_keyStudentType) ??
         StudentType.undergraduate.index;
@@ -252,6 +305,7 @@ class AppConfigProvider {
 
     reminderEnabled.value =
         _sharedPreferences.getBool(_keyReminderEnabled) ?? false;
+    logPersistenceEnabled.value = readLogPersistenceEnabled(_sharedPreferences);
     reminderLeadMinutes.value =
         _decodeLeadMinutes(
           _sharedPreferences.getStringList(_keyReminderLeadMinutes),
@@ -395,6 +449,9 @@ class AppConfigProvider {
         usePreviewUpdateSource.value,
       );
     });
+    useGithubProxy.addListener(() {
+      _sharedPreferences.setBool(_keyUseGithubProxy, useGithubProxy.value);
+    });
     useGoogleFonts.addListener(() {
       _sharedPreferences.setBool(_keyUseGoogleFonts, useGoogleFonts.value);
     });
@@ -440,8 +497,22 @@ class AppConfigProvider {
     studentType.addListener(() {
       _sharedPreferences.setInt(_keyStudentType, studentType.value.index);
     });
+    dateDisplayFormat.addListener(() {
+      final value = dateDisplayFormat.value;
+      if (value == null) {
+        _sharedPreferences.remove(_keyDateDisplayFormat);
+      } else {
+        _sharedPreferences.setInt(_keyDateDisplayFormat, value.index);
+      }
+    });
     reminderEnabled.addListener(() {
       _sharedPreferences.setBool(_keyReminderEnabled, reminderEnabled.value);
+    });
+    logPersistenceEnabled.addListener(() {
+      _sharedPreferences.setBool(
+        _keyLogPersistenceEnabled,
+        logPersistenceEnabled.value,
+      );
     });
     reminderLeadMinutes.addListener(() {
       _sharedPreferences.setStringList(

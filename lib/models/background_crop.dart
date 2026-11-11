@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:ui' show Offset;
+import 'package:bugaoshan/utils/app_log.dart';
 
 /// 背景图裁剪参数（归一化存储，与图片分辨率、课程页容器尺寸无关）。
 ///
@@ -10,6 +11,8 @@ import 'dart:ui' show Offset;
 /// 全部取默认值时，渲染结果与 BoxFit.cover（居中裁剪）完全一致，
 /// 因此旧用户没有裁剪参数（null）时背景显示不发生变化。
 class BackgroundCropParams {
+  static const String _tag = 'BackgroundCropParams';
+
   /// 默认焦点：图片中心。
   static const double defaultFocus = 0.5;
 
@@ -73,7 +76,8 @@ class BackgroundCropParams {
         focusY: fy.clamp(0.0, 1.0),
         zoom: z.clamp(minZoom, maxZoom),
       );
-    } catch (_) {
+    } catch (error, stackTrace) {
+      AppLog.e(_tag, '恢复背景裁剪配置失败', error: error, stackTrace: stackTrace);
       return null;
     }
   }

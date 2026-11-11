@@ -169,5 +169,14 @@
             <action android:name="android.intent.action.VIEW"/>
             <data android:mimeType="text/calendar"/>
         </intent>
+        <!-- 判断安装来源是否为 F-Droid 系客户端（Android 11+ 需声明才能 query 到） -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="fdroidrepo"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="fdroidrepos"/>
+        </intent>
     </queries>
 </manifest>

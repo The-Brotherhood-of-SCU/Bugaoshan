@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 /// 深色模式设置页：跟随系统 / 浅色 / 深色，点选后立即生效并持久化。
 /// 每个选项渲染一张迷你界面预览卡，「跟随系统」左右分屏展示浅深两种外观。
@@ -17,7 +18,10 @@ class SetThemeModePage extends StatelessWidget {
       body: ValueListenableBuilder<ThemeMode>(
         valueListenable: appConfig.themeMode,
         builder: (context, mode, _) => ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: withSystemBottomInset(
+            context,
+            EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          ),
           children: [
             Row(
               children: [

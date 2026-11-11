@@ -38,6 +38,7 @@ const _destinations = [
 Widget _host({
   List<HomeDockDestination> destinations = _destinations,
   int selectedIndex = 0,
+  Axis axis = Axis.horizontal,
   ValueChanged<int>? onSelected,
   ValueChanged<bool>? onNativeModeChanged,
   ThemeData? theme,
@@ -54,6 +55,7 @@ Widget _host({
         child: AdaptiveHomeDock(
           destinations: destinations,
           selectedIndex: selectedIndex,
+          axis: axis,
           onDestinationSelected: onSelected ?? (_) {},
           onNativeModeChanged: onNativeModeChanged,
         ),
@@ -144,6 +146,38 @@ void main() {
     bridge.uninstall();
     await getIt.reset();
   });
+
+  for (final axis in Axis.values) {
+    testWidgets(
+      'macOS native navigation preserves stable IDs with $axis layout',
+      (tester) async {
+        bridge.install();
+        final selected = <int>[];
+        await tester.pumpWidget(_host(axis: axis, onSelected: selected.add));
+        await tester.pumpAndSettle();
+        expect(find.byType(AppKitView), findsOneWidget);
+        expect(find.byType(UiKitView), findsNothing);
+        expect(bridge.creations.single['axis'], axis.name);
+        await bridge.send('select', 'profile');
+        await bridge.send('select', 'removed-destination');
+        expect(selected, [2]);
+        bridge.failUpdates = true;
+        await tester.pumpWidget(
+          _host(axis: axis, selectedIndex: 1, onSelected: selected.add),
+        );
+        await tester.pumpAndSettle();
+        expect(find.byType(AppKitView), findsNothing);
+        expect(
+          find.byType(axis == Axis.vertical ? NavigationRail : NavigationBar),
+          findsOneWidget,
+        );
+        await tester.tap(find.text('Profile'));
+        expect(selected, [2, 2]);
+        expect(tester.takeException(), isNull);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.macOS),
+    );
+  }
 
   testWidgets(
     'non-iOS navigation never contacts the native bridge',
@@ -489,4 +523,108 @@ void main() {
       const Rect.fromLTRB(12, 24, 788, 566),
     );
   });
+
+  testWidgets('consumed() strips the body padding injected by extendBody', (
+    tester,
+  ) async {
+    double? inset;
+    double? innerBottomPadding;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MediaQuery(
+          data: const MediaQueryData(
+            size: Size(800, 600),
+            padding: EdgeInsets.only(top: 24, bottom: 122),
+            viewPadding: EdgeInsets.only(top: 24, bottom: 122),
+          ),
+          child: HomeDockBody(
+            extended: true,
+            child: Builder(
+              builder: (outer) {
+                inset = HomeDockInsets.bottomOf(outer);
+                return HomeDockInsets.consumed(
+                  context: outer,
+                  child: Builder(
+                    builder: (inner) {
+                      innerBottomPadding = MediaQuery.paddingOf(inner).bottom;
+                      return const SizedBox.expand();
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // 外层仍能读到避让距离，内层不再重复消费。
+    expect(inset, 122);
+    expect(innerBottomPadding, 0);
+  });
+
+  testWidgets(
+    'nested Scaffold with its own bottom bar is not inflated by the dock inset',
+    (tester) async {
+      // #376：此前第二课堂自带 NavigationBar（现已改为顶部 TabBar）；此处针对此类
+      // 自带底栏的 dock 入口进行回归防护，验证其内层 Scaffold 不应再消费一次注入的底部 padding。
+      Widget build({required bool consumed}) => MaterialApp(
+        theme: ThemeData(
+          navigationBarTheme: const NavigationBarThemeData(height: 64),
+        ),
+        home: MediaQuery(
+          data: const MediaQueryData(
+            size: Size(402, 874),
+            padding: EdgeInsets.only(top: 59, bottom: 34),
+            viewPadding: EdgeInsets.only(top: 59, bottom: 34),
+          ),
+          child: Scaffold(
+            extendBody: true,
+            bottomNavigationBar: const SizedBox(height: 122),
+            body: HomeDockBody(
+              extended: true,
+              child: Builder(
+                builder: (context) {
+                  final page = Scaffold(
+                    body: const SizedBox.expand(),
+                    bottomNavigationBar: NavigationBar(
+                      selectedIndex: 0,
+                      destinations: const [
+                        NavigationDestination(
+                          icon: Icon(Icons.search),
+                          label: 'A',
+                        ),
+                        NavigationDestination(
+                          icon: Icon(Icons.person),
+                          label: 'B',
+                        ),
+                      ],
+                    ),
+                  );
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      bottom: HomeDockInsets.bottomOf(context),
+                    ),
+                    child: consumed
+                        ? HomeDockInsets.consumed(context: context, child: page)
+                        : page,
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpWidget(build(consumed: false));
+      await tester.pumpAndSettle();
+      final inflated = tester.getRect(find.byType(NavigationBar));
+      expect(inflated.height, 64 + 122);
+
+      await tester.pumpWidget(build(consumed: true));
+      await tester.pumpAndSettle();
+      final normal = tester.getRect(find.byType(NavigationBar));
+      expect(normal.height, 64);
+    },
+  );
 }

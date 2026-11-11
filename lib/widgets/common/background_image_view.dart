@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/models/background_crop.dart';
+import 'package:bugaoshan/widgets/common/image_error_log.dart';
 
 /// 课程页背景图渲染组件：按 [crop] 裁剪参数把原图缩放/平移进容器，超出部分裁掉。
 ///
@@ -35,11 +37,14 @@ class BackgroundImageView extends StatefulWidget {
 }
 
 class _BackgroundImageViewState extends State<BackgroundImageView> {
+  static const String _tag = 'BackgroundImageViewState';
+
   static const Duration _fadeInDuration = Duration(milliseconds: 300);
 
   ImageStream? _stream;
   ImageStreamListener? _listener;
   Size? _imageSize;
+  final _imageErrors = ImageErrorReporter();
 
   bool get _hasCustomCrop => widget.crop != null && !widget.crop!.isCover;
 
@@ -53,6 +58,7 @@ class _BackgroundImageViewState extends State<BackgroundImageView> {
   void didUpdateWidget(covariant BackgroundImageView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.path != widget.path) {
+      _imageErrors.reset();
       _imageSize = null;
       _resolveImageSize();
     }
@@ -62,6 +68,7 @@ class _BackgroundImageViewState extends State<BackgroundImageView> {
   /// 与这里共享 ImageCache，不产生二次解码。
   void _resolveImageSize() {
     _removeListener();
+    final path = widget.path;
     try {
       final stream = FileImage(
         File(widget.path),
@@ -78,7 +85,14 @@ class _BackgroundImageViewState extends State<BackgroundImageView> {
             widget.onImageSize?.call(size);
           }
         },
-        onError: (_, _) {
+        onError: (error, stackTrace) {
+          _imageErrors.report(
+            path,
+            _tag,
+            '背景图片解码失败',
+            error: error,
+            stackTrace: stackTrace,
+          );
           // 解码失败保持空显示，与 Image.errorBuilder 行为一致。
           _removeListener();
         },
@@ -86,7 +100,13 @@ class _BackgroundImageViewState extends State<BackgroundImageView> {
       _stream = stream;
       _listener = listener;
       stream.addListener(listener);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_resolveImageSize 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // 文件不存在等同步异常：保持空显示。
     }
   }
@@ -94,7 +114,14 @@ class _BackgroundImageViewState extends State<BackgroundImageView> {
   void _removeListener() {
     try {
       _stream?.removeListener(_listener!);
-    } catch (_) {}
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_removeListener 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
+    }
     _stream = null;
     _listener = null;
   }
@@ -165,7 +192,16 @@ class _BackgroundImageViewState extends State<BackgroundImageView> {
         (widget.overlayOpacity.clamp(0.0, 1.0) * 255).round(),
       ),
       colorBlendMode: BlendMode.modulate,
-      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+      errorBuilder: (_, error, stackTrace) {
+        _imageErrors.report(
+          widget.path,
+          _tag,
+          '背景图片渲染失败',
+          error: error,
+          stackTrace: stackTrace,
+        );
+        return const SizedBox.shrink();
+      },
     );
   }
 }
