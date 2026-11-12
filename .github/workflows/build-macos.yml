@@ -26,10 +26,10 @@ jobs:
       PUB_HOSTED_URL: https://pub.flutter-io.cn
       COCOAPODS_DISABLE_STATS: 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
-      - uses: subosito/flutter-action@v2.18.0
+      - uses: subosito/flutter-action@f2c4f6686ca8e8d6e6d0f28410eeef506ed66aff # v2.18.0
         with:
           flutter-version: '3.44.9'
           channel: stable
@@ -37,7 +37,7 @@ jobs:
       - name: Compile and verify app and widget for arm64 and x86_64
         run: bash tool/validate_macos.sh unsigned
       - name: Upload unsigned validation bundle (not a public release)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: macos-validation-unsigned
           path: build/macos/validation/Bugaoshan-unsigned.zip
