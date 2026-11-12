@@ -173,7 +173,7 @@ jobs:
           mapfile -t FILES < <(
             git diff --name-only --diff-filter=ACMR "$MERGE_BASE" "$HEAD_SHA" \
               | grep -E '\.(dart|py|sh|bash|yml|yaml|js|ts|json)$' \
-              | grep -v -E '\.g\.dart$|^lib/l10n/app_localizations|^lib/injection/injector\.config\.dart$' \
+              | grep -v -E '^\.github/|\.g\.dart$|^lib/l10n/app_localizations|^lib/injection/injector\.config\.dart$' \
               || true
           )
           if [ ${#FILES[@]} -eq 0 ]; then
