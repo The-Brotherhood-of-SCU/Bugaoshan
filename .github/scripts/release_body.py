@@ -14,6 +14,7 @@ def main():
 - Linux: [x64 Tar.gz]({repo}/releases/download/v{version}/bugaoshan_{version}_linux_x64.tar.gz)
 - macOS: [App Store](https://apps.apple.com/app/id6813305962) · [DMG](https://github.com/wjlfish/Bugaoshan-macos/releases)
 - iOS: [App Store](https://apps.apple.com/app/id6813305962)
+- HarmonyOS: [App Test](https://appgallery.huawei.com/apptest/4R0ngHwSmNP)
 
 > 💡 **Note**: 当前项目优先保障移动平台的稳定与体验。 Windows、Linux 版本可能存在部分兼容性或体验问题。
 
