@@ -9,9 +9,9 @@ def main():
     prev = os.environ.get("PREV", "").lstrip("v")
 
     body = f"""## ⬇️ 下载 (Downloads)
-- Android: [arm64-Apk]({repo}/releases/download/v{version}/bugaoshan_{version}_arm64-v8a.apk)
-- Windows: [x64 Zip]({repo}/releases/download/v{version}/bugaoshan_{version}_windows_x64.zip)
-- Linux: [x64 Tar.gz]({repo}/releases/download/v{version}/bugaoshan_{version}_linux_x64.tar.gz)
+- Android: [arm64 apk]({repo}/releases/download/v{version}/bugaoshan_{version}_arm64-v8a.apk)
+- Windows: [x64 zip]({repo}/releases/download/v{version}/bugaoshan_{version}_windows_x64.zip)
+- Linux: [x64 tar.gz]({repo}/releases/download/v{version}/bugaoshan_{version}_linux_x64.tar.gz)
 - macOS: [App Store](https://apps.apple.com/app/id6813305962) · [DMG](https://github.com/wjlfish/Bugaoshan-macos/releases)
 - iOS: [App Store](https://apps.apple.com/app/id6813305962)
 - HarmonyOS: [App Test](https://appgallery.huawei.com/apptest/4R0ngHwSmNP)
