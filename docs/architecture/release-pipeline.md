@@ -95,13 +95,14 @@ preview 通道开启「只保留最新一轮」的取消语义后，短时间连
 CI 自己的 `git push`（自动 tag、F-Droid metadata 兜底提交）使用 `GITHUB_TOKEN`，GitHub 不会为 GITHUB_TOKEN 产生的事件新建 workflow run，因此发布流程不会自我连环触发。
 
 ### 4.8 CHANGELOG 的提取路径
-`changelog_sections.py` 为发布说明、F-Droid 元数据和预检提供共享的版本章节解析。`release_changelog.py` 对预览、RC 和正式版统一按完整目标版本精确匹配 `CHANGELOG.md`（标题为 `## [版本]`，日期可选）；正文内代码块的示例标题不会分割章节，重复版本会报错。
+`changelog_sections.py` 为发布说明、F-Droid 元数据和预检提供共享的版本章节解析。标题为 `## [版本]`、日期可选；正文内代码块的示例标题不会分割章节，重复版本会报错。
 
-预览/RC 路径的行为：
+`release_changelog.py` 按渠道取用章节：
 
-- 目标预览/RC 章节有有效内容 → 作为发布说明；
-- 目标预览/RC 章节缺失或为空 → 发布占位文案 `*No changelog entry for this version.*` 并打 `::warning::` 注解，**绝不借用其他版本的章节**；
-- 正式版目标章节缺失或为空 → 报错终止；仅有分类标题也视为空内容。F-Droid 说明同样精确匹配正式版本，不使用其他章节兜底。
+- 正式版：只精确匹配 `## [X.Y.Z]`；缺失或为空 → 报错终止。
+- 预览/RC：先匹配完整目标版本章节（如 `## [2.6.0-rc]`、`## [2.5.4-preview.2]`）；没有有效内容时依次回退到旧版暂存章节 `## [Unreleased]`、基础版本章节 `## [X.Y.Z]`，以复用本轮准备中的更新说明；
+- 预览/RC 在以上章节都没有有效内容时 → 发布占位文案 `*No changelog entry for this version.*` 并打 `::warning::` 注解；不会借用其他发布轮次的章节。
+- F-Droid 说明精确匹配正式版本，不使用其他章节兜底。
 
 相关守卫：发布流程在打 tag 前以最终解析版本执行提取检查，publish 阶段仍会再次读取。日常预览 PR 只检查章节结构；指定完整预览版本的本地严格检查要求有对应内容，`--ci` 模式将其缺失降为 WARN。正式版在两种模式下都要求目标说明完整。门禁不是 required check 时，仍需人工关注其结果。
 

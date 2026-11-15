@@ -43,6 +43,20 @@ class PreReleaseChangelogTest(unittest.TestCase):
                 self.assertEqual(results[0][0], expected)
                 self.assertIn("[2.5.2-rc1]", results[0][2])
 
+    def test_prerelease_reuses_unreleased_or_base_notes(self):
+        cases = {
+            "unreleased": "## [Unreleased]\n- pending\n## [2.5.1]\n- old\n",
+            "base": "## [2.5.2]\n- target\n## [2.5.1]\n- old\n",
+        }
+        for source, text in cases.items():
+            for ci in (True, False):
+                with self.subTest(source=source, ci=ci):
+                    results = self.check(text, "2.5.2-rc1", ci=ci)
+                    self.assertTrue(
+                        any(s == "OK" and n == "CHANGELOG.md" for s, n, _ in results)
+                    )
+                    self.assertFalse(any(s == "FAIL" for s, _, _ in results))
+
     def test_missing_formal_fails_even_in_ci(self):
         results = self.check("## [2.5.2-preview]\n- preview\n", "2.5.2", ci=True)
         self.assertEqual(results[0][0], "FAIL")

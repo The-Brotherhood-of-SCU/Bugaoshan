@@ -14,7 +14,7 @@ import release_changelog
 
 
 class ReleaseChangelogTest(unittest.TestCase):
-    """Every channel selects its exact version, without borrowing other notes."""
+    """Formal releases match exactly; prereleases may reuse their own release notes."""
 
     def setUp(self):
         self.temp_dir = tempfile.TemporaryDirectory()
@@ -75,12 +75,48 @@ class ReleaseChangelogTest(unittest.TestCase):
         self.assertNotIn("修复 B", out)
         self.assertIn("::warning::", warn)
 
-    def test_missing_rc_never_borrows_formal_or_other_preview(self):
+    def test_missing_rc_does_not_borrow_other_release_sections(self):
         self.write_changelog("## [2.5.1] - 2026-09-11\n\n### Fixed\n- 修复 B\n")
         out, warn = self.run_extract("v2.5.2-rc")
         self.assertIn("No changelog entry", out)
         self.assertNotIn("修复 B", out)
         self.assertIn("::warning::", warn)
+
+    def test_rc_falls_back_to_base_version_section(self):
+        self.write_changelog(
+            "## [2.5.2] - 2026-11-10\n\n### Fixed\n- 目标版本说明\n\n"
+            "## [2.5.1] - 2026-09-11\n\n### Fixed\n- 修复 B\n"
+        )
+        out, _ = self.run_extract("v2.5.2-rc")
+        self.assertIn("- 目标版本说明", out)
+        self.assertNotIn("修复 B", out)
+
+    def test_prerelease_falls_back_to_unreleased_section(self):
+        self.write_changelog(
+            "## [Unreleased]\n\n### Added\n- 待发布 A\n\n"
+            "## [2.5.1] - 2026-09-11\n\n### Fixed\n- 修复 B\n"
+        )
+        out, _ = self.run_extract("v2.5.2-preview.1")
+        self.assertIn("- 待发布 A", out)
+        self.assertNotIn("修复 B", out)
+
+    def test_exact_preview_section_wins_over_unreleased(self):
+        self.write_changelog(
+            "## [2.5.2-preview.1]\n\n### Added\n- 本轮 A\n\n"
+            "## [Unreleased]\n\n### Added\n- 待发布 B\n"
+        )
+        out, _ = self.run_extract("v2.5.2-preview.1")
+        self.assertIn("- 本轮 A", out)
+        self.assertNotIn("- 待发布 B", out)
+
+    def test_unreleased_wins_over_base_section_for_prerelease(self):
+        self.write_changelog(
+            "## [Unreleased]\n\n### Added\n- 待发布 A\n\n"
+            "## [2.5.2] - 2026-11-10\n\n### Added\n- 目标版本说明\n"
+        )
+        out, _ = self.run_extract("v2.5.2-rc")
+        self.assertIn("- 待发布 A", out)
+        self.assertNotIn("- 目标版本说明", out)
 
     def test_rc_uses_its_own_section(self):
         self.write_changelog(self.CHANGELOG_WITH_SECTIONS)

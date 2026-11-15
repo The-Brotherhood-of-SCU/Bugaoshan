@@ -27,6 +27,7 @@ SCRIPTS_DIR = ROOT / ".github" / "scripts"
 sys.path.insert(0, str(SCRIPTS_DIR))
 
 from changelog_sections import (
+    find_release_notes,
     has_changelog_content,
     has_unreleased_content,
     normalize_version,
@@ -302,13 +303,13 @@ class Checker:
             self.record(OK, name, f"{len(sections)} 个版本章节结构正确；发布时按实际目标版本检查内容")
             return
 
-        target = next((section for section in sections if section.version == self.version), None)
+        target = find_release_notes(text, self.version)
         status = self._release_timing_status() if self.is_prerelease else FAIL
         if target is None:
             self.record(status, name, f"未找到 ## [{self.version}] 章节")
             return
         if not has_changelog_content(target.content):
-            self.record(status, name, f"[{self.version}] 章节为空")
+            self.record(status, name, f"[{target.version}] 章节为空")
             return
         if target.date:
             date = datetime.date.fromisoformat(target.date)
@@ -322,7 +323,7 @@ class Checker:
                 "Unreleased 遗留内容",
                 "[Unreleased] 仍有未归并内容，请核对并入目标版本章节后移除 [Unreleased]",
             )
-        self.record(OK, name, f"[{self.version}] 有更新说明")
+        self.record(OK, name, f"[{target.version}] 有更新说明")
 
     def check_metadata_yml(self):
         name = "F-Droid metadata/*.yml"
