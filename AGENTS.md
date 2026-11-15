@@ -154,16 +154,23 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 └── .github/
     ├── actions/setup/          # composite action: install Flutter 3.44, gen-l10n, git metadata
     ├── scripts/                # Python release automation
-    │   ├── git_meta.py             # export GIT_TAG / GIT_COMMIT / GIT_COMMIT_DATE / BUILD_TIME
-    │   ├── release_tags.py         # resolve version + prev tag
-    │   ├── release_changelog.py    # extract version section from CHANGELOG.md
+    │   ├── changelog_sections.py   # CHANGELOG parse / release state / notes selection
+    │   ├── resolve_release_version.py  # release state, tag, build injection
+    │   ├── release_changelog.py    # extract release notes for a tag
     │   ├── release_body.py         # build the GitHub release markdown body
-    │   └── release_prepare.py      # rename APK/zip/tar artifacts for upload
+    │   ├── release_prepare.py      # rename APK/zip/tar artifacts for upload
+    │   ├── release_tags.py         # resolve version + prev tag
+    │   ├── metadata_changelog.py   # F-Droid metadata changelogs
+    │   ├── git_meta.py             # export GIT_TAG / GIT_COMMIT / GIT_COMMIT_DATE
+    │   ├── pub_get_with_fallback.py # mirror pub get with official-source fallback
+    │   └── tests/                  # Python unit tests
     ├── workflows/
-    │   ├── release.yml         # releases on push to main/preview, target-gated tags, or manual dispatch
+    │   ├── pre-flight.yml      # quality gate + changelog state gate
+    │   ├── release.yml         # release pipeline (state, tag, build, publish)
     │   ├── build-android.yml   # workflow_call → APK (split per ABI, obfuscated)
     │   ├── build-windows.yml   # workflow_call → Windows zip
     │   ├── build-linux.yml     # workflow_call → Linux x64 tar.gz (debian:13 container)
+    │   └── ...                 # build-macos, issue/markdown/PR checkers, security report
     └── ISSUE_TEMPLATE/feature_request.yml
 ```
 
@@ -368,11 +375,11 @@ The repository operates a strict two-tier release model (`preview` -> `main`):
 - **`preview` (Staging / Preview Release Track)**:
   - Staging branch for preview testing and daily integration.
   - Accepts PRs from any feature/fix/refactor/docs branch directly.
-  - Merges into `preview` automatically trigger the release pipeline to publish a **Preview Release** (`prerelease: true`, tag sequence `vX.Y.Z-preview` or `vX.Y.Z-preview.N`).
+  - Merges into `preview` automatically trigger the release pipeline to publish a **Preview Release** (`prerelease: true`). The tag is `vX.Y.Z-preview[.N]` in normal state, or `vX.Y.Z-rc[.N]` when `CHANGELOG.md` contains a version higher than the latest formal tag.
 - **`main` (Production / Formal Stable Release Track)**:
   - Production stable branch.
   - **Only accepts PRs from `preview`**. Direct pushes or direct feature PRs are strictly forbidden.
-  - Merges into `main` automatically trigger the release pipeline to publish a **Formal Stable Release** (`prerelease: false, latest: true`, tag `vX.Y.Z`), generate F-Droid changelogs, and commit metadata.
+  - Merges into `main` automatically trigger the release pipeline to publish a **Formal Stable Release** (`prerelease: false, latest: true`, tag `vX.Y.Z`), generate F-Droid changelogs, and commit metadata. A merge without a new CHANGELOG version does not publish.
 
 ### PR Labels
 
@@ -386,10 +393,11 @@ Two labels drive automation / review routing on pull requests:
 - **`pre-flight.yml` (Quality Gate & Policy Enforcement)**:
   - Triggers on PRs to `main` / `preview`, pushes to `main` / `preview`, and `workflow_dispatch`.
   - Enforces branch flow policy: `main` must originate from `preview` (there is no `dev` branch; feature branches target `preview` directly).
-  - Runs `dart analyze --fatal-infos`, `flutter test`, codegen cleanliness check (`git status --porcelain` after codegen), Python CI unit tests (`.github/scripts/tests/`), and `tool/pre_release_check.py --ci`. Daily preview checks add `--prerelease --changelog-structure-only`; the release workflow validates notes against its resolved tag before tagging. Release-timing checks are advisory WARNs in CI; structural errors still fail the gate.
+  - Runs `dart analyze --fatal-infos`, `flutter test`, codegen cleanliness check (`git status --porcelain` after codegen), Python CI unit tests (`.github/scripts/tests/`), and `tool/pre_release_check.py`. Without a version it checks the CHANGELOG state and invariants; PRs to `main` pass the pubspec version for the strict formal release check.
 - **`release.yml` (Release Pipeline)**:
   - Triggers on pushes to `main` / `preview`, tags matching `v*.*.*` (published only when the tag targets the main/preview head), and `workflow_dispatch` (build-only on other branches).
-  - Version/tag rules via `.github/scripts/resolve_release_version.py` (formal: pubspec, idempotent; preview: anchored to the last formal tag with a patch increment `-preview[.N]`; the `/release` prep phase switches to `-rc` naming; preview builds inject the last formal versionName/versionCode).
+  - Version/tag rules via `.github/scripts/resolve_release_version.py`: the highest `## [X.Y.Z]` in `CHANGELOG.md` is compared with the latest formal tag. Equal → normal preview (`-preview[.N]`, notes from `[Unreleased]`); greater → RC (`-rc[.N]`, notes from `## [X.Y.Z]`); `pubspec.yaml` must match the current target. Formal releases are `vX.Y.Z`, idempotent; preview/RC builds inject the last formal versionName/versionCode.
+  - Before tagging a formal release on `main`, `resolve-metadata` runs `tool/pre_release_check.py X.Y.Z` to assert pubspec, CHANGELOG, F-Droid metadata, and metadata changelogs are consistent. Manual formal tag pushes skip this check.
   - Triggers `build-android.yml` (universal + split APKs with Java 21), `build-windows.yml` (Windows zip with dynamic WebView2Loader) and `build-linux.yml` (Linux x64 tar.gz, built in a `debian:13` container).
   - Publishes GitHub Releases with safe Draft -> Upload -> Publish ordering to support Immutable Releases.
 - **`close-linked-issues.yml` (Issue Auto-Close)**:
@@ -401,12 +409,13 @@ Two labels drive automation / review routing on pull requests:
 
 These are project-specific Claude Code slash commands:
 
-- `release.md` (`/release <version>`) — prepares formal release: updates `pubspec.yaml` (e.g. `2.5.1+20501`), generates F-Droid metadata changelogs, runs `tool/pre_release_check.py`, and opens/merges a PR from `preview` to `main`.
-- `prerelease.md` (`/prerelease [tag]`) — prepares preview release, runs pre-flight checks, and publishes through `preview`.
+- `release.md` (`/release <version>`) — prepares formal release: moves `[Unreleased]` into `## [X.Y.Z]`, updates `pubspec.yaml` (e.g. `2.5.1+20501`), generates F-Droid metadata, runs `tool/pre_release_check.py`, and opens a PR from `preview` to `main`.
+- `prerelease.md` (`/prerelease`) — updates `[Unreleased]` in normal state or `## [X.Y.Z]` during release prep, runs the pre-release gate, and publishes through `preview`.
 
 ### Changelog Preparation
 
-- `CHANGELOG.md` is prepared centrally at release time for a specific target version. Do not add entries during ordinary development unless the user explicitly requests a changelog update.
+- `CHANGELOG.md` is the source of truth for the next release. Normal previews read `## [Unreleased]`; when a higher `## [X.Y.Z]` section exists, the pipeline publishes RC releases from it. `[Unreleased]` and a higher version section must not both have content.
+- At formal release prep, move `[Unreleased]` into `## [X.Y.Z] - YYYY-MM-DD`, bump `pubspec.yaml` and F-Droid metadata, and leave `[Unreleased]` empty. Do not add per-preview or per-RC sections.
 - To generate, supplement, or merge version notes, use [bugaoshan-changelog](.agents/skills/bugaoshan-changelog/SKILL.md). It defines version and commit boundaries, diff verification, net-change merging, and user-facing wording.
 - Release helpers follow that skill for changelog content. Version metadata, validation, PRs, and publication remain separate operations within the user's requested scope.
 

@@ -8,20 +8,6 @@ on:
     tags:
       - "v*.*.*"
   workflow_dispatch:
-    inputs:
-      channel:
-        description: "Release channel (auto / formal / preview)"
-        required: false
-        default: "auto"
-        type: choice
-        options:
-          - auto
-          - formal
-          - preview
-      version_override:
-        description: "Explicit version or tag (optional, e.g. 2.5.1 or v2.5.1-rc1)"
-        required: false
-        type: string
 
 concurrency:
   group: release-${{ github.ref }}
@@ -57,12 +43,15 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Resolve Version & Channel
+      - name: Resolve Release Metadata
         id: resolve
-        env:
-          INPUT_CHANNEL: ${{ github.event.inputs.channel || 'auto' }}
-          INPUT_VERSION_OVERRIDE: ${{ github.event.inputs.version_override || '' }}
         run: python3 .github/scripts/resolve_release_version.py
+
+      - name: Verify Formal Release Consistency
+        # 正式版在 main 上发布前强制检查 pubspec / CHANGELOG / F-Droid 元数据一致；
+        # 手动 tag 已存在，跳过该步骤（仍有 pubspec 与发布说明校验）。
+        if: steps.resolve.outputs.should_release == 'true' && steps.resolve.outputs.is_prerelease == 'false' && github.ref_type != 'tag'
+        run: python3 tool/pre_release_check.py "${{ steps.resolve.outputs.version_name }}"
 
       - name: Validate target changelog before tagging
         if: steps.resolve.outputs.should_release == 'true'

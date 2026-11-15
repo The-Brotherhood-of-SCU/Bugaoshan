@@ -1,31 +1,42 @@
-"""Select the release notes for the target version."""
+"""Select the release notes for the target tag.
+
+- `-preview` tag -> `[Unreleased]`; empty is allowed and falls back to a placeholder.
+- `-rc` / other prerelease tag -> base `## [X.Y.Z]`; empty is an error.
+- formal tag -> `## [X.Y.Z]`; empty is an error.
+"""
 
 import os
 import sys
 
-from changelog_sections import find_release_notes, has_changelog_content, normalize_version
+from changelog_sections import (
+    has_changelog_content,
+    is_preview_tag,
+    normalize_version,
+    select_release_notes,
+)
 
 
 def main():
     try:
         version = normalize_version(os.environ.get("VERSION", ""))
         with open("CHANGELOG.md", "r", encoding="utf-8") as f:
-            section = find_release_notes(f.read(), version)
+            section = select_release_notes(f.read(), version)
     except (ValueError, OSError) as error:
         print(f"::error::{error}", file=sys.stderr)
         sys.exit(1)
 
+    preview = is_preview_tag(version)
+    source = "[Unreleased]" if preview else f"## [{version.split('-', 1)[0]}]"
+
     if section is None or not has_changelog_content(section.content):
         reason = "missing" if section is None else "empty"
-        hint = f"## [{version}]"
-        if "-" in version:
-            hint += " or ## [Unreleased]"
-        message = f"Changelog entry for {version} is {reason}. Please add {hint} before releasing."
-        if "-" not in version:
-            print(f"::error::{message}", file=sys.stderr)
+        message = f"Changelog entry in {source} is {reason}."
+        if preview:
+            print(f"::warning::{message} 本次预览使用占位说明。")
+            changelog = "*No changelog entry for this version.*"
+        else:
+            print(f"::error::{message} 请先补充 {source}。", file=sys.stderr)
             sys.exit(1)
-        print(f"::warning::{message}")
-        changelog = "*No changelog entry for this version.*"
     else:
         changelog = section.content
 

@@ -35,6 +35,22 @@ class ReleaseWorkflowTest(unittest.TestCase):
         )
         self.assertNotIn("ios_unsigned.ipa", release_body)
 
+    def test_formal_release_runs_consistency_check_before_tagging(self):
+        workflow = (
+            REPOSITORY_ROOT / ".github/workflows/release.yml"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("Verify Formal Release Consistency", workflow)
+        self.assertIn(
+            'run: python3 tool/pre_release_check.py "${{ steps.resolve.outputs.version_name }}"',
+            workflow,
+        )
+        # 只覆盖 main 的分支流程；手动 tag 已存在，不能再用 tag 冲突检查。
+        self.assertIn(
+            "steps.resolve.outputs.is_prerelease == 'false' && github.ref_type != 'tag'",
+            workflow,
+        )
+
     def test_linux_artifact_is_built_downloaded_and_required(self):
         workflow = (REPOSITORY_ROOT / ".github/workflows/release.yml").read_text(
             encoding="utf-8"
