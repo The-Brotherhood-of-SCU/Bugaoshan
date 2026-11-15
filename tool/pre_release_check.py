@@ -311,12 +311,16 @@ class Checker:
         if not has_changelog_content(target.content):
             self.record(status, name, f"[{target.version}] 章节为空")
             return
-        if target.date:
-            date = datetime.date.fromisoformat(target.date)
-            if date != datetime.date.today():
-                self.record(WARN, "CHANGELOG 日期", f"发布日期 {date} 不是今天，确认是否正确")
-        elif not self.is_prerelease:
-            self.record(WARN, "CHANGELOG 日期", f"[{self.version}] 缺少 YYYY-MM-DD 日期")
+        # 日期只对「精确命中目标版本」的章节有意义。预览/RC 允许回退到
+        # [Unreleased] 或基础版本章节，那些章节的日期属于别的发布轮次，
+        # 拿它跟今天比会在每轮 RC 上都误报一条 WARN。
+        if target.version == normalize_version(self.version):
+            if target.date:
+                date = datetime.date.fromisoformat(target.date)
+                if date != datetime.date.today():
+                    self.record(WARN, "CHANGELOG 日期", f"发布日期 {date} 不是今天，确认是否正确")
+            elif not self.is_prerelease:
+                self.record(WARN, "CHANGELOG 日期", f"[{self.version}] 缺少 YYYY-MM-DD 日期")
         if not self.is_prerelease and has_unreleased_content(text):
             self.record(
                 WARN,

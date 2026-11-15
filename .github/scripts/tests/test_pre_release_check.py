@@ -57,6 +57,24 @@ class PreReleaseChangelogTest(unittest.TestCase):
                     )
                     self.assertFalse(any(s == "FAIL" for s, _, _ in results))
 
+    def test_fallback_section_date_is_not_checked(self):
+        """回退取用的章节日期属于其他发布轮次，不能按本期发布日期校验。"""
+        text = "## [2.5.2] - 2000-01-01\n- target\n## [2.5.1]\n- old\n"
+        for ci in (True, False):
+            with self.subTest(ci=ci):
+                results = self.check(text, "2.5.2-rc1", ci=ci)
+                self.assertFalse(any(n == "CHANGELOG 日期" for _, n, _ in results))
+                self.assertTrue(any(s == "OK" and n == "CHANGELOG.md" for s, n, _ in results))
+
+    def test_exact_section_date_is_still_checked(self):
+        text = "## [2.5.2-rc1] - 2000-01-01\n- rc notes\n## [2.5.1]\n- old\n"
+        for ci in (True, False):
+            with self.subTest(ci=ci):
+                results = self.check(text, "2.5.2-rc1", ci=ci)
+                self.assertTrue(
+                    any(s == "WARN" and n == "CHANGELOG 日期" for s, n, _ in results)
+                )
+
     def test_missing_formal_fails_even_in_ci(self):
         results = self.check("## [2.5.2-preview]\n- preview\n", "2.5.2", ci=True)
         self.assertEqual(results[0][0], "FAIL")

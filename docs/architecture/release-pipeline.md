@@ -104,7 +104,7 @@ CI 自己的 `git push`（自动 tag、F-Droid metadata 兜底提交）使用 `G
 - 预览/RC 在以上章节都没有有效内容时 → 发布占位文案 `*No changelog entry for this version.*` 并打 `::warning::` 注解；不会借用其他发布轮次的章节。
 - F-Droid 说明精确匹配正式版本，不使用其他章节兜底。
 
-相关守卫：发布流程在打 tag 前以最终解析版本执行提取检查，publish 阶段仍会再次读取。日常预览 PR 只检查章节结构；指定完整预览版本的本地严格检查要求有对应内容，`--ci` 模式将其缺失降为 WARN。正式版在两种模式下都要求目标说明完整。门禁不是 required check 时，仍需人工关注其结果。
+相关守卫：发布流程在打 tag 前以最终解析版本执行提取检查，publish 阶段仍会再次读取。日常预览 PR 只检查章节结构；指定完整预览版本的本地严格检查走同一条回退链，只有精确章节、`## [Unreleased]` 与基础版本章节都没有有效内容时才判定为缺失（`--ci` 模式降为 WARN）。日期校验只作用于精确命中的目标版本章节——回退取用的章节日期属于其他发布轮次，不作为本期依据。正式版仍只认精确章节，两种模式下都要求目标说明完整。门禁不是 required check 时，仍需人工关注其结果。
 
 ### 4.9 F-Droid 元数据需要先行
 `metadata/*.yml` 的 versionName/versionCode 不会由流水线自动生成，必须在 `preview → main` 发布 PR 之前手动补齐（`/release` 命令包含此步骤），否则 pre-flight 的结构性检查会 FAIL；`metadata/{lang}/changelogs/*.txt` 由 CI 在正式发布时兜底生成并提交回 `main`。
