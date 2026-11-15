@@ -381,7 +381,8 @@ class Checker:
         if issues:
             self.record(FAIL, name, "；".join(issues) + "（需更新 metadata/*.yml 的 Builds）")
         else:
-            self.record(OK, name, f"versionName={self.target_version}，versionCode={expected_codes}")
+            codes = ", ".join(str(code) for code in expected_codes)
+            self.record(OK, name, f"versionName={self.target_version}，versionCode={codes}")
 
     def check_metadata_changelogs(self):
         name = "F-Droid metadata changelogs"
@@ -407,10 +408,12 @@ class Checker:
                 + "。运行 python .github/scripts/metadata_changelog.py 生成",
             )
         else:
+            langs = " / ".join(METADATA_LANGS)
+            codes = ", ".join(str(code) for code in expected)
             self.record(
                 OK,
                 name,
-                f"{len(expected) * len(METADATA_LANGS)} 个文件齐全（{METADATA_LANGS} × {expected}）",
+                f"{len(expected) * len(METADATA_LANGS)} 个文件齐全（{langs}；versionCode {codes}）",
             )
 
     # ---- 汇总 ----

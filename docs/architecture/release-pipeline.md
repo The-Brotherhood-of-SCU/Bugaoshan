@@ -42,7 +42,10 @@ feature/fix/docs/*  --PR-->  preview（预览版/RC）  --PR-->  main（正式�
 - 常态预览 tag 锚定最新正式 tag 并递增 patch 位：`v2.5.3` → `v2.5.4-preview`、`v2.5.4-preview.2`…
 - 准备期 tag：`v2.6.0-rc`、`v2.6.0-rc1`、`v2.6.0-rc2`…
 - 所有预览/RC 构建注入最新正式版的 versionName/versionCode；tag 与包体版本不同是设计如此。
-- 正式版只在 `main` 上发布。手动 dispatch 到其他分支只构建产物；手动 `v*.*.*` tag 只按 tag 指向发布：main 顶端按名称发布，preview 顶端按 prerelease 发布，其他 commit 仅构建产物。
+- 合并到 `preview` 自动发预览/RC；合并 `preview → main` 自动发正式版。
+- `release.yml` 只由 branch push（`main` / `preview`）和 `workflow_dispatch` 触发；不监听 tag push，tag 由发布流程在构建前自动创建。
+- 手动 dispatch 到非 main/preview 分支只构建产物。
+
 ## 4. 一次发布的流程
 
 1. 功能/fix PR → `preview`。pre-flight 运行分析、测试、代码生成漂移检查、`pre_release_check.py`（PR 门禁）。
@@ -53,11 +56,16 @@ feature/fix/docs/*  --PR-->  preview（预览版/RC）  --PR-->  main（正式�
 
 ## 5. 已知边界
 
+- `on: push` 在分支创建时也会触发；从 `main` 创建 `preview` 会立即发一轮预览版。
+- `preview` 每次合并都发版，没有跳过开关；纯文档改动也会发布预览，只能攒到下一轮或接受一轮预览。
 - tag 在构建前推送；构建/发布失败会留下孤儿 tag。预览 tag 可随旧 release 清理；正式版孤儿 tag 需手动删除后重发。
 - 发布采用 Draft → 上传 → Publish；上传失败会留下草稿，重试前先删除。
 - preview 发布只保留最新一轮（cancel-in-progress）；被取消的 run 也可能留下孤儿 tag。
+- `pubspec.lock` 锁定国内镜像；未设置 `PUB_HOSTED_URL` 时 pub get 会按 pub.dev 重解析，依赖与 `injector.config.dart` 可能漂移。setup 已统一设置。
+- setup 的 `build_runner` 带 `|| true`，生成失败不会让 setup 直接报错，由干净树检查与测试兜底。
+- F-Droid `metadata/*.yml` 与 changelogs 必须在 `preview → main` PR 前更新；正式版发布前的一致性检查会拦截缺失或版本不匹配。
 - pre-flight 不是 required check，红/绿都不阻塞合并；真正的闸门是 review。要硬拦截需在仓库设置中把检查设为 required。
-- 正式版发布前的一致性检查只覆盖分支流程；手动推正式 tag 时 tag 已存在，跳过 F-Droid 一致性检查，只校验 pubspec 与发布说明。
+- `release.yml` 不监听 tag push；手动推任何 tag 都不会触发发布。tag 由发布流程在构建前自动创建。
 - macOS DMG 由个人仓库 `wjlfish/Bugaoshan-macos` 独立构建发布；主仓库只发布 Android / Windows / Linux。
 
 ## 6. 文件

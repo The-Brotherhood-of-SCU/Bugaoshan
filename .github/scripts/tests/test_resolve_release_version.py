@@ -90,7 +90,7 @@ class ResolveReleaseVersionTest(unittest.TestCase):
     # ── 常态预览：CHANGELOG 最高版本 == 最新正式 tag ─────
 
     def test_preview_anchored_to_last_formal(self):
-        res, _ = self.resolve(ref_name="preview", ref_type="branch")
+        res, _ = self.resolve(ref_name="preview")
         self.assertEqual(res["channel"], "preview")
         self.assertEqual(res["tag"], "v2.5.2-preview")
         self.assertEqual(res["build_version"], "2.5.1")
@@ -101,20 +101,19 @@ class ResolveReleaseVersionTest(unittest.TestCase):
     def test_preview_increments_sequence(self):
         res, _ = self.resolve(
             ref_name="preview",
-            ref_type="branch",
             existing_tags=["v2.5.1", "v2.5.2-preview", "v2.5.2-preview.2"],
         )
         self.assertEqual(res["tag"], "v2.5.2-preview.3")
         self.assertEqual(res["build_version"], "2.5.1")
 
     def test_preview_is_silent(self):
-        _, out = self.resolve(ref_name="preview", ref_type="branch")
+        _, out = self.resolve(ref_name="preview")
         self.assertNotIn("::warning::", out)
         self.assertNotIn("::notice::", out)
 
     def test_preview_allows_unreleased_notes(self):
         self.set_changelog("## [Unreleased]\n- pending\n\n## [2.5.1]\n- old\n")
-        res, _ = self.resolve(ref_name="preview", ref_type="branch")
+        res, _ = self.resolve(ref_name="preview")
         self.assertEqual(res["tag"], "v2.5.2-preview")
 
     # ── 准备期：CHANGELOG 最高版本 > 最新正式 tag ────────
@@ -122,7 +121,7 @@ class ResolveReleaseVersionTest(unittest.TestCase):
     def test_rc_naming_when_changelog_ahead(self):
         self.set_pubspec_version("2.5.2")
         self.set_changelog("## [2.5.2]\n- target\n\n## [2.5.1]\n- old\n")
-        res, out = self.resolve(ref_name="preview", ref_type="branch")
+        res, out = self.resolve(ref_name="preview")
         self.assertEqual(res["tag"], "v2.5.2-rc")
         self.assertEqual(res["build_version"], "2.5.1")
         self.assertIn("::notice::", out)
@@ -132,7 +131,6 @@ class ResolveReleaseVersionTest(unittest.TestCase):
         self.set_changelog("## [2.5.2]\n- target\n\n## [2.5.1]\n- old\n")
         res, _ = self.resolve(
             ref_name="preview",
-            ref_type="branch",
             existing_tags=["v2.5.1", "v2.5.2-rc", "v2.5.2-rc1"],
         )
         self.assertEqual(res["tag"], "v2.5.2-rc2")
@@ -143,7 +141,7 @@ class ResolveReleaseVersionTest(unittest.TestCase):
             "## [Unreleased]\n- pending\n\n## [2.5.2]\n- target\n\n## [2.5.1]\n- old\n"
         )
         with self.assertRaises(ValueError):
-            self.resolve(ref_name="preview", ref_type="branch")
+            self.resolve(ref_name="preview")
 
     def test_multiple_unpublished_versions_fail(self):
         self.set_pubspec_version("2.5.2")
@@ -151,27 +149,25 @@ class ResolveReleaseVersionTest(unittest.TestCase):
             "## [2.6.0]\n- next\n\n## [2.5.2]\n- target\n\n## [2.5.1]\n- old\n"
         )
         with self.assertRaises(ValueError):
-            self.resolve(ref_name="preview", ref_type="branch")
+            self.resolve(ref_name="preview")
 
     def test_changelog_behind_latest_formal_fails(self):
         with self.assertRaises(ValueError):
             self.resolve(
                 ref_name="preview",
-                ref_type="branch",
                 existing_tags=["v2.5.1", "v2.5.2"],
             )
 
     def test_pubspec_must_match_changelog_target(self):
         self.set_changelog("## [2.5.2]\n- target\n\n## [2.5.1]\n- old\n")
         with self.assertRaises(ValueError):
-            self.resolve(ref_name="preview", ref_type="branch")
+            self.resolve(ref_name="preview")
 
     # ── 无正式 tag ───────────────────────────────────
 
     def test_no_formal_tag_uses_rc_naming(self):
         res, _ = self.resolve(
             ref_name="preview",
-            ref_type="branch",
             existing_tags=[],
         )
         self.assertEqual(res["tag"], "v2.5.1-rc")
@@ -182,7 +178,6 @@ class ResolveReleaseVersionTest(unittest.TestCase):
     def test_formal_release_main_branch_new(self):
         res, _ = self.resolve(
             ref_name="main",
-            ref_type="branch",
             existing_tags=["v2.4.0"],
         )
         self.assertEqual(res["channel"], "formal")
@@ -195,14 +190,14 @@ class ResolveReleaseVersionTest(unittest.TestCase):
         self.assertEqual(res["release_title"], "Release v2.5.1")
 
     def test_formal_release_main_branch_without_new_version_skips(self):
-        res, _ = self.resolve(ref_name="main", ref_type="branch")
+        res, _ = self.resolve(ref_name="main")
         self.assertEqual(res["should_release"], "false")
         self.assertIn("没有新版本", res["skip_reason"])
 
     def test_formal_after_release_prep_bump(self):
         self.set_pubspec_version("2.5.2")
         self.set_changelog("## [2.5.2]\n- target\n\n## [2.5.1]\n- old\n")
-        res, _ = self.resolve(ref_name="main", ref_type="branch")
+        res, _ = self.resolve(ref_name="main")
         self.assertEqual(res["tag"], "v2.5.2")
         self.assertEqual(res["build_version"], "2.5.2")
         self.assertEqual(res["build_number"], "20502")
@@ -214,105 +209,44 @@ class ResolveReleaseVersionTest(unittest.TestCase):
         res, out = self.resolve(
             event_name="workflow_dispatch",
             ref_name="feat/foo",
-            ref_type="branch",
         )
         self.assertEqual(res["build_only"], "true")
         self.assertEqual(res["should_release"], "false")
         self.assertEqual(res["tag"], "v2.5.2-preview")
         self.assertIn("::warning::", out)
 
+    def test_dispatch_on_feature_branch_tolerates_pubspec_mismatch(self):
+        self.set_pubspec_version("2.6.0")
+        res, out = self.resolve(
+            event_name="workflow_dispatch",
+            ref_name="feat/foo",
+        )
+        self.assertEqual(res["build_only"], "true")
+        self.assertEqual(res["should_release"], "false")
+        self.assertIn("不一致", out)
+        self.assertEqual(res["tag"], "v2.5.2-preview")
+
+    def test_dispatch_on_feature_branch_tolerates_invalid_changelog_state(self):
+        self.set_pubspec_version("2.6.0")
+        self.set_changelog(
+            "## [2.7.0]\n- next\n\n## [2.6.0]\n- target\n\n## [2.5.1]\n- old\n"
+        )
+        res, out = self.resolve(
+            event_name="workflow_dispatch",
+            ref_name="feat/foo",
+        )
+        self.assertEqual(res["build_only"], "true")
+        self.assertEqual(res["should_release"], "false")
+        self.assertIn("build-only 状态校验失败", out)
+        self.assertEqual(res["tag"], "v2.5.2-preview")
+
     def test_dispatch_on_main_is_not_build_only(self):
         res, _ = self.resolve(
             event_name="workflow_dispatch",
             ref_name="main",
-            ref_type="branch",
         )
         self.assertEqual(res["build_only"], "false")
         self.assertEqual(res["should_release"], "false")
-
-    # ── tag 事件：按指向判定发布资格 ──────────────────
-
-    def test_tag_on_main_head_publishes_formal(self):
-        self.set_pubspec_version("2.5.2")
-        res, _ = self.resolve(
-            ref_type="tag",
-            ref_name="v2.5.2",
-            existing_tags=["v2.5.1"],
-            main_head="m1",
-            preview_head="p1",
-            head_sha="m1",
-        )
-        self.assertEqual(res["channel"], "formal")
-        self.assertEqual(res["build_only"], "false")
-        self.assertEqual(res["should_release"], "true")
-        self.assertEqual(res["build_version"], "2.5.2")
-
-    def test_formal_tag_must_match_pubspec(self):
-        with self.assertRaises(ValueError):
-            self.resolve(
-                ref_type="tag",
-                ref_name="v2.5.2",
-                existing_tags=["v2.5.1"],
-                main_head="m1",
-                preview_head="p1",
-                head_sha="m1",
-            )
-
-    def test_formal_named_tag_on_preview_head_is_build_only(self):
-        self.set_pubspec_version("2.5.2")
-        res, out = self.resolve(
-            ref_type="tag",
-            ref_name="v2.5.2",
-            existing_tags=["v2.5.1"],
-            main_head="m1",
-            preview_head="p1",
-            head_sha="p1",
-        )
-        self.assertEqual(res["build_only"], "true")
-        self.assertEqual(res["should_release"], "false")
-        self.assertIn("::warning::", out)
-
-    def test_rc_named_tag_on_preview_head_publishes_prerelease(self):
-        res, _ = self.resolve(
-            ref_type="tag",
-            ref_name="v2.5.2-rc1",
-            existing_tags=["v2.5.1"],
-            main_head="m1",
-            preview_head="p1",
-            head_sha="p1",
-        )
-        self.assertEqual(res["channel"], "preview")
-        self.assertEqual(res["is_prerelease"], "true")
-        self.assertEqual(res["build_only"], "false")
-        self.assertEqual(res["should_release"], "true")
-
-    def test_tag_on_other_commit_is_build_only(self):
-        self.set_pubspec_version("2.5.2")
-        res, out = self.resolve(
-            ref_type="tag",
-            ref_name="v2.5.2",
-            existing_tags=["v2.5.1"],
-            main_head="m1",
-            preview_head="p1",
-            head_sha="deadbeef",
-        )
-        self.assertEqual(res["build_only"], "true")
-        self.assertEqual(res["should_release"], "false")
-        self.assertIn("::warning::", out)
-
-    def test_tag_with_unresolvable_heads_is_build_only(self):
-        self.set_pubspec_version("2.5.2")
-        res, out = self.resolve(
-            ref_type="tag",
-            ref_name="v2.5.2",
-            existing_tags=["v2.5.1"],
-            main_head="",
-            preview_head="",
-            head_sha="abc123",
-        )
-        self.assertEqual(res["build_only"], "true")
-        self.assertEqual(res["should_release"], "false")
-        self.assertIn("::warning::", out)
 
 
 if __name__ == "__main__":

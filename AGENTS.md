@@ -395,9 +395,9 @@ Two labels drive automation / review routing on pull requests:
   - Enforces branch flow policy: `main` must originate from `preview` (there is no `dev` branch; feature branches target `preview` directly).
   - Runs `dart analyze --fatal-infos`, `flutter test`, codegen cleanliness check (`git status --porcelain` after codegen), Python CI unit tests (`.github/scripts/tests/`), and `tool/pre_release_check.py`. Without a version it checks the CHANGELOG state and invariants; PRs to `main` pass the pubspec version for the strict formal release check.
 - **`release.yml` (Release Pipeline)**:
-  - Triggers on pushes to `main` / `preview`, tags matching `v*.*.*` (published only when the tag targets the main/preview head), and `workflow_dispatch` (build-only on other branches).
+  - Triggers on pushes to `main` / `preview` and `workflow_dispatch` (build-only on other branches). Tags are created by the workflow; manual tag pushes do not trigger a release.
   - Version/tag rules via `.github/scripts/resolve_release_version.py`: the highest `## [X.Y.Z]` in `CHANGELOG.md` is compared with the latest formal tag. Equal → normal preview (`-preview[.N]`, notes from `[Unreleased]`); greater → RC (`-rc[.N]`, notes from `## [X.Y.Z]`); `pubspec.yaml` must match the current target. Formal releases are `vX.Y.Z`, idempotent; preview/RC builds inject the last formal versionName/versionCode.
-  - Before tagging a formal release on `main`, `resolve-metadata` runs `tool/pre_release_check.py X.Y.Z` to assert pubspec, CHANGELOG, F-Droid metadata, and metadata changelogs are consistent. Manual formal tag pushes skip this check.
+  - Before tagging a formal release on `main`, `resolve-metadata` runs `tool/pre_release_check.py X.Y.Z` to assert pubspec, CHANGELOG, F-Droid metadata, and metadata changelogs are consistent. This check only runs on the main branch flow; tag pushes do not trigger a release.
   - Triggers `build-android.yml` (universal + split APKs with Java 21), `build-windows.yml` (Windows zip with dynamic WebView2Loader) and `build-linux.yml` (Linux x64 tar.gz, built in a `debian:13` container).
   - Publishes GitHub Releases with safe Draft -> Upload -> Publish ordering to support Immutable Releases.
 - **`close-linked-issues.yml` (Issue Auto-Close)**:
