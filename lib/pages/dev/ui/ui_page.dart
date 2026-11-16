@@ -27,13 +27,13 @@ class _UiPageState extends State<UiPage> {
     );
   }
 
-  void _showUpdateDialog() {
+  void _showUpdateDialog(bool isPreview) {
     showDialog(
       context: context,
       builder: (dialogContext) => UpdateDialogContent(
         version: "11.45.14",
-        releaseNotes: "这是一个新的版本\n\n" * 10,
-        isPreview: false,
+        releaseNotes: "这是一个新的版本，这是一个新的版本\n\n" * 10,
+        isPreview: isPreview,
         onStartUpdate: () {},
       ),
     );
@@ -43,7 +43,11 @@ class _UiPageState extends State<UiPage> {
   Widget build(BuildContext context) {
     final children = [
       _Tile(text: "Downloading Dialog", onTap: _showDownloadingDialog),
-      _Tile(text: "Update Dialog", onTap: _showUpdateDialog),
+      _Tile(text: "Update Dialog", onTap: () => _showUpdateDialog(false)),
+      _Tile(
+        text: "Preview Update Dialog",
+        onTap: () => _showUpdateDialog(true),
+      ),
     ];
     return Scaffold(
       appBar: AppBar(title: const Text("UI Preview")),
