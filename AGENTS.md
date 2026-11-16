@@ -38,14 +38,6 @@ flutter build macos --release
 flutter build web --release
 ```
 
-### Helper batch scripts (Windows convenience)
-
-The repo ships three small CMD wrappers at the project root that just chain the corresponding `flutter` / `dart` command:
-
-- `_build_generator.bat` → `dart run build_runner build --delete-conflicting-outputs`
-- `_build_icon.bat` → `flutter pub run flutter_launcher_icons`
-- `_build_l10n.bat` → `flutter gen-l10n`
-
 ### Commit Convention
 
 Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `perf:`, `build:`, `ci:`, `test:`, `style:`. Release notes are prepared separately using the Changelog Preparation workflow below.
@@ -67,9 +59,6 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 ├── .editorconfig               # LF, UTF-8, 2-space indent
 ├── .flutter-plugins-dependencies
 ├── .gitattributes
-├── _build_generator.bat        # helper wrapper
-├── _build_icon.bat             # helper wrapper
-├── _build_l10n.bat             # helper wrapper
 ├── assets/
 │   ├── icon.png                # app icon (referenced by flutter_launcher_icons)
 │   ├── icon-foreground.png     # adaptive icon foreground
