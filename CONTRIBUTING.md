@@ -121,7 +121,7 @@ lib/
 6. 向 **`preview` 分支**发起 Pull Request——门禁全绿且 review 通过后合并，合并会自动发布一轮预览版（无需手动操作）
 
 > [!NOTE]
-> 请勿手动推送 `v*.*.*` tag，这可能会导致CICD无法创建目标Tag。行为边界见 `docs/architecture/release-pipeline.md`。
+> 请勿手动推送 `v*.*.*` tag，这会导致CICD无法创建目标Tag。行为边界见 `docs/architecture/release-pipeline.md`。
 
 
 
