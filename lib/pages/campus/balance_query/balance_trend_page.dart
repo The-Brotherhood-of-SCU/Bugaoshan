@@ -1,4 +1,5 @@
 import 'package:bugaoshan/theme_shape.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/beijing_time.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_trend_range
 import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_trend_raw_records_card.dart';
 import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_trend_stats_card.dart';
 import 'package:bugaoshan/pages/campus/balance_query/widgets/balance_trend_time_range.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 /// 电费余额趋势页。
 ///
@@ -38,6 +40,8 @@ class BalanceTrendPage extends StatefulWidget {
 }
 
 class _BalanceTrendPageState extends State<BalanceTrendPage> {
+  static const String _tag = 'BalanceTrendPageState';
+
   BalanceTrendTimeRange _range = BalanceTrendTimeRange.days7;
 
   /// 自定义模式的起止日期(本地日期,仅日期部分有效)。
@@ -98,7 +102,13 @@ class _BalanceTrendPageState extends State<BalanceTrendPage> {
         until: range.until,
         force: force,
       );
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_loadHistory 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // 错误保留在 Provider 的趋势状态中。
     }
   }
@@ -169,7 +179,7 @@ class _BalanceTrendPageState extends State<BalanceTrendPage> {
           return RefreshIndicator(
             onRefresh: () => _loadHistory(force: true),
             child: ListView(
-              padding: const EdgeInsets.all(16),
+              padding: withSystemBottomInset(context, EdgeInsets.all(16)),
               children: [
                 // 第一层:4 个预设 tab
                 BalanceTrendRangeSelector(

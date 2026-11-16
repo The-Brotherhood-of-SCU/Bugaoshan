@@ -1,18 +1,72 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:bugaoshan/services/storage_cleanup_service.dart';
+import 'package:bugaoshan/utils/app_log.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
+import 'package:bugaoshan/utils/share_utils.dart';
+import 'package:bugaoshan/l10n/app_localizations.dart';
 
 /// 启动失败时的兜底界面：直接以 MaterialApp 作为根，展示错误堆栈，
 /// 并提供清理本地存储的恢复入口（DI 可能尚未装配完成，故不依赖 GetIt 之外的设施）。
 class StartupErrorApp extends StatefulWidget {
   final String? errorMessage;
-  const StartupErrorApp({super.key, this.errorMessage});
+  final Directory? logExportDirectory;
+  const StartupErrorApp({
+    super.key,
+    this.errorMessage,
+    this.logExportDirectory,
+  });
 
   @override
   State<StartupErrorApp> createState() => _StartupErrorAppState();
 }
 
 class _StartupErrorAppState extends State<StartupErrorApp> {
+  static const String _tag = 'StartupErrorAppState';
+
   String? _status;
+  bool _exporting = false;
+
+  Future<void> _copyLogs(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      await Clipboard.setData(ClipboardData(text: AppLog.exportToText()));
+      _setStatus(l10n.logCopied);
+    } catch (error, stackTrace) {
+      AppLog.e(_tag, '复制启动日志失败', error: error, stackTrace: stackTrace);
+      _setStatus(l10n.logCopyFailed);
+    }
+  }
+
+  Future<void> _exportLogs(BuildContext context, {required bool share}) async {
+    final l10n = AppLocalizations.of(context)!;
+    setState(() => _exporting = true);
+    String? path;
+    try {
+      final directory = widget.logExportDirectory ?? await resolveLogDir();
+      path = await AppLog.exportToFile(directory);
+      _setStatus(l10n.logSaved(path));
+      if (share && context.mounted) {
+        await shareSingleFile(path, context: context);
+      }
+    } catch (error, stackTrace) {
+      AppLog.e(
+        _tag,
+        path == null ? '保存启动日志失败' : '分享启动日志失败',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      _setStatus(
+        path == null
+            ? l10n.logSaveFailed
+            : '${l10n.logSaved(path)}\n${l10n.logShareFailed}',
+      );
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
 
   void _setStatus(String status) {
     if (!mounted) return;
@@ -28,8 +82,8 @@ class _StartupErrorAppState extends State<StartupErrorApp> {
     try {
       await action();
       _setStatus('$label: done');
-    } catch (error) {
-      debugPrint('Startup recovery [$label] failed: $error');
+    } catch (error, stackTrace) {
+      AppLog.e(_tag, '$label 失败', error: error, stackTrace: stackTrace);
       _setStatus('$label: failed - $error');
     }
   }
@@ -61,10 +115,15 @@ class _StartupErrorAppState extends State<StartupErrorApp> {
     // home 外再套一层 Builder：State.context 位于 MaterialApp 之上，
     // 沿着它向上找不到 Localizations / Navigator，直接拿它调 showDialog
     // 会命中 debugCheckHasMaterialLocalizations 断言。
-    return MaterialApp(home: Builder(builder: _buildPage));
+    return MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Builder(builder: _buildPage),
+    );
   }
 
   Widget _buildPage(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final canClearCache = StorageCleanupService.canClearCacheDirectory;
     return Scaffold(
@@ -76,7 +135,7 @@ class _StartupErrorAppState extends State<StartupErrorApp> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Bugaoshan 启动失败',
+                  l10n.logStartupTitle,
                   textAlign: TextAlign.center,
                   textScaler: TextScaler.linear(1.5),
                 ),
@@ -84,6 +143,32 @@ class _StartupErrorAppState extends State<StartupErrorApp> {
                 SelectableText(
                   widget.errorMessage ?? '',
                   textAlign: TextAlign.start,
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: _exporting ? null : () => _copyLogs(context),
+                      icon: const Icon(Icons.copy_all),
+                      label: Text(l10n.logCopy),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: _exporting
+                          ? null
+                          : () => _exportLogs(context, share: false),
+                      icon: const Icon(Icons.save_alt),
+                      label: Text(l10n.logSave),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: _exporting
+                          ? null
+                          : () => _exportLogs(context, share: true),
+                      icon: const Icon(Icons.share),
+                      label: Text(l10n.logShare),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 Container(

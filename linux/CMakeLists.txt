@@ -74,11 +74,6 @@ set_target_properties(${BINARY_NAME}
 # them to the application.
 include(flutter/generated_plugins.cmake)
 
-# WPE WebKit is supplied by the host distribution (or Flatpak's /app prefix).
-# Keep the native WebView plugin, but do not copy WPE itself into the app bundle.
-list(FILTER PLUGIN_BUNDLED_LIBRARIES EXCLUDE REGEX
-  "lib(WPEWebKit-2\\.0|WPEBackend-fdo-1\\.0|wpe-1\\.0)\\.so")
-
 
 # === Installation ===
 # By default, "installing" just makes a relocatable bundle in the build
@@ -131,3 +126,16 @@ if(NOT CMAKE_BUILD_TYPE MATCHES "Debug")
   install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
     COMPONENT Runtime)
 endif()
+
+# Install the application icon inside the bundle so the GTK runner can set the
+# window icon even when the bundle is not installed as a desktop application.
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/../packaging/linux/bugaoshan-512.png"
+  DESTINATION "${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/512x512/apps"
+  RENAME "${APPLICATION_ID}.png"
+  COMPONENT Runtime)
+
+# Desktop entry template used by the runner to register a user-level icon
+# association on first launch (needed for window icons on Wayland).
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/../packaging/linux/io.github.the_brotherhood_of_scu.bugaoshan.desktop"
+  DESTINATION "${CMAKE_INSTALL_PREFIX}/share/applications"
+  COMPONENT Runtime)

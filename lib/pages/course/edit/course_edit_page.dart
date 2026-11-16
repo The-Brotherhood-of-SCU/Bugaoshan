@@ -11,6 +11,7 @@ import 'package:bugaoshan/pages/course/widgets/week_selector_grid.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 class CourseEditPage extends StatefulWidget {
   final ScheduleConfig scheduleConfig;
@@ -160,7 +161,7 @@ class _CourseEditPageState extends State<CourseEditPage> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: withSystemBottomInset(context, EdgeInsets.all(16)),
         child: Form(
           key: _formKey,
           child: Column(

@@ -10,6 +10,7 @@ import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/info_row.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 part 'train_program_detail_page.dart';
 
@@ -223,7 +224,10 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
                 ),
               )
             : ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: withSystemBottomInset(
+                  context,
+                  EdgeInsets.symmetric(horizontal: 16),
+                ),
                 itemCount: _provider.programs.length,
                 itemBuilder: (context, index) {
                   final program = _provider.programs[index];

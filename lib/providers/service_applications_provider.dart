@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/services/api/service_api_service.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
@@ -9,6 +10,8 @@ enum ServiceApplicationsLoadState { idle, loading, loaded, error }
 ///
 /// 页面只触发 [ensureLoaded] 或 [refresh]，不再自行保存远端列表和错误状态。
 class ServiceApplicationsProvider extends ChangeNotifier {
+  static const String _tag = 'ServiceApplicationsProvider';
+
   ServiceApplicationsProvider(this._api);
 
   final ServiceApiService _api;
@@ -40,15 +43,18 @@ class ServiceApplicationsProvider extends ChangeNotifier {
       if (generation != _generation) return;
       _items = items;
       _state = ServiceApplicationsLoadState.loaded;
-    } on UnauthenticatedException {
+    } on UnauthenticatedException catch (logError, logStackTrace) {
+      AppLog.e(_tag, '_load 失败', error: logError, stackTrace: logStackTrace);
       if (generation != _generation) return;
       _state = ServiceApplicationsLoadState.error;
       _error = LoadErrorType.sessionExpired;
-    } on ServiceException {
+    } on ServiceException catch (logError, logStackTrace) {
+      AppLog.e(_tag, '_load 失败', error: logError, stackTrace: logStackTrace);
       if (generation != _generation) return;
       _state = ServiceApplicationsLoadState.error;
       _error = campusNetworkErrorType(LoadErrorType.loadFailed);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(_tag, '_load 失败', error: logError, stackTrace: logStackTrace);
       if (generation != _generation) return;
       _state = ServiceApplicationsLoadState.error;
       _error = campusNetworkErrorType(LoadErrorType.loadFailed);

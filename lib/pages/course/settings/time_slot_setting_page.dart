@@ -5,6 +5,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/theme_shape.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 class TimeSlotSettingPage extends StatefulWidget {
   final int morningSections;
@@ -123,7 +124,7 @@ class _TimeSlotSettingPageState extends State<TimeSlotSettingPage> {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.timeSlot)),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: withSystemBottomInset(context, EdgeInsets.all(16)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

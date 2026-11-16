@@ -2,6 +2,38 @@ import 'package:bugaoshan/models/reminder_plan.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+/// 系统通知授权状态。
+///
+/// 与原生平台状态枚举一一对应，并补充两个跨平台语义值：
+/// - [unsupported]：当前平台不具备本地提醒投递能力（Noop 通道或原生通道未接线），
+///   属预期降级，调用方应据此隐藏授权引导而非反复请求；
+/// - [unknown]：通道可用但无法读取原生状态，属可疑故障，按未授权保守处理。
+enum ReminderPermissionStatus {
+  authorized,
+  provisional,
+
+  /// iOS 临时授权（仅 App Clip 场景），生命周期受限但期间可投递通知。
+  ephemeral,
+  denied,
+  notDetermined,
+  unsupported,
+  unknown;
+
+  /// 是否可实际投递通知。`ephemeral` 属临时授权，同样可投递。
+  bool get isGranted =>
+      this == authorized || this == provisional || this == ephemeral;
+
+  /// 由原生返回字符串解析；未知字符串一律回退 [unknown]。
+  static ReminderPermissionStatus fromNative(String? raw) => switch (raw) {
+    'authorized' => authorized,
+    'provisional' => provisional,
+    'ephemeral' => ephemeral,
+    'denied' => denied,
+    'notDetermined' => notDetermined,
+    _ => unknown,
+  };
+}
+
 /// 排期计划投递传输层接口。
 ///
 /// 解耦排期计算与平台原生调度，使 [ReminderService] 依赖抽象接口以便于测试与多平台适配。
@@ -19,8 +51,8 @@ abstract class ReminderTransport {
   Future<bool> requestAuthorization({bool provisional = false});
 
   /// 查询当前系统通知授权状态。返回值与原生平台状态枚举对应
-  /// （`authorized`、`provisional`、`denied`、`notDetermined`、`unknown`）。
-  Future<String> getPermissionStatus();
+  /// （`authorized`、`provisional`、`ephemeral`、`denied`、`notDetermined`、`unknown`）。
+  Future<ReminderPermissionStatus> getPermissionStatus();
 
   /// 获取原生系统当前实际注册的待投递通知数量。
   ///
@@ -93,28 +125,30 @@ class MethodChannelReminderTransport implements ReminderTransport {
         'requestAuthorization',
         {'provisional': provisional},
       );
-      return granted ?? false;
+      if (granted == null) throw const ReminderTransportUnavailable();
+      return granted;
     } on MissingPluginException {
       throw const ReminderTransportUnavailable();
-    } on PlatformException {
-      return false;
+    } on PlatformException catch (e) {
+      if (e.code == unsupportedPlatformCode) {
+        throw const ReminderTransportUnavailable();
+      }
+      // A host/API failure is not a user denying notification permission.
+      rethrow;
     }
   }
 
   @override
-  Future<String> getPermissionStatus() async {
+  Future<ReminderPermissionStatus> getPermissionStatus() async {
     try {
       final status = await _channel.invokeMethod<String>('getPermissionStatus');
-      return status ?? permissionUnknown;
+      return ReminderPermissionStatus.fromNative(status);
     } on MissingPluginException {
       throw const ReminderTransportUnavailable();
     } on PlatformException {
-      return permissionUnknown;
+      return ReminderPermissionStatus.unknown;
     }
   }
-
-  /// 无法获取原生授权状态时的回退值。默认不假定已授权，防止界面显示开启但实际无法投递。
-  static const String permissionUnknown = 'unknown';
 
   @override
   Future<int> getPendingCount() async {
@@ -185,11 +219,12 @@ class NoopReminderTransport implements ReminderTransport {
   Future<void> cancelAll() async {}
 
   @override
-  Future<bool> requestAuthorization({bool provisional = false}) async => false;
+  Future<bool> requestAuthorization({bool provisional = false}) async =>
+      throw const ReminderTransportUnavailable();
 
   @override
-  Future<String> getPermissionStatus() async =>
-      MethodChannelReminderTransport.permissionUnknown;
+  Future<ReminderPermissionStatus> getPermissionStatus() async =>
+      ReminderPermissionStatus.unsupported;
 
   @override
   Future<int> getPendingCount() async => 0;

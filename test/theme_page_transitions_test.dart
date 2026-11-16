@@ -1,4 +1,5 @@
 import 'package:bugaoshan/theme.dart';
+import 'package:bugaoshan/widgets/route/ios_back_gesture.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -53,6 +54,33 @@ void main() {
         entry.value.reverseTransitionDuration,
         const Duration(milliseconds: 123),
         reason: '${entry.key} 的 reverseTransitionDuration 应跟随设置值',
+      );
+    }
+  });
+
+  // iOS 的返回手势范围由转场构建器决定：默认 Cupertino 构建器只有左缘 20 点，
+  // 这里锁住「iOS 必须挂自研构建器」的接线，避免主题重构时悄悄退回窄手势区。
+  test('iOS 使用内容区全局返回手势的转场构建器', () {
+    final builders = buildTheme(
+      brightness: Brightness.light,
+      seedColor: Colors.blue,
+    ).pageTransitionsTheme.builders;
+
+    expect(
+      builders[TargetPlatform.iOS],
+      isA<AppCupertinoPageTransitionsBuilder>(),
+      reason: 'iOS 必须挂自研构建器，否则返回手势只剩左缘 20 点',
+    );
+    for (final platform in <TargetPlatform>[
+      TargetPlatform.android,
+      TargetPlatform.windows,
+      TargetPlatform.linux,
+      TargetPlatform.macOS,
+    ]) {
+      expect(
+        builders[platform],
+        isNot(isA<AppCupertinoPageTransitionsBuilder>()),
+        reason: '$platform 不应被换成 iOS 转场',
       );
     }
   });

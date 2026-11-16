@@ -79,7 +79,7 @@ class BalanceTrendStatsCard extends StatelessWidget {
                   Text(
                     isLoading
                         ? placeholder
-                        : '${formatNumber(trend.dailyAvgKwh, decimals: 3)} ${l10n.unitKwh}/${l10n.balanceTrendUnitPerDay}',
+                        : '${formatNumber(trend.dailyAvgKwh, decimals: 3)} ${l10n.unitKwh}',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),

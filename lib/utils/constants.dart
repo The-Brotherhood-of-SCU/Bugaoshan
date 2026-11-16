@@ -17,7 +17,7 @@ const String dockIdPlanCompletion = 'plan_completion';
 const String dockIdTrainProgram = 'train_program';
 const String dockIdClassroom = 'classroom';
 const String dockIdNetworkDevice = 'network_device';
-const String dockIdPasspoint = 'passpoint';
+const String dockIdCloudPrint = 'cloud_print';
 const String dockIdBalanceQuery = 'balance_query';
 const String dockIdAcademicCalendar = 'academic_calendar';
 const String dockIdFitnessTest = 'fitness_test';
@@ -28,17 +28,20 @@ const String dockIdExamPlan = 'exam_plan';
 const String dockIdZysc = 'zysc';
 const String dockIdLeave = 'leave';
 const String dockIdRepair = 'repair';
+const String dockIdReservation = 'reservation';
 
 // ── 研究生（gsapp）dock 项 ─────────────────────────────────────
-const String dockIdGraduateSection = 'graduate';
 const String dockIdGraduateGrades = 'graduate_grades';
 const String dockIdGraduateTrainPlan = 'graduate_train_plan';
 const String dockIdGraduateScheduleImport = 'graduate_schedule_import';
-const String dockIdLabAttendance = 'lab_attendance';
-const String dockIdThesisProgress = 'thesis_progress';
-const String dockIdMentorTasks = 'mentor_tasks';
 
 const Duration kHttpTimeout = Duration(seconds: 15);
+
+/// gh-proxy 镜像前缀，统一此前 gh-proxy.org / gh-proxy.com 两处混用。
+///
+/// 直接拼接在原始 GitHub URL 之前，对 `github.com/*/releases/download/*` 与
+/// `raw.githubusercontent.com/*` 均适用。由 [GithubResourceService] 消费。
+const String kGithubProxyPrefix = 'https://gh-proxy.org/';
 
 const String kCcylSpCode =
     'bDBhREE1WDMzK3llSzZyVFZNeE81czRDd1hESTI4NWxGaFdsTnlvcGt3eVdTb2cxSjN5a1FJTDVMWTBEQkFFd2k1bWZRMy82OXN6V21ZYzFLd2NlSDdUaWlVcVJ1emxVVnF4Q3RZNWxjWlVoTEZqUktVSWVmY1ZaKzBLYUlBWDYvaU5MS1E5Y25nT1BoSzRIM0FIOWVCQjMxMXd5b0JrenNuWDBDM1BKU0FwUVVnZHdoSWYrc0hKZmEwSHRQbFZDV1o2dzFtQ3Nuci9wV1ExZHRMMytueHpLZVg5djJJcGFRbkJxZFJCQWJZWHI2dlpQNHVxNFNhcHM3Y3RkK2g1dWFuUEtNT1JZblFXRFBLUEdrcGdxNHR5eEcxclh5YXQ5a2FXN3JSZ2g2OTAxWCt0TUdTNXJDRVdNeDNTU3duTk1nNW9RSyt4WkdzSjNkR3NvVEFDMzFCQmJHUVcrVitybmszQVd0djFpUUJ5dDJySlRTajZIem1qZFYwMjVWcVpEaUtKd1AwQzI3TUpZd3FyY1hqdkxUZkFCd3JwL3ltczdXcmlTUzhZYVJPR0QwOXk2aDJIdUlCUTAvbEJWd0xzcUZXSElxaENpR0pseG1XYTZRbWlFaklERTd6TlhBQkJLdTZGUS8rNTBBYWRkcDVrRXdBM0tqejMvd1AvTklkZW5oNll4MllINlFiNVRucXNhZWtzUlh3d1BOQzBrMERSM0tId3dyS1hONkF6VDZwRGl3S3h1aDNLSGVmcTBRTktXUXMxTTZxeW1lcmgzYVlGWDNmVHdvUnJkWXVhbHN0aEtHKzU5TnFuVm1NbXU4dnhZQk8zKzQrdnV3aTJEaGY4VXRnV3lHeTVBcFFnWlUyQTFsWjdsR1RyNHh1TjV5dUlVc1VNNTRlbEtETTVVYWZoYnFPTXFrM2MxUHVNSHVHLzRtUFk4cmZzaXNUVkovWlhuSkhWWXpYQUJ4UDE4bGt2NXJkMFlXZHM0cFlYVVduKy9ZWGNKTlBDNEVrSzE3R0NVWDNxcCtiQkVyaXMzaTRXam1wWTFzYkpWZTAxYzZ0VGlxcGkvcEYyLzJPND0=';
@@ -47,18 +50,18 @@ const String kDefaultUserAgent =
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
     '(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0';
 
-/// 研教务 SSO 入口（真实地址待抓包确认，见 TODO(gs-api)）。
+/// 研教务 SSO 入口（gsapp 域）。
+///
+/// 2026-09-20 实测该域在公网 / 校园网均不可达；当前研究生功能（课表、
+/// 成绩、培养进度）全部部署在 ehall 域，这里仅保留给 [GsAuth] 的
+/// best-effort 预热，失败不阻断 ehall 主链路。
 const String kGsSsoUrl = 'https://gsapp.scu.edu.cn/';
-
-/// 研教务 API 基址（gsapp 应用组）。
-const String kGsApiBaseUrl = 'https://gsapp.scu.edu.cn';
 
 /// 研教务在「网上办事大厅」域名下的基址。
 ///
 /// 研究生「我的课表」应用实测部署在该域名下（用户抓包确认，第三方课程表
 /// 亦从这里取数）：
 /// `https://ehall.scu.edu.cn/gsapp/sys/wdkbapp/*default/index.do#/xskcb`
-/// 与 [kGsApiBaseUrl] 是否共用同一套 cookie 尚未验证，见 TODO(gs-api)。
 const String kGsEhallBaseUrl = 'https://ehall.scu.edu.cn';
 
 /// 研究生「我的课表」页面地址（我的课表 app，路由 `#/xskcb`）。
@@ -127,6 +130,60 @@ const String kGsFirstClassPath = '/gsapp/sys/wdkbapp/modules/xskcb/xsjxrwcx.do';
 /// 如「免修通过」)/SFJG(是否及格)/SFYX(是否有效)/BZSM(备注)。
 const String kGsGradesEndpointPath =
     '/gsapp/sys/wdcjapp/modules/wdcj/xscjcx.do';
+
+// ── 预约系统（service.scu.edu.cn/reservation，2026-10-23 抓包定案）──────
+//
+// 独立部署的预约系统（Nuxt SPA），与办事大厅同域但**会话独立**：
+// 登录后 service.scu.edu.cn 域下持有 `reservation_uid`（办事大厅是
+// `vjuid`）。接口统一信封 `{e, m, d}`，`e == "OK"` 为成功，
+// `UN_AUTH` 表示会话未建立 / 已过期。
+
+/// 预约系统根路径（业务接口与页面都在其下）。
+const String kReservationBaseUrl = 'https://service.scu.edu.cn/reservation';
+
+/// 「望江校区研究生活动室」专题 id（#347 的入口专题）。
+const String kReservationTopicId = '37';
+
+/// 专题页面地址（兼作 SSO 的 redirect_url 与业务请求的 Referer）。
+const String kReservationSpecialPageUrl =
+    '$kReservationBaseUrl/fe/site/special/m_special'
+    '?id=$kReservationTopicId&platform_id=28';
+
+/// 预约系统 SSO 入口：`/api/login/main` 302 到 id.scu.edu.cn 的 CAS
+/// plugin，回跳 `/api/login/cas` 时下发 `reservation_uid`。
+final String kReservationSsoUrl = Uri.parse(
+  '$kReservationBaseUrl/api/login/main',
+).replace(queryParameters: {'redirect_url': kReservationSpecialPageUrl}).toString();
+
+/// 专题资源列表（`d.data[].base` 为资源定义，`time` / `appointmen_list_info`
+/// 在列表接口里恒为空，时段要单独查 calendar）。
+const String kReservationTopicResourceListPath =
+    '/api/topic/resource-list';
+
+/// 资源日历：`id`(资源) + `date`(JSON 字符串 `{start_date,end_date}`)
+/// + `collective`(0)。返回 `{time:[时段], day:[日期], data:{日期:{时段id:{status,total,num,amount}}}}`。
+const String kReservationCalendarPath = '/site/resource/calendar';
+
+/// 提交预约：`POST`，body 为
+/// `{data, data_colle, code, number, collective, captcha}`，其中 `data` 是
+/// JSON **字符串**：`[{resource_id, period: [{date, period_id}], number}]`
+/// （自由时间段类资源则是 `{start_date,end_date,start_time,end_time}`，
+/// 见 2026-10-24 对官方前端 `site/resourceLaunch` 的分析）。
+/// 成功 `d = {is_relate, process_url, process_id, time}`；`e == "APPLY"`
+/// 表示存在未提交的预约单。
+const String kReservationLaunchPath = '/site/resource/launch';
+
+/// 我的预约列表：`GET`，query `{p, type, pageSize}`；`type` 与官方「我的预约」
+/// tab 一致（0 全部 / 1 待申请 / 2 审核中 / 3 已预约 / 4 待签到）。响应
+/// `d = {data: [预约单], total}`，行含 `id / resource_name / created /
+/// status / type / is_cancel / is_creater / detail`，其中 `detail` 是
+/// `日期 -> [{id, str_time}]` 的对象（可按明细部分取消）。
+const String kReservationAppointmentListPath = '/site/appointment/appointment-list';
+
+/// 取消预约：`POST`，body `{appointment_id, appointment_detail_id}`，其中
+/// `appointment_detail_id` 是**明细 id 的 JSON 字符串**（传整单全部明细
+/// 即整单取消）。服务器要求该单 `is_cancel == 1` 且当前用户是创建者。
+const String kReservationCancelPath = '/site/appointment/appointment-cancel';
 
 const MethodChannel kUpdateMethodChannel = MethodChannel('bugaoshan/update');
 const MethodChannel kDynamicIconMethodChannel = MethodChannel(

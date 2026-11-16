@@ -28,9 +28,10 @@ import 'package:bugaoshan/utils/gs_json_envelope.dart';
 /// 成绩链路（2026-09-20 抓包定案）：`POST xscjcx.do`（wdcjapp），标准 GS
 /// 信封，行字段见 [GraduateGradeRow]。
 ///
-/// 培养计划的 `.do` 端点尚未定案，对应方法随功能一并添加
-/// （应用入口：培养进度 `/sys/wdpyjhapp/*default/index.do`、
-/// 培养方案 `/sys/wdpyfaappscu/*default/index.do#/pyfaxq`）。
+/// 培养进度链路（2026-09-21 模拟机内抓包定案）：`wdpyjhapp` 的 `wdxx.do` /
+/// `wdkclbtj.do` / `wdfakcxx.do` 三个 GET 无参零框架信封接口，见
+/// [_getZeroJson]；培养方案入口 `/sys/wdpyfaappscu/*default/index.do#/pyfaxq`
+/// 尚无对应功能，未接线。
 class GsApiService {
   GsApiService(this._gsAuth);
 
@@ -92,8 +93,14 @@ class GsApiService {
     try {
       final semesters = await fetchSemesters();
       return semesters.isEmpty ? null : semesters.first;
-    } catch (e) {
-      AppLog.w(_tag, 'latestSemesterCode: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'latestSemesterCode 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       return null;
     }
   }
@@ -133,6 +140,7 @@ class GsApiService {
       _gsAuth.getClient,
       (client) => _postEnvelopeOnce(client, path, fields).then(gsRows),
       invalidate: _gsAuth.invalidate,
+      logTag: 'GsApiService',
     );
   }
 
@@ -153,16 +161,19 @@ class GsApiService {
     final all = <Map<String, dynamic>>[];
     var page = 1;
     while (true) {
-      final envelope = await retryOnUnauthenticated(_gsAuth.getClient, (
-        client,
-      ) async {
-        final decoded = await _postEnvelopeOnce(client, path, {
-          ...fields,
-          'pageNumber': '$page',
-          'pageSize': '$pageSize',
-        });
-        return gsPagedEnvelope(decoded) ?? GsPagedEnvelope(rows: const []);
-      }, invalidate: _gsAuth.invalidate);
+      final envelope = await retryOnUnauthenticated(
+        _gsAuth.getClient,
+        (client) async {
+          final decoded = await _postEnvelopeOnce(client, path, {
+            ...fields,
+            'pageNumber': '$page',
+            'pageSize': '$pageSize',
+          });
+          return gsPagedEnvelope(decoded) ?? GsPagedEnvelope(rows: const []);
+        },
+        invalidate: _gsAuth.invalidate,
+        logTag: 'GsApiService',
+      );
       if (envelope.rows.isEmpty) break;
       all.addAll(envelope.rows);
       final totalPage = envelope.totalPage;
@@ -219,7 +230,13 @@ class GsApiService {
     final Object? decoded;
     try {
       decoded = jsonDecode(response.body);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_postEnvelopeOnce 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       if (looksLikeLoginPage(response.body)) {
         throw const UnauthenticatedException('研教务会话已过期');
       }
@@ -289,6 +306,7 @@ class GsApiService {
       _gsAuth.getClient,
       (client) => _getZeroOnce(client, path),
       invalidate: _gsAuth.invalidate,
+      logTag: 'GsApiService',
     );
   }
 
@@ -318,7 +336,13 @@ class GsApiService {
     final Object? decoded;
     try {
       decoded = jsonDecode(response.body);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_getZeroOnce 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       if (looksLikeLoginPage(response.body)) {
         throw const UnauthenticatedException('研教务会话已过期');
       }

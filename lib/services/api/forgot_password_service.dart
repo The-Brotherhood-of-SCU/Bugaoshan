@@ -60,6 +60,8 @@ class ResetAccountInfo {
 /// 2. `obtain_code` / `verify_code` 短信或邮件验证码校验 → 重置 token
 /// 3. `submit` 设置新密码（官方即 JSON+HTTPS 提交，无 SM2 加密）
 class ForgotPasswordService {
+  static const String _tag = 'ForgotPasswordService';
+
   static const _base = 'https://id.scu.edu.cn';
   static const _enterpriseId = 'scdx';
   static const _captchaPath = '/api/public/bff/v1.2/one_time_login/captcha';
@@ -128,7 +130,7 @@ class ForgotPasswordService {
       throw const ForgotPasswordException('该账户未绑定手机号或邮箱，请联系管理员处理');
     }
     AppLog.i(
-      'ForgotPassword',
+      _tag,
       'verifyUser: ok (phone=${info.hasPhone}, email=${info.hasEmail})',
     );
     return info;
@@ -146,7 +148,7 @@ class ForgotPasswordService {
       'type': channel == ResetChannel.sms ? 'phone' : 'email',
       'sToken': sToken,
     }, api: 'obtain_code');
-    AppLog.i('ForgotPassword', 'obtainCode: sent (${channel.name})');
+    AppLog.i(_tag, 'obtainCode: sent (${channel.name})');
   }
 
   /// 步骤2b：校验验证码，返回步骤3所需的重置 token。
@@ -168,7 +170,7 @@ class ForgotPasswordService {
     if (token.isEmpty) {
       throw const ForgotPasswordException('验证码校验返回异常');
     }
-    AppLog.i('ForgotPassword', 'verifyCode: ok');
+    AppLog.i(_tag, 'verifyCode: ok');
     return token;
   }
 
@@ -188,7 +190,7 @@ class ForgotPasswordService {
     // 官方按渠道以 phone / email 字段回传账户名
     body[channel == ResetChannel.sms ? 'phone' : 'email'] = username;
     await _post('$_apiPrefix/submit', body, api: 'submit');
-    AppLog.i('ForgotPassword', 'submit: password reset ok');
+    AppLog.i(_tag, 'submit: password reset ok');
   }
 
   Future<Map<String, dynamic>> _post(
@@ -196,11 +198,13 @@ class ForgotPasswordService {
     Map<String, dynamic> body, {
     required String api,
   }) async {
-    final uri = Uri.parse('$_base$endpoint?_enterprise_id=$_enterpriseId');
-    final resp = await _client
-        .post(uri, headers: _headers, body: jsonEncode(body))
-        .timeout(kHttpTimeout);
-    return _parseResponse(resp, api);
+    return AppLog.guard(_tag, api, () async {
+      final uri = Uri.parse('$_base$endpoint?_enterprise_id=$_enterpriseId');
+      final resp = await _client
+          .post(uri, headers: _headers, body: jsonEncode(body))
+          .timeout(kHttpTimeout);
+      return _parseResponse(resp, api);
+    });
   }
 
   /// 统一响应校验：非 2xx 或业务 code 非 200/成功标记缺失时抛业务异常。

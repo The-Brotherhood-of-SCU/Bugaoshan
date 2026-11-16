@@ -1,6 +1,5 @@
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
-import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
@@ -135,15 +134,10 @@ class RetryableErrorWidget extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            AdaptiveGlassButton(
-              label: l10n.retry,
+            FilledButton.tonalIcon(
               onPressed: onRetry,
-              symbol: 'arrow.clockwise',
-              fallback: FilledButton.tonalIcon(
-                onPressed: onRetry,
-                icon: const Icon(Icons.refresh),
-                label: Text(l10n.retry),
-              ),
+              icon: const Icon(Icons.refresh),
+              label: Text(l10n.retry),
             ),
             if (isUndergradOnly) ...[
               const SizedBox(height: 12),

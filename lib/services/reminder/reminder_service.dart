@@ -18,8 +18,10 @@ import 'package:flutter/foundation.dart';
 /// - 哈希短路：计划特征哈希未变化时直接短路返回，避免前台唤醒等高频事件触发冗余系统排期调度。
 ///
 /// 依赖设计：
-/// 监听 [CourseProvider] 的 ValueNotifier 字段而非复用 [CourseProvider.onCoursesChanged]，
-/// 是由于后者为单一回调，已在依赖注入层由桌面小组件更新服务占用，二次赋值会导致小组件数据同步失效。
+/// 课表相关变更仍监听 [CourseProvider] 的 ValueNotifier 字段，而不是注册中心的
+/// `courseChanged` 时机：提醒排期需要「值确实变了」的语义（后者在每次写操作后都会触发，
+/// 包括保存了内容未变的配置），并且要与提醒配置的多路变更合并去抖。
+/// 只做副作用、不关心数据是否变化的订阅（如桌面小组件同步）走注册中心。
 class ReminderService {
   ReminderService({
     required CourseProvider courseProvider,
@@ -218,7 +220,11 @@ class ReminderService {
   );
 
   /// 通知权限授予后的回调入口，用于强制触发即时排期同步。
-  Future<void> onPermissionGranted() => reschedule(force: true);
+  Future<void> onPermissionGranted() async {
+    // The OS may have discarded requests while permission was revoked.
+    _lastPushedPlanId = null;
+    await reschedule(force: true);
+  }
 
   /// 请求通知权限并在获取成功后执行排期同步。
   ///
@@ -228,25 +234,37 @@ class ReminderService {
       final granted = await _transport.requestAuthorization(
         provisional: provisional,
       );
+      if (!_canWrite) return granted;
       if (granted) {
         needsPermission.value = false;
-        await reschedule(force: true);
+        await onPermissionGranted();
       } else {
         needsPermission.value = true;
       }
       return granted;
     } on ReminderTransportUnavailable catch (e) {
       AppLog.w('ReminderService', 'requestPermission 跳过：$e');
-      return false;
+      rethrow;
+    } catch (e, stack) {
+      AppLog.e(
+        'ReminderService',
+        'requestPermission FAILED',
+        error: e,
+        stackTrace: stack,
+      );
+      rethrow;
     }
   }
 
-  /// 查询当前系统的通知授权状态（如 authorized、provisional、denied、notDetermined、unknown）。
-  Future<String> permissionStatus() async {
+  /// 查询当前系统的通知授权状态。
+  ///
+  /// 平台不支持本地提醒投递（原生通道未接线或 Noop 通道）时返回
+  /// [ReminderPermissionStatus.unsupported]，调用方据此隐藏授权引导。
+  Future<ReminderPermissionStatus> permissionStatus() async {
     try {
       return await _transport.getPermissionStatus();
     } on ReminderTransportUnavailable {
-      return MethodChannelReminderTransport.permissionUnknown;
+      return ReminderPermissionStatus.unsupported;
     }
   }
 

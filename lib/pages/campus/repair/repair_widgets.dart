@@ -77,7 +77,7 @@ class _MyTicketsTabState extends State<_MyTicketsTab> {
       onRefresh: _refresh,
       child: ListView.separated(
         controller: _scrollController,
-        padding: const EdgeInsets.all(16),
+        padding: withSystemBottomInset(context, const EdgeInsets.all(16)),
         itemCount: tickets.length,
         separatorBuilder: (_, _) => const SizedBox(height: 12),
         itemBuilder: (context, index) =>
@@ -215,6 +215,8 @@ class _ProjectSelector extends StatefulWidget {
 }
 
 class _ProjectSelectorState extends State<_ProjectSelector> {
+  static const String _tag = 'ProjectSelectorState';
+
   List<RepairProject> _categories = const [];
   RepairProject? _selectedCategory;
   bool _loading = false;
@@ -248,7 +250,13 @@ class _ProjectSelectorState extends State<_ProjectSelector> {
     try {
       final projects = await widget.provider.fetchProjects(areaId);
       if (mounted) setState(() => _categories = projects);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_loadProjects 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       if (mounted) setState(() => _categories = const []);
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -406,6 +414,8 @@ class _AddAddressSheet extends StatefulWidget {
 }
 
 class _AddAddressSheetState extends State<_AddAddressSheet> {
+  static const String _tag = 'AddAddressSheetState';
+
   final _formKey = GlobalKey<FormState>();
   final _detailController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -435,7 +445,13 @@ class _AddAddressSheetState extends State<_AddAddressSheet> {
     try {
       final tree = await widget.provider.fetchAreaTree();
       if (mounted) setState(() => _areaTree = tree);
-    } catch (_) {
+    } catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_loadAreaTree 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // 失败时保持空树
     } finally {
       if (mounted) setState(() => _loadingTree = false);

@@ -1,3 +1,4 @@
+import 'package:bugaoshan/utils/app_log.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
@@ -5,6 +6,8 @@ import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/json_utils.dart';
 
 class BalanceQueryService {
+  static const String _tag = 'BalanceQueryService';
+
   static const _base = 'https://payapp.scu.edu.cn/eleFees';
 
   static final Map<String, String> _headers = {
@@ -145,7 +148,8 @@ class BalanceQueryService {
     try {
       final requestUrl = response.request?.url ?? Uri.parse(_base);
       return _isKnownAuthenticationTarget(requestUrl.resolve(location));
-    } on FormatException {
+    } on FormatException catch (error, stackTrace) {
+      AppLog.e(_tag, '解析缴费平台重定向地址失败', error: error, stackTrace: stackTrace);
       return false;
     }
   }

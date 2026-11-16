@@ -7,16 +7,16 @@ import 'package:bugaoshan/services/api/ccyl_api_service.dart';
 import 'package:bugaoshan/services/auth/ccyl_auth.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/ccyl/ccyl_service.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 
 void main() {
   late SharedPreferences prefs;
-  late AuthLogger logger;
+  late AppLogger logger;
 
   setUp(() async {
     await getIt.reset();
-    logger = AuthLogger();
-    getIt.registerSingleton<AuthLogger>(logger);
+    logger = AppLogger();
+    getIt.registerSingleton<AppLogger>(logger);
     FlutterSecureStorage.setMockInitialValues({});
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
@@ -89,7 +89,7 @@ void main() {
 
 Future<CcylAuth> _authenticatedCcylAuth(
   SharedPreferences prefs,
-  AuthLogger logger, {
+  AppLogger logger, {
   required void Function() onLogin,
   required void Function() onOAuth,
 }) async {

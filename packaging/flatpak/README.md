@@ -16,7 +16,6 @@ flatpak run org.flatpak.Builder \
   build io.github.the_brotherhood_of_scu.bugaoshan.yml
 ```
 
-The WPE WebKit modules are built before the Flutter application so the notice
-pages retain their native Linux WebView implementation. The WebView plugin
-links to these libraries under `/app`; WPE is not duplicated in the Flutter
-application bundle.
+The manifest builds only the Flutter application; Linux has no in-app WebView,
+so no WPE WebKit stack is built or linked. `foreign.json` supplies the offline
+sqlite3 native asset.

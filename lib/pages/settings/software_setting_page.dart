@@ -11,6 +11,7 @@ import 'package:bugaoshan/pages/settings/set_language_page.dart';
 import 'package:bugaoshan/pages/settings/set_app_icon_page.dart';
 import 'package:bugaoshan/pages/settings/set_course_style_page.dart';
 import 'package:bugaoshan/pages/settings/set_font_page.dart';
+import 'package:bugaoshan/pages/settings/set_proxy_page.dart';
 import 'package:bugaoshan/pages/settings/set_student_type_page.dart';
 import 'package:bugaoshan/pages/settings/set_theme_color_page.dart';
 import 'package:bugaoshan/pages/settings/reminder_setting_page.dart';
@@ -18,11 +19,13 @@ import 'package:bugaoshan/pages/settings/set_theme_mode_page.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/widgets/common/info_card.dart';
 import 'package:bugaoshan/widgets/common/section_title.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 class SoftwareSettingPage extends StatelessWidget {
   const SoftwareSettingPage({super.key});
@@ -35,7 +38,10 @@ class SoftwareSettingPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(localizations.softwareSetting)),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: withSystemBottomInset(
+          context,
+          const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        ),
         children: [
           SectionTitle(title: localizations.settingsGeneral),
           InfoCard(
@@ -78,6 +84,11 @@ class SoftwareSettingPage extends StatelessWidget {
                 icon: Icons.dock_outlined,
                 label: localizations.customDock,
                 onTap: () => popupOrNavigate(context, const SetDockPage()),
+              ),
+              IconTile(
+                icon: Icons.alt_route,
+                label: localizations.networkProxy,
+                onTap: () => popupOrNavigate(context, const SetProxyPage()),
               ),
               if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS)
                 IconTile(
@@ -144,6 +155,12 @@ class SoftwareSettingPage extends StatelessWidget {
                     await appConfig.clearAll();
                     final courseProvider = getIt<CourseProvider>();
                     await courseProvider.clearAllData();
+                    // 日志文件也清掉：用户点了「清除所有数据」就应真的全清，
+                    // 否则残留日志既不符预期，也与 privacy-policy / EULA 的
+                    // 「按数据类型另行删除」说明产生矛盾。
+                    await getIt<AppLogger>().deletePersistedFiles(
+                      preserveEnabled: true,
+                    );
                   }
                 },
               ),

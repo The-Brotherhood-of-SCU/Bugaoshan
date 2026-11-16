@@ -9,6 +9,7 @@ import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/theme_shape.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 class SetDockPage extends StatefulWidget {
   const SetDockPage({super.key});
@@ -257,7 +258,10 @@ class _SetDockPageState extends State<SetDockPage> {
               // Items list
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: withSystemBottomInset(
+                    context,
+                    EdgeInsets.symmetric(horizontal: 16),
+                  ),
                   children: [
                     // Visible items (reorderable)
                     visibleItems,
@@ -272,15 +276,10 @@ class _SetDockPageState extends State<SetDockPage> {
                 padding: const EdgeInsets.all(16),
                 child: SizedBox(
                   width: double.infinity,
-                  child: AdaptiveGlassButton(
-                    label: l10n.resetDock,
+                  child: OutlinedButton.icon(
                     onPressed: _resetToDefault,
-                    symbol: 'arrow.counterclockwise',
-                    fallback: OutlinedButton.icon(
-                      onPressed: _resetToDefault,
-                      icon: const Icon(Icons.refresh),
-                      label: Text(l10n.resetDock),
-                    ),
+                    icon: const Icon(Icons.refresh),
+                    label: Text(l10n.resetDock),
                   ),
                 ),
               ),

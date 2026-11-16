@@ -1,0 +1,45 @@
+{
+  "platforms": [
+    {"name":"platform:android","values":["Android"],"pattern":"android|安卓|ColorOS|HyperOS|MIUI|MagicOS"},
+    {"name":"platform:ios","values":["iOS"],"pattern":"\\biOS\\b|iPadOS|iPhone|iPad"},
+    {"name":"platform:harmonyos","values":["HarmonyOS (鸿蒙 / OpenHarmony)"],"pattern":"HarmonyOS|鸿蒙|OpenHarmony"},
+    {"name":"platform:windows","values":["Windows"],"pattern":"Windows|Win(?:10|11|32|64)"},
+    {"name":"platform:macos","values":["macOS"],"pattern":"macOS|MacBook|(?:^|[\\s:：\\[(])mac(?=无法|不能|启动|端|版|系统|[\\s\\])]|$)"},
+    {"name":"platform:linux","values":["Linux"],"pattern":"Linux|Ubuntu|Debian|Flatpak|AppImage"}
+  ],
+  "modules": [
+    {"name":"module:course","values":["课表与桌面小组件 (Course & Widget)","课表与日历导入导出 (Course & Calendar)"],"pattern":"课表|课程|周次|周数|调休|\\bICS\\b|日历|schedule"},
+    {"name":"module:widget","values":["桌面小组件 (Widget)"],"pattern":"小组件|微件|widget"},
+    {"name":"module:reminder","values":["提醒与实时活动 (Reminder & Live Activity)"],"pattern":"提醒|备忘录|待办|实况窗|实时活动|胶囊|Live Activity|Live Updates"},
+    {"name":"module:auth","values":["统一身份认证与登录 (SCU Auth / SSO)"],"pattern":"登录|登陆|认证|会话|验证码|密码|SSO|CAS|bindSession|\\bauth\\b"},
+    {"name":"module:passpoint","values":["校园网无感认证 (Passpoint)"],"pattern":"无感认证|Passpoint|校园网(?:设备|接入)|绑定设备MAC"},
+    {"name":"module:grades","values":["成绩与绩点查询 (Grades)"],"pattern":"成绩|绩点|均分|GPA|排名"},
+    {"name":"module:training","values":["培养方案与完成度 (Training Program)"],"pattern":"培养方案|培养进度|方案修读|计划完成|微专业"},
+    {"name":"module:balance","values":["电费 / 空调余额查询 (Balance Query)"],"pattern":"电费|电量|余额|照明|空调(?:费|余额)"},
+    {"name":"module:ccyl","values":["第二课堂 (CCYL)"],"pattern":"第二课堂|二课|CCYL"},
+    {"name":"module:fitness","values":["体测查询 (Fitness)"],"pattern":"体测|体质测试|fitness"},
+    {"name":"module:course-selection","values":["选课与教师评价 (Course Selection)"],"pattern":"选课|抢课|选菜通|教师评价|及格率|分数分布"},
+    {"name":"module:repair","values":["智慧后勤在线报修 (Repair)"],"pattern":"报修|工单|智慧后勤|zhhq"},
+    {"name":"module:classroom","values":["空闲教室 / 考表查询 (Classroom & Exam)"],"pattern":"教室|考表|考场|考试|班级课表"},
+    {"name":"module:notices","values":["校园通知 / 附件下载 (Notices & Downloads)"],"pattern":"公告|附件|教务(?:处|部|系统)通知|通知(?:功能|页面|公告|源)|团省委|团委|学工部"},
+    {"name":"module:services","values":["微服务与预约请假 (Campus Services)"],"pattern":"微服务|请假|活动室|预约|办事大厅"},
+    {"name":"module:volunteer","values":["志愿四川 (Volunteer Sichuan)"],"pattern":"志愿四川|志愿时长"},
+    {"name":"module:settings","values":["界面主题与基础设置 (Theme & Settings)"],"pattern":"主题|背景图|背景图片|多语言|语言切换|毛玻璃|液态玻璃|导航条|导航栏|样式|wizard|引导页|\\bUI\\b|\\bUX\\b"},
+    {"name":"module:update","values":["更新下载与安装 (Update & Installation)"],"pattern":"更新下载|下载更新|更新包|安装包|版本升级|升级失败|检查更新|下载进度"},
+    {"name":"module:logs","values":["日志与异常诊断 (Logging & Diagnostics)"],"pattern":"日志|诊断|异常反馈|全局异常|启动失败|无法启动|崩溃|闪退"},
+    {"name":"module:distribution","values":["构建与发布分发 (Build & Distribution)"],"pattern":"构建|发布流程|分发|签名|TestFlight|App Store|AltStore|SideStore|Flutter.*Kotlin|\\bCI\\b"},
+    {"name":"module:storage","values":["本地存储 (Storage)"],"pattern":"存储|SQLite|文件IO|数据文件|文件夹"},
+    {"name":"module:architecture","values":["架构与代码质量 (Architecture & Code Quality)"],"pattern":"架构|重构|资源释放|Model|算法|硬编码|逻辑重复|全局超时|反向依赖|Provider|静态状态"},
+    {"name":"module:security","values":["安全与隐私 (Security & Privacy)"],"pattern":"安全|隐私|权限|明文|Security"},
+    {"name":"module:other","values":["其他 / 全局异常 (Others)"],"pattern":null}
+  ],
+  "extra": [
+    {"name":"audience:graduate","pattern":"研究生|\\bgraduate\\b"},
+    {"name":"discussion","pattern":"\\[RFC\\]|讨论[:：]|\\[(?:Arch|Logic|Code Quality|Security)\\]"}
+  ],
+  "types": [
+    {"name":"bug","pattern":"\\bbug\\b"},
+    {"name":"enhancement","pattern":"feature|feat(?:\\(|:)|功能请求|需求|增强|样式优化|\\[适配\\]|\\[RFC\\]|\\[Sub-issue\\]"}
+  ],
+  "team": {"name":"Bugaoshan Team","org":"The-Brotherhood-of-SCU","slug":"bugaoshan-team"}
+}

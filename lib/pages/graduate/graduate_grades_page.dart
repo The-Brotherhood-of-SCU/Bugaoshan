@@ -6,11 +6,13 @@ import 'package:bugaoshan/providers/graduate_grades_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/theme_shape.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/stat_item.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
+import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -26,7 +28,12 @@ class GraduateGradesPage extends StatefulWidget {
 }
 
 class _GraduateGradesPageState extends State<GraduateGradesPage> {
+  static const String _tag = 'GraduateGradesPage';
+
   late final GraduateGradesProvider _provider;
+
+  /// 缓存实例：dispose 时 getIt 可能已被 reset，重新取会抛异常。
+  late final ScuAuthProvider _auth;
 
   /// 统一认证会话过期（token 还在）时的自愈刷新进行中。
   bool _recoveringSession = false;
@@ -35,7 +42,8 @@ class _GraduateGradesPageState extends State<GraduateGradesPage> {
   void initState() {
     super.initState();
     _provider = getIt<GraduateGradesProvider>();
-    getIt<ScuAuthProvider>().addListener(_onAuthChanged);
+    _auth = getIt<ScuAuthProvider>();
+    _auth.addListener(_onAuthChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _onAuthChanged();
     });
@@ -43,12 +51,12 @@ class _GraduateGradesPageState extends State<GraduateGradesPage> {
 
   @override
   void dispose() {
-    getIt<ScuAuthProvider>().removeListener(_onAuthChanged);
+    _auth.removeListener(_onAuthChanged);
     super.dispose();
   }
 
   void _onAuthChanged() {
-    final auth = getIt<ScuAuthProvider>();
+    final auth = _auth;
     if (auth.isLoggedIn) {
       _provider.ensureLoaded();
     } else if (!auth.isAutoLoggingIn &&
@@ -64,6 +72,11 @@ class _GraduateGradesPageState extends State<GraduateGradesPage> {
     setState(() => _recoveringSession = true);
     try {
       await getIt<ScuAuth>().refresh();
+    } catch (e, logStackTrace) {
+      // 这个 Future 由 listener 回调 fire-and-forget 触发、没人接，不 catch
+      // 会变成 unhandled async error。留在未登录分支，由 _buildBody 的
+      // 「请先登录」引导承接（与培养进度页同语义）。
+      AppLog.e(_tag, '_recoverSession 失败', error: e, stackTrace: logStackTrace);
     } finally {
       if (mounted) setState(() => _recoveringSession = false);
     }
@@ -79,7 +92,7 @@ class _GraduateGradesPageState extends State<GraduateGradesPage> {
     final l10n = AppLocalizations.of(context)!;
 
     return ListenableBuilder(
-      listenable: Listenable.merge([_provider, getIt<ScuAuthProvider>()]),
+      listenable: Listenable.merge([_provider, _auth]),
       builder: (context, _) => Scaffold(
         appBar: AppBar(
           centerTitle: true,
@@ -87,12 +100,13 @@ class _GraduateGradesPageState extends State<GraduateGradesPage> {
           leading: IconButton(
             icon: const Icon(Icons.close),
             tooltip: l10n.close,
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => popDialog(context: context),
           ),
           actions: [
-            if (getIt<ScuAuthProvider>().isLoggedIn &&
+            if (_auth.isLoggedIn &&
                 _provider.state != GraduateGradesLoadState.loading)
               IconButton(
+                tooltip: l10n.refresh,
                 onPressed: _provider.refresh,
                 icon: const Icon(Icons.refresh),
               ),
@@ -104,7 +118,7 @@ class _GraduateGradesPageState extends State<GraduateGradesPage> {
   }
 
   Widget _buildBody(AppLocalizations l10n) {
-    final auth = getIt<ScuAuthProvider>();
+    final auth = _auth;
 
     // 统一认证未登录：自动登录或会话自愈中给加载态，
     // 否则给「请先登录」引导。研教务会话过期的错误态走下方 unauthenticated。

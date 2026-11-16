@@ -13,9 +13,11 @@ import 'package:flutter/material.dart' show Colors, TimeOfDay;
 /// - [graduateCoursesFromCapturedJson]：WebView 抓取路径。输入是页面自己的
 ///   数据请求被钩子记下来的**响应体原文**，结构无法预知，靠形态特征识别。
 ///
-/// **真实字段名仍待最终确认**（TODO(gs-api)）。当前同时兼容金智 EMAP 常见命名
-/// （`kcmc` 课程名 / `xm` 教师 / `cdmc` 场地 / `xqj` 星期 / `jcs` 节次 /
-/// `zcd` 周次 / `xqmc` 校区）与英文别名（`courseName` / `startWeek` …）。
+/// 字段名分两层：川大 ehall 实测字段（KCMC/JSXM/JASMC/XQ/KSJCDM/JSJCDM/
+/// ZCMC/ZCBH/KSSJ/JSSJ，2026-09-15/20 抓包定案）走精确映射；金智 EMAP
+/// 常见命名（`kcmc` 课程名 / `xm` 教师 / `cdmc` 场地 / `xqj` 星期 /
+/// `jcs` 节次 / `zcd` 周次 / `xqmc` 校区）与英文别名（`courseName` /
+/// `startWeek` …）是给非川大来源的兼容层，**未经实测**，仅作 best-effort。
 ///
 /// 取值一律走宽松 helper 并带取值范围校验：脏数据、位串、全 `null` 字段只会
 /// 退化成默认值，不会崩溃，也不会造出第 9999 周的课。

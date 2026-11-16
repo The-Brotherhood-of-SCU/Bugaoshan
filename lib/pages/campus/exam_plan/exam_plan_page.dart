@@ -11,6 +11,7 @@ import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 class ExamPlanPage extends StatefulWidget {
   const ExamPlanPage({super.key});
@@ -113,7 +114,10 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
     return RefreshIndicator(
       onRefresh: _provider.refresh,
       child: ListView.builder(
-        padding: const EdgeInsets.all(AppShapes.large),
+        padding: withSystemBottomInset(
+          context,
+          EdgeInsets.all(AppShapes.large),
+        ),
         itemCount: _provider.exams.length,
         itemBuilder: (context, index) => _buildExamCard(_provider.exams[index]),
       ),

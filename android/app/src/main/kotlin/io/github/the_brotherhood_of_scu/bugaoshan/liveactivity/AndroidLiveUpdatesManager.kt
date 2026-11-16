@@ -241,7 +241,8 @@ object AndroidLiveUpdatesManager {
 
         ensureChannel(context)
 
-        val effectiveCourseName = courseName ?: lastCourseName ?: "当前课程"
+        val effectiveCourseName = courseName ?: lastCourseName
+            ?: context.getString(R.string.live_activity_current_course)
         val effectiveLocation = location ?: lastLocation ?: ""
         val effectiveStartAtMillis = startAtMillis ?: lastStartAtMillis
         val effectiveEndAtMillis = endAtMillis ?: lastEndAtMillis
@@ -385,26 +386,31 @@ object AndroidLiveUpdatesManager {
         )
 
         val endTimeText = formatTime(endAtMillis)
+        val endsAtText = if (endTimeText.isNotEmpty()) {
+            context.getString(R.string.live_activity_ends_at, endTimeText)
+        } else {
+            ""
+        }
         val displayText = when {
-            location.isNotEmpty() -> "地点：$location"
-            endTimeText.isNotEmpty() -> "预计 $endTimeText 下课"
-            else -> "进行中"
+            location.isNotEmpty() -> location
+            endsAtText.isNotEmpty() -> endsAtText
+            else -> context.getString(R.string.live_activity_in_progress)
         }
 
         // 状态栏芯片（Chip）文本：根据 Android 16 规范严格控制在 96dp 以内，
         // 优先展示清晰紧凑的 "11:40 下课"，避免过长文案被系统截断
-        val shortCriticalText = if (endTimeText.isNotEmpty()) "$endTimeText 下课" else courseName
+        val shortCriticalText = endsAtText.ifEmpty { courseName }
 
         val summaryText = buildString {
             if (location.isNotEmpty()) {
-                append("地点：").append(location)
+                append(location)
             }
-            if (endTimeText.isNotEmpty()) {
+            if (endsAtText.isNotEmpty()) {
                 if (isNotEmpty()) append("  |  ")
-                append("预计 ").append(endTimeText).append(" 下课")
+                append(endsAtText)
             }
             if (!nextCourseName.isNullOrEmpty()) {
-                append("\n下节预告：").append(nextCourseName)
+                append("\n").append(context.getString(R.string.live_activity_next_course, nextCourseName))
                 if (!nextLocation.isNullOrEmpty()) {
                     append(" · ").append(nextLocation)
                 }
@@ -448,7 +454,7 @@ object AndroidLiveUpdatesManager {
                 putInt(EXTRA_CAPSULE_STATUS, CAPSULE_STATUS_SHOW)
                 putInt(EXTRA_CAPSULE_TYPE, CAPSULE_TYPE_NORMAL)
                 putString(EXTRA_CAPSULE_TITLE, courseName)
-                putString(EXTRA_CAPSULE_CONTENT, if (location.isNotEmpty()) location else "$endTimeText 下课")
+                putString(EXTRA_CAPSULE_CONTENT, if (location.isNotEmpty()) location else endsAtText)
                 putString(EXTRA_CAPSULE_BG_COLOR, COLOR_SCU_RED)
 
                 // 兼容老版本/无前缀键名

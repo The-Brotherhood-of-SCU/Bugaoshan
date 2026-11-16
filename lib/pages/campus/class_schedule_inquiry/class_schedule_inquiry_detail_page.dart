@@ -11,6 +11,7 @@ import 'package:bugaoshan/providers/class_schedule_inquiry_provider.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/utils/week_parser.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 /// 班级课表详情页 - 以课表网格按周展示班级课程。
 ///
@@ -148,7 +149,10 @@ class _ClassScheduleInquiryDetailPageState
             },
             itemBuilder: (context, index) {
               return SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(2, 2, 2, 16),
+                padding: withSystemBottomInset(
+                  context,
+                  EdgeInsets.fromLTRB(2, 2, 2, 16),
+                ),
                 child: SizedBox(
                   height: gridHeight,
                   child: CourseGrid(

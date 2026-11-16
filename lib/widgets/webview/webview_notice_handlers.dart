@@ -1,3 +1,4 @@
+import 'package:bugaoshan/utils/open_link.dart';
 import 'dart:convert';
 
 import 'package:bugaoshan/injection/injector.dart';
@@ -13,6 +14,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'captcha_webview_dialog.dart';
 import 'download_options.dart';
+
+const String _tag = 'WebviewNoticeHandlers';
 
 /// JavaScript handlers and download logic for WebViewNoticePage.
 mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
@@ -35,10 +38,12 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
           )
           .toList();
       if (mounted) setState(() => pageAttachments = attachments);
-    } catch (e) {
+    } catch (e, logStackTrace) {
       AppLog.e(
-        'WebViewNoticeHandlers',
-        '$debugLabel parse attachments error: $e',
+        _tag,
+        'onAttachmentsMessage 失败',
+        error: e,
+        stackTrace: logStackTrace,
       );
     }
   }
@@ -89,7 +94,7 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
       ),
     ).then((confirmed) {
       if (confirmed == true) {
-        launchUrl(uri, mode: LaunchMode.externalApplication);
+        openUri(uri, mode: LaunchMode.externalApplication);
       }
     });
   }
@@ -126,7 +131,13 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
           errorMessage: AppLocalizations.of(context)!.captchaCancelled,
         );
       }
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_downloadWithCaptchaHandling 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (mounted) {
         manager.updateTask(
           task,
@@ -241,10 +252,12 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
               : null,
         );
       }
-    } catch (e) {
+    } catch (e, logStackTrace) {
       AppLog.e(
-        'WebViewNoticeHandlers',
-        '$debugLabel download attachment error: $e',
+        _tag,
+        'onDownloadAttachment 失败',
+        error: e,
+        stackTrace: logStackTrace,
       );
     }
   }
@@ -271,8 +284,14 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
         ).showSnackBar(SnackBar(content: Text(l10n.downloadComplete)));
       }
       return true;
-    } catch (e) {
-      AppLog.e('WebViewNoticeHandlers', '$debugLabel download error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'handleDownloadStartRequest 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       return false;
     }
   }

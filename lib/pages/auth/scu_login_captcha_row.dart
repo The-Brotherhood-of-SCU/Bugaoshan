@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:bugaoshan/widgets/common/image_error_log.dart';
 
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/auth/scu_login_input_field.dart';
@@ -11,6 +12,8 @@ import 'package:flutter/material.dart';
 /// 验证码未加载时图片区域显示刷新图标，同样可点击刷新。
 /// [labelTrailing] 可选，渲染在「验证码」标签行右侧（如「重置密码」入口）。
 class ScuLoginCaptchaRow extends StatelessWidget {
+  static const String _tag = 'ScuLoginCaptchaRow';
+
   const ScuLoginCaptchaRow({
     super.key,
     required this.controller,
@@ -105,16 +108,24 @@ class ScuLoginCaptchaRow extends StatelessWidget {
                     : captchaImageBytes != null
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: Image.memory(
-                          captchaImageBytes!,
-                          fit: BoxFit.contain,
-                          gaplessPlayback: true,
-                          errorBuilder: (_, _, _) => Icon(
-                            Icons.broken_image_outlined,
-                            color: isDark
-                                ? Colors.white54
-                                : Colors.grey.shade600,
-                            size: 22,
+                        child: ImageErrorLog(
+                          source: captchaImageBytes!,
+                          tag: _tag,
+                          message: '验证码图片渲染失败',
+                          builder: (report) => Image.memory(
+                            captchaImageBytes!,
+                            fit: BoxFit.contain,
+                            gaplessPlayback: true,
+                            errorBuilder: (context, error, stackTrace) {
+                              report(error, stackTrace);
+                              return Icon(
+                                Icons.broken_image_outlined,
+                                color: isDark
+                                    ? Colors.white54
+                                    : Colors.grey.shade600,
+                                size: 22,
+                              );
+                            },
                           ),
                         ),
                       )

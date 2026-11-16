@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'package:flutter/services.dart';
 
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/dev/changelog/changelog_version_page.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 class _VersionEntry {
   final String version;
@@ -24,6 +26,8 @@ class ChangelogPage extends StatefulWidget {
 }
 
 class _ChangelogPageState extends State<ChangelogPage> {
+  static const String _tag = 'ChangelogPageState';
+
   List<_VersionEntry> _entries = [];
   bool _isLoading = true;
 
@@ -42,7 +46,8 @@ class _ChangelogPageState extends State<ChangelogPage> {
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(_tag, '_loadChangelog 失败', error: e, stackTrace: logStackTrace);
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -98,7 +103,10 @@ class _ChangelogPageState extends State<ChangelogPage> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView.separated(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: withSystemBottomInset(
+                context,
+                EdgeInsets.symmetric(vertical: 8),
+              ),
               itemCount: _entries.length,
               separatorBuilder: (_, _) => const Divider(height: 1, indent: 72),
               itemBuilder: (context, index) {

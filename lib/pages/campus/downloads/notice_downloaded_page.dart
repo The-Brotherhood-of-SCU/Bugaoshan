@@ -1,4 +1,6 @@
+import 'package:bugaoshan/utils/open_link.dart';
 import 'dart:async';
+import 'package:bugaoshan/utils/app_log.dart';
 import 'dart:io';
 
 import 'package:bugaoshan/injection/injector.dart';
@@ -6,13 +8,13 @@ import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/download_manager.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:open_filex/open_filex.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
-import 'package:url_launcher/url_launcher.dart';
 
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/utils/share_utils.dart';
 import 'package:bugaoshan/widgets/common/swipe_page_view.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 import 'file_utils.dart';
 
 class _DirConfig {
@@ -54,6 +56,8 @@ class NoticeDownloadedPage extends StatefulWidget {
 
 class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
     with TickerProviderStateMixin {
+  static const String _tag = 'NoticeDownloadedPageState';
+
   late final List<_DirConfig> _dirConfigs;
 
   late final TabController _tabController;
@@ -123,25 +127,30 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
     return Directory('${base.path}/${_dirPath(dirName)}');
   }
 
+  /// 打开附件所在目录。
+  ///
+  /// Android 上不能靠 content URI 调起文件管理器：系统 DocumentsUI 不接受
+  /// VIEW 一个目录 document URI（抛 `PlatformException(ACTIVITY_NOT_FOUND)`），
+  /// 且 scoped storage 下也进不去 `Android/data/<package>/files/`。
+  /// 改为复制绝对路径，用户可自行到文件管理器/ADB 取。
   Future<void> _openFolder() async {
     final l10n = AppLocalizations.of(context)!;
-    final dir = await _attachmentsDir(_currentDir);
-    if (!await dir.exists()) {
-      await dir.create(recursive: true);
-    }
-
     try {
-      if (Platform.isAndroid) {
-        final encodedPath = _dirPath(_currentDir).replaceAll('/', '%2F');
-        await launchUrl(
-          Uri.parse(
-            'content://com.android.externalstorage.documents/document/primary%3AAndroid%2Fdata%2Fio.github.the_brotherhood_of_scu.bugaoshan%2Ffiles%2F$encodedPath',
-          ),
-        );
-      } else {
-        await launchUrl(Uri.file(dir.path));
+      final dir = await _attachmentsDir(_currentDir);
+      if (!await dir.exists()) {
+        await dir.create(recursive: true);
       }
-    } catch (e) {
+      if (Platform.isAndroid) {
+        await Clipboard.setData(ClipboardData(text: dir.path));
+        if (!mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(dir.path)));
+        return;
+      }
+      await openUri(Uri.file(dir.path));
+    } catch (e, logStackTrace) {
+      AppLog.e(_tag, '_openFolder 失败', error: e, stackTrace: logStackTrace);
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
@@ -398,7 +407,7 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
-  void _openFile(File file) => OpenFilex.open(file.path);
+  void _openFile(File file) => openDownloadedFile(file.path);
 
   void _shareFile(File file) => shareSingleFile(file.path, context: context);
 
@@ -690,7 +699,10 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
     }
     final entries = _buildSearchEntries();
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: withSystemBottomInset(
+        context,
+        EdgeInsets.symmetric(vertical: 8),
+      ),
       itemCount: entries.length,
       itemBuilder: (ctx, index) {
         final entry = entries[index];
@@ -749,7 +761,10 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
       );
     }
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: withSystemBottomInset(
+        context,
+        EdgeInsets.symmetric(vertical: 8),
+      ),
       itemCount: infos.length,
       itemBuilder: (ctx, index) {
         final info = infos[index];

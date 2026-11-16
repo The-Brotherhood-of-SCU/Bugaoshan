@@ -110,7 +110,8 @@ class _SetDurationPageState extends State<SetDurationPage> {
               ),
             ),
 
-            Slider(
+            AdaptiveGlassSlider(
+              semanticLabel: appLang.animationDuration,
               value: _tempAnimationTime.toDouble(),
               min: 0,
               max: 1000,
@@ -166,19 +167,13 @@ class _SetDurationPageState extends State<SetDurationPage> {
             const SizedBox(height: 16.0),
             SizedBox(
               width: double.infinity,
-              child: AdaptiveGlassButton(
-                label: appLang.confirmButton,
-                onPressed: _confirmChanges,
-                prominent: true,
-                symbol: 'checkmark',
-                fallback: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  ),
-                  onPressed: _confirmChanges,
-                  child: Text(appLang.confirmButton),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 ),
+                onPressed: _confirmChanges,
+                child: Text(appLang.confirmButton),
               ),
             ),
           ],

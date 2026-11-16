@@ -1,4 +1,3 @@
-import 'package:bugaoshan/widgets/adaptive/adaptive_glass_controls.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -6,6 +5,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/set_theme_color_provider.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 import 'package:system_theme/system_theme.dart';
 
 class SetThemeColorPage extends StatefulWidget {
@@ -136,29 +136,21 @@ class _SetThemeColorPageState extends State<SetThemeColorPage> {
               actions: [
                 Padding(
                   padding: const EdgeInsets.only(right: 16.0),
-                  child: AdaptiveGlassButton(
-                    label: l10n.confirmButton,
-                    onPressed: _confirmChanges,
-                    prominent: true,
-                    symbol: 'checkmark',
-                    fallback: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Theme.of(
-                          context,
-                        ).colorScheme.onPrimary,
-                      ),
-                      onPressed: _confirmChanges,
-                      child: Text(l10n.confirmButton),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     ),
+                    onPressed: _confirmChanges,
+                    child: Text(l10n.confirmButton),
                   ),
                 ),
               ],
             ),
             body: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 8.0,
+              padding: withSystemBottomInset(
+                context,
+                EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               ),
               child: Column(
                 children: [

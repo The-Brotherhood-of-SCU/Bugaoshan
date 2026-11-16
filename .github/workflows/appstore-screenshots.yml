@@ -27,7 +27,7 @@ jobs:
           cache: true
       - name: Dependencies and generated sources
         run: |
-          flutter pub get
+          python3 .github/scripts/pub_get_with_fallback.py
           dart run build_runner build --delete-conflicting-outputs
           flutter gen-l10n
       - name: Capture real iPhone and iPad UI

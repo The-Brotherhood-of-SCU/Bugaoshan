@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
@@ -12,21 +12,32 @@ import 'package:bugaoshan/pages/startup_error_app.dart';
 import 'package:bugaoshan/services/window_state_service.dart';
 import 'package:system_theme/system_theme.dart';
 import 'package:bugaoshan/services/update_service.dart';
+import 'package:bugaoshan/utils/app_error_reporter.dart';
+import 'package:bugaoshan/utils/app_log.dart';
+import 'package:bugaoshan/utils/log_persistence.dart';
+
+const String _tag = 'Main';
 
 Future<void> main() async {
   try {
     await _initializeApp();
     runApp(MyApp());
   } catch (error, stackTrace) {
-    debugPrint('Startup error: $error\n$stackTrace');
+    AppLog.e(_tag, '应用启动失败', error: error, stackTrace: stackTrace);
+    await AppLog.flushFileSink();
     runApp(StartupErrorApp(errorMessage: stackTrace.toString()));
   }
 }
 
 Future<void> _initializeApp() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // 尽早接管全局异常：此后任何未捕获异常（含异步）都会进入日志。
+  // 放在 configureDependencies 之前是安全的——AppLog 在 GetIt 未注册
+  // AppLogger 时会退化为独立裸实例。
+  setupGlobalErrorHandlers();
   if (!kIsWeb) {
     DartPluginRegistrant.ensureInitialized();
+    await initializeLogPersistence();
     if (_isDesktopPlatform) {
       sqfliteFfiInit();
       databaseFactory = databaseFactoryFfi;

@@ -4,7 +4,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/dev/environment_info_page.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 
-/// TestPage 入口：环境信息。
+/// 开发者页面入口：环境信息。
 class EnvironmentInfoTile extends StatelessWidget {
   const EnvironmentInfoTile({super.key});
 

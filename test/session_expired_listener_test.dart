@@ -1,7 +1,7 @@
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/widgets/common/session_expired_listener.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
@@ -10,14 +10,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   late ScuAuth auth;
-  late AuthLogger logger;
+  late AppLogger logger;
   late ValueNotifier<Locale> locale;
 
   setUp(() async {
     await getIt.reset();
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    logger = AuthLogger();
+    logger = AppLogger();
     auth = ScuAuth(prefs, logger: logger);
     getIt.registerSingleton<ScuAuth>(auth);
     locale = ValueNotifier(const Locale('zh'));

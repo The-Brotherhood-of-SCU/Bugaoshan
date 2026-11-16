@@ -89,4 +89,19 @@ void main() {
       reason: '本科生模式下研究生课表导入不应出现在 dock 自定义列表',
     );
   });
+
+  test('init 丢弃已移除的 passpoint dock id，保留其余合法 id', () async {
+    SharedPreferences.setMockInitialValues({
+      'visibleDockIds': [dockIdCourse, 'passpoint', dockIdProfile],
+    });
+    final prefs = await SharedPreferences.getInstance();
+    final appConfig = AppConfigProvider(prefs);
+    await appConfig.init();
+
+    expect(appConfig.visibleDockIds.value, [
+      dockIdCourse,
+      dockIdProfile,
+    ], reason: '无感认证已并入校园网，旧 dock id 应被过滤而非显示成「我的」');
+    expect(appConfig.visibleDockIds.value, isNot(contains('passpoint')));
+  });
 }

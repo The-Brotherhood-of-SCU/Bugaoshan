@@ -19,6 +19,8 @@ import 'package:bugaoshan/utils/app_log.dart';
 /// 间的不一致中间态。移动判定用**物理位置**（`pageController.page?.round() != target`）
 /// 而非缓存 int 比较 —— 根治「同值不通知」bug 类。
 class CoursePageController extends ChangeNotifier {
+  static const String _tag = 'CoursePageController';
+
   CoursePageController({
     required ValueListenable<ScheduleConfig?> scheduleConfig,
     required ValueListenable<List<ScheduleConfig>> allSchedules,
@@ -185,8 +187,14 @@ class CoursePageController extends ChangeNotifier {
       calendarNextSemester.value = next;
       _calendarNextSemesterLoaded = true;
       return next;
-    } catch (e) {
-      AppLog.e('CoursePageController', 'Load calendar failed: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'ensureCalendarNextSemester 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
+
       return null;
     } finally {
       if (!_disposed && gen == _calendarLoadGen) {

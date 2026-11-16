@@ -9,12 +9,14 @@ def main():
     prev = os.environ.get("PREV", "").lstrip("v")
 
     body = f"""## ⬇️ 下载 (Downloads)
-- Android: [arm64-Apk]({repo}/releases/download/v{version}/bugaoshan_{version}_arm64-v8a.apk)
-- Windows: [x64 Zip]({repo}/releases/download/v{version}/bugaoshan_{version}_windows_x64.zip)
-- macOS (Apple Silicon): [dmg](https://github.com/Visio-Vanitas/Bugaoshan/releases/download/v{version}/bugaoshan_{version}_macos_arm64.dmg)
-- iOS: 未发布正式版，可安装testflight后点击链接进行邀测: https://testflight.apple.com/join/Vyenb6gC ；另提供 [ipa](https://github.com/Visio-Vanitas/Bugaoshan/releases/download/v{version}/bugaoshan_{version}_ios_unsigned.ipa)（ipa仅供理解有关技术的同学测试使用，非技术背景同学请勿下载）
+- Android: [arm64 apk]({repo}/releases/download/v{version}/bugaoshan_{version}_arm64-v8a.apk)
+- Windows: [x64 zip]({repo}/releases/download/v{version}/bugaoshan_{version}_windows_x64.zip)
+- Linux: [x64 tar.gz]({repo}/releases/download/v{version}/bugaoshan_{version}_linux_x64.tar.gz)
+- macOS: [App Store](https://apps.apple.com/app/id6813305962) · [DMG](https://github.com/wjlfish/Bugaoshan-macos/releases)
+- iOS: [App Store](https://apps.apple.com/app/id6813305962)
+- HarmonyOS: [App Test](https://appgallery.huawei.com/apptest/4R0ngHwSmNP)
 
-> 💡 **Note**: 当前项目优先保障 Android 端的稳定与体验。 Windows 版本可能存在部分兼容性或体验问题。
+> 💡 **Note**: 当前项目优先保障移动平台的稳定与体验。 Windows、Linux 版本可能存在部分兼容性或体验问题。
 
 {changelog}
 

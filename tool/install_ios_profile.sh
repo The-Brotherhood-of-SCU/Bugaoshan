@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-readonly bundle_id="io.github.thebrotherhoodofscu.bugaoshan"
 readonly app_path="build/ios/iphoneos/Runner.app"
+readonly info_plist="$app_path/Info.plist"
 
 usage() {
   cat <<'EOF'
@@ -45,6 +45,19 @@ if [[ ! -d "$app_path" ]]; then
   echo "Run without --no-build to create it first." >&2
   exit 66
 fi
+
+# 从构建产物读取 Bundle ID，而不是写死：2026-09-18 的 App Store 分发准备把
+# 主应用 Bundle ID 改成了 `.ios` 后缀（见 docs/architecture/ios-distribution.md），
+# 写死的旧值会让下面的 info apps 查不到已安装包，静默跳过「杀旧进程」这一步，
+# 白屏问题（本脚本存在的唯一理由）就会原地复发。
+#
+# 读不到就是构建产物不完整，直接停下——再退回到另一个写死的值只会把同一类
+# 漂移问题换个地方重演。`if !` 形式可绕过 `set -e` 拿到失败分支。
+if ! bundle_id="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$info_plist" 2>/dev/null)"; then
+  echo "Cannot read CFBundleIdentifier from $info_plist" >&2
+  exit 66
+fi
+echo "Bundle ID: $bundle_id"
 
 temp_dir="$(mktemp -d "${TMPDIR:-/tmp}/bugaoshan-ios-profile.XXXXXX")"
 trap 'rm -rf "$temp_dir"' EXIT

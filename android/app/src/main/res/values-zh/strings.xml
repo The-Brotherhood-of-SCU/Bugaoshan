@@ -17,4 +17,8 @@
     <!-- 实时活动与状态栏胶囊通知 -->
     <string name="live_activity_channel_name">课程实时动态</string>
     <string name="live_activity_channel_desc">上课期间状态栏胶囊与锁屏实时卡片</string>
+    <string name="live_activity_current_course">当前课程</string>
+    <string name="live_activity_in_progress">进行中</string>
+    <string name="live_activity_ends_at">%1$s 下课</string>
+    <string name="live_activity_next_course">下节预告：%1$s</string>
 </resources>

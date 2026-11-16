@@ -39,13 +39,17 @@ class RecordingTransport implements ReminderTransport {
   @override
   Future<bool> requestAuthorization({bool provisional = false}) async {
     if (unavailable) throw const ReminderTransportUnavailable();
+    if (failWith != null) throw failWith!;
     return !denied;
   }
 
   @override
-  Future<String> getPermissionStatus() async => unavailable
-      ? MethodChannelReminderTransport.permissionUnknown
-      : (denied ? 'denied' : 'authorized');
+  Future<ReminderPermissionStatus> getPermissionStatus() async {
+    if (unavailable) throw const ReminderTransportUnavailable();
+    return denied
+        ? ReminderPermissionStatus.denied
+        : ReminderPermissionStatus.authorized;
+  }
 
   @override
   Future<int> getPendingCount() async =>
@@ -191,6 +195,49 @@ void main() {
     service.dispose();
   });
 
+  group('通知授权', () {
+    test('宿主不可用不返回授权被拒绝，也不改变权限状态', () async {
+      await setUpService();
+      transport.unavailable = true;
+
+      await expectLater(
+        service.requestPermission(),
+        throwsA(isA<ReminderTransportUnavailable>()),
+      );
+      expect(service.needsPermission.value, isFalse);
+      expect(transport.synced, isEmpty);
+    });
+
+    test('系统接口失败保持异常，不返回授权被拒绝', () async {
+      await setUpService();
+      final failure = StateError('native authorization failed');
+      transport.failWith = failure;
+
+      await expectLater(service.requestPermission(), throwsA(same(failure)));
+      expect(service.needsPermission.value, isFalse);
+    });
+
+    test('系统实际拒绝权限才返回 false', () async {
+      await setUpService();
+      transport.denied = true;
+
+      expect(await service.requestPermission(), isFalse);
+      expect(service.needsPermission.value, isTrue);
+      expect(transport.synced, isEmpty);
+    });
+
+    test('重新授权会重新登记未改变的课表计划', () async {
+      await setUpService();
+      await service.reschedule(force: true);
+      final previous = transport.synced.single;
+
+      expect(await service.requestPermission(), isTrue);
+      expect(service.needsPermission.value, isFalse);
+      expect(transport.synced, hasLength(2));
+      expect(transport.synced.last.planId, previous.planId);
+    });
+  });
+
   group('排期触发', () {
     test('启用后首次排期会把计划投递出去', () async {
       await setUpService();
@@ -320,6 +367,26 @@ void main() {
       await service.onPermissionGranted();
       expect(service.needsPermission.value, isFalse);
       expect(transport.synced, hasLength(1));
+    });
+
+    test('permissionStatus 返回枚举，平台不可用时映射为 unsupported', () async {
+      await setUpService();
+
+      expect(
+        await service.permissionStatus(),
+        ReminderPermissionStatus.authorized,
+      );
+
+      // 权限被拒时透传原生拒绝状态，而非压缩成其他值。
+      transport.denied = true;
+      expect(await service.permissionStatus(), ReminderPermissionStatus.denied);
+
+      // 原生通道不可用（未接线 / 平台不支持）时映射为 unsupported，供 UI 隐藏授权引导。
+      transport.unavailable = true;
+      expect(
+        await service.permissionStatus(),
+        ReminderPermissionStatus.unsupported,
+      );
     });
 
     test('dispose 之后不再排期', () async {

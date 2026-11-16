@@ -1,4 +1,5 @@
 import 'package:bugaoshan/widgets/navigation/home_dock_insets.dart';
+import 'package:bugaoshan/utils/open_link.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -433,7 +434,7 @@ class _CampusPageState extends State<CampusPage>
             Icons.open_in_new,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          onTap: () => launchUrl(
+          onTap: () => openUri(
             Uri.parse('$appLink/issues/new?template=feature_request.yml'),
             mode: LaunchMode.externalApplication,
           ),

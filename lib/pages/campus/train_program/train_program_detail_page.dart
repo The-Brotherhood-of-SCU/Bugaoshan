@@ -59,7 +59,7 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
     final info = detail.jhFajhb;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: withSystemBottomInset(context, EdgeInsets.all(16)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

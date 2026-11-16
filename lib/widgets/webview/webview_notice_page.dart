@@ -1,3 +1,4 @@
+import 'package:bugaoshan/utils/open_link.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/downloads/shared_notice_downloads.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
@@ -7,7 +8,6 @@ import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:os_type/os_type.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'download_options.dart';
@@ -44,6 +44,8 @@ class WebViewNoticePage extends StatefulWidget {
 
 class _WebViewNoticePageState extends State<WebViewNoticePage>
     with WebViewNoticeHandlers {
+  static const String _tag = 'WebViewNoticePageState';
+
   InAppWebViewController? _controller;
   String _beautifyScript = '';
   String _domReadyScript = '';
@@ -143,20 +145,15 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
     if (_beautifyScript.isNotEmpty) {
       try {
         await controller.evaluateJavascript(source: _beautifyScript);
-      } catch (e) {
-        AppLog.e(
-          'WebViewNoticePage',
-          '${widget.debugLabel} beautify script error: $e',
-        );
+      } catch (e, logStackTrace) {
+        AppLog.e(_tag, '_onLoadStop 失败', error: e, stackTrace: logStackTrace);
       }
       if (_domReadyScript.isNotEmpty) {
         try {
           await controller.evaluateJavascript(source: _domReadyScript);
-        } catch (e) {
-          AppLog.e(
-            'WebViewNoticePage',
-            '${widget.debugLabel} dom ready script error: $e',
-          );
+        } catch (e, logStackTrace) {
+          AppLog.e(_tag, '_onLoadStop 失败', error: e, stackTrace: logStackTrace);
+
           await _finishLoading();
         }
         return;
@@ -174,9 +171,7 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
     if (ctrl == null) return;
     final current = await ctrl.getUrl();
     final uri = current ?? Uri.parse(widget.url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    await openUri(uri, mode: LaunchMode.externalApplication);
   }
 
   Future<void> _goBack() async {
@@ -205,8 +200,8 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
 
   @override
   Widget build(BuildContext context) {
-    if (OS.isHarmony) {
-      return WebViewUnsupportedPage(title: widget.title);
+    if (hasNoWebViewBackend) {
+      return WebViewUnsupportedPage(title: widget.title, url: widget.url);
     }
     return _buildWebViewPage(context);
   }
@@ -296,10 +291,7 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
                 onLoadStart: _onLoadStart,
                 onLoadStop: _onLoadStop,
                 onReceivedError: (controller, request, error) {
-                  AppLog.e(
-                    'WebViewNoticePage',
-                    '${widget.debugLabel} WebView error: $error',
-                  );
+                  AppLog.e(_tag, '${widget.debugLabel} WebView error: $error');
                   if ((request.isForMainFrame ?? false) &&
                       _errorHtmlTemplate.isNotEmpty) {
                     final html = _errorHtmlTemplate.replaceAll(
@@ -308,6 +300,12 @@ class _WebViewNoticePageState extends State<WebViewNoticePage>
                     );
                     controller.loadData(data: html);
                   }
+                },
+                onReceivedHttpError: (controller, request, response) {
+                  AppLog.e(
+                    _tag,
+                    '${widget.debugLabel} HTTP ${response.statusCode} url=${request.url}',
+                  );
                 },
               ),
               IgnorePointer(

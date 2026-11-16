@@ -12,7 +12,7 @@ import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/service_auth.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 
 /// 可切换 CookieClient 的假 ScuAuth（与 wfw_auth_test 同模式）。
 class _FakeScuAuth extends ScuAuth {
@@ -48,12 +48,12 @@ class _FakeServiceAuth extends ServiceAuth {
 
 void main() {
   late SharedPreferences prefs;
-  late AuthLogger logger;
+  late AppLogger logger;
 
   setUp(() async {
     await getIt.reset();
-    logger = AuthLogger();
-    getIt.registerSingleton<AuthLogger>(logger);
+    logger = AppLogger();
+    getIt.registerSingleton<AppLogger>(logger);
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
   });
@@ -77,6 +77,34 @@ void main() {
       headers: {'content-type': 'application/json'},
       request: req,
     );
+  }
+
+  for (final status in [500, 403]) {
+    test('HTTP $status 的非 JSON 响应保留脱敏标题但不记录正文', () async {
+      final client = CookieClient(
+        inner: MockClient(
+          (request) async => http.Response(
+            '<html><title>WAF blocked password&#61;private-secret</title><body>private response payload</body></html>',
+            status,
+            request: request,
+          ),
+        ),
+      );
+      final (auth, service) = makeService([client]);
+      await expectLater(
+        service.fetchFormSchema('350'),
+        throwsA(
+          status == 403
+              ? isA<UnauthenticatedException>()
+              : isA<FormatException>(),
+        ),
+      );
+      final exported = logger.exportToText();
+      expect(exported, contains('title=WAF blocked'));
+      expect(exported, isNot(contains('private-secret')));
+      expect(exported, isNot(contains('private response payload')));
+      expect(auth.getClientCalls, status == 403 ? 2 : 1);
+    });
   }
 
   group('fetchFormSchema', () {

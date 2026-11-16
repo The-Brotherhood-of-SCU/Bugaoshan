@@ -4,6 +4,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/academic_calendar.dart';
 import 'course_page_controller.dart';
 import 'package:bugaoshan/theme_shape.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 class VacationView extends StatefulWidget {
   final CoursePageController controller;
@@ -50,7 +51,10 @@ class _VacationViewState extends State<VacationView> {
 
     return ThirdCenter(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        padding: withSystemBottomInset(
+          context,
+          EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        ),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 360),
           child: Column(

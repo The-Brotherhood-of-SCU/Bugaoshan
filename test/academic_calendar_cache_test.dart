@@ -1,4 +1,6 @@
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/api/academic_calendar_service.dart';
+import 'package:bugaoshan/services/github_resource_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -23,6 +25,11 @@ class _TrackingClient extends http.BaseClient {
   }
 }
 
+/// 构造带注入 client 的 GithubResourceService（AppConfigProvider 不 init，
+/// useGithubProxy 保持字段默认值 true，镜像优先行为与旧实现一致）。
+GithubResourceService _resource(http.Client client, SharedPreferences prefs) =>
+    GithubResourceService(AppConfigProvider(prefs), client: client);
+
 void main() {
   const cacheKey = 'cached_academic_calendar_json';
   const validCalendar = '''
@@ -44,7 +51,7 @@ void main() {
     final client = MockClient(
       (_) async => http.Response('{"semesters":"invalid"}', 200),
     );
-    final service = AcademicCalendarService(prefs, client: client);
+    final service = AcademicCalendarService(prefs, _resource(client, prefs));
 
     final calendar = await service.fetchCalendarData();
 
@@ -59,7 +66,7 @@ void main() {
     final client = MockClient(
       (_) async => http.Response('{"semesters":[]}', 200),
     );
-    final service = AcademicCalendarService(prefs, client: client);
+    final service = AcademicCalendarService(prefs, _resource(client, prefs));
 
     final calendar = await service.fetchCalendarData();
 
@@ -78,7 +85,7 @@ void main() {
         headers: {'content-type': 'application/json; charset=utf-8'},
       ),
     );
-    final service = AcademicCalendarService(prefs, client: client);
+    final service = AcademicCalendarService(prefs, _resource(client, prefs));
 
     final calendar = await service.refreshCalendarData();
 
@@ -91,7 +98,7 @@ void main() {
     SharedPreferences.setMockInitialValues({cacheKey: validCalendar});
     final prefs = await SharedPreferences.getInstance();
     final client = MockClient((_) async => throw Exception('network down'));
-    final service = AcademicCalendarService(prefs, client: client);
+    final service = AcademicCalendarService(prefs, _resource(client, prefs));
 
     final calendar = await service.refreshCalendarData();
 
@@ -110,7 +117,10 @@ void main() {
       ),
     );
     final tracking = _TrackingClient(inner);
-    final service = AcademicCalendarService(prefs, client: tracking);
+    final service = AcademicCalendarService(
+      prefs,
+      GithubResourceService(AppConfigProvider(prefs), client: tracking),
+    );
 
     final calendar = await service.refreshCalendarData();
 

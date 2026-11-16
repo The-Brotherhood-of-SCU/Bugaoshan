@@ -11,16 +11,16 @@ import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/zhjw_auth.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 
 void main() {
   late SharedPreferences prefs;
-  late AuthLogger logger;
+  late AppLogger logger;
 
   setUp(() async {
     await getIt.reset();
-    logger = AuthLogger();
-    getIt.registerSingleton<AuthLogger>(logger);
+    logger = AppLogger();
+    getIt.registerSingleton<AppLogger>(logger);
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
   });
@@ -284,7 +284,7 @@ String _jsonEncodeNode(Map<String, dynamic> node) => jsonEncode(node);
 ({ZhjwApiService api, ZhjwAuth auth}) _buildRoutingApi(
   Map<String, String> routes,
   SharedPreferences prefs,
-  AuthLogger logger,
+  AppLogger logger,
 ) {
   var requests = 0;
   final client = CookieClient(
@@ -313,7 +313,7 @@ String _jsonEncodeNode(Map<String, dynamic> node) => jsonEncode(node);
 ({ZhjwApiService api, ZhjwAuth auth}) _buildApi(
   String homeBody,
   SharedPreferences prefs,
-  AuthLogger logger,
+  AppLogger logger,
 ) {
   var requests = 0;
   final client = CookieClient(

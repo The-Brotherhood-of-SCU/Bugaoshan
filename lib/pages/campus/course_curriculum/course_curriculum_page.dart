@@ -10,6 +10,7 @@ import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 class CourseCurriculumPage extends StatefulWidget {
   const CourseCurriculumPage({super.key});
@@ -272,7 +273,7 @@ class _CourseCurriculumPageState extends State<CourseCurriculumPage> {
     return RefreshIndicator(
       onRefresh: _provider.refresh,
       child: ListView.builder(
-        padding: const EdgeInsets.all(12),
+        padding: withSystemBottomInset(context, EdgeInsets.all(12)),
         itemCount: _provider.courses.length + (_provider.hasMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index == _provider.courses.length) {

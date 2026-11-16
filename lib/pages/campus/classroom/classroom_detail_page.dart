@@ -3,6 +3,7 @@ import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 class ClassroomDetailPage extends StatelessWidget {
   final ClassroomCampus campus;
@@ -29,7 +30,10 @@ class ClassroomDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(room.classroomName)),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        padding: withSystemBottomInset(
+          context,
+          EdgeInsets.fromLTRB(16, 16, 16, 32),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

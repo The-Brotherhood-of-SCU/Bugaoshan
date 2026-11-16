@@ -6,21 +6,21 @@ import 'package:bugaoshan/services/auth/cookie_client.dart';
 import 'package:bugaoshan/services/auth/gs_auth.dart';
 import 'package:bugaoshan/services/auth/scu_auth.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
+import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 late SharedPreferences prefs;
-late AuthLogger logger;
+late AppLogger logger;
 
 void main() {
   setUp(() async {
     await getIt.reset();
-    logger = AuthLogger();
-    // CookieClient 的日志 getter 走 getIt<AuthLogger>，必须先注册。
-    getIt.registerSingleton<AuthLogger>(logger);
+    logger = AppLogger();
+    // CookieClient 的日志 getter 走 getIt<AppLogger>，必须先注册。
+    getIt.registerSingleton<AppLogger>(logger);
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
   });

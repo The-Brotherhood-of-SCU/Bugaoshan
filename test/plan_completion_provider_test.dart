@@ -258,6 +258,55 @@ void main() {
     expect(stats.completedCount, 1);
     expect(stats.totalEarned, 6.0);
   });
+
+  test(
+    'PlanCompletionNode parses Chinese brackets, commas, spaces and formats',
+    () {
+      final node1 = PlanCompletionNode.fromJson({
+        'flagType': 'kch',
+        'name': '[304112010]【全英文】新生研讨课[1学分，2023-2024学年秋](必修,96.0(20240107))',
+        'sfwc': '是',
+      });
+      expect(node1.courseCode, '304112010');
+      expect(node1.courseName, '【全英文】新生研讨课');
+      expect(node1.academicTerm, '2023-2024学年秋');
+      expect(node1.courseCredits, '1');
+      expect(node1.scoreDisplay, '96.0');
+
+      final node2 = PlanCompletionNode.fromJson({
+        'flagType': 'kch',
+        'name': '[102620020] 改革开放史 [2学分 2024-2025-1] (必修,86.0)',
+        'sfwc': '是',
+      });
+      expect(node2.courseCode, '102620020');
+      expect(node2.courseName, '改革开放史');
+      expect(node2.academicTerm, '2024-2025-1');
+      expect(node2.scoreDisplay, '86.0');
+    },
+  );
+
+  test(
+    'PlanCompletionNode categoryDisplayName strips both half-width and full-width brackets',
+    () {
+      final nodeHalf = PlanCompletionNode.fromJson({
+        'flagType': '001',
+        'name': '公共基础课(最低修读学分:25)',
+      });
+      expect(nodeHalf.categoryDisplayName, '公共基础课');
+
+      final nodeFull = PlanCompletionNode.fromJson({
+        'flagType': '001',
+        'name': '专业核心课（最低修读学分:30）',
+      });
+      expect(nodeFull.categoryDisplayName, '专业核心课');
+
+      final nodePlain = PlanCompletionNode.fromJson({
+        'flagType': '001',
+        'name': '通识教育选修课',
+      });
+      expect(nodePlain.categoryDisplayName, '通识教育选修课');
+    },
+  );
 }
 
 PlanCompletionNode _node(String id) => PlanCompletionNode.fromJson({

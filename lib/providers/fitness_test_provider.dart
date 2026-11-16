@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,6 +17,8 @@ enum FitnessTestLoadState { idle, loading, loaded, error }
 /// 远端通知和当前选中年份的成绩只保存在此处；页面仅根据资源状态渲染，并通过
 /// [ensureLoaded]、[refresh] 和 [selectYear] 表达加载意图。
 class FitnessTestProvider extends ChangeNotifier {
+  static const String _tag = 'FitnessTestProvider';
+
   FitnessTestProvider(this._prefs, this._api) {
     _selectedYear =
         _prefs.getInt(kFitnessTestSelectedYearKey) ?? DateTime.now().year;
@@ -113,7 +116,13 @@ class FitnessTestProvider extends ChangeNotifier {
         if (!_isNoticesCurrent(epoch, generation)) return;
         _notices = notices;
         _noticesState = FitnessTestLoadState.loaded;
-      } catch (error) {
+      } catch (error, logStackTrace) {
+        AppLog.e(
+          _tag,
+          '_loadNotices 失败',
+          error: error,
+          stackTrace: logStackTrace,
+        );
         if (!_isNoticesCurrent(epoch, generation)) return;
         _noticesState = FitnessTestLoadState.error;
         _noticesError = _noticeError(error);
@@ -150,7 +159,13 @@ class FitnessTestProvider extends ChangeNotifier {
         if (!_isScoreCurrent(epoch, generation, year)) return;
         _scoreData = score;
         _scoreState = FitnessTestLoadState.loaded;
-      } catch (error) {
+      } catch (error, logStackTrace) {
+        AppLog.e(
+          _tag,
+          '_loadScore 失败',
+          error: error,
+          stackTrace: logStackTrace,
+        );
         if (!_isScoreCurrent(epoch, generation, year)) return;
         _scoreState = FitnessTestLoadState.error;
         _scoreError = _scoreLoadError(error);

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show PlatformException;
@@ -15,6 +16,8 @@ import 'package:bugaoshan/utils/constants.dart';
 /// 权限处理:[requestPermission] 在 Android 13+ 请求 `POST_NOTIFICATIONS` 运行时权限;
 /// 权限被拒绝时不阻断下载,仅不显示通知。
 class DownloadNotificationService {
+  static const String _tag = 'DownloadNotificationService';
+
   static const _methodChannel = kUpdateMethodChannel;
   static const _cancelEventChannel = kDownloadCancelEventChannel;
 
@@ -36,7 +39,13 @@ class DownloadNotificationService {
         'requestNotificationPermission',
       );
       return result ?? false;
-    } on PlatformException {
+    } on PlatformException catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'requestPermission 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       return false;
     }
   }
@@ -62,7 +71,13 @@ class DownloadNotificationService {
         'indeterminate': indeterminate,
         'title': ?title,
       });
-    } on PlatformException {
+    } on PlatformException catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'showDownloadNotification 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // 通知权限被拒或系统问题,忽略 — App 内对话框照常工作
     }
   }
@@ -84,7 +99,13 @@ class DownloadNotificationService {
         'indeterminate': indeterminate,
         'title': ?title,
       });
-    } on PlatformException {
+    } on PlatformException catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'updateProgress 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // 忽略
     }
   }
@@ -97,7 +118,13 @@ class DownloadNotificationService {
         'content': content,
         'title': ?title,
       });
-    } on PlatformException {
+    } on PlatformException catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'showCompleted 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // 忽略
     }
   }
@@ -110,7 +137,13 @@ class DownloadNotificationService {
         'content': content,
         'title': ?title,
       });
-    } on PlatformException {
+    } on PlatformException catch (logError, logStackTrace) {
+      AppLog.e(
+        _tag,
+        'showError 失败',
+        error: logError,
+        stackTrace: logStackTrace,
+      );
       // 忽略
     }
   }
@@ -120,7 +153,8 @@ class DownloadNotificationService {
     if (!isSupported) return;
     try {
       await _methodChannel.invokeMethod<void>('cancelDownloadNotification');
-    } on PlatformException {
+    } on PlatformException catch (logError, logStackTrace) {
+      AppLog.e(_tag, 'cancel 失败', error: logError, stackTrace: logStackTrace);
       // 忽略
     }
   }
@@ -143,8 +177,8 @@ class DownloadNotificationService {
     _cancelController = StreamController<void>.broadcast();
     _cancelSub = _cancelEventChannel.receiveBroadcastStream().listen(
       (_) => _cancelController?.add(null),
-      onError: (Object _) {
-        // 忽略 EventChannel 错误
+      onError: (Object error, StackTrace stackTrace) {
+        AppLog.e(_tag, '下载取消事件流失败', error: error, stackTrace: stackTrace);
       },
     );
   }

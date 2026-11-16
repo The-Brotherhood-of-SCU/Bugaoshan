@@ -9,7 +9,8 @@
 - [Flutter SDK](https://flutter.dev/docs/get-started/install) >= 3.44（Dart SDK 3.10+）
 - [Dart SDK](https://dart.dev/get-dart) >= 3.10.4
 - [Nuget CLI](https://learn.microsoft.com/en-us/nuget/install-nuget-client-tools?tabs=windows#nugetexe-cli)  required by `flutter_inappwebview` (windows target)
-- Linux 构建需要 GTK 3、WPE WebKit 2.0、WPEBackend-fdo、libwpe、libsecret、libepoxy 和 Wayland 开发包。Linux 发布包动态链接这些系统库，不包含 WPE WebKit 的副本。
+- Windows 需要先执行 `git config --global core.longpaths true`，否则部分依赖在 pub cache 内检出时可能因路径超过 MAX_PATH 报 `Filename too long`
+- Linux 构建需要 GTK 3、libsecret、libepoxy 和 Wayland 开发包。Linux 发布包动态链接这些系统库。
 
 ### 安装运行
 
@@ -73,6 +74,8 @@ tool/install_ios_profile.sh <device>
 
 `<device>` 可以是 `xcrun devicectl list devices` 显示的设备标识、UDID 或设备名。若已经完成 Profile 构建，可用 `--no-build` 复用现有产物。
 
+脚本的 Bundle ID 从构建产物的 `Info.plist` 读取并打印，不写死：App Store 分发准备把主应用 Bundle ID 改为 `.ios` 后缀后，写死的旧值会静默失效。改动 Bundle ID 时无需同步该脚本。
+
 脚本会先结束旧 App 及 Widget Extension 进程，再覆盖安装并启动新包。请不要直接对正在运行的 App 反复执行 `devicectl device install app`：iOS 可能保留指向旧安装路径的 Runner 进程，表现为安装成功但启动后白屏。若启动在 15 秒内没有完成，脚本会停止等待并提示解锁或重启设备。
 
 
@@ -113,12 +116,12 @@ lib/
 1. Fork 本仓库（组织成员可直接在仓库建分支）
 2. 从 **`preview`** 分支切出功能分支 (`git checkout -b feat/your-feature preview`)
 3. 提交更改 (`git commit -m 'feat: add some feature'`，pre-commit 会自动执行 `dart format`)
-4. 若变更包含用户可感知的行为，请在 `CHANGELOG.md` 的 `## [Unreleased]` 中补充条目
+4. 日常开发通过提交和 PR 说明改动；发版前按 [changelog skill](.agents/skills/bugaoshan-changelog/SKILL.md) 集中整理目标版本的更新说明
 5. 推送分支 (`git push origin feat/your-feature`)
 6. 向 **`preview` 分支**发起 Pull Request——门禁全绿且 review 通过后合并，合并会自动发布一轮预览版（无需手动操作）
 
 > [!NOTE]
-> 请勿手动推送 `v*.*.*` tag 或在非 `main` / `preview` 分支上触发发布——手动入口的行为边界见 `docs/architecture/release-pipeline.md`。
+> 请勿手动推送 `v*.*.*` tag，这会导致CICD无法创建目标Tag。行为边界见 `docs/architecture/release-pipeline.md`。
 
 
 
@@ -175,14 +178,14 @@ lib/
 - **PR 门禁 (`pre-flight.yml`)**：向 `preview`、`main` 发起 PR 时，会自动执行分支合规检查、代码静态分析 (`dart analyze`)、生成文件漂移检测、测试套件 (`flutter test`) 以及发布前预检。
 - **`preview` 分支更新**：当 feature 分支合入 `preview` 后，触发全平台构建并发布 **Preview 预发布版本**；短时间连续合并只保留最新一轮。
 - **`main` 分支更新**：当 `preview` 合入 `main` 后，触发全平台构建、更新 F-Droid 元数据并发布 **Formal 正式版本**。
-- **手动入口边界**：`workflow_dispatch` 仅在 `main` / `preview` 上发布（其他分支仅构建产物）；手动推送 `v*.*.*` tag 仅在指向 `main` / `preview` 顶端时发布。行为细节见 `docs/architecture/release-pipeline.md`。
+- **手动入口边界**：`workflow_dispatch` 仅在 `main` / `preview` 上发布（其他分支仅构建产物）；`release.yml` 不监听 tag push，手动推送任何 tag 都不会触发发布。行为细节见 `docs/architecture/release-pipeline.md`。
 
 ### 分支规范
 
 | 分支 | 职责 | 触发动作 |
 |---|---|---|
 | `main` | **正式版生产分支**。仅接收来自 `preview` 的 PR（禁止日常直接提交）。 | 合并后自动创建 Tag `vX.Y.Z`，构建并发布 **Formal 正式版** (GitHub Release latest)。 |
-| `preview` | **预览版预发布分支，兼日常集成分支**。所有日常功能、修复 PR 均以 `preview` 为目标分支。 | 合并后自动创建 Tag `vX.Y.Z-preview[.N]`（`/release` 准备期为 `vX.Y.Z-rc[.N]`），构建并发布 **Preview 预览版** (prerelease)。 |
+| `preview` | **预览版预发布分支，兼日常集成分支**。所有日常功能、修复 PR 均以 `preview` 为目标分支。 | 合并后自动创建 Tag `vX.Y.Z-preview[.N]`（准备期为 `vX.Y.Z-rc[.N]`），构建并发布 **Preview 预览版** (prerelease)。 |
 | `feat/*`, `fix/*` | **特性/修复工作分支**。从 `preview` 分支切出。 | 提交 PR 至 `preview` 时自动触发 Pre-flight 质量门禁检查。 |
 
 ### 质量门禁 (Pre-flight Checks)

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,7 @@ import 'package:bugaoshan/widgets/common/styled_tile.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import '../widgets/empty_schedule_placeholder.dart';
 import 'package:bugaoshan/theme_shape.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 class CourseScheduleSetting extends StatefulWidget {
   const CourseScheduleSetting({super.key});
@@ -27,6 +29,8 @@ class CourseScheduleSetting extends StatefulWidget {
 }
 
 class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
+  static const String _tag = 'CourseScheduleSettingState';
+
   final courseProvider = getIt<CourseProvider>();
   final authProvider = getIt<ScuAuthProvider>();
 
@@ -100,12 +104,24 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
         _startDate = newStartDate;
       });
       unawaited(_save());
-    } on ScuException catch (e) {
+    } on ScuException catch (e, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_fetchCurrentWeek 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(e.message)));
-    } catch (e) {
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_fetchCurrentWeek 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
@@ -128,7 +144,10 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.scheduleSetting)),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: withSystemBottomInset(
+          context,
+          EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        ),
         children: [
           // Semester config section
           SectionTitle(title: l10n.semesterConfig),

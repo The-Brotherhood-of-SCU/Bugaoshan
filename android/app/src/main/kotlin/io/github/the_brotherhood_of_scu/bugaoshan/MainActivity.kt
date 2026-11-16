@@ -7,6 +7,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.github.the_brotherhood_of_scu.bugaoshan.channels.ApkInstaller
 import io.github.the_brotherhood_of_scu.bugaoshan.channels.BatteryOptimizationHandler
 import io.github.the_brotherhood_of_scu.bugaoshan.channels.DynamicIconHandler
+import io.github.the_brotherhood_of_scu.bugaoshan.channels.FdroidInstallDetector
 import io.github.the_brotherhood_of_scu.bugaoshan.channels.IcsImportHandler
 import io.github.the_brotherhood_of_scu.bugaoshan.channels.NotificationPermissionHandler
 import io.github.the_brotherhood_of_scu.bugaoshan.channels.WidgetPinHandler
@@ -32,6 +33,7 @@ class MainActivity : FlutterActivity() {
     private lateinit var dynamicIcon: DynamicIconHandler
     private lateinit var icsImport: IcsImportHandler
     private lateinit var batteryOptimization: BatteryOptimizationHandler
+    private lateinit var fdroidInstallDetector: FdroidInstallDetector
     private lateinit var apkInstaller: ApkInstaller
     private lateinit var widgetPin: WidgetPinHandler
     private lateinit var reminderChannel: ReminderChannel
@@ -46,6 +48,7 @@ class MainActivity : FlutterActivity() {
         dynamicIcon = DynamicIconHandler(this)
         icsImport = IcsImportHandler(this)
         batteryOptimization = BatteryOptimizationHandler(this)
+        fdroidInstallDetector = FdroidInstallDetector(this)
         apkInstaller = ApkInstaller(this)
         widgetPin = WidgetPinHandler(this)
 
@@ -143,6 +146,13 @@ class MainActivity : FlutterActivity() {
                 }
                 "isIgnoringBatteryOptimizations" -> {
                     result.success(batteryOptimization.isIgnoring())
+                }
+                "isFdroidInstaller" -> {
+                    result.success(
+                        fdroidInstallDetector.isFdroidInstaller(
+                            call.argument<String>("installer"),
+                        ),
+                    )
                 }
                 "requestNotificationPermission" -> {
                     notificationPermission.requestPermission(result)

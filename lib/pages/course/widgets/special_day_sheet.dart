@@ -1,21 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
+import 'package:bugaoshan/models/date_display_format.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
 import 'package:bugaoshan/theme_shape.dart';
 
-/// 点击课表表头的特殊日（假/节/气）后弹出的信息悬浮窗
+/// 点击课表表头的特殊日（假/节/气）后弹出的信息悬浮窗。
+///
+/// 日期文案与表头同源，使用调用方传入的 [dateFormat]（全局日期格式设置），
+/// 避免弹窗与表头显示成两种顺序。
 Future<void> showSpecialDaySheet(
   BuildContext context,
   DateTime date,
-  SpecialDayInfo info,
-) async {
+  SpecialDayInfo info, {
+  required DateDisplayFormat dateFormat,
+}) async {
   switch (info.type) {
     case SpecialDayType.holiday:
-      await _showSheet(context, date, info, Colors.red);
+      await _showSheet(context, date, info, Colors.red, dateFormat);
     case SpecialDayType.festival:
-      await _showSheet(context, date, info, Colors.orange);
+      await _showSheet(context, date, info, Colors.orange, dateFormat);
     case SpecialDayType.solarTerm:
-      await _showSheet(context, date, info, Colors.green);
+      await _showSheet(context, date, info, Colors.green, dateFormat);
     case SpecialDayType.ordinary:
       break;
   }
@@ -26,6 +31,7 @@ Future<void> _showSheet(
   DateTime date,
   SpecialDayInfo info,
   Color color,
+  DateDisplayFormat dateFormat,
 ) async {
   final l10n = AppLocalizations.of(context)!;
   final typeLabel = switch (info.type) {
@@ -76,7 +82,7 @@ Future<void> _showSheet(
                   const SizedBox(height: 8),
                   // Holiday/festival/term name
                   Text(
-                    info.name ?? l10n.dateMonthDay(date.month, date.day),
+                    info.name ?? dateFormat.formatMonthDay(date),
                     style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: color,
@@ -97,7 +103,7 @@ Future<void> _showSheet(
                     ),
                   // Date
                   Text(
-                    l10n.dateMonthDay(date.month, date.day),
+                    dateFormat.formatMonthDay(date),
                     style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
                       fontSize: 13,
                       color: Theme.of(ctx).colorScheme.onSurfaceVariant,

@@ -20,6 +20,7 @@ Color campusItemAccent(String id) => switch (id) {
   dockIdAcademicCalendar => const Color(0xFFD97757), // 赭橙
   dockIdZysc => const Color(0xFF9A7FD1), // 淡紫
   dockIdLeave => const Color(0xFF6488C4), // 灰蓝
+  dockIdReservation => const Color(0xFF4E9A8A), // 青碧
   dockIdGraduateGrades => const Color(0xFF4A7BA6), // 钢蓝
   dockIdGraduateTrainPlan => const Color(0xFF6B5CA5), // 深紫
   dockIdNotice => const Color(0xFFE05D5D), // 朱红

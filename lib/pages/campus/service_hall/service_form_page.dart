@@ -15,13 +15,13 @@ import 'package:bugaoshan/services/api/service_plugin_models.dart';
 import 'package:bugaoshan/services/auth/scu_exceptions.dart';
 import 'package:bugaoshan/services/auth/service_auth.dart';
 import 'package:bugaoshan/utils/app_log.dart';
-import 'package:bugaoshan/utils/auth_logger.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/service_region_picker.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/pages/campus/service_hall/service_app_catalog.dart';
 import 'package:bugaoshan/pages/campus/service_hall/service_field_widgets.dart';
 import 'package:bugaoshan/pages/campus/service_hall/service_form_controller.dart';
+import 'package:bugaoshan/utils/system_insets.dart';
 
 /// 办事大厅通用动态表单页。
 ///
@@ -36,9 +36,11 @@ import 'package:bugaoshan/pages/campus/service_hall/service_form_controller.dart
 ///    失败封闭（错误 + 重试，绝不渲染猜测的表单）。
 ///
 /// 提交流程：校验（[ServiceFormController.validate]）→ 逐 File 字段上传
-/// 附件 → 组装 `form_data`（[ServiceFormController.buildFormData]，记入
-/// AuthLogger 便于诊断）→ `POST /site/apps/launch`。
+/// 附件 → 组装 `form_data`（[ServiceFormController.buildFormData]，日志仅记录
+/// 字段数量）→ `POST /site/apps/launch`。
 class ServiceFormPage extends StatefulWidget {
+  static const String _tag = 'ServiceFormPage';
+
   final ServiceAppInfo app;
 
   const ServiceFormPage({super.key, required this.app});
@@ -48,6 +50,9 @@ class ServiceFormPage extends StatefulWidget {
 }
 
 class _ServiceFormPageState extends State<ServiceFormPage> {
+  /// 与外层Widget 同名常量，避免每处日志重复写字符串字面量。
+  static const String _tag = ServiceFormPage._tag;
+
   ServiceFormSchema? _schema;
   ServiceFormController? _controller;
   bool _schemaLoading = false;
@@ -117,8 +122,8 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
       // schema 就绪后取各 DataSource 值（不阻塞渲染；
       // starterDepartId 已在 _fetchSchema 中先行请求）
       unawaited(_loadDataSources());
-    } catch (e) {
-      AppLog.e('ServiceFormPage', 'Schema load failed: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(_tag, '_loadSchema 失败', error: e, stackTrace: logStackTrace);
     } finally {
       if (mounted) setState(() => _schemaLoading = false);
     }
@@ -140,6 +145,7 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
     try {
       startData = await startDataFuture;
     } catch (e) {
+      AppLog.w(_tag, '实时表单定义不可用，尝试备用定义', error: e);
       // start-info 的结果已无人消费，吞掉避免悬空的 unhandled error
       startInfoFuture.ignore();
       rethrow;
@@ -169,15 +175,12 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
         formvD: formvD,
         startData: startData,
       );
-    } catch (e) {
-      AppLog.w('ServiceFormPage', 'Live schema unavailable: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(_tag, '_fetchSchema 失败', error: e, stackTrace: logStackTrace);
     }
     final fallback = widget.app.fallbackSchema;
     if (fallback != null) {
-      getIt<AuthLogger>().w(
-        'SERVICE',
-        'appId=$appId 实时表单定义不可用，使用硬编码 fallback schema',
-      );
+      AppLog.w(_tag, 'appId=$appId 实时表单定义不可用，使用硬编码 fallback schema');
       return fallback(startData);
     }
     throw StateError('appId=$appId 无可用表单定义');
@@ -190,8 +193,13 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
       );
       if (!mounted || id == null) return;
       setState(() => _starterDepartId = id);
-    } catch (e) {
-      AppLog.w('ServiceFormPage', 'Starter depart id load skipped: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(
+        _tag,
+        '_loadStarterDepartId 失败',
+        error: e,
+        stackTrace: logStackTrace,
+      );
     }
   }
 
@@ -214,8 +222,13 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
         if (!mounted) return;
         if (d == null) continue;
         setState(() => controller.applyDataSourceValue(p, d['list']));
-      } catch (e) {
-        AppLog.w('ServiceFormPage', 'DataSource ${p.key} load skipped: $e');
+      } catch (e, logStackTrace) {
+        AppLog.e(
+          _tag,
+          '_loadDataSources 失败',
+          error: e,
+          stackTrace: logStackTrace,
+        );
       }
     }
   }
@@ -233,10 +246,8 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
         data = await getIt<ServiceApiService>().fetchProvinces();
         if (data.isEmpty) throw StateError('empty provinces');
       } catch (e) {
-        AppLog.w(
-          'ServiceFormPage',
-          'Region online load failed, fallback to asset: $e',
-        );
+        AppLog.w(_tag, '在线地区数据不可用，使用本地数据', error: e);
+
         final raw = await rootBundle.loadString('assets/region_data.json');
         data = jsonDecode(raw) as List;
       }
@@ -247,8 +258,8 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
               .toList(growable: false);
         });
       }
-    } catch (e) {
-      AppLog.w('ServiceFormPage', 'Region load skipped: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(_tag, '_loadRegions 失败', error: e, stackTrace: logStackTrace);
     } finally {
       if (mounted) setState(() => _regionsLoading = false);
     }
@@ -301,11 +312,8 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
       }
 
       final formData = controller.buildFormData();
-      // 记录完整 payload，337/356/357 首次提交后可通过 Dev 页导出诊断
-      getIt<AuthLogger>().i(
-        'SERVICE',
-        'submit appId=$appId payload=${jsonEncode(formData)}',
-      );
+      // 仅记录字段数量，避免导出日志包含表单个人数据。
+      AppLog.i(_tag, 'submit appId=$appId fieldCount=${formData.length}');
       try {
         await api.submitMatter(
           appId,
@@ -313,7 +321,13 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
           starterDepartId:
               _starterDepartId ?? ServiceApiService.kDefaultStarterDepartId,
         );
-      } catch (_) {
+      } catch (logError, logStackTrace) {
+        AppLog.e(
+          _tag,
+          '_submit 失败',
+          error: logError,
+          stackTrace: logStackTrace,
+        );
         // 恢复本地 File 列表，保持附件 UI 不变
         fileBackups.forEach((k, v) => controller.values[k] = v);
         rethrow;
@@ -324,10 +338,12 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
         controller.resetToPrefill();
         _resetCounter++;
       });
-    } on UnauthenticatedException {
+    } on UnauthenticatedException catch (logError, logStackTrace) {
+      AppLog.e(_tag, '_submit 失败', error: logError, stackTrace: logStackTrace);
       if (mounted) _showSnack(l10n.loginRequired, isError: true);
-    } catch (e) {
-      AppLog.e('ServiceFormPage', 'Submit error: $e');
+    } catch (e, logStackTrace) {
+      AppLog.e(_tag, '_submit 失败', error: e, stackTrace: logStackTrace);
+
       if (mounted) _showSnack(l10n.leaveSubmitFailed, isError: true);
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -377,7 +393,7 @@ class _ServiceFormPageState extends State<ServiceFormPage> {
       return _errorState(l10n);
     }
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: withSystemBottomInset(context, EdgeInsets.all(16)),
       children: [
         _buildInfoCard(l10n),
         const SizedBox(height: 12),

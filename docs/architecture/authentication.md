@@ -58,7 +58,7 @@ flowchart TB
         SA["ScuAuth<br/>token / principal / id.scu.edu.cn session / refresh"]
     end
 
-    INFRA["基础设施<br/>CookieClient / FlutterSecureStorage / SharedPreferences / AuthLogger"]
+    INFRA["基础设施<br/>CookieClient / FlutterSecureStorage / SharedPreferences / AppLogger"]
 
     UI --> P
     P --> API
@@ -490,16 +490,23 @@ L3 ScuAuth
 - 账号相关缓存必须绑定已确认的 principal，不能仅以“当前处于登录态”作为身份依据。
 - 退出登录必须使飞行中的认证和持久化任务失效。
 
-### 12.1 认证日志
+### 12.1 应用日志
 
-[`AuthLogger`](../../lib/utils/auth_logger.dart) 是 GetIt 注册的全局单例。认证模块使用类名作为 tag，把关键状态变化写入默认 1000 条的内存环形缓冲：
+[`AppLogger`](../../lib/utils/app_logger.dart) 是 GetIt 注册的全局单例，是**全应用通用**日志器（认证模块只是最早的一批使用者，并非唯一使用者；业务模块经 `AppLog` 门面写入同一条流）。各模块使用类名作为 tag，把关键状态变化写入默认 1000 条的内存环形缓冲：
 
-- 每条消息先经过 `AuthLogRedactor`，再进入内存、控制台或文件。
-- redactor 处理 token、密码、Bearer header、OAuth code 和用户标识。
+- 每条消息先经过 `LogRedactor`，再进入内存、控制台或文件。
+- redactor 处理 token、密码、Bearer header、OAuth code 和用户标识；
+  身份标识覆盖 camelCase、snake_case 与中文「学号」标签三种写法，
+  但**不**脱敏 `account` / `id` / `sid` 等语义模糊的键——过度脱敏会抹掉排障信息。
 - 仅 debug 构建同步输出控制台日志。
-- 文件 sink 默认关闭；开发者页面可查看、过滤、清空和导出脱敏日志。
+- **文件落盘默认开启**：warn / error 写入 `<getLogBaseDir()>/Bugaoshan/logs/`，按 2 MB × 3 份自动轮转；debug / info 仅在内存。落盘开关位于开发者页面。
+- 日志由单个异步写入队列串行落盘，避免同步记录与异步轮转争抢文件。队列有容量上限，溢出计入 `droppedWriteLines`。
+- 开发者页面可查看、过滤、清空和导出脱敏日志；导出快照与自动落盘文件位于同一目录，关闭落盘开关只删除轮转文件，保留手动导出的快照。
+- 全局异常由 [`setupGlobalErrorHandlers()`](../../lib/utils/app_error_reporter.dart) 接管，在 binding 就绪后立即安装，覆盖框架异常、未捕获异步异常与当前 isolate 的错误监听，保留此前的处理器。启动失败亦经 `AppLog.e` 记录。
 
-新增认证日志时仍应避免主动拼入敏感值。脱敏器是最后一道保护，不是记录凭据的许可。
+认证记录使用 `authentication` 分类，业务记录使用 `business` 分类；异常和堆栈也在存储前脱敏。两类共享缓冲以保留请求与认证恢复的时间顺序。错误覆盖与查看方式见[运行日志架构](logging.md)。
+
+「清除所有数据」会删除落盘日志文件，与隐私政策 / EULA 的说明一致。新增日志时仍应避免主动拼入敏感值。脱敏器是最后一道保护，不是记录凭据的许可。
 
 ## 13. 依赖注入与生命周期
 
@@ -581,7 +588,8 @@ lib/
 │   └── ccyl/
 │       └── ccyl_service.dart        # CCYL 底层 HTTP 与业务错误分类
 ├── utils/
-│   ├── auth_logger.dart             # 脱敏认证日志
+│   ├── app_logger.dart              # 脱敏应用日志（认证 + 业务共用）
+│   ├── app_error_reporter.dart      # 全局异常接管（框架/引擎/isolate）
 │   └── secure_storage.dart
 └── widgets/common/
     └── session_expired_listener.dart

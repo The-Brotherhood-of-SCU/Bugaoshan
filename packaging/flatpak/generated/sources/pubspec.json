@@ -520,14 +520,14 @@
     {
         "type": "git",
         "url": "https://github.com/The-Brotherhood-of-SCU/flutter_inappwebview.git",
-        "commit": "666bc33f776285076327e4a94aafc103c693e17a",
-        "dest": ".pub-cache/git/flutter_inappwebview-666bc33f776285076327e4a94aafc103c693e17a"
+        "commit": "edd0663cf09cf5e8882dd2f4d22ba6855fdbac5e",
+        "dest": ".pub-cache/git/flutter_inappwebview-edd0663cf09cf5e8882dd2f4d22ba6855fdbac5e"
     },
     {
         "type": "shell",
         "commands": [
             "mkdir -p .pub-cache/git/cache/flutter_inappwebview-a6d2d7fc69ecbe4159dfbbc007cca351f8ccc4f3",
-            "cp -rf .pub-cache/git/flutter_inappwebview-666bc33f776285076327e4a94aafc103c693e17a/.git/* .pub-cache/git/cache/flutter_inappwebview-a6d2d7fc69ecbe4159dfbbc007cca351f8ccc4f3"
+            "cp -rf .pub-cache/git/flutter_inappwebview-edd0663cf09cf5e8882dd2f4d22ba6855fdbac5e/.git/* .pub-cache/git/cache/flutter_inappwebview-a6d2d7fc69ecbe4159dfbbc007cca351f8ccc4f3"
         ]
     },
     {
@@ -557,20 +557,6 @@
         "contents": "ae8a78829398771be863aa3c8804a9d40728e1815e66c9c966f86d2cc3ae4fd9",
         "dest": ".pub-cache/hosted-hashes/pub.dev",
         "dest-filename": "flutter_inappwebview_ios-1.2.0-beta.3.sha256"
-    },
-    {
-        "type": "archive",
-        "archive-type": "tar-gzip",
-        "url": "https://pub.dev/api/archives/flutter_inappwebview_linux-0.1.0-beta.1.tar.gz",
-        "sha256": "2e1a3b09bb911fb5a8bb155cb7f1eb1428a19b6e20363b9db48beef428b8cef5",
-        "strip-components": 0,
-        "dest": ".pub-cache/hosted/pub.dev/flutter_inappwebview_linux-0.1.0-beta.1"
-    },
-    {
-        "type": "inline",
-        "contents": "2e1a3b09bb911fb5a8bb155cb7f1eb1428a19b6e20363b9db48beef428b8cef5",
-        "dest": ".pub-cache/hosted-hashes/pub.dev",
-        "dest-filename": "flutter_inappwebview_linux-0.1.0-beta.1.sha256"
     },
     {
         "type": "archive",
