@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 添加功能一般升级第二个版本号，小修改或者紧急修复bug则升级第三个版本号。小更新自由发布预览版，版本号不变，git tag为 `v{LatestVersion}-{PreviewName}` ，如 1.0.0 版本的预览版为： `v1.0.0-preview`
 
 
-## [2.6.0] - 2026-11-11
+## [2.6.0] - 2026-11-16
 
 ### Added
 - 新增「图书馆打印与扫描」：上传后需到图书馆终端刷校园卡确认打印。
