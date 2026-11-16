@@ -65,7 +65,7 @@ git branch --show-current
 
 ### Step 2: 整理目标版本说明
 
-按 [bugaoshan-changelog](.agents/skills/bugaoshan-changelog/SKILL.md) 的规则：
+按 [bugaoshan-changelog](../bugaoshan-changelog/SKILL.md) 的规则：
 
 - 把 `## [Unreleased]` 中的条目归并去重，写入 `## [X.Y.Z] - YYYY-MM-DD`（日期未定则省略）。
 - 清空 `[Unreleased]`；正式版发布时它必须为空。
@@ -136,7 +136,7 @@ python tool/pre_release_check.py
 
 ### Step 2: 整理说明
 
-按 [bugaoshan-changelog](.agents/skills/bugaoshan-changelog/SKILL.md) 的规则写用户可感知的变化。
+按 [bugaoshan-changelog](../bugaoshan-changelog/SKILL.md) 的规则写用户可感知的变化。
 
 - 常态：只维护 `[Unreleased]`；为空时允许继续，发布端会显示占位说明。
 - 准备期：只维护 `## [X.Y.Z]`；为空时发布会失败。
