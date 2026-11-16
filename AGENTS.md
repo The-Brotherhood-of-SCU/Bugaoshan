@@ -70,7 +70,6 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 ├── _build_generator.bat        # helper wrapper
 ├── _build_icon.bat             # helper wrapper
 ├── _build_l10n.bat             # helper wrapper
-├── update_and_push_tag.py      # release tag helper script
 ├── assets/
 │   ├── icon.png                # app icon (referenced by flutter_launcher_icons)
 │   ├── icon-foreground.png     # adaptive icon foreground

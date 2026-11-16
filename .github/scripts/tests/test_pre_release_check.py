@@ -110,14 +110,20 @@ class PreReleaseCheckTest(unittest.TestCase):
         )
         self.assertTrue(self.has(results, "FAIL", "CHANGELOG 状态"))
 
-    def test_preview_state_skips_metadata(self):
-        self.write_changelog("## [2.5.1]\n- old\n")
+    def test_non_strict_skips_metadata(self):
+        """日常门禁（非严格）不运行 F-Droid metadata 检查。
+
+        准备期普通 PR 只 bump CHANGELOG / pubspec，metadata 留待正式版 PR 前统一更新；
+        若日常门禁硬性校验 metadata，准备期所有 PR 都会 FAIL。
+        """
+        self.write_changelog("## [2.6.0]\n- target\n\n## [2.5.1]\n- old\n")
+        self.write_pubspec("2.6.0+20600")
         checker = pre_release_check.Checker(existing_tags=["v2.5.1"])
-        checker._ensure_state()
-        checker.check_metadata_yml()
-        checker.check_metadata_changelogs()
-        self.assertTrue(self.has(checker.results, "OK", "F-Droid metadata/*.yml"))
-        self.assertTrue(self.has(checker.results, "OK", "F-Droid metadata changelogs"))
+        with mock.patch.object(checker, "check_git_repo", return_value=True):
+            checker.run_all()
+        names = [n for _, n, _ in checker.results]
+        self.assertNotIn("F-Droid metadata/*.yml", names)
+        self.assertNotIn("F-Droid metadata changelogs", names)
 
     # ── 正式版严格检查 ───────────────────────────────
 

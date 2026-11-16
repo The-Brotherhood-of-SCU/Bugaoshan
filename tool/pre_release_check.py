@@ -355,10 +355,8 @@ class Checker:
     # ---- F-Droid ----
 
     def _metadata_required(self):
-        if self.strict:
-            return True
-        state, _ = self._ensure_state()
-        return bool(state and state.mode == "rc")
+        # metadata 检查仅在正式版严格检查路径运行，日常门禁不调用。
+        return True
 
     def check_metadata_yml(self):
         name = "F-Droid metadata/*.yml"
@@ -436,10 +434,10 @@ class Checker:
                 self.check_metadata_changelogs,
             ]
         else:
+            # 日常门禁只校验 CHANGELOG 状态、不变量与 pubspec 一致性。
+            # F-Droid metadata 仅在正式版严格检查（base_ref == main）时校验，
+            # 避免准备期普通 PR 因 metadata 未同步更新而集体失败。
             checks = [self.check_working_tree, self.check_changelog, self.check_pubspec]
-            state, _ = self._ensure_state()
-            if state and state.mode == "rc":
-                checks += [self.check_metadata_yml, self.check_metadata_changelogs]
 
         for fn in checks:
             fn()
