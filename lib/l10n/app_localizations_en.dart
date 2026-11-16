@@ -364,6 +364,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newVersionAvailable => 'New Version Available';
 
   @override
+  String get newTestVersionAvailable => 'New Test Available';
+
+  @override
   String get anotherVersionDownloading => 'Another version is downloading...';
 
   @override

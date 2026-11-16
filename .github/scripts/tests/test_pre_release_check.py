@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tool"))
 import pre_release_check
 
 
-class PreReleaseChangelogTest(unittest.TestCase):
+class PreReleaseCheckTest(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
@@ -19,73 +19,241 @@ class PreReleaseChangelogTest(unittest.TestCase):
         self.patch = mock.patch.object(pre_release_check, "ROOT", self.root)
         self.patch.start()
         self.addCleanup(self.patch.stop)
-        (self.root / "pubspec.yaml").write_text("version: 2.5.1+20501\n", encoding="utf-8")
+        self.write_pubspec("2.5.1+20501")
 
-    def check(self, text, version, **kwargs):
+    def write_pubspec(self, version):
+        (self.root / "pubspec.yaml").write_text(f"version: {version}\n", encoding="utf-8")
+
+    def write_changelog(self, text):
         (self.root / "CHANGELOG.md").write_text(text, encoding="utf-8")
-        checker = pre_release_check.Checker(version, **kwargs)
+
+    def run_checks(self, text, version="", tags=("v2.5.1",), pubspec=None):
+        if pubspec:
+            self.write_pubspec(pubspec)
+        self.write_changelog(text)
+        checker = pre_release_check.Checker(version, existing_tags=list(tags))
         checker.check_changelog()
+        checker.check_pubspec()
         return checker.results
 
-    def test_matching_formal_or_preview_needs_no_placeholder_section(self):
-        text = "## [2.5.2-preview.2]\n- preview\n## [2.5.1]\n- formal\n"
-        for version in ("2.5.1", "2.5.2-preview.2"):
-            with self.subTest(version=version):
-                results = self.check(text, version)
-                self.assertTrue(any(s == "OK" and n == "CHANGELOG.md" for s, n, _ in results))
-                self.assertFalse(any(s == "FAIL" for s, _, _ in results))
-
-    def test_missing_preview_warns_in_ci_but_fails_strict_check(self):
-        text = "## [2.5.1]\n- old\n"
-        for ci, expected in ((True, "WARN"), (False, "FAIL")):
-            with self.subTest(ci=ci):
-                results = self.check(text, "2.5.2-rc1", ci=ci)
-                self.assertEqual(results[0][0], expected)
-                self.assertIn("[2.5.2-rc1]", results[0][2])
-
-    def test_missing_formal_fails_even_in_ci(self):
-        results = self.check("## [2.5.2-preview]\n- preview\n", "2.5.2", ci=True)
-        self.assertEqual(results[0][0], "FAIL")
-
-    def test_empty_target_does_not_borrow_other_content(self):
-        results = self.check("## [2.5.2]\n### Fixed\n## [2.5.1]\n- old\n", "2.5.2")
-        self.assertEqual(results[0][0], "FAIL")
-
-    def test_formal_release_warns_when_legacy_unreleased_has_content(self):
-        text = "## [Unreleased]\n- legacy item\n\n## [2.5.2] - 2026-11-10\n- formal item\n"
-        results = self.check(text, "2.5.2")
-        self.assertTrue(
-            any(s == "WARN" and n == "Unreleased 遗留内容" for s, n, _ in results)
-        )
-        self.assertTrue(
-            any(s == "OK" and n == "CHANGELOG.md" for s, n, _ in results)
+    def has(self, results, status, name=None):
+        return any(
+            s == status and (name is None or n == name)
+            for s, n, _ in results
         )
 
-    def test_structure_only_accepts_history_without_guessing_future_tag(self):
-        results = self.check(
-            "## [2.5.1]\n- old\n", "2.5.1-prerelease", ci=True, changelog_structure_only=True
-        )
-        self.assertEqual(results[0][0], "OK")
-        self.assertIn("1 个版本章节", results[0][2])
+    def message(self, results, name):
+        return next(message for _, n, message in results if n == name)
 
-    def test_duplicate_and_invalid_dates_fail_even_in_structure_only_mode(self):
+    # ── PR 门禁：常态 ────────────────────────────────
+
+    def test_preview_state_passes(self):
+        results = self.run_checks("## [2.5.1]\n- old\n")
+        self.assertTrue(self.has(results, "OK", "CHANGELOG.md"))
+        self.assertTrue(self.has(results, "OK", "pubspec.yaml 版本"))
+        self.assertFalse(self.has(results, "FAIL"))
+
+    def test_preview_with_unreleased_passes(self):
+        results = self.run_checks(
+            "## [Unreleased]\n- pending\n\n## [2.5.1]\n- old\n"
+        )
+        self.assertTrue(self.has(results, "OK", "CHANGELOG.md"))
+        self.assertFalse(self.has(results, "FAIL"))
+
+    def test_preview_empty_unreleased_warns(self):
+        results = self.run_checks("## [2.5.1]\n- old\n")
+        self.assertTrue(self.has(results, "WARN", "预览说明"))
+
+    # ── PR 门禁：准备期 ──────────────────────────────
+
+    def test_rc_state_passes(self):
+        results = self.run_checks(
+            "## [2.6.0]\n- target\n\n## [2.5.1]\n- old\n",
+            pubspec="2.6.0+20600",
+        )
+        self.assertTrue(self.has(results, "OK", "CHANGELOG.md"))
+        self.assertTrue(self.has(results, "OK", "pubspec.yaml 版本"))
+        self.assertFalse(self.has(results, "FAIL"))
+
+    def test_rc_with_unreleased_content_fails(self):
+        results = self.run_checks(
+            "## [Unreleased]\n- pending\n\n## [2.6.0]\n- target\n\n## [2.5.1]\n- old\n",
+            pubspec="2.6.0+20600",
+        )
+        self.assertTrue(self.has(results, "FAIL", "CHANGELOG 状态"))
+
+    def test_rc_empty_target_fails(self):
+        results = self.run_checks(
+            "## [2.6.0]\n\n### Fixed\n\n## [2.5.1]\n- old\n",
+            pubspec="2.6.0+20600",
+        )
+        self.assertTrue(self.has(results, "FAIL", "CHANGELOG.md"))
+
+    def test_multiple_unpublished_versions_fail(self):
+        results = self.run_checks(
+            "## [2.7.0]\n- next\n\n## [2.6.0]\n- target\n\n## [2.5.1]\n- old\n",
+            pubspec="2.6.0+20600",
+        )
+        self.assertTrue(self.has(results, "FAIL", "CHANGELOG 状态"))
+
+    def test_pubspec_must_match_changelog_target(self):
+        results = self.run_checks(
+            "## [2.6.0]\n- target\n\n## [2.5.1]\n- old\n",
+            pubspec="2.5.1+20501",
+        )
+        self.assertTrue(self.has(results, "FAIL", "pubspec.yaml 版本"))
+
+    def test_changelog_behind_latest_formal_fails(self):
+        results = self.run_checks(
+            "## [2.5.1]\n- old\n",
+            tags=("v2.5.1", "v2.5.2"),
+        )
+        self.assertTrue(self.has(results, "FAIL", "CHANGELOG 状态"))
+
+    def test_non_strict_skips_metadata(self):
+        """日常门禁（非严格）不运行 F-Droid metadata 检查。
+
+        准备期普通 PR 只 bump CHANGELOG / pubspec，metadata 留待正式版 PR 前统一更新；
+        若日常门禁硬性校验 metadata，准备期所有 PR 都会 FAIL。
+        """
+        self.write_changelog("## [2.6.0]\n- target\n\n## [2.5.1]\n- old\n")
+        self.write_pubspec("2.6.0+20600")
+        checker = pre_release_check.Checker(existing_tags=["v2.5.1"])
+        with mock.patch.object(checker, "check_git_repo", return_value=True):
+            checker.run_all()
+        names = [n for _, n, _ in checker.results]
+        self.assertNotIn("F-Droid metadata/*.yml", names)
+        self.assertNotIn("F-Droid metadata changelogs", names)
+
+    def test_tag_lookup_failure_reported_in_gate(self):
+        """远端 tag 读不到时给出报告行，而不是抛 traceback。"""
+        self.write_changelog("## [2.6.0]\n- target\n\n## [2.5.1]\n- old\n")
+        self.write_pubspec("2.6.0+20600")
+        checker = pre_release_check.Checker()
+        with mock.patch.object(
+            pre_release_check,
+            "get_existing_remote_tags",
+            side_effect=RuntimeError("git ls-remote 失败（exit=128）：boom"),
+        ):
+            checker.check_changelog()
+            checker.check_pubspec()
+        self.assertTrue(self.has(checker.results, "FAIL", "CHANGELOG 状态"))
+        message = self.message(checker.results, "CHANGELOG 状态")
+        self.assertIn("无法获取远端 tag", message)
+        self.assertIn("boom", message)
+
+    def test_tag_lookup_failure_reported_in_strict(self):
+        self.write_changelog("## [2.6.0] - 2026-11-16\n- target\n\n## [2.5.1]\n- old\n")
+        self.write_pubspec("2.6.0+20600")
+        checker = pre_release_check.Checker("2.6.0")
+        with mock.patch.object(
+            pre_release_check,
+            "get_existing_remote_tags",
+            side_effect=RuntimeError("git ls-remote 失败（exit=128）：boom"),
+        ):
+            checker.check_changelog()
+            checker.check_tag_not_exists()
+            checker.check_version_monotonic()
+        for name in ("CHANGELOG 状态", "tag 冲突", "版本号递增"):
+            self.assertTrue(self.has(checker.results, "FAIL", name), name)
+            self.assertIn("无法获取远端 tag", self.message(checker.results, name))
+
+    # ── 正式版严格检查 ───────────────────────────────
+
+    def test_strict_formal_passes(self):
+        results = self.run_checks(
+            "## [2.5.2] - 2026-11-16\n- target\n\n## [2.5.1]\n- old\n",
+            version="2.5.2",
+            pubspec="2.5.2+20502",
+        )
+        self.assertTrue(self.has(results, "OK", "CHANGELOG.md"))
+        self.assertTrue(self.has(results, "OK", "pubspec.yaml 版本"))
+        self.assertFalse(self.has(results, "FAIL"))
+
+    def test_strict_formal_missing_section_fails(self):
+        results = self.run_checks(
+            "## [2.5.1]\n- old\n",
+            version="2.5.2",
+            pubspec="2.5.2+20502",
+        )
+        self.assertTrue(self.has(results, "FAIL", "CHANGELOG 状态"))
+
+    def test_strict_formal_empty_section_fails(self):
+        results = self.run_checks(
+            "## [2.5.2] - 2026-11-16\n\n### Fixed\n\n## [2.5.1]\n- old\n",
+            version="2.5.2",
+            pubspec="2.5.2+20502",
+        )
+        self.assertTrue(self.has(results, "FAIL", "CHANGELOG.md"))
+
+    def test_strict_formal_rejects_unreleased_content(self):
+        results = self.run_checks(
+            "## [Unreleased]\n- pending\n\n## [2.5.2] - 2026-11-16\n- target\n",
+            version="2.5.2",
+            pubspec="2.5.2+20502",
+        )
+        self.assertTrue(self.has(results, "FAIL", "CHANGELOG 状态"))
+
+    def test_strict_formal_missing_date_fails(self):
+        """RC 章节不带日期；正式版必须补日期，否则严格检查失败。"""
+        results = self.run_checks(
+            "## [2.5.2]\n- target\n\n## [2.5.1]\n- old\n",
+            version="2.5.2",
+            pubspec="2.5.2+20502",
+        )
+        self.assertTrue(self.has(results, "FAIL", "CHANGELOG 日期"))
+
+    def test_strict_formal_date_warns(self):
+        results = self.run_checks(
+            "## [2.5.2] - 2000-01-01\n- target\n\n## [2.5.1]\n- old\n",
+            version="2.5.2",
+            pubspec="2.5.2+20502",
+        )
+        self.assertTrue(self.has(results, "WARN", "CHANGELOG 日期"))
+
+    def test_strict_formal_rejects_changelog_highest_mismatch(self):
+        results = self.run_checks(
+            "## [2.5.3]\n- newer\n\n## [2.5.2]\n- target\n",
+            version="2.5.2",
+            pubspec="2.5.2+20502",
+        )
+        self.assertTrue(self.has(results, "FAIL", "CHANGELOG 状态"))
+
+    def test_strict_formal_tag_conflict_fails(self):
+        checker = pre_release_check.Checker("2.5.2", existing_tags=["v2.5.1", "v2.5.2"])
+        checker.check_tag_not_exists()
+        self.assertTrue(self.has(checker.results, "FAIL", "tag 冲突"))
+
+    def test_strict_formal_version_must_increase(self):
+        checker = pre_release_check.Checker("2.5.1", existing_tags=["v2.5.1"])
+        checker.check_version_monotonic()
+        self.assertTrue(self.has(checker.results, "FAIL", "版本号递增"))
+
+    # ── 结构错误 ────────────────────────────────────
+
+    def test_duplicate_and_invalid_dates_fail(self):
         for text in (
             "## [2.5.1]\n- A\n## [2.5.1]\n- B\n",
             "## [2.5.1] - 2026-02-30\n- A\n",
         ):
             with self.subTest(text=text):
-                results = self.check(text, "2.5.1-prerelease", ci=True, changelog_structure_only=True)
-                self.assertEqual(results[0][0], "FAIL")
+                results = self.run_checks(text)
+                self.assertTrue(self.has(results, "FAIL", "CHANGELOG.md"))
 
-    def test_structure_only_skips_checks_for_a_fabricated_tag(self):
-        checker = pre_release_check.Checker("2.5.1-prerelease", ci=True, changelog_structure_only=True)
-        with mock.patch.object(checker, "run") as run:
-            checker.check_tag_not_exists()
-        run.assert_not_called()
+    # ── CLI ────────────────────────────────────────
 
-    def test_cli_requires_full_preview_target_outside_daily_ci(self):
-        with mock.patch.object(pre_release_check, "_try_reconfigure_encoding"), contextlib.redirect_stderr(io.StringIO()):
-            for args in (("--ci", "--prerelease"), ("2.5.2", "--prerelease"), ("--changelog-structure-only",)):
+    def test_cli_rejects_prerelease_target(self):
+        with mock.patch.object(
+            pre_release_check, "_try_reconfigure_encoding"
+        ), contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit):
+                pre_release_check.main(["2.5.2-preview"])
+
+    def test_cli_rejects_removed_modes(self):
+        with mock.patch.object(
+            pre_release_check, "_try_reconfigure_encoding"
+        ), contextlib.redirect_stderr(io.StringIO()):
+            for args in (("--ci",), ("--prerelease",), ("--changelog-structure-only",)):
                 with self.subTest(args=args), self.assertRaises(SystemExit):
                     pre_release_check.main(list(args))
 

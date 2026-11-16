@@ -1,0 +1,36 @@
+- Added "Library print & scan": after uploading, confirm printing by tapping your campus card at a library terminal.
+- Added "Room Reservation" for graduate students at Wangjiang campus: submit reservations, view records and cancel when permitted; some rooms require approval.
+- Scheme Scores, Passing Scores and Plan Completion can show teachers using historical schedules (#410).
+- Ordinary iOS detail pages support swiping right from the content area to go back; multi-tab pages allow this on the first tab.
+- Added on-device diagnostic logs, enabled by default and configurable on the Developer Page; startup failure pages support log export.
+- Added a Linux x64 download package.
+- Added signed, notarized macOS DMG installers, distributed separately through the [Mac release page](https://github.com/wjlfish/Bugaoshan-macos/releases).
+
+- Moved "Passive Authentication" to the top of "Network Device Query".
+- Second Classroom now uses top tabs with left and right swiping (#376).
+- Schedule dates use numeric formats, adjustable in "Course Style".
+- Desktop lists and horizontal tabs support mouse dragging.
+- Added "Network Acceleration" to Software Settings for GitHub update packages and academic calendar downloads.
+- Improved the "Notifications & Reminders" settings layout.
+- On Apple platforms, Liquid Glass is limited to navigation, switches and sliders; other actions use ordinary buttons again.
+- Renamed "View authentication logs" to "View runtime logs", with category filters and exception stack traces.
+- Updated rounded icons on Windows and Linux, and fixed Wayland window and taskbar icons.
+- Unified the macOS app name as "不高山上".
+- Improved F-Droid installation channel detection and hid in-app update entries for those channels.
+
+- Fixed startup failures caused by old databases or switching app versions.
+- Fixed repeated macOS keychain prompts; sign in again after upgrading. Users of the old bundle ID must export schedules first, then import them into the new version.
+- Fixed window controls covering the back button and content in iPadOS 26 windowed mode (#426).
+- Fixed the system navigation bar covering the bottom of some lists on Android 15 and later (#379).
+- Fixed an overlay blocking the main interface after closing dialogs such as graduate grades on wide screens or in landscape (#331).
+- Fixed truncated week numbers and crowded schedule toolbar buttons on narrow screens or with large text.
+- Fixed missed preview updates, duplicate prompts and incorrect version comparisons.
+- Fixed unavailable update packages being recommended and incorrect download progress on the Developer Page.
+- Fixed macOS notification permission detection and pre-class reminder delivery.
+- Fixed shifted window positions after restoring on Windows with mixed display scaling.
+- Fixed Linux window state saving; only size is saved under Wayland.
+- Fixed gaps between feature pages and the floating bottom bar on iOS 26 and later (#380).
+- Fixed "Open folder" failures on Android log and attachment pages; the path is now copied instead.
+- Corrected the Developer Page name in update settings and the user agreement.
+
+- Removed embedded browsing on Linux: notices and Volunteer Sichuan open in the system browser, and graduate schedule import uses only the direct connection.

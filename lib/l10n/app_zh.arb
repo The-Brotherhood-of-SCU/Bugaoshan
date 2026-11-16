@@ -136,6 +136,7 @@
   "projectRepository": "项目仓库",
   "checkForUpdates": "检查更新",
   "newVersionAvailable": "发现新版本",
+  "newTestVersionAvailable": "发现新测试版",
   "anotherVersionDownloading": "另一版本正在下载…",
   "stableVersion": "正式版：{version}",
   "@stableVersion": {

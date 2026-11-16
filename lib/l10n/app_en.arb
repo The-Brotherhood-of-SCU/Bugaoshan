@@ -137,6 +137,7 @@
   "projectRepository": "Repository",
   "checkForUpdates": "Check Updates",
   "newVersionAvailable": "New Version Available",
+  "newTestVersionAvailable": "New Test Available",
   "anotherVersionDownloading": "Another version is downloading...",
   "stableVersion": "Stable: {version}",
   "@stableVersion": {

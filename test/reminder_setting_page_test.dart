@@ -18,6 +18,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class _FakeTransport implements ReminderTransport {
   final List<ReminderPlan> synced = [];
   bool denied = false;
+  bool unsupported = false;
   Completer<ReminderPermissionStatus>? permissionStatusResponse;
 
   @override
@@ -40,7 +41,9 @@ class _FakeTransport implements ReminderTransport {
 
   @override
   Future<ReminderPermissionStatus> getPermissionStatus() async {
-    if (permissionStatusResponse != null) return permissionStatusResponse!.future;
+    if (unsupported) return ReminderPermissionStatus.unsupported;
+    final response = permissionStatusResponse;
+    if (response != null) return response.future;
     return denied
         ? ReminderPermissionStatus.denied
         : ReminderPermissionStatus.authorized;
@@ -97,7 +100,10 @@ void main() {
     return DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
   }
 
-  Future<void> setUpDeps({bool denied = false}) async {
+  Future<void> setUpDeps({
+    bool denied = false,
+    bool unsupported = false,
+  }) async {
     await getIt.reset();
     LiquidGlassCapabilities.resetForTesting();
     SharedPreferences.setMockInitialValues({});
@@ -134,7 +140,9 @@ void main() {
       ),
     );
 
-    transport = _FakeTransport()..denied = denied;
+    transport = _FakeTransport()
+      ..denied = denied
+      ..unsupported = unsupported;
     service = ReminderService(
       courseProvider: courseProvider,
       appConfig: appConfig,
@@ -209,5 +217,28 @@ void main() {
 
     expect(find.text('通知未开启'), findsOneWidget);
     expect(find.text('去系统设置'), findsOneWidget);
+  });
+
+  testWidgets('平台不支持本地提醒时禁用下方设置且不显示授权按钮', (tester) async {
+    await setUpDeps(unsupported: true);
+    await tester.pumpWidget(buildTestApp());
+    await tester.pumpAndSettle();
+
+    expect(find.text('当前平台暂不支持本地提醒。'), findsOneWidget);
+    expect(find.text('去授权'), findsNothing);
+
+    // 主开关被 IgnorePointer 禁用，点击不应改变配置。
+    expect(appConfig.reminderEnabled.value, isTrue);
+    await tester.tap(
+      find.byType(AdaptiveGlassSwitch).first,
+      warnIfMissed: false,
+    );
+    await tester.pumpAndSettle();
+    expect(appConfig.reminderEnabled.value, isTrue);
+
+    // 提前时间选项同样不可点击。
+    await tester.tap(find.text('提前 5 分钟'), warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(appConfig.reminderLeadMinutes.value, [15]);
   });
 }

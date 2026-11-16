@@ -14,7 +14,11 @@ import argparse
 import os
 import re
 import sys
-from changelog_sections import find_version_section, has_changelog_content
+from changelog_sections import (
+    has_changelog_content,
+    normalize_version,
+    parse_changelog_document,
+)
 
 # 与 android/app/build.gradle.kts 的 ABI override 一致：
 # versionCode = base*10 + abiCode（v7a=1, v8a=2, x86_64=4）
@@ -42,10 +46,12 @@ def extract_changelog(version: str, changelog_path: str = "CHANGELOG.md") -> str
         content = f.read()
 
     try:
-        section = find_version_section(content, version)
+        document = parse_changelog_document(content)
+        target = normalize_version(version)
     except ValueError as error:
         print(f"::error::{error}", file=sys.stderr)
         return None
+    section = next((s for s in document.versions if s.version == target), None)
     if section is None or not has_changelog_content(section.content):
         print(f"::error::No changelog content found for version {version}", file=sys.stderr)
         return None

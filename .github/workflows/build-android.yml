@@ -80,7 +80,7 @@ jobs:
 
       - name: Build universal APK for in-app updates
         run: |
-          # 版本注入：预览通道统一使用上一正式版的版本号（pubspec 的 /release bump
+          # 版本注入：预览通道统一使用上一正式版的版本号（正式版 bump 后的 pubspec
           # 不影响预览构建），formal 与 pubspec 一致；空值时回退 pubspec 默认。
           BUILD_ARGS=()
           if [ -n "${{ inputs.build_name }}" ]; then BUILD_ARGS+=(--build-name "${{ inputs.build_name }}"); fi
