@@ -65,7 +65,7 @@ def get_existing_remote_tags(root_dir: Path | None = None) -> list[str]:
     code, remote_out, err = run_git(["ls-remote", "--tags", "origin", "refs/tags/v*"], root_dir=root_dir)
     if code != 0:
         raise RuntimeError(
-            f"git ls-remote 失败（exit={code}），无法获取远端 tag：{err or '(无 stderr)'}"
+            f"git ls-remote 失败（exit={code}）：{err or '(无 stderr)'}"
         )
     if remote_out:
         for line in remote_out.splitlines():

@@ -67,6 +67,7 @@ class Checker:
         self.target_version = version
         self.results = []
         self._state_loaded = False
+        self._tags_error = ""
         self.tag = f"v{version}" if version else ""
 
     # ---- 基础工具 ----
@@ -91,10 +92,21 @@ class Checker:
     def record(self, status, name, message=""):
         self.results.append((status, name, message))
 
-    def _tags(self):
+    def _load_tags(self):
+        """读取 tag 列表，返回 (tags, error)。
+
+        远端 tag 不可读时不能静默降级为空列表：那会把常态预览误判为准备期，
+        所以这里把错误交给调用方落成一条 FAIL 报告。
+        """
+        if self._tags_error:
+            return [], self._tags_error
         if self.existing_tags is None:
-            self.existing_tags = get_existing_remote_tags(root_dir=ROOT)
-        return self.existing_tags
+            try:
+                self.existing_tags = get_existing_remote_tags(root_dir=ROOT)
+            except RuntimeError as error:
+                self._tags_error = f"无法获取远端 tag：{error}"
+                return [], self._tags_error
+        return self.existing_tags, ""
 
     def _read_changelog(self):
         path = ROOT / "CHANGELOG.md"
@@ -108,7 +120,11 @@ class Checker:
         self._state_loaded = True
         try:
             content = self._read_changelog()
-            formal_tag, _ = latest_formal(self._tags())
+            tags, tags_error = self._load_tags()
+            if tags_error:
+                self.state_error = tags_error
+                return self.state, self.state_error
+            formal_tag, _ = latest_formal(tags)
             latest = formal_tag[1:] if formal_tag else None
             self.state = resolve_release_state(content, latest)
             self.target_version = self.state.version
@@ -195,15 +211,23 @@ class Checker:
 
     def check_tag_not_exists(self):
         name = "tag 冲突"
-        if self.tag in self._tags():
+        tags, error = self._load_tags()
+        if error:
+            self.record(FAIL, name, error)
+            return
+        if self.tag in tags:
             self.record(FAIL, name, f"已存在 tag {self.tag}，发布会冲突")
         else:
             self.record(OK, name, f"tag {self.tag} 尚未使用")
 
     def check_version_monotonic(self):
         name = "版本号递增"
+        tags, error = self._load_tags()
+        if error:
+            self.record(FAIL, name, error)
+            return
         stable = []
-        for tag in self._tags():
+        for tag in tags:
             m = SEMVER_RE.match(tag[1:] if tag.startswith("v") else tag)
             if m and "-" not in tag:
                 stable.append((tuple(int(x) for x in m.groups()), tag))
@@ -296,7 +320,11 @@ class Checker:
                     return
 
         if self.strict:
-            formal_tag, _ = latest_formal(self._tags())
+            tags, tags_error = self._load_tags()
+            if tags_error:
+                self.record(FAIL, "CHANGELOG 状态", tags_error)
+                return
+            formal_tag, _ = latest_formal(tags)
             latest = formal_tag[1:] if formal_tag else None
             try:
                 state = resolve_release_state(text, latest)

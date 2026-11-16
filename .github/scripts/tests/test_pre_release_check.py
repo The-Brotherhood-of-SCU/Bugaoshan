@@ -125,6 +125,39 @@ class PreReleaseCheckTest(unittest.TestCase):
         self.assertNotIn("F-Droid metadata/*.yml", names)
         self.assertNotIn("F-Droid metadata changelogs", names)
 
+    def test_tag_lookup_failure_reported_in_gate(self):
+        """远端 tag 读不到时给出报告行，而不是抛 traceback。"""
+        self.write_changelog("## [2.6.0]\n- target\n\n## [2.5.1]\n- old\n")
+        self.write_pubspec("2.6.0+20600")
+        checker = pre_release_check.Checker()
+        with mock.patch.object(
+            pre_release_check,
+            "get_existing_remote_tags",
+            side_effect=RuntimeError("git ls-remote 失败（exit=128）：boom"),
+        ):
+            checker.check_changelog()
+            checker.check_pubspec()
+        self.assertTrue(self.has(checker.results, "FAIL", "CHANGELOG 状态"))
+        message = self.message(checker.results, "CHANGELOG 状态")
+        self.assertIn("无法获取远端 tag", message)
+        self.assertIn("boom", message)
+
+    def test_tag_lookup_failure_reported_in_strict(self):
+        self.write_changelog("## [2.6.0] - 2026-11-16\n- target\n\n## [2.5.1]\n- old\n")
+        self.write_pubspec("2.6.0+20600")
+        checker = pre_release_check.Checker("2.6.0")
+        with mock.patch.object(
+            pre_release_check,
+            "get_existing_remote_tags",
+            side_effect=RuntimeError("git ls-remote 失败（exit=128）：boom"),
+        ):
+            checker.check_changelog()
+            checker.check_tag_not_exists()
+            checker.check_version_monotonic()
+        for name in ("CHANGELOG 状态", "tag 冲突", "版本号递增"):
+            self.assertTrue(self.has(checker.results, "FAIL", name), name)
+            self.assertIn("无法获取远端 tag", self.message(checker.results, name))
+
     # ── 正式版严格检查 ───────────────────────────────
 
     def test_strict_formal_passes(self):
