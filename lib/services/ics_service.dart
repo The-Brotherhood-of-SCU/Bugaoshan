@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/pages/campus/exam_plan/models/exam_info.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/exam_info.dart';
 import 'package:bugaoshan/utils/calendar_event_utils.dart';
 
 export 'package:bugaoshan/utils/calendar_event_utils.dart'

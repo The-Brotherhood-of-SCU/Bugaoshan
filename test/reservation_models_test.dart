@@ -1,4 +1,4 @@
-import 'package:bugaoshan/pages/campus/reservation/models/reservation_models.dart';
+import 'package:bugaoshan/scu_backend/reservation/models/reservation_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -12,12 +12,7 @@ void main() {
             'name': '党建活动室',
             'type': 1,
             'attribute': [
-              {
-                'name': '容量/人数',
-                'type': 0,
-                'enable': 1,
-                'data': '28',
-              },
+              {'name': '容量/人数', 'type': 0, 'enable': 1, 'data': '28'},
             ],
             'config': {'book': true},
           },
@@ -25,7 +20,11 @@ void main() {
           'appointmen_list_info': const [],
         },
         {
-          'base': {'id': 490, 'name': '学术交流室', 'config': {'book': true}},
+          'base': {
+            'id': 490,
+            'name': '学术交流室',
+            'config': {'book': true},
+          },
           'time': const [],
           'appointmen_list_info': const [],
         },
@@ -55,9 +54,13 @@ void main() {
     test('跳过没有 base 或 base 缺 id 的脏行', () {
       final resources = reservationResourcesFromJson({
         'data': [
-          {'base': {'id': 1, 'name': '有效'}},
+          {
+            'base': {'id': 1, 'name': '有效'},
+          },
           {'time': const []},
-          {'base': {'name': '无 id'}},
+          {
+            'base': {'name': '无 id'},
+          },
           'oops',
         ],
       });
@@ -144,7 +147,10 @@ void main() {
       expect(ReservationSlotStatus.fromCode(3), ReservationSlotStatus.full);
       expect(ReservationSlotStatus.fromCode(4), ReservationSlotStatus.disabled);
       // 未知编码归入「已禁用」，不误判为可预约。
-      expect(ReservationSlotStatus.fromCode(99), ReservationSlotStatus.disabled);
+      expect(
+        ReservationSlotStatus.fromCode(99),
+        ReservationSlotStatus.disabled,
+      );
     });
 
     test('可约但剩余为 0 时不算可预约', () {

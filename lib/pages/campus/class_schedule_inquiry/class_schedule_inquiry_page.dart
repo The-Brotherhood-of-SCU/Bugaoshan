@@ -3,7 +3,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/campus/class_schedule_inquiry/class_schedule_inquiry_detail_page.dart';
 import 'package:bugaoshan/pages/campus/filter_input_decoration.dart';
-import 'package:bugaoshan/pages/campus/models/class_schedule_inquiry_model.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/class_schedule_inquiry_model.dart';
 import 'package:bugaoshan/providers/class_schedule_inquiry_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';

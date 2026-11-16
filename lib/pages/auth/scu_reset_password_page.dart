@@ -7,9 +7,9 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/auth/scu_login_button.dart';
 import 'package:bugaoshan/pages/auth/scu_login_captcha_row.dart';
 import 'package:bugaoshan/pages/auth/scu_login_input_field.dart';
-import 'package:bugaoshan/services/api/forgot_password_service.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart' show CaptchaResult;
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/forgot_password/forgot_password_service.dart';
+import 'package:bugaoshan/scu_backend/core/scu_auth.dart' show CaptchaResult;
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:flutter/material.dart';
 

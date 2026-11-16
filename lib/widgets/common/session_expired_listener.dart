@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/pages/auth/scu_login_page.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
+import 'package:bugaoshan/scu_backend/core/scu_auth.dart';
 
 /// 全局 session 过期监听器。
 ///

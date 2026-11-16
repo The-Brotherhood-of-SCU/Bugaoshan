@@ -108,8 +108,23 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │   │   ├── settings/
 │   │   └── wizard/             # First-launch wizard
 │   ├── providers/              # State management (GetIt-registered)
-│   ├── services/               # Business logic, network, auth, DB
-│   ├── utils/                  # Constants, crypto, helpers
+│   ├── scu_backend/            # SCU subsystem auth, network, API services, crypto
+│   │   ├── calendar/
+│   │   ├── ccyl/
+│   │   ├── cloud_print/
+│   │   ├── core/               # ScuAuth, CookieClient, SubsystemAuth, AuthCoordinator
+│   │   ├── fitness/
+│   │   ├── forgot_password/
+│   │   ├── gs/
+│   │   ├── passpoint/
+│   │   ├── payapp/
+│   │   ├── reservation/
+│   │   ├── service_hall/
+│   │   ├── wfw/
+│   │   ├── zhhq/
+│   │   └── zhjw/
+│   ├── services/               # Client-side general services (database, update, reminder, etc.)
+│   ├── utils/                  # Constants, helpers
 │   └── widgets/                # Shared UI components
 ├── test/                       # Unit + widget tests
 ├── test_driver/                # integration driver
@@ -178,7 +193,7 @@ Two patterns coexist by design:
 - **多个 ValueNotifier 字段** — providers with many independent config/setting fields where widgets should only rebuild when specific fields change. UI consumes via `ListenableBuilder(listenable: Listenable.merge([field1, field2]))` or `ValueListenableBuilder`. Examples: `AppConfigProvider` (~25 fields: locale, themeColor, themeColorMode, colorOpacity, useGoogleFonts, …), `CourseProvider` (4 fields).
 - **手动 `addListener`** — only for imperative side-effects (animations, SnackBars, triggering data loads), never for pure rebuild triggers.
 
-**Directory convention:** All DI-registered providers live in `lib/providers/`. Page-specific non-DI utility classes may live in page directories (e.g. `lib/services/ccyl/ccyl_service.dart`).
+**Directory convention:** All DI-registered providers live in `lib/providers/`. Page-specific non-DI utility classes may live in page directories (e.g. `lib/scu_backend/ccyl/ccyl_service.dart`).
 
 ### Dependency Injection
 
@@ -187,6 +202,8 @@ Two patterns coexist by design:
 ### Service Layer — Three-Layer Architecture
 
 Authoritative reference: `docs/architecture/authentication.md` (ADR-0002). AGENTS.md only summarizes the layering and the invariants an agent must preserve.
+
+L1–L3 network/auth code lives under `lib/scu_backend/<subsystem>/` (`core/` for cross-subsystem auth, plus one folder per backend); client-side general services (database, updater, reminders, etc.) stay in `lib/services/`.
 
 - **L3 — Unified Auth (`ScuAuth`)**: single source of truth for SCU root token, principal, `id.scu.edu.cn` session, 1-hour TTL + auto-renewal, single-flight `bindSession` / refresh.
 - **L2 — Subsystem Auth (one per backend)**: `ZhjwAuth`, `WfwAuth`, `PayAppAuth`, `FitnessAuth`, `CcylAuth`, `ZhhqAuth`, `NewServiceAuth`. Each declares real L2 `dependencies`; `AuthCoordinator` warms them up concurrently after login, skipping only downstream of a failed module. `CookieClient` is the shared, domain-isolated cookie jar.
@@ -205,7 +222,7 @@ Key invariants (do not break when adding a subsystem): `ScuAuth` is the sole roo
 - **`UpdateAssetSelector`** (`lib/services/update_asset_selector.dart`) — selects correct APK/asset based on device platform and CPU architecture.
 - **`WidgetUpdateService`** — Android + iOS/macOS home-screen widget data sync via MethodChannel `bugaoshan/update` (Android) and App Group (iOS/macOS, `syncWidgetShowTomorrow`). Has its own debounce + in-flight coalescing logic (covered by `test/widget_update_service_test.dart`).
 - **`DownloadNotificationService`** (`lib/services/download_notification_service.dart`) — Android 下载进度通知栏（进度条 + 取消按钮，MethodChannel `bugaoshan/update` + EventChannel `bugaoshan/download_cancel`，仅 Android，其他平台静默 no-op）；由 `UpdateProvider` 使用。
-- **`AcademicCalendarService`** (`lib/services/api/academic_calendar_service.dart`) — academic calendar data with mirror fetch + SharedPreferences cache.
+- **`AcademicCalendarService`** (`lib/scu_backend/calendar/academic_calendar_service.dart`) — academic calendar data with mirror fetch + SharedPreferences cache.
 - **`DynamicIconService`** (`lib/services/dynamic_icon_service.dart`) — runtime app icon switching via MethodChannel `bugaoshan/dynamic_icon` (Android native).
 - **`BackgroundCacheService`** — precaches the user's background image post-frame.
 - **`ExitService`** — unified exit (windowManager.destroy on desktop, exit(0) on mobile).
@@ -327,7 +344,7 @@ Release workflows are defined as project skills under `.agents/skills/`:
 
 ## Notable Implementation Details
 
-- `CookieClient` (`lib/services/auth/cookie_client.dart`) — 按域名隔离 cookie，发送时只带当前请求域的 cookie. `followRedirects()` 手动跟随重定向并收集每跳的 Set-Cookie；子系统 Auth 用它执行各自的 SSO 跳转链，`ScuAuth.bindSession()` 只负责 `session/save`.
+- `CookieClient` (`lib/scu_backend/core/cookie_client.dart`) — 按域名隔离 cookie，发送时只带当前请求域的 cookie. `followRedirects()` 手动跟随重定向并收集每跳的 Set-Cookie；子系统 Auth 用它执行各自的 SSO 跳转链，`ScuAuth.bindSession()` 只负责 `session/save`.
 - `_request()` 模板方法 — 业务方只调 `await apiService.fetchXxx()`,不碰 token/cookie/重试细节.
 - `SessionExpiredListener` (`lib/widgets/common/session_expired_listener.dart`) — 监听 `ScuAuth.onSessionExpired`,全局弹 SnackBar 带「前往登录」action (5 秒防抖).
 - 成绩刷新失败但 `sessionExpired` 时保留 SharedPreferences 缓存,并登出用户.
