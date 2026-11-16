@@ -53,12 +53,21 @@ def extract_pubspec_version(pubspec_path: Path) -> str:
 
 
 def get_existing_remote_tags(root_dir: Path | None = None) -> list[str]:
-    """Fetch existing git tags from local and remote if possible."""
+    """Fetch existing git tags from local and remote.
+
+    远端 tag 是判定发布状态（常态预览 vs 准备期 RC）的关键依据。
+    `git ls-remote` 失败时直接抛错，不静默降级到本地 tag —— 否则本地缺
+    最新正式 tag 时会把常态预览误判为准备期，发出版号错误的 RC。
+    """
     code, out, _ = run_git(["tag", "--list", "v*"], root_dir=root_dir)
     tags = set(out.splitlines()) if code == 0 and out else set()
 
-    code, remote_out, _ = run_git(["ls-remote", "--tags", "origin", "refs/tags/v*"], root_dir=root_dir)
-    if code == 0 and remote_out:
+    code, remote_out, err = run_git(["ls-remote", "--tags", "origin", "refs/tags/v*"], root_dir=root_dir)
+    if code != 0:
+        raise RuntimeError(
+            f"git ls-remote 失败（exit={code}），无法获取远端 tag：{err or '(无 stderr)'}"
+        )
+    if remote_out:
         for line in remote_out.splitlines():
             parts = line.split()
             if len(parts) >= 2:
@@ -266,7 +275,7 @@ def main():
             ref_name=ref_name,
             root_dir=root,
         )
-    except (ValueError, OSError) as error:
+    except (ValueError, OSError, RuntimeError) as error:
         print(f"::error::{error}", file=sys.stderr)
         sys.exit(1)
 

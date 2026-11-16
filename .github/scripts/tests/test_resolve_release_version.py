@@ -4,6 +4,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 SCRIPTS_DIR = Path(__file__).resolve().parents[1]
 if str(SCRIPTS_DIR) not in sys.path:
@@ -14,9 +15,11 @@ from resolve_release_version import (
     calculate_next_preview_tag,
     calculate_next_rc_tag,
     extract_pubspec_version,
+    get_existing_remote_tags,
     latest_formal,
     next_patch_version,
     resolve_release,
+    run_git,
 )
 
 
@@ -66,6 +69,32 @@ class ResolveReleaseVersionTest(unittest.TestCase):
         tag, tup = latest_formal(["v2.5.1", "v2.5.1-preview.2", "v2.4.0", "v2.5.2-rc"])
         self.assertEqual(tag, "v2.5.1")
         self.assertEqual(tup, (2, 5, 1))
+
+    def test_get_remote_tags_raises_on_ls_remote_failure(self):
+        """ls-remote 失败必须抛错，不能静默降级到本地 tag。
+
+        否则本地缺最新正式 tag 时会把常态预览误判为准备期 RC。
+        """
+        with mock.patch(
+            "resolve_release_version.run_git",
+            side_effect=[
+                (0, "v2.5.0", ""),  # git tag --list
+                (128, "", "fatal: 'origin' does not appear to be a git repository"),  # ls-remote 失败
+            ],
+        ):
+            with self.assertRaises(RuntimeError):
+                get_existing_remote_tags()
+
+    def test_get_remote_tags_combines_local_and_remote(self):
+        with mock.patch(
+            "resolve_release_version.run_git",
+            side_effect=[
+                (0, "v2.5.0\nv2.4.0", ""),  # git tag --list
+                (0, "deadbeef refs/tags/v2.5.1\ncafebabe refs/tags/v2.5.1^{}", ""),  # ls-remote
+            ],
+        ):
+            tags = get_existing_remote_tags()
+        self.assertEqual(tags, ["v2.4.0", "v2.5.0", "v2.5.1"])
 
     def test_calculate_next_preview_tag_first(self):
         self.assertEqual(
