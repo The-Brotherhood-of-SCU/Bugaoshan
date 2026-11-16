@@ -2,11 +2,10 @@ import 'dart:async';
 
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/platform/platform_adapter.dart';
-import 'package:bugaoshan/utils/platform_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' show MethodCall, MethodChannel;
 
 /// 所有自适应控件共用一次能力查询，包括同时创建的设置列表项。
 class LiquidGlassCapabilities {
@@ -16,15 +15,7 @@ class LiquidGlassCapabilities {
   static Future<bool>? _supported;
 
   static Future<bool> isSupported() {
-    if (isOhos) {
-      if (!PlatformAdapter.instance.supportsNativeControls) {
-        return SynchronousFuture(false);
-      }
-      return _supported ??= _checkSupport();
-    }
-    if (kIsWeb ||
-        (defaultTargetPlatform != TargetPlatform.iOS &&
-            defaultTargetPlatform != TargetPlatform.macOS)) {
+    if (!PlatformAdapter.instance.supportsNativeControls) {
       return SynchronousFuture(false);
     }
     return _supported ??= _checkSupport();
@@ -281,8 +272,9 @@ class _AdaptiveGlassControlState extends State<_AdaptiveGlassControl> {
   }
 
   Future<void> _checkSupport() async {
-    // The OHOS host currently implements switches and buttons, not sliders.
-    if (isOhos && widget.kind == _GlassControlKind.slider) return;
+    // 各宿主原生实现覆盖的控件种类不同，由适配器给出能力，而不是判断平台身份。
+    final kind = widget.kind == _GlassControlKind.slider ? 'slider' : 'switch';
+    if (!PlatformAdapter.instance.supportsNativeControlKind(kind)) return;
     final supported = await LiquidGlassCapabilities.isSupported();
     if (mounted && supported) setState(() => _supported = true);
   }
@@ -422,44 +414,26 @@ class _AdaptiveGlassControlState extends State<_AdaptiveGlassControl> {
   Widget build(BuildContext context) {
     if (!_supported) return widget.fallback;
 
-    final nativeView = isOhos
-        ? PlatformAdapter.instance.createNativeControl(
-            viewType: _viewType,
-            layoutDirection: Directionality.of(context),
-            creationParams: _parameters(),
-            onPlatformViewCreated: _onPlatformViewCreated,
-            gestureRecognizers: {
-              Factory<TapGestureRecognizer>(TapGestureRecognizer.new),
-              Factory<HorizontalDragGestureRecognizer>(
-                HorizontalDragGestureRecognizer.new,
-              ),
-            },
-          )
-        : defaultTargetPlatform == TargetPlatform.macOS
-        ? AppKitView(
-            viewType: _viewType,
-            layoutDirection: Directionality.of(context),
-            creationParams: _parameters(),
-            creationParamsCodec: const StandardMessageCodec(),
-            onPlatformViewCreated: _onPlatformViewCreated,
-          )
-        : UiKitView(
-            viewType: _viewType,
-            layoutDirection: Directionality.of(context),
-            creationParams: _parameters(),
-            creationParamsCodec: const StandardMessageCodec(),
-            onPlatformViewCreated: _onPlatformViewCreated,
-            // 控件区域内的点击交给 UIKit，避免父 ListTile 同时翻转开关。
-            // 纵向拖动仍参与外层 Flutter 列表的手势竞争。
-            gestureRecognizers: {
-              Factory<TapGestureRecognizer>(TapGestureRecognizer.new),
-              Factory<HorizontalDragGestureRecognizer>(
-                HorizontalDragGestureRecognizer.new,
-              ),
-            },
-          );
+    final nativeView = PlatformAdapter.instance.createNativeControl(
+      viewType: _viewType,
+      layoutDirection: Directionality.of(context),
+      creationParams: _parameters(),
+      onPlatformViewCreated: _onPlatformViewCreated,
+      gestureRecognizers: {
+        // 控件区域内的点击交给宿主原生视图，避免父 ListTile 同时翻转开关。
+        // 纵向拖动仍参与外层 Flutter 列表的手势竞争。
+        Factory<TapGestureRecognizer>(TapGestureRecognizer.new),
+        Factory<HorizontalDragGestureRecognizer>(
+          HorizontalDragGestureRecognizer.new,
+        ),
+      },
+    );
     final control = widget.kind == _GlassControlKind.toggle
-        ? SizedBox(width: 64, height: isOhos ? 48 : 44, child: nativeView)
+        ? SizedBox(
+            width: 64,
+            height: PlatformAdapter.instance.nativeControlToggleHeight,
+            child: nativeView,
+          )
         : SizedBox(
             height: 48,
             width: double.infinity,

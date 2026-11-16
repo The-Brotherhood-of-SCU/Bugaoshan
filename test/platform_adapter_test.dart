@@ -28,6 +28,12 @@ class _OhosAdapter extends PlatformAdapter {
   bool get supportsNativeControls => true;
 
   @override
+  bool supportsNativeControlKind(String kind) => kind != 'slider';
+
+  @override
+  double get nativeControlToggleHeight => 48;
+
+  @override
   Future<bool> saveImage(Uint8List bytes, {String? name}) async {
     savedImage = bytes;
     return true;
@@ -97,14 +103,17 @@ void main() {
     },
   );
 
-  test('OHOS bootstrap selects the reminder budget from its API version', () async {
-    PlatformAdapter.instance = _OhosAdapter();
-    // A standard Flutter SDK can test the OHOS contract without its enum.
-    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
-    expect(isOhos, isTrue);
-    expect(createReminderTransport(), isA<MethodChannelReminderTransport>());
-    expect(await createReminderTransport().getPendingLimit(), 64);
-  });
+  test(
+    'OHOS bootstrap selects the reminder budget from its API version',
+    () async {
+      PlatformAdapter.instance = _OhosAdapter();
+      // A standard Flutter SDK can test the OHOS contract without its enum.
+      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+      expect(isOhos, isTrue);
+      expect(createReminderTransport(), isA<MethodChannelReminderTransport>());
+      expect(await createReminderTransport().getPendingLimit(), 64);
+    },
+  );
 
   test('shared file opening dispatches to the selected host', () async {
     final adapter = _OhosAdapter();

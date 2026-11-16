@@ -26,6 +26,12 @@ class OhosPlatformAdapter extends PlatformAdapter {
   bool get supportsNativeControls => isOhos;
 
   @override
+  bool supportsNativeControlKind(String kind) => isOhos && kind != 'slider';
+
+  @override
+  double get nativeControlToggleHeight => 48;
+
+  @override
   Future<List<SelectedFile>> pickFiles({
     required List<String> allowedExtensions,
   }) async {
