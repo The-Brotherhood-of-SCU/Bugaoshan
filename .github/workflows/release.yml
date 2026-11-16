@@ -5,29 +5,13 @@ on:
     branches:
       - main
       - preview
-    tags:
-      - "v*.*.*"
   workflow_dispatch:
-    inputs:
-      channel:
-        description: "Release channel (auto / formal / preview)"
-        required: false
-        default: "auto"
-        type: choice
-        options:
-          - auto
-          - formal
-          - preview
-      version_override:
-        description: "Explicit version or tag (optional, e.g. 2.5.1 or v2.5.1-rc1)"
-        required: false
-        type: string
 
 concurrency:
   group: release-${{ github.ref }}
   # 预览轨道只保留最新一轮：连续合并/ dispatch 到 preview 时取消进行中的旧发布；
-  # main 与 tag 事件绝不取消，正式发布必须完整走完。
-  cancel-in-progress: ${{ github.ref_type == 'branch' && github.ref_name == 'preview' }}
+  # main 绝不取消，正式发布必须完整走完。
+  cancel-in-progress: ${{ github.ref_name == 'preview' }}
 
 jobs:
   resolve-metadata:
@@ -57,12 +41,14 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Resolve Version & Channel
+      - name: Resolve Release Metadata
         id: resolve
-        env:
-          INPUT_CHANNEL: ${{ github.event.inputs.channel || 'auto' }}
-          INPUT_VERSION_OVERRIDE: ${{ github.event.inputs.version_override || '' }}
         run: python3 .github/scripts/resolve_release_version.py
+
+      - name: Verify Formal Release Consistency
+        # 正式版在 main 上发布前强制检查 pubspec / CHANGELOG / F-Droid 元数据一致。
+        if: steps.resolve.outputs.should_release == 'true' && steps.resolve.outputs.is_prerelease == 'false'
+        run: python3 tool/pre_release_check.py "${{ steps.resolve.outputs.version_name }}"
 
       - name: Validate target changelog before tagging
         if: steps.resolve.outputs.should_release == 'true'
@@ -71,7 +57,7 @@ jobs:
         run: python3 .github/scripts/release_changelog.py
 
       - name: Tag commit in repository (if new branch release)
-        if: steps.resolve.outputs.should_release == 'true' && github.ref_type != 'tag'
+        if: steps.resolve.outputs.should_release == 'true'
         run: |
           TAG="${{ steps.resolve.outputs.tag }}"
           echo "Applying tag $TAG to HEAD..."

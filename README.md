@@ -78,7 +78,7 @@
 - iOS: [App Store](https://apps.apple.com/cn/app/%E4%B8%8D%E9%AB%98%E5%B1%B1%E4%B8%8A/id6813305962)
 - macOS: [App Store](https://apps.apple.com/cn/app/%E4%B8%8D%E9%AB%98%E5%B1%B1%E4%B8%8A/id6813305962)、[macOS Releases](https://github.com/wjlfish/Bugaoshan-macos/releases)
 - Windows / Linux: [GitHub Releases](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases)
-- HarmonyOS: 正在邀测中，欢迎加入官方 QQ 群（1102483776）参与测试
+- HarmonyOS: 正在邀测中，[AppGallery 应用测试](https://appgallery.huawei.com/apptest/4R0ngHwSmNP) 或加入官方 QQ 群（1102483776）讨论反馈
 
 
 ## 🛠️ 开发

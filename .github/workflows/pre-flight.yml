@@ -76,11 +76,13 @@ jobs:
 
       - name: Pre-release Metadata & Consistency Check
         run: |
-          if [ "${{ github.base_ref || github.ref_name }}" = "main" ]; then
-            python3 tool/pre_release_check.py --ci
+          if [ "${{ github.base_ref }}" = "main" ]; then
+            # preview -> main 的发布 PR：按 pubspec 目标做正式版严格检查。
+            VERSION=$(grep -m1 '^version:' pubspec.yaml | sed 's/^version:[[:space:]]*//; s/+.*//')
+            python3 tool/pre_release_check.py "$VERSION"
           else
-            # 日常 PR 尚无最终预览 tag；这里只检查结构，发布流程核对实际版本内容。
-            python3 tool/pre_release_check.py --ci --prerelease --changelog-structure-only
+            # 日常 PR / push：只校验 CHANGELOG 状态与不变量。
+            python3 tool/pre_release_check.py
           fi
 
   security:
