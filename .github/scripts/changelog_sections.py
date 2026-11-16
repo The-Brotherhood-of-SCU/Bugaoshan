@@ -125,15 +125,6 @@ def parse_changelog_document(content: str) -> Changelog:
     return Changelog(unreleased, versions)
 
 
-def parse_changelog(content: str) -> list[ChangelogSection]:
-    return parse_changelog_document(content).versions
-
-
-def find_version_section(content: str, version: str) -> ChangelogSection | None:
-    target = normalize_version(version)
-    return next((s for s in parse_changelog(content) if s.version == target), None)
-
-
 def has_changelog_content(content: str) -> bool:
     """Category headings and blank separators alone are not release notes."""
     return any(
