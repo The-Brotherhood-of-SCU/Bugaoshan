@@ -757,6 +757,12 @@ abstract class AppLocalizations {
   /// **'New Version Available'**
   String get newVersionAvailable;
 
+  /// No description provided for @newTestVersionAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'New Test Available'**
+  String get newTestVersionAvailable;
+
   /// No description provided for @anotherVersionDownloading.
   ///
   /// In en, this message translates to:

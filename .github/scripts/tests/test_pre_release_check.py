@@ -194,6 +194,15 @@ class PreReleaseCheckTest(unittest.TestCase):
         )
         self.assertTrue(self.has(results, "FAIL", "CHANGELOG 状态"))
 
+    def test_strict_formal_missing_date_fails(self):
+        """RC 章节不带日期；正式版必须补日期，否则严格检查失败。"""
+        results = self.run_checks(
+            "## [2.5.2]\n- target\n\n## [2.5.1]\n- old\n",
+            version="2.5.2",
+            pubspec="2.5.2+20502",
+        )
+        self.assertTrue(self.has(results, "FAIL", "CHANGELOG 日期"))
+
     def test_strict_formal_date_warns(self):
         results = self.run_checks(
             "## [2.5.2] - 2000-01-01\n- target\n\n## [2.5.1]\n- old\n",

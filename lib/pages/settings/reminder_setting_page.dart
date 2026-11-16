@@ -95,6 +95,18 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
 
   Duration get _animDuration => _appConfig.cardSizeAnimationDuration.value;
 
+  /// 平台不支持本地提醒时，整块设置置灰并禁止交互：
+  /// 这些开关不会产生任何提醒，保持可点击会让人误以为设置生效。
+  Widget _withReminderAvailability({required Widget child}) {
+    final enabled = !_isPermissionUnsupported;
+    return AnimatedOpacity(
+      duration: _animDuration,
+      curve: appCurve,
+      opacity: enabled ? 1.0 : 0.45,
+      child: IgnorePointer(ignoring: !enabled, child: child),
+    );
+  }
+
   Future<void> _toggleMaster(bool enabled) async {
     _appConfig.reminderEnabled.value = enabled;
     // 开启主开关且处于未决定授权状态时，主动请求系统权限以完成引导流程。
@@ -205,20 +217,27 @@ class _ReminderSettingPageState extends State<ReminderSettingPage>
                     child: _buildPermissionCard(l10n),
                   ),
           ),
-          SectionTitle(title: l10n.settingsGeneral),
-          InfoCard(
-            indent: _tileDividerIndent,
-            children: [_buildMasterSwitch(l10n)],
+          _withReminderAvailability(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SectionTitle(title: l10n.settingsGeneral),
+                InfoCard(
+                  indent: _tileDividerIndent,
+                  children: [_buildMasterSwitch(l10n)],
+                ),
+                const SizedBox(height: 14),
+                _buildCourseSection(l10n),
+                const SizedBox(height: 14),
+                _buildQuietSection(l10n),
+                const SizedBox(height: 14),
+                _buildStatusSection(l10n),
+                const SizedBox(height: 14),
+                _buildPrivacyHint(l10n),
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
-          const SizedBox(height: 14),
-          _buildCourseSection(l10n),
-          const SizedBox(height: 14),
-          _buildQuietSection(l10n),
-          const SizedBox(height: 14),
-          _buildStatusSection(l10n),
-          const SizedBox(height: 14),
-          _buildPrivacyHint(l10n),
-          const SizedBox(height: 24),
         ],
       ),
     );

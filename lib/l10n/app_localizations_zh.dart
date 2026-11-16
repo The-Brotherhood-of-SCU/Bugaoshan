@@ -347,6 +347,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get newVersionAvailable => '发现新版本';
 
   @override
+  String get newTestVersionAvailable => '发现新测试版';
+
+  @override
   String get anotherVersionDownloading => '另一版本正在下载…';
 
   @override
