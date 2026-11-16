@@ -121,7 +121,7 @@ lib/
 6. 向 **`preview` 分支**发起 Pull Request——门禁全绿且 review 通过后合并，合并会自动发布一轮预览版（无需手动操作）
 
 > [!NOTE]
-> 请勿手动推送 `v*.*.*` tag 或在非 `main` / `preview` 分支上触发发布——手动入口的行为边界见 `docs/architecture/release-pipeline.md`。
+> 请勿手动推送 `v*.*.*` tag，这可能会导致CICD无法创建目标Tag。行为边界见 `docs/architecture/release-pipeline.md`。
 
 
 
@@ -178,14 +178,14 @@ lib/
 - **PR 门禁 (`pre-flight.yml`)**：向 `preview`、`main` 发起 PR 时，会自动执行分支合规检查、代码静态分析 (`dart analyze`)、生成文件漂移检测、测试套件 (`flutter test`) 以及发布前预检。
 - **`preview` 分支更新**：当 feature 分支合入 `preview` 后，触发全平台构建并发布 **Preview 预发布版本**；短时间连续合并只保留最新一轮。
 - **`main` 分支更新**：当 `preview` 合入 `main` 后，触发全平台构建、更新 F-Droid 元数据并发布 **Formal 正式版本**。
-- **手动入口边界**：`workflow_dispatch` 仅在 `main` / `preview` 上发布（其他分支仅构建产物）；手动推送 `v*.*.*` tag 仅在指向 `main` / `preview` 顶端时发布。行为细节见 `docs/architecture/release-pipeline.md`。
+- **手动入口边界**：`workflow_dispatch` 仅在 `main` / `preview` 上发布（其他分支仅构建产物）；`release.yml` 不监听 tag push，手动推送任何 tag 都不会触发发布。行为细节见 `docs/architecture/release-pipeline.md`。
 
 ### 分支规范
 
 | 分支 | 职责 | 触发动作 |
 |---|---|---|
 | `main` | **正式版生产分支**。仅接收来自 `preview` 的 PR（禁止日常直接提交）。 | 合并后自动创建 Tag `vX.Y.Z`，构建并发布 **Formal 正式版** (GitHub Release latest)。 |
-| `preview` | **预览版预发布分支，兼日常集成分支**。所有日常功能、修复 PR 均以 `preview` 为目标分支。 | 合并后自动创建 Tag `vX.Y.Z-preview[.N]`（`/release` 准备期为 `vX.Y.Z-rc[.N]`），构建并发布 **Preview 预览版** (prerelease)。 |
+| `preview` | **预览版预发布分支，兼日常集成分支**。所有日常功能、修复 PR 均以 `preview` 为目标分支。 | 合并后自动创建 Tag `vX.Y.Z-preview[.N]`（准备期为 `vX.Y.Z-rc[.N]`），构建并发布 **Preview 预览版** (prerelease)。 |
 | `feat/*`, `fix/*` | **特性/修复工作分支**。从 `preview` 分支切出。 | 提交 PR 至 `preview` 时自动触发 Pre-flight 质量门禁检查。 |
 
 ### 质量门禁 (Pre-flight Checks)

@@ -405,19 +405,18 @@ Two labels drive automation / review routing on pull requests:
   - Because PRs target `preview` rather than the default branch `main`, GitHub's native `Closes #N` keyword would only fire at the `preview -> main` step; this workflow closes the referenced issues at preview merge time instead.
   - Only acts on PRs labeled **`close issue`**; parses `closes` / `fixes` / `resolves` keywords (with optional `#`) from the PR title and body, closes each referenced issue as completed, and leaves a comment linking the merged PR. Issues already closed, and references that are PRs, are skipped.
 
-### Release Helpers (`.claude/commands/`)
+### Release Skills
 
-These are project-specific Claude Code slash commands:
+Release workflows are defined as project skills under `.agents/skills/`:
 
-- `release.md` (`/release <version>`) — prepares formal release: moves `[Unreleased]` into `## [X.Y.Z]`, updates `pubspec.yaml` (e.g. `2.5.1+20501`), generates F-Droid metadata, runs `tool/pre_release_check.py`, and opens a PR from `preview` to `main`.
-- `prerelease.md` (`/prerelease`) — updates `[Unreleased]` in normal state or `## [X.Y.Z]` during release prep, runs the pre-release gate, and publishes through `preview`.
+- [bugaoshan-release](.agents/skills/bugaoshan-release/SKILL.md) — the full release flow (formal release + preview/RC). Covers CHANGELOG section selection, `pubspec.yaml` / F-Droid metadata bump, `tool/pre_release_check.py` gate, and `preview → main` PR creation. Tag creation is always handled by CI; never push tags manually.
+- [bugaoshan-changelog](.agents/skills/bugaoshan-changelog/SKILL.md) — changelog content rules only (version/commit boundaries, diff verification, net-change merging, user-facing wording). `bugaoshan-release` delegates content writing to it.
 
 ### Changelog Preparation
 
 - `CHANGELOG.md` is the source of truth for the next release. Normal previews read `## [Unreleased]`; when a higher `## [X.Y.Z]` section exists, the pipeline publishes RC releases from it. `[Unreleased]` and a higher version section must not both have content.
 - At formal release prep, move `[Unreleased]` into `## [X.Y.Z] - YYYY-MM-DD`, bump `pubspec.yaml` and F-Droid metadata, and leave `[Unreleased]` empty. Do not add per-preview or per-RC sections.
-- To generate, supplement, or merge version notes, use [bugaoshan-changelog](.agents/skills/bugaoshan-changelog/SKILL.md). It defines version and commit boundaries, diff verification, net-change merging, and user-facing wording.
-- Release helpers follow that skill for changelog content. Version metadata, validation, PRs, and publication remain separate operations within the user's requested scope.
+- Use `bugaoshan-release` for the end-to-end release workflow; it follows `bugaoshan-changelog` for changelog wording. Version metadata, validation, PRs, and publication are handled within the release skill's scope.
 
 ## Notable Implementation Details
 

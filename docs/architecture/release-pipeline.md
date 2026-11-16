@@ -50,7 +50,7 @@ feature/fix/docs/*  --PR-->  preview（预览版/RC）  --PR-->  main（正式�
 
 1. 功能/fix PR → `preview`。pre-flight 运行分析、测试、代码生成漂移检查、`pre_release_check.py`（PR 门禁）。
 2. 合并到 `preview`：自动发预览版。常态使用 `[Unreleased]`；准备期使用 `## [X.Y.Z]` 发 RC。
-3. 准备正式版（`/release X.Y.Z`）：把 `[Unreleased]` 并入 `## [X.Y.Z]`，bump pubspec 与 F-Droid metadata，运行 `pre_release_check.py X.Y.Z`，推送 `preview` 触发 RC，再创建 `preview → main` PR。
+3. 准备正式版（[bugaoshan-release](/.agents/skills/bugaoshan-release/SKILL.md)）：把 `[Unreleased]` 并入 `## [X.Y.Z]`，bump pubspec 与 F-Droid metadata，运行 `pre_release_check.py X.Y.Z`，推送 `preview` 触发 RC，再创建 `preview → main` PR。
 4. 合并到 `main`：`release.yml` 先运行 `pre_release_check.py X.Y.Z` 严格检查（pubspec、CHANGELOG、F-Droid metadata 与 changelogs 一致），再打 tag、构建 Android/Windows/Linux、发布 Release（latest）；F-Droid changelog 由 CI 兜底生成。
 5. 正式版发布后，下一轮常态预览从新的 `[Unreleased]` 开始；为空时预览说明显示占位文案。
 
