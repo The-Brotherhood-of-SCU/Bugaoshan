@@ -67,7 +67,7 @@ git branch --show-current
 
 按 [bugaoshan-changelog](../bugaoshan-changelog/SKILL.md) 的规则：
 
-- 把 `## [Unreleased]` 中的条目归并去重，写入 `## [X.Y.Z] - YYYY-MM-DD`（日期未定则省略）。
+- 把 `## [Unreleased]` 中的条目归并去重，写入 `## [X.Y.Z] - YYYY-MM-DD`（正式版必须带日期；准备期的 RC 章节不带日期）。
 - 清空 `[Unreleased]`；正式版发布时它必须为空。
 - 合并同周期预览的净变化，补最后一个预览之后的增量；不要直接搬 git log。
 - 正式版必须有有效内容；确无用户可感知变化时停止，不要发布空说明。

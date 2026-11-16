@@ -357,7 +357,12 @@ class Checker:
                         f"发布日期 {section.date} 不是今天，确认是否正确",
                     )
             else:
-                self.record(WARN, "CHANGELOG 日期", f"[{self.version}] 缺少 YYYY-MM-DD 日期")
+                self.record(
+                    FAIL,
+                    "CHANGELOG 日期",
+                    f"[{self.version}] 缺少 - YYYY-MM-DD 日期（正式版必须填写）",
+                )
+                return
             self.record(OK, name, f"[{self.version}] 有更新说明")
             return
 
