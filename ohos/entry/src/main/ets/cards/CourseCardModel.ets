@@ -88,6 +88,20 @@ export function semesterEnd(start: string, totalWeeks: number): number {
   return weekAnchor(start) + totalWeeks * 7 - 1;
 }
 
+enum SemesterPhase {
+  BeforeStart,
+  InTerm,
+  Vacation,
+  NextTerm
+}
+
+function semesterPhase(snapshot: CourseSnapshot, day: number): SemesterPhase {
+  if (day < parseDate(snapshot.semesterStart)) return SemesterPhase.BeforeStart;
+  if (day <= semesterEnd(snapshot.semesterStart, snapshot.totalWeeks)) return SemesterPhase.InTerm;
+  const next = parseDate(snapshot.nextSemesterStart);
+  return Number.isFinite(next) && day >= next ? SemesterPhase.NextTerm : SemesterPhase.Vacation;
+}
+
 // Discrete weeks take precedence over both the range and odd/even rules, as in Dart.
 export function activeCourseWeeks(custom: string, start: number, end: number,
   weekType: number, totalWeeks: number): number[] {
@@ -132,11 +146,11 @@ export function decodeSnapshot(json: string): CourseSnapshot {
 }
 
 function weekFor(snapshot: CourseSnapshot, day: number): number {
-  return Math.max(1, Math.min(snapshot.totalWeeks,
-    Math.floor((day - weekAnchor(snapshot.semesterStart)) / 7) + 1));
+  return Math.floor((day - weekAnchor(snapshot.semesterStart)) / 7) + 1;
 }
 
-function coursesFor(snapshot: CourseSnapshot, date: Date): SnapshotCourse[] {
+function coursesFor(snapshot: CourseSnapshot, date: Date, phase: SemesterPhase): SnapshotCourse[] {
+  if (phase !== SemesterPhase.InTerm) return [];
   const week = weekFor(snapshot, dateSerial(date));
   const weekday = date.getDay() === 0 ? 7 : date.getDay();
   return snapshot.courses.filter((course: SnapshotCourse) =>
@@ -159,29 +173,40 @@ export function makeCardView(snapshot: CourseSnapshot, systemLanguage: string, n
     view.emptyText = chinese ? '打开 App 同步课表' : 'Open the app to sync your schedule';
     return view;
   }
-  const today = dateSerial(now);
-  const vacation = today > semesterEnd(snapshot.semesterStart, snapshot.totalWeeks) &&
-    Number.isFinite(parseDate(snapshot.nextSemesterStart)) && today < parseDate(snapshot.nextSemesterStart);
+  const todayPhase = semesterPhase(snapshot, dateSerial(now));
   const minutes = now.getHours() * 60 + now.getMinutes();
-  const todayCourses = vacation ? [] : coursesFor(snapshot, now);
+  const todayCourses = coursesFor(snapshot, now, todayPhase);
   let selected = todayCourses.filter((course: SnapshotCourse) =>
     course.endMinutes < 0 || minutes < course.endMinutes);
   const displayDate = new Date(now.getTime());
-  if (!vacation && selected.length === 0 && snapshot.showTomorrow) {
+  let displayPhase = todayPhase;
+  if (todayPhase === SemesterPhase.InTerm && selected.length === 0 && snapshot.showTomorrow) {
     view.tomorrow = true;
     displayDate.setDate(displayDate.getDate() + 1);
-    selected = coursesFor(snapshot, displayDate);
+    displayPhase = semesterPhase(snapshot, dateSerial(displayDate));
+    selected = coursesFor(snapshot, displayDate, displayPhase);
+  }
+  let dateStatus: string;
+  if (displayPhase === SemesterPhase.BeforeStart) {
+    dateStatus = chinese ? '未开学' : 'Before term';
+    view.emptyText = chinese ? '开学后显示课程' : 'Classes appear when the semester starts';
+  } else if (displayPhase === SemesterPhase.Vacation) {
+    dateStatus = chinese ? '放假中' : 'On vacation';
+    view.emptyText = chinese ? '享受假期～' : 'Enjoy your vacation';
+  } else if (displayPhase === SemesterPhase.NextTerm) {
+    dateStatus = chinese ? '新学期' : 'New semester';
+    view.emptyText = chinese ? '打开 App 切换到新学期课表' : 'Open the app to switch to the new schedule';
+  } else {
+    const week = weekFor(snapshot, dateSerial(displayDate));
+    dateStatus = chinese ? `第${week}周` : `Week ${week}`;
+    if (view.tomorrow) view.emptyText = chinese ? '明天没课' : 'No classes tomorrow';
+    else if (todayCourses.length > 0) view.emptyText = chinese ? '今天的课都上完啦' : 'All classes are finished';
+    else view.emptyText = chinese ? '今天没有课程' : 'No classes today';
   }
   const weekdays = chinese ? ['周日', '周一', '周二', '周三', '周四', '周五', '周六'] :
     ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const week = weekFor(snapshot, dateSerial(displayDate));
-  const weekText = vacation ? (chinese ? '放假中' : 'On vacation') : (chinese ? `第${week}周` : `Week ${week}`);
   const tomorrowText = view.tomorrow ? (chinese ? ' 明天' : ' Tomorrow') : '';
-  view.date = `${displayDate.getMonth() + 1}/${displayDate.getDate()} ${weekdays[displayDate.getDay()]}${tomorrowText}  ${weekText}`;
-  if (vacation) view.emptyText = chinese ? '享受假期～' : 'Enjoy your vacation';
-  else if (view.tomorrow) view.emptyText = chinese ? '明天没课' : 'No classes tomorrow';
-  else if (todayCourses.length > 0) view.emptyText = chinese ? '今天的课都上完啦' : 'All classes are finished';
-  else view.emptyText = chinese ? '今天没有课程' : 'No classes today';
+  view.date = `${displayDate.getMonth() + 1}/${displayDate.getDate()} ${weekdays[displayDate.getDay()]}${tomorrowText}  ${dateStatus}`;
   view.courses = selected.map((source: SnapshotCourse, index: number) => {
     const course = new CardCourse();
     course.id = `${source.id}:${index}`;
@@ -207,10 +232,12 @@ export function makeCardView(snapshot: CourseSnapshot, systemLanguage: string, n
 
 // A system request, not a promise of exact background execution.
 export function nextRefreshMinutes(snapshot: CourseSnapshot, now: Date = new Date()): number {
-  let next = 1440 - now.getHours() * 60 - now.getMinutes();
+  const minutes = now.getHours() * 60 + now.getMinutes();
+  let next = 1440 - minutes;
   if (snapshot.hasSchedule) {
-    const minutes = now.getHours() * 60 + now.getMinutes();
-    for (const course of coursesFor(snapshot, now)) {
+    const phase = semesterPhase(snapshot, dateSerial(now));
+    if (phase !== SemesterPhase.InTerm) return 30;
+    for (const course of coursesFor(snapshot, now, phase)) {
       if (course.startMinutes > minutes) next = Math.min(next, course.startMinutes - minutes);
       if (course.endMinutes > minutes) next = Math.min(next, course.endMinutes - minutes);
     }
