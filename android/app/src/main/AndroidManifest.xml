@@ -15,6 +15,9 @@
     <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS"/>
     <!-- Android 12+ (API 31+) 精确闹钟权限:课程提醒排期需要(Android 14+ 默认未授予,不可用时降级为不精确唤醒) -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <!-- Android 13+ (API 33+) 精确闹钟权限的自动授予变体:安装即授予、用户不可撤销。
+         课程提醒属于日历/日程类核心功能;本应用未上架 Google Play,不受该权限的商店政策限制 -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
     <!-- 提醒通知震动 -->
     <uses-permission android:name="android.permission.VIBRATE"/>
     <application
