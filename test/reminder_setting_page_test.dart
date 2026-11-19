@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
@@ -17,9 +19,10 @@ class _FakeTransport implements ReminderTransport {
   final List<ReminderPlan> synced = [];
   bool denied = false;
   bool unsupported = false;
+  Completer<ReminderPermissionStatus>? permissionStatusResponse;
 
   @override
-  int? pendingLimit;
+  Future<int?> getPendingLimit() async => null;
 
   @override
   Future<void> syncPlan(ReminderPlan plan) async {
@@ -39,6 +42,8 @@ class _FakeTransport implements ReminderTransport {
   @override
   Future<ReminderPermissionStatus> getPermissionStatus() async {
     if (unsupported) return ReminderPermissionStatus.unsupported;
+    final response = permissionStatusResponse;
+    if (response != null) return response.future;
     return denied
         ? ReminderPermissionStatus.denied
         : ReminderPermissionStatus.authorized;
@@ -197,9 +202,17 @@ void main() {
     expect(find.textContaining('综C407'), findsWidgets);
   });
 
-  testWidgets('未授权时置顶展示权限引导卡片', (tester) async {
+  testWidgets('权限查询完成前不显示引导，确认未授权后置顶展示', (tester) async {
     await setUpDeps(denied: true);
+    final permissionStatus = Completer<ReminderPermissionStatus>();
+    transport.permissionStatusResponse = permissionStatus;
     await tester.pumpWidget(buildTestApp());
+    await tester.pumpAndSettle();
+
+    expect(find.text('通知未开启'), findsNothing);
+    expect(find.text('去系统设置'), findsNothing);
+
+    permissionStatus.complete(ReminderPermissionStatus.denied);
     await tester.pumpAndSettle();
 
     expect(find.text('通知未开启'), findsOneWidget);

@@ -23,6 +23,8 @@ import 'package:flutter/foundation.dart';
 /// 包括保存了内容未变的配置），并且要与提醒配置的多路变更合并去抖。
 /// 只做副作用、不关心数据是否变化的订阅（如桌面小组件同步）走注册中心。
 class ReminderService {
+  static const String _tag = 'ReminderService';
+
   ReminderService({
     required CourseProvider courseProvider,
     required AppConfigProvider appConfig,
@@ -142,10 +144,10 @@ class ReminderService {
   bool get _canWrite => !_disposed;
 
   Future<void> _pushOnce() async {
-    final plan = buildPlan(now: DateTime.now());
-
     // 提醒开关关闭时撤销全部待投递通知，防止残留通知继续触发。
+    // 取消不依赖额度读取，原生能力查询失败也不能阻止用户关闭提醒。
     if (!_appConfig.reminderEnabled.value) {
+      final plan = _buildPlan(now: DateTime.now());
       try {
         await _transport.cancelAll();
         if (!_canWrite) return;
@@ -165,9 +167,25 @@ class ReminderService {
       return;
     }
 
-    if (plan.planId == _lastPushedPlanId) {
+    final ReminderPlan plan;
+    try {
+      plan = await buildPlan(now: DateTime.now());
+    } catch (e, stack) {
       if (!_canWrite) return;
+      AppLog.e(_tag, '读取提醒额度或构建排期失败', error: e, stackTrace: stack);
+      lastError.value = '$e';
+      // 不下发未知额度的计划，也不撤销已登记的提醒。
+      return;
+    }
+    if (!_canWrite) return;
+    if (!_appConfig.reminderEnabled.value) {
+      _needsRunAgain = true;
+      return;
+    }
+
+    if (plan.planId == _lastPushedPlanId) {
       lastPlan.value = plan;
+      lastError.value = null;
       return;
     }
 
@@ -209,14 +227,24 @@ class ReminderService {
   /// 基于当前课表与配置构建排期计划。公开此方法供设置页预览与单元测试调用。
   ///
   /// [now]：基准时间注入参数，单元测试可指定时间，生产调用使用当前时钟。
-  ReminderPlan buildPlan({required DateTime now}) => ReminderPlanBuilder.build(
+  Future<ReminderPlan> buildPlan({required DateTime now}) async {
+    final limit = _appConfig.reminderEnabled.value
+        ? await _transport.getPendingLimit()
+        : null;
+    return _buildPlan(now: now, maxReminders: limit);
+  }
+
+  ReminderPlan _buildPlan({
+    required DateTime now,
+    int? maxReminders,
+  }) => ReminderPlanBuilder.build(
     courses: _courseProvider.courses.value,
     config: _courseProvider.scheduleConfig.value,
     settings: _appConfig.reminderSettings,
     now: now,
     // 在计划构建阶段应用系统容量截断，避免由系统按未定义顺序丢弃通知，
     // 同时保证 droppedCount 精确反映截断数量。
-    maxReminders: _transport.pendingLimit,
+    maxReminders: maxReminders,
   );
 
   /// 通知权限授予后的回调入口，用于强制触发即时排期同步。
@@ -304,9 +332,11 @@ class ReminderService {
     required String body,
   }) async {
     if (_disposed) return false;
+    final limit = await _transport.getPendingLimit();
+    if (_disposed) return false;
     final now = DateTime.now();
     final fireAt = now.add(delay);
-    final base = buildPlan(now: now);
+    final base = _buildPlan(now: now, maxReminders: limit);
 
     final probe = ReminderItem(
       id: 'probe:${now.millisecondsSinceEpoch}',
@@ -324,7 +354,7 @@ class ReminderService {
       windowStart: base.windowStart,
       windowEnd: fireAt.isAfter(base.windowEnd) ? fireAt : base.windowEnd,
       channel: base.channel,
-      maxReminders: _transport.pendingLimit,
+      maxReminders: limit,
     );
 
     // 先行重置短路标识：即使后续下发异常，下一次重排也能重新构建并下发计划，避免被历史哈希短路。
