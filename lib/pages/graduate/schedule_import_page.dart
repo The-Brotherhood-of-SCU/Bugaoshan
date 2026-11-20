@@ -11,7 +11,7 @@ import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/scu_backend/gs/graduate_schedule_capture.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/constants.dart';
-import 'package:bugaoshan/utils/graduate_schedule_parser.dart';
+import 'package:bugaoshan/scu_backend/gs/graduate_schedule_parser.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:bugaoshan/widgets/webview/webview_unsupported_page.dart';

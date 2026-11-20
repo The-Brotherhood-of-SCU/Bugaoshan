@@ -3,7 +3,7 @@ import 'package:bugaoshan/models/graduate_grades.dart';
 import 'package:bugaoshan/scu_backend/gs/gs_api_service.dart';
 import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/utils/app_log.dart';
-import 'package:bugaoshan/utils/graduate_grades_parser.dart';
+import 'package:bugaoshan/scu_backend/gs/graduate_grades_parser.dart';
 
 /// 研究生成绩加载状态。
 enum GraduateGradesLoadState { idle, loading, loaded, error }

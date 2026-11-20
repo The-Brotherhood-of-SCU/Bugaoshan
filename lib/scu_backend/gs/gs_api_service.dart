@@ -9,8 +9,8 @@ import 'package:bugaoshan/models/graduate_grades.dart';
 import 'package:bugaoshan/models/graduate_train_plan.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/constants.dart';
-import 'package:bugaoshan/utils/graduate_schedule_parser.dart';
-import 'package:bugaoshan/utils/graduate_grades_parser.dart';
+import 'package:bugaoshan/scu_backend/gs/graduate_schedule_parser.dart';
+import 'package:bugaoshan/scu_backend/gs/graduate_grades_parser.dart';
 import 'package:bugaoshan/scu_backend/gs/gs_json_envelope.dart';
 
 /// 研教务（gsapp / EMAP）API 服务（第1层）。

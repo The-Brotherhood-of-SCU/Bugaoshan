@@ -14,7 +14,7 @@ import 'package:bugaoshan/scu_backend/core/cookie_client.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/utils/json_utils.dart';
-import 'package:bugaoshan/utils/sm2_crypto.dart';
+import 'package:bugaoshan/scu_backend/core/sm2_crypto.dart';
 import 'package:bugaoshan/utils/storage_keys.dart';
 
 /// 教务系统 base URL（该服务器不支持 HTTPS）
