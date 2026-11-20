@@ -21,6 +21,9 @@ import WidgetKit
         // 并把回调分发给注册过生命周期代理的插件，但没有任何插件会为本地提醒调
         // willPresent。没有这一步，用户正在用 App 时提醒会静默丢弃。
         UNUserNotificationCenter.current().delegate = self
+        if #available(iOS 16.0, *) {
+            CourseShortcutsProvider.refreshShortcuts()
+        }
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 
