@@ -77,7 +77,18 @@ class UpdateService {
   /// GitHub 资源访问入口：更新包下载的镜像/直连选择与回退内聚于此。
   final GithubResourceService _resource;
 
-  UpdateService(this._prefs, this._currentVersion, this._resource);
+  /// 目标平台覆盖，仅供测试使用。
+  ///
+  /// 为 null 时按宿主平台（[Platform]）推断；测试在 macOS/Linux 等宿主上
+  /// 验证各平台的安装包选择逻辑时显式传入，避免断言随 CI 运行环境漂移。
+  final UpdateAssetPlatform? _platformOverride;
+
+  UpdateService(
+    this._prefs,
+    this._currentVersion,
+    this._resource, {
+    UpdateAssetPlatform? platformOverride,
+  }) : _platformOverride = platformOverride;
 
   bool get supportsInAppUpdate =>
       // F-Droid 渠道安装的包由 F-Droid 负责更新，应用内自更新对其隐藏。
@@ -89,6 +100,7 @@ class UpdateService {
           Platform.isWindows);
 
   UpdateAssetPlatform? get _assetPlatform {
+    if (_platformOverride != null) return _platformOverride;
     if (Platform.isAndroid) return UpdateAssetPlatform.android;
     if (Platform.isWindows) return UpdateAssetPlatform.windows;
     if (Platform.isLinux) return UpdateAssetPlatform.linux;
