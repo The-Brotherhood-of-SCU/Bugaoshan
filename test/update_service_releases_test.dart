@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/services/github_resource_service.dart';
+import 'package:bugaoshan/services/update_asset_selector.dart';
 import 'package:bugaoshan/services/update_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -37,6 +38,11 @@ void main() {
       prefs,
       '2.5.3',
       GithubResourceService(AppConfigProvider(prefs)),
+      // 固定使用 linux 以匹配上述 fixture（windows_x64.zip / linux_x64.tar.gz /
+      // universal.apk）。不指定时 UpdateService 按宿主平台推断，而 macOS 上
+      // 应用内更新不适用，会返回 null 导致断言随运行环境漂移——CI 在 ubuntu
+      // 上恰好通过，本地 mac 则失败。
+      platformOverride: UpdateAssetPlatform.linux,
     );
   });
 
