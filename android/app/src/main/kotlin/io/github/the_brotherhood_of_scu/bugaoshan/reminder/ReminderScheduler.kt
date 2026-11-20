@@ -269,19 +269,7 @@ object ReminderScheduler {
         for ((fireAtMillis, items) in groupedByTimestamp) {
             val pendingIntent = createAlarmPendingIntent(context, fireAtMillis)
             try {
-                if (canExact) {
-                    alarmManager.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        fireAtMillis,
-                        pendingIntent,
-                    )
-                } else {
-                    alarmManager.setAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        fireAtMillis,
-                        pendingIntent,
-                    )
-                }
+                scheduleAlarm(alarmManager, fireAtMillis, pendingIntent, canExact)
                 scheduledTimestamps.add(fireAtMillis.toString())
                 Log.d(
                     TAG,
@@ -406,19 +394,7 @@ object ReminderScheduler {
         for ((fireAtMillis, _) in groupedByTimestamp) {
             val pendingIntent = createAlarmPendingIntent(context, fireAtMillis)
             try {
-                if (canExact) {
-                    alarmManager.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        fireAtMillis,
-                        pendingIntent,
-                    )
-                } else {
-                    alarmManager.setAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        fireAtMillis,
-                        pendingIntent,
-                    )
-                }
+                scheduleAlarm(alarmManager, fireAtMillis, pendingIntent, canExact)
                 scheduledTimestamps.add(fireAtMillis.toString())
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to re-schedule alarm at $fireAtMillis", e)
@@ -467,6 +443,37 @@ object ReminderScheduler {
         val current = prefs.getStringSet(KEY_DELIVERED_IDS, emptySet())?.toMutableSet() ?: mutableSetOf()
         current.addAll(ids)
         prefs.edit().putStringSet(KEY_DELIVERED_IDS, current).apply()
+    }
+
+    /**
+     * 登记单条闹钟，供 [syncPlan] 与 [reconstructSchedule] 共用。
+     *
+     * 精确分支用 [AlarmManager.setAlarmClock] 而非 `setExactAndAllowWhileIdle`：
+     * 前者是系统唯一承诺「不调整触发时刻、必要时退出低功耗模式」的排期方式，
+     * 且不吃 App Standby 分桶的每日 alarm 配额；后者在 Doze 下受「每应用每 9 分钟
+     * 一次」节流，分桶降级时还会被推迟到下一个配额窗口——对外表现为课前提醒晚 1~2 小时。
+     * 代价是状态栏常驻闹钟图标（顺带充当「下次提醒时刻」的可见提示）。
+     *
+     * 无精确权限（API 31+ 未授予，或上面权限声明对个别 ROM 不生效）时退化为不精确闹钟。
+     */
+    private fun scheduleAlarm(
+        alarmManager: AlarmManager,
+        fireAtMillis: Long,
+        pendingIntent: PendingIntent,
+        canExact: Boolean,
+    ) {
+        if (canExact) {
+            alarmManager.setAlarmClock(
+                AlarmManager.AlarmClockInfo(fireAtMillis, null),
+                pendingIntent,
+            )
+        } else {
+            alarmManager.setAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                fireAtMillis,
+                pendingIntent,
+            )
+        }
     }
 
     private fun cancelAllAlarms(context: Context, alarmManager: AlarmManager) {
