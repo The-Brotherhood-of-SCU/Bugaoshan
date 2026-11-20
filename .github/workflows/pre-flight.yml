@@ -56,6 +56,12 @@ jobs:
       - name: Static Analysis
         run: dart analyze --fatal-infos
 
+      - name: Layering Guard
+        # dart analyze 抓不到「分层退化」：例如后端层重新引入 material 依赖、
+        # 或反向 import pages/providers/widgets，编译与测试都仍然通过。
+        # 这里把 lib/scu_backend 的依赖方向变成可执行检查，既有债务走显式白名单。
+        run: python3 .github/scripts/check_layering.py
+
       - name: Verify Clean Working Tree after Code Generation
         run: |
           git status --porcelain
