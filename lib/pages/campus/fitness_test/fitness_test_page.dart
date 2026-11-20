@@ -385,7 +385,7 @@ class _FitnessTestPageState extends State<FitnessTestPage>
 
   Widget _buildTotalScoreCard(AppLocalizations l10n) {
     final score = _provider.scoreData!;
-    final gradeColor = score.gradeColorFor(context);
+    final gradeColor = _gradeColorFor(score.totalGrade);
 
     return StyledCard(
       child: Padding(
@@ -626,4 +626,18 @@ class _ScoreItem {
   final String label;
   final FitnessScoreItem data;
   final String rawScoreDisplay;
+}
+
+/// 体测总分等级对应的展示颜色。
+Color _gradeColorFor(String grade) {
+  if (grade.contains('优秀') || grade.contains('Excellent')) {
+    return Colors.blue;
+  }
+  if (grade.contains('良好') || grade.contains('Good')) return Colors.green;
+  // 「不及格」也包含「及格」，必须先匹配，否则红色分支不可达。
+  if (grade.contains('不及格') || grade.contains('Fail')) {
+    return Colors.red;
+  }
+  if (grade.contains('及格') || grade.contains('Pass')) return Colors.orange;
+  return Colors.grey;
 }

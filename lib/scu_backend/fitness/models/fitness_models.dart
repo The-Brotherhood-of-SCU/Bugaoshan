@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 /// 体测通知。
 class FitnessNotice {
   final String title;
@@ -167,19 +165,5 @@ class FitnessScore {
         colorClass: classStr('run_class'),
       ),
     );
-  }
-
-  /// 总分等级对应的展示颜色，与原 Page [_getGradeColor] 一致。
-  Color gradeColorFor(BuildContext context) {
-    final grade = totalGrade;
-    if (grade.contains('优秀') || grade.contains('Excellent')) {
-      return Colors.blue;
-    }
-    if (grade.contains('良好') || grade.contains('Good')) return Colors.green;
-    if (grade.contains('及格') || grade.contains('Pass')) return Colors.orange;
-    if (grade.contains('不及格') || grade.contains('Fail')) {
-      return Colors.red;
-    }
-    return Colors.grey;
   }
 }
