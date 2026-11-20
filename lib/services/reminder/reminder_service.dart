@@ -234,18 +234,16 @@ class ReminderService {
     return _buildPlan(now: now, maxReminders: limit);
   }
 
-  ReminderPlan _buildPlan({
-    required DateTime now,
-    int? maxReminders,
-  }) => ReminderPlanBuilder.build(
-    courses: _courseProvider.courses.value,
-    config: _courseProvider.scheduleConfig.value,
-    settings: _appConfig.reminderSettings,
-    now: now,
-    // 在计划构建阶段应用系统容量截断，避免由系统按未定义顺序丢弃通知，
-    // 同时保证 droppedCount 精确反映截断数量。
-    maxReminders: maxReminders,
-  );
+  ReminderPlan _buildPlan({required DateTime now, int? maxReminders}) =>
+      ReminderPlanBuilder.build(
+        courses: _courseProvider.courses.value,
+        config: _courseProvider.scheduleConfig.value,
+        settings: _appConfig.reminderSettings,
+        now: now,
+        // 在计划构建阶段应用系统容量截断，避免由系统按未定义顺序丢弃通知，
+        // 同时保证 droppedCount 精确反映截断数量。
+        maxReminders: maxReminders,
+      );
 
   /// 通知权限授予后的回调入口，用于强制触发即时排期同步。
   Future<void> onPermissionGranted() async {

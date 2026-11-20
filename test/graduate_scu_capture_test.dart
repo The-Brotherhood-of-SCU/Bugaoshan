@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/utils/graduate_schedule_parser.dart';
+import 'package:bugaoshan/scu_backend/gs/graduate_schedule_parser.dart';
 
 /// 川大研究生课表（ehall wdkbapp `xspkjgcx.do`）真实信封/字段形状测试。
 ///

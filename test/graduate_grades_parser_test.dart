@@ -1,5 +1,5 @@
 import 'package:bugaoshan/models/graduate_grades.dart';
-import 'package:bugaoshan/utils/graduate_grades_parser.dart';
+import 'package:bugaoshan/scu_backend/gs/graduate_grades_parser.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

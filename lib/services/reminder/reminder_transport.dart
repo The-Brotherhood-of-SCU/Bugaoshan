@@ -195,9 +195,7 @@ class MethodChannelReminderTransport implements ReminderTransport {
     try {
       final api = await PlatformAdapter.instance.getOhosApiVersion();
       if (api == null || api <= 0) {
-        throw StateError(
-          'OHOS device info returned an invalid API version',
-        );
+        throw StateError('OHOS device info returned an invalid API version');
       }
       return api >= 26 ? 64 : 30;
     } catch (_) {

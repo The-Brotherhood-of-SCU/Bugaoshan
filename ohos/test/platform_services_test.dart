@@ -84,14 +84,23 @@ void main() {
     expect(await adapter.getOhosApiVersion(), 26);
   });
 
-  test('OHOS API reading accepts numbers and rejects malformed device info', () async {
-    messenger.setMockMethodCallHandler(environment, (_) async => {'sdkApiVersion': 25});
-    expect(await adapter.getOhosApiVersion(), 25);
-    for (final invalid in <Object?>[null, 'invalid', 26.5]) {
-      messenger.setMockMethodCallHandler(environment, (_) async => {'sdkApiVersion': invalid});
-      expect(await adapter.getOhosApiVersion(), isNull);
-    }
-  });
+  test(
+    'OHOS API reading accepts numbers and rejects malformed device info',
+    () async {
+      messenger.setMockMethodCallHandler(
+        environment,
+        (_) async => {'sdkApiVersion': 25},
+      );
+      expect(await adapter.getOhosApiVersion(), 25);
+      for (final invalid in <Object?>[null, 'invalid', 26.5]) {
+        messenger.setMockMethodCallHandler(
+          environment,
+          (_) async => {'sdkApiVersion': invalid},
+        );
+        expect(await adapter.getOhosApiVersion(), isNull);
+      }
+    },
+  );
 
   test('non-OHOS hosts do not query the OHOS API channel', () async {
     messenger.setMockMethodCallHandler(environment, (_) async {

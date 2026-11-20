@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:bugaoshan/pages/campus/exam_plan/models/exam_info.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/exam_info.dart';
 import 'package:bugaoshan/services/ics_service.dart';
 
 void main() {

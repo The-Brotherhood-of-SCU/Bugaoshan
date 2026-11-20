@@ -5,7 +5,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/pages/campus/classroom/classroom_detail_page.dart';
-import 'package:bugaoshan/pages/campus/models/classroom_model.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/classroom_model.dart';
 import 'package:bugaoshan/providers/classroom_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';

@@ -9,9 +9,9 @@ import 'package:bugaoshan/pages/graduate/schedule_import_page.dart';
 import 'package:bugaoshan/providers/graduate_grades_provider.dart';
 import 'package:bugaoshan/providers/graduate_train_plan_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/api/gs_api_service.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/gs/gs_api_service.dart';
+import 'package:bugaoshan/scu_backend/core/scu_auth.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -28,10 +28,7 @@ void main() {
   });
 
   /// 横屏尺寸（1200×800）触发 `popupOrNavigate` 的弹窗分支。
-  Future<void> pumpHost(
-    WidgetTester tester, {
-    required Widget page,
-  }) async {
+  Future<void> pumpHost(WidgetTester tester, {required Widget page}) async {
     tester.view.physicalSize = const Size(1200, 800);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);

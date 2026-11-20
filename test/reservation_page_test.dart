@@ -1,12 +1,12 @@
 import 'package:bugaoshan/app.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/pages/campus/reservation/models/reservation_models.dart';
+import 'package:bugaoshan/scu_backend/reservation/models/reservation_models.dart';
 import 'package:bugaoshan/pages/campus/reservation/reservation_page.dart';
 import 'package:bugaoshan/providers/reservation_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/api/reservation_api_service.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/reservation/reservation_api_service.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -151,9 +151,14 @@ void main() {
     // 默认 ScrollBehavior 不含 mouse，这一拖会毫无反应；带上 AppScrollBehavior
     // 之后应能把标签条拖出偏移。
     final strip = find.byWidgetPredicate(
-      (widget) => widget is ListView && widget.scrollDirection == Axis.horizontal,
+      (widget) =>
+          widget is ListView && widget.scrollDirection == Axis.horizontal,
     );
-    await tester.drag(strip, const Offset(-220, 0), kind: PointerDeviceKind.mouse);
+    await tester.drag(
+      strip,
+      const Offset(-220, 0),
+      kind: PointerDeviceKind.mouse,
+    );
     await tester.pumpAndSettle();
 
     expect(_arrow(tester, l10n.reservationScrollLeft).onPressed, isNotNull);
@@ -347,21 +352,20 @@ void main() {
       String id = '9001',
       int status = 1,
       bool canCancel = true,
-    }) =>
-        ReservationAppointment(
-          id: id,
-          resourceName: '党建活动室',
-          createdAt: '2026-10-24 21:00:00',
-          status: status,
-          canCancel: canCancel,
-          details: const [
-            ReservationAppointmentDetail(
-              id: 'd1',
-              date: '2026-10-27',
-              timeLabel: '08:00-12:00',
-            ),
-          ],
-        );
+    }) => ReservationAppointment(
+      id: id,
+      resourceName: '党建活动室',
+      createdAt: '2026-10-24 21:00:00',
+      status: status,
+      canCancel: canCancel,
+      details: const [
+        ReservationAppointmentDetail(
+          id: 'd1',
+          date: '2026-10-27',
+          timeLabel: '08:00-12:00',
+        ),
+      ],
+    );
 
     testWidgets('打开弹窗：列出预约单与状态、时段明细', (tester) async {
       final api = _FakeReservationApi(appointments: [makeAppointment()]);
@@ -462,9 +466,7 @@ void main() {
           ReservationResource(
             id: '493',
             name: '党建活动室',
-            attributes: [
-              ReservationAttribute(name: '容量/人数', value: '2'),
-            ],
+            attributes: [ReservationAttribute(name: '容量/人数', value: '2')],
             needsApproval: true,
             maxPeriodsPerDay: 2,
             capacity: 2,
@@ -496,8 +498,11 @@ void main() {
               (w.icon as Icon).icon == Icons.add_circle_outline,
         ),
       );
-      expect(plus.onPressed, isNull,
-          reason: 'plus button must disable at capacity');
+      expect(
+        plus.onPressed,
+        isNull,
+        reason: 'plus button must disable at capacity',
+      );
       await tester.tap(find.text(l10n.cancel));
       await tester.pumpAndSettle();
     });
@@ -666,7 +671,6 @@ class _FakeReservationApi implements ReservationApi {
         ];
   }
 
-
   @override
   Future<ReservationCalendar> fetchCalendar({
     required String resourceId,
@@ -678,9 +682,21 @@ class _FakeReservationApi implements ReservationApi {
     if (allSlotsAvailable) {
       return const ReservationCalendar(
         slots: [
-          ReservationTimeSlot(id: '5103', startTime: '08:00:00', endTime: '12:00:00'),
-          ReservationTimeSlot(id: '5104', startTime: '12:00:00', endTime: '18:00:00'),
-          ReservationTimeSlot(id: '5105', startTime: '18:00:00', endTime: '22:00:00'),
+          ReservationTimeSlot(
+            id: '5103',
+            startTime: '08:00:00',
+            endTime: '12:00:00',
+          ),
+          ReservationTimeSlot(
+            id: '5104',
+            startTime: '12:00:00',
+            endTime: '18:00:00',
+          ),
+          ReservationTimeSlot(
+            id: '5105',
+            startTime: '18:00:00',
+            endTime: '22:00:00',
+          ),
         ],
         days: ['2026-10-23'],
         states: {
