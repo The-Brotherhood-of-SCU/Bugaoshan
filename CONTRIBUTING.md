@@ -198,6 +198,13 @@ lib/
 
 ---
 
+## HarmonyOS 独立构建
+
+根目录继续使用标准 Flutter 及根 `pubspec.yaml` / `pubspec.lock`。
+HarmonyOS 使用独立清单、锁和 CPF 工作目录；DevEco 打开 `ohos/`，命令行使用
+`node ohos/flutterw.cjs ...`。环境配置、签名和验证流程见 [鸿蒙开发指南](ohos/README.md)。
+不要用 CPF 在根目录解析依赖，也不要把鸿蒙锁覆盖到根锁。
+
 ## 团队
 
 **The-Brotherhood-of-SCU** — 一个非官方的四川大学开源组织

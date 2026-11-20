@@ -24,6 +24,8 @@ class UpdateCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     final updateProvider = getIt<UpdateProvider>();
+    final textTheme = Theme.of(context).textTheme;
+    final colors = Theme.of(context).colorScheme;
 
     // 与 About 页的 UpdateTile 一致:同时监听下载状态,
     // 在下载中展示进度百分比并禁用按钮,避免重入。
@@ -55,10 +57,7 @@ class UpdateCard extends StatelessWidget {
                         Icon(icon, size: 20),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Text(
-                            title,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
+                          child: Text(title, style: textTheme.bodyMedium),
                         ),
                         if (r.checking) ...[
                           const SizedBox(width: 12),
@@ -80,32 +79,47 @@ class UpdateCard extends StatelessWidget {
                             const SizedBox(height: 8),
                             Text(
                               'Error: ${r.error}',
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    color: Theme.of(context).colorScheme.error,
-                                  ),
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: colors.error,
+                              ),
                             ),
                           ],
                           if (r.noUpdate) ...[
                             const SizedBox(height: 8),
                             Text(
                               localizations.noUpdateAvailable,
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurfaceVariant,
-                                  ),
+                              style: textTheme.bodySmall?.copyWith(
+                                color: colors.onSurfaceVariant,
+                              ),
                             ),
                           ],
                           if (r.hasUpdate && r.downloadUrl != null) ...[
-                            if (r.version != null) ...[
+                            if (r.version != null || isThisDownloading) ...[
                               const SizedBox(height: 8),
-                              Text(
-                                r.isPrerelease
-                                    ? localizations.previewVersion(r.version!)
-                                    : localizations.stableVersion(r.version!),
-                                style: Theme.of(context).textTheme.bodyMedium,
+                              Row(
+                                children: [
+                                  if (r.version != null)
+                                    Expanded(
+                                      child: Text(
+                                        r.isPrerelease
+                                            ? localizations.previewVersion(
+                                                r.version!,
+                                              )
+                                            : localizations.stableVersion(
+                                                r.version!,
+                                              ),
+                                        style: textTheme.bodyMedium,
+                                      ),
+                                    ),
+                                  if (isThisDownloading)
+                                    Text(
+                                      '$percent%',
+                                      style: textTheme.bodySmall?.copyWith(
+                                        color: colors.primary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                ],
                               ),
                             ],
                             const SizedBox(height: 12),
@@ -120,33 +134,16 @@ class UpdateCard extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                if (isThisDownloading) ...[
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    '$percent%',
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.primary,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                  ),
-                                ] else if (isDownloading) ...[
+                                if (isDownloading && !isThisDownloading) ...[
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
                                       localizations.anotherVersionDownloading,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.onSurfaceVariant,
-                                          ),
+                                      style: textTheme.bodySmall?.copyWith(
+                                        color: colors.onSurfaceVariant,
+                                      ),
                                     ),
                                   ),
                                 ],

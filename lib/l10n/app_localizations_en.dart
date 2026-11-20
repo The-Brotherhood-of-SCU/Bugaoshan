@@ -364,6 +364,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newVersionAvailable => 'New Version Available';
 
   @override
+  String get newTestVersionAvailable => 'New Test Available';
+
+  @override
   String get anotherVersionDownloading => 'Another version is downloading...';
 
   @override
@@ -2357,6 +2360,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String switchAppIconConfirm(String label) {
     return 'Switch to \"$label\"? The app will restart. Continue?';
+  }
+
+  @override
+  String switchAppIconConfirmWithoutRestart(String label) {
+    return 'Switch to \"$label\"?';
   }
 
   @override
