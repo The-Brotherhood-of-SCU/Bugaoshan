@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/pages/campus/models/course_curriculum_model.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/course_curriculum_model.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_curriculum_provider.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';

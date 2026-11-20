@@ -757,6 +757,12 @@ abstract class AppLocalizations {
   /// **'New Version Available'**
   String get newVersionAvailable;
 
+  /// No description provided for @newTestVersionAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'New Test Available'**
+  String get newTestVersionAvailable;
+
   /// No description provided for @anotherVersionDownloading.
   ///
   /// In en, this message translates to:
@@ -4506,6 +4512,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Switch to \"{label}\"? The app will restart. Continue?'**
   String switchAppIconConfirm(String label);
+
+  /// No description provided for @switchAppIconConfirmWithoutRestart.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to \"{label}\"?'**
+  String switchAppIconConfirmWithoutRestart(String label);
 
   /// No description provided for @defaultIconRestored.
   ///

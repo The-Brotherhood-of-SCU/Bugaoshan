@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
@@ -16,9 +18,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 class _FakeTransport implements ReminderTransport {
   final List<ReminderPlan> synced = [];
   bool denied = false;
+  bool unsupported = false;
+  Completer<ReminderPermissionStatus>? permissionStatusResponse;
 
   @override
-  int? pendingLimit;
+  Future<int?> getPendingLimit() async => null;
 
   @override
   Future<void> syncPlan(ReminderPlan plan) async {
@@ -36,9 +40,14 @@ class _FakeTransport implements ReminderTransport {
   }
 
   @override
-  Future<ReminderPermissionStatus> getPermissionStatus() async => denied
-      ? ReminderPermissionStatus.denied
-      : ReminderPermissionStatus.authorized;
+  Future<ReminderPermissionStatus> getPermissionStatus() async {
+    if (unsupported) return ReminderPermissionStatus.unsupported;
+    final response = permissionStatusResponse;
+    if (response != null) return response.future;
+    return denied
+        ? ReminderPermissionStatus.denied
+        : ReminderPermissionStatus.authorized;
+  }
 
   @override
   Future<int> getPendingCount() async =>
@@ -91,7 +100,10 @@ void main() {
     return DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
   }
 
-  Future<void> setUpDeps({bool denied = false}) async {
+  Future<void> setUpDeps({
+    bool denied = false,
+    bool unsupported = false,
+  }) async {
     await getIt.reset();
     LiquidGlassCapabilities.resetForTesting();
     SharedPreferences.setMockInitialValues({});
@@ -128,7 +140,9 @@ void main() {
       ),
     );
 
-    transport = _FakeTransport()..denied = denied;
+    transport = _FakeTransport()
+      ..denied = denied
+      ..unsupported = unsupported;
     service = ReminderService(
       courseProvider: courseProvider,
       appConfig: appConfig,
@@ -188,12 +202,43 @@ void main() {
     expect(find.textContaining('综C407'), findsWidgets);
   });
 
-  testWidgets('未授权时置顶展示权限引导卡片', (tester) async {
+  testWidgets('权限查询完成前不显示引导，确认未授权后置顶展示', (tester) async {
     await setUpDeps(denied: true);
+    final permissionStatus = Completer<ReminderPermissionStatus>();
+    transport.permissionStatusResponse = permissionStatus;
     await tester.pumpWidget(buildTestApp());
+    await tester.pumpAndSettle();
+
+    expect(find.text('通知未开启'), findsNothing);
+    expect(find.text('去系统设置'), findsNothing);
+
+    permissionStatus.complete(ReminderPermissionStatus.denied);
     await tester.pumpAndSettle();
 
     expect(find.text('通知未开启'), findsOneWidget);
     expect(find.text('去系统设置'), findsOneWidget);
+  });
+
+  testWidgets('平台不支持本地提醒时禁用下方设置且不显示授权按钮', (tester) async {
+    await setUpDeps(unsupported: true);
+    await tester.pumpWidget(buildTestApp());
+    await tester.pumpAndSettle();
+
+    expect(find.text('当前平台暂不支持本地提醒。'), findsOneWidget);
+    expect(find.text('去授权'), findsNothing);
+
+    // 主开关被 IgnorePointer 禁用，点击不应改变配置。
+    expect(appConfig.reminderEnabled.value, isTrue);
+    await tester.tap(
+      find.byType(AdaptiveGlassSwitch).first,
+      warnIfMissed: false,
+    );
+    await tester.pumpAndSettle();
+    expect(appConfig.reminderEnabled.value, isTrue);
+
+    // 提前时间选项同样不可点击。
+    await tester.tap(find.text('提前 5 分钟'), warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(appConfig.reminderLeadMinutes.value, [15]);
   });
 }

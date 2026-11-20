@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:bugaoshan/services/api/api_request.dart';
+import 'package:bugaoshan/scu_backend/core/api_request.dart';
 
 void main() {
   group('looksLikeLoginPage: 正常业务页不应误判（issue #282）', () {

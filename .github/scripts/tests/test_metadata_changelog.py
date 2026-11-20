@@ -33,9 +33,9 @@ class MetadataChangelogTest(unittest.TestCase):
             with self.subTest(content=content):
                 self.assertIsNone(self.extract(content, "2.5.2"))
 
-    def test_preview_extraction_also_uses_exact_version(self):
+    def test_preview_versions_are_not_metadata_targets(self):
         content = "## [2.5.2-rc]\n- rc\n## [2.5.2-preview.2]\n### Added\n- preview\n"
-        self.assertEqual(self.extract(content, "2.5.2-preview.2"), "- preview")
+        self.assertIsNone(self.extract(content, "2.5.2-preview.2"))
 
 
 if __name__ == "__main__":

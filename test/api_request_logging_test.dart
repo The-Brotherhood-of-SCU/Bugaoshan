@@ -1,6 +1,6 @@
 import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/services/api/api_request.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/core/api_request.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:flutter_test/flutter_test.dart';
 

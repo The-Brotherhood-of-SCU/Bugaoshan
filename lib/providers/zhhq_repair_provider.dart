@@ -4,11 +4,11 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/models/repair.dart';
-import 'package:bugaoshan/services/api/zhhq_api_service.dart';
-import 'package:bugaoshan/services/auth/auth_state.dart';
-import 'package:bugaoshan/services/auth/scu_auth.dart';
-import 'package:bugaoshan/services/auth/scu_exceptions.dart';
-import 'package:bugaoshan/services/auth/zhhq_auth.dart';
+import 'package:bugaoshan/scu_backend/zhhq/zhhq_api_service.dart';
+import 'package:bugaoshan/scu_backend/core/auth_state.dart';
+import 'package:bugaoshan/scu_backend/core/scu_auth.dart';
+import 'package:bugaoshan/scu_backend/core/scu_exceptions.dart';
+import 'package:bugaoshan/scu_backend/zhhq/zhhq_auth.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 

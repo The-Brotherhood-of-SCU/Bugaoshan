@@ -24,19 +24,40 @@ class ReleaseWorkflowTest(unittest.TestCase):
         body = (REPOSITORY_ROOT / ".github/scripts/release_body.py").read_text()
         self.assertIn("https://github.com/wjlfish/Bugaoshan-macos/releases", body)
 
-    def test_ios_download_points_to_apple_mirror_release(self):
+    def test_ios_download_points_to_app_store(self):
         release_body = (
             REPOSITORY_ROOT / ".github/scripts/release_body.py"
         ).read_text(encoding="utf-8")
 
         self.assertIn(
-            "[ipa](https://github.com/Visio-Vanitas/Bugaoshan/releases/download/"
-            "v{version}/bugaoshan_{version}_ios_unsigned.ipa)",
+            "- iOS: [App Store](https://apps.apple.com/app/id6813305962)",
             release_body,
         )
+        self.assertNotIn("ios_unsigned.ipa", release_body)
+
+    def test_tag_pushes_do_not_trigger_release(self):
+        workflow = (
+            REPOSITORY_ROOT / ".github/workflows/release.yml"
+        ).read_text(encoding="utf-8")
+
+        self.assertNotIn("tags:", workflow)
+        self.assertNotIn("v*.*.*", workflow)
+        self.assertIn("  workflow_dispatch:", workflow)
+
+    def test_formal_release_runs_consistency_check_before_tagging(self):
+        workflow = (
+            REPOSITORY_ROOT / ".github/workflows/release.yml"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("Verify Formal Release Consistency", workflow)
         self.assertIn(
-            "ipa仅供理解有关技术的同学测试使用，非技术背景同学请勿下载",
-            release_body,
+            'run: python3 tool/pre_release_check.py "${{ steps.resolve.outputs.version_name }}"',
+            workflow,
+        )
+        # 只覆盖 main 的正式版流程。
+        self.assertIn(
+            "steps.resolve.outputs.should_release == 'true' && steps.resolve.outputs.is_prerelease == 'false'",
+            workflow,
         )
 
     def test_linux_artifact_is_built_downloaded_and_required(self):

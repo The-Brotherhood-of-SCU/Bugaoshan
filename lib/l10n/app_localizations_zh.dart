@@ -347,6 +347,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get newVersionAvailable => '发现新版本';
 
   @override
+  String get newTestVersionAvailable => '发现新测试版';
+
+  @override
   String get anotherVersionDownloading => '另一版本正在下载…';
 
   @override
@@ -2293,6 +2296,11 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String switchAppIconConfirm(String label) {
     return '切换至「$label」后应用将重启，是否继续？';
+  }
+
+  @override
+  String switchAppIconConfirmWithoutRestart(String label) {
+    return '是否切换至「$label」？';
   }
 
   @override

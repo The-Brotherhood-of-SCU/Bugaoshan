@@ -1,0 +1,33 @@
+{
+  "forms": [
+    {
+      "name": "CourseCard",
+      "displayName": "$string:card_name",
+      "description": "$string:card_description",
+      "src": "./ets/cards/CourseCard.ets",
+      "uiSyntax": "arkts",
+      "isDynamic": true,
+      "isDefault": true,
+      "colorMode": "auto",
+      "fontScaleFollowSystem": true,
+      "updateEnabled": true,
+      "updateDuration": 1,
+      "defaultDimension": "2*4",
+      "supportDimensions": ["2*2", "2*4", "4*4"]
+    },
+    {
+      "name": "CourseLockScreenCard",
+      "displayName": "$string:card_lock_screen_name",
+      "description": "$string:card_description",
+      "src": "./ets/cards/CourseLockScreenCard.ets",
+      "uiSyntax": "arkts",
+      "isDynamic": true,
+      "isDefault": false,
+      "renderingMode": "singleColor",
+      "updateEnabled": true,
+      "updateDuration": 1,
+      "defaultDimension": "1*2",
+      "supportDimensions": ["1*2"]
+    }
+  ]
+}
