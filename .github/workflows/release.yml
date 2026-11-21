@@ -239,3 +239,28 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BODY: ${{ steps.release_body.outputs.body }}
+
+      - name: Trigger SideStore source rebuild
+        # 上游发布完成后，通知 SideStore 源仓库从新 tag 构建未签名 IPA。
+        # 需在仓库 Secrets 配置 SIDESTORE_DISPATCH_TOKEN：
+        #   经典 PAT（scope: public_repo）或 fine-grained PAT（Contents: read and write）。
+        # 未配置或触发失败时只告警，不影响上游发布本身。
+        env:
+          GH_TOKEN: ${{ secrets.SIDESTORE_DISPATCH_TOKEN }}
+          TAG: ${{ steps.vars.outputs.tag }}
+          IS_PRERELEASE: ${{ needs.resolve-metadata.outputs.is_prerelease }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::warning::SIDESTORE_DISPATCH_TOKEN 未配置，跳过触发 SideStore 源"
+            exit 0
+          fi
+          payload=$(jq -n --arg tag "$TAG" --arg pre "$IS_PRERELEASE" \
+            '{event_type:"upstream-tag", client_payload:{tag:$tag, prerelease:$pre}}')
+          if printf '%s' "$payload" | gh api --method POST \
+              repos/The-Brotherhood-of-SCU/Bugaoshan-sidestore/dispatches \
+              --input - >/dev/null; then
+            echo "已触发 SideStore 源仓库构建：$TAG"
+          else
+            echo "::warning::触发 SideStore 源失败（$TAG），可稍后在该仓库手动 Run workflow"
+          fi
