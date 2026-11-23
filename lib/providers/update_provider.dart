@@ -63,6 +63,22 @@ class UpdateProvider {
 
   bool get supportsInAppUpdate => _service.supportsInAppUpdate;
 
+  /// 一次后台更新检查结果对应的「有更新」红点目标状态。
+  ///
+  /// 返回 `null` 表示保持原状：检查出错或仍在进行时不应抹掉已有提示。
+  ///
+  /// 红点只有「关于 → 检查更新」这一个手动清除入口，而不支持应用内更新的
+  /// 渠道（F-Droid / Flatpak / iOS / macOS）不渲染该入口，红点在那里没有任何
+  /// 清除路径；从 GitHub 版覆盖安装过来时，持久化在 SharedPreferences 的旧值
+  /// 会永久残留（#448）。因此这类渠道上永远不点亮红点，并让残留值失效。
+  /// 检查确认「没有更新」时旧红点同样已失效，一并熄掉。
+  bool? updateBadgeFor(UpdateCheckResult result) {
+    if (!supportsInAppUpdate) return false;
+    if (result.hasUpdate) return true;
+    if (result.noUpdate) return false;
+    return null;
+  }
+
   bool hasUpdate(String currentVersion, String latestVersion) =>
       _service.hasUpdate(currentVersion, latestVersion);
 

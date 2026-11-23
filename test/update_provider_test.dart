@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:bugaoshan/models/release_info.dart';
 import 'package:bugaoshan/models/version_info.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
@@ -30,6 +31,13 @@ class _ControllableUpdateService extends UpdateService {
           client: _stubResourceClient,
         ),
       );
+
+  /// 覆盖基类基于平台与安装来源的判定：宿主测试平台不一定是 Android，
+  /// 红点逻辑需要能显式模拟「支持 / 不支持应用内更新」两种渠道。
+  bool supportsInAppUpdateOverride = true;
+
+  @override
+  bool get supportsInAppUpdate => supportsInAppUpdateOverride;
 
   Completer<void>? _downloadCompleter;
   Object? nextError;
@@ -206,33 +214,76 @@ void main() {
     expect(() => other.dispose(), returnsNormally);
   });
 
-  test('developer results stay noUpdate when platform packages are absent', () async {
-    final realService = UpdateService(
-      prefs,
-      '2.5.3',
-      GithubResourceService(AppConfigProvider(prefs), client: _stubResourceClient),
+  test(
+    'developer results stay noUpdate when platform packages are absent',
+    () async {
+      final realService = UpdateService(
+        prefs,
+        '2.5.3',
+        GithubResourceService(
+          AppConfigProvider(prefs),
+          client: _stubResourceClient,
+        ),
+      );
+      final realProvider = UpdateProvider(
+        realService,
+        _StubAppInfo(),
+        _StubNotification(),
+      );
+      addTearDown(realProvider.dispose);
+      final client = MockClient(
+        (_) async => http.Response(
+          jsonEncode([
+            {'tag_name': 'v2.5.4', 'prerelease': false, 'assets': []},
+            {'tag_name': 'v2.5.5-preview', 'prerelease': true, 'assets': []},
+          ]),
+          200,
+        ),
+      );
+      addTearDown(client.close);
+      final (stable, preview) = await http.runWithClient(
+        realProvider.getAllLatestReleases,
+        () => client,
+      );
+      expect(stable, isNull);
+      expect(preview, isNull);
+      expect(realProvider.stableResult.value.noUpdate, isTrue);
+      expect(realProvider.previewResult.value.noUpdate, isTrue);
+    },
+  );
+
+  group('更新红点（#448）', () {
+    UpdateCheckResult hasUpdateResult() => UpdateCheckResult.hasUpdate(
+      const ReleaseInfo(
+        tagName: 'v2.5.4',
+        downloadUrl: 'https://example.com/bugaoshan_2.5.4.apk',
+        filename: 'bugaoshan_2.5.4.apk',
+      ),
     );
-    final realProvider = UpdateProvider(
-      realService,
-      _StubAppInfo(),
-      _StubNotification(),
-    );
-    addTearDown(realProvider.dispose);
-    final client = MockClient((_) async => http.Response(
-      jsonEncode([
-        {'tag_name': 'v2.5.4', 'prerelease': false, 'assets': []},
-        {'tag_name': 'v2.5.5-preview', 'prerelease': true, 'assets': []},
-      ]),
-      200,
-    ));
-    addTearDown(client.close);
-    final (stable, preview) = await http.runWithClient(
-      realProvider.getAllLatestReleases,
-      () => client,
-    );
-    expect(stable, isNull);
-    expect(preview, isNull);
-    expect(realProvider.stableResult.value.noUpdate, isTrue);
-    expect(realProvider.previewResult.value.noUpdate, isTrue);
+
+    test('不支持应用内更新的渠道即使检查到新版本也不点亮红点', () {
+      service.supportsInAppUpdateOverride = false;
+      expect(provider.updateBadgeFor(hasUpdateResult()), isFalse);
+    });
+
+    test('不支持应用内更新时熄灭从其它渠道覆盖安装残留的红点', () {
+      service.supportsInAppUpdateOverride = false;
+      expect(provider.updateBadgeFor(UpdateCheckResult.noUpdate()), isFalse);
+    });
+
+    test('支持应用内更新时检查到新版本点亮红点', () {
+      service.supportsInAppUpdateOverride = true;
+      expect(provider.updateBadgeFor(hasUpdateResult()), isTrue);
+    });
+
+    test('支持应用内更新且确认没有更新时熄灭旧红点', () {
+      service.supportsInAppUpdateOverride = true;
+      expect(provider.updateBadgeFor(UpdateCheckResult.noUpdate()), isFalse);
+    });
+
+    test('检查出错时保持红点原状，网络抖动不抹掉已有提示', () {
+      service.supportsInAppUpdateOverride = true;
+      expect(provider.updateBadgeFor(UpdateCheckResult.error('boom')), isNull);
+    });
   });
 }
