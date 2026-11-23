@@ -2977,6 +2977,18 @@ abstract class AppLocalizations {
   /// **'Operation successful'**
   String get networkDeviceOperationSuccess;
 
+  /// No description provided for @showPrivacyInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Show personal information'**
+  String get showPrivacyInfo;
+
+  /// No description provided for @hidePrivacyInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide personal information'**
+  String get hidePrivacyInfo;
+
   /// No description provided for @passpointTitle.
   ///
   /// In en, this message translates to:

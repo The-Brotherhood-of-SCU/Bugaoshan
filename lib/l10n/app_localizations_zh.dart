@@ -1501,6 +1501,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get networkDeviceOperationSuccess => '操作成功';
 
   @override
+  String get showPrivacyInfo => '显示隐私信息';
+
+  @override
+  String get hidePrivacyInfo => '隐藏隐私信息';
+
+  @override
   String get passpointTitle => '无感认证';
 
   @override

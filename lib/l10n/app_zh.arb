@@ -584,6 +584,8 @@
   "networkDeviceForceOffline": "强制下线",
   "networkDeviceConfirmOffline": "确定要下线该设备吗？",
   "networkDeviceOperationSuccess": "操作成功",
+  "showPrivacyInfo": "显示隐私信息",
+  "hidePrivacyInfo": "隐藏隐私信息",
   "passpointTitle": "无感认证",
   "passpointDesc": "绑定设备 MAC，接入校园网自动认证",
   "passpointAddDevice": "添加无感设备",
