@@ -45,19 +45,20 @@ runs:
       run: git config --global core.longpaths true
       shell: bash
 
-    - name: Get dependencies
-      run: flutter pub get
-      shell: bash
-      # 提交的 pubspec.lock 锁定的是国内镜像：不设 PUB_HOSTED_URL 时 pub get 会把
-      # lock 全量翻成 pub.dev，造成「生成物漂移」假失败（三个调用方共用本 action，
-      # 在此统一设置；build-android 自身的 job 级 env 与此处取值相同，保留无妨）。
-      env:
-        PUB_HOSTED_URL: https://pub.flutter-io.cn
-
     - name: Set up Python 3
       uses: actions/setup-python@v3
       with:
         python-version: "3.12"
+
+    - name: Get dependencies
+      run: python .github/scripts/pub_get_with_fallback.py
+      shell: bash
+      # 提交的 pubspec.lock 锁定的是国内镜像：不设 PUB_HOSTED_URL 时 pub get 会把
+      # lock 全量翻成 pub.dev，造成「生成物漂移」假失败；当海外 Runner 拉取国内镜像
+      # 出现坏包或 502 时，脚本会自动从官方 pub.dev 校验 SHA-256 回退补齐缓存并保持
+      # pubspec.lock 干净。
+      env:
+        PUB_HOSTED_URL: https://pub.flutter-io.cn
 
     - name: Extract git metadata
       id: git_meta

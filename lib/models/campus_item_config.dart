@@ -15,7 +15,6 @@ import 'package:bugaoshan/pages/campus/exam_plan/exam_plan_page.dart';
 import 'package:bugaoshan/pages/campus/fitness_test/fitness_test_page.dart';
 import 'package:bugaoshan/pages/campus/grades/grades_page.dart';
 import 'package:bugaoshan/pages/campus/network_device/network_device_page.dart';
-import 'package:bugaoshan/pages/campus/passpoint/passpoint_page.dart';
 import 'package:bugaoshan/pages/campus/cloud_print/cloud_print_page.dart';
 import 'package:bugaoshan/pages/campus/notice/notice_page.dart';
 import 'package:bugaoshan/pages/campus/plan_completion/plan_completion_page.dart';
@@ -189,16 +188,6 @@ final campusItemNetworkDevice = CampusItemConfig(
   page: () => const NetworkDevicePage(),
 );
 
-final campusItemPasspoint = CampusItemConfig(
-  id: dockIdPasspoint,
-  icon: Icons.wifi_password_outlined,
-  selectedIcon: Icons.wifi_password,
-  dockLabel: (l10n) => l10n.dockLabelPasspoint,
-  dockFullLabel: (l10n) => l10n.passpointTitle,
-  desc: (l10n) => l10n.passpointDesc,
-  page: () => const PasspointPage(),
-);
-
 final campusItemBalanceQuery = CampusItemConfig(
   id: dockIdBalanceQuery,
   icon: Icons.account_balance_wallet_outlined,
@@ -362,7 +351,6 @@ final campusSections = [
       campusItemGraduateScheduleImport,
       campusItemClassroom,
       campusItemNetworkDevice,
-      campusItemPasspoint,
       campusItemCloudPrint,
       campusItemBalanceQuery,
       campusItemRepair,
@@ -391,6 +379,13 @@ CampusItemConfig campusItemConfigById(String id) => allCampusItems.firstWhere(
   (item) => item.id == id,
   orElse: () => campusItemProfile,
 );
+
+/// 该 id 是否仍对应一个校园功能入口。
+///
+/// 加载历史 dock 配置时用它丢弃已移除的入口（如并入校园网的无感认证），
+/// 避免 [campusItemConfigById] 的兜底逻辑把旧 id 显示成「我的」。
+bool campusItemIdExists(String id) =>
+    allCampusItems.any((item) => item.id == id);
 
 /// 该功能项在指定学生身份下是否展示；[CampusItemConfig.audience] 为 null
 /// （通用）时恒为 true。

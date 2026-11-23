@@ -757,6 +757,12 @@ abstract class AppLocalizations {
   /// **'New Version Available'**
   String get newVersionAvailable;
 
+  /// No description provided for @newTestVersionAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'New Test Available'**
+  String get newTestVersionAvailable;
+
   /// No description provided for @anotherVersionDownloading.
   ///
   /// In en, this message translates to:
@@ -2971,6 +2977,18 @@ abstract class AppLocalizations {
   /// **'Operation successful'**
   String get networkDeviceOperationSuccess;
 
+  /// No description provided for @showPrivacyInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Show personal information'**
+  String get showPrivacyInfo;
+
+  /// No description provided for @hidePrivacyInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide personal information'**
+  String get hidePrivacyInfo;
+
   /// No description provided for @passpointTitle.
   ///
   /// In en, this message translates to:
@@ -3409,12 +3427,6 @@ abstract class AppLocalizations {
   /// **'Price'**
   String get balanceTrendTooltipPrice;
 
-  /// No description provided for @balanceTrendUnitPerDay.
-  ///
-  /// In en, this message translates to:
-  /// **'CNY/day'**
-  String get balanceTrendUnitPerDay;
-
   /// No description provided for @balanceTrendUnitYuanPerKwh.
   ///
   /// In en, this message translates to:
@@ -3636,12 +3648,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Network'**
   String get dockLabelNetworkDevice;
-
-  /// No description provided for @dockLabelPasspoint.
-  ///
-  /// In en, this message translates to:
-  /// **'Passive'**
-  String get dockLabelPasspoint;
 
   /// No description provided for @dockLabelBalanceQuery.
   ///
@@ -4518,6 +4524,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Switch to \"{label}\"? The app will restart. Continue?'**
   String switchAppIconConfirm(String label);
+
+  /// No description provided for @switchAppIconConfirmWithoutRestart.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to \"{label}\"?'**
+  String switchAppIconConfirmWithoutRestart(String label);
 
   /// No description provided for @defaultIconRestored.
   ///
@@ -6790,7 +6802,7 @@ abstract class AppLocalizations {
   /// No description provided for @logPersistenceActive.
   ///
   /// In en, this message translates to:
-  /// **'Warnings and errors are saved to bugaoshan.log (about 6 MB, rotating)'**
+  /// **'Warnings and errors are saved (about 6 MB)'**
   String get logPersistenceActive;
 
   /// No description provided for @logPersistenceRetryHint.

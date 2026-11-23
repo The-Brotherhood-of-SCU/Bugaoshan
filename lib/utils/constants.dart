@@ -17,7 +17,6 @@ const String dockIdPlanCompletion = 'plan_completion';
 const String dockIdTrainProgram = 'train_program';
 const String dockIdClassroom = 'classroom';
 const String dockIdNetworkDevice = 'network_device';
-const String dockIdPasspoint = 'passpoint';
 const String dockIdCloudPrint = 'cloud_print';
 const String dockIdBalanceQuery = 'balance_query';
 const String dockIdAcademicCalendar = 'academic_calendar';

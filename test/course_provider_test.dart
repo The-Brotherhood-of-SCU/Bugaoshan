@@ -1,6 +1,7 @@
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/services/database_service.dart';
+import 'package:bugaoshan/services/hook_registry.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -13,9 +14,14 @@ void main() {
         currentScheduleId: current.id,
         schedules: [current, other],
       );
-      final provider = CourseProvider(database);
+      final registry = HookRegistry();
+      final provider = CourseProvider(database, registry: registry);
       var coursesChangedCount = 0;
-      provider.onCoursesChanged = () => coursesChangedCount++;
+      registry.on(
+        provider,
+        CourseProvider.courseChanged,
+        (_) => coursesChangedCount++,
+      );
       final updatedOther = other.copyWith(
         semesterName: '已重命名的其他课表',
         semesterStartDate: _weeksAgo(5),
@@ -41,9 +47,14 @@ void main() {
         currentScheduleId: current.id,
         schedules: [current, other],
       );
-      final provider = CourseProvider(database);
+      final registry = HookRegistry();
+      final provider = CourseProvider(database, registry: registry);
       var coursesChangedCount = 0;
-      provider.onCoursesChanged = () => coursesChangedCount++;
+      registry.on(
+        provider,
+        CourseProvider.courseChanged,
+        (_) => coursesChangedCount++,
+      );
       final updatedCurrent = current.copyWith(
         semesterName: '已更新的当前课表',
         semesterStartDate: _weeksAgo(4),
@@ -136,6 +147,107 @@ void main() {
       current.copyWith(semesterName: '改名后的课表'),
     );
     expect(provider.courseDataVersion.value, 1);
+  });
+
+  test('课表变更可以同时通知多个订阅者', () async {
+    final current = _schedule(id: 'A', name: '当前课表', weeksAgo: 1);
+    final database = _FakeDatabaseService(
+      currentScheduleId: current.id,
+      schedules: [current],
+    );
+    final registry = HookRegistry();
+    final provider = CourseProvider(database, registry: registry);
+    var firstCount = 0;
+    var secondCount = 0;
+    List<Course>? secondPayload;
+    registry.on(provider, CourseProvider.courseChanged, (_) => firstCount++);
+    registry.on(provider, CourseProvider.courseChanged, (courses) {
+      secondCount++;
+      secondPayload = courses;
+    });
+
+    await provider.updateScheduleConfig(current.copyWith(semesterName: '改名'));
+
+    // 单一回调字段时代，第二个订阅会覆盖第一个；经注册中心分发后两者都应收到。
+    expect(firstCount, 1);
+    expect(secondCount, 1);
+    // 时机携带变更后的课表数据，订阅者不需要再去读 ValueNotifier。
+    expect(secondPayload, same(provider.courses.value));
+  });
+
+  test('取消订阅只移除对应的订阅者', () async {
+    final current = _schedule(id: 'A', name: '当前课表', weeksAgo: 1);
+    final database = _FakeDatabaseService(
+      currentScheduleId: current.id,
+      schedules: [current],
+    );
+    final registry = HookRegistry();
+    final provider = CourseProvider(database, registry: registry);
+    var firstCount = 0;
+    var secondCount = 0;
+    final cancelFirst = registry.on(
+      provider,
+      CourseProvider.courseChanged,
+      (_) => firstCount++,
+    );
+    registry.on(provider, CourseProvider.courseChanged, (_) => secondCount++);
+
+    cancelFirst();
+    await provider.updateScheduleConfig(current.copyWith(semesterName: '改名'));
+
+    expect(firstCount, 0);
+    expect(secondCount, 1);
+  });
+
+  test('单个订阅者抛错不影响其它订阅者', () async {
+    final current = _schedule(id: 'A', name: '当前课表', weeksAgo: 1);
+    final database = _FakeDatabaseService(
+      currentScheduleId: current.id,
+      schedules: [current],
+    );
+    final registry = HookRegistry();
+    final provider = CourseProvider(database, registry: registry);
+    var laterCount = 0;
+    registry.on(
+      provider,
+      CourseProvider.courseChanged,
+      (_) => throw StateError('订阅者异常'),
+    );
+    registry.on(provider, CourseProvider.courseChanged, (_) => laterCount++);
+
+    await provider.updateScheduleConfig(current.copyWith(semesterName: '改名'));
+
+    expect(laterCount, 1);
+  });
+
+  test('订阅未注册的时机立即抛错，而不是静默收不到通知', () {
+    final current = _schedule(id: 'A', name: '当前课表', weeksAgo: 1);
+    final database = _FakeDatabaseService(
+      currentScheduleId: current.id,
+      schedules: [current],
+    );
+    final registry = HookRegistry();
+    final provider = CourseProvider(database, registry: registry);
+    final unknownHook = Hook<void>('typoHook');
+
+    expect(
+      () => registry.on(provider, unknownHook, (_) {}),
+      throwsA(isA<StateError>()),
+    );
+  });
+
+  test('debugSnapshot 反映每个时机的订阅者数量', () {
+    final current = _schedule(id: 'A', name: '当前课表', weeksAgo: 1);
+    final database = _FakeDatabaseService(
+      currentScheduleId: current.id,
+      schedules: [current],
+    );
+    final registry = HookRegistry();
+    final provider = CourseProvider(database, registry: registry);
+    registry.on(provider, CourseProvider.courseChanged, (_) {});
+    registry.on(provider, CourseProvider.courseChanged, (_) {});
+
+    expect(registry.debugSnapshot()['CourseProvider.courseChanged'], 2);
   });
 }
 

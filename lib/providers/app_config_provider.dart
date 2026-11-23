@@ -236,9 +236,13 @@ class AppConfigProvider {
         kDebugMode;
     hasUpdateNotification.value =
         _sharedPreferences.getBool(_keyHasUpdateNotification) ?? false;
-    visibleDockIds.value =
-        _sharedPreferences.getStringList(_keyVisibleDockIds) ??
-        List<String>.from(defaultVisibleDockIds);
+    final savedDockIds = _sharedPreferences.getStringList(_keyVisibleDockIds);
+    visibleDockIds.value = savedDockIds == null
+        ? List<String>.from(defaultVisibleDockIds)
+        : [
+            for (final id in savedDockIds)
+              if (campusItemIdExists(id)) id,
+          ];
     acceptedEulaVersion.value =
         _sharedPreferences.getInt(_keyAcceptedEulaVersion) ??
         (kDebugMode ? 114514 : 0); //debug mode default 114514, skip eula check

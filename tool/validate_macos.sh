@@ -4,11 +4,11 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 export PUB_HOSTED_URL="${PUB_HOSTED_URL:-https://pub.flutter-io.cn}"
-flutter pub get
+python3 .github/scripts/pub_get_with_fallback.py
 dart run build_runner build --delete-conflicting-outputs
 flutter gen-l10n
 
-args=(--release --config-only)
+args=(--release --config-only --no-pub)
 if [ -n "${MACOS_BUILD_NAME:-}" ]; then args+=(--build-name "$MACOS_BUILD_NAME"); fi
 if [ -n "${MACOS_BUILD_NUMBER:-}" ]; then args+=(--build-number "$MACOS_BUILD_NUMBER"); fi
 flutter build macos "${args[@]}" \

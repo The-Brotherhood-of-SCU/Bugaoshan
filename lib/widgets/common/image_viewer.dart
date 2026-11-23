@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:gal/gal.dart';
+import 'package:bugaoshan/platform/platform_adapter.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_view/photo_view.dart';
@@ -121,12 +121,9 @@ class ImageViewerPage extends StatelessWidget {
     AppLocalizations l10n,
   ) async {
     try {
-      final granted = await Gal.requestAccess();
-      if (!granted) throw StateError('Gallery access denied');
-
       final response = await http.get(Uri.parse(imageUrl), headers: headers);
       if (response.statusCode != 200) throw Exception('Download failed');
-      await Gal.putImageBytes(response.bodyBytes);
+      if (!await PlatformAdapter.instance.saveImage(response.bodyBytes)) return;
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,

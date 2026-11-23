@@ -7,7 +7,7 @@ import 'package:bugaoshan/pages/campus/grades/scheme_scores_tab.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/grades_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
-import 'package:bugaoshan/services/api/zhjw_api_service.dart';
+import 'package:bugaoshan/scu_backend/zhjw/zhjw_api_service.dart';
 import 'package:bugaoshan/services/course_teacher_index.dart';
 import 'package:bugaoshan/services/database_service.dart';
 import 'package:bugaoshan/widgets/common/auth_scoped_indexed_stack.dart';

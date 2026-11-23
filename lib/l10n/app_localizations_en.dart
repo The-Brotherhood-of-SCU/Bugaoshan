@@ -364,6 +364,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newVersionAvailable => 'New Version Available';
 
   @override
+  String get newTestVersionAvailable => 'New Test Available';
+
+  @override
   String get anotherVersionDownloading => 'Another version is downloading...';
 
   @override
@@ -1543,6 +1546,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get networkDeviceOperationSuccess => 'Operation successful';
 
   @override
+  String get showPrivacyInfo => 'Show personal information';
+
+  @override
+  String get hidePrivacyInfo => 'Hide personal information';
+
+  @override
   String get passpointTitle => 'Passive Authentication';
 
   @override
@@ -1769,9 +1778,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get balanceTrendTooltipPrice => 'Price';
 
   @override
-  String get balanceTrendUnitPerDay => 'CNY/day';
-
-  @override
   String get balanceTrendUnitYuanPerKwh => 'CNY/kWh';
 
   @override
@@ -1891,9 +1897,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dockLabelNetworkDevice => 'Network';
-
-  @override
-  String get dockLabelPasspoint => 'Passive';
 
   @override
   String get dockLabelBalanceQuery => 'Electricity';
@@ -2363,6 +2366,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String switchAppIconConfirm(String label) {
     return 'Switch to \"$label\"? The app will restart. Continue?';
+  }
+
+  @override
+  String switchAppIconConfirmWithoutRestart(String label) {
+    return 'Switch to \"$label\"?';
   }
 
   @override
@@ -3652,7 +3660,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logPersistenceActive =>
-      'Warnings and errors are saved to bugaoshan.log (about 6 MB, rotating)';
+      'Warnings and errors are saved (about 6 MB)';
 
   @override
   String get logPersistenceRetryHint =>

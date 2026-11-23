@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
-"""Bugaoshan 发布前检查脚本。
+"""Bugaoshan 发布前检查。
 
 用法:
-    python tool/pre_release_check.py <version>
-    python tool/pre_release_check.py <version> --prerelease
-    python tool/pre_release_check.py 2.3.0
-
-检查 .claude/commands/release.md / prerelease.md 描述的发布流程中容易遗漏的项，
-只做静态检查，不修改任何文件。
+    python tool/pre_release_check.py          # PR 门禁：检查 CHANGELOG 状态与不变量
+    python tool/pre_release_check.py X.Y.Z    # 正式版发布前严格检查
 
 退出码:
     0 全部通过（含仅 WARN）
@@ -23,6 +19,16 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS_DIR = ROOT / ".github" / "scripts"
+sys.path.insert(0, str(SCRIPTS_DIR))
+
+from changelog_sections import (
+    has_changelog_content,
+    normalize_version,
+    parse_changelog_document,
+    resolve_release_state,
+)
+from resolve_release_version import get_existing_remote_tags, latest_formal
 
 # 与 android/app/build.gradle.kts 的 ABI override / F-Droid VercodeOperation 一致
 ABI_CODES = (1, 2, 4)
@@ -52,24 +58,17 @@ def _try_reconfigure_encoding():
 
 
 class Checker:
-    def __init__(self, version, ci=False):
+    def __init__(self, version="", existing_tags=None):
         self.version = version
-        self.base_version = version.split("-", 1)[0]
-        self.is_prerelease = "-" in version
-        self.ci = ci
-        self.results = []  # (status, name, message)
-        self.tag = f"v{self.version}"
-        self.base_tag = f"v{self.base_version}"
-
-    def _release_timing_status(self):
-        """发布时机类检查（版本递增 / tag 冲突 / Unreleased 空置）的状态。
-
-        CI 门禁（--ci）跑在任意 PR/push 上，代码库经常处于「两个版本之间」
-        的正常状态（刚发完 X.Y.Z、pubspec 还未 bump），此时这些检查必然
-        不满足，硬 FAIL 会让 main/preview 的门禁长期挂红。CI 模式下降级为
-        WARN 供人工确认；本地手动 /release 流程保持 FAIL 严格拦截。
-        """
-        return WARN if self.ci else FAIL
+        self.strict = bool(version)
+        self.existing_tags = existing_tags
+        self.state = None
+        self.state_error = None
+        self.target_version = version
+        self.results = []
+        self._state_loaded = False
+        self._tags_error = ""
+        self.tag = f"v{version}" if version else ""
 
     # ---- 基础工具 ----
 
@@ -93,7 +92,45 @@ class Checker:
     def record(self, status, name, message=""):
         self.results.append((status, name, message))
 
-    # ---- 版本号 ----
+    def _load_tags(self):
+        """读取 tag 列表，返回 (tags, error)。
+
+        远端 tag 不可读时不能静默降级为空列表：那会把常态预览误判为准备期，
+        所以这里把错误交给调用方落成一条 FAIL 报告。
+        """
+        if self._tags_error:
+            return [], self._tags_error
+        if self.existing_tags is None:
+            try:
+                self.existing_tags = get_existing_remote_tags(root_dir=ROOT)
+            except RuntimeError as error:
+                self._tags_error = f"无法获取远端 tag：{error}"
+                return [], self._tags_error
+        return self.existing_tags, ""
+
+    def _read_changelog(self):
+        path = ROOT / "CHANGELOG.md"
+        if not path.exists():
+            raise FileNotFoundError("未找到 CHANGELOG.md")
+        return path.read_text(encoding="utf-8")
+
+    def _ensure_state(self):
+        if self.strict or self._state_loaded:
+            return self.state, self.state_error
+        self._state_loaded = True
+        try:
+            content = self._read_changelog()
+            tags, tags_error = self._load_tags()
+            if tags_error:
+                self.state_error = tags_error
+                return self.state, self.state_error
+            formal_tag, _ = latest_formal(tags)
+            latest = formal_tag[1:] if formal_tag else None
+            self.state = resolve_release_state(content, latest)
+            self.target_version = self.state.version
+        except (ValueError, OSError) as error:
+            self.state_error = str(error)
+        return self.state, self.state_error
 
     @staticmethod
     def semver_tuple(text):
@@ -109,24 +146,18 @@ class Checker:
             return None
         return t[0] * 10000 + t[1] * 100 + t[2]
 
-    # ---- 各项检查 ----
+    # ---- 版本号 ----
 
     def check_version_format(self):
         name = "版本号格式"
-        if self.is_prerelease:
-            if SEMVER_RE.match(self.base_version):
-                self.record(OK, name, f"预览版 {self.version}（基础版本 {self.base_version}）")
-            else:
-                self.record(FAIL, name, f"预览版基础版本格式非法: {self.base_version}，应为 X.Y.Z")
-            return
         if SEMVER_RE.match(self.version):
             self.record(OK, name, f"{self.version}")
         else:
-            self.record(FAIL, name, f"{self.version} 不是合法的 X.Y.Z 版本号（不应带 v 前缀或 -suffix）")
+            self.record(FAIL, name, f"{self.version} 不是合法的 X.Y.Z 版本号")
 
     def check_git_repo(self):
         name = "Git 仓库"
-        code, out, err = self.run("git", "rev-parse", "--is-inside-work-tree")
+        code, out, _ = self.run("git", "rev-parse", "--is-inside-work-tree")
         if code == 0 and out.strip() == "true":
             self.record(OK, name, "位于 git 工作树内")
             return True
@@ -154,12 +185,12 @@ class Checker:
             self.record(WARN, name, f"无法读取分支: {err.strip()}")
             return
         branch = out.strip()
-        if not branch:
-            self.record(WARN, name, "处于 detached HEAD 状态，请确认在正确的分支上发布")
-        elif branch not in ("main", "master"):
-            self.record(WARN, name, f"当前分支为 {branch}，发布流程通常应在 main 上执行")
+        if branch in ("preview", "main"):
+            self.record(OK, name, branch)
+        elif branch:
+            self.record(WARN, name, f"当前分支为 {branch}，发布准备建议在 preview 上执行")
         else:
-            self.record(OK, name, f"{branch}")
+            self.record(WARN, name, "处于 detached HEAD 状态，请确认在正确的 ref 上发布")
 
     def check_unpushed_commits(self):
         name = "未推送提交"
@@ -167,9 +198,9 @@ class Checker:
         if code != 0:
             self.record(WARN, name, "未设置上游分支，无法判断本地是否领先 origin")
             return
-        code, out, err = self.run("git", "rev-list", "--count", "@{u}..HEAD")
+        code, out, _ = self.run("git", "rev-list", "--count", "@{u}..HEAD")
         ahead = int(out.strip()) if code == 0 and out.strip().isdigit() else 0
-        code, out, err = self.run("git", "rev-list", "--count", "HEAD..@{u}")
+        code, out, _ = self.run("git", "rev-list", "--count", "HEAD..@{u}")
         behind = int(out.strip()) if code == 0 and out.strip().isdigit() else 0
         if ahead > 0:
             self.record(WARN, name, f"本地领先 origin 有 {ahead} 个提交（打 tag 前记得先 push）")
@@ -179,47 +210,40 @@ class Checker:
             self.record(OK, name, "与上游同步")
 
     def check_tag_not_exists(self):
-        name = "本地/远端 tag 冲突"
-        timing = self._release_timing_status()
-        if not self.is_prerelease:
-            code, out, err = self.run("git", "tag", "--list", self.tag)
-            if code == 0 and out.strip():
-                self.record(timing, name, f"本地已存在 tag {self.tag}，发布会冲突")
-                return
-        code, out, err = self.run("git", "ls-remote", "--tags", "origin", f"refs/tags/{self.tag}", timeout=20)
-        if code == 0:
-            if out.strip():
-                self.record(timing, name, f"远端 origin 已存在 tag {self.tag}")
-            else:
-                self.record(OK, name, f"tag {self.tag} 尚未使用")
+        name = "tag 冲突"
+        tags, error = self._load_tags()
+        if error:
+            self.record(FAIL, name, error)
+            return
+        if self.tag in tags:
+            self.record(FAIL, name, f"已存在 tag {self.tag}，发布会冲突")
         else:
-            self.record(WARN, name, f"无法检查远端 tag（离线或无 origin）: {err.strip()[:200]}")
+            self.record(OK, name, f"tag {self.tag} 尚未使用")
 
     def check_version_monotonic(self):
         name = "版本号递增"
-        code, out, err = self.run("git", "tag", "--list", "v*")
-        if code != 0:
-            self.record(WARN, name, f"git tag 读取失败: {err.strip()}")
+        tags, error = self._load_tags()
+        if error:
+            self.record(FAIL, name, error)
             return
         stable = []
-        for t in out.splitlines():
-            m = SEMVER_RE.match(t[1:] if t.startswith("v") else t)
-            if m and not ("-" in t):
-                stable.append((tuple(int(x) for x in m.groups()), t))
+        for tag in tags:
+            m = SEMVER_RE.match(tag[1:] if tag.startswith("v") else tag)
+            if m and "-" not in tag:
+                stable.append((tuple(int(x) for x in m.groups()), tag))
         if not stable:
-            self.record(WARN, name, "仓库尚无稳定 tag，将作为首个稳定版本")
+            self.record(OK, name, "仓库尚无正式 tag，将作为首个正式版本")
             return
         latest_tuple, latest_tag = max(stable, key=lambda x: x[0])
-        new_tuple = self.semver_tuple(self.base_version)
+        new_tuple = self.semver_tuple(self.version)
         if new_tuple is None:
             return
-        timing = self._release_timing_status()
         if new_tuple > latest_tuple:
-            self.record(OK, name, f"{self.base_version} > 上一稳定版本 {latest_tag[1:]}")
-        elif new_tuple == latest_tuple:
-            self.record(timing, name, f"{self.base_version} 与最新稳定版本 {latest_tag} 相同")
+            self.record(OK, name, f"{self.version} > 上一正式版本 {latest_tag[1:]}")
         else:
-            self.record(timing, name, f"{self.base_version} < 最新稳定版本 {latest_tag}，版本号应递增")
+            self.record(FAIL, name, f"{self.version} 应大于最新正式版本 {latest_tag[1:]}")
+
+    # ---- 版本一致性 ----
 
     def check_pubspec(self):
         name = "pubspec.yaml 版本"
@@ -234,142 +258,169 @@ class Checker:
             return
         raw = m.group(1)
         pub_name, sep, pub_build = raw.partition("+")
-        pub_tuple = self.semver_tuple(pub_name)
         expected_build = self.base_version_code(pub_name)
 
-        if self.is_prerelease:
-            new_tuple = self.semver_tuple(self.base_version)
-            if pub_tuple and new_tuple and new_tuple >= pub_tuple:
-                self.record(OK, name, f"pubspec {raw}（预览版基础版本 {self.base_version} 合法）")
-            elif pub_tuple and new_tuple:
-                self.record(FAIL, name, f"预览版基础版本 {self.base_version} 应大于或等于 pubspec 当前 {raw}")
+        if self.strict:
+            issues = []
+            if pub_name != self.version:
+                issues.append(f"版本名应为 {self.version}，实际为 {pub_name}")
+            if not sep:
+                issues.append("缺少 +buildNumber（Android versionCode）")
+            elif expected_build is not None and pub_build != str(expected_build):
+                issues.append(f"buildNumber 应为 {expected_build}，实际为 {pub_build}")
+            if self.semver_tuple(pub_name) is None:
+                issues.append("版本名格式非法")
+            if issues:
+                self.record(FAIL, name, "；".join(issues))
             else:
-                self.record(FAIL, name, f"pubspec 版本 {raw} 格式非法")
+                self.record(OK, name, f"version: {raw}（versionCode {pub_build}）")
             return
 
-        issues = []
-        if pub_name != self.version:
-            issues.append(f"版本名应为 {self.version}，实际为 {pub_name}")
-        if not sep:
-            issues.append("缺少 +buildNumber（Android versionCode）")
-        elif expected_build is not None and pub_build != str(expected_build):
-            issues.append(f"buildNumber 应为 {expected_build}（X.Y.Z → 主*10000+次*100+修订），实际为 {pub_build}")
-        if pub_tuple is None:
-            issues.append("版本名格式非法")
-
-        if issues:
-            self.record(FAIL, name, "；".join(issues))
-        else:
-            self.record(OK, name, f"version: {raw}（versionCode {pub_build}）")
+        state, error = self._ensure_state()
+        if error:
+            return
+        if pub_name != state.version:
+            self.record(
+                FAIL,
+                name,
+                f"pubspec 版本 {pub_name} 与 CHANGELOG 目标 {state.version} 不一致",
+            )
+            return
+        if not sep or expected_build is None or pub_build != str(expected_build):
+            self.record(
+                FAIL,
+                name,
+                f"buildNumber 应为 {expected_build}（X.Y.Z → 主*10000+次*100+修订），实际为 {pub_build or '缺失'}",
+            )
+            return
+        self.record(OK, name, f"version: {raw}（目标 {state.version}）")
 
     def check_changelog(self):
         name = "CHANGELOG.md"
-        path = ROOT / "CHANGELOG.md"
-        if not path.exists():
-            self.record(FAIL, name, "未找到 CHANGELOG.md")
+        try:
+            text = self._read_changelog()
+        except OSError as error:
+            self.record(FAIL, name, str(error))
             return
-        text = path.read_text(encoding="utf-8")
 
-        heading_re = re.compile(r"^##\s+(.+?)\s*$")
-        sections = []
-        for i, line in enumerate(text.splitlines()):
-            m = heading_re.match(line)
-            if m:
-                sections.append((m.group(1), i))
+        try:
+            document = parse_changelog_document(text)
+        except ValueError as error:
+            self.record(FAIL, name, str(error))
+            return
+        if not document.versions:
+            self.record(FAIL, name, "未找到 ## [X.Y.Z] 版本章节")
+            return
+        for section in document.versions:
+            if section.date:
+                try:
+                    datetime.date.fromisoformat(section.date)
+                except ValueError:
+                    self.record(FAIL, name, f"[{section.version}] 日期非法: {section.date}")
+                    return
 
-        def section_content(idx):
-            lines = text.splitlines()
-            start = sections[idx][1] + 1
-            end = sections[idx + 1][1] if idx + 1 < len(sections) else len(lines)
-            return [ln for ln in lines[start:end] if ln.strip()]
-
-        def count_bullets(content):
-            return sum(1 for ln in content if ln.lstrip().startswith(("- ", "* ")))
-
-        if self.is_prerelease:
-            timing = self._release_timing_status()
-            unreleased = next((i for i, (h, _) in enumerate(sections) if h.strip().lower() in ("[unreleased]", "unreleased")), None)
-            if unreleased is None:
-                self.record(timing, name, "预览版需要 ## [Unreleased] 章节，未找到")
+        if self.strict:
+            tags, tags_error = self._load_tags()
+            if tags_error:
+                self.record(FAIL, "CHANGELOG 状态", tags_error)
                 return
-            bullets = count_bullets(section_content(unreleased))
-            if bullets > 0:
-                self.record(OK, name, f"[Unreleased] 有 {bullets} 条内容")
-            else:
-                self.record(timing, name, "[Unreleased] 为空，预览版没有更新说明")
-            return
-
-        # 稳定版：找到 [X.Y.Z] 章节
-        target = None
-        for i, (h, _) in enumerate(sections):
-            stripped = h.strip()
-            m = re.match(r"^\[?" + re.escape(self.version) + r"\]?(?:\s*-\s*\d{4}-\d{2}-\d{2})?$", stripped)
-            if m:
-                target = i
-                break
-        if target is None:
-            self.record(FAIL, name, f"未找到 ## [{self.version}] 章节")
-            return
-
-        header = sections[target][0]
-        date_m = re.search(r"(\d{4})-(\d{2})-(\d{2})\s*$", header)
-        if date_m:
+            formal_tag, _ = latest_formal(tags)
+            latest = formal_tag[1:] if formal_tag else None
             try:
-                date = datetime.date(*map(int, date_m.groups()))
-                today = datetime.date.today()
-                if date != today:
-                    self.record(WARN, "CHANGELOG 日期", f"发布日期 {date} 不是今天 {today}，确认是否正确")
-            except ValueError:
-                self.record(FAIL, "CHANGELOG 日期", f"日期非法: {date_m.group(0)}")
-        else:
-            self.record(WARN, "CHANGELOG 日期", f"章节 {header} 缺少 YYYY-MM-DD 日期")
-
-        bullets = count_bullets(section_content(target))
-        if bullets > 0:
-            self.record(OK, name, f"[{self.version}] 有 {bullets} 条内容")
-        else:
-            self.record(FAIL, name, f"[{self.version}] 章节为空")
-
-        # Unreleased 占位符应存在且为空（稳定版）
-        unreleased = next((i for i, (h, _) in enumerate(sections) if h.strip().lower() in ("[unreleased]", "unreleased")), None)
-        if unreleased is None:
-            self.record(WARN, "Unreleased 占位符", "缺少 ## [Unreleased] 占位符，建议补一个空章节")
-        else:
-            ubullets = count_bullets(section_content(unreleased))
-            if ubullets > 0:
-                self.record(WARN, "Unreleased 占位符", f"[Unreleased] 仍有 {ubullets} 条未发布内容，可能没移动到 [{self.version}]")
+                state = resolve_release_state(text, latest)
+            except ValueError as error:
+                self.record(FAIL, "CHANGELOG 状态", str(error))
+                return
+            if state.mode != "rc":
+                self.record(
+                    FAIL,
+                    "CHANGELOG 状态",
+                    f"没有高于最新正式版 {latest} 的新版本",
+                )
+                return
+            if state.version != self.version:
+                self.record(
+                    FAIL,
+                    "CHANGELOG 状态",
+                    f"CHANGELOG 目标 {state.version} 与发布目标 {self.version} 不一致",
+                )
+                return
+            section = next((s for s in document.versions if s.version == self.version), None)
+            if section is None or not has_changelog_content(section.content):
+                self.record(FAIL, name, f"## [{self.version}] 章节缺失或为空")
+                return
+            if section.date:
+                if datetime.date.fromisoformat(section.date) != datetime.date.today():
+                    self.record(
+                        WARN,
+                        "CHANGELOG 日期",
+                        f"发布日期 {section.date} 不是今天，确认是否正确",
+                    )
             else:
-                self.record(OK, "Unreleased 占位符", "已清空")
+                self.record(
+                    FAIL,
+                    "CHANGELOG 日期",
+                    f"[{self.version}] 缺少 - YYYY-MM-DD 日期（正式版必须填写）",
+                )
+                return
+            self.record(OK, name, f"[{self.version}] 有更新说明")
+            return
+
+        state, error = self._ensure_state()
+        if error:
+            self.record(FAIL, "CHANGELOG 状态", error)
+            return
+        if state.mode == "rc":
+            if not has_changelog_content(state.notes.content):
+                self.record(
+                    FAIL,
+                    name,
+                    f"## [{state.version}] 章节为空；RC 必须有发布说明",
+                )
+                return
+            self.record(OK, name, f"准备期：使用 ## [{state.version}]")
+            return
+
+        self.record(OK, name, "常态预览：使用 [Unreleased]")
+        if not document.unreleased or not has_changelog_content(document.unreleased.content):
+            self.record(WARN, "预览说明", "[Unreleased] 为空，本次预览将使用占位说明")
+
+    # ---- F-Droid ----
+
+    def _metadata_required(self):
+        # metadata 检查仅在正式版严格检查路径运行，日常门禁不调用。
+        return True
 
     def check_metadata_yml(self):
         name = "F-Droid metadata/*.yml"
-        if self.is_prerelease:
-            self.record(OK, name, "预览版无需更新 metadata/*.yml")
+        if not self._metadata_required():
+            self.record(OK, name, "常态预览无需更新 metadata/*.yml")
             return
         ymls = list(ROOT.glob("metadata/*.yml"))
         if not ymls:
             self.record(FAIL, name, "未找到 metadata/*.yml")
             return
-        base = self.base_version_code(self.version)
+        base = self.base_version_code(self.target_version)
         expected_codes = [base * 10 + abi for abi in ABI_CODES]
         text = "\n".join(p.read_text(encoding="utf-8") for p in ymls)
         issues = []
-        if not re.search(r"versionName:\s*['\"]?" + re.escape(self.version) + r"['\"]?", text):
-            issues.append(f"versionName 未包含 {self.version}")
+        if not re.search(r"versionName:\s*['\"]?" + re.escape(self.target_version) + r"['\"]?", text):
+            issues.append(f"versionName 未包含 {self.target_version}")
         for code in expected_codes:
             if f"versionCode: {code}" not in text:
                 issues.append(f"缺少 versionCode: {code}")
         if issues:
             self.record(FAIL, name, "；".join(issues) + "（需更新 metadata/*.yml 的 Builds）")
         else:
-            self.record(OK, name, f"versionName={self.version}，versionCode={expected_codes}")
+            codes = ", ".join(str(code) for code in expected_codes)
+            self.record(OK, name, f"versionName={self.target_version}，versionCode={codes}")
 
     def check_metadata_changelogs(self):
         name = "F-Droid metadata changelogs"
-        if self.is_prerelease:
-            self.record(OK, name, "预览版不生成 metadata changelogs（CI 会跳过）")
+        if not self._metadata_required():
+            self.record(OK, name, "常态预览不生成 metadata changelogs")
             return
-        base = self.base_version_code(self.version)
+        base = self.base_version_code(self.target_version)
         expected = [base * 10 + abi for abi in ABI_CODES]
         missing = []
         empty = []
@@ -388,26 +439,39 @@ class Checker:
                 + "。运行 python .github/scripts/metadata_changelog.py 生成",
             )
         else:
-            self.record(OK, name, f"{len(expected) * len(METADATA_LANGS)} 个文件齐全（{METADATA_LANGS} × {expected}）")
+            langs = " / ".join(METADATA_LANGS)
+            codes = ", ".join(str(code) for code in expected)
+            self.record(
+                OK,
+                name,
+                f"{len(expected) * len(METADATA_LANGS)} 个文件齐全（{langs}；versionCode {codes}）",
+            )
 
     # ---- 汇总 ----
 
     def run_all(self):
         if not self.check_git_repo():
-            self.report()
-            return 2
-        checks = [
-            self.check_version_format,
-            self.check_working_tree,
-            self.check_branch,
-            self.check_unpushed_commits,
-            self.check_tag_not_exists,
-            self.check_version_monotonic,
-            self.check_pubspec,
-            self.check_changelog,
-            self.check_metadata_yml,
-            self.check_metadata_changelogs,
-        ]
+            return self.report()
+
+        if self.strict:
+            checks = [
+                self.check_version_format,
+                self.check_working_tree,
+                self.check_branch,
+                self.check_unpushed_commits,
+                self.check_tag_not_exists,
+                self.check_version_monotonic,
+                self.check_changelog,
+                self.check_pubspec,
+                self.check_metadata_yml,
+                self.check_metadata_changelogs,
+            ]
+        else:
+            # 日常门禁只校验 CHANGELOG 状态、不变量与 pubspec 一致性。
+            # F-Droid metadata 仅在正式版严格检查（base_ref == main）时校验，
+            # 避免准备期普通 PR 因 metadata 未同步更新而集体失败。
+            checks = [self.check_working_tree, self.check_changelog, self.check_pubspec]
+
         for fn in checks:
             fn()
         return self.report()
@@ -419,8 +483,10 @@ class Checker:
 
         print()
         print("=" * 64)
-        kind = "预览版" if self.is_prerelease else "稳定版"
-        print(f"发布前检查结果：{self.version}（{kind}）")
+        if self.strict:
+            print(f"发布前检查结果：{self.version}（正式版）")
+        else:
+            print("发布前检查结果：PR 门禁")
         print("=" * 64)
 
         for status, name, message in self.results:
@@ -440,52 +506,34 @@ class Checker:
             for _, name, message in fails:
                 print(f"  - {name}: {message.splitlines()[0] if message else ''}")
             return 1
-        print("✅ 静态检查通过（WARN 项请人工确认）。")
+        print("✅ 检查通过（WARN 项请人工确认）。")
         return 0
 
 
 def main(argv=None):
     _try_reconfigure_encoding()
     parser = argparse.ArgumentParser(
-        description="Bugaoshan 发布前检查。用法示例: python tool/pre_release_check.py 2.3.0",
-    )
-    parser.add_argument("version", nargs="?", default="", help="目标版本号，如 2.3.0 或 2.3.0-preview（在 CI 模式下可省略）")
-    parser.add_argument(
-        "--prerelease",
-        action="store_true",
-        help="按预览版检查（等价于版本号里含 '-'）",
+        description="Bugaoshan 发布前检查。省略版本号时运行 PR 门禁。",
     )
     parser.add_argument(
-        "--ci",
-        action="store_true",
-        help="CI 门禁模式：自动从 pubspec.yaml 读取版本号，发布时机类检查"
-             "（版本递增 / tag 冲突 / Unreleased 空置）降级为 WARN，其余检查未通过时退出码为 1",
+        "version",
+        nargs="?",
+        default="",
+        help="正式版目标版本 X.Y.Z；省略则运行 PR 门禁",
     )
     args = parser.parse_args(argv)
 
-    version = args.version
-    if not version and args.ci:
-        # Auto-read from pubspec.yaml
-        pub_path = ROOT / "pubspec.yaml"
-        if pub_path.exists():
-            for line in pub_path.read_text(encoding="utf-8").splitlines():
-                if line.strip().startswith("version:"):
-                    raw = line.split(":", 1)[1].strip().split("+")[0].strip()
-                    version = raw
-                    break
+    version = ""
+    if args.version:
+        if "-" in args.version:
+            parser.error("预览/RC 不需要指定版本；直接运行 PR 门禁")
+        try:
+            version = normalize_version(args.version)
+        except ValueError as error:
+            print(f"错误: {error}", file=sys.stderr)
+            return 2
 
-    if not version:
-        print("错误: 未指定版本号，且无法从 pubspec.yaml 解析", file=sys.stderr)
-        return 2
-
-    if args.prerelease and "-" not in version:
-        version = f"{version}-prerelease"
-
-    if not SEMVER_RE.match(version.split("-", 1)[0]):
-        print(f"错误: 非法版本号 '{args.version}'，应为 X.Y.Z 或 X.Y.Z-suffix", file=sys.stderr)
-        return 2
-
-    return Checker(version, ci=args.ci).run_all()
+    return Checker(version).run_all()
 
 
 if __name__ == "__main__":

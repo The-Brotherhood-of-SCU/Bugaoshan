@@ -347,6 +347,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get newVersionAvailable => '发现新版本';
 
   @override
+  String get newTestVersionAvailable => '发现新测试版';
+
+  @override
   String get anotherVersionDownloading => '另一版本正在下载…';
 
   @override
@@ -1498,6 +1501,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get networkDeviceOperationSuccess => '操作成功';
 
   @override
+  String get showPrivacyInfo => '显示隐私信息';
+
+  @override
+  String get hidePrivacyInfo => '隐藏隐私信息';
+
+  @override
   String get passpointTitle => '无感认证';
 
   @override
@@ -1720,9 +1729,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get balanceTrendTooltipPrice => '单价';
 
   @override
-  String get balanceTrendUnitPerDay => '元/天';
-
-  @override
   String get balanceTrendUnitYuanPerKwh => '元/度';
 
   @override
@@ -1835,9 +1841,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dockLabelNetworkDevice => '校园网';
-
-  @override
-  String get dockLabelPasspoint => '无感';
 
   @override
   String get dockLabelBalanceQuery => '电费';
@@ -2299,6 +2302,11 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String switchAppIconConfirm(String label) {
     return '切换至「$label」后应用将重启，是否继续？';
+  }
+
+  @override
+  String switchAppIconConfirmWithoutRestart(String label) {
+    return '是否切换至「$label」？';
   }
 
   @override
@@ -3524,7 +3532,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get logPersistenceOff => '日志仅保留在内存，应用退出即丢失';
 
   @override
-  String get logPersistenceActive => '警告与错误会写入 bugaoshan.log（约 6 MB，自动轮转）';
+  String get logPersistenceActive => '警告与错误会写入日志（约 6 MB）';
 
   @override
   String get logPersistenceRetryHint => '请关闭后重新开启；若仍失败，请检查设备剩余存储空间。';

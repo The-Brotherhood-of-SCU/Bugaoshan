@@ -14,7 +14,7 @@
 ///    负责人已开始活动按「报名中」展示，否则按「可预约」展示。
 library;
 
-import 'package:bugaoshan/pages/campus/ccyl/models/ccyl_models.dart';
+import 'package:bugaoshan/scu_backend/ccyl/models/ccyl_models.dart';
 import 'package:bugaoshan/utils/beijing_time.dart';
 
 /// 学生视角的活动状态。

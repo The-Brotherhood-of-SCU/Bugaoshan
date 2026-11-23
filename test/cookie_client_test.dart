@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:bugaoshan/injection/injector.dart';
-import 'package:bugaoshan/services/auth/cookie_client.dart';
+import 'package:bugaoshan/scu_backend/core/cookie_client.dart';
 import 'package:bugaoshan/utils/app_logger.dart';
 
 /// 可统计 close 次数的假 client，用于验证退役时序。

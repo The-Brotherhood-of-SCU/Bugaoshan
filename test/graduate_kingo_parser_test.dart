@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bugaoshan/models/course.dart';
-import 'package:bugaoshan/utils/graduate_schedule_parser.dart';
+import 'package:bugaoshan/scu_backend/gs/graduate_schedule_parser.dart';
 
 /// 金智研究生系统（gsapp）课表行的字段映射测试。
 ///

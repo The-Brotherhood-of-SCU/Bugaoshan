@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
-import 'package:bugaoshan/pages/campus/exam_plan/models/exam_info.dart';
+import 'package:bugaoshan/scu_backend/zhjw/models/exam_info.dart';
 import 'package:bugaoshan/providers/exam_plan_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/services/ics_service.dart';

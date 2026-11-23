@@ -136,6 +136,7 @@
   "projectRepository": "项目仓库",
   "checkForUpdates": "检查更新",
   "newVersionAvailable": "发现新版本",
+  "newTestVersionAvailable": "发现新测试版",
   "anotherVersionDownloading": "另一版本正在下载…",
   "stableVersion": "正式版：{version}",
   "@stableVersion": {
@@ -583,6 +584,8 @@
   "networkDeviceForceOffline": "强制下线",
   "networkDeviceConfirmOffline": "确定要下线该设备吗？",
   "networkDeviceOperationSuccess": "操作成功",
+  "showPrivacyInfo": "显示隐私信息",
+  "hidePrivacyInfo": "隐藏隐私信息",
   "passpointTitle": "无感认证",
   "passpointDesc": "绑定设备 MAC，接入校园网自动认证",
   "passpointAddDevice": "添加无感设备",
@@ -664,7 +667,6 @@
   "balanceTrendRawRecords": "原始记录",
   "balanceTrendYAxisBalance": "余额 (度)",
   "balanceTrendTooltipPrice": "单价",
-  "balanceTrendUnitPerDay": "元/天",
   "balanceTrendUnitYuanPerKwh": "元/度",
   "balanceQuerySettings": "电费查询设置",
   "autoSampleBalanceOnLogin": "登录后自动统计电费详情",
@@ -709,7 +711,6 @@
   "dockLabelTrainProgram": "培养方案",
   "dockLabelClassroom": "教室",
   "dockLabelNetworkDevice": "校园网",
-  "dockLabelPasspoint": "无感",
   "dockLabelBalanceQuery": "电费",
   "dockLabelClassScheduleInquiry": "班级课表",
   "dockLabelAcademicCalendar": "校历",
@@ -916,6 +917,14 @@
   "switchAppIcon": "切换应用图标",
   "switchAppIconConfirm": "切换至「{label}」后应用将重启，是否继续？",
   "@switchAppIconConfirm": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "switchAppIconConfirmWithoutRestart": "是否切换至「{label}」？",
+  "@switchAppIconConfirmWithoutRestart": {
     "placeholders": {
       "label": {
         "type": "String"
@@ -2093,7 +2102,7 @@
   "logClearTitle": "清空内存中的日志？",
   "logClearHint": "仅清空当前进程的内存日志，磁盘上已保存的文件不受影响。",
   "logPersistenceOff": "日志仅保留在内存，应用退出即丢失",
-  "logPersistenceActive": "警告与错误会写入 bugaoshan.log（约 6 MB，自动轮转）",
+  "logPersistenceActive": "警告与错误会写入日志（约 6 MB）",
   "logPersistenceRetryHint": "请关闭后重新开启；若仍失败，请检查设备剩余存储空间。",
   "logPersistenceUnavailable": "落盘不可用{reason}",
   "logDroppedEntries": "已丢弃 {count} 条待写日志",

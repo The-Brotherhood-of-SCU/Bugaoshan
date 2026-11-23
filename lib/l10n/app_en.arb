@@ -137,6 +137,7 @@
   "projectRepository": "Repository",
   "checkForUpdates": "Check Updates",
   "newVersionAvailable": "New Version Available",
+  "newTestVersionAvailable": "New Test Available",
   "anotherVersionDownloading": "Another version is downloading...",
   "stableVersion": "Stable: {version}",
   "@stableVersion": {
@@ -617,6 +618,8 @@
   "networkDeviceForceOffline": "Force Offline",
   "networkDeviceConfirmOffline": "Are you sure you want to offline this device?",
   "networkDeviceOperationSuccess": "Operation successful",
+  "showPrivacyInfo": "Show personal information",
+  "hidePrivacyInfo": "Hide personal information",
   "passpointTitle": "Passive Authentication",
   "passpointDesc": "Bind device MAC to auto authenticate on campus network",
   "passpointAddDevice": "Add Device",
@@ -697,7 +700,6 @@
   "balanceTrendRawRecords": "Raw Records",
   "balanceTrendYAxisBalance": "Balance (kWh)",
   "balanceTrendTooltipPrice": "Price",
-  "balanceTrendUnitPerDay": "CNY/day",
   "balanceTrendUnitYuanPerKwh": "CNY/kWh",
   "balanceQuerySettings": "Balance Query Settings",
   "autoSampleBalanceOnLogin": "Auto-collect balance details on login",
@@ -742,7 +744,6 @@
   "dockLabelTrainProgram": "Program",
   "dockLabelClassroom": "Classroom",
   "dockLabelNetworkDevice": "Network",
-  "dockLabelPasspoint": "Passive",
   "dockLabelBalanceQuery": "Electricity",
   "dockLabelClassScheduleInquiry": "Class Schedule",
   "dockLabelAcademicCalendar": "Calendar",
@@ -985,6 +986,14 @@
   "switchAppIcon": "Switch App Icon",
   "switchAppIconConfirm": "Switch to \"{label}\"? The app will restart. Continue?",
   "@switchAppIconConfirm": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "switchAppIconConfirmWithoutRestart": "Switch to \"{label}\"?",
+  "@switchAppIconConfirmWithoutRestart": {
     "placeholders": {
       "label": {
         "type": "String"
@@ -2186,7 +2195,7 @@
   "logClearTitle": "Clear logs in memory?",
   "logClearHint": "Only logs from the current process will be cleared. Saved log files are kept.",
   "logPersistenceOff": "Logs stay in memory and are lost when the app closes",
-  "logPersistenceActive": "Warnings and errors are saved to bugaoshan.log (about 6 MB, rotating)",
+  "logPersistenceActive": "Warnings and errors are saved (about 6 MB)",
   "logPersistenceRetryHint": "Turn this off and on to retry. If it still fails, check available storage.",
   "logPersistenceUnavailable": "Log file writing is unavailable{reason}",
   "@logPersistenceUnavailable": {"placeholders": {"reason": {"type": "String"}}},

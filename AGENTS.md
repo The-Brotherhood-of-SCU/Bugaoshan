@@ -1,6 +1,7 @@
 # AGENTS.md
 
-This file provides guidance to AI coding agents (e.g. Claude Code, Kimi Code) when working with code in this repository.
+This file provides guidance to AI coding agents when working with code in this repository.
+此处仅为索引，详细内容请指向 `docs/` 目录下的文档。
 
 ## Project Overview
 
@@ -38,17 +39,9 @@ flutter build macos --release
 flutter build web --release
 ```
 
-### Helper batch scripts (Windows convenience)
-
-The repo ships three small CMD wrappers at the project root that just chain the corresponding `flutter` / `dart` command:
-
-- `_build_generator.bat` → `dart run build_runner build --delete-conflicting-outputs`
-- `_build_icon.bat` → `flutter pub run flutter_launcher_icons`
-- `_build_l10n.bat` → `flutter gen-l10n`
-
 ### Commit Convention
 
-Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `perf:`, `build:`, `ci:`, `test:`, `style:`. The release tooling in `.claude/commands/release.md` and `prerelease.md` classifies commits by prefix when generating changelogs.
+Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `perf:`, `build:`, `ci:`, `test:`, `style:`. Release notes are prepared separately using the Changelog Preparation workflow below.
 
 ## Project Layout
 
@@ -58,7 +51,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 ├── CLAUDE.md                   # pointer → "follow AGENTS.md"
 ├── README.md                   # public-facing intro
 ├── CONTRIBUTING.md             # dev environment + workflow
-├── CHANGELOG.md                # Keep-a-Changelog format (Chinese summaries)
+├── CHANGELOG.md                # Versioned release notes (Chinese summaries)
 ├── LICENSE                     # AGPL-3.0
 ├── pubspec.yaml                # package metadata, deps, flutter_launcher_icons config
 ├── analysis_options.yaml       # extends package:flutter_lints/flutter.yaml
@@ -67,10 +60,6 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 ├── .editorconfig               # LF, UTF-8, 2-space indent
 ├── .flutter-plugins-dependencies
 ├── .gitattributes
-├── _build_generator.bat        # helper wrapper
-├── _build_icon.bat             # helper wrapper
-├── _build_l10n.bat             # helper wrapper
-├── update_and_push_tag.py      # release tag helper script
 ├── assets/
 │   ├── icon.png                # app icon (referenced by flutter_launcher_icons)
 │   ├── icon-foreground.png     # adaptive icon foreground
@@ -119,19 +108,38 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │   │   ├── settings/
 │   │   └── wizard/             # First-launch wizard
 │   ├── providers/              # State management (GetIt-registered)
-│   ├── services/               # Business logic, network, auth, DB
-│   ├── utils/                  # Constants, crypto, helpers
+│   ├── scu_backend/            # SCU subsystem auth, network, API services, crypto
+│   │   ├── calendar/
+│   │   ├── ccyl/
+│   │   ├── cloud_print/
+│   │   ├── core/               # ScuAuth, CookieClient, SubsystemAuth, AuthCoordinator
+│   │   ├── fitness/
+│   │   ├── forgot_password/
+│   │   ├── gs/
+│   │   ├── passpoint/
+│   │   ├── payapp/
+│   │   ├── reservation/
+│   │   ├── service_hall/
+│   │   ├── wfw/
+│   │   ├── zhhq/
+│   │   └── zhjw/
+│   ├── services/               # Client-side general services (database, update, reminder, etc.)
+│   ├── utils/                  # Constants, helpers
 │   └── widgets/                # Shared UI components
 ├── test/                       # Unit + widget tests
 ├── test_driver/                # integration driver
 ├── docs/
 │   ├── README.md                # engineering documentation index
 │   ├── architecture/           # current implementation architecture
+│   │   ├── android-system-bars.md
 │   │   ├── authentication.md
+│   │   ├── ios-back-gesture.md
 │   │   ├── ios-distribution.md
 │   │   ├── ios-liquid-glass.md
 │   │   ├── linux-distribution.md
 │   │   ├── local-reminder-android.md
+│   │   ├── logging.md
+│   │   ├── macos-distribution.md
 │   │   ├── notice-webview.md
 │   │   └── release-pipeline.md
 │   ├── legal/                  # 公开法律文档（随应用打包/外链）
@@ -153,16 +161,23 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 └── .github/
     ├── actions/setup/          # composite action: install Flutter 3.44, gen-l10n, git metadata
     ├── scripts/                # Python release automation
-    │   ├── git_meta.py             # export GIT_TAG / GIT_COMMIT / GIT_COMMIT_DATE / BUILD_TIME
-    │   ├── release_tags.py         # resolve version + prev tag
-    │   ├── release_changelog.py    # extract version section from CHANGELOG.md
+    │   ├── changelog_sections.py   # CHANGELOG parse / release state / notes selection
+    │   ├── resolve_release_version.py  # release state, tag, build injection
+    │   ├── release_changelog.py    # extract release notes for a tag
     │   ├── release_body.py         # build the GitHub release markdown body
-    │   └── release_prepare.py      # rename APK/zip/tar artifacts for upload
+    │   ├── release_prepare.py      # rename APK/zip/tar artifacts for upload
+    │   ├── release_tags.py         # resolve version + prev tag
+    │   ├── metadata_changelog.py   # F-Droid metadata changelogs
+    │   ├── git_meta.py             # export GIT_TAG / GIT_COMMIT / GIT_COMMIT_DATE
+    │   ├── pub_get_with_fallback.py # mirror pub get with official-source fallback
+    │   └── tests/                  # Python unit tests
     ├── workflows/
-    │   ├── release.yml         # releases on push to main/preview, target-gated tags, or manual dispatch
+    │   ├── pre-flight.yml      # quality gate + changelog state gate
+    │   ├── release.yml         # release pipeline (state, tag, build, publish)
     │   ├── build-android.yml   # workflow_call → APK (split per ABI, obfuscated)
     │   ├── build-windows.yml   # workflow_call → Windows zip
     │   ├── build-linux.yml     # workflow_call → Linux x64 tar.gz (debian:13 container)
+    │   └── ...                 # build-macos, issue/markdown/PR checkers, security report
     └── ISSUE_TEMPLATE/feature_request.yml
 ```
 
@@ -178,7 +193,7 @@ Two patterns coexist by design:
 - **多个 ValueNotifier 字段** — providers with many independent config/setting fields where widgets should only rebuild when specific fields change. UI consumes via `ListenableBuilder(listenable: Listenable.merge([field1, field2]))` or `ValueListenableBuilder`. Examples: `AppConfigProvider` (~25 fields: locale, themeColor, themeColorMode, colorOpacity, useGoogleFonts, …), `CourseProvider` (4 fields).
 - **手动 `addListener`** — only for imperative side-effects (animations, SnackBars, triggering data loads), never for pure rebuild triggers.
 
-**Directory convention:** All DI-registered providers live in `lib/providers/`. Page-specific non-DI utility classes may live in page directories (e.g. `lib/services/ccyl/ccyl_service.dart`).
+**Directory convention:** All DI-registered providers live in `lib/providers/`. Page-specific non-DI utility classes may live in page directories (e.g. `lib/pages/campus/service_hall/service_form_controller.dart`).
 
 ### Dependency Injection
 
@@ -186,38 +201,15 @@ Two patterns coexist by design:
 
 ### Service Layer — Three-Layer Architecture
 
-Authoritative reference: `docs/architecture/authentication.md`.
+Authoritative reference: `docs/architecture/authentication.md` (ADR-0002). AGENTS.md only summarizes the layering and the invariants an agent must preserve.
 
-**Layer 3 — Unified Auth (single source of truth):**
-- **`ScuAuth`** (`lib/services/auth/scu_auth.dart`) — SCU 统一身份认证. Owns login, captcha fetch, `bindSession()` (`session/save` via `CookieClient`), token/principal persistence (`FlutterSecureStorage`), 1-hour TTL, auto-renewal, and the `_synchronizedRefresh` `Completer` mutex (N concurrent → 1 refresh). Exposes `state` (`AuthState` enum) and `onSessionExpired` callback. On refresh failure → `UnauthenticatedException`. Subsystem SSO redirects do not live here.
+L1–L3 network/auth code lives under `lib/scu_backend/<subsystem>/` (`core/` for cross-subsystem auth, plus one folder per backend); client-side general services (database, updater, reminders, etc.) stay in `lib/services/`.
 
-**Layer 2 — Subsystem Auth (one per backend):**
-- **`SubsystemAuth`** (`subsystem_auth.dart`) — abstract contract: `moduleId`, `dependencies`, `ensureAuthenticated()`, `invalidate()`.
-- **`SsoRelayAuth`** (`sso_relay_auth.dart`) — base class for SSOs that just need SCU's `CookieClient` + a redirect; used by `PayAppAuth` and `FitnessAuth`.
-- **`AuthCoordinator`** (`auth_coordinator.dart`) — after ScuAuth login, schedules every subsystem immediately; each task recursively awaits only its declared dependencies (zhjw/wfw/fitness/ccyl can run in parallel, while payapp waits for wfw). Failures skip only downstream modules, and dependency cycles are rejected.
-- **`ZhjwAuth`** — obtains ScuAuth's `CookieClient`, then performs and caches the ZHJW JWT SSO.
-- **`WfwAuth`** — shares ScuAuth's `CookieClient`, follows the WFW login redirect chain (get-info → `uc/wap/login` → `a_scu/api/cas/login` → id CAS) to establish a user-bound domain session, and self-manages `_ready` (gated on an `e == 0` JSON response) so Providers do not fetch before that warm-up completes.
-- **`PayAppAuth`** — payapp OAuth warrant jump, depends on `WfwAuth`.
-- **`FitnessAuth`** — fitness test SSO jump.
-- **`CcylAuth`** — second-classroom OAuth token management via `CcylOAuthService` (SCU → CCYL bridge); binds the persisted token to the current SCU principal and rejects stale async login results.
-- **`ZhhqAuth`** (`zhhq_auth.dart`) — 智慧后勤（zhhq，在线报修）认证. Shares SCU's `CookieClient`, follows SSO (scdxplugin_jwt31) → `login/auto` to exchange **tokenKey**; persists tokenKey to `FlutterSecureStorage` (`kZhhqTokenKey`), `init()` unconditionally restores it for a fast path (业务请求只依赖 Token/TokenKey 头，不依赖 SCU 会话), and `getClientFast()` returns an isolated `CookieClient`. On 4010-4017 token errors → `invalidate()` + full re-auth.
-- **`NewServiceAuth`** (`new_service_auth.dart`) — 校园网无感认证（Passpoint）子系统认证，绑定设备 MAC 自动认证.
-- **`CookieClient`** (`cookie_client.dart`) — domain-isolated cookie jar + manual `followRedirects()` collecting `Set-Cookie` per hop + `http.ClientException` retry with fresh `http.Client`.
+- **L3 — Unified Auth (`ScuAuth`)**: single source of truth for SCU root token, principal, `id.scu.edu.cn` session, 1-hour TTL + auto-renewal, single-flight `bindSession` / refresh.
+- **L2 — Subsystem Auth (one per backend)**: `ZhjwAuth`, `WfwAuth`, `PayAppAuth`, `FitnessAuth`, `CcylAuth`, `ZhhqAuth`, `NewServiceAuth`. Each declares real L2 `dependencies`; `AuthCoordinator` warms them up concurrently after login, skipping only downstream of a failed module. `CookieClient` is the shared, domain-isolated cookie jar.
+- **L1 — API Services (stateless)**: `ZhjwApiService`, `WfwApiService`, `PayAppApiService`, `CcylApiService`, `ZhhqApiService`, `NewServiceApiService`, etc. Each wraps calls in the `_request()` template (`retryOnUnauthenticated` → `invalidate` → retry once). CCYL is the exception: only `CcylAuthExpiredException` is retried, to protect non-idempotent operations.
 
-**Layer 1 — API Services (stateless HTTP tools):**
-- **`ZhjwApiService`** (`zhjw_api_service.dart`) — 教务系统 API (课表 / 成绩 / 教室 / 培养方案 / 计划完成度 / 考表).
-- **`WfwApiService`** (`wfw_api_service.dart`) — 微服务 (用户信息 / 标签).
-- **`PayAppApiService`** (`payapp_api_service.dart`) — 缴费平台 (电费 / 空调).
-- **`CcylApiService`** (`ccyl_api_service.dart`) — 第二课堂.
-- **`CcylService`** (`lib/services/ccyl/ccyl_service.dart`) — CCYL static stateless data API.
-- **`BalanceQueryService`** (`lib/services/api/balance_query_service.dart`) — dorm balance data service (HTTP query methods + model classes; called inside `PayAppApiService._request()` so retry is handled by the parent, not by this service itself).
-- **`ZhhqApiService`** (`zhhq_api_service.dart`) — 智慧后勤 API（在线报修）：地址 / 区域树 / 项目 / 预约日期时段 / 工单列表（`activeTemplateData/list`）/ 提交工单（`publish`）/ 图片上传（multipart 明文 JSON）. 业务请求用独立 token（AES 加密 `{tokenKey, clientId, timestamp, GUID}`），4010-4017 错误码触发认证层重建.
-- **`NewServiceApiService`** (`new_service_api_service.dart`) — 校园网无感认证（Passpoint）API.
-
-ZHJW, WFW, and PayApp API services follow the **`_request()` template** (internally calls `retryOnUnauthenticated` from `lib/services/api/api_request.dart`):
-1. `getClient()` → 2. business HTTP → 3. on `UnauthenticatedException` → 4. `invalidate?.call()` + retry once → 5. still failing → propagate to the Provider (which converts to UI state).
-
-The CCYL service is special: its token expires via an explicit business error code classified as `CcylAuthExpiredException`. `CcylApiService._retryOnCcylAuthError()` handles only that path (`recoverExpiredSession()` single-flight → retry once); ordinary `CcylException` failures are not replayed, which protects non-idempotent operations.
+Key invariants (do not break when adding a subsystem): `ScuAuth` is the sole root-token source; L2 modules depend only via explicit `dependencies`; one module's failure must not block unrelated modules; retries are bounded and only on explicit auth expiry; sensitive credentials go only to `FlutterSecureStorage`.
 
 ### Other Services
 
@@ -230,97 +222,61 @@ The CCYL service is special: its token expires via an explicit business error co
 - **`UpdateAssetSelector`** (`lib/services/update_asset_selector.dart`) — selects correct APK/asset based on device platform and CPU architecture.
 - **`WidgetUpdateService`** — Android + iOS/macOS home-screen widget data sync via MethodChannel `bugaoshan/update` (Android) and App Group (iOS/macOS, `syncWidgetShowTomorrow`). Has its own debounce + in-flight coalescing logic (covered by `test/widget_update_service_test.dart`).
 - **`DownloadNotificationService`** (`lib/services/download_notification_service.dart`) — Android 下载进度通知栏（进度条 + 取消按钮，MethodChannel `bugaoshan/update` + EventChannel `bugaoshan/download_cancel`，仅 Android，其他平台静默 no-op）；由 `UpdateProvider` 使用。
-- **`AcademicCalendarService`** (`lib/services/api/academic_calendar_service.dart`) — academic calendar data with mirror fetch + SharedPreferences cache.
+- **`AcademicCalendarService`** (`lib/scu_backend/calendar/academic_calendar_service.dart`) — academic calendar data with mirror fetch + SharedPreferences cache.
 - **`DynamicIconService`** (`lib/services/dynamic_icon_service.dart`) — runtime app icon switching via MethodChannel `bugaoshan/dynamic_icon` (Android native).
 - **`BackgroundCacheService`** — precaches the user's background image post-frame.
 - **`ExitService`** — unified exit (windowManager.destroy on desktop, exit(0) on mobile).
 - **`WindowStateService`** — desktop window position/size persistence.
 
-### App Logging
+### App Logging & 业务日志（AppLog）
 
-All modules log through a single in-memory ring buffer via `AppLogger` (`lib/utils/app_logger.dart`). It is a **general-purpose** logger — auth-layer modules (`ScuAuth`, `CookieClient`, `AuthCoordinator`, `ZhjwAuth` / `WfwAuth` / `PayAppAuth` / `FitnessAuth` via `SsoRelayAuth`, `CcylAuth`, `CcylOAuthService`, `ScuAuthProvider`) are only the earliest adopters. Business modules log via the `AppLog` facade (see below); all entries share one buffer and are visible in the Dev page viewer.
+Authoritative reference: `docs/architecture/logging.md`.
 
-- Ring buffer caps at 1000 entries (oldest evicted).
-- Each entry has timestamp + category (`authentication` / `business`) + `LogLevel` (`debug` / `info` / `warn` / `error`) + `tag` + redacted message, with optional redacted error and stack trace.
-- `LogRedactor.apply()` strips `"access_token":"…"`, `"password":"…"`, `Bearer <token>` and truncates `?code=` values before storage, so logs are safe to share via the Dev page "Save" button.
-- `LogRedactor` also covers student identifiers in three shapes: camelCase (`studentId=`), snake_case (`student_id=`, `student_number=`), and the Chinese label (`学号202612345678`). The Chinese pattern requires the value to start with an alphanumeric so prose like `学号相关的缓存 key` is **not** redacted — over-redaction destroys diagnostic value, not just privacy. Do not add loosely-typed keys such as `account` / `id` / `sid` for the same reason.
-- `LogRedactor` covers **both** JSON (`"password":"x"`) and non-JSON (`password=x`, `token: x`) credential forms. The non-JSON form is the common one in exception stacks (`StateError('token=...')`) and was a real leak path until PR #369's review surfaced it. Key names are deliberately narrow — **no `id` / `account` / `key`**, and **no `authorization` / `cookie`**: the latter two are handled by `_bearerHeader`, and listing them here would consume the `Authorization: ` prefix first, silently breaking Bearer redaction.
-- `tag` is a stable class/module identifier (for example `ScuAuth`, `CookieClient`, or `ServiceApiService`) so the Viewer's dropdown groups events by source. **Convention**: PascalCase matching the owning class name, declared as `static const String _tag` next to the class — never a bare string literal. Top-level functions use a module-level `const String _tag`. The Viewer's dropdown sorts tags by entry count (descending) so the noisiest module is visible first, and shows that count inline.
-- `debug` lines are only echoed to console in `kDebugMode`; production builds stay silent.
-- `AppLogger` is a `ChangeNotifier` — Dev page's `LogTile` and `LogViewerPage` use `ListenableBuilder` for live updates.
-- **Persistence (on by default)**: `warn` / `error` entries are written to `<getLogBaseDir()>/Bugaoshan/logs/bugaoshan.log` when `AppConfigProvider.logPersistenceEnabled` is on, which is the **default**. Default-off would mean a crash is only diagnosable if the user enabled the switch beforehand — and the users who report crashes are exactly the ones who never go looking for a diagnostics toggle. The switch is exposed in the Dev page (`LogPersistenceTile`) and backed by `AppConfigProvider.logPersistenceEnabled`. `debug` / `info` stay in memory only — they record lifecycle milestones that are near-useless for user bug reports but would fill the file quickly.
-- **Write path is a single-writer queue**: `log()` only appends the formatted line to an in-memory queue (never touching the file), and one serial async consumer (`_drainQueue`) does openWrite / writeln / flush / rotate. This is deliberate: `log()` is synchronous and may be called from any business path, while file IO is async — coupling them directly produced a race where entries written between "rotation scheduled" and "sink closed" were neither written nor drained. Queue is bounded (`_maxWriteQueue = 2000`); overflow increments `droppedWriteLines` rather than growing without limit, since logging must not become the failure. `disableFileSink()` drains the queue before closing.
-- **Rotation**: multi-file, threshold-driven — `bugaoshan.2.log` deleted, `bugaoshan.1.log` → `bugaoshan.2.log`, `bugaoshan.log` → `bugaoshan.1.log`, then a fresh `bugaoshan.log` opens. Totals ≈ 6 MB (2 MB × 3). Rotation uses only rename/delete (no read-rewrite) so it never stalls on slow storage; rotation happens after a complete record, so each file may exceed its threshold by one record.
-- **Verifying persistence**: entries beyond the size cap are *evicted by design*, so "lines on disk == lines written" only holds when the write volume is below capacity. Test both: (1) volume well under cap → nothing may be missing; (2) volume far over cap → on-disk size must sit at the cap. A burst test lives in `test/app_logger_test.dart`; `LogStressTile` (Dev page, **debug builds only**) does the same on-device so filesystem timing can be checked with `adb`, since `flutter test` is not representative here.
-- `AppLogger` is the only writer; the Dev page "Save" button uses `exportToFile()` for a shareable snapshot alongside the auto-rotated files in the same directory. Exports are named `bugaoshan-export-<timestamp>.log`, deliberately **not** matching the rotated-file pattern: `deletePersistedFiles()` matches rotation files by regex (`^bugaoshan(\.\d+)?\.log$`), not by prefix, so turning the switch off does not delete a snapshot the user already exported to share.
-- Global error handlers are installed by `setupGlobalErrorHandlers()` (`lib/utils/app_error_reporter.dart`), called from `main()` right after `WidgetsFlutterBinding.ensureInitialized()`. It covers `FlutterError.onError` (framework errors, red screen in debug), `PlatformDispatcher.instance.onError` (unhandled async — preserves the previous handler, or returns `true` when none was installed), and `Isolate.current` error listener. `formatExceptionForLog()` truncates over-long stack traces to 2000 chars while preserving the head, since the exception type and message are the highest-value part.
-- Startup failure in `main()` logs via `AppLog.e(_tag, …)` — note the previous `debugPrint`-only handling was invisible in release builds.
-- `resolveLogDir()` / `kLogDir` / `getLogBaseDir()` live in `app_logger.dart`, not in `pages/campus/downloads/file_utils.dart` — the log path is used by both auto-persistence and the Dev page, so defining it in the pages layer would invert the dependency direction. The Dev page's folder button now shows both auto-rotated logs and manual exports.
-- **Do not open app-private directories with an Android content URI.** `launchUrl` on a `content://com.android.externalstorage.documents/document/...` URI sends `ACTION_VIEW`, which DocumentsUI does not accept for a *directory* document — it always fails with `PlatformException(ACTIVITY_NOT_FOUND)`. Scoped storage (Android 11+) additionally bars file managers from `Android/data/<package>/{cache,files}/`. Both the Dev log viewer and the notice attachment page now **copy the absolute path to the clipboard on Android** and only use `Uri.file(dir)` on desktop. Getting logs off the device is the "Save" (share) action, not the folder button.
+All modules log through one in-memory ring buffer (cap 1000): auth-layer modules use `AppLogger` (`lib/utils/app_logger.dart`, category `authentication`), business modules use the `AppLog` facade (`lib/utils/app_log.dart`, category `business`). Both share the buffer, redaction rules, and file persistence.
 
-Dev page (`lib/pages/dev/logs/`) contains:
-- `LogTile` — entry showing last log line + count; opens the runtime log viewer with copy/save/share actions. Exports use `bugaoshan-export-<timestamp>.log`.
-- `LogEntryTile` — individual log entry display with level color coding.
-- `LogFilterBar` — filter chips for log level and tag selection.
-- `LogViewerPage` — full-screen viewer with all/authentication/business-error views, level and tag filters, expandable stack traces, clear/copy/save actions.
+Conventions an agent must follow:
+- Real errors (catch branches, failed states, HTTP failures, platform callbacks) → `AppLog.e` with `error` + `stackTrace`; recoverable retries may use `AppLog.w`. Never swallow exceptions or only `debugPrint`.
+- Lifecycle milestones → `AppLog.i`; local debug → `AppLog.d` (console only in debug builds).
+- `LogRedactor` strips tokens, passwords, Bearer headers, OAuth codes, and student IDs (camelCase / snake_case / 「学号」). Do **not** add loosely-typed keys (`account`, `id`, `sid`) — over-redaction destroys diagnostic value.
+- `tag` must be a PascalCase class/module identifier (`static const String _tag`), never a bare string.
+- `warn`/`error` persist to `<getLogBaseDir()>/Bugaoshan/logs/bugaoshan.log` by default (single-writer queue, 2 MB × 3 rotation); `debug`/`info` stay in memory only.
+- Global error handlers (`setupGlobalErrorHandlers()` in `app_error_reporter.dart`) are the backstop — local code must still log functional context.
 
-### 业务日志（AppLog）
-
-`AppLog`（`lib/utils/app_log.dart`）是业务层日志门面：与 `AppLogger` **共享同一个**内存环形缓冲、脱敏规则与文件落盘，分类为 `business`。每次从 GetIt 取当前实例；DI 前使用 `bootstrapLogger`，装配时沿用以保留启动错误。完整流程见 `docs/architecture/logging.md`。
-
-约定（与 App Logging 一并遵守）：
-
-- 真实错误（catch 分支、失败状态、图片/平台回调、HTTP 失败）必须记录 `AppLog.e`，捕获异常时传 `error` 与 `stackTrace`；可恢复的重试可用 `AppLog.w`。不要只写 `debugPrint`、错误文案或吞掉异常。认证操作使用 `AppLogger`，必要时用相应 `guard` 记录并保持原异常传播。正常取消和格式兼容探测不属于操作失败。
-- 生命周期 / 关键里程碑 → `AppLog.i`。
-- 本地调试输出 → `AppLog.d`（仍进入内存缓冲，仅 debug 构建输出控制台）；`debugPrint` 仅限 kDebugMode 下的 DI 装配期 / 启动期调试。
-- 消息、异常和堆栈统一脱敏；仍禁止主动记录凭据、完整表单和个人数据。`FormatException` 不输出原 source。全局错误处理仅作兜底，本地仍须记录功能上下文。
+Do not open app-private directories with an Android `content://` URI for the log folder; on Android copy the absolute path to the clipboard and use `Uri.file(dir)` only on desktop.
 
 ### Notice Pages
 
-Three notice sources, each in its own subdirectory under `lib/pages/campus/notice/` (see `docs/architecture/notice-webview.md`):
+Three notice sources (`jwc/`, `xgb/`, `tuanwei/` under `lib/pages/campus/notice/`), each with its own beautify JS under `assets/js/`. All wrap the shared `WebViewNoticePage` (`lib/widgets/webview/webview_notice_page.dart`). Shared downloads (`NoticeAttachmentFab`, `attachments_sheet`, `file_utils`, `notice_downloaded_page`) live in `lib/pages/campus/downloads/`.
 
-- **`jwc/`** — `jwc.scu.edu.cn` 教务处, beautified by `assets/js/jwc_notice_beautify.js`. Sets `useWebViewDownload: true` for cookie-based downloads.
-- **`xgb/`** — `xgb.scu.edu.cn` 党委学工部, beautified by `party_notice_beautify.js`.
-- **`tuanwei/`** — `tuanwei.scu.edu.cn` 团委 (青春川大), beautified by `tuanwei_notice_beautify.js`. Sets `useWebViewDownload: true` for cookie-based downloads.
-
-All three wrap a shared `WebViewNoticePage` (`lib/widgets/webview/webview_notice_page.dart`) which loads the URL in an `InAppWebView`, injects the corresponding beautify JS on `onLoadStop`, double-`requestAnimationFrame` for `dom_ready.js`, extracts attachments via the `AttachmentsChannel` JS handler, and shows a draggable `NoticeAttachmentFab` when attachments are present.
-
-Shared downloads module lives in `lib/pages/campus/downloads/`:
-- `NoticeAttachmentFab` / `attachment_fab.dart` — draggable FAB.
-- `attachments_sheet.dart` — `showAttachmentsSheet()` modal with download/share/open.
-- `file_utils.dart` — `kNoticeAttachmentDir`, `kPartyAttachmentDir`, `kTuanweiAttachmentDir`, `downloadFile()`, `checkDownloadedFile()`.
-- `shared_notice_downloads.dart` — shared notice download logic.
-- `notice_downloaded_page.dart` — tabbed management for all three sources' downloaded files.
+Authoritative reference: `docs/architecture/notice-webview.md` (ADR-0001).
 
 ### Providers
 
-| Provider                                                  | Role                                                                                                                                                                                                                                                                                                                  |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ScuAuthProvider`                                         | 认证控制器；直接持有 `ScuAuth`、`CcylAuth` 和 `AuthCoordinator`. Manages SCU login / logout / auto-login（服务端返回 `invalid_captcha` 时最多 5 次）/ credential persistence，并在登录后后台预热子系统。                                                                                                              |
-| `UserInfoProvider`                                        | 监听 `WfwAuth`，登录后自动 fetch 用户信息（realname/number）和标签（图书借阅 / 校园卡 / 网费），登出 clear.                                                                                                                                                                                                           |
-| `GradesProvider`                                          | Holds `ZhjwApiService`; fetches scheme & passing scores (session-expired retry handled by the API service layer). Caches grades to SharedPreferences.                                                                                                                                                                 |
-| `CourseProvider`                                          | 课表 CRUD via `DatabaseService`.                                                                                                                                                                                                                                                                                      |
-| `AppConfigProvider`                                       | ~25 `ValueNotifier` fields: locale, themeColor, themeColorMode, colorOpacity, useGoogleFonts, course card font/row height, grid visibility, background image, dock items, EULA version, wizard completed, widget show-tomorrow, preview update source, privacy toggles (showTeacherName/showLocation/showWeekend…), … |
-| `SetThemeColorProvider`                                   | 从背景图提取主题色（pixel sampling + `compute()` isolate），支持系统强调色预览.                                                                                                                                                                                                                                       |
-| `AppInfoProvider`                                         | App version + CI build metadata (git tag / commit / build time).                                                                                                                                                                                                                                                      |
-| `UpdateProvider`                                          | 更新检查/下载状态管理（包裹 `UpdateService`）：isChecking / isDownloading / lastCheckResult / stableResult / previewResult + `UpdateProgressState`；供 about/home 页与 Dev 页使用。                                                                                                                                   |
-| `BalanceQueryProvider`                                    | 电费 / 空调余额状态管理，支持多房间绑定切换.                                                                                                                                                                                                                                                                          |
-| `CcylProvider`                                            | 第二课堂登录状态管理。委托 `CcylAuth` 持久化 OAuth token (`FlutterSecureStorage`)，通过 `service` getter 暴露 `CcylApiService`.                                                                                                                                                                                       |
-| `TrainProgramProvider`                                    | 培养方案查询；管理学院/年级/方案列表 + 详情加载状态.                                                                                                                                                                                                                                                                  |
-| `PlanCompletionProvider`                                  | 培养方案完成度；缓存到 SharedPreferences，处理 rate-limit 错误.                                                                                                                                                                                                                                                       |
-| `ZhhqRepairProvider`                                      | 在线报修（智慧后勤）会话级状态：地址/项目/工单列表/提交状态；tokenKey 就绪即可请求（不依赖 SCU 会话），认证失败进入 error 态供重试，登出时 clear.                                                                                                                                                                     |
-| `PasspointProvider`                                       | 校园网无感认证状态管理（绑定设备 MAC 自动认证）.                                                                                                                                                                                                                                                                      |
-| `ExportScheduleProvider`                                  | 课表导出（剪贴板 JSON / .ics 文件 / 通过 .ics 间接导入系统日历）.                                                                                                                                                                                                                                                     |
-| `SecureStorageProvider` (`lib/utils/secure_storage.dart`) | `FlutterSecureStorage` 单例封装.                                                                                                                                                                                                                                                                                      |
+- `ScuAuthProvider` — 认证控制器；直接持有 `ScuAuth`、`CcylAuth` 和 `AuthCoordinator`。管理 SCU login / logout / auto-login（服务端返回 `invalid_captcha` 时最多 5 次）/ credential persistence，并在登录后后台预热子系统。
+- `UserInfoProvider` — 监听 `WfwAuth`，登录后自动 fetch 用户信息（realname/number）和标签（图书借阅 / 校园卡 / 网费），登出 clear。
+- `GradesProvider` — 持有 `ZhjwApiService`；获取 scheme & passing scores（会话过期重试由 API service 层处理）。成绩缓存到 SharedPreferences。
+- `CourseProvider` — 课表 CRUD via `DatabaseService`。
+- `AppConfigProvider` — ~25 个 `ValueNotifier` 字段：locale, themeColor, themeColorMode, colorOpacity, useGoogleFonts, 课表卡片字体/行高, grid visibility, background image, dock items, EULA version, wizard completed, widget show-tomorrow, preview update source, privacy toggles (showTeacherName/showLocation/showWeekend…), …
+- `SetThemeColorProvider` — 从背景图提取主题色（pixel sampling + `compute()` isolate），支持系统强调色预览。
+- `AppInfoProvider` — App version + CI build metadata (git tag / commit / build time)。
+- `UpdateProvider` — 更新检查/下载状态管理（包裹 `UpdateService`）：isChecking / isDownloading / lastCheckResult / stableResult / previewResult + `UpdateProgressState`；供 about/home 页与 Dev 页使用。
+- `BalanceQueryProvider` — 电费 / 空调余额状态管理，支持多房间绑定切换。
+- `CcylProvider` — 第二课堂登录状态管理。委托 `CcylAuth` 持久化 OAuth token (`FlutterSecureStorage`)，通过 `service` getter 暴露 `CcylApiService`。
+- `TrainProgramProvider` — 培养方案查询；管理学院/年级/方案列表 + 详情加载状态。
+- `PlanCompletionProvider` — 培养方案完成度；缓存到 SharedPreferences，处理 rate-limit 错误。
+- `ZhhqRepairProvider` — 在线报修（智慧后勤）会话级状态：地址/项目/工单列表/提交状态；tokenKey 就绪即可请求（不依赖 SCU 会话），认证失败进入 error 态供重试，登出时 clear。
+- `PasspointProvider` — 校园网无感认证状态管理（绑定设备 MAC 自动认证）。
+- `ExportScheduleProvider` — 课表导出（剪贴板 JSON / .ics 文件 / 通过 .ics 间接导入系统日历）。
+- `SecureStorageProvider` (`lib/utils/secure_storage.dart`) — `FlutterSecureStorage` 单例封装。
 
 ### Key Patterns
 
 - **Session expiry** — `ScuAuth.getClient()` checks 1-hour TTL, calls `_synchronizedRefresh()` on expiry. Refresh failure → `onSessionExpired` callback → `SessionExpiredListener` shows a global SnackBar with "前往登录" action (5 s debounce). ZHJW/WFW/PayApp API Services wrap calls in `retryOnUnauthenticated(getClient, fn)` to retry once on `UnauthenticatedException`; CCYL only retries `CcylAuthExpiredException`. Business providers catch final exceptions for UI state.
-- **左右 + 上下双滑页面** — 统一用 `SwipePageView`（`lib/widgets/common/swipe_page_view.dart`，做法源自课表页：禁用 PageView 自带物理、外层 GestureDetector 接管横滑并手动 jumpTo 跟手，纵向拖动放行给页内列表），替代 `TabBarView` / `PageView`，避免手势冲突导致的滑动不跟手。传 `tabController` 与 TabBar 双向联动；`keepPagesAlive: true` 保留各页 State（表单/滚动位置）。课表页的 `CourseSwipePageView` 是它的薄壳转发。
+- **左右 + 上下双滑页面** — 统一用 `SwipePageView`（`lib/widgets/common/swipe_page_view.dart`，做法源自课表页：禁用 PageView 自带物理、外层 GestureDetector 接管横滑并手动 jumpTo 跟手，纵向拖动放行给页内列表），替代 `TabBarView` / `PageView`，避免手势冲突导致的滑动不跟手。传 `tabController` 与 TabBar 双向联动；`keepPagesAlive: true` 保留各页 State（表单/滚动位置）。课表页的 `CourseSwipePageView` 是它的薄壳转发。已到边界（第一页向右 / 最后一页向左）时它不认领手势，第一页的右滑交还给 iOS 全局侧滑返回（`docs/architecture/ios-back-gesture.md`）。
 - **Multiple schedules** — Courses are stored in a single SQLite `courses` table, filtered by `schedule_id`. `DatabaseService.switchSchedule()` updates the current ID and refreshes the in-memory cache.
 - **Responsive dialogs** — `popupOrNavigate(context, page)` in `lib/widgets/route/router_utils.dart`: dialog at width/2 on tablets/landscape, dialog at 2/3 w+h on big portrait, full-page push on phones. Falls back to `Navigator.push` if already inside a popup (`PopupContext.of(context)`).
 - **`logicRootContext`** — global getter `navigatorKey.currentContext!` in `router_utils.dart`. Use when you need a `BuildContext` outliving the current widget — e.g. after `Navigator.pop(context)` the local `context` is disposed, so capture `final rootCtx = logicRootContext; Navigator.pop(context); popupOrNavigate(rootCtx, ...)`.
-- **国密 (SM2)** — `dart_sm` encrypts the password before sending to SCU's auth API (`lib/utils/sm2_crypto.dart`).
+- **国密 (SM2)** — `dart_sm` encrypts the password before sending to SCU's auth API (`lib/scu_backend/core/sm2_crypto.dart`).
 - **Dynamic navigation** — Home page uses a customizable dock system (`lib/models/campus_item_config.dart`). Users can enable/disable/reorder dock items. Pages are lazily built and cached in an `IndexedStack`.
 - **Theme system** — `lib/theme.dart` defines MD3 expressive overrides (PredictiveBack on Android, Cupertino on iOS, FadeForwards on desktop). Supports system accent color, custom color, or color derived from the background image (with opacity).
 - **EULA gate** — `app.dart` checks `AppConfigProvider.acceptedEulaVersion`; below `currentEulaVersion` shows `EulaGatePage` (EULA text is in `lib/widgets/eula_content.dart` and `docs/legal/eula.md`). 应用内法律文档（协议 / 隐私政策 / 支持与帮助）统一由 `MarkdownViewer` / `MarkdownAssetPage`（`lib/widgets/common/markdown_viewer.dart`）渲染，asset 路径常量集中在 `lib/utils/constants.dart`（`kEulaAsset` / `kPrivacyPolicyAsset` / `kSupportAsset`）。
@@ -360,57 +316,36 @@ Always run `dart format` (the repo's pre-commit hook enforces this on staged `.d
 
 ## Continuous Integration & Release
 
-### Branching Model & Workflow Architecture
+Authoritative reference: `docs/architecture/release-pipeline.md`. What an agent must know:
 
-The repository operates a strict two-tier release model (`preview` -> `main`):
-
-- **`preview` (Staging / Preview Release Track)**:
-  - Staging branch for preview testing and daily integration.
-  - Accepts PRs from any feature/fix/refactor/docs branch directly.
-  - Merges into `preview` automatically trigger the release pipeline to publish a **Preview Release** (`prerelease: true`, tag sequence `vX.Y.Z-preview` or `vX.Y.Z-preview.N`).
-- **`main` (Production / Formal Stable Release Track)**:
-  - Production stable branch.
-  - **Only accepts PRs from `preview`**. Direct pushes or direct feature PRs are strictly forbidden.
-  - Merges into `main` automatically trigger the release pipeline to publish a **Formal Stable Release** (`prerelease: false, latest: true`, tag `vX.Y.Z`), generate F-Droid changelogs, and commit metadata.
+- **Two-tier branch model**: feature/fix/docs PRs → `preview` (preview/RC release on merge) → `main` (formal release on merge). `main` only accepts PRs from `preview`.
+- **Release state is driven by CHANGELOG.md**: highest `## [X.Y.Z]` vs. latest formal tag. Equal → normal preview (`-preview[.N]`, notes from `[Unreleased]`); greater → RC (`-rc[.N]`, notes from `## [X.Y.Z]`). `pubspec.yaml` must match the target.
+- **Tags are created by CI, never manually.** `release.yml` only triggers on branch push (`main`/`preview`) and `workflow_dispatch`; manual tag pushes are ignored.
+- **`pre-flight.yml`** runs `dart analyze`, the layering guard (`check_layering.py`), `flutter test`, codegen-drift check, Python CI tests, and `tool/pre_release_check.py`. Daily PRs run the no-arg gate (CHANGELOG state + invariants only; F-Droid metadata is **not** checked on preview PRs); PRs to `main` run `pre_release_check.py X.Y.Z` (strict: includes metadata consistency).
+- **Layering guard** (`.github/scripts/check_layering.py`) — enforces the `lib/scu_backend` boundaries that `dart analyze` cannot catch: no `package:flutter/material.dart`, no imports from `pages/` / `providers/` / `widgets/`, and `lib/utils` must not import `scu_backend`. Existing violations are listed explicitly in the script's `ALLOWLIST` with a reason; the check fails only on **new** ones, so the recorded debt can only shrink. Scope directories that do not exist yet are skipped.
+- **`release.yml`** builds Android (split-per-ABI), Windows, Linux; publishes via Draft → Upload → Publish.
 
 ### PR Labels
 
-Two labels drive automation / review routing on pull requests:
+- **`close issue`** — the PR closes referenced issues. GitHub's `Closes #N` only fires at `preview → main`; `close-linked-issues.yml` closes them at preview-merge. Always write `Closes #N` and apply the label.
+- **`review request`** — manual routing marker for changes needing device/OS-specific validation; nothing consumes it automatically.
 
-- **`close issue`** — the PR closes the issue(s) it references. GitHub's native `Closes #N` keyword only fires when a PR merges into the default branch, and PRs here target `preview`, so `close-linked-issues.yml` reads this label and closes the referenced issues at preview-merge time. Always write the reference as `Closes #N` in the PR title or body, and apply the label.
-- **`review request`** — the change needs someone with the matching device / OS environment to run it before merging (e.g. Android multi-button navigation, iOS 26 Liquid Glass, a specific vendor ROM). It is a manual routing marker: nothing consumes it automatically, so a reviewer must be asked directly.
+### Release Skills
 
-### CI Workflows
+Release workflows are defined as project skills under `.agents/skills/`:
 
-- **`pre-flight.yml` (Quality Gate & Policy Enforcement)**:
-  - Triggers on PRs to `main` / `preview`, pushes to `main` / `preview`, and `workflow_dispatch`.
-  - Enforces branch flow policy: `main` must originate from `preview` (there is no `dev` branch; feature branches target `preview` directly).
-  - Runs `dart analyze --fatal-infos`, `flutter test`, codegen cleanliness check (`git status --porcelain` after codegen), Python CI unit tests (`.github/scripts/tests/`), and `tool/pre_release_check.py --ci` (release-timing checks are advisory WARNs in CI; structural checks still fail the gate).
-- **`release.yml` (Release Pipeline)**:
-  - Triggers on pushes to `main` / `preview`, tags matching `v*.*.*` (published only when the tag targets the main/preview head), and `workflow_dispatch` (build-only on other branches).
-  - Version/tag rules via `.github/scripts/resolve_release_version.py` (formal: pubspec, idempotent; preview: anchored to the last formal tag with a patch increment `-preview[.N]`; the `/release` prep phase switches to `-rc` naming; preview builds inject the last formal versionName/versionCode).
-  - Triggers `build-android.yml` (universal + split APKs with Java 21), `build-windows.yml` (Windows zip with dynamic WebView2Loader) and `build-linux.yml` (Linux x64 tar.gz, built in a `debian:13` container).
-  - Publishes GitHub Releases with safe Draft -> Upload -> Publish ordering to support Immutable Releases.
-- **`close-linked-issues.yml` (Issue Auto-Close)**:
-  - Triggers on `pull_request: [closed]`, only runs when the PR was merged.
-  - Because PRs target `preview` rather than the default branch `main`, GitHub's native `Closes #N` keyword would only fire at the `preview -> main` step; this workflow closes the referenced issues at preview merge time instead.
-  - Only acts on PRs labeled **`close issue`**; parses `closes` / `fixes` / `resolves` keywords (with optional `#`) from the PR title and body, closes each referenced issue as completed, and leaves a comment linking the merged PR. Issues already closed, and references that are PRs, are skipped.
+- [bugaoshan-release](.agents/skills/bugaoshan-release/SKILL.md) — the full release flow (formal release + preview/RC). Covers CHANGELOG section selection, `pubspec.yaml` / F-Droid metadata bump, `tool/pre_release_check.py` gate, and `preview → main` PR creation. Tag creation is always handled by CI; never push tags manually.
+- [bugaoshan-changelog](.agents/skills/bugaoshan-changelog/SKILL.md) — changelog content rules only (version/commit boundaries, diff verification, net-change merging, user-facing wording). `bugaoshan-release` delegates content writing to it.
 
-### Release Helpers (`.claude/commands/`)
+### Changelog Preparation
 
-These are project-specific Claude Code slash commands:
-
-- `release.md` (`/release <version>`) — prepares formal release: updates `pubspec.yaml` (e.g. `2.5.1+20501`), formats `CHANGELOG.md [X.Y.Z]`, generates F-Droid metadata changelogs, runs `tool/pre_release_check.py`, and opens/merges a PR from `preview` to `main`.
-- `prerelease.md` (`/prerelease [tag]`) — prepares preview release: updates `CHANGELOG.md [Unreleased]`, runs pre-flight checks, and merges into `preview` to trigger automated preview builds.
-
-The auto-changelog flow:
-1. Find last stable tag: `git tag -l "v[0-9]*.[0-9]*.[0-9]*" --sort=-v:refname | grep -E "^v[0-9]+\.[0-9]+\.[0-9]+$" | head -n 1`.
-2. `git log <last>..HEAD --pretty=format:"%s" --no-merges`.
-3. Classify by Conventional Commits prefix into `### Added` / `### Changed` / `### Fixed` / `### Removed`. Drop `docs:` / `chore:` / `test:` / `style:`. Translate to Chinese bullet points (matching the style of existing entries).
+- `CHANGELOG.md` is the source of truth for the next release. Normal previews read `## [Unreleased]`; when a higher `## [X.Y.Z]` section exists, the pipeline publishes RC releases from it. `[Unreleased]` and a higher version section must not both have content.
+- At formal release prep, move `[Unreleased]` into `## [X.Y.Z] - YYYY-MM-DD`, bump `pubspec.yaml` and F-Droid metadata, and leave `[Unreleased]` empty. Do not add per-preview or per-RC sections.
+- Use `bugaoshan-release` for the end-to-end release workflow; it follows `bugaoshan-changelog` for changelog wording. Version metadata, validation, PRs, and publication are handled within the release skill's scope.
 
 ## Notable Implementation Details
 
-- `CookieClient` (`lib/services/auth/cookie_client.dart`) — 按域名隔离 cookie，发送时只带当前请求域的 cookie. `followRedirects()` 手动跟随重定向并收集每跳的 Set-Cookie；子系统 Auth 用它执行各自的 SSO 跳转链，`ScuAuth.bindSession()` 只负责 `session/save`.
+- `CookieClient` (`lib/scu_backend/core/cookie_client.dart`) — 按域名隔离 cookie，发送时只带当前请求域的 cookie. `followRedirects()` 手动跟随重定向并收集每跳的 Set-Cookie；子系统 Auth 用它执行各自的 SSO 跳转链，`ScuAuth.bindSession()` 只负责 `session/save`.
 - `_request()` 模板方法 — 业务方只调 `await apiService.fetchXxx()`,不碰 token/cookie/重试细节.
 - `SessionExpiredListener` (`lib/widgets/common/session_expired_listener.dart`) — 监听 `ScuAuth.onSessionExpired`,全局弹 SnackBar 带「前往登录」action (5 秒防抖).
 - 成绩刷新失败但 `sessionExpired` 时保留 SharedPreferences 缓存,并登出用户.
@@ -444,5 +379,12 @@ The auto-changelog flow:
 - 桌面端 `assets/scripts/update.{bat,sh}` 在更新流程中执行 — 修改时注意命令注入.
 
 ## Platform Support
+
+HarmonyOS uses an isolated CPF Flutter entry under `ohos/`; see `ohos/AGENTS.md`
+and `ohos/README.md`. Root Pub files remain for standard Flutter. The OHOS wrapper
+links shared sources into its own workspace and injects `OhosPlatformAdapter`
+before calling the root entry point. Keep OHOS plugin imports and `OhosView`
+inside `ohos/`; shared code uses `PlatformAdapter` / `isOhos`, never an SDK-specific
+`TargetPlatform.ohos` reference. Do not copy the OHOS lock over the root lock.
 
 `flutter_launcher_icons` 为所有 6 个平台生成图标;`flutter_secure_storage` 在所有平台都可用;`sqflite_common_ffi` 处理桌面端 SQLite. UI 通过 `LayoutBuilder`/`MediaQuery` 适配手机/平板/桌面. 主 release pipeline(参见 `release.yml`)打包 **Android (split-per-ABI APK)**、**Windows (zip)** 和 **Linux (x64 tar.gz)**;Linux 仍支持本地构建. Linux 分发与网页视图边界见 `docs/architecture/linux-distribution.md`;新增发布平台时务必同时更新 `release.yml`、`release_prepare.py` 和发布正文.
