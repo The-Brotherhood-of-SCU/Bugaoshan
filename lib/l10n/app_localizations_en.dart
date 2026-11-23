@@ -1546,6 +1546,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get networkDeviceOperationSuccess => 'Operation successful';
 
   @override
+  String get showPrivacyInfo => 'Show personal information';
+
+  @override
+  String get hidePrivacyInfo => 'Hide personal information';
+
+  @override
   String get passpointTitle => 'Passive Authentication';
 
   @override

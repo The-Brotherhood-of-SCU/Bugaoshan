@@ -618,6 +618,8 @@
   "networkDeviceForceOffline": "Force Offline",
   "networkDeviceConfirmOffline": "Are you sure you want to offline this device?",
   "networkDeviceOperationSuccess": "Operation successful",
+  "showPrivacyInfo": "Show personal information",
+  "hidePrivacyInfo": "Hide personal information",
   "passpointTitle": "Passive Authentication",
   "passpointDesc": "Bind device MAC to auto authenticate on campus network",
   "passpointAddDevice": "Add Device",

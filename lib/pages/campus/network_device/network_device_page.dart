@@ -181,31 +181,43 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
     return '$start$masked$end';
   }
 
+  /// 隐私字段行：显隐由卡片内的唯一开关（姓名行行尾）统一控制，
+  /// 行内只负责按 `_privacyHidden` 渲染掩码文本。
   Widget _buildPrivacyRow(
     String label,
     String value, {
     int visibleStart = 1,
     int visibleEnd = 0,
+    bool showToggle = false,
   }) {
-    return GestureDetector(
-      onTap: () => setState(() => _privacyHidden = !_privacyHidden),
-      child: _infoRow(
-        label,
+    return _infoRow(
+      label,
+      _privacyHidden
+          ? _maskText(value, visibleStart: visibleStart, visibleEnd: visibleEnd)
+          : value,
+      trailing: showToggle ? _buildPrivacyToggle() : null,
+    );
+  }
+
+  /// 全卡片唯一的隐私信息开关，放在姓名行行尾。
+  ///
+  /// 命中的是整卡所有隐私字段，所以不再在学号/邮箱/手机号行重复出现——
+  /// 多个入口共用一个状态会让用户以为是四个独立控制。
+  Widget _buildPrivacyToggle() {
+    final l10n = AppLocalizations.of(context)!;
+    return IconButton(
+      icon: Icon(
         _privacyHidden
-            ? _maskText(
-                value,
-                visibleStart: visibleStart,
-                visibleEnd: visibleEnd,
-              )
-            : value,
-        trailing: Icon(
-          _privacyHidden
-              ? Icons.visibility_off_outlined
-              : Icons.visibility_outlined,
-          size: 16,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
+            ? Icons.visibility_off_outlined
+            : Icons.visibility_outlined,
       ),
+      iconSize: 18,
+      padding: EdgeInsets.zero,
+      visualDensity: VisualDensity.compact,
+      constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+      tooltip: _privacyHidden ? l10n.showPrivacyInfo : l10n.hidePrivacyInfo,
+      onPressed: () => setState(() => _privacyHidden = !_privacyHidden),
     );
   }
 
@@ -221,7 +233,11 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildPrivacyRow(l10n.nameLabel, _valueOf(user?['realname'])),
+            _buildPrivacyRow(
+              l10n.nameLabel,
+              _valueOf(user?['realname']),
+              showToggle: true,
+            ),
             _infoRow(l10n.sexLabel, _valueOf(user?['sex'])),
             _buildPrivacyRow(
               l10n.studentIdLabel,
