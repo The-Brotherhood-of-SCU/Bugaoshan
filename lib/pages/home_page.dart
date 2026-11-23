@@ -69,15 +69,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         getIt.isReady<AppConfigProvider>(),
       ]);
       final updateProvider = getIt<UpdateProvider>();
-      final appConfig = getIt<AppConfigProvider>();
-      final result = await updateProvider.checkForUpdate();
-      // 红点只由这里按后台检查结果维护：不支持应用内更新的渠道（F-Droid /
-      // Flatpak / iOS / macOS）没有「关于 → 检查更新」入口可手动清除，
-      // 必须在这里让覆盖安装带来的残留值失效，否则红点永久残留（#448）。
-      final badge = updateProvider.updateBadgeFor(result);
-      if (badge != null) {
-        appConfig.hasUpdateNotification.value = badge;
-      }
+      // 红点由 UpdateProvider 按渠道与检查结果统一维护（#448），页面只触发一次。
+      await updateProvider.checkForUpdateInBackground();
     } catch (e, logStackTrace) {
       AppLog.e(
         _tag,

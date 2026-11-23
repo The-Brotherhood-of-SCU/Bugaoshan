@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/release_info.dart';
+import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
 import 'package:bugaoshan/services/download_notification_service.dart';
 import 'package:bugaoshan/services/update_checker.dart';
@@ -22,11 +23,19 @@ import 'package:bugaoshan/widgets/route/router_utils.dart';
 class UpdateProvider {
   static const String _tag = 'UpdateProvider';
 
-  UpdateProvider(this._service, this._appInfo, this._notification);
+  UpdateProvider(
+    this._service,
+    this._appInfo,
+    this._notification,
+    this._appConfig,
+  );
 
   final UpdateService _service;
   final AppInfoProvider _appInfo;
   final DownloadNotificationService _notification;
+
+  /// 红点（[AppConfigProvider.hasUpdateNotification]）的持久化状态归它所有。
+  final AppConfigProvider _appConfig;
 
   /// 主线更新检查(about_page / home_page)。true 表示正在请求 GitHub API。
   final ValueNotifier<bool> isChecking = ValueNotifier(false);
@@ -71,7 +80,15 @@ class UpdateProvider {
   /// 渠道（F-Droid / Flatpak / iOS / macOS）不渲染该入口，红点在那里没有任何
   /// 清除路径；从 GitHub 版覆盖安装过来时，持久化在 SharedPreferences 的旧值
   /// 会永久残留（#448）。因此这类渠道上永远不点亮红点，并让残留值失效。
+  ///
+  /// 判定顺序是有意的：渠道判定排在 `error` 之前，所以这类渠道首次启动即使
+  /// 没网、检查直接报错，残留红点也照样会熄。
+  ///
   /// 检查确认「没有更新」时旧红点同样已失效，一并熄掉。
+  ///
+  /// 首个分支正常走不到 —— [UpdateService.checkForUpdate] 在同样条件下已经
+  /// 短路返回 `noUpdate`。保留它是把渠道判定也放在「写红点」这一侧兜底，
+  /// 两处共同保证不支持应用内更新的渠道不会留下红点。
   bool? updateBadgeFor(UpdateCheckResult result) {
     if (!supportsInAppUpdate) return false;
     if (result.hasUpdate) return true;
@@ -101,6 +118,20 @@ class UpdateProvider {
       isChecking.value = false;
       _checkInFlight = null;
     }
+  }
+
+  /// 后台更新检查，并把结果同步到「有更新」红点。
+  ///
+  /// 首页启动时调用一次即可。红点的所有写入都收在这里，调用方不必（也不应）
+  /// 自己判断 [UpdateCheckResult.hasUpdate] —— 否则渠道判定与「出错保持原状」
+  /// 的规则会在每个调用点各写一遍，漏一处就退化成 #448。
+  Future<UpdateCheckResult> checkForUpdateInBackground() async {
+    final result = await checkForUpdate();
+    final target = updateBadgeFor(result);
+    if (target != null) {
+      _appConfig.hasUpdateNotification.value = target;
+    }
+    return result;
   }
 
   /// DevPage 用的双检查。重入时直接返回 in-flight Future。
