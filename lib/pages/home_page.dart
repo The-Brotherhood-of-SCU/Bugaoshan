@@ -69,11 +69,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         getIt.isReady<AppConfigProvider>(),
       ]);
       final updateProvider = getIt<UpdateProvider>();
-      final appConfig = getIt<AppConfigProvider>();
-      final result = await updateProvider.checkForUpdate();
-      if (result.hasUpdate) {
-        appConfig.hasUpdateNotification.value = true;
-      }
+      // 红点由 UpdateProvider 按渠道与检查结果统一维护（#448），页面只触发一次。
+      await updateProvider.checkForUpdateInBackground();
     } catch (e, logStackTrace) {
       AppLog.e(
         _tag,

@@ -446,10 +446,12 @@ void _configureAsyncDependencies() {
   getIt.registerSingletonAsync<UpdateProvider>(() async {
     await getIt.isReady<UpdateService>();
     await getIt.isReady<AppInfoProvider>();
+    await getIt.isReady<AppConfigProvider>();
     return UpdateProvider(
       getIt<UpdateService>(),
       getIt<AppInfoProvider>(),
       DownloadNotificationService(),
+      getIt<AppConfigProvider>(),
     );
   });
   getIt.registerSingletonAsync<BackgroundCacheService>(() async {
