@@ -126,9 +126,8 @@ class WindowStateService with WindowListener {
 
       // Already mostly visible on any display — keep as-is.
       for (final display in displays) {
-        final intersection = _displayRect(
-          display,
-        ).intersect(windowRectOn(display));
+        final intersection = _displayRect(display)
+            .intersect(windowRectOn(display));
         if (intersection.width > 100 && intersection.height > 50) {
           return pos;
         }

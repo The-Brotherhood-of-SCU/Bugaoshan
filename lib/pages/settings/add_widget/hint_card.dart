@@ -26,9 +26,8 @@ class HintCard extends StatelessWidget {
             Expanded(
               child: Text(
                 hint,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: colorScheme.onSurfaceVariant),
               ),
             ),
           ],

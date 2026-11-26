@@ -361,9 +361,8 @@ class _ReservationPageState extends State<ReservationPage>
     }
 
     final message = failure?.message ?? l10n.reservationLaunchFailedGeneric;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   // ── 我的预约 ─────────────────────────────────────────────────────────────
@@ -484,9 +483,8 @@ class _ReservationPageState extends State<ReservationPage>
       return Center(
         child: Text(
           l10n.reservationNoResources,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       );
     }
@@ -673,9 +671,8 @@ class _ReservationPageState extends State<ReservationPage>
         children: [
           Text(
             resource.name,
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            style: Theme.of(context).textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w600),
           ),
           if (resource.attributes.isNotEmpty) ...[
             const SizedBox(height: AppShapes.small),
@@ -1060,9 +1057,8 @@ class _InfoChip extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: Theme.of(
-          context,
-        ).textTheme.labelSmall?.copyWith(color: scheme.onSecondaryContainer),
+        style: Theme.of(context).textTheme.labelSmall
+            ?.copyWith(color: scheme.onSecondaryContainer),
       ),
     );
   }
@@ -1116,9 +1112,8 @@ class _MyAppointmentsDialog extends StatelessWidget {
                         ? error
                         : l10n.reservationMyAppointmentsError,
                     textAlign: TextAlign.center,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: scheme.error),
+                    style: Theme.of(context).textTheme.bodyMedium
+                        ?.copyWith(color: scheme.error),
                   ),
                 );
               }
@@ -1129,9 +1124,8 @@ class _MyAppointmentsDialog extends StatelessWidget {
                   child: Text(
                     l10n.reservationMyAppointmentsEmpty,
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
+                    style: Theme.of(context).textTheme.bodyMedium
+                        ?.copyWith(color: scheme.onSurfaceVariant),
                   ),
                 );
               }

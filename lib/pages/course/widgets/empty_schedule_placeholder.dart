@@ -39,9 +39,8 @@ class EmptySchedulePlaceholder extends StatelessWidget {
               const SizedBox(height: 20),
               Text(
                 l10n.noSchedule,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                style: Theme.of(context).textTheme.titleLarge
+                    ?.copyWith(fontWeight: FontWeight.w600),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),

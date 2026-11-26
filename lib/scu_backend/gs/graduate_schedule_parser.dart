@@ -543,9 +543,9 @@ List<Course> assignColorsByName(List<Course> courses) {
 /// 稀疏周次（如 `"1,5,9"`）只能近似成首尾区间——[Course] 的模型表达不了，
 /// 这是已知的精度损失。
 ({int start, int end, WeekType weekType})? _parseWeekSpec(Object? value) {
-  final numbers = _extractInts(
-    value,
-  ).where((w) => w >= 1 && w <= _maxWeeksPerTerm).toList();
+  final numbers = _extractInts(value)
+      .where((w) => w >= 1 && w <= _maxWeeksPerTerm)
+      .toList();
   if (numbers.isEmpty) return null;
 
   final text = value.toString();
@@ -596,9 +596,10 @@ List<int> _extractInts(Object? value) {
   if (value == null) return const [];
   if (value is int) return [value];
   if (value is num) return [value.toInt()];
-  return RegExp(
-    r'\d+',
-  ).allMatches(value.toString()).map((m) => int.parse(m.group(0)!)).toList();
+  return RegExp(r'\d+')
+      .allMatches(value.toString())
+      .map((m) => int.parse(m.group(0)!))
+      .toList();
 }
 
 // ── 宽松取值 ──────────────────────────────────────────────────────

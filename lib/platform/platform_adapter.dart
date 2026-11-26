@@ -93,10 +93,10 @@ class PlatformAdapter {
 
   /// false 表示取消；权限拒绝保持 Gal 的异常语义。
   Future<bool> saveImage(Uint8List bytes, {String? name}) async {
-    if (!await Gal.requestAccess()) {
+    if (!await Gal.requestPermission()) {
       throw GalException(
-        type: GalExceptionType.accessDenied,
-        platformException: PlatformException(code: 'ACCESS_DENIED'),
+        type: GalExceptionType.permissionDenied,
+        platformException: PlatformException(code: 'PERMISSION_DENIED'),
         stackTrace: StackTrace.current,
       );
     }

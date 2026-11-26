@@ -76,9 +76,8 @@ void main() {
       'bugaoshan-logger-test-',
     );
     addTearDown(() => directory.delete(recursive: true));
-    final file = await File(
-      '${directory.path}/not-a-directory',
-    ).writeAsString('test');
+    final file = await File('${directory.path}/not-a-directory')
+        .writeAsString('test');
     final logger = AppLogger();
     await logger.enableFileSink(overridePath: file.path);
     expect(logger.fileSinkEnabled, isTrue);

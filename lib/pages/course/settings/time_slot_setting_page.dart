@@ -378,9 +378,8 @@ class _TimeSlotEditor extends StatelessWidget {
             width: 48,
             child: Text(
               '${index + 1}',
-              style: Theme.of(
-                context,
-              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleSmall
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
           ),
           Expanded(

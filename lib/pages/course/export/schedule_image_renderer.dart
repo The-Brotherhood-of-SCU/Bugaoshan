@@ -12,6 +12,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/platform_utils.dart';
+
 import 'schedule_export_view.dart';
 
 /// 课表导出图片的渲染层：数据模型、DPR 策略与「离屏挂载 + RepaintBoundary 捕获」。
@@ -103,11 +104,10 @@ double resolveEffectiveDpr({
 }
 
 /// 渲染函数签名。
-typedef ScheduleImageRender =
-    Future<ScheduleImageArtifact> Function(
-      BuildContext context,
-      ScheduleExportData exportData,
-    );
+typedef ScheduleImageRender = Future<ScheduleImageArtifact> Function(
+  BuildContext context,
+  ScheduleExportData exportData,
+);
 
 /// 离屏路由返回结果内部封装。
 class _ScheduleImageRenderResult {

@@ -6,6 +6,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/academic_calendar.dart';
 import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/models/date_display_format.dart';
+
 import 'course_page_actions.dart';
 import 'course_page_controller.dart';
 import 'course_page_no_schedule_view.dart';
@@ -14,6 +15,7 @@ import 'course_page_top_bar.dart';
 import 'course_page_vacation_view.dart';
 import 'course_preview_data.dart';
 import '../management/schedule_management_page.dart';
+
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
@@ -375,9 +377,8 @@ class _CoursePageState extends State<CoursePage> with WidgetsBindingObserver {
     if (matchId != null) {
       courseProvider.switchSchedule(matchId);
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.noNextSemesterSchedule)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.noNextSemesterSchedule)));
     }
   }
 

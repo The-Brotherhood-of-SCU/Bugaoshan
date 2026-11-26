@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/release_version.dart';
 
@@ -57,9 +58,8 @@ Future<String> fetchLatestVersionFromGithub({http.Client? client}) async {
 Future<List<dynamic>> fetchRecentGithubReleases({http.Client? client}) async {
   final effectiveClient = client ?? http.Client();
   try {
-    final uri = Uri.parse(
-      _releasesUrl,
-    ).replace(queryParameters: {'per_page': '100'});
+    final uri = Uri.parse(_releasesUrl)
+        .replace(queryParameters: {'per_page': '100'});
     final response = await effectiveClient.get(uri, headers: _apiHeaders);
     if (response.statusCode != 200) {
       throw Exception('GitHub API error: ${response.statusCode}');

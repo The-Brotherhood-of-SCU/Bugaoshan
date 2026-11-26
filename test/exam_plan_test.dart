@@ -166,9 +166,9 @@ void main() {
       expect(pastExam.isPast, isTrue);
       expect(futureExam.isPast, isFalse);
 
-      final pastUid = IcsService.genExamCalendarEvents(
-        exams: const [pastExam],
-      ).single.uid;
+      final pastUid = IcsService.genExamCalendarEvents(exams: const [pastExam])
+          .single
+          .uid;
       final futureUid = IcsService.genExamCalendarEvents(
         exams: const [futureExam],
       ).single.uid;

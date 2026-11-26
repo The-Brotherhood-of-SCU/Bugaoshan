@@ -151,14 +151,14 @@ const String kReservationSpecialPageUrl =
 
 /// 预约系统 SSO 入口：`/api/login/main` 302 到 id.scu.edu.cn 的 CAS
 /// plugin，回跳 `/api/login/cas` 时下发 `reservation_uid`。
-final String kReservationSsoUrl = Uri.parse(
-  '$kReservationBaseUrl/api/login/main',
-).replace(queryParameters: {'redirect_url': kReservationSpecialPageUrl}).toString();
+final String kReservationSsoUrl =
+    Uri.parse('$kReservationBaseUrl/api/login/main')
+        .replace(queryParameters: {'redirect_url': kReservationSpecialPageUrl})
+        .toString();
 
 /// 专题资源列表（`d.data[].base` 为资源定义，`time` / `appointmen_list_info`
 /// 在列表接口里恒为空，时段要单独查 calendar）。
-const String kReservationTopicResourceListPath =
-    '/api/topic/resource-list';
+const String kReservationTopicResourceListPath = '/api/topic/resource-list';
 
 /// 资源日历：`id`(资源) + `date`(JSON 字符串 `{start_date,end_date}`)
 /// + `collective`(0)。返回 `{time:[时段], day:[日期], data:{日期:{时段id:{status,total,num,amount}}}}`。
@@ -178,7 +178,8 @@ const String kReservationLaunchPath = '/site/resource/launch';
 /// `d = {data: [预约单], total}`，行含 `id / resource_name / created /
 /// status / type / is_cancel / is_creater / detail`，其中 `detail` 是
 /// `日期 -> [{id, str_time}]` 的对象（可按明细部分取消）。
-const String kReservationAppointmentListPath = '/site/appointment/appointment-list';
+const String kReservationAppointmentListPath =
+    '/site/appointment/appointment-list';
 
 /// 取消预约：`POST`，body `{appointment_id, appointment_detail_id}`，其中
 /// `appointment_detail_id` 是**明细 id 的 JSON 字符串**（传整单全部明细

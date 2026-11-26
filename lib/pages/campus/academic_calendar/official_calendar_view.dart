@@ -6,8 +6,10 @@ import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
-typedef OfficialCalendarImageBuilder =
-    Widget Function(BuildContext context, String url);
+typedef OfficialCalendarImageBuilder = Widget Function(
+  BuildContext context,
+  String url,
+);
 
 class CalendarEntry {
   final String title;
@@ -139,18 +141,18 @@ class OfficialCalendarView extends StatelessWidget {
                               Icon(
                                 Icons.broken_image,
                                 size: 48,
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 l10n.loadFailed,
                                 style: Theme.of(context).textTheme.bodyMedium
                                     ?.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSurfaceVariant,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
                                     ),
                               ),
                             ],

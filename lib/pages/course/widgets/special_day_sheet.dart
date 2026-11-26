@@ -83,10 +83,8 @@ Future<void> _showSheet(
                   // Holiday/festival/term name
                   Text(
                     info.name ?? dateFormat.formatMonthDay(date),
-                    style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
+                    style: Theme.of(ctx).textTheme.titleLarge
+                        ?.copyWith(fontWeight: FontWeight.bold, color: color),
                   ),
                   const SizedBox(height: 4),
                   // Holiday total days subtitle

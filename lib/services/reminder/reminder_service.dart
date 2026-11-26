@@ -26,14 +26,11 @@ class ReminderService {
   static const String _tag = 'ReminderService';
 
   ReminderService({
-    required CourseProvider courseProvider,
-    required AppConfigProvider appConfig,
-    required ReminderTransport transport,
+    required this._courseProvider,
+    required this._appConfig,
+    required this._transport,
     Duration? debounceDuration,
-  }) : _courseProvider = courseProvider,
-       _appConfig = appConfig,
-       _transport = transport,
-       _debounceDuration =
+  }) : _debounceDuration =
            debounceDuration ?? const Duration(milliseconds: 800);
 
   final CourseProvider _courseProvider;

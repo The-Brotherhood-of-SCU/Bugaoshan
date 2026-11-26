@@ -6,7 +6,7 @@
 
 | 项目 | 当前配置 |
 |---|---|
-| Flutter | `3.44.9` stable，与仓库 CI 一致 |
+| Flutter | `3.47.9` stable，与仓库 CI 一致 |
 | 主应用 Bundle ID | `io.github.thebrotherhoodofscu.bugaoshan.ios` |
 | Widget Bundle ID | `io.github.thebrotherhoodofscu.bugaoshan.ios.CourseWidget` |
 | App Group | `group.io.github.thebrotherhoodofscu.bugaoshan.ios` |

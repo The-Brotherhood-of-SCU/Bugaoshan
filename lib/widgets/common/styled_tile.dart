@@ -183,9 +183,8 @@ class BadgedTile extends StatelessWidget {
           else ...[
             Icon(
               Icons.chevron_right_rounded,
-              color: Theme.of(
-                context,
-              ).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+              color: Theme.of(context).colorScheme.onSurfaceVariant
+                  .withValues(alpha: 0.4),
               size: 20,
             ),
           ],
@@ -222,9 +221,8 @@ class LinkTile extends StatelessWidget {
       value: value,
       trailing: Icon(
         Icons.open_in_new,
-        color: Theme.of(
-          context,
-        ).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+        color: Theme.of(context).colorScheme.onSurfaceVariant
+            .withValues(alpha: 0.4),
         size: 18,
       ),
     );
@@ -281,9 +279,8 @@ class StackedTile extends StatelessWidget {
           ),
           Icon(
             trailing ?? Icons.chevron_right_rounded,
-            color: Theme.of(
-              context,
-            ).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+            color: Theme.of(context).colorScheme.onSurfaceVariant
+                .withValues(alpha: 0.4),
             size: 20,
           ),
         ],

@@ -7,6 +7,7 @@ import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/stat_item.dart';
 import 'package:bugaoshan/services/course_teacher_index.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
+
 import 'scheme_scores_tab.dart' show ScoreCardWidget;
 
 class PassingScoresTab extends StatefulWidget {
@@ -49,9 +50,8 @@ class _PassingScoresTabState extends State<PassingScoresTab> {
               l10n,
               fallback: l10n.gradesRefreshFailed,
             );
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(message)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(message)));
           });
         }
         return switch (provider.passingState) {

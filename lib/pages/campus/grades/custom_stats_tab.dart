@@ -7,6 +7,7 @@ import 'package:bugaoshan/widgets/common/retryable_error_widget.dart';
 import 'package:bugaoshan/widgets/common/stat_item.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/theme_shape.dart';
+
 import 'scheme_scores_tab.dart' show SchemeScoreSelector, ScoreCardWidget;
 
 class CustomStatsTab extends StatefulWidget {
@@ -45,9 +46,8 @@ class _CustomStatsTabState extends State<CustomStatsTab> {
               l10n,
               fallback: l10n.gradesRefreshFailed,
             );
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(message)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(message)));
           });
         }
         return switch (provider.schemeState) {

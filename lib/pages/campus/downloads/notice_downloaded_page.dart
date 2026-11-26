@@ -1,6 +1,9 @@
 import 'package:bugaoshan/utils/open_link.dart';
+
 import 'dart:async';
+
 import 'package:bugaoshan/utils/app_log.dart';
+
 import 'dart:io';
 
 import 'package:bugaoshan/injection/injector.dart';
@@ -15,6 +18,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/utils/share_utils.dart';
 import 'package:bugaoshan/widgets/common/swipe_page_view.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
+
 import 'file_utils.dart';
 
 class _DirConfig {
@@ -143,9 +147,8 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
       if (Platform.isAndroid) {
         await Clipboard.setData(ClipboardData(text: dir.path));
         if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(dir.path)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(dir.path)));
         return;
       }
       await openUri(Uri.file(dir.path));
@@ -626,9 +629,8 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
       child: _selecting
           ? Container(
               decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                color: Theme.of(context).colorScheme.primaryContainer
+                    .withValues(alpha: 0.3),
                 border: Border(
                   bottom: BorderSide(
                     color: Theme.of(context).colorScheme.outlineVariant,
@@ -640,9 +642,8 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
                 children: [
                   Text(
                     l10n.selectedCount(_selected.length),
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: Theme.of(context).textTheme.bodyMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
                   ),
                   const Spacer(),
                   TextButton.icon(
@@ -672,9 +673,8 @@ class _NoticeDownloadedPageState extends State<NoticeDownloadedPage>
     return Center(
       child: Text(
         message,
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
+        style: Theme.of(context).textTheme.bodyLarge
+            ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
       ),
     );
   }

@@ -43,10 +43,9 @@ class CcylAuth extends ChangeNotifier implements SubsystemAuth {
     this._scuAuth, {
     AppLogger? logger,
     CcylLoginCallback? login,
-    CcylOAuthCodeProvider? oauthCodeProvider,
+    this._oauthCodeProvider,
   }) : _log = logger ?? getIt<AppLogger>(),
-       _login = login ?? CcylService.login,
-       _oauthCodeProvider = oauthCodeProvider;
+       _login = login ?? CcylService.login;
 
   @override
   String get moduleId => 'ccyl';

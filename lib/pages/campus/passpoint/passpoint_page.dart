@@ -140,9 +140,8 @@ class _PasspointPageState extends State<PasspointPage> {
           Expanded(
             child: Text(
               message,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: scheme.onErrorContainer),
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: scheme.onErrorContainer),
             ),
           ),
           TextButton(onPressed: onRetry, child: Text(l10n.retry)),
@@ -305,9 +304,8 @@ class _PasspointPageState extends State<PasspointPage> {
                     Flexible(
                       child: Text(
                         device.userMac,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontFamily: 'monospace',
-                        ),
+                        style: Theme.of(context).textTheme.bodyMedium
+                            ?.copyWith(fontFamily: 'monospace'),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -509,9 +507,8 @@ class _AddDeviceSheetState extends State<_AddDeviceSheet> {
               children: [
                 Text(
                   l10n.passpointAddDevice,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleLarge
+                      ?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
@@ -592,9 +589,9 @@ class _AddDeviceSheetState extends State<_AddDeviceSheet> {
                             _errorText!,
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onErrorContainer,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onErrorContainer,
                                 ),
                           ),
                         ),

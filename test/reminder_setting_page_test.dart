@@ -58,7 +58,7 @@ class _FakeTransport implements ReminderTransport {
 }
 
 class _FakeDatabase extends DatabaseService {
-  _FakeDatabase({required ScheduleConfig config}) : _config = config;
+  _FakeDatabase({required this._config});
 
   final ScheduleConfig _config;
   List<Course> _courses = [];

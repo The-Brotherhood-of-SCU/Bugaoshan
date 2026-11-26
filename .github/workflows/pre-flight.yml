@@ -253,7 +253,7 @@ jobs:
         if: steps.deps.outputs.changed == 'true'
         uses: subosito/flutter-action@f2c4f6686ca8e8d6e6d0f28410eeef506ed66aff # v2.18.0
         with:
-          flutter-version: "3.44.9"
+          flutter-version: "3.47.9"
           channel: "stable"
           cache: true
 

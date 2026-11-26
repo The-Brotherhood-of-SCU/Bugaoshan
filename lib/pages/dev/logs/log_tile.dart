@@ -41,9 +41,8 @@ class LogTile extends StatelessWidget {
             '${entries.length}',
             style: Theme.of(context).textTheme.labelSmall,
           ),
-          onTap: () => Navigator.of(
-            logicRootContext,
-          ).push(MaterialPageRoute(builder: (_) => const LogViewerPage())),
+          onTap: () => Navigator.of(logicRootContext)
+              .push(MaterialPageRoute(builder: (_) => const LogViewerPage())),
         );
       },
     );

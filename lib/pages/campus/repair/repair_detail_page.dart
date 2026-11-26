@@ -109,9 +109,8 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
     try {
       await _provider.withdrawRepair(id: _detail!.id);
       if (!mounted) return false;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.repairWithdrawSuccess)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.repairWithdrawSuccess)));
       // 留在详情页：重新拉取详情，状态徽标变为「已撤回」、
       // 撤回按钮消失（_operatorVisible 按最新详情重算）。
       await _load();
@@ -119,9 +118,8 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
     } catch (e, logStackTrace) {
       AppLog.e(_tag, '_withdraw 失败', error: e, stackTrace: logStackTrace);
       if (!mounted) return false;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.repairWithdrawFailed)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.repairWithdrawFailed)));
       return false;
     } finally {
       if (mounted) setState(() => _operating = false);
@@ -196,9 +194,8 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
                 if (title.isNotEmpty)
                   Text(
                     title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
                   ),
                 if (statusText.isNotEmpty)
                   Padding(
@@ -209,9 +206,8 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.primary.withValues(alpha: 0.12),
+                        color: Theme.of(context).colorScheme.primary
+                            .withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(AppShapes.small),
                       ),
                       child: Text(
@@ -274,9 +270,8 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
                 children: [
                   Text(
                     l10n.repairProgress,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: Theme.of(context).textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 8),
                   for (final log in detail.logs) _buildLogItem(log),
@@ -332,9 +327,8 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
                 if (log.statusName.isNotEmpty)
                   Text(
                     log.statusName,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: Theme.of(context).textTheme.bodyMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
                   ),
                 if (log.content.isNotEmpty)
                   Text(
@@ -396,9 +390,8 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
     final projects = await _provider.fetchEvaluateProjects();
     if (!mounted) return;
     if (projects.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.repairEvaluateFailed)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.repairEvaluateFailed)));
       return;
     }
 
@@ -417,9 +410,8 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
       ),
     );
     if (result == true && mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.repairEvaluateSuccess)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.repairEvaluateSuccess)));
       // 留在详情页：重新拉取详情，状态徽标变为「已评价」、
       // 评价按钮消失（_operatorVisible 按最新详情重算）。
       await _load();

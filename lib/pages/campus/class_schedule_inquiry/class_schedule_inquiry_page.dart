@@ -253,9 +253,8 @@ class _ClassScheduleInquiryPageState extends State<ClassScheduleInquiryPage> {
       return Center(
         child: Text(
           l10n.classScheduleInquiryNoData,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodyLarge
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       );
     }
@@ -328,9 +327,8 @@ class _ClassCard extends StatelessWidget {
         ),
         title: Text(
           classInfo.className,
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.titleSmall
+              ?.copyWith(fontWeight: FontWeight.w600),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

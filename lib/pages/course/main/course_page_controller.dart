@@ -23,11 +23,9 @@ class CoursePageController extends ChangeNotifier {
 
   CoursePageController({
     required ValueListenable<ScheduleConfig?> scheduleConfig,
-    required ValueListenable<List<ScheduleConfig>> allSchedules,
-    required ValueListenable<Duration> animationDuration,
+    required this._allSchedules,
+    required this._animationDuration,
   }) : _scheduleConfig = scheduleConfig,
-       _allSchedules = allSchedules,
-       _animationDuration = animationDuration,
        showVacationPage = ValueNotifier<bool>(false) {
     assert(
       scheduleConfig.value != null,

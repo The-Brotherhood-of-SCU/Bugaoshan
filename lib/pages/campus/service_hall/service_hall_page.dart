@@ -20,15 +20,13 @@ class ServiceHallPage extends StatelessWidget {
   const ServiceHallPage({super.key});
 
   void _openMatter(BuildContext context, ServiceAppInfo app) {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => ServiceFormPage(app: app)));
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => ServiceFormPage(app: app)));
   }
 
   void _openMyApplications(BuildContext context) {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const MyApplicationsPage()));
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => const MyApplicationsPage()));
   }
 
   @override

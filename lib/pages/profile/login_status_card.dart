@@ -82,9 +82,8 @@ class _LoginStatusCardState extends State<LoginStatusCard> {
     if (result == true) {
       unawaited(_loadUsername());
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.loginSuccess)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.loginSuccess)));
     }
   }
 

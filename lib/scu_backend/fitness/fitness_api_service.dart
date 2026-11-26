@@ -103,8 +103,7 @@ class FitnessApiService implements FitnessTestApi {
     'Content-Type': 'application/x-www-form-urlencoded',
     'Origin': 'https://pead.scu.edu.cn',
     'Pragma': 'no-cache',
-    'Referer':
-        'https://pead.scu.edu.cn/bdlp_h5_fitness_test/public/index.php/index/index',
+    'Referer': 'https://pead.scu.edu.cn/bdlp_h5_fitness_test/public/index.php/index/index',
     'User-Agent': kDefaultUserAgent,
     'X-Requested-With': 'XMLHttpRequest',
     'sec-ch-ua':

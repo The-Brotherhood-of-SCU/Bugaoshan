@@ -182,9 +182,8 @@ class _GraduateGradesPageState extends State<GraduateGradesPage> {
       return Center(
         child: Text(
           l10n.graduateGradesEmpty,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       );
     }
@@ -329,9 +328,8 @@ class _GradeCard extends StatelessWidget {
                 children: [
                   Text(
                     row.courseName,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: Theme.of(context).textTheme.bodyMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
                   ),
                   if (row.courseNameEn != null &&
                       row.courseNameEn!.trim().isNotEmpty)
@@ -378,9 +376,9 @@ class _GradeCard extends StatelessWidget {
                           row.attemptType!,
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
                               ),
                         ),
                       ],

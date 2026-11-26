@@ -168,9 +168,8 @@ class _BalanceTrendPageState extends State<BalanceTrendPage> {
                 padding: const EdgeInsets.all(24),
                 child: Text(
                   state.error.toString(),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                  style: Theme.of(context).textTheme.bodyMedium
+                      ?.copyWith(color: Theme.of(context).colorScheme.error),
                   textAlign: TextAlign.center,
                 ),
               ),

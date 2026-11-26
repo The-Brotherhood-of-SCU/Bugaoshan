@@ -181,13 +181,11 @@ class LiveCourseResolver {
 ///    本服务仅在课程发生切换或状态实质性变更时触发同步，不维持分钟级更新心跳。
 class LiveActivityCoordinator {
   LiveActivityCoordinator({
-    required CourseProvider courseProvider,
+    required this._courseProvider,
     LiveActivityService? service,
     Duration? pollInterval,
-    AppConfigProvider? appConfig,
-  }) : _courseProvider = courseProvider,
-       _appConfig = appConfig,
-       _service = service ?? LiveActivityService(),
+    this._appConfig,
+  }) : _service = service ?? LiveActivityService(),
        _pollInterval = pollInterval ?? const Duration(seconds: 60);
 
   final CourseProvider _courseProvider;

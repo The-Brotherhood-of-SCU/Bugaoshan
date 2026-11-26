@@ -314,9 +314,8 @@ class _ClassroomPageState extends State<ClassroomPage> {
       return Center(
         child: Text(
           l10n.noData,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodyLarge
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       );
     }

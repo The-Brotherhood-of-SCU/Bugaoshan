@@ -299,9 +299,8 @@ class _AddWidgetContentState extends State<AddWidgetContent>
     _pinPending = false;
     if (!mounted) return;
     final localizations = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(localizations.pinWidgetSuccess)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(localizations.pinWidgetSuccess)));
     // 让新添加的小组件立刻加载课程数据
     getIt<WidgetUpdateService>().updateWidgetData(force: true);
   }

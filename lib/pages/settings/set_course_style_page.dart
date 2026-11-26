@@ -110,9 +110,8 @@ class SetCourseStylePage extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: Text(
           localizations.courseCardSection,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            color: Theme.of(context).colorScheme.primary,
-          ),
+          style: Theme.of(context).textTheme.titleSmall
+              ?.copyWith(color: Theme.of(context).colorScheme.primary),
         ),
       ),
       // Color opacity
@@ -162,9 +161,8 @@ class SetCourseStylePage extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: Text(
           localizations.courseGridSection,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            color: Theme.of(context).colorScheme.primary,
-          ),
+          style: Theme.of(context).textTheme.titleSmall
+              ?.copyWith(color: Theme.of(context).colorScheme.primary),
         ),
       ),
       // Show course grid switch
@@ -200,9 +198,8 @@ class SetCourseStylePage extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: Text(
           localizations.displaySetting,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            color: Theme.of(context).colorScheme.primary,
-          ),
+          style: Theme.of(context).textTheme.titleSmall
+              ?.copyWith(color: Theme.of(context).colorScheme.primary),
         ),
       ),
       AdaptiveGlassSwitchListTile(
@@ -264,9 +261,8 @@ class SetCourseStylePage extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: Text(
           localizations.backgroundImage,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            color: Theme.of(context).colorScheme.primary,
-          ),
+          style: Theme.of(context).textTheme.titleSmall
+              ?.copyWith(color: Theme.of(context).colorScheme.primary),
         ),
       ),
       // Background image

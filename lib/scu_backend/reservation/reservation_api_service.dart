@@ -163,9 +163,8 @@ class ReservationApiService implements ReservationApi {
     String path, {
     Map<String, String>? query,
   }) async {
-    final uri = Uri.parse(
-      '$kReservationBaseUrl$path',
-    ).replace(queryParameters: query);
+    final uri = Uri.parse('$kReservationBaseUrl$path')
+        .replace(queryParameters: query);
     final response = await client.get(uri, headers: _headers);
     return _decodeEnvelope(response, path);
   }

@@ -162,9 +162,8 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
           Expanded(
             child: Text(
               message,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: scheme.onErrorContainer),
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: scheme.onErrorContainer),
             ),
           ),
           TextButton(onPressed: onRetry, child: Text(l10n.retry)),
@@ -329,9 +328,8 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
         padding: const EdgeInsets.all(16),
         child: Text(
           l10n.noData,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       ),
     );
@@ -371,9 +369,8 @@ class _NetworkDevicePageState extends State<NetworkDevicePage> {
               children: [
                 Text(
                   '${l10n.networkDeviceDeviceId}: ${_valueOf(deviceId)}',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(fontFamily: 'monospace'),
+                  style: Theme.of(context).textTheme.bodyMedium
+                      ?.copyWith(fontFamily: 'monospace'),
                 ),
                 const SizedBox(height: 2),
                 Text(

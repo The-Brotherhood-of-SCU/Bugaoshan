@@ -196,7 +196,7 @@ class _ControllableUserInfoPersistence {
 }
 
 class _FakeWfwAuth extends ChangeNotifier implements WfwAuth {
-  _FakeWfwAuth({required bool ready}) : _ready = ready;
+  _FakeWfwAuth({required this._ready});
 
   bool _ready;
   int ensureAuthenticatedCalls = 0;

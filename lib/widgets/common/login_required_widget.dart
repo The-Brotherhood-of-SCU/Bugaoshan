@@ -11,9 +11,8 @@ class LoginRequiredWidget extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     void openLogin() {
       // 登录成功回到根导航器，避免平板弹窗误关整个功能页。
-      Navigator.of(
-        logicRootContext,
-      ).push(MaterialPageRoute(builder: (_) => const ScuLoginPage()));
+      Navigator.of(logicRootContext)
+          .push(MaterialPageRoute(builder: (_) => const ScuLoginPage()));
     }
 
     return Center(

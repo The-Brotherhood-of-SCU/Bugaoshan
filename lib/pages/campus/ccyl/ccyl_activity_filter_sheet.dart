@@ -146,9 +146,8 @@ class _CcylActivityFilterSheetState extends State<_CcylActivityFilterSheet> {
       padding: const EdgeInsets.only(top: 16, bottom: 8),
       child: Text(
         label,
-        style: Theme.of(
-          context,
-        ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+        style: Theme.of(context).textTheme.labelLarge
+            ?.copyWith(fontWeight: FontWeight.w600),
       ),
     );
   }

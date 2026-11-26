@@ -184,10 +184,9 @@ void main() {
 
     test('uses preview tag semantics and reports a missing flag', () {
       final mislabeled = release('v2.5.4-preview', preview: false);
-      final selected = selectLatestGithubRelease(
-        [mislabeled],
-        prerelease: true,
-      );
+      final selected = selectLatestGithubRelease([
+        mislabeled,
+      ], prerelease: true);
       expect(selected?['tag_name'], 'v2.5.4-preview');
       expect(selected?['prerelease'], isTrue);
       expect(mislabeled['prerelease'], isFalse);
@@ -198,10 +197,9 @@ void main() {
     });
 
     test('uses stable tag semantics and reports an extra preview flag', () {
-      final selected = selectLatestGithubRelease(
-        [release('v2.5.4')],
-        prerelease: false,
-      );
+      final selected = selectLatestGithubRelease([
+        release('v2.5.4'),
+      ], prerelease: false);
       expect(selected?['tag_name'], 'v2.5.4');
       expect(selected?['prerelease'], isFalse);
       expect(logger.entries.single.level, LogLevel.info);
@@ -223,10 +221,9 @@ void main() {
     });
 
     test('accepts a preview tag without a sequence number without warning', () {
-      final selected = selectLatestGithubRelease(
-        [release('v2.5.4-preview')],
-        prerelease: true,
-      );
+      final selected = selectLatestGithubRelease([
+        release('v2.5.4-preview'),
+      ], prerelease: true);
       expect(selected?['tag_name'], 'v2.5.4-preview');
       expect(logger.entries, isEmpty);
     });
@@ -242,7 +239,8 @@ void main() {
           ]),
           200,
           headers: {
-            'link': '<https://api.github.com/repos/$kGithubRepo/releases'
+            'link':
+                '<https://api.github.com/repos/$kGithubRepo/releases'
                 '?per_page=100&page=2>; rel="next"',
           },
         );

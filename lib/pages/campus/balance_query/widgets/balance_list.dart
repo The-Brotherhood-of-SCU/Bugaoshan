@@ -3,6 +3,7 @@ import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/providers/balance_query_provider.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
+
 import 'balance_card.dart';
 
 class BalanceList extends StatefulWidget {
@@ -89,9 +90,8 @@ class _BalanceListState extends State<BalanceList> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (context.mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.loadFailed)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.loadFailed)));
       }
     });
   }

@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:flutter/material.dart';
@@ -70,9 +71,8 @@ class _BackgroundImageViewState extends State<BackgroundImageView> {
     _removeListener();
     final path = widget.path;
     try {
-      final stream = FileImage(
-        File(widget.path),
-      ).resolve(ImageConfiguration.empty);
+      final stream = FileImage(File(widget.path))
+          .resolve(ImageConfiguration.empty);
       final listener = ImageStreamListener(
         (info, _) {
           if (!mounted) return;

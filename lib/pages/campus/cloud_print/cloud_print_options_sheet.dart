@@ -57,10 +57,7 @@ class _CloudPrintOptionsSheetState extends State<_CloudPrintOptionsSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              widget.title,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+            Text(widget.title, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 20),
             DropdownButtonFormField<CloudPrintColor>(
               initialValue: _color,

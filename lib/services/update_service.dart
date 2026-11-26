@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
@@ -87,8 +88,8 @@ class UpdateService {
     this._prefs,
     this._currentVersion,
     this._resource, {
-    UpdateAssetPlatform? platformOverride,
-  }) : _platformOverride = platformOverride;
+    this._platformOverride,
+  });
 
   bool get supportsInAppUpdate =>
       // F-Droid 渠道安装的包由 F-Droid 负责更新，应用内自更新对其隐藏。

@@ -222,9 +222,9 @@ class _CourseEditPageState extends State<CourseEditPage> {
                       child: Text(
                         l10n.customWeeksHint,
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onPrimaryContainer,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onPrimaryContainer,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

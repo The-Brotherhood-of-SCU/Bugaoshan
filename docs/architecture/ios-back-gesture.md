@@ -73,7 +73,7 @@ iPad 上「打开一个功能页」走的不是 `Navigator.push`：`popupOrNavig
 
 ## 维护注意
 
-- 代码里对 `TransitionRoute.controller`（`@protected`）的访问带 `// ignore: invalid_use_of_protected_member`，与 Flutter 3.44 的 `cupertino/route.dart` 对齐。升级 Flutter 时要复查：`TransitionRoute.controller` 是否仍在、`CupertinoPageTransition` 的 `linearTransition` 语义是否变化、框架是否新增了可直接使用的公开 API（例如 `PredictiveBackRoute` 的 `handleStartBackGesture` 一族，代价是失去 Cupertino 的 350ms + `fastEaseInToSlowEaseOut` 补齐动画）。
+- 代码里对 `TransitionRoute.controller`（`@protected`）的访问带 `// ignore: invalid_use_of_protected_member`，与 Flutter 3.47 的 `cupertino/route.dart` 对齐。升级 Flutter 时要复查：`TransitionRoute.controller` 是否仍在、`CupertinoPageTransition` 的 `linearTransition` 语义是否变化、框架是否新增了可直接使用的公开 API（例如 `PredictiveBackRoute` 的 `handleStartBackGesture` 一族，代价是失去 Cupertino 的 350ms + `fastEaseInToSlowEaseOut` 补齐动画）。
 - 手势结束时必须保证 `NavigatorState.userGestureInProgress` 复位；测试里统一断言这一点。
 
 ## 系统版本边界

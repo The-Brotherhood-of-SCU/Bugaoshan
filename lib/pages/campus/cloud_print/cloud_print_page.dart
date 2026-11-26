@@ -166,9 +166,8 @@ class _CloudPrintPageState extends State<CloudPrintPage>
       : '${(bytes / 1024).ceil()} KB';
   void _snack(String message) {
     if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(message)));
     }
   }
 

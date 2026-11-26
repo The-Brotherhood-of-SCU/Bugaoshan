@@ -183,9 +183,8 @@ class ServiceApiService {
   /// 由 [ServiceFormSchema.build] 解析。
   Future<Map<String, dynamic>> fetchStartInfo(String appId) async {
     final json = await _request((client) async {
-      final uri = Uri.parse(
-        '$_base${paths['processStartInfo']}',
-      ).replace(queryParameters: {'app_id': appId});
+      final uri = Uri.parse('$_base${paths['processStartInfo']}')
+          .replace(queryParameters: {'app_id': appId});
       final resp = await client.get(uri, headers: _jsonHeaders);
       return _decodeResponse(resp.body, resp.statusCode);
     });
@@ -235,9 +234,8 @@ class ServiceApiService {
   /// 解析不出时返回 null，由调用方回退 [kDefaultStarterDepartId]。
   Future<String?> fetchStarterDepartId(String appId) async {
     final json = await _request((client) async {
-      final uri = Uri.parse(
-        '$_base${paths['selectDepartment']}',
-      ).replace(queryParameters: {'app_id': appId});
+      final uri = Uri.parse('$_base${paths['selectDepartment']}')
+          .replace(queryParameters: {'app_id': appId});
       final resp = await client.get(uri, headers: _jsonHeaders);
       return _decodeResponse(resp.body, resp.statusCode);
     });

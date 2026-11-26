@@ -277,9 +277,8 @@ class ZhjwApiService {
       );
       final body = resp.body.trim();
       _checkSessionExpiry(body, resp.statusCode);
-      final xqMatch = RegExp(
-        r"""<input[^>]+id="xqList"[^>]+value='([^']+)'""",
-      ).firstMatch(body);
+      final xqMatch = RegExp(r"""<input[^>]+id="xqList"[^>]+value='([^']+)'""")
+          .firstMatch(body);
       if (xqMatch == null) {
         throw const ServiceException('无法解析校区列表');
       }

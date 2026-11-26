@@ -78,7 +78,7 @@ class RecordingTransport implements ReminderTransport {
 
 /// 内存测试桩数据源，模拟 [DatabaseService] 核心接口以避免测试对原生平台存储插件的依赖。
 class _FakeDatabase extends DatabaseService {
-  _FakeDatabase({ScheduleConfig? config}) : _config = config;
+  _FakeDatabase({this._config});
 
   ScheduleConfig? _config;
   List<Course> _courses = [];

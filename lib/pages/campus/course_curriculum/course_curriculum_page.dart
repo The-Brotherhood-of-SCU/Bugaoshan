@@ -263,9 +263,8 @@ class _CourseCurriculumPageState extends State<CourseCurriculumPage> {
       return Center(
         child: Text(
           l10n.courseCurriculumNoData,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodyLarge
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       );
     }
@@ -336,9 +335,8 @@ class _CourseCard extends StatelessWidget {
         ),
         title: Text(
           courseInfo.courseName,
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.titleSmall
+              ?.copyWith(fontWeight: FontWeight.w600),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

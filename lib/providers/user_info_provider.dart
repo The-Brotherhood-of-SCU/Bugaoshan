@@ -15,8 +15,10 @@ typedef _UserInfoResult = ({
   Map<String, dynamic>? profile,
   List<Map<String, dynamic>> labels,
 });
-typedef UserInfoPersistence =
-    Future<void> Function(String? realname, String? number);
+typedef UserInfoPersistence = Future<void> Function(
+  String? realname,
+  String? number,
+);
 
 Future<void> _persistUserInfoToPreferences(
   String? realname,

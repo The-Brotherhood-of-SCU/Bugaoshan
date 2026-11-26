@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
@@ -9,6 +10,7 @@ import 'package:bugaoshan/services/course_teacher_index.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
 import 'package:bugaoshan/widgets/common/swipe_page_view.dart';
+
 import 'scheme_scores_tab.dart';
 import 'passing_scores_tab.dart';
 import 'custom_stats_tab.dart';

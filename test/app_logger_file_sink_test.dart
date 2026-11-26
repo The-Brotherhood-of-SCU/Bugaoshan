@@ -198,9 +198,8 @@ void main() {
       '\ntoken=old-secret\n',
       mode: FileMode.append,
     );
-    await File(
-      '${directory.path}/bugaoshan-export-old.log',
-    ).writeAsString('excluded-old-snapshot');
+    await File('${directory.path}/bugaoshan-export-old.log')
+        .writeAsString('excluded-old-snapshot');
     final second = logger();
     await second.enableFileSink(overridePath: directory.path);
     second.i('Test', 'current-debug-context');
@@ -286,9 +285,8 @@ void main() {
 
   test('导出只保留最近五份快照且开关清理保留这些快照', () async {
     for (var i = 1; i <= 6; i++) {
-      await File(
-        '${directory.path}/bugaoshan-export-$i.log',
-      ).writeAsString('old snapshot $i');
+      await File('${directory.path}/bugaoshan-export-$i.log')
+          .writeAsString('old snapshot $i');
     }
     final unrelated = File('${directory.path}/bugaoshan-export-manual.log');
     await unrelated.writeAsString('user named snapshot');
@@ -319,9 +317,8 @@ void main() {
   test('已有未来时间戳快照也不能使本次导出被清理', () async {
     final future = DateTime.now().microsecondsSinceEpoch + 1000000000;
     for (var i = 0; i < 6; i++) {
-      await File(
-        '${directory.path}/bugaoshan-export-${future + i}.log',
-      ).writeAsString('future');
+      await File('${directory.path}/bugaoshan-export-${future + i}.log')
+          .writeAsString('future');
     }
     final instance = logger();
     instance.e('Test', 'new snapshot');

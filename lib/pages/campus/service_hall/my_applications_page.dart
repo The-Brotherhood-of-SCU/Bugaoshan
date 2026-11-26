@@ -99,9 +99,8 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
               Expanded(
                 child: Text(
                   title.isEmpty ? '请假申请' : title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: Theme.of(context).textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w600),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

@@ -58,16 +58,14 @@ void main() {
     });
 
     test('毫秒时间戳', () {
-      final expected = DateTime.fromMillisecondsSinceEpoch(
-        1700000000000,
-      ).toUtc();
+      final expected = DateTime.fromMillisecondsSinceEpoch(1700000000000)
+          .toUtc();
       expect(parseCcylServerTime('1700000000000'), expected);
     });
 
     test('秒时间戳', () {
-      final expected = DateTime.fromMillisecondsSinceEpoch(
-        1700000000 * 1000,
-      ).toUtc();
+      final expected = DateTime.fromMillisecondsSinceEpoch(1700000000 * 1000)
+          .toUtc();
       expect(parseCcylServerTime('1700000000'), expected);
     });
 

@@ -4,6 +4,7 @@ import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/services/download_manager.dart';
 import 'package:bugaoshan/utils/share_utils.dart';
+
 import 'file_utils.dart';
 
 /// Data for a single attachment item in the sheet.
