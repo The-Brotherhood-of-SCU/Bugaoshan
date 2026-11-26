@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/utils/app_log.dart';
 import 'package:bugaoshan/utils/share_utils.dart';
+
 import 'schedule_export_view.dart';
 import 'schedule_image_renderer.dart';
 
@@ -72,7 +73,7 @@ Future<ScheduleImageOutputStatus> saveScheduleImageToGallery({
     return ScheduleImageOutputStatus.success;
   } on GalException catch (e) {
     AppLog.w('ScheduleImageExport', 'GalException while saving image: $e');
-    if (e.type == GalExceptionType.accessDenied) {
+    if (e.type == GalExceptionType.permissionDenied) {
       return ScheduleImageOutputStatus.permissionDenied;
     }
     return ScheduleImageOutputStatus.failed;

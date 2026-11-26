@@ -42,7 +42,7 @@ dependencies:
   system_theme: ^3.2.0
   google_fonts: ^8.1.0
   share_plus: ^13.1.0
-  gal: ^2.3.0
+  gal: ^3.0.1
   open_filex: ^5.0.0
   flutter_inappwebview:
     git:

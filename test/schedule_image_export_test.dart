@@ -98,13 +98,16 @@ void main() {
           MethodCall methodCall,
         ) async {
           galCalls.add(methodCall);
-          if (methodCall.method == 'requestAccess' ||
-              methodCall.method == 'hasAccess') {
+          if (methodCall.method == 'requestPermission' ||
+              methodCall.method == 'hasPermission') {
             return galAccessGranted;
           }
           if (methodCall.method == 'putImageBytes') {
             if (!galAccessGranted) {
-              throw PlatformException(code: 'ACCESS_DENIED', message: 'Denied');
+              throw PlatformException(
+                code: 'PERMISSION_DENIED',
+                message: 'Denied',
+              );
             }
             return null;
           }
