@@ -9,7 +9,7 @@ This file provides guidance to AI coding agents when working with code in this r
 
 The name comes from a landmark on SCU's Jiang'an campus — "Bugaoshan" is a play on words meaning "not a tall mountain" and "The Brotherhood of SCU" sounds similar.
 
-> **⚠️ Flutter 版本要求**: 本项目需要 **Flutter >= 3.47**（Dart SDK >= 3.10.4）才能正常编译。CI uses Flutter **3.47** stable. 详情见 `CONTRIBUTING.md` 与 `.github/actions/setup/action.yml`.
+> **⚠️ Flutter 版本要求**: 本项目需要 **Flutter >= 3.47**（Dart SDK >= 3.13.0）才能正常编译。CI uses Flutter **3.47** stable. 详情见 `CONTRIBUTING.md` 与 `.github/actions/setup/action.yml`.
 
 ## Build & Run
 

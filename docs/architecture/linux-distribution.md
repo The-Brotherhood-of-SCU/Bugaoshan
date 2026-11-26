@@ -74,7 +74,7 @@ Linux 构建由 [`.github/workflows/build-linux.yml`](../../.github/workflows/bu
 
 - `org.freedesktop.Platform` / SDK `25.08`
 - LLVM 20 extension
-- Flutter `3.44.4`
+- Flutter `3.44.4`（manifest 固定值，低于项目当前要求的 `3.47`，见第 9 节第 4 条）
 
 构建顺序：
 
@@ -139,7 +139,7 @@ debian/changelog
 1. Linux 构建只做 `flutter build linux --release` 与打包：不校验 `ldd` 依赖可解析，也不校验 bundle 内是否残留网页视图原生库；最低 ABI 基线仍只靠用户实测。
 2. 裸 bundle 没有运行依赖说明或启动前检查，缺库时通常只表现为 loader 错误。
 3. Flatpak source manifest 与 generated manifest 需要人工同步；两者当前固定旧应用 commit，不会直接构建当前 HEAD。
-4. Flatpak Flutter `3.44.4` 与 CI Flutter `3.44.6` 不一致。
+4. Flatpak 固定的 Flutter `3.44.4` 落后于 CI 的 `3.47.9`，且低于 `pubspec.yaml` 当前要求的 Dart `>= 3.13`（Flutter `>= 3.47`）。两者目前仍自洽，因为 manifest 的应用 commit 也固定在旧版本；但一旦把该 commit 前移到 `3.47` 之后，必须同时把 Flutter 升到 `3.47.9` 并重跑 `flatpak-flutter` 重新生成 `generated/modules/flutter-sdk-*.json`，否则容器内 `flutter pub get` 会因 SDK 约束失败。
 5. AppStream metainfo 最新 release 仍为 `2.1.1`，落后于 `pubspec.yaml` 的 `2.2.0`。
 6. Linux 端没有应用内网页视图；若恢复，需要重新引入原生插件并重跑跨发行版 ABI 验证（见 [ADR-0010](../decisions/0010-remove-linux-native-webview.md)）。
 7. AUR 和 Debian 还没有可安装包，系统依赖方案尚未经过真实打包工具验证。
