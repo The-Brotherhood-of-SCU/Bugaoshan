@@ -68,8 +68,9 @@ void main() {
             .setMockMethodCallHandler(_launcherChannel, (call) async {
               attempts++;
               if (attempts > 1) return true;
-              if (throwsException)
+              if (throwsException) {
                 throw PlatformException(code: 'launch_failed');
+              }
               return false;
             });
 
