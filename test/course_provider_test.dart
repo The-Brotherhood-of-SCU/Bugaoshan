@@ -272,10 +272,9 @@ DateTime _weeksAgo(int weeks) {
 
 class _FakeDatabaseService extends DatabaseService {
   _FakeDatabaseService({
-    required String currentScheduleId,
+    required this._currentScheduleId,
     required List<ScheduleConfig> schedules,
-  }) : _currentScheduleId = currentScheduleId,
-       _schedules = List.of(schedules);
+  }) : _schedules = List.of(schedules);
 
   final String _currentScheduleId;
   List<ScheduleConfig> _schedules;

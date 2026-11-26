@@ -87,8 +87,8 @@ class UpdateService {
     this._prefs,
     this._currentVersion,
     this._resource, {
-    UpdateAssetPlatform? platformOverride,
-  }) : _platformOverride = platformOverride;
+    this._platformOverride,
+  });
 
   bool get supportsInAppUpdate =>
       // F-Droid 渠道安装的包由 F-Droid 负责更新，应用内自更新对其隐藏。

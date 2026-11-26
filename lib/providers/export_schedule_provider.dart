@@ -18,10 +18,9 @@ class ExportScheduleProvider {
 
   ExportScheduleProvider(
     this._courseProvider, {
-    ScheduleConfig? overrideConfig,
-    List<Course>? overrideCourses,
-  }) : _overrideConfig = overrideConfig,
-       _overrideCourses = overrideCourses;
+    this._overrideConfig,
+    this._overrideCourses,
+  });
 
   factory ExportScheduleProvider.create() =>
       ExportScheduleProvider(getIt<CourseProvider>());

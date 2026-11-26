@@ -39,8 +39,7 @@ class GithubResourceService {
   final http.Client? _client;
   http.Client? _ownedClient;
 
-  GithubResourceService(this._appConfig, {http.Client? client})
-    : _client = client;
+  GithubResourceService(this._appConfig, {this._client});
 
   http.Client get _inner => _client ?? (_ownedClient ??= http.Client());
 
