@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:bugaoshan/utils/app_log.dart';
+
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -142,9 +144,8 @@ class DownloadProgressDialogView extends StatelessWidget {
   Widget _buildFileSizeLabel(BuildContext context) {
     return Text(
       '${_formatBytes(progressState.received)} / ${progressState.total == 0 ? l10n.loading : _formatBytes(progressState.total)}',
-      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-      ),
+      style: Theme.of(context).textTheme.bodySmall
+          ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
     );
   }
 
@@ -163,9 +164,8 @@ class DownloadProgressDialogView extends StatelessWidget {
           filename,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodySmall
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: 8),
         _buildFileSizeLabel(context),
@@ -230,9 +230,8 @@ Future<bool> showDownloadProgressDialog({
         stackTrace: logStackTrace,
       );
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('${l10n.updateFailed}: $e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('${l10n.updateFailed}: $e')));
       }
       return false;
     }
@@ -281,9 +280,8 @@ Future<bool> showDownloadProgressDialog({
     );
     if (context.mounted && visible) {
       unawaited(Navigator.of(context, rootNavigator: true).maybePop());
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('${l10n.updateFailed}: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('${l10n.updateFailed}: $e')));
     }
     return false;
   }

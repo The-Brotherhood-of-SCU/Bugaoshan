@@ -9,6 +9,7 @@ import 'package:bugaoshan/providers/scu_auth_provider.dart';
 import 'package:bugaoshan/scu_backend/payapp/balance_query_service.dart';
 import 'package:bugaoshan/widgets/common/loading_widgets.dart';
 import 'package:bugaoshan/widgets/common/login_required_widget.dart';
+
 import 'widgets/balance_list.dart';
 import 'widgets/bind_room_dialog.dart';
 
@@ -123,9 +124,8 @@ class BalanceQueryPage extends StatelessWidget {
   ) {
     final l10n = AppLocalizations.of(context)!;
     if (!auth.isLoggedIn) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.loginRequired)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.loginRequired)));
       return;
     }
     if (index == -1) {

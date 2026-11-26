@@ -322,31 +322,28 @@ void main() {
       },
     );
 
-    test(
-      'vacation page goToPreviousPage → last week, isViewingVacation flips false',
-      () {
-        final current = _schedule(
-          id: 'C',
-          name: 'ended',
-          weeksAgo: 25,
-          totalWeeks: 20,
-        );
-        final nextSem = _scheduleAhead(
-          id: 'N',
-          name: 'next',
-          weeksAhead: 1,
-          totalWeeks: 20,
-        );
-        final h = _Harness(config: current, all: [nextSem]);
-        // starts at vacation page (index 20)
-        expect(h.controller.isViewingVacation, isTrue);
+    test('vacation page goToPreviousPage → last week, isViewingVacation flips false', () {
+      final current = _schedule(
+        id: 'C',
+        name: 'ended',
+        weeksAgo: 25,
+        totalWeeks: 20,
+      );
+      final nextSem = _scheduleAhead(
+        id: 'N',
+        name: 'next',
+        weeksAhead: 1,
+        totalWeeks: 20,
+      );
+      final h = _Harness(config: current, all: [nextSem]);
+      // starts at vacation page (index 20)
+      expect(h.controller.isViewingVacation, isTrue);
 
-        h.controller.goToPreviousPage();
-        expect(h.controller.pageIndex, 19);
-        expect(h.controller.isViewingVacation, isFalse);
-        h.controller.dispose();
-      },
-    );
+      h.controller.goToPreviousPage();
+      expect(h.controller.pageIndex, 19);
+      expect(h.controller.isViewingVacation, isFalse);
+      h.controller.dispose();
+    });
 
     test('index 0 goToPreviousPage: no change and zero notify', () {
       final config = _scheduleAhead(
@@ -510,35 +507,32 @@ void main() {
       },
     );
 
-    test(
-      'push next sem schedule during vacation: showVacationPage flips true, pageCount+1, pageIndex unchanged',
-      () {
-        // weeksAgo:25 → actualWeek=26, no next sem → _pageIndex=19 (clamped last week)
-        final current = _schedule(
-          id: 'C',
-          name: 'ended',
-          weeksAgo: 25,
-          totalWeeks: 20,
-        );
-        final h = _Harness(config: current);
-        expect(h.controller.showVacationPage.value, isFalse);
-        expect(h.controller.pageIndex, 19);
-        expect(h.controller.pageCount, 20);
+    test('push next sem schedule during vacation: showVacationPage flips true, pageCount+1, pageIndex unchanged', () {
+      // weeksAgo:25 → actualWeek=26, no next sem → _pageIndex=19 (clamped last week)
+      final current = _schedule(
+        id: 'C',
+        name: 'ended',
+        weeksAgo: 25,
+        totalWeeks: 20,
+      );
+      final h = _Harness(config: current);
+      expect(h.controller.showVacationPage.value, isFalse);
+      expect(h.controller.pageIndex, 19);
+      expect(h.controller.pageCount, 20);
 
-        final nextSem = _scheduleAhead(
-          id: 'N',
-          name: 'next',
-          weeksAhead: 1,
-          totalWeeks: 20,
-        );
-        h.allSchedules.value = [current, nextSem];
+      final nextSem = _scheduleAhead(
+        id: 'N',
+        name: 'next',
+        weeksAhead: 1,
+        totalWeeks: 20,
+      );
+      h.allSchedules.value = [current, nextSem];
 
-        expect(h.controller.showVacationPage.value, isTrue);
-        expect(h.controller.pageCount, 21); // +1
-        expect(h.controller.pageIndex, 19); // unchanged (no auto-jump)
-        h.controller.dispose();
-      },
-    );
+      expect(h.controller.showVacationPage.value, isTrue);
+      expect(h.controller.pageCount, 21); // +1
+      expect(h.controller.pageIndex, 19); // unchanged (no auto-jump)
+      h.controller.dispose();
+    });
 
     test('remove next sem while viewing vacation: move back to last week', () {
       final current = _schedule(

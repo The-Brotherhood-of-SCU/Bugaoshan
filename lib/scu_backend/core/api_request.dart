@@ -13,9 +13,9 @@ String? responseTitleForLog(String body) {
   if (!body.trimLeft().startsWith('<')) return null;
   final match = _titlePattern.firstMatch(body);
   if (match == null) return null;
-  final title = LogRedactor.apply(
-    _decodeTitleEntities(match[1]!),
-  ).replaceAll(RegExp(r'\s+'), ' ').trim();
+  final title = LogRedactor.apply(_decodeTitleEntities(match[1]!))
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
   if (title.isEmpty) return null;
   return title.length <= 160 ? title : '${title.substring(0, 159)}…';
 }

@@ -180,9 +180,8 @@ class BalanceTrendChartCard extends StatelessWidget {
                             meta: meta,
                             child: Text(
                               dateStr,
-                              style: Theme.of(
-                                context,
-                              ).textTheme.bodySmall?.copyWith(fontSize: 10),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(fontSize: 10),
                             ),
                           );
                         },

@@ -88,9 +88,8 @@ class _CcylBindPageState extends State<CcylBindPage> {
                   _error is LoadErrorType
                       ? (_error as LoadErrorType).message(l10n)
                       : _error as String,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                  style: Theme.of(context).textTheme.bodyMedium
+                      ?.copyWith(color: Theme.of(context).colorScheme.error),
                   textAlign: TextAlign.center,
                 ),
               ),

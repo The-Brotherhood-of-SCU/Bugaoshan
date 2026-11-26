@@ -14,6 +14,7 @@
 library;
 
 import 'dart:convert';
+
 import 'package:bugaoshan/utils/app_log.dart';
 
 const String _tag = 'GraduateScheduleCapture';

@@ -70,9 +70,8 @@ class _LoadingCard extends StatelessWidget {
             Flexible(
               child: Text(
                 localizations.loading,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: colorScheme.onSurfaceVariant),
               ),
             ),
           ],
@@ -122,9 +121,8 @@ class _OptimizationEnabledCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     localizations.batteryOptimizationDesc,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onPrimaryContainer,
-                    ),
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: colorScheme.onPrimaryContainer),
                   ),
                   const SizedBox(height: 8),
                   FilledButton.tonal(
@@ -163,9 +161,8 @@ class _OptimizationDisabledCard extends StatelessWidget {
             Expanded(
               child: Text(
                 localizations.batteryOptimizationAlreadyDisabled,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: colorScheme.onSurfaceVariant),
               ),
             ),
           ],

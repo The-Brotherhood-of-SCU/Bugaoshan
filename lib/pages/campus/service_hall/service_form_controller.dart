@@ -360,9 +360,8 @@ DateTime? parseServiceDateTime(Object? raw) {
   if (raw is DateTime) return raw;
   var s = raw.toString().trim();
   if (s.isEmpty) return null;
-  final m = RegExp(
-    r'^(\d{4}-\d{2}-\d{2})(?:[T ](\d{2}:\d{2}(?::\d{2})?))?',
-  ).firstMatch(s);
+  final m = RegExp(r'^(\d{4}-\d{2}-\d{2})(?:[T ](\d{2}:\d{2}(?::\d{2})?))?')
+      .firstMatch(s);
   if (m == null) return null;
   s = m.group(2) != null ? '${m.group(1)}T${m.group(2)}' : m.group(1)!;
   return DateTime.tryParse(s);

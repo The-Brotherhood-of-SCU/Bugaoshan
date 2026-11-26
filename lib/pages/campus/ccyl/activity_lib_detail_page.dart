@@ -165,9 +165,8 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
                 )
               : Text(
                   _subscribed ? l10n.ccylCancelSubscribe : l10n.ccylSubscribe,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: Theme.of(context).textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w600),
                 ),
         ),
       ),
@@ -217,9 +216,8 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
                 Expanded(
                   child: Text(
                     lib.name,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context).textTheme.titleLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ),
                 if (_subscribed)
@@ -284,9 +282,8 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
           children: [
             Text(
               l10n.ccylActivityInfo,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
             if (lib.qualityName != null)
@@ -332,9 +329,8 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
           children: [
             Text(
               l10n.ccylContactInfo,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
             IconInfoRow(
@@ -372,9 +368,8 @@ class _ActivityLibDetailPageState extends State<ActivityLibDetailPage> {
       children: [
         Text(
           l10n.ccylActivities,
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
         if (_activities.isEmpty)
@@ -439,9 +434,8 @@ class _ActivityCard extends StatelessWidget {
                   child: Center(
                     child: Text(
                       '$index',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.labelSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -449,9 +443,8 @@ class _ActivityCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     activity.activityName,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: Theme.of(context).textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w600),
                   ),
                 ),
                 CcylPhaseChips(phases: resolveCcylActivityPhases(activity)),

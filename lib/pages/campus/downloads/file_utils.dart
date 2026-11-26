@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:bugaoshan/utils/app_log.dart';
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -303,9 +305,8 @@ Future<String> downloadFile(
         Uri.decodeComponent(rfc5987.group(1)!),
       );
     } else {
-      final fnMatch = RegExp(
-        r'''filename\s*=\s*["']?([^"';]+)["']?''',
-      ).firstMatch(cd);
+      final fnMatch = RegExp(r'''filename\s*=\s*["']?([^"';]+)["']?''')
+          .firstMatch(cd);
       if (fnMatch != null) {
         actualFileName = sanitizeDownloadFileName(fnMatch.group(1)!);
       }

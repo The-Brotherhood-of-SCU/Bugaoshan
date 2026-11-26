@@ -79,9 +79,8 @@ class _CourseCurriculumDetailPageState
       return Center(
         child: Text(
           l10n.courseCurriculumNoSchedule,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodyLarge
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       );
     }

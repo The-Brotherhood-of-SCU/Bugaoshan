@@ -158,9 +158,8 @@ class ClassroomDetailPage extends StatelessWidget {
                   const SizedBox(width: 4),
                   Text(
                     l10n.classroomCanBorrow,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(color: Colors.green),
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: Colors.green),
                   ),
                 ],
               ),
@@ -211,10 +210,8 @@ class ClassroomDetailPage extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             '$label $count',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w500,
-            ),
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: color, fontWeight: FontWeight.w500),
           ),
         ],
       ),
@@ -289,9 +286,8 @@ class ClassroomDetailPage extends StatelessWidget {
               child: Text(
                 periodLabel,
                 textAlign: TextAlign.center,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(fontWeight: FontWeight.w600),
               ),
             ),
             const SizedBox(width: 12),

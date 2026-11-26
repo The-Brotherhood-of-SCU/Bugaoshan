@@ -92,9 +92,8 @@ class _NativeDockBridge {
         viewIds.add(id);
         creations.add(
           const StandardMessageCodec().decodeMessage(
-                ByteData.sublistView(arguments['params'] as Uint8List),
-              )
-              as Map<Object?, Object?>,
+            ByteData.sublistView(arguments['params'] as Uint8List),
+          ) as Map<Object?, Object?>,
         );
         messenger.setMockMethodCallHandler(MethodChannel('$_viewType/$id'), (
           call,
@@ -179,22 +178,20 @@ void main() {
     );
   }
 
-  testWidgets(
-    'non-iOS navigation never contacts the native bridge',
-    (tester) async {
-      bridge.install();
-      final selections = <int>[];
-      await tester.pumpWidget(_host(onSelected: selections.add));
-      await tester.pumpAndSettle();
+  testWidgets('non-iOS navigation never contacts the native bridge', (
+    tester,
+  ) async {
+    bridge.install();
+    final selections = <int>[];
+    await tester.pumpWidget(_host(onSelected: selections.add));
+    await tester.pumpAndSettle();
 
-      expect(bridge.supportChecks, 0);
-      expect(bridge.viewIds, isEmpty);
-      expect(find.byType(NavigationBar), findsOneWidget);
-      await tester.tap(find.text('Campus'));
-      expect(selections, [1]);
-    },
-    variant: TargetPlatformVariant.only(TargetPlatform.android),
-  );
+    expect(bridge.supportChecks, 0);
+    expect(bridge.viewIds, isEmpty);
+    expect(find.byType(NavigationBar), findsOneWidget);
+    await tester.tap(find.text('Campus'));
+    expect(selections, [1]);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.android));
 
   for (final missing in [false, true]) {
     testWidgets(
@@ -321,120 +318,114 @@ void main() {
     variant: TargetPlatformVariant.only(TargetPlatform.iOS),
   );
 
-  testWidgets(
-    'updates selection, destinations and badge without recreating',
-    (tester) async {
-      bridge.install();
-      await tester.pumpWidget(_host());
-      await tester.pumpAndSettle();
-      const updatedProfile = HomeDockDestination(
-        id: 'profile',
-        label: 'Me',
-        icon: Icons.person_outline,
-        selectedIcon: Icons.person,
-        symbol: 'person',
-        selectedSymbol: 'person.fill',
-        showBadge: true,
-        badgeLabel: 'Update available',
-      );
-      await tester.pumpWidget(
-        _host(destinations: [updatedProfile, _destinations[0]]),
-      );
-      await tester.pumpAndSettle();
+  testWidgets('updates selection, destinations and badge without recreating', (
+    tester,
+  ) async {
+    bridge.install();
+    await tester.pumpWidget(_host());
+    await tester.pumpAndSettle();
+    const updatedProfile = HomeDockDestination(
+      id: 'profile',
+      label: 'Me',
+      icon: Icons.person_outline,
+      selectedIcon: Icons.person,
+      symbol: 'person',
+      selectedSymbol: 'person.fill',
+      showBadge: true,
+      badgeLabel: 'Update available',
+    );
+    await tester.pumpWidget(
+      _host(destinations: [updatedProfile, _destinations[0]]),
+    );
+    await tester.pumpAndSettle();
 
-      expect(bridge.supportChecks, 1);
-      expect(bridge.creations, hasLength(1));
-      expect(bridge.updates.last['selectedId'], 'profile');
-      final items = bridge.updates.last['items'] as List<Object?>;
-      expect(items, hasLength(2));
-      expect(items.first, {
-        'id': 'profile',
-        'label': 'Me',
-        'symbol': 'person',
-        'selectedSymbol': 'person.fill',
-        'badge': true,
-        'badgeLabel': 'Update available',
-      });
-    },
-    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
-  );
+    expect(bridge.supportChecks, 1);
+    expect(bridge.creations, hasLength(1));
+    expect(bridge.updates.last['selectedId'], 'profile');
+    final items = bridge.updates.last['items'] as List<Object?>;
+    expect(items, hasLength(2));
+    expect(items.first, {
+      'id': 'profile',
+      'label': 'Me',
+      'symbol': 'person',
+      'selectedSymbol': 'person.fill',
+      'badge': true,
+      'badgeLabel': 'Update available',
+    });
+  }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
-  testWidgets(
-    'native selection uses current IDs and stops after disposal',
-    (tester) async {
-      bridge.install();
-      final selections = <int>[];
-      await tester.pumpWidget(_host(onSelected: selections.add));
-      await tester.pumpAndSettle();
-      await tester.pumpWidget(
-        _host(
-          destinations: [_destinations[2], _destinations[1], _destinations[0]],
-          selectedIndex: 2,
-          onSelected: selections.add,
-        ),
-      );
-      await tester.pumpAndSettle();
+  testWidgets('native selection uses current IDs and stops after disposal', (
+    tester,
+  ) async {
+    bridge.install();
+    final selections = <int>[];
+    await tester.pumpWidget(_host(onSelected: selections.add));
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(
+      _host(
+        destinations: [_destinations[2], _destinations[1], _destinations[0]],
+        selectedIndex: 2,
+        onSelected: selections.add,
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      expect(await bridge.send('select', 'profile'), isNotNull);
-      expect(selections, [0]);
-      await tester.pumpWidget(
-        _host(
-          destinations: [_destinations[1], _destinations[0]],
-          selectedIndex: 1,
-          onSelected: selections.add,
-        ),
-      );
-      await tester.pumpAndSettle();
-      await bridge.send('select', 'profile');
-      await bridge.send('select', 'unknown');
-      await bridge.send('select', 'course');
-      await bridge.send('select', 0);
-      await bridge.send('unknown', 'campus');
-      expect(selections, [0]);
+    expect(await bridge.send('select', 'profile'), isNotNull);
+    expect(selections, [0]);
+    await tester.pumpWidget(
+      _host(
+        destinations: [_destinations[1], _destinations[0]],
+        selectedIndex: 1,
+        onSelected: selections.add,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await bridge.send('select', 'profile');
+    await bridge.send('select', 'unknown');
+    await bridge.send('select', 'course');
+    await bridge.send('select', 0);
+    await bridge.send('unknown', 'campus');
+    expect(selections, [0]);
 
-      await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pumpAndSettle();
-      expect(await bridge.send('select', 'campus'), isNull);
-      expect(selections, [0]);
-      expect(bridge.disposedViewIds, bridge.viewIds);
-    },
-    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
-  );
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+    expect(await bridge.send('select', 'campus'), isNull);
+    expect(selections, [0]);
+    expect(bridge.disposedViewIds, bridge.viewIds);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
-  testWidgets(
-    'failed native update restores functioning Material navigation',
-    (tester) async {
-      bridge.install();
-      final selections = <int>[];
-      final nativeModes = <bool>[];
-      await tester.pumpWidget(
-        _host(onSelected: selections.add, onNativeModeChanged: nativeModes.add),
-      );
-      await tester.pumpAndSettle();
-      expect(nativeModes, [true]);
-      bridge.failUpdates = true;
-      await tester.pumpWidget(
-        _host(
-          selectedIndex: 1,
-          onSelected: selections.add,
-          onNativeModeChanged: nativeModes.add,
-        ),
-      );
-      await tester.pumpAndSettle();
+  testWidgets('failed native update restores functioning Material navigation', (
+    tester,
+  ) async {
+    bridge.install();
+    final selections = <int>[];
+    final nativeModes = <bool>[];
+    await tester.pumpWidget(
+      _host(onSelected: selections.add, onNativeModeChanged: nativeModes.add),
+    );
+    await tester.pumpAndSettle();
+    expect(nativeModes, [true]);
+    bridge.failUpdates = true;
+    await tester.pumpWidget(
+      _host(
+        selectedIndex: 1,
+        onSelected: selections.add,
+        onNativeModeChanged: nativeModes.add,
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      expect(find.byType(UiKitView), findsNothing);
-      expect(nativeModes, [true, false]);
-      expect(
-        tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
-        1,
-      );
-      expect(await bridge.send('select', 'profile'), isNull);
-      await tester.tap(find.text('Profile'));
-      expect(selections, [2]);
-      expect(tester.takeException(), isNull);
-    },
-    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
-  );
+    expect(find.byType(UiKitView), findsNothing);
+    expect(nativeModes, [true, false]);
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      1,
+    );
+    expect(await bridge.send('select', 'profile'), isNull);
+    await tester.tap(find.text('Profile'));
+    expect(selections, [2]);
+    expect(tester.takeException(), isNull);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
   testWidgets(
     'extended body draws behind the dock but scrolls its last item above it',

@@ -109,9 +109,8 @@ class CourseCard extends StatelessWidget {
                   padding: const EdgeInsets.all(4),
                   child: SizedBox.expand(
                     child: ScrollConfiguration(
-                      behavior: ScrollConfiguration.of(
-                        context,
-                      ).copyWith(scrollbars: false),
+                      behavior: ScrollConfiguration.of(context)
+                          .copyWith(scrollbars: false),
                       child: SingleChildScrollView(
                         physics: const NeverScrollableScrollPhysics(),
                         child: Column(

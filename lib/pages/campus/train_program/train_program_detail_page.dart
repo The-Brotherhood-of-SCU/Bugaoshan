@@ -71,9 +71,8 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
                 children: [
                   Text(
                     info.famc,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context).textTheme.titleLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -125,9 +124,8 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
           if (info.pymb.isNotEmpty) ...[
             Text(
               l10n.trainProgramObjective,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             StyledCard(
@@ -143,9 +141,8 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
           ],
           Text(
             l10n.trainProgramCourseStructure,
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           _buildTreeView(context),
@@ -170,9 +167,8 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
         ),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodySmall
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       ],
     );
@@ -332,9 +328,8 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
               Expanded(
                 child: Text(
                   kc.kcm == '' ? fallbackName ?? '' : kc.kcm,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleLarge
+                      ?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
               IconButton(
@@ -417,9 +412,9 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
                       child: Text(
                         l10n.trainProgramOpenCourse,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onTertiaryContainer,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onTertiaryContainer,
                         ),
                       ),
                     ),
@@ -430,9 +425,8 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
           ] else if (jhkc != null) ...[
             Text(
               l10n.trainProgramCourseArrangement,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             StyledCard(
@@ -534,9 +528,8 @@ class _TrainProgramDetailPageState extends State<TrainProgramDetailPage> {
       ),
       child: Text(
         '$label:$value',
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: Theme.of(context).colorScheme.onPrimaryContainer,
-        ),
+        style: Theme.of(context).textTheme.bodySmall
+            ?.copyWith(color: Theme.of(context).colorScheme.onPrimaryContainer),
       ),
     );
   }

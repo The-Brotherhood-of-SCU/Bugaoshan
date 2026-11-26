@@ -206,33 +206,41 @@ void main() {
     expect(() => other.dispose(), returnsNormally);
   });
 
-  test('developer results stay noUpdate when platform packages are absent', () async {
-    final realService = UpdateService(
-      prefs,
-      '2.5.3',
-      GithubResourceService(AppConfigProvider(prefs), client: _stubResourceClient),
-    );
-    final realProvider = UpdateProvider(
-      realService,
-      _StubAppInfo(),
-      _StubNotification(),
-    );
-    addTearDown(realProvider.dispose);
-    final client = MockClient((_) async => http.Response(
-      jsonEncode([
-        {'tag_name': 'v2.5.4', 'prerelease': false, 'assets': []},
-        {'tag_name': 'v2.5.5-preview', 'prerelease': true, 'assets': []},
-      ]),
-      200,
-    ));
-    addTearDown(client.close);
-    final (stable, preview) = await http.runWithClient(
-      realProvider.getAllLatestReleases,
-      () => client,
-    );
-    expect(stable, isNull);
-    expect(preview, isNull);
-    expect(realProvider.stableResult.value.noUpdate, isTrue);
-    expect(realProvider.previewResult.value.noUpdate, isTrue);
-  });
+  test(
+    'developer results stay noUpdate when platform packages are absent',
+    () async {
+      final realService = UpdateService(
+        prefs,
+        '2.5.3',
+        GithubResourceService(
+          AppConfigProvider(prefs),
+          client: _stubResourceClient,
+        ),
+      );
+      final realProvider = UpdateProvider(
+        realService,
+        _StubAppInfo(),
+        _StubNotification(),
+      );
+      addTearDown(realProvider.dispose);
+      final client = MockClient(
+        (_) async => http.Response(
+          jsonEncode([
+            {'tag_name': 'v2.5.4', 'prerelease': false, 'assets': []},
+            {'tag_name': 'v2.5.5-preview', 'prerelease': true, 'assets': []},
+          ]),
+          200,
+        ),
+      );
+      addTearDown(client.close);
+      final (stable, preview) = await http.runWithClient(
+        realProvider.getAllLatestReleases,
+        () => client,
+      );
+      expect(stable, isNull);
+      expect(preview, isNull);
+      expect(realProvider.stableResult.value.noUpdate, isTrue);
+      expect(realProvider.previewResult.value.noUpdate, isTrue);
+    },
+  );
 }

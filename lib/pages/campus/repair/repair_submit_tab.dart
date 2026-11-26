@@ -176,9 +176,8 @@ class _SubmitTabState extends State<_SubmitTab> {
         _bookDate = null;
         _bookTime = null;
       });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.repairSubmitSuccess)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.repairSubmitSuccess)));
     } else {
       _showError(widget.provider.submitError ?? l10n.repairSubmitFailed);
     }

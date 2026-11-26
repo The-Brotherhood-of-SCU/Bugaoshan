@@ -31,9 +31,8 @@ class ProfileMenuCard extends StatelessWidget {
           valueListenable: courseProvider.allSchedules,
           builder: (context, allSchedules, _) {
             final hasSchedule = allSchedules.isNotEmpty;
-            final disabledColor = Theme.of(
-              context,
-            ).colorScheme.onSurfaceVariant.withValues(alpha: 0.4);
+            final disabledColor = Theme.of(context).colorScheme.onSurfaceVariant
+                .withValues(alpha: 0.4);
             return IconTile(
               icon: Icons.schedule_rounded,
               label: localizations.scheduleSetting,

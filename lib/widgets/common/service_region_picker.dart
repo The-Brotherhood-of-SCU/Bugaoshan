@@ -429,9 +429,8 @@ class _RegionListSheet extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               child: Text(
                 title,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                style: Theme.of(context).textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w600),
               ),
             ),
             const Divider(height: 1),

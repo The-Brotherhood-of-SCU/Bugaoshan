@@ -112,10 +112,7 @@ void main() {
       expect(await db.query('courses'), [course]);
       final columns = await db.rawQuery('PRAGMA table_info(courses)');
       for (final name in ['campus', 'custom_weeks']) {
-        expect(
-          columns.where((column) => column['name'] == name),
-          hasLength(1),
-        );
+        expect(columns.where((column) => column['name'] == name), hasLength(1));
       }
       await db.close();
       database = null;
@@ -161,7 +158,12 @@ void main() {
     expect(await db.getVersion(), 3);
     final timeout = await db.rawQuery('PRAGMA busy_timeout');
     expect(timeout.single.values.single, 5000);
-    for (final table in ['metadata', 'schedules', 'courses', 'balance_records']) {
+    for (final table in [
+      'metadata',
+      'schedules',
+      'courses',
+      'balance_records',
+    ]) {
       expect(await db.query(table), isEmpty);
     }
     expect(logger.entries, isEmpty);

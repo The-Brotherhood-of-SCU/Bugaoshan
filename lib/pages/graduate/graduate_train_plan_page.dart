@@ -186,9 +186,8 @@ class _GraduateTrainPlanPageState extends State<GraduateTrainPlanPage> {
       return Center(
         child: Text(
           l10n.graduateTrainPlanEmpty,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       );
     }

@@ -60,29 +60,32 @@ void main() {
   }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
   for (final throwsException in [false, true]) {
-    testWidgets('iOS launch failure can be retried (throws: $throwsException)', (
-      tester,
-    ) async {
-      var attempts = 0;
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(_launcherChannel, (call) async {
-            attempts++;
-            if (attempts > 1) return true;
-            if (throwsException) throw PlatformException(code: 'launch_failed');
-            return false;
-          });
+    testWidgets(
+      'iOS launch failure can be retried (throws: $throwsException)',
+      (tester) async {
+        var attempts = 0;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(_launcherChannel, (call) async {
+              attempts++;
+              if (attempts > 1) return true;
+              if (throwsException)
+                throw PlatformException(code: 'launch_failed');
+              return false;
+            });
 
-      await tester.pumpWidget(_app());
-      await tester.pumpAndSettle();
-      await tester.tap(find.byType(FilledButton));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(_app());
+        await tester.pumpAndSettle();
+        await tester.tap(find.byType(FilledButton));
+        await tester.pumpAndSettle();
 
-      expect(find.text('操作失败'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-      await tester.tap(find.byType(FilledButton));
-      await tester.pumpAndSettle();
-      expect(attempts, 2);
-    }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
+        expect(find.text('操作失败'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await tester.tap(find.byType(FilledButton));
+        await tester.pumpAndSettle();
+        expect(attempts, 2);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+    );
   }
 
   testWidgets('Android keeps the existing embedded volunteer page', (

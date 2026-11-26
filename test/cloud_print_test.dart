@@ -564,9 +564,8 @@ void main() {
           }
           return http.StreamedResponse(
             mode == 'lost'
-                ? Stream<List<int>>.fromIterable([
-                    bytes.take(5).toList(),
-                  ]).asyncMap((chunk) => throw const HttpException('lost'))
+                ? Stream<List<int>>.fromIterable([bytes.take(5).toList()])
+                      .asyncMap((chunk) => throw const HttpException('lost'))
                 : Stream.fromIterable([
                     bytes.take(5).toList(),
                     bytes.skip(5).toList(),

@@ -125,9 +125,8 @@ class ImageViewerPage extends StatelessWidget {
       if (response.statusCode != 200) throw Exception('Download failed');
       if (!await PlatformAdapter.instance.saveImage(response.bodyBytes)) return;
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.imageSavedToGallery)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.imageSavedToGallery)));
       }
     } catch (e, logStackTrace) {
       AppLog.e(_tag, '_saveToGallery 失败', error: e, stackTrace: logStackTrace);

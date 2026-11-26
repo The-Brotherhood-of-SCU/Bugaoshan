@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/models/course.dart';
+
 import '../edit/course_edit_page.dart';
+
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/widgets/dialog/dialog.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
@@ -57,9 +59,8 @@ class CourseDetailSheet extends StatelessWidget {
                   Expanded(
                     child: Text(
                       course.name,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ),
                   if (courseProvider != null) ...[

@@ -141,71 +141,68 @@ void main() {
     expect(result.courses, isEmpty);
   });
 
-  test(
-    'fetchCourseSchedule parses callback payload (real response shape)',
-    () async {
-      // 响应样例来自 2026-09 真实抓包：外层数组包一层的结构与班级课表一致。
-      final helper = _buildRoutingApi(
-        {
-          '/student/teachingResources/courseCurriculum/searchCurriculum/callback':
-              jsonEncode([
-                [
-                  {
-                    'id': {
-                      'zxjxjhh': '2026-2027-1-1',
-                      'jsh': '20092132',
-                      'kxh': '01',
-                      'kch': '101022020',
-                      'skzc': '011111111111000000000000',
-                      'skxq': 4,
-                      'skjc': 5,
-                    },
-                    'kcm': '中外经典舞蹈佳作赏析',
-                    'jclxdm': '01',
-                    'zxjxjhm': '2026-2027学年秋',
-                    'zcsm': '2-12周',
-                    'cxjc': 3,
-                    'xqh': '03',
-                    'xqm': '江安',
-                    'jxlh': '304',
-                    'jxlm': '一教D座',
-                    'jash': 'D405',
-                    'jasm': 'D405',
-                    'kkxsh': '101',
-                    'xsh': '101',
-                    'jsm': '海维清',
-                    'xf': '2',
-                    'kkxsm': '艺术学院',
-                    'skxq': '4',
+  test('fetchCourseSchedule parses callback payload (real response shape)', () async {
+    // 响应样例来自 2026-09 真实抓包：外层数组包一层的结构与班级课表一致。
+    final helper = _buildRoutingApi(
+      {
+        '/student/teachingResources/courseCurriculum/searchCurriculum/callback':
+            jsonEncode([
+              [
+                {
+                  'id': {
+                    'zxjxjhh': '2026-2027-1-1',
+                    'jsh': '20092132',
+                    'kxh': '01',
+                    'kch': '101022020',
+                    'skzc': '011111111111000000000000',
+                    'skxq': 4,
+                    'skjc': 5,
                   },
-                ],
-              ]),
-        },
-        prefs,
-        logger,
-      );
-      addTearDown(helper.auth.dispose);
+                  'kcm': '中外经典舞蹈佳作赏析',
+                  'jclxdm': '01',
+                  'zxjxjhm': '2026-2027学年秋',
+                  'zcsm': '2-12周',
+                  'cxjc': 3,
+                  'xqh': '03',
+                  'xqm': '江安',
+                  'jxlh': '304',
+                  'jxlm': '一教D座',
+                  'jash': 'D405',
+                  'jasm': 'D405',
+                  'kkxsh': '101',
+                  'xsh': '101',
+                  'jsm': '海维清',
+                  'xf': '2',
+                  'kkxsm': '艺术学院',
+                  'skxq': '4',
+                },
+              ],
+            ]),
+      },
+      prefs,
+      logger,
+    );
+    addTearDown(helper.auth.dispose);
 
-      final courses = await helper.api.fetchCourseSchedule(
-        planCode: '2026-2027-1-1',
-        courseCode: '101022020',
-        courseSequenceCode: '01',
-      );
-      expect(courses, hasLength(1));
-      final item = courses.single;
-      expect(item.dayOfWeek, 4);
-      expect(item.startPeriod, 5);
-      expect(item.duration, 3);
-      expect(item.courseCode, '101022020');
-      expect(item.courseSeq, '01');
-      expect(item.courseName, '中外经典舞蹈佳作赏析');
-      expect(item.teacherName, '海维清');
-      expect(item.weeksDescription, '2-12周');
-      expect(item.campus, '江安');
-      expect(item.building, '一教D座');
-      expect(item.classroom, 'D405');
-    },
-  );
+    final courses = await helper.api.fetchCourseSchedule(
+      planCode: '2026-2027-1-1',
+      courseCode: '101022020',
+      courseSequenceCode: '01',
+    );
+    expect(courses, hasLength(1));
+    final item = courses.single;
+    expect(item.dayOfWeek, 4);
+    expect(item.startPeriod, 5);
+    expect(item.duration, 3);
+    expect(item.courseCode, '101022020');
+    expect(item.courseSeq, '01');
+    expect(item.courseName, '中外经典舞蹈佳作赏析');
+    expect(item.teacherName, '海维清');
+    expect(item.weeksDescription, '2-12周');
+    expect(item.campus, '江安');
+    expect(item.building, '一教D座');
+    expect(item.classroom, 'D405');
+  });
 
   // zhjw 网关异常时可能返回非 JSON、非登录页的文本（如 nginx 502），
   // 解析失败应抛 ServiceException 而不是让 FormatException 裸奔。

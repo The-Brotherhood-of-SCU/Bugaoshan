@@ -103,129 +103,123 @@ void main() {
     expect(provider.nodes, isEmpty);
   });
 
-  test(
-    'empty cached plans triggers refetch on fetchPlanCompletion (no forceRefresh)',
-    () async {
-      SharedPreferences.setMockInitialValues({'plan_completion_nodes': '[]'});
-      final prefs = await SharedPreferences.getInstance();
-      final api = _ControllableZhjwApiService();
-      final provider = PlanCompletionProvider(prefs, api);
+  test('empty cached plans triggers refetch on fetchPlanCompletion (no forceRefresh)', () async {
+    SharedPreferences.setMockInitialValues({'plan_completion_nodes': '[]'});
+    final prefs = await SharedPreferences.getInstance();
+    final api = _ControllableZhjwApiService();
+    final provider = PlanCompletionProvider(prefs, api);
 
-      // 缓存已加载但内容为空——state 为 loaded，plans 为空
-      expect(provider.state, PlanCompletionLoadState.loaded);
-      expect(provider.plans, isEmpty);
+    // 缓存已加载但内容为空——state 为 loaded，plans 为空
+    expect(provider.state, PlanCompletionLoadState.loaded);
+    expect(provider.plans, isEmpty);
 
-      // 不带 forceRefresh 调用也应发起请求：缓存为空说明不是有效数据，必须重新拉取
-      final request = provider.fetchPlanCompletion();
-      expect(
-        api.requests,
-        isNotEmpty,
-        reason: 'should refetch when cache is empty',
-      );
-      expect(provider.state, PlanCompletionLoadState.loading);
+    // 不带 forceRefresh 调用也应发起请求：缓存为空说明不是有效数据，必须重新拉取
+    final request = provider.fetchPlanCompletion();
+    expect(
+      api.requests,
+      isNotEmpty,
+      reason: 'should refetch when cache is empty',
+    );
+    expect(provider.state, PlanCompletionLoadState.loading);
 
-      api.requests.single.complete([
-        _plan('1', [_node('course1')]),
-      ]);
-      await request;
+    api.requests.single.complete([
+      _plan('1', [_node('course1')]),
+    ]);
+    await request;
 
-      expect(provider.state, PlanCompletionLoadState.loaded);
-      expect(provider.plans, hasLength(1));
-      expect(provider.nodes.single.id, 'course1');
-    },
-  );
+    expect(provider.state, PlanCompletionLoadState.loaded);
+    expect(provider.plans, hasLength(1));
+    expect(provider.nodes.single.id, 'course1');
+  });
 
-  test(
-    'summary stats only count root-level modules (pId=-1) matching school hierarchy',
-    () {
-      // 模拟真实场景：根级模块（pId=-1）包括 001 大类和 002 课程组，
-      // 子层分类（002 必修/选修/限选）不参与统计。
-      //   公共基础课(001, pId=-1, yxxf=25, sfwc=否)
-      //   ├─ 必修(002, pId=cat1, yxxf=25, sfwc=否) ← 子层，不计入
-      //   选择性思政(002, pId=-1, yxxf=2, sfwc=是)
-      //   ├─ 课程A(kch, pId=sub1)
-      //   专业课(001, pId=-1, yxxf=10, sfwc=否)
-      //   ├─ 限选(002, pId=cat2, yxxf=2, sfwc=否) ← 子层，不计入
-      final nodes = <PlanCompletionNode>[
-        PlanCompletionNode.fromJson({
-          'id': 'cat1',
-          'pId': '-1',
-          'flagId': 'cat1',
-          'flagType': '001',
-          'name': '公共基础课',
-          'sfwc': '否',
-          'yxxf': '25',
-          'zsxf': '27',
-        }),
-        PlanCompletionNode.fromJson({
-          'id': 'sub_classify',
-          'pId': 'cat1',
-          'flagId': 'sub_c',
-          'flagType': '002',
-          'name': '必修',
-          'sfwc': '否',
-          'yxxf': '25',
-          'zsxf': '27',
-        }),
-        PlanCompletionNode.fromJson({
-          'id': 'sub1',
-          'pId': '-1',
-          'flagId': 'sub1',
-          'flagType': '002',
-          'name': '选择性思政必修课（N选1）',
-          'sfwc': '是',
-          'yxxf': '2',
-          'zsxf': '2',
-        }),
-        PlanCompletionNode.fromJson({
-          'id': 'c1',
-          'pId': 'sub1',
-          'flagId': 'c1',
-          'flagType': 'kch',
-          'name': '[102620020]改革开放史[2学分,2024-2025学年春](必修,86.0(20250625))',
-          'sfwc': '是',
-          'yxxf': '0',
-          'zsxf': '0',
-        }),
-        PlanCompletionNode.fromJson({
-          'id': 'cat2',
-          'pId': '-1',
-          'flagId': 'cat2',
-          'flagType': '001',
-          'name': '专业课',
-          'sfwc': '否',
-          'yxxf': '10',
-          'zsxf': '40',
-        }),
-        PlanCompletionNode.fromJson({
-          'id': 'sub_classify2',
-          'pId': 'cat2',
-          'flagId': 'sub_c2',
-          'flagType': '002',
-          'name': '限选',
-          'sfwc': '否',
-          'yxxf': '2',
-          'zsxf': '9',
-        }),
-      ];
+  test('summary stats only count root-level modules (pId=-1) matching school hierarchy', () {
+    // 模拟真实场景：根级模块（pId=-1）包括 001 大类和 002 课程组，
+    // 子层分类（002 必修/选修/限选）不参与统计。
+    //   公共基础课(001, pId=-1, yxxf=25, sfwc=否)
+    //   ├─ 必修(002, pId=cat1, yxxf=25, sfwc=否) ← 子层，不计入
+    //   选择性思政(002, pId=-1, yxxf=2, sfwc=是)
+    //   ├─ 课程A(kch, pId=sub1)
+    //   专业课(001, pId=-1, yxxf=10, sfwc=否)
+    //   ├─ 限选(002, pId=cat2, yxxf=2, sfwc=否) ← 子层，不计入
+    final nodes = <PlanCompletionNode>[
+      PlanCompletionNode.fromJson({
+        'id': 'cat1',
+        'pId': '-1',
+        'flagId': 'cat1',
+        'flagType': '001',
+        'name': '公共基础课',
+        'sfwc': '否',
+        'yxxf': '25',
+        'zsxf': '27',
+      }),
+      PlanCompletionNode.fromJson({
+        'id': 'sub_classify',
+        'pId': 'cat1',
+        'flagId': 'sub_c',
+        'flagType': '002',
+        'name': '必修',
+        'sfwc': '否',
+        'yxxf': '25',
+        'zsxf': '27',
+      }),
+      PlanCompletionNode.fromJson({
+        'id': 'sub1',
+        'pId': '-1',
+        'flagId': 'sub1',
+        'flagType': '002',
+        'name': '选择性思政必修课（N选1）',
+        'sfwc': '是',
+        'yxxf': '2',
+        'zsxf': '2',
+      }),
+      PlanCompletionNode.fromJson({
+        'id': 'c1',
+        'pId': 'sub1',
+        'flagId': 'c1',
+        'flagType': 'kch',
+        'name': '[102620020]改革开放史[2学分,2024-2025学年春](必修,86.0(20250625))',
+        'sfwc': '是',
+        'yxxf': '0',
+        'zsxf': '0',
+      }),
+      PlanCompletionNode.fromJson({
+        'id': 'cat2',
+        'pId': '-1',
+        'flagId': 'cat2',
+        'flagType': '001',
+        'name': '专业课',
+        'sfwc': '否',
+        'yxxf': '10',
+        'zsxf': '40',
+      }),
+      PlanCompletionNode.fromJson({
+        'id': 'sub_classify2',
+        'pId': 'cat2',
+        'flagId': 'sub_c2',
+        'flagType': '002',
+        'name': '限选',
+        'sfwc': '否',
+        'yxxf': '2',
+        'zsxf': '9',
+      }),
+    ];
 
-      final childMap = <String, List<PlanCompletionNode>>{};
-      for (final n in nodes) {
-        if (n.pId != '-1') {
-          childMap.putIfAbsent(n.pId, () => []).add(n);
-        }
+    final childMap = <String, List<PlanCompletionNode>>{};
+    for (final n in nodes) {
+      if (n.pId != '-1') {
+        childMap.putIfAbsent(n.pId, () => []).add(n);
       }
+    }
 
-      final stats = computeSummaryStats(nodes);
+    final stats = computeSummaryStats(nodes);
 
-      // 根级模块 = 3（cat1 + sub1 + cat2），不含子层分类
-      expect(stats.moduleCount, 3);
-      // 已完成 = 1（选择性思政）
-      expect(stats.completedCount, 1);
-      // 已获学分 = 根级模块 yxxf 之和（25 + 2 + 10 = 37）
-      expect(stats.totalEarned, 37.0);
-    },
-  );
+    // 根级模块 = 3（cat1 + sub1 + cat2），不含子层分类
+    expect(stats.moduleCount, 3);
+    // 已完成 = 1（选择性思政）
+    expect(stats.completedCount, 1);
+    // 已获学分 = 根级模块 yxxf 之和（25 + 2 + 10 = 37）
+    expect(stats.totalEarned, 37.0);
+  });
 
   test('summary stats with single root-level module', () {
     // 仅一个根级模块
@@ -285,28 +279,25 @@ void main() {
     },
   );
 
-  test(
-    'PlanCompletionNode categoryDisplayName strips both half-width and full-width brackets',
-    () {
-      final nodeHalf = PlanCompletionNode.fromJson({
-        'flagType': '001',
-        'name': '公共基础课(最低修读学分:25)',
-      });
-      expect(nodeHalf.categoryDisplayName, '公共基础课');
+  test('PlanCompletionNode categoryDisplayName strips both half-width and full-width brackets', () {
+    final nodeHalf = PlanCompletionNode.fromJson({
+      'flagType': '001',
+      'name': '公共基础课(最低修读学分:25)',
+    });
+    expect(nodeHalf.categoryDisplayName, '公共基础课');
 
-      final nodeFull = PlanCompletionNode.fromJson({
-        'flagType': '001',
-        'name': '专业核心课（最低修读学分:30）',
-      });
-      expect(nodeFull.categoryDisplayName, '专业核心课');
+    final nodeFull = PlanCompletionNode.fromJson({
+      'flagType': '001',
+      'name': '专业核心课（最低修读学分:30）',
+    });
+    expect(nodeFull.categoryDisplayName, '专业核心课');
 
-      final nodePlain = PlanCompletionNode.fromJson({
-        'flagType': '001',
-        'name': '通识教育选修课',
-      });
-      expect(nodePlain.categoryDisplayName, '通识教育选修课');
-    },
-  );
+    final nodePlain = PlanCompletionNode.fromJson({
+      'flagType': '001',
+      'name': '通识教育选修课',
+    });
+    expect(nodePlain.categoryDisplayName, '通识教育选修课');
+  });
 }
 
 PlanCompletionNode _node(String id) => PlanCompletionNode.fromJson({

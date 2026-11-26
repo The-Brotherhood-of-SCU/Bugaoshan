@@ -9,11 +9,13 @@ import 'package:bugaoshan/utils/constants.dart';
 import 'package:bugaoshan/widgets/common/styled_card.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import 'section_header.dart';
 import 'list_card.dart';
 import 'grid_card.dart';
 import 'grid_view_switch.dart';
 import 'item_accent.dart';
+
 import 'package:bugaoshan/theme_shape.dart';
 
 class CampusPage extends StatefulWidget {
@@ -199,9 +201,8 @@ class _CampusPageState extends State<CampusPage>
                       ),
                       child: Icon(
                         Icons.keyboard_arrow_down,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant
+                            .withValues(alpha: 0.6),
                         size: AppShapes.extraLarge,
                       ),
                     ),
@@ -374,9 +375,8 @@ class _CampusPageState extends State<CampusPage>
           const SizedBox(height: 12),
           Text(
             l10n.campusNoSearchResults,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
+            style: Theme.of(context).textTheme.bodyMedium
+                ?.copyWith(color: colorScheme.onSurfaceVariant),
           ),
         ],
       ),

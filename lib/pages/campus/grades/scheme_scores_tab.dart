@@ -49,9 +49,8 @@ class _SchemeScoresTabState extends State<SchemeScoresTab> {
               l10n,
               fallback: l10n.gradesRefreshFailed,
             );
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(message)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(message)));
           });
         }
         return switch (provider.schemeState) {
@@ -380,18 +379,16 @@ class ScoreCardWidget extends StatelessWidget {
                 children: [
                   Text(
                     item.courseName,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: Theme.of(context).textTheme.bodyMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
                   ),
                   if (englishCourseName != null && englishCourseName.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 2),
                       child: Text(
                         englishCourseName,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
+                        style: Theme.of(context).textTheme.bodySmall
+                            ?.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                     ),
                   if (teacher != null && teacher.isNotEmpty)
@@ -399,9 +396,8 @@ class ScoreCardWidget extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 2),
                       child: Text(
                         l10n.courseTeacher(teacher),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
+                        style: Theme.of(context).textTheme.bodySmall
+                            ?.copyWith(color: colorScheme.onSurfaceVariant),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -427,9 +423,8 @@ class ScoreCardWidget extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         l10n.creditUnit(item.credit),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
+                        style: Theme.of(context).textTheme.bodySmall
+                            ?.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                     ],
                   ),
@@ -448,9 +443,8 @@ class ScoreCardWidget extends StatelessWidget {
                 ),
                 Text(
                   item.gradeName,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(color: colorScheme.onSurfaceVariant),
                 ),
               ],
             ),

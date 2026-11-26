@@ -239,65 +239,62 @@ void main() {
       expect(log.last.method, 'end');
     });
 
-    test(
-      'Android 平台异常映射正常转换（NOT_AUTHORIZED, NO_ACTIVE_ACTIVITY, OPERATION_FAILED）',
-      () async {
-        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    test('Android 平台异常映射正常转换（NOT_AUTHORIZED, NO_ACTIVE_ACTIVITY, OPERATION_FAILED）', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
 
-        // 1. NOT_AUTHORIZED
-        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-            .setMockMethodCallHandler(const MethodChannel(channelName), (
-              MethodCall call,
-            ) async {
-              throw PlatformException(
-                code: 'NOT_AUTHORIZED',
-                message: 'Notification permission denied',
-              );
-            });
-        await expectLater(
-          () => service.start(
-            courseName: '数据结构',
-            location: 'A101',
-            endAt: DateTime.now().add(const Duration(hours: 1)),
-          ),
-          throwsA(isA<LiveActivityNotAuthorizedException>()),
-        );
+      // 1. NOT_AUTHORIZED
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(const MethodChannel(channelName), (
+            MethodCall call,
+          ) async {
+            throw PlatformException(
+              code: 'NOT_AUTHORIZED',
+              message: 'Notification permission denied',
+            );
+          });
+      await expectLater(
+        () => service.start(
+          courseName: '数据结构',
+          location: 'A101',
+          endAt: DateTime.now().add(const Duration(hours: 1)),
+        ),
+        throwsA(isA<LiveActivityNotAuthorizedException>()),
+      );
 
-        // 2. NO_ACTIVE_ACTIVITY
-        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-            .setMockMethodCallHandler(const MethodChannel(channelName), (
-              MethodCall call,
-            ) async {
-              throw PlatformException(
-                code: 'NO_ACTIVE_ACTIVITY',
-                message: 'No active session',
-              );
-            });
-        await expectLater(
-          () => service.update(courseName: '数据结构'),
-          throwsA(isA<LiveActivityNoActiveSessionException>()),
-        );
+      // 2. NO_ACTIVE_ACTIVITY
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(const MethodChannel(channelName), (
+            MethodCall call,
+          ) async {
+            throw PlatformException(
+              code: 'NO_ACTIVE_ACTIVITY',
+              message: 'No active session',
+            );
+          });
+      await expectLater(
+        () => service.update(courseName: '数据结构'),
+        throwsA(isA<LiveActivityNoActiveSessionException>()),
+      );
 
-        // 3. 通用错误码转换为 LiveActivityOperationException
-        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-            .setMockMethodCallHandler(const MethodChannel(channelName), (
-              MethodCall call,
-            ) async {
-              throw PlatformException(
-                code: 'OPERATION_FAILED',
-                message: 'Native failure',
-              );
-            });
-        await expectLater(
-          () => service.start(
-            courseName: '算法设计',
-            location: 'B101',
-            endAt: DateTime.now().add(const Duration(hours: 1)),
-          ),
-          throwsA(isA<LiveActivityOperationException>()),
-        );
-      },
-    );
+      // 3. 通用错误码转换为 LiveActivityOperationException
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(const MethodChannel(channelName), (
+            MethodCall call,
+          ) async {
+            throw PlatformException(
+              code: 'OPERATION_FAILED',
+              message: 'Native failure',
+            );
+          });
+      await expectLater(
+        () => service.start(
+          courseName: '算法设计',
+          location: 'B101',
+          endAt: DateTime.now().add(const Duration(hours: 1)),
+        ),
+        throwsA(isA<LiveActivityOperationException>()),
+      );
+    });
 
     test('非支持平台（如 Windows）调用 isSupported 返回 false，start 抛出不支持异常', () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.windows;

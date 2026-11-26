@@ -56,11 +56,9 @@ class _NativeControlsBridge {
         final arguments = call.arguments as Map<Object?, Object?>;
         expect(arguments['viewType'], _viewType);
         final id = arguments['id'] as int;
-        creations[id] =
-            const StandardMessageCodec().decodeMessage(
-                  ByteData.sublistView(arguments['params'] as Uint8List),
-                )
-                as Map<Object?, Object?>;
+        creations[id] = const StandardMessageCodec().decodeMessage(
+          ByteData.sublistView(arguments['params'] as Uint8List),
+        ) as Map<Object?, Object?>;
         updates[id] = [];
         messenger.setMockMethodCallHandler(MethodChannel('$_viewType/$id'), (
           call,
@@ -174,37 +172,35 @@ void main() {
     variant: TargetPlatformVariant.only(TargetPlatform.iOS),
   );
 
-  testWidgets(
-    'native switch tap does not also activate the containing tile',
-    (tester) async {
-      bridge.install();
-      final changes = <bool>[];
-      await tester.pumpWidget(
-        _host(
-          AdaptiveGlassSwitchListTile(
-            value: false,
-            onChanged: changes.add,
-            title: const Text('Notifications'),
-          ),
+  testWidgets('native switch tap does not also activate the containing tile', (
+    tester,
+  ) async {
+    bridge.install();
+    final changes = <bool>[];
+    await tester.pumpWidget(
+      _host(
+        AdaptiveGlassSwitchListTile(
+          value: false,
+          onChanged: changes.add,
+          title: const Text('Notifications'),
         ),
-      );
-      await tester.pumpAndSettle();
-      final id = bridge.onlyId;
-      expect(bridge.creations[id]!['label'], 'Notifications');
-      await tester.tap(find.byType(UiKitView));
-      await tester.pumpAndSettle();
-      expect(
-        changes,
-        isEmpty,
-        reason: 'UIKit owns the switch tap; ListTile must not toggle too',
-      );
-      await bridge.send(id, 'change', true);
-      expect(changes, [true]);
-      await tester.tap(find.text('Notifications'));
-      expect(changes, [true, true], reason: 'A separate row tap still works');
-    },
-    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
-  );
+      ),
+    );
+    await tester.pumpAndSettle();
+    final id = bridge.onlyId;
+    expect(bridge.creations[id]!['label'], 'Notifications');
+    await tester.tap(find.byType(UiKitView));
+    await tester.pumpAndSettle();
+    expect(
+      changes,
+      isEmpty,
+      reason: 'UIKit owns the switch tap; ListTile must not toggle too',
+    );
+    await bridge.send(id, 'change', true);
+    expect(changes, [true]);
+    await tester.tap(find.text('Notifications'));
+    expect(changes, [true, true], reason: 'A separate row tap still works');
+  }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
   testWidgets(
     'vertical drag beginning on native switch still scrolls its settings list',
@@ -316,54 +312,48 @@ void main() {
     variant: TargetPlatformVariant.only(TargetPlatform.iOS),
   );
 
-  testWidgets(
-    'disposed controls detach native callbacks',
-    (tester) async {
-      bridge.install();
-      final changes = <bool>[];
-      await tester.pumpWidget(
-        _host(
-          AdaptiveGlassSwitch(
-            value: false,
-            onChanged: changes.add,
-            semanticLabel: 'Switch',
-          ),
+  testWidgets('disposed controls detach native callbacks', (tester) async {
+    bridge.install();
+    final changes = <bool>[];
+    await tester.pumpWidget(
+      _host(
+        AdaptiveGlassSwitch(
+          value: false,
+          onChanged: changes.add,
+          semanticLabel: 'Switch',
         ),
-      );
-      await tester.pumpAndSettle();
-      final id = bridge.onlyId;
-      await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pumpAndSettle();
-      expect(await bridge.send(id, 'change', true), isNull);
-      expect(changes, isEmpty);
-      expect(bridge.disposed, [id]);
-      expect(tester.takeException(), isNull);
-    },
-    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
-  );
+      ),
+    );
+    await tester.pumpAndSettle();
+    final id = bridge.onlyId;
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+    expect(await bridge.send(id, 'change', true), isNull);
+    expect(changes, isEmpty);
+    expect(bridge.disposed, [id]);
+    expect(tester.takeException(), isNull);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
-  testWidgets(
-    'late support response cannot create a disposed platform view',
-    (tester) async {
-      final support = Completer<bool>();
-      bridge.install(delayedSupport: support);
-      await tester.pumpWidget(
-        _host(
-          AdaptiveGlassSwitch(
-            value: false,
-            onChanged: (_) {},
-            semanticLabel: 'Switch',
-          ),
+  testWidgets('late support response cannot create a disposed platform view', (
+    tester,
+  ) async {
+    final support = Completer<bool>();
+    bridge.install(delayedSupport: support);
+    await tester.pumpWidget(
+      _host(
+        AdaptiveGlassSwitch(
+          value: false,
+          onChanged: (_) {},
+          semanticLabel: 'Switch',
         ),
-      );
-      await tester.pumpWidget(const SizedBox.shrink());
-      support.complete(true);
-      await tester.pumpAndSettle();
-      expect(bridge.creations, isEmpty);
-      expect(tester.takeException(), isNull);
-    },
-    variant: TargetPlatformVariant.only(TargetPlatform.iOS),
-  );
+      ),
+    );
+    await tester.pumpWidget(const SizedBox.shrink());
+    support.complete(true);
+    await tester.pumpAndSettle();
+    expect(bridge.creations, isEmpty);
+    expect(tester.takeException(), isNull);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
   for (final platform in [TargetPlatform.iOS, TargetPlatform.macOS]) {
     testWidgets(
       'native slider preserves discrete values and gesture callbacks on $platform',

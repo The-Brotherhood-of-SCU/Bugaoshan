@@ -107,9 +107,8 @@ class _ClassScheduleInquiryDetailPageState
       return Center(
         child: Text(
           l10n.classScheduleInquiryNoSchedule,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodyLarge
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       );
     }

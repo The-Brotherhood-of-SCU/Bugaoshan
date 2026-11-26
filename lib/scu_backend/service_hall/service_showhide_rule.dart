@@ -165,9 +165,8 @@ bool? evalServiceShowHideExpression(
   }
 
   // {p_K}.indexOf(v)!==-1 / ==-1
-  m = RegExp(
-    r'^\{p_([A-Za-z0-9_]+)\}\.indexOf\(([^)]+)\)\s*(!==-1|==-1)$',
-  ).firstMatch(expr);
+  m = RegExp(r'^\{p_([A-Za-z0-9_]+)\}\.indexOf\(([^)]+)\)\s*(!==-1|==-1)$')
+      .firstMatch(expr);
   if (m != null) {
     final v = norm(valueOf(m.group(1)!));
     final needle = unquote(m.group(2)!);
@@ -176,18 +175,16 @@ bool? evalServiceShowHideExpression(
   }
 
   // {p_K}.includes('s')
-  m = RegExp(
-    r'''^\{p_([A-Za-z0-9_]+)\}\.includes\(([^)]+)\)$''',
-  ).firstMatch(expr);
+  m = RegExp(r'''^\{p_([A-Za-z0-9_]+)\}\.includes\(([^)]+)\)$''')
+      .firstMatch(expr);
   if (m != null) {
     final v = norm(valueOf(m.group(1)!));
     return v.contains(unquote(m.group(2)!));
   }
 
   // {p_K}[0].value==v / {p_K}[0]==v（!=同理）
-  m = RegExp(
-    r'^\{p_([A-Za-z0-9_]+)\}\[0\](?:\.value)?\s*(==|!=)\s*(\S+)$',
-  ).firstMatch(expr);
+  m = RegExp(r'^\{p_([A-Za-z0-9_]+)\}\[0\](?:\.value)?\s*(==|!=)\s*(\S+)$')
+      .firstMatch(expr);
   if (m != null) {
     final v = norm(valueOf(m.group(1)!));
     final target = unquote(m.group(3)!);
@@ -242,9 +239,8 @@ DateTime? _parseServiceDate(Object? raw) {
   var s = raw.toString().trim();
   if (s.isEmpty) return null;
   // 截断的时区标记（'2026-08-10T17:10:21+'）→ 去掉尾部非日期内容
-  final m = RegExp(
-    r'^(\d{4}-\d{2}-\d{2})(?:[T ](\d{2}:\d{2}(?::\d{2})?))?',
-  ).firstMatch(s);
+  final m = RegExp(r'^(\d{4}-\d{2}-\d{2})(?:[T ](\d{2}:\d{2}(?::\d{2})?))?')
+      .firstMatch(s);
   if (m == null) return null;
   s = m.group(2) != null ? '${m.group(1)}T${m.group(2)}' : m.group(1)!;
   return DateTime.tryParse(s);

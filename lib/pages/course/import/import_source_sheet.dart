@@ -56,9 +56,8 @@ Future<void> showScheduleImportSheet(
                     ),
                     child: Text(
                       l10n.importSchedule,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ),
                   const Divider(),

@@ -233,9 +233,8 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                 )
               : Text(
                   _signedUp ? l10n.ccylCancelSignUp : l10n.ccylSignUp,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: Theme.of(context).textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w600),
                 ),
         ),
       ),
@@ -325,9 +324,8 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                 Expanded(
                   child: Text(
                     activity.activityName,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context).textTheme.titleLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ),
                 Container(
@@ -435,9 +433,8 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
           children: [
             Text(
               l10n.ccylLocationInfo,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
             if (activity.activityAddress != null &&
@@ -469,9 +466,8 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
           children: [
             Text(
               l10n.ccylActivityInfo,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
             IconInfoRow(
@@ -527,9 +523,8 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
           children: [
             Text(
               l10n.ccylActivitySeries,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
             IconInfoRow(

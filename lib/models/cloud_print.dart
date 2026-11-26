@@ -31,9 +31,8 @@ class CloudPrintOptions {
     }
     var first = 0, last = 0;
     if (pages.trim().isNotEmpty) {
-      final match = RegExp(
-        r'^(\d+)(?:\s*-\s*(\d+))?$',
-      ).firstMatch(pages.trim());
+      final match = RegExp(r'^(\d+)(?:\s*-\s*(\d+))?$')
+          .firstMatch(pages.trim());
       if (match == null) throw const FormatException('pages');
       first = int.tryParse(match[1]!) ?? 0;
       last = int.tryParse(match[2] ?? match[1]!) ?? 0;

@@ -165,9 +165,8 @@ class _CreditListPageState extends State<CreditListPage> {
   Future<void> _exportToEmail(String email) async {
     final l10n = AppLocalizations.of(context)!;
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.loading)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(l10n.loading)));
 
     try {
       final provider = getIt<CcylProvider>();

@@ -277,9 +277,8 @@ class _ProjectSelectorState extends State<_ProjectSelector> {
     if (_categories.isEmpty) {
       return Text(
         l10n.repairSelectProjectHint,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
+        style: Theme.of(context).textTheme.bodySmall
+            ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
       );
     }
 
@@ -516,9 +515,8 @@ class _AddAddressSheetState extends State<_AddAddressSheet> {
               children: [
                 Text(
                   l10n.repairAddAddress,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleLarge
+                      ?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 20),
                 if (_loadingTree)

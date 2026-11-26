@@ -105,9 +105,8 @@ class CloudPrintAuth extends ChangeNotifier implements SubsystemAuth {
                 : 'text/html,application/xhtml+xml,*/*',
           }),
       );
-      final response = await http.Response.fromStream(
-        stream,
-      ).timeout(kHttpTimeout);
+      final response = await http.Response.fromStream(stream)
+          .timeout(kHttpTimeout);
       // 仅记录源站、路径和状态码；SSO 查询参数可能包含 CAS 票据。
       AppLog.d(
         _tag,

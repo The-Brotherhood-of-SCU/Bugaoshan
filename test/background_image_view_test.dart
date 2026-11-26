@@ -12,9 +12,8 @@ import 'package:flutter_test/flutter_test.dart';
 /// zone 中 dart:io 的真实事件永远不会被处理，会直接卡死测试。
 Future<File> _writeTestImage(WidgetTester tester) async {
   return (await tester.runAsync(() async {
-    final bytes = (await rootBundle.load(
-      'assets/icon.png',
-    )).buffer.asUint8List();
+    final bytes = (await rootBundle.load('assets/icon.png')).buffer
+        .asUint8List();
     final dir = await Directory.systemTemp.createTemp('bugaoshan_bg_test');
     addTearDown(() => dir.delete(recursive: true).ignore());
     final file = File('${dir.path}/bg.png');

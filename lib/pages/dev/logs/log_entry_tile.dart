@@ -39,9 +39,8 @@ class LogEntryTile extends StatelessWidget {
             width: 44,
             child: Text(
               entry.level.name.toUpperCase(),
-              style: Theme.of(
-                context,
-              ).textTheme.labelSmall?.copyWith(color: fg, letterSpacing: 0.6),
+              style: Theme.of(context).textTheme.labelSmall
+                  ?.copyWith(color: fg, letterSpacing: 0.6),
             ),
           ),
           Expanded(
@@ -50,9 +49,8 @@ class LogEntryTile extends StatelessWidget {
               children: [
                 Text(
                   '${entry.category == LogCategory.authentication ? l10n.logCategoryAuthentication : l10n.logCategoryBusiness} · ${entry.tag}',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.labelSmall?.copyWith(color: fg),
+                  style: Theme.of(context).textTheme.labelSmall
+                      ?.copyWith(color: fg),
                 ),
                 const SizedBox(height: 2),
                 // 用 Text 而非 SelectableText：后者要装配可编辑区域，布局开销
@@ -60,9 +58,8 @@ class LogEntryTile extends StatelessWidget {
                 // 「复制全部」，单条复制可走系统长按菜单。
                 Text(
                   entry.message,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: fg),
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(color: fg),
                 ),
                 // error 与堆栈作为独立字段渲染（移植自 PR #369，
                 // moranfanhua）：此前它们被拼进 message 字符串，UI 无法
@@ -72,9 +69,8 @@ class LogEntryTile extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     entry.error!,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(color: fg),
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: fg),
                   ),
                 ],
                 if (entry.stackTrace != null)
@@ -84,27 +80,24 @@ class LogEntryTile extends StatelessWidget {
                   Material(
                     color: bg,
                     child: Theme(
-                      data: Theme.of(
-                        context,
-                      ).copyWith(dividerColor: Colors.transparent),
+                      data: Theme.of(context)
+                          .copyWith(dividerColor: Colors.transparent),
                       child: ExpansionTile(
                         tilePadding: EdgeInsets.zero,
                         childrenPadding: EdgeInsets.zero,
                         visualDensity: VisualDensity.compact,
                         title: Text(
                           l10n.logStackTrace,
-                          style: Theme.of(
-                            context,
-                          ).textTheme.labelSmall?.copyWith(color: fg),
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(color: fg),
                         ),
                         children: [
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
                               entry.stackTrace!,
-                              style: Theme.of(
-                                context,
-                              ).textTheme.bodySmall?.copyWith(color: fg),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: fg),
                             ),
                           ),
                         ],

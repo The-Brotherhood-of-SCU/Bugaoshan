@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
@@ -479,9 +480,8 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.importSuccess)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.importSuccess)));
 
         if (logicRootContext.mounted &&
             Navigator.of(logicRootContext).canPop()) {
@@ -617,9 +617,8 @@ class _ImportSchedulePageState extends State<ImportSchedulePage> {
   /// 显示导入成功提示并关闭页面。
   void _showSuccessAndPop() {
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.importSuccess)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(l10n.importSuccess)));
     if (logicRootContext.mounted && Navigator.of(logicRootContext).canPop()) {
       Navigator.of(logicRootContext).pop();
     }

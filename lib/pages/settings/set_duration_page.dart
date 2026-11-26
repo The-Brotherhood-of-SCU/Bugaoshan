@@ -119,9 +119,9 @@ class _SetDurationPageState extends State<SetDurationPage> {
               label: '$_tempAnimationTime ms',
               onChanged: _updateAnimationTime,
               activeColor: Theme.of(context).colorScheme.primary,
-              inactiveColor: Theme.of(
-                context,
-              ).colorScheme.surfaceContainerHighest,
+              inactiveColor: Theme.of(context)
+                  .colorScheme
+                  .surfaceContainerHighest,
             ),
 
             const SizedBox(height: 20),

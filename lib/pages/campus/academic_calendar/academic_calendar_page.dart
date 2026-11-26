@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:flutter/material.dart';
@@ -16,8 +17,10 @@ import 'official_calendar_view.dart';
 
 typedef AcademicCalendarHttpGet = Future<http.Response> Function(Uri uri);
 typedef AcademicCalendarDataLoader = Future<AcademicCalendarData> Function();
-typedef AcademicCalendarImageBuilder =
-    Widget Function(BuildContext context, String url);
+typedef AcademicCalendarImageBuilder = Widget Function(
+  BuildContext context,
+  String url,
+);
 
 class AcademicCalendarPage extends StatefulWidget {
   const AcademicCalendarPage({
@@ -244,9 +247,8 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
     if (!mounted) return;
     if (data == null) {
       final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.networkError)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.networkError)));
       return;
     }
     setState(() {
@@ -254,9 +256,8 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage>
       _selectedSemester = _pickInitialSemester(data);
     });
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.calendarRefreshSuccess)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(l10n.calendarRefreshSuccess)));
   }
 
   Future<void> _importSemesterToSystem() async {

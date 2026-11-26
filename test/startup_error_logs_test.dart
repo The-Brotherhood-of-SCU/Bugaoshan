@@ -68,9 +68,9 @@ void main() {
       ))!;
       addTearDown(() => directory.delete(recursive: true));
       await tester.runAsync(
-        () => File(
-          '${directory.path}/bugaoshan.log',
-        ).writeAsString('previous-failure token=old-secret'),
+        () =>
+            File('${directory.path}/bugaoshan.log')
+                .writeAsString('previous-failure token=old-secret'),
       );
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(

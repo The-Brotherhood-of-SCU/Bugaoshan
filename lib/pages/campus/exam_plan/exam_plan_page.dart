@@ -104,9 +104,8 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
       return Center(
         child: Text(
           l10n.examPlanNoData,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       );
     }
@@ -385,9 +384,8 @@ class _ExamPlanPageState extends State<ExamPlanPage> {
           Expanded(
             child: Text(
               text,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: textColor, height: 1.3),
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: textColor, height: 1.3),
             ),
           ),
         ],

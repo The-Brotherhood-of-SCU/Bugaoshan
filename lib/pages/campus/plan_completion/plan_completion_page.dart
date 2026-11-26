@@ -146,9 +146,8 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
       return Center(
         child: Text(
           l10n.planCompletionNoData,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodyLarge
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       );
     }
@@ -223,9 +222,8 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
       return Center(
         child: Text(
           l10n.planCompletionNoData,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodyLarge
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       );
     }
@@ -290,9 +288,8 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
         ),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodySmall
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       ],
     );
@@ -331,9 +328,8 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
         ),
         title: Text(
           node.categoryDisplayName,
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.titleSmall
+              ?.copyWith(fontWeight: FontWeight.w600),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -360,9 +356,9 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
               child: LinearProgressIndicator(
                 value: node.progress,
                 minHeight: 4,
-                backgroundColor: Theme.of(
-                  context,
-                ).colorScheme.surfaceContainerHighest,
+                backgroundColor: Theme.of(context)
+                    .colorScheme
+                    .surfaceContainerHighest,
               ),
             ),
           ],
@@ -480,9 +476,8 @@ class _PlanCompletionPageState extends State<PlanCompletionPage> {
           size: 18,
           color: isPassed
               ? Theme.of(context).colorScheme.primary
-              : Theme.of(
-                  context,
-                ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              : Theme.of(context).colorScheme.onSurfaceVariant
+                    .withValues(alpha: 0.5),
         ),
         title: Text(
           node.courseName.isNotEmpty ? node.courseName : node.name,

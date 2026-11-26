@@ -82,8 +82,7 @@ void main() {
       c.values['File_71'] = <ServiceAttachment>[
         const ServiceAttachment(
           name: '图片1.png',
-          url:
-              'https://service.scu.edu.cn/site/attach/auth-download?file_id=1774464',
+          url: 'https://service.scu.edu.cn/site/attach/auth-download?file_id=1774464',
           id: '1774464',
         ),
       ];
@@ -117,8 +116,7 @@ void main() {
       expect(fields['File_71'], [
         {
           'name': '图片1.png',
-          'url':
-              'https://service.scu.edu.cn/site/attach/auth-download?file_id=1774464',
+          'url': 'https://service.scu.edu.cn/site/attach/auth-download?file_id=1774464',
           'id': '1774464',
         },
       ]);

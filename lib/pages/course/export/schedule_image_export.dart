@@ -185,9 +185,8 @@ Future<void> showScheduleImageExportFlow(
           ? l10n.exportScheduleAsImageEmpty
           : l10n.exportScheduleAsImageFailed;
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(message)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(message)));
       }
       return;
     }
@@ -246,9 +245,8 @@ Future<void> showScheduleImageExportFlow(
               ),
             );
           case ScheduleImageOutputStatus.failed:
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(l10n.imageSaveFailed)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(l10n.imageSaveFailed)));
           case ScheduleImageOutputStatus.canceled:
             break;
         }

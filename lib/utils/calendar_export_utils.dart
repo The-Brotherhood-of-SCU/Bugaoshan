@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:bugaoshan/utils/app_log.dart';
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -71,9 +73,8 @@ class CalendarExportUtils {
                 ),
                 child: Text(
                   title,
-                  style: Theme.of(
-                    sheetContext,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(sheetContext).textTheme.titleLarge
+                      ?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
               const Divider(),
@@ -126,9 +127,8 @@ class CalendarExportUtils {
                 ),
                 child: Text(
                   title,
-                  style: Theme.of(
-                    sheetContext,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(sheetContext).textTheme.titleLarge
+                      ?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
               const Divider(),
@@ -152,9 +152,9 @@ class CalendarExportUtils {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 24),
                   leading: const Icon(Icons.event_available),
                   title: Text(l10n.exportScheduleAddToCalendar),
-                  onTap: () => Navigator.of(
-                    sheetContext,
-                  ).pop(CalendarExportAction.addToCalendar),
+                  onTap: () =>
+                      Navigator.of(sheetContext)
+                          .pop(CalendarExportAction.addToCalendar),
                 ),
               const SizedBox(height: 8),
             ],

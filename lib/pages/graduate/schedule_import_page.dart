@@ -568,9 +568,8 @@ class _GraduateScheduleImportPageState
                   if (hasCourses)
                     Text(
                       '${_courses.length}',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: Theme.of(context).textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w600),
                     ),
                 ],
               ),

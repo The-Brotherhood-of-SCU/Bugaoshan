@@ -1,4 +1,5 @@
 import 'package:bugaoshan/utils/open_link.dart';
+
 import 'dart:convert';
 
 import 'package:bugaoshan/injection/injector.dart';
@@ -187,9 +188,8 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
           );
           if (mounted) {
             final l10n = AppLocalizations.of(context)!;
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(l10n.downloadComplete)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(l10n.downloadComplete)));
           }
         },
         getCookies: () => getDownloadCookieHeader(url),
@@ -279,9 +279,8 @@ mixin WebViewNoticeHandlers<T extends StatefulWidget> on State<T> {
       );
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.downloadComplete)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.downloadComplete)));
       }
       return true;
     } catch (e, logStackTrace) {

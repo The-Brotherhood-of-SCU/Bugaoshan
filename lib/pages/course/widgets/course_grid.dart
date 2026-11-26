@@ -5,6 +5,7 @@ import 'package:bugaoshan/models/course.dart';
 import 'package:bugaoshan/models/date_display_format.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/utils/holiday_utils.dart';
+
 import 'course_grid_body.dart';
 
 /// 显示周课程表的网格，包含时间槽和课程卡片。

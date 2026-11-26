@@ -47,9 +47,8 @@ Future<AppConfigProvider> _createAppConfig({
 
 Future<File> _writeTestImage(WidgetTester tester) async {
   return (await tester.runAsync(() async {
-    final bytes = (await rootBundle.load(
-      'assets/icon.png',
-    )).buffer.asUint8List();
+    final bytes = (await rootBundle.load('assets/icon.png')).buffer
+        .asUint8List();
     final dir = await Directory.systemTemp.createTemp('bugaoshan_export_test');
     addTearDown(() => dir.delete(recursive: true).ignore());
     final file = File('${dir.path}/bg.png');

@@ -63,9 +63,8 @@ class _ChangelogPageState extends State<ChangelogPage> {
 
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i];
-      final headerMatch = RegExp(
-        r'^##\s+\[(.+?)\](?:\s*-\s*(.+))?$',
-      ).matchAsPrefix(line);
+      final headerMatch = RegExp(r'^##\s+\[(.+?)\](?:\s*-\s*(.+))?$')
+          .matchAsPrefix(line);
       if (headerMatch != null) {
         if (currentVersion != null && start != null) {
           entries.add(

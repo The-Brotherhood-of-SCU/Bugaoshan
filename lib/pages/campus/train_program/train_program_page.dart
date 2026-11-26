@@ -200,9 +200,8 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
       TrainProgramLoadState.idle => Center(
         child: Text(
           l10n.trainProgramNoData,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodyLarge
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       ),
       TrainProgramLoadState.loading => const Center(
@@ -242,9 +241,9 @@ class _TrainProgramPageState extends State<TrainProgramPage> {
                         ),
                         child: Icon(
                           Icons.school_outlined,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onPrimaryContainer,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onPrimaryContainer,
                         ),
                       ),
                       title: Text(

@@ -229,12 +229,10 @@ class IcsService {
   static ({DateTime start, DateTime end})? _parseExamDateTimeRange(
     ExamInfo exam,
   ) {
-    final dateMatch = RegExp(
-      r'^(\d{4})-(\d{2})-(\d{2})$',
-    ).firstMatch(exam.date);
-    final timeMatch = RegExp(
-      r'^(\d{2}):(\d{2})-(\d{2}):(\d{2})$',
-    ).firstMatch(exam.timeRange);
+    final dateMatch = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$')
+        .firstMatch(exam.date);
+    final timeMatch = RegExp(r'^(\d{2}):(\d{2})-(\d{2}):(\d{2})$')
+        .firstMatch(exam.timeRange);
     if (dateMatch == null || timeMatch == null) return null;
 
     final year = int.parse(dateMatch.group(1)!);

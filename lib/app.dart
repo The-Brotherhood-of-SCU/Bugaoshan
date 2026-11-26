@@ -25,6 +25,7 @@ import 'package:bugaoshan/widgets/eula_content.dart';
 import 'package:bugaoshan/widgets/route/mouse_back_handler.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
 import 'package:system_theme/system_theme.dart';
+
 import 'l10n/app_localizations.dart';
 
 class MyApp extends StatefulWidget {
@@ -134,9 +135,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           final scale = MediaQuery.textScalerOf(context).scale(1.0);
           final clamped = scale.clamp(1.0, 2.0);
           return MediaQuery(
-            data: MediaQuery.of(
-              context,
-            ).copyWith(textScaler: TextScaler.linear(clamped)),
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(clamped)),
             child: MouseBackHandler(
               child: SessionExpiredListener(child: child ?? const SizedBox()),
             ),

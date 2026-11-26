@@ -97,9 +97,8 @@ void main() {
     await logger.enableFileSink(overridePath: directory.path);
     logger.e('Main', 'after-enabling');
     await logger.flushFileSink();
-    final content = await File(
-      '${directory.path}/bugaoshan.log',
-    ).readAsString();
+    final content = await File('${directory.path}/bugaoshan.log')
+        .readAsString();
     expect(content, isNot(contains('while-disabled')));
     expect(content, contains('after-enabling'));
   });

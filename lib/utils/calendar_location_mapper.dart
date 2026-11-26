@@ -613,9 +613,8 @@ class CalendarLocationMapper {
     }
 
     // 5. 若出现重复座号如 "B B503"，合并为 "B503"
-    final duplicateLetterMatch = RegExp(
-      r'^[A-Za-z]\s+([A-Za-z]\d+.*)$',
-    ).firstMatch(text);
+    final duplicateLetterMatch = RegExp(r'^[A-Za-z]\s+([A-Za-z]\d+.*)$')
+        .firstMatch(text);
     if (duplicateLetterMatch != null) {
       text = duplicateLetterMatch.group(1)!;
     }

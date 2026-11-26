@@ -79,9 +79,8 @@ class CcylPhaseChip extends StatelessWidget {
         ccylPhaseLabel(AppLocalizations.of(context)!, phase),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: Theme.of(
-          context,
-        ).textTheme.labelSmall?.copyWith(color: style.foreground),
+        style: Theme.of(context).textTheme.labelSmall
+            ?.copyWith(color: style.foreground),
       ),
     );
   }

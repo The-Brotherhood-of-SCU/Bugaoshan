@@ -106,9 +106,8 @@ class _FitnessTestPageState extends State<FitnessTestPage>
       return Center(
         child: Text(
           l10n.noData,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       );
     }
@@ -166,9 +165,8 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                 Expanded(
                   child: Text(
                     notice.title,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: Theme.of(context).textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
@@ -227,9 +225,8 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                   Expanded(
                     child: Text(
                       notice.title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: Theme.of(context).textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w600),
                     ),
                   ),
                   IconButton(
@@ -403,10 +400,8 @@ class _FitnessTestPageState extends State<FitnessTestPage>
               alignment: Alignment.center,
               child: Text(
                 '${score.totalScore}',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: gradeColor,
-                ),
+                style: Theme.of(context).textTheme.headlineMedium
+                    ?.copyWith(fontWeight: FontWeight.bold, color: gradeColor),
               ),
             ),
             const SizedBox(width: 20),
@@ -416,9 +411,8 @@ class _FitnessTestPageState extends State<FitnessTestPage>
                 children: [
                   Text(
                     l10n.fitnessTestTotalScore,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 4),
                   Container(
@@ -595,16 +589,13 @@ class _FitnessTestPageState extends State<FitnessTestPage>
             children: [
               Text(
                 item.rawScoreDisplay,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                style: Theme.of(context).textTheme.bodyMedium
+                    ?.copyWith(fontWeight: FontWeight.w500),
               ),
               Text(
                 '${item.data.gradedScore} · ${item.data.grade}',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: color,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: color, fontWeight: FontWeight.w500),
               ),
             ],
           ),

@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:bugaoshan/utils/app_log.dart';
 
 import 'package:flutter/cupertino.dart';
@@ -6,7 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:bugaoshan/injection/injector.dart';
 import 'package:bugaoshan/l10n/app_localizations.dart';
 import 'package:bugaoshan/models/course.dart';
+
 import 'time_slot_setting_page.dart';
+
 import 'package:bugaoshan/pages/settings/set_course_style_page.dart';
 import 'package:bugaoshan/providers/course_provider.dart';
 import 'package:bugaoshan/providers/scu_auth_provider.dart';
@@ -17,7 +20,9 @@ import 'package:bugaoshan/widgets/common/info_card.dart';
 import 'package:bugaoshan/widgets/common/section_title.dart';
 import 'package:bugaoshan/widgets/common/styled_tile.dart';
 import 'package:bugaoshan/widgets/route/router_utils.dart';
+
 import '../widgets/empty_schedule_placeholder.dart';
+
 import 'package:bugaoshan/theme_shape.dart';
 import 'package:bugaoshan/utils/system_insets.dart';
 
@@ -112,9 +117,8 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
         stackTrace: logStackTrace,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.message)));
     } catch (e, logStackTrace) {
       AppLog.e(
         _tag,
@@ -123,9 +127,8 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
         stackTrace: logStackTrace,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       if (mounted) setState(() => _fetchingCurrentWeek = false);
     }
@@ -328,10 +331,8 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
                     ),
                     Text(
                       title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.titleMedium
+                          ?.copyWith(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     TextButton(
                       onPressed: () => Navigator.pop(context, tempValue),
@@ -416,9 +417,8 @@ class _CourseScheduleSettingState extends State<CourseScheduleSetting> {
       if (picked.weekday != DateTime.sunday) {
         finalDate = picked.toSunday();
         if (context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(l10n.autoAdjustedToSunday)));
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(l10n.autoAdjustedToSunday)));
         }
       }
       setState(() {

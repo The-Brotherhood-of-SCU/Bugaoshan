@@ -58,14 +58,17 @@ class CloudPrintApiService {
         logTag: _tag,
       );
 
-  Future<List<CloudPrintJob>> fetchJobs() async => (await _list(
-    '/api/client/PrintJob/Get',
-  )).map(CloudPrintJob.fromJson).where((job) => job.id > 0).toList();
+  Future<List<CloudPrintJob>> fetchJobs() async =>
+      (await _list('/api/client/PrintJob/Get'))
+          .map(CloudPrintJob.fromJson)
+          .where((job) => job.id > 0)
+          .toList();
 
   Future<List<CloudScanJob>> fetchScans() async =>
-      (await _list(
-          '/api/client/Scan/Get',
-        )).map(CloudScanJob.fromJson).where((job) => job.id > 0).toList()
+      (await _list('/api/client/Scan/Get'))
+          .map(CloudScanJob.fromJson)
+          .where((job) => job.id > 0)
+          .toList()
         ..sort((a, b) {
           final date = b.date.compareTo(a.date);
           return date != 0 ? date : b.time.compareTo(a.time);
