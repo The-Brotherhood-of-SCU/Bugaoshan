@@ -24,7 +24,7 @@ Flutter 维护选中入口与开关值，原生层仅回传稳定入口 ID、开
 
 ## 构建与签名
 
-使用 Flutter 3.44.9、支持 macOS 26 API 的 Xcode 和 CocoaPods。先在 Xcode 登录发布 iOS 时使用的开发者账号，并确保主应用和 Widget 的 App ID 均启用上述 App Group。
+使用 Flutter 3.47.9、支持 macOS 26 API 的 Xcode 和 CocoaPods。先在 Xcode 登录发布 iOS 时使用的开发者账号，并确保主应用和 Widget 的 App ID 均启用上述 App Group。
 
 ```bash
 export PUB_HOSTED_URL=https://pub.flutter-io.cn

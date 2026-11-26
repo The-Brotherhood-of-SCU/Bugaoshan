@@ -4,7 +4,7 @@
 
 # 🏔️ 不高山上 · Bugaoshan
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.44-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.47-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.10-0175C2?logo=dart&logoColor=white)](https://dart.dev)
 [![License](https://img.shields.io/badge/License-AGPL3.0-green.svg)](LICENSE)
 [![Downloads](https://img.shields.io/github/downloads/The-Brotherhood-of-SCU/Bugaoshan/total?style=flat-square&logo=github&label=Downloads)](https://github.com/The-Brotherhood-of-SCU/Bugaoshan/releases)

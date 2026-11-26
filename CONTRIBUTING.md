@@ -6,7 +6,7 @@
 
 ### 环境要求
 
-- [Flutter SDK](https://flutter.dev/docs/get-started/install) >= 3.44（Dart SDK 3.10+）
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) >= 3.47（Dart SDK 3.10+）
 - [Dart SDK](https://dart.dev/get-dart) >= 3.10.4
 - [Nuget CLI](https://learn.microsoft.com/en-us/nuget/install-nuget-client-tools?tabs=windows#nugetexe-cli)  required by `flutter_inappwebview` (windows target)
 - Windows 需要先执行 `git config --global core.longpaths true`，否则部分依赖在 pub cache 内检出时可能因路径超过 MAX_PATH 报 `Filename too long`

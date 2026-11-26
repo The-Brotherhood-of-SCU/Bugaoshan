@@ -9,7 +9,7 @@ This file provides guidance to AI coding agents when working with code in this r
 
 The name comes from a landmark on SCU's Jiang'an campus — "Bugaoshan" is a play on words meaning "not a tall mountain" and "The Brotherhood of SCU" sounds similar.
 
-> **⚠️ Flutter 版本要求**: 本项目需要 **Flutter >= 3.44**（Dart SDK >= 3.10.4）才能正常编译。CI uses Flutter **3.44** stable. 详情见 `CONTRIBUTING.md` 与 `.github/actions/setup/action.yml`.
+> **⚠️ Flutter 版本要求**: 本项目需要 **Flutter >= 3.47**（Dart SDK >= 3.10.4）才能正常编译。CI uses Flutter **3.47** stable. 详情见 `CONTRIBUTING.md` 与 `.github/actions/setup/action.yml`.
 
 ## Build & Run
 
@@ -159,7 +159,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `f
 │       ├── 0009-export-schedule-as-image.md
 │       └── 0010-remove-linux-native-webview.md
 └── .github/
-    ├── actions/setup/          # composite action: install Flutter 3.44, gen-l10n, git metadata
+    ├── actions/setup/          # composite action: install Flutter 3.47, gen-l10n, git metadata
     ├── scripts/                # Python release automation
     │   ├── changelog_sections.py   # CHANGELOG parse / release state / notes selection
     │   ├── resolve_release_version.py  # release state, tag, build injection
