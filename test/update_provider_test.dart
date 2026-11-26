@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:bugaoshan/models/release_info.dart';
 import 'package:bugaoshan/models/version_info.dart';
 import 'package:bugaoshan/providers/app_config_provider.dart';
 import 'package:bugaoshan/providers/app_info_provider.dart';
@@ -30,6 +31,19 @@ class _ControllableUpdateService extends UpdateService {
           client: _stubResourceClient,
         ),
       );
+
+  /// 覆盖基类基于平台与安装来源的判定：宿主测试平台不一定是 Android，
+  /// 红点逻辑需要能显式模拟「支持 / 不支持应用内更新」两种渠道。
+  bool supportsInAppUpdateOverride = true;
+
+  @override
+  bool get supportsInAppUpdate => supportsInAppUpdateOverride;
+
+  /// 主线检查结果由测试指定，避免走真实网络与平台判定。
+  UpdateCheckResult checkResult = UpdateCheckResult.noUpdate();
+
+  @override
+  Future<UpdateCheckResult> checkForUpdate() async => checkResult;
 
   Completer<void>? _downloadCompleter;
   Object? nextError;
@@ -127,14 +141,23 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late SharedPreferences prefs;
+  late AppConfigProvider appConfig;
   late _ControllableUpdateService service;
   late UpdateProvider provider;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
+    appConfig = AppConfigProvider(prefs);
+    // 红点由 AppConfigProvider 持久化，需接上层监听才能断言落盘结果。
+    await appConfig.init();
     service = _ControllableUpdateService(prefs);
-    provider = UpdateProvider(service, _StubAppInfo(), _StubNotification());
+    provider = UpdateProvider(
+      service,
+      _StubAppInfo(),
+      _StubNotification(),
+      appConfig,
+    );
   });
 
   tearDown(() {
@@ -202,7 +225,12 @@ void main() {
   });
 
   test('dispose releases downloadingVersion notifier', () {
-    final other = UpdateProvider(service, _StubAppInfo(), _StubNotification());
+    final other = UpdateProvider(
+      service,
+      _StubAppInfo(),
+      _StubNotification(),
+      appConfig,
+    );
     expect(() => other.dispose(), returnsNormally);
   });
 
@@ -221,6 +249,7 @@ void main() {
         realService,
         _StubAppInfo(),
         _StubNotification(),
+        appConfig,
       );
       addTearDown(realProvider.dispose);
       final client = MockClient(
@@ -243,4 +272,110 @@ void main() {
       expect(realProvider.previewResult.value.noUpdate, isTrue);
     },
   );
+
+  group('更新红点（#448）', () {
+    UpdateCheckResult hasUpdateResult() => UpdateCheckResult.hasUpdate(
+      const ReleaseInfo(
+        tagName: 'v2.5.4',
+        downloadUrl: 'https://example.com/bugaoshan_2.5.4.apk',
+        filename: 'bugaoshan_2.5.4.apk',
+      ),
+    );
+
+    test('不支持应用内更新的渠道即使检查到新版本也不点亮红点', () {
+      service.supportsInAppUpdateOverride = false;
+      expect(provider.updateBadgeFor(hasUpdateResult()), isFalse);
+    });
+
+    test('不支持应用内更新时熄灭从其它渠道覆盖安装残留的红点', () {
+      service.supportsInAppUpdateOverride = false;
+      expect(provider.updateBadgeFor(UpdateCheckResult.noUpdate()), isFalse);
+    });
+
+    test('支持应用内更新时检查到新版本点亮红点', () {
+      service.supportsInAppUpdateOverride = true;
+      expect(provider.updateBadgeFor(hasUpdateResult()), isTrue);
+    });
+
+    test('支持应用内更新且确认没有更新时熄灭旧红点', () {
+      service.supportsInAppUpdateOverride = true;
+      expect(provider.updateBadgeFor(UpdateCheckResult.noUpdate()), isFalse);
+    });
+
+    test('检查出错时保持红点原状，网络抖动不抹掉已有提示', () {
+      service.supportsInAppUpdateOverride = true;
+      expect(provider.updateBadgeFor(UpdateCheckResult.error('boom')), isNull);
+    });
+  });
+
+  // 覆盖首页接线：页面只调 checkForUpdateInBackground 一次，红点的写入与
+  // 渠道判定都在这条路径上。有人把这里改回「只看 result.hasUpdate」时，
+  // 本组第一个用例会失败（#448）。
+  group('后台检查写入红点（#448 接线）', () {
+    UpdateCheckResult hasUpdateResult() => UpdateCheckResult.hasUpdate(
+      const ReleaseInfo(
+        tagName: 'v2.5.4',
+        downloadUrl: 'https://example.com/bugaoshan_2.5.4.apk',
+        filename: 'bugaoshan_2.5.4.apk',
+      ),
+    );
+
+    test('不支持应用内更新时，即使检查到新版本也熄灭红点并落盘', () async {
+      service
+        ..supportsInAppUpdateOverride = false
+        ..checkResult = hasUpdateResult();
+      appConfig.hasUpdateNotification.value = true;
+
+      await provider.checkForUpdateInBackground();
+
+      expect(appConfig.hasUpdateNotification.value, isFalse);
+      expect(prefs.getBool('hasUpdateNotification'), isFalse);
+    });
+
+    test('不支持应用内更新时，检查报错也熄灭残留红点（无网首启场景）', () async {
+      service
+        ..supportsInAppUpdateOverride = false
+        ..checkResult = UpdateCheckResult.error('offline');
+      appConfig.hasUpdateNotification.value = true;
+
+      await provider.checkForUpdateInBackground();
+
+      expect(appConfig.hasUpdateNotification.value, isFalse);
+    });
+
+    test('支持应用内更新时，检查到新版本点亮红点并落盘', () async {
+      service
+        ..supportsInAppUpdateOverride = true
+        ..checkResult = hasUpdateResult();
+      appConfig.hasUpdateNotification.value = false;
+
+      await provider.checkForUpdateInBackground();
+
+      expect(appConfig.hasUpdateNotification.value, isTrue);
+      expect(prefs.getBool('hasUpdateNotification'), isTrue);
+    });
+
+    test('支持应用内更新且确认没有更新时熄灭旧红点', () async {
+      service
+        ..supportsInAppUpdateOverride = true
+        ..checkResult = UpdateCheckResult.noUpdate();
+      appConfig.hasUpdateNotification.value = true;
+
+      await provider.checkForUpdateInBackground();
+
+      expect(appConfig.hasUpdateNotification.value, isFalse);
+    });
+
+    test('检查出错时红点保持原状，网络抖动不抹掉已有提示', () async {
+      service
+        ..supportsInAppUpdateOverride = true
+        ..checkResult = UpdateCheckResult.error('boom');
+      appConfig.hasUpdateNotification.value = true;
+
+      await provider.checkForUpdateInBackground();
+
+      expect(appConfig.hasUpdateNotification.value, isTrue);
+      expect(prefs.getBool('hasUpdateNotification'), isTrue);
+    });
+  });
 }
